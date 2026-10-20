@@ -7,10 +7,10 @@
 // introduced itself as the framework until someone edited `.env` by hand.
 
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
-import { copyFileSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { appEnvValues, appIdentity, applyAppChangelogTemplate, applyAppEnvTemplate, applyAppPackageTemplate, renderTemplate } from '../src/scaffold-app'
+import { appEnvValues, appIdentity, applyAppChangelogTemplate, applyAppEnvTemplate, applyAppPackageTemplate, removeFrameworkLicense, renderTemplate } from '../src/scaffold-app'
 
 const REPO = join(import.meta.dir, '../../../../..')
 const CREATE_COMMAND = join(import.meta.dir, '../src/commands/create.ts')
@@ -113,7 +113,7 @@ describe('the app package.json', () => {
     const text = JSON.stringify({ ...pkg, dependencies: undefined, devDependencies: undefined, scripts: undefined, overrides: undefined })
     expect(text).not.toContain('github.com/stacksjs/stacks')
     expect(text).not.toContain('chrisbbreuer')
-    for (const key of ['repository', 'bugs', 'homepage', 'funding', 'contributors', 'author'])
+    for (const key of ['repository', 'bugs', 'homepage', 'funding', 'contributors', 'author', 'license'])
       expect(pkg).not.toHaveProperty(key)
   })
 
@@ -159,5 +159,24 @@ describe('buddy new wiring', () => {
     expect(source).toContain('applyAppEnv(path)')
     expect(source.indexOf('applyAppEnv(path)'))
       .toBeLessThan(source.indexOf('await install(path, options)'))
+  })
+})
+
+describe('the app licence', () => {
+  test('is not the framework\'s', () => {
+    const app = mkdtempSync(join(tmpdir(), 'stacks-app-license-'))
+    try {
+      copyFileSync(join(REPO, 'LICENSE.md'), join(app, 'LICENSE.md'))
+      expect(removeFrameworkLicense(app)).toBe(true)
+      expect(existsSync(join(app, 'LICENSE.md'))).toBe(false)
+
+      // An app's own licence is left alone.
+      writeFileSync(join(app, 'LICENSE.md'), 'Copyright (c) 2026 Someone Else\n')
+      expect(removeFrameworkLicense(app)).toBe(false)
+      expect(existsSync(join(app, 'LICENSE.md'))).toBe(true)
+    }
+    finally {
+      rmSync(app, { recursive: true, force: true })
+    }
   })
 })

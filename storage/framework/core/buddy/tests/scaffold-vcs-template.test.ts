@@ -218,3 +218,22 @@ describe('the scaffold installs it (#2239)', () => {
     expect(source).toContain('rmSync(destination')
   })
 })
+
+describe('the app template speaks for the app, not for Stacks', () => {
+  // It shipped the framework's community files: FUNDING.yml put Stacks'
+  // sponsor buttons on every app's repository, SECURITY.md and the code of
+  // conduct sent an app's vulnerability reports and conduct complaints to
+  // chris@stacksjs.com, and the issue templates sent its users to the Stacks
+  // Discord. Workflows may use stacksjs actions; nothing else may name Stacks'
+  // people or community.
+  test('no file outside the workflows names a Stacks contact, sponsor or community', () => {
+    const offenders = filesUnder(APP_VCS)
+      .filter(file => !file.includes('/workflows/'))
+      .filter(file => /chris@stacksjs\.com|chrisbbreuer|stacksjs\.com\/discord|github\.com\/stacksjs\/(?:stacks|contribut|\.github)/.test(readFileSync(file, 'utf8')))
+    expect(offenders).toEqual([])
+  })
+
+  test('ships no FUNDING.yml', () => {
+    expect(existsSync(join(APP_VCS, 'FUNDING.yml'))).toBe(false)
+  })
+})

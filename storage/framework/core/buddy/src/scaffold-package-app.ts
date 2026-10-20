@@ -164,6 +164,54 @@ export function applyAppPackageScripts(root: string): ScriptChanges {
   return changes
 }
 
+/** Keys that credit the framework or point at its repository. */
+const FRAMEWORK_CREDIT_KEYS = ['author', 'contributors', 'funding', 'homepage', 'repository', 'bugs']
+
+/**
+ * Strip the framework's author, sponsor link and repository from the
+ * workspace manifests an app keeps under `storage/framework` (the root one,
+ * `server/`, `cloud/`, `orm/`, `api/` and the library entries). The root
+ * package.json already loses them (`appPackageValues`); these said
+ * `"funding": "https://github.com/sponsors/chrisbbreuer"` in every app.
+ * Returns the manifests it changed.
+ */
+export function stripFrameworkManifestCredits(root: string): string[] {
+  const framework = join(root, 'storage/framework')
+  const manifests: string[] = []
+  const walk = (dir: string): void => {
+    let entries
+    try {
+      entries = readdirSync(dir, { withFileTypes: true })
+    }
+    catch {
+      return
+    }
+    for (const entry of entries) {
+      const full = join(dir, entry.name)
+      // The vendored framework packages are the framework's own, credits and
+      // all; `core` is only still here under --with-core.
+      if (entry.isDirectory() && !['core', 'defaults', 'node_modules', 'dist'].includes(entry.name))
+        walk(full)
+      else if (entry.isFile() && entry.name === 'package.json')
+        manifests.push(full)
+    }
+  }
+  walk(framework)
+
+  const touched: string[] = []
+  for (const file of manifests) {
+    const pkg = JSON.parse(readFileSync(file, 'utf8')) as Record<string, unknown>
+    const present = FRAMEWORK_CREDIT_KEYS.filter(key => key in pkg)
+    if (present.length === 0)
+      continue
+    for (const key of present)
+      delete pkg[key]
+    writeFileSync(file, `${JSON.stringify(pkg, null, 2)}\n`)
+    touched.push(relative(root, file))
+  }
+  return touched
+}
+
 /**
  * Content globs that name a core package's source, which an app does not have.
  * The published package ships the same views under `dist/`.

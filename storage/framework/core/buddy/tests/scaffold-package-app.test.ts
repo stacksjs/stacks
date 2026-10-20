@@ -15,6 +15,7 @@ import {
   rewriteDefaultsImports,
   rewriteCoreContentPaths,
   rewriteDefaultsModulePaths,
+  stripFrameworkManifestCredits,
   unignoreDefaults,
 } from '../src/scaffold-package-app'
 
@@ -168,4 +169,24 @@ test('content globs into the core point at the published package', () => {
   const css = readFileSync(join(app, 'config/css.ts'), 'utf8')
   expect(css).not.toContain('storage/framework/core')
   expect(css).toContain('./node_modules/@stacksjs/error-handling/dist/views/**/*.{stx,html}')
+})
+
+test('the framework manifests an app keeps lose the framework\'s credits', () => {
+  for (const dir of ['storage/framework', 'storage/framework/server', 'storage/framework/cloud', 'storage/framework/orm'])
+    copy(`${dir}/package.json`)
+  write('storage/framework/core/router/package.json', '{"name":"@stacksjs/router","author":"Chris Breuer"}')
+
+  const touched = stripFrameworkManifestCredits(app)
+
+  expect(touched).toContain('storage/framework/package.json')
+  expect(touched).toContain('storage/framework/server/package.json')
+  for (const file of touched) {
+    const text = readFileSync(join(app, file), 'utf8')
+    expect(text).not.toContain('chrisbbreuer')
+    expect(text).not.toContain('github.com/stacksjs/stacks')
+    // What the workspace runs on survives.
+    expect(JSON.parse(text).name).toBeTruthy()
+  }
+  // A vendored framework package keeps its own.
+  expect(readFileSync(join(app, 'storage/framework/core/router/package.json'), 'utf8')).toContain('Chris Breuer')
 })

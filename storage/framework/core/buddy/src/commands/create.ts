@@ -10,9 +10,9 @@ import { ExitCode } from '@stacksjs/types'
 import { uninstallAllFeatures } from './features'
 import { ensurePantryDependencies, ensurePantryInstalled, optimizePantryDeps } from './setup'
 import { resultFailed } from '../result'
-import { appIdentity, applyAppChangelogTemplate, applyAppEnvTemplate, applyAppPackageTemplate, renderTemplate } from '../scaffold-app'
+import { appIdentity, applyAppChangelogTemplate, applyAppEnvTemplate, applyAppPackageTemplate, removeFrameworkLicense, renderTemplate } from '../scaffold-app'
 import { applyAppSiteTemplate } from '../scaffold-site'
-import { adoptPackagedDefaults, applyAppPackageScripts, applyPackageAppTsconfig, pruneFrameworkOnlyFiles, rewriteCoreContentPaths } from '../scaffold-package-app'
+import { adoptPackagedDefaults, applyAppPackageScripts, applyPackageAppTsconfig, pruneFrameworkOnlyFiles, rewriteCoreContentPaths, stripFrameworkManifestCredits } from '../scaffold-package-app'
 import { fetchPublishedVersions } from '../registry'
 
 interface NewOptions extends CreateOptions {
@@ -400,6 +400,8 @@ function applyAppPackage(path: string) {
       log.success(`Named the app in package.json (${changed.join(', ')})`)
     if (applyAppChangelogTemplate(path, identity))
       log.success('Started the app its own CHANGELOG.md')
+    if (removeFrameworkLicense(path))
+      log.success('Removed the framework\'s LICENSE.md - choose the app\'s own licence')
   }
   catch (error) {
     log.warn(`Could not name the app in package.json: ${error instanceof Error ? error.message : String(error)}`)
@@ -630,6 +632,7 @@ function trimFrameworkOnlyFiles(path: string) {
     const removed = pruneFrameworkOnlyFiles(path)
     const scripts = applyAppPackageScripts(path)
     rewriteCoreContentPaths(path)
+    stripFrameworkManifestCredits(path)
     log.success(`Removed ${removed.length} framework-only path${removed.length === 1 ? '' : 's'} and ${scripts.removed.length} framework-only script${scripts.removed.length === 1 ? '' : 's'}`)
   }
   catch (error) {

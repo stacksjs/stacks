@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 /** The names a new app goes by, all derived from the directory `buddy new` created. */
@@ -118,6 +118,8 @@ export function appPackageValues(identity: AppIdentity): Record<string, unknown>
     homepage: undefined,
     repository: undefined,
     bugs: undefined,
+    // The app's licence is its owner's call. MIT was the framework's.
+    license: undefined,
   }
 }
 
@@ -149,6 +151,21 @@ export function applyAppPackageTemplate(root: string, identity: AppIdentity): st
 
   writeFileSync(file, `${JSON.stringify(pkg, null, 2)}\n`)
   return changed
+}
+
+/**
+ * Drop the framework's LICENSE.md: "MIT License, Copyright (c) 2023 Open Web
+ * Foundation", which every app then claimed as its own terms and copyright
+ * holder. Only that file - an app that already has its own licence keeps it.
+ * Returns whether it was removed.
+ */
+export function removeFrameworkLicense(root: string): boolean {
+  const file = join(root, 'LICENSE.md')
+  if (!existsSync(file) || !readFileSync(file, 'utf8').includes('Open Web Foundation'))
+    return false
+
+  rmSync(file)
+  return true
 }
 
 /**
