@@ -45,12 +45,46 @@ export interface ResolvedDashboardToggles {
   data: DashboardDataRowToggles
 }
 
-export function defaultDashboardToggles(): ResolvedDashboardToggles {
+/**
+ * Dashboard sections that mirror an installable feature.
+ *
+ * A section whose feature is off used to stay in the sidebar anyway, and every
+ * page under it failed: the models those pages query are never loaded, so the
+ * first call came back `Manufacturer.orderByDesc is not a function` and the
+ * endpoint 503'd. Switching commerce off took two edits in two files -
+ * `config/commerce.ts` and `config/dashboard.ts` - and missing the second left
+ * a Commerce section that could not load. See stacksjs/stacks#2928.
+ *
+ * `library`, `analytics`, `management` and `utilities` are deliberately absent:
+ * they have no feature of their own, so they stay on.
+ */
+const FEATURE_BACKED_SECTIONS = {
+  commerce: 'commerce',
+  content: 'cms',
+  marketing: 'marketing',
+} as const
+
+/**
+ * Reads whether a feature is on. Supplied by the caller rather than imported,
+ * because this module is loaded on the dashboard's synchronous path and stays
+ * free of `@stacksjs/*` imports - its sibling `sidebar.ts` says why.
+ *
+ * Omitted, every section defaults on exactly as it did before.
+ */
+export type FeatureResolver = (name: string) => boolean
+
+function sectionFallback(section: keyof typeof FEATURE_BACKED_SECTIONS, isFeatureEnabled?: FeatureResolver): boolean {
+  if (!isFeatureEnabled)
+    return true
+  return isFeatureEnabled(FEATURE_BACKED_SECTIONS[section])
+}
+
+export function defaultDashboardToggles(isFeatureEnabled?: FeatureResolver): ResolvedDashboardToggles {
   return {
     library: true,
-    content: true,
-    commerce: true,
-    marketing: true,
+    content: sectionFallback('content', isFeatureEnabled),
+    commerce: sectionFallback('commerce', isFeatureEnabled),
+    marketing: sectionFallback('marketing', isFeatureEnabled),
     analytics: true,
     management: true,
     utilities: true,
@@ -66,7 +100,7 @@ export function defaultDashboardToggles(): ResolvedDashboardToggles {
   }
 }
 
-export function resolveDashboardToggles(value: unknown): ResolvedDashboardToggles {
+export function resolveDashboardToggles(value: unknown, isFeatureEnabled?: FeatureResolver): ResolvedDashboardToggles {
   const config = objectValue(value, 'dashboard config')
   const sections = config.sections === undefined
     ? {}
@@ -77,9 +111,11 @@ export function resolveDashboardToggles(value: unknown): ResolvedDashboardToggle
 
   return {
     library: sectionEnabled(sections.library, 'library', true),
-    content: sectionEnabled(sections.content, 'content', true),
-    commerce: sectionEnabled(sections.commerce, 'commerce', true),
-    marketing: sectionEnabled(sections.marketing, 'marketing', true),
+    // An explicit `enabled` in config/dashboard.ts still wins, both ways: an
+    // app can show a section whose feature is off, or hide one that is on.
+    content: sectionEnabled(sections.content, 'content', sectionFallback('content', isFeatureEnabled)),
+    commerce: sectionEnabled(sections.commerce, 'commerce', sectionFallback('commerce', isFeatureEnabled)),
+    marketing: sectionEnabled(sections.marketing, 'marketing', sectionFallback('marketing', isFeatureEnabled)),
     analytics: sectionEnabled(sections.analytics, 'analytics', true),
     management: sectionEnabled(sections.management, 'management', true),
     utilities: sectionEnabled(sections.utilities, 'utilities', true),
@@ -157,16 +193,16 @@ export interface LoadedDashboardConfig {
  * One import rather than two: the config module is cache-busted on mtime, so a
  * second load of the same file would be a second evaluation of user code.
  */
-export async function loadDashboardConfig(configPath: string): Promise<LoadedDashboardConfig> {
+export async function loadDashboardConfig(configPath: string, isFeatureEnabled?: FeatureResolver): Promise<LoadedDashboardConfig> {
   if (!existsSync(configPath))
-    return { toggles: defaultDashboardToggles(), nav: [] }
+    return { toggles: defaultDashboardToggles(isFeatureEnabled), nav: [] }
 
   try {
     const moduleUrl = pathToFileURL(configPath)
     moduleUrl.searchParams.set('dashboard-config-mtime', String(statSync(configPath).mtimeMs))
     const configModule = await import(moduleUrl.href) as { default?: unknown }
     return {
-      toggles: resolveDashboardToggles(configModule.default),
+      toggles: resolveDashboardToggles(configModule.default, isFeatureEnabled),
       nav: resolveDashboardNav(configModule.default),
     }
   }

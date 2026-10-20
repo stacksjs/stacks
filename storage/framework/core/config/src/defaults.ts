@@ -226,9 +226,9 @@ export const defaults: StacksOptions = {
   dashboard: {
     sections: {
       library: { enabled: true },
-      content: { enabled: true },
-      commerce: { enabled: true },
-      marketing: { enabled: true },
+      // content, commerce and marketing follow their own feature instead of
+      // defaulting on, so a section is only offered when its pages can load.
+      // See stacksjs/stacks#2928.
       analytics: { enabled: true },
       management: { enabled: true },
       utilities: { enabled: true },

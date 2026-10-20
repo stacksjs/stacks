@@ -565,7 +565,25 @@ const { loadDashboardConfig } = await import(
   storagePath('framework/defaults/resources/functions/dashboard/toggles.ts')
 )
 // eslint-disable-next-line ts/no-top-level-await
-const { toggles: dashboardToggles, nav: dashboardNav } = await loadDashboardConfig(projectPath('config/dashboard.ts'))
+// `feature` is handed in rather than imported by the toggles module, which
+// stays free of `@stacksjs/*` imports because it also loads on the dashboard's
+// synchronous path. It makes a section whose feature is off default to hidden,
+// so switching commerce off in `config/commerce.ts` no longer leaves a
+// Commerce section whose every page 503s. See stacksjs/stacks#2928.
+// `feature` is handed in rather than imported by the toggles module, which
+// stays free of `@stacksjs/*` imports because it also loads on the dashboard's
+// synchronous path. It makes a section whose feature is off default to hidden,
+// so switching commerce off in `config/commerce.ts` no longer leaves a
+// Commerce section whose every page 503s. See stacksjs/stacks#2928.
+//
+// Imported here rather than at the top of the file, and read only now: a
+// config read before `overridesReady` has settled sees framework defaults, and
+// commerce's framework default is off - which would hide the section for an
+// app that actually has it on.
+// eslint-disable-next-line ts/no-top-level-await
+const { feature: featureEnabled } = await import('@stacksjs/config')
+// eslint-disable-next-line ts/no-top-level-await
+const { toggles: dashboardToggles, nav: dashboardNav } = await loadDashboardConfig(projectPath('config/dashboard.ts'), featureEnabled)
 
 // Write manifest. The envelope format includes the section toggles and any
 // app-declared nav sections so the web sidebar (which runs in STX

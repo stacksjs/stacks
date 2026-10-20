@@ -45,9 +45,9 @@ export default {
 
   sections: {
     library: { enabled: true },
-    content: { enabled: true },
-    commerce: { enabled: true },
-    marketing: { enabled: true },
+    // content, commerce and marketing are deliberately absent: each follows
+    // its own feature, so a section is only in the sidebar when the pages
+    // under it can actually load. Set one here to override that either way.
     analytics: { enabled: true },
     management: { enabled: true },
     utilities: { enabled: true },

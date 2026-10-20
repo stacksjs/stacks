@@ -4,13 +4,20 @@ import { useDashboard } from '../../../../functions/dashboard'
 const dashboard = useDashboard()
 const loadingCards = [1, 2, 3, 4]
 
-const quickLinks = [
+/**
+ * `section` names the feature-backed dashboard section a card belongs to.
+ * A card with one is only offered when the server says that section exists -
+ * otherwise the home page links to pages the sidebar has hidden and that
+ * cannot load. See stacksjs/stacks#2928.
+ */
+const allQuickLinks = [
   {
     title: 'Blog',
     description: 'Manage persisted posts',
     href: '/content/dashboard',
     icon: 'i-hugeicons-book-open-01',
     tone: 'blue',
+    section: 'content',
   },
   {
     title: 'Commerce',
@@ -18,6 +25,7 @@ const quickLinks = [
     href: '/commerce/dashboard',
     icon: 'i-hugeicons-store-01',
     tone: 'green',
+    section: 'commerce',
   },
   {
     title: 'Cloud',
@@ -34,6 +42,16 @@ const quickLinks = [
     tone: 'neutral',
   },
 ]
+
+/**
+ * Cards without a `section` are always offered. A card with one waits for the
+ * server to say that section exists, so the home page never links to a
+ * section the sidebar has hidden and whose pages cannot load.
+ */
+function quickLinks() {
+  const available = dashboard.sections.value
+  return allQuickLinks.filter(link => !link.section || available[link.section] !== false)
+}
 
 const resourceLinks = [
   {
@@ -153,7 +171,7 @@ onMount(() => {
     </div>
   </section>
 
-  <QuickLinks class="mb-8" :links="quickLinks" />
+  <QuickLinks class="mb-8" :links="quickLinks()" />
 
   <div class="grid gap-6 grid-cols-1 lg:grid-cols-2 mt-8">
     <ServiceHealth :services="services()" :loading="dashboard.isLoading.value" />

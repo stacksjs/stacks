@@ -39,6 +39,11 @@ export interface DashboardIssue {
 }
 
 interface DashboardHomeResponse {
+  /**
+   * Which feature-backed sections the server has available, so the home page
+   * only offers cards for sections that exist. See stacksjs/stacks#2928.
+   */
+  sections?: Record<string, boolean>
   stats?: Array<{ label: string, value: string }>
   httpMetrics?: DashboardHttpMetric[]
   services?: SystemHealthItem[]
@@ -98,6 +103,7 @@ export async function fetchDashboardHome(): Promise<DashboardHomeResponse> {
 }
 
 export function useDashboard() {
+  const sections = ref<Record<string, boolean>>({})
   const stats = ref<DashboardStats[]>([])
   const httpMetrics = ref<DashboardHttpMetric[]>([])
   const recentActivity = ref<ActivityItem[]>([])
@@ -109,6 +115,7 @@ export function useDashboard() {
   async function fetchDashboardStats(timeRange = '7d') {
     void timeRange
     const data = await fetchDashboardHome()
+    sections.value = data.sections && typeof data.sections === 'object' ? data.sections : {}
     stats.value = normalizeStats(data.stats)
     issues.value = Array.isArray(data.issues) ? data.issues : []
   }
@@ -132,7 +139,8 @@ export function useDashboard() {
 
     try {
       const data = await fetchDashboardHome()
-      stats.value = normalizeStats(data.stats)
+      sections.value = data.sections && typeof data.sections === 'object' ? data.sections : {}
+    stats.value = normalizeStats(data.stats)
       httpMetrics.value = Array.isArray(data.httpMetrics) ? data.httpMetrics : []
       recentActivity.value = normalizeActivities(data.activities)
       systemHealth.value = Array.isArray(data.services) ? data.services : []
@@ -157,6 +165,7 @@ export function useDashboard() {
   }
 
   return {
+    sections,
     stats,
     httpMetrics,
     recentActivity,

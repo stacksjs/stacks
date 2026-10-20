@@ -193,6 +193,12 @@ export default new Action({
       })
     }
 
-    return { stats, httpMetrics, services, activities, issues }
+    // Which feature-backed sections exist, so the home page does not offer a
+    // card for a section the sidebar has hidden and whose pages cannot load.
+    // `feature()` is server-side only, and this component runs on the client.
+    // See stacksjs/stacks#2928.
+    const sections = { commerce, content: feature('cms'), marketing: feature('marketing') }
+
+    return { stats, httpMetrics, services, activities, issues, sections }
   },
 })
