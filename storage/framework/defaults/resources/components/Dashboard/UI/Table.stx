@@ -78,6 +78,17 @@ interface DashboardTableColumn {
    */
   badgeLabels?: Record<string, string>
   /**
+   * Row field holding the pill's text, when it varies per row rather than per
+   * value.
+   *
+   * `badgeLabels` is a static map, which covers a status whose wording is
+   * fixed. It cannot cover a pill coloured by state but labelled with
+   * something row-specific - a publish pill that is green when published and
+   * grey when not, and reads as the date it happened. Wins over
+   * `badgeLabels` when both are given.
+   */
+  badgeLabelKey?: string
+  /**
    * Row field rendered as a second, quieter line under the value.
    *
    * A name with its slug, abbreviation or description underneath is by far the
@@ -354,6 +365,12 @@ function badgeLabel(row: DashboardTableRow, column: DashboardTableColumn): strin
   const value = rawValue(row, column.key)
   if (value === null || value === undefined || value === '')
     return column.emptyText ?? '-'
+
+  if (column.badgeLabelKey) {
+    const label = rawValue(row, column.badgeLabelKey)
+    if (label !== null && label !== undefined && label !== '')
+      return String(label)
+  }
 
   const key = String(value)
   const mapped = column.badgeLabels?.[key]

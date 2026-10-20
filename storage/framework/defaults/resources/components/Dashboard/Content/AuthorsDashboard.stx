@@ -1,3 +1,5 @@
+@import('../UI/Table')
+
 <script client>
 import { dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
@@ -23,7 +25,6 @@ const authors = state<AuthorRecord[]>([])
 const assignedPostCount = state(0)
 const loading = state(true)
 const loadError = state('')
-const search = state('')
 const formOpen = state(false)
 const editingAuthor = state<AuthorRecord | null>(null)
 const saving = state(false)
@@ -44,24 +45,38 @@ function normalize(record: any): AuthorRecord {
   }
 }
 
-function visibleAuthors(): AuthorRecord[] {
-  const query = search().trim().toLowerCase()
-  return authors().filter(author => !query || [author.name, author.email, author.bio]
-    .some(value => value.toLowerCase().includes(query)))
+const COLUMNS = [
+  // Slotted: the cell is an avatar, or the author's initials when there is no
+  // image, with the name and email beside it.
+  { key: 'name', label: 'Author', sortable: true, slotted: true },
+  { key: 'postCount', label: 'Posts', type: 'number' as const, sortable: true, class: 'text-gray-500 dark:text-neutral-400' },
+  { key: 'createdAt', label: 'Created', type: 'date' as const, sortable: true, emptyText: 'Unknown', class: 'text-gray-500 dark:text-neutral-400' },
+]
+
+const ROW_ACTIONS = [
+  { action: 'edit', label: 'Edit author', icon: 'i-hugeicons-edit-02' },
+  { action: 'delete', label: 'Delete author', icon: 'i-hugeicons-delete-02', class: 'text-red-500' },
+]
+
+/**
+ * `UI/Table` owns the search. `initialsLabel` is computed per row rather than
+ * called from the slot, because a slot body reads the row through attribute
+ * bindings and keeping the derivation here is one less thing to depend on.
+ */
+function visibleAuthors(): Array<AuthorRecord & { initialsLabel: string }> {
+  return authors().map(author => ({ ...author, initialsLabel: initials(author.name) }))
+}
+
+function handleRowAction(payload: { action: string, row: AuthorRecord }): void {
+  if (payload.action === 'edit')
+    openEdit(payload.row)
+  else
+    openDelete(payload.row)
 }
 
 function initials(value: string): string {
   return value.split(/\s+/).filter(Boolean).slice(0, 2)
     .map(part => part[0]?.toUpperCase() || '').join('') || '?'
-}
-
-function formatDate(value: string): string {
-  if (!value)
-    return 'Unknown'
-  const date = new Date(value)
-  return Number.isNaN(date.getTime())
-    ? value
-    : new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(date)
 }
 
 async function loadAuthors(): Promise<void> {
@@ -185,12 +200,36 @@ onMount(() => {
   </section>
 
   <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
-    <div class="p-4 border-b border-gray-200 dark:border-neutral-700"><label><span class="sr-only">Search authors</span><input x-model="search" type="search" placeholder="Search authors" class="px-3 py-2 max-w-md w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label></div>
-    <div class="overflow-x-auto"><table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700"><thead class="bg-gray-50 dark:bg-neutral-900/50"><tr><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Author</th><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Posts</th><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Created</th><th class="px-4 py-3"><span class="sr-only">Actions</span></th></tr></thead><tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
-      <template :if="loading()"><tr><td colspan="4" class="px-4 py-12 text-center text-gray-500 text-sm dark:text-neutral-400"><span class="inline-block mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Loading authors</td></tr></template>
-      <template :else-if="visibleAuthors().length === 0"><tr><td colspan="4" class="px-4 py-14 text-center"><span class="inline-block h-6 w-6 text-gray-400 i-hugeicons-user-group"></span><p class="mt-2 font-medium text-gray-900 text-sm dark:text-white">No authors found</p><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Adjust the search or create an author.</p></td></tr></template>
-      <template :else><template :for="author in visibleAuthors()"><tr><td class="px-4 py-3"><div class="flex gap-3 items-center"><div class="flex overflow-hidden flex-shrink-0 items-center justify-center h-9 w-9 font-semibold text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-950/50 rounded-full"><img :if="author.avatar" :src="author.avatar" :alt="author.name" class="object-cover h-full w-full" /><span :else>{{ initials(author.name) }}</span></div><div class="min-w-0"><p class="font-medium text-gray-900 text-sm truncate dark:text-white">{{ author.name }}</p><p class="text-gray-500 text-xs truncate dark:text-neutral-400">{{ author.email }}</p></div></div></td><td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-400">{{ author.postCount }}</td><td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-400">{{ formatDate(author.createdAt) }}</td><td class="px-4 py-3"><div class="flex justify-end"><Button variant="ghost" size="sm" iconOnly :ariaLabel="'Edit author ' + author.name" @click="openEdit(author)"><span class="block h-4 w-4 text-blue-500 i-hugeicons-edit-02"></span></Button><Button variant="ghost" size="sm" iconOnly :ariaLabel="'Delete author ' + author.name" @click="openDelete(author)"><span class="block h-4 w-4 text-red-500 i-hugeicons-delete-02"></span></Button></div></td></tr></template></template>
-    </tbody></table></div>
+    {{-- Slot bodies read the row through `x-text` and `:attr`; an
+         interpolation in slot content is preserved but not evaluated on the
+         installed stx. See stacksjs/stx#2095. --}}
+    <Table
+      :columns="COLUMNS"
+      :data="visibleAuthors()"
+      :loading="loading()"
+      :row-actions="ROW_ACTIONS"
+      action-label-key="name"
+      searchable
+      search-placeholder="Search authors"
+      paginated
+      :page-size="25"
+      empty-title="No authors found"
+      empty-description="Adjust the search or create an author."
+      @row-action="handleRowAction"
+    >
+      <template #cell="{ row }">
+        <div class="flex gap-3 items-center">
+          <div class="flex overflow-hidden flex-shrink-0 items-center justify-center h-9 w-9 font-semibold text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-950/50 rounded-full">
+            <img :if="row.avatar" :src="row.avatar" :alt="row.name" class="object-cover h-full w-full" />
+            <span :else x-text="row.initialsLabel"></span>
+          </div>
+          <div class="min-w-0">
+            <p class="font-medium text-gray-900 text-sm truncate dark:text-white" x-text="row.name"></p>
+            <p class="text-gray-500 text-xs truncate dark:text-neutral-400" x-text="row.email"></p>
+          </div>
+        </div>
+      </template>
+    </Table>
   </section>
 </div>
 
