@@ -8,7 +8,7 @@ import { featureGroups, features, featuresInGroup } from '../../data/features'
 
 
 const pageTitle = 'Features - Stacks'
-const pageDescription = 'Routing, views, models, auth, CMS, commerce, AI, native apps, storage, realtime, search, testing, cloud deploys, environment setup, and automated upgrades. Every layer of a Stacks app, first-party and typed against the others.'
+const pageDescription = 'Routing, views, models, auth, CMS, commerce, AI, native apps, storage, realtime, search, testing, cloud deploys, environment setup, and automated updates. Every layer of a Stacks app, first-party and typed against the others.'
 const canonicalPath = '/features'
 
 const megaGroups = featureGroups.map(group => ({

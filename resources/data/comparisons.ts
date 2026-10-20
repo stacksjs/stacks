@@ -30,6 +30,7 @@ export interface ComparisonMatrix {
   admin: MatrixLevel
   realtime: MatrixLevel
   deploy: MatrixLevel
+  updates: MatrixLevel
   mailbox: MatrixLevel
 }
 
@@ -87,6 +88,7 @@ export const matrixDimensions = [
   { id: 'admin', title: 'Admin dashboard' },
   { id: 'realtime', title: 'Realtime' },
   { id: 'deploy', title: 'Deploy and infrastructure' },
+  { id: 'updates', title: 'Automated updates' },
   { id: 'mailbox', title: 'Own mail server' },
 ] as const
 
@@ -107,6 +109,7 @@ export const stacksMatrix: ComparisonMatrix = {
   admin: 'built-in',
   realtime: 'built-in',
   deploy: 'built-in',
+  updates: 'built-in',
   mailbox: 'built-in',
 }
 
@@ -130,6 +133,27 @@ function mailServerRow(other: string): ComparisonRow {
   return { dimension: 'Mail server', stacks: 'Built in: SMTP, IMAP, real mailboxes', other }
 }
 
+/*
+ * Staying current is the other job every framework leaves to you. Some ship
+ * an upgrade command or codemods for their own majors (Next.js, Nuxt,
+ * SvelteKit, Astro, Nest, Rails), Laravel's is Shift, a paid third-party
+ * service, and the dependency bot is always a separate thing to set up.
+ * A new Stacks app has both on day one: buddy-bot's workflow and config are
+ * scaffolded into it, and buddy upgrade moves the framework itself.
+ *
+ * Dependabot and Renovate are free and good, so the claim is that it is
+ * configured and included, not that nobody else can have it. Laravel's page
+ * and the T3 page carry their own versions of the point.
+ */
+const updatesStrength: ComparisonPoint = {
+  title: 'Automated updates, included',
+  text: 'Every new Stacks app ships with buddy-bot configured: dependency pull requests every two hours, a Dependency Dashboard issue that tracks them, and stale ones closed once their bump lands. buddy upgrade moves the framework itself, with its dependencies, migrations, and CI, to the next release after a dry run. Nothing to buy and nothing to wire up.',
+}
+
+function updatesRow(other: string): ComparisonRow {
+  return { dimension: 'Automated updates', stacks: 'Built in: buddy-bot pull requests, buddy upgrade', other }
+}
+
 export const comparisons: Comparison[] = [
   {
     slug: 'nextjs',
@@ -139,7 +163,7 @@ export const comparisons: Comparison[] = [
     language: 'TypeScript',
     icon: 'i-hugeicons-layers-01',
     group: 'fullstack',
-    matrix: { auth: 'byo', orm: 'byo', jobs: 'byo', mail: 'byo', admin: 'byo', realtime: 'byo', deploy: 'partial', mailbox: 'byo' },
+    matrix: { auth: 'byo', orm: 'byo', jobs: 'byo', mail: 'byo', admin: 'byo', realtime: 'byo', deploy: 'partial', updates: 'partial', mailbox: 'byo' },
     page: {
       headline: 'Next.js decides how your pages render. Stacks decides the rest too.',
       lede: 'Next.js is a rendering framework with route handlers attached. Everything behind the request, the database layer, the auth, the queue, the mail, the admin, is a decision you make and maintain. Stacks makes those decisions and ships them typed against each other.',
@@ -156,6 +180,7 @@ export const comparisons: Comparison[] = [
         { title: 'Infrastructure in the repository', text: 'config/cloud.ts describes the servers, DNS, certificates, and mail records, and buddy deploy applies them to infrastructure you own. Nothing about production is configured in a console, there is no platform fee, and one small box can run several apps.' },
         { title: 'No build config to own', text: 'STX compiles single-file components on the server without a bundler configuration surface, and buddy dev runs every surface at once.' },
         mailServerStrength,
+        updatesStrength,
       ],
       rows: [
         { dimension: 'Rendering model', stacks: 'SSR, SSG with ISR, SPA mode, streaming, islands, server components', other: 'React server and client components, streaming, Cache Components (PPR)' },
@@ -167,6 +192,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Hosting', stacks: 'Driver-based: Hetzner, AWS, or any Linux box over SSH', other: 'Vercel first, with a stable adapter API for other hosts' },
         { dimension: 'Language surface', stacks: 'TypeScript everywhere, including infrastructure', other: 'TypeScript, plus whatever your backend services use' },
         mailServerRow('None; inboxes come from a hosted provider'),
+        updatesRow('@next/codemod upgrade for releases; a dependency bot is yours to set up'),
       ],
       migration: [
         { title: 'Keep Next.js on the front, put Stacks behind it', text: 'A Stacks API with generated OpenAPI and a typed client is a normal thing for a Next.js app to consume. This is the lowest-risk way to try it.' },
@@ -189,7 +215,7 @@ export const comparisons: Comparison[] = [
     language: 'TypeScript',
     icon: 'i-hugeicons-layers-02',
     group: 'fullstack',
-    matrix: { auth: 'partial', orm: 'partial', jobs: 'byo', mail: 'partial', admin: 'byo', realtime: 'partial', deploy: 'partial', mailbox: 'byo' },
+    matrix: { auth: 'partial', orm: 'partial', jobs: 'byo', mail: 'partial', admin: 'byo', realtime: 'partial', deploy: 'partial', updates: 'partial', mailbox: 'byo' },
     page: {
       headline: 'Nuxt has the best module ecosystem in the space. Stacks has the application in the box.',
       lede: 'Nuxt covers more of the stack than most meta-frameworks: Nitro gives it a real server, and there is a module for nearly everything. The difference is that a Nuxt application is assembled out of modules you selected, and a Stacks application is one thing that already fits together.',
@@ -206,6 +232,7 @@ export const comparisons: Comparison[] = [
         { title: 'Background work and mail', text: 'Queues, batches, schedules, and transactional mail are framework features, not a service you add.' },
         { title: 'Infrastructure as reviewed code', text: 'DNS, TLS, CDN, and mail records live in config/cloud.ts and ship with buddy deploy.' },
         mailServerStrength,
+        updatesStrength,
       ],
       rows: [
         { dimension: 'View layer', stacks: 'STX single-file components: SSR, SSG, islands, signals', other: 'Vue single-file components' },
@@ -217,6 +244,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Deploy targets', stacks: 'Driver-based: Hetzner, AWS, or any SSH box', other: 'Many platforms through Nitro presets' },
         { dimension: 'Auto-imports', stacks: 'Models and jobs on the server, composables in views', other: 'Components, composables, and utilities' },
         mailServerRow('None; inboxes come from a hosted provider'),
+        updatesRow('nuxi upgrade and codemods; a dependency bot is yours to set up'),
       ],
       migration: [
         { title: 'Nuxt on the front, Stacks behind', text: 'Point a Nuxt app at a Stacks API, its typed client, or its OpenAPI spec. Nothing about the front end has to change.' },
@@ -239,7 +267,7 @@ export const comparisons: Comparison[] = [
     language: 'TypeScript',
     icon: 'i-hugeicons-flash',
     group: 'fullstack',
-    matrix: { auth: 'partial', orm: 'partial', jobs: 'byo', mail: 'byo', admin: 'byo', realtime: 'byo', deploy: 'partial', mailbox: 'byo' },
+    matrix: { auth: 'partial', orm: 'partial', jobs: 'byo', mail: 'byo', admin: 'byo', realtime: 'byo', deploy: 'partial', updates: 'partial', mailbox: 'byo' },
     page: {
       headline: 'SvelteKit ships the least JavaScript. Stacks ships the most application.',
       lede: 'SvelteKit is the most elegant front end story in this comparison and the most deliberately minimal backend one. Load functions, form actions, and adapters are the whole server surface; the database, the auth, the queue, and the admin are yours to select.',
@@ -256,6 +284,7 @@ export const comparisons: Comparison[] = [
         { title: 'Operations included', text: 'Failed jobs, captured mail, deployment status, and logs are dashboard pages rather than terminal sessions.' },
         { title: 'One deploy command', text: 'buddy deploy builds every surface and publishes the infrastructure that serves it.' },
         mailServerStrength,
+        updatesStrength,
       ],
       rows: [
         { dimension: 'View layer', stacks: 'STX components: SSR, SSG, islands, signals', other: 'Svelte components, compiled, client hydration' },
@@ -267,6 +296,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Hosting', stacks: 'Driver-based: Hetzner, AWS, or any Linux box over SSH', other: 'Adapter per platform' },
         { dimension: 'Bundle weight', stacks: 'Small, but not compiled away', other: 'Smallest of the meta-frameworks' },
         mailServerRow('None; inboxes come from a hosted provider'),
+        updatesRow('sv migrate for majors; a dependency bot is yours to set up'),
       ],
       migration: [
         { title: 'Keep the front end', text: 'A SvelteKit app in front of a Stacks API loses nothing and gains a typed backend immediately.' },
@@ -289,7 +319,7 @@ export const comparisons: Comparison[] = [
     language: 'TypeScript',
     icon: 'i-hugeicons-structure-03',
     group: 'fullstack',
-    matrix: { auth: 'byo', orm: 'byo', jobs: 'byo', mail: 'byo', admin: 'byo', realtime: 'byo', deploy: 'partial', mailbox: 'byo' },
+    matrix: { auth: 'byo', orm: 'byo', jobs: 'byo', mail: 'byo', admin: 'byo', realtime: 'byo', deploy: 'partial', updates: 'partial', mailbox: 'byo' },
     page: {
       headline: 'Remix bet on the platform. Stacks makes the same bet and keeps going past the request.',
       lede: 'Loaders, actions, forms, and nested routes are a genuinely good model, and Stacks shares most of the philosophy: server first, HTML first, no state library needed to show a list of rows. The difference is what happens after the response, where Remix stops and Stacks has a queue, a mailer, a scheduler, and an admin.',
@@ -306,6 +336,7 @@ export const comparisons: Comparison[] = [
         { title: 'Auth and roles included', text: 'Sessions, tokens, passkeys, two-factor, RBAC, and policies rather than a per-project auth assembly.' },
         { title: 'Deploy from config', text: 'The infrastructure that runs it is described in the repository and applied by one command.' },
         mailServerStrength,
+        updatesStrength,
       ],
       rows: [
         { dimension: 'Routing', stacks: 'File and code routes, groups, model binding', other: 'Nested file routes with per-segment data' },
@@ -317,6 +348,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Admin surface', stacks: 'Generated from models', other: 'Build it yourself' },
         { dimension: 'Deploy', stacks: 'buddy deploy to Hetzner, AWS, or an SSH box', other: 'Any fetch-handler host' },
         mailServerRow('None; inboxes come from a hosted provider'),
+        updatesRow('Codemods and future flags for majors; a dependency bot is yours to set up'),
       ],
       migration: [
         { title: 'The shapes line up', text: 'Loaders become read actions, route actions become write actions, and the validation moves onto the model.' },
@@ -339,7 +371,7 @@ export const comparisons: Comparison[] = [
     language: 'TypeScript',
     icon: 'i-hugeicons-note-edit',
     group: 'fullstack',
-    matrix: { auth: 'byo', orm: 'byo', jobs: 'byo', mail: 'byo', admin: 'byo', realtime: 'byo', deploy: 'partial', mailbox: 'byo' },
+    matrix: { auth: 'byo', orm: 'byo', jobs: 'byo', mail: 'byo', admin: 'byo', realtime: 'byo', deploy: 'partial', updates: 'partial', mailbox: 'byo' },
     page: {
       headline: 'Astro is right about content sites. Stacks is for the day it stops being one.',
       lede: 'For a marketing site, a blog, or documentation, Astro is hard to beat: almost no client JavaScript, content collections with type-checked frontmatter, and islands only where you need interactivity. Stacks is not trying to win that comparison. It is the answer when the site grows accounts, a dashboard, and a queue.',
@@ -356,6 +388,7 @@ export const comparisons: Comparison[] = [
         { title: 'Dynamic and static together', text: 'Marketing pages, a docs site, a blog, and an authenticated product live in one project and one deploy.' },
         { title: 'Infrastructure and mail', text: 'DNS, certificates, CDN, and transactional mail come from the same config the app reads.' },
         mailServerStrength,
+        updatesStrength,
       ],
       rows: [
         { dimension: 'Primary use', stacks: 'Applications that also have content', other: 'Content sites that sometimes have an island' },
@@ -367,6 +400,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Background work', stacks: 'Included', other: 'Not applicable' },
         { dimension: 'Admin surface', stacks: 'Generated from models', other: 'A git-based or hosted CMS' },
         mailServerRow('None; inboxes come from a hosted provider'),
+        updatesRow('@astrojs/upgrade; a dependency bot is yours to set up'),
       ],
       migration: [
         { title: 'Content moves cleanly', text: 'Markdown in content/ works much the same way, and frontmatter maps onto model attributes when you want an editing surface.' },
@@ -389,7 +423,7 @@ export const comparisons: Comparison[] = [
     language: 'TypeScript',
     icon: 'i-hugeicons-structure-01',
     group: 'fullstack',
-    matrix: { auth: 'built-in', orm: 'built-in', jobs: 'built-in', mail: 'built-in', admin: 'partial', realtime: 'partial', deploy: 'partial', mailbox: 'byo' },
+    matrix: { auth: 'built-in', orm: 'built-in', jobs: 'built-in', mail: 'built-in', admin: 'partial', realtime: 'partial', deploy: 'partial', updates: 'partial', mailbox: 'byo' },
     page: {
       headline: 'Same ambition, different bets.',
       lede: 'Redwood set out to be the full-stack framework JavaScript never had, and much of it landed: generators, cells, Prisma-backed services, auth providers, and background jobs. Stacks wants the same thing and made different choices about the runtime, the transport, and how much of the infrastructure belongs in the repository.',
@@ -406,6 +440,7 @@ export const comparisons: Comparison[] = [
         { title: 'Infrastructure included', text: 'DNS, TLS, CDN, and mail records are declared in config and applied by buddy deploy to servers you own, without a separate infrastructure tool. RedwoodSDK, by contrast, runs only on Cloudflare.' },
         { title: 'Model-driven migrations', text: 'Schema comes from the model definitions and is diffed into SQL, rather than being maintained in a separate schema file.' },
         mailServerStrength,
+        updatesStrength,
       ],
       rows: [
         { dimension: 'Front end', stacks: 'STX components', other: 'React, with RSC in RedwoodSDK' },
@@ -417,6 +452,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Admin surface', stacks: 'Dashboard generated from models', other: 'Scaffold generators produce CRUD pages' },
         { dimension: 'Infrastructure', stacks: 'Declared in config/cloud.ts', other: 'Deploy targets and your own IaC, Cloudflare only for RedwoodSDK' },
         mailServerRow('None; inboxes come from a hosted provider'),
+        updatesRow('rw upgrade and codemods; a dependency bot is yours to set up'),
       ],
       migration: [
         { title: 'Services become actions', text: 'A Redwood service function is close to a Stacks action: one job, typed input, typed result.' },
@@ -439,7 +475,7 @@ export const comparisons: Comparison[] = [
     language: 'TypeScript',
     icon: 'i-hugeicons-puzzle',
     group: 'fullstack',
-    matrix: { auth: 'partial', orm: 'partial', jobs: 'byo', mail: 'byo', admin: 'byo', realtime: 'byo', deploy: 'partial', mailbox: 'byo' },
+    matrix: { auth: 'partial', orm: 'partial', jobs: 'byo', mail: 'byo', admin: 'byo', realtime: 'byo', deploy: 'partial', updates: 'byo', mailbox: 'byo' },
     page: {
       headline: 'A stack you assemble, or a framework that arrives assembled.',
       lede: 'T3 is Next.js, tRPC, Prisma or Drizzle, Tailwind, and NextAuth.js or Better Auth, chosen because each is the strongest in its category and typed end to end. It works. The cost is that you own the seams: five upgrade cadences, five sets of release notes, and every integration point is yours to keep working.',
@@ -451,7 +487,7 @@ export const comparisons: Comparison[] = [
         { title: 'Enormous shared knowledge', text: 'Every problem you hit has been hit publicly by thousands of others.' },
       ],
       ourStrengths: [
-        { title: 'One upgrade, not five', text: 'The pieces version together, and buddy upgrade moves the whole application forward.' },
+        { title: 'One upgrade, not five', text: 'The pieces version together, and buddy upgrade moves the whole application forward. buddy-bot comes configured in every new app, opening dependency pull requests every two hours with a dashboard issue to track them, so staying current is not a sixth thing to set up.' },
         { title: 'The parts T3 does not cover', text: 'Queues, mail, storage, search, realtime, notifications, admin, and deploy are the ones you would otherwise choose next.' },
         { title: 'One set of conventions', text: 'Where files go and how a feature is built is answered by the framework, so every project reads the same.' },
         { title: 'Deploy and infrastructure', text: 'T3 ends at the application, and most teams then pick a hosting platform. Stacks provisions Hetzner or AWS, or adopts any Linux box over SSH, so the app and its data run on servers you control with no platform fee.' },
@@ -467,6 +503,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Upgrades', stacks: 'One framework version', other: 'Independent versions per library' },
         { dimension: 'Ceiling on choice', stacks: 'Framework conventions, overridable per file', other: 'Anything you want, and anything you maintain' },
         mailServerRow('None; inboxes come from a hosted provider'),
+        updatesRow('Five packages, upgraded one by one, by hand or by a bot you set up'),
       ],
       migration: [
         { title: 'Procedures become actions', text: 'A tRPC procedure and a Stacks action are the same unit of work with a different transport.' },
@@ -489,7 +526,7 @@ export const comparisons: Comparison[] = [
     language: 'TypeScript',
     icon: 'i-hugeicons-server-stack-01',
     group: 'backends',
-    matrix: { auth: 'partial', orm: 'partial', jobs: 'partial', mail: 'partial', admin: 'byo', realtime: 'partial', deploy: 'partial', mailbox: 'byo' },
+    matrix: { auth: 'partial', orm: 'partial', jobs: 'partial', mail: 'partial', admin: 'byo', realtime: 'partial', deploy: 'partial', updates: 'partial', mailbox: 'byo' },
     page: {
       headline: 'Modules and injection, or models and conventions.',
       lede: 'NestJS brought Angular-style architecture to the Node backend and gave large teams something to standardise on. Stacks aims at the same problem from the Laravel direction: fewer abstractions to configure, more of the application already written, and no front end left as an exercise.',
@@ -506,6 +543,7 @@ export const comparisons: Comparison[] = [
         { title: 'Less ceremony per feature', text: 'A feature is a model, an action, and a route. There is no module, provider, and DTO scaffolding to write first.' },
         { title: 'Operations and deploy', text: 'Admin dashboard, mail, storage, and search come with it, and buddy deploy provisions servers you own. The deploy path from the Nest team, Mau, is a paid service on AWS.' },
         mailServerStrength,
+        updatesStrength,
       ],
       rows: [
         { dimension: 'Architecture', stacks: 'Convention-based files, no container', other: 'Modules and dependency injection' },
@@ -517,6 +555,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Runtime', stacks: 'Bun today, more runtimes planned', other: 'Node.js 20.19+' },
         { dimension: 'Deploy', stacks: 'buddy deploy to Hetzner, AWS, or any SSH box', other: 'Mau (paid, on AWS) or your own containers' },
         mailServerRow('None; inboxes come from a hosted provider'),
+        updatesRow('nest upgrade for majors; a dependency bot is yours to set up'),
       ],
       migration: [
         { title: 'Controllers become routes and actions', text: 'A controller method maps to a route pointing at an action; the decorators become route definitions.' },
@@ -539,7 +578,7 @@ export const comparisons: Comparison[] = [
     language: 'TypeScript',
     icon: 'i-hugeicons-server-stack-02',
     group: 'backends',
-    matrix: { auth: 'built-in', orm: 'built-in', jobs: 'partial', mail: 'built-in', admin: 'byo', realtime: 'partial', deploy: 'byo', mailbox: 'byo' },
+    matrix: { auth: 'built-in', orm: 'built-in', jobs: 'partial', mail: 'built-in', admin: 'byo', realtime: 'partial', deploy: 'byo', updates: 'partial', mailbox: 'byo' },
     page: {
       headline: 'The nearest neighbour, and the most honest comparison here.',
       lede: 'Adonis has been doing batteries-included TypeScript on the server for years, with a real ORM, auth, validation, mail, and templating. If you want that today with a track record behind it, Adonis is a serious answer. Stacks differs in runtime, in how migrations are produced, and in how far past the application it reaches.',
@@ -557,6 +596,7 @@ export const comparisons: Comparison[] = [
         { title: 'Deploy and infrastructure', text: 'config/cloud.ts plus buddy deploy provisions Hetzner or AWS, or adopts any Linux box over SSH, which Adonis leaves to you.' },
         { title: 'An admin dashboard', text: 'Model-driven admin screens, which Adonis does not provide.' },
         mailServerStrength,
+        updatesStrength,
       ],
       rows: [
         { dimension: 'Runtime', stacks: 'Bun today, more runtimes planned', other: 'Node.js 24+' },
@@ -568,6 +608,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Admin surface', stacks: 'Generated from models', other: 'Build it yourself' },
         { dimension: 'Infrastructure', stacks: 'Declared in config and deployed by the CLI', other: 'Your own' },
         mailServerRow('None; inboxes come from a hosted provider'),
+        updatesRow('upgrade-kit codemods for v5 to v6; otherwise by hand'),
       ],
       migration: [
         { title: 'The vocabulary matches', text: 'Controllers, middleware, validators, and models all have direct counterparts, so the port is mostly mechanical.' },
@@ -590,7 +631,7 @@ export const comparisons: Comparison[] = [
     language: 'JavaScript and TypeScript',
     icon: 'i-hugeicons-share-08',
     group: 'backends',
-    matrix: { auth: 'byo', orm: 'byo', jobs: 'byo', mail: 'byo', admin: 'byo', realtime: 'byo', deploy: 'byo', mailbox: 'byo' },
+    matrix: { auth: 'byo', orm: 'byo', jobs: 'byo', mail: 'byo', admin: 'byo', realtime: 'byo', deploy: 'byo', updates: 'byo', mailbox: 'byo' },
     page: {
       headline: 'A router is not a framework, and sometimes a router is all you want.',
       lede: 'Express and Fastify do one job well: take a request, run some middleware, return a response. That minimalism is why they are everywhere and why every Express codebase is different. Stacks is the opposite trade: conventions and batteries, at the cost of doing things its way.',
@@ -607,6 +648,7 @@ export const comparisons: Comparison[] = [
         { title: 'Typed end to end', text: 'The route, the action, the model, and the client share types by construction.' },
         { title: 'Deploy included', text: 'Infrastructure in config, applied by the CLI, instead of a bespoke pipeline per service.' },
         mailServerStrength,
+        updatesStrength,
       ],
       rows: [
         { dimension: 'Scope', stacks: 'Full application framework', other: 'HTTP routing and middleware' },
@@ -618,6 +660,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Best fit', stacks: 'Products and platforms', other: 'Small services and glue' },
         { dimension: 'Runtime', stacks: 'Bun today, more runtimes planned', other: 'Node.js, Bun compatible' },
         mailServerRow('None; inboxes come from a hosted provider'),
+        updatesRow('By hand, or a dependency bot you set up'),
       ],
       migration: [
         { title: 'Handlers become actions', text: 'Each route handler becomes an action, and shared middleware moves into app/Middleware/.' },
@@ -640,7 +683,7 @@ export const comparisons: Comparison[] = [
     language: 'TypeScript',
     icon: 'i-hugeicons-globe',
     group: 'backends',
-    matrix: { auth: 'partial', orm: 'byo', jobs: 'byo', mail: 'byo', admin: 'byo', realtime: 'partial', deploy: 'byo', mailbox: 'byo' },
+    matrix: { auth: 'partial', orm: 'byo', jobs: 'byo', mail: 'byo', admin: 'byo', realtime: 'partial', deploy: 'byo', updates: 'byo', mailbox: 'byo' },
     page: {
       headline: 'Hono runs anywhere. Stacks runs an application.',
       lede: 'Hono is a few kilobytes of extremely well-made routing that works on Cloudflare Workers, Deno, Bun, Node, and Lambda, with typed middleware and an RPC mode. It is the right tool for edge services. It is not trying to be the place your models, jobs, mail, and admin live.',
@@ -657,6 +700,7 @@ export const comparisons: Comparison[] = [
         { title: 'Long-running work', text: 'Queues, schedules, and workers are a poor fit for edge runtimes and a first-class fit here.' },
         { title: 'Deploy and infrastructure', text: 'Provisioned from config rather than assembled per service.' },
         mailServerStrength,
+        updatesStrength,
       ],
       rows: [
         { dimension: 'Scope', stacks: 'Full application framework', other: 'Routing and middleware' },
@@ -668,6 +712,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Best fit', stacks: 'Products, platforms, long-running work', other: 'Edge services, APIs, proxies' },
         { dimension: 'Admin surface', stacks: 'Generated from models', other: 'Not applicable' },
         mailServerRow('None; inboxes come from a hosted provider'),
+        updatesRow('By hand, or a dependency bot you set up'),
       ],
       migration: [
         { title: 'They coexist well', text: 'Keep Hono at the edge for caching, geo routing, or webhooks, and put the application behind it.' },
@@ -690,7 +735,7 @@ export const comparisons: Comparison[] = [
     language: 'TypeScript',
     icon: 'i-hugeicons-rocket-01',
     group: 'backends',
-    matrix: { auth: 'partial', orm: 'byo', jobs: 'byo', mail: 'byo', admin: 'byo', realtime: 'partial', deploy: 'byo', mailbox: 'byo' },
+    matrix: { auth: 'partial', orm: 'byo', jobs: 'byo', mail: 'byo', admin: 'byo', realtime: 'partial', deploy: 'byo', updates: 'byo', mailbox: 'byo' },
     page: {
       headline: 'Both are Bun-first. One is a router, one is an application framework.',
       lede: 'Elysia is the strongest argument for Bun on the server: schema-validated routes, inferred types, an Eden client with no code generation, and throughput near the top of public benchmarks. Stacks shares the runtime bet and answers a different question, which is everything you need once the router is chosen.',
@@ -707,6 +752,7 @@ export const comparisons: Comparison[] = [
         { title: 'Structure that survives growth', text: 'Conventions for where things live, so the tenth feature looks like the first.' },
         { title: 'Deploy and operations', text: 'Infrastructure from config, a dashboard for jobs and mail, and CI that ships on push.' },
         mailServerStrength,
+        updatesStrength,
       ],
       rows: [
         { dimension: 'Scope', stacks: 'Full application framework', other: 'HTTP framework' },
@@ -718,6 +764,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Views', stacks: 'STX: SSR, static, islands', other: 'HTML/JSX plugin or a template engine' },
         { dimension: 'Raw throughput', stacks: 'Good, with a framework in the path', other: 'Best in class' },
         mailServerRow('None; inboxes come from a hosted provider'),
+        updatesRow('By hand, or a dependency bot you set up'),
       ],
       migration: [
         { title: 'Same runtime, so no rewrite of the primitives', text: 'Bun APIs, native SQLite, and package resolution behave the same on both sides.' },
@@ -740,7 +787,7 @@ export const comparisons: Comparison[] = [
     language: 'TypeScript',
     icon: 'i-hugeicons-cloud-server',
     group: 'backends',
-    matrix: { auth: 'partial', orm: 'partial', jobs: 'built-in', mail: 'byo', admin: 'byo', realtime: 'partial', deploy: 'partial', mailbox: 'byo' },
+    matrix: { auth: 'partial', orm: 'partial', jobs: 'built-in', mail: 'byo', admin: 'byo', realtime: 'partial', deploy: 'partial', updates: 'byo', mailbox: 'byo' },
     page: {
       headline: 'Two frameworks that think infrastructure belongs in the code.',
       lede: 'Encore reads your source, works out which databases, queues, and cron jobs it implies, and provisions them. Stacks reaches the same conclusion from the other end: the infrastructure is declared in config in the repository, and one command applies it. The difference is that Encore is built for many services and Stacks is built for one application.',
@@ -757,6 +804,7 @@ export const comparisons: Comparison[] = [
         { title: 'No platform in the middle, no platform fee', text: 'Encore Cloud provisions your AWS or GCP account for $49 per member a month plus per-environment and per-resource fees, and self-hosting Encore means wiring the infrastructure yourself. Stacks provisions Hetzner or AWS, or adopts any Linux box over SSH, directly.' },
         { title: 'Single-application simplicity', text: 'One deployable, one database, one repository, which is the right shape for most products.' },
         mailServerStrength,
+        updatesStrength,
       ],
       rows: [
         { dimension: 'Target shape', stacks: 'One application', other: 'Many services' },
@@ -768,6 +816,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Cloud targets', stacks: 'Hetzner, AWS, any SSH box', other: 'AWS and GCP' },
         { dimension: 'Admin surface', stacks: 'Generated from models', other: 'Developer dashboard, not an app admin' },
         mailServerRow('None; inboxes come from a hosted provider'),
+        updatesRow('encore version update for the CLI; app packages by hand'),
       ],
       migration: [
         { title: 'Endpoints become actions', text: 'Encore API endpoints and Stacks actions are the same unit with different decoration.' },
@@ -790,7 +839,7 @@ export const comparisons: Comparison[] = [
     language: 'PHP',
     icon: 'i-hugeicons-gem',
     group: 'ecosystems',
-    matrix: { auth: 'built-in', orm: 'built-in', jobs: 'built-in', mail: 'built-in', admin: 'partial', realtime: 'built-in', deploy: 'partial', mailbox: 'byo' },
+    matrix: { auth: 'built-in', orm: 'built-in', jobs: 'built-in', mail: 'built-in', admin: 'partial', realtime: 'built-in', deploy: 'partial', updates: 'partial', mailbox: 'byo' },
     page: {
       headline: 'Everything you like about Laravel, in the language your front end already speaks.',
       lede: 'Stacks does not pretend to be an independent invention. Models, migrations, queues, mail, events, gates, and an expressive CLI are Laravel ideas, and they are good ones. What changes is the language: one TypeScript type graph from the database row to the rendered view, with no boundary in between.',
@@ -807,7 +856,7 @@ export const comparisons: Comparison[] = [
         { title: 'Front end in the box', text: 'STX is part of the framework: server rendering, static generation with incremental regeneration, island hydration, streaming, and fine-grained signals. There is no Livewire or Inertia decision to make, and no choice between React, Vue, and Svelte after that.' },
         { title: 'Infrastructure in the repository', text: 'DNS records, TLS certificates, mail records, and a CDN (Cloudflare, or CloudFront on AWS) are declared in config and applied by buddy deploy, with DNS through Route53, Cloudflare, Porkbun, or GoDaddy, without a paid platform.' },
         { title: 'One runtime for everything', text: 'The server, the CLI, the tests, and the build all run on Bun, so there is no separate Node toolchain beside the PHP one. Bun is the runtime today, with more runtimes planned.' },
-        { title: 'Upgrades without a separate service', text: 'Laravel Shift is a third-party paid service that opens a pull request per version. buddy upgrade is part of the framework: it previews every change, refuses to overwrite uncommitted edits, then moves the framework, dependencies, migrations, and CI to the next release.' },
+        { title: 'Automated updates, free in the box', text: 'Laravel Shift is a third-party service that charges per upgrade, $19 to $29 for each version jump, and opens a pull request once you pay. Stacks includes the whole job. buddy upgrade previews every change, refuses to overwrite uncommitted edits, then moves the framework, dependencies, migrations, and CI to the next release, and buddy-bot, configured in every new app, opens dependency pull requests every two hours with a dashboard issue to track them.' },
         { title: 'The machine sets itself up', text: 'Herd and Sail give Laravel a polished local environment. Pantry installs exactly the tools config/deps.ts declares into the project, starts the database, and migrates and seeds it, and CI installs from the same lockfile.' },
         { title: 'No deploy platform subscription', text: 'Forge runs $12 to $39 a month on top of the servers it manages, and Laravel Cloud starts at $5 a month plus usage, on AWS, with your database living on their platform. buddy deploy ships in the framework itself, so the only recurring cost is the server: a Hetzner box, an AWS account, or any Linux machine you already pay for. One small box can host several apps, and the data stays on hardware you control.' },
         { title: 'A mail server, not just a mail sender', text: 'Laravel pairs with SES, Postmark, or Resend for sending and Google Workspace or Fastmail for real mailboxes. Stacks can run its own self-hostable SMTP and IMAP server, so a custom mailbox on your domain is infrastructure you already have rather than another subscription.' },
@@ -821,7 +870,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Realtime', stacks: 'WebSocket channels and broadcasting, included', other: 'Reverb (first-party) or Pusher, via Echo' },
         { dimension: 'Admin', stacks: 'Dashboard generated from models', other: 'Filament (free) or Nova (paid, from $99)' },
         { dimension: 'Local setup', stacks: 'Pantry, per project, from config/deps.ts', other: 'Herd, Sail (Docker), or Valet' },
-        { dimension: 'Upgrades', stacks: 'buddy upgrade, built in, with a dry run', other: 'Laravel Shift (paid) or by hand' },
+        { dimension: 'Automated updates', stacks: 'buddy upgrade and buddy-bot, free and built in', other: 'Laravel Shift, $19-29 per upgrade, or by hand' },
         { dimension: 'Deploy', stacks: 'buddy deploy to Hetzner, AWS, or any Linux box over SSH, no platform fee', other: 'Forge $12-39/mo plus servers, or Cloud from $5/mo plus usage' },
         { dimension: 'Mail server', stacks: 'Built in: SMTP, IMAP, real mailboxes', other: 'None; a hosted inbox provider, billed per seat' },
         { dimension: 'Ecosystem age', stacks: 'Young', other: 'Mature' },
@@ -835,7 +884,7 @@ export const comparisons: Comparison[] = [
       ],
       verdict: {
         pickThem: 'Your team writes PHP, or you need the deepest ecosystem and the most proven hosting story available. Laravel remains the benchmark and there is no shame in that being the answer.',
-        pickStacks: 'Your team already writes TypeScript for the front end and you would rather not maintain two languages, two toolchains, and a serialisation boundary between them, or pay a deploy platform on top of the servers that hold your data.',
+        pickStacks: 'Your team already writes TypeScript for the front end and you would rather not maintain two languages, two toolchains, and a serialisation boundary between them, or pay a deploy platform on top of the servers that hold your data, and a service per upgrade to keep it current.',
       },
       related: ['adonisjs', 'rails', 'django'],
     },
@@ -849,7 +898,7 @@ export const comparisons: Comparison[] = [
     language: 'Ruby',
     icon: 'i-hugeicons-train-01',
     group: 'ecosystems',
-    matrix: { auth: 'partial', orm: 'built-in', jobs: 'built-in', mail: 'built-in', admin: 'partial', realtime: 'built-in', deploy: 'built-in', mailbox: 'byo' },
+    matrix: { auth: 'partial', orm: 'built-in', jobs: 'built-in', mail: 'built-in', admin: 'partial', realtime: 'built-in', deploy: 'built-in', updates: 'partial', mailbox: 'byo' },
     page: {
       headline: 'Rails proved the case. Stacks argues it again in TypeScript.',
       lede: 'Every framework on this page owes Rails something: convention over configuration, generators, migrations, an ORM with opinions, and the idea that one person should be able to build a whole product. Stacks agrees with all of it and differs on the two things Rails cannot change, which are the language and the runtime.',
@@ -871,6 +920,7 @@ export const comparisons: Comparison[] = [
         { title: 'Schema from models', text: 'The model is the source of truth and migrations are diffed from it, instead of schema.rb being derived from migration history.' },
         { title: 'Provisioning, DNS, and mail too', text: 'Kamal deploys to servers you already have. buddy deploy can also create them on Hetzner or AWS, adopt any Linux box over SSH, and manage DNS and mail records, and Stacks can run its own SMTP and IMAP server on the same box.' },
         mailServerStrength,
+        updatesStrength,
       ],
       rows: [
         { dimension: 'Language', stacks: 'TypeScript, statically checked', other: 'Ruby, dynamically typed' },
@@ -882,6 +932,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Deploy', stacks: 'buddy deploy to Hetzner, AWS, or any SSH box', other: 'Kamal to any servers' },
         { dimension: 'Admin', stacks: 'Generated dashboard', other: 'ActiveAdmin or Avo' },
         mailServerRow('Action Mailbox routes inbound mail; inboxes are a provider'),
+        updatesRow('bin/rails app:update, interactive; a dependency bot is yours to set up'),
       ],
       migration: [
         { title: 'Active Record models become defineModel()', text: 'Associations, validations, callbacks, and scopes have direct counterparts as relationships, attribute rules, and traits.' },
@@ -904,7 +955,7 @@ export const comparisons: Comparison[] = [
     language: 'Python',
     icon: 'i-hugeicons-dashboard-square-01',
     group: 'ecosystems',
-    matrix: { auth: 'built-in', orm: 'built-in', jobs: 'partial', mail: 'built-in', admin: 'built-in', realtime: 'partial', deploy: 'byo', mailbox: 'byo' },
+    matrix: { auth: 'built-in', orm: 'built-in', jobs: 'partial', mail: 'built-in', admin: 'built-in', realtime: 'partial', deploy: 'byo', updates: 'partial', mailbox: 'byo' },
     page: {
       headline: 'Django got there first on the admin. Stacks generates one too, in your language.',
       lede: 'Django has been the batteries-included argument for twenty years, and its admin is still the single best reason to choose it. Stacks makes the same argument for TypeScript teams, and adds the parts Django leaves out, which are the background workers, the interactive front end, and the deploy.',
@@ -921,6 +972,7 @@ export const comparisons: Comparison[] = [
         { title: 'Front end in the framework', text: 'STX views and components rather than Django templates plus a separate JavaScript build.' },
         { title: 'Deploy from config', text: 'Servers on Hetzner or AWS, or any Linux box over SSH, plus DNS and certificates, all declared in the repository and applied by buddy deploy.' },
         mailServerStrength,
+        updatesStrength,
       ],
       rows: [
         { dimension: 'Language', stacks: 'TypeScript', other: 'Python' },
@@ -932,6 +984,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Front end', stacks: 'STX: SSR, SSG, islands, signals', other: 'Templates or a separate SPA' },
         { dimension: 'Deploy', stacks: 'buddy deploy to Hetzner, AWS, or any SSH box', other: 'Your own containers and IaC' },
         mailServerRow('None; inboxes come from a hosted provider'),
+        updatesRow('django-upgrade (community) and deprecation warnings; a bot is yours to set up'),
       ],
       migration: [
         { title: 'Models translate directly', text: 'Django model fields and Stacks attributes line up almost one to one, including validation and defaults.' },
@@ -954,7 +1007,7 @@ export const comparisons: Comparison[] = [
     language: 'Any client language',
     icon: 'i-hugeicons-database',
     group: 'ecosystems',
-    matrix: { auth: 'hosted', orm: 'hosted', jobs: 'partial', mail: 'byo', admin: 'hosted', realtime: 'hosted', deploy: 'hosted', mailbox: 'byo' },
+    matrix: { auth: 'hosted', orm: 'hosted', jobs: 'partial', mail: 'byo', admin: 'hosted', realtime: 'hosted', deploy: 'hosted', updates: 'hosted', mailbox: 'byo' },
     page: {
       headline: 'Supabase gives you a backend. Stacks gives you somewhere to put your logic.',
       lede: 'This is the least like-for-like comparison on the page, and worth making because teams genuinely choose between them. Supabase is a hosted Postgres with auth, storage, realtime, and edge functions in front of it. Stacks is a framework you run. Plenty of applications use both.',
@@ -971,6 +1024,7 @@ export const comparisons: Comparison[] = [
         { title: 'Background work and mail', text: 'Queues, schedules, retries, transactional mail, and notifications, rather than cron extensions and a mail provider.' },
         { title: 'You own the deployment', text: 'Supabase Pro is $25 a month plus compute for every project after the first. A Stacks app, its Postgres, its file storage, and even its mail server can share one small Hetzner box, or any Linux server you already pay for, with no platform between you and your data.' },
         mailServerStrength,
+        updatesStrength,
       ],
       rows: [
         { dimension: 'What it is', stacks: 'A framework you run', other: 'A hosted platform you consume' },
@@ -982,6 +1036,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Admin', stacks: 'Generated from your models', other: 'Platform dashboard over tables' },
         { dimension: 'Operating model', stacks: 'You deploy and run it', other: 'Managed, with self-hosting possible' },
         mailServerRow('Auth emails only; inboxes are a separate provider'),
+        updatesRow('The platform is upgraded for you; client SDKs are yours to bump'),
       ],
       migration: [
         { title: 'They work well together', text: 'Point a Stacks application at a Supabase Postgres instance and keep Supabase Storage, which speaks the S3 protocol that Stacks storage drivers support, while logic moves into the framework.' },
@@ -1004,7 +1059,7 @@ export const comparisons: Comparison[] = [
     language: 'Any client language',
     icon: 'i-hugeicons-satellite-02',
     group: 'ecosystems',
-    matrix: { auth: 'hosted', orm: 'hosted', jobs: 'partial', mail: 'partial', admin: 'hosted', realtime: 'hosted', deploy: 'hosted', mailbox: 'byo' },
+    matrix: { auth: 'hosted', orm: 'hosted', jobs: 'partial', mail: 'partial', admin: 'hosted', realtime: 'hosted', deploy: 'hosted', updates: 'hosted', mailbox: 'byo' },
     page: {
       headline: 'Firebase syncs data to clients. Stacks runs the application in the middle.',
       lede: 'Firebase is built on the idea that the client is the application and the backend is a synchronised document store. That is a genuinely good fit for chat, presence, and offline-first mobile apps. Firestore is a poor fit for reporting, invoicing, or complex authorisation. Firebase now offers Postgres through SQL Connect, but it is still reached through Firebase, on Google Cloud, and billed per operation. Relational work on a server you own is where Stacks is aimed.',
@@ -1021,6 +1076,7 @@ export const comparisons: Comparison[] = [
         { title: 'Cost predictability', text: 'Firestore bills per document read, write, and delete, and SQL Connect per operation, so a bad query is a bad invoice. A server and a database you pay for directly have a shape you can forecast.' },
         { title: 'No lock-in', text: 'Your data is in your own SQL database, and the application that reads it is yours.' },
         mailServerStrength,
+        updatesStrength,
       ],
       rows: [
         { dimension: 'Data model', stacks: 'Relational, with migrations', other: 'Firestore documents, or Postgres via SQL Connect' },
@@ -1032,6 +1088,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Cost model', stacks: 'A server you pay for directly', other: 'Per operation' },
         { dimension: 'Portability', stacks: 'Your database, your servers', other: 'Google Cloud only' },
         mailServerRow('A send-only extension; inboxes are a separate provider'),
+        updatesRow('The platform is upgraded for you; client SDKs are yours to bump'),
       ],
       migration: [
         { title: 'Flatten the documents first', text: 'Collections become tables and models, and the denormalisation Firestore required usually disappears.' },

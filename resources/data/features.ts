@@ -784,16 +784,17 @@ export const config: PantryConfig = {
 
   {
     slug: 'automated-upgrades',
-    title: 'Automated upgrades',
-    blurb: 'buddy upgrade moves an app to the next release: framework, dependencies, migrations, and CI, previewed first and never over your uncommitted edits.',
+    title: 'Automated updates',
+    blurb: 'buddy-bot opens dependency pull requests on a schedule, and buddy upgrade moves the app to the next release, previewed first and never over your uncommitted edits.',
     icon: 'i-hugeicons-arrow-reload-horizontal',
     group: 'ship',
     bento: { cols: 6, visual: 'capabilities' },
     page: {
       kicker: 'Ship',
-      headline: 'Upgrades are a command, not a weekend.',
-      lede: 'What Laravel Shift sells as a separate service is part of the framework here. buddy upgrade pulls the next release into the app, refreshes dependencies, runs the migrations it brings, and raises the Bun version your CI and containers pin. Every change can be previewed first, and it will not overwrite framework files you edited and did not commit.',
+      headline: 'Staying current is a pull request, not a weekend.',
+      lede: 'What Laravel Shift sells per upgrade is part of the framework here, free. Every new app ships with buddy-bot configured, so dependency updates arrive as pull requests every two hours without anyone setting up a bot. For the framework itself, buddy upgrade pulls the next release into the app, refreshes dependencies, runs the migrations it brings, and raises the Bun version your CI and containers pin. Every change can be previewed first, and it will not overwrite framework files you edited and did not commit.',
       capabilities: [
+        { title: 'Dependency pull requests', text: 'buddy-bot is scaffolded into every new app with its GitHub workflow: update pull requests every two hours, a Dependency Dashboard issue that tracks them, and a daily pass that closes the ones whose bump already landed.' },
         { title: 'Preview first', text: 'buddy upgrade --dry-run lists every file a real run would change, from a snapshot of the release, without writing a byte to the project.' },
         { title: 'Your edits are safe', text: 'Uncommitted changes inside managed framework paths stop the upgrade unless you pass --force, so nothing hand-edited is silently replaced.' },
         { title: 'Dependencies and migrations', text: 'After the sync the dependencies are refreshed and the migrations the release brings are run, so the app and its schema land on the new version together.' },
@@ -803,7 +804,10 @@ export const config: PantryConfig = {
       ],
       code: {
         file: 'Terminal',
-        code: `// See everything the next release would change
+        code: `// Dependency pull requests run on their own; or update now
+buddy upgrade:dependencies
+
+// See everything the next release would change
 buddy upgrade --dry-run
 
 // Apply it: framework, dependencies, migrations, CI
