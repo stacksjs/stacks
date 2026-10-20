@@ -142,38 +142,48 @@ export default defineModel({
         rule: schema.string().max(255),
       },
     },
+    // `text`, all of these: an EXPLAIN plan, the tables a query touched and the
+    // suggestions made about it run past the varchar(255) Postgres enforces, and
+    // a log row that does not fit is dropped ("value too long for type character
+    // varying(255)") - losing exactly the slow queries this table exists for.
     tags: {
       fillable: true,
+      type: 'text',
       validation: {
         rule: schema.string(),
       },
     },
     affected_tables: {
       fillable: true,
+      type: 'text',
       validation: {
         rule: schema.string(),
       },
     },
     indexes_used: {
       fillable: true,
+      type: 'text',
       validation: {
         rule: schema.string(),
       },
     },
     missing_indexes: {
       fillable: true,
+      type: 'text',
       validation: {
         rule: schema.string(),
       },
     },
     explain_plan: {
       fillable: true,
+      type: 'text',
       validation: {
         rule: schema.string(),
       },
     },
     optimization_suggestions: {
       fillable: true,
+      type: 'text',
       validation: {
         rule: schema.string(),
       },

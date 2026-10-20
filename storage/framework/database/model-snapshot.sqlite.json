@@ -6070,7 +6070,7 @@
           },
           {
             "name": "tags",
-            "type": "string",
+            "type": "text",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
@@ -6078,7 +6078,7 @@
           },
           {
             "name": "affected_tables",
-            "type": "string",
+            "type": "text",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
@@ -6086,7 +6086,7 @@
           },
           {
             "name": "indexes_used",
-            "type": "string",
+            "type": "text",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
@@ -6094,7 +6094,7 @@
           },
           {
             "name": "missing_indexes",
-            "type": "string",
+            "type": "text",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
@@ -6102,7 +6102,7 @@
           },
           {
             "name": "explain_plan",
-            "type": "string",
+            "type": "text",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
@@ -6110,7 +6110,7 @@
           },
           {
             "name": "optimization_suggestions",
-            "type": "string",
+            "type": "text",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
@@ -13800,7 +13800,7 @@
       }
     ]
   },
-  "hash": "dafb9e51ad8a2a19c446f44d942764787a1af2d7cc3ded54a446641bc707c9cb",
+  "hash": "52fb5349cd9effa52323f249a7d2d30982c604b28b7a14caffca88beb4aaa5f1",
   "dialect": "sqlite",
-  "updatedAt": "2026-10-19T17:00:17.106Z"
+  "updatedAt": "2026-10-20T15:12:44.491Z"
 }
