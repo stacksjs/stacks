@@ -116,14 +116,32 @@ export function isInstalledDefaultsRoot(path: string): boolean {
 /**
  * Where the installed `@stacksjs/defaults` lives for a project, or null when
  * it is not installed. Resolved through `package.json` because the package
- * publishes no `.` export, and memoised per project root: it cannot move
- * without a reinstall, and this sits under every `storagePath()` call that
- * names the defaults tree.
+ * publishes no `.` export, and memoised per project root once found: it
+ * cannot move without a reinstall, and this sits under every `storagePath()`
+ * call that names the defaults tree.
  */
 export function packagedDefaultsRoot(projectRoot: string = projectPath()): string | null {
   const cached = packagedDefaultsRoots.get(projectRoot)
-  if (cached !== undefined)
+  if (cached)
     return cached
+
+  // The two places an install puts it, read from the filesystem first. Bun's
+  // resolver caches directory lookups for the life of the process, so one that
+  // looked before the install (`buddy new` imports the new app's
+  // config/deps.ts before installing anything) keeps answering "not
+  // installed" afterwards. Not memoised while missing, for the same reason.
+  for (const dir of ['node_modules', 'pantry']) {
+    const candidate = join(projectRoot, dir, '@stacksjs', 'defaults')
+    if (existsSync(join(candidate, 'package.json'))) {
+      packagedDefaultsRoots.set(projectRoot, candidate)
+      return candidate
+    }
+  }
+
+  // The resolver, once, for a layout neither of those covers (a hoisted
+  // workspace above the project).
+  if (cached === null)
+    return null
 
   let root: string | null = null
   try {

@@ -165,6 +165,33 @@ export function applyAppPackageScripts(root: string): ScriptChanges {
 }
 
 /**
+ * Content globs that name a core package's source, which an app does not have.
+ * The published package ships the same views under `dist/`.
+ */
+const CORE_CONTENT_PATHS: Array<{ file: string, from: string, to: string }> = [
+  {
+    file: 'config/css.ts',
+    from: '\'./storage/framework/core/error-handling/src/views/**/*.{stx,html}\'',
+    to: '\'./node_modules/@stacksjs/error-handling/dist/views/**/*.{stx,html}\'',
+  },
+]
+
+export function rewriteCoreContentPaths(root: string): string[] {
+  const touched: string[] = []
+  for (const { file, from, to } of CORE_CONTENT_PATHS) {
+    const full = join(root, file)
+    if (!existsSync(full))
+      continue
+    const raw = readFileSync(full, 'utf8')
+    if (!raw.includes(from))
+      continue
+    writeFileSync(full, raw.replaceAll(from, to))
+    touched.push(file)
+  }
+  return touched
+}
+
+/**
  * Give the app the package-layout `storage/framework/tsconfig.app.json`.
  *
  * The repository's own maps every `@stacksjs/*` import onto
@@ -262,16 +289,26 @@ export function rewriteDefaultsImports(root: string, hasFile: (path: string) => 
  * the bunfig preloader, and the stx plugin in `config/ui.ts`. Both resolve
  * package specifiers.
  */
+/**
+ * Spelled with `${TS}` on purpose. The package build rewrites every quoted
+ * `./...ts` string to `.js` (it has to, for import specifiers and buddy's lazy
+ * command map), and these are paths in the APP's files, not modules of ours:
+ * written out in full, 0.75.245 shipped them as `preloader.js` and
+ * `stx-components-plugin.js`, matched nothing, and left both pointing at the
+ * tree it had just replaced with a link.
+ */
+const TS = '.ts'
+
 const DEFAULTS_MODULE_PATHS: Array<{ file: string, from: string, to: string }> = [
   {
     file: 'bunfig.toml',
-    from: '"./storage/framework/defaults/resources/plugins/preloader.ts"',
+    from: `"./storage/framework/defaults/resources/plugins/preloader${TS}"`,
     to: '"@stacksjs/defaults/resources/plugins/preloader"',
   },
   {
     file: 'config/ui.ts',
-    from: '\'./storage/framework/defaults/stx-components-plugin.ts\'',
-    to: '\'@stacksjs/defaults/stx-components-plugin.ts\'',
+    from: `'./storage/framework/defaults/stx-components-plugin${TS}'`,
+    to: `'@stacksjs/defaults/stx-components-plugin${TS}'`,
   },
 ]
 

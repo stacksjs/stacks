@@ -892,13 +892,16 @@ async function unvendorDefaults(force: boolean): Promise<void> {
     process.exit(ExitCode.FatalError)
   }
 
+  // Only what deleting the tree would lose: a file that differs from the
+  // package, or one the package does not have. A file the package has and the
+  // tree lacks is still there afterwards.
   const differs = syncPackageProjectFiles(root, packageRoot, { dryRun: true, vendorDefaults: true })
-    .filter(change => change.path.startsWith(`${VENDORED_DEFAULTS}/`))
+    .filter(change => change.path.startsWith(`${VENDORED_DEFAULTS}/`) && change.action !== 'add')
 
   if (differs.length > 0 && !force) {
     await log.error(`${VENDORED_DEFAULTS} differs from the installed @stacksjs/defaults ${installedDefaultsVersion(root) ?? ''} in ${differs.length} place${differs.length === 1 ? '' : 's'}:`)
     for (const change of differs.slice(0, 15))
-      log.error(`  ${change.action === 'add' ? 'missing' : change.action === 'remove' ? 'extra  ' : 'changed'}  ${change.path}`)
+      log.error(`  ${change.action === 'remove' ? 'only here' : 'changed  '}  ${change.path}`)
     if (differs.length > 15)
       log.error(`  ... and ${differs.length - 15} more`)
     log.info('A tree from another release: run `buddy upgrade` first. A file you edited: move it to the same path under app/, which wins over the defaults. Then run this again, or pass --force to drop the differences.')

@@ -12,7 +12,7 @@ import { ensurePantryDependencies, ensurePantryInstalled, optimizePantryDeps } f
 import { resultFailed } from '../result'
 import { appIdentity, applyAppChangelogTemplate, applyAppEnvTemplate, applyAppPackageTemplate, renderTemplate } from '../scaffold-app'
 import { applyAppSiteTemplate } from '../scaffold-site'
-import { adoptPackagedDefaults, applyAppPackageScripts, applyPackageAppTsconfig, pruneFrameworkOnlyFiles } from '../scaffold-package-app'
+import { adoptPackagedDefaults, applyAppPackageScripts, applyPackageAppTsconfig, pruneFrameworkOnlyFiles, rewriteCoreContentPaths } from '../scaffold-package-app'
 import { fetchPublishedVersions } from '../registry'
 
 interface NewOptions extends CreateOptions {
@@ -109,8 +109,9 @@ export function create(buddy: CLI): void {
   await install(path, options)
 
   if (!options.withCore) {
-    await unvendorCore(path, options)
     trimFrameworkOnlyFiles(path)
+    await unvendorCore(path, options)
+    applyPackageAppTsconfig(path)
 
     if (!options.vendorDefaults)
       linkFrameworkDefaults(path)
@@ -619,14 +620,16 @@ async function generatePantryDeps(path: string) {
 /**
  * Remove what builds, benchmarks or publishes the framework itself - `bench/`,
  * the publish scripts, the framework's tsconfigs and package.json scripts - and
- * give the app the package-layout tsconfig. See `../scaffold-package-app`.
- * Runs after `unvendorCore`, whose own script rewrite it supersedes.
+ * repoint content globs at the published packages. See
+ * `../scaffold-package-app`. Runs before `unvendorCore`, which otherwise
+ * reports every one of those files as a broken reference to the core it is
+ * about to remove.
  */
 function trimFrameworkOnlyFiles(path: string) {
   try {
     const removed = pruneFrameworkOnlyFiles(path)
     const scripts = applyAppPackageScripts(path)
-    applyPackageAppTsconfig(path)
+    rewriteCoreContentPaths(path)
     log.success(`Removed ${removed.length} framework-only path${removed.length === 1 ? '' : 's'} and ${scripts.removed.length} framework-only script${scripts.removed.length === 1 ? '' : 's'}`)
   }
   catch (error) {

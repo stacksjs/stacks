@@ -133,3 +133,22 @@ it('never takes Bun\'s auto-install cache for an installed package', async () =>
   expect(isInstalledDefaultsRoot('/home/runner/work/stacks/stacks/pantry/install/cache/@stacksjs/defaults@0.75.244@@@1')).toBe(false)
   expect(isInstalledDefaultsRoot('/x/pantry/install/cache/@stacksjs/defaults')).toBe(false)
 })
+
+it('finds the package once it is installed, even after asking before the install', async () => {
+  // `buddy new` asks about the new app before installing its dependencies,
+  // and Bun's resolver keeps the "no node_modules" answer for the process.
+  const { packagedDefaultsRoot } = await import('../src/project')
+  const root = realpathSync(mkdtempSync(join(tmpdir(), 'stacks-defaults-root-')))
+  try {
+    expect(packagedDefaultsRoot(root)).toBeNull()
+
+    const pkg = join(root, 'node_modules/@stacksjs/defaults')
+    mkdirSync(pkg, { recursive: true })
+    writeFileSync(join(pkg, 'package.json'), '{"name":"@stacksjs/defaults","version":"1.0.0"}')
+
+    expect(packagedDefaultsRoot(root)).toBe(pkg)
+  }
+  finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})

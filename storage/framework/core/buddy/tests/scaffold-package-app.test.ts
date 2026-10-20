@@ -13,6 +13,7 @@ import {
   FRAMEWORK_ONLY_PATHS,
   ignoreDefaults,
   rewriteDefaultsImports,
+  rewriteCoreContentPaths,
   rewriteDefaultsModulePaths,
   unignoreDefaults,
 } from '../src/scaffold-package-app'
@@ -157,4 +158,14 @@ test('a template import gets no .ts extension, which stx typecheck rejects', () 
   rewriteDefaultsImports(app, () => true)
 
   expect(readFileSync(join(app, 'resources/views/index.stx'), 'utf8')).toContain('from \'@stacksjs/defaults/functions/toasts\'')
+})
+
+test('content globs into the core point at the published package', () => {
+  copy('config/css.ts')
+
+  // Fails if config/css.ts stops naming the core path the rewrite expects.
+  expect(rewriteCoreContentPaths(app)).toEqual(['config/css.ts'])
+  const css = readFileSync(join(app, 'config/css.ts'), 'utf8')
+  expect(css).not.toContain('storage/framework/core')
+  expect(css).toContain('./node_modules/@stacksjs/error-handling/dist/views/**/*.{stx,html}')
 })
