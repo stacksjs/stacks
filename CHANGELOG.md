@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.238...v0.75.239)
+
+## 🐛 Bug Fixes
+
+- **release**: refuse a Pantry the workspace does not declare ([ef17b23](https://github.com/stacksjs/stacks/commit/ef17b23)) _(by Chris <chris@stacksjs.com>)_
+- **deps**: regenerate pantry.lock with the declared Pantry 0.11.103 ([b2cc2a5](https://github.com/stacksjs/stacks/commit/b2cc2a5)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **release**: expect the declared Pantry to refresh pantry.lock ([21e0666](https://github.com/stacksjs/stacks/commit/21e0666)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- regenerate route auto-imports with routeRedirects ([affeeef](https://github.com/stacksjs/stacks/commit/affeeef)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.237...v0.75.238)
 
 ## ✨ Features
