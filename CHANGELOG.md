@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.249...v0.75.250)
+
+## 🐛 Bug Fixes
+
+- **scaffold**: a new app's agents stop publishing as the framework's author ([9a250c4](https://github.com/stacksjs/stacks/commit/9a250c4)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **buddy**: give the long shallow-history revision test time to build its history ([330343e](https://github.com/stacksjs/stacks/commit/330343e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.248...v0.75.249)
 
 ## 🐛 Bug Fixes
