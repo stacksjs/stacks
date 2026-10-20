@@ -102,7 +102,7 @@ describe('policy consultation in the generated handlers', () => {
     const bulk = generator.slice(at(`enabledRoutes.includes('destroy') && !routeClaimed('POST'`))
 
     expect(indexOfExisting(bulk, `policyRefusal(modelName, 'delete'`))
-      .toBeLessThan(indexOfExisting(bulk, 'const now = new Date().toISOString()'))
+      .toBeLessThan(indexOfExisting(bulk, 'const now = writeTimestamp()'))
     expect(bulk).toContain('refusedRows.length > 0')
   })
 
