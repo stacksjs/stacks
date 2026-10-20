@@ -126,13 +126,18 @@ export function createSoftDeleteMethods(model: SoftDeleteCapableModel, primaryKe
     },
 
     withTrashed() {
-      // Vanilla query builder — no `whereNull('deleted_at')` filter
-      // injection, so soft-deleted rows are visible.
-      return typeof model.query === 'function' ? model.query() : (model)
+      // Through the builder's own `withTrashed()`. A plain `query()` on a
+      // soft-delete model already adds `deleted_at IS NULL`, so returning it
+      // as it was hid exactly the rows this is for.
+      const q: any = typeof model.query === 'function' ? model.query() : (model)
+      return typeof q?.withTrashed === 'function' ? q.withTrashed() : q
     },
 
     onlyTrashed() {
+      // The builder's own `onlyTrashed()` replaces that default scope. A
+      // `deleted_at IS NOT NULL` added on top of it matched no row at all.
       const q: any = typeof model.query === 'function' ? model.query() : (model)
+      if (typeof q?.onlyTrashed === 'function') return q.onlyTrashed()
       if (typeof q?.whereNotNull === 'function') return q.whereNotNull(DELETED_AT_COLUMN)
       // Fallback for builders that don't expose whereNotNull
       return q?.where?.(DELETED_AT_COLUMN, '!=', null) ?? q
