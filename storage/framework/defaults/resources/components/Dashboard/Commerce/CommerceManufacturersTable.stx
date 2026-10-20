@@ -1,3 +1,5 @@
+@import('../UI/Table')
+
 <script client>
 import type { ManufacturerRecord } from '../../../../app/Actions/Dashboard/Commerce/manufacturer-records'
 
@@ -5,67 +7,62 @@ const records = useReactiveProp('records', [] as ManufacturerRecord[])
 const loading = useReactiveProp('loading', false)
 const emit = defineEmits()
 
-function formatDate(value: string): string {
-  if (!value)
-    return 'Not recorded'
-  const normalized = /^\d{4}-\d{2}-\d{2} \d/.test(value)
-    ? `${value.replace(' ', 'T')}Z`
-    : value
-  const date = new Date(normalized)
-  return Number.isNaN(date.getTime())
-    ? value
-    : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(date)
+/**
+ * `featured` becomes a flag badge beside the name rather than the starred line
+ * it used to be under it. The information is the same and it reads as a table
+ * column; the star is dropped because a `cell` slot cannot carry markup yet
+ * (stacksjs/stx#2095, stacksjs/stx#2096).
+ *
+ * `createdAt` is a `date` column, and `UI/Table` now normalises SQLite's
+ * space-separated timestamps the way this component used to do for itself.
+ */
+const COLUMNS = [
+  { key: 'name', label: 'Manufacturer', sortable: true, emptyText: 'Unnamed manufacturer', class: 'min-w-48 font-medium text-gray-900 dark:text-white' },
+  {
+    key: 'featuredFlag',
+    label: '',
+    type: 'badge' as const,
+    emptyText: '',
+    badgeClasses: { featured: 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40' },
+    badgeLabels: { featured: 'Featured' },
+    searchable: false,
+  },
+  { key: 'description', label: 'Description', emptyText: 'No description recorded.', class: 'max-w-md min-w-64 line-clamp-2 text-gray-500 dark:text-neutral-400' },
+  { key: 'country', label: 'Country', sortable: true, emptyText: 'Not recorded', class: 'whitespace-nowrap' },
+  { key: 'productCount', label: 'Products', type: 'number' as const, sortable: true, align: 'right' as const, class: 'font-mono' },
+  { key: 'createdAt', label: 'Created', type: 'date' as const, sortable: true, class: 'whitespace-nowrap' },
+]
+
+const ROW_ACTIONS = [
+  { action: 'edit', label: 'Edit', icon: 'i-hugeicons-edit-01' },
+  { action: 'delete', label: 'Delete', icon: 'i-hugeicons-waste', class: 'text-red-500' },
+]
+
+/** A badge column maps a row field, so the flag needs one. */
+const rows = derived(() => records().map(record => ({
+  ...record,
+  featuredFlag: record.featured ? 'featured' : '',
+})))
+
+function handleRowAction(payload: { action: string, row: ManufacturerRecord }): void {
+  emit(payload.action, payload.row)
 }
 </script>
 
-<div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
-  <div :if="loading() && records().length === 0" class="flex items-center justify-center p-10 text-gray-500 text-sm dark:text-neutral-400">
-    <span class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
-    Loading manufacturers
-  </div>
-  <div :else-if="records().length === 0" class="p-10 text-center">
-    <p class="font-medium text-gray-900 text-sm dark:text-white">No manufacturers found</p>
-    <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Add a manufacturer or adjust the current filters.</p>
-  </div>
-  <div :else class="overflow-x-auto">
-    <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-      <thead class="bg-gray-50 dark:bg-neutral-900/50">
-        <tr>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Manufacturer</th>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Description</th>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Country</th>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-right text-xs uppercase dark:text-neutral-400">Products</th>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Created</th>
-          <th scope="col" class="relative px-4 py-3"><span class="sr-only">Actions</span></th>
-        </tr>
-      </thead>
-      <tbody class="divide-gray-100 divide-y dark:divide-neutral-700">
-        <template :for="record in records()" :key="record.id">
-          <tr class="hover:bg-gray-50/60 dark:hover:bg-neutral-700/40">
-            <td class="px-4 py-4 min-w-48">
-              <p class="font-medium text-gray-900 text-sm dark:text-white">{{ record.name || 'Unnamed manufacturer' }}</p>
-              <span :if="record.featured" class="inline-flex items-center mt-1 font-medium text-blue-700 text-xs dark:text-blue-300">
-                <span class="mr-1 h-3.5 w-3.5 i-hugeicons-star"></span>
-                Featured
-              </span>
-            </td>
-            <td class="px-4 py-4 max-w-md min-w-64 text-gray-500 text-sm dark:text-neutral-400">
-              <p class="line-clamp-2">{{ record.description || 'No description recorded.' }}</p>
-            </td>
-            <td class="px-4 py-4 text-gray-700 text-sm whitespace-nowrap dark:text-neutral-200">{{ record.country || 'Not recorded' }}</td>
-            <td class="px-4 py-4 font-mono text-gray-700 text-right text-sm dark:text-neutral-200">{{ record.productCount }}</td>
-            <td class="px-4 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ formatDate(record.createdAt) }}</td>
-            <td class="px-4 py-3 text-right whitespace-nowrap">
-              <Button variant="ghost" size="sm" iconOnly :ariaLabel="'Edit ' + record.name" @click="emit('edit', record)">
-                <span class="block h-4 w-4 text-blue-500 i-hugeicons-edit-01"></span>
-              </Button>
-              <Button variant="ghost" size="sm" iconOnly :ariaLabel="'Delete ' + record.name" @click="emit('delete', record)">
-                <span class="block h-4 w-4 text-red-500 i-hugeicons-waste"></span>
-              </Button>
-            </td>
-          </tr>
-        </template>
-      </tbody>
-    </table>
-  </div>
-</div>
+{{--
+  No `searchable` or `filterable`: the parent dashboard already owns the
+  search box and the filter selects, and a second set inside the table would
+  duplicate them. Paging is what was missing, and Table brings it.
+--}}
+<Table
+  :columns="COLUMNS"
+  :data="rows()"
+  :loading="loading()"
+  :row-actions="ROW_ACTIONS"
+  action-label-key="name"
+  paginated
+  :page-size="25"
+  empty-title="No manufacturers found"
+  empty-description="Add a manufacturer or adjust the current filters."
+  @row-action="handleRowAction"
+/>

@@ -20,7 +20,7 @@ import { describe, expect, it } from 'bun:test'
 const ROOT = join(import.meta.dir, '../../../defaults/resources/components/Dashboard')
 
 /** Lower this when a migration lands. Never raise it. */
-const CEILING = 67
+const CEILING = 65
 
 function components(): string[] {
   return [...new Glob('**/*.stx').scanSync(ROOT)].map(rel => join(ROOT, rel)).sort()
@@ -100,5 +100,40 @@ describe('UI/Table column types', () => {
     // The transpiler normalises string quoting, so match either style.
     const unsorted = declaredTypes().filter(type => !STRING_SORTED.has(type) && !new RegExp(`(['"])${type}\\1`).test(comparator))
     expect(unsorted).toEqual([])
+  })
+})
+
+describe('UI/Table timestamp parsing', () => {
+  const TABLE = join(ROOT, 'UI/Table.stx')
+
+  function script(): string {
+    const source = readFileSync(TABLE, 'utf8')
+    const open = source.indexOf('<script client>')
+    const body = source.slice(open + '<script client>'.length, source.indexOf('</script>', open))
+    return new Bun.Transpiler({ loader: 'ts' }).transformSync(body)
+  }
+
+  /**
+   * SQLite returns `2026-01-01 12:00:00` - a space, and no zone. `new Date()`
+   * reads that as local time, so every row shifted by the viewer's offset and
+   * a timestamp near midnight landed on the wrong day. Each hand-rolled table
+   * normalised it itself; `toDate()` is that knowledge in one place, and every
+   * site that turns a stored value into a Date has to go through it.
+   */
+  it('parses every stored timestamp through toDate', () => {
+    const body = script()
+    expect(body).toContain('function toDate')
+    // `new Date(` is allowed only inside toDate itself.
+    const withoutHelper = body.replace(/function toDate[\s\S]*?\n\}/, '')
+    expect(withoutHelper).not.toContain('new Date(')
+  })
+
+  it('toDate rewrites a space-separated timestamp as UTC', () => {
+    const body = script()
+    const helper = body.match(/function toDate[\s\S]*?\n\}/)
+    expect(helper).not.toBeNull()
+    // The transpiler normalises string quoting, so match either style.
+    expect(helper![0]).toMatch(/replace\((['"]) \1, \1T\1\)/)
+    expect(helper![0]).toContain('Z')
   })
 })

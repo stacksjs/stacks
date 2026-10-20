@@ -212,7 +212,13 @@ describe('dashboard button contract', () => {
       )
       const nativeButtons = [...source.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
 
-      expect(source).toMatch(/<(?:Button|ConfirmDialog)\b/)
+      // `<Table` counts: a component that declares its row actions through
+      // `UI/Table`'s `rowActions` prop has no controls of its own, and Table
+      // renders those through `<Button>`. Table is NOT in the shared-controls
+      // list below, because its own sort headers, column menu and pagination
+      // are still raw `<button>` elements - tracked separately, see
+      // stacksjs/stacks#2926. See also stacksjs/stacks#2924.
+      expect(source).toMatch(/<(?:Button|ConfirmDialog|Table)\b/)
       expect(nativeButtons.every(button => button.includes('absolute inset-0 bg-black/45'))).toBe(true)
     }
   })

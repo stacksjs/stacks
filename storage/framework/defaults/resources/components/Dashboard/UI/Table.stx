@@ -67,7 +67,20 @@ interface DashboardTableColumn {
    */
   badgeLabels?: Record<string, string>
   /**
-   * What an empty cell reads as. Defaults to `-`.
+   * Row field rendered as a second, quieter line under the value.
+   *
+   * A name with its slug, abbreviation or description underneath is by far the
+   * most common custom cell in the dashboard - 38 of the 67 hand-rolled tables
+   * have one - and it is the only reason most of them needed a slot at all.
+   * Doing it here keeps them off the `cell` slot, which cannot carry text
+   * (stacksjs/stx#2095). A row with no value for the key renders one line.
+   */
+  subtitleKey?: string
+
+  /**
+   * What an empty cell reads as. Defaults to `-`. On a `badge` column, `''`
+   * means no pill at all for rows without a value, which is what a flag
+   * column wants.
    *
    * Per column because the right word is specific: a shipping table wants
    * "No minimum" for an absent free-shipping threshold, which is a statement
@@ -106,6 +119,26 @@ interface DashboardTableColumn {
   slotted?: boolean
 }
 
+/**
+ * An icon button in the actions column, declared rather than slotted.
+ *
+ * The `actions` slot needs `row`, and `stx typecheck` rejects every reference
+ * to a scoped slot prop (stacksjs/stx#2096), so a table with action buttons
+ * could not be migrated at all. Props and events cross the attribute boundary
+ * cleanly, which this does: Table renders the buttons and emits `row-action`
+ * with the action name and the row.
+ */
+interface DashboardTableRowAction {
+  /** Identifies this action in the `row-action` payload. */
+  action: string
+  /** Read out as "<label> <row[actionLabelKey]>", e.g. "Edit Kilogram". */
+  label: string
+  /** Iconify class, e.g. `i-hugeicons-edit-01`. */
+  icon: string
+  /** Colour class for the icon. Defaults to the usual blue. */
+  class?: string
+}
+
 type DashboardTableRow = Record<string, any>
 type TableKey = string | number
 type SortDirection = 'asc' | 'desc'
@@ -134,6 +167,8 @@ const columnToggle = useReactiveProp('columnToggle', false)
 const exportable = useReactiveProp('exportable', false)
 const exportFilename = useReactiveProp('exportFilename', 'table')
 const stickyFirstColumn = useReactiveProp('stickyFirstColumn', false)
+const rowActions = useReactiveProp<DashboardTableRowAction[]>('rowActions', [])
+const actionLabelKey = useReactiveProp('actionLabelKey', '')
 
 const selectedKeys = state<TableKey[]>([])
 const sortKey = state('')
@@ -201,14 +236,14 @@ function displayValue(row: DashboardTableRow, column: DashboardTableColumn): str
     return Number.isFinite(amount) ? amount.toLocaleString() : String(value)
   }
   if (column.type === 'date') {
-    const at = new Date(value)
+    const at = toDate(value)
     return Number.isNaN(at.getTime()) ? String(value) : at.toLocaleDateString()
   }
   // An event or log row is ordered by when it happened, and to the minute, so
   // the date alone is not enough to read it. Separate from `date` rather than
   // a flag on it because the two render differently everywhere they appear.
   if (column.type === 'datetime') {
-    const at = new Date(value)
+    const at = toDate(value)
     return Number.isNaN(at.getTime())
       ? String(value)
       : at.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
@@ -260,6 +295,31 @@ function badgeClass(row: DashboardTableRow, column: DashboardTableColumn): strin
   return `${BADGE_BASE} ${column.badgeClasses?.[key] ?? BADGE_NEUTRAL}`
 }
 
+/**
+ * Whether this row gets a pill at all.
+ *
+ * A badge column with `emptyText: ''` is a flag: it marks the rows that have
+ * the value and leaves the rest blank, rather than drawing an empty pill
+ * around a dash on every other row.
+ */
+function hasBadge(row: DashboardTableRow, column: DashboardTableColumn): boolean {
+  return badgeLabel(row, column) !== ''
+}
+
+/**
+ * Parse a stored timestamp.
+ *
+ * SQLite hands back `2026-01-01 12:00:00`, with a space and no zone. `new
+ * Date()` reads that as local time where it reads it at all, so every row
+ * shifted by the viewer's offset - a date near midnight landing on the wrong
+ * day. The hand-rolled tables each normalised it themselves; this is the same
+ * knowledge in the one place that needs it.
+ */
+function toDate(value: unknown): Date {
+  const text = String(value)
+  return new Date(/^\d{4}-\d{2}-\d{2} \d/.test(text) ? `${text.replace(' ', 'T')}Z` : text)
+}
+
 /** The pill's text: the mapped label, else the value with its underscores read as spaces. */
 function badgeLabel(row: DashboardTableRow, column: DashboardTableColumn): string {
   const value = rawValue(row, column.key)
@@ -291,7 +351,7 @@ function compare(a: any, b: any, type: DashboardTableColumn['type']): number {
   // comparison below, which is only accidentally right for ISO timestamps and
   // wrong for every other format.
   if (type === 'date' || type === 'datetime')
-    return new Date(a).getTime() - new Date(b).getTime()
+    return toDate(a).getTime() - toDate(b).getTime()
   if (type === 'boolean')
     return (a ? 1 : 0) - (b ? 1 : 0)
 
@@ -514,6 +574,30 @@ function hasSlottedColumns(): boolean {
   return columns().some(column => column.slotted)
 }
 
+/** Whether the actions column is shown at all. */
+function hasRowActions(): boolean {
+  return rowActions().length > 0
+}
+
+/** The quieter second line, when the column asked for one and the row has it. */
+function subtitleValue(row: DashboardTableRow, column: DashboardTableColumn): string {
+  if (!column.subtitleKey)
+    return ''
+  const value = rawValue(row, column.subtitleKey)
+  return value === null || value === undefined ? '' : String(value)
+}
+
+/** "Edit Kilogram", built from the action's label and the row's own name. */
+function rowActionLabel(row: DashboardTableRow, action: DashboardTableRowAction): string {
+  const key = actionLabelKey() || rowKey()
+  const name = rawValue(row, key)
+  return name === null || name === undefined || name === '' ? action.label : `${action.label} ${String(name)}`
+}
+
+function rowActionIconClass(action: DashboardTableRowAction): string {
+  return `block h-4 w-4 ${action.class || 'text-blue-500'} ${action.icon}`
+}
+
 function cellClass(column: DashboardTableColumn, index: number): string {
   return [
     index === 0 && !selectable() ? 'pl-6' : 'pl-4',
@@ -649,7 +733,7 @@ function cellClass(column: DashboardTableColumn, index: number): string {
             </th>
           </template>
 
-          <th :if="$slots.actions" scope="col" class="px-4 py-3 w-12"><span class="sr-only">Actions</span></th>
+          <th :if="$slots.actions || hasRowActions()" scope="col" class="px-4 py-3 w-12"><span class="sr-only">Actions</span></th>
         </tr>
 
         <!-- Per-column filter row. -->
@@ -680,7 +764,7 @@ function cellClass(column: DashboardTableColumn, index: number): string {
               />
             </td>
           </template>
-          <td :if="$slots.actions" class="px-4 py-2"></td>
+          <td :if="$slots.actions || hasRowActions()" class="px-4 py-2"></td>
         </tr>
       </thead>
 
@@ -703,14 +787,28 @@ function cellClass(column: DashboardTableColumn, index: number): string {
                   <slot name="cell" :row="row" :column="column" :value="row[column.key]" />
                 </template>
                 <template :else>
-                  <span :if="column.type === 'badge'" :class="badgeClass(row, column)">{{ badgeLabel(row, column) }}</span>
+                  <span :if="column.type === 'badge' && hasBadge(row, column)" :class="badgeClass(row, column)">{{ badgeLabel(row, column) }}</span>
                   <span :if="column.type !== 'badge'">{{ displayValue(row, column) }}</span>
+                  <p :if="subtitleValue(row, column)" class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ subtitleValue(row, column) }}</p>
                 </template>
               </td>
             </template>
 
-            <td :if="$slots.actions" class="px-4 w-12" :class="compact() ? 'py-2' : 'py-3'">
-              <slot name="actions" :row="row" />
+            <td :if="$slots.actions || hasRowActions()" class="px-4 w-12" :class="compact() ? 'py-2' : 'py-3'">
+              <slot :if="$slots.actions" name="actions" :row="row" />
+              <div :if="!$slots.actions && hasRowActions()" class="flex gap-1 justify-end">
+                <template :for="action in rowActions()">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    iconOnly
+                    :ariaLabel="rowActionLabel(row, action)"
+                    @click="emit('row-action', { action: action.action, row })"
+                  >
+                    <span aria-hidden="true" :class="rowActionIconClass(action)"></span>
+                  </Button>
+                </template>
+              </div>
             </td>
           </tr>
         </template>

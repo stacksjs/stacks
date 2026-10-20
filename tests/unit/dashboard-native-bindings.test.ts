@@ -742,7 +742,11 @@ describe('dashboard native STX bindings', () => {
     expect(table).toContain("emit('update:selectedKeys', next)")
     expect(table).toContain("emit('selection-change', next)")
     expect(table).toContain(':indeterminate="someSelected()"')
-    expect(table).toContain('<slot name="actions" :row="row" />')
+    // Guarded by `$slots.actions` since the actions column can also be filled
+    // declaratively from the `rowActions` prop (stacksjs/stacks#2924). What
+    // this pins is that the slot still receives the row.
+    expect(table).toContain('<slot :if="$slots.actions" name="actions" :row="row" />')
+    expect(table).toContain("emit('row-action', { action: action.action, row })")
     expect(table).toContain('const exportUrl = useObjectUrl(exportBlob)')
     expect(table).toContain('tag="a"')
     expect(table).toContain(':download="exportDownload()"')
