@@ -95,7 +95,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/bumpx": "^0.2.24",
+    "@stacksjs/bumpx": "^0.2.25",
     "@stacksjs/actions": "0.75.237",
     "@stacksjs/ai": "0.75.237",
     "@stacksjs/alias": "0.75.237",
@@ -148,7 +148,7 @@
     "@stacksjs/socials": "0.75.237",
     "@stacksjs/storage": "0.75.237",
     "@stacksjs/strings": "0.75.237",
-    "@stacksjs/stx": "^0.2.574",
+    "@stacksjs/stx": "^0.2.590",
     "@stacksjs/testing": "0.75.237",
     "@stacksjs/tinker": "0.75.237",
     "@stacksjs/tlsx": "^0.13.19",
@@ -160,7 +160,7 @@
     "@stacksjs/validation": "0.75.237",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
-    "bun-plugin-stx": "^0.2.574",
+    "bun-plugin-stx": "^0.2.590",
     "ts-pantry": "^0.11.98"
   },
   "devDependencies": {
