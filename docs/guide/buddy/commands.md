@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **362 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **364 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -55,7 +55,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `phone` | 4 |
 | `ports` | 2 |
 | `projects` | 1 |
-| `publish` | 5 |
+| `publish` | 6 |
 | `queue` | 21 |
 | `realtime` | 2 |
 | `release` | 2 |
@@ -77,7 +77,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `test` | 5 |
 | `types` | 2 |
 | `unlink` | 1 |
-| `unpublish` | 1 |
+| `unpublish` | 2 |
 | `upgrade` | 5 |
 | `user` | 2 |
 
@@ -4107,6 +4107,7 @@ Create a new Stacks project
 | `-P`, `--project` | Target a specific project | value, optional | `false` |
 | `-m`, `--minimal` | Skip optional feature bundles (cms, commerce, dashboard, marketing, monitoring, realtime, queue) - bare-bones API/SPA starter that can re-add them later via `./buddy <feature>:install`. | boolean, optional | `false` |
 | `--with-core` | Keep the framework vendored in `storage/framework/core` as a Bun workspace, for working ON Stacks. Apps that only work WITH Stacks want the default, which resolves every @stacksjs/* package from npm. | boolean, optional | `false` |
+| `--vendor-defaults` | Commit a copy of the framework defaults in `storage/framework/defaults` instead of linking it to node_modules/@stacksjs/defaults. Implied by --with-core. | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `outdated`
@@ -4359,6 +4360,25 @@ Examples:
 buddy publish:core router
 buddy publish:core --all
 buddy publish:core --all --path ../stacks
+```
+
+### `publish:defaults`
+
+Commit a copy of the framework defaults in storage/framework/defaults instead of linking it to node_modules/@stacksjs/defaults
+
+- Usage: `$ buddy publish:defaults`
+- Namespace: `publish`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy publish:defaults
 ```
 
 ### `publish:middleware`
@@ -5663,6 +5683,26 @@ Drop a vendored storage/framework/core/<pkg>/ and go back to the installed @stac
 | `--all` | Unvendor the whole framework: remove storage/framework/core and resolve every @stacksjs package from the `stacks` dependency in package.json | boolean, optional | `false` |
 | `--force` | Delete the vendored source even when it has uncommitted changes | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `unpublish:defaults`
+
+Drop the vendored storage/framework/defaults and run the installed @stacksjs/defaults through a gitignored link
+
+- Usage: `$ buddy unpublish:defaults`
+- Namespace: `unpublish`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--force` | Drop the vendored tree even where it differs from the installed package | boolean, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy unpublish:defaults
+```
 
 ### `up`
 

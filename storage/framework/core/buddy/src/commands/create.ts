@@ -4,18 +4,20 @@ import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { bold, cyan, dim, intro, log, onUnknownSubcommand, runCommand } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
-import { resolve } from '@stacksjs/path'
+import { relative, resolve } from '@stacksjs/path'
 import { isFolder } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
 import { uninstallAllFeatures } from './features'
-import { ensurePantryDependencies, ensurePantryInstalled } from './setup'
+import { ensurePantryDependencies, ensurePantryInstalled, optimizePantryDeps } from './setup'
 import { resultFailed } from '../result'
 import { appIdentity, applyAppChangelogTemplate, applyAppEnvTemplate, applyAppPackageTemplate, renderTemplate } from '../scaffold-app'
 import { applyAppSiteTemplate } from '../scaffold-site'
+import { adoptPackagedDefaults, applyAppPackageScripts, applyPackageAppTsconfig, pruneFrameworkOnlyFiles } from '../scaffold-package-app'
 import { fetchPublishedVersions } from '../registry'
 
 interface NewOptions extends CreateOptions {
   withCore?: boolean
+  vendorDefaults?: boolean
 }
 
 export function create(buddy: CLI): void {
@@ -35,6 +37,7 @@ export function create(buddy: CLI): void {
     project: 'Target a specific project',
     minimal: 'Skip optional feature bundles (cms, commerce, dashboard, marketing, monitoring, realtime, queue) - bare-bones API/SPA starter that can re-add them later via `./buddy <feature>:install`.',
     withCore: 'Keep the framework vendored in `storage/framework/core` as a Bun workspace, for working ON Stacks. Apps that only work WITH Stacks want the default, which resolves every @stacksjs/* package from npm.',
+    vendorDefaults: 'Commit a copy of the framework defaults in `storage/framework/defaults` instead of linking it to node_modules/@stacksjs/defaults. Implied by --with-core.',
     verbose: 'Enable verbose output',
   }
 
@@ -54,6 +57,7 @@ export function create(buddy: CLI): void {
     .option('-P, --project [project]', descriptions.project, { default: false })
     .option('-m, --minimal', descriptions.minimal, { default: false })
     .option('--with-core', descriptions.withCore, { default: false })
+    .option('--vendor-defaults', descriptions.vendorDefaults, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     // .option('--auth', 'Scaffold an authentication?', { default: true })
     .action(async (name, options: NewOptions) => {
@@ -84,8 +88,10 @@ export function create(buddy: CLI): void {
   applyAppConfigTemplate(path)
   applyAppEnv(path)
   applyAppPackage(path)
+  applyAppReadme(path)
   replaceFrameworkSite(path)
   removeFrameworkTests(path)
+  await generatePantryDeps(path)
   await ensureEnv(path, options)
 
   // Strip BEFORE install, not after. `install()` runs pantry's
@@ -102,10 +108,19 @@ export function create(buddy: CLI): void {
 
   await install(path, options)
 
-  if (!options.withCore)
+  if (!options.withCore) {
     await unvendorCore(path, options)
+    trimFrameworkOnlyFiles(path)
 
-  if (options.minimal)
+    if (!options.vendorDefaults)
+      linkFrameworkDefaults(path)
+  }
+
+  // A package app regenerates them too: the template's barrels name the
+  // defaults by a path relative to the vendored tree, and a fresh clone of the
+  // app has no tree (and no link yet) until its first boot, so `tsc` failed on
+  // every default model. Regenerated, they name `@stacksjs/defaults/...`.
+  if (options.minimal || (!options.withCore && !options.vendorDefaults))
     await regenerateAutoImports(path, options)
 
       if (startTime) {
@@ -391,6 +406,25 @@ function applyAppPackage(path: string) {
 }
 
 /**
+ * Replace the framework's README (badges, npm links, the framework's feature
+ * tour) with a short one about the app: how to start it, the everyday
+ * commands, and where things live. Runs before unvendoring because the
+ * template lives under the defaults tree.
+ */
+function applyAppReadme(path: string) {
+  const source = resolve(path, 'storage/framework/defaults/scaffold/README.md')
+  if (!existsSync(source))
+    return
+
+  try {
+    writeFileSync(resolve(path, 'README.md'), renderTemplate(readFileSync(source, 'utf8'), appIdentity(path)))
+  }
+  catch (error) {
+    log.warn(`Could not write the app README: ${error instanceof Error ? error.message : String(error)}`)
+  }
+}
+
+/**
  * Swap stacksjs.com for a neutral starter page.
  *
  * Same root as the two templates above: the download IS this repository, and
@@ -561,7 +595,66 @@ async function unvendorCore(path: string, options: NewOptions) {
 }
 
 /**
- * Rebuild the auto-import barrels after `--minimal` has stripped features.
+ * Generate `deps.yaml` from `config/deps.ts`, and drop the template's
+ * `deps.yml`.
+ *
+ * The config is the one place a project declares its system dependencies;
+ * Pantry needs them as YAML because evaluating the config takes Bun, which is
+ * one of the dependencies. The template shipped a hand-kept `deps.yml` beside
+ * the config, and the two had drifted: it lacked the mail server the config
+ * declares on purpose, so a new app's password resets failed silently in
+ * development until someone ran `buddy setup`. `buddy setup` regenerates the
+ * same file from the same config, so they stay one source.
+ */
+async function generatePantryDeps(path: string) {
+  try {
+    if (await optimizePantryDeps(path))
+      rmSync(resolve(path, 'deps.yml'), { force: true })
+  }
+  catch (error) {
+    log.warn(`Could not generate deps.yaml from config/deps.ts, keeping the template's deps.yml: ${error instanceof Error ? error.message : String(error)}`)
+  }
+}
+
+/**
+ * Remove what builds, benchmarks or publishes the framework itself - `bench/`,
+ * the publish scripts, the framework's tsconfigs and package.json scripts - and
+ * give the app the package-layout tsconfig. See `../scaffold-package-app`.
+ * Runs after `unvendorCore`, whose own script rewrite it supersedes.
+ */
+function trimFrameworkOnlyFiles(path: string) {
+  try {
+    const removed = pruneFrameworkOnlyFiles(path)
+    const scripts = applyAppPackageScripts(path)
+    applyPackageAppTsconfig(path)
+    log.success(`Removed ${removed.length} framework-only path${removed.length === 1 ? '' : 's'} and ${scripts.removed.length} framework-only script${scripts.removed.length === 1 ? '' : 's'}`)
+  }
+  catch (error) {
+    log.warn(`Could not remove the framework-only files: ${error instanceof Error ? error.message : String(error)}`)
+  }
+}
+
+/**
+ * Run the framework defaults from `node_modules/@stacksjs/defaults` through a
+ * gitignored `storage/framework/defaults` link, instead of committing the
+ * 2,600-odd files the template vendored there. They are identical to the
+ * installed package, and the copy was the one thing `buddy upgrade` had to
+ * keep in step by hand. `--vendor-defaults` keeps the copy.
+ */
+function linkFrameworkDefaults(path: string) {
+  log.info('Linking the framework defaults from node_modules (pass --vendor-defaults to commit a copy)...')
+  try {
+    const adopted = adoptPackagedDefaults(path)
+    log.success(`storage/framework/defaults now links to ${relative(path, adopted.packageRoot)}`)
+  }
+  catch (error) {
+    log.warn(`Could not move the framework defaults to node_modules: ${error instanceof Error ? error.message : String(error)}`)
+  }
+}
+
+/**
+ * Rebuild the auto-import barrels after `--minimal` has stripped features, or
+ * after the defaults moved to node_modules.
  *
  * The template ships its generated barrels (`storage/framework/auto-imports/
  * jobs.ts`, `functions.ts`, ...) for the full kitchen-sink tree, so they name

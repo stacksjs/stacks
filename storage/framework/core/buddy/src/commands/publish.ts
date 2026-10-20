@@ -1,15 +1,17 @@
 import type { CLI } from '@stacksjs/types'
-import { existsSync, mkdirSync, realpathSync } from 'node:fs'
+import { existsSync, lstatSync, mkdirSync, realpathSync, unlinkSync } from 'node:fs'
 import { cp, readdir, stat } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import process from 'node:process'
 import { italic, log, onUnknownSubcommand } from "@stacksjs/cli"
-import { path } from '@stacksjs/path'
+import { syncPackageProjectFiles } from '@stacksjs/actions/upgrade/package-project'
+import { installedDefaultsVersion, linkPackagedDefaults, packagedDefaultsRoot, path, usesVendoredDefaults } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { pruneVendoredCoreFromWorkflows, splitFrameworkTypecheckScript } from '../workflow-prune'
 import { detectInstaller, findCoreReferences, INSTALL_RETRY_DELAYS_MS, installWithRetry, isDanglingLink, rewriteCoreCommandPaths, rewriteCoreSourceImports, rewriteSurvivingFrameworkManifests } from '../unvendor-rewrite'
 import { fetchPublishedVersions } from '../registry'
+import { adoptPackagedDefaults, unignoreDefaults, VENDORED_DEFAULTS } from '../scaffold-package-app'
 import { ExitCode } from '@stacksjs/types'
 
 interface PublishOptions {
@@ -39,6 +41,9 @@ export function publish(buddy: CLI): void {
     publishAll: 'Vendor the whole framework: copy storage/framework/core out of a local Stacks checkout and wire it up as a Bun workspace',
     frameworkPath: 'The Stacks checkout to vendor from (defaults to $STACKS_FRAMEWORK_PATH, ../stacks, then ~/Code/stacks)',
     coreStatus: 'Report whether this project runs on a vendored storage/framework/core or on the published packages',
+    publishDefaults: 'Commit a copy of the framework defaults in storage/framework/defaults instead of linking it to node_modules/@stacksjs/defaults',
+    unpublishDefaults: 'Drop the vendored storage/framework/defaults and run the installed @stacksjs/defaults through a gitignored link',
+    forceDefaults: 'Drop the vendored tree even where it differs from the installed package',
     name: 'The name of the resource to publish (e.g. Cart, User)',
     pkg: 'The name of the framework package (e.g. router, orm, faker - without @stacksjs/ prefix)',
     force: 'Overwrite an existing userland file',
@@ -151,6 +156,23 @@ export function publish(buddy: CLI): void {
       }
 
       await unpublishCorePackage(pkg, !!options.force)
+    })
+
+  buddy
+    .command('publish:defaults', descriptions.publishDefaults)
+    .option('--verbose', descriptions.verbose, { default: false })
+    .example('buddy publish:defaults')
+    .action(async () => {
+      await vendorDefaults()
+    })
+
+  buddy
+    .command('unpublish:defaults', descriptions.unpublishDefaults)
+    .option('--force', descriptions.forceDefaults, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .example('buddy unpublish:defaults')
+    .action(async (options: PublishOptions) => {
+      await unvendorDefaults(!!options.force)
     })
 
   buddy
@@ -802,6 +824,93 @@ export function rewriteBunfigPreloads(bunfig: string): { next: string, packages:
   )
 
   return { next, packages, rewritten }
+}
+
+/**
+ * `buddy publish:defaults`: replace the link to `@stacksjs/defaults` with a
+ * copy the project commits, for an app that wants to read the defaults in its
+ * own history or deploys without `node_modules`. `buddy upgrade` keeps the copy
+ * in step from then on, exactly as it did before apps linked the package.
+ */
+async function vendorDefaults(): Promise<void> {
+  const root = path.projectPath()
+
+  if (usesVendoredDefaults(root)) {
+    log.info(`${VENDORED_DEFAULTS} is already a vendored copy.`)
+    return
+  }
+
+  const packageRoot = packagedDefaultsRoot(root)
+  if (!packageRoot) {
+    await log.error('@stacksjs/defaults is not installed, so there is nothing to copy. Install the project\'s dependencies first.')
+    process.exit(ExitCode.FatalError)
+  }
+
+  const tree = resolve(root, VENDORED_DEFAULTS)
+  try {
+    // The link only; never recurse into the package it points at.
+    if (lstatSync(tree).isSymbolicLink())
+      unlinkSync(tree)
+  }
+  catch {
+    // No link yet.
+  }
+
+  mkdirSync(tree, { recursive: true })
+  const changes = syncPackageProjectFiles(root, packageRoot, { vendorDefaults: true })
+  unignoreDefaults(root)
+
+  log.success(`Copied @stacksjs/defaults ${installedDefaultsVersion(root) ?? ''} into ${VENDORED_DEFAULTS} (${changes.length} files). Commit it; \`buddy upgrade\` keeps it current.`)
+  log.info('Go back to the link any time with `buddy unpublish:defaults`.')
+}
+
+/**
+ * `buddy unpublish:defaults`: drop the vendored tree and run the installed
+ * package through a gitignored link, which is how `buddy new` sets up an app.
+ *
+ * Refuses when the tree differs from the package: that is either an edit made
+ * in place, which would be lost (move it under `app/`, where the override chain
+ * looks first), or a tree from another release (`buddy upgrade` first).
+ */
+async function unvendorDefaults(force: boolean): Promise<void> {
+  const root = path.projectPath()
+
+  if (!usesVendoredDefaults(root)) {
+    linkPackagedDefaults(root)
+    log.info(`${VENDORED_DEFAULTS} already runs from node_modules/@stacksjs/defaults.`)
+    return
+  }
+
+  if (existsSync(resolve(root, 'storage/framework/core/buddy/package.json'))) {
+    await log.error('This project vendors the framework itself (storage/framework/core), and its defaults tree is the source the package is built from. Run `buddy unpublish:core --all` first.')
+    process.exit(ExitCode.FatalError)
+  }
+
+  const packageRoot = packagedDefaultsRoot(root)
+  if (!packageRoot) {
+    await log.error('@stacksjs/defaults is not installed, so there is nothing to run the defaults from. Install the project\'s dependencies first.')
+    process.exit(ExitCode.FatalError)
+  }
+
+  const differs = syncPackageProjectFiles(root, packageRoot, { dryRun: true, vendorDefaults: true })
+    .filter(change => change.path.startsWith(`${VENDORED_DEFAULTS}/`))
+
+  if (differs.length > 0 && !force) {
+    await log.error(`${VENDORED_DEFAULTS} differs from the installed @stacksjs/defaults ${installedDefaultsVersion(root) ?? ''} in ${differs.length} place${differs.length === 1 ? '' : 's'}:`)
+    for (const change of differs.slice(0, 15))
+      log.error(`  ${change.action === 'add' ? 'missing' : change.action === 'remove' ? 'extra  ' : 'changed'}  ${change.path}`)
+    if (differs.length > 15)
+      log.error(`  ... and ${differs.length - 15} more`)
+    log.info('A tree from another release: run `buddy upgrade` first. A file you edited: move it to the same path under app/, which wins over the defaults. Then run this again, or pass --force to drop the differences.')
+    await log.flush()
+    process.exit(ExitCode.FatalError)
+  }
+
+  const adopted = adoptPackagedDefaults(root)
+  log.success(`Removed ${VENDORED_DEFAULTS}; it now links to ${adopted.packageRoot.replace(`${root}/`, '')} and is gitignored.`)
+  for (const file of [...adopted.rewrittenImports, ...adopted.rewrittenModulePaths])
+    log.info(`  repointed ${file} at @stacksjs/defaults`)
+  log.info('Commit the removal. Go back to a vendored copy any time with `buddy publish:defaults`.')
 }
 
 async function unvendorFramework(force: boolean): Promise<void> {

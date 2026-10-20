@@ -174,6 +174,9 @@ const commandRegistry: Record<string, CommandLoader> = {
   'publish:action': { path: './commands/publish.ts', load: () => import('./commands/publish.ts'), exportName: 'publish' },
   'publish:core': { path: './commands/publish.ts', load: () => import('./commands/publish.ts'), exportName: 'publish' },
   'core:status': { path: './commands/publish.ts', load: () => import('./commands/publish.ts'), exportName: 'publish' },
+  'publish:defaults': { path: './commands/publish.ts', load: () => import('./commands/publish.ts'), exportName: 'publish' },
+  // publish.ts registers every unpublish:* command.
+  'unpublish': { path: './commands/publish.ts', load: () => import('./commands/publish.ts'), exportName: 'publish' },
   'queue': { path: './commands/queue.ts', load: () => import('./commands/queue.ts'), exportName: 'queue' },
   'release': { path: './commands/release.ts', load: () => import('./commands/release.ts'), exportName: 'release' },
   'route': { path: './commands/route.ts', load: () => import('./commands/route.ts'), exportName: 'route' },

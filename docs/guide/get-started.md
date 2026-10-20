@@ -26,6 +26,10 @@ panx buddy new my-app
 
 The installer downloads the project template. Buddy and Pantry then install the declared machine and project dependencies, create your `.env` file, and generate an application key.
 
+The framework itself lives in `node_modules`, not in your repository. `storage/framework/defaults` (the built-in models, actions, views, routes and dashboard) is a gitignored link to `node_modules/@stacksjs/defaults`, so it upgrades with the `stacks` dependency and your first commit is your app, a few hundred files rather than a few thousand. Override any default by creating the same path under `app/` or `resources/`. To commit a copy of the defaults instead, pass `--vendor-defaults` to `buddy new`, or run `./buddy publish:defaults` later (`./buddy unpublish:defaults` goes back).
+
+System dependencies are declared in `config/deps.ts`; `deps.yaml` is generated from it for Pantry.
+
 ## Start Developing
 
 ```bash

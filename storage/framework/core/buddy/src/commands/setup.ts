@@ -492,15 +492,14 @@ function detectDbPackage(cwd: string): DatabasePackage | undefined {
 /**
  * Reads config/deps.ts dependencies and merges in environment-detected
  * dependencies (e.g. DB_CONNECTION), then writes deps.yaml so pantry install
- * picks up the correct packages.
+ * picks up the correct packages. Returns whether it wrote the file.
  */
-export async function optimizePantryDeps(): Promise<void> {
-  const cwd = p.projectPath()
+export async function optimizePantryDeps(cwd: string = p.projectPath()): Promise<boolean> {
   const depsConfigPath = join(cwd, 'config', 'deps.ts')
 
   if (!existsSync(depsConfigPath)) {
     log.debug('No config/deps.ts found, skipping dependency optimization')
-    return
+    return false
   }
 
   let configDeps: Record<string, string> = {}
@@ -531,7 +530,7 @@ export async function optimizePantryDeps(): Promise<void> {
   }
   catch (err) {
     log.debug('Could not load config/deps.ts, skipping dependency optimization')
-    return
+    return false
   }
 
   const dbPackage = detectDbPackage(cwd)
@@ -633,6 +632,7 @@ export async function optimizePantryDeps(): Promise<void> {
   writeFileSync(depsYamlPath, `${lines.join('\n')}\n`)
 
   log.success('Generated deps.yaml from config/deps.ts')
+  return true
 }
 
 export async function ensureEnvIsSet(options: CliOptions): Promise<void> {
