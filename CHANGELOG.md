@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.246...v0.75.247)
+
+## ✨ Features
+
+- **buddy**: doctor points vendored apps at unpublish:defaults ([de56c75](https://github.com/stacksjs/stacks/commit/de56c75)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **scaffold**: a new app stops speaking for Stacks ([c73a43d](https://github.com/stacksjs/stacks/commit/c73a43d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.245...v0.75.246)
 
 ## 🐛 Bug Fixes
