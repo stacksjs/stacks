@@ -117,9 +117,10 @@ ranges, run `bun install`, then `pantry install --ignore-scripts --quiet`, and
 commit both lockfiles with the manifests. These are real dependency installs,
 which can download native packages and invoke the JavaScript package manager;
 they are not metadata-only operations. The native CLI has no supported
-`install --lockfile-only` mode. On Pantry 0.11.102, `--ignore-scripts` suppresses
-Pantry project hooks but is not forwarded to the JavaScript package manager.
-Do not promise that this version suppresses JavaScript lifecycle scripts.
+`install --lockfile-only` mode. Pantry 0.11.103 and later forwards
+`--ignore-scripts` to the JavaScript package manager as well as suppressing
+Pantry project hooks. On 0.11.102 the flag does not suppress JavaScript
+lifecycle scripts; use the qualified 0.11.103 or later when that policy matters.
 A plain `pantry install` can also activate project services and run
 `postDatabaseSetup` or `postSetup` hooks, including migrations and seeding.
 
