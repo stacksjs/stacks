@@ -9,6 +9,7 @@ import { verifyReleaseEvidence } from '../src/release-evidence'
 // establish platform fidelity or verify a registry's signing authority.
 const roots: string[] = []
 afterEach(() => {
+  // Immediate removal also detects a helper still owning its working directory.
   for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true })
 })
 
