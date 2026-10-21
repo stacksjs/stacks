@@ -2,6 +2,7 @@ import { expect, test } from 'bun:test'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
+import { publicationEnvironment } from '../../actions/tests/helpers/publication-environment'
 
 function git(root: string, ...args: string[]) {
   const result = Bun.spawnSync(['git', '-C', root, ...args], { stdout: 'pipe', stderr: 'pipe' })
@@ -44,7 +45,7 @@ await buddy.parse()
 `)
     const child = Bun.spawn([
       process.execPath, '--no-env-file', '--tsconfig-override', join(checkout, 'storage/framework/tsconfig.framework.json'), runner, ...args,
-    ], { cwd: root, env: { PATH: process.env.PATH, APP_ENV: 'test', NODE_ENV: 'test', GIT_TRACE: join(root, 'git-trace.log') }, stdout: 'pipe', stderr: 'pipe', timeout: 10_000 })
+    ], { cwd: root, env: { ...publicationEnvironment(), GIT_TRACE: join(root, 'git-trace.log') }, stdout: 'pipe', stderr: 'pipe', timeout: 10_000 })
     const [code, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
     return {
       code, output: `${stdout}\n${stderr}`, ran: existsSync(join(root, 'policy-ran')),
@@ -57,14 +58,16 @@ await buddy.parse()
   }
 }
 
-test.each([
+for (const args of [
   ['deploy'], ['deploy:preview', 'policy-fixture'], ['release:ios'], ['release:github', 'fixture-tag'],
-])('the direct Buddy %s command blocks publication policy failure', async (...args) => {
-  const result = await command(args)
-  expect(result.code, result.output).not.toBe(0)
-  expect(result.output).toContain('publication:check failed with exit code 9')
-  expect(result.ran).toBe(true)
-}, 15_000)
+]) {
+  test(`the direct Buddy ${args[0]} command blocks publication policy failure`, async () => {
+    const result = await command(args)
+    expect(result.code, result.output).not.toBe(0)
+    expect(result.output).toContain('publication:check failed with exit code 9')
+    expect(result.ran).toBe(true)
+  }, 15_000)
+}
 
 test('iOS dry-run inspects local source without pulling, fetching, building or changing refs', async () => {
   const result = await command(['release:ios', '--dry-run', '--skip-github-release'], iosFixture)

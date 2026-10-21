@@ -31,7 +31,8 @@ jobs:
       - name: Build packages imported by subpath
         run: |
           set -euo pipefail
-          for pkg in $(bun .github/scripts/subpath-packages.ts); do
+          stacks_subpath_targets=$(bun .github/scripts/subpath-packages.ts)
+          for pkg in $stacks_subpath_targets; do
             echo "::group::build @stacksjs/$pkg"
             (cd "storage/framework/core/$pkg" && bun run build)
             echo "::endgroup::"
@@ -142,7 +143,8 @@ jobs:
       - name: Build the ordinary published runtime entrypoints
         run: |
           set -euo pipefail
-          for pkg in $(bun .github/scripts/subpath-packages.ts --runtime); do
+          stacks_subpath_targets=$(bun .github/scripts/subpath-packages.ts --runtime)
+          for pkg in $stacks_subpath_targets; do
             (cd "storage/framework/core/$pkg" && bun run build)
           done
       - name: Verify real credential stamp precision and transaction rollback

@@ -1,4 +1,5 @@
 import { expect, test } from 'bun:test'
+import { createHash } from 'node:crypto'
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -40,11 +41,25 @@ process.exitCode = ${exitCode}
 test('owned cleanup retains all completed command output in the receipt hash', async () => {
   const root = mkdtempSync(join(tmpdir(), 'stacks-project-output-'))
   writeFileSync(join(root, 'package.json'), JSON.stringify({ scripts: { check: 'bun check.ts' } }))
-  writeFileSync(join(root, 'check.ts'), "await Bun.write(Bun.stdout, 'hello\\n')")
+  writeFileSync(join(root, 'check.ts'), '')
   try {
+    // Capture Bun's actual platform banner independently of the owned runner.
+    const bun = Bun.which('bun', { cwd: root })
+    expect(bun).toBeTruthy()
+    const baseline = Bun.spawn([bun!, 'run', 'check'], { cwd: root, stdout: 'pipe', stderr: 'pipe' })
+    const [baselineCode, stdout, banner] = await Promise.all([
+      baseline.exited, new Response(baseline.stdout).arrayBuffer(), new Response(baseline.stderr).arrayBuffer(),
+    ])
+    expect(baselineCode).toBe(0)
+    expect(stdout.byteLength).toBe(0)
+    expect(Buffer.from(banner).toString()).toContain('check.ts')
+    // One pipe establishes byte order without depending on stdout/stderr scheduling.
+    // A multi-chunk payload and final marker catch dropped/truncated completion output.
+    const payload = `known-command-output\n${'0123456789abcdef'.repeat(16_384)}\ncompleted-command-output\n`
+    writeFileSync(join(root, 'check.ts'), `await Bun.write(Bun.stderr, ${JSON.stringify(payload)})`)
     const receipt = await runProjectScripts({ cwd: root, scripts: ['check'], timeoutMs: process.platform === 'win32' ? 15_000 : 3000 })
-    // Bun's script announcement precedes the command's hello newline.
-    expect(receipt.checks[0]?.outputSha256).toBe('ec6845d6823525e43218af38e7f4443602189e61c95c94ebf6e25bd7223f2460')
+    const expected = createHash('sha256').update(Buffer.from(banner)).update(payload).digest('hex')
+    expect(receipt.checks[0]?.outputSha256).toBe(expected)
   }
   finally { rmSync(root, { recursive: true, force: true }) }
 }, 30_000)

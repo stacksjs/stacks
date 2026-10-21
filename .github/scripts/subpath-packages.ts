@@ -14,12 +14,13 @@
  * no reason to know needed listing. Computing the set removes the step where a
  * person has to remember.
  *
- * Prints one package directory per line, for `for pkg in $(bun … )`.
+ * Prints one package directory per line. CI checks discovery before its build loop.
  */
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const root = new URL('../../', import.meta.url).pathname
+const root = fileURLToPath(new URL('../../', import.meta.url))
 const coreDir = join(root, 'storage/framework/core')
 
 /**
