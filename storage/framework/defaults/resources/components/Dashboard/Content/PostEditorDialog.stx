@@ -28,7 +28,11 @@ interface PostDraft {
 }
 
 const open = useReactiveProp('open', false)
-const post = useReactiveProp('post', null as PostRecord | null)
+// Named `editing`, not `post`, while still reading the `post` prop.
+// A bare `post` in a `{{ … }}` interpolation is resolved server-side
+// against module and global scope, where it finds the dashboard API
+// client's own `post()` and calls it mid-render (stacksjs/stacks#2944).
+const editing = useReactiveProp('post', null as PostRecord | null)
 const categories = useReactiveProp('categories', [] as OptionRecord[])
 const tags = useReactiveProp('tags', [] as OptionRecord[])
 const authors = useReactiveProp('authors', [] as AuthorRecord[])
@@ -49,7 +53,7 @@ let wasOpen = false
 effect(() => {
   const isOpen = open()
   if (isOpen && !wasOpen) {
-    const record = post()
+    const record = editing()
     title.set(record?.title || '')
     excerpt.set(record?.excerpt || '')
     content.set(record?.content || '')
@@ -93,7 +97,7 @@ function submit(): void {
 
 <Modal
   :isOpen="open()"
-  :title="post() ? 'Edit post' : 'New post'"
+  :title="editing() ? 'Edit post' : 'New post'"
   description="Content, ownership, and taxonomies are persisted together."
   size="xl"
   :closable="!busy()"
@@ -169,7 +173,7 @@ function submit(): void {
     <div class="flex gap-2 justify-end w-full">
       <Button :disabled="busy()" variant="secondary" @click="close">Cancel</Button>
       <Button type="submit" form="post-editor-form" :disabled="!valid()" :loading="busy()">
-        {{ post() ? 'Save changes' : 'Create post' }}
+        {{ editing() ? 'Save changes' : 'Create post' }}
       </Button>
     </div>
   </template>

@@ -9,6 +9,55 @@ import { useAuth } from './auth'
 
 const baseUrl = resolveApiBaseUrl()
 
+/**
+ * Where this client is allowed to send a request from.
+ *
+ * `resolveApiBaseUrl()` answers with the relative `/api` when there is no
+ * `window.location` and no injected `__STACKS_API_URL__`, which is the honest
+ * answer for a browser bundle and deliberate (stacksjs/stacks#2421). `fetch`
+ * cannot use it: off the DOM there is no origin to resolve a relative URL
+ * against, so every verb below would reach `ERR_INVALID_URL` after building
+ * its headers, reading the auth token and serialising its body.
+ *
+ * That failure arrived as a bare `TypeError: fetch() URL is invalid` in a dev
+ * server log while the page still returned 200, which is how a dashboard
+ * template calling `post()` by accident during server-side rendering went
+ * unnoticed (stacksjs/stacks#2944). It is also only an accident that nothing
+ * was sent: with `__STACKS_API_URL__` injected for a split-origin deployment
+ * the URL is absolute, and the same mistake issues a real mutating request
+ * while a page renders.
+ *
+ * So refuse first, by name, before any of that work happens. This client is
+ * for the browser; server-side code has the ORM and the actions.
+ */
+function requestUrl(endpoint: string): string {
+  if (/^https?:\/\//i.test(baseUrl))
+    return `${baseUrl}${endpoint}`
+
+  throw new DashboardApiEnvironmentError(endpoint)
+}
+
+/**
+ * Thrown when a dashboard API verb is called where it cannot send a request.
+ *
+ * Named rather than generic: the thing worth knowing is which endpoint was
+ * about to be called from the wrong place, and the stack alone does not say
+ * so once the evaluator that called it is several frames of template
+ * machinery deep.
+ */
+export class DashboardApiEnvironmentError extends Error {
+  readonly endpoint: string
+
+  constructor(endpoint: string) {
+    super(
+      `The dashboard API client cannot request "${endpoint}" here: it needs an absolute base URL and resolved "${baseUrl}". `
+      + `This client runs in the browser. Server-side code should use the ORM or an action instead.`,
+    )
+    this.name = 'DashboardApiEnvironmentError'
+    this.endpoint = endpoint
+  }
+}
+
 export interface ApiResponse<T> {
   data: T
   message?: string
@@ -55,7 +104,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
  * GET request
  */
 export async function get<T>(endpoint: string): Promise<T> {
-  const response = await fetch(`${baseUrl}${endpoint}`, {
+  const response = await fetch(requestUrl(endpoint), {
     method: 'GET',
     headers: createHeaders(),
   })
@@ -67,7 +116,7 @@ export async function get<T>(endpoint: string): Promise<T> {
  * POST request
  */
 export async function post<T>(endpoint: string, body?: unknown): Promise<T> {
-  const response = await fetch(`${baseUrl}${endpoint}`, {
+  const response = await fetch(requestUrl(endpoint), {
     method: 'POST',
     headers: createHeaders(),
     body: body ? JSON.stringify(body) : undefined,
@@ -80,7 +129,7 @@ export async function post<T>(endpoint: string, body?: unknown): Promise<T> {
  * PUT request
  */
 export async function put<T>(endpoint: string, body?: unknown): Promise<T> {
-  const response = await fetch(`${baseUrl}${endpoint}`, {
+  const response = await fetch(requestUrl(endpoint), {
     method: 'PUT',
     headers: createHeaders(),
     body: body ? JSON.stringify(body) : undefined,
@@ -93,7 +142,7 @@ export async function put<T>(endpoint: string, body?: unknown): Promise<T> {
  * PATCH request
  */
 export async function patch<T>(endpoint: string, body?: unknown): Promise<T> {
-  const response = await fetch(`${baseUrl}${endpoint}`, {
+  const response = await fetch(requestUrl(endpoint), {
     method: 'PATCH',
     headers: createHeaders(),
     body: body ? JSON.stringify(body) : undefined,
@@ -106,7 +155,7 @@ export async function patch<T>(endpoint: string, body?: unknown): Promise<T> {
  * DELETE request
  */
 export async function del<T>(endpoint: string): Promise<T> {
-  const response = await fetch(`${baseUrl}${endpoint}`, {
+  const response = await fetch(requestUrl(endpoint), {
     method: 'DELETE',
     headers: createHeaders(),
   })

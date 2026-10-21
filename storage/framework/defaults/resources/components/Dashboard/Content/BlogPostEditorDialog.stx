@@ -24,7 +24,11 @@ interface BlogPostDraft {
 }
 
 const open = useReactiveProp('open', false)
-const post = useReactiveProp('post', null as BlogPostRecord | null)
+// Named `editing`, not `post`, while still reading the `post` prop.
+// A bare `post` in a `{{ … }}` interpolation is resolved server-side
+// against module and global scope, where it finds the dashboard API
+// client's own `post()` and calls it mid-render (stacksjs/stacks#2944).
+const editing = useReactiveProp('post', null as BlogPostRecord | null)
 const loadedBody = useReactiveProp('loadedBody', '')
 const bodyLoading = useReactiveProp('bodyLoading', false)
 const bodyLoadFailed = useReactiveProp('bodyLoadFailed', false)
@@ -54,13 +58,13 @@ function slugify(input: string): string {
 const suggestedSlug = derived(() => slugify(title()))
 const wordCount = derived(() => body().split(/\s+/).filter(Boolean).length)
 const readingTime = derived(() => Math.max(1, Math.round(wordCount() / 200)))
-const dialogTitle = derived(() => post() ? 'Edit post' : 'New post')
-const actionLabel = derived(() => post() ? 'Save post' : 'Create post')
+const dialogTitle = derived(() => editing() ? 'Edit post' : 'New post')
+const actionLabel = derived(() => editing() ? 'Save post' : 'Create post')
 
 effect(() => {
   const isOpen = open()
   if (isOpen && !wasOpen) {
-    const record = post()
+    const record = editing()
     activeSlug = record?.slug || ''
     title.set(record?.title || '')
     slug.set(record?.slug || '')
@@ -76,7 +80,7 @@ effect(() => {
 })
 
 effect(() => {
-  if (open() && post()?.slug === activeSlug && !bodyLoading())
+  if (open() && editing()?.slug === activeSlug && !bodyLoading())
     body.set(loadedBody())
 })
 
