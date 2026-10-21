@@ -1035,6 +1035,10 @@ for (const [modelName, model] of Object.entries(apiModels)) {
         const v = validateWriteBody(data, model, 'creating')
         if (!v.valid) return jsonResponse({ success: false, message: 'Validation failed', errors: v.errors }, 422)
 
+        // A `useUuid` model gets its uuid here, as `Model.create()` gives it one.
+        if (model.traits?.useUuid && !data.uuid)
+          data.uuid = crypto.randomUUID()
+
         // Add timestamps if model uses them
         if (model.traits?.useTimestamps !== false) {
           const now = new Date().toISOString()
