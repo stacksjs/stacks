@@ -223,7 +223,14 @@ export async function transpilePackage(options: {
   // exists to protect. Whitespace-only minification leaves every import,
   // export, and exported name byte-identical while still shipping compact
   // output, so a published package carries no formatting it does not need.
-  const transpiler = new Bun.Transpiler({ loader: 'ts', target: 'bun', minifyWhitespace: true })
+  const transpiler = new Bun.Transpiler({
+    loader: 'ts',
+    target: 'bun',
+    minifyWhitespace: true,
+    // Bun otherwise substitutes the builder's NODE_ENV, even for a library.
+    // Env-file selection and other runtime branches belong to the consumer.
+    define: { 'process.env.NODE_ENV': 'process.env.NODE_ENV' },
+  })
   for (const f of srcFiles) {
     let js = transpiler.transformSync(await Bun.file(p.resolve(srcDir, f)).text())
     // The transpiler leaves import specifiers verbatim, so an explicit
