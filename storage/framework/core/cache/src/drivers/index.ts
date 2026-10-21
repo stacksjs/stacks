@@ -9,6 +9,8 @@ import type { CacheDriver, CacheStats } from '@stacksjs/types'
 import type { SingleStoreCacheOptions } from './singlestore'
 import { CacheManager, createCache as createTsCache, MemoryDriver, RedisDriver } from '@stacksjs/ts-cache'
 import { SingleStoreCacheStore } from './singlestore'
+import type { SqliteCacheOptions } from './sqlite'
+import { SqliteCacheStore } from './sqlite'
 
 /**
  * Memory cache options
@@ -543,20 +545,32 @@ export function createSingleStoreCache(options: SingleStoreCacheOptions = {}): C
 }
 
 /**
+ * Create a SQLite cache driver: entries in a table of a SQLite file, so they
+ * outlive the process (see ./sqlite). Same `StacksCache` façade as the others.
+ */
+export function createSqliteCache(options: SqliteCacheOptions = {}): CacheDriver {
+  return new StacksCache(new SqliteCacheStore(options))
+}
+
+/**
  * Create a cache driver based on the specified type
  */
 export function createCache(driver: 'memory', options?: MemoryOptions): CacheDriver
 export function createCache(driver: 'redis', options?: RedisOptions): CacheDriver
 export function createCache(driver: 'singlestore', options?: SingleStoreCacheOptions): CacheDriver
+export function createCache(driver: 'sqlite', options?: SqliteCacheOptions): CacheDriver
 export function createCache(
-  driver: 'memory' | 'redis' | 'singlestore',
-  options?: MemoryOptions | RedisOptions | SingleStoreCacheOptions,
+  driver: 'memory' | 'redis' | 'singlestore' | 'sqlite',
+  options?: MemoryOptions | RedisOptions | SingleStoreCacheOptions | SqliteCacheOptions,
 ): CacheDriver {
   if (driver === 'redis') {
     return createRedisCache(options as RedisOptions)
   }
   if (driver === 'singlestore') {
     return createSingleStoreCache(options as SingleStoreCacheOptions)
+  }
+  if (driver === 'sqlite') {
+    return createSqliteCache(options as SqliteCacheOptions)
   }
   return createMemoryCache(options as MemoryOptions)
 }
@@ -583,6 +597,8 @@ export const cache: CacheDriver = memory
 // Re-export the SingleStore store + its options for advanced usage
 export type { SingleStoreCacheOptions } from './singlestore'
 export { SingleStoreCacheStore } from './singlestore'
+export type { SqliteCacheOptions } from './sqlite'
+export { SqliteCacheStore } from './sqlite'
 
 // Re-export ts-cache utilities for advanced usage
 export {
