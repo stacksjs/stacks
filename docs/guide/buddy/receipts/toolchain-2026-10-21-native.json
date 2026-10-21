@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-21T23:14:30.343Z",
+  "sources": [
+    {
+      "repository": "stacksjs/dtsx",
+      "commit": "6ee09fb2430e013bc9fa313b3a8cafebbe374c76",
+      "tag": "v0.11.21",
+      "releaseRun": 39689868757,
+      "releaseCommand": "bun run release:patch",
+      "checksumFileSha256": "7b4ca78d808b3f682c227ee53e1da1c9f91534f8b11c91c304e0ef1b132bfa07",
+      "artifacts": [
+        {
+          "name": "zig-dtsx-linux-x64.zip",
+          "bytes": 318647,
+          "sha256": "775620fbfa32b7d8ddff10bcf2880655ba356a6dd072a63b74975233110ce2ed"
+        },
+        {
+          "name": "zig-dtsx-linux-arm64.zip",
+          "bytes": 305064,
+          "sha256": "4b5d09f3d9c95543fbb23911a1466f43a19513dbeb567c9a554ab310375b0cf5"
+        },
+        {
+          "name": "zig-dtsx-darwin-x64.zip",
+          "bytes": 254504,
+          "sha256": "86fae795158156c8a9cd485d13a83e100e36a2c8a06b0ede7fc84a94c21ce729"
+        },
+        {
+          "name": "zig-dtsx-darwin-arm64.zip",
+          "bytes": 235998,
+          "sha256": "ea0a1aad18c6bbea369fb9a8c9369b592af90f39b36f0a624429b67332598941"
+        },
+        {
+          "name": "zig-dtsx-windows-x64.zip",
+          "bytes": 326215,
+          "sha256": "f90519a7ed38dea29fc2f9117026b94e367bfab10680cab99683e0bfdf8f1596"
+        },
+        {
+          "name": "zig-dtsx-freebsd-x64.zip",
+          "bytes": 259495,
+          "sha256": "6569bffaf0e1eb854e7ba6cf12907d4d671eab3a7268c413e0cd31786a245df8"
+        },
+        {
+          "name": "zig-dtsx-lib-linux-x64.tar.gz",
+          "bytes": 334191,
+          "sha256": "cb993b2385a80c8316dc1511ddcdad7ae8b0ca43aaf5bbd25e6c0da7058250f7"
+        },
+        {
+          "name": "zig-dtsx-lib-linux-arm64.tar.gz",
+          "bytes": 323519,
+          "sha256": "b075abac5729877cc728ef8fc08aa9e2562aed5f842ddcc6e3ae0c0ca422f0e7"
+        },
+        {
+          "name": "zig-dtsx-lib-darwin-x64.tar.gz",
+          "bytes": 248805,
+          "sha256": "3b1f5ef96052df686eb9a5865e2caf985d0222c647a35b1cedfb6330d207dd04"
+        },
+        {
+          "name": "zig-dtsx-lib-darwin-arm64.tar.gz",
+          "bytes": 229606,
+          "sha256": "efd7f66cb40cc56d3ce3a2bbe51911d8358a7be35fde62d0fcb090d2aed026b4"
+        },
+        {
+          "name": "zig-dtsx-lib-windows-x64.tar.gz",
+          "bytes": 318309,
+          "sha256": "d617c11dd8eafa849589b0684cdd3a6cddb1bb6208742fb7b3b73db2b6d92125"
+        },
+        {
+          "name": "zig-dtsx-lib-freebsd-x64.tar.gz",
+          "bytes": 254865,
+          "sha256": "078eb86f648991b98a16338f58b11e30772ec119dc783c9cf83d8a08b8b7a72b"
+        }
+      ]
+    },
+    {
+      "repository": "pantry-pm/pantry",
+      "commit": "3a37ec776aa9e37e17bd8e3aea2d457cdbd02c36",
+      "tag": "v0.11.113",
+      "releaseRun": 39688585624,
+      "releaseCommand": "bun run release:patch",
+      "manifestSha256": "b0726af758ea339432cfc984dc93d2565208f96130ee1a3488761fc772a2ed73",
+      "artifacts": [
+        {
+          "name": "pantry-linux-x64.zip",
+          "bytes": 3112937,
+          "sha256": "6e9947d1bed1d6f83e95d2b3ccaeb8c37f24e3051c745a9b30fd67fb2bb87384"
+        },
+        {
+          "name": "pantry-linux-arm64.zip",
+          "bytes": 2976705,
+          "sha256": "7104166e654086727cab737100bc5f1e42c5c810615e1b6ef84a821194e18d2d"
+        },
+        {
+          "name": "pantry-darwin-x64.zip",
+          "bytes": 3126974,
+          "sha256": "4782c07a7a848fe09cca51ac31a5fe7dd320cae5390a051f3962555c1bac6191"
+        },
+        {
+          "name": "pantry-darwin-arm64.zip",
+          "bytes": 2844998,
+          "sha256": "2c0e72746f990ece236c412b031797619d1623a284d9a96100fb1ace95b4e9ab"
+        },
+        {
+          "name": "pantry-windows-x64.zip",
+          "bytes": 3199799,
+          "sha256": "0f6270478956c77904b83da3b298a3ba6c2d98e766ac5f02e511880e71ef03c4"
+        },
+        {
+          "name": "pantry-freebsd-x64.zip",
+          "bytes": 3137030,
+          "sha256": "c1c23c2fe9b20b1c7761265dce1ba9b15da7550866ce9f8d54559dd5a22a1d78"
+        },
+        {
+          "name": "pantry-freebsd-arm64.zip",
+          "bytes": 2912376,
+          "sha256": "b6f980c363cb08e04042c49edbd1157d3e5e00ab40ec7ef75cfa2afa8ce9050b"
+        }
+      ],
+      "executed": {
+        "platform": "darwin-arm64",
+        "command": "pantry --version",
+        "exitCode": 0,
+        "stdout": "pantry 0.11.113 (3a37ec776)",
+        "binarySha256": "ae7452c22ec58831dd21ee22c0cdb907c7eb761525cd78cb5cd2c9c5bf072106"
+      }
+    }
+  ],
+  "boundary": "Downloaded archive identity and one local Pantry CLI version probe. Cross-platform archive verification does not establish execution on those platforms or native game presentation."
+}

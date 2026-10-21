@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-21T23:16:43.133Z",
+  "sources": [
+    {
+      "repository": "stacksjs/dtsx",
+      "commit": "6ee09fb2430e013bc9fa313b3a8cafebbe374c76",
+      "tag": "v0.11.21",
+      "gates": [
+        {
+          "runId": 39689868806,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "test",
+            "typecheck",
+            "lint",
+            "Source path identity (ubuntu-latest)",
+            "Source path identity (macos-latest)",
+            "Source path identity (windows-latest)",
+            "Build workspace libraries",
+            "publish-commit"
+          ]
+        },
+        {
+          "runId": 39689868757,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "release"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "@stacksjs/dtsx",
+          "version": "0.11.21",
+          "integrity": "sha512-H1DyQD1JdnXplHREClZoSDg5iR0OahTkpWm091SQ8pxNth+U3+uMDdZZLKqBRyax82OyQZUxs1XjOTY3tgvFZg==",
+          "tarball": "https://registry.npmjs.org/@stacksjs/dtsx/-/dtsx-0.11.21.tgz",
+          "bytes": 225277,
+          "filesSha256": "ce10342832bce2a2f0b3f48849dea2bfb4140ec119cfead5aeff6c5383064f72"
+        },
+        {
+          "name": "bun-plugin-dtsx",
+          "version": "0.11.21",
+          "integrity": "sha512-VyMWSNlQzx1V7lgcu64bi8KoPpfN0yXR31yolj8noHd6Ni40TxInR8KK335DVQAp7x6WPHSGP9GHoTk6xqz2Cg==",
+          "tarball": "https://registry.npmjs.org/bun-plugin-dtsx/-/bun-plugin-dtsx-0.11.21.tgz",
+          "bytes": 5855,
+          "filesSha256": "5c8435221beb7e023b711a328aa000c37c24711ee3c3ea9a30ad84f527331fa2"
+        }
+      ],
+      "releaseCommand": "bun run release:patch",
+      "releaseScript": "bun x --bun @stacksjs/bumpx patch --recursive --commit --tag --push --yes"
+    },
+    {
+      "repository": "pantry-pm/pantry",
+      "commit": "3a37ec776aa9e37e17bd8e3aea2d457cdbd02c36",
+      "tag": "v0.11.113",
+      "gates": [
+        {
+          "runId": 39688586276,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "test",
+            "typecheck",
+            "lint",
+            "zig-tests",
+            "action-native-tools",
+            "native-browser",
+            "action-redis-service",
+            "Explicit native toolchain pins (ubuntu-latest)",
+            "Explicit native toolchain pins (macos-latest)",
+            "action-native-services (26.7.0)",
+            "action-native-services (8.4.11)",
+            "windows-native-runtime",
+            "continuous-release"
+          ]
+        },
+        {
+          "runId": 39688586312,
+          "workflow": ".github/workflows/build-zig.yml",
+          "requiredJobs": [
+            "compile-all",
+            "Native Windows CLI and compiler links"
+          ]
+        },
+        {
+          "runId": 39688585624,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "pantry",
+            "npm"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "ts-pantry",
+          "version": "0.11.113",
+          "integrity": "sha512-Ws9tZ7RW9H4svEkqw3ZeVuyIsWFvhwq133Vd00aGaYfD2EEOt5t/iM7mGcQRFxE5wmL5aoCWoUKm1xDJPoBCBw==",
+          "tarball": "https://registry.npmjs.org/ts-pantry/-/ts-pantry-0.11.113.tgz",
+          "bytes": 1379433,
+          "filesSha256": "16f60bf2ae7a56f3b010ae100f26efbf74e676e4b86dc8a2c0346b8843030c21"
+        }
+      ],
+      "releaseCommand": "bun run release:patch",
+      "releaseScript": "bun x --bun @stacksjs/bumpx patch --recursive --execute 'bun .github/scripts/build-release-action.ts' --commit --tag --push --yes"
+    }
+  ],
+  "consumer": {
+    "lockfile": "bun.lock",
+    "sha256": "d87f19e66bf81e96bff71831c3e1534abb990918165b1a09a5c17ca191d9b341",
+    "bunVersion": "1.4.2",
+    "checks": [
+      {
+        "script": "deps:lockfile:check",
+        "exitCode": 0,
+        "outputSha256": "e1cf2d764cf950b13cccd2176bf4e85fad74c8aba8775e72ddebf88b79913040"
+      },
+      {
+        "script": "typecheck",
+        "exitCode": 0,
+        "outputSha256": "a1d02aa34ffd4a4fe0bbd3c5f14e7d15f0990e02d89e89e61eac41ae0f48908d"
+      }
+    ]
+  }
+}

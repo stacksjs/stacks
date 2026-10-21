@@ -100,10 +100,11 @@ neither native execution nor Settlers III fidelity or original-media rights.
 
 The [DTSX 0.11.20 plan](./receipts/dtsx-0.11.20-plan.json) and
 [executed receipt](./receipts/dtsx-0.11.20-receipt.json) retain the framework's
-adoption of `@stacksjs/dtsx` and `bun-plugin-dtsx`. This release normalizes source
-paths before deduplication, so Windows glob matches and re-export resolution
-identify the same source. Distinct flat-output collisions still fail before
-cleaning the previous declarations.
+adoption of `@stacksjs/dtsx` and `bun-plugin-dtsx`. This release normalizes initial
+source discovery before deduplication. A later Windows framework build exposed
+another path spelling introduced by directory re-export resolution. The 0.11.20
+receipt does not establish that this complete integration passed. Distinct
+flat-output collisions still fail before cleaning the previous declarations.
 
 Original archive identities came from the successful release's npm publication
 step. Verification checked the exact tag, source CI including all three OS path
@@ -112,3 +113,21 @@ and framework type checks. The framework package build also passed locally using
 the installed release. This is historical evidence for the recorded lockfile;
 the framework's hosted Windows release-evidence job separately verifies its
 complete build and subprocess contracts.
+
+The [DTSX 0.11.21 and Pantry 0.11.113 plan](./receipts/toolchain-2026-10-21-plan.json)
+and [executed receipt](./receipts/toolchain-2026-10-21-receipt.json) retain the next
+adoption. DTSX now normalizes graph entrypoints, absolute specifiers and directory
+index resolution. Its public Bun plugin and graph cases passed on all three
+operating systems. Pantry retries interrupted response bodies within the
+existing bounded request budget, closing and restarting partial downloads.
+Its source, native Windows runtime, native build and publication gates passed.
+
+Both releases used their owning repository's existing `bun run release:patch`.
+The receipt checks original publication SHA-512 identities, complete archives,
+installed files, the frozen Bun lock, lock compatibility and framework types.
+Stacks' three workflows pin Pantry's verified release commit and declared
+version; all three runtime consumers declare the matching SDK range.
+The [native archive readback](./receipts/toolchain-2026-10-21-native.json) records
+all twelve DTSX and seven Pantry archive hashes and an actual macOS arm64 Pantry
+version probe. Archive checks do not establish execution on other platforms.
+The framework's hosted Windows build and process tests remain a separate gate.

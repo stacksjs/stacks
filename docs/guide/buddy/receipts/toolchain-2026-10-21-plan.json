@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "repository": "stacksjs/dtsx",
+      "commit": "6ee09fb2430e013bc9fa313b3a8cafebbe374c76",
+      "tag": "v0.11.21",
+      "gates": [
+        {
+          "runId": 39689868806,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "test",
+            "typecheck",
+            "lint",
+            "Source path identity (ubuntu-latest)",
+            "Source path identity (macos-latest)",
+            "Source path identity (windows-latest)",
+            "Build workspace libraries",
+            "publish-commit"
+          ]
+        },
+        {
+          "runId": 39689868757,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": ["release"]
+        }
+      ],
+      "packages": [
+        {
+          "name": "@stacksjs/dtsx",
+          "version": "0.11.21",
+          "integrity": "sha512-H1DyQD1JdnXplHREClZoSDg5iR0OahTkpWm091SQ8pxNth+U3+uMDdZZLKqBRyax82OyQZUxs1XjOTY3tgvFZg=="
+        },
+        {
+          "name": "bun-plugin-dtsx",
+          "version": "0.11.21",
+          "integrity": "sha512-VyMWSNlQzx1V7lgcu64bi8KoPpfN0yXR31yolj8noHd6Ni40TxInR8KK335DVQAp7x6WPHSGP9GHoTk6xqz2Cg=="
+        }
+      ]
+    },
+    {
+      "repository": "pantry-pm/pantry",
+      "commit": "3a37ec776aa9e37e17bd8e3aea2d457cdbd02c36",
+      "tag": "v0.11.113",
+      "gates": [
+        {
+          "runId": 39688586276,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "test",
+            "typecheck",
+            "lint",
+            "zig-tests",
+            "action-native-tools",
+            "native-browser",
+            "action-redis-service",
+            "Explicit native toolchain pins (ubuntu-latest)",
+            "Explicit native toolchain pins (macos-latest)",
+            "action-native-services (26.7.0)",
+            "action-native-services (8.4.11)",
+            "windows-native-runtime",
+            "continuous-release"
+          ]
+        },
+        {
+          "runId": 39688586312,
+          "workflow": ".github/workflows/build-zig.yml",
+          "requiredJobs": ["compile-all", "Native Windows CLI and compiler links"]
+        },
+        {
+          "runId": 39688585624,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": ["pantry", "npm"]
+        }
+      ],
+      "packages": [
+        {
+          "name": "ts-pantry",
+          "version": "0.11.113",
+          "integrity": "sha512-Ws9tZ7RW9H4svEkqw3ZeVuyIsWFvhwq133Vd00aGaYfD2EEOt5t/iM7mGcQRFxE5wmL5aoCWoUKm1xDJPoBCBw=="
+        }
+      ]
+    }
+  ],
+  "checks": ["deps:lockfile:check", "typecheck"]
+}

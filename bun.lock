@@ -318,7 +318,7 @@
       "version": "0.75.256",
       "dependencies": {
         "bun-plugin-stx": "0.2.644",
-        "ts-pantry": "^0.11.105",
+        "ts-pantry": "^0.11.113",
       },
       "devDependencies": {
         "better-dx": "^0.2.24",
@@ -405,7 +405,7 @@
         "ajv": "^8.20.0",
         "ajv-formats": "^3.0.1",
         "bun-plugin-stx": "0.2.644",
-        "ts-pantry": "^0.11.105",
+        "ts-pantry": "^0.11.113",
       },
       "devDependencies": {
         "better-dx": "^0.2.24",
@@ -418,7 +418,7 @@
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/storage": "workspace:*",
-        "bun-plugin-dtsx": "^0.11.20",
+        "bun-plugin-dtsx": "^0.11.21",
       },
       "devDependencies": {
         "better-dx": "^0.2.24",
@@ -584,7 +584,7 @@
         "@stacksjs/features": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/tunnel": "workspace:*",
-        "ts-pantry": "^0.11.105",
+        "ts-pantry": "^0.11.113",
       },
       "devDependencies": {
         "@stacksjs/alias": "workspace:*",
@@ -1654,7 +1654,7 @@
 
     "@stacksjs/docs": ["@stacksjs/docs@workspace:storage/framework/core/docs"],
 
-    "@stacksjs/dtsx": ["@stacksjs/dtsx@0.11.20", "", { "dependencies": { "@stacksjs/clapp": "^0.2.16" }, "bin": { "dtsx": "./dist/bin/cli.js" } }, "sha512-h7T4gZtoR4LT1ChHr15/BnvO6IjxXgcE/mtxaJzeGK7gdvQ0er7ZEuHLDQ6FAABCSkg9nXPrnUVM+aT5MCX6Gg=="],
+    "@stacksjs/dtsx": ["@stacksjs/dtsx@0.11.21", "", { "dependencies": { "@stacksjs/clapp": "^0.2.16" }, "bin": { "dtsx": "./dist/bin/cli.js" } }, "sha512-H1DyQD1JdnXplHREClZoSDg5iR0OahTkpWm091SQ8pxNth+U3+uMDdZZLKqBRyax82OyQZUxs1XjOTY3tgvFZg=="],
 
     "@stacksjs/email": ["@stacksjs/email@workspace:storage/framework/core/email"],
 
@@ -1892,7 +1892,7 @@
 
     "bun-plugin-auto-imports": ["bun-plugin-auto-imports@0.4.4", "", {}, "sha512-j1KXTDBEB/w95UWTvl8qQPjE8U+6jpm8UdCrIm+zDxnZM97ENhUpJjBYVB85oF14NsQpDcDnQYZdgLRckD4pKg=="],
 
-    "bun-plugin-dtsx": ["bun-plugin-dtsx@0.11.20", "", { "dependencies": { "@stacksjs/dtsx": "0.11.20" } }, "sha512-+kwt/cFrQu+GUHlcSrMxHJu9wLICGZF9BHQ3hixzdjA9yvd/LwgMzMgdPplNmbLEqGxa8wqjGVNZaiOqMWCxOg=="],
+    "bun-plugin-dtsx": ["bun-plugin-dtsx@0.11.21", "", { "dependencies": { "@stacksjs/dtsx": "0.11.21" } }, "sha512-VyMWSNlQzx1V7lgcu64bi8KoPpfN0yXR31yolj8noHd6Ni40TxInR8KK335DVQAp7x6WPHSGP9GHoTk6xqz2Cg=="],
 
     "bun-plugin-stx": ["bun-plugin-stx@0.2.644", "", { "dependencies": { "@stacksjs/stx": "0.2.644", "stx-router": "0.2.644" }, "bin": { "serve": "./dist/serve.js", "stx-serve": "./dist/serve.js" } }, "sha512-LK9ru0wJJBsXJLKR0LwIV5mHQXFTmvhkEG3grvwQGvKHpA94KpkVM8s2s6dQ4q0bghXjdTal35ZTdp4Fg/JkSQ=="],
 
@@ -2116,7 +2116,7 @@
 
     "ts-medium-editor": ["ts-medium-editor@0.2.0", "", {}, "sha512-XR4Orpxm1v9OfP6dCMImYpPaqdJUdoRl3laUUiPB9dR9WJHSFbWZmHCBdPG3uiQiaQljeSssKQTZTUcfQnsj3g=="],
 
-    "ts-pantry": ["ts-pantry@0.11.109", "", { "bin": { "ts-pantry": "./dist/bin/cli.js" } }, "sha512-TB2VeS/mUd+3Q/aYJ+pc43sD5/B9G7hVwZ4EbBLbf/4/J4OBjWCW9GCB5ixB5MZzBGBVIUmTfaAFcT+yaisYCQ=="],
+    "ts-pantry": ["ts-pantry@0.11.113", "", { "bin": { "ts-pantry": "./dist/bin/cli.js" } }, "sha512-Ws9tZ7RW9H4svEkqw3ZeVuyIsWFvhwq133Vd00aGaYfD2EEOt5t/iM7mGcQRFxE5wmL5aoCWoUKm1xDJPoBCBw=="],
 
     "ts-qr-codes": ["ts-qr-codes@0.1.9", "", { "bin": { "qrx": "./dist/cli.js" } }, "sha512-q2U4hjgx+L57IsCKew/+an/P+mdcvRLr2tlW4waOaulRCpm5OZLakZ32czjscUaHiGOIeG13J28lxUawyIc9/Q=="],
 
