@@ -4246,6 +4246,11 @@ EOF
 cat > /usr/local/sbin/mail-health-check <<'EOF'
 #!/bin/sh
 set -eu
+# The mail release owns the protocol checker and alert state. A tenant deploy
+# must never downgrade it to listener-only checks or take its lock twice.
+if [ -x /usr/local/sbin/mail-protocol-health-check ]; then
+  exec /usr/local/sbin/mail-protocol-health-check
+fi
 exec 9>/run/mail-health-check.lock
 flock -n 9 || exit 0
 restart_mail() {
@@ -4264,7 +4269,7 @@ restart_mail() {
 if ! systemctl is-active --quiet mail; then
   restart_mail "mail service is inactive"
 fi
-for port in 25 143 587 993; do
+for port in 25 143 465 587 993; do
   if ! ss -H -ltn "sport = :$port" | grep -q .; then
     restart_mail "required TCP port $port is not listening"
     ss -H -ltn "sport = :$port" | grep -q . || {
@@ -4277,7 +4282,7 @@ EOF
 chmod 755 /usr/local/sbin/mail-health-check
 cat > /etc/systemd/system/mail-health.service <<'EOF'
 [Unit]
-Description=Check the Stacks mail daemon listeners
+Description=Verify mail delivery health
 After=mail.service
 
 [Service]

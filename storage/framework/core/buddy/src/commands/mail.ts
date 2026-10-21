@@ -1698,7 +1698,7 @@ export function mailCommands(buddy: CLI): void {
 
       const directHost = await resolveOperationalMailHost()
       if (directHost) {
-        const command = 'systemctl is-active mail; systemctl show mail -p NRestarts -p ActiveEnterTimestamp --value; ss -H -ltn | grep -E "(:(25|143|465|587|993))\\b"; systemctl is-enabled mail-health.timer; systemctl is-active mail-health.timer'
+        const command = 'set -eu; systemctl is-active --quiet mail; systemctl is-enabled --quiet mail-health.timer; systemctl is-active --quiet mail-health.timer; test -x /usr/local/sbin/mail-protocol-health-check || { echo "Protocol monitoring is missing. Deploy the current mail release."; exit 1; }; systemctl start mail-health.service; systemctl show mail-health.service -p Result -p ExecMainStatus; cat /var/lib/mail-health/public/status.json'
         try {
           const output = execSync(`ssh -o BatchMode=yes -o ConnectTimeout=10 root@${shellQuote(directHost)} ${shellQuote(command)}`, { encoding: 'utf8' })
           console.log(output)

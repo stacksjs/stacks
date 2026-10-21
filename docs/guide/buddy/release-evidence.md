@@ -97,3 +97,18 @@ check and the framework's stx view type checks.
 This is a historical receipt for the recorded lockfile hash. Later framework
 releases change that lockfile and need fresh consumer evidence. It establishes
 neither native execution nor Settlers III fidelity or original-media rights.
+
+The [DTSX 0.11.20 plan](./receipts/dtsx-0.11.20-plan.json) and
+[executed receipt](./receipts/dtsx-0.11.20-receipt.json) retain the framework's
+adoption of `@stacksjs/dtsx` and `bun-plugin-dtsx`. This release normalizes source
+paths before deduplication, so Windows glob matches and re-export resolution
+identify the same source. Distinct flat-output collisions still fail before
+cleaning the previous declarations.
+
+Original archive identities came from the successful release's npm publication
+step. Verification checked the exact tag, source CI including all three OS path
+checks, release workflow, complete archives, installed files, lock compatibility
+and framework type checks. The framework package build also passed locally using
+the installed release. This is historical evidence for the recorded lockfile;
+the framework's hosted Windows release-evidence job separately verifies its
+complete build and subprocess contracts.
