@@ -1,4 +1,8 @@
 import { describe, expect, it } from 'bun:test'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
+import { encryptValue, generateKeypair } from '../../env/src/crypto'
 import { parseEnvAssignments } from '../src/commands/env'
 
 /**
@@ -83,5 +87,53 @@ describe('parseEnvAssignments', () => {
 
   it('ignores lines that are not assignments', () => {
     expect(parseEnvAssignments('#/---[DOTENV_PUBLIC_KEY]---/\nnot an assignment\nA=1')).toEqual({ A: '1' })
+  })
+})
+
+describe('env:check production key presence', () => {
+  it.each(['production', 'production-environment', 'generic', 'production-file', 'generic-file', 'absent', 'staging', 'empty', 'unrelated-file', 'empty-file'] as const)('reports %s key configuration without revealing values', async (source) => {
+    const cwd = mkdtempSync(join(tmpdir(), 'buddy-env-check-key-'))
+    const checkout = resolve(import.meta.dir, '../../../../..')
+    const keys = generateKeypair()
+    const payload = 'check-private-fixture-value'
+    try {
+      writeFileSync(join(cwd, '.env.production'), `DOTENV_PUBLIC_KEY_PRODUCTION="${keys.publicKey}"\nAPP_KEY="${encryptValue(payload, keys.publicKey)}"\n`)
+      if (source === 'unrelated-file') writeFileSync(join(cwd, '.env.keys'), `DOTENV_PRIVATE_KEY_STAGING="${keys.privateKey}"\n`, { mode: 0o600 })
+      if (source === 'production-file') writeFileSync(join(cwd, '.env.keys'), `DOTENV_PRIVATE_KEY_PRODUCTION="${keys.privateKey}"\n`, { mode: 0o600 })
+      if (source === 'generic-file') writeFileSync(join(cwd, '.env.keys'), `DOTENV_PRIVATE_KEY="${keys.privateKey}"\n`, { mode: 0o600 })
+      if (source === 'empty-file') writeFileSync(join(cwd, '.env.keys'), 'DOTENV_PRIVATE_KEY_PRODUCTION=""\n', { mode: 0o600 })
+      const runner = join(cwd, 'buddy.ts')
+      writeFileSync(runner, `import { cli } from ${JSON.stringify(join(checkout, 'storage/framework/core/cli/src/index.ts'))}
+import { env } from ${JSON.stringify(join(checkout, 'storage/framework/core/buddy/src/commands/env.ts'))}
+const buddy = cli('buddy')
+buddy.option('--env [environment]', 'Environment')
+env(buddy)
+await buddy.parse()
+`)
+      const result = Bun.spawnSync([
+        process.execPath, '--no-env-file', '--tsconfig-override', join(checkout, 'storage/framework/tsconfig.framework.json'),
+        runner, 'env:check', ...(source === 'production-environment' ? ['--env', 'production'] : ['--file', '.env.production']),
+      ], {
+        cwd,
+        env: {
+          PATH: process.env.PATH, APP_ENV: 'test', NODE_ENV: 'test',
+          ...(source === 'production' || source === 'production-environment' ? { DOTENV_PRIVATE_KEY_PRODUCTION: keys.privateKey } : {}),
+          ...(source === 'generic' ? { DOTENV_PRIVATE_KEY: keys.privateKey } : {}),
+          ...(source === 'staging' ? { DOTENV_PRIVATE_KEY_STAGING: keys.privateKey } : {}),
+          ...(source === 'empty' ? { DOTENV_PRIVATE_KEY_PRODUCTION: '' } : {}),
+        },
+        stdout: 'pipe', stderr: 'pipe',
+      })
+      const transcript = `${result.stdout}\n${result.stderr}`
+      expect(result.exitCode, transcript).toBe(0)
+      expect(transcript).toContain(['production', 'production-environment', 'generic', 'production-file', 'generic-file'].includes(source)
+        ? 'Public and private keys configured'
+        : 'Incomplete keypair')
+      expect(transcript).not.toContain(keys.privateKey)
+      expect(transcript).not.toContain(payload)
+    }
+    finally {
+      rmSync(cwd, { recursive: true, force: true })
+    }
   })
 })

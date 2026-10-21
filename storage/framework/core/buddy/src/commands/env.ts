@@ -1,7 +1,7 @@
 import type { CLI } from '@stacksjs/types'
 import process from 'node:process'
 import { log, onUnknownSubcommand } from "@stacksjs/cli"
-import { decryptEnv, encryptEnv, getEnv, getKeypair, resolveEnvFile, rotateKeypair, setEnv } from '@stacksjs/env'
+import { decryptEnv, encryptEnv, envKeyNames, getEnv, getKeypair, getPrivateKey, parseEnvFromKey, resolveEnvFile, rotateKeypair, setEnv } from '@stacksjs/env'
 import { ExitCode } from '@stacksjs/types'
 
 interface EnvOptions {
@@ -301,7 +301,7 @@ export function env(buddy: CLI): void {
       }
 
       const checks: EnvCheck[] = []
-      const envFile = options.file || '.env'
+      const envFile = resolveEnvFile(options.file, options.env) || '.env'
       const envPath = resolve(process.cwd(), envFile)
 
       // Check if .env file exists
@@ -358,11 +358,20 @@ export function env(buddy: CLI): void {
             })
           }
 
-          // Check for encryption keys. The private half lives in .env.keys, so
-          // an encrypted env file legitimately carries only the public one.
-          const hasPublicKey = keys.some(key => key.startsWith('DOTENV_PUBLIC_KEY'))
-          const hasPrivateKey = keys.some(key => key.startsWith('DOTENV_PRIVATE_KEY'))
-            || existsSync(resolve(process.cwd(), '.env.keys'))
+          // The selected file names its key scope. CI can supply the private
+          // half through its protected environment instead of a local file.
+          // A different environment's key or an empty keys file proves nothing.
+          const { publicKeyName, privateKeyName } = envKeyNames(envFile)
+          const privateKeyNames = [privateKeyName, 'DOTENV_PRIVATE_KEY']
+          const hasPublicKey = Boolean(values[publicKeyName] || values.DOTENV_PUBLIC_KEY)
+          let hasPrivateKey = Boolean(getPrivateKey(parseEnvFromKey(privateKeyName)) || getPrivateKey())
+            || privateKeyNames.some(name => Boolean(values[name]))
+          const localKeysPath = resolve(process.cwd(), '.env.keys')
+          if (!hasPrivateKey && existsSync(localKeysPath)) {
+            const localKeys = await storage.readTextFile(localKeysPath)
+            const assignments = parseEnvAssignments(typeof localKeys === 'string' ? localKeys : localKeys.data)
+            hasPrivateKey = privateKeyNames.some(name => Boolean(assignments[name]))
+          }
 
           if (hasPublicKey && hasPrivateKey) {
             checks.push({
