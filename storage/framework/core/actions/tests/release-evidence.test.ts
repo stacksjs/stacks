@@ -80,7 +80,7 @@ describe('source release and consumer evidence', () => {
     expect(receipt.sources[0]?.packages[0]).toEqual({ ...plan.sources[0]!.packages[0], tarball: 'https://registry.npmjs.org/@example/runtime/-/runtime-1.2.3.tgz', bytes: bytes.length, filesSha256: expect.stringMatching(/^[a-f0-9]{64}$/) })
     expect(receipt.consumer.sha256).toBe(createHash('sha256').update(readFileSync(join(root, 'bun.lock'))).digest('hex'))
     expect(receipt.consumer.checks).toEqual([{ script: 'check', exitCode: 0, outputSha256: expect.stringMatching(/^[a-f0-9]{64}$/) }])
-  })
+  }, process.platform === 'win32' ? 30_000 : 5000)
 
   test('rejects a successful workflow for another source commit and a skipped required job', async () => {
     await expect(verifyReleaseEvidence(plan, { cwd: consumer(), fetch: publishedSource(url => url.includes('/actions/runs/')

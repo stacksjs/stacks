@@ -70,6 +70,9 @@ public static class StacksOwnedCheck {
   static extern bool AssignProcessToJobObject(IntPtr job, IntPtr process);
   [DllImport("kernel32.dll", SetLastError = true)]
   static extern bool TerminateJobObject(IntPtr job, uint code);
+  [DllImport("kernel32.dll", SetLastError = true)]
+  static extern bool DuplicateHandle(IntPtr sourceProcess, IntPtr source, IntPtr targetProcess,
+    out IntPtr target, uint access, bool inherit, uint options);
   [DllImport("kernel32.dll")] static extern IntPtr GetCurrentProcess();
   [DllImport("kernel32.dll")] static extern IntPtr GetStdHandle(int kind);
   [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
@@ -81,6 +84,13 @@ public static class StacksOwnedCheck {
   [DllImport("kernel32.dll", SetLastError = true)] static extern bool GetExitCodeProcess(IntPtr process, out uint code);
   [DllImport("kernel32.dll", SetLastError = true)] static extern bool CloseHandle(IntPtr handle);
   static void Require(bool success) { if (!success) throw new Win32Exception(Marshal.GetLastWin32Error()); }
+  static IntPtr InheritableStandardHandle(int kind) {
+    IntPtr source = GetStdHandle(kind);
+    if (source == IntPtr.Zero || source == new IntPtr(-1)) return IntPtr.Zero;
+    IntPtr inherited;
+    Require(DuplicateHandle(GetCurrentProcess(), source, GetCurrentProcess(), out inherited, 0, true, 2));
+    return inherited;
+  }
   static IntPtr Job() {
     IntPtr job = CreateJobObjectW(IntPtr.Zero, null);
     Require(job != IntPtr.Zero);
@@ -103,10 +113,19 @@ public static class StacksOwnedCheck {
       Startup startup = new Startup();
       startup.Size = (uint)Marshal.SizeOf(typeof(Startup));
       startup.Flags = 0x100; // STARTF_USESTDHANDLES
-      startup.Input = GetStdHandle(-10); startup.Output = GetStdHandle(-11); startup.Error = GetStdHandle(-12);
+      // Bun can supply non-inheritable standard handles to PowerShell. A
+      // native CreateProcess child needs explicitly inheritable duplicates.
+      startup.Input = InheritableStandardHandle(-10);
+      startup.Output = InheritableStandardHandle(-11);
+      startup.Error = InheritableStandardHandle(-12);
       // Never execute user code before it belongs to the inner cleanup job.
-      Require(CreateProcessW(bun, new StringBuilder("\\\"" + bun + "\\\" run " + script),
-        IntPtr.Zero, IntPtr.Zero, true, 0x4, IntPtr.Zero, null, ref startup, out child));
+      try {
+        Require(CreateProcessW(bun, new StringBuilder("\\\"" + bun + "\\\" run " + script),
+          IntPtr.Zero, IntPtr.Zero, true, 0x08000004, IntPtr.Zero, null, ref startup, out child));
+      } finally {
+        foreach (IntPtr handle in new[] { startup.Input, startup.Output, startup.Error })
+          if (handle != IntPtr.Zero) CloseHandle(handle);
+      }
       Require(AssignProcessToJobObject(commandJob, child.Process));
       Require(ResumeThread(child.Thread) != 0xffffffff);
       Require(WaitForSingleObject(child.Process, 0xffffffff) == 0);
