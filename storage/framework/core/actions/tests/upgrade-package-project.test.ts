@@ -72,8 +72,51 @@ describe('package project manifest migration', () => {
     migratePackageProjectManifest(pkg)
     expect(pkg.scripts.typecheck).toContain('-p tsconfig.json')
     expect(pkg.scripts['typecheck:app']).toContain('-p tsconfig.json')
-    expect(pkg.scripts['types:check']).toBe('bun run typecheck')
+    expect(pkg.scripts['types:check']).toBe('bun tsc --noEmit')
     expect(migratePackageProjectManifest(pkg)).toEqual([])
+  })
+
+  it('removes only obsolete steps from mixed application check pipelines', () => {
+    const pkg = { scripts: {
+      typecheck: 'bun run build:framework-types && bun run typecheck:app && bun run typecheck:views',
+      'typecheck:app': 'bun tsc --noEmit -p storage/framework/tsconfig.framework.json && bun run custom-check',
+      'types:check': 'bun run typecheck && bun run typecheck:tools',
+      'build:framework-types': 'bun --filter core run build',
+    } }
+    migratePackageProjectManifest(pkg)
+    expect(pkg.scripts.typecheck).toBe('bun run typecheck:app && bun run typecheck:views')
+    expect(pkg.scripts['typecheck:app']).toBe('bun x --bun tsc --noEmit -p tsconfig.json --pretty false && bun run custom-check')
+    expect(pkg.scripts['types:check']).toBe('bun run typecheck && bun run typecheck:tools')
+    expect(pkg.scripts['build:framework-types']).toBeUndefined()
+    expect(migratePackageProjectManifest(pkg)).toEqual([])
+  })
+
+  it('preserves quoted arguments and complex application shell commands', () => {
+    const scripts = {
+      typecheck: 'bun run build:framework-types && bun run check --label "app && views"',
+      'typecheck:app': 'if test -f custom.json; then bun run build:framework-types; fi',
+      'types:check': 'bun run typecheck',
+      'build:framework-types': 'bun --filter core run build',
+    }
+    migratePackageProjectManifest({ scripts })
+    expect(scripts.typecheck).toBe('bun run check --label "app && views"')
+    expect(scripts['typecheck:app']).toBe('if test -f custom.json; then bun run build:framework-types; fi')
+    expect(scripts['build:framework-types']).toBe('bun --filter core run build')
+  })
+
+  for (const suffix of [' > type-errors.txt', ' # application annotation']) {
+    it(`preserves application shell syntax: ${suffix.trim()}`, () => {
+      const typecheck = `bun tsc --noEmit -p storage/framework/core/tsconfig.json${suffix}`
+      const pkg = { scripts: { typecheck } }
+      migratePackageProjectManifest(pkg)
+      expect(pkg.scripts.typecheck).toBe(typecheck)
+    })
+  }
+
+  it('migrates local compiler commands while preserving view validation', () => {
+    const pkg = { scripts: { typecheck: 'tsc --noEmit -p storage/framework/core/tsconfig.json && bun run typecheck:views' } }
+    migratePackageProjectManifest(pkg)
+    expect(pkg.scripts.typecheck).toBe('bun x --bun tsc --noEmit -p tsconfig.json --pretty false && bun run typecheck:views')
   })
 
   it('supplies missing app checks without replacing custom ones', () => {
@@ -106,7 +149,7 @@ describe('package project manifest migration', () => {
     expect(changes.length).toBeGreaterThan(0)
     expect(pkg.scripts.buddy).toBe('./buddy')
     expect(pkg.scripts['build:reset']).not.toContain('storage/framework')
-    expect(pkg.scripts.typecheck).toContain('-p tsconfig.json')
+    expect(pkg.scripts.typecheck).toBe('bun x tsc --noEmit')
     expect(pkg.scripts['build:framework-types']).toBeUndefined()
     expect(pkg.workspaces).toEqual(['storage/framework'])
   })

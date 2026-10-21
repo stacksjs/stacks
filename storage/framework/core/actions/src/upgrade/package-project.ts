@@ -464,9 +464,31 @@ export function migratePackageProjectManifest(pkg: ProjectPackageJson): ProjectS
     'types:check': 'bun run typecheck',
   })) {
     const current = scripts[name]
-    if (!current || current.includes('build:framework-types')
-      || /storage\/framework\/(?:core(?:\/|['"\s]|$)|tsconfig\.(?:framework|defaults|type-tests)\.json)/.test(current))
+    if (!current) {
       setScript(name, replacement)
+      continue
+    }
+    // Only migrate simple command chains. Quoted arguments stay together;
+    // shell control flow and substitutions need the application's own intent.
+    const steps = current.match(/(?:[^&"'`]|"[^"\\]*(?:\\.[^"\\]*)*"|'[^']*')+/g)
+    if (!steps || steps.join('&&') !== current || /[;|`$()<>#\\\n]/.test(current))
+      continue
+    let changed = false
+    const migrated = steps.flatMap((step) => {
+      const command = step.trim()
+      if (/^(?:bun|npm|pnpm) run build:framework-types$/.test(command)) {
+        changed = true
+        return []
+      }
+      if (/^(?:(?:bun(?: x|x)?(?: --bun)?|npx) )?(?:tsc|tsgo)\b/.test(command)
+        && /storage\/framework\/(?:core(?:\/|['"\s]|$)|tsconfig\.(?:framework|defaults|type-tests)\.json)/.test(command)) {
+        changed = true
+        return [appCheck]
+      }
+      return [command]
+    })
+    if (changed)
+      setScript(name, migrated.length ? migrated.join(' && ') : replacement)
   }
 
   if (scripts['build:reset']?.includes('storage/framework')) {
@@ -476,7 +498,8 @@ export function migratePackageProjectManifest(pkg: ProjectPackageJson): ProjectS
     )
   }
 
-  if (scripts['build:framework-types']) {
+  if (scripts['build:framework-types'] && !Object.entries(scripts).some(([name, command]) =>
+    name !== 'build:framework-types' && command.includes('build:framework-types'))) {
     delete scripts['build:framework-types']
     changes.push({ path: 'package.json#scripts.build:framework-types', action: 'remove' })
   }
