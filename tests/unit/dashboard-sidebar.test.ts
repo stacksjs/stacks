@@ -42,10 +42,21 @@ describe('dashboard sidebar data', () => {
     const serialized = JSON.stringify(sections)
 
     expect(sections[0]?.items[0]?.href).toBe('/')
-    expect(sections.at(-1)?.items[0]?.href).toBe('/settings')
     expect(serialized).not.toContain('<svg')
     expect(serialized).not.toContain('onclick=')
     expect(serialized).not.toContain('sidebar-link')
+  })
+
+  // Settings used to be listed twice: once in Utilities beside Appearance and
+  // Mail Settings, and again in a trailing unlabelled section that pinned it
+  // to the bottom the way macOS does. Two rows, two clicks apart, same page.
+  it('lists Settings once, in Utilities', () => {
+    const sections = buildWebSidebarSections()
+    const settings = sections.flatMap(section =>
+      section.items.filter(item => item.href === '/settings').map(item => [section.id, item.label] as const),
+    )
+
+    expect(settings).toEqual([['utilities', 'Settings']])
   })
 
   it('links the component library through its non-conflicting route', () => {
