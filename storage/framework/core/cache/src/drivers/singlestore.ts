@@ -26,6 +26,7 @@
 
 import { EventEmitter } from 'node:events'
 import { SQL } from 'bun'
+import { escapeLike } from './like'
 
 export interface SingleStoreCacheOptions {
   /** SingleStore host (MySQL wire protocol). @default '127.0.0.1' */
@@ -213,11 +214,13 @@ export class SingleStoreCacheStore extends EventEmitter {
   async flush(): Promise<void> {
     await this.ensureReady()
     // TRUNCATE is the fast path; scope to the prefix when one is configured so
-    // a shared cache table isn't wiped for every namespace.
+    // a shared cache table isn't wiped for every namespace. The prefix is
+    // matched literally: `_` and `%` in it were wildcards, so `tenant_1` also
+    // matched `tenantX1:...` and its flush deleted that namespace's keys.
     if (this.prefix) {
       await this.sql.unsafe(
         `DELETE FROM ${this.qualified} WHERE cache_key LIKE ?`,
-        [`${this.prefix}:%`],
+        [`${escapeLike(this.prefix)}:%`],
       )
     }
     else {
@@ -228,8 +231,9 @@ export class SingleStoreCacheStore extends EventEmitter {
   async keys(pattern?: string): Promise<string[]> {
     await this.ensureReady()
     // Translate a glob-ish `*` pattern into SQL LIKE. Always constrain to the
-    // active prefix so callers only see their own namespace's keys.
-    const like = `${this.prefix ? `${this.prefix}:` : ''}${pattern ? pattern.replace(/\*/g, '%') : '%'}`
+    // active prefix, matched literally, so callers only see their own
+    // namespace's keys. The pattern keeps its own escapes.
+    const like = `${this.prefix ? `${escapeLike(this.prefix)}:` : ''}${pattern ? pattern.replace(/\*/g, '%') : '%'}`
     const rows = await this.sql.unsafe(
       `SELECT cache_key FROM ${this.qualified} WHERE cache_key LIKE ? AND (expires_at IS NULL OR expires_at > ?)`,
       [like, this.nowMs()],

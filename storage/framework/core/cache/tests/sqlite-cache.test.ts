@@ -78,4 +78,16 @@ describe('the SQLite cache driver', () => {
     expect(await two.get('user_1')).toBe('c')
     expect((await two.getStats()).keys).toBe(1)
   })
+
+  it('takes a * in a prefix literally, so it flushes and lists its own namespace only', async () => {
+    const path = file()
+    const starred = new SqliteCacheStore({ path, prefix: 'tenant*' })
+    const other = new SqliteCacheStore({ path, prefix: 'tenant42' })
+    await starred.set('item', 'a')
+    await other.set('item', 'b')
+    expect(await starred.keys()).toEqual(['item'])
+    await starred.flush()
+    expect(await starred.keys()).toEqual([])
+    expect(await other.get('item')).toBe('b')
+  })
 })
