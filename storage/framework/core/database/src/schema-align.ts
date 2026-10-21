@@ -448,6 +448,19 @@ export function planSchemaAlignment(
           reports.push({ kind: 'missing-column', table, name: column.name, detail: `${table}.${column.name} is missing and cannot be added in place` })
           continue
         }
+        // A column can carry its foreign key inline, and nothing here creates
+        // tables. Adding it would fail the whole apply on the reference, so
+        // the table it points at has to come first.
+        const inlineReference = /\bREFERENCES\s+"([^"]+)"/i.exec(column.definition)?.[1]?.toLowerCase()
+        if (inlineReference && !live.tables.has(inlineReference)) {
+          reports.push({
+            kind: 'foreign-key',
+            table,
+            name: column.name,
+            detail: `${table}.${column.name} references ${inlineReference}, which does not exist - \`buddy migrate\` creates that table`,
+          })
+          continue
+        }
         // A NOT NULL column with no default cannot go into a table with rows.
         // Added nullable instead, and said so: a missing column breaks every
         // query that names it, a nullable one only holds a weaker rule.

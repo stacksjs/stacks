@@ -253,6 +253,50 @@ describe('column alignment', () => {
     expect(result.reports.map(r => `${r.kind} ${r.name}`)).toEqual(['nullability a'])
   })
 
+  /**
+   * A column can carry its foreign key inline, and `migrate:align` never
+   * creates tables - so a column that references one the database does not
+   * have cannot be added here either. Planned anyway, it failed the whole
+   * apply with `relation "campaign_variants" does not exist`.
+   */
+  it('does not add a column that references a table the database lacks', () => {
+    const [desired, live] = schemas(
+      {
+        tables: new Map([['campaign_sends', [
+          column('campaign_variant_id', { definition: '"campaign_variant_id" bigint REFERENCES "campaign_variants"("id")' }),
+        ]]]),
+      },
+      { tables: new Map([['campaign_sends', new Map([['id', liveColumn('id', 'bigint')]])]]) },
+    )
+    const plan = planSchemaAlignment(desired, live)
+
+    expect(plan.actions).toEqual([])
+    expect(plan.reports.map(r => r.detail)).toContain(
+      'campaign_sends.campaign_variant_id references campaign_variants, which does not exist - `buddy migrate` creates that table',
+    )
+  })
+
+  it('still adds a column whose reference the database does have', () => {
+    const [desired, live] = schemas(
+      {
+        tables: new Map([['boards', [
+          column('team_id', { definition: '"team_id" bigint REFERENCES "teams"("id")' }),
+        ]]]),
+      },
+      {
+        tables: new Map([
+          ['boards', new Map([['id', liveColumn('id', 'bigint')]])],
+          ['teams', new Map([['id', liveColumn('id', 'bigint')]])],
+        ]),
+      },
+    )
+    const plan = planSchemaAlignment(desired, live)
+
+    expect(plan.actions.map(a => a.sql)).toEqual([
+      'ALTER TABLE "boards" ADD COLUMN IF NOT EXISTS "team_id" bigint REFERENCES "teams"("id")',
+    ])
+  })
+
   it('reports extra columns and missing tables', () => {
     const [desired, live] = schemas(
       { tables: new Map([['t', [column('a')]], ['gone', [column('a')]]]) },
