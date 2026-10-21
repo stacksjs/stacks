@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "verifiedAt": "2026-10-21T23:16:43.133Z",
+  "verifiedAt": "2026-10-21T23:19:41.034Z",
   "sources": [
     {
       "repository": "stacksjs/dtsx",
@@ -118,7 +118,7 @@
       {
         "script": "typecheck",
         "exitCode": 0,
-        "outputSha256": "a1d02aa34ffd4a4fe0bbd3c5f14e7d15f0990e02d89e89e61eac41ae0f48908d"
+        "outputSha256": "270d8decfad145f6ecf3bbaff5a2ab2ccda4730b68f906bdfda7de31ef7d379d"
       }
     ]
   }
