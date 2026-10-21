@@ -964,7 +964,15 @@ function wrapQueryBuilder(qb: any, casts?: Record<string, CastType | CasterInter
         // any request scope, so CLI / queue / cron callers still see
         // the same defaults as before.
         let callArgs = args
-        if (propName === 'paginate' || propName === 'simplePaginate') {
+        if (propName === 'paginate' && args[0] === undefined && args[1] === undefined) {
+          // Both numbers come from the request or the defaults here, and
+          // bun-query-builder's model builder reads positional arguments as
+          // `(page, perPage)`. Its options object names them, so they cannot
+          // cross.
+          const { perPage, page } = resolvePageArgs()
+          callArgs = [{ perPage, page }]
+        }
+        else if (propName === 'paginate' || propName === 'simplePaginate') {
           const { perPage, page } = resolvePageArgs(args[0], args[1])
           callArgs = [perPage, page]
         }
