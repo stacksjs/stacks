@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.251...v0.75.252)
+
+## ✨ Features
+
+- **cache**: the default cache is the driver config/cache.ts selects ([9370ce7](https://github.com/stacksjs/stacks/commit/9370ce7)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- **skills**: count the configured-cache test in the native catalog ([df574be](https://github.com/stacksjs/stacks/commit/df574be)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.250...v0.75.251)
 
 ## ✨ Features
