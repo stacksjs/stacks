@@ -2665,18 +2665,21 @@ function createInertRoute(): ChainableRoute {
   return inert
 }
 
-function createChainableRoute(routeStates: Map<string, RouteRuntimeState>, routeKey: string, shadowed = false): ChainableRoute {
+function createChainableRoute(routeStates: Map<string, RouteRuntimeState>, routeKey: string, shadowed = false, siblingRouteKeys: string[] = []): ChainableRoute {
   if (shadowed)
     return createInertRoute()
 
   // Extract the path from routeKey (format: "METHOD:/path")
   const routePath = routeKey.includes(':') ? routeKey.substring(routeKey.indexOf(':') + 1) : routeKey
-  const routeState = routeStates.get(routeKey)
+  const states = [routeKey, ...siblingRouteKeys].flatMap((key) => {
+    const state = routeStates.get(key)
+    return state ? [state] : []
+  })
 
   const chain: ChainableRoute = {
     parseBody(enabled: boolean) {
       if (typeof enabled !== 'boolean') throw new TypeError('parseBody() requires a boolean')
-      if (routeState) routeState.parseBody = enabled
+      for (const state of states) state.parseBody = enabled
       return chain
     },
     /**
@@ -2694,17 +2697,14 @@ function createChainableRoute(routeStates: Map<string, RouteRuntimeState>, route
      * cheapest possible place to learn about it.
      */
     middleware(name: MiddlewareReference | readonly MiddlewareReference[]) {
-      if (!routeState)
-        return chain
-      const middlewareList = routeState.middleware ??= []
-
       for (const entry of Array.isArray(name) ? name : [name]) {
         if (typeof entry !== 'string') {
           throw new TypeError(
             `[Router] middleware() on ${routeKey} was given a ${typeof entry}; it takes an alias or an array of aliases`,
           )
         }
-        middlewareList.push(entry)
+        for (const state of states)
+          (state.middleware ??= []).push(entry)
       }
 
       return chain
@@ -2720,15 +2720,15 @@ function createChainableRoute(routeStates: Map<string, RouteRuntimeState>, route
 
     skipCsrf() {
       // Last call wins, so skip and require remain mutually exclusive.
-      if (routeState)
-        routeState.csrfMode = CSRF_SKIPPED
+      for (const state of states)
+        state.csrfMode = CSRF_SKIPPED
       return chain
     },
 
     requireCsrf() {
       // Forced-on mode overrides the action-level skip cache.
-      if (routeState)
-        routeState.csrfMode = CSRF_REQUIRED
+      for (const state of states)
+        state.csrfMode = CSRF_REQUIRED
       return chain
     },
 
@@ -2741,8 +2741,8 @@ function createChainableRoute(routeStates: Map<string, RouteRuntimeState>, route
         throw new Error(`[Router] .rateLimit(): max must be a positive number, got ${String(max)}`)
       }
       const windowSeconds = rateLimitWindowToSeconds(window)
-      if (routeState)
-        routeState.rateLimit = { max: Math.floor(max), windowSeconds }
+      for (const state of states)
+        state.rateLimit = { max: Math.floor(max), windowSeconds }
       return chain
     },
   }
@@ -5204,16 +5204,12 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     // Match multiple HTTP methods for a single route
     match(methods: string[], path: string, handler: StacksHandler) {
       log.debug(`[router] Match: [${methods.join(', ')}] ${path} → ${typeof handler === 'string' ? handler : 'function'}`)
-      // The chain returned below belongs to `methods[0]`, so it is that
-      // method's own shadow state that decides whether it is inert. Taking
-      // "any method shadowed" would silently inert a chain whose first method
-      // is perfectly live.
-      let firstShadowed = false
-      for (const [index, method] of methods.entries()) {
+      const routeKeys: string[] = []
+      for (const method of methods) {
         const m = method.toUpperCase()
         const { fullPath, routeKey, shadowed } = registerRoute(m, path, handler)
-        if (index === 0)
-          firstShadowed = shadowed
+        if (!shadowed)
+          routeKeys.push(routeKey)
         const wrappedHandler = createMiddlewareHandler(bunRouter, routeStates, routeKey, handler, csrfEnabled)
         switch (m) {
           case 'GET':
@@ -5236,7 +5232,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
             break
         }
       }
-      return createChainableRoute(routeStates, `${methods[0]}:${currentPrefix}${path}`, firstShadowed)
+      return createChainableRoute(routeStates, routeKeys[0] ?? '', routeKeys.length === 0, routeKeys.slice(1))
     },
 
     // Health check route — probes critical dependencies and returns
