@@ -9,7 +9,7 @@ import { verifyReleaseEvidence } from '../src/release-evidence'
 // establish platform fidelity or verify a registry's signing authority.
 const roots: string[] = []
 afterEach(() => {
-  for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true })
+  for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 })
 })
 
 const commit = '1234567890abcdef1234567890abcdef12345678'

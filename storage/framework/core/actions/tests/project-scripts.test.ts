@@ -57,9 +57,12 @@ test('owned cleanup retains all completed command output in the receipt hash', a
     // A multi-chunk payload and final marker catch dropped/truncated completion output.
     const payload = `known-command-output\n${'0123456789abcdef'.repeat(16_384)}\ncompleted-command-output\n`
     writeFileSync(join(root, 'check.ts'), `await Bun.write(Bun.stderr, ${JSON.stringify(payload)})`)
-    const receipt = await runProjectScripts({ cwd: root, scripts: ['check'], timeoutMs: process.platform === 'win32' ? 15_000 : 3000 })
+    const observed: Buffer[] = []
+    const receipt = await runProjectScripts({ cwd: root, scripts: ['check'], timeoutMs: process.platform === 'win32' ? 15_000 : 3000,
+      onOutput: chunk => { observed.push(Buffer.from(chunk)) } })
     const expected = createHash('sha256').update(Buffer.from(banner)).update(payload).digest('hex')
-    expect(receipt.checks[0]?.outputSha256).toBe(expected)
+    const actual = Buffer.concat(observed)
+    expect(receipt.checks[0]?.outputSha256, `Fixture output: ${actual.length} bytes; prefix ${JSON.stringify(actual.subarray(0, 300).toString())}; suffix ${JSON.stringify(actual.subarray(-100).toString())}`).toBe(expected)
   }
   finally { rmSync(root, { recursive: true, force: true }) }
 }, 30_000)

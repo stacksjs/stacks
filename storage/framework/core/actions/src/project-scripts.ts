@@ -8,6 +8,8 @@ export interface ProjectScriptOptions {
   env?: Record<string, string | undefined>
   signal?: AbortSignal
   timeoutMs?: number
+  /** Optional live output observer. Receipts still retain only hashes. */
+  onOutput?: (chunk: Uint8Array, stream: 'stdout' | 'stderr') => void
 }
 
 export interface ProjectScriptReceipt {
@@ -25,6 +27,7 @@ function fail(message: string): never {
 function windowsCheckCommand(powershell: string, bun: string, script: string): string[] {
   const source = `
 $ErrorActionPreference = 'Stop'
+$ProgressPreference = 'SilentlyContinue'
 Add-Type -TypeDefinition @'
 using System;
 using System.ComponentModel;
@@ -216,7 +219,7 @@ try {
         else reportFailure(new Error(`Consumer script ${script} host failed: ${message?.error ?? 'invalid completion report'}`))
       },
     })
-    const pipes = [child.stdout, child.stderr].map(stream => ({ reader: stream.getReader(), done: false }))
+    const pipes = [child.stdout, child.stderr].map((stream, index) => ({ reader: stream.getReader(), done: false, source: index === 0 ? 'stdout' as const : 'stderr' as const }))
     let interrupted = false
     let teardown: Promise<void> | undefined
     let announceStop: () => void = () => {}
@@ -337,6 +340,7 @@ try {
           const next = await pipe.reader.read()
           if (next.done) break
           output.update(next.value)
+          options.onOutput?.(next.value.slice(), pipe.source)
         }
       }
       finally {
