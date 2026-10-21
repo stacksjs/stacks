@@ -40,4 +40,21 @@ describe('query builder paginate() without arguments', () => {
     expect(ids(page)).toEqual([6, 7])
     expect(page).toMatchObject({ current_page: 2, per_page: 5, total: 7, last_page: 2 })
   })
+
+  it('keeps explicit page size and page distinct on every model entrypoint', async () => {
+    for (const read of [
+      () => Model.query().orderBy('id', 'asc').paginate(3, 2),
+      () => Model.where('id', '>', 0).paginate(3, 2),
+      () => Model.paginate(3, 2),
+    ]) {
+      const page = await read()
+      expect(ids(page)).toEqual([4, 5, 6])
+      expect(page).toMatchObject({ current_page: 2, per_page: 3, total: 7, last_page: 3 })
+    }
+  })
+
+  it('applies a lone page-size argument to page one', async () => {
+    expect(ids(await Model.query().paginate(2))).toEqual([1, 2])
+    expect(ids(await Model.paginate(2))).toEqual([1, 2])
+  })
 })

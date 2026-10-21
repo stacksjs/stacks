@@ -127,10 +127,10 @@ async function queryResultContracts(): Promise<void> {
   // @ts-expect-error sum only accepts numeric columns
   await Article.sum('status')
 
-  const page = await Article.paginate(2, 25)
+  const page = await Article.paginate(25, 2)
   const pageTitle: string = page.data[0]!.title
   const totalRows: number = page.total
-  const hasMore: boolean = page.hasMorePages
+  const hasMore: boolean = page.has_more_pages
 
   const builderPage = await Article.where('status', 'draft').paginate(2, 25)
   const builderPageTitle: string = builderPage.data[0]!.get('title')

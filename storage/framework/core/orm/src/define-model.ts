@@ -7,7 +7,7 @@ import { log } from '@stacksjs/logging/runtime'
 import { parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { snakeCase } from '@stacksjs/strings'
 import { AsyncLocalStorage } from 'node:async_hooks'
-import { toCursorPaginator, toPaginator, toSimplePaginator } from '@stacksjs/pagination'
+import { type Paginator, toCursorPaginator, toPaginator, toSimplePaginator } from '@stacksjs/pagination'
 import { enrichPaginatorUrls, resolveCursorArgs, resolvePageArgs } from './paginator-request'
 import { hasWriteValidators, validateWriteBody } from './auto-crud'
 import type { BelongsToForeignKeys } from './model-types'
@@ -964,15 +964,13 @@ function wrapQueryBuilder(qb: any, casts?: Record<string, CastType | CasterInter
         // any request scope, so CLI / queue / cron callers still see
         // the same defaults as before.
         let callArgs = args
-        if (propName === 'paginate' && args[0] === undefined && args[1] === undefined) {
-          // Both numbers come from the request or the defaults here, and
-          // bun-query-builder's model builder reads positional arguments as
-          // `(page, perPage)`. Its options object names them, so they cannot
-          // cross.
-          const { perPage, page } = resolvePageArgs()
+        if (propName === 'paginate') {
+          // Stacks uses (perPage, page), while the upstream model builder
+          // uses (page, perPage). Its named options avoid positional swaps.
+          const { perPage, page } = resolvePageArgs(args[0], args[1])
           callArgs = [{ perPage, page }]
         }
-        else if (propName === 'paginate' || propName === 'simplePaginate') {
+        else if (propName === 'simplePaginate') {
           const { perPage, page } = resolvePageArgs(args[0], args[1])
           callArgs = [perPage, page]
         }
@@ -1034,6 +1032,15 @@ function wrapReadsWithProxy(baseModel: Record<string, unknown>, casts?: Record<s
     baseModel[method] = function (...args: any[]) {
       const qb = (original as Function).apply(this, args)
       return wrapQueryBuilder(qb, casts)
+    }
+  }
+
+  // Static pagination enters the same wrapper as chained model reads, so it
+  // shares argument order, request defaults, casts and the canonical envelope.
+  if (typeof baseModel.paginate === 'function') {
+    baseModel.paginate = (...args: unknown[]) => {
+      const query = (baseModel.query as () => Record<string, unknown>)()
+      return (query.paginate as (...values: unknown[]) => unknown)(...args)
     }
   }
 }
@@ -2437,8 +2444,9 @@ export type ModelSearchStatics<TDef> = TDef extends { traits: { useSearch: infer
   }
   : {}
 
-export type StacksModelStatic<TDef extends ModelDefinition> = Omit<QueryModel<TDef>, 'update' | 'delete'> & TDef & TraitMethods & ModelSearchStatics<TDef> & {
+export type StacksModelStatic<TDef extends ModelDefinition> = Omit<QueryModel<TDef>, 'update' | 'delete' | 'paginate'> & TDef & TraitMethods & ModelSearchStatics<TDef> & {
   readonly [MODEL_DEFINITION]: TDef
+  paginate: (perPage?: number, page?: number) => Promise<Paginator<Awaited<ReturnType<QueryModel<TDef>['paginate']>>['data'][number]>>
   update: (id: number | string, data: ModelWriteData<TDef>) => ReturnType<QueryModel<TDef>['find']>
   forceUpdate: (id: number | string, data: ModelForceWriteData<TDef>) => ReturnType<QueryModel<TDef>['find']>
   forceCreate: (data: ModelForceWriteData<TDef>) => ReturnType<QueryModel<TDef>['create']>
