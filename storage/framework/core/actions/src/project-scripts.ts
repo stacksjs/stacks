@@ -8,7 +8,7 @@ export interface ProjectScriptOptions {
   env?: Record<string, string | undefined>
   signal?: AbortSignal
   timeoutMs?: number
-  /** Optional live observation; receipts still retain only an output hash. */
+  /** Optional synchronous live output observer. Receipts still retain only hashes. */
   onOutput?: (chunk: Uint8Array, stream: 'stdout' | 'stderr') => void
 }
 
@@ -298,7 +298,7 @@ try {
         else reportFailure(new Error(`Consumer script ${script} host failed: ${message?.error ?? 'invalid completion report'}`))
       },
     })
-    const pipes = [child.stdout, child.stderr].map((stream, index) => ({ reader: stream.getReader(), done: false, kind: index === 0 ? 'stdout' as const : 'stderr' as const }))
+    const pipes = [child.stdout, child.stderr].map((stream, index) => ({ reader: stream.getReader(), done: false, source: index === 0 ? 'stdout' as const : 'stderr' as const }))
     let teardown: Promise<void> | undefined
     let announceStop: () => void = () => {}
     const stopped = new Promise<void>(resolve => { announceStop = resolve })
@@ -442,7 +442,7 @@ try {
           const next = await pipe.reader.read()
           if (next.done) break
           output.update(next.value)
-          options.onOutput?.(next.value.slice(), pipe.kind)
+          options.onOutput?.(next.value.slice(), pipe.source)
         }
       }
       finally {
@@ -466,8 +466,16 @@ try {
       await dispose(true)
     }
     catch (error) {
+      const wasInterrupted = interrupted
       stop()
-      await teardown
+      try { await teardown }
+      catch (cleanupError) {
+        // A deadline remains a failed deadline even when Windows also reports
+        // a process-tree cleanup race. Retain both causes for the operator.
+        if (wasInterrupted)
+          fail(`Consumer script ${script} was interrupted or exceeded its execution budget; ${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`)
+        throw cleanupError
+      }
       throw error
     }
     finally {
