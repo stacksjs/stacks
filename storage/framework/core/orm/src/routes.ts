@@ -19,6 +19,7 @@
 
 import process from 'node:process'
 import type { DbWriteResult } from '@stacksjs/database/runtime'
+import { dialectCapabilities, sqlDateTime } from '@stacksjs/database/runtime'
 import type { EnhancedRequest } from '@stacksjs/router'
 import { parseBearerToken, route } from '@stacksjs/router'
 import { projectPath, storagePath } from '@stacksjs/path'
@@ -125,6 +126,26 @@ const models = registry.models
  */
 function dynamicDb(): DynamicDb {
   return createQueryBuilder() as unknown as DynamicDb
+}
+
+/**
+ * The value a write here stamps into `created_at`, `updated_at` or
+ * `deleted_at`.
+ *
+ * MySQL takes `sqlDateTime()`, the framework's canonical form: strict mode
+ * rejects the trailing `Z` of `toISOString()` with "Incorrect datetime value",
+ * so store, update, destroy and bulk-delete all answered 500 on a MySQL-wire
+ * connection. The other dialects keep `toISOString()`. On SQLite that string
+ * is what these routes read back and return, and the zoneless canonical form
+ * would change every response to a value `new Date()` reads as local time.
+ * Moving them is a wider decision than this fix.
+ *
+ * Asked of the query builder's live config, the connection `dynamicDb()`
+ * writes through, rather than `DB_CONNECTION`: config/database.ts can name a
+ * different default.
+ */
+function writeTimestamp(): string {
+  return dialectCapabilities(queryBuilderConfig.dialect).wire === 'mysql' ? sqlDateTime() : new Date().toISOString()
 }
 
 const routeShapeIndex = indexRouteShapes<RegisteredRouteLike>(route.routes)
@@ -1037,7 +1058,7 @@ for (const [modelName, model] of Object.entries(apiModels)) {
 
         // Add timestamps if model uses them
         if (model.traits?.useTimestamps !== false) {
-          const now = new Date().toISOString()
+          const now = writeTimestamp()
           data.created_at = now
           data.updated_at = now
         }
@@ -1144,7 +1165,7 @@ for (const [modelName, model] of Object.entries(apiModels)) {
 
         // Add updated_at timestamp
         if (model.traits?.useTimestamps !== false) {
-          data.updated_at = new Date().toISOString()
+          data.updated_at = writeTimestamp()
         }
 
         // Same hook+cast pass as the create path — and crucially the set-hooks
@@ -1214,7 +1235,7 @@ for (const [modelName, model] of Object.entries(apiModels)) {
           // Soft delete: stamp deleted_at + updated_at instead of dropping the row.
           // Reads in the index handler filter `WHERE deleted_at IS NULL` unless
           // the caller passes ?withTrashed=true.
-          const now = new Date().toISOString()
+          const now = writeTimestamp()
           await dynamicDb().updateTable(table)
             .set({ deleted_at: now, updated_at: now })
             .where({ id })
@@ -1307,7 +1328,7 @@ for (const [modelName, model] of Object.entries(apiModels)) {
             return jsonResponse({ error: `Cannot delete ${modelName} this policy refuses`, ids: refusedRows }, 403)
         }
 
-        const now = new Date().toISOString()
+        const now = writeTimestamp()
         for (const id of validIds) {
           if (usesSoftDeletes) {
             await dynamicDb().updateTable(table)
