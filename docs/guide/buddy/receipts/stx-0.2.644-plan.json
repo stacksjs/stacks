@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "repository": "stacksjs/stx",
+      "commit": "3902759748e23b8ac035642c5468d25af8e7875a",
+      "tag": "v0.2.644",
+      "gates": [
+        {
+          "runId": 39647766798,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "Verify the exact release source",
+            "npm",
+            "icons"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "@stacksjs/stx",
+          "version": "0.2.644",
+          "integrity": "sha512-I+N0VRoZBoob2By6uhtQ6tC5vAOFBVYFeTfsdUfNzowstnbHiPVIo6+4pAVCrl9f4xJ3b/jSZih05HUAobiVwQ=="
+        },
+        {
+          "name": "@stacksjs/desktop",
+          "version": "0.2.644",
+          "integrity": "sha512-C6/JPKYb5gsJoEwrORyrihYTDshdzzapqMsb6Nx2/ppiW55IL7LFszGdpG3tpayiTT48Tf1XJ0WJofyEC8ey6w=="
+        },
+        {
+          "name": "@stacksjs/sanitizer",
+          "version": "0.2.644",
+          "integrity": "sha512-srwNYr5rs+StDvqSBmJNfAcPo/5jMisI4e0o9OOpBcQQUv4cBOLPFsb+bsWP9t9/LahmMuLVpiyLaSyC/gjeBg=="
+        },
+        {
+          "name": "bun-plugin-stx",
+          "version": "0.2.644",
+          "integrity": "sha512-LK9ru0wJJBsXJLKR0LwIV5mHQXFTmvhkEG3grvwQGvKHpA94KpkVM8s2s6dQ4q0bghXjdTal35ZTdp4Fg/JkSQ=="
+        },
+        {
+          "name": "stx-router",
+          "version": "0.2.644",
+          "integrity": "sha512-EK8HhCs+ZHomH8xfTEYmS2MOMjbogrG90FIuqgUVEFuO41LvzkLI8zDpmim2HQNye/s6trReslhwL6Nafk9txg=="
+        },
+        {
+          "name": "@stacksjs/components",
+          "version": "0.2.644",
+          "integrity": "sha512-Nj7AGQQLR/uOcAX/WaaHQ9+FiH2qsSU4iSKcpL/khdQV5CTwUBQklx7w6pR+vNCe6S8hTzbpkH1vERLFJB3NVA=="
+        }
+      ]
+    }
+  ],
+  "checks": [
+    "deps:lockfile:check",
+    "typecheck:views"
+  ]
+}

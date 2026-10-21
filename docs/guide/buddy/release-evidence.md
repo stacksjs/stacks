@@ -75,3 +75,16 @@ not validate registry signatures or SLSA attestations, establish redistribution
 rights, prove native execution, or guarantee original-game fidelity. Include
 the actual native and product acceptance scripts in the consumer checks and
 retain their platform execution evidence separately.
+## Retained adoption evidence
+
+The [stx 0.2.644 plan](./receipts/stx-0.2.644-plan.json) and
+[executed receipt](./receipts/stx-0.2.644-receipt.json) retain the framework's
+adoption of six published stx packages. Original archive identities came from
+the successful release's npm job, not from a mutable latest version lookup.
+The verifier checked the exact source tag and workflow, downloaded archives,
+installed file inventories, Bun lock identities, the lockfile compatibility
+check and the framework's stx view type checks.
+
+This is a historical receipt for the recorded lockfile hash. Later framework
+releases change that lockfile and need fresh consumer evidence. It establishes
+neither native execution nor Settlers III fidelity or original-media rights.

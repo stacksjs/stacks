@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-21T21:27:21.929Z",
+  "sources": [
+    {
+      "repository": "stacksjs/stx",
+      "commit": "3902759748e23b8ac035642c5468d25af8e7875a",
+      "tag": "v0.2.644",
+      "gates": [
+        {
+          "runId": 39647766798,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "Verify the exact release source",
+            "npm",
+            "icons"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "@stacksjs/stx",
+          "version": "0.2.644",
+          "integrity": "sha512-I+N0VRoZBoob2By6uhtQ6tC5vAOFBVYFeTfsdUfNzowstnbHiPVIo6+4pAVCrl9f4xJ3b/jSZih05HUAobiVwQ==",
+          "tarball": "https://registry.npmjs.org/@stacksjs/stx/-/stx-0.2.644.tgz",
+          "bytes": 2243383,
+          "filesSha256": "aaf65f6888dfaf9a36e953d31dd0fd76000ce3000c8c4a9b3f3fbb5e1f196f70"
+        },
+        {
+          "name": "@stacksjs/desktop",
+          "version": "0.2.644",
+          "integrity": "sha512-C6/JPKYb5gsJoEwrORyrihYTDshdzzapqMsb6Nx2/ppiW55IL7LFszGdpG3tpayiTT48Tf1XJ0WJofyEC8ey6w==",
+          "tarball": "https://registry.npmjs.org/@stacksjs/desktop/-/desktop-0.2.644.tgz",
+          "bytes": 106733,
+          "filesSha256": "aa5488706b69b180858b40fdf108c45e96a17e66a22cf2c27f495e4351dcb403"
+        },
+        {
+          "name": "@stacksjs/sanitizer",
+          "version": "0.2.644",
+          "integrity": "sha512-srwNYr5rs+StDvqSBmJNfAcPo/5jMisI4e0o9OOpBcQQUv4cBOLPFsb+bsWP9t9/LahmMuLVpiyLaSyC/gjeBg==",
+          "tarball": "https://registry.npmjs.org/@stacksjs/sanitizer/-/sanitizer-0.2.644.tgz",
+          "bytes": 4743,
+          "filesSha256": "459247f0831d8d7b21fe4e87820bc9fffca5fc776854038d26f6f3a5b183c6e5"
+        },
+        {
+          "name": "bun-plugin-stx",
+          "version": "0.2.644",
+          "integrity": "sha512-LK9ru0wJJBsXJLKR0LwIV5mHQXFTmvhkEG3grvwQGvKHpA94KpkVM8s2s6dQ4q0bghXjdTal35ZTdp4Fg/JkSQ==",
+          "tarball": "https://registry.npmjs.org/bun-plugin-stx/-/bun-plugin-stx-0.2.644.tgz",
+          "bytes": 124129,
+          "filesSha256": "8e00be5a152d24a085b2712ce318f5c5d0767bd04a30d319fda7df7b68e869e0"
+        },
+        {
+          "name": "stx-router",
+          "version": "0.2.644",
+          "integrity": "sha512-EK8HhCs+ZHomH8xfTEYmS2MOMjbogrG90FIuqgUVEFuO41LvzkLI8zDpmim2HQNye/s6trReslhwL6Nafk9txg==",
+          "tarball": "https://registry.npmjs.org/stx-router/-/stx-router-0.2.644.tgz",
+          "bytes": 82875,
+          "filesSha256": "45caa7d6b6773d2d8f4f88ce6ab1f3c6becd4068530494e38f5d68c798c5f1b7"
+        },
+        {
+          "name": "@stacksjs/components",
+          "version": "0.2.644",
+          "integrity": "sha512-Nj7AGQQLR/uOcAX/WaaHQ9+FiH2qsSU4iSKcpL/khdQV5CTwUBQklx7w6pR+vNCe6S8hTzbpkH1vERLFJB3NVA==",
+          "tarball": "https://registry.npmjs.org/@stacksjs/components/-/components-0.2.644.tgz",
+          "bytes": 542212,
+          "filesSha256": "27bcddb04d5e25a521f6b531c0bf22694c3183e81a80ca2a1b965db28aa402b3"
+        }
+      ],
+      "releaseCommand": "bun run release:patch",
+      "releaseScript": "bun x --bun @stacksjs/bumpx patch --recursive --yes"
+    }
+  ],
+  "consumer": {
+    "lockfile": "bun.lock",
+    "sha256": "116a18b04b754475719290e01519328181f9e654f21876e7cb3d17c12552b5ee",
+    "bunVersion": "1.4.2",
+    "checks": [
+      {
+        "script": "deps:lockfile:check",
+        "exitCode": 0,
+        "outputSha256": "97401ad71177b2110a3768aa80293837b99e51efa3604e20bdda38194633f2b7"
+      },
+      {
+        "script": "typecheck:views",
+        "exitCode": 0,
+        "outputSha256": "ec77c728155a1a6aa969cbfb2b32050f7086ec422bf85956c3abc6f06268024a"
+      }
+    ]
+  }
+}
