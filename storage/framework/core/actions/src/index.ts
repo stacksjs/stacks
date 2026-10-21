@@ -46,6 +46,8 @@ export { formatProject, lintFix, lintProject } from './lint/lint'
 // pushed tag gets, and the Pantry-managed tools behind `build:ios`.
 export { describeGitHubRelease, parseGitHubRemote, publishGitHubRelease } from './github-release'
 export type { GitHubReleaseResult, PublishGitHubReleaseOptions } from './github-release'
+export { validateReleaseEvidencePlan, verifyReleaseEvidence } from './release-evidence'
+export type { ReleaseEvidenceOptions, ReleaseEvidencePlan, ReleaseEvidenceReceipt, ReleaseSource } from './release-evidence'
 export { DEFAULT_IOS_DEPENDENCIES, IosToolchainError, loadIosDependencies, pantryExecutable, pantryInstallArgs, resolveXcodegen, XCODE_NOTE, xcodeDeveloperDir } from './build/ios-toolchain'
 export type { PantryTool } from './build/ios-toolchain'
 // stx conformance checks behind `buddy lint --stx`. Pure - returns a report

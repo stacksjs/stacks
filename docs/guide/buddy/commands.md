@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **364 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **365 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -58,7 +58,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `publish` | 6 |
 | `queue` | 21 |
 | `realtime` | 2 |
-| `release` | 2 |
+| `release` | 3 |
 | `route` | 1 |
 | `scaffold` | 1 |
 | `schedule` | 6 |
@@ -4808,6 +4808,19 @@ Ship the iOS app: regenerate its project for production, commit, tag and push
 | `--keep-builds` | TestFlight builds to keep besides the new one; older ones are expired (needs an App Store Connect API key) | value, required | `1` |
 | `--skip-github-release` | Push the tag without creating its GitHub release | boolean, optional | `false` |
 | `--dry-run` | Run the release without actually releasing | boolean, optional | `false` |
+
+### `release:verify`
+
+Verify exact source gates, published archives and installed consumer checks
+
+- Usage: `$ buddy release:verify <plan>`
+- Namespace: `release`
+- Aliases: none
+- Arguments: `<plan>`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--output` | Save the successful verification receipt as JSON | value, required | - |
 
 ### `route:list`
 

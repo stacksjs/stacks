@@ -22,6 +22,26 @@ env:
   BUN_VERSION: '1.4.2'
 
 jobs:
+  release-evidence:
+    name: Release evidence (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Set up the declared Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+      - name: Install the committed dependency graph
+        run: bun install --frozen-lockfile
+      - name: Verify source gates, installed artifacts and subprocess ownership
+        run: bun test ./storage/framework/core/actions/tests/release-evidence.test.ts ./storage/framework/core/buddy/tests/release-evidence.test.ts
+
   dependency-locks:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest

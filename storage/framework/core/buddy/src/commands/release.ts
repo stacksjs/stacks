@@ -1,13 +1,15 @@
 import type { CLI, ReleaseOptions } from '@stacksjs/types'
 import { execFileSync } from 'node:child_process'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import process from 'node:process'
 import { resolveXcodegen } from '@stacksjs/actions/build/ios-toolchain'
-import { describeGitHubRelease, publishGitHubRelease } from '@stacksjs/actions/github-release'
+import { describeGitHubRelease, publishGitHubRelease, resolveGitHubToken } from '@stacksjs/actions/github-release'
+import { validateReleaseEvidencePlan, verifyReleaseEvidence } from '@stacksjs/actions/release-evidence'
 import { runAction } from '@stacksjs/actions/run-action'
 import { intro, italic, log, onUnknownSubcommand, outro } from '@stacksjs/cli'
+import { printAsync } from '@stacksjs/cli/output'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
 import { AppStoreConnect, appStoreConnectCredentials, buildsToExpire } from '../app-store-connect'
@@ -105,6 +107,34 @@ export function release(buddy: CLI): void {
       catch (error) {
         await log.error('Failed to create the GitHub release', error)
         process.exit(ExitCode.FatalError)
+      }
+    })
+
+  buddy
+    .command('release:verify <plan>', 'Verify exact source gates, published archives and installed consumer checks')
+    .option('--output <path>', 'Save the successful verification receipt as JSON')
+    .action(async (planPath: string, options: { output?: string }) => {
+      let temporary: string | undefined
+      try {
+        const plan: unknown = JSON.parse(readFileSync(planPath, 'utf8'))
+        validateReleaseEvidencePlan(plan)
+        const receipt = await verifyReleaseEvidence(plan, { cwd: process.cwd(), token: resolveGitHubToken() ?? undefined })
+        const json = `${JSON.stringify(receipt, null, 2)}\n`
+        if (options.output) {
+          temporary = `${options.output}.${crypto.randomUUID()}.tmp`
+          writeFileSync(temporary, json, { flag: 'wx', mode: 0o600 })
+          renameSync(temporary, options.output)
+          temporary = undefined
+          await printAsync(`Verified release evidence saved to ${options.output}`)
+        }
+        else {
+          await printAsync(json.trimEnd())
+        }
+      }
+      catch (error) {
+        if (temporary) rmSync(temporary, { force: true })
+        await log.error('Release verification failed', error)
+        process.exitCode = ExitCode.FatalError
       }
     })
 
