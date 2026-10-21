@@ -136,3 +136,66 @@ describe('backward compat: existing object schemas keep working', () => {
     expect(shape.bar).toBeDefined()
   })
 })
+
+describe('.when() leaves the schema it refines unchanged', () => {
+  test('an optional object made required by .when() is optional again for the next input', () => {
+    const address = schema.object({ street: schema.string().required() })
+      .optional()
+      .when('delivery', 'ship', s => s.required())
+    const order = schema.object({ delivery: schema.string(), address })
+
+    for (let round = 0; round < 2; round++) {
+      expect(order.validate({ delivery: 'pickup' }).valid).toBe(true)
+      expect(order.validate({ delivery: 'ship' }).valid).toBe(false)
+      expect(order.validate({ delivery: 'ship', address: { street: 'Main St' } }).valid).toBe(true)
+    }
+    expect(address.isRequired).toBe(false)
+  })
+
+  test('a required object made optional by .when() is required again for the next input', () => {
+    const address = schema.object({ street: schema.string().required() })
+      .when('delivery', 'pickup', s => s.optional())
+    const order = schema.object({ delivery: schema.string(), address })
+
+    for (let round = 0; round < 2; round++) {
+      expect(order.validate({ delivery: 'pickup' }).valid).toBe(true)
+      expect(order.validate({ delivery: 'ship' }).valid).toBe(false)
+    }
+    expect(address.isRequired).toBe(true)
+  })
+
+  test('a .when() that swaps the shape leaves the original shape and flag in place', () => {
+    const strict = { street: schema.string().required() }
+    const loose = { street: schema.string() }
+    const address = schema.object(strict)
+      .when('delivery', 'pickup', s => s.optional().shape(loose))
+    const order = schema.object({ delivery: schema.string(), address })
+
+    for (let round = 0; round < 2; round++) {
+      expect(order.validate({ delivery: 'pickup' }).valid).toBe(true)
+      expect(order.validate({ delivery: 'pickup', address: {} }).valid).toBe(true)
+      expect(order.validate({ delivery: 'ship' }).valid).toBe(false)
+      expect(order.validate({ delivery: 'ship', address: {} }).valid).toBe(false)
+    }
+    expect(address.getShape()).toBe(strict)
+    expect(address.isRequired).toBe(true)
+  })
+
+  test('the same holds with the shape swapped before .required()', () => {
+    const strict = { street: schema.string().required() }
+    const loose = { street: schema.string() }
+    const address = schema.object(strict)
+      .optional()
+      .when('delivery', 'ship', s => s.shape(loose).required())
+    const order = schema.object({ delivery: schema.string(), address })
+
+    for (let round = 0; round < 2; round++) {
+      expect(order.validate({ delivery: 'ship' }).valid).toBe(false)
+      expect(order.validate({ delivery: 'ship', address: {} }).valid).toBe(true)
+      expect(order.validate({ delivery: 'pickup' }).valid).toBe(true)
+      expect(order.validate({ delivery: 'pickup', address: {} }).valid).toBe(false)
+    }
+    expect(address.getShape()).toBe(strict)
+    expect(address.isRequired).toBe(false)
+  })
+})

@@ -89,14 +89,17 @@ export interface ObjectWithContextValidator<TShape extends ValidatorShape> exten
 export function objectWithContext<const TShape extends ValidatorShape = Record<string, never>>(
   initialShape?: TShape,
 ): ObjectWithContextValidator<TShape> & ConditionalAPI<ObjectWithContextValidator<TShape>> {
-  let shape: ValidatorShape = initialShape ?? {}
-  let isRequired = true
-
-  const validator: ObjectWithContextValidator<TShape> = {
+  type ObjectState = ObjectWithContextValidator<TShape> & { schema: ValidatorShape }
+  const validator: ObjectState = {
     name: 'object',
-    get isRequired() {
-      return isRequired
-    },
+    // `isRequired` and `schema` live on the instance, as ts-validation's own
+    // validators keep them, and are set through `this` below. A `.when()`
+    // refinement runs on a copy of this object (see `cloneValidator` in
+    // ./conditional.ts), and state held in this function's scope was shared by
+    // that copy: the refinement changed the schema itself, for every later
+    // input.
+    isRequired: true,
+    schema: initialShape ?? {},
     getRules: () => [],
     test(value: InferObjectShape<TShape>) {
       return this.validate(value).valid
@@ -108,24 +111,24 @@ export function objectWithContext<const TShape extends ValidatorShape = Record<s
     isPartOfShape: false,
 
     shape<TNextShape extends ValidatorShape>(next: TNextShape) {
-      shape = next
-      return validator as unknown as ObjectWithContextValidator<TNextShape>
+      this.schema = next
+      return this as unknown as ObjectWithContextValidator<TNextShape>
     },
 
     getShape() {
-      return shape as TShape
+      return this.schema as TShape
     },
 
     required() {
-      isRequired = true
+      this.isRequired = true
       // The marker is phantom - nothing is added here. The cast IS the marker,
       // in the one place it can be, exactly as ts-validation's base does it.
-      return augmented as ObjectChain & RequiredMarker
+      return this as unknown as ObjectChain & RequiredMarker
     },
 
     optional() {
-      isRequired = false
-      return augmented
+      this.isRequired = false
+      return this as unknown as ObjectChain
     },
 
     validate(value: unknown): ValidationResult {
@@ -133,10 +136,10 @@ export function objectWithContext<const TShape extends ValidatorShape = Record<s
       // `objectWithContext().required().validate(undefined)` still fails
       // with the standard "required" error rather than silently passing.
       const isEmpty = value === undefined || value === null
-      if (!isRequired && isEmpty) {
+      if (!this.isRequired && isEmpty) {
         return { valid: true, errors: this.isPartOfShape ? {} : [] }
       }
-      if (isRequired && isEmpty) {
+      if (this.isRequired && isEmpty) {
         const message = 'value is required'
         return this.isPartOfShape
           ? { valid: false, errors: { object: [{ message }] } }
@@ -153,8 +156,8 @@ export function objectWithContext<const TShape extends ValidatorShape = Record<s
       const errors: Record<string, { message: string }[]> = {}
       let hasErrors = false
 
-      for (const key of Object.keys(shape)) {
-        const baseChild = shape[key]
+      for (const key of Object.keys(this.schema)) {
+        const baseChild = this.schema[key]
         if (!baseChild) continue
 
         // Apply conditional refinement against the parent context. If
@@ -187,7 +190,7 @@ export function objectWithContext<const TShape extends ValidatorShape = Record<s
   // Wire `.when()` / `.sometimes()` onto the object validator itself so
   // nested-object-level conditionals work too (e.g. an entire object
   // sub-tree is required only when a sibling key matches a value).
-  type ObjectChain = ObjectWithContextValidator<TShape> & ConditionalAPI<ObjectWithContextValidator<TShape>>
+  type ObjectChain = ObjectState & ConditionalAPI<ObjectWithContextValidator<TShape>>
   const augmented = withConditionals(validator as unknown as Validator<any>) as unknown as ObjectChain
 
   return augmented
