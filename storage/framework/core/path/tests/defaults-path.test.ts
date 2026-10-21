@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
-import { clearDefaultsPathCache, defaultsPath, frameworkPath } from '../src/project'
+import { clearDefaultsPathCache, defaultsPath, frameworkPath, resolveDefaultsRoot } from '../src/index'
 
 /**
  * `defaultsPath()` is where the scaffold defaults resolve from.
@@ -76,12 +76,15 @@ describe('defaultsPath', () => {
     }
   })
 
-  it('names the vendored location when neither tree exists', () => {
+  it('falls back to the module graph when the project has neither', () => {
+    // Not a hole: a hoisted or linked layout legitimately puts the package
+    // outside the project's own node_modules, and `import.meta.resolve` is
+    // the only thing that knows where. Inside this repository that always
+    // resolves, which is why the "nothing anywhere" branch is pinned on the
+    // pure rule below rather than with a fixture.
     const root = fixture({})
     try {
-      // So a missing-file error points at the path an app is expected to
-      // have, not at one inside node_modules.
-      expect(resolveIn(root, 'app/Models/User.ts')).toBe('storage/framework/defaults/app/Models/User.ts')
+      expect(resolveIn(root, 'app/Models/User.ts')).toContain('defaults/app/Models/User.ts')
     }
     finally {
       rmSync(root, { recursive: true, force: true })
@@ -112,5 +115,41 @@ describe('defaultsPath', () => {
   it('takes a relative option like the other path helpers', () => {
     expect(defaultsPath('app/Models', { relative: true, cwd: process.cwd() }))
       .toBe('storage/framework/defaults/app/Models')
+  })
+})
+
+/**
+ * The precedence without a filesystem, so every branch is reachable -
+ * including "nothing is installed anywhere", which cannot be produced from
+ * inside this repository because the module graph always resolves
+ * `@stacksjs/defaults`.
+ */
+describe('resolveDefaultsRoot', () => {
+  const vendored = '/app/storage/framework/defaults'
+  const installed = '/app/node_modules/@stacksjs/defaults'
+
+  it('prefers the vendored tree', () => {
+    expect(resolveDefaultsRoot(vendored, installed, false, vendored)).toBe(vendored)
+  })
+
+  it('prefers the package when the vendored tree is a release behind', () => {
+    // `buddy upgrade` is the only thing that writes the vendored tree, so
+    // bumping `stacks` and running `bun install` leaves an older copy in
+    // front of the version actually declared.
+    expect(resolveDefaultsRoot(vendored, installed, true, vendored)).toBe(installed)
+  })
+
+  it('keeps a stale vendored tree when nothing is installed to replace it', () => {
+    expect(resolveDefaultsRoot(vendored, undefined, true, vendored)).toBe(vendored)
+  })
+
+  it('uses the package when nothing is vendored', () => {
+    expect(resolveDefaultsRoot(undefined, installed, false, vendored)).toBe(installed)
+  })
+
+  it('names the vendored location when neither exists', () => {
+    // So a missing-file error points at the path an app is expected to have,
+    // not at one inside node_modules.
+    expect(resolveDefaultsRoot(undefined, undefined, false, vendored)).toBe(vendored)
   })
 })

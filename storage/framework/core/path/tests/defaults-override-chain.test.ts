@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { existsSync } from 'node:fs'
-import { defaultsPath, frameworkPath } from '../src/project'
+import { defaultsPath, frameworkPath } from '../src/index'
 
 /**
  * The subpaths the framework reads out of the defaults tree.
