@@ -69,6 +69,12 @@ discovered-packages.json
 #   storage/cloud              cloud driver state + dashboard credentials
 storage/framework/stx/
 storage/framework/runtime/
+# The dashboard's discovered-models manifest, at the path `buddy dev
+# --dashboard` wrote it to before it moved under `framework/runtime/` above.
+# Generated per app from its own models and `config/dashboard.ts` toggles, so
+# a tracked copy made every app that ran the dashboard dirty its own vendored
+# framework tree. Still read as a fallback until the next dashboard run.
+storage/framework/defaults/views/dashboard/.discovered-models.json
 # Site-mode markers written by `buddy down` / `buddy coming-soon` on THIS
 # machine. Committing one puts every checkout - and the next deploy - behind
 # the holding page, and taking it back off is a `git rm` rather than a command.

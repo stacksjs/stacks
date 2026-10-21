@@ -111,15 +111,41 @@ interface NavItem {
 }
 
 /**
- * Pull the discovered-models manifest `buddy dev:dashboard` writes into the
- * project's runtime state.
- * Returns the default empty payload when the file is absent (fresh project
+ * Where `buddy dev --dashboard` writes the discovered-models manifest, and
+ * where this reads it: under `storage/framework/runtime/`, which `.gitignore`
+ * covers.
+ */
+export const DISCOVERED_MANIFEST_PATH = 'storage/framework/runtime/dashboard/.discovered-models.json'
+
+/**
+ * Where it used to be written, inside the vendored framework tree.
+ *
+ * Read as a fallback rather than dropped, because an app that upgrades does
+ * not get a new manifest until its next `buddy dev --dashboard` - and without
+ * this it would render an empty sidebar until then. New writes only ever go
+ * to the path above.
+ */
+export const LEGACY_DISCOVERED_MANIFEST_PATH = 'storage/framework/defaults/views/dashboard/.discovered-models.json'
+
+/** The first of the two manifest paths that exists, or null when neither does. */
+function discoveredManifestPath(cwd: string): string | null {
+  for (const rel of [DISCOVERED_MANIFEST_PATH, LEGACY_DISCOVERED_MANIFEST_PATH]) {
+    const candidate = resolve(cwd, rel)
+    if (existsSync(candidate))
+      return candidate
+  }
+  return null
+}
+
+/**
+ * Pull the discovered-models manifest written by the dashboard dev server.
+ * Returns the default empty payload when neither path has one (fresh project
  * before the first dashboard run regenerates it).
  */
 export function loadDiscoveredManifest(
-  manifestPath = resolve(process.cwd(), 'storage/framework/runtime/dashboard/discovered-models.json'),
+  manifestPath = discoveredManifestPath(process.cwd()),
 ): DiscoveredManifest {
-  if (!existsSync(manifestPath))
+  if (manifestPath === null || !existsSync(manifestPath))
     return { models: [], sections: defaultToggles(), nav: [] }
 
   try {

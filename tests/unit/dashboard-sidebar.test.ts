@@ -1,8 +1,14 @@
 import { describe, expect, it } from 'bun:test'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { dirname, join } from 'node:path'
 import {
   DEFAULT_TOGGLES,
+  DISCOVERED_MANIFEST_PATH,
+  LEGACY_DISCOVERED_MANIFEST_PATH,
   buildNavSections,
   buildWebSidebarSections,
+  loadDiscoveredManifest,
   parseDiscoveredManifest,
 } from '../../storage/framework/defaults/resources/functions/dashboard/sidebar'
 
@@ -102,5 +108,91 @@ describe('dashboard sidebar data', () => {
       models: [],
       sections: { library: 'false' },
     }))).toThrow('manifest sections.library must be a boolean')
+  })
+})
+
+/**
+ * The manifest is generated per app from its own models and its
+ * `config/dashboard.ts` section toggles. It used to be written into
+ * `storage/framework/defaults/`, which is the vendored framework tree and is
+ * tracked, so every app that ran `buddy dev --dashboard` dirtied a file it
+ * does not own, and flipping a dashboard section toggle rewrote it.
+ */
+describe('discovered-models manifest location', () => {
+  const payload = JSON.stringify({
+    models: [{ id: 'users', name: 'User' }],
+    sections: DEFAULT_TOGGLES,
+    nav: [],
+  })
+
+  /** A throwaway project root with a manifest at `rel`. */
+  function project(rel: string | null): string {
+    const dir = mkdtempSync(join(tmpdir(), 'sidebar-manifest-'))
+    if (rel !== null) {
+      mkdirSync(dirname(join(dir, rel)), { recursive: true })
+      writeFileSync(join(dir, rel), payload)
+    }
+    return dir
+  }
+
+  function loadFrom(dir: string): ReturnType<typeof loadDiscoveredManifest> {
+    const cwd = process.cwd()
+    process.chdir(dir)
+    try {
+      return loadDiscoveredManifest()
+    }
+    finally {
+      process.chdir(cwd)
+    }
+  }
+
+  it('writes and reads under storage/framework/runtime, which is gitignored', () => {
+    expect(DISCOVERED_MANIFEST_PATH).toBe('storage/framework/runtime/dashboard/.discovered-models.json')
+    expect(DISCOVERED_MANIFEST_PATH.startsWith('storage/framework/runtime/')).toBe(true)
+
+    const dir = project(DISCOVERED_MANIFEST_PATH)
+    try {
+      expect(loadFrom(dir).models).toEqual([{ id: 'users', name: 'User' }])
+    }
+    finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('still reads the legacy defaults path, so an upgrade keeps its sidebar', () => {
+    const dir = project(LEGACY_DISCOVERED_MANIFEST_PATH)
+    try {
+      expect(loadFrom(dir).models).toEqual([{ id: 'users', name: 'User' }])
+    }
+    finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('prefers the runtime path when both exist', () => {
+    const dir = project(DISCOVERED_MANIFEST_PATH)
+    try {
+      mkdirSync(dirname(join(dir, LEGACY_DISCOVERED_MANIFEST_PATH)), { recursive: true })
+      writeFileSync(
+        join(dir, LEGACY_DISCOVERED_MANIFEST_PATH),
+        JSON.stringify({ models: [{ id: 'stale', name: 'Stale' }], sections: DEFAULT_TOGGLES, nav: [] }),
+      )
+      expect(loadFrom(dir).models).toEqual([{ id: 'users', name: 'User' }])
+    }
+    finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('falls back to an empty payload when neither path has one', () => {
+    const dir = project(null)
+    try {
+      const manifest = loadFrom(dir)
+      expect(manifest.models).toEqual([])
+      expect(manifest.sections).toEqual(DEFAULT_TOGGLES)
+    }
+    finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
   })
 })

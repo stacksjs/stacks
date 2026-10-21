@@ -1,7 +1,6 @@
 import process from 'node:process'
 import { randomUUID } from 'node:crypto'
 import { existsSync, mkdirSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
-import { dirname } from 'node:path'
 import { connect } from 'node:net'
 import { bold, cyan, dim, green } from '@stacksjs/cli'
 import { projectPath, publicPath, storagePath } from '@stacksjs/path'
@@ -591,13 +590,16 @@ const { toggles: dashboardToggles, nav: dashboardNav } = await loadDashboardConf
 // server-script context and can't easily do async config loading) can read
 // them synchronously alongside the model list. Older readers that expect a
 // bare array are handled in the loader.
-//
-// Written under `storage/framework/runtime`, the project's own gitignored
-// state, and never into the defaults tree: an app that does not vendor that
-// tree resolves it to `node_modules/@stacksjs/defaults`, which is not the
-// app's to write.
-const manifestPath = storagePath('framework/runtime/dashboard/discovered-models.json')
-mkdirSync(dirname(manifestPath), { recursive: true })
+// Under `framework/runtime/`, which `.gitignore` already covers, and not in
+// `framework/defaults/` where this used to live. The manifest is generated
+// per app from its own models and `config/dashboard.ts` section toggles, so
+// a tracked copy means every app that runs `buddy dev --dashboard` gets a
+// dirty file in its vendored framework tree - and flipping a section toggle
+// rewrites it. The upgrade sync already treated it as local state it must not
+// clobber; this puts it where local state belongs.
+const manifestDir = storagePath('framework/runtime/dashboard')
+const manifestPath = storagePath('framework/runtime/dashboard/.discovered-models.json')
+mkdirSync(manifestDir, { recursive: true })
 const manifestPayload = {
   models: buildManifest(discoveredModels),
   sections: dashboardToggles,
