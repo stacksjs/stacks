@@ -646,7 +646,9 @@ async function runScenarioStep(cdp: Cdp, step: ScenarioStep): Promise<Record<str
   if (step.action === 'press') {
     const key = step.key || ''
     const keyCode = key.length === 1 ? key.charCodeAt(0) : ({ Enter: 13, Escape: 27, Tab: 9 }[key] || 0)
-    await cdp.send('Input.dispatchKeyEvent', { type: 'keyDown', key, code: key, windowsVirtualKeyCode: keyCode })
+    // Enter's text generates the keypress that activates native buttons/forms.
+    const text = key === 'Enter' ? '\r' : undefined
+    await cdp.send('Input.dispatchKeyEvent', { type: 'keyDown', key, code: key, windowsVirtualKeyCode: keyCode, text, unmodifiedText: text })
     await cdp.send('Input.dispatchKeyEvent', { type: 'keyUp', key, code: key, windowsVirtualKeyCode: keyCode })
     return { action: step.action, key, ok: true }
   }

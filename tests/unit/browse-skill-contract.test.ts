@@ -97,6 +97,23 @@ describe('browse skill contract', () => {
     expect(script).toContain('url.hash = \'\'')
   })
 
+  test('delivers Enter text for native button activation without typing during navigation', async () => {
+    const block = script.slice(script.indexOf("  if (step.action === 'press')"), script.indexOf("  if (step.action === 'evaluate')"))
+    const press = new Function('cdp', 'step', `return (async () => { ${block} })()`)
+    const events: Array<{ type: string, key: string, text?: string }> = []
+    const cdp = { send: async (method: string, event: { type: string, key: string, text?: string }) => { expect(method).toBe('Input.dispatchKeyEvent'); events.push(event) } }
+    await press(cdp, { action: 'press', key: 'Enter' })
+    expect(events[0]).toMatchObject({ type: 'keyDown', key: 'Enter', text: '\r' })
+    expect(events[1]).toMatchObject({ type: 'keyUp', key: 'Enter' })
+    expect(events[1]?.text).toBeUndefined()
+    for (const key of ['Tab', 'ArrowDown']) {
+      events.length = 0
+      await press(cdp, { action: 'press', key })
+      expect(events[0]?.text).toBeUndefined()
+      expect(events[1]?.text).toBeUndefined()
+    }
+  })
+
   test('uses isolated page targets and relaunches a failed browser session', () => {
     const crawl = script.slice(script.indexOf("else if (command === 'crawl')"))
     const connection = crawl.indexOf('let browserPage = await createPage(session.port)')
