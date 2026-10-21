@@ -26,7 +26,7 @@
 
 import { EventEmitter } from 'node:events'
 import { SQL } from 'bun'
-import { escapeLike } from './like'
+import { escapeLike } from '../sql-like'
 
 export interface SingleStoreCacheOptions {
   /** SingleStore host (MySQL wire protocol). @default '127.0.0.1' */

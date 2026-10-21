@@ -28,7 +28,7 @@ import { Database } from 'bun:sqlite'
 import { EventEmitter } from 'node:events'
 import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
-import { escapeLike, likePattern } from './like'
+import { escapeLike, likePattern } from '../sql-like'
 
 export interface SqliteCacheOptions {
   /** The SQLite file holding the cache table. `:memory:` for tests. @default 'storage/framework/cache/cache.sqlite' */
