@@ -15,13 +15,23 @@ ambient browser manifest is a type declaration input, not this delivery map.
 3. Explicit application-module imports are bundled separately. Their bindings
    do not leak into another imported module or magically change Ref contracts.
 
-Installed STX 0.2.422 delivers `useForm`, `useIntersectionObserver`,
-`useMouse`, `useParallax`, and `useScroll` on demand. It eagerly supplies
-`useMediaQuery` and `usePreferredReducedMotion` through the runtime/compiler.
+Verified in STX 0.2.422: demand delivery for `useForm`, `useIntersectionObserver`,
+`useMouse`, `useParallax`, and `useScroll`. The runtime/compiler eagerly supplies
+`useMediaQuery` and `usePreferredReducedMotion`.
 An older installation must be checked against its own runtime and demand
 implementation rather than a newer docs list. Demand legacy helpers commonly
 expose getters, `get()`, `subscribe()`, and `stop()`. Their getters are not
 automatically signal-tracked template values.
+
+STX 0.2.628 adds demand-delivered `useAnimationFrame` for canvas and simulations.
+Imported TypeScript controllers use an explicit
+`import { useAnimationFrame } from '@stacksjs/stx/composables'` and declare
+`@stacksjs/stx` as a runtime dependency. This is a STX export, separate from
+the `@stacksjs/composables` Ref API.
+
+STX 0.2.631 keeps top-level mutable bindings live in template expressions,
+including controllers assigned in `onMount` by imported TypeScript code. Use
+signals for values whose changes should schedule rendering.
 
 ## Browser and module contracts differ
 
@@ -34,6 +44,14 @@ automatically signal-tracked template values.
 | useForm | schema then initialValues, signal-backed property records | options object, Stacks schema rules, Ref values and field accessors |
 
 ## Motion and observers
+
+`useAnimationFrame((delta, timestamp) => ...)` supplies milliseconds and returns
+`active`, `resume()`, `pause()` and permanent `stop()` controls. Hidden documents
+suspend the clock and resume with zero delta; subsequent deltas default to a
+100 ms ceiling. Use fixed simulation steps rather than tying production to
+frame count. Honor reduced motion when drawing decorative animation. Component
+destruction registers cleanup when available; controllers with their own
+disposal method call `stop()` there.
 
 Prefer CSS transitions or scroll-driven animation. Use the eager reduced-motion
 signal for anything beyond hover. Attach native browser observation in a mount
