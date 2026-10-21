@@ -28,6 +28,7 @@ import { Database } from 'bun:sqlite'
 import { EventEmitter } from 'node:events'
 import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
+import { escapeLike, likePattern } from './like'
 
 export interface SqliteCacheOptions {
   /** The SQLite file holding the cache table. `:memory:` for tests. @default 'storage/framework/cache/cache.sqlite' */
@@ -51,11 +52,6 @@ interface CacheStatsShape {
 /** Double-quoted identifier for safe interpolation of the configured table name. */
 function quoteIdent(id: string): string {
   return `"${id.replace(/"/g, '""')}"`
-}
-
-/** `*` globs as LIKE patterns, with LIKE's own wildcards taken literally. */
-function likePattern(glob: string): string {
-  return glob.replace(/[\\%_]/g, character => `\\${character}`).replace(/\*/g, '%')
 }
 
 export class SqliteCacheStore extends EventEmitter {
@@ -159,15 +155,17 @@ export class SqliteCacheStore extends EventEmitter {
 
   async flush(): Promise<void> {
     // Scoped to the prefix when one is configured, so a shared table is not
-    // wiped for every namespace.
+    // wiped for every namespace. The prefix is matched literally: run through
+    // likePattern, a `*` in it was a wildcard and `tenant*` flushed `tenant42`.
     if (this.prefix)
-      this.db.query(`DELETE FROM ${this.qualified} WHERE cache_key LIKE ? ESCAPE '\\'`).run(`${likePattern(this.prefix)}:%`)
+      this.db.query(`DELETE FROM ${this.qualified} WHERE cache_key LIKE ? ESCAPE '\\'`).run(`${escapeLike(this.prefix)}:%`)
     else
       this.db.run(`DELETE FROM ${this.qualified}`)
   }
 
   async keys(pattern?: string): Promise<string[]> {
-    const like = `${this.prefix ? `${likePattern(this.prefix)}:` : ''}${pattern ? likePattern(pattern) : '%'}`
+    // The prefix is matched literally, the pattern as a `*` glob.
+    const like = `${this.prefix ? `${escapeLike(this.prefix)}:` : ''}${pattern ? likePattern(pattern) : '%'}`
     const rows = this.db.query(`SELECT cache_key FROM ${this.qualified} WHERE cache_key LIKE ? ESCAPE '\\' AND (expires_at IS NULL OR expires_at > ?)`).all(like, Date.now()) as Array<{ cache_key: string }>
     const strip = this.prefix ? this.prefix.length + 1 : 0
     return rows.map(row => (strip ? row.cache_key.slice(strip) : row.cache_key))

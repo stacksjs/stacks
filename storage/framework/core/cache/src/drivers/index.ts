@@ -372,9 +372,10 @@ export class TaggedCache {
   private static readonly TAG_PREFIX = '__stacks_tag__:'
 
   /**
-   * Per-tag flush mutex. Keyed by the tag-index key (not the user tag)
-   * so multiple `tags(['a'])` instances share the same lock for `'a'`.
-   * Static — flush ordering is process-global, not instance-local.
+   * Per-tag mutex for flushes and the writes they index. Keyed by the
+   * tag-index key (not the user tag) so multiple `tags(['a'])` instances
+   * share the same lock for `'a'`. Static - ordering is process-global, not
+   * instance-local.
    */
   private static readonly flushLocks = new Map<string, Promise<unknown>>()
 
@@ -388,11 +389,30 @@ export class TaggedCache {
     return `${TaggedCache.TAG_PREFIX}${tag}`
   }
 
+  /**
+   * Run `work` after everything already queued on this scope's tags, and
+   * make later writes and flushes on them wait for it.
+   *
+   * The index is a read-modify-write, so two writes that both read it before
+   * either wrote it back kept only one key, and a flush then left the other
+   * in place. Taking the slot synchronously, before the first `await`, also
+   * keeps a write ordered against a flush called after it.
+   */
+  private serialize<T>(work: () => Promise<T>): Promise<T> {
+    const tagKs = this.tags.map(tag => this.tagKey(tag))
+    const before = tagKs.map(tagK => TaggedCache.flushLocks.get(tagK)).filter(lock => lock !== undefined)
+    const ours = Promise.all(before.map(lock => lock.catch(() => 0))).then(work)
+    for (const tagK of tagKs) TaggedCache.flushLocks.set(tagK, ours)
+    return ours.finally(() => {
+      for (const tagK of tagKs) {
+        if (TaggedCache.flushLocks.get(tagK) === ours) TaggedCache.flushLocks.delete(tagK)
+      }
+    })
+  }
+
   private async indexKey(key: string): Promise<void> {
-    // Read–modify–write is fine for tag-index updates: the worst case
-    // is a stale extra entry on flush, which is harmless (flush attempts
-    // to delete keys that no longer exist). Using a Set means the
-    // membership check + append is O(1) regardless of index size.
+    // Called through `serialize()`. Using a Set means the membership
+    // check + append is O(1) regardless of index size.
     for (const tag of this.tags) {
       const tagK = this.tagKey(tag)
       const existing = (await this.cache.get<string[]>(tagK)) ?? []
@@ -405,9 +425,11 @@ export class TaggedCache {
   }
 
   async put<T>(key: string, value: T, ttl?: number): Promise<boolean> {
-    const ok = await this.cache.set(key, value, ttl)
-    if (ok) await this.indexKey(key)
-    return ok
+    return this.serialize(async () => {
+      const ok = await this.cache.set(key, value, ttl)
+      if (ok) await this.indexKey(key)
+      return ok
+    })
   }
 
   async set<T>(key: string, value: T, ttl?: number): Promise<boolean> {
@@ -415,20 +437,24 @@ export class TaggedCache {
   }
 
   async setForever<T>(key: string, value: T): Promise<boolean> {
-    const ok = await this.cache.setForever(key, value)
-    if (ok) await this.indexKey(key)
-    return ok
+    return this.serialize(async () => {
+      const ok = await this.cache.setForever(key, value)
+      if (ok) await this.indexKey(key)
+      return ok
+    })
   }
 
+  // The callback runs outside the lock, so a slow one cannot hold up
+  // flushes of its tags; only the index update waits its turn.
   async remember<T>(key: string, ttl: number, callback: () => T | Promise<T>): Promise<T> {
     const value = await this.cache.remember(key, ttl, callback)
-    await this.indexKey(key)
+    await this.serialize(() => this.indexKey(key))
     return value
   }
 
   async rememberForever<T>(key: string, callback: () => T | Promise<T>): Promise<T> {
     const value = await this.cache.rememberForever(key, callback)
-    await this.indexKey(key)
+    await this.serialize(() => this.indexKey(key))
     return value
   }
 

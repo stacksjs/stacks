@@ -85,3 +85,45 @@ describe('TaggedCache.flush - atomic check-and-set (#1876 C-1)', () => {
     expect(await cache.get('key-2')).toBeUndefined()
   })
 })
+
+describe('TaggedCache writes - the tag index keeps every key', () => {
+  test('keys written to one tag at the same time are all flushed', async () => {
+    const cache = freshCache()
+    const keys = ['feed:1', 'feed:2', 'feed:3', 'feed:4']
+
+    await Promise.all(keys.map(key => cache.tags(['feed']).put(key, key)))
+    await cache.tags(['feed']).flush()
+
+    for (const key of keys)
+      expect(await cache.get(key)).toBeUndefined()
+  })
+
+  test('scopes that share tags in either order index every key without stalling', async () => {
+    const cache = freshCache()
+
+    await Promise.all([
+      cache.tags(['a', 'b']).put('ab:1', 1),
+      cache.tags(['b', 'a']).put('ba:1', 1),
+      cache.tags(['a', 'b']).put('ab:2', 2),
+      cache.tags(['b', 'a']).put('ba:2', 2),
+    ])
+    await cache.tags(['a']).flush()
+
+    for (const key of ['ab:1', 'ba:1', 'ab:2', 'ba:2'])
+      expect(await cache.get(key)).toBeUndefined()
+  })
+
+  test('a write or remember that throws does not hold up the next one', async () => {
+    const cache = freshCache()
+    const set = cache.set.bind(cache)
+    cache.set = async () => { throw new Error('write failed') }
+    await expect(cache.tags(['jobs']).put('job:1', 1)).rejects.toThrow('write failed')
+    cache.set = set
+
+    await expect(cache.tags(['jobs']).remember('job:2', 60, () => { throw new Error('callback failed') })).rejects.toThrow('callback failed')
+
+    await cache.tags(['jobs']).put('job:3', 3)
+    await cache.tags(['jobs']).flush()
+    expect(await cache.get('job:3')).toBeUndefined()
+  })
+})
