@@ -235,6 +235,24 @@ Retained evidence:
 - [storage/framework/core/cache/tests/Memory.test.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cache/tests/Memory.test.ts)
 - [storage/framework/core/cache/tests/ttl.test.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cache/tests/ttl.test.ts)
 
+## cache: sqlite
+
+Status: **supported**. Topology: embedded.
+
+Implementation: [storage/framework/core/cache/src/drivers/sqlite.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cache/src/drivers/sqlite.ts).
+
+Prerequisites:
+
+- Bun SQLite and a writable persistent file
+
+Limitations:
+
+- Values must be JSON-serializable. Retain the SQLite file across deploys. Stampede protection is process-local; this is not a distributed cache.
+
+Retained evidence:
+
+- [storage/framework/core/cache/tests/sqlite-cache.test.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cache/tests/sqlite-cache.test.ts)
+
 ## cache: redis
 
 Status: **supported**. Topology: client-server.
