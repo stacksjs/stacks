@@ -1,5 +1,5 @@
 import { useDark, usePreferredDark } from '@stacksjs/stx/composables'
-import { state } from '@stacksjs/stx/signals'
+import { state } from '@stacksjs/stx'
 
 const dark = useDark()
 const preferred = usePreferredDark()

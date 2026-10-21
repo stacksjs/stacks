@@ -33,6 +33,12 @@ STX 0.2.631 keeps top-level mutable bindings live in template expressions,
 including controllers assigned in `onMount` by imported TypeScript code. Use
 signals for values whose changes should schedule rendering.
 
+Imported modules that create template-facing signals must import `state` from
+`@stacksjs/stx`. The native bundler maps that entry to the page runtime, so
+reads participate in template effects. The `/signals` subpath owns the separate
+module reactive graph and does not schedule browser template updates. Explicit
+module composables retain their documented getter/subscription contracts.
+
 ## Browser and module contracts differ
 
 | Name | STX client runtime | Explicit @stacksjs/composables |

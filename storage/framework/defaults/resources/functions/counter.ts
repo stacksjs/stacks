@@ -1,4 +1,4 @@
-import { state } from '@stacksjs/stx/signals'
+import { state } from '@stacksjs/stx'
 
 export const count = state(0)
 
