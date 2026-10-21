@@ -83,12 +83,14 @@ is a driver you cannot select.
 | Driver | Status | Topology | Live service | Evidence |
 |---|---|---|---|---|
 | `memory` | **supported** | in-process | - | `Memory.test.ts`<br>`ttl.test.ts` |
+| `sqlite` | **supported** | embedded | - | `sqlite-cache.test.ts` |
 | `redis` | **supported** | client-server | redis 8.8.0 | `redis-contract.test.ts` |
 | `singlestore` | **experimental** | client-server | - | none retained |
 
 **Limitations**
 
 - **`memory`** - Not shared across processes.
+- **`sqlite`** - Values must be JSON-serializable. Retain the SQLite file across deploys. Stampede protection is process-local; this is not a distributed cache.
 - **`redis`** - The retained contract covers core cache and TTL operations; TLS/authenticated deployments require separate provider evidence.
 - **`singlestore`** - No dedicated CI service matrix.
 
