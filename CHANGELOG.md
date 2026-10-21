@@ -1,5 +1,18 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.253...v0.75.254)
+
+## 🐛 Bug Fixes
+
+- **upgrade**: retain app checks in mixed legacy pipelines ([5843452](https://github.com/stacksjs/stacks/commit/5843452)) _(by Chris <chris@stacksjs.com>)_
+- **scaffold**: connect imported signals to browser effects ([ffff3b4](https://github.com/stacksjs/stacks/commit/ffff3b4)) _(by Chris <chris@stacksjs.com>)_
+- **upgrade**: preserve application type-check pipelines ([d8615b7](https://github.com/stacksjs/stacks/commit/d8615b7)) _(by Chris <chris@stacksjs.com>)_
+- **scaffold**: import reactive APIs in standalone modules ([4331c15](https://github.com/stacksjs/stacks/commit/4331c15)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.252...v0.75.253)
 
 ## 🐛 Bug Fixes
