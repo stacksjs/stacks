@@ -175,7 +175,17 @@ buddy env:set PUBLIC_URL "https://example.com" --plain
 
 # Set in specific file
 buddy env:set API_KEY "value" --file .env.production
+
+# Read a secret from a file without putting it in the process arguments
+buddy env:set APP_STORE_CONNECT_PRIVATE_KEY --stdin --file .env.production < /secure/AuthKey.p8
 ```
+
+`--stdin` preserves the complete input, including whitespace, newlines, and an
+empty value. It cannot be combined with a positional value and refuses an
+interactive terminal. Values are encrypted by default; command output reports
+the key name and target file without echoing the input. New and updated private
+key files are owner-only (`0600`) and replaced atomically. Existing key files are
+also restricted when reused for encryption.
 
 ### Manage Keypairs
 

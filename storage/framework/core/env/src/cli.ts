@@ -2,7 +2,8 @@
  * CLI commands for .env encryption/decryption
  */
 
-import { existsSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
+import { randomUUID } from 'node:crypto'
+import { chmodSync, existsSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { basename, dirname, resolve } from 'node:path'
 import { decryptValue, encryptValue, generateKeypair } from './crypto'
 import { parse } from './parser'
@@ -38,6 +39,19 @@ export interface GetOptions {
   format?: 'json' | 'shell' | 'eval'
   prettyPrint?: boolean
   cwd?: string
+}
+
+/** Replace key material atomically without exposing it through the process umask. */
+function writePrivateKeys(path: string, content: string | Buffer): void {
+  const temporary = resolve(dirname(path), `.${basename(path)}.${randomUUID()}.tmp`)
+  try {
+    writeFileSync(temporary, content, { encoding: 'utf8', mode: 0o600, flag: 'wx' })
+    chmodSync(temporary, 0o600)
+    renameSync(temporary, path)
+  }
+  finally {
+    rmSync(temporary, { force: true })
+  }
 }
 
 /**
@@ -291,6 +305,7 @@ export function encryptEnv(options: EncryptOptions = {}): { success: boolean, ou
   }
 
   try {
+    if (existsSync(keysPath)) chmodSync(keysPath, 0o600)
     // Load or generate keys
     let publicKey: string
     let privateKey: string
@@ -324,7 +339,7 @@ export function encryptEnv(options: EncryptOptions = {}): { success: boolean, ou
 
         // Append to keys file
         const newKeys = `\n${publicKeyName}="${publicKey}"\n${privateKeyName}="${privateKey}"\n`
-        writeFileSync(keysPath, keysContent + newKeys, 'utf-8')
+        writePrivateKeys(keysPath, keysContent + newKeys)
       }
     }
     else {
@@ -337,7 +352,7 @@ export function encryptEnv(options: EncryptOptions = {}): { success: boolean, ou
       const { publicKeyName, privateKeyName } = envKeyNames(options.file)
 
       const keysContent = `# .env.keys - Keep this file secure and never commit to source control\n${publicKeyName}="${publicKey}"\n${privateKeyName}="${privateKey}"\n`
-      writeFileSync(keysPath, keysContent, 'utf-8')
+      writePrivateKeys(keysPath, keysContent)
     }
 
     const envContent = readFileSync(envPath, 'utf-8')
@@ -512,6 +527,7 @@ export function setEnv(
     : resolve(dirname(envPath), '.env.keys')
 
   try {
+    if (!options.plain && existsSync(keysPath)) chmodSync(keysPath, 0o600)
     let content = ''
     if (existsSync(envPath)) {
       content = readFileSync(envPath, 'utf-8')
@@ -605,7 +621,7 @@ export function setEnv(
       }
 
       keysContent += `\n${publicKeyName}="${keypair.publicKey}"\n${privateKeyName}="${keypair.privateKey}"\n`
-      writeFileSync(keysPath, keysContent, 'utf-8')
+      writePrivateKeys(keysPath, keysContent)
 
       // Drop any stale/orphaned public key line(s) for this file before
       // adding the fresh one, so repeated regeneration can't pile up
@@ -957,7 +973,7 @@ export function rotateKeypair(options: RotateOptions = {}): RotateResult {
     return { success: true, output: `✔ rotated (${envFileName}) to encrypted:v2` }
   }
   catch (error) {
-    if (!existsSync(keysPath)) writeFileSync(keysPath, originalKeys, { mode: 0o600 })
+    if (!existsSync(keysPath)) writePrivateKeys(keysPath, originalKeys)
     return { success: false, error: `Failed to rotate without exposing plaintext: ${error instanceof Error ? error.message : 'Unknown error'}` }
   }
   finally {

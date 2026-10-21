@@ -2115,6 +2115,7 @@ Set an environment variable
 | `-f`, `--file` | The environment file to use | value, optional | `""` |
 | `--fk`, `--file-keys` | The path to the file containing the keys | value, optional | `""` |
 | `--plain` | Don't encrypt the value | boolean, optional | `false` |
+| `--stdin` | Read the exact value from piped standard input instead of an argument | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 Examples:
@@ -2124,6 +2125,7 @@ buddy env:set SECRET=value
 buddy env:set SECRET value
 buddy env:set SECRET value --file .env.production
 buddy env:set SECRET value --plain
+buddy env:set SECRET --stdin --file .env.production
 ```
 
 ### `extension:build`

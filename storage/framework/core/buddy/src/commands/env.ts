@@ -21,6 +21,8 @@ interface EnvOptions {
   verbose: boolean
   file: string
   plain: boolean
+  /** `env:set`: keep secret values out of the process argument list. */
+  stdin: boolean
   /** `env:check`: report EVERY unencrypted value, not just secret-shaped names. */
   strict: boolean
   /** The global `--env <environment>` flag, e.g. `production`. */
@@ -92,14 +94,14 @@ export function env(buddy: CLI): void {
     .option('-f, --file [file]', descriptions.file, { default: '' })
     .option('-fk, --file-keys [fileKeys]', descriptions.fileKeys, { default: '' })
     .option('--plain', 'Don\'t encrypt the value', { default: false })
+    .option('--stdin', 'Read the exact value from piped standard input instead of an argument', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .example('buddy env:set SECRET=value')
     .example('buddy env:set SECRET value')
     .example('buddy env:set SECRET value --file .env.production')
     .example('buddy env:set SECRET value --plain')
-    .action(async (key: string, value: string, options: EnvOptions) => {
-      log.debug('Running `buddy env:set` ...', options)
-
+    .example('buddy env:set SECRET --stdin --file .env.production')
+    .action(async (key: string, value: string | undefined, options: EnvOptions) => {
       // `value === ''` is a value: "this variable exists and is deliberately
       // empty" is a normal state for an app whose billing or mail is not
       // configured yet. Rejecting it as a missing argument left hand-editing the
@@ -111,12 +113,33 @@ export function env(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      if (value === undefined) {
+      if (options.stdin && value !== undefined) {
+        console.error('Choose a value argument or --stdin, not both.')
+        process.exit(ExitCode.FatalError)
+      }
+
+      let inputValue = value
+      if (options.stdin) {
+        if (process.stdin.isTTY) {
+          console.error('--stdin needs a pipe or file redirection; no value was written.')
+          process.exit(ExitCode.FatalError)
+        }
+        try {
+          inputValue = await Bun.stdin.text()
+        }
+        catch {
+          console.error('Could not read the value from standard input; no value was written.')
+          process.exit(ExitCode.FatalError)
+        }
+      }
+
+      if (inputValue === undefined) {
         console.error(`No value given for ${key}. Pass one, or an empty string to clear it: \`buddy env:set ${key} ''\``)
         process.exit(ExitCode.FatalError)
       }
 
-      const result = setEnv(key, value, {
+      log.debug('Running `buddy env:set` ...', { file: options.file, stdin: options.stdin, plain: options.plain })
+      const result = setEnv(key, inputValue, {
         file: resolveEnvFile(options.file, options.env),
         keysFile: options.fileKeys,
         plain: options.plain,

@@ -340,6 +340,7 @@ buddy env:set [key] [value]      # set env var
   -f/--file [file]               # env file path
   -fk/--file-keys [path]         # keys file path
   --plain                        # don't encrypt the value
+  --stdin                        # read exact value from piped stdin; excludes a value argument
 buddy env:encrypt [key]          # encrypt env var(s)
   -f/--file [file]               # env file path
   -fk/--file-keys [path]         # keys file path
