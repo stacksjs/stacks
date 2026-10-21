@@ -9,9 +9,9 @@ import { $ } from 'bun'
 export async function cleanCopy(sourcePath: string, targetPath: string) {
   try {
     log.debug(`Deleting ${targetPath} ...`)
-    await runCommand(`rm -rf ${targetPath}`)
+    await runCommand(['rm', '-rf', targetPath])
     log.debug(`Copying ${sourcePath} to ${targetPath} ...`)
-    await runCommand(`cp -r ${sourcePath} ${targetPath}`)
+    await runCommand(['cp', '-r', sourcePath, targetPath])
     log.debug(`Done copying ${sourcePath} to ${targetPath}`)
   } catch (error) {
     log.error(`Error copying ${sourcePath} to ${targetPath}: ${error}`)
@@ -37,28 +37,28 @@ export async function buildDockerImage() {
   // delete old CDK relating files, to always build fresh
   log.info('Deleting old CDK files...')
   log.info('Deleting old cdk.out ...')
-  await runCommand(`rm -rf ${frameworkCloudPath('cdk.out/')}`)
+  await runCommand(['rm', '-rf', frameworkCloudPath('cdk.out/')])
   log.success('Deleted old cdk.out')
 
   log.info('Deleting old CDK context file...')
-  await runCommand(`rm -rf ${frameworkCloudPath('cdk.context.json')}`)
+  await runCommand(['rm', '-rf', frameworkCloudPath('cdk.context.json')])
   log.success('Deleted old cdk.context.json')
 
   log.info('Deleting old dist.zip file...')
-  await runCommand(`rm -rf ${cloudPath('dist.zip')}`)
+  await runCommand(['rm', '-rf', cloudPath('dist.zip')])
   log.success('Deleted old dist.zip')
 
   log.info('Deleting .DS_Store files...')
-  await runCommand(`rm -rf ${frameworkPath('**/.DS_Store')}`)
+  await runCommand(['rm', '-rf', frameworkPath('**/.DS_Store')])
   log.success('Deleted .DS_Store files')
 
   log.info('Deleting sourcemaps...')
-  await runCommand(`rm -rf ${frameworkPath('**/*.map')}`)
+  await runCommand(['rm', '-rf', frameworkPath('**/*.map')])
   log.success('Deleted sourcemaps')
 
   log.info('Deleting cache files...')
-  await runCommand(`rm -rf ${frameworkPath('cache/dashboard')}`)
-  await runCommand(`rm -rf ${frameworkPath('cache/docs')}`)
+  await runCommand(['rm', '-rf', frameworkPath('cache/dashboard')])
+  await runCommand(['rm', '-rf', frameworkPath('cache/docs')])
   log.success('Deleted cache files')
 
   log.info('Copying project files...')
