@@ -5,7 +5,7 @@
 // style framework bump. We deliberately use `console.*` + `process.exit` here
 // (same as framework.ts) because the calling script exits synchronously.
 /* eslint-disable no-console */
-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, lstatSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import process from 'node:process'
 import { runCommand } from '@stacksjs/cli'
@@ -615,8 +615,16 @@ export function reconcileVendoredManifests(
   options: { dryRun?: boolean, context?: ManifestSpecContext } = {},
 ): ManifestChange[] {
   const root = join(projectRoot, 'storage/framework')
-  if (!existsSync(root))
+  // These paths and their descendants must be app-owned directories. A link
+  // can lead into node_modules or another checkout whose manifests we cannot
+  // rewrite, even when its lexical path is under storage/framework.
+  try {
+    if (![join(projectRoot, 'storage'), root].every(dir => lstatSync(dir).isDirectory()))
+      return []
+  }
+  catch {
     return []
+  }
 
   const changes: ManifestChange[] = []
   const members = workspaceMembers(projectRoot)
@@ -638,11 +646,14 @@ export function reconcileVendoredManifests(
       const full = join(dir, entry)
       let stat
       try {
-        stat = statSync(full)
+        stat = lstatSync(full)
       }
       catch {
         continue
       }
+
+      if (stat.isSymbolicLink())
+        continue
 
       if (stat.isDirectory()) {
         walk(full)

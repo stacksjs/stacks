@@ -55,7 +55,6 @@ const LOCAL_DEFAULT_IGNORES = new Set([
 ])
 
 const LEGACY_PACKAGE_PROJECT_FILES = [
-  'pantry.lock',
   // The old ORM generator described a Request class that no longer exists.
   // Current routes use @stacksjs/router's Request and model-inferred payloads.
   'storage/framework/types/traits.d.ts',
@@ -212,7 +211,7 @@ function syncDirectory(
 /**
  * Copy the installed package into `storage/framework/defaults` and stamp it,
  * touching nothing else: `buddy publish:defaults`, which must not also run the
- * rest of an upgrade (support files, Bun pins, removing `pantry.lock`).
+ * rest of an upgrade (support files, Bun pins, retiring framework types).
  */
 export function vendorDefaultsTree(
   projectRoot: string,
@@ -491,10 +490,11 @@ export function migratePackageProjectManifest(pkg: ProjectPackageJson): ProjectS
       setScript(name, migrated.length ? migrated.join(' && ') : replacement)
   }
 
-  if (scripts['build:reset']?.includes('storage/framework')) {
+  if (scripts['build:reset']?.includes('storage/framework')
+    || scripts['build:reset'] === 'rm -rf node_modules pantry.lock && bun install && ./buddy generate:types && ./buddy lint:fix') {
     setScript(
       'build:reset',
-      'rm -rf node_modules pantry.lock && bun install && ./buddy generate:types && ./buddy lint:fix',
+      'rm -rf node_modules && bun install && ./buddy generate:types && ./buddy lint:fix',
     )
   }
 

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { reconcileVendoredManifests, resolveManifestSpec, workspaceMembers } from '../src/upgrade/packages'
@@ -138,6 +138,50 @@ describe('reconcileVendoredManifests', () => {
     })
 
     expect(reconcileVendoredManifests(root, '0.70.193')).toEqual([])
+  })
+
+  it.each([false, true])('preserves installed defaults reached through a directory link (dry run: %s)', (dryRun) => {
+    const installed = writeManifest('node_modules/@stacksjs/defaults/package.json', {
+      name: '@stacksjs/defaults', dependencies: { '@stacksjs/utils': '^0.70.100' },
+    })
+    const nested = writeManifest('node_modules/@stacksjs/defaults/project/package.json', {
+      name: 'installed-scaffold', dependencies: { '@stacksjs/utils': 'workspace:*' },
+    })
+    const original = [installed, nested].map(file => readFileSync(file, 'utf-8'))
+    writeManifest('storage/framework/api/package.json', {
+      name: '@stacksjs/api', dependencies: { '@stacksjs/utils': 'workspace:*' },
+    })
+    symlinkSync(join(root, 'node_modules/@stacksjs/defaults'), join(root, 'storage/framework/defaults'), 'dir')
+
+    const changes = reconcileVendoredManifests(root, '0.70.193', { dryRun })
+
+    expect(changes.map(change => change.file)).toEqual(['storage/framework/api/package.json'])
+    expect([installed, nested].map(file => readFileSync(file, 'utf-8'))).toEqual(original)
+    expect(readManifest('storage/framework/api/package.json').dependencies['@stacksjs/utils']).toBe(dryRun ? 'workspace:*' : '^0.70.193')
+  })
+
+  it('preserves a linked manifest file', () => {
+    const installed = writeManifest('node_modules/@stacksjs/defaults/package.json', {
+      name: '@stacksjs/defaults', dependencies: { '@stacksjs/utils': '^0.70.100' },
+    })
+    const original = readFileSync(installed, 'utf-8')
+    mkdirSync(join(root, 'storage/framework/linked'), { recursive: true })
+    symlinkSync(installed, join(root, 'storage/framework/linked/package.json'), 'file')
+
+    expect(reconcileVendoredManifests(root, '0.70.193')).toEqual([])
+    expect(readFileSync(installed, 'utf-8')).toBe(original)
+  })
+
+  it.each(['storage', 'storage/framework'])('does not enter a linked traversal root at %s', (linkedPath) => {
+    const installed = writeManifest(`external/${linkedPath === 'storage' ? 'framework/' : ''}package.json`, {
+      name: '@stacksjs/defaults', dependencies: { '@stacksjs/utils': '^0.70.100' },
+    })
+    const original = readFileSync(installed, 'utf-8')
+    if (linkedPath === 'storage/framework') mkdirSync(join(root, 'storage'))
+    symlinkSync(join(root, 'external'), join(root, linkedPath), 'dir')
+
+    expect(reconcileVendoredManifests(root, '0.70.193')).toEqual([])
+    expect(readFileSync(installed, 'utf-8')).toBe(original)
   })
 
   it('writes nothing on a dry run, but still reports what would change', () => {

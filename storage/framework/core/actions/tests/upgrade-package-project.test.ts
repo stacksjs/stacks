@@ -149,9 +149,17 @@ describe('package project manifest migration', () => {
     expect(changes.length).toBeGreaterThan(0)
     expect(pkg.scripts.buddy).toBe('./buddy')
     expect(pkg.scripts['build:reset']).not.toContain('storage/framework')
+    expect(pkg.scripts['build:reset']).not.toContain('pantry.lock')
     expect(pkg.scripts.typecheck).toBe('bun x tsc --noEmit')
     expect(pkg.scripts['build:framework-types']).toBeUndefined()
     expect(pkg.workspaces).toEqual(['storage/framework'])
+  })
+
+  it('repairs the previous generated reset command without discarding the Pantry graph', () => {
+    const pkg = { scripts: { 'build:reset': 'rm -rf node_modules pantry.lock && bun install && ./buddy generate:types && ./buddy lint:fix' } }
+    expect(migratePackageProjectManifest(pkg).some(change => change.path === 'package.json#scripts.build:reset')).toBe(true)
+    expect(pkg.scripts['build:reset']).toBe('rm -rf node_modules && bun install && ./buddy generate:types && ./buddy lint:fix')
+    expect(migratePackageProjectManifest(pkg)).toEqual([])
   })
 })
 
@@ -186,7 +194,7 @@ describe('package project file sync', () => {
     write('storage/framework/defaults/ai/skills/stacks-buddy/SKILL.md', 'old skill')
     write('storage/framework/defaults/ai/skills/removed/SKILL.md', 'stale skill')
     write('storage/framework/defaults/.discovered-models.json', '{}')
-    write('pantry.lock', 'legacy workspace lock')
+    write('pantry.lock', 'existing canonical dependency graph')
 
     const changes = syncPackageProjectFiles(root, defaultsRoot)
 
@@ -194,7 +202,8 @@ describe('package project file sync', () => {
     expect(readFileSync(join(root, 'storage/framework/defaults/ai/skills/stacks-buddy/SKILL.md'), 'utf8')).toBe('current skill')
     expect(existsSync(join(root, 'storage/framework/defaults/ai/skills/removed'))).toBe(false)
     expect(existsSync(join(root, 'storage/framework/defaults/.discovered-models.json'))).toBe(true)
-    expect(existsSync(join(root, 'pantry.lock'))).toBe(false)
+    expect(readFileSync(join(root, 'pantry.lock'), 'utf8')).toBe('existing canonical dependency graph')
+    expect(changes.some(change => change.path === 'pantry.lock')).toBe(false)
     expect(readFileSync(join(root, 'storage/framework/tsconfig.app.json'), 'utf8')).toContain('"app"')
     expect(readFileSync(join(root, 'storage/framework/server/tsconfig.docker.json'), 'utf8')).toContain('"docker"')
     expect(lstatSync(join(root, 'buddy')).mode & 0o111).not.toBe(0)
@@ -206,6 +215,16 @@ describe('package project file sync', () => {
     expect(changes.length).toBeGreaterThan(0)
     expect(readdirSync(join(root, 'storage/framework/defaults'))).toEqual([])
     expect(existsSync(join(root, 'buddy'))).toBe(false)
+  })
+
+  it.each([false, true])('preserves the complete Pantry lock during scaffold sync (vendored defaults: %s)', (vendorDefaults) => {
+    const original = Buffer.from('# canonical lock with platform entries\nlinux = "retained"\nmacos = "retained"\n')
+    writeFileSync(join(root, 'pantry.lock'), original)
+    for (const dryRun of [true, false]) {
+      const changes = syncPackageProjectFiles(root, defaultsRoot, { vendorDefaults, dryRun })
+      expect(changes.some(change => change.path === 'pantry.lock')).toBe(false)
+      expect(readFileSync(join(root, 'pantry.lock')).equals(original)).toBe(true)
+    }
   })
 })
 
