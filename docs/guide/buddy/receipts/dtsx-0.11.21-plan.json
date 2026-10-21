@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "repository": "stacksjs/dtsx",
+      "commit": "6ee09fb2430e013bc9fa313b3a8cafebbe374c76",
+      "tag": "v0.11.21",
+      "gates": [
+        {
+          "runId": 39689868806,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "test",
+            "typecheck",
+            "lint",
+            "Source path identity (ubuntu-latest)",
+            "Source path identity (macos-latest)",
+            "Source path identity (windows-latest)",
+            "publish-commit"
+          ]
+        },
+        {
+          "runId": 39689868757,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "release"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "@stacksjs/dtsx",
+          "version": "0.11.21",
+          "integrity": "sha512-H1DyQD1JdnXplHREClZoSDg5iR0OahTkpWm091SQ8pxNth+U3+uMDdZZLKqBRyax82OyQZUxs1XjOTY3tgvFZg=="
+        },
+        {
+          "name": "bun-plugin-dtsx",
+          "version": "0.11.21",
+          "integrity": "sha512-VyMWSNlQzx1V7lgcu64bi8KoPpfN0yXR31yolj8noHd6Ni40TxInR8KK335DVQAp7x6WPHSGP9GHoTk6xqz2Cg=="
+        }
+      ]
+    }
+  ],
+  "checks": [
+    "deps:lockfile:check",
+    "typecheck"
+  ]
+}

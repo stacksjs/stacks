@@ -2,6 +2,7 @@ import type { EmailMessage } from '@stacksjs/types'
 import { describe, expect, test } from 'bun:test'
 import { createServer } from 'node:net'
 import { config } from '@stacksjs/config'
+import { log } from '@stacksjs/logging'
 import { SMTPDriver } from '../src/drivers/smtp'
 import { buildMimeMessage } from '../src/mime'
 
@@ -50,6 +51,59 @@ describe('SMTP wire boundaries', () => {
     finally {
       config.services.smtp = originalSmtp
       if (originalEncryption !== undefined) process.env.MAIL_ENCRYPTION = originalEncryption
+      await new Promise<void>(resolve => server.close(() => resolve()))
+    }
+  })
+
+  test('authentication travels on the wire without entering debug logs', async () => {
+    const username = 'private-user@example.test'
+    const password = 'private-smtp-password'
+    const wire: string[] = []
+    const logs: string[] = []
+    const originalDebug = log.debug
+    const originalSmtp = config.services.smtp
+    const server = createServer((socket) => {
+      socket.write('220 local.test ESMTP\r\n')
+      let buffer = ''
+      let authStep = 0
+      let inData = false
+      socket.on('data', (data) => {
+        buffer += data.toString()
+        let end: number
+        while ((end = buffer.indexOf('\r\n')) !== -1) {
+          const line = buffer.slice(0, end)
+          buffer = buffer.slice(end + 2)
+          wire.push(line)
+          if (inData) {
+            if (line === '.') { inData = false; socket.write('250 queued\r\n') }
+          }
+          else if (line === 'AUTH LOGIN') { authStep = 1; socket.write('334 username\r\n') }
+          else if (authStep === 1) { authStep = 2; socket.write('334 password\r\n') }
+          else if (authStep === 2) { authStep = 0; socket.write('235 authenticated\r\n') }
+          else if (line === 'DATA') { inData = true; socket.write('354 go\r\n') }
+          else if (line === 'QUIT') { socket.end('221 bye\r\n') }
+          else { socket.write('250 ok\r\n') }
+        }
+      })
+    })
+    await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve))
+    try {
+      log.debug = (...args) => { logs.push(args.map(String).join(' ')) }
+      config.services.smtp = { host: '127.0.0.1', port: (server.address() as { port: number }).port,
+        encryption: null, username, password }
+      const result = await new SMTPDriver().send(message)
+      expect(result.success).toBe(true)
+      for (const credential of [username, password]) {
+        const encoded = Buffer.from(credential).toString('base64')
+        expect(wire).toContain(encoded)
+        expect(logs.join(' ')).not.toContain(encoded)
+        expect(logs.join(' ')).not.toContain(credential)
+      }
+      expect(logs.join(' ')).toContain('[redacted authentication]')
+    }
+    finally {
+      config.services.smtp = originalSmtp
+      log.debug = originalDebug
       await new Promise<void>(resolve => server.close(() => resolve()))
     }
   })
