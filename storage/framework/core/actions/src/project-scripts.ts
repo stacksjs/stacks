@@ -364,8 +364,16 @@ try {
       await dispose(true)
     }
     catch (error) {
+      const wasInterrupted = interrupted
       stop()
-      await teardown
+      try { await teardown }
+      catch (cleanupError) {
+        // A deadline remains a failed deadline even when Windows also reports
+        // a process-tree cleanup race. Retain both causes for the operator.
+        if (wasInterrupted)
+          fail(`Consumer script ${script} was interrupted or exceeded its execution budget; ${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`)
+        throw cleanupError
+      }
       throw error
     }
     finally {
