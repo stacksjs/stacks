@@ -190,7 +190,7 @@ async function createTableMigration(modelPath: string): Promise<void> {
     const fieldOptions = options as Attribute
     const fieldNameFormatted = snakeCase(fieldName)
 
-    const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule)
+    const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule, 'mysql', fieldOptions.type)
     migrationContent += `    .addColumn('${fieldNameFormatted}', ${columnType}`
 
     const isRequired = 'isRequired' in (fieldOptions.validation?.rule ?? {})

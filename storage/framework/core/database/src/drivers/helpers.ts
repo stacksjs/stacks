@@ -140,15 +140,20 @@ export async function getExecutedMigrations(): Promise<{ name: string }[]> {
   }
 }
 
-function findCharacterLength(validator: ValidationType): number {
-  // Check for max length constraint
+/** The `.max()` the model declared, or null when it declared none. */
+function declaredCharacterLength(validator: ValidationType): number | null {
   if ('getRules' in validator) {
     const maxLengthRule = validator.getRules().find((rule: any) => rule.name === 'max')
+    const declared = maxLengthRule?.params?.length ?? maxLengthRule?.params?.max
 
-    return maxLengthRule?.params?.length || maxLengthRule?.params?.max || 255
+    return typeof declared === 'number' ? declared : null
   }
 
-  return 255
+  return null
+}
+
+function findCharacterLength(validator: ValidationType): number {
+  return declaredCharacterLength(validator) ?? 255
 }
 
 export function prepareTextColumnType(validator: StringValidatorType, driver = 'mysql'): string {
@@ -156,8 +161,19 @@ export function prepareTextColumnType(validator: StringValidatorType, driver = '
   if (driver === 'sqlite')
     return `'text'`
 
-  // Get length and choose appropriate MySQL type
-  const maxLength = findCharacterLength(validator)
+  const maxLength = declaredCharacterLength(validator)
+
+  // No `.max()` means the model never bounded this column, and Postgres stores
+  // `text` exactly as it stores `varchar(n)` - same layout, same speed, no
+  // limit to trip over. Defaulting to 255 there was a MySQL habit that cost
+  // correctness and bought nothing: a longer value is rejected outright
+  // (`value too long for type character varying(255)`), which on query_logs
+  // silently dropped every long query the table exists to record.
+  //
+  // MySQL keeps the default, because there TEXT cannot be indexed without a
+  // prefix length, so widening every unbounded string would break indexes.
+  if (maxLength === null)
+    return driver === 'postgres' ? `'text'` : `'varchar(255)'`
 
   return `'varchar(${maxLength})'`
 }
@@ -356,7 +372,26 @@ export function prepareEnumColumnType(validator: EnumValidatorType, driver = 'my
   return `sql\`enum(${enumStructure})\`` // MySQL supports native ENUM
 }
 
-export function mapFieldTypeToColumnType(validator: ValidationType, driver = 'mysql'): string {
+/**
+ * Column types a model may name on the attribute itself, as `type: 'text'`.
+ *
+ * Only the ones every dialect spells the same way. A free-form `type` is also
+ * read by bun-query-builder (`type: 'decimal(10,2)'`), so anything not listed
+ * here is left to the validator rather than passed through to the DDL.
+ */
+const DECLARED_COLUMN_TYPES = new Set(['text', 'json', 'jsonb', 'uuid'])
+
+/**
+ * @param declaredType the attribute's own `type`, which wins over the validator.
+ *   `QueryLog` declares `type: 'text'` on its analysis columns, naming in a
+ *   comment the very error Postgres raised without it, and nothing read it:
+ *   the mapper saw only the validation rule (stacksjs/stacks#2965).
+ */
+export function mapFieldTypeToColumnType(validator: ValidationType, driver = 'mysql', declaredType?: string): string {
+  const declared = declaredType?.trim().toLowerCase()
+  if (declared && DECLARED_COLUMN_TYPES.has(declared))
+    return `'${declared}'`
+
   if (enumValidator(validator))
     return prepareEnumColumnType(validator, driver)
 

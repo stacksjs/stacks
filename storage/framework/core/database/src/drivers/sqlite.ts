@@ -235,7 +235,7 @@ async function createTableMigration(modelPath: string) {
     const fieldOptions = options as Attribute
     const fieldNameFormatted = snakeCase(fieldName)
 
-    const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule, 'sqlite')
+    const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule, 'sqlite', fieldOptions.type)
     migrationContent += `    .addColumn('${fieldNameFormatted}', ${columnType}`
 
     const isRequired = fieldOptions.validation?.rule.isRequired
@@ -429,7 +429,7 @@ async function createAlterTableMigration(modelPath: string) {
   // Add new fields
   for (const fieldName of fieldsToAdd) {
     const options = currentFields[fieldName] as Attribute
-    const columnType = mapFieldTypeToColumnType(options.validation?.rule, 'sqlite')
+    const columnType = mapFieldTypeToColumnType(options.validation?.rule, 'sqlite', options.type)
     const formattedFieldName = snakeCase(fieldName)
     const isRequired = options.validation?.rule.isRequired
 

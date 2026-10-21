@@ -185,7 +185,7 @@ async function createTableMigration(modelPath: string) {
   for (const [fieldName, options] of arrangeColumns(model.attributes)) {
     const fieldOptions = options as Attribute
     const fieldNameFormatted = snakeCase(fieldName)
-    const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule, 'postgres')
+    const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule, 'postgres', fieldOptions.type)
     const isRequired = 'isRequired' in (fieldOptions.validation?.rule ?? {})
       ? (fieldOptions.validation?.rule as Validator<any>).isRequired
       : false
@@ -422,7 +422,7 @@ async function createAlterTableMigration(modelPath: string) {
   // Add new fields
   for (const fieldName of fieldsToAdd) {
     const options = currentFields[fieldName] as Attribute
-    const columnType = mapFieldTypeToColumnType(options.validation?.rule, 'postgres')
+    const columnType = mapFieldTypeToColumnType(options.validation?.rule, 'postgres', options.type)
     const formattedFieldName = snakeCase(fieldName)
     const isRequired = 'isRequired' in (options.validation?.rule ?? {})
       ? (options.validation?.rule as Validator<any>).isRequired

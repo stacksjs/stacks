@@ -157,8 +157,15 @@ export function prepareTextColumnType(validator: StringValidatorType, driver = '
   if (driver === 'sqlite')
     return `'text'`
 
-  // Get length and choose appropriate MySQL type
-  const maxLength = findCharacterLength(validator)
+  const maxLength = declaredCharacterLength(validator)
+
+  // Same rule as the live copy in drivers/helpers.ts: an unbounded string is
+  // `text` on Postgres, which stores it exactly as varchar and without a limit
+  // to reject (stacksjs/stacks#2965). Kept in step deliberately - this module
+  // is a second, older implementation of the same mapping, and the two
+  // disagreeing is how the wrong one gets read.
+  if (maxLength === null)
+    return driver === 'postgres' ? `'text'` : `'varchar(255)'`
 
   return `'varchar(${maxLength})'`
 }
@@ -176,6 +183,18 @@ export function prepareDateTimeColumnType(validator: DateValidatorType, driver =
 
   // Default to datetime
   return name || 'date'
+}
+
+/** The `.max()` the model declared, or null when it declared none. */
+function declaredCharacterLength(validator: ValidationType): number | null {
+  if ('getRules' in validator) {
+    const maxLengthRule = validator.getRules().find((rule: any) => rule.name === 'max')
+    const declared = maxLengthRule?.params?.length ?? maxLengthRule?.params?.max
+
+    return typeof declared === 'number' ? declared : null
+  }
+
+  return null
 }
 
 export function findCharacterLength(validator: ValidationType): number {
