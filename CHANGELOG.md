@@ -1,5 +1,28 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.254...v0.75.255)
+
+## 🐛 Bug Fixes
+
+- **browse**: deliver Enter keypresses for native controls ([6975201](https://github.com/stacksjs/stacks/commit/6975201)) _(by Chris <chris@stacksjs.com>)_
+- **config**: register the tested SQLite cache driver ([4ba5d43](https://github.com/stacksjs/stacks/commit/4ba5d43)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh native SQLite cache capability evidence ([8b0334c](https://github.com/stacksjs/stacks/commit/8b0334c)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- keep scaffold generation and ambient fixtures current ([c6c91de](https://github.com/stacksjs/stacks/commit/c6c91de)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- require the verified Craft browser lifecycle release ([11e0723](https://github.com/stacksjs/stacks/commit/11e0723)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.253...v0.75.254)
 
 ## 🐛 Bug Fixes
