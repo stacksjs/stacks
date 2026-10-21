@@ -28,9 +28,9 @@ import {
   toNamespacedPath,
 } from 'node:path'
 import process from 'node:process'
-import { appPath, frameworkDefaultsRoot, frameworkPath, projectPath, storagePath, usesVendoredDefaults } from './project'
+import { appPath, clearDefaultsPathCache, defaultsPath, frameworkPath, projectPath, storagePath } from './project'
 
-export { appPath, frameworkDefaultsRoot, frameworkPath, isCompiledBinary, isInstalledDefaultsRoot, linkPackagedDefaults, packagedDefaultsRoot, projectPath, storagePath, usesVendoredDefaults } from './project'
+export { appPath, clearDefaultsPathCache, defaultsPath, frameworkPath, isCompiledBinary, projectPath, storagePath } from './project'
 export { resolveModulePath } from './module-resolution'
 
 // Lazy import logging to avoid circular dependency (logging imports path)
@@ -1185,11 +1185,6 @@ export function inspectDefaultsProvenance(projectRoot: string = projectPath()): 
   if (!existsSync(targetDefaults) || !existsSync(join(packageRoot, 'package.json')))
     return notApplicable()
 
-  // The link `linkPackagedDefaults` makes IS the installed package, so there
-  // is nothing for it to have drifted from.
-  if (!usesVendoredDefaults(projectRoot))
-    return notApplicable()
-
   // A framework checkout carries the framework's own source, and there the
   // vendored tree is what `@stacksjs/defaults` is built *from* rather than a
   // copy of it. Comparing the two reports drift that means nothing.
@@ -1921,8 +1916,6 @@ export interface Path {
   frameworkPath: (path?: string) => string
   browserPath: (path?: string) => string
   storagePath: (path?: string) => string
-  frameworkDefaultsRoot: (projectRoot?: string) => string
-  usesVendoredDefaults: (projectRoot?: string) => boolean
   functionsPath: (path?: string) => string
   gitPath: (path?: string) => string
   langPath: (path?: string) => string
@@ -1949,6 +1942,8 @@ export interface Path {
   coreStoragePath: (path?: string) => string
   publicPath: (path?: string) => string
   defaultsPackagePath: (projectRoot?: string) => string
+  defaultsPath: (path?: string, options?: { relative?: boolean, cwd?: string }) => string
+  clearDefaultsPathCache: () => void
   installedDefaultsVersion: (projectRoot?: string) => string | null
   inspectDefaultsProvenance: (projectRoot?: string) => DefaultsSkew
   pushPath: (path?: string) => string
@@ -2076,8 +2071,6 @@ export const path: Path = {
   frameworkPath,
   browserPath,
   storagePath,
-  frameworkDefaultsRoot,
-  usesVendoredDefaults,
   functionsPath,
   gitPath,
   langPath,
@@ -2104,6 +2097,8 @@ export const path: Path = {
   coreStoragePath,
   publicPath,
   defaultsPackagePath,
+  defaultsPath,
+  clearDefaultsPathCache,
   installedDefaultsVersion,
   inspectDefaultsProvenance,
   pushPath,
