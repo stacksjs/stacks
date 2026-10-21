@@ -253,6 +253,10 @@ describe('the mail health check', () => {
   const end = src.indexOf('\nEOF', start)
   const healthCheck = src.slice(start, end)
 
+  it('delegates to the release protocol monitor before acquiring its lock', () => {
+    expect(healthCheck.indexOf('exec /usr/local/sbin/mail-protocol-health-check')).toBeLessThan(healthCheck.indexOf('exec 9>'))
+  })
+
   it('fails when a restart leaves mail inactive', () => {
     expect(healthCheck).toContain('if ! systemctl is-active --quiet mail; then')
     expect(healthCheck).toContain('mail remained inactive after restart')
