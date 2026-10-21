@@ -190,15 +190,19 @@ async function systemResolve(hostname: string): Promise<string[]> {
  * webhook URL at the moment someone saves it, say.
  */
 export async function assertPublicOutboundUrl(url: string, options: OutboundUrlOptions = {}): Promise<URL> {
+  return (await validatedTarget(url, options)).parsed
+}
+
+/** Validate and retain exactly the DNS answer used for the connection. */
+async function validatedTarget(url: string, options: OutboundUrlOptions): Promise<{ parsed: URL, addresses: string[] }> {
   const problem = outboundUrlProblem(url, options)
   if (problem)
     throw new OutboundUrlError(problem.message, problem.reason)
   const parsed = new URL(url)
-  if (options.allowPrivate)
-    return parsed
   const host = parsed.hostname.replace(/^\[|\]$/g, '')
-  if (isIP(host.split('%')[0]!))
-    return parsed
+  if (options.allowPrivate || isIP(host.split('%')[0]!))
+    return { parsed, addresses: [] }
+
   let addresses: string[]
   try {
     addresses = await (options.resolve ?? systemResolve)(host)
@@ -210,25 +214,6 @@ export async function assertPublicOutboundUrl(url: string, options: OutboundUrlO
     throw new OutboundUrlError(`Could not resolve ${host}`, 'unresolvable')
   if (addresses.some(isPrivateAddress))
     throw new OutboundUrlError('The URL points at a private or local address', 'private')
-  return parsed
-}
-
-/**
- * Resolve the addresses behind a validated URL, keeping them.
- *
- * {@link assertPublicOutboundUrl} throws them away, which is what forces the
- * caller's `fetch` to resolve a second time and reopens the window a
- * rebinding answer walks through.
- */
-async function validatedTarget(url: string, options: OutboundUrlOptions): Promise<{ parsed: URL, addresses: string[] }> {
-  const parsed = await assertPublicOutboundUrl(url, options)
-  const host = parsed.hostname.replace(/^\[|\]$/g, '')
-
-  // An address in the URL is already the address that will be connected to.
-  if (isIP(host.split('%')[0]!) || options.allowPrivate)
-    return { parsed, addresses: [] }
-
-  const addresses = await (options.resolve ?? systemResolve)(host)
   return { parsed, addresses }
 }
 
@@ -352,7 +337,7 @@ export async function fetchPublicUrl(url: string, init: RequestInit = {}, option
     }
     origin = parsed.origin
 
-    const [target, pinned] = pinnedRequest(parsed, addresses.find(address => !isPrivateAddress(address)), request)
+    const [target, pinned] = pinnedRequest(parsed, addresses[0], request)
     const response = await fetch(target, pinned)
 
     if (!REDIRECT_STATUSES.has(response.status))

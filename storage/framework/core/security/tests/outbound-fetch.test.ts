@@ -38,6 +38,15 @@ afterEach(() => {
 })
 
 describe('fetchPublicUrl redirects', () => {
+  test('connects to the single validated DNS answer without resolving a second time', async () => {
+    const calls = stubFetch(() => new Response('ok'))
+    let resolutions = 0
+    await fetchPublicUrl('https://webhook.example.com/hook', {}, {
+      resolve: async () => ++resolutions === 1 ? ['93.184.216.34'] : ['127.0.0.1'],
+    })
+    expect(resolutions).toBe(1)
+    expect(calls[0]!.url).toBe('https://93.184.216.34/hook')
+  })
   test('refuses a redirect into the metadata service, and never sends it', async () => {
     const calls = stubFetch(() => redirectTo('http://169.254.169.254/latest/meta-data/iam/security-credentials/'))
 
