@@ -833,7 +833,9 @@ async function main() {
         const cdp = await openPage(session.port)
         const state = await gotoAndInstrument(cdp, url, { viewport: { w: bp.w, h: bp.h }, cookies, settleMs, scheme, reducedMotion: true })
         const overflow = await cdp.send('Runtime.evaluate', {
-          expression: 'document.body.scrollWidth > window.innerWidth ? document.body.scrollWidth - window.innerWidth : 0',
+          // Mobile Chrome may expand innerWidth to fit overflowing content.
+          // Compare the page with the requested device width, not that expansion.
+          expression: `Math.max(0, Math.max(document.body.scrollWidth, document.documentElement.scrollWidth) - ${bp.w})`,
           returnByValue: true,
         })
         const out = join(outDir, `${bp.device.toLowerCase().replace(/\s+/g, '-')}.png`)
@@ -1022,7 +1024,7 @@ async function main() {
               expression: `(() => ({
               title: document.title,
               links: Array.from(document.querySelectorAll('a[href]')).map(link => link.href),
-              overflow: Math.max(0, document.body.scrollWidth - window.innerWidth),
+              overflow: Math.max(0, Math.max(document.body.scrollWidth, document.documentElement.scrollWidth) - ${crawlViewport.w}),
               layout: (() => {
                 const main = document.querySelector('[data-stx-content]')
                 return {
@@ -1031,7 +1033,7 @@ async function main() {
                   mainClientWidth: main?.clientWidth ?? null,
                   mainOverflowX: main ? getComputedStyle(main).overflowX : null,
                   mainScrollWidth: main?.scrollWidth ?? null,
-                  viewportWidth: window.innerWidth,
+                  viewportWidth: ${crawlViewport.w},
                 }
               })(),
               overflowing: Array.from(document.querySelectorAll('body *'))
@@ -1076,8 +1078,8 @@ async function main() {
                     ...(overflowContainer ? { overflowContainer } : {}),
                   }
                 })
-                .filter(item => item.width > 0 && (item.left < -1 || item.right > window.innerWidth + 1))
-                .sort((a, b) => Math.max(b.right - window.innerWidth, -b.left) - Math.max(a.right - window.innerWidth, -a.left))
+                .filter(item => item.width > 0 && (item.left < -1 || item.right > ${crawlViewport.w} + 1))
+                .sort((a, b) => Math.max(b.right - ${crawlViewport.w}, -b.left) - Math.max(a.right - ${crawlViewport.w}, -a.left))
                 .slice(0, 10),
             }))()`,
               returnByValue: true,

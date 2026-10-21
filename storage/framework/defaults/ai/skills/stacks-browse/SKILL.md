@@ -88,6 +88,8 @@ Full-page screenshot at each breakpoint and a horizontal-overflow check:
 | Wide | 1920 | 1080 |
 
 Reports `horizontalOverflowPx` per breakpoint (0 = no overflow). Shots in `storage/framework/runtime/shots/responsive/`.
+Overflow is measured against the requested device width, so mobile Chrome's
+automatic viewport expansion cannot hide a page wider than the device.
 
 ### Monitor (console + network)
 ```bash

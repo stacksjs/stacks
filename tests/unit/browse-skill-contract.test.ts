@@ -27,7 +27,7 @@ describe('browse skill contract', () => {
     expect(script).toContain('page.consoleErrors.length > 0')
     expect(script).toContain('page.failedRequests.length > 0')
     expect(script).toContain('page.horizontalOverflowPx > 0')
-    expect(script).toContain('document.body.scrollWidth - window.innerWidth')
+    expect(script).toContain('Math.max(document.body.scrollWidth, document.documentElement.scrollWidth) - ${crawlViewport.w}')
     expect(script).toContain('viewport: crawlViewport')
     expect(script).toContain('overflowingElements: value.overflowing || []')
     expect(script).toContain("['auto', 'scroll', 'hidden', 'clip'].includes(overflowX)")
@@ -43,6 +43,16 @@ describe('browse skill contract', () => {
     expect(script).toContain('console.error(`[crawl]')
     expect(script).toContain('dispose: () => unsubscribe()')
     expect(script).toContain('state.dispose()')
+  })
+
+  test('detects overflow when mobile Chrome expands innerWidth to fit the page', () => {
+    const responsive = script.slice(script.indexOf("else if (command === 'responsive')"), script.indexOf("else if (command === 'monitor')"))
+    const expression = responsive.match(/expression: [`']([^`']+)[`']/)?.[1]
+    expect(expression).toBeDefined()
+    const measure = new Function('document', 'window', `return (${expression!.replaceAll('${bp.w}', '320')})`)
+    expect(measure({ body: { scrollWidth: 563 }, documentElement: { scrollWidth: 563 } }, { innerWidth: 563 })).toBe(243)
+    expect(measure({ body: { scrollWidth: 320 }, documentElement: { scrollWidth: 320 } }, { innerWidth: 320 })).toBe(0)
+    expect(measure({ body: { scrollWidth: 300 }, documentElement: { scrollWidth: 320 } }, { innerWidth: 320 })).toBe(0)
   })
 
   test('documents repeatable stateful SPA scenarios', () => {
