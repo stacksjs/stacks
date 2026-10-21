@@ -224,7 +224,7 @@ export async function discoverModels(userModelsPath: string, defaultModelsPath: 
 }
 
 /**
- * Manifest row written to `storage/framework/runtime/dashboard/discovered-models.json`
+ * Manifest row written to `storage/framework/runtime/dashboard/.discovered-models.json`
  * for the web-side sidebar to consume. Includes the per-model `dashboard`
  * config (stacksjs/stacks#1843) so both sidebar builders (the native one
  * here and the HTML one in `defaults/resources/functions/dashboard/sidebar.ts`)
