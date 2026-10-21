@@ -14,7 +14,7 @@ export interface CacheOptions {
    *
    * @default "memory"
    */
-  driver: 'memory' | 'redis' | 'singlestore'
+  driver: 'memory' | 'redis' | 'singlestore' | 'sqlite'
 
   /**
    * **Cache Prefix**
@@ -163,6 +163,21 @@ export interface CacheOptions {
        * @default false
        */
       ssl?: boolean
+    }
+
+    sqlite?: {
+      /**
+       * The SQLite file holding the cache table. Point it at a file the
+       * deploy keeps (beside the app's database), so entries outlive it.
+       * @default "storage/framework/cache/cache.sqlite"
+       */
+      path?: string
+
+      /**
+       * Table used to store cache entries
+       * @default "stacks_cache"
+       */
+      table?: string
     }
   }
 }

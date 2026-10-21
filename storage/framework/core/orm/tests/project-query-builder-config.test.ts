@@ -74,7 +74,7 @@ describe('the route generator with a stale config/qb.ts', () => {
       }\n`)
       const script = `
         await import(${JSON.stringify(join(import.meta.dir, '../src/routes.ts'))})
-        const qb = await import('@stacksjs/query-builder')
+        const qb = await import(${JSON.stringify(Bun.resolveSync('@stacksjs/query-builder', join(import.meta.dir, '../src')))})
         console.log(JSON.stringify({ configured: qb.config.database.database, opened: qb.getDatabase().filename }))
       `
       const run = Bun.spawnSync({

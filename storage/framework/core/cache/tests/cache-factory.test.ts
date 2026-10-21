@@ -117,9 +117,10 @@ describe('Cache Factory - default instances', () => {
     expect(typeof memory.set).toBe('function')
   })
 
-  test('cache is the same instance as memory', () => {
-    // The source says: export const cache: CacheDriver = memory
-    expect(cache).toBe(memory)
+  test('cache is the memory driver while config/cache.ts selects memory', async () => {
+    // The default config selects memory: the default instance answers for it.
+    await cache.set('shared-key', 'from-cache')
+    expect(await memory.get('shared-key')).toBe('from-cache')
   })
 
   test('default memory instance works for set/get', async () => {

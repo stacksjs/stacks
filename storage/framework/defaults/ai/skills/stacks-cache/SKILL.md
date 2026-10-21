@@ -59,8 +59,11 @@ deploys, pointing `path` at a file the deploy preserves (the app's own SQLite
 database works; the table is the driver's alone). `createCache(driver,
 options?)` selects one of memory, redis, singlestore or sqlite.
 
-The `cache` export is the same memory instance as `memory`. Use an explicit
-Redis instance for application data that must be shared across processes.
+The `cache` export is the driver `config/cache.ts` selects (`driver`, with
+`prefix` and `ttl` applied to the non-memory drivers), resolved on first use
+and once the app's config has loaded. With the default `driver: 'memory'` it
+answers from the `memory` instance itself. `cacheFromConfig(settings?)` builds
+the same choice explicitly; `resetConfiguredCache()` forgets it.
 The capability registry proves memory and a versioned Redis core/TTL contract;
 TLS/authenticated Redis deployments need separate provider evidence. SingleStore
 has no dedicated service conformance matrix. Source:

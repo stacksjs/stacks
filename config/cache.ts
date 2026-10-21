@@ -9,7 +9,9 @@ import type { CacheConfig } from '@stacksjs/types'
  */
 export default {
   /**
-   * The cache driver to use ('memory' or 'redis')
+   * The cache driver the default `cache` uses: 'memory', 'redis',
+   * 'singlestore', or 'sqlite' (entries kept in a file, across restarts and
+   * deploys).
    */
   driver: 'memory',
 
@@ -69,6 +71,18 @@ export default {
       database: 'stacks',
       table: 'stacks_cache',
       ssl: false,
+    },
+
+    /**
+     * SQLite driver configuration
+     *
+     * Keeps entries in a table of a SQLite file, so they outlive the process.
+     * Point `path` at a file the deploy keeps, such as one beside the app's
+     * database.
+     */
+    sqlite: {
+      path: 'storage/framework/cache/cache.sqlite',
+      table: 'stacks_cache',
     },
   },
 } satisfies CacheConfig

@@ -7,6 +7,7 @@
 
 import type { CacheDriver, CacheStats } from '@stacksjs/types'
 import type { SingleStoreCacheOptions } from './singlestore'
+import { config, overridesReady } from '@stacksjs/config'
 import { CacheManager, createCache as createTsCache, MemoryDriver, RedisDriver } from '@stacksjs/ts-cache'
 import { SingleStoreCacheStore } from './singlestore'
 import type { SqliteCacheOptions } from './sqlite'
@@ -589,10 +590,91 @@ const defaultMemoryManager = createTsCache({
  */
 export const memory: CacheDriver = new StacksCache(defaultMemoryManager)
 
+/** What `config/cache.ts` holds, as far as choosing a driver goes. */
+export interface CacheSettings {
+  driver?: 'memory' | 'redis' | 'singlestore' | 'sqlite'
+  prefix?: string
+  ttl?: number
+  drivers?: {
+    redis?: RedisOptions
+    singlestore?: SingleStoreCacheOptions
+    sqlite?: SqliteCacheOptions
+  }
+}
+
 /**
- * Default cache instance (memory)
+ * The driver `config/cache.ts` selects, built from its options. Memory is
+ * the `memory` instance itself, so an app on the default changes nothing;
+ * the others get the configured `prefix` and `ttl` as their key prefix and
+ * default TTL.
  */
-export const cache: CacheDriver = memory
+export function cacheFromConfig(settings: CacheSettings | undefined = (config as { cache?: CacheSettings }).cache): CacheDriver {
+  const shared = { prefix: settings?.prefix, stdTTL: settings?.ttl }
+  switch (settings?.driver) {
+    case 'redis': return createRedisCache({ ...settings.drivers?.redis, ...shared })
+    case 'singlestore': return createSingleStoreCache({ ...settings.drivers?.singlestore, ...shared })
+    case 'sqlite': return createSqliteCache({ ...settings.drivers?.sqlite, ...shared })
+    default: return memory
+  }
+}
+
+let configured: CacheDriver | null = null
+let configLoaded = false
+void Promise.resolve(overridesReady).then(() => { configLoaded = true }, () => { configLoaded = true })
+
+/** Forget the resolved driver (tests, or after changing the cache config). */
+export function resetConfiguredCache(): void {
+  configured = null
+}
+
+function configuredCache(): CacheDriver {
+  if (configured)
+    return configured
+  // Until the app's own config/cache.ts has loaded, `config` answers with the
+  // framework defaults, which select memory: answer from memory, but do not
+  // settle on it, or an early read would decide for the life of the process.
+  if (!configLoaded)
+    return memory
+  configured = cacheFromConfig()
+  return configured
+}
+
+/**
+ * Default cache instance: the driver `config/cache.ts` selects.
+ *
+ * It used to be the memory instance whatever the config said, so an app that
+ * chose `driver: 'redis'` - or `'sqlite'`, to keep entries across deploys -
+ * still lost every entry on a restart and kept one cache per worker. Resolved
+ * on first use, so importing the package opens no connection. A plain object
+ * with a method per operation, so it can be spied on like any other.
+ */
+class ConfiguredCache implements CacheDriver {
+  get<T>(key: string): Promise<T | undefined> { return configuredCache().get<T>(key) }
+  mget<T>(keys: string[]): Promise<Record<string, T>> { return configuredCache().mget<T>(keys) }
+  set<T>(key: string, value: T, ttl?: number): Promise<boolean> { return configuredCache().set(key, value, ttl) }
+  mset<T>(entries: Array<{ key: string, value: T, ttl?: number }>): Promise<boolean> { return configuredCache().mset(entries) }
+  setForever<T>(key: string, value: T): Promise<boolean> { return configuredCache().setForever(key, value) }
+  getOrSet<T>(key: string, fetcher: () => T | Promise<T>, ttl?: number): Promise<T> { return configuredCache().getOrSet(key, fetcher, ttl) }
+  del(keys: string | string[]): Promise<number> { return configuredCache().del(keys) }
+  has(key: string): Promise<boolean> { return configuredCache().has(key) }
+  missing(key: string): Promise<boolean> { return configuredCache().missing(key) }
+  remove(key: string): Promise<void> { return configuredCache().remove(key) }
+  deleteMany(keys: string[]): Promise<number> { return configuredCache().deleteMany(keys) }
+  clear(): Promise<void> { return configuredCache().clear() }
+  flush(): Promise<void> { return configuredCache().flush() }
+  keys(pattern?: string): Promise<string[]> { return configuredCache().keys(pattern) }
+  getTtl(key: string): Promise<number | undefined> { return configuredCache().getTtl(key) }
+  ttl(key: string, ttl: number): Promise<boolean> { return configuredCache().ttl(key, ttl) }
+  take<T>(key: string): Promise<T | undefined> { return configuredCache().take<T>(key) }
+  remember<T>(key: string, ttl: number, callback: () => T | Promise<T>): Promise<T> { return configuredCache().remember(key, ttl, callback) }
+  rememberForever<T>(key: string, callback: () => T | Promise<T>): Promise<T> { return configuredCache().rememberForever(key, callback) }
+  getStats(): Promise<CacheStats> { return configuredCache().getStats() }
+  close(): Promise<void> { return configuredCache().close() }
+  disconnect(): Promise<void> { return configuredCache().disconnect() }
+  tags(tags: readonly string[]): TaggedCache { return (configuredCache() as StacksCache).tags(tags) }
+}
+
+export const cache: CacheDriver = new ConfiguredCache()
 
 // Re-export the SingleStore store + its options for advanced usage
 export type { SingleStoreCacheOptions } from './singlestore'
