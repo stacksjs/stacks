@@ -254,6 +254,14 @@ writes. Strict `env:check` rejects mismatches, and `env:set`/`env:encrypt` refus
 to add ciphertext under a header unrelated to an available private key. Reading
 old ciphertext and rotating legacy keys retain their existing migration policy.
 
+For CLI/file operations, use
+`resolveEnvPrivateKey({ file?: string, keysFile?: string, cwd?: string })`.
+Its order is target-scoped local key, target-scoped process key, generic local
+key, then generic process key. The keys file defaults to `.env.keys` relative to
+`cwd`. `getEnv`, encrypted writers, and strict Buddy checks share this resolver.
+The cached application-runtime `resolvePrivateKey` remains process-first so
+server/browser test configuration can intentionally override local defaults.
+
 ## Tenant isolation on a shared box
 
 When several projects share one server - one owns it, the rest attach with

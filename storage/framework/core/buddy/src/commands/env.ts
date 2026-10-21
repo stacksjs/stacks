@@ -1,7 +1,7 @@
 import type { CLI } from '@stacksjs/types'
 import process from 'node:process'
 import { log, onUnknownSubcommand } from "@stacksjs/cli"
-import { decryptEnv, encryptEnv, envKeyNames, getEnv, getKeypair, getPrivateKey, isValidPublicKey, parseEnvFromKey, publicKeyMatchesPrivateKey, resolveEnvFile, rotateKeypair, setEnv } from '@stacksjs/env'
+import { decryptEnv, encryptEnv, envKeyNames, getEnv, getKeypair, isValidPublicKey, publicKeyMatchesPrivateKey, resolveEnvFile, resolveEnvPrivateKey, rotateKeypair, setEnv } from '@stacksjs/env'
 import { ExitCode } from '@stacksjs/types'
 
 interface EnvOptions {
@@ -365,14 +365,8 @@ export function env(buddy: CLI): void {
           const privateKeyNames = [privateKeyName, 'DOTENV_PRIVATE_KEY']
           const publicKey = values[publicKeyName] || values.DOTENV_PUBLIC_KEY
           const hasPublicKey = Boolean(publicKey)
-          let privateKey = getPrivateKey(parseEnvFromKey(privateKeyName)) || getPrivateKey()
+          const privateKey = resolveEnvPrivateKey({ file: envFile })
             || privateKeyNames.map(name => values[name]).find(Boolean)
-          const localKeysPath = resolve(process.cwd(), '.env.keys')
-          if (!privateKey && existsSync(localKeysPath)) {
-            const localKeys = await storage.readTextFile(localKeysPath)
-            const assignments = parseEnvAssignments(typeof localKeys === 'string' ? localKeys : localKeys.data)
-            privateKey = privateKeyNames.map(name => assignments[name]).find(Boolean)
-          }
 
           const hasPrivateKey = Boolean(privateKey)
           if (options.strict && privateKey && isValidPublicKey(publicKey) && !publicKeyMatchesPrivateKey(publicKey, privateKey)) {

@@ -224,12 +224,24 @@ export function envPrivateKeyNames(file?: string): string[] {
   return privateKeyName === 'DOTENV_PRIVATE_KEY' ? [privateKeyName] : [privateKeyName, 'DOTENV_PRIVATE_KEY']
 }
 
+/**
+ * Resolve a CLI/file operation's private key. Scoped keys precede generic
+ * fallbacks; the keys file precedes the process within each scope. Runtime
+ * process overrides use their separate cached resolvePrivateKey policy.
+ */
+export function resolveEnvPrivateKey(options: { file?: string, keysFile?: string, cwd?: string } = {}): string | undefined {
+  const keysPath = resolve(options.cwd || process.cwd(), options.keysFile || '.env.keys')
+  const keys = existsSync(keysPath) ? parse(readFileSync(keysPath, 'utf8')).parsed : {}
+  for (const name of envPrivateKeyNames(options.file)) {
+    const value = keys[name] || process.env[name]
+    if (value) return value
+  }
+  return undefined
+}
+
 /** A readable old value does not prove that its public header names that key. */
 function assertMatchingPrivateKey(publicKey: string, keysPath: string, file?: string): void {
-  const names = envPrivateKeyNames(file)
-  const keys = existsSync(keysPath) ? parse(readFileSync(keysPath, 'utf8')).parsed : {}
-  const privateKey = names.map(name => keys[name]).find(Boolean)
-    || names.map(name => process.env[name]).find(Boolean)
+  const privateKey = resolveEnvPrivateKey({ file, keysFile: keysPath })
   // Public-only encryption remains supported. When a private half is present,
   // refuse a mismatch before writing ciphertext that this operator cannot read.
   if (privateKey && !publicKeyMatchesPrivateKey(publicKey, privateKey))
@@ -708,30 +720,8 @@ export function getEnv(
   }
 
   try {
-    // Load private key if available
-    let privateKey: string | undefined
-    const keysPath = resolve(cwd, options.keysFile || '.env.keys')
-
-    const envFileName = options.file || '.env'
-    const baseName = envFileName.split('/').pop() || ''
-    const env = baseName.replace(/^\.env\./, '').replace(/^\.env$/, '').toUpperCase()
-    const privateKeyName = env ? `DOTENV_PRIVATE_KEY_${env}` : 'DOTENV_PRIVATE_KEY'
-
-    if (existsSync(keysPath)) {
-      const keysContent = readFileSync(keysPath, 'utf-8')
-      const { parsed: keys } = parse(keysContent)
-      privateKey = keys[privateKeyName]
-    }
-
-    // No .env.keys (or it lacks this env's key): fall back to the process
-    // env, the dotenvx convention for CI runners and servers, where
-    // .env.keys must never exist (it's the one file that can't be
-    // committed). Without this fallback, `buddy deploy` from GitHub
-    // Actions shipped still-encrypted `encrypted:...` ciphertext as every
-    // site's .env and the app crash-looped on config validation
-    // (stacksjs/status, 2026-07-04).
-    if (!privateKey)
-      privateKey = process.env[privateKeyName]
+    const privateKey = resolveEnvPrivateKey(options)
+    const { privateKeyName } = envKeyNames(options.file)
 
     // Load and parse .env file
     const envContent = readFileSync(envPath, 'utf-8')

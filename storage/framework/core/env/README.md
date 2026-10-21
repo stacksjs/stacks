@@ -137,6 +137,13 @@ value does not establish that its public header names the same private key.
 `env:set` and `env:encrypt` reject a mismatch with an available private key
 before changing ciphertext; encryption using only a public key remains supported.
 
+`resolveEnvPrivateKey({ file, keysFile, cwd })` is the CLI/file-operation resolver
+used by `getEnv`, encrypted writes, and strict Buddy checks. It selects the
+target-scoped local key, target-scoped process key, generic local key, then
+generic process key. `keysFile` defaults to `.env.keys` relative to `cwd`.
+The cached runtime `resolvePrivateKey` retains its separate process-first
+override policy for running applications.
+
 `buddy env:check --strict` requires valid public metadata in committed env files
 and rejects private-key assignments even if their values are encrypted. Legacy
 headers require `buddy env:rotate`; a public-looking variable name alone does
