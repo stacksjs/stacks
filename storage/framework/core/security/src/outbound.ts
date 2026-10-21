@@ -256,11 +256,34 @@ function pinnedRequest(parsed: URL, address: string | undefined, init: RequestIn
   return [pinned.href, withSni]
 }
 
+/** Stop a response we will not consume without masking the policy error. */
+async function cancelResponse(response: Response): Promise<void> {
+  await response.body?.cancel().catch(() => {})
+}
+
+/** DNS resolvers do not accept fetch's signal, so bound that wait explicitly. */
+async function resolveBeforeAbort<T>(pending: () => Promise<T>, signal: AbortSignal): Promise<T> {
+  signal.throwIfAborted()
+  let onAbort: () => void = () => {}
+  const aborted = new Promise<never>((_, reject) => {
+    onAbort = () => reject(signal.reason)
+    signal.addEventListener('abort', onAbort, { once: true })
+  })
+  try {
+    return await Promise.race([Promise.resolve().then(pending), aborted])
+  }
+  finally {
+    signal.removeEventListener('abort', onAbort)
+  }
+}
+
 /** Read at most `maxBytes`, refusing rather than truncating past it. */
 async function readCapped(response: Response, maxBytes: number): Promise<Response> {
   const declared = Number(response.headers.get('content-length') ?? Number.NaN)
-  if (Number.isFinite(declared) && declared > maxBytes)
+  if (Number.isFinite(declared) && declared > maxBytes) {
+    await cancelResponse(response)
     throw new OutboundUrlError(`The response is ${declared} bytes, over the ${maxBytes} byte limit`, 'too-large')
+  }
 
   if (!response.body)
     return response
@@ -327,7 +350,8 @@ export async function fetchPublicUrl(url: string, init: RequestInit = {}, option
   let origin = ''
 
   for (let hop = 0; ; hop++) {
-    const { parsed, addresses } = await validatedTarget(current, options)
+    signal.throwIfAborted()
+    const { parsed, addresses } = await resolveBeforeAbort(() => validatedTarget(current, options), signal)
 
     if (origin && parsed.origin !== origin) {
       const headers = new Headers(request.headers)
@@ -347,18 +371,24 @@ export async function fetchPublicUrl(url: string, init: RequestInit = {}, option
     if (!location)
       return await readCapped(response, maxBytes)
 
+    await cancelResponse(response)
+
     if (hop >= maxRedirects)
       throw new OutboundUrlError(`The URL redirected more than ${maxRedirects} times`, 'redirects')
 
-    if (!replayable)
+    if (response.status !== 303 && request.body != null && !replayable)
       throw new OutboundUrlError('The URL redirected, and a streaming request body cannot be sent again', 'unreplayable-body')
 
-    // 303 always becomes GET; 301 and 302 do for anything that is not already
-    // GET or HEAD, which is what every client does in practice. 307 and 308
-    // keep the method and the body, which is the point of them existing.
+    // Fetch changes POST on 301/302, and non-GET/HEAD on 303, to GET.
+    // Dropping the body also drops its headers and avoids replaying a stream.
     const method = (request.method ?? 'GET').toUpperCase()
-    if (response.status === 303 || ((response.status === 301 || response.status === 302) && method !== 'GET' && method !== 'HEAD'))
-      request = { ...request, method: 'GET', body: undefined }
+    if (((response.status === 301 || response.status === 302) && method === 'POST')
+      || (response.status === 303 && method !== 'GET' && method !== 'HEAD')) {
+      const headers = new Headers(request.headers)
+      for (const name of ['content-encoding', 'content-language', 'content-location', 'content-type', 'content-length'])
+        headers.delete(name)
+      request = { ...request, headers, method: 'GET', body: undefined }
+    }
 
     current = new URL(location, parsed).href
   }

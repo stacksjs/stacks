@@ -176,3 +176,114 @@ describe('fetchPublicUrl bounds the response', () => {
     expect(await response.text()).toBe('small enough')
   })
 })
+
+// The peer owns these response streams. Leaving a skipped response unread also
+// leaves its connection alive, even after the caller has received an answer.
+describe('fetchPublicUrl releases skipped responses', () => {
+  for (const scenario of ['followed redirect', 'refused redirect', 'declared oversized body'] as const) {
+    test(`cancels the body of a ${scenario}`, async () => {
+      let cancelled = false
+      const body = new ReadableStream<Uint8Array>({
+        cancel() { cancelled = true },
+      })
+      stubFetch((_call, index) => index === 0
+        ? new Response(body, scenario === 'declared oversized body'
+          ? { headers: { 'Content-Length': '100' } }
+          : { status: 302, headers: { Location: 'https://elsewhere.example.com/' } })
+        : new Response('ok'))
+      const attempt = fetchPublicUrl('https://webhook.example.com/', {}, {
+        resolve: publicResolve,
+        maxBytes: 10,
+        maxRedirects: scenario === 'refused redirect' ? 0 : 3,
+      })
+      if (scenario === 'followed redirect')
+        expect(await (await attempt).text()).toBe('ok')
+      else
+        await expect(attempt).rejects.toBeInstanceOf(OutboundUrlError)
+      expect(cancelled).toBe(true)
+    })
+  }
+})
+
+describe('fetchPublicUrl redirect request semantics', () => {
+  test('preserves HEAD on 303 and non-POST methods on 301 and 302', async () => {
+    for (const [status, method] of [[303, 'HEAD'], [301, 'PUT'], [302, 'DELETE']] as const) {
+      const calls = stubFetch((_call, index) => index === 0 ? redirectTo('/landed', status) : new Response(null))
+      await fetchPublicUrl('https://webhook.example.com/', { method }, { resolve: publicResolve })
+      expect(calls[1]!.init.method).toBe(method)
+    }
+  })
+
+  test('drops request body headers when a redirect changes POST to GET', async () => {
+    const calls = stubFetch((_call, index) => index === 0 ? redirectTo('/landed', 303) : new Response('ok'))
+    await fetchPublicUrl('https://webhook.example.com/', {
+      method: 'POST',
+      body: 'payload',
+      headers: { 'Content-Type': 'application/json', 'Content-Length': '7', 'Content-Encoding': 'gzip', 'Content-Language': 'en', 'Content-Location': '/original', 'X-Kept': 'yes' },
+    }, { resolve: publicResolve })
+    const headers = new Headers(calls[1]!.init.headers)
+    for (const name of ['content-type', 'content-length', 'content-encoding', 'content-language', 'content-location'])
+      expect(headers.has(name)).toBe(false)
+    expect(headers.get('x-kept')).toBe('yes')
+  })
+
+  test('does not require replaying a streaming body after a 303 changes it to GET', async () => {
+    const calls = stubFetch((_call, index) => index === 0 ? redirectTo('/landed', 303) : new Response('ok'))
+    const body = new ReadableStream<Uint8Array>({ start(controller) { controller.close() } })
+    expect(await (await fetchPublicUrl('https://webhook.example.com/', { method: 'POST', body }, { resolve: publicResolve })).text()).toBe('ok')
+    expect(calls[1]!.init.method).toBe('GET')
+    expect(calls[1]!.init.body).toBeUndefined()
+  })
+})
+
+describe('fetchPublicUrl resolution deadline', () => {
+  test('rejects a resolver that never settles within the whole-chain timeout', async () => {
+    const calls = stubFetch(() => new Response('must not send'))
+    const attempt = fetchPublicUrl('https://webhook.example.com/', {}, {
+      timeoutMs: 20,
+      resolve: () => new Promise(() => {}),
+    })
+    const outcome = await Promise.race([
+      attempt.then(() => 'resolved', error => error.name),
+      Bun.sleep(200).then(() => 'still waiting'),
+    ])
+    expect(outcome).toBe('TimeoutError')
+    expect(calls).toHaveLength(0)
+  })
+})
+
+test('releases a live redirect stream before returning the final response', async () => {
+  let closed: () => void = () => {}
+  const cancelled = new Promise<void>((resolve) => { closed = resolve })
+  const server = Bun.serve({
+    hostname: '127.0.0.1',
+    port: 0,
+    fetch(request) {
+      if (new URL(request.url).pathname === '/landed')
+        return new Response('arrived')
+      return new Response(new ReadableStream<Uint8Array>({
+        async pull(controller) {
+          await Bun.sleep(5)
+          controller.enqueue(new Uint8Array([120]))
+        },
+        cancel() { closed() },
+      }), { status: 302, headers: { Location: '/landed' } })
+    },
+  })
+  try {
+    const response = await fetchPublicUrl(`http://127.0.0.1:${server.port}/`, {}, { allowHttp: true, allowPrivate: true })
+    expect(await response.text()).toBe('arrived')
+    expect(await Promise.race([cancelled.then(() => true), Bun.sleep(500).then(() => false)])).toBe(true)
+  }
+  finally {
+    await server.stop(true)
+  }
+})
+
+test.each([301, 302, 307, 308])('refuses non-replayable POST bodies on %i', async (status) => {
+  const calls = stubFetch(() => redirectTo('/landed', status))
+  const body = new ReadableStream<Uint8Array>({ start(controller) { controller.close() } })
+  await expect(fetchPublicUrl('https://webhook.example.com/', { method: 'POST', body }, { resolve: publicResolve }))
+    .rejects.toThrow('streaming request body cannot be sent again')
+  expect(calls).toHaveLength(1)
+})
