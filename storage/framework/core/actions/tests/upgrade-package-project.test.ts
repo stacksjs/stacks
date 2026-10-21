@@ -186,6 +186,25 @@ describe('the VS Code extension in the defaults', () => {
 })
 
 describe('framework type declarations', () => {
+  it.each([false, true])('retires obsolete trait request declarations (vendored: %s)', (vendorDefaults) => {
+    // These described the removed Request class, including a string `body`
+    // and synchronous validation. No current generator or caller uses them.
+    const retired = 'storage/framework/types/traits.d.ts'
+    write(retired, "import { Request } from '../core/router/src/request'\n")
+    write('storage/framework/types/custom.d.ts', 'export interface Campaign { seed: number }\n')
+
+    const preview = syncPackageProjectFiles(root, defaultsRoot, { vendorDefaults, dryRun: true })
+    expect(preview).toContainEqual({ path: retired, action: 'remove' })
+    expect(existsSync(join(root, retired))).toBe(true)
+
+    const applied = syncPackageProjectFiles(root, defaultsRoot, { vendorDefaults })
+    expect(applied).toContainEqual({ path: retired, action: 'remove' })
+    expect(existsSync(join(root, retired))).toBe(false)
+    expect(readFileSync(join(root, 'storage/framework/types/custom.d.ts'), 'utf8'))
+      .toBe('export interface Campaign { seed: number }\n')
+    expect(syncPackageProjectFiles(root, defaultsRoot, { vendorDefaults })).toEqual([])
+  })
+
   // trifitla upgraded 0.72.57 -> 0.75.11 and its own app/Events.ts stopped
   // typechecking: `'user:created'` lives on AppEvents through
   // storage/framework/types/model-events.d.ts, which `buddy new` ships and

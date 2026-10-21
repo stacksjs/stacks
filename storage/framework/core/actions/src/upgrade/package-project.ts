@@ -54,7 +54,12 @@ const LOCAL_DEFAULT_IGNORES = new Set([
   'node_modules',
 ])
 
-const LEGACY_PACKAGE_PROJECT_FILES = ['pantry.lock']
+const LEGACY_PACKAGE_PROJECT_FILES = [
+  'pantry.lock',
+  // The old ORM generator described a Request class that no longer exists.
+  // Current routes use @stacksjs/router's Request and model-inferred payloads.
+  'storage/framework/types/traits.d.ts',
+]
 
 const SUPPORT_FILES: Array<{ source: string, target: string, executable?: boolean }> = [
   { source: 'project/buddy', target: 'buddy', executable: true },
@@ -84,9 +89,9 @@ const SUPPORT_FILES: Array<{ source: string, target: string, executable?: boolea
  * `'user:created'` exist on `AppEvents` (trifitla, upgrading 0.72.57 -> 0.75.11,
  * failed typecheck on its own `app/Events.ts`).
  *
- * Added and updated, never pruned: an app can still hold older generated
- * declarations here that something imports. The two files the runtime writes
- * for this app are left alone.
+ * Added and updated without pruning app-owned declarations. Explicitly retired
+ * framework files are removed by LEGACY_PACKAGE_PROJECT_FILES. The two files
+ * the runtime writes for this app are left alone.
  */
 export const FRAMEWORK_TYPES_SUPPORT_DIRECTORY = {
   source: 'project/storage/framework/types',
