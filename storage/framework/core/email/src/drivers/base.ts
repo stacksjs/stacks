@@ -2,7 +2,7 @@ import type { EmailAddress, EmailDriver, EmailDriverConfig, EmailMessage, EmailR
 import type { TemplateOptions } from '../template'
 import { config as appConfig } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
-import { assertEnvelopeAddress, assertHeaderSafeSubject } from '../validation'
+import { assertEnvelopeAddress, assertHeaderSafeSubject, assertHeaderValue } from '../validation'
 
 export abstract class BaseEmailDriver implements EmailDriver {
   public abstract name: string
@@ -50,21 +50,25 @@ export abstract class BaseEmailDriver implements EmailDriver {
     // driver gets the same check.
     assertHeaderSafeSubject(message.subject)
 
-    const checkAddress = (raw: string | undefined, role: string) => {
-      if (!raw) return
-      assertEnvelopeAddress(raw, role)
+    const checkAddresses = (value: unknown, role: string): void => {
+      if (value === undefined || value === null) return
+      if (Array.isArray(value)) {
+        for (const item of value) checkAddresses(item, role)
+      }
+      else if (typeof value === 'string') {
+        assertEnvelopeAddress(value, role)
+      }
+      else {
+        const address = value as EmailAddress
+        assertEnvelopeAddress(address.address, role)
+        if (address.name !== undefined) assertHeaderValue(address.name, `${role} name`)
+      }
     }
-    const flatten = (v: unknown): string[] => {
-      if (!v) return []
-      if (typeof v === 'string') return [v]
-      if (Array.isArray(v)) return v.flatMap(item => typeof item === 'string' ? [item] : (item as { address?: string })?.address ? [(item as { address: string }).address] : [])
-      const obj = v as { address?: string }
-      return obj.address ? [obj.address] : []
-    }
-    if (message.from) checkAddress((message.from as { address?: string }).address, 'from')
-    for (const addr of flatten(message.to)) checkAddress(addr, 'to')
-    for (const addr of flatten((message as { cc?: unknown }).cc)) checkAddress(addr, 'cc')
-    for (const addr of flatten((message as { bcc?: unknown }).bcc)) checkAddress(addr, 'bcc')
+    checkAddresses(message.from ?? appConfig.email.from, 'from')
+    checkAddresses(message.to, 'to')
+    checkAddresses(message.cc, 'cc')
+    checkAddresses(message.bcc, 'bcc')
+    checkAddresses(message.replyTo, 'replyTo')
 
     return true
   }

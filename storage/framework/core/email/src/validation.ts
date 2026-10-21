@@ -69,8 +69,19 @@ export function filterStringHeaders(
     // CR / LF in either name or value would let a caller smuggle
     // additional headers. Drop the entry rather than the whole
     // message — most callers want best-effort passthrough.
-    if (/[\r\n]/.test(k) || /[\r\n]/.test(v)) continue
+    if (!isHeaderName(k) || /[\r\n\0]/.test(v)) continue
     out[k] = v
   }
   return Object.keys(out).length > 0 ? out : undefined
+}
+
+/** Validate one unfolded header value before any RFC 2047 encoding. */
+export function assertHeaderValue(value: string, role: string): void {
+  if (typeof value !== 'string' || /[\r\n\0]/.test(value))
+    throw new Error(`Email ${role} contains forbidden header characters`)
+}
+
+/** RFC 5322 field names cannot contain whitespace or a colon. */
+export function isHeaderName(name: string): boolean {
+  return /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/.test(name)
 }

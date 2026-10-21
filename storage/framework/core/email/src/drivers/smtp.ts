@@ -154,7 +154,12 @@ export class SMTPDriver extends BaseEmailDriver {
       })
 
       // Send via SMTP
-      const messageId = await this.sendViaSMTP(smtpConfig, fromAddress, toAddresses, emailContent)
+      const recipients = [...new Set([
+        ...toAddresses,
+        ...this.formatAddresses(message.cc),
+        ...this.formatAddresses(message.bcc),
+      ])]
+      const messageId = await this.sendViaSMTP(smtpConfig, fromAddress, recipients, emailContent)
 
       return this.handleSuccess(message, messageId)
     }
@@ -305,7 +310,9 @@ export class SMTPDriver extends BaseEmailDriver {
           await sendCommand('DATA')
 
           // Send email content (no response expected until final .)
-          socket.write(`${content}\r\n.\r\n`)
+          const normalized = content.replace(/\r\n|\r|\n/g, '\r\n')
+          const stuffed = normalized.replace(/(^|\r\n)\./g, '$1..')
+          socket.write(`${stuffed}\r\n.\r\n`)
           await new Promise<string>((res, rej) => {
             commandQueue.push({ cmd: 'DATA_END', resolve: res, reject: rej })
           })

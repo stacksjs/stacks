@@ -17,6 +17,7 @@
 
 import type { EmailAttachment } from '@stacksjs/types'
 import { Buffer } from 'node:buffer'
+import { assertHeaderValue, isHeaderName } from './validation'
 
 /**
  * Encode an SMTP header value with RFC 2047 base64 encoding when it
@@ -26,6 +27,7 @@ import { Buffer } from 'node:buffer'
  * by downstream relays.
  */
 export function encodeRfc2047IfNeeded(value: string): string {
+  assertHeaderValue(value, 'encoded header')
   // eslint-disable-next-line no-control-regex
   if (/^[\x00-\x7F]*$/.test(value)) return value
   return `=?UTF-8?B?${Buffer.from(value, 'utf-8').toString('base64')}?=`
@@ -81,6 +83,15 @@ export function buildMimeMessage(options: MimeMessageOptions): string {
     messageIdDomain,
     customHeaders,
   } = options
+  for (const [role, value] of Object.entries({ from, to, cc, replyTo, subject, messageIdDomain })) {
+    if (value !== undefined)
+      assertHeaderValue(value, role)
+  }
+  for (const [name, value] of Object.entries(customHeaders ?? {})) {
+    if (!isHeaderName(name))
+      throw new Error('Email custom header name contains forbidden characters')
+    assertHeaderValue(value, name)
+  }
   const lines: string[] = []
   const hasAttachments = !!(attachments && attachments.length > 0)
   const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).substring(2)}`
@@ -171,6 +182,9 @@ function pushBodyParts(
  * §6.8 to stay within the SMTP line-length limit.
  */
 function pushAttachmentPart(lines: string[], attachment: EmailAttachment): void {
+  assertHeaderValue(attachment.filename, 'attachment filename')
+  if (attachment.contentType)
+    assertHeaderValue(attachment.contentType, 'attachment content type')
   const contentType = attachment.contentType || 'application/octet-stream'
   const safeFilename = encodeRfc2047IfNeeded(
     attachment.filename.replace(/\\/g, '\\\\').replace(/"/g, '\\"'),
