@@ -31,11 +31,24 @@ describe('resolveStxSource', () => {
   })
 })
 
-describe('the production server does not prefer untracked local copies (#2369)', () => {
-  const source = readFileSync(
-    join(import.meta.dir, '../src/production-server.ts'),
-    'utf8',
-  )
+/**
+ * Every server that renders through stx, not just the production one.
+ *
+ * #2369 was fixed in `production-server.ts` alone, and the dashboard dev
+ * server kept its own silent chain: a hardcoded `~/Code/Tools/stx` checkout,
+ * then `pantry/@stacksjs/stx`, then the installed dependency. So the dashboard
+ * rendered every page through `pantry/@stacksjs/stx@0.2.484` while the
+ * repository pinned `0.2.607` - 123 versions behind, with nothing saying so,
+ * which meant local dashboard repros ran against a different compiler than the
+ * one the app ships. See stacksjs/stacks#2941.
+ */
+const STX_RENDERING_SERVERS = [
+  ['production server', '../../buddy/src/production-server.ts'],
+  ['dashboard dev server', '../src/dev/dashboard.ts'],
+] as const
+
+describe.each(STX_RENDERING_SERVERS)('%s does not prefer untracked local copies (#2369)', (_label, rel) => {
+  const source = readFileSync(join(import.meta.dir, rel), 'utf8')
   // Comments explain the history and name both, so only look at real code.
   const code = source
     .replace(/\/\*[\s\S]*?\*\//g, '')

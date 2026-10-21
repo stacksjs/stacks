@@ -12,6 +12,7 @@ import { resolveDashboardDomain, resolveDashboardProxyStrategy } from './dashboa
 import { buildManifest, discoverModels, findAvailablePort, waitForServer } from './dashboard-utils'
 import { runDashboardSupervisor } from './dashboard-supervisor'
 import { ensureDiscoveredPackages } from '../discover-packages'
+import { resolveStxSource } from '../stx-source'
 
 if (process.env.STACKS_DASHBOARD_WORKER !== '1') {
   // The STX server owns template and component HMR. Backend modules need a
@@ -79,51 +80,52 @@ async function startStxServer(): Promise<void> {
     await generateAutoImportFiles()
   await injectGlobalAutoImports()
 
-  let serve: typeof import('bun-plugin-stx/serve').serve
-  try {
-    const localServe = process.env.BUN_PLUGIN_STX_SRC
-      || `${process.env.HOME}/Code/Tools/stx/packages/bun-plugin/src/serve.ts`
-    if (!(await Bun.file(localServe).exists()))
-      throw new Error('local bun-plugin-stx source not found')
-    const mod = await import(localServe)
-    serve = mod.serve
-  }
-  catch {
-    try {
-      const mod = await import('bun-plugin-stx/serve')
-      serve = mod.serve
-    }
-    catch {
-      const mod = await import(projectPath('pantry/bun-plugin-stx/dist/serve.js'))
-      serve = mod.serve
-    }
+  // The installed dependency, unless an operator names another copy by path.
+  //
+  // This used to be a silent chain: a hardcoded `~/Code/Tools/stx` checkout,
+  // then the project's `pantry/` directory, then the installed package - the
+  // same inversion `production-server.ts` was fixed for in #2369, which the
+  // dev server never got. It had stopped being hypothetical: pantry carried
+  // `@stacksjs/stx@0.2.484` while the repository pinned `0.2.607`, so every
+  // dashboard page rendered through a compiler 123 versions behind the one
+  // the application ships, and nothing said so. A bug reproduced here was
+  // being reproduced against the wrong stx.
+  //
+  // `resolveStxSource` is the rule `production-server.ts` already uses, now
+  // shared rather than restated. A named path that does not exist is refused
+  // instead of silently falling back to a guess.
+  const serveSource = resolveStxSource({ value: process.env.BUN_PLUGIN_STX_SRC })
+  if (serveSource.kind === 'missing') {
+    throw new Error(
+      `BUN_PLUGIN_STX_SRC points at ${serveSource.path}, which does not exist. `
+      + `Unset it to use the installed bun-plugin-stx.`,
+    )
   }
 
-  // Pre-resolve stx from pantry. Bun's bare-specifier resolver finds the
-  // stale `node_modules/@stacksjs/stx` first when serve.js does
-  // `import('@stacksjs/stx')`, which breaks @extends/layoutsDir. Pass the
-  // pantry copy via the `stxModule` option (see ServeOptions) so the
-  // dashboard's layout resolution stays consistent with the other dev
-  // servers.
-  let stxModule: any
-  // Published dependencies are the default. Framework maintainers may opt
-  // into a source checkout explicitly; a neighbouring repository must never
-  // silently replace the STX or ts-css package an application installed.
-  try {
-    const localStx = process.env.STX_SRC
-    if (localStx && await Bun.file(localStx).exists())
-      stxModule = await import(localStx)
+  let serve: typeof import('bun-plugin-stx/serve').serve
+  if (serveSource.kind === 'override') {
+    serve = (await import(serveSource.path)).serve
+    console.log(`[Dashboard] bun-plugin-stx from ${serveSource.path}`)
   }
-  catch { /* fall through */ }
-  if (stxModule && verbose)
-    console.log('[Dashboard] Using local stx checkout')
-  if (!stxModule) {
-    try {
-      const vendoredStx = projectPath('pantry/@stacksjs/stx/dist/index.js')
-      if (await Bun.file(vendoredStx).exists())
-        stxModule = await import(vendoredStx)
-    }
-    catch { /* fall through */ }
+  else {
+    serve = (await import('bun-plugin-stx/serve')).serve
+  }
+
+  // Same rule for the renderer itself. Left undefined when there is no
+  // override, so `serve` resolves `@stacksjs/stx` the ordinary way and the
+  // process holds one instance of it rather than two.
+  const stxSource = resolveStxSource({ value: process.env.STX_SRC })
+  if (stxSource.kind === 'missing') {
+    throw new Error(
+      `STX_SRC points at ${stxSource.path}, which does not exist. `
+      + `Unset it to use the installed @stacksjs/stx.`,
+    )
+  }
+
+  let stxModule: any
+  if (stxSource.kind === 'override') {
+    stxModule = await import(stxSource.path)
+    console.log(`[Dashboard] stx from ${stxSource.path}`)
   }
 
   // Mount the config-editor API routes. The settings UI talks to these
@@ -137,23 +139,24 @@ async function startStxServer(): Promise<void> {
   // Package dist files are intentionally not served verbatim: they retain
   // package-internal bare imports, which browsers cannot resolve. Build each
   // entry into one browser-native ESM module and cache it for this dev session.
+  // Opt-in by env only. This defaulted to `~/Code/Libraries/ts-charts`, so a
+  // maintainer's unrelated checkout silently outranked the installed package
+  // for every chart on every dashboard - the same inversion as the stx chain
+  // above, one dependency over.
   const localTsChartsRoot = process.env.TS_CHARTS_SRC
-    || `${process.env.HOME}/Code/Libraries/ts-charts`
   const dependencyBundles = new Map<string, Promise<string>>()
 
   function resolveTsChartsSource(packageName: string): string | null {
     const candidates = [
-      `${localTsChartsRoot}/packages/${packageName}/src/index.ts`,
+      ...(localTsChartsRoot ? [`${localTsChartsRoot}/packages/${packageName}/src/index.ts`] : []),
       projectPath(`node_modules/@ts-charts/${packageName}/src/index.ts`),
-      projectPath(`pantry/@ts-charts/${packageName}/src/index.ts`),
     ]
     return candidates.find(existsSync) || null
   }
 
   const tsChartsEntry = [
-    `${localTsChartsRoot}/packages/ts-charts/src/index.ts`,
+    ...(localTsChartsRoot ? [`${localTsChartsRoot}/packages/ts-charts/src/index.ts`] : []),
     projectPath('node_modules/ts-charts/src/index.ts'),
-    projectPath('pantry/ts-charts/src/index.ts'),
   ].find(existsSync)
 
   async function buildDashboardDependency(entrypoint: string): Promise<string> {

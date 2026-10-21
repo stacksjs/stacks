@@ -5,7 +5,7 @@ import { enterRequestScope, installRequestScope } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { siteConfigPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
-import { resolveStxSource } from './stx-source'
+import { resolveStxSource } from '@stacksjs/actions'
 import type { EnhancedRequest } from '@stacksjs/router'
 
 /**
