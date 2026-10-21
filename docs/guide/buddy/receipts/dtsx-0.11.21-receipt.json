@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-21T23:12:38.636Z",
+  "sources": [
+    {
+      "repository": "stacksjs/dtsx",
+      "commit": "6ee09fb2430e013bc9fa313b3a8cafebbe374c76",
+      "tag": "v0.11.21",
+      "gates": [
+        {
+          "runId": 39689868806,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "test",
+            "typecheck",
+            "lint",
+            "Source path identity (ubuntu-latest)",
+            "Source path identity (macos-latest)",
+            "Source path identity (windows-latest)",
+            "publish-commit"
+          ]
+        },
+        {
+          "runId": 39689868757,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "release"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "@stacksjs/dtsx",
+          "version": "0.11.21",
+          "integrity": "sha512-H1DyQD1JdnXplHREClZoSDg5iR0OahTkpWm091SQ8pxNth+U3+uMDdZZLKqBRyax82OyQZUxs1XjOTY3tgvFZg==",
+          "tarball": "https://registry.npmjs.org/@stacksjs/dtsx/-/dtsx-0.11.21.tgz",
+          "bytes": 225277,
+          "filesSha256": "ce10342832bce2a2f0b3f48849dea2bfb4140ec119cfead5aeff6c5383064f72"
+        },
+        {
+          "name": "bun-plugin-dtsx",
+          "version": "0.11.21",
+          "integrity": "sha512-VyMWSNlQzx1V7lgcu64bi8KoPpfN0yXR31yolj8noHd6Ni40TxInR8KK335DVQAp7x6WPHSGP9GHoTk6xqz2Cg==",
+          "tarball": "https://registry.npmjs.org/bun-plugin-dtsx/-/bun-plugin-dtsx-0.11.21.tgz",
+          "bytes": 5855,
+          "filesSha256": "5c8435221beb7e023b711a328aa000c37c24711ee3c3ea9a30ad84f527331fa2"
+        }
+      ],
+      "releaseCommand": "bun run release:patch",
+      "releaseScript": "bun x --bun @stacksjs/bumpx patch --recursive --commit --tag --push --yes"
+    }
+  ],
+  "consumer": {
+    "lockfile": "bun.lock",
+    "sha256": "7773dff61454e064eb2e087cb50ee939b277c42ad1a27f655b933a42818c8e15",
+    "bunVersion": "1.4.2",
+    "checks": [
+      {
+        "script": "deps:lockfile:check",
+        "exitCode": 0,
+        "outputSha256": "e1cf2d764cf950b13cccd2176bf4e85fad74c8aba8775e72ddebf88b79913040"
+      },
+      {
+        "script": "typecheck",
+        "exitCode": 0,
+        "outputSha256": "4e59825b2959438de7a4c8d462e0b770df30d52ea0e87c5b747fdc41017158be"
+      }
+    ]
+  }
+}

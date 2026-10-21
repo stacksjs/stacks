@@ -112,3 +112,12 @@ and framework type checks. The framework package build also passed locally using
 the installed release. This is historical evidence for the recorded lockfile;
 the framework's hosted Windows release-evidence job separately verifies its
 complete build and subprocess contracts.
+
+The [DTSX 0.11.21 plan](./receipts/dtsx-0.11.21-plan.json) and
+[executed receipt](./receipts/dtsx-0.11.21-receipt.json) retain the follow-up
+Windows fix for directory re-export identities. The source release passed its
+Windows, macOS and Linux path checks and publication gates. Verification used
+the declared Bun 1.4.2, compared complete published archives and installed files,
+and passed lockfile compatibility and framework type checks. The actions package
+also built successfully with the installed update. Hosted Windows evidence runs
+against the complete consumer build separately.
