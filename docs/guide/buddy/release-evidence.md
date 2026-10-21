@@ -78,6 +78,14 @@ starts suspended, joins its job, then resumes. Missing ownership support or
 failed cleanup blocks verification. This is process cleanup, not a sandbox for
 deliberately escaping POSIX groups or privileged external services.
 
+Windows cancellation uses a separate control pipe so the native owner can
+terminate its job and confirm zero active members before the host is removed.
+Consumer stdin remains closed. PowerShell's own progress output is disabled and
+its transport uses text output; command bytes are neither filtered nor rewritten.
+Library callers can observe those bytes with `runProjectScripts`' optional
+synchronous `onOutput(chunk, stream)` callback. The verifier retains hashes by
+default. An observer failure fails the check and triggers owned cleanup.
+
 An integrity match proves archive identity against the plan. This command does
 not validate registry signatures or SLSA attestations, establish redistribution
 rights, prove native execution, or guarantee original-game fidelity. Include

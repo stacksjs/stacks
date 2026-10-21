@@ -8,6 +8,8 @@ export interface ProjectScriptOptions {
   env?: Record<string, string | undefined>
   signal?: AbortSignal
   timeoutMs?: number
+  /** Optional live observation; receipts still retain only an output hash. */
+  onOutput?: (chunk: Uint8Array, stream: 'stdout' | 'stderr') => void
 }
 
 export interface ProjectScriptReceipt {
@@ -25,6 +27,7 @@ function fail(message: string): never {
 function windowsCheckCommand(powershell: string, bun: string, script: string): string[] {
   const source = `
 $ErrorActionPreference = 'Stop'
+$ProgressPreference = 'SilentlyContinue'
 Add-Type -TypeDefinition @'
 using System;
 using System.ComponentModel;
@@ -76,12 +79,19 @@ public static class StacksOwnedCheck {
   [DllImport("kernel32.dll")] static extern IntPtr GetCurrentProcess();
   [DllImport("kernel32.dll")] static extern IntPtr GetStdHandle(int kind);
   [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+  static extern IntPtr CreateFileW(string name, uint access, uint share, IntPtr security,
+    uint disposition, uint flags, IntPtr template);
+  [DllImport("kernel32.dll", SetLastError = true)]
+  static extern bool PeekNamedPipe(IntPtr pipe, IntPtr buffer, uint size, IntPtr read,
+    out uint available, IntPtr remaining);
+  [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
   static extern bool CreateProcessW(string application, StringBuilder command, IntPtr processSecurity,
     IntPtr threadSecurity, bool inherit, uint flags, IntPtr environment, string directory,
     ref Startup startup, out ProcessInfo process);
   [DllImport("kernel32.dll", SetLastError = true)] static extern uint ResumeThread(IntPtr thread);
   [DllImport("kernel32.dll", SetLastError = true)] static extern uint WaitForSingleObject(IntPtr handle, uint timeout);
   [DllImport("kernel32.dll", SetLastError = true)] static extern bool GetExitCodeProcess(IntPtr process, out uint code);
+  [DllImport("kernel32.dll", SetLastError = true)] static extern bool TerminateProcess(IntPtr process, uint code);
   [DllImport("kernel32.dll", SetLastError = true)] static extern bool CloseHandle(IntPtr handle);
   static void Require(bool success) { if (!success) throw new Win32Exception(Marshal.GetLastWin32Error()); }
   static IntPtr InheritableStandardHandle(int kind) {
@@ -90,6 +100,23 @@ public static class StacksOwnedCheck {
     IntPtr inherited;
     Require(DuplicateHandle(GetCurrentProcess(), source, GetCurrentProcess(), out inherited, 0, true, 2));
     return inherited;
+  }
+  static IntPtr ConsumerInput() {
+    IntPtr source = CreateFileW("NUL", 0x80000000, 3, IntPtr.Zero, 3, 0, IntPtr.Zero);
+    Require(source != new IntPtr(-1));
+    try {
+      IntPtr inherited;
+      Require(DuplicateHandle(GetCurrentProcess(), source, GetCurrentProcess(), out inherited, 0, true, 2));
+      return inherited;
+    } finally { CloseHandle(source); }
+  }
+  static bool StopRequested() {
+    uint available;
+    if (PeekNamedPipe(GetStdHandle(-10), IntPtr.Zero, 0, IntPtr.Zero, out available, IntPtr.Zero))
+      return available != 0;
+    int error = Marshal.GetLastWin32Error();
+    if (error == 109 || error == 232) return true; // Closed control pipe.
+    throw new Win32Exception(error);
   }
   static IntPtr Job() {
     IntPtr job = CreateJobObjectW(IntPtr.Zero, null);
@@ -101,6 +128,9 @@ public static class StacksOwnedCheck {
     return job;
   }
   public static int Run(string bun, string script) {
+    // A queued stop must prevent startup even when Add-Type took most of the
+    // check's budget. The control pipe is never inherited as consumer stdin.
+    if (StopRequested()) return 1;
     // The outer job owns this host before it creates anything. If cancellation
     // races suspended-child assignment below, host death still kills that child.
     // Retain this non-inheritable handle until process exit; closing it earlier
@@ -115,11 +145,11 @@ public static class StacksOwnedCheck {
       startup.Flags = 0x100; // STARTF_USESTDHANDLES
       // Bun can supply non-inheritable standard handles to PowerShell. A
       // native CreateProcess child needs explicitly inheritable duplicates.
-      startup.Input = InheritableStandardHandle(-10);
-      startup.Output = InheritableStandardHandle(-11);
-      startup.Error = InheritableStandardHandle(-12);
       // Never execute user code before it belongs to the inner cleanup job.
       try {
+        startup.Input = ConsumerInput();
+        startup.Output = InheritableStandardHandle(-11);
+        startup.Error = InheritableStandardHandle(-12);
         Require(CreateProcessW(bun, new StringBuilder("\\\"" + bun + "\\\" run " + script),
           IntPtr.Zero, IntPtr.Zero, true, 0x08000004, IntPtr.Zero, null, ref startup, out child));
       } finally {
@@ -127,32 +157,49 @@ public static class StacksOwnedCheck {
           if (handle != IntPtr.Zero) CloseHandle(handle);
       }
       Require(AssignProcessToJobObject(commandJob, child.Process));
-      Require(ResumeThread(child.Thread) != 0xffffffff);
-      Require(WaitForSingleObject(child.Process, 0xffffffff) == 0);
-      uint code;
-      Require(GetExitCodeProcess(child.Process, out code));
-      // Membership survives an exited intermediate process, unlike a PID tree.
-      Require(TerminateJobObject(commandJob, 1));
-      var cleanup = System.Diagnostics.Stopwatch.StartNew();
-      while (true) {
-        Accounting info;
-        Require(QueryInformationJobObject(commandJob, 1, out info, (uint)Marshal.SizeOf(typeof(Accounting)), IntPtr.Zero));
-        if (info.ActiveProcesses == 0) break;
-        if (cleanup.ElapsedMilliseconds >= 1000) throw new TimeoutException("Owned Windows processes did not finish cleanup");
-        Thread.Sleep(10);
+      bool cancelled = StopRequested();
+      if (!cancelled) Require(ResumeThread(child.Thread) != 0xffffffff);
+      while (!cancelled) {
+        uint state = WaitForSingleObject(child.Process, 10);
+        if (state == 0) break;
+        Require(state == 258); // WAIT_TIMEOUT, otherwise retain the native error.
+        cancelled = StopRequested();
       }
+      uint code = 1;
+      if (!cancelled) Require(GetExitCodeProcess(child.Process, out code));
       return unchecked((int)code);
     } finally {
-      if (child.Thread != IntPtr.Zero) CloseHandle(child.Thread);
-      if (child.Process != IntPtr.Zero) CloseHandle(child.Process);
-      Require(CloseHandle(commandJob));
+      try {
+        // Also dispose a suspended child if assigning its inner job failed.
+        if (child.Process != IntPtr.Zero) {
+          uint state = WaitForSingleObject(child.Process, 0);
+          Require(state == 0 || state == 258);
+          if (state == 258) Require(TerminateProcess(child.Process, 1));
+        }
+        // Membership survives an exited intermediate process, unlike a PID
+        // tree. Query it on every exit path before closing the owning handle.
+        // https://learn.microsoft.com/windows/win32/procthread/job-objects
+        Require(TerminateJobObject(commandJob, 1));
+        var cleanup = System.Diagnostics.Stopwatch.StartNew();
+        while (true) {
+          Accounting info;
+          Require(QueryInformationJobObject(commandJob, 1, out info, (uint)Marshal.SizeOf(typeof(Accounting)), IntPtr.Zero));
+          if (info.ActiveProcesses == 0 && (child.Process == IntPtr.Zero || WaitForSingleObject(child.Process, 0) == 0)) break;
+          if (cleanup.ElapsedMilliseconds >= 1000) throw new TimeoutException("Owned Windows processes did not finish cleanup");
+          Thread.Sleep(10);
+        }
+      } finally {
+        if (child.Thread != IntPtr.Zero) CloseHandle(child.Thread);
+        if (child.Process != IntPtr.Zero) CloseHandle(child.Process);
+        Require(CloseHandle(commandJob));
+      }
     }
   }
 }
 '@
 exit [StacksOwnedCheck]::Run('${bun.replaceAll("'", "''")}', '${script}')
 `
-  return [powershell, '-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(source, 'utf16le').toString('base64')]
+  return [powershell, '-NoLogo', '-NoProfile', '-NonInteractive', '-OutputFormat', 'Text', '-EncodedCommand', Buffer.from(source, 'utf16le').toString('base64')]
 }
 
 /** Execute declared project checks with the installed Bun and owned cleanup. */
@@ -195,7 +242,37 @@ export async function runProjectScripts(options: ProjectScriptOptions): Promise<
       reportExit = resolve
       reportFailure = reject
     })
-    const host = `
+    let interrupted = false
+    let windowsHelperPid: number | undefined
+    const host = powershell ? `
+setInterval(() => {}, 60_000)
+let command
+let stopRequested = false
+let start
+const permitted = new Promise(resolve => { start = resolve })
+process.on('message', async (message) => {
+  if (message?.stop) {
+    stopRequested = true
+    start()
+    if (command) {
+      try {
+        command.stdin.write(new Uint8Array([1]))
+        await command.stdin.flush()
+      } catch (error) { process.send({ error: String(error) }) }
+    }
+  } else if (message?.start) start()
+})
+process.send({ ready: true })
+await permitted
+if (stopRequested) process.send({ exitCode: 1 })
+else {
+  try {
+    command = Bun.spawn(${JSON.stringify(command)}, { stdin: 'pipe', stdout: 'inherit', stderr: 'inherit' })
+    process.send({ helperPid: command.pid })
+    process.send({ exitCode: await command.exited })
+  } catch (error) { process.send({ error: String(error) }) }
+}
+` : `
 setInterval(() => {}, 60_000)
 try {
   const command = Bun.spawn(${JSON.stringify(command)}, { stdin: 'ignore', stdout: 'inherit', stderr: 'inherit' })
@@ -212,12 +289,16 @@ try {
       stderr: 'pipe',
       detached: process.platform !== 'win32',
       ipc(message) {
-        if (Number.isInteger(message?.exitCode)) reportExit(message.exitCode)
+        if (powershell && message?.ready === true) {
+          try { child.send(interrupted ? { stop: true } : { start: true }) }
+          catch (error) { reportFailure(new Error(`Consumer script ${script} control channel failed: ${String(error)}`)) }
+        }
+        else if (powershell && Number.isSafeInteger(message?.helperPid) && message.helperPid > 0) windowsHelperPid = message.helperPid
+        else if (Number.isInteger(message?.exitCode)) reportExit(message.exitCode)
         else reportFailure(new Error(`Consumer script ${script} host failed: ${message?.error ?? 'invalid completion report'}`))
       },
     })
-    const pipes = [child.stdout, child.stderr].map(stream => ({ reader: stream.getReader(), done: false }))
-    let interrupted = false
+    const pipes = [child.stdout, child.stderr].map((stream, index) => ({ reader: stream.getReader(), done: false, kind: index === 0 ? 'stdout' as const : 'stderr' as const }))
     let teardown: Promise<void> | undefined
     let announceStop: () => void = () => {}
     const stopped = new Promise<void>(resolve => { announceStop = resolve })
@@ -238,6 +319,16 @@ try {
       teardown = (async () => {
         const errors: string[] = []
         if (windowsTaskkill) {
+          if (!preserveOutput) {
+            // Keep the native Job Object owner alive until it has terminated
+            // the check and confirmed zero active members, including children
+            // whose intermediate parent has already exited.
+            try {
+              child.send({ stop: true })
+              await waitWithin(reported, 1000)
+            }
+            catch { errors.push('Native Windows cleanup completion was not confirmed') }
+          }
           // Query and terminate the tree before its leader disappears. Killing
           // only the leader first loses taskkill's parent/descendant relation.
           try {
@@ -247,6 +338,20 @@ try {
             if (result.exitCode !== 0) errors.push(`taskkill failed with exit code ${result.exitCode}`)
           }
           catch { errors.push('Windows process-tree cleanup could not execute taskkill') }
+          if (windowsHelperPid) {
+            const until = performance.now() + 1000
+            let alive = true
+            while (alive) {
+              try { process.kill(windowsHelperPid, 0) }
+              catch (error) {
+                if ((error as NodeJS.ErrnoException).code === 'ESRCH') alive = false
+                else break
+              }
+              if (!alive || performance.now() >= until) break
+              await new Promise<void>(resolve => setTimeout(resolve, 10))
+            }
+            if (alive) errors.push('Native Windows helper disposal was not confirmed')
+          }
           if (errors.length) {
             // Still dispose the direct child and readers while retaining the
             // tree-cleanup error; this must never produce a success receipt.
@@ -337,6 +442,7 @@ try {
           const next = await pipe.reader.read()
           if (next.done) break
           output.update(next.value)
+          options.onOutput?.(next.value.slice(), pipe.kind)
         }
       }
       finally {

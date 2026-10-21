@@ -57,9 +57,19 @@ test('owned cleanup retains all completed command output in the receipt hash', a
     // A multi-chunk payload and final marker catch dropped/truncated completion output.
     const payload = `known-command-output\n${'0123456789abcdef'.repeat(16_384)}\ncompleted-command-output\n`
     writeFileSync(join(root, 'check.ts'), `await Bun.write(Bun.stderr, ${JSON.stringify(payload)})`)
-    const receipt = await runProjectScripts({ cwd: root, scripts: ['check'], timeoutMs: process.platform === 'win32' ? 15_000 : 3000 })
+    const observed: Record<'stdout' | 'stderr', Buffer[]> = { stdout: [], stderr: [] }
+    const receipt = await runProjectScripts({
+      cwd: root, scripts: ['check'], timeoutMs: process.platform === 'win32' ? 15_000 : 3000,
+      onOutput: (chunk, stream) => { observed[stream].push(Buffer.from(chunk)) },
+    })
     const expected = createHash('sha256').update(Buffer.from(banner)).update(payload).digest('hex')
-    expect(receipt.checks[0]?.outputSha256).toBe(expected)
+    const captured = Object.fromEntries(Object.entries(observed).map(([stream, chunks]) => {
+      const bytes = Buffer.concat(chunks)
+      return [stream, { bytes: bytes.length, first: bytes.subarray(0, 120).toString(), last: bytes.subarray(-80).toString() }]
+    }))
+    expect(receipt.checks[0]?.outputSha256, JSON.stringify(captured)).toBe(expected)
+    expect(Buffer.concat(observed.stderr).byteLength).toBe(banner.byteLength + Buffer.byteLength(payload))
+    expect(Buffer.concat(observed.stdout).byteLength).toBe(0)
   }
   finally { rmSync(root, { recursive: true, force: true }) }
 }, 30_000)
