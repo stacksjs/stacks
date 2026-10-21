@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.250...v0.75.251)
+
+## ✨ Features
+
+- **cache**: a SQLite driver, for entries worth keeping across restarts ([200c2fd](https://github.com/stacksjs/stacks/commit/200c2fd)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.249...v0.75.250)
 
 ## 🐛 Bug Fixes
