@@ -4089,7 +4089,7 @@ Create a new Stacks project
 
 - Usage: `$ buddy new [name]`
 - Namespace: none
-- Aliases: `create [name]`
+- Aliases: `create`
 - Arguments: `[name]`
 
 | Option | Description | Contract | Default |

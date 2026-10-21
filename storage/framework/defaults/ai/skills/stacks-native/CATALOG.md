@@ -21,7 +21,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/auth` | [`stacks-auth`](../stacks-auth/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/auth/src/index.ts) | 119 |
 | `@stacksjs/browser` | [`stacks-browser`](../stacks-browser/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/browser/src/index.ts) | 8 |
 | `@stacksjs/browser-extension` | [`stacks-browser-extension`](../stacks-browser-extension/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/browser-extension/src/index.ts) | 7 |
-| `@stacksjs/buddy` | [`stacks-buddy`](../stacks-buddy/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/buddy/src/index.ts) | 153 |
+| `@stacksjs/buddy` | [`stacks-buddy`](../stacks-buddy/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/buddy/src/index.ts) | 154 |
 | `@stacksjs/build` | [`stacks-build`](../stacks-build/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/build/src/index.ts) | 2 |
 | `@stacksjs/cache` | [`stacks-cache`](../stacks-cache/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cache/src/index.ts) | 13 |
 | `@stacksjs/calendar-api` | [`stacks-calendar`](../stacks-calendar/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/calendar-api/src/index.ts) | 2 |
@@ -215,7 +215,7 @@ Read the entrypoint and package export map for re-exported or type-only surfaces
 
 Local source modules: [src/commands/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/buddy/src/commands/index.ts).
 
-Evidence directory: [153 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/buddy/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [154 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/buddy/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/build
 

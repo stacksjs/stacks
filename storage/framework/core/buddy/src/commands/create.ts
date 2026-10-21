@@ -43,7 +43,7 @@ export function create(buddy: CLI): void {
 
   buddy
     .command('new [name]', descriptions.command)
-    .alias('create [name]')
+    .alias('create')
     .option('-n, --name [name]', descriptions.name, { default: false })
     .option('-u, --ui', descriptions.ui, { default: true }) // if no, disregard remainder of questions wrt UI
     .option('-c, --components', descriptions.components, { default: true })
