@@ -5,7 +5,7 @@ export { isDark, preferredDark, toggleDark } from '../../../resources/functions/
 export { fetchWebAnalytics, fetchSalesAnalytics, fetchCampaignAnalytics, fetchEventAnalytics, recordAnalyticsEvent, useAnalytics } from '../defaults/functions/analytics'
 export type { AnalyticsOverview, TrafficDataPoint, PageData, ReferrerData, DeviceData, BrowserData, CountryData, AnalyticsRange, AnalyticsScope, WebAnalyticsResponse, SalesAnalyticsResponse, CampaignAnalyticsResponse, EventAnalyticsResponse, RecordAnalyticsEventInput } from '../defaults/functions/analytics'
 export { resolveApiBaseUrl } from '../defaults/functions/api-url'
-export { get, post, put, patch, del, createResource, useApi } from '../defaults/functions/api'
+export { get, post, put, patch, del, createResource, useApi, DashboardApiEnvironmentError } from '../defaults/functions/api'
 export type { ApiResponse, ApiError } from '../defaults/functions/api'
 export { isTwoFactorChallenge, isLoginResponse, safeAuthRedirect, useAuth, describeAuthError, authGuard } from '../defaults/functions/auth'
 export type { AuthComposable } from '../defaults/functions/auth'
