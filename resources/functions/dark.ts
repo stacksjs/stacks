@@ -1,8 +1,22 @@
-// Dark mode toggle — uses stx composables (globals from stx.d.ts).
-// `preferredDark` exposes the OS-level color-scheme preference so pages
-// can render an "Auto" mode without overriding what the user picked.
-export const isDark = useDark()
-export const preferredDark = usePreferredDark()
-export function toggleDark() {
-  isDark.set(!isDark())
+import { useDark, usePreferredDark } from '@stacksjs/stx/composables'
+import { state } from '@stacksjs/stx/signals'
+
+const dark = useDark()
+const preferred = usePreferredDark()
+const darkValue = state(dark.isDark)
+const preferredValue = state(preferred.matches)
+
+dark.subscribe(value => darkValue.set(value))
+preferred.subscribe(value => preferredValue.set(value))
+
+export function isDark(): boolean {
+  return darkValue()
+}
+
+export function preferredDark(): boolean {
+  return preferredValue()
+}
+
+export function toggleDark(): void {
+  dark.toggle()
 }

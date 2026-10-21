@@ -102,6 +102,7 @@
     "docs:native-skills:check": "./buddy docs:native-skills:check"
   },
   "dependencies": {
+    "@stacksjs/stx": "0.2.631",
     "stacks": "workspace:*"
   },
   "workspaces": [
@@ -121,7 +122,6 @@
   },
   "devDependencies": {
     "@stacksjs/components": "0.2.631",
-    "@stacksjs/stx": "0.2.631",
     "better-dx": "^0.2.37",
     "bun-plugin-stx": "0.2.631"
   }

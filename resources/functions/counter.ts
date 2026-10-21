@@ -1,4 +1,5 @@
-// Reactive counter — uses stx signals (globals from stx.d.ts)
+import { state } from '@stacksjs/stx/signals'
+
 export const count = state(0)
 
 export function increment() {

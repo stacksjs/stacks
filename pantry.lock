@@ -5,11 +5,11 @@
     "": {
       "name": "stacks",
       "dependencies": {
+        "@stacksjs/stx": "0.2.631",
         "stacks": "workspace:*"
       },
       "devDependencies": {
         "@stacksjs/components": "0.2.631",
-        "@stacksjs/stx": "0.2.631",
         "better-dx": "^0.2.37",
         "bun-plugin-stx": "0.2.631"
       },
@@ -612,6 +612,7 @@
         "@iconify-json/hugeicons": "^1.2.35",
         "@stacksjs/mobile": "0.75.253",
         "@stacksjs/sanitizer": "^0.2.534",
+        "@stacksjs/stx": "^0.2.631",
         "@xterm/addon-fit": "^0.11.0",
         "@xterm/xterm": "^6.0.0",
         "ts-qr-codes": "^0.1.8"
