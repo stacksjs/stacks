@@ -247,6 +247,13 @@ private-key assignments, including encrypted ones. Legacy decryption remains
 supported for migration through `buddy env:rotate`; non-strict scans retain
 their existing compatibility behavior.
 
+`publicKeyMatchesPrivateKey(publicKey: unknown, privateKey: unknown): boolean`
+validates a current X25519 pair without returning either key or parser errors.
+Use it with the actual private half before accepting public metadata for future
+writes. Strict `env:check` rejects mismatches, and `env:set`/`env:encrypt` refuse
+to add ciphertext under a header unrelated to an available private key. Reading
+old ciphertext and rotating legacy keys retain their existing migration policy.
+
 ## Tenant isolation on a shared box
 
 When several projects share one server - one owns it, the rest attach with

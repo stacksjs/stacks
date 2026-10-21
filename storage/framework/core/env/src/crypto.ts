@@ -103,6 +103,18 @@ function parsePrivateKey(value: string) {
   return key
 }
 
+/** Validate a current public/private key relationship without exposing either key. */
+export function publicKeyMatchesPrivateKey(publicKey: unknown, privateKey: unknown): boolean {
+  if (!isValidPublicKey(publicKey) || typeof privateKey !== 'string') return false
+  try {
+    const derived = createPublicKey(parsePrivateKey(privateKey))
+    return publicKey === `${PUBLIC_KEY_PREFIX}${encode(derived.export({ format: 'der', type: 'spki' }))}`
+  }
+  catch {
+    return false
+  }
+}
+
 function aad(envelope: Pick<EnvelopeV2, 'epk' | 'salt' | 'nonce'>): Buffer {
   return Buffer.from(`stacks-env:v2;${envelope.epk};${envelope.salt};${envelope.nonce}`, 'utf8')
 }

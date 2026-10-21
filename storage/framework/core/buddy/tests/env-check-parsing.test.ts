@@ -139,12 +139,13 @@ await buddy.parse()
 })
 
 describe('env:check strict committed encryption metadata', () => {
-  it.each(['valid', 'private-header', 'malformed', 'legacy', 'trailing-plaintext', 'private-assignment', 'empty-header'] as const)('checks %s without printing key material', async (variant) => {
+  it.each(['valid', 'mismatched-header', 'mismatched-header-local-key', 'mismatched-header-nonstrict', 'private-header', 'malformed', 'legacy', 'trailing-plaintext', 'private-assignment', 'empty-header'] as const)('checks %s without printing key material', async (variant) => {
     const cwd = mkdtempSync(join(tmpdir(), 'buddy-env-check-metadata-'))
     const checkout = resolve(import.meta.dir, '../../../../..')
     const keys = generateKeypair()
     const fixtureSecret = 'metadata-fixture-must-stay-private'
-    const publicValue = variant === 'private-header' ? keys.privateKey
+    const publicValue = variant.startsWith('mismatched-header') ? generateKeypair().publicKey
+      : variant === 'private-header' ? keys.privateKey
       : variant === 'malformed' ? fixtureSecret
         : variant === 'legacy' ? 'a'.repeat(64)
           : variant === 'empty-header' ? '' : keys.publicKey
@@ -152,6 +153,8 @@ describe('env:check strict committed encryption metadata', () => {
       const suffix = variant === 'trailing-plaintext' ? ` PLAINTEXT_SECRET="${fixtureSecret}"` : ''
       const privateAssignment = variant === 'private-assignment' ? `DOTENV_PRIVATE_KEY_PRODUCTION="${keys.privateKey}"\n` : ''
       writeFileSync(join(cwd, '.env.production'), `DOTENV_PUBLIC_KEY_PRODUCTION="${publicValue}"${suffix}\nAPP_KEY="${encryptValue(fixtureSecret, keys.publicKey)}"\n${privateAssignment}`)
+      if (variant === 'mismatched-header-local-key')
+        writeFileSync(join(cwd, '.env.keys'), `DOTENV_PRIVATE_KEY_PRODUCTION="${keys.privateKey}"\n`, { mode: 0o600 })
       for (const args of [['init', '-q'], ['add', '.env.production']]) {
         const initialized = Bun.spawnSync(['git', ...args], { cwd, stdout: 'pipe', stderr: 'pipe' })
         expect(initialized.exitCode).toBe(0)
@@ -167,17 +170,17 @@ await buddy.parse()
 `)
       const child = Bun.spawnSync([
         process.execPath, '--no-env-file', '--tsconfig-override', join(checkout, 'storage/framework/tsconfig.framework.json'),
-        runner, 'env:check', '--file', '.env.production', '--strict',
+        runner, 'env:check', '--file', '.env.production', ...(variant === 'mismatched-header-nonstrict' ? [] : ['--strict']),
       ], {
         cwd,
-        env: { PATH: process.env.PATH, APP_ENV: 'test', NODE_ENV: 'test', DOTENV_PRIVATE_KEY_PRODUCTION: keys.privateKey },
+        env: { PATH: process.env.PATH, APP_ENV: 'test', NODE_ENV: 'test', ...(variant === 'mismatched-header-local-key' ? {} : { DOTENV_PRIVATE_KEY_PRODUCTION: keys.privateKey }) },
         stdout: 'pipe', stderr: 'pipe',
       })
       const output = `${child.stdout}\n${child.stderr}`
       expect(output).not.toContain('Fixture must remain decryptable')
       expect(output).not.toContain(keys.privateKey)
       expect(output).not.toContain(fixtureSecret)
-      if (variant === 'valid') expect(child.exitCode, output).toBe(0)
+      if (variant === 'valid' || variant === 'mismatched-header-nonstrict') expect(child.exitCode, output).toBe(0)
       else {
         expect(child.exitCode, output).not.toBe(0)
         expect(output).toContain('Encryption metadata')

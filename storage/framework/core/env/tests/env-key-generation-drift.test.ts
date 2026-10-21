@@ -16,7 +16,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { encryptValue, generateKeypair } from '../src/crypto'
-import { encryptEnv, reusableEnvPublicKey, setEnv } from '../src/cli'
+import { encryptEnv, getEnv, reusableEnvPublicKey, rotateKeypair, setEnv } from '../src/cli'
 
 let dir: string
 
@@ -56,6 +56,46 @@ function valuesIn(path: string): Record<string, string> {
   }
   return out
 }
+
+describe('a valid public header unrelated to the readable ciphertext', () => {
+  test.each(['process', 'file'] as const)('rejects encrypted writes with the original private key from %s', (source) => {
+    const original = generateKeypair()
+    const unrelated = generateKeypair()
+    const path = join(dir, '.env.production')
+    const content = `DOTENV_PUBLIC_KEY_PRODUCTION="${unrelated.publicKey}"\nAPP_KEY="${encryptValue('original-secret', original.publicKey)}"\nNEW_VALUE=not-yet-encrypted\n`
+    const previous = process.env.DOTENV_PRIVATE_KEY_PRODUCTION
+    const keysContent = `# existing key ownership\nDOTENV_PRIVATE_KEY_PRODUCTION="${original.privateKey}"\n`
+    if (source === 'process') process.env.DOTENV_PRIVATE_KEY_PRODUCTION = original.privateKey
+    else writeFileSync(join(dir, '.env.keys'), keysContent)
+    try {
+      for (const operation of ['set', 'encrypt']) {
+        writeFileSync(path, content)
+        expect(getEnv('APP_KEY', { file: '.env.production', cwd: dir }).output).toBe('original-secret')
+        const result = operation === 'set'
+          ? setEnv('NEW_VALUE', 'new-secret', { file: '.env.production', cwd: dir })
+          : encryptEnv({ file: '.env.production', cwd: dir })
+        expect(result.success).toBe(false)
+        expect(result.error).toContain('does not match')
+        expect(result.error).not.toContain(original.privateKey)
+        expect(result.error).not.toContain('original-secret')
+        expect(result.error).not.toContain('new-secret')
+        expect(readFileSync(path, 'utf8')).toBe(content)
+        if (source === 'file') expect(readFileSync(join(dir, '.env.keys'), 'utf8')).toBe(keysContent)
+        else expect(existsSync(join(dir, '.env.keys'))).toBe(false)
+      }
+      // Rotation retains its existing local-key-file prerequisite.
+      if (source === 'process') writeFileSync(join(dir, '.env.keys'), keysContent, { mode: 0o600 })
+      expect(rotateKeypair({ file: '.env.production', cwd: dir }).success).toBe(true)
+      expect(getEnv('APP_KEY', { file: '.env.production', cwd: dir }).output).toBe('original-secret')
+      expect(setEnv('NEW_VALUE', 'new-secret', { file: '.env.production', cwd: dir }).success).toBe(true)
+      expect(getEnv('NEW_VALUE', { file: '.env.production', cwd: dir }).output).toBe('new-secret')
+    }
+    finally {
+      if (previous === undefined) delete process.env.DOTENV_PRIVATE_KEY_PRODUCTION
+      else process.env.DOTENV_PRIVATE_KEY_PRODUCTION = previous
+    }
+  })
+})
 
 describe('reusableEnvPublicKey', () => {
   test('returns the file key when the file already holds ciphertext', () => {

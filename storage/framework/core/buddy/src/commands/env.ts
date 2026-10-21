@@ -1,7 +1,7 @@
 import type { CLI } from '@stacksjs/types'
 import process from 'node:process'
 import { log, onUnknownSubcommand } from "@stacksjs/cli"
-import { decryptEnv, encryptEnv, envKeyNames, getEnv, getKeypair, getPrivateKey, parseEnvFromKey, resolveEnvFile, rotateKeypair, setEnv } from '@stacksjs/env'
+import { decryptEnv, encryptEnv, envKeyNames, getEnv, getKeypair, getPrivateKey, isValidPublicKey, parseEnvFromKey, publicKeyMatchesPrivateKey, resolveEnvFile, rotateKeypair, setEnv } from '@stacksjs/env'
 import { ExitCode } from '@stacksjs/types'
 
 interface EnvOptions {
@@ -363,14 +363,24 @@ export function env(buddy: CLI): void {
           // A different environment's key or an empty keys file proves nothing.
           const { publicKeyName, privateKeyName } = envKeyNames(envFile)
           const privateKeyNames = [privateKeyName, 'DOTENV_PRIVATE_KEY']
-          const hasPublicKey = Boolean(values[publicKeyName] || values.DOTENV_PUBLIC_KEY)
-          let hasPrivateKey = Boolean(getPrivateKey(parseEnvFromKey(privateKeyName)) || getPrivateKey())
-            || privateKeyNames.some(name => Boolean(values[name]))
+          const publicKey = values[publicKeyName] || values.DOTENV_PUBLIC_KEY
+          const hasPublicKey = Boolean(publicKey)
+          let privateKey = getPrivateKey(parseEnvFromKey(privateKeyName)) || getPrivateKey()
+            || privateKeyNames.map(name => values[name]).find(Boolean)
           const localKeysPath = resolve(process.cwd(), '.env.keys')
-          if (!hasPrivateKey && existsSync(localKeysPath)) {
+          if (!privateKey && existsSync(localKeysPath)) {
             const localKeys = await storage.readTextFile(localKeysPath)
             const assignments = parseEnvAssignments(typeof localKeys === 'string' ? localKeys : localKeys.data)
-            hasPrivateKey = privateKeyNames.some(name => Boolean(assignments[name]))
+            privateKey = privateKeyNames.map(name => assignments[name]).find(Boolean)
+          }
+
+          const hasPrivateKey = Boolean(privateKey)
+          if (options.strict && privateKey && isValidPublicKey(publicKey) && !publicKeyMatchesPrivateKey(publicKey, privateKey)) {
+            checks.push({
+              name: 'Encryption metadata',
+              status: 'fail',
+              message: `The public key in ${envFile} does not match the configured private key. Restore matching metadata or run \`buddy env:rotate\` before writing encrypted values.`,
+            })
           }
 
           if (hasPublicKey && hasPrivateKey) {

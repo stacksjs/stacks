@@ -5,12 +5,24 @@
 
 import { describe, expect, it } from 'bun:test'
 import { createHash, generateKeyPairSync } from 'node:crypto'
-import { aesDecrypt, aesEncrypt, decryptValue, encryptValue, generateKeypair, getPrivateKey, isLegacyEncryptedValue, isValidPublicKey, migrateEncryptedValue, parseEnvFromKey } from '../src/crypto'
+import { aesDecrypt, aesEncrypt, decryptValue, encryptValue, generateKeypair, getPrivateKey, isLegacyEncryptedValue, isValidPublicKey, migrateEncryptedValue, parseEnvFromKey, publicKeyMatchesPrivateKey } from '../src/crypto'
 
 // Hardcoded test keys for deterministic testing
 const TEST_PRIVATE_KEY = 'a4547dcd9d3429615a3649bb79e87edb62ee6a74b007075e9141ae44f5fb412c'
 
 describe('canonical public-key validation', () => {
+  it('validates the public/private relationship without returning key material', () => {
+    const keys = generateKeypair()
+    const unrelated = generateKeypair()
+    expect(publicKeyMatchesPrivateKey(keys.publicKey, keys.privateKey)).toBe(true)
+    expect(publicKeyMatchesPrivateKey(unrelated.publicKey, keys.privateKey)).toBe(false)
+    expect(publicKeyMatchesPrivateKey(keys.publicKey, unrelated.privateKey)).toBe(false)
+    for (const value of [undefined, null, 42, '', keys.publicKey, TEST_PRIVATE_KEY, 'x25519-private:invalid'])
+      expect(publicKeyMatchesPrivateKey(keys.publicKey, value)).toBe(false)
+    for (const value of [undefined, null, 42, '', keys.privateKey, TEST_PRIVATE_KEY, `${keys.publicKey} plaintext`])
+      expect(publicKeyMatchesPrivateKey(value, keys.privateKey)).toBe(false)
+  })
+
   it('accepts only current public keys without throwing or returning key material', () => {
     const keys = generateKeypair()
     expect(isValidPublicKey(keys.publicKey)).toBe(true)

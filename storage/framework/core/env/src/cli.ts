@@ -5,7 +5,7 @@
 import { randomUUID } from 'node:crypto'
 import { chmodSync, existsSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { basename, dirname, resolve } from 'node:path'
-import { decryptValue, encryptValue, generateKeypair } from './crypto'
+import { decryptValue, encryptValue, generateKeypair, publicKeyMatchesPrivateKey } from './crypto'
 import { parse } from './parser'
 
 export interface EncryptOptions {
@@ -224,6 +224,18 @@ export function envPrivateKeyNames(file?: string): string[] {
   return privateKeyName === 'DOTENV_PRIVATE_KEY' ? [privateKeyName] : [privateKeyName, 'DOTENV_PRIVATE_KEY']
 }
 
+/** A readable old value does not prove that its public header names that key. */
+function assertMatchingPrivateKey(publicKey: string, keysPath: string, file?: string): void {
+  const names = envPrivateKeyNames(file)
+  const keys = existsSync(keysPath) ? parse(readFileSync(keysPath, 'utf8')).parsed : {}
+  const privateKey = names.map(name => keys[name]).find(Boolean)
+    || names.map(name => process.env[name]).find(Boolean)
+  // Public-only encryption remains supported. When a private half is present,
+  // refuse a mismatch before writing ciphertext that this operator cannot read.
+  if (privateKey && !publicKeyMatchesPrivateKey(publicKey, privateKey))
+    throw new Error('Encryption public key does not match the configured private key. Restore the matching keypair or run buddy env:rotate before writing encrypted values.')
+}
+
 /**
  * Does this file already hold ciphertext, under any key name?
  *
@@ -355,6 +367,7 @@ export function encryptEnv(options: EncryptOptions = {}): { success: boolean, ou
       writePrivateKeys(keysPath, keysContent)
     }
 
+    assertMatchingPrivateKey(publicKey, keysPath, options.file)
     const envContent = readFileSync(envPath, 'utf-8')
     // The SAME name the keypair was stored under above — see envKeyNames.
     const output = encryptedEnvContent(envContent, publicKey, envKeyNames(options.file).publicKeyName, options)
@@ -644,6 +657,7 @@ export function setEnv(
     // Encrypt value if needed
     let finalValue = value
     if (!options.plain && publicKey) {
+      assertMatchingPrivateKey(publicKey, keysPath, options.file)
       finalValue = encryptValue(value, publicKey)
     }
 

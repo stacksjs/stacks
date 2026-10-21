@@ -131,11 +131,19 @@ throwing or exposing parser details. Private keys, legacy headers, other key
 algorithms, and noncanonical/trailing data return `false`. Legacy decryption and
 migration remain available.
 
+`publicKeyMatchesPrivateKey(publicKey, privateKey)` validates the relationship
+between current-format keys and returns only a boolean. A readable encrypted
+value does not establish that its public header names the same private key.
+`env:set` and `env:encrypt` reject a mismatch with an available private key
+before changing ciphertext; encryption using only a public key remains supported.
+
 `buddy env:check --strict` requires valid public metadata in committed env files
 and rejects private-key assignments even if their values are encrypted. Legacy
 headers require `buddy env:rotate`; a public-looking variable name alone does
 not establish that its contents are safe to commit. Non-strict scanning retains
-its existing compatibility behavior.
+its existing compatibility behavior. Strict checks also reject a valid public
+header that does not match the configured private half. Restore matching
+metadata or use `buddy env:rotate` to migrate the existing readable values.
 
 This feature is not a complete secret-management system. It has not yet passed
 the independent review required by [Stacks issue #2058](https://github.com/stacksjs/stacks/issues/2058),
