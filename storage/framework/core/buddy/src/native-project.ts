@@ -50,7 +50,7 @@ export function scaffoldNativeProject(root: string, options: { adopt?: boolean, 
   writeMissing('buddy', `#!/bin/sh\nset -eu\ncd -- "$(dirname -- "$0")"\nBUDDY_NATIVE_ENTRY=$(bun --print 'Bun.resolveSync("@stacksjs/buddy/cli", process.cwd())')\nexec bun "$BUDDY_NATIVE_ENTRY" "$@"\n`)
   chmodSync(join(root, 'buddy'), 0o755)
   writeMissing('craft.config.ts', `export default {\n  name: ${JSON.stringify(name)},\n  input: 'src/app.stx',\n  target: 'macos',\n  bundleId: ${JSON.stringify(`com.example.${basename(root).toLowerCase().replace(/[^a-z0-9-]/g, '-')}`)},\n  window: { title: ${JSON.stringify(name)}, width: 640, height: 480 },\n}\n`)
-  writeMissing('src/app.stx', `<!doctype html>\n<html lang="en">\n<head><meta charset="utf-8"><title>${name.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</title></head>\n<body><h1>${name.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</h1><p>Your Stacks native app is ready.</p></body>\n</html>\n`)
+  if (!options.adopt) writeMissing('src/app.stx', `<!doctype html>\n<html lang="en">\n<head><meta charset="utf-8"><title>${name.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</title></head>\n<body><h1>${name.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</h1><p>Your Stacks native app is ready.</p></body>\n</html>\n`)
   writeMissing('.gitignore', 'node_modules/\ndist/\n.stx/\n')
   writeFileSync(manifest, `${JSON.stringify(pkg, null, 2)}\n`)
 }
@@ -73,6 +73,7 @@ export async function buildNativeProject(root: string, args: string[] = []): Pro
     description: pkg.description,
     author: pkg.author,
     ...(config.icon ? { icon: resolve(root, config.icon) } : {}),
+    ...(config.backend ? { backend: { ...config.backend, entry: resolve(root, config.backend.entry) } } : {}),
     ...(args.includes('--dmg') ? { format: 'dmg' } : {}),
     verbose: args.includes('--verbose'),
   })

@@ -2,7 +2,7 @@ import { afterEach, describe, expect, test } from 'bun:test'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { isNativeProject, scaffoldNativeProject, runNativeProjectCommand } from '../src/native-project'
+import { buildNativeProject, isNativeProject, scaffoldNativeProject, runNativeProjectCommand } from '../src/native-project'
 
 const roots: string[] = []
 const options = { buddyVersion: '0.75.255', stxVersion: '0.2.637' }
@@ -59,4 +59,28 @@ describe('native app creation and adoption', () => {
     await expect(runNativeProjectCommand(root, ['upgrade', '--from', '/framework'])).rejects.toThrow('Native upgrades support')
     expect(await runNativeProjectCommand(root, ['typecheck'])).toBe(false)
   })
+})
+
+
+test('adoption does not add a second, unused UI entry', () => {
+  const root = temporary()
+  writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'images' }))
+  writeFileSync(join(root, 'craft.config.ts'), 'export default { input: "src/pages/index.stx" }')
+  scaffoldNativeProject(root, { ...options, adopt: true })
+  expect(existsSync(join(root, 'src/app.stx'))).toBe(false)
+})
+
+test('resolves native backend source relative to the application, independently of cwd', async () => {
+  const root = temporary()
+  writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'images', version: '1.0.0' }))
+  writeFileSync(join(root, 'craft.config.ts'), 'export default { input: "src/pages/index.stx", backend: { entry: "src/api.ts", maxRequestBodySize: 123 } }')
+  const pkg = join(root, 'node_modules/@stacksjs/stx')
+  mkdirSync(pkg, { recursive: true })
+  writeFileSync(join(pkg, 'package.json'), JSON.stringify({ name: '@stacksjs/stx', type: 'module', exports: { './craft': './craft.ts' } }))
+  writeFileSync(join(pkg, 'craft.ts'), `export async function buildNative(config) {
+    if (config.backend.entry !== ${JSON.stringify(join(root, 'src/api.ts'))}) throw new Error('Backend source escaped app root')
+    if (config.backend.maxRequestBodySize !== 123) throw new Error('Backend options were lost')
+    return { success: true, outputPath: config.output }
+  }`)
+  expect(await buildNativeProject(root)).toBe(join(root, 'dist'))
 })
