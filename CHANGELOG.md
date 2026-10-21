@@ -1,5 +1,41 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.255...v0.75.256)
+
+## ✨ Features
+
+- **buddy**: scaffold and adopt minimal offline native apps ([1e7fa96](https://github.com/stacksjs/stacks/commit/1e7fa96)) _(by Chris <chris@stacksjs.com>)_
+- **path**: one seam for where the scaffold defaults resolve from ([58d3d76](https://github.com/stacksjs/stacks/commit/58d3d76)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2941](https://github.com/stacksjs/stacks/issues/2941), [#2927](https://github.com/stacksjs/stacks/issues/2927))
+
+## 🐛 Bug Fixes
+
+- **defaults**: restore the release metadata I reverted ([c8e9b27](https://github.com/stacksjs/stacks/commit/c8e9b27)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **orm**: restore the config/qb.ts fix I reverted ([d3d8bfa](https://github.com/stacksjs/stacks/commit/d3d8bfa)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **path**: restore the defaults resolution I overwrote ([775e27e](https://github.com/stacksjs/stacks/commit/775e27e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2941](https://github.com/stacksjs/stacks/issues/2941))
+- **dashboard**: the dev server renders through the stx it declares ([ad1397f](https://github.com/stacksjs/stacks/commit/ad1397f)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2941](https://github.com/stacksjs/stacks/issues/2941), [#2369](https://github.com/stacksjs/stacks/issues/2369), [#2944](https://github.com/stacksjs/stacks/issues/2944))
+- **dashboard**: a button label no longer calls the API client mid-render ([8ec3414](https://github.com/stacksjs/stacks/commit/8ec3414)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2944](https://github.com/stacksjs/stacks/issues/2944), [#2421](https://github.com/stacksjs/stacks/issues/2421))
+- **defaults**: publish scaffold/, and contract that the package is complete ([ef2fcc0](https://github.com/stacksjs/stacks/commit/ef2fcc0)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2941](https://github.com/stacksjs/stacks/issues/2941))
+- **dashboard**: the discovered-models manifest is local state, not vendor ([8596b03](https://github.com/stacksjs/stacks/commit/8596b03)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **dashboard**: the dashboard reads its defaults through one resolver ([c5c3578](https://github.com/stacksjs/stacks/commit/c5c3578)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2941](https://github.com/stacksjs/stacks/issues/2941))
+- **path**: defaultsPath adopts the precedence core/server already had ([c1cead2](https://github.com/stacksjs/stacks/commit/c1cead2)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2941](https://github.com/stacksjs/stacks/issues/2941))
+- **path**: the app/ override chain resolves through defaultsPath ([8ed2f67](https://github.com/stacksjs/stacks/commit/8ed2f67)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2941](https://github.com/stacksjs/stacks/issues/2941))
+
+## 📝 Documentation
+
+- **buddy**: refresh native app command references ([691e009](https://github.com/stacksjs/stacks/commit/691e009)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **dashboard**: activating a feature must change one config file ([779383a](https://github.com/stacksjs/stacks/commit/779383a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2920](https://github.com/stacksjs/stacks/issues/2920))
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.254...v0.75.255)
 
 ## 🐛 Bug Fixes
