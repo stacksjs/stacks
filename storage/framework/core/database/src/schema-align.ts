@@ -118,7 +118,7 @@ export interface LiveAlignSchema {
   populated?: Set<string>
 }
 
-export type AlignActionKind = 'add-enum-value' | 'add-column' | 'widen-column' | 'rename-index' | 'create-index' | 'add-foreign-key'
+export type AlignActionKind = 'create-enum-type' | 'add-enum-value' | 'add-column' | 'widen-column' | 'rename-index' | 'create-index' | 'add-foreign-key'
 
 export interface AlignAction {
   kind: AlignActionKind
@@ -396,11 +396,24 @@ export function planSchemaAlignment(
   const reports: AlignReport[] = []
   const added = new Set<string>()
 
-  // Enum labels the model added. Additive, so safe; removing a label is not.
+  // Enum types and labels the model added. Additive, so safe; removing either
+  // is not.
   for (const [type, labels] of desired.enums) {
     const existing = live.enums.get(type)
-    if (!existing)
+    // A type the database never got, rather than one missing a label. Skipping
+    // it left the column that is declared with it to fail the whole apply with
+    // `type "..." does not exist`, since nothing else creates one. Created here
+    // so it exists before the add-column below reaches for it.
+    if (!existing) {
+      actions.push({
+        kind: 'create-enum-type',
+        table: type,
+        name: type,
+        detail: `create enum type ${type} (${labels.join(', ')})`,
+        sql: `CREATE TYPE ${quote(type)} AS ENUM (${labels.map(sqlString).join(', ')})`,
+      })
       continue
+    }
     for (const label of labels.filter(label => !existing.includes(label))) {
       actions.push({
         kind: 'add-enum-value',

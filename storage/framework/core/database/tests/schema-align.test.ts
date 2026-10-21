@@ -274,6 +274,51 @@ describe('enum alignment', () => {
     expect(plan.actions.map(a => a.sql)).toEqual(['ALTER TYPE "teams_status_type" ADD VALUE IF NOT EXISTS \'paused\''])
     expect(plan.reports.map(r => r.kind)).toEqual(['enum'])
   })
+
+  /**
+   * A type the database never got is not the same as one missing a label, and
+   * skipping it quietly let the plan hand Postgres a column typed by nothing:
+   * `ALTER TABLE "campaigns" ADD COLUMN "experiment_metric"
+   * "campaigns_experiment_metric_type"` failed the whole transaction with
+   * `type "campaigns_experiment_metric_type" does not exist`.
+   */
+  it('creates an enum type the database does not have', () => {
+    const [desired, live] = schemas(
+      { enums: new Map([['campaigns_experiment_metric_type', ['opens', 'clicks']]]) },
+      { enums: new Map() },
+    )
+    const plan = planSchemaAlignment(desired, live)
+
+    expect(plan.actions.map(a => a.sql)).toEqual([
+      'CREATE TYPE "campaigns_experiment_metric_type" AS ENUM (\'opens\', \'clicks\')',
+    ])
+    expect(plan.actions[0]!.kind).toBe('create-enum-type')
+  })
+
+  it('creates the type before any column that is declared with it', () => {
+    const [desired, live] = schemas(
+      {
+        enums: new Map([['campaigns_experiment_metric_type', ['opens']]]),
+        tables: new Map([['campaigns', [column('experiment_metric', { definition: '"experiment_metric" "campaigns_experiment_metric_type"' })]]]),
+      },
+      { enums: new Map(), tables: new Map([['campaigns', new Map([['id', liveColumn('id', 'bigint')]])]]) },
+    )
+    const plan = planSchemaAlignment(desired, live)
+    const kinds = plan.actions.map(a => a.kind)
+
+    expect(kinds.indexOf('create-enum-type')).toBeGreaterThan(-1)
+    expect(kinds.indexOf('add-column')).toBeGreaterThan(-1)
+    expect(kinds.indexOf('create-enum-type')).toBeLessThan(kinds.indexOf('add-column'))
+  })
+
+  it('does not create a type the database already has', () => {
+    const [desired, live] = schemas(
+      { enums: new Map([['teams_status_type', ['active']]]) },
+      { enums: new Map([['teams_status_type', ['active']]]) },
+    )
+
+    expect(planSchemaAlignment(desired, live).actions).toEqual([])
+  })
 })
 
 describe('desiredSchemaFrom', () => {
