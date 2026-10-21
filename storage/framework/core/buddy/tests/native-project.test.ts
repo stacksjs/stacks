@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from 'bun:test'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { buildNativeProject, isNativeProject, scaffoldNativeProject, runNativeProjectCommand } from '../src/native-project'
@@ -83,4 +83,21 @@ test('resolves native backend source relative to the application, independently 
     return { success: true, outputPath: config.output }
   }`)
   expect(await buildNativeProject(root)).toBe(join(root, 'dist'))
+})
+
+
+test.skipIf(process.platform !== 'darwin')('native dev rejects an unexpected child signal', async () => {
+  const root = temporary()
+  scaffoldNativeProject(root, options)
+  const moduleRoot = join(root, 'node_modules/@stacksjs/stx')
+  const executableRoot = join(root, 'fixture.app/Contents/MacOS')
+  mkdirSync(moduleRoot, { recursive: true })
+  mkdirSync(executableRoot, { recursive: true })
+  writeFileSync(join(root, 'craft.config.ts'), 'export default { name: "Fixture" }')
+  writeFileSync(join(moduleRoot, 'package.json'), JSON.stringify({ name: '@stacksjs/stx', type: 'module', exports: { './craft': './craft.js' } }))
+  writeFileSync(join(moduleRoot, 'craft.js'), `export async function buildNative() { return { success: true, outputPath: ${JSON.stringify(join(root, 'fixture.app'))} } }`)
+  const executable = join(executableRoot, 'Fixture')
+  writeFileSync(executable, `#!${process.execPath}\nprocess.kill(process.pid, 'SIGTERM')\n`)
+  chmodSync(executable, 0o755)
+  await expect(runNativeProjectCommand(root, ['dev'])).rejects.toThrow('SIGTERM')
 })

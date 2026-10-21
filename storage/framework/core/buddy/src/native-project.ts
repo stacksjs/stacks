@@ -109,12 +109,13 @@ export async function runNativeProjectCommand(root: string, args: string[]): Pro
     if (process.platform !== 'darwin') throw new Error('Native development launch currently requires macOS.')
     const executable = join(artifact, 'Contents', 'MacOS', config.name)
     const child = Bun.spawn([executable], { cwd: root, stdin: 'inherit', stdout: 'inherit', stderr: 'inherit' })
-    const stop = () => child.kill('SIGTERM')
+    let interrupted = false
+    const stop = () => { interrupted = true; child.kill('SIGTERM') }
     process.once('SIGINT', stop)
     process.once('SIGTERM', stop)
     try {
       const code = await child.exited
-      if (code !== 0 && child.signalCode === null) throw new Error(`Native app exited with code ${code}.`)
+      if (code !== 0 && !interrupted) throw new Error(`Native app exited with ${child.signalCode ?? `code ${code}`}.`)
     }
     finally {
       process.removeListener('SIGINT', stop)
