@@ -118,7 +118,7 @@ export interface LiveAlignSchema {
   populated?: Set<string>
 }
 
-export type AlignActionKind = 'add-enum-value' | 'add-column' | 'widen-column' | 'rename-index' | 'create-index' | 'add-foreign-key'
+export type AlignActionKind = 'create-enum-type' | 'add-enum-value' | 'add-column' | 'widen-column' | 'rename-index' | 'create-index' | 'add-foreign-key'
 
 export interface AlignAction {
   kind: AlignActionKind
@@ -127,8 +127,13 @@ export interface AlignAction {
   name: string
   detail: string
   sql: string
-  /** For `create-index` (unique) and `add-foreign-key`: what to check before applying. */
-  check?: { kind: 'duplicates', sql: string } | { kind: 'orphans', sql: string }
+  /**
+   * For `create-index` (unique) and `add-foreign-key`: what to check before
+   * applying, and the columns of `table` the probe reads. A probe over a
+   * column this same plan adds cannot run until that add-column has, so
+   * `dependsOn` is what lets the planner recognise the one it must not run.
+   */
+  check?: ({ kind: 'duplicates', sql: string } | { kind: 'orphans', sql: string }) & { dependsOn?: string[] }
 }
 
 export type AlignReportKind =
@@ -144,6 +149,7 @@ export type AlignReportKind =
   | 'name-conflict'
   | 'enum'
   | 'foreign-key'
+  | 'unchecked'
 
 export interface AlignReport {
   kind: AlignReportKind
@@ -390,11 +396,24 @@ export function planSchemaAlignment(
   const reports: AlignReport[] = []
   const added = new Set<string>()
 
-  // Enum labels the model added. Additive, so safe; removing a label is not.
+  // Enum types and labels the model added. Additive, so safe; removing either
+  // is not.
   for (const [type, labels] of desired.enums) {
     const existing = live.enums.get(type)
-    if (!existing)
+    // A type the database never got, rather than one missing a label. Skipping
+    // it left the column that is declared with it to fail the whole apply with
+    // `type "..." does not exist`, since nothing else creates one. Created here
+    // so it exists before the add-column below reaches for it.
+    if (!existing) {
+      actions.push({
+        kind: 'create-enum-type',
+        table: type,
+        name: type,
+        detail: `create enum type ${type} (${labels.join(', ')})`,
+        sql: `CREATE TYPE ${quote(type)} AS ENUM (${labels.map(sqlString).join(', ')})`,
+      })
       continue
+    }
     for (const label of labels.filter(label => !existing.includes(label))) {
       actions.push({
         kind: 'add-enum-value',
@@ -427,6 +446,19 @@ export function planSchemaAlignment(
       if (!current) {
         if (!column.definition || /\bPRIMARY\s+KEY\b|\bUNIQUE\b/i.test(column.definition)) {
           reports.push({ kind: 'missing-column', table, name: column.name, detail: `${table}.${column.name} is missing and cannot be added in place` })
+          continue
+        }
+        // A column can carry its foreign key inline, and nothing here creates
+        // tables. Adding it would fail the whole apply on the reference, so
+        // the table it points at has to come first.
+        const inlineReference = /\bREFERENCES\s+"([^"]+)"/i.exec(column.definition)?.[1]?.toLowerCase()
+        if (inlineReference && !live.tables.has(inlineReference)) {
+          reports.push({
+            kind: 'foreign-key',
+            table,
+            name: column.name,
+            detail: `${table}.${column.name} references ${inlineReference}, which does not exist - \`buddy migrate\` creates that table`,
+          })
           continue
         }
         // A NOT NULL column with no default cannot go into a table with rows.
@@ -608,6 +640,7 @@ export function planSchemaAlignment(
       action.check = {
         kind: 'duplicates',
         sql: `SELECT COUNT(*) AS n FROM (SELECT 1 FROM ${quote(index.table)} WHERE ${where} GROUP BY ${columns} HAVING COUNT(*) > 1) AS duplicates`,
+        dependsOn: [...index.columns],
       }
     }
     creates.push(action)
@@ -662,6 +695,7 @@ export function planSchemaAlignment(
         check: {
           kind: 'orphans',
           sql: `SELECT COUNT(*) AS n FROM ${quote(table)} AS child WHERE child.${quote(column.name)} IS NOT NULL AND NOT EXISTS (SELECT 1 FROM ${quote(refTable)} AS parent WHERE parent.${quote(refColumn)} = child.${quote(column.name)})`,
+          dependsOn: [column.name],
         },
       })
     }
@@ -799,6 +833,58 @@ export interface AlignResult {
  * multi-statement string, which Postgres executes as a single implicit
  * transaction - all of it lands, or none of it does.
  */
+/**
+ * Run each action's pre-flight check and sort the survivors from the refused.
+ *
+ * Separate from `alignSchema` so it can be exercised without a database: the
+ * decisions here are about what a probe's answer means, including the case
+ * where there is no answer to have.
+ */
+export async function evaluateAlignChecks(plan: AlignmentPlan, run: AlignSqlRunner): Promise<AlignAction[]> {
+  const pending = new Set(
+    plan.actions
+      .filter(action => action.kind === 'add-column')
+      .map(action => `${action.table}.${action.name}`),
+  )
+  const kept: AlignAction[] = []
+  for (const action of plan.actions) {
+    if (!action.check) {
+      kept.push(action)
+      continue
+    }
+    // A probe reading a column this plan has yet to add has no answer to give:
+    // the column is not there to be read, and Postgres ends the whole planning
+    // pass rather than returning a count. Keep the repair and say the probe did
+    // not run. The apply is one transaction, so an index the data really does
+    // violate still fails there and takes nothing with it.
+    const unmet = action.check.dependsOn?.filter(column => pending.has(`${action.table}.${column}`)) ?? []
+    if (unmet.length > 0) {
+      plan.reports.push({
+        kind: 'unchecked',
+        table: action.table,
+        name: action.name,
+        detail: `${action.detail}: not checked for ${action.check.kind === 'orphans' ? 'orphan rows' : 'duplicate values'} first, because the probe reads ${unmet.map(column => `${action.table}.${column}`).join(', ')}, which this plan adds`,
+      })
+      kept.push(action)
+      continue
+    }
+    // A check on a table this plan widens or extends still reads correctly:
+    // neither changes which rows exist or what they hold.
+    const count = Number(rows(await run(action.check.sql))[0]?.n ?? 0)
+    if (count > 0) {
+      plan.refused.push({
+        ...action,
+        reason: action.check.kind === 'orphans'
+          ? `${count} row(s) in ${action.table} reference a missing parent - fix or delete them, then re-run`
+          : `${count} duplicate value(s) in ${action.table} would violate it - de-duplicate them, then re-run`,
+      })
+      continue
+    }
+    kept.push(action)
+  }
+  return kept
+}
+
 export async function alignSchema(options: {
   apply?: boolean
   widenIntegers?: boolean
@@ -845,26 +931,7 @@ export async function alignSchema(options: {
 
   const plan = planSchemaAlignment(desired, live, { widenIntegers: options.widenIntegers, typeSatisfies })
 
-  const kept: AlignAction[] = []
-  for (const action of plan.actions) {
-    if (!action.check) {
-      kept.push(action)
-      continue
-    }
-    // A check on a table this plan widens or extends still reads correctly:
-    // neither changes which rows exist or what they hold.
-    const count = Number(rows(await run(action.check.sql))[0]?.n ?? 0)
-    if (count > 0) {
-      plan.refused.push({
-        ...action,
-        reason: action.check.kind === 'orphans'
-          ? `${count} row(s) in ${action.table} reference a missing parent - fix or delete them, then re-run`
-          : `${count} duplicate value(s) in ${action.table} would violate it - de-duplicate them, then re-run`,
-      })
-      continue
-    }
-    kept.push(action)
-  }
+  const kept = await evaluateAlignChecks(plan, run)
   plan.actions = kept
 
   if (!options.apply || kept.length === 0)

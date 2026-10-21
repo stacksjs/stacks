@@ -1,7 +1,7 @@
 import type { DesiredColumn, DesiredSchema, LiveAlignSchema, LiveColumn, LiveIndex } from '../src/schema-align'
 import { describe, expect, it } from 'bun:test'
 import { comparableIndexKey, postgresIndexStatement } from '../src/index-shape'
-import { columnDefinitionsOf, comparableDefault, desiredSchemaFrom, planSchemaAlignment, postgresIdentifier } from '../src/schema-align'
+import { columnDefinitionsOf, comparableDefault, desiredSchemaFrom, evaluateAlignChecks, planSchemaAlignment, postgresIdentifier } from '../src/schema-align'
 
 /**
  * `buddy migrate:align`'s planner, without a database. The rules under test are
@@ -158,6 +158,9 @@ describe('index alignment', () => {
     expect(action!.check).toEqual({
       kind: 'duplicates',
       sql: 'SELECT COUNT(*) AS n FROM (SELECT 1 FROM "users" WHERE "email" IS NOT NULL AND ("deleted_at" IS NULL) GROUP BY "email" HAVING COUNT(*) > 1) AS duplicates',
+      // The columns the probe reads, so the planner can tell when one of them
+      // is a column it is adding in the same pass (stacksjs/stacks#2966).
+      dependsOn: ['email'],
     })
   })
 })
@@ -250,6 +253,50 @@ describe('column alignment', () => {
     expect(result.reports.map(r => `${r.kind} ${r.name}`)).toEqual(['nullability a'])
   })
 
+  /**
+   * A column can carry its foreign key inline, and `migrate:align` never
+   * creates tables - so a column that references one the database does not
+   * have cannot be added here either. Planned anyway, it failed the whole
+   * apply with `relation "campaign_variants" does not exist`.
+   */
+  it('does not add a column that references a table the database lacks', () => {
+    const [desired, live] = schemas(
+      {
+        tables: new Map([['campaign_sends', [
+          column('campaign_variant_id', { definition: '"campaign_variant_id" bigint REFERENCES "campaign_variants"("id")' }),
+        ]]]),
+      },
+      { tables: new Map([['campaign_sends', new Map([['id', liveColumn('id', 'bigint')]])]]) },
+    )
+    const plan = planSchemaAlignment(desired, live)
+
+    expect(plan.actions).toEqual([])
+    expect(plan.reports.map(r => r.detail)).toContain(
+      'campaign_sends.campaign_variant_id references campaign_variants, which does not exist - `buddy migrate` creates that table',
+    )
+  })
+
+  it('still adds a column whose reference the database does have', () => {
+    const [desired, live] = schemas(
+      {
+        tables: new Map([['boards', [
+          column('team_id', { definition: '"team_id" bigint REFERENCES "teams"("id")' }),
+        ]]]),
+      },
+      {
+        tables: new Map([
+          ['boards', new Map([['id', liveColumn('id', 'bigint')]])],
+          ['teams', new Map([['id', liveColumn('id', 'bigint')]])],
+        ]),
+      },
+    )
+    const plan = planSchemaAlignment(desired, live)
+
+    expect(plan.actions.map(a => a.sql)).toEqual([
+      'ALTER TABLE "boards" ADD COLUMN IF NOT EXISTS "team_id" bigint REFERENCES "teams"("id")',
+    ])
+  })
+
   it('reports extra columns and missing tables', () => {
     const [desired, live] = schemas(
       { tables: new Map([['t', [column('a')]], ['gone', [column('a')]]]) },
@@ -271,6 +318,51 @@ describe('enum alignment', () => {
     expect(plan.actions.map(a => a.sql)).toEqual(['ALTER TYPE "teams_status_type" ADD VALUE IF NOT EXISTS \'paused\''])
     expect(plan.reports.map(r => r.kind)).toEqual(['enum'])
   })
+
+  /**
+   * A type the database never got is not the same as one missing a label, and
+   * skipping it quietly let the plan hand Postgres a column typed by nothing:
+   * `ALTER TABLE "campaigns" ADD COLUMN "experiment_metric"
+   * "campaigns_experiment_metric_type"` failed the whole transaction with
+   * `type "campaigns_experiment_metric_type" does not exist`.
+   */
+  it('creates an enum type the database does not have', () => {
+    const [desired, live] = schemas(
+      { enums: new Map([['campaigns_experiment_metric_type', ['opens', 'clicks']]]) },
+      { enums: new Map() },
+    )
+    const plan = planSchemaAlignment(desired, live)
+
+    expect(plan.actions.map(a => a.sql)).toEqual([
+      'CREATE TYPE "campaigns_experiment_metric_type" AS ENUM (\'opens\', \'clicks\')',
+    ])
+    expect(plan.actions[0]!.kind).toBe('create-enum-type')
+  })
+
+  it('creates the type before any column that is declared with it', () => {
+    const [desired, live] = schemas(
+      {
+        enums: new Map([['campaigns_experiment_metric_type', ['opens']]]),
+        tables: new Map([['campaigns', [column('experiment_metric', { definition: '"experiment_metric" "campaigns_experiment_metric_type"' })]]]),
+      },
+      { enums: new Map(), tables: new Map([['campaigns', new Map([['id', liveColumn('id', 'bigint')]])]]) },
+    )
+    const plan = planSchemaAlignment(desired, live)
+    const kinds = plan.actions.map(a => a.kind)
+
+    expect(kinds.indexOf('create-enum-type')).toBeGreaterThan(-1)
+    expect(kinds.indexOf('add-column')).toBeGreaterThan(-1)
+    expect(kinds.indexOf('create-enum-type')).toBeLessThan(kinds.indexOf('add-column'))
+  })
+
+  it('does not create a type the database already has', () => {
+    const [desired, live] = schemas(
+      { enums: new Map([['teams_status_type', ['active']]]) },
+      { enums: new Map([['teams_status_type', ['active']]]) },
+    )
+
+    expect(planSchemaAlignment(desired, live).actions).toEqual([])
+  })
 })
 
 describe('desiredSchemaFrom', () => {
@@ -291,5 +383,73 @@ describe('desiredSchemaFrom', () => {
       ['teams_name_unique', true, ['name']],
       ['teams_lower_name', false, undefined],
     ])
+  })
+})
+
+/**
+ * A plan that adds a column AND the unique index over it describes two moments:
+ * the index's duplicates probe reads a column that only exists after the
+ * add-column ahead of it has run. Postgres answers the probe with an error, and
+ * `migrate:align` used to let that error out of the planner - so the one
+ * command for a drifted database refused to describe the drift it found
+ * ("Could not compare the database with the models: column "sku" does not
+ * exist"). See stacksjs/stacks#2966.
+ */
+describe('align checks that cannot be answered yet', () => {
+  const addSku = {
+    kind: 'add-column' as const,
+    table: 'product_variants',
+    name: 'sku',
+    detail: 'add product_variants.sku',
+    sql: 'ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "sku" varchar(255)',
+  }
+  const uniqueOverSku = {
+    kind: 'create-index' as const,
+    table: 'product_variants',
+    name: 'product_variants_product_sku_unique',
+    detail: 'create unique index product_variants_product_sku_unique',
+    sql: 'CREATE UNIQUE INDEX IF NOT EXISTS product_variants_product_sku_unique ON product_variants ("product_id", "sku")',
+    check: {
+      kind: 'duplicates' as const,
+      sql: 'SELECT COUNT(*) AS n FROM (SELECT 1 FROM "product_variants" WHERE "product_id" IS NOT NULL AND "sku" IS NOT NULL GROUP BY "product_id", "sku" HAVING COUNT(*) > 1) AS duplicates',
+      dependsOn: ['product_id', 'sku'],
+    },
+  }
+  const missingColumn = async (sql: string) => {
+    if (sql.includes('"sku"'))
+      throw new Error('column "sku" does not exist')
+    return [{ n: 0 }]
+  }
+
+  it('keeps planning when a probe reads a column this plan adds', async () => {
+    const plan = { actions: [addSku, uniqueOverSku], reports: [], refused: [] }
+    const kept = await evaluateAlignChecks(plan, missingColumn)
+
+    expect(kept.map(action => action.name)).toEqual(['sku', 'product_variants_product_sku_unique'])
+    expect(plan.refused).toEqual([])
+  })
+
+  it('says the probe went unanswered rather than passing it off as checked', async () => {
+    const plan = { actions: [addSku, uniqueOverSku], reports: [], refused: [] }
+    await evaluateAlignChecks(plan, missingColumn)
+
+    expect(plan.reports).toHaveLength(1)
+    expect(plan.reports[0]!.name).toBe('product_variants_product_sku_unique')
+    expect(plan.reports[0]!.detail).toContain('product_variants.sku')
+  })
+
+  it('still refuses an index whose probe does find duplicates', async () => {
+    const plan = { actions: [uniqueOverSku], reports: [], refused: [] }
+    const kept = await evaluateAlignChecks(plan, async () => [{ n: 3 }])
+
+    expect(kept).toEqual([])
+    expect(plan.refused[0]!.reason).toContain('3 duplicate value(s)')
+  })
+
+  it('does not swallow a probe that failed for some other reason', async () => {
+    const plan = { actions: [uniqueOverSku], reports: [], refused: [] }
+
+    await expect(evaluateAlignChecks(plan, async () => { throw new Error('connection terminated') }))
+      .rejects.toThrow('connection terminated')
   })
 })

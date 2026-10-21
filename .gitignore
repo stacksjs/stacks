@@ -82,6 +82,12 @@ storage/framework/down
 storage/framework/coming-soon
 storage/cloud/
 
+# Database dumps from `buddy db:backup`, which writes here by default. A dump is
+# every row the database holds, so committing one publishes the application's
+# data - and the first backup anyone takes shows up as an untracked file asking
+# to be added.
+storage/backups/
+
 # Same cache, in the wrong place. stx falls back to `.stx` beside the working
 # directory when STX_DIR is unset, and a package's own `bun test` runs with
 # that set to the package root — so core/browser-extension grows a `.stx/`.
