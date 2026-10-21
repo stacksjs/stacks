@@ -87,6 +87,8 @@ describe('browse skill contract', () => {
     expect(script).toContain('focusHistory: window.__browseFocusHistory || []')
     expect(script).toContain('consoleMessages: state.console')
     expect(script).toContain('state.consoleErrors.length || failedRequests.length')
+    expect(script).toContain('step: results.length + 1')
+    expect(script).toContain('if (scenarioFailed || state.consoleErrors.length || failedRequests.length)')
   })
 
   test('keeps crawling within the starting origin', () => {

@@ -916,8 +916,16 @@ async function main() {
         })()`,
       })
 
+      let scenarioFailed = false
       for (const step of steps) {
-        results.push(await runScenarioStep(cdp, step))
+        try {
+          results.push(await runScenarioStep(cdp, step))
+        }
+        catch (error) {
+          results.push({ action: step.action, ok: false, step: results.length + 1, error: error instanceof Error ? error.message : String(error) })
+          scenarioFailed = true
+          break
+        }
         if (step.action !== 'wait')
           await Bun.sleep(step.settle ?? 250)
       }
@@ -956,7 +964,7 @@ async function main() {
         consoleErrors: state.consoleErrors,
         failedRequests,
       }, null, 2))
-      if (state.consoleErrors.length || failedRequests.length)
+      if (scenarioFailed || state.consoleErrors.length || failedRequests.length)
         process.exitCode = 1
       state.dispose()
       cdp.close()
