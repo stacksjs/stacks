@@ -217,10 +217,10 @@ export class SMTPDriver extends BaseEmailDriver {
         }
       }
 
-      const sendCommand = (cmd: string): Promise<string> => {
+      const sendCommand = (cmd: string, sensitive = false): Promise<string> => {
         return new Promise((res, rej) => {
-          commandQueue.push({ cmd, resolve: res, reject: rej })
-          log.debug(`[SMTP] Client: ${cmd}`)
+          commandQueue.push({ cmd: sensitive ? '[redacted authentication]' : cmd, resolve: res, reject: rej })
+          log.debug(`[SMTP] Client: ${sensitive ? '[redacted authentication]' : cmd}`)
           socket.write(`${cmd}\r\n`)
         })
       }
@@ -292,8 +292,8 @@ export class SMTPDriver extends BaseEmailDriver {
           // Authenticate if credentials provided
           if (smtpConfig.username && smtpConfig.password) {
             await sendCommand('AUTH LOGIN')
-            await sendCommand(Buffer.from(smtpConfig.username).toString('base64'))
-            await sendCommand(Buffer.from(smtpConfig.password).toString('base64'))
+            await sendCommand(Buffer.from(smtpConfig.username).toString('base64'), true)
+            await sendCommand(Buffer.from(smtpConfig.password).toString('base64'), true)
           }
 
           // SMTP command injection guard — see assertEnvelopeAddress below.
