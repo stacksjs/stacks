@@ -1,3 +1,4 @@
+/* eslint-disable ts/no-top-level-await */
 import type { CLI } from '@stacksjs/cli'
 import { writeSync } from 'node:fs'
 import process from 'node:process'
@@ -13,6 +14,18 @@ const isVersionOnly = args.length === 1 && ['--version', '-V', 'version'].includ
 if (isVersionOnly) {
   writeSync(process.stdout.fd, `${versionLine} ${process.platform}-${process.arch} bun-v${Bun.version}\n`)
   process.exit(0)
+}
+
+// Standalone native apps do not boot web routes, env keys or a database.
+const { isNativeProject, runNativeProjectCommand } = await import('./native-project')
+if (isNativeProject(process.cwd())) {
+  try {
+    if (await runNativeProjectCommand(process.cwd(), args)) process.exit(0)
+  }
+  catch (error) {
+    console.error(`[buddy] ${error instanceof Error ? error.message : String(error)}`)
+    process.exit(1)
+  }
 }
 
 const [{ cli, log }, { path: p }] = await Promise.all([

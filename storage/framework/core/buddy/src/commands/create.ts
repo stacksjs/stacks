@@ -16,6 +16,8 @@ import { adoptPackagedDefaults, applyAppPackageScripts, applyPackageAppTsconfig,
 import { fetchPublishedVersions } from '../registry'
 
 interface NewOptions extends CreateOptions {
+  native?: boolean
+  adopt?: boolean
   withCore?: boolean
   vendorDefaults?: boolean
 }
@@ -56,6 +58,8 @@ export function create(buddy: CLI): void {
     .option('-e, --email', descriptions.email, { default: false })
     .option('-P, --project [project]', descriptions.project, { default: false })
     .option('-m, --minimal', descriptions.minimal, { default: false })
+    .option('--native', 'Create a minimal offline Craft desktop app', { default: false })
+    .option('--adopt', 'Integrate an existing native app without replacing its source (requires --native)', { default: false })
     .option('--with-core', descriptions.withCore, { default: false })
     .option('--vendor-defaults', descriptions.vendorDefaults, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
@@ -66,7 +70,22 @@ export function create(buddy: CLI): void {
       const startTime = await intro('buddy new')
 
       name = name ?? options.name
-      const path = resolve(process.cwd(), name)
+      const path = resolve(process.cwd(), name ?? '.')
+
+      if (options.adopt && !options.native)
+        throw new Error('--adopt requires --native')
+      if (options.native) {
+        const { scaffoldNativeProject } = await import('../native-project')
+        const { version } = await import('../../package.json')
+        const { latest } = await fetchPublishedVersions('@stacksjs/stx')
+        if (!latest) throw new Error('The registry has no published stx version.')
+        scaffoldNativeProject(path, { adopt: options.adopt, buddyVersion: version, stxVersion: latest })
+        const installed = await runCommand(['bun', 'install'], { cwd: path })
+        if (resultFailed(installed)) throw installed.error
+        log.success(`Native app ready at ${path}. Run ./buddy dev to launch.`)
+        await log.flush()
+        return
+      }
 
       isFolderCheck(path)
       await onlineCheck()
