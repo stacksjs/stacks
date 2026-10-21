@@ -44,7 +44,7 @@ console.warn = (...args: unknown[]) => {
 // Dashboard pages live directly under views/dashboard/. The earlier `pages/`
 // subdir layout was removed in #1838 — see the per-feature dirs (analytics/,
 // commerce/, content/, …) plus index.stx for the canonical structure.
-const dashboardPath = storagePath('framework/defaults/views/dashboard')
+const dashboardPath = defaultsPath('views/dashboard')
 const userDashboardPath = projectPath('resources/views/dashboard')
 const preferredPort = Number(process.env.PORT_ADMIN) || 3002
 // eslint-disable-next-line ts/no-top-level-await
@@ -131,7 +131,7 @@ async function startStxServer(): Promise<void> {
   // back to disk. They run in the dashboard server's process so they
   // share the same fs cwd and don't need a second port to be open.
   const { listConfigFiles, readConfig, updateConfigKeys } = await import(
-    storagePath('framework/defaults/resources/functions/dashboard/config-io.ts')
+    defaultsPath('resources/functions/dashboard/config-io.ts')
   )
   // Dashboard chart modules are loaded lazily from explicit dev-server URLs.
   // Package dist files are intentionally not served verbatim: they retain
@@ -229,7 +229,7 @@ async function startStxServer(): Promise<void> {
   let dashboardIconCss: Promise<string> | null = null
   async function buildDashboardIconCss(): Promise<string> {
     const { generateCss } = await import('@stacksjs/stx')
-    const dirs = [dashboardPath, userDashboardPath, storagePath('framework/defaults/resources/components/Dashboard')]
+    const dirs = [dashboardPath, userDashboardPath, defaultsPath('resources/components/Dashboard')]
     const icons = new Set<string>()
     for (const dir of dirs) {
       if (!existsSync(dir))
@@ -393,7 +393,7 @@ async function startStxServer(): Promise<void> {
     root: projectPath('resources'),
     patterns: [userDashboardPath, dashboardPath],
     port: dashboardPort,
-    componentsDir: storagePath('framework/defaults/resources/components/Dashboard'),
+    componentsDir: defaultsPath('resources/components/Dashboard'),
     // The layout's `<Sidebar>` and `<SidebarHeader>` ship in
     // `@stacksjs/components`. Searched last, so an app's own component of
     // the same name still wins (stacksjs/stacks#2641).
@@ -414,7 +414,7 @@ async function startStxServer(): Promise<void> {
     prewarmRenderCache: 4,
     watchDirs: [
       projectPath('resources/functions'),
-      storagePath('framework/defaults/resources/functions'),
+      defaultsPath('resources/functions'),
     ],
     quiet: true,
     routes: configRoutes,
@@ -562,7 +562,7 @@ const [, discoveredModels] = await Promise.all([
 
 // eslint-disable-next-line ts/no-top-level-await
 const { loadDashboardConfig } = await import(
-  storagePath('framework/defaults/resources/functions/dashboard/toggles.ts')
+  defaultsPath('resources/functions/dashboard/toggles.ts')
 )
 // eslint-disable-next-line ts/no-top-level-await
 // `feature` is handed in rather than imported by the toggles module, which
@@ -745,7 +745,7 @@ if (createApp && craftBinaryPath) {
   // back to the framework's bundled placeholder so the dock never shows the
   // generic "no icon" silhouette. PNG is fine — NSImage decodes it directly.
   const userIconPath = projectPath('resources/assets/images/app-icon.png')
-  const defaultIconPath = storagePath('framework/defaults/resources/assets/images/app-icon.png')
+  const defaultIconPath = defaultsPath('resources/assets/images/app-icon.png')
   // eslint-disable-next-line ts/no-top-level-await
   const appIconPath = (await Bun.file(userIconPath).exists())
     ? userIconPath

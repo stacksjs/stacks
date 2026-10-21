@@ -2,7 +2,7 @@ import type { FSWatcher } from 'node:fs'
 import { existsSync, readdirSync, watch } from 'node:fs'
 import process from 'node:process'
 import { join } from 'node:path'
-import { projectPath, storagePath } from '@stacksjs/path'
+import { defaultsPath, projectPath, storagePath } from '@stacksjs/path'
 
 const BACKEND_SOURCE_RE = /\.(?:[cm]?[jt]sx?|json)$/i
 const DECLARATION_RE = /\.d\.[cm]?ts$/i
@@ -25,9 +25,9 @@ export function dashboardBackendWatchRoots(): string[] {
     projectPath('routes'),
     projectPath('config'),
     projectPath('resources/functions'),
-    storagePath('framework/defaults/app'),
-    storagePath('framework/defaults/routes'),
-    storagePath('framework/defaults/resources/functions'),
+    defaultsPath('app'),
+    defaultsPath('routes'),
+    defaultsPath('resources/functions'),
     ...coreSources,
   ].filter(existsSync)
 }

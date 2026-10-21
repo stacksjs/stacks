@@ -17,123 +17,110 @@
  */
 
 import { existsSync } from 'node:fs'
-import { basename, dirname, resolve } from 'node:path'
-
-let projectRootCache: string | null = null
-
-const VENDORED_DEFAULTS_PREFIX = 'storage/framework/defaults/'
-let defaultsRootCache: string | null = null
+import { basename, resolve } from 'node:path'
+import { defaultsPath, projectPath } from '@stacksjs/path'
 
 /**
- * The framework defaults tree: `storage/framework/defaults` in a project that
- * vendors it, `node_modules/@stacksjs/defaults` in one that does not. Counted
- * from this file first, which is inside that tree in both layouts; the project
- * root is the fallback for a copy that was bundled somewhere else.
+ * The project root, and where the defaults tree is, both from
+ * `@stacksjs/path`.
+ *
+ * This file used to hand-roll the walk, explicitly to avoid importing the
+ * path package, which was recorded as having "its own evaluation graph" that
+ * "would slow page renders". Measured rather than inherited: importing
+ * `@stacksjs/path` in this checkout costs 1.5-2.7ms, once per process because
+ * the module cache holds it, not once per render. `preloader.ts` next door
+ * already imports it.
+ *
+ * The walk also had to go, independently of cost. It anchored on a directory
+ * containing `storage/framework/defaults`, which is the one directory
+ * stacksjs/stacks#2941 is removing: in a project resolving its defaults from
+ * `node_modules`, the walk would find no anchor and fall through to
+ * `process.cwd()`, which is right only by luck.
  */
-function defaultsRoot(): string {
-  if (defaultsRootCache) return defaultsRootCache
-  const own = resolve(dirname(new URL(import.meta.url).pathname), '../../..')
-  const candidates = [
-    own,
-    resolve(projectRoot(), 'storage/framework/defaults'),
-    resolve(projectRoot(), 'node_modules/@stacksjs/defaults'),
-  ]
-  defaultsRootCache = candidates.find(candidate => existsSync(resolve(candidate, 'app/Models'))) ?? candidates[1]!
-  return defaultsRootCache
-}
-
 function projectRoot(): string {
-  if (projectRootCache) return projectRootCache
-  // Walk up from this file location to find the project root (the dir
-  // that contains `storage/framework`). This mirrors what
-  // `@stacksjs/path` does, but without pulling in the path package
-  // (which has its own evaluation graph and would slow page renders).
-  let dir = dirname(new URL(import.meta.url).pathname)
-  for (let i = 0; i < 12; i++) {
-    if (existsSync(resolve(dir, 'storage/framework'))) {
-      projectRootCache = dir
-      return dir
-    }
-    const parent = dirname(dir)
-    if (parent === dir) break
-    dir = parent
-  }
-  // Fall back to cwd — STX serves run from the project root.
-  projectRootCache = process.cwd()
-  return projectRootCache
+  return projectPath()
 }
 
 /**
- * Fast-path map of common model names to relative paths. The first existing
- * file wins, and user overrides always take priority over framework defaults.
- * A cached filesystem index below covers newly-added and nested models so
- * this map is an optimization rather than a correctness requirement.
+ * Fast-path map of common model names to the two places they can live:
+ * `[path under the project, path under the defaults tree]`.
+ *
+ * The first existing file wins, and user overrides always take priority over
+ * framework defaults. A cached filesystem index below covers newly-added and
+ * nested models, so this map is an optimization rather than a correctness
+ * requirement.
+ *
+ * The second element is relative to the defaults tree rather than to the
+ * project, because that tree is not always inside the project: it is
+ * `storage/framework/defaults` when the project vendors a current copy and the
+ * installed `@stacksjs/defaults` otherwise (stacksjs/stacks#2941). Fifty-five
+ * rows used to spell `storage/framework/defaults/` out by hand.
  */
-const MODEL_PATHS: Record<string, string[]> = {
+const MODEL_PATHS: Record<string, [string, string]> = {
   // Auth / core
-  User: ['app/Models/User.ts', 'storage/framework/defaults/app/Models/User.ts'],
-  Team: ['app/Models/Team.ts', 'storage/framework/defaults/app/Models/Team.ts'],
-  Subscriber: ['app/Models/Subscriber.ts', 'storage/framework/defaults/app/Models/Subscriber.ts'],
-  SubscriberEmail: ['app/Models/SubscriberEmail.ts', 'storage/framework/defaults/app/Models/SubscriberEmail.ts'],
-  Subscription: ['app/Models/Subscription.ts', 'storage/framework/defaults/app/Models/Subscription.ts'],
+  User: ['app/Models/User.ts', 'app/Models/User.ts'],
+  Team: ['app/Models/Team.ts', 'app/Models/Team.ts'],
+  Subscriber: ['app/Models/Subscriber.ts', 'app/Models/Subscriber.ts'],
+  SubscriberEmail: ['app/Models/SubscriberEmail.ts', 'app/Models/SubscriberEmail.ts'],
+  Subscription: ['app/Models/Subscription.ts', 'app/Models/Subscription.ts'],
 
   // Content
-  Post: ['app/Models/Post.ts', 'storage/framework/defaults/app/Models/Content/Post.ts'],
-  Page: ['app/Models/Page.ts', 'storage/framework/defaults/app/Models/Content/Page.ts'],
-  Author: ['app/Models/Author.ts', 'storage/framework/defaults/app/Models/Content/Author.ts'],
-  Comment: ['app/Models/Comment.ts', 'storage/framework/defaults/app/Models/Comment.ts'],
-  Tag: ['app/Models/Tag.ts', 'storage/framework/defaults/app/Models/Tag.ts'],
-  Category: ['app/Models/Category.ts', 'storage/framework/defaults/app/Models/commerce/Category.ts'],
+  Post: ['app/Models/Post.ts', 'app/Models/Content/Post.ts'],
+  Page: ['app/Models/Page.ts', 'app/Models/Content/Page.ts'],
+  Author: ['app/Models/Author.ts', 'app/Models/Content/Author.ts'],
+  Comment: ['app/Models/Comment.ts', 'app/Models/Comment.ts'],
+  Tag: ['app/Models/Tag.ts', 'app/Models/Tag.ts'],
+  Category: ['app/Models/Category.ts', 'app/Models/commerce/Category.ts'],
 
   // App / operations
-  Activity: ['app/Models/Activity.ts', 'storage/framework/defaults/app/Models/Activity.ts'],
-  Deployment: ['app/Models/Deployment.ts', 'storage/framework/defaults/app/Models/Deployment.ts'],
-  Release: ['app/Models/Release.ts', 'storage/framework/defaults/app/Models/Release.ts'],
-  Notification: ['app/Models/Notification.ts', 'storage/framework/defaults/app/Models/Notification.ts'],
-  Job: ['app/Models/Job.ts', 'storage/framework/defaults/app/Models/Job.ts'],
-  FailedJob: ['app/Models/FailedJob.ts', 'storage/framework/defaults/app/Models/FailedJob.ts'],
-  Log: ['app/Models/Log.ts', 'storage/framework/defaults/app/Models/Log.ts'],
-  Request: ['app/Models/Request.ts', 'storage/framework/defaults/app/Models/Request.ts'],
-  Error: ['app/Models/Error.ts', 'storage/framework/defaults/app/Models/Error.ts'],
-  Websocket: ['app/Models/Websocket.ts', 'storage/framework/defaults/app/Models/realtime/Websocket.ts'],
+  Activity: ['app/Models/Activity.ts', 'app/Models/Activity.ts'],
+  Deployment: ['app/Models/Deployment.ts', 'app/Models/Deployment.ts'],
+  Release: ['app/Models/Release.ts', 'app/Models/Release.ts'],
+  Notification: ['app/Models/Notification.ts', 'app/Models/Notification.ts'],
+  Job: ['app/Models/Job.ts', 'app/Models/Job.ts'],
+  FailedJob: ['app/Models/FailedJob.ts', 'app/Models/FailedJob.ts'],
+  Log: ['app/Models/Log.ts', 'app/Models/Log.ts'],
+  Request: ['app/Models/Request.ts', 'app/Models/Request.ts'],
+  Error: ['app/Models/Error.ts', 'app/Models/Error.ts'],
+  Websocket: ['app/Models/Websocket.ts', 'app/Models/realtime/Websocket.ts'],
 
   // Marketing
-  Campaign: ['app/Models/Campaign.ts', 'storage/framework/defaults/app/Models/Campaign.ts'],
-  EmailList: ['app/Models/EmailList.ts', 'storage/framework/defaults/app/Models/EmailList.ts'],
-  SocialPost: ['app/Models/SocialPost.ts', 'storage/framework/defaults/app/Models/SocialPost.ts'],
+  Campaign: ['app/Models/Campaign.ts', 'app/Models/Campaign.ts'],
+  EmailList: ['app/Models/EmailList.ts', 'app/Models/EmailList.ts'],
+  SocialPost: ['app/Models/SocialPost.ts', 'app/Models/SocialPost.ts'],
 
   // Commerce
-  Order: ['app/Models/Order.ts', 'storage/framework/defaults/app/Models/commerce/Order.ts'],
-  OrderItem: ['app/Models/OrderItem.ts', 'storage/framework/defaults/app/Models/commerce/OrderItem.ts'],
-  Cart: ['app/Models/Cart.ts', 'storage/framework/defaults/app/Models/commerce/Cart.ts'],
-  CartItem: ['app/Models/CartItem.ts', 'storage/framework/defaults/app/Models/commerce/CartItem.ts'],
-  Customer: ['app/Models/Customer.ts', 'storage/framework/defaults/app/Models/commerce/Customer.ts'],
-  Product: ['app/Models/Product.ts', 'storage/framework/defaults/app/Models/commerce/Product.ts'],
-  ProductVariant: ['app/Models/ProductVariant.ts', 'storage/framework/defaults/app/Models/commerce/ProductVariant.ts'],
-  ProductUnit: ['app/Models/ProductUnit.ts', 'storage/framework/defaults/app/Models/commerce/ProductUnit.ts'],
-  Manufacturer: ['app/Models/Manufacturer.ts', 'storage/framework/defaults/app/Models/commerce/Manufacturer.ts'],
-  Coupon: ['app/Models/Coupon.ts', 'storage/framework/defaults/app/Models/commerce/Coupon.ts'],
-  GiftCard: ['app/Models/GiftCard.ts', 'storage/framework/defaults/app/Models/commerce/GiftCard.ts'],
-  LicenseKey: ['app/Models/LicenseKey.ts', 'storage/framework/defaults/app/Models/commerce/LicenseKey.ts'],
-  Review: ['app/Models/Review.ts', 'storage/framework/defaults/app/Models/commerce/Review.ts'],
-  Receipt: ['app/Models/Receipt.ts', 'storage/framework/defaults/app/Models/commerce/Receipt.ts'],
-  PrintDevice: ['app/Models/PrintDevice.ts', 'storage/framework/defaults/app/Models/commerce/PrintDevice.ts'],
-  ShippingMethod: ['app/Models/ShippingMethod.ts', 'storage/framework/defaults/app/Models/commerce/ShippingMethod.ts'],
-  ShippingRate: ['app/Models/ShippingRate.ts', 'storage/framework/defaults/app/Models/commerce/ShippingRate.ts'],
-  ShippingZone: ['app/Models/ShippingZone.ts', 'storage/framework/defaults/app/Models/commerce/ShippingZone.ts'],
-  DeliveryRoute: ['app/Models/DeliveryRoute.ts', 'storage/framework/defaults/app/Models/commerce/DeliveryRoute.ts'],
-  DigitalDelivery: ['app/Models/DigitalDelivery.ts', 'storage/framework/defaults/app/Models/commerce/DigitalDelivery.ts'],
-  Courier: ['app/Models/Courier.ts', 'storage/framework/defaults/app/Models/commerce/Courier.ts'],
-  TaxRate: ['app/Models/TaxRate.ts', 'storage/framework/defaults/app/Models/commerce/TaxRate.ts'],
-  WaitlistProduct: ['app/Models/WaitlistProduct.ts', 'storage/framework/defaults/app/Models/commerce/WaitlistProduct.ts'],
-  WaitlistRestaurant: ['app/Models/WaitlistRestaurant.ts', 'storage/framework/defaults/app/Models/commerce/WaitlistRestaurant.ts'],
-  LoyaltyPoint: ['app/Models/LoyaltyPoint.ts', 'storage/framework/defaults/app/Models/commerce/LoyaltyPoint.ts'],
-  LoyaltyReward: ['app/Models/LoyaltyReward.ts', 'storage/framework/defaults/app/Models/commerce/LoyaltyReward.ts'],
-  Payment: ['app/Models/Payment.ts', 'storage/framework/defaults/app/Models/commerce/Payment.ts'],
-  PaymentMethod: ['app/Models/PaymentMethod.ts', 'storage/framework/defaults/app/Models/PaymentMethod.ts'],
-  PaymentProduct: ['app/Models/PaymentProduct.ts', 'storage/framework/defaults/app/Models/PaymentProduct.ts'],
-  PaymentTransaction: ['app/Models/PaymentTransaction.ts', 'storage/framework/defaults/app/Models/PaymentTransaction.ts'],
-  Transaction: ['app/Models/Transaction.ts', 'storage/framework/defaults/app/Models/commerce/Transaction.ts'],
+  Order: ['app/Models/Order.ts', 'app/Models/commerce/Order.ts'],
+  OrderItem: ['app/Models/OrderItem.ts', 'app/Models/commerce/OrderItem.ts'],
+  Cart: ['app/Models/Cart.ts', 'app/Models/commerce/Cart.ts'],
+  CartItem: ['app/Models/CartItem.ts', 'app/Models/commerce/CartItem.ts'],
+  Customer: ['app/Models/Customer.ts', 'app/Models/commerce/Customer.ts'],
+  Product: ['app/Models/Product.ts', 'app/Models/commerce/Product.ts'],
+  ProductVariant: ['app/Models/ProductVariant.ts', 'app/Models/commerce/ProductVariant.ts'],
+  ProductUnit: ['app/Models/ProductUnit.ts', 'app/Models/commerce/ProductUnit.ts'],
+  Manufacturer: ['app/Models/Manufacturer.ts', 'app/Models/commerce/Manufacturer.ts'],
+  Coupon: ['app/Models/Coupon.ts', 'app/Models/commerce/Coupon.ts'],
+  GiftCard: ['app/Models/GiftCard.ts', 'app/Models/commerce/GiftCard.ts'],
+  LicenseKey: ['app/Models/LicenseKey.ts', 'app/Models/commerce/LicenseKey.ts'],
+  Review: ['app/Models/Review.ts', 'app/Models/commerce/Review.ts'],
+  Receipt: ['app/Models/Receipt.ts', 'app/Models/commerce/Receipt.ts'],
+  PrintDevice: ['app/Models/PrintDevice.ts', 'app/Models/commerce/PrintDevice.ts'],
+  ShippingMethod: ['app/Models/ShippingMethod.ts', 'app/Models/commerce/ShippingMethod.ts'],
+  ShippingRate: ['app/Models/ShippingRate.ts', 'app/Models/commerce/ShippingRate.ts'],
+  ShippingZone: ['app/Models/ShippingZone.ts', 'app/Models/commerce/ShippingZone.ts'],
+  DeliveryRoute: ['app/Models/DeliveryRoute.ts', 'app/Models/commerce/DeliveryRoute.ts'],
+  DigitalDelivery: ['app/Models/DigitalDelivery.ts', 'app/Models/commerce/DigitalDelivery.ts'],
+  Courier: ['app/Models/Courier.ts', 'app/Models/commerce/Courier.ts'],
+  TaxRate: ['app/Models/TaxRate.ts', 'app/Models/commerce/TaxRate.ts'],
+  WaitlistProduct: ['app/Models/WaitlistProduct.ts', 'app/Models/commerce/WaitlistProduct.ts'],
+  WaitlistRestaurant: ['app/Models/WaitlistRestaurant.ts', 'app/Models/commerce/WaitlistRestaurant.ts'],
+  LoyaltyPoint: ['app/Models/LoyaltyPoint.ts', 'app/Models/commerce/LoyaltyPoint.ts'],
+  LoyaltyReward: ['app/Models/LoyaltyReward.ts', 'app/Models/commerce/LoyaltyReward.ts'],
+  Payment: ['app/Models/Payment.ts', 'app/Models/commerce/Payment.ts'],
+  PaymentMethod: ['app/Models/PaymentMethod.ts', 'app/Models/PaymentMethod.ts'],
+  PaymentProduct: ['app/Models/PaymentProduct.ts', 'app/Models/PaymentProduct.ts'],
+  PaymentTransaction: ['app/Models/PaymentTransaction.ts', 'app/Models/PaymentTransaction.ts'],
+  Transaction: ['app/Models/Transaction.ts', 'app/Models/commerce/Transaction.ts'],
 }
 
 const modelCache = new Map<string, any>()
@@ -153,7 +140,7 @@ async function discoverModelPaths(): Promise<Map<string, string[]>> {
     const paths = new Map<string, string[]>()
     const modelRoots = [
       resolve(root, 'app/Models'),
-      resolve(defaultsRoot(), 'app/Models'),
+      defaultsPath('app/Models'),
     ]
 
     for (const modelsRoot of modelRoots) {
@@ -178,11 +165,11 @@ async function discoverModelPaths(): Promise<Map<string, string[]>> {
 }
 
 async function modelCandidatePaths(name: string): Promise<string[]> {
-  const root = projectRoot()
   const discovered = (await discoverModelPaths()).get(name) ?? []
-  const explicit = (MODEL_PATHS[name] ?? []).map(path => path.startsWith(VENDORED_DEFAULTS_PREFIX)
-    ? resolve(defaultsRoot(), path.slice(VENDORED_DEFAULTS_PREFIX.length))
-    : resolve(root, path))
+  const entry = MODEL_PATHS[name]
+  const explicit = entry
+    ? [resolve(projectRoot(), entry[0]), defaultsPath(entry[1])]
+    : []
   return [...new Set([...discovered, ...explicit])]
 }
 

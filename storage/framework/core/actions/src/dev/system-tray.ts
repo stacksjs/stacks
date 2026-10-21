@@ -3,7 +3,7 @@ import { basename, join } from 'node:path'
 import process from 'node:process'
 import { bold, cyan, dim, green } from '@stacksjs/cli'
 import { openDevWindow } from '@stacksjs/desktop-build'
-import { projectPath, storagePath } from '@stacksjs/path'
+import { defaultsPath, projectPath } from '@stacksjs/path'
 import { findStacksProjects } from '@stacksjs/utils'
 import { findAvailablePort, waitForServer } from './dashboard-utils'
 
@@ -15,7 +15,7 @@ interface TrayActionRequest {
 
 const preferredPort = Number(process.env.PORT_SYSTEM_TRAY) || 3009
 const port = await findAvailablePort(preferredPort)
-const trayViews = storagePath('framework/defaults/views/system-tray')
+const trayViews = defaultsPath('views/system-tray')
 const appUrl = process.env.APP_URL || 'stacks.test'
 const domain = appUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')
 const hasPrettyDomain = !domain.includes('localhost:') && domain !== 'localhost'
@@ -160,7 +160,7 @@ const { serve } = await import('bun-plugin-stx/serve')
 const serverPromise = serve({
   patterns: [trayViews],
   port,
-  componentsDir: storagePath('framework/defaults/resources/components'),
+  componentsDir: defaultsPath('resources/components'),
   quiet: true,
   auth: false,
   routes: {
