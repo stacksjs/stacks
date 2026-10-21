@@ -70,11 +70,20 @@ Check output is hashed instead of copied into the receipt. Library consumers
 can set cancellation and tighter budgets through
 `@stacksjs/actions/release-evidence`.
 
+Completed checks dispose their normal background descendants before a receipt
+is issued. POSIX uses an owned process group and confirms its disappearance.
+Windows requires PowerShell with .NET `Add-Type` and `taskkill.exe`; native Job
+Objects retain child ownership across intermediate process exits. A command
+starts suspended, joins its job, then resumes. Missing ownership support or
+failed cleanup blocks verification. This is process cleanup, not a sandbox for
+deliberately escaping POSIX groups or privileged external services.
+
 An integrity match proves archive identity against the plan. This command does
 not validate registry signatures or SLSA attestations, establish redistribution
 rights, prove native execution, or guarantee original-game fidelity. Include
 the actual native and product acceptance scripts in the consumer checks and
 retain their platform execution evidence separately.
+
 ## Retained adoption evidence
 
 The [stx 0.2.644 plan](./receipts/stx-0.2.644-plan.json) and

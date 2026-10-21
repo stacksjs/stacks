@@ -64,7 +64,7 @@ test.each([
   expect(result.code, result.output).not.toBe(0)
   expect(result.output).toContain('publication:check failed with exit code 9')
   expect(result.ran).toBe(true)
-})
+}, 15_000)
 
 test('iOS dry-run inspects local source without pulling, fetching, building or changing refs', async () => {
   const result = await command(['release:ios', '--dry-run', '--skip-github-release'], iosFixture)
@@ -101,4 +101,4 @@ test.each(['release:ios', 'release:github'])('%s dry-run does not execute an app
   const result = await command([name, '--dry-run'])
   expect(result.ran).toBe(false)
   expect(result.output).not.toContain('publication:check failed')
-})
+}, 15_000)

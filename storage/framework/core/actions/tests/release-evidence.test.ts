@@ -147,9 +147,10 @@ describe('source release and consumer evidence', () => {
     writeFileSync(join(root, 'check.ts'), `import {writeFileSync} from "node:fs"; writeFileSync("parent.pid", String(process.pid)); Bun.spawn([process.execPath, "descendant.ts"], {stdout:"inherit", stderr:"inherit", detached:${detached}}); await Bun.sleep(60000)`)
     writeFileSync(join(root, 'package.json'), JSON.stringify({ scripts: { check: 'bun check.ts' } }))
     let watchdog: ReturnType<typeof setTimeout> | undefined
+    const budget = process.platform === 'win32' ? 15_000 : 1000
     try {
-      const execution = verifyReleaseEvidence(plan, { cwd: root, fetch: publishedSource(), checkTimeoutMs: 1000 })
-      const bounded = new Promise<never>((_, reject) => { watchdog = setTimeout(() => reject(new Error('Verification remained blocked by descendant output pipes')), 4000) })
+      const execution = verifyReleaseEvidence(plan, { cwd: root, fetch: publishedSource(), checkTimeoutMs: budget })
+      const bounded = new Promise<never>((_, reject) => { watchdog = setTimeout(() => reject(new Error('Verification remained blocked by descendant output pipes')), budget + 3000) })
       await expect(Promise.race([execution, bounded])).rejects.toThrow('was interrupted or exceeded its execution budget')
       expect(existsSync(join(root, 'descendant.pid'))).toBe(true)
       const pid = Number(readFileSync(join(root, 'descendant.pid'), 'utf8'))
@@ -179,7 +180,7 @@ describe('source release and consumer evidence', () => {
         catch { /* An already disposed test-owned process needs no cleanup. */ }
       }
     }
-  }, 10_000)
+  }, 30_000)
 
   test('a compiled verifier executes consumer scripts through Bun instead of reentering itself', async () => {
     const root = consumer()

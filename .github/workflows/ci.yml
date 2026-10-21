@@ -39,8 +39,16 @@ jobs:
           bun-version: ${{ env.BUN_VERSION }}
       - name: Install the committed dependency graph
         run: bun install --frozen-lockfile
+      - name: Build packages imported by subpath
+        shell: bash
+        run: |
+          for pkg in $(bun .github/scripts/subpath-packages.ts); do
+            echo "::group::build @stacksjs/$pkg"
+            (cd "storage/framework/core/$pkg" && bun run build)
+            echo "::endgroup::"
+          done
       - name: Verify source gates, installed artifacts and subprocess ownership
-        run: bun test ./storage/framework/core/actions/tests/release-evidence.test.ts ./storage/framework/core/buddy/tests/release-evidence.test.ts ./storage/framework/core/actions/tests/publication-preflight.test.ts ./storage/framework/core/actions/tests/publication-entrypoints.test.ts ./storage/framework/core/buddy/tests/publication-entrypoints.test.ts
+        run: bun test ./storage/framework/core/actions/tests/release-evidence.test.ts ./storage/framework/core/buddy/tests/release-evidence.test.ts ./storage/framework/core/actions/tests/publication-preflight.test.ts ./storage/framework/core/actions/tests/publication-entrypoints.test.ts ./storage/framework/core/buddy/tests/publication-entrypoints.test.ts ./storage/framework/core/actions/tests/project-scripts.test.ts
 
   dependency-locks:
     if: github.event_name == 'pull_request'

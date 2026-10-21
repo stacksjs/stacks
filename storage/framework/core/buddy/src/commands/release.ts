@@ -26,124 +26,6 @@ const descriptions = {
   skipGithubRelease: 'Push the tag without creating its GitHub release',
 }
 
-export function release(buddy: CLI): void {
-  buddy
-    .command('release', descriptions.release)
-    .option('--dry-run', descriptions.dryRun, { default: false })
-    .option('-p, --project [project]', descriptions.project, { default: false })
-    .option('--bump <type>', descriptions.bump)
-    .option('--preid <identifier>', 'Prerelease channel, for example beta or rc')
-    .option('--skip-github-release', descriptions.skipGithubRelease, { default: false })
-    .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: ReleaseOptions) => {
-      log.debug('Running `buddy release` ...', options)
-
-      if (options.dryRun)
-        log.warn('Dry run enabled. No changes will be made or committed.')
-
-      const startTime = await intro('buddy release')
-      const result = await runAction(Action.Release, options)
-
-      if (resultFailed(result)) {
-        await log.error('Failed to release', result.error)
-        process.exit(ExitCode.FatalError)
-      }
-
-      // A dry run neither tags nor pushes, so it must not claim it did. This
-      // used to print "Successfully released" and "Triggered CI/CD Release"
-      // either way, which reads as a release having happened - the one thing
-      // a dry run exists to avoid being unsure about.
-      await outro(
-        options.dryRun
-          ? 'Dry run complete. Nothing was committed, tagged or pushed.'
-          : 'Triggered CI/CD Release via GitHub Actions',
-        { startTime, useSeconds: true },
-      )
-
-      if (!options.dryRun)
-        log.info(`Follow along: ${italic(resolveGitHubActionsUrl(readOriginRemote()))}`)
-    })
-
-  buddy
-    .command('release:ios', 'Ship the iOS app: regenerate its project for production, commit, tag and push')
-    .option('--bump <type>', 'build | patch | minor | major | x.y.z (default: a new build of the current marketing version)')
-    .option('--keep-builds <n>', 'TestFlight builds to keep besides the new one; older ones are expired (needs an App Store Connect API key)', { default: 1 })
-    .option('--skip-github-release', descriptions.skipGithubRelease, { default: false })
-    .option('--dry-run', descriptions.dryRun, { default: false })
-    .action(async (options: IosReleaseOptions) => {
-      const startTime = await intro('buddy release:ios')
-      try {
-        const tag = await releaseIos(options)
-        await outro(options.dryRun ? `Dry run complete: would release ${tag}` : `Released ${tag}`, { startTime, useSeconds: true })
-        if (!options.dryRun)
-          log.info('A CI that builds tags (Xcode Cloud: Tag Changes, prefix "v") turns it into a TestFlight build now.')
-      }
-      catch (error) {
-        await log.error('Failed to release the iOS app', error)
-        process.exit(ExitCode.FatalError)
-      }
-    })
-
-  buddy
-    .command('release:github [tag]', 'Create the GitHub release for a pushed tag (default: the newest), with the changes since the tag before it')
-    .option('--dry-run', 'Print the release instead of creating it', { default: false })
-    .action(async (tag: string | undefined, options: { dryRun?: boolean }) => {
-      const startTime = await intro('buddy release:github')
-      try {
-        if (!options.dryRun)
-          await assertPublicationAllowed({ cwd: process.cwd(), channel: 'github-release' })
-        const target = tag || git('describe', '--tags', '--abbrev=0')
-        if (!git('tag', '--list', target))
-          throw new Error(`there is no tag ${target}`)
-        // An iOS build tag gets the same title and TestFlight line release:ios gives it.
-        const ios = /^v\d+\.\d+\.\d+-build\.\d+$/.test(target)
-          ? iosReleaseSummary(target, { numberedByXcodeCloud: appStoreConnectCredentials() !== null })
-          : null
-        const result = await publishGitHubRelease({ cwd: process.cwd(), tag: target, name: ios?.name, summary: ios?.body, dryRun: options.dryRun })
-        if (result.status === 'failed')
-          throw new Error(describeGitHubRelease(target, result))
-        log.info(options.dryRun && result.draft
-          ? `Would create the GitHub release ${target} (${result.draft.name}):\n\n${result.draft.body}`
-          : describeGitHubRelease(target, result))
-        await outro(options.dryRun ? 'Dry run complete. Nothing was created.' : `GitHub release for ${target}`, { startTime, useSeconds: true })
-      }
-      catch (error) {
-        await log.error('Failed to create the GitHub release', error)
-        process.exit(ExitCode.FatalError)
-      }
-    })
-
-  buddy
-    .command('release:verify <plan>', 'Verify exact source gates, published archives and installed consumer checks')
-    .option('--output <path>', 'Save the successful verification receipt as JSON')
-    .action(async (planPath: string, options: { output?: string }) => {
-      let temporary: string | undefined
-      try {
-        const plan: unknown = JSON.parse(readFileSync(planPath, 'utf8'))
-        validateReleaseEvidencePlan(plan)
-        const receipt = await verifyReleaseEvidence(plan, { cwd: process.cwd(), token: resolveGitHubToken() ?? undefined })
-        const json = `${JSON.stringify(receipt, null, 2)}\n`
-        if (options.output) {
-          temporary = `${options.output}.${crypto.randomUUID()}.tmp`
-          writeFileSync(temporary, json, { flag: 'wx', mode: 0o600 })
-          renameSync(temporary, options.output)
-          temporary = undefined
-          await printAsync(`Verified release evidence saved to ${options.output}`)
-        }
-        else {
-          await printAsync(json.trimEnd())
-        }
-      }
-      catch (error) {
-        if (temporary) rmSync(temporary, { force: true })
-        await log.error('Release verification failed', error)
-        process.exitCode = ExitCode.FatalError
-      }
-    })
-
-  onUnknownSubcommand(buddy, 'release')
-}
-
 interface IosReleaseOptions {
   bump?: string
   dryRun?: boolean
@@ -282,6 +164,124 @@ async function releaseIos(options: IosReleaseOptions): Promise<string> {
     }
   }
   return tag
+}
+
+export function release(buddy: CLI): void {
+  buddy
+    .command('release', descriptions.release)
+    .option('--dry-run', descriptions.dryRun, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--bump <type>', descriptions.bump)
+    .option('--preid <identifier>', 'Prerelease channel, for example beta or rc')
+    .option('--skip-github-release', descriptions.skipGithubRelease, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: ReleaseOptions) => {
+      log.debug('Running `buddy release` ...', options)
+
+      if (options.dryRun)
+        log.warn('Dry run enabled. No changes will be made or committed.')
+
+      const startTime = await intro('buddy release')
+      const result = await runAction(Action.Release, options)
+
+      if (resultFailed(result)) {
+        await log.error('Failed to release', result.error)
+        process.exit(ExitCode.FatalError)
+      }
+
+      // A dry run neither tags nor pushes, so it must not claim it did. This
+      // used to print "Successfully released" and "Triggered CI/CD Release"
+      // either way, which reads as a release having happened - the one thing
+      // a dry run exists to avoid being unsure about.
+      await outro(
+        options.dryRun
+          ? 'Dry run complete. Nothing was committed, tagged or pushed.'
+          : 'Triggered CI/CD Release via GitHub Actions',
+        { startTime, useSeconds: true },
+      )
+
+      if (!options.dryRun)
+        log.info(`Follow along: ${italic(resolveGitHubActionsUrl(readOriginRemote()))}`)
+    })
+
+  buddy
+    .command('release:ios', 'Ship the iOS app: regenerate its project for production, commit, tag and push')
+    .option('--bump <type>', 'build | patch | minor | major | x.y.z (default: a new build of the current marketing version)')
+    .option('--keep-builds <n>', 'TestFlight builds to keep besides the new one; older ones are expired (needs an App Store Connect API key)', { default: 1 })
+    .option('--skip-github-release', descriptions.skipGithubRelease, { default: false })
+    .option('--dry-run', descriptions.dryRun, { default: false })
+    .action(async (options: IosReleaseOptions) => {
+      const startTime = await intro('buddy release:ios')
+      try {
+        const tag = await releaseIos(options)
+        await outro(options.dryRun ? `Dry run complete: would release ${tag}` : `Released ${tag}`, { startTime, useSeconds: true })
+        if (!options.dryRun)
+          log.info('A CI that builds tags (Xcode Cloud: Tag Changes, prefix "v") turns it into a TestFlight build now.')
+      }
+      catch (error) {
+        await log.error('Failed to release the iOS app', error)
+        process.exit(ExitCode.FatalError)
+      }
+    })
+
+  buddy
+    .command('release:github [tag]', 'Create the GitHub release for a pushed tag (default: the newest), with the changes since the tag before it')
+    .option('--dry-run', 'Print the release instead of creating it', { default: false })
+    .action(async (tag: string | undefined, options: { dryRun?: boolean }) => {
+      const startTime = await intro('buddy release:github')
+      try {
+        if (!options.dryRun)
+          await assertPublicationAllowed({ cwd: process.cwd(), channel: 'github-release' })
+        const target = tag || git('describe', '--tags', '--abbrev=0')
+        if (!git('tag', '--list', target))
+          throw new Error(`there is no tag ${target}`)
+        // An iOS build tag gets the same title and TestFlight line release:ios gives it.
+        const ios = /^v\d+\.\d+\.\d+-build\.\d+$/.test(target)
+          ? iosReleaseSummary(target, { numberedByXcodeCloud: appStoreConnectCredentials() !== null })
+          : null
+        const result = await publishGitHubRelease({ cwd: process.cwd(), tag: target, name: ios?.name, summary: ios?.body, dryRun: options.dryRun })
+        if (result.status === 'failed')
+          throw new Error(describeGitHubRelease(target, result))
+        log.info(options.dryRun && result.draft
+          ? `Would create the GitHub release ${target} (${result.draft.name}):\n\n${result.draft.body}`
+          : describeGitHubRelease(target, result))
+        await outro(options.dryRun ? 'Dry run complete. Nothing was created.' : `GitHub release for ${target}`, { startTime, useSeconds: true })
+      }
+      catch (error) {
+        await log.error('Failed to create the GitHub release', error)
+        process.exit(ExitCode.FatalError)
+      }
+    })
+
+  buddy
+    .command('release:verify <plan>', 'Verify exact source gates, published archives and installed consumer checks')
+    .option('--output <path>', 'Save the successful verification receipt as JSON')
+    .action(async (planPath: string, options: { output?: string }) => {
+      let temporary: string | undefined
+      try {
+        const plan: unknown = JSON.parse(readFileSync(planPath, 'utf8'))
+        validateReleaseEvidencePlan(plan)
+        const receipt = await verifyReleaseEvidence(plan, { cwd: process.cwd(), token: resolveGitHubToken() ?? undefined })
+        const json = `${JSON.stringify(receipt, null, 2)}\n`
+        if (options.output) {
+          temporary = `${options.output}.${crypto.randomUUID()}.tmp`
+          writeFileSync(temporary, json, { flag: 'wx', mode: 0o600 })
+          renameSync(temporary, options.output)
+          temporary = undefined
+          await printAsync(`Verified release evidence saved to ${options.output}`)
+        }
+        else {
+          await printAsync(json.trimEnd())
+        }
+      }
+      catch (error) {
+        if (temporary) rmSync(temporary, { force: true })
+        await log.error('Release verification failed', error)
+        process.exitCode = ExitCode.FatalError
+      }
+    })
+
+  onUnknownSubcommand(buddy, 'release')
 }
 
 export function resolveGitHubActionsUrl(
