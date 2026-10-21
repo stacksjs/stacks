@@ -181,7 +181,7 @@ async function loadPolicyRegistry(): Promise<Record<string, string> | null> {
 function policyDirectories(): string[] {
   return [
     p.appPath('Policies'),
-    p.storagePath('framework/defaults/app/Policies'),
+    p.defaultsPath('app/Policies'),
   ]
 }
 

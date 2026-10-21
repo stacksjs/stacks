@@ -10,7 +10,7 @@ import { searchIndexName, settingsFromSearchTrait } from './trait-settings'
 
 export async function updateIndexSettings(): Promise<Result<string, string>> {
   try {
-    const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/app/Models/**/*.ts')], { absolute: true })
+    const modelFiles = globSync([path.userModelsPath('*.ts'), path.defaultsPath('app/Models/**/*.ts')], { absolute: true })
     const { updateSettings } = useSearchEngine()
 
     for (const model of modelFiles) {

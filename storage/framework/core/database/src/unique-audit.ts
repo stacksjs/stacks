@@ -54,7 +54,7 @@ export interface UniqueAuditResult {
 export async function getDeclaredUniques(): Promise<DeclaredUnique[]> {
   const modelFiles = [
     ...safeGlob(path.userModelsPath('*.ts')),
-    ...safeGlob(path.storagePath('framework/defaults/app/Models/**/*.ts')),
+    ...safeGlob(path.defaultsPath('app/Models/**/*.ts')),
   ]
 
   const declared: DeclaredUnique[] = []

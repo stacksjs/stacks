@@ -128,7 +128,7 @@ export async function truncateSqlite(): Promise<void> {
   await dropSqliteTables()
   await deleteFrameworkModels()
 
-  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/app/Models/**/*.ts')], { absolute: true })
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.defaultsPath('app/Models/**/*.ts')], { absolute: true })
 
   for (const file of modelFiles) {
     await copyModelFiles(file)
@@ -166,7 +166,7 @@ export async function truncateSqliteFast(): Promise<void> {
     const watched = globSync(
       [
         path.userModelsPath('*.ts'),
-        path.storagePath('framework/defaults/app/Models/**/*.ts'),
+        path.defaultsPath('app/Models/**/*.ts'),
         path.userMigrationsPath('*.ts'),
       ],
       { absolute: true },

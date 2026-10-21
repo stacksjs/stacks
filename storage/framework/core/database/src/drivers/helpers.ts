@@ -273,7 +273,7 @@ export function findDifferingKeys(obj1: AttributesWithRules, obj2: AttributesWit
 }
 
 export async function fetchTables(): Promise<string[]> {
-  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/app/Models/**/*.ts')], { absolute: true })
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.defaultsPath('app/Models/**/*.ts')], { absolute: true })
 
   const tables: string[] = []
 

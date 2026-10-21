@@ -89,7 +89,7 @@ function toMessageObjects(
 }
 
 export async function validateField(modelFile: string, params: RequestData): Promise<any> {
-  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/app/Models/**/*.ts')], { absolute: true })
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.defaultsPath('app/Models/**/*.ts')], { absolute: true })
   const modelPath = modelFiles.find(file => file.endsWith(`${modelFile}.ts`))
 
   if (!modelPath)

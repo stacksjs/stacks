@@ -10,7 +10,7 @@ import { globSync } from '@stacksjs/storage'
 
 export async function flushModelDocuments(modelOption?: string): Promise<Result<string, string>> {
   try {
-    const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/app/Models/**/*.ts')], { absolute: true })
+    const modelFiles = globSync([path.userModelsPath('*.ts'), path.defaultsPath('app/Models/**/*.ts')], { absolute: true })
     const { deleteIndex } = useSearchEngine()
 
     for (const model of modelFiles) {

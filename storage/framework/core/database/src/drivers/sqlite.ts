@@ -63,7 +63,7 @@ export async function configureSqlitePragmas(): Promise<void> {
 }
 
 export async function dropSqliteTables(): Promise<void> {
-  const userModelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/app/Models/**/*.ts')], { absolute: true })
+  const userModelFiles = globSync([path.userModelsPath('*.ts'), path.defaultsPath('app/Models/**/*.ts')], { absolute: true })
   const tables = await fetchTables()
 
   // Validate table names are simple identifiers before splicing into raw SQL.

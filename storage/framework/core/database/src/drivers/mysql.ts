@@ -50,7 +50,7 @@ export async function resetMysqlDatabase(): Promise<Result<string, never>> {
 }
 
 export async function dropMysqlTables(): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/app/Models/**/*.ts')], { absolute: true })
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.defaultsPath('app/Models/**/*.ts')], { absolute: true })
   const tables = await fetchTables()
 
   for (const table of tables) {

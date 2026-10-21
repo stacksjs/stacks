@@ -222,7 +222,7 @@ export async function getDeclaredFKs(): Promise<DeclaredFK[]> {
   // additional schema silently audited alongside the app.
   const modelFiles = userModelFiles.length > 0
     ? userModelFiles
-    : safeGlob(path.storagePath('framework/defaults/app/Models/**/*.ts'))
+    : safeGlob(path.defaultsPath('app/Models/**/*.ts'))
 
   const models: Model[] = []
   for (const modelFile of modelFiles) {

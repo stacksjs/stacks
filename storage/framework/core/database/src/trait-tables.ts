@@ -346,7 +346,7 @@ export async function likeableTargets(): Promise<Array<{ table: string, foreignK
   const { getLikeableForeignKey, getUpvoteTableName } = await import('./drivers/helpers')
 
   const modelFiles = globSync(
-    [path.userModelsPath('*.ts'), path.storagePath('framework/defaults/app/Models/**/*.ts')],
+    [path.userModelsPath('*.ts'), path.defaultsPath('app/Models/**/*.ts')],
     { absolute: true },
   )
 

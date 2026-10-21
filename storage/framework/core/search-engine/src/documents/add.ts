@@ -10,7 +10,7 @@ import { searchIndexName, settingsFromSearchTrait } from './trait-settings'
 
 export async function importModelDocuments(modelOption?: string): Promise<Result<string, string>> {
   try {
-    const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/app/Models/**/*.ts')], { absolute: true })
+    const modelFiles = globSync([path.userModelsPath('*.ts'), path.defaultsPath('app/Models/**/*.ts')], { absolute: true })
     const { addDocument, updateSettings } = useSearchEngine()
 
     for (const model of modelFiles) {

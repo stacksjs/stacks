@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { existsSync, mkdirSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
 import { connect } from 'node:net'
 import { bold, cyan, dim, green } from '@stacksjs/cli'
-import { projectPath, publicPath, storagePath } from '@stacksjs/path'
+import { defaultsPath, projectPath, publicPath, storagePath } from '@stacksjs/path'
 import { seedCsrfPageResponse, validateDevCsrfRequest } from './csrf'
 import { resolveComponentsLibraryRoot } from './defaults-resources'
 import { shouldDelegateDashboardRequest } from './dashboard-request-routing'
@@ -557,7 +557,7 @@ async function startReverseProxy(): Promise<boolean> {
 // eslint-disable-next-line ts/no-top-level-await
 const [, discoveredModels] = await Promise.all([
   startStxServer(),
-  discoverModels(projectPath('app/Models'), storagePath('framework/defaults/app/Models')),
+  discoverModels(projectPath('app/Models'), defaultsPath('app/Models')),
 ])
 
 // eslint-disable-next-line ts/no-top-level-await

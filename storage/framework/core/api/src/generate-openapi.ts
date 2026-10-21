@@ -229,7 +229,7 @@ async function loadAction(handlerPath: string): Promise<Record<string, unknown> 
     const { path: p } = await import('@stacksjs/path')
     const candidates = [
       p.appPath(`${handlerPath}.ts`),
-      p.storagePath(`framework/defaults/app/${handlerPath}.ts`),
+      p.defaultsPath(`app/${handlerPath}.ts`),
     ]
     for (const candidate of candidates) {
       try {
@@ -384,7 +384,7 @@ export async function generateOpenApi(options: {
       registryModule = await import('../../orm/src/model-registry')
     }
     const registry = await registryModule.loadModelRegistryWithOrigins({
-      defaultsRoot: path.storagePath('framework/defaults/app/Models'),
+      defaultsRoot: path.defaultsPath('app/Models'),
       userRoot: path.projectPath('app/Models'),
     })
     let securityApi: { models?: unknown } | undefined
