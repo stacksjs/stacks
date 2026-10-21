@@ -27,6 +27,16 @@ const loading = state(true)
 const loadError = state('')
 const copyMessage = state('')
 
+/**
+ * Actions and Commands read the same way but do not have the same shape.
+ *
+ * An Action resolves through two roots: `app/Actions/<path>.ts` shadows the
+ * framework default at the same path, so a row has an origin worth showing.
+ * Commands have one root. `buddy` loads `app/Commands` and nothing else, so
+ * every row is application code and an origin column would be one repeated
+ * word. `defaults/app/Commands` is what `buddy new` copies into a new app,
+ * not a default the loader falls back to.
+ */
 const page = derived(() => mode() === 'actions'
   ? {
       title: 'Actions',
@@ -35,14 +45,30 @@ const page = derived(() => mode() === 'actions'
       scaffold: 'buddy make:action MyAction',
       icon: 'i-hugeicons-energy',
       detailLabel: 'Method',
+      note: 'Application files override matching framework defaults.',
+      showOrigin: true,
+      stats: [
+        { key: 'total', label: 'Total Actions' },
+        { key: 'application', label: 'Application Overrides' },
+        { key: 'framework', label: 'Framework Defaults' },
+        { key: 'writes', label: 'Write Handlers' },
+      ],
     }
   : {
       title: 'Commands',
-      description: 'Inspect the custom commands registered by app/Commands.ts.',
-      empty: 'No application commands are registered.',
+      description: 'Inspect the commands this application defines in app/Commands.',
+      empty: 'No command files in app/Commands.',
       scaffold: 'buddy make:command my-command',
       icon: 'i-hugeicons-command-line',
       detailLabel: 'Aliases and options',
+      note: 'Every file in app/Commands is a command. The optional app/Commands.ts only orders, aliases or disables them.',
+      showOrigin: false,
+      stats: [
+        { key: 'total', label: 'Commands' },
+        { key: 'registered', label: 'Registry Entries' },
+        { key: 'aliases', label: 'Aliases' },
+        { key: 'options', label: 'Declared Options' },
+      ],
     })
 
 const filteredItems = derived(() => {
@@ -152,17 +178,17 @@ onMount(() => {
   </div>
 
   <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-    <StatsCard :title="mode() === 'actions' ? 'Total Actions' : 'Registered Entries'" :icon="page().icon" iconBg="primary">
-      <template #value>{{ statValue(mode() === 'actions' ? 'total' : 'registered') }}</template>
+    <StatsCard :title="page().stats[0].label" :icon="page().icon" iconBg="primary">
+      <template #value>{{ statValue(page().stats[0].key) }}</template>
     </StatsCard>
-    <StatsCard :title="mode() === 'actions' ? 'Application Overrides' : 'Command Modules'" icon="i-hugeicons-source-code" iconBg="success">
-      <template #value>{{ statValue(mode() === 'actions' ? 'application' : 'total') }}</template>
+    <StatsCard :title="page().stats[1].label" icon="i-hugeicons-source-code" iconBg="success">
+      <template #value>{{ statValue(page().stats[1].key) }}</template>
     </StatsCard>
-    <StatsCard :title="mode() === 'actions' ? 'Framework Defaults' : 'Aliases'" icon="i-hugeicons-git-branch" iconBg="info">
-      <template #value>{{ statValue(mode() === 'actions' ? 'framework' : 'aliases') }}</template>
+    <StatsCard :title="page().stats[2].label" icon="i-hugeicons-git-branch" iconBg="info">
+      <template #value>{{ statValue(page().stats[2].key) }}</template>
     </StatsCard>
-    <StatsCard :title="mode() === 'actions' ? 'Write Handlers' : 'Declared Options'" icon="i-hugeicons-settings-02" iconBg="warning">
-      <template #value>{{ statValue(mode() === 'actions' ? 'writes' : 'options') }}</template>
+    <StatsCard :title="page().stats[3].label" icon="i-hugeicons-settings-02" iconBg="warning">
+      <template #value>{{ statValue(page().stats[3].key) }}</template>
     </StatsCard>
   </div>
 
@@ -170,7 +196,7 @@ onMount(() => {
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between p-5 border-b border-neutral-200 dark:border-neutral-700">
       <div>
         <h2 class="font-semibold text-neutral-900 dark:text-white">Native source inventory</h2>
-        <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Application files override matching framework defaults.</p>
+        <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ page().note }}</p>
       </div>
       <label class="block relative w-full sm:max-w-xs">
         <span class="sr-only">Search {{ page().title.toLowerCase() }}</span>
@@ -197,7 +223,7 @@ onMount(() => {
           <tr>
             <th class="pl-5 pr-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Name</th>
             <th class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">{{ page().detailLabel }}</th>
-            <th class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Origin</th>
+            <th :if="page().showOrigin" class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Origin</th>
             <th class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Path</th>
             <th class="pr-5 py-3 font-semibold text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Modified</th>
           </tr>
@@ -215,7 +241,7 @@ onMount(() => {
                 <p class="text-neutral-700 dark:text-neutral-300"><span class="text-neutral-500 dark:text-neutral-400">Options:</span> {{ formatOptions(item) }}</p>
               </div>
             </td>
-            <td class="px-4 py-3.5">
+            <td :if="page().showOrigin" class="px-4 py-3.5">
               <span :class="'inline-flex px-2 py-0.5 font-medium text-xs rounded ' + (item.origin === 'Application' ? 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40' : 'text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800')">{{ item.origin }}</span>
             </td>
             <td class="px-4 py-3.5 font-mono text-neutral-600 text-xs dark:text-neutral-300">{{ item.path }}</td>

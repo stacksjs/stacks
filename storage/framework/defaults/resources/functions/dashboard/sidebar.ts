@@ -708,10 +708,5 @@ export function buildWebSidebarSections(): WebSidebarSection[] {
         ...(item.roles && item.roles.length > 0 ? { roles: item.roles } : {}),
       })),
     })),
-    {
-      id: 'system',
-      label: '',
-      items: [{ id: 'settings', label: 'Settings', icon: NAV_ICON_CLASSES.settings, iconColor: 'blue', href: '/settings' }],
-    },
   ]
 }
