@@ -207,7 +207,7 @@ const { parsed, errors, skippedEncrypted } = parse(envContent, {
 ## Encryption (X25519 + AES-256-GCM)
 
 ```typescript
-import { aesEncrypt, aesDecrypt, generateKeypair, encryptValue, decryptValue, getPrivateKey } from '@stacksjs/env'
+import { aesEncrypt, aesDecrypt, generateKeypair, encryptValue, decryptValue, getPrivateKey, isValidPublicKey } from '@stacksjs/env'
 
 // AES-256-GCM symmetric encryption
 const encrypted = aesEncrypt(plaintext, password)
@@ -215,6 +215,7 @@ const decrypted = aesDecrypt(encrypted, password)
 
 // Versioned ephemeral-static X25519 envelope encryption
 const keypair = generateKeypair()
+const validPublicKey = isValidPublicKey(keypair.publicKey) // canonical current X25519 public metadata
 const encrypted = encryptValue(value, keypair.publicKey)
 const decrypted = decryptValue(encrypted, keypair.privateKey)
 ```
@@ -238,6 +239,13 @@ Restore the environment's matching private key through `.env.keys` or its
 `DOTENV_PRIVATE_KEY_<ENVIRONMENT>` process secret. A request for one plaintext
 key remains readable independently. `buddy deploy` stops on an incomplete or
 unreadable environment instead of deploying a partial map.
+
+`isValidPublicKey(value: unknown): value is string` returns false for private,
+legacy, malformed, or noncanonical public metadata without throwing or exposing
+parser errors. Strict committed-env checks reject that metadata and all nonempty
+private-key assignments, including encrypted ones. Legacy decryption remains
+supported for migration through `buddy env:rotate`; non-strict scans retain
+their existing compatibility behavior.
 
 ## Tenant isolation on a shared box
 

@@ -484,7 +484,17 @@ export function env(buddy: CLI): void {
             }
             catch { /* no example file; every secret-shaped value is then reported */ }
 
-            const leaked = plaintextSecrets(values, { placeholders, strict: options.strict })
+            const findings = plaintextSecrets(values, { placeholders, strict: options.strict })
+            const metadata = findings.filter(finding => finding.reason === 'invalid-public-key' || finding.reason === 'private-key-material')
+            const leaked = findings.filter(finding => finding.reason !== 'invalid-public-key' && finding.reason !== 'private-key-material')
+
+            if (metadata.length) {
+              checks.push({
+                name: 'Encryption metadata',
+                status: 'fail',
+                message: `Unsafe encryption metadata in committed ${envFile}: ${metadata.map(finding => finding.key).join(', ')}. Keep private keys outside Git and restore valid public keys. For legacy keys, run \`buddy env:rotate\`.`,
+              })
+            }
 
             if (leaked.length === 0) {
               checks.push({

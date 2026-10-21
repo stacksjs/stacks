@@ -78,6 +78,24 @@ function parsePublicKey(value: string) {
   return key
 }
 
+/**
+ * Whether a value is a canonical current-format X25519 public key.
+ *
+ * Returns only a boolean and never exposes parser errors or key material.
+ * Legacy headers are not validated as safe public metadata by this API;
+ * their existing decryption and `env:rotate` migration remain supported.
+ */
+export function isValidPublicKey(value: unknown): value is string {
+  if (typeof value !== 'string') return false
+  try {
+    const key = parsePublicKey(value)
+    return value === `${PUBLIC_KEY_PREFIX}${encode(key.export({ format: 'der', type: 'spki' }))}`
+  }
+  catch {
+    return false
+  }
+}
+
 function parsePrivateKey(value: string) {
   if (!value.startsWith(PRIVATE_KEY_PREFIX)) throw new Error('Private key is not a version 2 X25519 key')
   const key = createPrivateKey({ key: decode(value.slice(PRIVATE_KEY_PREFIX.length), 'private key'), format: 'der', type: 'pkcs8' })

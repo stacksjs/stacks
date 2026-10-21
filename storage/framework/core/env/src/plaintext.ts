@@ -1,4 +1,5 @@
 import { isEncryptedValue } from './encrypted-value'
+import { isValidPublicKey } from './crypto'
 
 // Re-exported so `@stacksjs/env` keeps the same public surface.
 export { isEncryptedValue }
@@ -64,17 +65,16 @@ export const SECRET_NAME_PATTERN
 /**
  * Keys that ARE cryptographic material and are meant to be readable.
  *
- * The public half of the keypair is public by definition, and the private half
- * is never committed (`.env.keys` is gitignored). Both match
- * {@link SECRET_NAME_PATTERN} on `_KEY`, so they are excluded explicitly rather
- * than by weakening the pattern.
+ * Legacy non-strict scans preserve their metadata exemption. Strict committed
+ * scans validate current public keys and reject private-key assignments;
+ * a metadata-shaped name alone cannot establish that its value is public.
  */
 const CRYPTO_METADATA_PATTERN = /^DOTENV_(?:PUBLIC|PRIVATE)_KEY/
 
 /** A value that refers to another variable rather than holding one. */
 const EXPANSION_PATTERN = /^\$\{[^}]+\}$/
 
-export type PlaintextReason = 'plaintext-secret' | 'plaintext-value'
+export type PlaintextReason = 'plaintext-secret' | 'plaintext-value' | 'invalid-public-key' | 'private-key-material'
 
 export interface PlaintextFinding {
   /** The offending key. The VALUE is deliberately never carried. */
@@ -82,7 +82,8 @@ export interface PlaintextFinding {
   /**
    * `plaintext-secret` - the name looks like a secret and the value is not the
    * documented placeholder. `plaintext-value` - any unencrypted value, only
-   * ever produced under `strict`.
+   * ever produced under `strict`. Strict scans also reject invalid/legacy public
+   * metadata and private key assignments, without including their values.
    */
   reason: PlaintextReason
 }
@@ -100,8 +101,8 @@ export interface PlaintextScanOptions {
 /**
  * Find values in a parsed env file that should have been encrypted.
  *
- * Returns key names, never values. Empty values, `${VAR}` expansions, dotenvx
- * key metadata and anything already encrypted are skipped.
+ * Returns key names, never values. Empty ordinary values, `${VAR}` expansions
+ * and encrypted values are skipped. Strict scans also validate key metadata.
  */
 export function plaintextSecrets(
   values: Record<string, string>,
@@ -111,6 +112,14 @@ export function plaintextSecrets(
   const findings: PlaintextFinding[] = []
 
   for (const [key, value] of Object.entries(values)) {
+    if (strict && key.startsWith('DOTENV_PUBLIC_KEY')) {
+      if (!isValidPublicKey(value)) findings.push({ key, reason: 'invalid-public-key' })
+      continue
+    }
+    if (strict && key.startsWith('DOTENV_PRIVATE_KEY')) {
+      if (value.trim()) findings.push({ key, reason: 'private-key-material' })
+      continue
+    }
     if (!value || value.trim() === '')
       continue
     if (isEncryptedValue(value))
