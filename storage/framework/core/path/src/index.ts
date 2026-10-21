@@ -28,10 +28,9 @@ import {
   toNamespacedPath,
 } from 'node:path'
 import process from 'node:process'
-import { fileURLToPath } from 'node:url'
-import { appPath, frameworkPath, projectPath, storagePath } from './project'
+import { appPath, defaultsPath, frameworkDefaultsRoot, frameworkPath, projectPath, storagePath, usesVendoredDefaults } from './project'
 
-export { appPath, frameworkPath, isCompiledBinary, projectPath, storagePath } from './project'
+export { appPath, defaultsPath, frameworkDefaultsRoot, frameworkPath, isCompiledBinary, isInstalledDefaultsRoot, linkPackagedDefaults, packagedDefaultsRoot, projectPath, storagePath, usesVendoredDefaults } from './project'
 export { resolveModulePath } from './module-resolution'
 
 // Lazy import logging to avoid circular dependency (logging imports path)
@@ -1186,6 +1185,11 @@ export function inspectDefaultsProvenance(projectRoot: string = projectPath()): 
   if (!existsSync(targetDefaults) || !existsSync(join(packageRoot, 'package.json')))
     return notApplicable()
 
+  // The link `linkPackagedDefaults` makes IS the installed package, so there
+  // is nothing for it to have drifted from.
+  if (!usesVendoredDefaults(projectRoot))
+    return notApplicable()
+
   // A framework checkout carries the framework's own source, and there the
   // vendored tree is what `@stacksjs/defaults` is built *from* rather than a
   // copy of it. Comparing the two reports drift that means nothing.
@@ -1226,130 +1230,6 @@ export function inspectDefaultsProvenance(projectRoot: string = projectPath()): 
     vendored: marker.version,
     syncedAt: marker.syncedAt || null,
   }
-}
-
-/** Where the scaffold defaults resolve from, keyed by project root. */
-const cachedDefaultsRoot = new Map<string, string>()
-
-/**
- * The installed `@stacksjs/defaults` for this project.
- *
- * The project's own `node_modules` is consulted first, deliberately. The
- * obvious implementation is `import.meta.resolve`, but that resolves relative
- * to THIS file - which in a real app sits inside
- * `node_modules/@stacksjs/path/` and finds the right sibling, and in a
- * framework checkout or a monorepo finds the checkout's own copy regardless of
- * which project is being asked about. Asking about a project should answer
- * about that project.
- *
- * `import.meta.resolve` is still the fallback, because a hoisted or linked
- * layout legitimately puts the package somewhere other than the project's own
- * `node_modules`, and the module resolver is the only thing that knows where.
- * Inside a `bun build --compile` binary neither is available and this returns
- * undefined, which leaves the vendored path as the answer.
- */
-function installedDefaultsRoot(projectRoot: string): string | undefined {
-  const local = join(projectRoot, 'node_modules', '@stacksjs', 'defaults')
-  if (existsSync(local))
-    return local
-
-  try {
-    const resolved = dirname(fileURLToPath(import.meta.resolve('@stacksjs/defaults/package.json')))
-    return existsSync(resolved) ? resolved : undefined
-  }
-  catch {
-    return undefined
-  }
-}
-
-/**
- * The precedence on its own, so it can be pinned without a project on disk.
- *
- * `core/server`'s `resolveDefaultsDir` is the same rule for the import
- * generator and was written first; this is it stated once for every caller,
- * with the final fallback made explicit rather than left to `??`.
- *
- * Vendored wins, unless it is a copy of a release the app has already moved
- * past. A missing side never beats a present one. When neither side is there
- * the answer is `fallback`, the vendored location, so that a missing-file
- * error names the path an app is expected to have rather than one inside
- * `node_modules`.
- */
-export function resolveDefaultsRoot(
-  vendored: string | undefined,
-  installed: string | undefined,
-  vendoredIsStale: boolean,
-  fallback: string,
-): string {
-  if (installed && vendoredIsStale)
-    return installed
-
-  return vendored ?? installed ?? fallback
-}
-
-/**
- * The scaffold defaults tree: `storage/framework/defaults` when the project
- * vendors a current copy, and the installed `@stacksjs/defaults` otherwise.
- *
- * Every layer of the framework reads this tree by filesystem path - the
- * dashboard's views and components, the 107 default models and 761 default
- * actions behind the `app/` override chain, the routes `bootstrap.ts`
- * registers. The vendored tree is a copy of a package the project already
- * depends on (stacksjs/stacks#2941), and this is the one seam that says which
- * of the two answers.
- *
- * The precedence is `resolveDefaultsDir`'s, which `core/server`'s import
- * generator arrived at first and which this now shares rather than competing
- * with: vendored wins, UNLESS it is a copy of a release the app has already
- * moved past. `buddy upgrade` is the only thing that writes the vendored tree,
- * so bumping `stacks` and running `bun install` leaves an older copy sitting
- * in front of the version actually declared, and preferring it means reading
- * code from a release nobody asked for. An unstamped tree, a framework
- * checkout and a linked checkout all keep resolving to the vendored copy.
- *
- * Decided on the ROOT and cached per project root, not per file. A per-file
- * fallback would answer out of the vendored tree for some paths and the
- * package for others whenever the two disagree, and a half-and-half tree is a
- * worse failure than either alone: that is the shape of #2927, where two
- * sources for one component name picked the wrong one by readdir order and
- * rendered the marketing header in the production storefront.
- *
- * Falls back to the vendored path when neither exists, so a missing-file error
- * names the location an app is expected to have rather than one inside
- * `node_modules`.
- */
-export function defaultsPath(path = '', options?: { relative?: boolean, cwd?: string }): string {
-  const root = projectPath()
-  let base = cachedDefaultsRoot.get(root)
-
-  if (base === undefined) {
-    const vendored = join(root, 'storage', 'framework', 'defaults')
-    base = resolveDefaultsRoot(
-      existsSync(vendored) ? vendored : undefined,
-      installedDefaultsRoot(root),
-      inspectDefaultsProvenance(root).status === 'stale',
-      vendored,
-    )
-    cachedDefaultsRoot.set(root, base)
-  }
-
-  const absolutePath = resolve(base, path)
-
-  if (options?.relative)
-    return relative(options.cwd || process.cwd(), absolutePath)
-
-  return absolutePath
-}
-
-/**
- * Forget which tree `defaultsPath()` resolved to.
- *
- * The resolution is cached for the life of the process because it answers on
- * hot paths, and nothing moves the defaults tree under a running app. A test
- * that builds one project root per case does move it, so it needs this.
- */
-export function clearDefaultsPathCache(): void {
-  cachedDefaultsRoot.clear()
 }
 
 /**
@@ -2041,6 +1921,9 @@ export interface Path {
   frameworkPath: (path?: string) => string
   browserPath: (path?: string) => string
   storagePath: (path?: string) => string
+  frameworkDefaultsRoot: (projectRoot?: string) => string
+  defaultsPath: (path?: string, options?: { relative?: boolean, cwd?: string }) => string
+  usesVendoredDefaults: (projectRoot?: string) => boolean
   functionsPath: (path?: string) => string
   gitPath: (path?: string) => string
   langPath: (path?: string) => string
@@ -2067,9 +1950,6 @@ export interface Path {
   coreStoragePath: (path?: string) => string
   publicPath: (path?: string) => string
   defaultsPackagePath: (projectRoot?: string) => string
-  defaultsPath: (path?: string, options?: { relative?: boolean, cwd?: string }) => string
-  resolveDefaultsRoot: (vendored: string | undefined, installed: string | undefined, vendoredIsStale: boolean, fallback: string) => string
-  clearDefaultsPathCache: () => void
   installedDefaultsVersion: (projectRoot?: string) => string | null
   inspectDefaultsProvenance: (projectRoot?: string) => DefaultsSkew
   pushPath: (path?: string) => string
@@ -2197,6 +2077,9 @@ export const path: Path = {
   frameworkPath,
   browserPath,
   storagePath,
+  frameworkDefaultsRoot,
+  defaultsPath,
+  usesVendoredDefaults,
   functionsPath,
   gitPath,
   langPath,
@@ -2223,9 +2106,6 @@ export const path: Path = {
   coreStoragePath,
   publicPath,
   defaultsPackagePath,
-  defaultsPath,
-  resolveDefaultsRoot,
-  clearDefaultsPathCache,
   installedDefaultsVersion,
   inspectDefaultsProvenance,
   pushPath,
