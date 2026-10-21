@@ -1,7 +1,7 @@
 import type { DesiredColumn, DesiredSchema, LiveAlignSchema, LiveColumn, LiveIndex } from '../src/schema-align'
 import { describe, expect, it } from 'bun:test'
 import { comparableIndexKey, postgresIndexStatement } from '../src/index-shape'
-import { columnDefinitionsOf, comparableDefault, desiredSchemaFrom, planSchemaAlignment, postgresIdentifier } from '../src/schema-align'
+import { columnDefinitionsOf, comparableDefault, desiredSchemaFrom, evaluateAlignChecks, planSchemaAlignment, postgresIdentifier } from '../src/schema-align'
 
 /**
  * `buddy migrate:align`'s planner, without a database. The rules under test are
@@ -158,6 +158,9 @@ describe('index alignment', () => {
     expect(action!.check).toEqual({
       kind: 'duplicates',
       sql: 'SELECT COUNT(*) AS n FROM (SELECT 1 FROM "users" WHERE "email" IS NOT NULL AND ("deleted_at" IS NULL) GROUP BY "email" HAVING COUNT(*) > 1) AS duplicates',
+      // The columns the probe reads, so the planner can tell when one of them
+      // is a column it is adding in the same pass (stacksjs/stacks#2966).
+      dependsOn: ['email'],
     })
   })
 })
@@ -291,5 +294,73 @@ describe('desiredSchemaFrom', () => {
       ['teams_name_unique', true, ['name']],
       ['teams_lower_name', false, undefined],
     ])
+  })
+})
+
+/**
+ * A plan that adds a column AND the unique index over it describes two moments:
+ * the index's duplicates probe reads a column that only exists after the
+ * add-column ahead of it has run. Postgres answers the probe with an error, and
+ * `migrate:align` used to let that error out of the planner - so the one
+ * command for a drifted database refused to describe the drift it found
+ * ("Could not compare the database with the models: column "sku" does not
+ * exist"). See stacksjs/stacks#2966.
+ */
+describe('align checks that cannot be answered yet', () => {
+  const addSku = {
+    kind: 'add-column' as const,
+    table: 'product_variants',
+    name: 'sku',
+    detail: 'add product_variants.sku',
+    sql: 'ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "sku" varchar(255)',
+  }
+  const uniqueOverSku = {
+    kind: 'create-index' as const,
+    table: 'product_variants',
+    name: 'product_variants_product_sku_unique',
+    detail: 'create unique index product_variants_product_sku_unique',
+    sql: 'CREATE UNIQUE INDEX IF NOT EXISTS product_variants_product_sku_unique ON product_variants ("product_id", "sku")',
+    check: {
+      kind: 'duplicates' as const,
+      sql: 'SELECT COUNT(*) AS n FROM (SELECT 1 FROM "product_variants" WHERE "product_id" IS NOT NULL AND "sku" IS NOT NULL GROUP BY "product_id", "sku" HAVING COUNT(*) > 1) AS duplicates',
+      dependsOn: ['product_id', 'sku'],
+    },
+  }
+  const missingColumn = async (sql: string) => {
+    if (sql.includes('"sku"'))
+      throw new Error('column "sku" does not exist')
+    return [{ n: 0 }]
+  }
+
+  it('keeps planning when a probe reads a column this plan adds', async () => {
+    const plan = { actions: [addSku, uniqueOverSku], reports: [], refused: [] }
+    const kept = await evaluateAlignChecks(plan, missingColumn)
+
+    expect(kept.map(action => action.name)).toEqual(['sku', 'product_variants_product_sku_unique'])
+    expect(plan.refused).toEqual([])
+  })
+
+  it('says the probe went unanswered rather than passing it off as checked', async () => {
+    const plan = { actions: [addSku, uniqueOverSku], reports: [], refused: [] }
+    await evaluateAlignChecks(plan, missingColumn)
+
+    expect(plan.reports).toHaveLength(1)
+    expect(plan.reports[0]!.name).toBe('product_variants_product_sku_unique')
+    expect(plan.reports[0]!.detail).toContain('product_variants.sku')
+  })
+
+  it('still refuses an index whose probe does find duplicates', async () => {
+    const plan = { actions: [uniqueOverSku], reports: [], refused: [] }
+    const kept = await evaluateAlignChecks(plan, async () => [{ n: 3 }])
+
+    expect(kept).toEqual([])
+    expect(plan.refused[0]!.reason).toContain('3 duplicate value(s)')
+  })
+
+  it('does not swallow a probe that failed for some other reason', async () => {
+    const plan = { actions: [uniqueOverSku], reports: [], refused: [] }
+
+    await expect(evaluateAlignChecks(plan, async () => { throw new Error('connection terminated') }))
+      .rejects.toThrow('connection terminated')
   })
 })

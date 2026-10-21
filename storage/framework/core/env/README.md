@@ -125,6 +125,18 @@ writes are `encrypted:v2:<base64url>`, and legacy public keys are rejected. Run
 `buddy env:rotate` to decrypt legacy values in memory, generate a version 2 key,
 and replace the encrypted file without writing plaintext to disk.
 
+`isValidPublicKey(value)` validates canonical current-format X25519 public keys
+through the same parser used by encryption. It returns a boolean without
+throwing or exposing parser details. Private keys, legacy headers, other key
+algorithms, and noncanonical/trailing data return `false`. Legacy decryption and
+migration remain available.
+
+`buddy env:check --strict` requires valid public metadata in committed env files
+and rejects private-key assignments even if their values are encrypted. Legacy
+headers require `buddy env:rotate`; a public-looking variable name alone does
+not establish that its contents are safe to commit. Non-strict scanning retains
+its existing compatibility behavior.
+
 This feature is not a complete secret-management system. It has not yet passed
 the independent review required by [Stacks issue #2058](https://github.com/stacksjs/stacks/issues/2058),
 so do not treat it as a production security boundary without your own review.

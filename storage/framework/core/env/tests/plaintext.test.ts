@@ -16,6 +16,7 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'bun:test'
+import { generateKeypair } from '../src/crypto'
 import { isEncryptedValue, plaintextSecrets, SECRET_NAME_PATTERN, trackedEnvFiles } from '../src/plaintext'
 
 describe('isEncryptedValue', () => {
@@ -121,11 +122,28 @@ describe('plaintextSecrets', () => {
         .toEqual(['plaintext-value', 'plaintext-value'])
     })
 
-    it('still skips encrypted values, expansions and key metadata', () => {
+    it('still skips encrypted values, expansions and valid public metadata', () => {
       expect(plaintextSecrets(
-        { A: 'encrypted:v2:x', B: '${C}', DOTENV_PUBLIC_KEY: '03ab', D: '' },
+        { A: 'encrypted:v2:x', B: '${C}', DOTENV_PUBLIC_KEY: generateKeypair().publicKey, D: '' },
         { strict: true },
       )).toEqual([])
+    })
+
+    it('does not exempt private, legacy or malformed material under metadata names', () => {
+      const keys = generateKeypair()
+      expect(plaintextSecrets({
+        DOTENV_PUBLIC_KEY: keys.privateKey,
+        DOTENV_PUBLIC_KEY_PRODUCTION: 'a'.repeat(64),
+        DOTENV_PUBLIC_KEY_STAGING: '',
+        DOTENV_PRIVATE_KEY_PRODUCTION: keys.privateKey,
+        DOTENV_PRIVATE_KEY_STAGING: 'encrypted:v2:still-private-key-material',
+      }, { strict: true })).toEqual([
+        { key: 'DOTENV_PUBLIC_KEY', reason: 'invalid-public-key' },
+        { key: 'DOTENV_PUBLIC_KEY_PRODUCTION', reason: 'invalid-public-key' },
+        { key: 'DOTENV_PUBLIC_KEY_STAGING', reason: 'invalid-public-key' },
+        { key: 'DOTENV_PRIVATE_KEY_PRODUCTION', reason: 'private-key-material' },
+        { key: 'DOTENV_PRIVATE_KEY_STAGING', reason: 'private-key-material' },
+      ])
     })
   })
 })

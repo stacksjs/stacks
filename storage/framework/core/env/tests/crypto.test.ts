@@ -4,11 +4,24 @@
  */
 
 import { describe, expect, it } from 'bun:test'
-import { createHash } from 'node:crypto'
-import { aesDecrypt, aesEncrypt, decryptValue, encryptValue, generateKeypair, getPrivateKey, isLegacyEncryptedValue, migrateEncryptedValue, parseEnvFromKey } from '../src/crypto'
+import { createHash, generateKeyPairSync } from 'node:crypto'
+import { aesDecrypt, aesEncrypt, decryptValue, encryptValue, generateKeypair, getPrivateKey, isLegacyEncryptedValue, isValidPublicKey, migrateEncryptedValue, parseEnvFromKey } from '../src/crypto'
 
 // Hardcoded test keys for deterministic testing
 const TEST_PRIVATE_KEY = 'a4547dcd9d3429615a3649bb79e87edb62ee6a74b007075e9141ae44f5fb412c'
+
+describe('canonical public-key validation', () => {
+  it('accepts only current public keys without throwing or returning key material', () => {
+    const keys = generateKeypair()
+    expect(isValidPublicKey(keys.publicKey)).toBe(true)
+    for (const value of [undefined, null, 42, '', keys.privateKey, TEST_PRIVATE_KEY, 'x25519-public:invalid', `${keys.publicKey}=`, `${keys.publicKey} plaintext`])
+      expect(isValidPublicKey(value)).toBe(false)
+    const other = generateKeyPairSync('ed25519').publicKey.export({ format: 'der', type: 'spki' })
+    expect(isValidPublicKey(`x25519-public:${other.toString('base64url')}`)).toBe(false)
+    const der = Buffer.from(keys.publicKey.slice('x25519-public:'.length), 'base64url')
+    expect(isValidPublicKey(`x25519-public:${Buffer.concat([der, Buffer.from('trailing material')]).toString('base64url')}`)).toBe(false)
+  })
+})
 
 describe('Crypto - AES Encryption/Decryption', () => {
   it('should encrypt and decrypt a simple string', () => {
