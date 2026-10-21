@@ -32,3 +32,12 @@ describe('env commands outside a Stacks project', () => {
     expect(shouldSkipAppKeyCheck('environment')).toBeFalse()
   })
 })
+
+
+describe('Apple tooling for standalone native apps', () => {
+  it('does not require web application keys or a framework vendor tree', () => {
+    for (const command of ['desktop:apple:provision', 'desktop:apple:csr', 'desktop:apple:doctor', 'desktop:apple:publish'])
+      expect(shouldSkipAppKeyCheck(command)).toBeTrue()
+    expect(shouldSkipAppKeyCheck('desktop:applets')).toBeFalse()
+  })
+})

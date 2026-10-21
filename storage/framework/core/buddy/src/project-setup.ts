@@ -10,6 +10,8 @@ const APP_KEY_OPTIONAL_COMMANDS = [
    * then wrote its own wrapper around the same `@stacksjs/env` functions.
    */
   'env',
+  // Apple signing/provisioning also serves standalone Stacks native apps.
+  'desktop:apple',
   'build',
   'lint',
   'docs',
