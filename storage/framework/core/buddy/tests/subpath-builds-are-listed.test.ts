@@ -22,10 +22,12 @@
  * needed listing.
  */
 import { describe, expect, it } from 'bun:test'
-import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const root = new URL('../../../../../', import.meta.url).pathname
+const root = fileURLToPath(new URL('../../../../../', import.meta.url))
 const coreDir = join(root, 'storage/framework/core')
 
 /** Workspace package names, by directory. */
@@ -132,13 +134,40 @@ describe('subpath imports', () => {
    * as stale as before.
    */
   it('are built by the computed set, not a list typed into the workflow', () => {
-    const workflow = readFileSync(join(root, '.github/workflows/ci.yml'), 'utf-8')
+    for (const name of ['ci', 'mobile-packed-contract']) {
+      const workflow = readFileSync(join(root, `.github/workflows/${name}.yml`), 'utf-8')
+      const loops = [...workflow.matchAll(/for pkg in (.+?); do/g)].map(match => match[1]!)
+      const checkedDiscovery = [...workflow.matchAll(/stacks_subpath_targets=\$\(bun \.github\/scripts\/subpath-packages\.ts(?: --runtime)?\)\r?\n[ \t]*for pkg in \$stacks_subpath_targets; do/g)]
+      expect(loops.length).toBeGreaterThan(0)
+      expect(checkedDiscovery.length).toBe(loops.length)
+      for (const loop of loops) expect(loop).toBe('$stacks_subpath_targets')
+    }
+  })
 
-    const loops = [...workflow.matchAll(/for pkg in (.+?); do/g)].map(match => match[1]!)
-
-    expect(loops.length).toBeGreaterThan(0)
-    for (const loop of loops)
-      expect(loop).toMatch(/^\$\(bun \.github\/scripts\/subpath-packages\.ts(?: --runtime)?\)$/)
+  it('every actual preparation step fails when package discovery cannot run', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'stacks-missing-subpath-discovery-'))
+    const bash = Bun.which('bash')
+    expect(bash).toBeTruthy()
+    let exercised = 0
+    try {
+      for (const name of ['ci', 'mobile-packed-contract']) {
+        const workflow = Bun.YAML.parse(readFileSync(join(root, `.github/workflows/${name}.yml`), 'utf8')) as {
+          jobs: Record<string, { steps: Array<{ name?: string, run?: string }> }>
+        }
+        for (const [job, value] of Object.entries(workflow.jobs)) {
+          for (const step of value.steps.filter(step => step.run?.includes('bun .github/scripts/subpath-packages.ts'))) {
+            const result = Bun.spawnSync([bash!, '-e', '-o', 'pipefail', '-c', step.run!], {
+              cwd: directory, stdout: 'pipe', stderr: 'pipe', timeout: 5000,
+            })
+            expect(result.exitCode, `${name}/${job}/${step.name}: ${result.stderr}`).not.toBe(0)
+            expect(result.stderr.toString()).toContain('.github/scripts/subpath-packages.ts')
+            exercised++
+          }
+        }
+      }
+      expect(exercised).toBe(8)
+    }
+    finally { rmSync(directory, { recursive: true, force: true }) }
   })
 
   it('prepares root dependencies used by published runtime probes', () => {
@@ -149,7 +178,9 @@ describe('subpath imports', () => {
   })
 
   it('builds package roots before bundling standalone commands on a clean runner', () => {
-    const workflow = Bun.YAML.parse(readFileSync(join(root, '.github/workflows/ci.yml'), 'utf-8'))
+    const workflow = Bun.YAML.parse(readFileSync(join(root, '.github/workflows/ci.yml'), 'utf-8')) as {
+      jobs: { compile: { steps: Array<{ run?: string }> } }
+    }
     const steps = workflow.jobs.compile.steps as Array<{ run?: string }>
     const preparation = steps.findIndex(step => step.run?.includes('bun .github/scripts/subpath-packages.ts --runtime'))
     const compilation = steps.findIndex(step => step.run?.includes('bun run compile:linux-x64'))
@@ -206,7 +237,7 @@ describe('subpath imports', () => {
       if (built === -1)
         problems.push(`${name}: never builds the subpath set`)
       else if (firstUse !== -1 && firstUse < built)
-        problems.push(`${name}: "${job.steps[firstUse].name}" runs before the subpath set is built`)
+        problems.push(`${name}: "${job.steps[firstUse]!.name}" runs before the subpath set is built`)
     }
     expect(problems).toEqual([])
 

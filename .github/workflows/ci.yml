@@ -42,7 +42,8 @@ jobs:
       - name: Build packages imported by subpath
         shell: bash
         run: |
-          for pkg in $(bun .github/scripts/subpath-packages.ts); do
+          stacks_subpath_targets=$(bun .github/scripts/subpath-packages.ts)
+          for pkg in $stacks_subpath_targets; do
             echo "::group::build @stacksjs/$pkg"
             (cd "storage/framework/core/$pkg" && bun run build)
             echo "::endgroup::"
@@ -77,7 +78,8 @@ jobs:
           if-no-files-found: error
       - name: Build packages imported by subpath
         run: |
-          for pkg in $(bun .github/scripts/subpath-packages.ts); do
+          stacks_subpath_targets=$(bun .github/scripts/subpath-packages.ts)
+          for pkg in $stacks_subpath_targets; do
             echo "::group::build @stacksjs/$pkg"
             (cd "storage/framework/core/$pkg" && bun run build)
             echo "::endgroup::"
@@ -183,7 +185,8 @@ jobs:
       # nobody had reason to know needed listing.
       - name: Build packages imported by subpath
         run: |
-          for pkg in $(bun .github/scripts/subpath-packages.ts); do
+          stacks_subpath_targets=$(bun .github/scripts/subpath-packages.ts)
+          for pkg in $stacks_subpath_targets; do
             echo "::group::build @stacksjs/$pkg"
             (cd "storage/framework/core/$pkg" && bun run build)
             echo "::endgroup::"
@@ -274,7 +277,8 @@ jobs:
       # so a clean checkout resolves roots such as strings and model-meta.
       - name: Build framework runtime packages
         run: |
-          for pkg in $(bun .github/scripts/subpath-packages.ts --runtime); do
+          stacks_subpath_targets=$(bun .github/scripts/subpath-packages.ts --runtime)
+          for pkg in $stacks_subpath_targets; do
             echo "::group::build @stacksjs/$pkg"
             (cd "storage/framework/core/$pkg" && bun run build)
             echo "::endgroup::"
@@ -438,7 +442,8 @@ jobs:
       # only subpaths left desktop-build/dist absent on clean Linux runners.
       - name: Build packages bundled by standalone Buddy
         run: |
-          for pkg in $(bun .github/scripts/subpath-packages.ts --runtime); do
+          stacks_subpath_targets=$(bun .github/scripts/subpath-packages.ts --runtime)
+          for pkg in $stacks_subpath_targets; do
             echo "::group::build @stacksjs/$pkg"
             (cd "storage/framework/core/$pkg" && bun run build)
             echo "::endgroup::"
@@ -487,7 +492,8 @@ jobs:
       - name: Build packages imported by subpath
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: |
-          for pkg in $(bun .github/scripts/subpath-packages.ts); do
+          stacks_subpath_targets=$(bun .github/scripts/subpath-packages.ts)
+          for pkg in $stacks_subpath_targets; do
             echo "::group::build @stacksjs/$pkg"
             (cd "storage/framework/core/$pkg" && bun run build)
             echo "::endgroup::"
