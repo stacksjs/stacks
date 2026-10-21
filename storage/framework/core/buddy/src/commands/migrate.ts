@@ -172,7 +172,7 @@ function validateModelsExist(): { valid: boolean, error?: string } {
  */
 export function validateMigrationDialect(
   cwd = process.cwd(),
-  options: { driver?: string } = {},
+  options: { driver?: string, only?: readonly string[] } = {},
 ): { valid: boolean, error?: string } {
   // `driver` is passed explicitly by the deploy preflight, which has to audit
   // the connection each SITE will run with (resolved from its env and
@@ -191,7 +191,10 @@ export function validateMigrationDialect(
     const caps = dialectCapabilities(driver)
     const target = caps.wire === 'mysql' ? 'mysql' : caps.wire === 'postgres' ? 'postgres' : 'sqlite'
     if (driver === 'sqlite' || driver === 'postgres' || caps.wire === 'mysql' || isLibsqlDriver(driver)) {
-      const audit = auditMigrationCorpus({ dir, target })
+      // `only` scopes the audit to what this run will execute. Absent for
+      // `migrate:fresh`, which re-runs the corpus from an empty database, and
+      // for the deploy preflight, which cannot read the target's ledger.
+      const audit = auditMigrationCorpus({ dir, target, only: options.only })
       if (!audit.empty && audit.incompatible.length > 0)
         return { valid: false, error: formatMigrationDialectError(audit, target, relativeDir) }
     }
@@ -706,7 +709,20 @@ export function migrate(buddy: CLI): void {
       // Before the drop confirmation, the database bootstrap, and the action
       // subprocess: a corpus that cannot run must not get as far as dropping
       // tables it has no way to recreate.
-      const dialectCheck = validateMigrationDialect()
+      //
+      // Scoped to the files this run will execute. `migrate` skips what the
+      // ledger records and what a disabled feature owns, so their dialect
+      // cannot decide whether this run is safe (stacksjs/stacks#2968). An
+      // unreadable ledger yields no list, which audits the whole corpus.
+      const { pendingMigrationFiles: pendingForDialect } = await import('@stacksjs/database')
+      let willRun: string[] | undefined
+      try {
+        willRun = await pendingForDialect()
+      }
+      catch {
+        willRun = undefined
+      }
+      const dialectCheck = validateMigrationDialect(process.cwd(), { only: willRun })
       if (!dialectCheck.valid) {
         console.error(`\n❌ Error: ${dialectCheck.error!}\n`)
         process.exit(ExitCode.FatalError)
@@ -1121,6 +1137,9 @@ export function migrate(buddy: CLI): void {
       // Before the drop confirmation, the database bootstrap, and the action
       // subprocess: a corpus that cannot run must not get as far as dropping
       // tables it has no way to recreate.
+      //
+      // Unscoped, unlike `migrate`: this drops the database and runs the whole
+      // corpus from nothing, so every file's dialect is about to matter again.
       const dialectCheck = validateMigrationDialect()
       if (!dialectCheck.valid) {
         console.error(`\n❌ Error: ${dialectCheck.error!}\n`)

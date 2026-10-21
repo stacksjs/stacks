@@ -157,6 +157,21 @@ export function classifyMigrationSql(sql: string, file: string): DialectMarker[]
 export function auditMigrationCorpus(options: {
   dir: string
   target: MigrationDialect
+  /**
+   * The only files to judge: the ones the caller is about to run.
+   *
+   * A migration already in the ledger, or owned by a disabled feature, is not
+   * going to execute, so its dialect says nothing about whether this run is
+   * safe. Auditing the whole directory let one old SQLite file block every
+   * future migration on Postgres for the life of the project, and
+   * `migrate:regenerate` could not clear it, because it keeps applied history
+   * on purpose (stacksjs/stacks#2968).
+   *
+   * Left out by the callers that really do run everything: `migrate:fresh`,
+   * which rebuilds from an empty database, and the deploy preflight, which
+   * audits from the operator's machine and cannot see the target's ledger.
+   */
+  only?: readonly string[]
 }): MigrationCorpusAudit {
   const { dir, target } = options
 
@@ -169,6 +184,11 @@ export function auditMigrationCorpus(options: {
   }
   catch {
     return { total: 0, inferred: null, incompatible: [], empty: true }
+  }
+
+  if (options.only) {
+    const judged = new Set(options.only)
+    files = files.filter(file => judged.has(file))
   }
 
   const all: DialectMarker[] = []

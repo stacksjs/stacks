@@ -108,6 +108,75 @@ describe('auditMigrationCorpus against the real shipped corpus', () => {
   })
 })
 
+/**
+ * A migration the ledger already records, or one a disabled feature owns, is
+ * not going to execute, so its dialect cannot decide whether the next
+ * `buddy migrate` is safe. Judging the whole directory meant one old SQLite
+ * file blocked every future migration on Postgres for the life of the project,
+ * and `migrate:regenerate` could not clear it, because it keeps applied
+ * history on purpose. See stacksjs/stacks#2968.
+ */
+describe('auditMigrationCorpus scoped to what will run', () => {
+  const sqliteFiles = () => {
+    const audit = auditMigrationCorpus({ dir: CORPUS, target: 'postgres' })
+    return [...new Set(audit.incompatible.map(m => m.file))].sort()
+  }
+
+  it('judges nothing when nothing is going to run', () => {
+    const audit = auditMigrationCorpus({ dir: CORPUS, target: 'postgres', only: [] })
+
+    expect(audit.incompatible).toEqual([])
+    expect(audit.total).toBe(0)
+  })
+
+  it('judges only the file that is going to run', () => {
+    const [first] = sqliteFiles()
+    const audit = auditMigrationCorpus({ dir: CORPUS, target: 'postgres', only: [first!] })
+
+    expect(audit.total).toBe(1)
+    expect(new Set(audit.incompatible.map(m => m.file))).toEqual(new Set([first!]))
+  })
+
+  it('passes a run made only of files the target accepts', () => {
+    const sqlite = new Set(sqliteFiles())
+    const portable = auditMigrationCorpus({ dir: CORPUS, target: 'postgres' })
+    const clean = [...new Set(portable.incompatible.map(m => m.file))].length > 0
+      ? sqliteFiles().length
+      : 0
+    expect(clean).toBeGreaterThan(0) // the corpus really does hold sqlite files
+
+    const audit = auditMigrationCorpus({
+      dir: CORPUS,
+      target: 'postgres',
+      only: ['0000000138-create-query_logs-table.sql'].filter(f => !sqlite.has(f)),
+    })
+
+    expect(audit.incompatible).toEqual([])
+  })
+
+  it('counts only the files it judged, so the message is about what will run', () => {
+    const [first] = sqliteFiles()
+    const audit = auditMigrationCorpus({ dir: CORPUS, target: 'postgres', only: [first!] })
+
+    expect(formatMigrationDialectError(audit, 'postgres', 'database/migrations'))
+      .toContain('1 of 1 files')
+  })
+
+  it('judges the whole corpus when no list is given, as migrate:fresh needs', () => {
+    const whole = auditMigrationCorpus({ dir: CORPUS, target: 'postgres' })
+
+    expect(whole.total).toBeGreaterThan(200)
+    expect(whole.incompatible.length).toBeGreaterThan(0)
+  })
+
+  it('ignores a named file that is not in the corpus', () => {
+    const audit = auditMigrationCorpus({ dir: CORPUS, target: 'postgres', only: ['9999-not-a-file.sql'] })
+
+    expect(audit.total).toBe(0)
+    expect(audit.incompatible).toEqual([])
+  })
+})
+
 describe('formatMigrationDialectError', () => {
   it('names the cause, the counts, and a way forward', () => {
     const audit = auditMigrationCorpus({ dir: CORPUS, target: 'postgres' })
