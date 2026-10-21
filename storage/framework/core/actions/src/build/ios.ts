@@ -10,6 +10,7 @@ import { assertCraftSupportsAppShortcuts, assertCraftSupportsCapabilities, asser
 import { generateXcodeProject, resolveXcodegen } from './ios-toolchain'
 import { compileNativeScreens } from './native-screens'
 import { writeIosShellSupport } from './ios-shell'
+import { reportMobileBuildTarget } from './mobile-target'
 
 // Action runners install a global exception reporter. Start pessimistically so
 // a reported exception can never look like a successful CI build.
@@ -124,6 +125,7 @@ await builder.init({
 // devServerURL), which Craft reads for the start path and the API.
 const native = config.renderer === 'native'
 if (native && !nativeBundle) throw new Error('ios.renderer \'native\' needs native screens to draw: list them in ios.nativeScreens')
+reportMobileBuildTarget({ renderer: config.renderer, site: craftConfig.devServerURL, nativeBundle: nativeBundle?.outFile, webAssets, fallbackWebAssets }, log)
 await builder.build(native
   ? { output, nativeBundlePath: nativeBundle!.outFile, generateProject: false }
   : {

@@ -10,6 +10,7 @@ import { androidRelease, assertCraftSupportsAndroid, assertCraftSupportsAndroidM
 import { resolveCrashReporting, resolveMobilePath, resolveNativeFonts, assertCraftSupportsNativeFonts } from './ios-config'
 import { compileNativeScreens } from './native-screens'
 import { writeAndroidIconTable } from './android-icons'
+import { reportMobileBuildTarget } from './mobile-target'
 
 process.exitCode = 1
 
@@ -112,6 +113,7 @@ else
 
 assertCraftSupportsAndroidMapProvider(config, builder.nativeMapProviders)
 await builder.init({ name: config.appName, packageName: config.packageName, output, config: craftConfig })
+reportMobileBuildTarget({ renderer: config.renderer, site: craftConfig.devServerURL, nativeBundle: nativeBundle?.outFile, webAssets, fallbackWebAssets }, log)
 await builder.build(native
   ? { output, nativeBundlePath: nativeBundle!.outFile, iconsPath: iconsPath ?? undefined, release, bundle: appBundle, compile: process.env.STACKS_ANDROID_SKIP_GRADLE !== '1' }
   : {
