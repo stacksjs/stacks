@@ -1,5 +1,27 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.252...v0.75.253)
+
+## 🐛 Bug Fixes
+
+- **types**: retire obsolete trait request declarations ([d8979d7](https://github.com/stacksjs/stacks/commit/d8979d7)) _(by Chris <chris@stacksjs.com>)_
+- **cache**: declare configuration as a runtime dependency ([aaccc1b](https://github.com/stacksjs/stacks/commit/aaccc1b)) _(by Chris <chris@stacksjs.com>)_
+- **browse**: retain scenario diagnostics after failed steps ([daf4897](https://github.com/stacksjs/stacks/commit/daf4897)) _(by Chris <chris@stacksjs.com>)_
+- **browse**: measure mobile overflow against requested viewport width ([054983c](https://github.com/stacksjs/stacks/commit/054983c)) _(by Chris <chris@stacksjs.com>)_
+- **buddy**: register the create alias without argument syntax ([c3ba6db](https://github.com/stacksjs/stacks/commit/c3ba6db)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- **composables**: document animation clocks and live bindings ([f35cafe](https://github.com/stacksjs/stacks/commit/f35cafe)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **deps**: upgrade stx and Pickier to released fixes ([02cc343](https://github.com/stacksjs/stacks/commit/02cc343)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.251...v0.75.252)
 
 ## ✨ Features
