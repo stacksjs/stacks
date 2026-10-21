@@ -905,7 +905,8 @@ export async function alignSchema(options: {
 
   const plan = planSchemaAlignment(desired, live, { widenIntegers: options.widenIntegers, typeSatisfies })
 
-  plan.actions = await evaluateAlignChecks(plan, run)
+  const kept = await evaluateAlignChecks(plan, run)
+  plan.actions = kept
 
   if (!options.apply || kept.length === 0)
     return { supported: true, dialect, plan, applied: [] }
