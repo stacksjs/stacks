@@ -6,6 +6,7 @@ import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
 import { runAction } from '@stacksjs/actions'
+import { assertPublicationAllowed } from '@stacksjs/actions/publication-preflight'
 import { italic, onUnknownSubcommand, outro, prompts } from "@stacksjs/cli"
 import { app, dns as dnsConfig, email as emailConfig } from '@stacksjs/config'
 import { addDomain, hasUserDomainBeenAddedToCloud, syncDnsConfig } from '@stacksjs/dns'
@@ -5383,6 +5384,8 @@ export async function reconcileHetznerDns(sites: Record<string, any>, ip: string
  */
 async function runPreviewCommand(name: string, options: { base?: string, verbose?: boolean }, action: 'deploy' | 'remove'): Promise<void> {
   const base = resolveDeploymentEnvironment({ option: options.base }) as 'production' | 'staging' | 'development'
+  if (action === 'deploy')
+    await assertPublicationAllowed({ cwd: p.projectPath(), channel: 'preview' })
 
   // A preview's secrets are `.env.preview`'s alone. Loaded before the config
   // is evaluated, so config/cloud.ts sees them, and never layered over the
@@ -5718,6 +5721,7 @@ export function deploy(buddy: CLI): void {
         return
       }
 
+      await assertPublicationAllowed({ cwd: p.projectPath(), channel: 'web' })
       const automatedRevision = automatedDeploymentRevision(deployEnvName)
       // On the branch, and which commits came after it: the SSH deploy refuses
       // only when production already runs one of those (runSshDeploy).

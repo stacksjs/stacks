@@ -48,6 +48,8 @@ export { describeGitHubRelease, parseGitHubRemote, publishGitHubRelease } from '
 export type { GitHubReleaseResult, PublishGitHubReleaseOptions } from './github-release'
 export { validateReleaseEvidencePlan, verifyReleaseEvidence } from './release-evidence'
 export type { ReleaseEvidenceOptions, ReleaseEvidencePlan, ReleaseEvidenceReceipt, ReleaseSource } from './release-evidence'
+export { assertPublicationAllowed, PUBLICATION_CHECK_SCRIPT, publicationChannels } from './publication-preflight'
+export type { PublicationChannel } from './publication-preflight'
 export { DEFAULT_IOS_DEPENDENCIES, IosToolchainError, loadIosDependencies, pantryExecutable, pantryInstallArgs, resolveXcodegen, XCODE_NOTE, xcodeDeveloperDir } from './build/ios-toolchain'
 export type { PantryTool } from './build/ios-toolchain'
 // stx conformance checks behind `buddy lint --stx`. Pure - returns a report

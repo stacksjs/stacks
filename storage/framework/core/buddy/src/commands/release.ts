@@ -7,6 +7,7 @@ import process from 'node:process'
 import { resolveXcodegen } from '@stacksjs/actions/build/ios-toolchain'
 import { describeGitHubRelease, publishGitHubRelease, resolveGitHubToken } from '@stacksjs/actions/github-release'
 import { validateReleaseEvidencePlan, verifyReleaseEvidence } from '@stacksjs/actions/release-evidence'
+import { assertPublicationAllowed } from '@stacksjs/actions/publication-preflight'
 import { runAction } from '@stacksjs/actions/run-action'
 import { intro, italic, log, onUnknownSubcommand, outro } from '@stacksjs/cli'
 import { printAsync } from '@stacksjs/cli/output'
@@ -89,6 +90,8 @@ export function release(buddy: CLI): void {
     .action(async (tag: string | undefined, options: { dryRun?: boolean }) => {
       const startTime = await intro('buddy release:github')
       try {
+        if (!options.dryRun)
+          await assertPublicationAllowed({ cwd: process.cwd(), channel: 'github-release' })
         const target = tag || git('describe', '--tags', '--abbrev=0')
         if (!git('tag', '--list', target))
           throw new Error(`there is no tag ${target}`)
@@ -160,6 +163,8 @@ function git(...args: string[]): string {
  */
 async function releaseIos(options: IosReleaseOptions): Promise<string> {
   const root = process.cwd()
+  if (!options.dryRun)
+    await assertPublicationAllowed({ cwd: root, channel: 'ios' })
   const configPath = join(root, 'config/mobile.ts')
   if (!existsSync(configPath))
     throw new Error('config/mobile.ts not found: run this in a Stacks app with a mobile config')
@@ -174,8 +179,13 @@ async function releaseIos(options: IosReleaseOptions): Promise<string> {
     throw new Error(`releases are cut from main; this is ${branch}`)
   if (git('status', '--porcelain', '--untracked-files=no'))
     throw new Error('commit or stash your changes first, so the release is exactly what is on main')
-  git('pull', '--quiet', '--rebase', 'origin', 'main')
-  git('fetch', '--quiet', '--tags', 'origin')
+  if (!options.dryRun) {
+    git('pull', '--quiet', '--rebase', 'origin', 'main')
+    git('fetch', '--quiet', '--tags', 'origin')
+    // Synchronization can introduce different content and a stricter policy.
+    // Validate that tree before building, tagging or contacting the store.
+    await assertPublicationAllowed({ cwd: root, channel: 'ios' })
+  }
 
   const source = readFileSync(configPath, 'utf8')
   const current = iosVersionIn(source)

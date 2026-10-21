@@ -5,6 +5,10 @@ import { config } from '@stacksjs/config'
 import { path as p } from '@stacksjs/path'
 import { storage } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
+import { assertPublicationAllowed } from '../publication-preflight'
+import { runBeforeDeployHook } from './hooks'
+
+await assertPublicationAllowed({ cwd: p.projectPath(), channel: 'web' })
 
 // Use console.log for clean output
 const log = {
@@ -308,6 +312,12 @@ async function ensureCloudFrontApiOriginPort(awsClient: any, distributionId: str
     },
   })
 }
+
+// A present hook is a gate, including its imports and default-export form.
+// Run it before this action builds or changes deployment infrastructure.
+const hookEnvironment = process.env.APP_ENV || process.env.NODE_ENV || 'production'
+const { stacksCloudRegion: hookRegion } = await import('@stacksjs/cloud')
+await runBeforeDeployHook(p.projectPath(), { environment: hookEnvironment, region: await hookRegion(undefined, hookEnvironment) })
 
 // Build framework - show output so user knows it's working
 const frameworkBuildSpinner = spinner('Building framework...')
@@ -677,22 +687,6 @@ try {
       if (isVerbose) log.debug(`Failed to get AWS Account ID: ${error.message}`)
       // Fallback to environment variable
       return process.env.AWS_ACCOUNT_ID || ''
-    }
-  }
-
-  // Run custom deploy script: beforeDeploy hook
-  try {
-    const deployScript = await import(p.projectPath('cloud/deploy-script'))
-    if (typeof deployScript.beforeDeploy === 'function') {
-      await deployScript.beforeDeploy({ environment, region })
-    }
-  } catch (hookError: any) {
-    // Only skip silently if the deploy-script module doesn't exist
-    if (hookError.code === 'ERR_MODULE_NOT_FOUND' || hookError.code === 'MODULE_NOT_FOUND') {
-      if (isVerbose) log.debug('No beforeDeploy hook found (cloud/deploy-script not found)')
-    } else {
-      console.warn(`⚠ beforeDeploy hook failed: ${hookError.message}`)
-      if (isVerbose) log.debug(`beforeDeploy error stack: ${hookError.stack}`)
     }
   }
 

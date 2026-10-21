@@ -4,6 +4,7 @@ import { app } from '@stacksjs/config'
 import { Action } from '@stacksjs/enums'
 import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
+import { assertPublicationAllowed } from './publication-preflight'
 import { runActions } from './helpers/utils'
 import { resolvePantryToolchain } from './pantry-toolchain'
 import { BYPASS_ENV, formatPreflightFailure, runPinnedChecks } from './release-preflight'
@@ -43,7 +44,9 @@ for (const [k, v] of Object.entries(raw)) {
 // rather than before the tag, which is a re-tag: strictly cheaper than
 // corrupting the working tree.
 const isDryRun = passthrough.dryRun === true || passthrough.dryRun === 'true'
-const actions: Action[] = [Action.GenerateLibraryEntries, Action.Bump]
+const actions: Action[] = isDryRun ? [Action.Bump] : [Action.GenerateLibraryEntries, Action.Bump]
+if (!isDryRun)
+  await assertPublicationAllowed({ cwd: projectPath(), channel: 'github-release' })
 
 // Pre-flight BEFORE anything mutates the tree or creates a tag.
 //
