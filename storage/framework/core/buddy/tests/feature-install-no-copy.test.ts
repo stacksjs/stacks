@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
@@ -70,6 +70,33 @@ describe('<feature>:install does not copy the feature into userland', () => {
     return FEATURE_FILES[feature].filter(rel => existsSync(join(dir, rel)))
   }
 
+  /**
+   * Every real file in the throwaway project, as paths relative to it.
+   *
+   * `landed()` above only looks at the 14 manifest paths, so it cannot see a
+   * regression that writes somewhere the manifest does not name. This walks
+   * the whole project instead, which is the shape of the actual requirement:
+   * activating a feature should change about as much as installing Nova or
+   * Filament does - a config file, not a vendored tree.
+   *
+   * The two symlinks to the framework checkout (`storage/framework/defaults`
+   * and `node_modules`) are skipped rather than followed: they are the
+   * framework, not the application, and descending into them would count
+   * every file in the repository.
+   */
+  function projectFiles(d: string = dir, prefix = ''): string[] {
+    const out: string[] = []
+    for (const entry of readdirSync(d, { withFileTypes: true })) {
+      const rel = prefix ? `${prefix}/${entry.name}` : entry.name
+      if (entry.isSymbolicLink())
+        continue
+      if (entry.isDirectory())
+        out.push(...projectFiles(join(d, entry.name), rel))
+      else out.push(rel)
+    }
+    return out
+  }
+
   function flag(): string {
     return readFileSync(join(dir, 'config/dashboard.ts'), 'utf8')
   }
@@ -98,6 +125,44 @@ describe('<feature>:install does not copy the feature into userland', () => {
     expect(copied.length).toBeGreaterThan(0)
     expect(copied).toContain('routes/dashboard.ts')
     expect(copied).toContain('resources/components/Dashboard/')
+  }, 120_000)
+
+  /**
+   * The requirement in the terms it was asked in: activating the dashboard
+   * must not produce hundreds of file changes.
+   *
+   * Asserted as an exact set rather than a budget, because the measured
+   * answer is one modified config file and nothing else, and a budget of
+   * "under ten" would quietly absorb nine files of drift. The control that
+   * makes this green meaningful is the `--publish-all` case below: same
+   * fixture, same walk, 791 files added.
+   */
+  it('activating the dashboard touches config/dashboard.ts and nothing else', () => {
+    const before = projectFiles()
+
+    const { exitCode, output } = run('dashboard:install')
+    expect(exitCode, output).toBe(0)
+    expect(flag()).toContain('enabled: true')
+
+    const after = projectFiles()
+    expect(after.filter(f => !before.includes(f))).toEqual([])
+    expect(after.sort()).toEqual(before.sort())
+  }, 120_000)
+
+  /**
+   * The control. Without this the test above is indistinguishable from a
+   * command that silently did nothing at all, which is exactly how the
+   * no-copy change could regress into a no-op install.
+   */
+  it('--publish-all is the case that does write hundreds of files', () => {
+    const before = projectFiles()
+
+    const { exitCode, output } = run('dashboard:install', '--publish-all')
+    expect(exitCode, output).toBe(0)
+
+    const added = projectFiles().filter(f => !before.includes(f))
+    expect(added.length).toBeGreaterThan(500)
+    expect(added).toContain('routes/dashboard.ts')
   }, 120_000)
 
   it('a dry run writes neither the flag nor any file', () => {
