@@ -5,8 +5,8 @@ import { projectPath } from '@stacksjs/path'
  * The identifiers stx injects into an STX page entry.
  *
  * They are ambient — `stx.d.ts` declares them, the runtime provides them, and
- * NO module exports them. That is fine inside an app and fatal inside a
- * published package: `export const count = state(0)` compiles cleanly and
+ * imported modules must import them explicitly. Without an import, a
+ * published package using `export const count = state(0)` compiles cleanly and
  * throws `ReferenceError: state is not defined` the first time a consumer
  * imports it. Reading the declarations rather than hardcoding a list means
  * this tracks whatever stx version is installed.

@@ -186,8 +186,8 @@ async function buildComponentPackage(pkg: ResolvedLibraryPackage, config: Librar
 /**
  * Refuse to publish sources that only work inside an stx page.
  *
- * `state`, `useDark` and friends are ambient: nothing exports them, so a
- * bundled copy of `counter.ts` compiles fine and throws
+ * `state`, `useDark` and friends need explicit imports in module sources.
+ * Without them a bundled helper compiles fine and throws
  * `ReferenceError: state is not defined` in the consumer's app. Catching it
  * here costs a config line; catching it after publishing costs a version.
  */

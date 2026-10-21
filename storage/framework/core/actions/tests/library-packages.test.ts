@@ -324,12 +324,20 @@ describe('buildLibraryPackages', () => {
   }, 120_000)
 
   it('refuses a standalone package whose sources need stx ambient globals', async () => {
-    // `counter.ts` calls `state()`, which nothing exports. Bundled into a
-    // published package it compiles and then throws `ReferenceError` on the
-    // consumer's first call, so the build has to stop here.
-    await expect(buildLibraryPackages({
-      config: { packages: [{ name: 'test-fx-standalone', kind: 'functions', include: ['counter.ts'] }] },
-    })).rejects.toThrow(/ambient globals/)
+    // Keep the invalid source independent of the application's valid helpers.
+    const name = `ambient-fixture-${crypto.randomUUID()}.ts`
+    const source = projectPath(`resources/functions/${name}`)
+    const output = projectPath('storage/framework/libs/packages/test-fx-standalone')
+    await Bun.write(source, 'export const value = state(0)\n')
+    try {
+      await expect(buildLibraryPackages({
+        config: { packages: [{ name: 'test-fx-standalone', kind: 'functions', include: [name] }] },
+      })).rejects.toThrow(/ambient globals/)
+    }
+    finally {
+      await rm(source, { force: true })
+      await rm(output, { recursive: true, force: true })
+    }
   })
 
   it('fails loudly when the requested kind has no packages', async () => {
