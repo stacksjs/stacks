@@ -50,6 +50,42 @@ afterEach(() => {
 })
 
 describe('package project manifest migration', () => {
+  it('preserves application type-check pipelines and aliases', () => {
+    const scripts = {
+      buddy: './buddy',
+      typecheck: 'bun run typecheck:app && bun run typecheck:tools && bun run typecheck:views',
+      'typecheck:app': 'bun x --bun tsc --noEmit -p tsconfig.json --pretty false',
+      'types:check': 'bun run typecheck',
+      'typecheck:tools': 'bun x --bun tsc --noEmit -p tsconfig.tools.json',
+    }
+    const original = { ...scripts }
+    expect(migratePackageProjectManifest({ scripts })).toEqual([])
+    expect(scripts).toEqual(original)
+  })
+
+  it('repairs checks that still target the removed framework source', () => {
+    const pkg = { scripts: {
+      typecheck: 'bun tsc --noEmit -p storage/framework/tsconfig.framework.json',
+      'typecheck:app': 'bun tsc --noEmit -p storage/framework/core/tsconfig.json',
+      'types:check': 'bun run build:framework-types && bun tsc --noEmit',
+    } }
+    migratePackageProjectManifest(pkg)
+    expect(pkg.scripts.typecheck).toContain('-p tsconfig.json')
+    expect(pkg.scripts['typecheck:app']).toContain('-p tsconfig.json')
+    expect(pkg.scripts['types:check']).toBe('bun run typecheck')
+    expect(migratePackageProjectManifest(pkg)).toEqual([])
+  })
+
+  it('supplies missing app checks without replacing custom ones', () => {
+    const pkg = { scripts: { typecheck: 'bun run custom-type-validation' } }
+    migratePackageProjectManifest(pkg)
+    expect(pkg.scripts.typecheck).toBe('bun run custom-type-validation')
+    expect(pkg.scripts).toMatchObject({
+      'typecheck:app': 'bun x --bun tsc --noEmit -p tsconfig.json --pretty false',
+      'types:check': 'bun run typecheck',
+    })
+  })
+
   it('removes core workspaces and legacy framework build scripts', () => {
     const pkg = {
       scripts: {

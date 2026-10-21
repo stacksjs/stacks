@@ -457,9 +457,17 @@ export function migratePackageProjectManifest(pkg: ProjectPackageJson): ProjectS
   }
 
   setScript('buddy', './buddy')
-  setScript('typecheck', 'bun x --bun tsc --noEmit -p tsconfig.json --pretty false')
-  setScript('typecheck:app', 'bun x --bun tsc --noEmit -p tsconfig.json --pretty false')
-  setScript('types:check', 'bun x --bun tsc --noEmit -p tsconfig.json --pretty false')
+  const appCheck = 'bun x --bun tsc --noEmit -p tsconfig.json --pretty false'
+  for (const [name, replacement] of Object.entries({
+    'typecheck': appCheck,
+    'typecheck:app': appCheck,
+    'types:check': 'bun run typecheck',
+  })) {
+    const current = scripts[name]
+    if (!current || current.includes('build:framework-types')
+      || /storage\/framework\/(?:core(?:\/|['"\s]|$)|tsconfig\.(?:framework|defaults|type-tests)\.json)/.test(current))
+      setScript(name, replacement)
+  }
 
   if (scripts['build:reset']?.includes('storage/framework')) {
     setScript(
