@@ -1,3 +1,5 @@
+@import('../UI/Table')
+
 <script client>
 import type { ProductVariantRecord } from '../../../../app/Actions/Dashboard/Commerce/product-variant-records'
 
@@ -5,30 +7,72 @@ const records = useReactiveProp('records', [] as ProductVariantRecord[])
 const loading = useReactiveProp('loading', false)
 const emit = defineEmits()
 
-function formatDate(value: string): string {
-  const date = new Date(value)
-  return !value || Number.isNaN(date.getTime()) ? 'Unknown' : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(date)
+/**
+ * Two slotted columns, dispatched on `column.key`: the variant with its type
+ * and description beneath it, and the option pills, of which the first four
+ * show and the rest are counted.
+ */
+const COLUMNS = [
+  { key: 'variant', label: 'Variant', sortable: true, slotted: true },
+  { key: 'productName', label: 'Product', sortable: true, emptyText: 'Unassigned' },
+  { key: 'optionsLabel', label: 'Options', slotted: true, class: 'max-w-sm' },
+  {
+    key: 'status',
+    label: 'Status',
+    type: 'badge' as const,
+    sortable: true,
+    badgeClasses: {
+      active: 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40',
+      draft: 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40',
+    },
+  },
+  { key: 'createdAt', label: 'Created', type: 'date' as const, sortable: true, class: 'whitespace-nowrap' },
+]
+
+const ROW_ACTIONS = [
+  { action: 'edit', label: 'Edit', icon: 'i-hugeicons-edit-01' },
+  { action: 'delete', label: 'Delete', icon: 'i-hugeicons-delete-02', class: 'text-red-500' },
+]
+
+const rows = derived(() => records().map(record => ({
+  ...record,
+  // Searchable text for the options, and the parts the cell draws.
+  optionsLabel: record.options.join(', '),
+  shownOptions: record.options.slice(0, 4),
+  moreOptions: record.options.length > 4 ? `+${record.options.length - 4}` : '',
+})))
+
+function handleRowAction(payload: { action: string, row: ProductVariantRecord }): void {
+  emit(payload.action, payload.row)
 }
 </script>
 
-<div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
-  <div :if="loading() && records().length === 0" class="flex items-center justify-center py-16 text-gray-500 text-sm dark:text-neutral-400"><span class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>Loading product variants</div>
-  <div :else-if="records().length === 0" class="px-6 py-16 text-center"><span class="inline-block h-8 w-8 text-gray-400 i-hugeicons-layer"></span><p class="mt-3 font-medium text-gray-900 text-sm dark:text-white">No product variants found</p><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Adjust the filters or add a ProductVariant record.</p></div>
-  <div :else class="overflow-x-auto">
-    <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-      <thead class="bg-gray-50 dark:bg-neutral-900/50"><tr><th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Variant</th><th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Product</th><th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Options</th><th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Status</th><th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Created</th><th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-right text-xs dark:text-neutral-300"><span class="sr-only">Actions</span></th></tr></thead>
-      <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
-        <template :for="record in records()" :key="record.id">
-          <tr class="align-top">
-            <td class="px-4 py-4"><p class="font-medium text-gray-900 text-sm dark:text-white">{{ record.variant }}</p><p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ record.type }}</p><p class="mt-2 max-w-sm text-gray-500 text-xs dark:text-neutral-400">{{ record.description }}</p></td>
-            <td class="px-4 py-4 text-gray-600 text-sm dark:text-neutral-300">{{ record.productName || 'Unassigned' }}</td>
-            <td class="px-4 py-4 max-w-sm"><div class="flex flex-wrap gap-1"><template :for="option in record.options.slice(0, 4)" :key="option"><span class="px-2 py-0.5 text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-full">{{ option }}</span></template><span :if="record.options.length > 4" class="px-2 py-0.5 text-gray-600 text-xs dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700 rounded-full">+{{ record.options.length - 4 }}</span><span :if="record.options.length === 0" class="text-gray-400 text-xs">No options</span></div></td>
-            <td class="px-4 py-4"><span :class="'inline-flex px-2 py-1 font-medium text-xs rounded-full ' + (record.status === 'active' ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40' : record.status === 'draft' ? 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40' : 'text-gray-600 dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700')">{{ record.status }}</span></td>
-            <td class="px-4 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ formatDate(record.createdAt) }}</td>
-            <td class="px-4 py-4"><div class="flex gap-1 justify-end"><Button variant="ghost" size="sm" iconOnly :ariaLabel="'Edit ' + record.variant" @click="emit('edit', record)"><span class="block h-4 w-4 text-blue-500 i-hugeicons-edit-01"></span></Button><Button variant="ghost" size="sm" iconOnly :ariaLabel="'Delete ' + record.variant" @click="emit('delete', record)"><span class="block h-4 w-4 text-red-500 i-hugeicons-delete-02"></span></Button></div></td>
-          </tr>
+<Table
+  :columns="COLUMNS"
+  :data="rows()"
+  :loading="loading()"
+  :row-actions="ROW_ACTIONS"
+  action-label-key="variant"
+  paginated
+  :page-size="25"
+  empty-title="No product variants found"
+  empty-description="Adjust the filters or add a ProductVariant record."
+  @row-action="handleRowAction"
+>
+  <template #cell="{ row, column }">
+    <template :if="column.key === 'variant'">
+      <p class="font-medium text-gray-900 text-sm dark:text-white" x-text="row.variant"></p>
+      <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400" x-text="row.type"></p>
+      <p class="mt-2 max-w-sm text-gray-500 text-xs dark:text-neutral-400" x-text="row.description"></p>
+    </template>
+    <template :else>
+      <div class="flex flex-wrap gap-1">
+        <template :for="option in row.shownOptions" :key="option">
+          <span class="px-2 py-0.5 text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-full" x-text="option"></span>
         </template>
-      </tbody>
-    </table>
-  </div>
-</div>
+        <span :if="row.moreOptions" class="px-2 py-0.5 text-gray-600 text-xs dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700 rounded-full" x-text="row.moreOptions"></span>
+        <span :if="row.shownOptions.length === 0" class="text-gray-400 text-xs">No options</span>
+      </div>
+    </template>
+  </template>
+</Table>

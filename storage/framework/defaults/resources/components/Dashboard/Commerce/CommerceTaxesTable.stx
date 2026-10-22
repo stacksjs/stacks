@@ -1,3 +1,5 @@
+@import('../UI/Table')
+
 <script client>
 import type { TaxRateRecord } from '../../../../app/Actions/Dashboard/Commerce/tax-rate-records'
 
@@ -5,72 +7,67 @@ const records = useReactiveProp('records', [] as TaxRateRecord[])
 const loading = useReactiveProp('loading', false)
 const emit = defineEmits()
 
-function formatDate(value: string): string {
-  const date = new Date(value)
-  return !value || Number.isNaN(date.getTime())
-    ? 'Unknown'
-    : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(date)
+/**
+ * The name cell is slotted: the default, code and exemptible badges sit
+ * beside the name because each changes what a customer is charged, and the
+ * code is what application code matches on, so renaming the rate must not
+ * change the bill. Everything else is a column option.
+ */
+const COLUMNS = [
+  { key: 'name', label: 'Tax rate', sortable: true, slotted: true },
+  { key: 'rateLabel', label: 'Rate', sortable: true, searchable: false, class: 'font-medium text-gray-900 whitespace-nowrap dark:text-white' },
+  { key: 'country', label: 'Location', sortable: true, subtitleKey: 'region' },
+  {
+    key: 'status',
+    label: 'Status',
+    type: 'badge' as const,
+    sortable: true,
+    badgeClasses: { active: 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40' },
+    badgeLabels: { active: 'Active', inactive: 'Inactive' },
+  },
+  { key: 'createdAt', label: 'Created', type: 'date' as const, sortable: true, class: 'whitespace-nowrap' },
+]
+
+const ROW_ACTIONS = [
+  { action: 'edit', label: 'Edit', icon: 'i-hugeicons-edit-01' },
+  { action: 'delete', label: 'Delete', icon: 'i-hugeicons-delete-02', class: 'text-red-500' },
+]
+
+const rows = derived(() => records().map(record => ({
+  ...record,
+  rateLabel: `${record.rate}%`,
+  // Anything but active reads as inactive, as the hand-rolled pill did.
+  status: record.status === 'active' ? 'active' : 'inactive',
+})))
+
+function handleRowAction(payload: { action: string, row: TaxRateRecord }): void {
+  emit(payload.action, payload.row)
 }
 </script>
 
-<div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
-  <div :if="loading() && records().length === 0" class="flex items-center justify-center py-16 text-gray-500 text-sm dark:text-neutral-400">
-    <span class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>
-    Loading tax rates
-  </div>
-  <div :else-if="records().length === 0" class="px-6 py-16 text-center">
-    <span class="inline-block h-8 w-8 text-gray-400 i-hugeicons-percent-circle"></span>
-    <p class="mt-3 font-medium text-gray-900 text-sm dark:text-white">No tax rates found</p>
-    <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Adjust the filters or add a TaxRate record.</p>
-  </div>
-  <div :else class="overflow-x-auto">
-    <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-      <thead class="bg-gray-50 dark:bg-neutral-900/50">
-        <tr>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Tax rate</th>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Rate</th>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Location</th>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Status</th>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Created</th>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-right text-xs dark:text-neutral-300"><span class="sr-only">Actions</span></th>
-        </tr>
-      </thead>
-      <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
-        <template :for="record in records()" :key="record.id">
-          <tr class="align-top">
-            <td class="px-4 py-4">
-              <div class="flex flex-wrap gap-2 items-center">
-                <p class="font-medium text-gray-900 text-sm dark:text-white">{{ record.name }}</p>
-                <span :if="record.isDefault" class="px-2 py-0.5 font-medium text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-full">Default</span>
-                {{--
-                  Both badges change what a customer is charged, so they sit
-                  next to the name rather than in a column someone has to
-                  scroll to. The code is what application code matches on;
-                  renaming the rate must not change the bill.
-                --}}
-                <span :if="record.code" class="px-2 py-0.5 font-mono text-gray-600 text-xs dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700 rounded-full">{{ record.code }}</span>
-                <span :if="record.exemptible" class="px-2 py-0.5 font-medium text-amber-700 text-xs dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 rounded-full" x-tooltip="Not charged to a customer who qualifies for an exemption" title="Not charged to a customer who qualifies for an exemption">Exemptible</span>
-              </div>
-              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ record.type }}</p>
-            </td>
-            <td class="px-4 py-4 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-white">{{ record.rate }}%</td>
-            <td class="px-4 py-4">
-              <p class="text-gray-700 text-sm dark:text-neutral-200">{{ record.country }}</p>
-              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ record.region }}</p>
-            </td>
-            <td class="px-4 py-4">
-              <span :class="'inline-flex px-2 py-1 font-medium text-xs rounded-full ' + (record.status === 'active' ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40' : 'text-gray-600 dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700')">{{ record.status === 'active' ? 'Active' : 'Inactive' }}</span>
-            </td>
-            <td class="px-4 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ formatDate(record.createdAt) }}</td>
-            <td class="px-4 py-4">
-              <div class="flex gap-1 justify-end">
-                <Button variant="ghost" size="sm" iconOnly :ariaLabel="'Edit ' + record.name" @click="emit('edit', record)"><span class="block h-4 w-4 text-blue-500 i-hugeicons-edit-01"></span></Button>
-                <Button variant="ghost" size="sm" iconOnly :ariaLabel="'Delete ' + record.name" @click="emit('delete', record)"><span class="block h-4 w-4 text-red-500 i-hugeicons-delete-02"></span></Button>
-              </div>
-            </td>
-          </tr>
-        </template>
-      </tbody>
-    </table>
-  </div>
-</div>
+{{--
+  No `searchable` or `filterable`: the parent dashboard owns the search box
+  and the filter selects. Paging is what was missing, and Table brings it.
+--}}
+<Table
+  :columns="COLUMNS"
+  :data="rows()"
+  :loading="loading()"
+  :row-actions="ROW_ACTIONS"
+  action-label-key="name"
+  paginated
+  :page-size="25"
+  empty-title="No tax rates found"
+  empty-description="Adjust the filters or add a TaxRate record."
+  @row-action="handleRowAction"
+>
+  <template #cell="{ row }">
+    <div class="flex flex-wrap gap-2 items-center">
+      <p class="font-medium text-gray-900 text-sm dark:text-white" x-text="row.name"></p>
+      <span :if="row.isDefault" class="px-2 py-0.5 font-medium text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-full">Default</span>
+      <span :if="row.code" class="px-2 py-0.5 font-mono text-gray-600 text-xs dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700 rounded-full" x-text="row.code"></span>
+      <span :if="row.exemptible" class="px-2 py-0.5 font-medium text-amber-700 text-xs dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 rounded-full" x-tooltip="Not charged to a customer who qualifies for an exemption" title="Not charged to a customer who qualifies for an exemption">Exemptible</span>
+    </div>
+    <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400" x-text="row.type"></p>
+  </template>
+</Table>

@@ -1,3 +1,5 @@
+@import('../UI/Table')
+
 <script client>
 import type { PaymentRecord } from '../../../../app/Actions/Dashboard/Commerce/payment-records'
 import { formatCurrency } from '@stacksjs/commerce/money'
@@ -6,61 +8,95 @@ const records = useReactiveProp('records', [] as PaymentRecord[])
 const loading = useReactiveProp('loading', false)
 const emit = defineEmits()
 
+/** `partiallyRefunded` and `bank_transfer` as words, each capitalized. */
 function label(value: string): string {
-  return value.replace(/([a-z])([A-Z])/g, '$1 $2').replaceAll('_', ' ')
+  return value.replace(/([a-z])([A-Z])/g, '$1 $2').replaceAll('_', ' ').replace(/\b\w/g, letter => letter.toUpperCase())
 }
 
-function money(value: number, currency: string): string {
-  return formatCurrency(value, currency)
-}
-
-function date(value: string): string {
-  const parsed = new Date(value.includes('T') ? value : value.replace(' ', 'T'))
-  return !value || Number.isNaN(parsed.getTime())
-    ? 'Unknown'
-    : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(parsed)
-}
-
-function statusClass(status: string): string {
+/**
+ * The status pill's colour, which is a tone rather than the status itself so
+ * that every status the ledger has not named still reads as pending, as the
+ * hand-rolled pill did.
+ */
+function statusTone(status: string): string {
   if (status === 'completed' || status === 'succeeded')
-    return 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40'
+    return 'settled'
   if (status === 'failed')
-    return 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40'
+    return 'failed'
   if (status === 'refunded' || status === 'partiallyRefunded')
-    return 'text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-950/40'
-  return 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40'
+    return 'refunded'
+  return 'pending'
+}
+
+/**
+ * Only the amount is slotted, for its refund line, whose colour says whether
+ * the refund was recorded. The rest are values with a second line, which is
+ * `subtitleKey`.
+ */
+const COLUMNS = [
+  { key: 'paymentLabel', label: 'Payment', sortable: true, subtitleKey: 'referenceLabel', class: 'font-medium text-gray-900 dark:text-white' },
+  { key: 'billingLabel', label: 'Billing', sortable: true, subtitleKey: 'orderLabel' },
+  { key: 'amount', label: 'Amount', sortable: true, slotted: true },
+  // Capitalized in `label()` rather than with a class, which would reach the
+  // processor line beneath it too.
+  { key: 'methodLabel', label: 'Method', sortable: true, subtitleKey: 'processorLabel' },
+  {
+    key: 'statusTone',
+    label: 'Status',
+    type: 'badge' as const,
+    sortable: true,
+    badgeLabelKey: 'statusLabel',
+    badgeClasses: {
+      settled: 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40',
+      failed: 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40',
+      refunded: 'text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-950/40',
+      pending: 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40',
+    },
+  },
+  { key: 'createdAt', label: 'Created', type: 'datetime' as const, sortable: true, class: 'whitespace-nowrap' },
+]
+
+const ROW_ACTIONS = [
+  { action: 'view', label: 'View payment', icon: 'i-hugeicons-view' },
+]
+
+const rows = derived(() => records().map(record => ({
+  ...record,
+  paymentLabel: `#${record.id}`,
+  referenceLabel: record.referenceNumber || record.transactionId || 'No reference',
+  billingLabel: record.billingEmail || 'No billing email',
+  orderLabel: record.orderId ? `Order #${record.orderId}` : 'No linked order',
+  amountLabel: formatCurrency(record.amount, record.currency),
+  refundLabel: record.refundAmount > 0 ? `Refunded ${formatCurrency(record.refundAmount, record.currency)}` : '',
+  refundMissing: record.refundAmount <= 0 && record.status === 'refunded' && !record.refundRecorded,
+  methodLabel: label(record.method),
+  processorLabel: record.cardBrand || record.cardLastFour
+    ? [record.cardBrand, record.cardLastFour].filter(Boolean).join(' · ')
+    : record.paymentProvider || 'No processor details',
+  statusTone: statusTone(record.status),
+  statusLabel: label(record.status),
+})))
+
+function handleRowAction(payload: { action: string, row: PaymentRecord }): void {
+  emit(payload.action, payload.row)
 }
 </script>
 
-<div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
-  <div :if="loading() && records().length === 0" class="flex items-center justify-center py-16 text-gray-500 text-sm dark:text-neutral-400"><span class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>Loading payments</div>
-  <div :else-if="records().length === 0" class="px-6 py-16 text-center"><span class="inline-block h-8 w-8 text-gray-400 i-hugeicons-credit-card"></span><p class="mt-3 font-medium text-gray-900 text-sm dark:text-white">No payments found</p><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Adjust the filters to inspect another part of the native ledger.</p></div>
-  <div :else class="overflow-x-auto">
-    <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-      <thead class="bg-gray-50 dark:bg-neutral-900/50">
-        <tr>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Payment</th>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Billing</th>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Amount</th>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Method</th>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Status</th>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Created</th>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-right text-xs dark:text-neutral-300"><span class="sr-only">Actions</span></th>
-        </tr>
-      </thead>
-      <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
-        <template :for="record in records()" :key="record.id">
-          <tr>
-            <td class="px-4 py-4"><p class="font-medium text-gray-900 text-sm dark:text-white">#{{ record.id }}</p><p class="mt-1 max-w-44 text-gray-400 text-xs truncate dark:text-neutral-500">{{ record.referenceNumber || record.transactionId || 'No reference' }}</p></td>
-            <td class="px-4 py-4"><p class="text-gray-700 text-sm dark:text-neutral-200">{{ record.billingEmail || 'No billing email' }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ record.orderId ? 'Order #' + record.orderId : 'No linked order' }}</p></td>
-            <td class="px-4 py-4"><p class="font-medium text-gray-900 text-sm dark:text-white">{{ money(record.amount, record.currency) }}</p><p :if="record.refundAmount > 0" class="mt-1 text-violet-600 text-xs dark:text-violet-300">Refunded {{ money(record.refundAmount, record.currency) }}</p><p :else-if="record.status === 'refunded' && !record.refundRecorded" class="mt-1 text-amber-600 text-xs dark:text-amber-300">Refund amount not recorded</p></td>
-            <td class="px-4 py-4"><p class="capitalize text-gray-700 text-sm dark:text-neutral-200">{{ label(record.method) }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ record.cardBrand }}<span :if="record.cardLastFour"> · {{ record.cardLastFour }}</span><span :if="!record.cardBrand && !record.cardLastFour">{{ record.paymentProvider || 'No processor details' }}</span></p></td>
-            <td class="px-4 py-4"><span :class="'inline-flex px-2 py-1 font-medium text-xs capitalize rounded-full ' + statusClass(record.status)">{{ label(record.status) }}</span></td>
-            <td class="px-4 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ date(record.createdAt) }}</td>
-            <td class="px-4 py-4 text-right"><Button variant="ghost" size="sm" iconOnly :ariaLabel="'View payment ' + record.id" @click="emit('view', record)"><span class="block h-4 w-4 text-blue-500 i-hugeicons-view"></span></Button></td>
-          </tr>
-        </template>
-      </tbody>
-    </table>
-  </div>
-</div>
+<Table
+  :columns="COLUMNS"
+  :data="rows()"
+  :loading="loading()"
+  :row-actions="ROW_ACTIONS"
+  action-label-key="id"
+  paginated
+  :page-size="25"
+  empty-title="No payments found"
+  empty-description="Adjust the filters to inspect another part of the native ledger."
+  @row-action="handleRowAction"
+>
+  <template #cell="{ row }">
+    <p class="font-medium text-gray-900 text-sm dark:text-white" x-text="row.amountLabel"></p>
+    <p :if="row.refundLabel" class="mt-1 text-violet-600 text-xs dark:text-violet-300" x-text="row.refundLabel"></p>
+    <p :if="row.refundMissing" class="mt-1 text-amber-600 text-xs dark:text-amber-300">Refund amount not recorded</p>
+  </template>
+</Table>
