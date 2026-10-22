@@ -452,6 +452,11 @@ export interface SeederModel {
   model: Model
   filePath: string
   /**
+   * Models this one's factories pick rows from (`useSeeder.after`), seeded
+   * before it like a `belongsTo` parent.
+   */
+  after: string[]
+  /**
    * Whether this model opted into the model pass via `traits.useSeeder`.
    *
    * A model that did not is still LOADED when the caller asks for it, because
@@ -507,10 +512,13 @@ async function loadModelsFromDir(modelsDir: string, recursive: boolean = false, 
       // Get seed count + optional fixture rows (merged over factories)
       let count = 10 // default
       let fixtures: Array<Record<string, unknown>> = []
-      if (typeof useSeeder === 'object' && 'count' in useSeeder) {
-        const opts = useSeeder as SeedOptions
-        count = opts.count
+      let after: string[] = []
+      if (typeof useSeeder === 'object' && useSeeder !== null) {
+        const opts = useSeeder as Partial<SeedOptions>
+        if (typeof opts.count === 'number')
+          count = opts.count
         fixtures = opts.fixtures ?? []
+        after = Array.isArray(opts.after) ? opts.after.filter((name): name is string => typeof name === 'string') : []
       }
 
       // Get model name and table name
@@ -525,6 +533,7 @@ async function loadModelsFromDir(modelsDir: string, recursive: boolean = false, 
         attributes: modelDef.attributes || {},
         model: modelDef,
         filePath: fullPath,
+        after,
         seedable,
       })
     }
@@ -611,6 +620,75 @@ function isPasswordField(fieldName: string, attr: Attribute): boolean {
   return false
 }
 
+/** What a factory receives as its third argument. */
+export interface FactoryContext {
+  /**
+   * A value from a row that already exists in another model's table: its `id`
+   * unless a column is named. For a column whose valid values are decided by
+   * another row, such as a polymorphic `subject_id`, which `belongsTo` cannot
+   * express because its foreign key would forbid most of the values.
+   *
+   * Throws when that model has no rows yet, or when it seeds later in this run
+   * (add it to `useSeeder.after`), and the seed of this model fails with that
+   * message rather than inventing a value (stacksjs/stacks#2951).
+   */
+  pick: (model: string, column?: string) => Promise<unknown>
+}
+
+type FactoryFunction = (faker: unknown, attributes: Readonly<Record<string, unknown>>, context: FactoryContext) => unknown
+
+/** A `pick()` that could not be satisfied. Never replaced with a default. */
+export class SeedReferenceError extends Error {
+  override name = 'SeedReferenceError'
+}
+
+async function unavailablePick(model: string): Promise<never> {
+  throw new SeedReferenceError(`pick('${model}') is only available while seeding a model`)
+}
+
+/**
+ * Models in the current seed run that have not been seeded yet.
+ *
+ * A `pick()` from one of them would see an empty or stale table, so it is
+ * refused with the fix rather than drawing from rows that are about to change.
+ */
+const pendingModels = new Set<string>()
+
+/** The `pick()` a model's factories receive, drawing rows once per table. */
+function factoryContext(model: SeederModel): FactoryContext {
+  const rowsByTable = new Map<string, Record<string, unknown>[]>()
+
+  return {
+    async pick(parent: string, column = 'id'): Promise<unknown> {
+      if (parent !== model.name && pendingModels.has(parent))
+        throw new SeedReferenceError(`${model.name} picks from ${parent}, which seeds later in this run. Add '${parent}' to ${model.name}'s useSeeder.after.`)
+
+      const table = parentTable(parent)
+      let rows = rowsByTable.get(table)
+      if (!rows) {
+        rows = await existingRows(table)
+        rowsByTable.set(table, rows)
+      }
+      if (rows.length === 0)
+        throw new SeedReferenceError(`${model.name} picks from ${parent}, but ${table} has no rows. Seed ${parent} first, or list it in ${model.name}'s useSeeder.after.`)
+
+      const row = faker.helpers.arrayElement(rows)
+      if (!(column in row))
+        throw new SeedReferenceError(`${model.name} picks ${parent}.${column}, but ${table} has no column "${column}".`)
+      return row[column]
+    },
+  }
+}
+
+/** Whether the migration generator makes this attribute's column NOT NULL. */
+function columnIsNotNull(attr: Attribute): boolean {
+  const nullable = (attr as { nullable?: boolean }).nullable
+  if (nullable !== undefined)
+    return !nullable
+  const validatorRequired = Boolean((attr.validation?.rule as { isRequired?: boolean } | undefined)?.isRequired)
+  return attr.required ?? validatorRequired
+}
+
 /**
  * Generate a single record using factory functions
  *
@@ -624,6 +702,7 @@ async function generateRecord(
   attributes: Record<string, Attribute>,
   modelName: string,
   report: boolean = false,
+  context: FactoryContext = { pick: unavailablePick },
 ): Promise<Record<string, unknown>> {
   const record: Record<string, unknown> = {}
   // What this record's factories have produced so far, by attribute name and
@@ -642,9 +721,14 @@ async function generateRecord(
       try {
         // Cast: the faker singleton is a wrapped object that exposes additional helpers
         // beyond the BaseFaker type used in the factory signature.
-        value = attr.factory(faker, generated)
+        value = await (attr.factory as FactoryFunction)(faker, generated, context)
       }
       catch (err) {
+        // A row that cannot be picked is not a factory bug to paper over with
+        // a default: the default is exactly the dangling or invented value
+        // `pick()` exists to prevent (stacksjs/stacks#2951).
+        if (err instanceof SeedReferenceError)
+          throw err
         const errorMsg = err instanceof Error ? err.message : String(err)
         if (report) {
           log.warn(`  Factory failed for ${modelName}.${fieldName}: ${errorMsg} - seeding the default instead.`)
@@ -1082,6 +1166,12 @@ const RELATION_ATTEMPTS = 25
 
 async function generateRecords(model: SeederModel, options: SeederConfig = {}): Promise<Record<string, unknown>[]> {
   const records: Record<string, unknown>[] = []
+  const context = factoryContext(model)
+  // NOT NULL columns a factory fills, checked once the relations and fixtures
+  // are in, since either may supply what the factory left empty.
+  const requiredFactoryColumns = Object.entries(model.attributes)
+    .filter(([, attr]) => typeof attr.factory === 'function' && columnIsNotNull(attr))
+    .map(([name]) => ({ name, column: snakeCase(name) }))
   const pools = await relationPools(model, options)
   const relations = chooseRelations(pools, model.count)
   const unique = uniqueColumns(model.attributes)
@@ -1103,12 +1193,12 @@ async function generateRecords(model: SeederModel, options: SeederConfig = {}): 
     // reported whether or not `--verbose` was passed: the failure is silently
     // replaced with a default, and a column that comes out null across the
     // whole table is otherwise indistinguishable from one nobody declared.
-    let record = await generateRecord(model.attributes, model.name, i === 0)
+    let record = await generateRecord(model.attributes, model.name, i === 0, context)
     if (unique.length > 0) {
       // Three retries, then disambiguate. A factory drawing from a small pool
       // would otherwise spin forever on the last few rows.
       for (let attempt = 0; attempt < 3 && !claimUniqueValues(record, unique, used, 0); attempt++)
-        record = await generateRecord(model.attributes, model.name, false)
+        record = await generateRecord(model.attributes, model.name, false, context)
       claimUniqueValues(record, unique, used, i + 1)
     }
     const fixture = model.fixtures[i]
@@ -1139,6 +1229,14 @@ async function generateRecords(model: SeederModel, options: SeederConfig = {}): 
         dropped++
         continue
       }
+    }
+
+    // A null in a NOT NULL column fails the whole insert batch, so the model
+    // never seeds and the summary says only that one model failed. Refuse it
+    // here, naming the column (stacksjs/stacks#2951).
+    for (const { name, column } of requiredFactoryColumns) {
+      if (row[column] == null)
+        throw new Error(`${model.name}.${name}: its factory produced ${row[column] === null ? 'null' : 'nothing'} for a required column, so no row can be inserted. Return a value, or reference an existing row with pick() in the factory's third argument.`)
     }
 
     sets.forEach((columns, s) => {
@@ -1369,7 +1467,7 @@ function sortModelsByDependencies(models: SeederModel[]): SeederModel[] {
 
     state.set(model.name, 'visiting')
 
-    for (const parentName of parentModels(model)) {
+    for (const parentName of [...parentModels(model), ...model.after]) {
       const parent = byName.get(parentName)
       if (parent && parent !== model)
         visit(parent)
@@ -1477,6 +1575,9 @@ export async function seed(config: SeederConfig = {}): Promise<SeedSummary> {
 
   // Seed each model
   const results: SeedResult[] = []
+  pendingModels.clear()
+  for (const model of models)
+    pendingModels.add(model.name)
 
   for (const model of models) {
     if (verbose) {
@@ -1502,7 +1603,11 @@ export async function seed(config: SeederConfig = {}): Promise<SeedSummary> {
         duration: 0,
       })
     }
+    finally {
+      pendingModels.delete(model.name)
+    }
   }
+  pendingModels.clear()
 
   // Calculate summary
   const successful = results.filter(r => r.success).length
@@ -1522,6 +1627,14 @@ export async function seed(config: SeederConfig = {}): Promise<SeedSummary> {
       log.info(`  Failed: ${failed}`)
     }
   }
+
+  // Each failure's reason, whatever the verbosity. A count alone is how a
+  // model that never seeded went unnoticed for months (stacksjs/stacks#2951).
+  for (const result of results) {
+    if (!result.success)
+      log.error(`  ${result.model}: ${result.error}`)
+  }
+
 
   return {
     total: results.length,

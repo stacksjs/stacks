@@ -217,6 +217,12 @@ export interface SeedOptions {
    * Keys use model attribute names (camelCase); stored as snake_case columns.
    */
   fixtures?: Array<Record<string, unknown>>
+  /**
+   * Models this one's factories `pick()` rows from, seeded before it the way a
+   * `belongsTo` parent is. Needed for a reference `belongsTo` cannot declare,
+   * such as a polymorphic `subject_id`.
+   */
+  after?: string[]
 }
 
 /** Which attributes `traits.useActivityLog` records. See the trait's docblock. */
@@ -539,8 +545,13 @@ export interface Attribute {
    * Fake value for seeding. Receives the attributes this record's factories
    * have already produced (those declared above it, by attribute name), so a
    * value can depend on another: `(faker, { discountType }) => ...`.
+   *
+   * The third argument's `pick(model, column = 'id')` resolves to a value from
+   * a row that already exists, for a column whose valid values another row
+   * decides: `async (faker, { subjectType }, { pick }) => pick(subjectType)`.
+   * The factory may return a promise.
    */
-  factory?: (faker: Faker, attributes: Readonly<Record<string, unknown>>) => any
+  factory?: (faker: Faker, attributes: Readonly<Record<string, unknown>>, context: { pick: (model: string, column?: string) => Promise<unknown> }) => any
   validation: {
     rule: ValidationType
     message?: ValidatorMessage

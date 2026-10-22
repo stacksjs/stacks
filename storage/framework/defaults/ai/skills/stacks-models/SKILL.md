@@ -376,6 +376,26 @@ traits: {
 },
 ```
 
+A factory receives `faker`, the attributes generated above it, and a context
+whose `pick(model, column = 'id')` resolves to a value from a row that already
+exists. Use it for a column whose valid values another row decides, such as a
+polymorphic `subject_id`, which `belongsTo` cannot express because its foreign
+key would forbid most of the values. List every model a factory picks from in
+`useSeeder.after` so it seeds first:
+
+```ts
+traits: { useSeeder: { count: 30, after: ['Issue', 'PullRequest'] } },
+attributes: {
+  subjectType: { required: true, factory: faker => faker.helpers.arrayElement(['Issue', 'PullRequest']) },
+  subjectId: { required: true, factory: (faker, { subjectType }, { pick }) => pick(subjectType) },
+},
+```
+
+A pick that cannot be satisfied (no rows yet, or the model seeds later and is
+missing from `after`) fails that model with the fix in its message, and so does
+a factory that leaves a required column `null`. Neither invents a value
+(#2951).
+
 `buddy seed` walks every model carrying the trait and fills its table from the
 attribute factories. Model fixture data needs no separate seeder or registration.
 Idempotent application bootstrap work can live in `database/seeders` as a

@@ -1339,12 +1339,8 @@ export function migrate(buddy: CLI): void {
 
           const failures = seedResult.failed + applicationSeedResult.failed
           if (failures > 0) {
+            // Model failures are named by seed() itself, which always reports them.
             log.warn(`Seeding completed with ${failures} failure(s)`)
-            for (const r of seedResult.results) {
-              if (!r.success) {
-                log.error(`  - ${r.model}: ${r.error}`)
-              }
-            }
             for (const r of applicationSeedResult.results) {
               if (!r.success)
                 log.error(`  - ${r.seeder}: ${r.error}`)
