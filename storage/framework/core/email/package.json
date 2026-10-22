@@ -69,7 +69,7 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/stx": "0.2.661",
+    "@stacksjs/stx": "0.2.663",
     "@stacksjs/ts-cloud": "^0.16.58",
     "@stacksjs/utils": "workspace:*"
   },
