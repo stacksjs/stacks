@@ -34,15 +34,40 @@ export interface DirectConversation {
   last_message: DirectMessage | null
   unread: number
 }
+/**
+ * What a message carries besides its text.
+ *
+ * The trait records what it was told and nothing more. Where the file lives,
+ * who may read it and how it is named belong to the application, which is
+ * what keeps messaging storage-agnostic: a disk, a bucket and a CDN all look
+ * the same from here.
+ */
+export interface DirectMessageAttachment {
+  /** The application's own name for the stored file. Opaque to the trait. */
+  file: string
+  /** Its media type, where the application knows it. */
+  type?: string
+  /** Bytes, and pixels for an image, where the application knows them. */
+  size?: number
+  width?: number
+  height?: number
+}
+
 export interface DirectMessage {
   id: number
   conversation_id: string
   sender_id: number
   body: string
+  /** Empty when the message is only text, so a reader never has to check for null. */
+  attachments: DirectMessageAttachment[]
   client_key: string
   created_at: string
   read_at: string | null
 }
+
+/** Attachments on one message, and how long their stored form may be. */
+const MAX_ATTACHMENTS = 10
+const MAX_ATTACHMENTS_LENGTH = 4000
 
 function positive(value: unknown): number {
   if (!Number.isSafeInteger(value) || Number(value) <= 0)
@@ -53,15 +78,58 @@ function duplicate(error: unknown): boolean {
   const e = error as { code?: string, errno?: number }
   return e.code === '23505' || e.code === 'SQLITE_CONSTRAINT_PRIMARYKEY' || e.code === 'SQLITE_CONSTRAINT_UNIQUE' || e.code === 'SQLITE_CONSTRAINT' || e.errno === 1062
 }
+function whole(value: unknown, name: string): number {
+  if (!Number.isSafeInteger(value) || Number(value) < 0) throw new MessagingError(`An attachment ${name} is a whole number of 0 or more`, 422)
+  return Number(value)
+}
+/**
+ * The attachments as they are stored and compared: the keys this trait knows,
+ * in one order, and nothing else. Anything the caller adds is dropped rather
+ * than persisted, so the column cannot become a second message body.
+ */
+function attachmentsOf(value: unknown): DirectMessageAttachment[] {
+  if (value === undefined || value === null) return []
+  if (!Array.isArray(value)) throw new MessagingError('Attachments are a list', 422)
+  if (value.length > MAX_ATTACHMENTS) throw new MessagingError(`Send at most ${MAX_ATTACHMENTS} attachments`, 422)
+  const list = value.map((entry) => {
+    const item = (entry ?? {}) as Record<string, unknown>
+    const file = typeof item.file === 'string' ? item.file.trim() : ''
+    if (!file || file.length > 255) throw new MessagingError('Each attachment needs a file of 1 to 255 characters', 422)
+    const out: DirectMessageAttachment = { file }
+    if (item.type !== undefined) {
+      if (typeof item.type !== 'string' || !item.type.trim() || item.type.length > 255) throw new MessagingError('An attachment type is 1 to 255 characters', 422)
+      out.type = item.type.trim()
+    }
+    if (item.size !== undefined) out.size = whole(item.size, 'size')
+    if (item.width !== undefined) out.width = whole(item.width, 'width')
+    if (item.height !== undefined) out.height = whole(item.height, 'height')
+    return out
+  })
+  if (JSON.stringify(list).length > MAX_ATTACHMENTS_LENGTH) throw new MessagingError('Those attachments are too long to record', 422)
+  return list
+}
+/**
+ * What the column holds, read back. A row written before the column existed,
+ * or by hand, reads as no attachments rather than throwing on the way out of
+ * a list someone is already looking at.
+ */
+function storedAttachments(value: unknown): DirectMessageAttachment[] {
+  if (typeof value !== 'string' || !value) return []
+  try {
+    const parsed = JSON.parse(value)
+    return Array.isArray(parsed) ? parsed as DirectMessageAttachment[] : []
+  }
+  catch { return [] }
+}
 function message(row: Record<string, unknown>): DirectMessage {
-  return { id: Number(row.id), conversation_id: String(row.conversation_id), sender_id: Number(row.sender_id), body: String(row.body), client_key: String(row.client_key), created_at: parseSqlDateTime(row.created_at)!.toISOString(), read_at: parseSqlDateTime(row.read_at)?.toISOString() ?? null }
+  return { id: Number(row.id), conversation_id: String(row.conversation_id), sender_id: Number(row.sender_id), body: String(row.body), attachments: storedAttachments(row.attachments), client_key: String(row.client_key), created_at: parseSqlDateTime(row.created_at)!.toISOString(), read_at: parseSqlDateTime(row.read_at)?.toISOString() ?? null }
 }
 
 export interface Messenger {
   direct: (recipientId: number) => Promise<{ id: string, recipient_id: number }>
   list: () => Promise<DirectConversation[]>
   messages: (id: string, before?: number) => Promise<{ messages: DirectMessage[], has_more: boolean }>
-  send: (id: string, body: string, clientKey: string) => Promise<DirectMessage>
+  send: (id: string, body: string, clientKey: string, attachments?: DirectMessageAttachment[]) => Promise<DirectMessage>
   markRead: (id: string, throughId: number) => Promise<void>
 }
 
@@ -123,23 +191,33 @@ export function createMessenger(options: MessagingOptions): Messenger {
     const rows = await query.orderBy('id', 'desc').limit(pageSize + 1).execute()
     return { messages: rows.slice(0, pageSize).reverse().map(message), has_more: rows.length > pageSize }
   }
-  async function send(id: string, body: string, clientKey: string): Promise<DirectMessage> {
+  async function send(id: string, body: string, clientKey: string, attachments?: DirectMessageAttachment[]): Promise<DirectMessage> {
     const recipientId = await conversation(id)
-    if (typeof body !== 'string' || !body.trim() || body.trim().length > maxLength) throw new MessagingError(`Write a message of 1 to ${maxLength} characters`, 422)
+    const files = attachmentsOf(attachments)
+    const text = typeof body === 'string' ? body.trim() : ''
+    // A photo with no caption is a message; an empty box is not.
+    if (typeof body !== 'string' || (!text && !files.length) || text.length > maxLength) throw new MessagingError(`Write a message of 1 to ${maxLength} characters, or send an attachment`, 422)
     if (typeof clientKey !== 'string' || !/^[\w-]{1,100}$/.test(clientKey)) throw new MessagingError('A valid message retry key is required', 422)
+    const stored = files.length ? JSON.stringify(files) : null
     const lookup = () => db.selectFrom('chat_messages').selectAll().where('conversation_id', '=', id).where('sender_id', '=', actorId).where('client_key', '=', clientKey).executeTakeFirst()
     let row = await lookup()
     let inserted = false
     if (!row) {
       try {
-        await db.insertInto('chat_messages').values({ conversation_id: id, sender_id: actorId, body: body.trim(), client_key: clientKey, created_at: sqlDateTime(), read_at: null }).execute()
+        // The column is named only when there is something to put in it, so
+        // an application that never attaches keeps sending on a database that
+        // has not run the column guarantee yet.
+        await db.insertInto('chat_messages').values({ conversation_id: id, sender_id: actorId, body: text, client_key: clientKey, created_at: sqlDateTime(), read_at: null, ...(stored ? { attachments: stored } : {}) }).execute()
         inserted = true
       }
       catch (error) { if (!duplicate(error)) throw error }
       row = await lookup()
     }
     if (!row) throw new Error('Message could not be saved')
-    if (row.body !== body.trim()) throw new MessagingError('This retry key belongs to a different message', 409)
+    // A retry is the same message or it is not this key's. The attachments
+    // are part of that: the same words with a different photo is a new
+    // message, and silently keeping the first one would lose the second.
+    if (row.body !== text || String(row.attachments ?? '') !== String(stored ?? '')) throw new MessagingError('This retry key belongs to a different message', 409)
     const saved = message(row)
     if (inserted) {
       const deliver = async () => {

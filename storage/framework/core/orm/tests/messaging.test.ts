@@ -100,6 +100,36 @@ describe('persistent direct messaging', () => {
     await expect(athlete.markRead(id, last)).rejects.toMatchObject({ status: 404 })
     allowed = true
   })
+  it('carries attachments, takes a photo with no caption, and tells a retry from a new message', async () => {
+    const photo = [{ file: 'a1b2c3d4.jpeg', type: 'image/jpeg', size: 2048, width: 100, height: 200 }]
+    const sent = await coach.send(id, '', 'photo', photo)
+    expect(sent.body).toBe('')
+    expect(sent.attachments).toEqual(photo)
+    // Read back out of the column rather than out of the call that wrote it.
+    expect((await athlete.messages(id)).messages.at(-1)?.attachments).toEqual(photo)
+    // The same key with the same photo is the same message.
+    expect((await coach.send(id, '', 'photo', photo)).id).toBe(sent.id)
+    // The same key with a different photo is a different message, and keeping
+    // the first one silently would lose the second.
+    await expect(coach.send(id, '', 'photo', [{ file: 'other.jpeg' }])).rejects.toMatchObject({ status: 409 })
+    // Text-only messages read as an empty list, never null.
+    expect((await coach.send(id, 'Just words', 'words')).attachments).toEqual([])
+  })
+
+  it('refuses attachments it cannot record, and stores only the keys it knows', async () => {
+    const many = Array.from({ length: 11 }, (_, i) => ({ file: `${i}.jpeg` }))
+    await expect(coach.send(id, '   ', 'nothing', [])).rejects.toMatchObject({ status: 422 })
+    await expect(coach.send(id, 'ok', 'not-a-list', 'nope' as any)).rejects.toMatchObject({ status: 422 })
+    await expect(coach.send(id, 'ok', 'too-many', many)).rejects.toMatchObject({ status: 422 })
+    await expect(coach.send(id, 'ok', 'no-file', [{ file: '  ' }])).rejects.toMatchObject({ status: 422 })
+    await expect(coach.send(id, 'ok', 'bad-size', [{ file: 'a.jpeg', size: -1 }])).rejects.toMatchObject({ status: 422 })
+    await expect(coach.send(id, 'ok', 'long', [{ file: 'a.jpeg', type: 'x'.repeat(256) }])).rejects.toMatchObject({ status: 422 })
+    // Anything the caller adds is dropped, so the column cannot become a
+    // second message body.
+    const extras = await coach.send(id, 'with extras', 'extras', [{ file: 'b.jpeg', secret: 'do not store me' } as any])
+    expect(extras.attachments).toEqual([{ file: 'b.jpeg' }])
+  })
+
   it('binds an opt-in model instance to its own identity', async () => {
     const Person = defineModel({ name: 'Person', table: 'people', traits: { useMessaging: true, useTimestamps: false }, attributes: { name: {} } })
     const person = await Person.find(1)

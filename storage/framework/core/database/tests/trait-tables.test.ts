@@ -526,6 +526,10 @@ describe('drifted catalogue tables', () => {
     db.run(categorizablesTableSql(sql))
     db.run(taggablesTableSql(sql))
     db.run(commentablesTableSql(sql))
+    // Messaging too, now that a guaranteed column lives on `chat_messages`.
+    // A fresh table has to carry every guaranteed column, or the assertion
+    // below would be proving the opposite of what it says.
+    for (const statement of messagingTableSql(sql)) db.run(statement)
 
     for (const { table, column, definition } of traitTableColumnGuarantees(sql)) {
       // Adding a column that exists throws, and the caller tolerates exactly
@@ -543,6 +547,7 @@ describe('drifted catalogue tables', () => {
     expect(guarantees.map(g => `${g.table}.${g.column}`).sort())
       .toEqual([
         'categorizables.categorizable_id',
+        'chat_messages.attachments',
         'commentables.author_email',
         'commentables.author_name',
         'taggables.taggable_id',

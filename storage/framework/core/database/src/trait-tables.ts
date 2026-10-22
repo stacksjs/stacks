@@ -287,6 +287,14 @@ export function commentableUpvotesTableSql(sql: SqlHelpers): string {
 export function traitTableColumnGuarantees(sql: SqlHelpers): { table: string, column: string, definition: string }[] {
   return [
     {
+      // Messaging predates attachments, so a database created before them
+      // has the table without the column. Nullable, so the rows already in
+      // it stay valid.
+      table: 'chat_messages',
+      column: 'attachments',
+      definition: 'TEXT',
+    },
+    {
       table: 'taggables',
       column: 'taggable_id',
       definition: `INTEGER NOT NULL DEFAULT ${UNSCOPED_OWNER_ID}`,
@@ -396,6 +404,10 @@ export function messagingTableSql(sql: SqlHelpers): string[] {
       conversation_id VARCHAR(64) NOT NULL REFERENCES chat_conversations(id) ON DELETE CASCADE,
       sender_id BIGINT NOT NULL,
       body TEXT NOT NULL,
+      -- What the message carries besides its text, as the JSON the messaging
+      -- trait validates (orm/src/messaging.ts). Null for a message that is
+      -- only words, which is nearly all of them.
+      attachments TEXT,
       client_key VARCHAR(100) NOT NULL,
       created_at ${sql.datetime} NOT NULL,
       read_at ${sql.nullableTimestamp},
