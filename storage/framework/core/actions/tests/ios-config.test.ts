@@ -181,6 +181,22 @@ describe('iOS mobile build configuration', () => {
     expect(() => nativeScreenFiles({ nativeScreens: { '/missing': 'resources/views/missing.stx' } }, root)).toThrow('resources/views/missing.stx')
   })
 
+  it('gives the web views the keys the page shares with the Keychain', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'stacks-native-share-'))
+    await Bun.write(join(root, 'resources/views/account.stx'), '<div>Account</div>')
+    const calls: Array<Record<string, unknown>> = []
+    const compile = async (options: Record<string, unknown>) => {
+      calls.push(options)
+      return options.routesDir ? { routes: { Account: join(String(options.routesDir), 'Account.js') } } : { outFile: String(options.outFile) }
+    }
+    const config = { nativeScreens: { '/account': 'resources/views/account.stx' }, shareStorage: { auth_token: 'auth.token' } }
+    await compileNativeScreens(config, root, join(root, 'out'), compile)
+    await compileNativeScreens(config, root, join(root, 'routes'), compile, 'ios', { routes: true })
+    expect(calls.map(call => call.shareStorage)).toEqual([{ auth_token: 'auth.token' }, { auth_token: 'auth.token' }])
+    await compileNativeScreens({ nativeScreens: config.nativeScreens }, root, join(root, 'none'), compile)
+    expect('shareStorage' in calls[2]!).toBe(false)
+  })
+
   it('compiles a bundle per route for a Craft that runs each screen from its own file', async () => {
     const root = await mkdtemp(join(tmpdir(), 'stacks-native-routes-'))
     await Bun.write(join(root, 'resources/native/Today.stx'), '<View />')

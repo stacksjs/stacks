@@ -26,6 +26,8 @@ type CompileNativeBundle = (options: {
   sharedRuntime?: boolean
   /** Messages a language at a time, beside the route files (stx 0.2.578 and later). */
   messages?: { dir: string, languages: string[] }
+  /** Web-storage keys shared with the Keychain: a web view's sign-in is the native screens' (stx 0.2.661 and later). */
+  shareStorage?: Record<string, string>
 }) => Promise<NativeBundleResult>
 
 /**
@@ -88,7 +90,7 @@ export function nativeAppFile(config: Pick<IosMobileConfig, 'nativeApp'>, root: 
  * HQ's 17 MB. Otherwise, the one-file bundle.
  */
 export async function compileNativeScreens(
-  config: Pick<IosMobileConfig, 'nativeScreens' | 'nativeScreensDir' | 'nativeApp' | 'nativeMessages'>,
+  config: Pick<IosMobileConfig, 'nativeScreens' | 'nativeScreensDir' | 'nativeApp' | 'nativeMessages' | 'shareStorage'>,
   root: string,
   output: string,
   compile?: CompileNativeBundle,
@@ -111,6 +113,9 @@ export async function compileNativeScreens(
   }
 
   const compileBundle = compile ?? (await import('@stacksjs/stx/native') as { compileNativeBundle: CompileNativeBundle }).compileNativeBundle
+  // The keys the page shares with the Keychain are the web views' too: a
+  // sign-in in a view compiled as a native screen is the app's session.
+  const share = config.shareStorage && Object.keys(config.shareStorage).length ? { shareStorage: { ...config.shareStorage } } : {}
   mkdirSync(output, { recursive: true })
   const outFile = join(output, 'native-screens.js')
   const routesDir = join(output, 'native-screens')
@@ -123,7 +128,7 @@ export async function compileNativeScreens(
     // Only for a Craft that reads them: otherwise every language stays in
     // the screens' code, as in the one-file bundle.
     const messages = sharedRuntime && options.messages && config.nativeMessages ? { dir: config.nativeMessages.dir, languages: [...config.nativeMessages.languages] } : undefined
-    const result = await compileBundle({ screens, initialScreen: names[0], minify: true, routesDir, root, ...(sharedRuntime ? { sharedRuntime } : {}), ...(app ? { app } : {}), ...(messages ? { messages } : {}) })
+    const result = await compileBundle({ screens, initialScreen: names[0], minify: true, routesDir, root, ...(sharedRuntime ? { sharedRuntime } : {}), ...(app ? { app } : {}), ...(messages ? { messages } : {}), ...share })
     if (result.routes && Object.keys(result.routes).length)
       return { outFile: routesDir, diagnostics: result.diagnostics ?? [] }
     // An stx without routesDir answered the one-file bundle's code instead.
@@ -131,6 +136,6 @@ export async function compileNativeScreens(
     writeFileSync(outFile, result.code)
     return { outFile, diagnostics: result.diagnostics ?? [] }
   }
-  const result = await compileBundle({ screens, initialScreen: names[0], minify: true, outFile, root, ...(app ? { app } : {}) })
+  const result = await compileBundle({ screens, initialScreen: names[0], minify: true, outFile, root, ...(app ? { app } : {}), ...share })
   return { outFile: result.outFile || outFile, diagnostics: result.diagnostics ?? [] }
 }
