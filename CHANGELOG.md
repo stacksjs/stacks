@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.258...v0.75.259)
+
+## ✨ Features
+
+- **mobile**: let a native route open a web view ([52c97cd](https://github.com/stacksjs/stacks/commit/52c97cd)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **cli**: allow bounded two-minute build commands ([3c52a79](https://github.com/stacksjs/stacks/commit/3c52a79)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **cli**: capture bounded process output with owned cleanup ([2dd4edf](https://github.com/stacksjs/stacks/commit/2dd4edf)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **deps**: stx 0.2.656 ([ca2e358](https://github.com/stacksjs/stacks/commit/ca2e358)) _(by Chris Breuer <chris@stacksjs.com>)_
+- integrate release metadata for bounded process capture ([1ed1657](https://github.com/stacksjs/stacks/commit/1ed1657)) _(by Chris Breuer <chris@stacksjs.com>)_
+- integrate main for bounded process capture ([829658c](https://github.com/stacksjs/stacks/commit/829658c)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.257...v0.75.258)
 
 ## ✨ Features
