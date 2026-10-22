@@ -2999,6 +2999,22 @@ async function getActionRegistry(): Promise<Record<string, string> | null> {
   return actionRegistryPromise
 }
 
+/** Whether a registry entry names a file under the app's own `app/Actions`. */
+function isInsideAppActions(file: string): boolean {
+  const local = relative(appPath('Actions'), file)
+  return Boolean(local) && local !== '..' && !local.startsWith(`..${sep}`) && !isAbsolute(local)
+}
+
+const staleRegistryWarned = new Set<string>()
+
+/** Said once per action, since it names a registry to regenerate rather than a request that failed. */
+function warnStaleActionRegistry(name: string, registered: string, appFile: string): void {
+  if (staleRegistryWarned.has(name))
+    return
+  staleRegistryWarned.add(name)
+  log.warn(`[router] The action registry maps ${name} to ${registered}, but the app has ${appFile}; using the app's. The registry is stale: run \`./buddy generate:auto-imports\` and commit storage/framework/auto-imports if you track it.`)
+}
+
 /** Preserve source precedence; native app builds emit colocated .js Actions. */
 function appActionModulePath(sourcePath: string): string {
   if (!sourcePath.endsWith('.ts') || lstatSync(sourcePath, { throwIfNoEntry: false }))
@@ -3067,13 +3083,22 @@ async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteH
     // it is the same list the compiler checked the handler string against, and
     // it works inside a compiled binary where probing source paths does not.
     const registered = (await getActionRegistry())?.[modulePath]
+    const userPath = appActionModulePath(projectPath(`app/${modulePath}.ts`))
 
-    if (registered) {
+    if (registered && !isInsideAppActions(registered) && await fileExists(userPath)) {
+      // The app has this action and the registry names another file: the
+      // registry predates the app's file. Every other branch here prefers the
+      // app, and so does the generator whenever it runs, so the app's file
+      // wins. A stale committed registry ran an app on the framework's
+      // default auth for a week, with nothing saying so (stacksjs/stacks#2947).
+      warnStaleActionRegistry(modulePath, registered, userPath)
+      fullPath = userPath
+    }
+    else if (registered) {
       fullPath = appActionModulePath(registered)
     }
     else {
       // Try user path first, then fall back to defaults
-      const userPath = appActionModulePath(projectPath(`app/${modulePath}.ts`))
       const defaultPath = resolveDefaultsPath(`app/${modulePath}.ts`)
       fullPath = await fileExists(userPath) ? userPath : defaultPath
     }
