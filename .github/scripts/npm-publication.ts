@@ -8,7 +8,7 @@ export interface AcceptedPublication {
   shasum: string
 }
 
-/** Preserve the original archive identity printed before an accepted upload. */
+/** Preserve archive identity when an upload may already have been staged. */
 export function acceptedPublications(log: string): AcceptedPublication[] {
   const accepted = new Map<string, AcceptedPublication>()
   let current: Partial<AcceptedPublication> | undefined
@@ -20,7 +20,8 @@ export function acceptedPublications(log: string): AcceptedPublication[] {
     }
     else if (line.startsWith('Integrity: ') && current) current.integrity = line.slice(11)
     else if (line.startsWith('Shasum: ') && current) current.shasum = line.slice(8)
-    else if (line.includes('Upload accepted; publication is pending public metadata')) {
+    else if (line.includes('Upload accepted; publication is pending public metadata')
+      || line.includes('Upload outcome is pending public verification. Do not send another upload while this version may be staged.')) {
       if (!current?.name || !current.version
         || !/^sha512-[A-Za-z0-9+/]{86}==$/.test(current.integrity ?? '')
         || !/^[a-f0-9]{40}$/.test(current.shasum ?? '')) {
