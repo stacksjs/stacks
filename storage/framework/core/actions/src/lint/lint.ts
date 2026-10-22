@@ -1,10 +1,10 @@
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
 import { spawnSync } from 'node:child_process'
-import { existsSync } from 'node:fs'
-import { join } from 'node:path'
+import { existsSync, statSync } from 'node:fs'
+import { join, relative, resolve } from 'node:path'
 import { runFormat, runLint } from 'pickier'
-import { isLintablePath } from './files'
+import { isIgnoredLocation, isLintableExtension, isLintablePath } from './files'
 
 // Code-style actions, exported as plain functions so commands (`buddy lint`)
 // and the release pipeline import and call them directly. They drive pickier
@@ -50,6 +50,74 @@ export function lintableFiles(cwd: string): string[] {
   throw new Error(`Could not list the files to lint: \`git ls-files\` failed in ${cwd} (${reason})`)
 }
 
+/**
+ * Narrow the project's lintable files to the paths a caller named.
+ *
+ * A path that matches nothing THROWS rather than falling back to the whole
+ * project. `buddy lint` and `buddy lint:fix` used to accept positional paths,
+ * discard them and run over everything, so naming one file rewrote 43: a
+ * caller who believes they scoped the change has to hear otherwise rather
+ * than read it out of `git status` (stacksjs/stacks#2953).
+ *
+ * Selection runs over {@link lintableFiles}, so .gitignore and the lintable
+ * extensions still decide, and naming a directory lints what is inside it.
+ */
+export function selectLintableFiles(cwd: string, paths: readonly string[]): string[] {
+  const all = lintableFiles(cwd)
+  const pool = new Set(all)
+  const selected = new Set<string>()
+
+  for (const named of paths) {
+    const rel = projectRelative(cwd, named)
+    if (rel === null)
+      throw new Error(`Cannot lint ${named}: it is outside the project at ${cwd}`)
+
+    // The whole project, named explicitly (`.` or the root itself).
+    if (rel === '') {
+      for (const file of all) selected.add(file)
+      continue
+    }
+
+    if (pool.has(rel)) {
+      selected.add(rel)
+      continue
+    }
+
+    const under = all.filter(file => file.startsWith(`${rel}/`))
+    if (under.length === 0)
+      throw new Error(whyNotLintable(cwd, named, rel))
+
+    for (const file of under) selected.add(file)
+  }
+
+  return [...selected].sort()
+}
+
+/** `named` as a project-relative POSIX path, or null if it escapes `cwd`. */
+function projectRelative(cwd: string, named: string): string | null {
+  const rel = relative(cwd, resolve(cwd, named)).split('\\').join('/').replace(/\/+$/, '')
+  if (rel === '..' || rel.startsWith('../'))
+    return null
+  return rel === '.' ? '' : rel
+}
+
+/**
+ * Why a path the caller named is not in the lintable set. Each case is a
+ * different mistake and a different fix, so they do not share a message.
+ */
+function whyNotLintable(cwd: string, named: string, rel: string): string {
+  const onDisk = join(cwd, rel)
+  if (!existsSync(onDisk))
+    return `Cannot lint ${named}: no such file or directory`
+  if (isIgnoredLocation(rel))
+    return `Cannot lint ${named}: it is dependency, build or cache output, which buddy lint never reads`
+  if (statSync(onDisk).isDirectory())
+    return `Cannot lint ${named}: it holds no files buddy lint handles`
+  if (!isLintableExtension(rel))
+    return `Cannot lint ${named}: buddy lint handles .ts, .js, .stx, .json, .md, .yaml and .yml files`
+  return `Cannot lint ${named}: it is not one of the project's files, so .gitignore excludes it`
+}
+
 /** Every lintable file under `cwd`, for a directory git cannot list. */
 function walkLintableFiles(cwd: string): string[] {
   return Array.from(new Bun.Glob('**/*').scanSync({ cwd, onlyFiles: true, dot: true }))
@@ -64,7 +132,7 @@ function walkLintableFiles(cwd: string): string[] {
  * pickier auto-discovers its own config (pickier.config.ts, .config/pickier.ts,
  * …), so we don't pass one.
  */
-export async function lintProject(options: { cwd?: string, fix?: boolean, maxWarnings?: number } = {}): Promise<{ ok: boolean }> {
+export async function lintProject(options: { cwd?: string, fix?: boolean, maxWarnings?: number, paths?: readonly string[] } = {}): Promise<{ ok: boolean }> {
   const cwd = options.cwd ?? process.cwd()
   log.info(options.fix ? 'Ensuring Code Style...' : 'Checking Code Style...')
   const maxWarnings = options.maxWarnings ?? 9999
@@ -75,7 +143,7 @@ export async function lintProject(options: { cwd?: string, fix?: boolean, maxWar
 
   let files: string[]
   try {
-    files = lintableFiles(cwd)
+    files = options.paths?.length ? selectLintableFiles(cwd, options.paths) : lintableFiles(cwd)
   }
   catch (error) {
     await log.error(error instanceof Error ? error.message : String(error))
@@ -97,7 +165,7 @@ export async function lintProject(options: { cwd?: string, fix?: boolean, maxWar
 }
 
 /** Auto-fix the project's code style — `lintProject` with fixing enabled. */
-export function lintFix(options: { cwd?: string, maxWarnings?: number } = {}): Promise<{ ok: boolean }> {
+export function lintFix(options: { cwd?: string, maxWarnings?: number, paths?: readonly string[] } = {}): Promise<{ ok: boolean }> {
   return lintProject({ ...options, fix: true })
 }
 
@@ -105,11 +173,11 @@ export function lintFix(options: { cwd?: string, maxWarnings?: number } = {}): P
  * Format the project via pickier's SDK. `write` applies changes; `check`
  * verifies formatting without writing (fails if anything is unformatted).
  */
-export async function formatProject(options: { cwd?: string, write?: boolean, check?: boolean } = {}): Promise<{ ok: boolean }> {
+export async function formatProject(options: { cwd?: string, write?: boolean, check?: boolean, paths?: readonly string[] } = {}): Promise<{ ok: boolean }> {
   const cwd = options.cwd ?? process.cwd()
   let files: string[]
   try {
-    files = lintableFiles(cwd)
+    files = options.paths?.length ? selectLintableFiles(cwd, options.paths) : lintableFiles(cwd)
   }
   catch (error) {
     await log.error(error instanceof Error ? error.message : String(error))

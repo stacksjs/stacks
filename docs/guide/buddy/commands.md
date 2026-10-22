@@ -2414,10 +2414,10 @@ buddy feedback:tokens --board Feedback
 
 Format your project codebase
 
-- Usage: `$ buddy format`
+- Usage: `$ buddy format [...paths]`
 - Namespace: none
 - Aliases: none
-- Arguments: none
+- Arguments: `[paths...]`
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
@@ -2425,18 +2425,32 @@ Format your project codebase
 | `-c`, `--check` | Check formatting without making changes | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
+Examples:
+
+```bash
+buddy format
+buddy format resources/components
+```
+
 ### `format:check`
 
 Check formatting without making changes
 
-- Usage: `$ buddy format:check`
+- Usage: `$ buddy format:check [...paths]`
 - Namespace: `format`
 - Aliases: none
-- Arguments: none
+- Arguments: `[paths...]`
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy format:check
+buddy format:check docs
+```
 
 ### `forms:install`
 
@@ -2988,10 +3002,10 @@ buddy link:core --all --path ../stacks
 
 Automagically lints your project codebase
 
-- Usage: `$ buddy lint`
+- Usage: `$ buddy lint [...paths]`
 - Namespace: none
 - Aliases: none
-- Arguments: none
+- Arguments: `[paths...]`
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
@@ -3000,19 +3014,33 @@ Automagically lints your project codebase
 | `--max-warnings` | Fail when warnings exceed this count | value, required | - |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
+Examples:
+
+```bash
+buddy lint
+buddy lint app/Jobs database/seeders
+```
+
 ### `lint:fix`
 
 Automagically fixes all lint errors
 
-- Usage: `$ buddy lint:fix`
+- Usage: `$ buddy lint:fix [...paths]`
 - Namespace: `lint`
 - Aliases: none
-- Arguments: none
+- Arguments: `[paths...]`
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--max-warnings` | Fail when warnings exceed this count | value, required | - |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy lint:fix
+buddy lint:fix app/Jobs/Foo.ts
+```
 
 ### `list`
 

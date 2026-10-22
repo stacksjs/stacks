@@ -14,7 +14,7 @@ import { ExitCode } from '@stacksjs/types'
 async function runStyleAction(
   entry: 'lintProject' | 'lintFix' | 'formatProject',
   label: string,
-  options?: { write?: boolean, check?: boolean, maxWarnings?: number },
+  options?: { write?: boolean, check?: boolean, maxWarnings?: number, paths?: readonly string[] },
 ): Promise<void> {
   const actions = await import('@stacksjs/actions')
   const { ok } = await actions[entry](options as never)
@@ -80,6 +80,24 @@ async function runStxChecks(startTime: number): Promise<void> {
   await outro('All stx checks pass', { startTime, useSeconds: true })
 }
 
+/**
+ * Say what was covered. A caller who named paths has just been told the
+ * command ran; which files it ran over is the part they came for.
+ */
+function scopedOutro(label: string, paths: readonly string[] | undefined): string {
+  if (!paths?.length)
+    return `${label} your project`
+  return `${label} ${paths.length === 1 ? paths[0] : `${paths.length} paths`}`
+}
+
+/** Refuse paths a subcommand cannot scope to, rather than discarding them. */
+async function refusePaths(command: string, paths: readonly string[], why: string, startTime: number): Promise<never> {
+  await log.error(`${command} does not take paths: ${why}.`)
+  log.info(`Drop ${paths.join(' ')}, or run \`buddy lint ${paths.join(' ')}\` for the code-style checks on those paths.`)
+  await outro(`${command} takes no paths`, { startTime, useSeconds: true, type: 'error' })
+  process.exit(ExitCode.FatalError)
+}
+
 export function lint(buddy: CLI): void {
   const descriptions = {
     lint: 'Automagically lints your project codebase',
@@ -92,67 +110,80 @@ export function lint(buddy: CLI): void {
   }
 
   buddy
-    .command('lint', descriptions.lint)
+    .command('lint [...paths]', descriptions.lint)
     .option('-f, --fix', descriptions.lintFix, { default: false })
     .option('--stx', descriptions.stx, { default: false })
     .option('--max-warnings <count>', 'Fail when warnings exceed this count')
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: LintOptions & { stx?: boolean }) => {
+    .example('buddy lint')
+    .example('buddy lint app/Jobs database/seeders')
+    .action(async (paths: string[] | undefined, options: LintOptions & { stx?: boolean }) => {
       log.debug('Running `buddy lint` ...', options)
 
       const startTime = await intro('buddy lint')
 
       if (options.stx) {
+        // The stx checks grade the project against the baselines in
+        // config/lint.ts, so there is no honest way to scope them to a path.
+        // Saying so beats accepting the paths and ignoring them.
+        if (paths?.length)
+          await refusePaths('lint --stx', paths, 'the stx checks grade the whole project against the baselines in config/lint.ts', startTime)
         await runStxChecks(startTime)
         return
       }
 
       const budget = options.maxWarnings ?? options['max-warnings']
-      await runStyleAction(options.fix ? 'lintFix' : 'lintProject', 'lint', { maxWarnings: budget === undefined ? undefined : Number(budget) })
+      await runStyleAction(options.fix ? 'lintFix' : 'lintProject', 'lint', { maxWarnings: budget === undefined ? undefined : Number(budget), paths })
 
-      await outro('Linted your project', { startTime, useSeconds: true })
+      await outro(scopedOutro('Linted', paths), { startTime, useSeconds: true })
     })
 
   buddy
-    .command('lint:fix', descriptions.lintFix)
+    .command('lint:fix [...paths]', descriptions.lintFix)
     .option('--max-warnings <count>', 'Fail when warnings exceed this count')
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: LintOptions) => {
+    .example('buddy lint:fix')
+    .example('buddy lint:fix app/Jobs/Foo.ts')
+    .action(async (paths: string[] | undefined, options: LintOptions) => {
       log.debug('Running `buddy lint:fix` ...', options)
 
       const startTime = await intro('buddy lint:fix')
 
       log.info('Fixing lint errors...')
       const budget = options.maxWarnings ?? options['max-warnings']
-      await runStyleAction('lintFix', 'lint:fix', { maxWarnings: budget === undefined ? undefined : Number(budget) })
+      await runStyleAction('lintFix', 'lint:fix', { maxWarnings: budget === undefined ? undefined : Number(budget), paths })
 
-      await outro('Fixed lint errors', { startTime, useSeconds: true })
+      await outro(scopedOutro('Fixed lint errors', paths), { startTime, useSeconds: true })
     })
 
   buddy
-    .command('format', descriptions.format)
+    .command('format [...paths]', descriptions.format)
     .option('-w, --write', 'Write changes to files', { default: false })
     .option('-c, --check', descriptions.formatCheck, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: LintOptions & { write?: boolean, check?: boolean }) => {
+    .example('buddy format')
+    .example('buddy format resources/components')
+    .action(async (paths: string[] | undefined, options: LintOptions & { write?: boolean, check?: boolean }) => {
       log.debug('Running `buddy format` ...', options)
 
       const startTime = await intro('buddy format')
 
-      await runStyleAction('formatProject', 'format', options.check ? { check: true } : { write: true })
+      await runStyleAction('formatProject', 'format', options.check ? { check: true, paths } : { write: true, paths })
 
-      await outro('Formatted your project', { startTime, useSeconds: true })
+      await outro(scopedOutro('Formatted', paths), { startTime, useSeconds: true })
     })
 
   buddy
-    .command('format:check', descriptions.formatCheck)
+    .command('format:check [...paths]', descriptions.formatCheck)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: LintOptions) => {
+    .example('buddy format:check')
+    .example('buddy format:check docs')
+    .action(async (paths: string[] | undefined, options: LintOptions) => {
       log.debug('Running `buddy format:check` ...', options)
 
       const startTime = await intro('buddy format:check')
 
-      await runStyleAction('formatProject', 'format:check', { check: true })
+      await runStyleAction('formatProject', 'format:check', { check: true, paths })
 
       await outro('Format check complete', { startTime, useSeconds: true })
     })

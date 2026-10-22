@@ -19,6 +19,15 @@ it does not wrap ESLint. ESLint-style disable comments are compatibility syntax.
 - `./buddy format`: write formatting; `./buddy format --check` checks without writing.
 - `./buddy lint --stx`: run the separate stx conformance checks from `config/lint.ts`.
 
+All four take paths and lint only what you name: `./buddy lint:fix app/Jobs/Foo.ts`
+fixes that file, `./buddy lint app/Jobs docs` covers those two directories, and
+naming none covers the project. Scope `lint:fix` this way whenever you are
+fixing something specific, because its project-wide run also applies rules you
+are not working on (class ordering across `resources/`, markdown in `docs/`),
+and those land in your diff. A path that matches nothing is an error rather
+than a silent fallback to the project, so a typo cannot widen the run.
+`--stx` grades the project against the config baselines and refuses paths.
+
 For direct CLI use, run `bunx --bun pickier .`, adding `--fix` for supported
 fixes. Re-run without `--fix` to confirm remaining findings. Only apply fixes
 that preserve the source behavior; investigate false positives at Pickier's source.
