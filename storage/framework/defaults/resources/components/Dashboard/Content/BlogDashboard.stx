@@ -1,3 +1,5 @@
+@import('../UI/Table')
+
 <script server>
 import { publicApplicationUrl } from '../../../../functions/public-application-url'
 
@@ -102,57 +104,47 @@ defineClientPayload({ blogUrl })
       </div>
 
       <div x-show="!isLoading() && !loadError() && filteredPosts().length > 0" class="overflow-x-auto max-w-full w-full">
-        <table class="min-w-full text-sm divide-neutral-200 divide-y dark:divide-neutral-800">
-          <thead class="font-semibold text-left text-neutral-600 text-xs uppercase dark:text-neutral-300 bg-neutral-50 dark:bg-neutral-950/60">
-            <tr>
-              <th scope="col" class="px-4 py-3">Post</th>
-              <th scope="col" class="px-4 py-3">Status</th>
-              <th scope="col" class="px-4 py-3">Date</th>
-              <th scope="col" class="px-4 py-3">Length</th>
-              <th scope="col" class="px-4 py-3"><span class="sr-only">Actions</span></th>
-            </tr>
-          </thead>
-          <tbody class="divide-neutral-200 divide-y dark:divide-neutral-800">
-            <template :for="post in filteredPosts">
-              <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-950/60">
-                <td class="px-4 py-3">
-                  <div class="flex gap-2 items-center">
-                    <span class="font-medium">{{ post.title }}</span>
-                    <span x-show="post.featured" class="inline-flex px-1.5 py-0.5 font-medium text-[11px] text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/40 rounded">Featured</span>
-                  </div>
-                  <div class="mt-1 max-w-xl text-neutral-500 text-xs truncate dark:text-neutral-400">{{ post.description || post.slug }}</div>
-                </td>
-                <td class="px-4 py-3">
-                  <span :class="statusClass(post.draft)" class="inline-flex px-2 py-0.5 font-medium text-xs rounded-full">
-                    {{ post.draft ? 'Draft' : 'Published' }}
-                  </span>
-                </td>
-                <td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">{{ formatDate(post.date) }}</td>
-                <td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">{{ post.readingTime }} min read</td>
-                <td class="px-4 py-3">
-                  <div class="flex gap-1 justify-end">
-                    <a
-                      x-show="!post.draft"
-                      :href="publicPostUrl(post.slug)"
-                      target="_blank"
-                      rel="noopener"
-                      :title="'View ' + post.title"
-                      class="p-2 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded"
-                    >
-                      <span class="block h-4 w-4 i-hugeicons-view"></span>
-                    </a>
-                    <Button variant="ghost" size="sm" iconOnly :ariaLabel="'Edit ' + post.title" @click="openEditor(post)">
-                      <span class="block h-4 w-4 i-hugeicons-edit-01"></span>
-                    </Button>
-                    <Button variant="ghost" size="sm" iconOnly :ariaLabel="'Delete ' + post.title" @click="askDelete(post)">
-                      <span class="block h-4 w-4 text-red-600 dark:text-red-400 i-hugeicons-waste"></span>
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            </template>
-          </tbody>
-        </table>
+        {{--
+          The page owns the search, the status filter and the loading, error
+          and empty states, so the table brings only sorting and paging. The
+          post is slotted for its featured mark; the actions are a slot for the
+          view link, which only a published post has.
+        --}}
+        <Table
+          :columns="POST_COLUMNS"
+          :data="postRows()"
+          row-key="slug"
+          paginated
+          :page-size="25"
+        >
+          <template #cell="{ row }">
+            <div class="flex gap-2 items-center">
+              <span class="font-medium" x-text="row.title"></span>
+              <span :if="row.featured" class="inline-flex px-1.5 py-0.5 font-medium text-[11px] text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/40 rounded">Featured</span>
+            </div>
+            <div class="mt-1 max-w-xl text-neutral-500 text-xs truncate dark:text-neutral-400" x-text="row.summary"></div>
+          </template>
+          <template #actions="{ row }">
+            <div class="flex gap-1 justify-end">
+              <a
+                :if="!row.draft"
+                :href="row.publicUrl"
+                target="_blank"
+                rel="noopener"
+                :title="'View ' + row.title"
+                class="p-2 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded"
+              >
+                <span class="block h-4 w-4 i-hugeicons-view"></span>
+              </a>
+              <Button variant="ghost" size="sm" iconOnly :ariaLabel="'Edit ' + row.title" @click="openEditor(row.post)">
+                <span class="block h-4 w-4 i-hugeicons-edit-01"></span>
+              </Button>
+              <Button variant="ghost" size="sm" iconOnly :ariaLabel="'Delete ' + row.title" @click="askDelete(row.post)">
+                <span class="block h-4 w-4 text-red-600 dark:text-red-400 i-hugeicons-waste"></span>
+              </Button>
+            </div>
+          </template>
+        </Table>
       </div>
 
       <!-- Empty: distinguishes "no posts yet" from "nothing matched the filter". -->
@@ -272,22 +264,36 @@ const filteredPosts = derived(() => {
   })
 })
 
-function statusClass(draft: boolean) {
-  return draft
-    ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200'
-    : 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200'
-}
+const POST_COLUMNS = [
+  { key: 'title', label: 'Post', sortable: true, slotted: true },
+  {
+    key: 'status',
+    label: 'Status',
+    type: 'badge' as const,
+    sortable: true,
+    badgeClasses: {
+      draft: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200',
+      published: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200',
+    },
+    badgeLabels: { draft: 'Draft', published: 'Published' },
+  },
+  { key: 'date', label: 'Date', type: 'date' as const, sortable: true, emptyText: 'No date', class: 'text-neutral-600 dark:text-neutral-300' },
+  { key: 'lengthLabel', label: 'Length', searchable: false, class: 'text-neutral-600 dark:text-neutral-300' },
+]
 
-function formatDate(value: string | number | Date | null | undefined) {
-  if (!value)
-    return 'No date'
-
-  const date = new Date(value)
-
-  return Number.isNaN(date.getTime())
-    ? value
-    : date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
-}
+/** What the table reads; `post` is the record the edit and delete actions take. */
+const postRows = derived(() => filteredPosts().map(post => ({
+  slug: post.slug,
+  title: post.title,
+  featured: post.featured,
+  draft: post.draft,
+  summary: post.description || post.slug,
+  status: post.draft ? 'draft' : 'published',
+  date: post.date,
+  lengthLabel: `${post.readingTime} min read`,
+  publicUrl: publicPostUrl(post.slug),
+  post,
+})))
 
 function clearFilters() {
   searchQuery.set('')

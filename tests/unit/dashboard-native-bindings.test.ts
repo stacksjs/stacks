@@ -327,7 +327,10 @@ describe('dashboard native STX bindings', () => {
     expect(staticClassLists(blog)).toContainEqual(expect.arrayContaining(['overflow-x-auto', 'max-w-full', 'w-full']))
     expect(blog).toContain("publicApplicationUrl('/blog')")
     expect(blog).toContain('href="{{ blogUrl }}"')
-    expect(blog).toContain(':href="publicPostUrl(post.slug)"')
+    // The view link reaches the public site through publicPostUrl, computed
+    // per row now that the list is a UI/Table (stacksjs/stacks#2925).
+    expect(blog).toContain('publicUrl: publicPostUrl(post.slug)')
+    expect(blog).toContain(':href="row.publicUrl"')
     expect(blog).toContain('encodeURIComponent(String(slug))')
     expect(blog).not.toContain('href="/blog"')
     expect(blog).toContain('<BlogPostEditorDialog')
