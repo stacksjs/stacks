@@ -46,8 +46,8 @@
     "@iconify-json/f7": "^1.2.2",
     "@iconify-json/hugeicons": "^1.2.35",
     "@stacksjs/mobile": "0.75.271",
-    "@stacksjs/sanitizer": "0.2.668",
-    "@stacksjs/stx": "0.2.668",
+    "@stacksjs/sanitizer": "0.2.669",
+    "@stacksjs/stx": "0.2.669",
     "@xterm/addon-fit": "^0.11.0",
     "@xterm/xterm": "^6.0.0",
     "ts-qr-codes": "^0.1.8"
