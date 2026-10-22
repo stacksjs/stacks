@@ -62,6 +62,14 @@ schema and excludes framework demo tables. Set
 wants the merged registry; application models override matching framework names.
 Discovered package model roots also contribute their declared models.
 
+The framework's default routes follow the same exclusion. At boot, a default
+route whose framework action uses an excluded model is not registered when the
+database has no table for that model, and one warning names each such route
+(#2943). Before this, those routes answered 500. If the table exists (for
+example, the app created it before the exclusion), the route registers as usual.
+Publish the model (`buddy publish model <Name>`) to serve the route from the
+app's own schema.
+
 The generator diffs the resolved registry against the committed dialect snapshot.
 An application does not need an `app/Models/` directory for fallback framework
 model migrations to be discovered. Inspect the resolved scope with verbose output
