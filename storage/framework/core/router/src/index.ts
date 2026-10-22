@@ -70,6 +70,8 @@ export type { UrlParams } from './stacks-router'
 // it, which is how the OpenAPI generator reads such a route's schema without a
 // file path to import.
 export { isRouterAction, wrapAction } from './stacks-router'
+export { withRouteAdmission } from './stacks-router'
+export type { RouteAdmission, WithheldRoute } from './stacks-router'
 export type { ChainableRoute, RedirectRoute, RedirectStatus, RouterAction, StacksHandler, StacksRouterInstance } from './stacks-router'
 
 /*

@@ -585,6 +585,50 @@ const routeStateRegistries = new Set<Map<string, RouteRuntimeState>>()
 const clearedRouteKeysByRegistry = new WeakMap<Map<string, RouteRuntimeState>, Set<string>>()
 
 /**
+ * Decides whether a route bound to a string handler (`'Actions/…'`) may be
+ * registered. Returns the reason to withhold it, or undefined to register it.
+ */
+export type RouteAdmission = (handler: string) => string | undefined
+
+/** A route {@link withRouteAdmission} declined to register, and why. */
+export interface WithheldRoute {
+  method: string
+  path: string
+  handler: string
+  reason: string
+}
+
+let routeAdmission: RouteAdmission | undefined
+let withheldRoutes: WithheldRoute[] = []
+
+/**
+ * Register routes with an admission check in force, and report what it withheld.
+ *
+ * For the framework's default route bundles, whose actions can depend on
+ * framework models an app has excluded from its schema. Registering one of
+ * those routes served an endpoint that could only answer 500 over a table that
+ * will never exist (stacksjs/stacks#2943). A withheld route is never handed to
+ * bun-router, so it answers 404 like any route that does not exist, and the
+ * chain API on it is inert.
+ *
+ * Applies to every router instance while `register` runs, and to nothing after.
+ */
+export async function withRouteAdmission(admit: RouteAdmission | undefined, register: () => Promise<void>): Promise<WithheldRoute[]> {
+  const previous = routeAdmission
+  const previousWithheld = withheldRoutes
+  routeAdmission = admit
+  withheldRoutes = []
+  try {
+    await register()
+    return withheldRoutes
+  }
+  finally {
+    routeAdmission = previous
+    withheldRoutes = previousWithheld
+  }
+}
+
+/**
  * Resolve a chainable-form `window` arg (`'minute'` or `300`) to a
  * positive integer of seconds. Throws on malformed input at
  * registration time so the typo surfaces at boot, not on the first
@@ -4938,6 +4982,13 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     // duplicate skip is per instance: two `createStacksRouter()` instances
     // registering the same path both serve it, and both must keep their own
     // middleware.
+    // Withheld: no state, no bun-router registration, an inert chain.
+    const withheldBecause = routeAdmission && typeof _handler === 'string' ? routeAdmission(_handler) : undefined
+    if (withheldBecause) {
+      withheldRoutes.push({ method, path: fullPath, handler: _handler as string, reason: withheldBecause })
+      return { fullPath, routeKey, shadowed: true, withheld: true }
+    }
+
     const shadowed = routeStates.has(routeKey)
       || clearedRouteKeysByRegistry.get(routeStates)?.has(routeKey) === true
 
@@ -4975,7 +5026,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       registry.set(routeKey, _handler)
     }
 
-    return { fullPath, routeKey, shadowed }
+    return { fullPath, routeKey, shadowed, withheld: false }
   }
 
   const stacksRouter: StacksRouterInstance = {
@@ -5017,38 +5068,44 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
 
     // HTTP methods with string handler support
     get(path: string, handler: StacksHandler) {
-      const { fullPath, routeKey, shadowed } = registerRoute('GET', path, handler)
-      bunRouter.get(fullPath, createMiddlewareHandler(bunRouter, routeStates, routeKey, handler, csrfEnabled))
+      const { fullPath, routeKey, shadowed, withheld } = registerRoute('GET', path, handler)
+      if (!withheld)
+        bunRouter.get(fullPath, createMiddlewareHandler(bunRouter, routeStates, routeKey, handler, csrfEnabled))
       return createChainableRoute(routeStates, routeKey, shadowed)
     },
 
     post(path: string, handler: StacksHandler) {
-      const { fullPath, routeKey, shadowed } = registerRoute('POST', path, handler)
-      bunRouter.post(fullPath, createMiddlewareHandler(bunRouter, routeStates, routeKey, handler, csrfEnabled))
+      const { fullPath, routeKey, shadowed, withheld } = registerRoute('POST', path, handler)
+      if (!withheld)
+        bunRouter.post(fullPath, createMiddlewareHandler(bunRouter, routeStates, routeKey, handler, csrfEnabled))
       return createChainableRoute(routeStates, routeKey, shadowed)
     },
 
     put(path: string, handler: StacksHandler) {
-      const { fullPath, routeKey, shadowed } = registerRoute('PUT', path, handler)
-      bunRouter.put(fullPath, createMiddlewareHandler(bunRouter, routeStates, routeKey, handler, csrfEnabled))
+      const { fullPath, routeKey, shadowed, withheld } = registerRoute('PUT', path, handler)
+      if (!withheld)
+        bunRouter.put(fullPath, createMiddlewareHandler(bunRouter, routeStates, routeKey, handler, csrfEnabled))
       return createChainableRoute(routeStates, routeKey, shadowed)
     },
 
     patch(path: string, handler: StacksHandler) {
-      const { fullPath, routeKey, shadowed } = registerRoute('PATCH', path, handler)
-      bunRouter.patch(fullPath, createMiddlewareHandler(bunRouter, routeStates, routeKey, handler, csrfEnabled))
+      const { fullPath, routeKey, shadowed, withheld } = registerRoute('PATCH', path, handler)
+      if (!withheld)
+        bunRouter.patch(fullPath, createMiddlewareHandler(bunRouter, routeStates, routeKey, handler, csrfEnabled))
       return createChainableRoute(routeStates, routeKey, shadowed)
     },
 
     delete(path: string, handler: StacksHandler) {
-      const { fullPath, routeKey, shadowed } = registerRoute('DELETE', path, handler)
-      bunRouter.delete(fullPath, createMiddlewareHandler(bunRouter, routeStates, routeKey, handler, csrfEnabled))
+      const { fullPath, routeKey, shadowed, withheld } = registerRoute('DELETE', path, handler)
+      if (!withheld)
+        bunRouter.delete(fullPath, createMiddlewareHandler(bunRouter, routeStates, routeKey, handler, csrfEnabled))
       return createChainableRoute(routeStates, routeKey, shadowed)
     },
 
     options(path: string, handler: StacksHandler) {
-      const { fullPath, routeKey, shadowed } = registerRoute('OPTIONS', path, handler)
-      bunRouter.options(fullPath, createMiddlewareHandler(bunRouter, routeStates, routeKey, handler, csrfEnabled))
+      const { fullPath, routeKey, shadowed, withheld } = registerRoute('OPTIONS', path, handler)
+      if (!withheld)
+        bunRouter.options(fullPath, createMiddlewareHandler(bunRouter, routeStates, routeKey, handler, csrfEnabled))
       return createChainableRoute(routeStates, routeKey, shadowed)
     },
 
@@ -5207,7 +5264,9 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       const routeKeys: string[] = []
       for (const method of methods) {
         const m = method.toUpperCase()
-        const { fullPath, routeKey, shadowed } = registerRoute(m, path, handler)
+        const { fullPath, routeKey, shadowed, withheld } = registerRoute(m, path, handler)
+        if (withheld)
+          continue
         if (!shadowed)
           routeKeys.push(routeKey)
         const wrappedHandler = createMiddlewareHandler(bunRouter, routeStates, routeKey, handler, csrfEnabled)
