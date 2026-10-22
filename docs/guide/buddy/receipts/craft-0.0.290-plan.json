@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "repository": "craft-native/craft",
+      "commit": "30909c50dd0eb8f7122d199ae9cadfda3269c93e",
+      "tag": "v0.0.290",
+      "gates": [
+        {
+          "runId": 39724662920,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "lint",
+            "typescript-sdk",
+            "ios-builder",
+            "android-builder",
+            "zig-core (macos-latest)",
+            "zig-core (ubuntu-latest)",
+            "integration"
+          ]
+        },
+        {
+          "runId": 39724662923,
+          "workflow": ".github/workflows/mobile-e2e.yml",
+          "requiredJobs": [
+            "iOS native UI (uikit)",
+            "iOS simulator",
+            "Android emulator",
+            "Mobile E2E summary"
+          ]
+        },
+        {
+          "runId": 39724663467,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "publish complete verified release",
+            "npm"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "craft-native",
+          "version": "0.0.290",
+          "integrity": "sha512-qdbBCXdNMfIKGbdBU0p4JoNyJs/edqwRkoT9TFOpu+7Sxeo1rj6Ac+aNoK2VZOsqm4am+B5IMhD7q8QuDKbiBw=="
+        }
+      ]
+    }
+  ],
+  "checks": [
+    "deps:lockfile:check",
+    "typecheck"
+  ]
+}

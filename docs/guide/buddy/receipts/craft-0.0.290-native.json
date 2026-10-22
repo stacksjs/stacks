@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-22T06:17:06.818657+00:00",
+  "repository": "craft-native/craft",
+  "commit": "30909c50dd0eb8f7122d199ae9cadfda3269c93e",
+  "tag": "v0.0.290",
+  "releaseRun": 39724663467,
+  "sourceCiRun": 39724662920,
+  "mobileCiRun": 39724662923,
+  "manifestSha256": "4efa8f253b258139703b8bbb5ed946682feae3b71edc5105affcd70e82f2fa02",
+  "assets": [
+    {
+      "name": "craft-darwin-arm64.zip",
+      "size": 4632395,
+      "sha256": "0fa8ed25a3f17d573a8fab0465402a4967d54a9a08b5e11a6bc303a836d85a42",
+      "githubDigest": "sha256:0fa8ed25a3f17d573a8fab0465402a4967d54a9a08b5e11a6bc303a836d85a42",
+      "url": "https://github.com/craft-native/craft/releases/download/v0.0.290/craft-darwin-arm64.zip"
+    },
+    {
+      "name": "craft-darwin-x64.zip",
+      "size": 5135665,
+      "sha256": "6a269df75887e1017ea8df01cf7fac73101724f169c6556daf99bc3ba12f5549",
+      "githubDigest": "sha256:6a269df75887e1017ea8df01cf7fac73101724f169c6556daf99bc3ba12f5549",
+      "url": "https://github.com/craft-native/craft/releases/download/v0.0.290/craft-darwin-x64.zip"
+    },
+    {
+      "name": "craft-linux-x64.zip",
+      "size": 5356927,
+      "sha256": "31216ea155892f1932d282b74b79fc1d257cde2bf915271f995291ba905b0fd0",
+      "githubDigest": "sha256:31216ea155892f1932d282b74b79fc1d257cde2bf915271f995291ba905b0fd0",
+      "url": "https://github.com/craft-native/craft/releases/download/v0.0.290/craft-linux-x64.zip"
+    },
+    {
+      "name": "craft-windows-x64.zip",
+      "size": 5610262,
+      "sha256": "cb9e2d0481ffc99fb61803c1d2aab92d6d22f95a1f8e8f18006dde7876004c87",
+      "githubDigest": "sha256:cb9e2d0481ffc99fb61803c1d2aab92d6d22f95a1f8e8f18006dde7876004c87",
+      "url": "https://github.com/craft-native/craft/releases/download/v0.0.290/craft-windows-x64.zip"
+    }
+  ],
+  "executed": {
+    "platform": "darwin-arm64",
+    "member": "craft",
+    "sha256": "d4016545025e6b87b0367c7956d16e811e7b5d5ca498a3a47fc69c54747881e3",
+    "version": "craft version 0.0.290\nBuilt with Zig 0.18.0-dev.146+35accc06e\nPlatform: macOS"
+  },
+  "originalNpmArtifact": {
+    "id": 12402572768,
+    "sha256": "5b3b63a4e84258fde20d79a63743cb05cbd7c66a9c6eb635e34ca4d17d023eab"
+  },
+  "publicPackages": [
+    {
+      "name": "craft-native",
+      "version": "0.0.290",
+      "bytes": 1315667,
+      "integrity": "sha512-qdbBCXdNMfIKGbdBU0p4JoNyJs/edqwRkoT9TFOpu+7Sxeo1rj6Ac+aNoK2VZOsqm4am+B5IMhD7q8QuDKbiBw==",
+      "verifiedIntegrity": "sha512-qdbBCXdNMfIKGbdBU0p4JoNyJs/edqwRkoT9TFOpu+7Sxeo1rj6Ac+aNoK2VZOsqm4am+B5IMhD7q8QuDKbiBw=="
+    },
+    {
+      "name": "@craft-native/android",
+      "version": "0.0.290",
+      "bytes": 388328,
+      "integrity": "sha512-nTV3Mtg+D8IL1Ninobr7QZDKT1rQCJwuUpTFzn0ZDPTyLjDL7LstrlNRSmjgo6ceYdXAdfeKvyuBU/z7vDiM1w==",
+      "verifiedIntegrity": "sha512-nTV3Mtg+D8IL1Ninobr7QZDKT1rQCJwuUpTFzn0ZDPTyLjDL7LstrlNRSmjgo6ceYdXAdfeKvyuBU/z7vDiM1w=="
+    },
+    {
+      "name": "@craft-native/ios",
+      "version": "0.0.290",
+      "bytes": 502859,
+      "integrity": "sha512-5xMYLvlZrdBKI+BoC6azCZy7d2lOYwpu44Psnptzc+4jynk7GnXGFEJ7vYU0RHK8o9thzsvjh1aLiHJa6mD0ew==",
+      "verifiedIntegrity": "sha512-5xMYLvlZrdBKI+BoC6azCZy7d2lOYwpu44Psnptzc+4jynk7GnXGFEJ7vYU0RHK8o9thzsvjh1aLiHJa6mD0ew=="
+    },
+    {
+      "name": "@craft-native/react",
+      "version": "0.0.290",
+      "bytes": 8762,
+      "integrity": "sha512-IFrsVDEeGL/2XI0Lu4Ca13jn6xOgW0/QjuUtJayntrf0PNvLR0MYopdkyZCt0Zp8ha6NPtdfE1Uas+FwQeQ1uQ==",
+      "verifiedIntegrity": "sha512-IFrsVDEeGL/2XI0Lu4Ca13jn6xOgW0/QjuUtJayntrf0PNvLR0MYopdkyZCt0Zp8ha6NPtdfE1Uas+FwQeQ1uQ=="
+    },
+    {
+      "name": "@craft-native/svelte",
+      "version": "0.0.290",
+      "bytes": 7007,
+      "integrity": "sha512-BFOCy4JsyyEqI/3JhX5v4ID4ETMdxraq4IwMmO4eEwU2H8cL8TgqLxQ0fKbsqErLBsDj+g3A8tEFeJ3SWg/GAQ==",
+      "verifiedIntegrity": "sha512-BFOCy4JsyyEqI/3JhX5v4ID4ETMdxraq4IwMmO4eEwU2H8cL8TgqLxQ0fKbsqErLBsDj+g3A8tEFeJ3SWg/GAQ=="
+    },
+    {
+      "name": "@craft-native/ts-maps",
+      "version": "0.0.290",
+      "bytes": 546332,
+      "integrity": "sha512-xExsS1pXK1l/EvjZjkroNQs36XHJOzYIAEpaM0QkJzNmhWkesgGPKZD8ZQ4ARaV2sCSjaJVTSSL6ubjkHuTSQQ==",
+      "verifiedIntegrity": "sha512-xExsS1pXK1l/EvjZjkroNQs36XHJOzYIAEpaM0QkJzNmhWkesgGPKZD8ZQ4ARaV2sCSjaJVTSSL6ubjkHuTSQQ=="
+    },
+    {
+      "name": "@craft-native/vue",
+      "version": "0.0.290",
+      "bytes": 7813,
+      "integrity": "sha512-dhtmnNN9uuw94UCjrfbig1wGj8oSKYWdqMjRsANdJM3tkKiBigInHaVygEbNkY7HRXsWyXyNmcW4oMOhxhPB3g==",
+      "verifiedIntegrity": "sha512-dhtmnNN9uuw94UCjrfbig1wGj8oSKYWdqMjRsANdJM3tkKiBigInHaVygEbNkY7HRXsWyXyNmcW4oMOhxhPB3g=="
+    },
+    {
+      "name": "create-craft",
+      "version": "0.0.290",
+      "bytes": 5965,
+      "integrity": "sha512-W4fPtZl0JneaidK5oWhCy/v/lJCoaXdnVeTvR6aoaF/lAAnpxgx5Wx5tQtnW0XyRpOZ59i7AkdlelECnfGUWGg==",
+      "verifiedIntegrity": "sha512-W4fPtZl0JneaidK5oWhCy/v/lJCoaXdnVeTvR6aoaF/lAAnpxgx5Wx5tQtnW0XyRpOZ59i7AkdlelECnfGUWGg=="
+    }
+  ],
+  "limitations": [
+    "Only the Darwin arm64 published CLI was executed locally.",
+    "This does not establish native game presentation or original-game fidelity."
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-22T06:17:56.282Z",
+  "sources": [
+    {
+      "repository": "craft-native/craft",
+      "commit": "30909c50dd0eb8f7122d199ae9cadfda3269c93e",
+      "tag": "v0.0.290",
+      "gates": [
+        {
+          "runId": 39724662920,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "lint",
+            "typescript-sdk",
+            "ios-builder",
+            "android-builder",
+            "zig-core (macos-latest)",
+            "zig-core (ubuntu-latest)",
+            "integration"
+          ]
+        },
+        {
+          "runId": 39724662923,
+          "workflow": ".github/workflows/mobile-e2e.yml",
+          "requiredJobs": [
+            "iOS native UI (uikit)",
+            "iOS simulator",
+            "Android emulator",
+            "Mobile E2E summary"
+          ]
+        },
+        {
+          "runId": 39724663467,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "publish complete verified release",
+            "npm"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "craft-native",
+          "version": "0.0.290",
+          "integrity": "sha512-qdbBCXdNMfIKGbdBU0p4JoNyJs/edqwRkoT9TFOpu+7Sxeo1rj6Ac+aNoK2VZOsqm4am+B5IMhD7q8QuDKbiBw==",
+          "tarball": "https://registry.npmjs.org/craft-native/-/craft-native-0.0.290.tgz",
+          "bytes": 1315667,
+          "filesSha256": "b288f98b314240844b6a753ad4618d8aa3b6492b1f4396b6ac24b4db07be4b46"
+        }
+      ],
+      "releaseCommand": "bun run release:patch",
+      "releaseScript": "bun scripts/release-version.ts --preflight && bun x --bun @stacksjs/bumpx patch --recursive --commit --tag --push --yes --no-changelog --execute \"bun scripts/release-version.ts --pending && bun scripts/generate-release-changelog.ts && git add CHANGELOG.md\""
+    }
+  ],
+  "consumer": {
+    "lockfile": "bun.lock",
+    "sha256": "15ebeb7d8dd2a3eb7d9198f314a1e9b1a16b322d9b62bde6dfe1464e59f7bf0c",
+    "bunVersion": "1.4.2",
+    "checks": [
+      {
+        "script": "deps:lockfile:check",
+        "exitCode": 0,
+        "outputSha256": "e1cf2d764cf950b13cccd2176bf4e85fad74c8aba8775e72ddebf88b79913040"
+      },
+      {
+        "script": "typecheck",
+        "exitCode": 0,
+        "outputSha256": "bc8dd9ac40248d300848736968f24ba058687b627619f73227411b6de0621819"
+      }
+    ]
+  }
+}
