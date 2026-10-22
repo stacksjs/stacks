@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.268...v0.75.269)
+
+## ✨ Features
+
+- **payments**: direct charges for Managed Risk platforms ([f5a6ef9](https://github.com/stacksjs/stacks/commit/f5a6ef9)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.267...v0.75.268)
 
 ## 🐛 Bug Fixes
