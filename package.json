@@ -92,7 +92,7 @@
     "docs:links:check": "./buddy docs:links:check",
     "docs:snippets": "./buddy docs:snippets",
     "docs:snippets:check": "./buddy docs:snippets:check",
-    "deps:lockfile:check": "bun .github/scripts/check-lockfile-version.ts",
+    "deps:lockfile:check": "bun .github/scripts/check-lockfile-version.ts && bun test ./storage/framework/core/buddy/tests/lockfile-matches-manifests.test.ts",
     "bud": "./buddy",
     "stx": "./buddy",
     "docs:agent-counts": "./buddy docs:agent-counts",

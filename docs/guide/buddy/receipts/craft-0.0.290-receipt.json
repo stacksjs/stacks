@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "verifiedAt": "2026-10-22T06:17:56.282Z",
+  "verifiedAt": "2026-10-22T06:39:21.431Z",
   "sources": [
     {
       "repository": "craft-native/craft",
@@ -55,18 +55,18 @@
   ],
   "consumer": {
     "lockfile": "bun.lock",
-    "sha256": "15ebeb7d8dd2a3eb7d9198f314a1e9b1a16b322d9b62bde6dfe1464e59f7bf0c",
+    "sha256": "d159b88e8bd716b23ac42f3793d5b35f9343c6d53fb40bd61893e70744c9548d",
     "bunVersion": "1.4.2",
     "checks": [
       {
         "script": "deps:lockfile:check",
         "exitCode": 0,
-        "outputSha256": "e1cf2d764cf950b13cccd2176bf4e85fad74c8aba8775e72ddebf88b79913040"
+        "outputSha256": "c3a0e6ab3102e9fc279b775d3be2bb1ee6ff12c2a7692c31dc7f0553fdcc794d"
       },
       {
         "script": "typecheck",
         "exitCode": 0,
-        "outputSha256": "bc8dd9ac40248d300848736968f24ba058687b627619f73227411b6de0621819"
+        "outputSha256": "02e9a39a08024b61918782cce0d188ff99145efa727a9228be7a60f6b3c87c17"
       }
     ]
   }
