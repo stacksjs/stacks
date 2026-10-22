@@ -182,3 +182,18 @@ describe('warnShadowedSecurityDefaults', () => {
     expect(one).toContain('1 app/ file shadows a framework security default')
   })
 })
+
+/**
+ * `buddy new` scaffolds from this repository, so its `app/` is every new
+ * application's `app/`. A security default copied here ships to all of them,
+ * pinned at the version it was copied from: `app/Middleware/Auth.ts` missed
+ * 38d3f2edf4, and a fresh app's first `buddy doctor` warned about a file its
+ * owner never wrote (stacksjs/stacks#2941).
+ */
+describe('the scaffold template', () => {
+  test('ships no copy of a framework security default', () => {
+    const repository = join(import.meta.dir, '../../../../..')
+    const shadows = findShadowedSecurityDefaults(join(repository, 'app'), join(repository, 'storage/framework/defaults/app'))
+    expect(shadows.map(entry => `app/${entry.path} (${entry.kind})`)).toEqual([])
+  })
+})

@@ -4,9 +4,7 @@ import type { EnhancedRequest } from '@stacksjs/bun-router'
 import { enhanceRequest, runWithRequest } from '@stacksjs/router'
 
 const root = `${import.meta.dir}/../../../../../..`
-const middleware = (await import(process.argv[2] === 'app'
-  ? `${root}/app/Middleware/Auth.ts`
-  : `${root}/storage/framework/defaults/app/Middleware/Auth.ts`)).default
+const middleware = (await import(`${root}/storage/framework/defaults/app/Middleware/Auth.ts`)).default
 const auth = await import('@stacksjs/auth')
 const { Auth } = await import('@stacksjs/auth/authentication')
 const cookie = await import('@stacksjs/auth/cookie')

@@ -183,15 +183,6 @@ describe('Default middleware files', () => {
   })
 })
 
-describe('User middleware files', () => {
-  test('app/Middleware/Auth.ts should exist', () => {
-    expect(existsSync(appPath('Middleware/Auth.ts'))).toBe(true)
-  })
-
-  // Skipped: Auth middleware depends on User model which is only a declare class stub at build time
-  // test('Auth middleware should be a valid Middleware instance', ...)
-})
-
 describe('Middleware alias resolution', () => {
   test('aliases should resolve to existing default files', async () => {
     const module = await import(appPath('Middleware.ts'))

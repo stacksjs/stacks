@@ -5,9 +5,9 @@
 // resolves. Values are paths rather than import thunks on purpose: thunks
 // would make every compilation that touches a name resolve every module.
 export const middleware = {
-  'Auth': '../../../app/Middleware/Auth.ts',
   'Abilities': '../defaults/app/Middleware/Abilities.ts',
   'Api': '../defaults/app/Middleware/Api.ts',
+  'Auth': '../defaults/app/Middleware/Auth.ts',
   'Can': '../defaults/app/Middleware/Can.ts',
   'Compress': '../defaults/app/Middleware/Compress.ts',
   'Cors': '../defaults/app/Middleware/Cors.ts',

@@ -68,13 +68,6 @@ describe('the writer and the readers agree (#2236)', () => {
     expect(team).not.toContain(`defaultTokenName || 'auth-token'`)
   })
 
-  it('writes the name the scaffold middleware reads', () => {
-    const scaffold = source('app/Middleware/Auth.ts')
-
-    expect(scaffold).toContain('authCookieName()')
-    expect(scaffold).not.toContain(`defaultTokenName || 'auth-token'`)
-  })
-
   it('writes the name the stx page gate is configured with', () => {
     const views = source('storage/framework/core/actions/src/dev/views.ts')
 
@@ -90,7 +83,6 @@ describe('the writer and the readers agree (#2236)', () => {
     for (const file of [
       'storage/framework/defaults/app/Middleware/Auth.ts',
       'storage/framework/core/auth/src/team.ts',
-      'app/Middleware/Auth.ts',
       'storage/framework/core/actions/src/dev/views.ts',
     ]) {
       expect(source(file)).not.toMatch(/defaultTokenName\s*[|?]{2}\s*['"]auth-token['"]/)
