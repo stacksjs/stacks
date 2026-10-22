@@ -1,5 +1,35 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.264...v0.75.265)
+
+## 🐛 Bug Fixes
+
+- **deploy**: remove a deploy's release archives when it is done ([bce1839](https://github.com/stacksjs/stacks/commit/bce1839)) _(by Chris <chris@stacksjs.com>)_
+- **server**: an app's auto-imports never replace a platform global ([7e60c91](https://github.com/stacksjs/stacks/commit/7e60c91)) _(by Chris <chris@stacksjs.com>)_
+- **qa**: observe bounded Chrome startup readiness ([eb6bdfc](https://github.com/stacksjs/stacks/commit/eb6bdfc)) _(by Chris <chris@stacksjs.com>)_
+
+## ♻️ Code Refactoring
+
+- **dashboard**: the team members and invitations tables onto UI/Table ([9242cc4](https://github.com/stacksjs/stacks/commit/9242cc4)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2925](https://github.com/stacksjs/stacks/issues/2925))
+- **dashboard**: the Actions and Commands inventories onto UI/Table ([1c3a182](https://github.com/stacksjs/stacks/commit/1c3a182)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2925](https://github.com/stacksjs/stacks/issues/2925))
+- **dashboard**: the request records table onto UI/Table ([9cf5a4e](https://github.com/stacksjs/stacks/commit/9cf5a4e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2925](https://github.com/stacksjs/stacks/issues/2925))
+- **dashboard**: the release history table onto UI/Table ([f41dc88](https://github.com/stacksjs/stacks/commit/f41dc88)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2925](https://github.com/stacksjs/stacks/issues/2925))
+- **dashboard**: the DNS records table onto UI/Table ([452cfeb](https://github.com/stacksjs/stacks/commit/452cfeb)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2925](https://github.com/stacksjs/stacks/issues/2925))
+
+## 📝 Documentation
+
+- refresh the native skill catalog's test counts ([38eaa7b](https://github.com/stacksjs/stacks/commit/38eaa7b)) _(by Chris <chris@stacksjs.com>)_
+- refresh the native skill catalog's test counts ([bbb1bb8](https://github.com/stacksjs/stacks/commit/bbb1bb8)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- ts-css 0.3.18, whose class scanner reads a regex after `return` ([7334a23](https://github.com/stacksjs/stacks/commit/7334a23)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2974](https://github.com/stacksjs/stacks/issues/2974))
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.263...v0.75.264)
 
 ## 🐛 Bug Fixes
