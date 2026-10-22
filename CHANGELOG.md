@@ -1,5 +1,28 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.266...v0.75.267)
+
+## 🐛 Bug Fixes
+
+- **auth**: verify a refresh token's expiry in SQL, and name the field a read-back missed ([8829536](https://github.com/stacksjs/stacks/commit/8829536)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2902](https://github.com/stacksjs/stacks/issues/2902))
+
+## 📝 Documentation
+
+- **chat**: message attachments, and export their type from @stacksjs/chat ([af11498](https://github.com/stacksjs/stacks/commit/af11498)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2931](https://github.com/stacksjs/stacks/issues/2931))
+
+## ✅ Tests
+
+- **messaging**: attachments on Postgres and MySQL, against a database that predates them ([0d5f47b](https://github.com/stacksjs/stacks/commit/0d5f47b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2931](https://github.com/stacksjs/stacks/issues/2931))
+
+## 🔧 Chores
+
+- stx 0.2.664, whose native screens bundle only the stores they use ([c5f6473](https://github.com/stacksjs/stacks/commit/c5f6473)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.265...v0.75.266)
 
 ## 📝 Documentation
