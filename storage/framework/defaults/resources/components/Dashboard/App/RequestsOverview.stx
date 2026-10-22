@@ -1,3 +1,5 @@
+@import('../UI/Table')
+
 <script client>
 import { dashboardApi } from '../../../../functions/dashboard-api'
 
@@ -67,29 +69,75 @@ const filteredRequests = derived(() => {
   })
 })
 
-function formatDate(value: string): string {
-  if (!value)
-    return 'Unknown'
-  const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? 'Unknown' : date.toLocaleString()
-}
-
-function statusClass(status: number): string {
+/**
+ * Pill colours by tone rather than by value, so every status code and every
+ * method the table has not named still lands on a colour, as the hand-rolled
+ * pills did.
+ */
+function statusTone(status: number): string {
   if (status >= 500)
-    return 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40'
+    return 'server'
   if (status >= 400)
-    return 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40'
+    return 'client'
   if (status >= 300)
-    return 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40'
-  return 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40'
+    return 'redirect'
+  return 'ok'
 }
 
-function methodClass(method: string): string {
+function methodTone(method: string): string {
   if (method === 'GET')
-    return 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40'
+    return 'read'
   if (method === 'DELETE')
-    return 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40'
-  return 'text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-950/40'
+    return 'delete'
+  return 'write'
+}
+
+const COLUMNS = [
+  {
+    key: 'methodTone',
+    label: 'Method',
+    type: 'badge' as const,
+    sortable: true,
+    badgeLabelKey: 'method',
+    badgeClasses: {
+      read: 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40',
+      delete: 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40',
+      write: 'text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-950/40',
+    },
+  },
+  { key: 'path', label: 'Path', sortable: true, class: 'max-w-md font-mono text-neutral-800 text-xs truncate dark:text-neutral-200' },
+  {
+    key: 'statusTone',
+    label: 'Status',
+    type: 'badge' as const,
+    sortable: true,
+    badgeLabelKey: 'status',
+    badgeClasses: {
+      server: 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40',
+      client: 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40',
+      redirect: 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40',
+      ok: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40',
+    },
+  },
+  { key: 'durationMs', label: 'Duration (ms)', type: 'number' as const, sortable: true, align: 'right' as const, class: 'font-mono whitespace-nowrap' },
+  { key: 'ipAddress', label: 'Client', sortable: true, emptyText: 'Not recorded' },
+  { key: 'createdAt', label: 'Recorded', type: 'datetime' as const, sortable: true, align: 'right' as const, emptyText: 'Unknown', class: 'whitespace-nowrap' },
+]
+
+const ROW_ACTIONS = [
+  { action: 'inspect', label: 'Inspect request', icon: 'i-hugeicons-view' },
+]
+
+const requestRows = derived(() => filteredRequests().map(request => ({
+  ...request,
+  methodTone: methodTone(request.method),
+  statusTone: statusTone(request.status),
+  durationMs: Math.round(request.durationMs * 10) / 10,
+})))
+
+function handleRowAction(payload: { action: string, row: RequestRow }): void {
+  if (payload.action === 'inspect')
+    inspectRequest(payload.row)
 }
 
 function inspectRequest(request: RequestRow): void {
@@ -184,49 +232,18 @@ onMount(() => {
       </div>
     </div>
 
-    <div :if="loading()" class="flex items-center justify-center py-16 text-neutral-500 text-sm dark:text-neutral-400">
-      <span class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>
-      Loading request records...
-    </div>
-
-    <EmptyState
-      :if="!loading() && !loadError() && filteredRequests().length === 0"
-      icon="i-hugeicons-global"
-      :title="search() || methodFilter() !== 'all' || statusFilter() !== 'all' ? 'No matching requests' : 'No requests recorded'"
-      description="Request records appear after the application writes to the Request model."
+    <Table
+      :columns="COLUMNS"
+      :data="requestRows()"
+      :loading="loading()"
+      :row-actions="ROW_ACTIONS"
+      action-label-key="path"
+      paginated
+      :page-size="25"
+      :empty-title="search() || methodFilter() !== 'all' || statusFilter() !== 'all' ? 'No matching requests' : 'No requests recorded'"
+      empty-description="Request records appear after the application writes to the Request model."
+      @row-action="handleRowAction"
     />
-
-    <div :if="!loading() && filteredRequests().length > 0" class="overflow-x-auto">
-      <table class="w-full">
-        <thead class="bg-neutral-50 dark:bg-neutral-800/50">
-          <tr>
-            <th class="pl-5 pr-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Request</th>
-            <th class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Status</th>
-            <th class="px-4 py-3 font-semibold text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Duration</th>
-            <th class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Client</th>
-            <th class="px-4 py-3 font-semibold text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Recorded</th>
-            <th class="pr-5 py-3 font-semibold text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Details</th>
-          </tr>
-        </thead>
-        <tbody class="divide-neutral-100 divide-y dark:divide-neutral-700">
-          <tr :for="request in filteredRequests()">
-            <td class="pl-5 pr-4 py-3.5">
-              <div class="flex gap-2 items-center">
-                <span :class="'inline-flex px-2 py-0.5 font-medium text-xs rounded ' + methodClass(request.method)">{{ request.method }}</span>
-                <code class="max-w-md text-neutral-800 text-xs truncate dark:text-neutral-200">{{ request.path }}</code>
-              </div>
-            </td>
-            <td class="px-4 py-3.5"><span :class="'inline-flex px-2 py-0.5 font-medium text-xs rounded ' + statusClass(request.status)">{{ request.status }}</span></td>
-            <td class="px-4 py-3.5 font-mono text-neutral-600 text-right text-xs whitespace-nowrap dark:text-neutral-300">{{ request.durationMs.toFixed(1) }} ms</td>
-            <td class="px-4 py-3.5 text-neutral-500 text-xs dark:text-neutral-400">{{ request.ipAddress || 'Not recorded' }}</td>
-            <td class="px-4 py-3.5 text-neutral-500 text-right text-xs whitespace-nowrap dark:text-neutral-400">{{ formatDate(request.createdAt) }}</td>
-            <td class="pr-5 py-3.5 text-right">
-              <Button variant="ghost" size="sm" @click="inspectRequest(request)">Inspect</Button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
   </Card>
 
   <RequestDetailsDialog :request="selectedRequest()" @close="closeInspector" />
