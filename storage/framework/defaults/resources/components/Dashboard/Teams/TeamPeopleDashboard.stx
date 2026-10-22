@@ -1,4 +1,4 @@
-@import('../UI/Button', '../UI/ConfirmDialog')
+@import('../UI/Button', '../UI/ConfirmDialog', '../UI/Table')
 
 <script client>
 import { dashboardApi } from '../../../../functions/dashboard-api'
@@ -53,8 +53,6 @@ const memberToRemove = state<TeamMember | null>(null)
 const invitationToRevoke = state<TeamInvitation | null>(null)
 
 const teamId = derived(() => Number(route.params.id))
-const hasMembers = derived(() => members().length > 0)
-const hasInvitations = derived(() => invitations().length > 0)
 
 function roleLabel(role: string): string {
   return role.charAt(0).toUpperCase() + role.slice(1)
@@ -65,24 +63,64 @@ function memberCountLabel(): string {
   return `${count} team ${count === 1 ? 'member' : 'members'}`
 }
 
-function statusClass(status: string): string {
-  if (status === 'active' || status === 'sent')
-    return 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400'
-  if (status === 'suspended' || status === 'failed')
-    return 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400'
-  if (status === 'expired')
-    return 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400'
-  return 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300'
+/**
+ * One palette for member status and invitation delivery, keyed by value, so
+ * a status the server adds later still reads, in the neutral pill.
+ */
+const STATUS_CLASSES = {
+  active: 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400',
+  sent: 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400',
+  suspended: 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400',
+  failed: 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400',
+  expired: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
 }
 
-function formatDate(value: string | null): string {
-  if (!value)
-    return 'Not available'
-  const date = new Date(value.replace(' ', 'T'))
-  return Number.isNaN(date.getTime())
-    ? value
-    : date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-}
+/**
+ * The member and role columns are slotted: the first for its avatar, the
+ * second because an owner's role is fixed and everyone else's is a select.
+ */
+const MEMBER_COLUMNS = [
+  { key: 'name', label: 'Member', sortable: true, slotted: true },
+  { key: 'role', label: 'Role', sortable: true, slotted: true },
+  { key: 'status', label: 'Status', type: 'badge' as const, sortable: true, badgeLabelKey: 'statusLabel', badgeClasses: STATUS_CLASSES },
+]
+
+/**
+ * An owner can be neither suspended nor removed. Anyone else is offered the
+ * opposite of their current state, and every status but `active` reads as
+ * one to activate, as the hand-rolled button did.
+ */
+const MEMBER_ACTIONS = [
+  { action: 'suspend', label: 'Suspend', icon: 'i-hugeicons-pause', class: 'text-amber-500', when: { key: 'statusAction', equals: 'suspend' } },
+  { action: 'activate', label: 'Activate', icon: 'i-hugeicons-play', class: 'text-green-500', when: { key: 'statusAction', equals: 'activate' } },
+  { action: 'remove', label: 'Remove', icon: 'i-hugeicons-delete-02', class: 'text-red-500', when: { key: 'removable', equals: true } },
+]
+
+const INVITATION_COLUMNS = [
+  { key: 'email', label: 'Recipient', sortable: true, class: 'text-neutral-900 dark:text-neutral-100' },
+  { key: 'roleLabel', label: 'Role', sortable: true },
+  { key: 'deliveryStatus', label: 'Delivery', type: 'badge' as const, sortable: true, badgeLabelKey: 'deliveryLabel', badgeClasses: STATUS_CLASSES },
+  { key: 'expiresAt', label: 'Expires', type: 'date' as const, sortable: true, emptyText: 'Not available' },
+]
+
+const INVITATION_ACTIONS = [
+  { action: 'resend', label: 'Resend invitation to', icon: 'i-hugeicons-mail-send-01' },
+  { action: 'revoke', label: 'Revoke invitation to', icon: 'i-hugeicons-cancel-01', class: 'text-red-500' },
+]
+
+const memberRows = derived(() => members().map(member => ({
+  ...member,
+  initial: member.name.charAt(0).toUpperCase(),
+  statusLabel: roleLabel(member.status),
+  statusAction: member.role === 'owner' ? 'none' : member.status === 'active' ? 'suspend' : 'activate',
+  removable: member.role !== 'owner',
+})))
+
+const invitationRows = derived(() => invitations().map(invitation => ({
+  ...invitation,
+  roleLabel: roleLabel(invitation.role),
+  deliveryLabel: roleLabel(invitation.deliveryStatus),
+})))
 
 async function fetchPeople(): Promise<void> {
   isLoading.set(true)
@@ -233,6 +271,20 @@ async function revokeInvitation(): Promise<void> {
   }
 }
 
+function handleMemberAction(payload: { action: string, row: TeamMember }): void {
+  if (payload.action === 'remove')
+    memberToRemove.set(payload.row)
+  else
+    void toggleMemberStatus(payload.row)
+}
+
+function handleInvitationAction(payload: { action: string, row: TeamInvitation }): void {
+  if (payload.action === 'resend')
+    void resendInvitation(payload.row)
+  else if (payload.action === 'revoke')
+    invitationToRevoke.set(payload.row)
+}
+
 onMount(() => {
   fetchPeople()
 })
@@ -307,79 +359,48 @@ onMount(() => {
       </div>
     </div>
 
-    <div :show="isLoading()" class="px-6 py-10 text-center text-neutral-500 text-sm dark:text-neutral-400">Loading members...</div>
-    <div :show="!isLoading() && !hasMembers()" class="px-6 py-10 text-center text-neutral-500 text-sm dark:text-neutral-400">No members have joined this team yet.</div>
-
-    <div :show="!isLoading() && hasMembers()" class="overflow-x-auto">
-      <table class="min-w-full divide-neutral-200 divide-y dark:divide-neutral-800">
-        <thead class="bg-neutral-50/80 dark:bg-neutral-950/50">
-          <tr>
-            <th scope="col" class="px-6 py-3 font-medium text-left text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Member</th>
-            <th scope="col" class="px-6 py-3 font-medium text-left text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Role</th>
-            <th scope="col" class="px-6 py-3 font-medium text-left text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Status</th>
-            <th scope="col" class="px-6 py-3 font-medium text-neutral-500 text-right text-xs tracking-wide uppercase dark:text-neutral-400">Actions</th>
-          </tr>
-        </thead>
-        <tbody class="divide-neutral-200 divide-y dark:divide-neutral-800">
-          <template :for="member in members">
-            <tr>
-              <td class="px-6 py-4">
-                <div class="flex gap-3 items-center">
-                  <div class="flex items-center justify-center shrink-0 h-9 w-9 font-semibold text-blue-700 text-sm dark:text-blue-300 bg-blue-50 dark:bg-blue-500/10 rounded-full">
-                    {{ member.name.charAt(0).toUpperCase() }}
-                  </div>
-                  <div>
-                    <p class="font-medium text-neutral-900 text-sm dark:text-white">{{ member.name }}</p>
-                    <p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">{{ member.email }}</p>
-                  </div>
-                </div>
-              </td>
-              <td class="px-6 py-4">
-                <span :show="member.role === 'owner'" class="text-neutral-700 text-sm dark:text-neutral-300">Owner</span>
-                <select
-                  :show="member.role !== 'owner'"
-                  :value="member.role"
-                  :aria-label="'Role for ' + member.name"
-                  :disabled="busyMemberId() === member.id"
-                  class="px-2.5 h-8 text-neutral-800 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700"
-                  @change="updateMemberRole(member, $event)"
-                >
-                  <option value="admin">Admin</option>
-                  <option value="member">Member</option>
-                  <option value="viewer">Viewer</option>
-                </select>
-              </td>
-              <td class="px-6 py-4">
-                <span class="inline-flex px-2 py-1 font-medium text-xs rounded-full" :class="statusClass(member.status)">
-                  {{ roleLabel(member.status) }}
-                </span>
-              </td>
-              <td class="px-6 py-4">
-                <div :show="member.role !== 'owner'" class="flex gap-2 items-center justify-end">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    :loading="busyMemberId() === member.id"
-                    :disabled="busyMemberId() === member.id"
-                    @click="toggleMemberStatus(member)"
-                  >
-                    {{ member.status === 'active' ? 'Suspend' : 'Activate' }}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    :disabled="busyMemberId() === member.id"
-                    @click="memberToRemove.set(member)"
-                  >
-                    Remove
-                  </Button>
-                </div>
-              </td>
-            </tr>
-          </template>
-        </tbody>
-      </table>
-    </div>
+    <Table
+      :columns="MEMBER_COLUMNS"
+      :data="memberRows()"
+      :loading="isLoading()"
+      :row-actions="MEMBER_ACTIONS"
+      action-label-key="name"
+      busy-key="id"
+      :busy-value="busyMemberId()"
+      paginated
+      :page-size="25"
+      empty-title="No members yet"
+      empty-description="No members have joined this team yet."
+      @row-action="handleMemberAction"
+    >
+      <template #cell="{ row, column }">
+        <template :if="column.key === 'name'">
+          <div class="flex gap-3 items-center">
+            <div class="flex items-center justify-center shrink-0 h-9 w-9 font-semibold text-blue-700 text-sm dark:text-blue-300 bg-blue-50 dark:bg-blue-500/10 rounded-full">{{ row.initial }}</div>
+            <div>
+              <p class="font-medium text-neutral-900 text-sm dark:text-white">{{ row.name }}</p>
+              <p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">{{ row.email }}</p>
+            </div>
+          </div>
+        </template>
+        <template :if="column.key === 'role' && row.role === 'owner'">
+          <span class="text-neutral-700 text-sm dark:text-neutral-300">Owner</span>
+        </template>
+        <template :if="column.key === 'role' && row.role !== 'owner'">
+          <select
+            :value="row.role"
+            :aria-label="'Role for ' + row.name"
+            :disabled="busyMemberId() === row.id"
+            class="px-2.5 h-8 text-neutral-800 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700"
+            @change="updateMemberRole(row, $event)"
+          >
+            <option value="admin">Admin</option>
+            <option value="member">Member</option>
+            <option value="viewer">Viewer</option>
+          </select>
+        </template>
+      </template>
+    </Table>
   </section>
 
   <section class="overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200/70 rounded-xl dark:border-neutral-800">
@@ -388,57 +409,20 @@ onMount(() => {
       <p class="mt-0.5 text-neutral-500 text-sm dark:text-neutral-400">Track delivery, resend links, or revoke access before acceptance.</p>
     </div>
 
-    <div :show="isLoading()" class="px-6 py-10 text-center text-neutral-500 text-sm dark:text-neutral-400">Loading invitations...</div>
-    <div :show="!isLoading() && !hasInvitations()" class="px-6 py-10 text-center text-neutral-500 text-sm dark:text-neutral-400">No pending invitations.</div>
-
-    <div :show="hasInvitations()" class="overflow-x-auto">
-      <table class="min-w-full divide-neutral-200 divide-y dark:divide-neutral-800">
-        <thead class="bg-neutral-50/80 dark:bg-neutral-950/50">
-          <tr>
-            <th scope="col" class="px-6 py-3 font-medium text-left text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Recipient</th>
-            <th scope="col" class="px-6 py-3 font-medium text-left text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Role</th>
-            <th scope="col" class="px-6 py-3 font-medium text-left text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Delivery</th>
-            <th scope="col" class="px-6 py-3 font-medium text-left text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Expires</th>
-            <th scope="col" class="px-6 py-3 font-medium text-neutral-500 text-right text-xs tracking-wide uppercase dark:text-neutral-400">Actions</th>
-          </tr>
-        </thead>
-        <tbody class="divide-neutral-200 divide-y dark:divide-neutral-800">
-          <template :for="invitation in invitations">
-            <tr>
-              <td class="px-6 py-4 text-neutral-900 text-sm dark:text-neutral-100">{{ invitation.email }}</td>
-              <td class="px-6 py-4 text-neutral-600 text-sm dark:text-neutral-300">{{ roleLabel(invitation.role) }}</td>
-              <td class="px-6 py-4">
-                <span class="inline-flex px-2 py-1 font-medium text-xs rounded-full" :class="statusClass(invitation.deliveryStatus)">
-                  {{ roleLabel(invitation.deliveryStatus) }}
-                </span>
-              </td>
-              <td class="px-6 py-4 text-neutral-500 text-sm dark:text-neutral-400">{{ formatDate(invitation.expiresAt) }}</td>
-              <td class="px-6 py-4">
-                <div class="flex gap-2 items-center justify-end">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    :loading="busyInvitationId() === invitation.id"
-                    :disabled="busyInvitationId() === invitation.id"
-                    @click="resendInvitation(invitation)"
-                  >
-                    Resend
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    :disabled="busyInvitationId() === invitation.id"
-                    @click="invitationToRevoke.set(invitation)"
-                  >
-                    Revoke
-                  </Button>
-                </div>
-              </td>
-            </tr>
-          </template>
-        </tbody>
-      </table>
-    </div>
+    <Table
+      :columns="INVITATION_COLUMNS"
+      :data="invitationRows()"
+      :loading="isLoading()"
+      :row-actions="INVITATION_ACTIONS"
+      action-label-key="email"
+      busy-key="id"
+      :busy-value="busyInvitationId()"
+      paginated
+      :page-size="25"
+      empty-title="No pending invitations"
+      empty-description="Invitations you send appear here until they are accepted."
+      @row-action="handleInvitationAction"
+    />
   </section>
 </div>
 
