@@ -121,6 +121,7 @@ On a failed step, execution stops and the report retains its number and error,
 the completed steps, final page state and requested screenshot.
 Use `{"action":"assert","selector":"...","absent":true}` to verify that an element is missing or hidden after an interaction.
 Use `{"action":"assert","selector":"button","text":"Save","focused":true}` to verify keyboard focus and focus restoration.
+For asynchronous results, use `{"action":"assert","selector":"button","text":"Sound on","timeoutMs":2000}`. This observes the actual visible result until it matches or the bounded budget expires. Ordinary assertions remain immediate. Only assertions accept `timeoutMs`, an integer from 0 to 30000; protocol and evaluation failures are not retried.
 
 ### Crawl (whole-site browser audit)
 ```bash

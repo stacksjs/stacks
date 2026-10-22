@@ -600,9 +600,12 @@ interface ScenarioStep {
   key?: string
   ms?: number
   settle?: number
+  timeoutMs?: number
 }
 
-function parseScenarioStep(value: string): ScenarioStep {
+class ScenarioAssertionError extends Error {}
+
+export function parseScenarioStep(value: string): ScenarioStep {
   let parsed: unknown
   try {
     parsed = JSON.parse(value)
@@ -633,11 +636,41 @@ function parseScenarioStep(value: string): ScenarioStep {
     throw new TypeError('Scenario action "press" requires a key.')
   if (action === 'wait' && (!Number.isFinite(step.ms) || Number(step.ms) < 0 || Number(step.ms) > 30_000))
     throw new TypeError('Scenario action "wait" requires ms between 0 and 30000.')
+  if (step.timeoutMs !== undefined && (action !== 'assert' || !Number.isSafeInteger(step.timeoutMs) || Number(step.timeoutMs) < 0 || Number(step.timeoutMs) > 30_000))
+    throw new TypeError('Scenario timeoutMs is supported only by assert actions and must be an integer between 0 and 30000.')
 
   return step as unknown as ScenarioStep
 }
 
-async function runScenarioStep(cdp: Cdp, step: ScenarioStep): Promise<Record<string, unknown>> {
+export async function runScenarioStep(cdp: Pick<Cdp, 'send'>, step: ScenarioStep): Promise<Record<string, unknown>> {
+  if (step.action === 'assert' && step.timeoutMs) {
+    const deadline = performance.now() + step.timeoutMs
+    let last: ScenarioAssertionError | undefined
+    const expired = () => new Error(`${last?.message || `Scenario assert failed (${step.selector || ''})`}; timed out after ${step.timeoutMs}ms`)
+    while (true) {
+      const budget = deadline - performance.now()
+      if (budget <= 0) throw expired()
+      let timeout: ReturnType<typeof setTimeout> | undefined
+      try {
+        const expiry = Promise.withResolvers<never>()
+        timeout = setTimeout(() => expiry.reject(expired()), budget)
+        const answer = await Promise.race([
+          runScenarioStep(cdp, { ...step, timeoutMs: 0 }),
+          expiry.promise,
+        ])
+        if (performance.now() > deadline) throw expired()
+        return answer
+      }
+      catch (error) {
+        if (!(error instanceof ScenarioAssertionError)) throw error
+        last = error
+        const remaining = deadline - performance.now()
+        if (remaining <= 0) throw error
+        await Bun.sleep(Math.min(50, remaining))
+      }
+      finally { if (timeout !== undefined) clearTimeout(timeout) }
+    }
+  }
   if (step.action === 'wait') {
     await Bun.sleep(Number(step.ms))
     return { action: step.action, ms: Number(step.ms), ok: true }
@@ -740,8 +773,11 @@ async function runScenarioStep(cdp: Cdp, step: ScenarioStep): Promise<Record<str
     returnByValue: true,
   })
   const value = result.result?.value as Record<string, unknown> | undefined
-  if (!value?.ok)
+  if (!value?.ok) {
+    if (step.action === 'assert' && value)
+      throw new ScenarioAssertionError(`Scenario assert failed: ${String(value.error || 'unknown error')} (${step.selector || ''})`)
     throw new Error(`Scenario ${step.action} failed: ${String(value?.error || 'unknown error')} (${step.selector || step.key || ''})`)
+  }
   if (step.action === 'click') {
     const point = value.clickPoint as { x: number, y: number }
     await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: point.x, y: point.y, button: 'left', clickCount: 1 })
@@ -1196,7 +1232,7 @@ async function main() {
   }
 }
 
-main().catch((e) => {
+if (import.meta.main) main().catch((e) => {
   console.error('browse error:', e?.message || e)
   process.exit(1)
 })
