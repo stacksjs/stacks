@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.261...v0.75.262)
+
+## 🐛 Bug Fixes
+
+- **mobile**: a native Craft screen is the phone app ([ea2d855](https://github.com/stacksjs/stacks/commit/ea2d855)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- stx 0.2.661, whose native compile binds a web view's leftover mustaches ([06827b2](https://github.com/stacksjs/stacks/commit/06827b2)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.260...v0.75.261)
 
 ## ✨ Features
