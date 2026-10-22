@@ -143,6 +143,11 @@ schedule.job('AnnualCleanup').annually()
 ```typescript
 // Specific days of week (0 = Sunday, 6 = Saturday)
 schedule.job('WeekdayTask').onDays([1, 2, 3, 4, 5]) // Monday to Friday
+
+// A day method keeps a time already set, and a time method keeps the days,
+// so these two agree:
+schedule.job('Digest').onDays([2]).at('09:00') // 0 9 * * 2
+schedule.job('Digest').at('09:00').onDays([2]) // 0 9 * * 2
 ```
 
 ### Any Cron Expression

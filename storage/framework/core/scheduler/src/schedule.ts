@@ -161,6 +161,47 @@ export class Schedule implements UntimedSchedule {
     return this.cronPattern
   }
 
+  /**
+   * A cron expression carries two independent axes: the time of day (minute
+   * and hour) and which days it falls on (day-of-month, month, day-of-week).
+   * Every cadence method below writes one axis through `setTimeOfDay` or
+   * `setDays` and leaves the other as it found it, so the order they are
+   * called in cannot change the answer. They used to assign the whole
+   * pattern, and `.at('09:00').onDays([2])` ran the job at midnight while
+   * `.onDays([2]).at('09:00')` was correct - both read as "Tuesdays at nine".
+   */
+  private cronFields(): [string, string, string, string, string] {
+    const fields = this.cronPattern.trim().split(/\s+/)
+    return fields.length === 5
+      ? fields as [string, string, string, string, string]
+      : ['0', '0', '*', '*', '*']
+  }
+
+  /** Set minute and hour, keeping the days the pattern already runs on. */
+  private setTimeOfDay(minute: string, hour: string): TimedSchedule {
+    const [, , dayOfMonth, month, dayOfWeek] = this.cronFields()
+    this.releaseInterval()
+    this.cronPattern = `${minute} ${hour} ${dayOfMonth} ${month} ${dayOfWeek}`
+    return this as TimedSchedule
+  }
+
+  /** Set the days to run on, keeping a time of day already set. */
+  private setDays(dayOfMonth: string, month: string, dayOfWeek: string): TimedSchedule {
+    const [minute, hour] = this.cronFields()
+    this.releaseInterval()
+    this.cronPattern = `${minute} ${hour} ${dayOfMonth} ${month} ${dayOfWeek}`
+    return this as TimedSchedule
+  }
+
+  /**
+   * A seconds cadence runs off `intervalMs`, which outranks `cronPattern` in
+   * `start()`, so moving to a cron cadence has to release it or the job keeps
+   * its old sub-minute tick.
+   */
+  private releaseInterval(): void {
+    this.intervalMs = null
+  }
+
   // --- Timing methods (standard 5-field cron patterns) ---
 
   everySecond(): TimedSchedule {
@@ -170,68 +211,55 @@ export class Schedule implements UntimedSchedule {
   }
 
   everyMinute(): TimedSchedule {
-    this.cronPattern = '* * * * *'
-    return this as TimedSchedule
+    return this.setTimeOfDay('*', '*')
   }
 
   everyTwoMinutes(): TimedSchedule {
-    this.cronPattern = '*/2 * * * *'
-    return this as TimedSchedule
+    return this.setTimeOfDay('*/2', '*')
   }
 
   everyFiveMinutes(): TimedSchedule {
-    this.cronPattern = '*/5 * * * *'
-    return this as TimedSchedule
+    return this.setTimeOfDay('*/5', '*')
   }
 
   everyTenMinutes(): TimedSchedule {
-    this.cronPattern = '*/10 * * * *'
-    return this as TimedSchedule
+    return this.setTimeOfDay('*/10', '*')
   }
 
   everyThirtyMinutes(): TimedSchedule {
-    this.cronPattern = '*/30 * * * *'
-    return this as TimedSchedule
+    return this.setTimeOfDay('*/30', '*')
   }
 
   everyHour(): TimedSchedule {
-    this.cronPattern = '0 * * * *'
-    return this as TimedSchedule
+    return this.setTimeOfDay('0', '*')
   }
 
   everyDay(): TimedSchedule {
-    this.cronPattern = '0 0 * * *'
-    return this as TimedSchedule
+    return this.setDays('*', '*', '*')
   }
 
   hourly(): TimedSchedule {
-    this.cronPattern = '0 * * * *'
-    return this as TimedSchedule
+    return this.setTimeOfDay('0', '*')
   }
 
   daily(): TimedSchedule {
-    this.cronPattern = '0 0 * * *'
-    return this as TimedSchedule
+    return this.setDays('*', '*', '*')
   }
 
   weekly(): TimedSchedule {
-    this.cronPattern = '0 0 * * 0'
-    return this as TimedSchedule
+    return this.setDays('*', '*', '0')
   }
 
   monthly(): TimedSchedule {
-    this.cronPattern = '0 0 1 * *'
-    return this as TimedSchedule
+    return this.setDays('1', '*', '*')
   }
 
   yearly(): TimedSchedule {
-    this.cronPattern = '0 0 1 1 *'
-    return this as TimedSchedule
+    return this.setDays('1', '1', '*')
   }
 
   annually(): TimedSchedule {
-    this.cronPattern = '0 0 1 1 *'
-    return this as TimedSchedule
+    return this.setDays('1', '1', '*')
   }
 
   /**
@@ -281,8 +309,7 @@ export class Schedule implements UntimedSchedule {
 
   /** Every day at "HH:MM" - `.daily().at(time)`. */
   dailyAt(time: string): TimedSchedule {
-    this.cronPattern = '0 0 * * *'
-    return this.at(time)
+    return this.daily().at(time)
   }
 
   /**
@@ -291,10 +318,7 @@ export class Schedule implements UntimedSchedule {
    * agree.
    */
   weekdays(): TimedSchedule {
-    const fields = this.cronPattern.trim().split(/\s+/)
-    const [minute, hour] = fields.length === 5 ? fields : ['0', '0']
-    this.cronPattern = `${minute} ${hour} * * 1-5`
-    return this as TimedSchedule
+    return this.setDays('*', '*', '1-5')
   }
 
   onDays(days: number[]): TimedSchedule {
@@ -309,8 +333,7 @@ export class Schedule implements UntimedSchedule {
         throw new Error(`onDays(): each day must be an integer 0-6 (Sun-Sat). Got ${d}`)
       }
     }
-    this.cronPattern = `0 0 * * ${days.join(',')}`
-    return this as TimedSchedule
+    return this.setDays('*', '*', days.join(','))
   }
 
   at(time: string): TimedSchedule {
@@ -327,10 +350,7 @@ export class Schedule implements UntimedSchedule {
     // the whole pattern as `m h * * *` quietly turned both into daily jobs:
     // a Monday digest sent every morning. The day, month and weekday fields a
     // timing method set are kept; with none set yet, this is a daily time.
-    const fields = this.cronPattern.trim().split(/\s+/)
-    const [dayOfMonth, month, dayOfWeek] = fields.length === 5 ? fields.slice(2) : ['*', '*', '*']
-    this.cronPattern = `${minute} ${hour} ${dayOfMonth} ${month} ${dayOfWeek}`
-    return this as TimedSchedule
+    return this.setTimeOfDay(String(minute), String(hour))
   }
 
   // --- Configuration methods ---

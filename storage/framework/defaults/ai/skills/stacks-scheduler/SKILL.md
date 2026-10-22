@@ -81,8 +81,19 @@ Each sets an internal cron pattern. Once a timing method is called, the schedule
 | `weekly()`             | `0 0 * * 0`        | Sunday at midnight          |
 | `monthly()`            | `0 0 1 * *`        | 1st of month at midnight    |
 | `yearly()` / `annually()` | `0 0 1 1 *`    | Jan 1 at midnight           |
+| `weekdays()`           | `0 0 * * 1-5`      | Monday to Friday            |
 | `onDays(days: number[])` | `0 0 * * {days}` | e.g. `onDays([1,3,5])` => `0 0 * * 1,3,5` |
 | `at(time: string)`      | `{min} {hr} * * *` | e.g. `at('14:30')` => `30 14 * * *` |
+
+The patterns above are what each method answers on its own. Chained, they
+compose on two independent axes and the order does not matter: the time of day
+(`at`, `hourly`, `every*Minutes`) and the days it runs on (`daily`, `weekly`,
+`monthly`, `yearly`, `weekdays`, `onDays`). Each method writes its own axis and
+keeps the other, so `.at('09:00').onDays([2])` and `.onDays([2]).at('09:00')`
+are both `0 9 * * 2`. Two calls on the same axis means the last one wins, so
+`.monthly().weekly()` is weekly. A `cron()` expression replaces both axes, and
+`everySecond()` leaves cron entirely (any cadence method after it returns to a
+cron pattern).
 
 ### Configuration Methods (chainable, returns `this`)
 
