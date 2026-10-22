@@ -1,4 +1,4 @@
-import { runTestSuites } from './runner'
+import { namedTestPaths, runTestSuites } from './runner'
 
 // Test runner shells out to `bun test` rather than running tests in-process so
 // each test file gets a fresh module graph (no leakage between suites).
@@ -11,4 +11,4 @@ import { runTestSuites } from './runner'
 //
 // The project-wide filter intentionally includes root-level tests as well as
 // feature, integration, and unit suites.
-await runTestSuites([''], 30000)
+await runTestSuites([''], 30000, namedTestPaths())

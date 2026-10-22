@@ -7,6 +7,25 @@ import { projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { resultFailed } from '../result'
 
+/**
+ * The environment the test actions read their named paths from.
+ *
+ * `buddy test <path>` used to accept the path, discard it and run the whole
+ * suite, so a named failing file printed `0 fail` and exited 0
+ * (stacksjs/stacks#2973). JSON in the environment rather than a flag because
+ * `buddyOptionArgs` comma-joins an array into a single argv value.
+ */
+function testPathEnv(paths: string[] | undefined): { STACKS_TEST_PATHS: string } | undefined {
+  return paths?.length ? { STACKS_TEST_PATHS: JSON.stringify(paths) } : undefined
+}
+
+/** What the command covered, so a caller who named paths is told. */
+function scopedTests(label: string, paths: string[] | undefined): string {
+  if (!paths?.length)
+    return label
+  return `${label} for ${paths.length === 1 ? paths[0] : `${paths.length} paths`}`
+}
+
 export function test(buddy: CLI): void {
   const descriptions = {
     command: 'Runs your test suite',
@@ -21,19 +40,24 @@ export function test(buddy: CLI): void {
   }
 
   buddy
-    .command('test', descriptions.command)
+    .command('test [...paths]', descriptions.command)
     .option('-f, --feature', descriptions.feature, { default: false })
     .option('-u, --unit', descriptions.unit, { default: false })
     // .option('--ui', descriptions.ui, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: true })
-    .action(async (options: TestingOptions) => {
+    .example('buddy test')
+    .example('buddy test tests/unit/auth.test.ts')
+    .example('buddy test storage/framework/core/scheduler/tests')
+    .action(async (paths: string[] | undefined, options: TestingOptions) => {
       const perf = await intro('buddy test')
+      const env = testPathEnv(paths)
 
       if (options.feature && options.unit) {
         const result = await runAction(Action.Test, {
           ...options,
           cwd: projectPath(),
+          env,
         })
 
         if (resultFailed(result)) {
@@ -52,6 +76,7 @@ export function test(buddy: CLI): void {
         const result = await runAction(Action.TestFeature, {
           ...options,
           cwd: projectPath(),
+          env,
         })
 
         if (resultFailed(result)) {
@@ -70,6 +95,7 @@ export function test(buddy: CLI): void {
         const result = await runAction(Action.TestUnit, {
           ...options,
           cwd: projectPath(),
+          env,
         })
 
         if (resultFailed(result)) {
@@ -86,6 +112,7 @@ export function test(buddy: CLI): void {
         const result = await runAction(Action.Test, {
           ...options,
           cwd: projectPath(),
+          env,
         })
 
         if (resultFailed(result)) {
@@ -98,7 +125,7 @@ export function test(buddy: CLI): void {
         }
       }
 
-      await outro('Finished running tests', {
+      await outro(scopedTests('Finished running tests', paths), {
         startTime: perf,
         useSeconds: true,
       })
@@ -108,14 +135,17 @@ export function test(buddy: CLI): void {
     })
 
   buddy
-    .command('test:unit', descriptions.unit)
+    .command('test:unit [...paths]', descriptions.unit)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: TestingOptions) => {
+    .example('buddy test:unit')
+    .example('buddy test:unit tests/unit/auth.test.ts')
+    .action(async (paths: string[] | undefined, options: TestingOptions) => {
       const perf = await intro('buddy test:unit')
       const result = await runAction(Action.TestUnit, {
         ...options,
         verbose: true,
         cwd: projectPath(),
+        env: testPathEnv(paths),
       })
 
       if (resultFailed(result)) {
@@ -127,21 +157,24 @@ export function test(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      await outro('Finished running unit tests', {
+      await outro(scopedTests('Finished running unit tests', paths), {
         startTime: perf,
         useSeconds: true,
       })
     })
 
   buddy
-    .command('test:feature', descriptions.feature)
+    .command('test:feature [...paths]', descriptions.feature)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: TestingOptions) => {
+    .example('buddy test:feature')
+    .example('buddy test:feature tests/feature/login.test.ts')
+    .action(async (paths: string[] | undefined, options: TestingOptions) => {
       const perf = await intro('buddy test:feature')
       const result = await runAction(Action.TestFeature, {
         ...options,
         verbose: true,
         cwd: projectPath(),
+        env: testPathEnv(paths),
       })
 
       if (resultFailed(result)) {
@@ -153,7 +186,7 @@ export function test(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      await outro('Finished running feature tests', {
+      await outro(scopedTests('Finished running feature tests', paths), {
         startTime: perf,
         useSeconds: true,
       })

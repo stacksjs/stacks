@@ -297,6 +297,8 @@ expect(pageAuditClean(report)).toBe(true) // no duplicate /api/ requests, failed
 buddy test                    # run all tests
 buddy test --unit             # unit tests only
 buddy test --feature          # feature tests only
+buddy test tests/unit/auth.test.ts                      # just that file
+buddy test storage/framework/core/scheduler/tests       # just that directory
 bun run test                  # via npm script
 bun run test:ui               # UI tests
 bun run test:coverage         # with coverage
@@ -304,6 +306,18 @@ bun run test:types            # type tests
 buddy test:page-audit --url /,/dashboard --base http://localhost:3000  # duplicate API requests, failures, console errors
 buddy test:page-audit --url http://localhost:3000/pricing --mobile --json
 ```
+
+Name a path to run only what is under it, file or directory, anywhere in the
+repo. A path matching no test file is an error rather than a fallback to the
+whole suite, which matters because the fallback used to report `0 fail` and
+exit 0 for a file it never opened. `test:unit` and `test:feature` narrow a
+named path to their own suite and say so when it holds none of their tests.
+
+Running `bun test` directly needs the `./` prefix: bunfig sets
+`[test] root = "tests"`, so `bun test storage/.../foo.test.ts` from the repo
+root matches nothing and reports a clean run over no files, while
+`bun test ./storage/.../foo.test.ts` works. `buddy test` adds the prefix for
+you, so prefer it.
 
 `test:page-audit` exits 1 when any page has duplicates, failed same-origin requests or errors, or
 never settles.

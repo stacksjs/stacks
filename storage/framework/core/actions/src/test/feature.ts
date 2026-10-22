@@ -1,3 +1,3 @@
-import { runTestSuites } from './runner'
+import { namedTestPaths, runTestSuites } from './runner'
 
-await runTestSuites(['feature'])
+await runTestSuites(['feature'], undefined, namedTestPaths())

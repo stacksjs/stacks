@@ -5587,10 +5587,10 @@ buddy telemetry --disable
 
 Runs your test suite
 
-- Usage: `$ buddy test`
+- Usage: `$ buddy test [...paths]`
 - Namespace: none
 - Aliases: none
-- Arguments: none
+- Arguments: `[paths...]`
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
@@ -5599,18 +5599,33 @@ Runs your test suite
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `true` |
 
+Examples:
+
+```bash
+buddy test
+buddy test tests/unit/auth.test.ts
+buddy test storage/framework/core/scheduler/tests
+```
+
 ### `test:feature`
 
 Runs your feature tests
 
-- Usage: `$ buddy test:feature`
+- Usage: `$ buddy test:feature [...paths]`
 - Namespace: `test`
 - Aliases: none
-- Arguments: none
+- Arguments: `[paths...]`
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy test:feature
+buddy test:feature tests/feature/login.test.ts
+```
 
 ### `test:page-audit`
 
@@ -5667,14 +5682,21 @@ Runs your test suite
 
 Runs your unit tests
 
-- Usage: `$ buddy test:unit`
+- Usage: `$ buddy test:unit [...paths]`
 - Namespace: `test`
 - Aliases: none
-- Arguments: none
+- Arguments: `[paths...]`
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy test:unit
+buddy test:unit tests/unit/auth.test.ts
+```
 
 ### `tinker`
 
