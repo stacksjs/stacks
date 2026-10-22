@@ -43,6 +43,11 @@ any other corpus the models have left behind; `--dialect <name>` or `--dialect
 all` brings it up to date from the models and that dialect's snapshot, without a
 database of that dialect (#2949).
 
+`buddy migrate` never writes the committed migration files. What it adapts for
+the connected database (idempotent ALTERs on Postgres, statements SQLite cannot
+run, gated features) happens to a copy of the corpus made for that run, so a
+SQLite app's migrations stay SQLite after a migrate against Postgres (#2929).
+
 A non-interactive `buddy migrate` (CI, a deploy step) generates nothing unless
 given `--generate` (#2948). Generating there authored a migration nobody
 reviewed and applied it in the same run, and on a deploy box the file then

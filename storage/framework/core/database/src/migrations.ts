@@ -8,7 +8,7 @@
 import type { UnsafeRowsResult } from './utils'
 import type { Result } from '@stacksjs/error-handling'
 import type { IndexShape } from './index-shape'
-import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, unlinkSync, writeFileSync } from 'node:fs'
 import { isPackageMigration, stagePackageMigrations } from './package-migrations'
 import { nextFreeMigrationOrdinal, nextMigrationOrdinal, reservedMigrationOrdinals, retiredMigrationNames } from './migration-names'
 import { basename, dirname, isAbsolute, join, resolve } from 'node:path'
@@ -177,10 +177,60 @@ function getQbDialect(): 'sqlite' | 'mysql' | 'singlestore' | 'vitess' | 'postgr
 }
 
 function migrationDirectory(dialect: string = getQbDialect()): string {
-  return resolveMigrationDirectory(dialect, {
+  const committed = resolveMigrationDirectory(dialect, {
     configured: userMigrationDir(),
     snapshotDir: qbSnapshotDir(),
   })
+  // During a run, the corpus being run is the staged copy (see `stageRunCorpus`).
+  return runCorpus && committed === runCorpus.committed ? runCorpus.staged : committed
+}
+
+/**
+ * The copy of the corpus a `runDatabaseMigration` executes, while it runs.
+ *
+ * Applying migrations adapts them to the connected database first: Postgres
+ * makes ALTERs idempotent, SQLite drops what it cannot run, quarantines mixed
+ * files and strips statements for gated features. That used to happen to the
+ * committed files, so one `buddy migrate` against a Postgres development
+ * database rewrote a SQLite app's tracked migrations into
+ * `ADD COLUMN IF NOT EXISTS`, which SQLite cannot parse, and the deploy that
+ * shipped them stopped migrating (stacksjs/stacks#2929). The run works on a
+ * copy instead, and the committed corpus is never written. The ledger records
+ * filenames, which the copy keeps.
+ */
+let runCorpus: { committed: string, staged: string } | undefined
+
+/** Copy the corpus `dialect` runs into a private directory and run from it. */
+function stageRunCorpus(dialect: string): { committed: string, staged: string } {
+  const committed = migrationDirectory(dialect)
+  const staged = join(path.frameworkRuntimePath(), 'migrations', `run-${process.pid}-${Date.now()}`)
+  mkdirSync(staged, { recursive: true })
+  for (const file of listCorpusEntries(committed))
+    writeFileSync(join(staged, file), readFileSync(join(committed, file)))
+  runCorpus = { committed, staged }
+  return runCorpus
+}
+
+/** Drop the staged copy and point the corpus back at the committed files. */
+function releaseRunCorpus(run: { staged: string } | undefined): void {
+  if (!run)
+    return
+  if (runCorpus?.staged === run.staged)
+    runCorpus = undefined
+  try {
+    rmSync(run.staged, { recursive: true, force: true })
+  }
+  catch { /* a leftover copy under storage/framework/runtime is harmless */ }
+}
+
+/** The files a corpus holds: migrations, and any left quarantined by an older run. */
+function listCorpusEntries(dir: string): string[] {
+  try {
+    return readdirSync(dir).filter(file => file.endsWith('.sql') || file.endsWith('.sql.unsupported'))
+  }
+  catch {
+    return []
+  }
 }
 
 /**
@@ -1796,16 +1846,10 @@ function makeMigrationsIdempotent(): void {
     }
   }
 
-  // These are git-tracked files, so rewriting them dirties the user's working
-  // tree. It was logged at .debug, which is invisible by default, so the only
-  // symptom was an unexplained diff appearing after every Postgres migrate.
-  // Say it out loud until the transform moves in-memory.
-  if (rewritten.length > 0) {
-    log.warn(
-      `[migration] Rewrote ${rewritten.length} migration file(s) on disk to be idempotent: ${rewritten.slice(0, 3).join(', ')}${rewritten.length > 3 ? `, +${rewritten.length - 3} more` : ''}. `
-      + 'These files are tracked in git, so this shows up as a working-tree change.',
-    )
-  }
+  // The staged copy of the corpus, never the committed files (see
+  // `stageRunCorpus`), so nothing here shows up in the working tree.
+  if (rewritten.length > 0)
+    log.debug(`[migration] Made ${rewritten.length} migration(s) idempotent for this run: ${rewritten.slice(0, 3).join(', ')}${rewritten.length > 3 ? `, +${rewritten.length - 3} more` : ''}`)
 }
 
 /** Rows the libSQL mirror is built from. */
@@ -1941,6 +1985,9 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
   await ensureDatabaseConfigLoaded()
 
   const startedAt = Date.now()
+  // Before anything adapts the corpus, so nothing adapts the committed files.
+  configureQueryBuilder()
+  const run = stageRunCorpus(getDialect())
   const hidden = await hideDisabledFeatureMigrations()
   /*
    * Files SQLite could not execute, set aside so the rest of the corpus could
@@ -2267,6 +2314,7 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
       }
     }
     await restoreHiddenMigrations(hidden)
+    releaseRunCorpus(run)
   }
 }
 
