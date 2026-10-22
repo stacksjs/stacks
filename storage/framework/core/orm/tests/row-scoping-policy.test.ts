@@ -40,7 +40,9 @@ async function registeredSurface(policy?: string): Promise<Surface> {
 
   const proc = Bun.spawn(['bun', '-e', script], {
     cwd: projectRoot,
-    env: { ...process.env, ...(policy ? { STACKS_API_ROW_SCOPING: policy } : {}) },
+    // The framework's own models publish no API unless an app selects them
+    // (stacksjs/stacks#2954), and these are the models under test.
+    env: { ...process.env, STACKS_MODEL_APIS: 'all', ...(policy ? { STACKS_API_ROW_SCOPING: policy } : {}) },
     stdout: 'pipe',
     stderr: 'pipe',
   })

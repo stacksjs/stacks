@@ -36,7 +36,8 @@ for (const dialect of ['sqlite', 'postgres'] as const) {
       const child = Bun.spawn([process.execPath, `--config=${config}`, '--no-env-file', join(import.meta.dir, 'fixtures', 'auto-crud-uuid.ts')], {
         cwd: project,
         env: {
-          ...process.env, APP_ENV: 'test', DB_CONNECTION: dialect, DB_QUERY_LOGGING_ENABLED: 'false',
+          // A framework model under test, so its API is selected explicitly (#2954).
+          ...process.env, STACKS_MODEL_APIS: 'all', APP_ENV: 'test', DB_CONNECTION: dialect, DB_QUERY_LOGGING_ENABLED: 'false',
           DB_DATABASE_PATH: dialect === 'sqlite' ? join(project, 'routes.sqlite') : ':memory:',
           ...(url
             ? {

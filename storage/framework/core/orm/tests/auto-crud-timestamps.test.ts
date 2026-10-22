@@ -60,7 +60,8 @@ for (const scenario of cases) {
       const child = Bun.spawn([process.execPath, `--config=${config}`, '--no-env-file', join(import.meta.dir, 'fixtures', 'auto-crud-timestamps.ts')], {
         cwd: project,
         env: {
-          ...process.env, APP_ENV: 'test', TZ: 'America/Los_Angeles', DB_QUERY_LOGGING_ENABLED: 'false',
+          // A framework model under test, so its API is selected explicitly (#2954).
+          ...process.env, STACKS_MODEL_APIS: 'all', APP_ENV: 'test', TZ: 'America/Los_Angeles', DB_QUERY_LOGGING_ENABLED: 'false',
           STACKS_AUTO_CRUD_TIMESTAMPS_DIALECT: scenario.dialect,
           ...('qb' in scenario
             ? { DB_CONNECTION: 'sqlite', DB_DATABASE_PATH: join(project, 'unused.sqlite'), STACKS_AUTO_CRUD_TIMESTAMPS_QB_URL: target!.href }
