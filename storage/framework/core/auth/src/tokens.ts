@@ -64,7 +64,14 @@ function validTokenExpiry(value: unknown): boolean {
   return expiry != null && expiry.getTime() > Date.now()
 }
 
-/** Verify the stored grant, not just whether INSERT raised an exception. */
+/**
+ * Verify the stored grant, not just whether INSERT raised an exception.
+ *
+ * The expiry is compared by the database, against the literal that was
+ * written, for the reason {@link verifyAccessTokenInsert} gives. Login issues a
+ * refresh token by default, so leaving this one on a parsed Date kept the
+ * failure in stacksjs/stacks#2902 reachable after the access token was fixed.
+ */
 async function verifyRefreshTokenInsert(
   trx: { unsafe: (sql: string, params?: any[]) => any },
   hash: string,
@@ -72,18 +79,52 @@ async function verifyRefreshTokenInsert(
   expiresAt: Date,
 ): Promise<void> {
   const { param } = tokenSql()
+  // `?` dialects bind by position, so the select list's placeholder is param(1).
   const rows = await trx.unsafe(`
-    SELECT access_token_id, revoked, expires_at FROM oauth_refresh_tokens WHERE token = ${param(1)}
-  `, [hash]) as Array<{ access_token_id: unknown, revoked: unknown, expires_at: unknown }>
-  const row = rows[0]
-  const storedExpiry = parseSqlDateTime(row?.expires_at)?.getTime()
-  const expectedExpiry = expiresAt.getTime()
-  if (rows.length !== 1 || !row || String(row.access_token_id) !== String(accessTokenId)
-    || (row.revoked !== false && row.revoked !== 0) || storedExpiry !== expectedExpiry)
-    throw new HttpError(500, 'Failed to persist the requested refresh token')
+    SELECT access_token_id, revoked, expires_at,
+      (expires_at = ${param(1)}) AS expires_at_matches
+    FROM oauth_refresh_tokens WHERE token = ${param(2)}
+  `, [sqlDateTime(expiresAt), hash]) as RefreshTokenReadBack[]
+  verifyRefreshTokenRow(rows, { accessTokenId })
 }
 
-/** Use the existing read-back to verify the grant before returning its secret. */
+interface RefreshTokenReadBack {
+  access_token_id: unknown
+  revoked: unknown
+  expires_at: unknown
+  expires_at_matches: boolean | number | null | undefined
+}
+
+/**
+ * The refresh token read-back is exactly the row that was written.
+ *
+ * Exported for tests.
+ */
+export function verifyRefreshTokenRow(rows: RefreshTokenReadBack[], expected: { accessTokenId: number }): void {
+  const row = rows[0]
+  if (rows.length !== 1 || !row)
+    throw new HttpError(500, `Failed to persist the requested refresh token: ${rows.length === 0 ? 'no row came back' : `${rows.length} rows came back`}`)
+  failOnMismatch('refresh token', [
+    ['access_token_id', String(row.access_token_id) === String(expected.accessTokenId)],
+    ['revoked', row.revoked === false || row.revoked === 0],
+    ['expires_at', storedAsWritten(row.expires_at_matches)],
+  ])
+}
+
+/**
+ * Throw when any read-back field differs, naming every one that did.
+ *
+ * One message for several different mismatches meant a 500 on the reporting
+ * host of stacksjs/stacks#2902 never said which field was wrong, and every
+ * round of that issue assumed it was the expiry. Field names only, never the
+ * values, which can include the owner's ids.
+ */
+function failOnMismatch(what: string, checks: Array<[field: string, ok: boolean]>): void {
+  const differed = checks.filter(([, ok]) => !ok).map(([field]) => field)
+  if (differed.length > 0)
+    throw new HttpError(500, `Failed to persist the requested ${what}: ${differed.join(', ')} did not match what was written`)
+}
+
 /**
  * The database's answer to `expires_at = <the literal written>`.
  *
@@ -129,14 +170,15 @@ export function verifyAccessTokenInsert(row: AccessTokenRow, expected: {
   scopes: TokenScopes
   expiresAt: Date
 }): void {
-  if (String(row.tokenable_id) !== String(expected.ownerId)
-    || String(row.user_id) !== String(expected.ownerId)
-    || row.tokenable_type !== expected.ownerType
-    || String(row.oauth_client_id) !== String(expected.clientId)
-    || (row.revoked !== false && row.revoked !== 0)
-    || !storedAsWritten(row.expires_at_matches)
-    || JSON.stringify(parseScopes(row.scopes)) !== JSON.stringify(expected.scopes))
-    throw new HttpError(500, 'Failed to persist the requested access token')
+  failOnMismatch('access token', [
+    ['tokenable_id', String(row.tokenable_id) === String(expected.ownerId)],
+    ['user_id', String(row.user_id) === String(expected.ownerId)],
+    ['tokenable_type', row.tokenable_type === expected.ownerType],
+    ['oauth_client_id', String(row.oauth_client_id) === String(expected.clientId)],
+    ['revoked', row.revoked === false || row.revoked === 0],
+    ['expires_at', storedAsWritten(row.expires_at_matches)],
+    ['scopes', JSON.stringify(parseScopes(row.scopes)) === JSON.stringify(expected.scopes)],
+  ])
 }
 
 function refreshDeadline(days: number): Date {
