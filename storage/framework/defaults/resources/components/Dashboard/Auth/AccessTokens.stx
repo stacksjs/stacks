@@ -1,3 +1,5 @@
+@import('../UI/Table')
+
 <script client>
 import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
 import { authStore } from '../../../../views/dashboard/stores/auth'
@@ -59,11 +61,31 @@ function tokenStatus(token: AccessTokenRow): 'active' | 'expired' {
   return new Date(token.expires_at).getTime() <= Date.now() ? 'expired' : 'active'
 }
 
-function statusClass(token: AccessTokenRow): string {
-  return tokenStatus(token) === 'active'
-    ? 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40'
-    : 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40'
-}
+const TOKEN_COLUMNS = [
+  { key: 'name', label: 'Token', sortable: true, subtitleKey: 'createdLabel', class: 'font-medium text-neutral-900 dark:text-white' },
+  { key: 'scopesLabel', label: 'Scopes', slotted: true },
+  {
+    key: 'status',
+    label: 'Status',
+    type: 'badge' as const,
+    sortable: true,
+    badgeClasses: {
+      active: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40',
+      expired: 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40',
+    },
+    badgeLabels: { active: 'Active', expired: 'Expired' },
+  },
+  { key: 'expires_at', label: 'Expires', align: 'right' as const, sortable: true, slotted: true, searchable: false },
+]
+
+const tokenRows = derived(() => tokens().map(token => ({
+  ...token,
+  createdLabel: `Created ${formatDate(token.created_at)}`,
+  // Searchable text for the scope pills the cell draws.
+  scopesLabel: token.scopes.join(' '),
+  status: tokenStatus(token),
+  expiresLabel: formatDate(token.expires_at),
+})))
 
 function formatDate(value: string | null): string {
   if (!value)
@@ -270,38 +292,36 @@ onMount(() => {
       </template>
     </EmptyState>
 
-    <div :if="!loading() && !authenticationRequired() && tokens().length > 0" class="overflow-x-auto">
-      <table class="w-full">
-        <thead class="bg-neutral-50 dark:bg-neutral-800/50">
-          <tr>
-            <th class="pl-5 pr-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Token</th>
-            <th class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Scopes</th>
-            <th class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Status</th>
-            <th class="px-4 py-3 font-semibold text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Expires</th>
-            <th class="pr-5 py-3 font-semibold text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Action</th>
-          </tr>
-        </thead>
-        <tbody class="divide-neutral-100 divide-y dark:divide-neutral-700">
-          <tr :for="token in tokens()">
-            <td class="pl-5 pr-4 py-3.5">
-              <p class="font-medium text-neutral-900 text-sm dark:text-white">{{ token.name }}</p>
-              <p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">Created {{ formatDate(token.created_at) }}</p>
-            </td>
-            <td class="px-4 py-3.5">
-              <div class="flex flex-wrap gap-1">
-                <span :for="scope in token.scopes" class="inline-flex px-2 py-0.5 font-medium text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded">{{ scope }}</span>
-              </div>
-            </td>
-            <td class="px-4 py-3.5"><span :class="'inline-flex px-2 py-0.5 font-medium text-xs capitalize rounded ' + statusClass(token)">{{ tokenStatus(token) }}</span></td>
-            <td class="px-4 py-3.5 text-neutral-500 text-right text-xs whitespace-nowrap dark:text-neutral-400">{{ formatDate(token.expires_at) }}</td>
-            <td class="pr-5 py-3.5 text-right whitespace-nowrap">
-              <Button variant="danger" size="sm" :loading="revoking() === token.id" @click="confirmingRevoke.set(token.id)">
-                {{ revoking() === token.id ? 'Revoking...' : 'Revoke' }}
-              </Button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    {{--
+      The page keeps its loading, sign-in and empty states; the table brings
+      sorting and paging. Scopes are slotted for their pills and expiry for
+      "Never", so it sorts on the date itself.
+    --}}
+    <div :if="!loading() && !authenticationRequired() && tokens().length > 0">
+      <Table :columns="TOKEN_COLUMNS" :data="tokenRows()" paginated :page-size="25">
+        <template #cell="{ row, column }">
+          <template :if="column.key === 'scopesLabel'">
+            <div class="flex flex-wrap gap-1">
+              <template :for="scope in row.scopes" :key="scope">
+                <span class="inline-flex px-2 py-0.5 font-medium text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded" x-text="scope"></span>
+              </template>
+            </div>
+          </template>
+          <template :else>
+            <span class="text-neutral-500 text-xs whitespace-nowrap dark:text-neutral-400" x-text="row.expiresLabel"></span>
+          </template>
+        </template>
+        <template #actions="{ row }">
+          <div class="text-right whitespace-nowrap">
+            <template :if="revoking() === row.id">
+              <Button variant="danger" size="sm" loading>Revoking...</Button>
+            </template>
+            <template :else>
+              <Button variant="danger" size="sm" @click="confirmingRevoke.set(row.id)">Revoke</Button>
+            </template>
+          </div>
+        </template>
+      </Table>
     </div>
   </Card>
 

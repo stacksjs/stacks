@@ -1,3 +1,5 @@
+@import('../UI/Table')
+
 <script client>
 import type {
   DashboardActivity,
@@ -53,10 +55,6 @@ const filteredRecords = derived(() => {
   return records().filter(record => searchableText(record).includes(query))
 })
 
-const activityRecords = derived(() => filteredRecords() as DashboardActivity[])
-const userRecords = derived(() => filteredRecords() as DashboardUser[])
-const teamRecords = derived(() => filteredRecords() as DashboardTeam[])
-const subscriberRecords = derived(() => filteredRecords() as DashboardSubscriber[])
 
 function searchableText(record: DataRecord): string {
   return Object.values(record)
@@ -69,26 +67,77 @@ function statValue(key: string): number {
   return Number(stats()[key] || 0)
 }
 
-function formatDate(value: string): string {
-  if (!value)
-    return 'Never'
-  const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? 'Unknown' : date.toLocaleString()
-}
-
 function formatSubject(record: DashboardActivity): string {
   if (!record.subjectType)
     return 'Application'
   return record.subjectId > 0 ? `${record.subjectType} #${record.subjectId}` : record.subjectType
 }
 
-function statusClass(status: string): string {
+/** A status pill's colour: settled, ended, or still in progress. */
+function statusTone(status: string): string {
   if (['active', 'subscribed', 'completed'].includes(status))
-    return 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40'
+    return 'positive'
   if (['bounced', 'inactive', 'unsubscribed'].includes(status))
-    return 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40'
-  return 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40'
+    return 'negative'
+  return 'pending'
 }
+
+const TONES = {
+  positive: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40',
+  negative: 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40',
+  pending: 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40',
+}
+
+function capitalize(value: string): string {
+  return value ? value.charAt(0).toUpperCase() + value.slice(1) : value
+}
+
+const recorded = (key: string, label: string) => ({ key, label, type: 'datetime' as const, align: 'right' as const, sortable: true, emptyText: 'Never', class: 'text-neutral-500 text-xs whitespace-nowrap dark:text-neutral-400' })
+const statusColumn = { key: 'statusTone', label: 'Status', type: 'badge' as const, sortable: true, badgeLabelKey: 'statusLabel', badgeClasses: TONES }
+
+const COLUMNS_BY_MODE = {
+  activity: [
+    { key: 'description', label: 'Activity', sortable: true, subtitleKey: 'type', class: 'font-medium text-neutral-900 dark:text-white' },
+    { key: 'subject', label: 'Subject', sortable: true, class: 'text-neutral-600 dark:text-neutral-300' },
+    { key: 'causer', label: 'Causer', sortable: true, class: 'text-neutral-600 dark:text-neutral-300' },
+    recorded('createdAt', 'Recorded'),
+  ],
+  users: [
+    { key: 'name', label: 'User', sortable: true, subtitleKey: 'email', class: 'font-medium text-neutral-900 dark:text-white' },
+    { key: 'verificationTone', label: 'Verification', type: 'badge' as const, sortable: true, badgeLabelKey: 'verificationLabel', badgeClasses: TONES },
+    recorded('updatedAt', 'Updated'),
+    recorded('createdAt', 'Registered'),
+  ],
+  teams: [
+    { key: 'name', label: 'Team', sortable: true, slotted: true },
+    { key: 'memberCount', label: 'Members', type: 'number' as const, align: 'right' as const, sortable: true, class: 'font-mono text-neutral-700 dark:text-neutral-300' },
+    statusColumn,
+    recorded('createdAt', 'Created'),
+  ],
+  subscribers: [
+    { key: 'email', label: 'Subscriber', sortable: true, class: 'font-medium text-neutral-900 dark:text-white' },
+    { key: 'sourceLabel', label: 'Source', sortable: true, class: 'text-neutral-600 dark:text-neutral-300' },
+    statusColumn,
+    recorded('createdAt', 'Subscribed'),
+  ],
+}
+
+const recordColumns = derived(() => COLUMNS_BY_MODE[mode()] ?? COLUMNS_BY_MODE.activity)
+
+const recordRows = derived(() => filteredRecords().map((record) => {
+  const row = record as Record<string, any>
+  return {
+    ...row,
+    subject: mode() === 'activity' ? formatSubject(record as DashboardActivity) : undefined,
+    verificationTone: row.emailVerifiedAt ? 'positive' : 'pending',
+    verificationLabel: row.emailVerifiedAt ? 'Verified' : 'Unverified',
+    statusTone: statusTone(String(row.status ?? '')),
+    statusLabel: capitalize(String(row.status ?? '')),
+    sourceLabel: capitalize(String(row.source ?? '')),
+    descriptionLabel: row.description || 'No description',
+    modelLink: `/models/team?q=${encodeURIComponent(String(row.name ?? ''))}`,
+  }
+}))
 
 async function loadRecords(): Promise<void> {
   loading.set(true)
@@ -202,80 +251,28 @@ onMount(() => {
 
     <EmptyState :if="!loading() && !loadError() && filteredRecords().length === 0" :icon="page().icon" :title="search() ? 'No matching records' : page().empty" :description="search() ? 'Try a different search term.' : 'New records will appear here automatically.'" />
 
-    <div :if="!loading() && filteredRecords().length > 0" class="overflow-x-auto">
-      <table class="w-full">
-        <thead class="bg-neutral-50 dark:bg-neutral-800/50">
-          <tr :if="mode() === 'activity'">
-            <th class="pl-5 pr-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Activity</th>
-            <th class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Subject</th>
-            <th class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Causer</th>
-            <th class="pr-5 py-3 font-semibold text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Recorded</th>
-          </tr>
-          <tr :if="mode() === 'users'">
-            <th class="pl-5 pr-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">User</th>
-            <th class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Verification</th>
-            <th class="px-4 py-3 font-semibold text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Updated</th>
-            <th class="pr-5 py-3 font-semibold text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Registered</th>
-          </tr>
-          <tr :if="mode() === 'teams'">
-            <th class="pl-5 pr-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Team</th>
-            <th class="px-4 py-3 font-semibold text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Members</th>
-            <th class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Status</th>
-            <th class="pr-5 py-3 font-semibold text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Created</th>
-          </tr>
-          <tr :if="mode() === 'subscribers'">
-            <th class="pl-5 pr-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Subscriber</th>
-            <th class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Source</th>
-            <th class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Status</th>
-            <th class="pr-5 py-3 font-semibold text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Subscribed</th>
-          </tr>
-        </thead>
-        <tbody class="divide-neutral-100 divide-y dark:divide-neutral-700">
-          <template :if="mode() === 'activity'" :for="record in activityRecords()">
-            <tr>
-              <td class="pl-5 pr-4 py-3.5">
-                <p class="font-medium text-neutral-900 text-sm dark:text-white">{{ record.description }}</p>
-                <p class="mt-0.5 font-mono text-neutral-500 text-xs dark:text-neutral-400">{{ record.type }}</p>
-              </td>
-              <td class="px-4 py-3.5 text-neutral-600 text-sm dark:text-neutral-300">{{ formatSubject(record) }}</td>
-              <td class="px-4 py-3.5 text-neutral-600 text-sm dark:text-neutral-300">{{ record.causer }}</td>
-              <td class="pr-5 py-3.5 text-neutral-500 text-right text-xs whitespace-nowrap dark:text-neutral-400">{{ formatDate(record.createdAt) }}</td>
-            </tr>
+    {{--
+      Four column sets: the mode decides which. The page keeps its search,
+      loading and empty states; the table brings sorting and paging. Only a
+      team's name is slotted, for the link to its model page.
+    --}}
+    <div :if="!loading() && filteredRecords().length > 0">
+      {{--
+        Two tables rather than one with a slot: Table hands every cell to a
+        given cell slot when no column is slotted, so the slot can only be
+        passed in the mode that has a slotted column.
+      --}}
+      <template :if="mode() === 'teams'">
+        <Table :columns="recordColumns()" :data="recordRows()" paginated :page-size="25">
+          <template #cell="{ row }">
+            <StxLink :to="row.modelLink" class="font-medium text-neutral-900 text-sm dark:text-white hover:text-blue-600 dark:hover:text-blue-400">{{ row.name }}</StxLink>
+            <p class="mt-0.5 max-w-xl text-neutral-500 text-xs dark:text-neutral-400" x-text="row.descriptionLabel"></p>
           </template>
-          <template :if="mode() === 'users'" :for="record in userRecords()">
-            <tr>
-              <td class="pl-5 pr-4 py-3.5">
-                <p class="font-medium text-neutral-900 text-sm dark:text-white">{{ record.name }}</p>
-                <p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">{{ record.email }}</p>
-              </td>
-              <td class="px-4 py-3.5">
-                <span :class="'inline-flex px-2 py-0.5 font-medium text-xs rounded ' + (record.emailVerifiedAt ? statusClass('active') : statusClass('pending'))">{{ record.emailVerifiedAt ? 'Verified' : 'Unverified' }}</span>
-              </td>
-              <td class="px-4 py-3.5 text-neutral-500 text-right text-xs whitespace-nowrap dark:text-neutral-400">{{ formatDate(record.updatedAt) }}</td>
-              <td class="pr-5 py-3.5 text-neutral-500 text-right text-xs whitespace-nowrap dark:text-neutral-400">{{ formatDate(record.createdAt) }}</td>
-            </tr>
-          </template>
-          <template :if="mode() === 'teams'" :for="record in teamRecords()">
-            <tr>
-              <td class="pl-5 pr-4 py-3.5">
-                <StxLink :to="'/models/team?q=' + encodeURIComponent(record.name)" class="font-medium text-neutral-900 text-sm dark:text-white hover:text-blue-600 dark:hover:text-blue-400">{{ record.name }}</StxLink>
-                <p class="mt-0.5 max-w-xl text-neutral-500 text-xs dark:text-neutral-400">{{ record.description || 'No description' }}</p>
-              </td>
-              <td class="px-4 py-3.5 font-mono text-neutral-700 text-right text-sm dark:text-neutral-300">{{ record.memberCount }}</td>
-              <td class="px-4 py-3.5"><span :class="'inline-flex px-2 py-0.5 font-medium text-xs capitalize rounded ' + statusClass(record.status)">{{ record.status }}</span></td>
-              <td class="pr-5 py-3.5 text-neutral-500 text-right text-xs whitespace-nowrap dark:text-neutral-400">{{ formatDate(record.createdAt) }}</td>
-            </tr>
-          </template>
-          <template :if="mode() === 'subscribers'" :for="record in subscriberRecords()">
-            <tr>
-              <td class="pl-5 pr-4 py-3.5 font-medium text-neutral-900 text-sm dark:text-white">{{ record.email }}</td>
-              <td class="px-4 py-3.5 capitalize text-neutral-600 text-sm dark:text-neutral-300">{{ record.source }}</td>
-              <td class="px-4 py-3.5"><span :class="'inline-flex px-2 py-0.5 font-medium text-xs capitalize rounded ' + statusClass(record.status)">{{ record.status }}</span></td>
-              <td class="pr-5 py-3.5 text-neutral-500 text-right text-xs whitespace-nowrap dark:text-neutral-400">{{ formatDate(record.createdAt) }}</td>
-            </tr>
-          </template>
-        </tbody>
-      </table>
+        </Table>
+      </template>
+      <template :else>
+        <Table :columns="recordColumns()" :data="recordRows()" paginated :page-size="25" />
+      </template>
     </div>
   </Card>
 </div>
