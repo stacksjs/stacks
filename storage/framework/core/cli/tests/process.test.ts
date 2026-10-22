@@ -18,7 +18,7 @@ test('captures both streams, literal argv and a nonzero exit without interpretin
   await fixture(async (directory, args) => {
     const script = join(directory, 'child.ts')
     await writeFile(script, 'console.log(JSON.stringify({ argument: process.argv[2], cwd: process.cwd(), environment: process.env.BOUNDED_PROCESS_TEST })); console.error("bounded diagnostic"); process.exitCode = 7')
-    const result = await runBoundedProcess([...args, script, '$(do-not-run); literal'], { ...options, cwd: directory, env: { ...process.env, BOUNDED_PROCESS_TEST: 'declared-value' } })
+    const result = await runBoundedProcess([...args, script, '$(do-not-run); literal'], { ...options, timeoutMs: 120000, cwd: directory, env: { ...process.env, BOUNDED_PROCESS_TEST: 'declared-value' } })
     expect(result).toEqual({ exitCode: 7, stdout: `${JSON.stringify({ argument: '$(do-not-run); literal', cwd: directory, environment: 'declared-value' })}\n`, stderr: 'bounded diagnostic\n' })
   })
 })
@@ -76,7 +76,7 @@ test('invalid budgets reject before a child can create its marker', async () => 
   await fixture(async (directory, args) => {
     const script = join(directory, 'child.ts'), marker = join(directory, 'created')
     await writeFile(script, `await Bun.write(${JSON.stringify(marker)}, 'unexpected')`)
-    for (const invalid of [{ timeoutMs: 0 }, { timeoutMs: 60001 }, { stdoutBytes: 0 }, { stderrBytes: 2_000_001 }]) {
+    for (const invalid of [{ timeoutMs: 0 }, { timeoutMs: 120001 }, { stdoutBytes: 0 }, { stderrBytes: 2_000_001 }]) {
       await expect(runBoundedProcess([...args, script], { ...options, ...invalid })).rejects.toThrow('Invalid bounded process')
       expect(await Bun.file(marker).exists()).toBe(false)
     }

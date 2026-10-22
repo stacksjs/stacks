@@ -15,7 +15,7 @@ export interface BoundedProcessResult {
 
 /** Owns a finite command, its output readers and, on POSIX, its process group. */
 export async function runBoundedProcess(command: string[], options: BoundedProcessOptions): Promise<BoundedProcessResult> {
-  if (!Number.isSafeInteger(options.timeoutMs) || options.timeoutMs < 1 || options.timeoutMs > 60000) throw new Error('Invalid bounded process timeout')
+  if (!Number.isSafeInteger(options.timeoutMs) || options.timeoutMs < 1 || options.timeoutMs > 120000) throw new Error('Invalid bounded process timeout')
   for (const limit of [options.stdoutBytes, options.stderrBytes]) {
     if (!Number.isSafeInteger(limit) || limit < 1 || limit > 2_000_000) throw new Error('Invalid bounded process output limit')
   }

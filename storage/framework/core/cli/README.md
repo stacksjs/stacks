@@ -31,7 +31,7 @@ if (result.exitCode !== 0)
   throw new Error('Source inspection failed', { cause: result })
 ```
 
-All three limits are required positive integers. Timeouts are at most 60,000 ms;
+All three limits are required positive integers. Timeouts are at most 120,000 ms;
 each stream is capped at 2,000,000 bytes before UTF-8 decoding. Stdin is ignored.
 Output overflow, read errors and deadlines reject after owned cleanup. Original
 failure values and cleanup errors are retained without coercing them to strings.
