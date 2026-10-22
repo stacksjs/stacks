@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'bun:test'
-import { unlinkSync, writeFileSync } from 'node:fs'
+import { mkdirSync, unlinkSync, writeFileSync } from 'node:fs'
 import { appPath } from '@stacksjs/path'
 import { clearMiddlewareCache, clearRouteMiddlewareRegistry, createStacksRouter } from '../src/stacks-router'
 
@@ -8,6 +8,7 @@ const fixtureFile = appPath(`Middleware/${fixtureName}.ts`)
 let aliases: Record<string, string>
 
 beforeAll(async () => {
+  mkdirSync(appPath('Middleware'), { recursive: true })
   aliases = (await import(appPath('Middleware.ts'))).default
   aliases.__timing = fixtureName
   writeFileSync(fixtureFile, `

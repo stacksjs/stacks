@@ -20,7 +20,7 @@
  */
 
 import { afterAll, beforeEach, describe, expect, test } from 'bun:test'
-import { unlinkSync, writeFileSync } from 'node:fs'
+import { mkdirSync, unlinkSync, writeFileSync } from 'node:fs'
 import { appPath } from '@stacksjs/path'
 import { assertRouteMiddlewareResolvable, clearMiddlewareCache, clearRouteMiddlewareRegistry, createStacksRouter, findUnresolvableRouteMiddleware } from '../src/stacks-router'
 
@@ -42,6 +42,7 @@ describe('request-time fail-closed', () => {
   test('a broken middleware stays closed when its failed load is cached', async () => {
     const name = `BrokenCached${crypto.randomUUID().replaceAll('-', '')}`
     const file = appPath(`Middleware/${name}.ts`)
+    mkdirSync(appPath('Middleware'), { recursive: true })
     writeFileSync(file, 'export default {}\n')
     let handlerRuns = 0
 

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { unlinkSync, writeFileSync } from 'node:fs'
+import { mkdirSync, unlinkSync, writeFileSync } from 'node:fs'
 import { appPath } from '@stacksjs/path'
 import { clearMiddlewareCache, clearRouteMiddlewareRegistry, createStacksRouter } from '../src/stacks-router'
 
@@ -19,6 +19,7 @@ describe('middleware reload during an unresolved import', () => {
       const files = ['Gate', 'Old', 'New'].map(suffix => appPath(`Middleware/${id}${suffix}.ts`))
       const aliases = (await import(appPath('Middleware.ts'))).default as Record<string, string>
       const originalAlias = aliases[alias]
+      mkdirSync(appPath('Middleware'), { recursive: true })
       writeFileSync(files[0], `
 export const started = Promise.withResolvers()
 export const release = Promise.withResolvers()
