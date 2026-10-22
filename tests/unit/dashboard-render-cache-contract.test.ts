@@ -8,11 +8,17 @@ const dashboardDevSource = readFileSync(
 )
 
 describe('dashboard rendered route cache', () => {
-  test('prewarms source-derived dashboard shells through native STX serving', () => {
+  test('caches source-derived dashboard shells through native STX serving', () => {
     expect(dashboardDevSource).toContain('renderCache: true')
     expect(dashboardDevSource).toContain("renderCacheVary: 'source'")
-    expect(dashboardDevSource).toContain('prewarmRenderCache: 4')
     expect(dashboardDevSource).toContain('publicDir: publicPath()')
+  })
+
+  test('does not prewarm, so a request never queues behind background renders', () => {
+    // Prewarming rendered every route on the serving thread for minutes after
+    // "ready", and pages took 3-28s while it ran (stacksjs/stacks#2964).
+    expect(dashboardDevSource).toContain('prewarmRenderCache: false')
+    expect(dashboardDevSource).not.toMatch(/prewarmRenderCache:\s*(true|\d)/)
   })
 
   test('invalidates client bundles when dashboard composables change', () => {

@@ -414,7 +414,14 @@ async function startStxServer(): Promise<void> {
     // whose client bundle can change the emitted HTML.
     renderCache: true,
     renderCacheVary: 'source',
-    prewarmRenderCache: 4,
+    // No prewarm. It fetched every dashboard route from this same process,
+    // four at a time, on the thread that serves the developer's requests: about
+    // 170 seconds of CPU after "ready", during which a page took 3-28s because
+    // it queued behind the renders (stacksjs/stacks#2964). On demand, a page's
+    // first visit costs its own ~1s render and every later one comes from the
+    // cache above in under 10ms. Concurrency 1 did not help: each render holds
+    // the thread for about a second, so even cached pages still waited 1-3s.
+    prewarmRenderCache: false,
     watchDirs: [
       projectPath('resources/functions'),
       defaultsPath('resources/functions'),
