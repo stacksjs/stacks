@@ -52,6 +52,10 @@ export function hasNativeMobileHost(): boolean {
   const host = craftHost()
   if (!host) return false
   if (host.CraftAndroid) return true
+  // A native screen (stx drawn by Craft's own renderer, no web view): the
+  // bridge is there before the screen runs, and it names the phone.
+  const platform = (craftRoot() as { platform?: unknown } | undefined)?.platform
+  if (platform === 'ios' || platform === 'android') return true
   return Boolean(host.webkit?.messageHandlers?.craft) && /iPhone|iPad|iPod/.test(userAgent())
 }
 

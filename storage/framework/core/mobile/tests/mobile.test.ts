@@ -80,6 +80,16 @@ describe('@stacksjs/mobile', () => {
       expect(hasNativeMobileHost()).toBe(false)
       await expect(whenNativeMobile(10)).resolves.toBe(false)
 
+      // A native screen: no web view and no user agent, the bridge there from
+      // the start and naming the phone. A desktop window's is not one.
+      setAgent('')
+      setWindow(Object.assign(new EventTarget(), { craft: { platform: 'ios', capabilities: {} } }))
+      expect(hasNativeMobileHost()).toBe(true)
+      setWindow(Object.assign(new EventTarget(), { craft: { platform: 'android', capabilities: {} } }))
+      expect(hasNativeMobileHost()).toBe(true)
+      setWindow(Object.assign(new EventTarget(), { craft: { platform: 'macos', capabilities: {} } }))
+      expect(hasNativeMobileHost()).toBe(false)
+
       // Answered by craftReady once the bridge arrives.
       const target = Object.assign(new EventTarget(), { webkit: { messageHandlers: { craft: {} } } }) as EventTarget & { craft?: unknown }
       setWindow(target)
