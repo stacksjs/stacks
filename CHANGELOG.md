@@ -1,5 +1,32 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.263...v0.75.264)
+
+## 🐛 Bug Fixes
+
+- **qa**: bound asynchronous browser assertions ([34ace94](https://github.com/stacksjs/stacks/commit/34ace94)) _(by Chris <chris@stacksjs.com>)_
+
+## ♻️ Code Refactoring
+
+- **dashboard**: the queue breakdown and workers tables onto UI/Table ([80d959c](https://github.com/stacksjs/stacks/commit/80d959c)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2925](https://github.com/stacksjs/stacks/issues/2925))
+- **dashboard**: Access Tokens and the Data record pages onto UI/Table ([4a1da93](https://github.com/stacksjs/stacks/commit/4a1da93)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2925](https://github.com/stacksjs/stacks/issues/2925))
+- **dashboard**: Blog and the file manager's list view onto UI/Table ([1cf1d71](https://github.com/stacksjs/stacks/commit/1cf1d71)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2925](https://github.com/stacksjs/stacks/issues/2925))
+- **dashboard**: Scheduler, Recovery, Deployment and Billing tables onto UI/Table ([1146a84](https://github.com/stacksjs/stacks/commit/1146a84)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2925](https://github.com/stacksjs/stacks/issues/2925), [stacksjs/stx#2096](https://github.com/stacksjs/stx/issues/2096))
+- **dashboard**: Taxes, Variants and Payments onto UI/Table ([81467fb](https://github.com/stacksjs/stacks/commit/81467fb)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2925](https://github.com/stacksjs/stacks/issues/2925), [stacksjs/stx#2095](https://github.com/stacksjs/stx/issues/2095), [#2096](https://github.com/stacksjs/stacks/issues/2096))
+
+## 📝 Documentation
+
+- refresh the native skill catalog ([3fa91f9](https://github.com/stacksjs/stacks/commit/3fa91f9)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- stx 0.2.663, whose native links take a mustache's words as their label ([720ee8d](https://github.com/stacksjs/stacks/commit/720ee8d)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.262...v0.75.263)
 
 ## 💥 Breaking Changes
