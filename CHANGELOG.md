@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.267...v0.75.268)
+
+## 🐛 Bug Fixes
+
+- **dashboard**: a calendar date in a Table column is that day, west of UTC too ([54865a7](https://github.com/stacksjs/stacks/commit/54865a7)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2925](https://github.com/stacksjs/stacks/issues/2925))
+- **scaffold**: new apps run the framework's Auth middleware, not a stale copy of it ([9bee135](https://github.com/stacksjs/stacks/commit/9bee135)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2941](https://github.com/stacksjs/stacks/issues/2941))
+- **defaults**: a fresh app's buddy doctor no longer fails on the token owner's legacy column ([4aa8081](https://github.com/stacksjs/stacks/commit/4aa8081)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2941](https://github.com/stacksjs/stacks/issues/2941))
+
+## 🔧 Chores
+
+- stx 0.2.667, whose native screens read glucose, insulin and carbs ([c4e08de](https://github.com/stacksjs/stacks/commit/c4e08de)) _(by Chris <chris@stacksjs.com>)_
+- **auto-imports**: regenerate the functions barrel for parseDashboardDate ([0c7ac66](https://github.com/stacksjs/stacks/commit/0c7ac66)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2925](https://github.com/stacksjs/stacks/issues/2925))
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.266...v0.75.267)
 
 ## 🐛 Bug Fixes
