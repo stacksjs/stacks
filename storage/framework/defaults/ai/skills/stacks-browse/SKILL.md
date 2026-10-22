@@ -37,6 +37,8 @@ A candidate is validated with `--version` before use, so a dead wrapper (e.g. a 
 shim pointing at an uninstalled `.app`) is skipped automatically. If none launch, it tells
 you to `brew install --cask chromium` or set `BROWSE_BROWSER`.
 
+Startup waits up to 15 seconds for the running browser's valid DevTools port. An exited process or expired deadline fails launch; page readiness and scenario assertions have separate budgets.
+
 ## Default Stacks dev URLs
 
 - Frontend: `http://localhost:3000`

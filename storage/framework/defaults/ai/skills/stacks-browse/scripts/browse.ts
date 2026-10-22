@@ -174,6 +174,28 @@ class Cdp {
 
 interface Session { proc: ReturnType<typeof spawn>, port: number, userDataDir: string, browser: string }
 
+export async function waitForBrowserPort(proc: { exitCode: number | null }, portFile: string, timeoutMs: number): Promise<number | null> {
+  if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0 || timeoutMs > 30_000)
+    throw new TypeError('Browser startup timeout must be an integer between 1 and 30000.')
+  const deadline = performance.now() + timeoutMs
+  while (performance.now() < deadline && proc.exitCode === null) {
+    try {
+      const line = readFileSync(portFile, 'utf8').split('\n')[0]?.trim()
+      const port = Number(line)
+      if (Number.isInteger(port) && port > 0 && port <= 65535) {
+        if (performance.now() >= deadline || proc.exitCode !== null) return null
+        return port
+      }
+    }
+    catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
+    }
+    const remaining = deadline - performance.now()
+    if (remaining > 0) await Bun.sleep(Math.min(50, remaining))
+  }
+  return null
+}
+
 async function tryLaunch(browser: string): Promise<Session | null> {
   const userDataDir = join(tmpdir(), `stacks-browse-${process.pid}-${Math.floor(Number(process.hrtime.bigint() % 1000000n))}`)
   mkdirSync(userDataDir, { recursive: true })
@@ -196,18 +218,19 @@ async function tryLaunch(browser: string): Promise<Session | null> {
 
   // Chromium writes the chosen port to <user-data-dir>/DevToolsActivePort.
   const portFile = join(userDataDir, 'DevToolsActivePort')
-  for (let i = 0; i < 80; i++) {
-    if (existsSync(portFile)) {
-      const line = readFileSync(portFile, 'utf8').split('\n')[0]?.trim()
-      if (line)
-        return { proc, port: Number(line), userDataDir, browser }
-    }
-    await Bun.sleep(50)
+  let port: number | null = null
+  try {
+    port = await waitForBrowserPort(proc, portFile, 15_000)
+    if (port !== null) return { proc, port, userDataDir, browser }
   }
-  try { proc.kill() }
-  catch { /* ignore */ }
-  try { rmSync(userDataDir, { recursive: true, force: true }) }
-  catch { /* a failed launch must not mask the next browser candidate */ }
+  finally {
+    if (port === null) {
+      try { proc.kill() }
+      catch { /* ignore */ }
+      try { rmSync(userDataDir, { recursive: true, force: true }) }
+      catch { /* a failed launch must not mask the next browser candidate */ }
+    }
+  }
   return null
 }
 
