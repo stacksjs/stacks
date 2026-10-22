@@ -2,6 +2,7 @@ import type { CLI, SeedOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { ExitCode } from '@stacksjs/types'
+import { loadSeeders } from '../seeding'
 
 export function seed(buddy: CLI): void {
   const descriptions = {
@@ -48,9 +49,7 @@ export function seed(buddy: CLI): void {
       // table from the per-attribute `factory: faker => …` declarations. The
       // trait is where a model's seed count and fixtures live, so the model
       // stays the single place its data shape is described.
-      const { injectGlobalAutoImports } = await import('@stacksjs/server')
-      await injectGlobalAutoImports()
-      const { runApplicationSeeders, seed: seedDatabase } = await import('@stacksjs/database')
+      const { runApplicationSeeders, seed: seedDatabase } = await loadSeeders()
 
       const list = (value?: string): string[] | undefined =>
         value ? value.split(',').map(entry => entry.trim()).filter(Boolean) : undefined

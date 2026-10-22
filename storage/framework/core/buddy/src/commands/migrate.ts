@@ -8,6 +8,7 @@ import { hasTTY, isCI } from '@stacksjs/env'
 import { appPath, frameworkPath, frameworkRuntimePath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { preflightDatabase } from '../database-preflight'
+import { loadSeeders } from '../seeding'
 import { DDL_CONSTRAINT_OVERRIDE_ENV, DIALECT_OVERRIDE_ENV, auditDdlConstraints, auditMigrationCorpus, dialectCapabilities, formatDdlConstraintError, formatMigrationDialectError, isLibsqlDriver, relativeMigrationDirectory, resolveMigrationDirectory, stripSqlNoise } from '@stacksjs/database'
 import { resultFailed } from '../result'
 
@@ -1306,8 +1307,8 @@ export function migrate(buddy: CLI): void {
       if (options.seed) {
         log.info('Running database seeders...')
         try {
-          // Import seed dynamically to avoid circular deps and ensure db is initialized
-          const { runApplicationSeeders, seed } = await import('@stacksjs/database')
+          // With the server globals installed, as `buddy seed` does (#2952).
+          const { runApplicationSeeders, seed } = await loadSeeders()
           const seedResult = await seed({ verbose: options.verbose, fresh: true })
           const applicationSeedResult = await runApplicationSeeders({ verbose: options.verbose })
 
