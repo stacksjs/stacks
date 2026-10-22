@@ -42,8 +42,9 @@ export const config: PantryConfig = {
     // has no mail server is an app where every password reset fails silently
     // in development. Nothing starts it; `buddy mail:dev` does, when you want it.
     'github.com/mail-os/mail': '^0.3.2',
-    // craft is not declared here: it ships inside @stacksjs/stx (its `./craft`
-    // export), so pantry installing it again is a second copy nothing uses.
+    // Craft's SDK is managed as craft-native in package.json. Desktop builds
+    // also need its native CLI on PATH, installed separately with pantry install craft.
+    // Browser and mobile projects do not require that desktop tool here.
     // Uncomment as needed:
     // 'redis.io': '^8.4.0',
     // 'openjdk.org': '^21.0.3.6',
