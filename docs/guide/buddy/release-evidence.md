@@ -94,6 +94,14 @@ retain their platform execution evidence separately.
 
 ## Retained adoption evidence
 
+The [stx 0.2.663 plan](./receipts/stx-0.2.663-plan.json) and
+[executed receipt](./receipts/stx-0.2.663-receipt.json) record six installed
+packages against their original release-job archive identities. All four
+release jobs passed, including native signing, exact source, npm and icons.
+The consumer verifier checked complete archive bytes, installed file inventories,
+lockfile compatibility and view types. This receipt applies to its recorded
+lockfile hash; it does not establish native game execution or original-game parity.
+
 The [stx 0.2.644 plan](./receipts/stx-0.2.644-plan.json) and
 [executed receipt](./receipts/stx-0.2.644-receipt.json) retain the framework's
 adoption of six published stx packages. Original archive identities came from
