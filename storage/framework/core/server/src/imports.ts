@@ -1350,6 +1350,33 @@ async function ormModelGlobals(): Promise<ExportInfo[]> {
  * (Action, response, schema, Auth), available globally, matching the
  * "no imports needed" ergonomics of framework default actions.
  */
+/**
+ * The platform's own globals, as they stood before Stacks added any: `Event`,
+ * `Request`, `URL`, `Blob`, `crypto`. Read once, at the first injection.
+ */
+let platformGlobalNames: Set<string> | null = null
+
+/**
+ * Puts an auto-import barrel's exports on `target` (globalThis), except a name
+ * the platform already defines. An app's model called `Event` (a race on a
+ * calendar) replaced the DOM `Event` class for the whole server, and every
+ * library built on it stopped loading: `stripe` extends `Event`, threw "The
+ * superclass is not a constructor", and @stacksjs/payments reported it as "the
+ * `stripe` package is not installed". The model stays importable; only the
+ * global goes to the platform. Returns the names it left out.
+ */
+export function assignBarrelGlobals(target: Record<string, unknown>, mod: Record<string, unknown>, platformNames: ReadonlySet<string>): string[] {
+  const skipped: string[] = []
+  for (const [name, value] of Object.entries(mod)) {
+    if (platformNames.has(name)) {
+      skipped.push(name)
+      continue
+    }
+    target[name] = value
+  }
+  return skipped
+}
+
 export async function injectGlobalAutoImports(): Promise<void> {
   // Idempotency guard. Bun's hot-reload re-evaluates this module on every
   // file change; without this guard each cycle would re-`Object.assign` the
@@ -1359,6 +1386,7 @@ export async function injectGlobalAutoImports(): Promise<void> {
   // the dev process. Once is enough.
   if ((globalThis as { __stacksAutoImportsInjected?: boolean }).__stacksAutoImportsInjected) return
   ;(globalThis as { __stacksAutoImportsInjected?: boolean }).__stacksAutoImportsInjected = true
+  platformGlobalNames ??= new Set(Object.getOwnPropertyNames(globalThis))
 
   const errors: Error[] = []
 
@@ -1447,7 +1475,13 @@ export async function injectGlobalAutoImports(): Promise<void> {
 
     try {
       const mod = await import(barrelPath)
-      Object.assign(globalThis, mod)
+      const kept = assignBarrelGlobals(globalThis as Record<string, unknown>, mod, platformGlobalNames)
+      if (kept.length) {
+        log.warn(
+          `[auto-imports] ${kept.join(', ')} from ${barrel}.ts ${kept.length === 1 ? 'is' : 'are'} not global: `
+          + `${kept.length === 1 ? 'it' : 'they'} would replace the platform's own, which libraries rely on. Import ${kept.length === 1 ? 'it' : 'them'} where used.`,
+        )
+      }
       injected.push(barrel)
     }
     catch (err) {
