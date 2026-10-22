@@ -423,14 +423,35 @@ export interface MailtrapConfig extends EmailDriverConfig {
   token: string
   inboxId?: number
 }
-export interface EmailResult {
+interface EmailResultFields {
   message: string
-  success: boolean
   provider: string
-  messageId?: string
   /** Additional metadata from the email provider */
   metadata?: Record<string, unknown>
 }
+
+/** A delivery the provider accepted. What `mail.sendOrFail()` resolves with. */
+export interface EmailSent extends EmailResultFields {
+  success: true
+  messageId?: string
+}
+
+/** A delivery that did not happen: unreachable host, rejected, suppressed. */
+export interface EmailFailed extends EmailResultFields {
+  success: false
+  messageId?: undefined
+}
+
+/**
+ * The outcome `mail.send()` resolves with, either way.
+ *
+ * `send()` does not throw when delivery fails; it resolves with `success:
+ * false`. A union rather than one shape with a boolean, so a caller has to
+ * narrow on `success` before it can treat the result as sent, and so
+ * `sendOrFail()` can say in its type that it only ever resolves with a sent one
+ * (stacksjs/stacks#2930).
+ */
+export type EmailResult = EmailSent | EmailFailed
 
 // Base configuration interface
 export interface EmailDriverConfig {

@@ -267,7 +267,10 @@ export class FailedJobNotifier {
     // Use Stacks mailer if available
     try {
       const { mail } = await import('@stacksjs/email')
-      await mail.send({
+      // sendOrFail, not send: send() resolves with a failure instead of
+      // throwing, so the catch below never saw an undelivered alert
+      // (stacksjs/stacks#2930).
+      await mail.sendOrFail({
         to: Array.isArray(config.to) ? config.to : [config.to],
         // The mailer takes an `{ address, name? }`, and the queue config
         // carries a plain address string. The cast used to hide that, so the

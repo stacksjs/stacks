@@ -81,7 +81,7 @@ export async function sendSubscriptionConfirmation({ to, subscriberUuid }: Optio
     }
   })
 
-  await mail.send({
+  await mail.sendOrFail({
     from: { name: config.app.name, address: config.email.from.address },
     to,
     subject: 'Confirm your subscription',

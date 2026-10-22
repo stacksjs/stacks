@@ -1,4 +1,4 @@
-import type { EmailDriver, EmailMessage, EmailResult } from '@stacksjs/types'
+import type { EmailDriver, EmailMessage, EmailResult, EmailSent } from '@stacksjs/types'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import type { Message } from './types'
@@ -151,6 +151,18 @@ export class Mail {
     this.drivers.set('capture', new CaptureEmailDriver())
   }
 
+  /**
+   * Dispatch an email and report the outcome. Does NOT throw when delivery
+   * fails: an unreachable host or a rejected message resolves with
+   * `{ success: false, message }`.
+   *
+   * Wrapping this in `try`/`catch` and counting the absence of an exception as
+   * a delivery records every failure as a success: a newsletter went out while
+   * its SMTP host was unreachable and was logged as delivered to everyone
+   * (stacksjs/stacks#2930). Check `result.success`, or call `sendOrFail()`,
+   * which throws `EmailDeliveryError` instead. A misconfigured driver still
+   * throws from either.
+   */
   public async send(message: EmailMessage): Promise<EmailResult> {
     const driver = this.drivers.get(this.defaultDriver)
 
@@ -214,13 +226,13 @@ export class Mail {
   }
 
   /**
-   * Dispatch an email and reject when the selected driver reports failure.
+   * Dispatch an email and throw `EmailDeliveryError` when it was not delivered.
    *
-   * Drivers keep returning structured results from `send()` so callers that
-   * aggregate delivery outcomes can inspect them without exceptions. Workflows
-   * that must commit a durable sent state should use this method instead.
+   * The one to reach for when the next line assumes the email went out: a
+   * `try`/`catch` around it means what it looks like. `send()` resolves with a
+   * failure instead, for callers that aggregate outcomes.
    */
-  public async sendOrFail(message: EmailMessage): Promise<EmailResult> {
+  public async sendOrFail(message: EmailMessage): Promise<EmailSent> {
     const result = await this.send(message)
     if (!result.success)
       throw new EmailDeliveryError(result)

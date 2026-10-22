@@ -79,10 +79,16 @@ export async function findEmailByIdempotencyKey(key: string): Promise<EmailResul
       .selectAll()
       .executeTakeFirst()
     if (!row) return null
+    const message = `Idempotent replay - original send recorded ${row.created_at}`
+    const provider = String(row.provider ?? 'cache')
+    // Only accepted sends are recorded, but the column is read back rather than
+    // assumed, and a result is either sent or failed, never a bare boolean.
+    if (!row.success)
+      return { success: false, message, provider } satisfies EmailResult
     return {
-      success: Boolean(row.success),
-      message: `Idempotent replay - original send recorded ${row.created_at}`,
-      provider: String(row.provider ?? 'cache'),
+      success: true,
+      message,
+      provider,
       // Coerced like the fields beside it: this table is not in the generated
       // `database/types.d.ts`, so every column comes back `unknown`, and
       // `?? undefined` left it that way rather than making it a string.

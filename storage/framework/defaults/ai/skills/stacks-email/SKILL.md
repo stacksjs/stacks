@@ -47,7 +47,9 @@ so `MAIL_MAILER` must be one of `smtp`, `ses`, `sendgrid`, `mailgun`,
 ```typescript
 import { mail } from '@stacksjs/email'
 
-await mail.send({
+// Throws EmailDeliveryError when it was not delivered. The default choice:
+// a try/catch around it means what it looks like.
+await mail.sendOrFail({
   from: { name: 'App', address: 'noreply@app.com' },
   to: 'user@example.com',
   subject: 'Welcome',
@@ -55,19 +57,21 @@ await mail.send({
   text: 'Hello!'
 })
 
-// Use this when later state depends on successful provider delivery.
-await mail.sendOrFail({
-  to: 'user@example.com',
-  subject: 'Your invitation',
-  text: 'Open the invitation link.'
-})
+// send() does NOT throw on a failed delivery; it resolves with success: false.
+// For callers that aggregate outcomes, and they must check it.
+const result = await mail.send({ to: 'user@example.com', subject: 'Digest', text: '...' })
+if (!result.success)
+  failed.push(result.message)
 
 // Switch driver
 const sendgridMail = mail.use('sendgrid')
 await sendgridMail.send(message)
 ```
 
-`mail.send()` always returns an `EmailResult`. Provider rejection is represented
+`mail.send()` always returns an `EmailResult`, typed as `EmailSent | EmailFailed`,
+and `sendOrFail()` resolves with `EmailSent`. Never wrap `send()` in `try`/`catch`
+and count the absence of an exception as delivered: a newsletter was recorded as
+sent while its SMTP host was unreachable that way (#2930). Provider rejection is represented
 as `{ success: false, message, provider }`, which is useful for campaign jobs
 that aggregate individual outcomes. It may still throw for invalid framework
 configuration. `mail.sendOrFail()` returns the same successful result and throws
