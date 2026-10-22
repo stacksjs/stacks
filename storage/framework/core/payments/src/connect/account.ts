@@ -73,6 +73,30 @@ export function connectedAccountIdempotencyKey(
   return stacksIdempotencyKey(scope, userId, reference, idempotencyFingerprint(params))
 }
 
+/**
+ * How a new connected account is controlled when the caller does not say:
+ * Stripe's Managed Risk. Stripe manages the account's credit and fraud risk
+ * and carries unrecoverable negative balances, the merchant gets the full
+ * Stripe Dashboard and pays Stripe's fees on its own charges, and Stripe
+ * collects what onboarding needs. It is what Stripe recommends for SaaS
+ * platforms and the only setup a platform that has not taken on loss
+ * liability may create: Stripe refuses the legacy `type: 'express'` and
+ * `type: 'custom'` there ("your platform as the losses collector"). Sell on
+ * such an account with direct charges (`connect/direct.ts`). A platform that
+ * did accept loss liability passes `type` or its own `controller`.
+ */
+export const MANAGED_RISK_CONTROLLER: Stripe.AccountCreateParams.Controller = {
+  stripe_dashboard: { type: 'full' },
+  fees: { payer: 'account' },
+  losses: { payments: 'stripe' },
+  requirement_collection: 'stripe',
+}
+
+/** The defaults' controller unless the caller chose a `type` or a `controller` of its own. */
+export function connectedAccountDefaults(params: Partial<Stripe.AccountCreateParams>): Partial<Stripe.AccountCreateParams> {
+  return params.type || params.controller ? {} : { controller: MANAGED_RISK_CONTROLLER }
+}
+
 export const manageConnectedAccount: ManageConnectedAccount = (() => {
   async function createConnectedAccount(
     user: UserModel,
@@ -80,7 +104,7 @@ export const manageConnectedAccount: ManageConnectedAccount = (() => {
     options: CreateConnectedAccountOptions = {},
   ): Promise<Stripe.Response<Stripe.Account>> {
     const defaults: Stripe.AccountCreateParams = {
-      type: 'express',
+      ...connectedAccountDefaults(params),
       email: user.email ?? undefined,
       metadata: { stacks_user_id: String(user.id) },
     }
@@ -118,7 +142,7 @@ export const manageConnectedAccount: ManageConnectedAccount = (() => {
     options: CreateConnectedAccountOptions = {},
   ): Promise<Stripe.Response<Stripe.Account>> {
     const defaults: Stripe.AccountCreateParams = {
-      type: 'express',
+      ...connectedAccountDefaults(params),
       email: user.email ?? undefined,
       business_type: 'individual',
       capabilities: {

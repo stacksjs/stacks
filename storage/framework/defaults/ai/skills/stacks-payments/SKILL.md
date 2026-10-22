@@ -133,6 +133,38 @@ const changed = await Payment.changeSubscription(user, 'enterprise-monthly')
 
 `Payment.connect` (source `src/connect/`) onboards merchants as Express connected accounts and settles sales to them, while the customer, the charge and its refunds and disputes stay on the platform.
 
+### Direct charges (Managed Risk, the default for new accounts)
+
+`createConnectedAccount` makes a Managed Risk account unless you pass `type` or
+`controller` (`MANAGED_RISK_CONTROLLER`: Stripe carries losses, full Stripe
+Dashboard, Stripe-hosted onboarding). Stripe refuses `type: 'express'`/`'custom'`
+on a platform that has not taken on loss liability, and such a platform sells
+with **direct charges**: the sale is made on the merchant's account and the
+platform's cut is an application fee. Everything of the sale lives there (the
+customer, session, PaymentIntent, subscription and invoices, payment methods,
+refund), so every call acts as the account with `asAccount(id)` (the
+`Stripe-Account` header). Stripe's fees are the merchant's; webhooks for it
+arrive on the **Connect** endpoint with `event.account` set.
+
+```typescript
+import { asAccount, checkoutLineItemsTotal, connectedCustomer, connectRefund, directCheckout, directCheckoutPaymentData, directSubscriptionParams, manageDirectSubscription } from '@stacksjs/payments'
+
+// One-off: Checkout on the account, the user's customer there found or created
+await directCheckout(user, gym.stripe_account_id, {
+  line_items,
+  payment_intent_data: directCheckoutPaymentData(checkoutLineItemsTotal(line_items), { feeCents: 140 }, { metadata }),
+  success_url, cancel_url,
+})
+// Recurring: a subscription on the account paying the platform a percent of each invoice
+await manageDirectSubscription.checkout(user, { account, price: { amount: 4900, currency: 'eur', interval: 'month', productName: 'Unlimited' }, platformFeePercent: 5, successUrl, cancelUrl })
+await stripe.subscriptions.create({ customer: (await connectedCustomer(user, account)).id, items: [{ price }], ...directSubscriptionParams({ feePercent: 5 }) }, asAccount(account))
+// Read, expire and refund as the account; a direct refund gives the fee back by default
+await stripe.checkout.sessions.retrieve(sessionId, asAccount(account))
+await connectRefund(paymentIntentId, { account, amount: 500 })
+```
+
+### Destination charges (a platform that took on loss liability)
+
 ```typescript
 import { manageConnectedAccount, manageDestinationCharge, manageDestinationSubscription } from '@stacksjs/payments'
 

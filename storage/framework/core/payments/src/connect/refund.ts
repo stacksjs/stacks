@@ -46,6 +46,12 @@ export interface ConnectRefundOptions {
   refundApplicationFee?: boolean
   /** Take the refund back from the merchant (default true on a destination charge). */
   reverseTransfer?: boolean
+  /**
+   * The connected account a direct charge was made on (`connect/direct.ts`).
+   * The refund is made as that account, and the platform's application fee
+   * goes back with it by default, as it does on a destination charge.
+   */
+  account?: string
 }
 
 function expandedCharge(source: RefundSource): RefundSource | null {
@@ -90,7 +96,7 @@ export function connectRefundParams(source: RefundSource, options: ConnectRefund
   const isIntent = source.object === 'payment_intent' || source.id.startsWith('pi_')
   const destination = isDestinationCharge(source)
   const reverse = destination && (options.reverseTransfer ?? true)
-  const refundFee = destination && tookApplicationFee(source) && (options.refundApplicationFee ?? true)
+  const refundFee = (destination || Boolean(options.account)) && tookApplicationFee(source) && (options.refundApplicationFee ?? true)
 
   return {
     ...(isIntent ? { payment_intent: source.id } : { charge: source.id }),
@@ -121,10 +127,12 @@ export async function connectRefund(
   if (!paymentId || typeof paymentId !== 'string')
     throw new Error('[payments/connect] connectRefund needs a PaymentIntent or Charge id')
   const { idempotencyKey, client = stripe, ...refundOptions } = options
+  const onAccount: Stripe.RequestOptions = refundOptions.account ? { stripeAccount: refundOptions.account } : {}
   const source: RefundSource = paymentId.startsWith('pi_')
-    ? await client.paymentIntents.retrieve(paymentId, { expand: ['latest_charge'] }) as unknown as RefundSource
-    : await client.charges.retrieve(paymentId) as unknown as RefundSource
+    ? await client.paymentIntents.retrieve(paymentId, { expand: ['latest_charge'] }, onAccount) as unknown as RefundSource
+    : await client.charges.retrieve(paymentId, {}, onAccount) as unknown as RefundSource
   return await client.refunds.create(connectRefundParams(source, refundOptions), {
+    ...onAccount,
     idempotencyKey: idempotencyKey ?? freshIdempotencyKey('connect.refund', paymentId, refundOptions.amount ?? 'full'),
   })
 }

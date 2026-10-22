@@ -16,7 +16,7 @@ export interface Checkout {
  * site impersonating the brand. We compare origins (scheme+host+port)
  * so subdomains and paths are still flexible within the trust boundary.
  */
-function assertSameOriginUrl(url: string | undefined, label: string): void {
+export function assertSameOriginUrl(url: string | undefined, label: string): void {
   if (!url) return
   let parsed: URL
   try {

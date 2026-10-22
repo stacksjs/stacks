@@ -13,6 +13,7 @@
 export * from './account'
 export * from './charge'
 export * from './destination'
+export * from './direct'
 export * from './payout'
 export * from './refund'
 export * from './subscription'
@@ -21,6 +22,7 @@ export * from './webhook'
 
 import { manageConnectedAccount } from './account'
 import { manageDestinationCharge } from './charge'
+import { asAccount, connectedCustomer, directCheckout, directCheckoutPaymentData, directCheckoutSubscriptionData, directPaymentIntentParams, directSubscriptionParams, manageDirectSubscription } from './direct'
 import { checkoutLineItemsTotal, destinationCheckoutPaymentData, destinationCheckoutSubscriptionData, destinationFeeCents, destinationFeePercent, destinationPaymentIntentParams, destinationSubscriptionParams, splitFee } from './destination'
 import { managePayout } from './payout'
 import { connectRefund, connectRefundParams, isDestinationCharge } from './refund'
@@ -52,6 +54,18 @@ export const connect = {
   subscriptionParams: destinationSubscriptionParams,
   lineItemsTotal: checkoutLineItemsTotal,
   splitFee,
+
+  // Direct charges: the sale on the merchant's own account, the platform's
+  // cut an application fee (Stripe's Managed Risk). `asAccount(id)` makes any
+  // Stripe call as the account.
+  asAccount,
+  customer: connectedCustomer,
+  directCheckout,
+  directPaymentIntentParams,
+  directCheckoutPaymentData,
+  directCheckoutSubscriptionData,
+  directSubscriptionParams,
+  directSubscriptionCheckout: manageDirectSubscription.checkout,
 
   // Refunds that reverse the merchant's transfer and the platform's fee
   refund: connectRefund,
@@ -85,6 +99,7 @@ export const connect = {
   account: manageConnectedAccount,
   charge: manageDestinationCharge,
   subscription: manageDestinationSubscription,
+  directSubscription: manageDirectSubscription,
   transfer: manageTransfer,
   payout: managePayout,
 }
