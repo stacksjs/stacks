@@ -1,3 +1,5 @@
+@import('../UI/Table')
+
 <script client>
 import type {
   DashboardDnsDomain,
@@ -61,8 +63,38 @@ function typeColor(type: string): string {
   return 'bg-rose-500'
 }
 
+const TYPE_BADGE = 'font-mono font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40'
+
+const COLUMNS = [
+  {
+    key: 'type',
+    label: 'Type',
+    type: 'badge' as const,
+    sortable: true,
+    badgeClasses: { A: TYPE_BADGE, AAAA: TYPE_BADGE, CNAME: TYPE_BADGE, MX: TYPE_BADGE, TXT: TYPE_BADGE },
+  },
+  { key: 'name', label: 'Name', sortable: true, class: 'font-mono text-neutral-900 whitespace-nowrap dark:text-white' },
+  { key: 'value', label: 'Value', sortable: true, emptyText: 'Not set', class: 'max-w-md font-mono truncate' },
+  { key: 'ttlLabel', label: 'TTL', class: 'whitespace-nowrap' },
+]
+
+const ROW_ACTIONS = [
+  { action: 'inspect', label: 'Inspect', icon: 'i-hugeicons-view' },
+]
+
+const recordRows = derived(() => filteredRecords().map((record, index) => ({
+  ...record,
+  rowId: `${record.type}:${record.name}:${index}`,
+  ttlLabel: ttlLabel(record),
+})))
+
 function inspectRecord(record: DashboardDnsRecord): void {
   selectedRecord.set(record)
+}
+
+function handleRowAction(payload: { action: string, row: DashboardDnsRecord }): void {
+  if (payload.action === 'inspect')
+    inspectRecord(payload.row)
 }
 
 function closeRecord(): void {
@@ -202,34 +234,20 @@ onMount(() => {
       </div>
     </div>
 
-    <div :if="loading()" class="flex items-center justify-center mt-4 py-16 text-neutral-500 text-sm dark:text-neutral-400 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
-      <span class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>
-      Loading DNS configuration...
-    </div>
-
-    <EmptyState :if="!loading() && !loadError() && filteredRecords().length === 0" icon="i-hugeicons-internet" :title="records().length ? 'No matching DNS records' : 'No DNS records configured'" :description="records().length ? 'Adjust the search or record type filter.' : 'Add records to config/dns.ts, then refresh this page.'" />
-
-    <div :if="!loading() && filteredRecords().length > 0" class="overflow-x-auto mt-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
-      <table class="min-w-full divide-neutral-200 divide-y dark:divide-neutral-700">
-        <thead class="bg-neutral-50 dark:bg-neutral-800/70">
-          <tr>
-            <th scope="col" class="px-5 py-3 font-semibold text-left text-neutral-500 text-xs uppercase dark:text-neutral-400">Type</th>
-            <th scope="col" class="px-5 py-3 font-semibold text-left text-neutral-500 text-xs uppercase dark:text-neutral-400">Name</th>
-            <th scope="col" class="px-5 py-3 font-semibold text-left text-neutral-500 text-xs uppercase dark:text-neutral-400">Value</th>
-            <th scope="col" class="px-5 py-3 font-semibold text-left text-neutral-500 text-xs uppercase dark:text-neutral-400">TTL</th>
-            <th scope="col" class="px-5 py-3"><span class="sr-only">Actions</span></th>
-          </tr>
-        </thead>
-        <tbody class="divide-neutral-100 divide-y dark:divide-neutral-800">
-          <tr :for="record in filteredRecords()" class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
-            <td class="px-5 py-4"><span class="inline-flex px-2 py-1 font-mono font-semibold text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-md">{{ record.type }}</span></td>
-            <td class="px-5 py-4 font-mono text-neutral-900 text-sm whitespace-nowrap dark:text-white">{{ record.name }}</td>
-            <td class="px-5 py-4 max-w-md font-mono text-neutral-500 text-sm truncate dark:text-neutral-400">{{ record.value || 'Not set' }}</td>
-            <td class="px-5 py-4 text-neutral-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ ttlLabel(record) }}</td>
-            <td class="px-5 py-4 text-right"><Button variant="ghost" size="sm" @click="inspectRecord(record)">Inspect</Button></td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="mt-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <Table
+        :columns="COLUMNS"
+        :data="recordRows()"
+        :loading="loading()"
+        :row-actions="ROW_ACTIONS"
+        action-label-key="name"
+        row-key="rowId"
+        paginated
+        :page-size="25"
+        :empty-title="records().length ? 'No matching DNS records' : 'No DNS records configured'"
+        :empty-description="records().length ? 'Adjust the search or record type filter.' : 'Add records to config/dns.ts, then refresh this page.'"
+        @row-action="handleRowAction"
+      />
     </div>
   </section>
 
