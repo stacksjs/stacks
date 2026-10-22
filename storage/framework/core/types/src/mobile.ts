@@ -390,6 +390,8 @@ export interface AndroidMobileConfig {
 export type AndroidHealthConnectType = 'steps' | 'heartRate' | 'activeEnergy' | 'distance' | 'workouts' | 'restingHeartRate'
   | 'heartRateVariability' | 'bodyMass' | 'sleep' | 'mindful' | 'dietaryEnergy' | 'dietaryProtein'
   | 'dietaryCarbohydrates' | 'dietaryFat'
+  /** Blood glucose (READ_BLOOD_GLUCOSE), Craft 0.0.291 and later. Health Connect has no insulin; `insulinDelivery` asks for nothing. */
+  | 'bloodGlucose' | 'insulinDelivery'
 
 /**
  * One kind of application content a device may index for search.
