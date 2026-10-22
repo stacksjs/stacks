@@ -172,6 +172,21 @@ describe('declared FKs mirror the generator\'s belongsTo rule', () => {
  * there with no constraint enforcing its references, and that finding must
  * still come through.
  */
+describe('the shipped defaults audit clean on a fresh app', () => {
+  // A fresh `buddy new` app has no app/Models, so the audit reads the default
+  // models, and its first `buddy doctor` failed on
+  // `oauth_access_tokens.user_id -> users.id`. That column is the legacy copy
+  // of the polymorphic owner `ensureAuthTables()` deliberately leaves without
+  // a constraint (a token can belong to an author, not only a user), and the
+  // model declared it with nothing saying so, so convention inferred a
+  // users-only key.
+  it('declares no key for the legacy user_id beside the polymorphic token owner', async () => {
+    const load = async (file: string) => (await import(`../../../defaults/app/Models/${file}.ts`)).default
+    const fks = getDeclaredFKsFromModels([await load('User'), await load('PersonalAccessToken')])
+    expect(fks.filter(fk => fk.fromTable === 'oauth_access_tokens').map(fkKey)).toEqual([])
+  })
+})
+
 describe('auditForeignKeys, absent tables vs missing constraints', () => {
   const declared: DeclaredFK[] = [
     { fromTable: 'posts', fromColumn: 'author_id', toTable: 'authors', toColumn: 'id', model: 'Post' },

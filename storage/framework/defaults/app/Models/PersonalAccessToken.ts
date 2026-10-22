@@ -162,9 +162,17 @@ export default defineModel({
      */
 
     /** Legacy owner column, written as a copy of `tokenable_id`. */
+    /**
+     * The legacy owner column, a copy of `tokenableId` kept for installs that
+     * predate the pair. `ensureAuthTables()` gives it no constraint, since a
+     * token can belong to an author as well as a user, so it is not a foreign
+     * key. Without saying so, convention inferred `users.id` from the name and
+     * a fresh app's first `buddy doctor` failed on it.
+     */
     userId: {
       order: 10,
       guarded: true,
+      foreignKey: false,
       validation: {
         rule: schema.number(),
       },
