@@ -114,27 +114,19 @@ describe('UI/Table timestamp parsing', () => {
   }
 
   /**
-   * SQLite returns `2026-01-01 12:00:00` - a space, and no zone. `new Date()`
-   * reads that as local time, so every row shifted by the viewer's offset and
-   * a timestamp near midnight landed on the wrong day. Each hand-rolled table
-   * normalised it itself; `toDate()` is that knowledge in one place, and every
-   * site that turns a stored value into a Date has to go through it.
+   * SQLite returns `2026-01-01 12:00:00` - a space, and no zone - and a
+   * calendar date column returns `2026-01-01`. `new Date()` reads the first
+   * as local time and the second as UTC midnight, so rows shifted by the
+   * viewer's offset and, west of UTC, a calendar date landed on the day
+   * before. `parseDashboardDate` (functions/dashboard-dates.ts) is that
+   * knowledge in one place, with its own timezone tests, and every site in
+   * Table that turns a stored value into a Date has to go through it.
    */
-  it('parses every stored timestamp through toDate', () => {
+  it('parses every stored value through parseDashboardDate', () => {
     const body = script()
-    expect(body).toContain('function toDate')
-    // `new Date(` is allowed only inside toDate itself.
-    const withoutHelper = body.replace(/function toDate[\s\S]*?\n\}/, '')
-    expect(withoutHelper).not.toContain('new Date(')
-  })
-
-  it('toDate rewrites a space-separated timestamp as UTC', () => {
-    const body = script()
-    const helper = body.match(/function toDate[\s\S]*?\n\}/)
-    expect(helper).not.toBeNull()
-    // The transpiler normalises string quoting, so match either style.
-    expect(helper![0]).toMatch(/replace\((['"]) \1, \1T\1\)/)
-    expect(helper![0]).toContain('Z')
+    expect(body).toContain('parseDashboardDate(')
+    expect(body).not.toContain('new Date(')
+    expect(body).not.toContain('function toDate')
   })
 })
 

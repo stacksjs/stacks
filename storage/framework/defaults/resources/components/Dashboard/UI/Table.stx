@@ -1,5 +1,6 @@
 <script client>
 import { formatCurrency } from '@stacksjs/commerce/money'
+import { parseDashboardDate } from '../../../../functions/dashboard-dates'
 /**
  * The data table.
  *
@@ -276,14 +277,14 @@ function displayValue(row: DashboardTableRow, column: DashboardTableColumn): str
     return Number.isFinite(amount) ? amount.toLocaleString() : String(value)
   }
   if (column.type === 'date') {
-    const at = toDate(value)
+    const at = parseDashboardDate(value)
     return Number.isNaN(at.getTime()) ? String(value) : at.toLocaleDateString()
   }
   // An event or log row is ordered by when it happened, and to the minute, so
   // the date alone is not enough to read it. Separate from `date` rather than
   // a flag on it because the two render differently everywhere they appear.
   if (column.type === 'datetime') {
-    const at = toDate(value)
+    const at = parseDashboardDate(value)
     return Number.isNaN(at.getTime())
       ? String(value)
       : at.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
@@ -346,20 +347,6 @@ function hasBadge(row: DashboardTableRow, column: DashboardTableColumn): boolean
   return badgeLabel(row, column) !== ''
 }
 
-/**
- * Parse a stored timestamp.
- *
- * SQLite hands back `2026-01-01 12:00:00`, with a space and no zone. `new
- * Date()` reads that as local time where it reads it at all, so every row
- * shifted by the viewer's offset - a date near midnight landing on the wrong
- * day. The hand-rolled tables each normalised it themselves; this is the same
- * knowledge in the one place that needs it.
- */
-function toDate(value: unknown): Date {
-  const text = String(value)
-  return new Date(/^\d{4}-\d{2}-\d{2} \d/.test(text) ? `${text.replace(' ', 'T')}Z` : text)
-}
-
 /** The pill's text: the mapped label, else the value with its underscores read as spaces. */
 function badgeLabel(row: DashboardTableRow, column: DashboardTableColumn): string {
   const value = rawValue(row, column.key)
@@ -397,7 +384,7 @@ function compare(a: any, b: any, type: DashboardTableColumn['type']): number {
   // comparison below, which is only accidentally right for ISO timestamps and
   // wrong for every other format.
   if (type === 'date' || type === 'datetime')
-    return toDate(a).getTime() - toDate(b).getTime()
+    return parseDashboardDate(a).getTime() - parseDashboardDate(b).getTime()
   if (type === 'boolean')
     return (a ? 1 : 0) - (b ? 1 : 0)
 
