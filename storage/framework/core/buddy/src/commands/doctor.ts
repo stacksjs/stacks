@@ -1,5 +1,5 @@
 import type { CLI } from '@stacksjs/types'
-import { lstatSync, readlinkSync } from 'node:fs'
+import { existsSync, lstatSync, readFileSync, readlinkSync } from 'node:fs'
 import { resolve } from 'node:path'
 import process from 'node:process'
 import { bold, dim, green, intro, log, onUnknownSubcommand, red, yellow } from "@stacksjs/cli"
@@ -147,6 +147,13 @@ export function doctor(buddy: CLI): void {
           status: 'warn',
           message: 'node_modules is missing - run `bun install`',
         })
+      }
+
+      // System dependencies the registry cannot install (stacksjs/stacks#2919).
+      const depsPath = resolve(process.cwd(), 'config/deps.ts')
+      if (existsSync(depsPath)) {
+        const { describeSystemDependencies } = await import('../system-dependencies')
+        checks.push({ name: 'System dependencies', ...describeSystemDependencies(readFileSync(depsPath, 'utf8')) })
       }
 
       // Framework defaults that are older than the package they came from
