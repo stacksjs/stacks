@@ -241,6 +241,65 @@ APP_STORE_CONNECT_ISSUER_ID=00000000-0000-0000-0000-000000000000
 APP_STORE_CONNECT_PRIVATE_KEY_PATH=/path/to/AuthKey_ABC123DEFG.p8
 ```
 
+#### What to Test
+
+Every release tells its testers what changed. The notes are written from the
+conventional commits since the previous mobile release tag (the newest
+`v*-build.*` before this one), parsed and grouped by logsmith, the generator
+behind bumpx and `CHANGELOG.md`: features, fixes, performance and reverts, one
+plain line each, the scope after it, with no hashes or authors. Release
+commits, `ci`, `test`, `docs` and `chore` commits stay out:
+
+```text
+Features
+- The Calendar a day, a week or a month at a time (mobile)
+- Edit your own comments (workouts)
+
+Fixes
+- The month keeps its grid when a day is tapped (mobile)
+```
+
+They go to three places:
+
+- **TestFlight.** The release commit carries
+  `TestFlight/WhatToTest.<locale>.txt` beside the Xcode project
+  (`storage/framework/mobile/ios/TestFlight/`), which is where Xcode Cloud
+  looks when it uploads the build. `en-US` always, plus each language of
+  `ios.nativeMessages` (`de` → `de-DE`). The file is kept under 1000
+  characters, because Xcode Cloud has been seen to drop larger ones silently;
+  a longer list ends with `…and 12 more`.
+- **The GitHub release**, under "What to Test", above the full changelog.
+- **Google Play**: `buddy release:notes <tag> --play` prints them cut to
+  Play's 500 characters, for an Android pipeline to pass on.
+
+To write the notes yourself, pass them in. The first one set wins:
+
+```bash
+buddy release:ios --notes "Try the new weekly check-ins"   # or --notes-file notes.txt
+RELEASE_NOTES="..." buddy release:ios                       # or RELEASE_NOTES_FILE=notes.txt
+```
+
+then `release` in `config/mobile.ts`, then the generated notes:
+
+```ts
+export default {
+  release: {
+    notes: undefined,                // or notesFile: 'TESTERS.md'
+    noteTypes: ['feat', 'fix', 'perf', 'revert'],
+    excludeScopes: ['release', 'ci', 'deps', 'test', 'docs', 'lint'],
+    locales: ['en-US', 'de-DE'],     // default: en-US + the app's languages
+  },
+}
+```
+
+`--dry-run` prints the notes. With an App Store Connect key, `--wait [minutes]`
+waits (60 minutes by default) for the build to reach App Store Connect, then
+sets its What to Test through the API as well, at TestFlight's full 4000
+characters. `buddy release:notes <tag> --testflight` does the same later
+without holding up the release. `buddy release:notes [tag]` prints a tag's
+notes (`--markdown` for a GitHub release, `--from <ref>` for another range);
+notes a person wrote are read back from the tag's release commit.
+
 ### Server Docker Image
 
 Build the production server Docker image:

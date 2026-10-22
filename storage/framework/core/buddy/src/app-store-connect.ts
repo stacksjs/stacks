@@ -123,6 +123,45 @@ export class AppStoreConnect {
     }))
   }
 
+  /** The build `number` of `version`, once App Store Connect lists it, else null. */
+  async build(appId: string, version: string, number: number): Promise<TestFlightBuild | null> {
+    const query = `filter[app]=${appId}&filter[version]=${encodeURIComponent(String(number))}&filter[preReleaseVersion.version]=${encodeURIComponent(version)}&limit=1&fields[builds]=version,uploadedDate,processingState,expired`
+    const build = (await this.request(`/v1/builds?${query}`))?.data?.[0]
+    return build
+      ? { id: build.id, number: Number(build.attributes?.version), uploadedDate: String(build.attributes?.uploadedDate ?? ''), processingState: String(build.attributes?.processingState ?? ''), expired: Boolean(build.attributes?.expired) }
+      : null
+  }
+
+  /**
+   * Set a build's "What to Test", one text per locale: the localization is
+   * updated where the build has one and created where it does not.
+   */
+  async setWhatToTest(buildId: string, notes: Record<string, string>): Promise<void> {
+    const existing = await this.request(`/v1/builds/${buildId}/betaBuildLocalizations?limit=50&fields[betaBuildLocalizations]=locale,whatsNew`)
+    const byLocale = new Map<string, string>((existing?.data ?? []).map((row: any) => [String(row.attributes?.locale), String(row.id)]))
+    for (const [locale, whatsNew] of Object.entries(notes)) {
+      const id = byLocale.get(locale)
+      if (id) {
+        await this.request(`/v1/betaBuildLocalizations/${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ data: { type: 'betaBuildLocalizations', id, attributes: { whatsNew } } }),
+        })
+      }
+      else {
+        await this.request('/v1/betaBuildLocalizations', {
+          method: 'POST',
+          body: JSON.stringify({
+            data: {
+              type: 'betaBuildLocalizations',
+              attributes: { locale, whatsNew },
+              relationships: { build: { data: { type: 'builds', id: buildId } } },
+            },
+          }),
+        })
+      }
+    }
+  }
+
   async expire(buildId: string): Promise<void> {
     await this.request(`/v1/builds/${buildId}`, {
       method: 'PATCH',
@@ -146,4 +185,36 @@ export function buildsToExpire(builds: TestFlightBuild[], keep = 1): TestFlightB
 /** The tag for the build Xcode Cloud is about to number, given its newest run. */
 export function tagForXcodeCloudRun(version: string, latestRun: number): string {
   return `v${version}-build.${nextBuildNumber(latestRun)}`
+}
+
+export interface WaitForBuildOptions {
+  /** How long to wait for the build to appear. */
+  timeoutMs: number
+  /** Between looks. Default 30 seconds. */
+  intervalMs?: number
+  sleep?: (ms: number) => Promise<void>
+  now?: () => number
+  /** Told about each look, e.g. to log progress. */
+  onWait?: (elapsedMs: number) => void
+}
+
+/**
+ * The build once App Store Connect lists it: Xcode Cloud uploads it some
+ * minutes after the tag is pushed. Null when it has not appeared in time.
+ */
+export async function waitForBuild(api: Pick<AppStoreConnect, 'build'>, appId: string, version: string, number: number, options: WaitForBuildOptions): Promise<TestFlightBuild | null> {
+  const sleep = options.sleep ?? (ms => new Promise(resolve => setTimeout(resolve, ms)))
+  const now = options.now ?? Date.now
+  const interval = options.intervalMs ?? 30_000
+  const start = now()
+  for (;;) {
+    const build = await api.build(appId, version, number)
+    if (build)
+      return build
+    const elapsed = now() - start
+    if (elapsed + interval > options.timeoutMs)
+      return null
+    options.onWait?.(elapsed)
+    await sleep(interval)
+  }
 }
