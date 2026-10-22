@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.265...v0.75.266)
+
+## 📝 Documentation
+
+- retain verified stx 663 consumer adoption ([fe8c034](https://github.com/stacksjs/stacks/commit/fe8c034)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.264...v0.75.265)
 
 ## 🐛 Bug Fixes
