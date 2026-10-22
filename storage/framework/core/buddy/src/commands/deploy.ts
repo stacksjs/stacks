@@ -1,6 +1,6 @@
 import type { DnsConfig, EnvironmentConfig } from '@stacksjs/ts-cloud'
 import type { CLI, DeploymentPreview, DeploymentSiteKind, DeployOptions } from '@stacksjs/types'
-import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import process from 'node:process'
@@ -2899,6 +2899,14 @@ async function runSshDeploy(args: {
   }
 
   const tarballs = new Map<string, string>()
+  // This deploy's release archives, in a directory of its own that goes when
+  // the deploy does. Written straight into the temp dir they stayed there: a CI
+  // runner's /tmp held every release of every site (HQ's: 138 archives, 3.7 GB,
+  // enough to fail a later job for disk). On exit as well, so a deploy refused
+  // or failed before shipping cleans up too.
+  const releaseDir = mkdtempSync(join(tmpdir(), `${slug}-release-`))
+  const removeReleaseDir = () => rmSync(releaseDir, { recursive: true, force: true })
+  process.once('exit', removeReleaseDir)
   // The cloud driver's release classification is authoritative for both
   // packaging and GitHub records. Proxy/redirect routes only change the gateway.
   for (const [siteName, site] of deploymentReleaseSites<any>(sites, onlySite, { shipsARelease })) {
@@ -2914,7 +2922,7 @@ async function runSshDeploy(args: {
     }
 
     const root = site.root || '.'
-    const tarballPath = join(tmpdir(), `${slug}-${siteName}-${sha}.tar.gz`)
+    const tarballPath = join(releaseDir, `${slug}-${siteName}-${sha}.tar.gz`)
 
     // Paths the SERVER owns, declared per site.
     //
@@ -3080,6 +3088,7 @@ async function runSshDeploy(args: {
       success: (m: string) => log.success(m),
     },
   })
+  removeReleaseDir()
 
   // Whether the world may be told about this deploy.
   //
