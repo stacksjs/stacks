@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.270...v0.75.271)
+
+## 🐛 Bug Fixes
+
+- **tests**: create middleware fixture directories in fresh checkouts ([a7d5108](https://github.com/stacksjs/stacks/commit/a7d5108)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- stx 0.2.668, whose native screens send a web view's requests with Headers ([dcaecaf](https://github.com/stacksjs/stacks/commit/dcaecaf)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.269...v0.75.270)
 
 ## 🐛 Bug Fixes
