@@ -1,5 +1,96 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.256...v0.75.257)
+
+## ✨ Features
+
+- **release**: verify source archives and installed consumer evidence ([0ac6d8a](https://github.com/stacksjs/stacks/commit/0ac6d8a)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **security**: bound outbound resolution and release skipped responses ([f5ae092](https://github.com/stacksjs/stacks/commit/f5ae092)) _(by Chris <chris@stacksjs.com>)_
+- **actions**: confirm Windows job cancellation before teardown ([587c201](https://github.com/stacksjs/stacks/commit/587c201)) _(by Chris <chris@stacksjs.com>)_
+- retain timeout diagnostics when Windows cleanup also fails ([d720584](https://github.com/stacksjs/stacks/commit/d720584)) _(by Chris <chris@stacksjs.com>)_
+- preserve command output without PowerShell progress noise ([efa240d](https://github.com/stacksjs/stacks/commit/efa240d)) _(by Chris <chris@stacksjs.com>)_
+- inherit Windows verification output handles explicitly ([7a6eeb7](https://github.com/stacksjs/stacks/commit/7a6eeb7)) _(by Chris <chris@stacksjs.com>)_
+- redact SMTP authentication from debug logs ([c033f55](https://github.com/stacksjs/stacks/commit/c033f55)) _(by Chris <chris@stacksjs.com>)_
+- adopt canonical Windows declaration path identities ([7ad7fe9](https://github.com/stacksjs/stacks/commit/7ad7fe9)) _(by Chris <chris@stacksjs.com>)_
+- **orm**: preserve pagination argument order across model entrypoints ([d496f73](https://github.com/stacksjs/stacks/commit/d496f73)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **mail**: preserve protocol monitoring during tenant deploys ([50857e7](https://github.com/stacksjs/stacks/commit/50857e7)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **email**: enforce SMTP DATA and MIME header boundaries ([58bf319](https://github.com/stacksjs/stacks/commit/58bf319)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **security**: pin outbound requests to one validated DNS answer ([4148b00](https://github.com/stacksjs/stacks/commit/4148b00)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **router**: apply matched route policies to every live method ([3872b4c](https://github.com/stacksjs/stacks/commit/3872b4c)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **ci**: preserve Windows runtime paths and reject failed package discovery ([df76c98](https://github.com/stacksjs/stacks/commit/df76c98)) _(by Chris <chris@stacksjs.com>)_
+- **release**: dispose completed check processes before issuing receipts ([51f8f52](https://github.com/stacksjs/stacks/commit/51f8f52)) _(by Chris <chris@stacksjs.com>)_
+- **publication**: enforce application policy before release and deploy ([8ebd387](https://github.com/stacksjs/stacks/commit/8ebd387)) _(by Chris <chris@stacksjs.com>)_
+- **database**: the exported column-type helpers answer the way the generator does ([8b32d84](https://github.com/stacksjs/stacks/commit/8b32d84)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2965](https://github.com/stacksjs/stacks/issues/2965), [stacksjs/stacks#2965](https://github.com/stacksjs/stacks/issues/2965))
+- **env**: unify CLI private key resolution ([09ad14c](https://github.com/stacksjs/stacks/commit/09ad14c)) _(by Chris <chris@stacksjs.com>)_
+- **env**: validate public and private key relationships ([bedb7d0](https://github.com/stacksjs/stacks/commit/bedb7d0)) _(by Chris <chris@stacksjs.com>)_
+- **upgrade**: preserve linked packages and application locks ([c3057f1](https://github.com/stacksjs/stacks/commit/c3057f1)) _(by Chris <chris@stacksjs.com>)_
+- **database**: the dialect guard judges the migrations that will run ([3dfb713](https://github.com/stacksjs/stacks/commit/3dfb713)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2968](https://github.com/stacksjs/stacks/issues/2968))
+- **build**: preserve runtime environment selection in packages ([d4182ff](https://github.com/stacksjs/stacks/commit/d4182ff)) _(by Chris <chris@stacksjs.com>)_
+- **database**: migrate:align skips a column whose reference is missing ([c18e619](https://github.com/stacksjs/stacks/commit/c18e619)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **database**: migrate:align creates an enum type the database is missing ([841680a](https://github.com/stacksjs/stacks/commit/841680a)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **database**: restore migrate:align's apply path ([26fda54](https://github.com/stacksjs/stacks/commit/26fda54)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **database**: migrate:align plans a database that is missing a column ([85128d3](https://github.com/stacksjs/stacks/commit/85128d3)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2966](https://github.com/stacksjs/stacks/issues/2966))
+- **buddy**: allow Apple tooling in standalone native projects ([1687efb](https://github.com/stacksjs/stacks/commit/1687efb)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **cache**: keep SQL pattern helpers outside driver discovery ([095b04b](https://github.com/stacksjs/stacks/commit/095b04b)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **env**: validate public metadata in strict configuration checks ([12dbbac](https://github.com/stacksjs/stacks/commit/12dbbac)) _(by Chris <chris@stacksjs.com>)_
+- **dashboard**: say what the commands inventory actually lists ([590fc42](https://github.com/stacksjs/stacks/commit/590fc42)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: list Settings once in the sidebar ([1f6162f](https://github.com/stacksjs/stacks/commit/1f6162f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **cache**: keep every key in a tag's index when tagged writes run at once (#2939) ([7f95db6](https://github.com/stacksjs/stacks/commit/7f95db6)) _(by Mantas Kantautas <mantas.kantautas@gmail.com>)_ ([#2939](https://github.com/stacksjs/stacks/issues/2939))
+- **server**: pass build paths to rm and cp as arguments, not one string (#2938) ([2c24f07](https://github.com/stacksjs/stacks/commit/2c24f07)) _(by Mantas Kantautas <mantas.kantautas@gmail.com>)_ ([#2938](https://github.com/stacksjs/stacks/issues/2938))
+- **orm**: give records created through the generated store route their uuid (#2937) ([1ffd469](https://github.com/stacksjs/stacks/commit/1ffd469)) _(by Mantas Kantautas <mantas.kantautas@gmail.com>)_ ([#2937](https://github.com/stacksjs/stacks/issues/2937))
+- **validation**: keep a .when() refinement from changing an object schema (#2936) ([0a1e3b3](https://github.com/stacksjs/stacks/commit/0a1e3b3)) _(by Mantas Kantautas <mantas.kantautas@gmail.com>)_ ([#2936](https://github.com/stacksjs/stacks/issues/2936))
+- **orm**: stamp timestamps MySQL accepts in the generated write routes (#2935) ([ae85544](https://github.com/stacksjs/stacks/commit/ae85544)) _(by Mantas Kantautas <mantas.kantautas@gmail.com>)_ ([#2935](https://github.com/stacksjs/stacks/issues/2935))
+- **orm**: make withTrashed() and onlyTrashed() return trashed rows (#2934) ([810f91f](https://github.com/stacksjs/stacks/commit/810f91f)) _(by Mantas Kantautas <mantas.kantautas@gmail.com>)_ ([#2934](https://github.com/stacksjs/stacks/issues/2934))
+- **orm**: read page and per_page correctly in a no-argument paginate() (#2933) ([d098d10](https://github.com/stacksjs/stacks/commit/d098d10)) _(by Mantas Kantautas <mantas.kantautas@gmail.com>)_ ([#2933](https://github.com/stacksjs/stacks/issues/2933))
+- **cache**: match a SingleStore and SQLite cache prefix literally (#2940) ([a440898](https://github.com/stacksjs/stacks/commit/a440898)) _(by Mantas Kantautas <mantas.kantautas@gmail.com>)_ ([#2940](https://github.com/stacksjs/stacks/issues/2940))
+- **buddy**: fail native development when the app exits unexpectedly ([2b8dbae](https://github.com/stacksjs/stacks/commit/2b8dbae)) _(by Chris <chris@stacksjs.com>)_
+- **env**: recognize scoped CI keys during configuration checks ([ede9288](https://github.com/stacksjs/stacks/commit/ede9288)) _(by Chris <chris@stacksjs.com>)_
+- **env**: secure key bootstrap and accept secrets from stdin ([abc7e48](https://github.com/stacksjs/stacks/commit/abc7e48)) _(by Chris <chris@stacksjs.com>)_
+- **buddy**: preserve adopted UI and resolve native backends from app roots ([3628c74](https://github.com/stacksjs/stacks/commit/3628c74)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **mobile**: report the resolved runtime source ([3ef1819](https://github.com/stacksjs/stacks/commit/3ef1819)) _(by Chris <chris@stacksjs.com>)_ ([#2942](https://github.com/stacksjs/stacks/issues/2942))
+
+## 📝 Documentation
+
+- refresh merged toolchain verification ([a9d4443](https://github.com/stacksjs/stacks/commit/a9d4443)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **security**: allow startup time in regex functional checks ([75398b6](https://github.com/stacksjs/stacks/commit/75398b6)) _(by Chris <chris@stacksjs.com>)_
+- **actions**: retain immediate cleanup and current verification ([403f697](https://github.com/stacksjs/stacks/commit/403f697)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **deps**: adopt verified toolchain releases ([374e0c2](https://github.com/stacksjs/stacks/commit/374e0c2)) _(by Chris <chris@stacksjs.com>)_
+- **deps**: adopt verified dtsx 0.11.20 artifacts ([5ec5b52](https://github.com/stacksjs/stacks/commit/5ec5b52)) _(by Chris <chris@stacksjs.com>)_
+- **deps**: refresh Pantry lock for verified stx adoption ([707f1bc](https://github.com/stacksjs/stacks/commit/707f1bc)) _(by Chris <chris@stacksjs.com>)_
+- **deps**: adopt verified stx 0.2.644 artifacts ([a692bef](https://github.com/stacksjs/stacks/commit/a692bef)) _(by Chris <chris@stacksjs.com>)_
+- integrate current migration dialect checks ([9e4a834](https://github.com/stacksjs/stacks/commit/9e4a834)) _(by Chris <chris@stacksjs.com>)_
+- integrate current schema alignment fixes ([0a7ce00](https://github.com/stacksjs/stacks/commit/0a7ce00)) _(by Chris <chris@stacksjs.com>)_
+- never commit a database dump ([7bf61fc](https://github.com/stacksjs/stacks/commit/7bf61fc)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- integrate standalone Apple tooling support ([70a6db9](https://github.com/stacksjs/stacks/commit/70a6db9)) _(by Chris <chris@stacksjs.com>)_
+- integrate current cache helper ownership ([57b95f7](https://github.com/stacksjs/stacks/commit/57b95f7)) _(by Chris <chris@stacksjs.com>)_
+- **deps**: adopt the verified stx 0.2.638 cohort ([fb95fe3](https://github.com/stacksjs/stacks/commit/fb95fe3)) _(by Chris <chris@stacksjs.com>)_
+- integrate current dashboard fixes ([a2442fd](https://github.com/stacksjs/stacks/commit/a2442fd)) _(by Chris <chris@stacksjs.com>)_
+- integrate current upstream foundations ([031f394](https://github.com/stacksjs/stacks/commit/031f394)) _(by Chris <chris@stacksjs.com>)_
+
+## 🎉 Miscellaneous
+
+- Merge remote-tracking branch 'origin/main' into codex/settlers-gold-source-evidence ([882ce8d](https://github.com/stacksjs/stacks/commit/882ce8d)) _(by Chris <chris@stacksjs.com>)_
+- Merge remote-tracking branch 'origin/main' into codex/mail-receipt-health ([b55b5b7](https://github.com/stacksjs/stacks/commit/b55b5b7)) _(by Chris <chris@stacksjs.com>)_
+- Merge remote-tracking branch 'origin/main' into codex/settlers-gold-source-evidence ([b20b104](https://github.com/stacksjs/stacks/commit/b20b104)) _(by Chris <chris@stacksjs.com>)_
+- Merge remote-tracking branch 'origin/main' into codex/security-source-boundaries ([20ea199](https://github.com/stacksjs/stacks/commit/20ea199)) _(by Chris <chris@stacksjs.com>)_
+- Merge remote-tracking branch 'origin/main' into codex/security-source-boundaries ([91fd33b](https://github.com/stacksjs/stacks/commit/91fd33b)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+- _Mantas Kantautas <mantas.kantautas@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.255...v0.75.256)
 
 ## ✨ Features
