@@ -1,5 +1,59 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.262...v0.75.263)
+
+## 💥 Breaking Changes
+
+- fix(migrate)!: a non-interactive buddy migrate applies committed migrations and generates none ([73b556d](https://github.com/stacksjs/stacks/commit/73b556d)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2948](https://github.com/stacksjs/stacks/issues/2948))
+- fix(orm)!: security.api.models defaults to 'own', so framework model APIs are opt-in ([035e4a8](https://github.com/stacksjs/stacks/commit/035e4a8)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2954](https://github.com/stacksjs/stacks/issues/2954))
+
+## ✨ Features
+
+- **messaging**: a direct message can carry attachments ([7240690](https://github.com/stacksjs/stacks/commit/7240690)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **migrations**: generate:migrations --dialect keeps another dialect's corpus current, with no database of it ([be73e71](https://github.com/stacksjs/stacks/commit/be73e71)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2949](https://github.com/stacksjs/stacks/issues/2949))
+- **seeder**: a factory can pick an existing row, and a null in a required column fails loudly ([9b2b783](https://github.com/stacksjs/stacks/commit/9b2b783)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2951](https://github.com/stacksjs/stacks/issues/2951))
+- **database**: tell whether a framework action can work in this app's schema ([5cba61e](https://github.com/stacksjs/stacks/commit/5cba61e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2943](https://github.com/stacksjs/stacks/issues/2943))
+- **router**: withRouteAdmission withholds routes a check rejects, and reports them ([b3ab279](https://github.com/stacksjs/stacks/commit/b3ab279)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2943](https://github.com/stacksjs/stacks/issues/2943))
+- **mobile**: give web views compiled as native screens the keys the page shares ([18fd0ea](https://github.com/stacksjs/stacks/commit/18fd0ea)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **deps**: pin the pantry the buddy wrapper bootstraps, and doctor names a craft entry nothing can install ([d311a92](https://github.com/stacksjs/stacks/commit/d311a92)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2919](https://github.com/stacksjs/stacks/issues/2919))
+- **email**: send() and sendOrFail() differ in their types, and the queue's alert stops trusting send() ([253595c](https://github.com/stacksjs/stacks/commit/253595c)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2930](https://github.com/stacksjs/stacks/issues/2930))
+- **mobile**: a development build warns when it talks to a site that is not local ([be442f6](https://github.com/stacksjs/stacks/commit/be442f6)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2942](https://github.com/stacksjs/stacks/issues/2942))
+- **migrate**: migrations run from a staged copy, so migrate never rewrites the committed corpus ([425a2f6](https://github.com/stacksjs/stacks/commit/425a2f6)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2929](https://github.com/stacksjs/stacks/issues/2929))
+- **server**: auto-imports go stale by their source listing, not only file times, and regenerate from a command ([34a2d1a](https://github.com/stacksjs/stacks/commit/34a2d1a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2947](https://github.com/stacksjs/stacks/issues/2947))
+- **router**: an app's action wins over a stale registry entry naming the framework's ([3ec1a60](https://github.com/stacksjs/stacks/commit/3ec1a60)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2947](https://github.com/stacksjs/stacks/issues/2947))
+- **routes**: default routes whose models an app excluded, and whose tables are missing, are not registered ([7b6f595](https://github.com/stacksjs/stacks/commit/7b6f595)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2943](https://github.com/stacksjs/stacks/issues/2943), [#2220](https://github.com/stacksjs/stacks/issues/2220))
+- **buddy**: migrate:fresh --seed installs the server globals before seeding ([937d35a](https://github.com/stacksjs/stacks/commit/937d35a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2952](https://github.com/stacksjs/stacks/issues/2952))
+- **orm**: a search document is id plus the declared fields, and never a hidden column ([173cd08](https://github.com/stacksjs/stacks/commit/173cd08)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2955](https://github.com/stacksjs/stacks/issues/2955))
+- **env**: env:get reads only the file it is given, and names the key when it cannot ([10ebd9a](https://github.com/stacksjs/stacks/commit/10ebd9a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2956](https://github.com/stacksjs/stacks/issues/2956))
+- **test**: buddy test runs the paths it is given, instead of the whole suite ([545fb23](https://github.com/stacksjs/stacks/commit/545fb23)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2973](https://github.com/stacksjs/stacks/issues/2973), [#2945](https://github.com/stacksjs/stacks/issues/2945))
+- **lint**: lint, lint:fix and format honour the paths they are given ([97bc170](https://github.com/stacksjs/stacks/commit/97bc170)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2953](https://github.com/stacksjs/stacks/issues/2953))
+- **scheduler**: cadence methods compose on two axes, so their order cannot change the schedule ([3931821](https://github.com/stacksjs/stacks/commit/3931821)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2945](https://github.com/stacksjs/stacks/issues/2945))
+
+## ⚡ Performance Improvements
+
+- **dashboard**: stop prewarming every route on the thread that serves requests ([ac737c5](https://github.com/stacksjs/stacks/commit/ac737c5)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2964](https://github.com/stacksjs/stacks/issues/2964))
+
+## 📝 Documentation
+
+- **skills**: refresh the native catalog's retained-test counts ([a7fccfc](https://github.com/stacksjs/stacks/commit/a7fccfc)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ✅ Tests
+
+- **orm**: route tests for framework models select those models' APIs ([9181e4b](https://github.com/stacksjs/stacks/commit/9181e4b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2954](https://github.com/stacksjs/stacks/issues/2954))
+- **orm**: pin that every paginate() entrypoint answers one shape ([5daf2ac](https://github.com/stacksjs/stacks/commit/5daf2ac)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2950](https://github.com/stacksjs/stacks/issues/2950))
+
+## 🔧 Chores
+
+- **docs**: regenerate the API artifacts for the model-API default ([6344e7e](https://github.com/stacksjs/stacks/commit/6344e7e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2954](https://github.com/stacksjs/stacks/issues/2954))
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.261...v0.75.262)
 
 ## 🐛 Bug Fixes
