@@ -129,6 +129,22 @@ if (health.supports('getHeartRateSamples')) {
 }
 ```
 
+For diabetes, `health.getSamples(type, { startDate, endDate })` reads
+`bloodGlucose` (mg/dL), `insulinDelivery` (IU, each marked `basal` or `bolus`)
+and `dietaryCarbohydrates` (g) one sample at a time, oldest first, each with
+the id HealthKit or Health Connect gave it, so a sync can store it once. Ask for
+them read only. Health Connect has no insulin type, so Android answers `[]` for
+it. `fromPhoneSamples` in `ts-health/glucose` turns the samples into readings,
+doses and carbs.
+
+```ts
+await health.requestAuthorization(['bloodGlucose', 'insulinDelivery', 'dietaryCarbohydrates'], { write: false })
+if (health.supports('getSamples')) {
+  const glucose = await health.getSamples('bloodGlucose', { startDate: Date.now() - 86400000 })
+  const doses = await health.getSamples('insulinDelivery', { startDate: Date.now() - 86400000 })
+}
+```
+
 Mindful minutes: ask for `mindful` with writing allowed, then
 `health.saveMindfulSession({ id, startDate, endDate })` records a meditation or
 breathing session. The id is kept as the sample's external UUID, so saving it

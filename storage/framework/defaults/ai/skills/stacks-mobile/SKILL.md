@@ -590,7 +590,10 @@ Enable `healthKit` on iOS or `healthConnect` on Android, then use the shared
 and `health.getDailyStatistics(type)` returns one value per day for steps,
 energy, distance, heart rate, resting heart rate, HRV, weight and sleep.
 `health.getHeartRateSamples(range)` returns every heart-rate reading (bpm,
-start/end, source and device) and `health.getSleepIntervals(range)` the night's
+start/end, source and device), `health.getSamples('bloodGlucose' |
+'insulinDelivery' | 'dietaryCarbohydrates', range)` each glucose reading,
+insulin dose (basal or bolus) or carb entry with its id (read only; no insulin
+on Health Connect), and `health.getSleepIntervals(range)` the night's
 in-bed, awake and asleep stages; check `health.supports(method)` first, since an
 app build that predates a read resolves `[]` for it. Mindful minutes go through
 `health.saveMindfulSession({ id, startDate, endDate })` (the `mindful` grant;

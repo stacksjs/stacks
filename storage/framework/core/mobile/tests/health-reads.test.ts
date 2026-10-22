@@ -142,3 +142,23 @@ describe('health heart rate as it arrives', () => {
     await expect(health.startHeartRateUpdates()).rejects.toThrow('Authorization not determined')
   })
 })
+
+describe('health glucose, insulin and carbs', () => {
+  const dose = { id: 'HK-ins-1', value: 1.5, unit: 'IU', startDate: 1_000, endDate: 1_000, sourceName: 'Loop', sourceBundleId: 'com.loopkit.Loop', ownApp: false, insulinReason: 'bolus' }
+
+  it('reads one type at a time through the shell, passing the type and range on', async () => {
+    const calls: unknown[][] = []
+    install({ platform: 'ios', health: { getSamples: async (type: unknown, options: unknown) => { calls.push([type, options]); return [dose] } } })
+    expect(health.supports('getSamples')).toBe(true)
+    expect(await health.getSamples('insulinDelivery', { startDate: 0, endDate: 5_000, limit: 50 })).toEqual([dose] as any)
+    expect(calls).toEqual([['insulinDelivery', { startDate: 0, endDate: 5_000, limit: 50 }]])
+  })
+
+  it('answers nothing on a browser or an app build that predates it', async () => {
+    install()
+    expect(await health.getSamples('bloodGlucose')).toEqual([])
+    install({ platform: 'ios', health: {} })
+    expect(health.supports('getSamples')).toBe(false)
+    expect(await health.getSamples('bloodGlucose')).toEqual([])
+  })
+})

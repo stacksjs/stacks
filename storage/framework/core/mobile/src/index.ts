@@ -41,6 +41,7 @@ import {
   watchConnectivity as craftWatchConnectivity,
 } from 'craft-native/mobile'
 
+import type { HealthDataType as CraftHealthDataType } from 'craft-native/mobile'
 import type { CraftHost } from './bridge'
 import { auth, background, browser, chrome, clipboard, contextMenu, db, dialog, files, orientation, refresh, shortcuts, statusBar, storeKit, symbols, widgets } from './native'
 import { afterBridge, callNative, craftHost, hasNativeMobileHost, nativeFunctionNow, onCraftEvent, subscribeWhenReady, whenBridgeReady } from './bridge'
@@ -61,6 +62,7 @@ import type {
   HealthHeartRateSample,
   HealthMindfulSample,
   HealthMindfulSessionResult,
+  HealthQuantitySample,
   HealthSleepInterval,
   HeartRateApi,
   KeepAwakeApi,
@@ -393,14 +395,18 @@ export const pushNotifications: PushNotificationsApi = {
   onNotification: callback => subscribeWhenReady(() => craftPushNotifications.onNotification(callback)),
 }
 export const health: HealthApi = {
-  requestAuthorization: (types, options) => afterBridge(() => craftHealth.requestAuthorization(types, options)),
-  getData: (type, options) => afterBridge(() => craftHealth.getData(type, options)),
+  // Type names are plain strings to the shell, which refuses one it does not
+  // know: Stacks can name a type (bloodGlucose) before the craft-native it
+  // resolves does, and a page checks `supports` before asking for it.
+  requestAuthorization: (types, options) => afterBridge(() => craftHealth.requestAuthorization(types as CraftHealthDataType[], options)),
+  getData: (type, options) => afterBridge(() => craftHealth.getData(type as CraftHealthDataType, options)),
   saveWorkout: workout => afterBridge(() => craftHealth.saveWorkout(workout)),
   getWorkouts: options => afterBridge(() => craftHealth.getWorkouts(options)),
   getDailyStatistics: (type, options) => afterBridge(() => craftHealth.getDailyStatistics(type, options)),
   // Straight to the bridge rather than through craft-native, so an app that
   // resolves an older craft-native still reaches a shell that has the read.
   getHeartRateSamples: options => callNative<HealthHeartRateSample[]>('health.getHeartRateSamples', [options ?? {}], () => []).then(rows => Array.isArray(rows) ? rows : []),
+  getSamples: (type, options) => callNative<HealthQuantitySample[]>('health.getSamples', [type, options ?? {}], () => []).then(rows => Array.isArray(rows) ? rows : []),
   getSleepIntervals: options => callNative<HealthSleepInterval[]>('health.getSleepIntervals', [options ?? {}], () => []).then(rows => Array.isArray(rows) ? rows : []),
   saveMindfulSession: session => callNative<HealthMindfulSessionResult | null>('health.saveMindfulSession', [session], () => null).then(saved => saved ?? null),
   getMindfulSessions: options => callNative<HealthMindfulSample[]>('health.getMindfulSessions', [options ?? {}], () => []).then(rows => Array.isArray(rows) ? rows : []),

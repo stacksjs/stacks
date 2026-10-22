@@ -613,9 +613,40 @@ export type HealthDataType =
   | 'dietaryFat'
   /** Mindful minutes (meditation, breathing): `saveMindfulSession` writes, `getMindfulSessions` reads (Craft 0.0.161). */
   | 'mindful'
+  /** Blood glucose from a CGM or meter, in mg/dL: read with `getSamples`. Read only (Craft 0.0.291). */
+  | 'bloodGlucose'
+  /** Insulin from a pump, pen or loop, in IU, marked basal or bolus: read with `getSamples`. Read only; HealthKit only (Craft 0.0.291). */
+  | 'insulinDelivery'
 
 /** The types with one value per day. `sleep` is hours asleep, counted on the day you woke. */
-export type HealthDailyType = Exclude<HealthDataType, 'workouts' | 'mindful'>
+export type HealthDailyType = Exclude<HealthDataType, 'workouts' | 'mindful' | 'bloodGlucose' | 'insulinDelivery'>
+
+/** What `health.getSamples()` reads one sample at a time: glucose, insulin and carbs. */
+export type HealthSampleType = 'bloodGlucose' | 'insulinDelivery' | 'dietaryCarbohydrates'
+
+/** One glucose reading, insulin dose or carb entry as the writing app saved it. */
+export interface HealthQuantitySample {
+  /** HealthKit's UUID or Health Connect's record id: stable across reads. */
+  id: string
+  /** In `unit`: mg/dL for glucose, IU for insulin, g for carbs. */
+  value: number
+  unit: 'mg/dL' | 'IU' | 'g'
+  /** Epoch ms. */
+  startDate: number
+  /** Epoch ms; a basal delivery spans its segment. */
+  endDate: number
+  sourceName: string
+  sourceBundleId: string
+  /** True when this app wrote it. */
+  ownApp: boolean
+  deviceName?: string
+  /** Insulin only: what the dose was for. */
+  insulinReason?: 'basal' | 'bolus'
+  /** Glucose only: when it was taken relative to a meal, when the source said. */
+  mealTime?: 'beforeMeal' | 'afterMeal' | 'fasting' | 'general'
+  /** Glucose only (Health Connect): what was sampled, when the source said. */
+  specimen?: string
+}
 
 export interface HealthDataOptions {
   startDate?: number
@@ -784,7 +815,7 @@ export interface HealthMindfulSample {
 }
 
 /** The health reads and writes an installed app build may or may not answer. */
-export type HealthReadMethod = 'getWorkouts' | 'getDailyStatistics' | 'getHeartRateSamples' | 'getSleepIntervals' | 'saveMindfulSession' | 'getMindfulSessions'
+export type HealthReadMethod = 'getWorkouts' | 'getDailyStatistics' | 'getHeartRateSamples' | 'getSamples' | 'getSleepIntervals' | 'saveMindfulSession' | 'getMindfulSessions'
   | 'startHeartRateUpdates' | 'stopHeartRateUpdates'
 
 export interface HealthHeartRateUpdatesOptions {
@@ -811,6 +842,14 @@ export interface HealthApi {
    * `[]` in a browser or an app build that predates it (see `supports`).
    */
   getHeartRateSamples: (options?: HealthHeartRateQuery) => Promise<HealthHeartRateSample[]>
+  /**
+   * Every glucose reading, insulin dose or carb entry between two instants,
+   * oldest first, each with its own id so a sync stores it once. Needs the
+   * type's read grant. Health Connect has no insulin, so Android answers `[]`
+   * for `insulinDelivery`; so does a browser or an app build that predates it
+   * (see `supports`).
+   */
+  getSamples: (type: HealthSampleType, options?: HealthHeartRateQuery) => Promise<HealthQuantitySample[]>
   /**
    * Sleep between two instants, oldest first: time in bed, and each asleep or
    * awake stretch with its stage. iOS only for now; resolves `[]` in a browser
