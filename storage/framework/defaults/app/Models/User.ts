@@ -41,10 +41,10 @@ export default defineModel({
     useTimestamps: true, // defaults to true, `timestampable` used as an alias
     useSocials: ['github'],
     useSearch: {
-      displayable: ['id', 'name', 'email'], // the fields to become d (defaults to all fields)
-      searchable: ['name', 'email'], // the fields to become searchable (defaults to all fields)
-      sortable: ['created_at', 'updated_at'], // the fields to become sortable (defaults to all fields)
-      filterable: [], // the fields to become filterable (defaults to all fields)
+      displayable: ['id', 'name', 'email'], // the fields a hit returns
+      searchable: ['name', 'email'], // the fields a query matches against
+      sortable: ['created_at', 'updated_at'], // the fields results can be ordered by
+      filterable: [], // the fields results can be narrowed by
       // options: {}, // you may pass options to the search engine
     },
 

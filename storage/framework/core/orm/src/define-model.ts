@@ -668,67 +668,24 @@ function wrapModelInstance<T extends object>(
 
       if (prop === 'toSearchableObject') {
         return function toSearchableObject() {
-          const def = target._definition as { traits?: { useSearch?: boolean | SearchOptions } } | undefined
+          const def = target._definition as (BQBModelDefinition & { traits?: { useSearch?: boolean | SearchOptions } }) | undefined
           const search = def?.traits?.useSearch
           if (!search) return null
 
           const attrs = target._attributes as Record<string, unknown> | undefined
           if (!attrs) return null
 
-          // Boolean form: `useSearch: true` indexes every attribute on
-          // the row. Pre-fix this branch short-circuited to `null`
-          // because `typeof true === 'boolean'`, which silently no-op'd
-          // both the live observer hook AND `./buddy search-engine:
-          // update` (the latter logged `imported 0, skipped N` and
-          // exited 0). See stacksjs/stacks#1917.
-          if (search === true) {
-            const doc: Record<string, unknown> = { ...attrs }
-            if (attrs.id != null) doc.id = String(attrs.id)
-            return doc
-          }
-
-          // Object form: explicit `searchable` / `displayable` /
-          // `filterable` / `sortable` arrays.
-          const doc: Record<string, unknown> = {}
-          const keys = search.displayable?.length
-            ? search.displayable
-            : [...search.searchable ?? [], ...search.filterable ?? [], ...search.sortable ?? [], 'id']
-
-          // Pre-resolve any cross-table fields declared in `denormalize`
-          // by walking the dot-path against `_relations`. Eager-loading
-          // is the caller's job (`Model.query().with('court_house').
-          // get()`); this loop just reads the already-loaded relation.
-          // See stacksjs/stacks#1918 for the broader picture.
-          const denormalize = search.denormalize ?? {}
-          const relations = target._relations as Record<string, unknown> | undefined
-
-          for (const key of keys) {
-            const snake = snakeCase(key)
-
-            // 1) Own attribute on the row — fast path, identical to
-            //    pre-#1918 behaviour.
-            const own = attrs[snake] ?? attrs[key]
-            if (own !== undefined) {
-              doc[snake] = own
-              continue
-            }
-
-            // 2) Denormalised dot-path against `_relations`. Missing
-            //    relation/segment resolves to `null` rather than
-            //    `undefined` so the indexed document keeps the field
-            //    (Meilisearch settings that declare a key as searchable
-            //    expect every doc to carry it).
-            const path = denormalize[key] ?? denormalize[snake]
-            if (path) {
-              doc[snake] = resolveRelationPath(relations, path)
-              continue
-            }
-
-            doc[snake] = undefined
-          }
-
-          if (attrs.id != null) doc.id = String(attrs.id)
-          return doc
+          // `useSearch: true` used to short-circuit to `null` here
+          // (`typeof true === 'boolean'`), which silently no-op'd both the live
+          // observer hook and `./buddy search-engine:update`. See
+          // stacksjs/stacks#1917. Both forms now share one projection with the
+          // bulk path, so the two cannot disagree (stacksjs/stacks#2955).
+          return searchDocumentFromRow(
+            attrs,
+            search === true ? {} : search,
+            hiddenAttributeNames(def),
+            target._relations as Record<string, unknown> | undefined,
+          )
         }
       }
 
@@ -1702,16 +1659,109 @@ export async function projectDocumentsFromTrait(
  * `displayable` did not prevent it: that governs what a query returns, not what
  * is written.
  */
-function hiddenAttributeNames(definition: BQBModelDefinition): Set<string> {
+function hiddenAttributeNames(definition: BQBModelDefinition | undefined): Set<string> {
   const hidden = new Set<string>()
-  const attributes = (definition as { attributes?: Record<string, { hidden?: boolean }> }).attributes ?? {}
+  const attributes = (definition as { attributes?: Record<string, { hidden?: boolean }> } | undefined)?.attributes ?? {}
 
+  // Both spellings: an attribute declared `apiToken` arrives on the row as
+  // `api_token`, and matching only the declared name let it through.
   for (const [name, attribute] of Object.entries(attributes)) {
-    if (attribute?.hidden)
+    if (attribute?.hidden) {
       hidden.add(name)
+      hidden.add(snakeCase(name))
+    }
   }
 
   return hidden
+}
+
+/** The four field lists a `useSearch` object declares, plus cross-table paths. */
+interface SearchFieldDeclaration {
+  displayable?: readonly string[]
+  searchable?: readonly string[]
+  filterable?: readonly string[]
+  sortable?: readonly string[]
+  denormalize?: Record<string, string>
+}
+
+/**
+ * The fields a model's search document may carry: `id` plus every field the
+ * model named in `displayable`, `searchable`, `filterable` or `sortable`.
+ *
+ * An allow list, so a column added to the model later is not published to the
+ * search engine until someone names it (stacksjs/stacks#2955). Forgetting a
+ * field then means search does not work, which is noticed in a minute, instead
+ * of a column being copied to a second datastore, which nobody notices.
+ *
+ * The union, not `displayable` alone. Indexing only `displayable` left out
+ * every field that was declared searchable, sortable or filterable without
+ * also being displayed, so 39 of the framework's own models could not sort by
+ * the `createdAt` they declared sortable.
+ */
+function declaredSearchFields(search: SearchFieldDeclaration): string[] {
+  return [...new Set([
+    ...search.displayable ?? [],
+    ...search.searchable ?? [],
+    ...search.filterable ?? [],
+    ...search.sortable ?? [],
+  ])]
+}
+
+/**
+ * The default search document for one row, shared by the per-save hook and the
+ * bulk reindex.
+ *
+ * With fields declared it is exactly those fields and `id`. With none declared
+ * (`useSearch: true`) it is the row minus every `hidden` attribute: before this
+ * the boolean form wrote the whole row, `password` hash included, because the
+ * hidden filter sat on a path that a model instance never reached.
+ */
+function searchDocumentFromRow(
+  attrs: Record<string, unknown>,
+  search: SearchFieldDeclaration,
+  hidden: Set<string>,
+  relations?: Record<string, unknown>,
+): Record<string, unknown> {
+  const fields = declaredSearchFields(search)
+  const doc: Record<string, unknown> = {}
+
+  if (fields.length === 0) {
+    Object.assign(doc, withoutHidden(attrs, hidden))
+  }
+  else {
+    // Pre-resolve any cross-table fields declared in `denormalize` by walking
+    // the dot-path against `_relations`. Eager-loading is the caller's job
+    // (`Model.query().with('court_house').get()`); this loop just reads the
+    // already-loaded relation. See stacksjs/stacks#1918.
+    const denormalize = search.denormalize ?? {}
+
+    for (const key of fields) {
+      const snake = snakeCase(key)
+
+      // 1) Own attribute on the row.
+      const own = attrs[snake] ?? attrs[key]
+      if (own !== undefined) {
+        doc[snake] = own
+        continue
+      }
+
+      // 2) Denormalised dot-path against `_relations`. A missing relation or
+      //    segment resolves to `null` rather than `undefined` so the indexed
+      //    document keeps the field (Meilisearch settings that declare a key
+      //    as searchable expect every doc to carry it).
+      const path = denormalize[key] ?? denormalize[snake]
+      if (path) {
+        doc[snake] = resolveRelationPath(relations, path)
+        continue
+      }
+
+      doc[snake] = undefined
+    }
+  }
+
+  // Search engines want string document ids.
+  if (attrs.id != null) doc.id = String(attrs.id)
+  return doc
 }
 
 /** Strip hidden attributes from a document the default projection produced. */
@@ -1742,12 +1792,12 @@ async function projectDocumentFromTrait(
   const fromHook = (model as { toSearchableObject?: () => Record<string, unknown> | null })?.toSearchableObject?.()
   if (fromHook !== undefined) return fromHook
 
-  // The default projection is the whole row, so anything the model marked
-  // `hidden` is removed here. See `hiddenAttributeNames` for why that matters.
-  return withoutHidden(
-    model?._attributes ?? (typeof model?.toJSON === 'function' ? model.toJSON() : null),
-    config.hidden ?? new Set<string>(),
-  )
+  // A plain row with no hook gets the same projection a model instance does,
+  // so the document never depends on whether the row arrived wrapped.
+  const attrs = model?._attributes ?? (typeof model?.toJSON === 'function' ? model.toJSON() : model)
+  if (!attrs || typeof attrs !== 'object')
+    return null
+  return searchDocumentFromRow(attrs, config, config.hidden ?? new Set<string>(), model?._relations)
 }
 
 /**
@@ -2982,7 +3032,10 @@ interface SearchableTraitConfig {
    * Attribute names in the model's own casing; the trait maps them to columns.
    */
 
-  /** Fields returned on a hit. Defaults to the whole document. */
+  /**
+   * Fields returned on a hit. The indexed document is `id` plus the union of
+   * all four lists (stacksjs/stacks#2955).
+   */
   displayable?: readonly string[]
   /** Fields matched against the query. Becomes Typesense's `query_by`. */
   searchable?: readonly string[]
@@ -2993,9 +3046,9 @@ interface SearchableTraitConfig {
   /**
    * Projection function — what gets indexed. Lets you index a
    * curated subset of fields (or denormalize relations) instead of
-   * the full row. Falls back to the model's `toSearchableObject()`
-   * if both are absent; if neither exists, the whole row is
-   * indexed.
+   * the declared fields. Falls back to the model's `toSearchableObject()`
+   * if both are absent; if neither exists, the declared fields are
+   * indexed, or the row minus `hidden` attributes when none are declared.
    */
   shape?: (model: any) => object | null | undefined | Promise<object | null | undefined>
   /**
@@ -3069,7 +3122,7 @@ function buildSearchHooks(definition: BQBModelDefinition): BQBModelDefinition['h
    *      projection, most callers
    *   2. model's `toSearchableObject()` — legacy hook still
    *      supported for back-compat
-   *   3. fall back to the raw model attributes
+   *   3. the declared fields (`searchDocumentFromRow`), never the raw row
    */
   async function projectDocument(model: any): Promise<Record<string, unknown> | null | undefined> {
     // A single save goes through the batch projector too, as a batch of one, so
@@ -3094,11 +3147,9 @@ function buildSearchHooks(definition: BQBModelDefinition): BQBModelDefinition['h
         return undefined
       }
     }
-    const wrapped = wrapModelInstance(model)
-    const fromHook = (wrapped as { toSearchableObject?: () => Record<string, unknown> | null }).toSearchableObject?.()
-    if (fromHook !== undefined) return fromHook
-    // Fall back to the model attributes (mirrors `Model.toJSON()`).
-    return model?._attributes ?? (typeof model?.toJSON === 'function' ? model.toJSON() : null)
+    // The instance hook, or the shared default projection. Never the raw row:
+    // that is how hidden columns reached the index (stacksjs/stacks#2955).
+    return projectDocumentFromTrait(wrapModelInstance(model), searchConfig)
   }
 
   /**

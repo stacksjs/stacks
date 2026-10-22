@@ -293,9 +293,19 @@ export interface SearchEngineStorage {
 export interface SearchOptions {
   /** Collection name, shared by model search, lifecycle writes and CLI sync. */
   index?: string
+  /*
+   * The indexed document is `id` plus the union of these four lists and
+   * nothing else, so a column reaches the search engine only once a model
+   * names it here (stacksjs/stacks#2955). With no list given (`useSearch:
+   * true`), the document is the row minus its `hidden` attributes.
+   */
+  /** Fields returned on a hit. */
   displayable: string[]
+  /** Fields matched against the query. */
   searchable: string[]
+  /** Fields a result set may be ordered by. */
   sortable: string[]
+  /** Fields a result set may be narrowed by. */
   filterable: string[]
   options?: SearchEngineOptions
   /**
