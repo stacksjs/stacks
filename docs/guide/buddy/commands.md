@@ -2733,6 +2733,10 @@ Generate Migrations
 - Aliases: none
 - Arguments: none
 
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--dialect` | Generate into this dialect's corpus instead of the connected one (sqlite, mysql, singlestore, vitess, postgres), or `all` for the connected dialect and every other one that keeps a corpus. No database of that dialect is needed | value, required | - |
+
 ### `generate:og`
 
 Generate the social cards used by link previews

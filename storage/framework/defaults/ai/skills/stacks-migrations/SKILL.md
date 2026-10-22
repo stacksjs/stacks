@@ -28,11 +28,20 @@ buddy migrate:fresh --seed          # drop, migrate, then seed
 buddy make:migration <name>         # create new migration file
 buddy seed                          # seed database
 buddy generate:migrations           # generate migrations from model diffs
+buddy generate:migrations --dialect postgres  # into another dialect's corpus, no Postgres needed
+buddy generate:migrations --dialect all       # the connected dialect and every other corpus
 buddy migrate:regenerate <dialect>  # rebuild the whole corpus from the models
 buddy migrate:status                # corpus vs ledger vs live schema; lists hand-written files
 buddy migrate:align                 # plan repairs of a database that drifted from the models
 buddy migrate:align --apply         # rename legacy indexes, add missing indexes/FKs/columns, widen losslessly
 ```
+
+An app that develops on one dialect and deploys on another keeps a corpus per
+dialect (`database/migrations/<dialect>/`, each with its own snapshot). A plain
+`generate:migrations` moves only the connected dialect and then warns, naming
+any other corpus the models have left behind; `--dialect <name>` or `--dialect
+all` brings it up to date from the models and that dialect's snapshot, without a
+database of that dialect (#2949).
 
 A non-interactive `buddy migrate` (CI, a deploy step) generates nothing unless
 given `--generate` (#2948). Generating there authored a migration nobody

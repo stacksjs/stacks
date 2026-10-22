@@ -297,20 +297,41 @@ export function generate(buddy: CLI): void {
       })
     })
 
-  buddy.command('generate:migrations', 'Generate Migrations').action(async (options: GeneratorOptions) => {
-    log.debug('Running `buddy generate:migrations` ...', options)
-    const { generateMigrations } = await import('@stacksjs/database')
-    const result = await generateMigrations()
+  buddy
+    .command('generate:migrations', 'Generate Migrations')
+    .option('--dialect <dialect>', 'Generate into this dialect\'s corpus instead of the connected one (sqlite, mysql, singlestore, vitess, postgres), or `all` for the connected dialect and every other one that keeps a corpus. No database of that dialect is needed')
+    .action(async (options: GeneratorOptions & { dialect?: string }) => {
+      log.debug('Running `buddy generate:migrations` ...', options)
+      const { dialectsBehindModels, generateMigrations, siblingMigrationDialects } = await import('@stacksjs/database')
 
-    // The message, not a summary of it, and written synchronously. A generator
-    // refuses for reasons the author can act on - a dialect mismatch, a model
-    // that would drop a framework table's columns - and each one names the fix.
-    // Logging `'generateMigrations failed'` with the error as a second argument
-    // threw all of that away; logging it properly then losing it to the exit
-    // before the logger flushed threw it away again.
-    if (resultFailed(result))
-      reportFailure(result, 'generateMigrations failed')
-  })
+      // `all`: the connected dialect, then each sibling corpus. Otherwise the
+      // named one, or the connected one when none is named.
+      const targets: Array<string | undefined> = options.dialect === 'all'
+        ? [undefined, ...await siblingMigrationDialects()]
+        : [options.dialect]
+
+      for (const dialect of targets) {
+        const result = await generateMigrations(dialect ? { dialect: dialect as never } : {})
+
+        // The message, not a summary of it, and written synchronously. A
+        // generator refuses for reasons the author can act on - a dialect
+        // mismatch, a model that would drop a framework table's columns - and
+        // each one names the fix. Logging `'generateMigrations failed'` with
+        // the error as a second argument threw all of that away; logging it
+        // properly then losing it to the exit before the logger flushed threw
+        // it away again.
+        if (resultFailed(result))
+          reportFailure(result, 'generateMigrations failed')
+      }
+
+      // An ordinary run moves only the connected dialect. Say which other
+      // corpora it left behind, rather than letting production find out
+      // (stacksjs/stacks#2949).
+      if (!options.dialect) {
+        for (const dialect of await dialectsBehindModels())
+          log.warn(`The ${dialect} migrations are behind these models. Run \`./buddy generate:migrations --dialect ${dialect}\` (or \`--dialect all\`) and commit the result.`)
+      }
+    })
 
   buddy
     .command('generate:core-symlink', 'Symlink `.framework` -> storage/framework. A shortcut for core developers.')

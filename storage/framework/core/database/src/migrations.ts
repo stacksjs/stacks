@@ -106,8 +106,27 @@ function sqliteDatabasePath(): string {
 }
 
 function getDriver(): string {
+  return generationDialect ?? attachedDriver()
+}
+
+/** The driver of the connection this process is attached to. */
+function attachedDriver(): string {
   return dbConfig.default || 'sqlite'
 }
+
+/** The dialects whose migrations can be generated, as `--dialect` spells them. */
+export const MIGRATION_DIALECTS = ['sqlite', 'mysql', 'singlestore', 'vitess', 'postgres'] as const
+export type GenerationDialect = typeof MIGRATION_DIALECTS[number]
+
+/**
+ * The dialect a `generateMigrations({ dialect })` run is generating for, when
+ * it is not the attached connection's.
+ *
+ * Generating needs only the models and that dialect's snapshot and corpus, not
+ * a database of that dialect, so an app that develops on SQLite can keep its
+ * Postgres corpus current without running Postgres (stacksjs/stacks#2949).
+ */
+let generationDialect: GenerationDialect | undefined
 
 /**
  * Narrow `DB_CONNECTION` to a SQL dialect the migration runner and
@@ -159,9 +178,25 @@ function getQbDialect(): 'sqlite' | 'mysql' | 'singlestore' | 'vitess' | 'postgr
 
 function migrationDirectory(dialect: string = getQbDialect()): string {
   return resolveMigrationDirectory(dialect, {
-    configured: (qbConfig as { migrationDir?: string }).migrationDir,
+    configured: userMigrationDir(),
     snapshotDir: qbSnapshotDir(),
   })
+}
+
+/**
+ * The migration directory the app configured, read before this module wrote
+ * its own.
+ *
+ * `configureQueryBuilder` writes the resolved directory into the shared config,
+ * and reading that back as the app's choice pinned every later dialect to the
+ * first one's corpus: after a Postgres generate, a MySQL one resolved to
+ * `database/migrations/postgres` and deduplicated against it, writing nothing
+ * (stacksjs/stacks#2949). Captured on first use, which is before the first write.
+ */
+let capturedMigrationDir: { value: string | undefined } | undefined
+function userMigrationDir(): string | undefined {
+  capturedMigrationDir ??= { value: (qbConfig as { migrationDir?: string }).migrationDir }
+  return capturedMigrationDir.value
 }
 
 /**
@@ -2654,6 +2689,11 @@ export interface GenerateMigrationsOptions {
    * `STACKS_MIGRATE_FROM_DB` env flag.
    */
   fromDb?: boolean
+  /**
+   * Generate into this dialect's corpus and snapshot instead of the attached
+   * connection's. No database of that dialect is needed.
+   */
+  dialect?: GenerationDialect
 }
 
 function resolveGenerateOptions(options: GenerateMigrationsOptions): { applyRenames?: boolean, fromDb?: boolean } {
@@ -2878,6 +2918,85 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
   // The app's config/database.ts, before anything reads the connection (see `dbConfig`).
   await ensureDatabaseConfigLoaded()
 
+  if (!options.dialect || options.dialect === attachedDriver())
+    return generateMigrationsForDialect(options)
+
+  if (!(MIGRATION_DIALECTS as readonly string[]).includes(options.dialect))
+    return err(new Error(`Unknown migration dialect "${options.dialect}". Use one of: ${MIGRATION_DIALECTS.join(', ')}.`))
+  if (resolveGenerateOptions(options).fromDb)
+    return err(new Error(`--from-db diffs against the attached ${attachedDriver()} database, so it cannot generate ${options.dialect} migrations.`))
+
+  return withGenerationDialect(options.dialect, () => generateMigrationsForDialect(options))
+}
+
+/** Run `work` against the attached dialect, even inside an override. */
+function withAttachedDialect<T>(work: () => T): T {
+  const previous = generationDialect
+  generationDialect = undefined
+  try {
+    return work()
+  }
+  finally {
+    generationDialect = previous
+  }
+}
+
+/** Run `work` as if the attached connection were `dialect`, then restore it. */
+async function withGenerationDialect<T>(dialect: GenerationDialect, work: () => Promise<T>): Promise<T> {
+  const previous = generationDialect
+  generationDialect = dialect
+  try {
+    return await work()
+  }
+  finally {
+    generationDialect = previous
+    configureQueryBuilder()
+  }
+}
+
+/**
+ * The dialects that keep a migration corpus besides the attached one, by the
+ * snapshot each keeps. The candidates for `--dialect all`.
+ */
+export async function siblingMigrationDialects(): Promise<GenerationDialect[]> {
+  await ensureDatabaseConfigLoaded()
+  configureQueryBuilder()
+  let files: string[]
+  try {
+    files = readdirSync(resolveSnapshotDir())
+  }
+  catch {
+    return []
+  }
+  return MIGRATION_DIALECTS.filter(dialect => dialect !== attachedDriver() && files.includes(`model-snapshot.${dialect}.json`))
+}
+
+/**
+ * The sibling dialects whose snapshot no longer matches the models: a
+ * `generate:migrations --dialect <name>` for each would write something.
+ *
+ * Reported after an ordinary generate, which only moves the attached dialect.
+ * Without it the other corpus fell behind silently, and every local gate stayed
+ * green while production was missing the tables (stacksjs/stacks#2949).
+ */
+export async function dialectsBehindModels(): Promise<GenerationDialect[]> {
+  const behind: GenerationDialect[] = []
+  for (const dialect of await siblingMigrationDialects()) {
+    const changed = await withGenerationDialect(dialect, async () => {
+      configureQueryBuilder()
+      const { modelsDir, skip } = prepareMigrationModelsDir()
+      if (skip)
+        return false
+      const result = await qbGenerateMigration(modelsDir, { dialect: getQbDialect(), dryRun: true })
+      return Boolean(result.hasChanges)
+    }).catch(() => false)
+    if (changed)
+      behind.push(dialect)
+  }
+  return behind
+}
+
+async function generateMigrationsForDialect(options: GenerateMigrationsOptions): Promise<Result<string, Error>> {
   try {
     // Step-progress at debug — buddy's intro/outro carries the user-
     // visible signal. On a no-op generate we want zero lines between
@@ -2900,6 +3019,19 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
     // persistGeneratedMigrations is textual and can't match across dialects), which
     // silently collides with the committed migrations. Refuse loudly instead of
     // clobbering; the fix is to set DB_CONNECTION (or add the `.env`).
+    // Another dialect's run must have a corpus of its own. Sharing the attached
+    // dialect's directory would put two dialects' SQL in one corpus.
+    const otherDialect = generationDialect !== undefined && generationDialect !== attachedDriver()
+    if (otherDialect) {
+      const attachedDir = withAttachedDialect(() => migrationDirectory())
+      if (migrationDirectory(dialect) === attachedDir) {
+        return err(new Error(
+          `Refusing to generate ${dialect} migrations into ${relativeMigrationDirectory(attachedDir)}, which is the ${attachedDriver()} corpus. `
+          + `Create ${relativeMigrationDirectory(join(attachedDir, dialect))}/ to give ${dialect} a corpus of its own, then retry.`,
+        ))
+      }
+    }
+
     const mismatch = detectSnapshotDialectMismatch(dialect)
     const flatMigrationDir = join(process.cwd(), 'database', 'migrations')
     if (mismatch && migrationDirectory(dialect) === flatMigrationDir) {
@@ -2946,12 +3078,19 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
     // anything. Keeping the qb call dry-run makes `persistGeneratedMigrations`
     // the single place that ever writes a migration file.
     const qbDialect = getQbDialect()
+    // With no snapshot, the library reconciles against the live database of
+    // that dialect. For a dialect this process is not attached to, that is
+    // whatever server the config names for it, possibly not the app's at all,
+    // so a new corpus is generated whole from the models instead
+    // (stacksjs/stacks#2949).
+    const full = otherDialect && !existsSync(snapshotPathFor(qbDialect))
     const result = await qbGenerateMigration(modelsDir, {
       dialect: qbDialect,
       vitessSharded: qbDialect === 'vitess' ? isVitessSharded(dbConfig.connections.vitess.sharded) : undefined,
       dryRun: true,
       applyRenames,
       fromDb,
+      ...(full ? { full: true } : {}),
     })
 
     // Never write a migration that drops a framework-managed column: those are
@@ -4504,6 +4643,12 @@ export async function claimedMigrationNames(dir: string = migrationDirectory()):
  * missing file stays missing rather than being opened (which creates it).
  */
 async function ledgerNamesForNumbering(timeoutMs = 5000): Promise<string[] | null> {
+  // The attached database's ledger records the files of ITS dialect's corpus,
+  // so it says nothing about another dialect's numbering. That corpus is
+  // numbered from its files and their git history, as when no database answers.
+  if (generationDialect && generationDialect !== attachedDriver())
+    return null
+
   try {
     if (getDialect() === 'sqlite' && !usesLibsql()) {
       const file = sqliteDatabasePath()
@@ -4553,6 +4698,7 @@ export function persistGeneratedMigrations(sqlStatements: string[], previousPlan
     return 0
 
   const migrationsDir = migrationDirectory()
+  log.debug(`[migration] Writing generated migrations into ${migrationsDir}`)
   try { require('node:fs').mkdirSync(migrationsDir, { recursive: true }) }
   catch { /* already exists */ }
 
