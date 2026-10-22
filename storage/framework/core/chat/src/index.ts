@@ -100,4 +100,4 @@ export type { TeamsConfig, TeamsMessage, TeamsAdaptiveCard, TeamsCardElement, Te
 
 /** Persistent first-party messaging between application users. */
 export { createMessenger, messagingChannel, MessagingError } from '@stacksjs/orm'
-export type { Messenger, MessagingOptions, DirectConversation, DirectMessage } from '@stacksjs/orm'
+export type { Messenger, MessagingOptions, DirectConversation, DirectMessage, DirectMessageAttachment } from '@stacksjs/orm'

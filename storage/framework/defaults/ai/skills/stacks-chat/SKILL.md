@@ -508,6 +508,38 @@ History is chronological, with `has_more` and a `before` message-id cursor.
 Receipts acknowledge only messages through the id actually displayed.
 `MessagingError.status` provides safe HTTP statuses for application handlers.
 
+### Attachments
+
+`send(id, body, retryKey, attachments?)` records files the application has
+already stored. The trait keeps a reference, never bytes: `file` is the
+application's own name for the upload (a disk path, a bucket key, an id), and
+`type`, `size`, `width` and `height` are optional. Resolving and authorizing
+the file stays with the application, so a disk, a bucket and a CDN look the
+same from here.
+
+```ts
+import type { DirectMessageAttachment } from '@stacksjs/chat'
+
+const photo: DirectMessageAttachment = { file: upload.key, type: 'image/jpeg', size: upload.size, width: 1200, height: 900 }
+await messenger.send(thread.id, '', retryKey, [photo])
+```
+
+- A photo with no caption is a message: `body` may be empty when there is at
+  least one attachment, and only then.
+- `message.attachments` is always an array, `[]` for text. Rows written before
+  the column existed read as `[]`.
+- A retry key covers the attachments too. The same key with a different file
+  is a different message and returns 409, rather than silently keeping the
+  first photo.
+- At most 10 attachments, 4000 characters once serialised. Keys the trait does
+  not know are dropped, so the column cannot become a second message body.
+- The column is `chat_messages.attachments`, added by `buddy migrate` to a
+  database created before it. A database that has not migrated yet still sends
+  text.
+- Notification previews are the application's to word: `onMessageSent`
+  receives the message with its attachments, so a photo with no caption can
+  read as "Sent a photo" rather than as an empty line.
+
 For the UI, STX ships `ChatInbox`, `ChatMessage`, and `ChatUnreadBadge` in
 `@stacksjs/components`. Browser stores import `createChat` from
 `@stacksjs/components/chat` and inject their authenticated HTTP transport.
