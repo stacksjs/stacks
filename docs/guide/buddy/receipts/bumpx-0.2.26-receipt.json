@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-22T23:02:44.083Z",
+  "sources": [
+    {
+      "repository": "stacksjs/bumpx",
+      "commit": "8e924a128fc9a779d972605862d5d50ca186adec",
+      "tag": "v0.2.26",
+      "gates": [
+        {
+          "runId": 39866466773,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "npm"
+          ]
+        },
+        {
+          "runId": 39866465979,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "test",
+            "lint",
+            "typecheck",
+            "publish-commit"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "@stacksjs/bumpx",
+          "version": "0.2.26",
+          "integrity": "sha512-fgoQd9bZf8u/7qY5kL2rJiHsP5wv03xu3MVb7/9c0aitTNbUu9+u/3Vk/eNUz/sKPiIuZFA0erE76Ca6nD8y/g==",
+          "tarball": "https://registry.npmjs.org/@stacksjs/bumpx/-/bumpx-0.2.26.tgz",
+          "bytes": 124428,
+          "filesSha256": "492aff8f353991d314de63a7b1e47086e630f3fe2b10be02255698e6c03077f1"
+        }
+      ],
+      "releaseCommand": "bun run release:patch",
+      "releaseScript": "./bumpx patch -r --push"
+    }
+  ],
+  "consumer": {
+    "lockfile": "bun.lock",
+    "sha256": "01bb99e58d0781f82a9b7aa5451f226e06ba38524e9f6ea587f1fe3c6d1a4e2d",
+    "bunVersion": "1.4.2",
+    "checks": [
+      {
+        "script": "deps:lockfile:check",
+        "exitCode": 0,
+        "outputSha256": "82daaab41a88934f81f10892734cacbe6e88873e884885310b1ff9ff66488b42"
+      },
+      {
+        "script": "typecheck",
+        "exitCode": 0,
+        "outputSha256": "6a3d58b37f327ccf04603618dcdc8bd09d6fd88d436f432e664667c8369d7b12"
+      },
+      {
+        "script": "typecheck:app",
+        "exitCode": 0,
+        "outputSha256": "2a057e73d0f276cfc5e9c8609b351fbb1e15e6b25e237ac453f6309045da3ec2"
+      },
+      {
+        "script": "typecheck:views",
+        "exitCode": 0,
+        "outputSha256": "6a83fff2afa42e1ae955d951b02debcee441fee8f35f01fe125c2ecee45bdb78"
+      }
+    ]
+  }
+}

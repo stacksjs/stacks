@@ -180,3 +180,12 @@ files. Craft 0.0.296, the lockfile range gate and all three type checks passed.
 All four required STX release jobs passed, including icon publication and
 native signing. The earlier receipt remains a historical verification of
 0.2.667; neither receipt qualifies the newer native graphics surface.
+
+The [Bumpx 0.2.26 plan](./receipts/bumpx-0.2.26-plan.json) and
+[installed-consumer receipt](./receipts/bumpx-0.2.26-receipt.json) record the
+release-history preflight correction used by Actions and Buddy. Exact-source
+CI and publication passed. The installed package matches its original public
+archive and complete file set. A shallow release now fails before release
+files or refs change; fetching full history enables the ordinary release and
+complete changelog. The framework lock and all three type checks passed.
+Native graphics and game fidelity remain independent acceptance gates.

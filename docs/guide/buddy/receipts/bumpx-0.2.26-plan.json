@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "repository": "stacksjs/bumpx",
+      "commit": "8e924a128fc9a779d972605862d5d50ca186adec",
+      "tag": "v0.2.26",
+      "gates": [
+        {
+          "runId": 39866466773,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "npm"
+          ]
+        },
+        {
+          "runId": 39866465979,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "test",
+            "lint",
+            "typecheck",
+            "publish-commit"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "@stacksjs/bumpx",
+          "version": "0.2.26",
+          "integrity": "sha512-fgoQd9bZf8u/7qY5kL2rJiHsP5wv03xu3MVb7/9c0aitTNbUu9+u/3Vk/eNUz/sKPiIuZFA0erE76Ca6nD8y/g=="
+        }
+      ]
+    }
+  ],
+  "checks": [
+    "deps:lockfile:check",
+    "typecheck",
+    "typecheck:app",
+    "typecheck:views"
+  ]
+}
