@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.272...v0.75.273)
+
+## 🔧 Chores
+
+- adopt verified Bumpx release history checks ([0397812](https://github.com/stacksjs/stacks/commit/0397812)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.271...v0.75.272)
 
 ## 📝 Documentation
