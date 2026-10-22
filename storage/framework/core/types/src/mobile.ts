@@ -232,6 +232,9 @@ export interface IosMobileConfig {
    * compiles those screens with stx into the app, every other path stays in
    * the web view, and a screen that is missing or throws falls back to the
    * page. A segment may be a parameter (`/m/workout/:id`), the last one `*`.
+   * A value may instead be a web view's path from the project root
+   * (`'/calendar': 'resources/views/calendar.stx'`): the same source is the
+   * web page and the native screen, compiled natively by stx.
    */
   nativeScreens?: Record<string, string>
   /** Where the native screens' `.stx` files live. Default `resources/native`. */

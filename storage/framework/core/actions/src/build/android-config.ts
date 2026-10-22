@@ -1,5 +1,6 @@
 import type { AndroidMobileConfig } from '@stacksjs/types'
 import { NATIVE_APP_ROUTE, normalizeMobileUrl, toCraftCrashReporting } from './ios-config'
+import { nativeScreenRoutes } from './native-screens'
 
 export interface CraftAndroidConfig {
   [key: string]: unknown
@@ -150,7 +151,7 @@ export function toCraftAndroidConfig(config: AndroidMobileConfig): CraftAndroidC
     googleServicesFile: config.googleServicesFile,
     mapsApiKey: config.mapsApiKey,
     renderer: config.renderer,
-    nativeScreens: native ? config.nativeScreens : undefined,
+    nativeScreens: native ? nativeScreenRoutes(config) : undefined,
     nativeApp: native && config.nativeApp ? NATIVE_APP_ROUTE : undefined,
     tabs: native ? config.tabs : undefined,
     backgroundRefresh: native ? config.backgroundRefresh : undefined,

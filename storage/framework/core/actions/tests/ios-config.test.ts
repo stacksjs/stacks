@@ -3,7 +3,8 @@ import { describe, expect, it } from 'bun:test'
 import { mkdtemp, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { compileNativeScreens, nativeScreenFiles } from '../src/build/native-screens'
+import { compileNativeScreens, nativeScreenFiles, nativeScreenName } from '../src/build/native-screens'
+import { toCraftAndroidConfig } from '../src/build/android-config'
 import { assertCraftSupportsAppShortcuts, assertCraftSupportsNativeFonts, resolveNativeFonts, assertCraftSupportsCapabilities, normalizeMobileUrl, portablePaths, resolveMobilePath, resolveSwipeNavigation, toCraftIosConfig, unsupportedCraftCapabilities, validateIosMobileConfig, withActivityTypes, writeIosActivityTypes } from '../src/build/ios-config'
 
 describe('build-owned iOS shortcuts', () => {
@@ -157,6 +158,27 @@ describe('iOS mobile build configuration', () => {
     expect(result?.outFile).toBe(join(root, 'out', 'native-screens.js'))
     expect(await compileNativeScreens({}, root, join(root, 'out'), async () => { throw new Error('not called') })).toBeNull()
     expect(() => nativeScreenFiles({ nativeScreens: { '/m/calendar': 'Calendar' } }, root)).toThrow('Calendar')
+  })
+
+  it('opens a web view as a native screen, named after its path, beside screens of the old kind', async () => {
+    // One source: a route can name the web page's own view instead of a
+    // separately written screen, and an app moves over a route at a time.
+    const root = await mkdtemp(join(tmpdir(), 'stacks-native-views-'))
+    await Bun.write(join(root, 'resources/native/Today.stx'), '<View />')
+    await Bun.write(join(root, 'resources/views/calendar.stx'), '<div>Calendar</div>')
+    await Bun.write(join(root, 'resources/views/gym/classes.stx'), '<div>Classes</div>')
+    const nativeScreens = { '/m': 'Today', '/m/calendar': 'resources/views/calendar.stx', '/calendar': 'resources/views/calendar.stx', '/gym/classes': 'resources/views/gym/classes.stx' }
+    expect(nativeScreenName('resources/views/gym/classes.stx')).toBe('views-gym-classes')
+    expect(nativeScreenName('Today')).toBe('Today')
+    expect(nativeScreenFiles({ nativeScreens }, root)).toEqual({
+      'Today': join(root, 'resources/native/Today.stx'),
+      'views-calendar': join(root, 'resources/views/calendar.stx'),
+      'views-gym-classes': join(root, 'resources/views/gym/classes.stx'),
+    })
+    const routes = { '/m': 'Today', '/m/calendar': 'views-calendar', '/calendar': 'views-calendar', '/gym/classes': 'views-gym-classes' }
+    expect(toCraftIosConfig({ appName: 'HQ', bundleId: 'training.hq.app', url: 'https://hq.training/m', nativeScreens }).nativeScreens).toEqual(routes)
+    expect(toCraftAndroidConfig({ appName: 'HQ', packageName: 'training.hq.app', url: 'https://hq.training/m', renderer: 'native', nativeScreens } as any).nativeScreens).toEqual(routes)
+    expect(() => nativeScreenFiles({ nativeScreens: { '/missing': 'resources/views/missing.stx' } }, root)).toThrow('resources/views/missing.stx')
   })
 
   it('compiles a bundle per route for a Craft that runs each screen from its own file', async () => {

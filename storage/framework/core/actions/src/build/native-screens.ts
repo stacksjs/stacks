@@ -29,18 +29,38 @@ type CompileNativeBundle = (options: {
 }) => Promise<NativeBundleResult>
 
 /**
+ * The screen name a `nativeScreens` value stands for. A value is either a
+ * screen's name in `nativeScreensDir` (`Today`) or, so the web views can be the
+ * app's screens too, a view's path from the project root
+ * (`resources/views/calendar.stx`), named after it (`views-calendar`): one
+ * source for the web page and the native screen.
+ */
+export function nativeScreenName(value: string): string {
+  if (!value.endsWith('.stx')) return value
+  return value.replace(/\.stx$/, '').replace(/^resources\//, '').replace(/^\.?\//, '').replace(/[^\w-]+/g, '-').replace(/^-+|-+$/g, '')
+}
+
+/** `nativeScreens` as Craft reads it: each path to the name of the screen it opens. */
+export function nativeScreenRoutes(config: Pick<IosMobileConfig, 'nativeScreens'>): Record<string, string> | undefined {
+  if (!config.nativeScreens) return undefined
+  return Object.fromEntries(Object.entries(config.nativeScreens).map(([path, value]) => [path, nativeScreenName(value)]))
+}
+
+/**
  * The `.stx` file each native screen is drawn from: one per screen name in
- * `nativeScreens`, in `nativeScreensDir` (`resources/native` by default).
- * A screen named twice, for two paths, is compiled once.
+ * `nativeScreens`, in `nativeScreensDir` (`resources/native` by default), or
+ * the view a path names (`resources/views/calendar.stx`). A screen named
+ * twice, for two paths, is compiled once.
  */
 export function nativeScreenFiles(config: Pick<IosMobileConfig, 'nativeScreens' | 'nativeScreensDir'>, root: string, section: 'ios' | 'android' = 'ios'): Record<string, string> {
   const dir = resolve(root, config.nativeScreensDir ?? 'resources/native')
   const files: Record<string, string> = {}
-  for (const name of Object.values(config.nativeScreens ?? {})) {
+  for (const value of Object.values(config.nativeScreens ?? {})) {
+    const name = nativeScreenName(value)
     if (files[name]) continue
-    const file = join(dir, `${name}.stx`)
+    const file = value.endsWith('.stx') ? resolve(root, value) : join(dir, `${value}.stx`)
     if (!existsSync(file))
-      throw new Error(`${section}.nativeScreens names the screen "${name}", but ${file} does not exist.`)
+      throw new Error(`${section}.nativeScreens names the screen "${value}", but ${file} does not exist.`)
     files[name] = file
   }
   return files

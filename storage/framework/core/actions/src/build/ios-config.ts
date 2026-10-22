@@ -2,6 +2,7 @@ import type { IosMobileConfig, MobileConfig, MobileCrashReportingConfig } from '
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join, relative, resolve } from 'node:path'
 import { spotlightActivityTypes } from '@stacksjs/mobile'
+import { nativeScreenRoutes } from './native-screens'
 
 export interface CraftIosConfig {
   [key: string]: unknown
@@ -279,7 +280,7 @@ export function toCraftIosConfig(config: IosMobileConfig): CraftIosConfig {
     limitNavigationsToAppBoundDomains: config.limitNavigationsToAppBoundDomains ?? (declaresAppBoundDomains || undefined),
     associatedDomains: config.associatedDomains,
     renderer: config.renderer,
-    nativeScreens: config.nativeScreens,
+    nativeScreens: nativeScreenRoutes(config),
     nativeApp: config.nativeApp ? NATIVE_APP_ROUTE : undefined,
     nativeScriptThread: config.nativeScriptThread,
     tabs: config.tabs,
