@@ -73,7 +73,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "craft-native": ">=0.0.290"
+    "craft-native": ">=0.0.296"
   },
   "devDependencies": {
     "@stacksjs/build": "workspace:*",

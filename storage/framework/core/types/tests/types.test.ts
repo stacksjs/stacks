@@ -1,10 +1,46 @@
 import { describe, expect, test } from 'bun:test'
 import { existsSync } from 'node:fs'
+import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import process from 'node:process'
 
 const typesDir = join(import.meta.dir, '..', 'src')
 
 describe('types module', () => {
+  test('UiConfig types the actual frontend config and Stacks default view selection', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'stacks-ui-config-'))
+    try {
+      const file = join(directory, 'config.ts')
+      await writeFile(file, `
+        import type { UiConfig } from ${JSON.stringify(join(typesDir, 'ui'))}
+        const config = {
+          root: 'resources', stateDir: 'storage/framework/stx',
+          plugins: ['@stacksjs/components', ['./plugin.ts', { enabled: true }]],
+          app: { head: { title: 'A native Stacks application' } },
+          defaultViews: ['errors'], imageWarmup: 'auto', imageWarmupBindBudgetMs: 0,
+        } satisfies UiConfig
+        // @ts-expect-error A state directory must be a path.
+        const invalidRoot = { stateDir: false } satisfies UiConfig
+        // @ts-expect-error Plugin entries must follow the engine's contract.
+        const invalidPlugin = { plugins: [42] } satisfies UiConfig
+        // @ts-expect-error The engine accepts boolean or 'auto' image warm-up.
+        const invalidWarmup = { imageWarmup: 'disabled' } satisfies UiConfig
+        // @ts-expect-error A bind budget is numeric.
+        const invalidBudget = { imageWarmupBindBudgetMs: 'slow' } satisfies UiConfig
+        // @ts-expect-error Framework default views are a boolean or a subtree list.
+        const invalidViews = { defaultViews: 'all' } satisfies UiConfig
+        void [config, invalidRoot, invalidPlugin, invalidWarmup, invalidBudget, invalidViews]
+      `)
+      const child = Bun.spawn([process.execPath, '--bun', 'tsc', '--ignoreConfig', '--noEmit', '--module', 'ESNext', '--target', 'ESNext', '--moduleResolution', 'bundler', '--types', 'bun', '--skipLibCheck', file], {
+        cwd: join(typesDir, '../../../../..'), stdout: 'pipe', stderr: 'pipe', signal: AbortSignal.timeout(4000),
+      })
+      const [code, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
+      expect(code, `TypeScript exit ${code}: ${stdout}${stderr}`).toBe(0)
+    }
+    finally { await rm(directory, { recursive: true, force: true }) }
+  })
+
   test('types index file exists', () => {
     expect(existsSync(join(typesDir, 'index.ts'))).toBe(true)
   })

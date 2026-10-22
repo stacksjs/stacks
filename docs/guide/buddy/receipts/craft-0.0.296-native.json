@@ -1,0 +1,43 @@
+{
+  "repository": "craft-native/craft",
+  "tag": "v0.0.296",
+  "commit": "5ae0851aa5f5275ebb838bea0fafe163f150811d",
+  "manifestSha256": "62d2d82dc1acedd9fb5785b478ed7b3ac6c64e1c53b0b347af5e7d81e758b9cf",
+  "assets": [
+    {
+      "name": "craft-darwin-arm64.zip",
+      "bytes": 4826623,
+      "sha256": "953840f542a37796dda31ec8eee784ca1a5dbc3378f106f5337841388b317612",
+      "githubAssetId": 666547281
+    },
+    {
+      "name": "craft-darwin-x64.zip",
+      "bytes": 5346056,
+      "sha256": "802c2c6a97fc0641165d045c3520520fa8832285d5c19fb061c0d7874eec9d7a",
+      "githubAssetId": 666547355
+    },
+    {
+      "name": "craft-linux-x64.zip",
+      "bytes": 5550357,
+      "sha256": "673c2a728dbe652a0575656910b5b667e906776ba14769ce771e15d317a47a5c",
+      "githubAssetId": 666581056
+    },
+    {
+      "name": "craft-windows-x64.zip",
+      "bytes": 5818801,
+      "sha256": "feb067dd0d22b9ff661c88b7b5c22985b327786629c68e7eeb2c26c4ab630f07",
+      "githubAssetId": 666581097
+    }
+  ],
+  "execution": {
+    "platform": "darwin-arm64",
+    "binarySha256": "dc51398fd28acfb67201e34fb2daa2e7a74684ec45b2bd69f8036beb9ea11834",
+    "arguments": [
+      "--version"
+    ],
+    "exitCode": 0,
+    "stdout": "craft version 0.0.296\nBuilt with Zig 0.18.0-dev.146+35accc06e\nPlatform: macOS\n\n",
+    "stderr": "",
+    "executedAt": "2026-10-22T18:35:41.246573+00:00"
+  }
+}

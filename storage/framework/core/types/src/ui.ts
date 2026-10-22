@@ -1,3 +1,5 @@
+import type { StxOptions } from '@stacksjs/stx'
+
 // Local mirror of the CSS engine's config shape so we don't bring
 // @stacksjs/ts-css into @stacksjs/types as a hard dependency. Apps that
 // import these types only need the structural surface
@@ -34,7 +36,7 @@ export interface WebFontMeta {
  * hover any of the options below and the definitions will be provided. In case you
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export interface UiOptions {
+export interface UiOptions extends StxOptions {
   /**
    * Which of the framework's default views to serve, read by `dev:views` and
    * the production server.
@@ -51,28 +53,12 @@ export interface UiOptions {
   defaultViews?: boolean | string[]
 
   /**
-   * Skip the startup pass that derives image placeholders and builds the
-   * responsive delivery catalog.
-   *
-   * Declared here for the same reason as `defaultViews`: `config/ui.ts` is the
-   * stx config (stx resolves `{ name: 'stx', alias: 'ui' }`), so this is where
-   * an app sets it, but it is typed on `ServeOptions` in bun-plugin-stx, which
-   * is the package that reads it. An app setting it had to widen the type
-   * inline to be allowed to.
-   *
-   * That gap is not cosmetic. The option is absent from both `UiOptions` and
-   * `StxOptions`, so grepping `node_modules/@stacksjs` for it finds nothing
-   * and it reads as dead config. On chrisbreuer.me it was deleted on exactly
-   * that reasoning and took the site down: the server runs the pass before it
-   * binds, and over 120 gallery files that is 35s to first response against
-   * 1.1s with it set, at 918 MB peak. The release could not clear its health
-   * gate, and because the current symlink had already moved the site served
-   * 502 until a previous release was started by hand.
-   *
-   * Leave it unset unless the app renders no `<StxImage>` and no `@image`, in
-   * which case every variant the pass derives goes unrequested.
+   * Startup image placeholders and responsive delivery catalog, following
+   * stx's config contract. 'auto' runs the pass when templates consume it;
+   * true forces it and false disables it. The server bounds its wait before
+   * binding with imageWarmupBindBudgetMs, inherited from the same contract.
    */
-  imageWarmup?: boolean
+  imageWarmup?: StxOptions['imageWarmup']
 
   /**
    * How long a request will wait on the image warmup pass before being served
