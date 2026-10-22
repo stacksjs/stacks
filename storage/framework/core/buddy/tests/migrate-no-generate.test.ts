@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { cli } from '@stacksjs/clapp'
+import { generatesMigrations } from '../src/commands/migrate'
 
 /**
  * `buddy migrate --no-generate` applies committed migrations and derives none.
@@ -20,6 +22,10 @@ import { join } from 'node:path'
  * These assert the wiring rather than the migration engine: that the flag
  * exists, that it crosses the action-subprocess boundary the same way
  * `--from-db` and `--no-rename` do, and that the action honours it.
+ *
+ * And since stacksjs/stacks#2948, the default: with neither flag, only an
+ * interactive run generates. An app that put a plain `migrate` in its own
+ * deploy step authored and applied unreviewed migrations on production.
  */
 
 const root = join(import.meta.dir, '../../../../..')
@@ -32,8 +38,30 @@ describe('buddy migrate --no-generate', () => {
   const command = () => read('storage/framework/core/buddy/src/commands/migrate.ts')
   const action = () => read('storage/framework/core/actions/src/migrate/database.ts')
 
-  it('is offered as a flag on the migrate command', () => {
-    expect(command()).toContain(`.option('--no-generate'`)
+  it('is decided by the flag when one is passed, and by the terminal otherwise', () => {
+    expect(generatesMigrations(true, false)).toBe(true)
+    expect(generatesMigrations(false, true)).toBe(false)
+    expect(generatesMigrations(undefined, true)).toBe(true)
+    // CI, a deploy step, anything without a person at the terminal.
+    expect(generatesMigrations(undefined, false)).toBe(false)
+  })
+
+  it('declares --generate alone, so "not passed" stays distinguishable from "asked for"', () => {
+    const source = command()
+    expect(source).toContain(`.option('--generate'`)
+    // Declaring `--no-generate` as well makes the parser default the value to
+    // true, and then a deploy that passed nothing would generate again.
+    expect(source).not.toContain(`.option('--no-generate'`)
+
+    const parsed: Array<boolean | undefined> = []
+    for (const argv of [[], ['--generate'], ['--no-generate']]) {
+      const program = cli('probe')
+      program.command('migrate', '').option('--generate', '').action((options: { generate?: boolean }) => {
+        parsed.push(options.generate)
+      })
+      program.parse(['bun', 'probe', 'migrate', ...argv], { run: true })
+    }
+    expect(parsed).toEqual([undefined, true, false])
   })
 
   it('crosses the subprocess boundary by env, like the other migrate flags', () => {
@@ -42,16 +70,8 @@ describe('buddy migrate --no-generate', () => {
     // threaded through `process.env` for this reason and this follows them.
     const source = command()
     expect(source).toContain('STACKS_MIGRATE_NO_GENERATE')
-    expect(source).toContain('options.generate === false')
-  })
-
-  it('sets the variable only when the flag is passed', () => {
-    // cac gives `generate: true` by default for a `--no-x` option, so keying
-    // off truthiness would disable generation on every ordinary `buddy
-    // migrate` — turning the local workflow inside out.
-    const source = command()
-    const guard = source.slice(source.indexOf('STACKS_MIGRATE_NO_GENERATE') - 200, source.indexOf('STACKS_MIGRATE_NO_GENERATE'))
-    expect(guard).toContain('=== false')
+    const guard = source.slice(source.indexOf('STACKS_MIGRATE_NO_GENERATE') - 300, source.indexOf('STACKS_MIGRATE_NO_GENERATE'))
+    expect(guard).toContain('generatesMigrations(options.generate, hasTTY && !isCI)')
   })
 
   it('is honoured by the action that generates and applies', () => {
@@ -64,16 +84,16 @@ describe('buddy migrate --no-generate', () => {
   it('does not preview an unrequested model diff before applying committed SQL', () => {
     const source = command()
     const gate = source.lastIndexOf('confirmDestructiveMigrations({')
-    const conditional = source.lastIndexOf('if (options.generate !== false)', gate)
+    const conditional = source.lastIndexOf('if (generate)', gate)
 
     expect(gate).toBeGreaterThan(-1)
     expect(conditional).toBeGreaterThan(-1)
     expect(gate - conditional).toBeLessThan(500)
   })
 
-  it('still generates by default', () => {
+  it('still generates when the action is not told otherwise', () => {
     // Models being the source of truth is the point of the local workflow, so
-    // the flag has to be opt-in.
+    // an interactive run, which sets nothing, generates.
     const source = action()
     const index = source.indexOf('const generated =')
     expect(source.slice(index, index + 120)).toContain('skipGeneration ?')

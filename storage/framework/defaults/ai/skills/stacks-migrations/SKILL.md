@@ -18,7 +18,9 @@ Schema change management via migration files.
 ## CLI Commands
 
 ```bash
-buddy migrate                       # run pending migrations
+buddy migrate                       # run pending migrations (and generate new ones from the models, in an interactive terminal only)
+buddy migrate --generate            # generate from the models even when not interactive
+buddy migrate --no-generate         # apply committed migrations only, even in a terminal
 buddy migrate --diff                # show SQL without running
 buddy migrate --auth                # include auth tables
 buddy migrate:fresh                 # drop ALL tables and re-migrate
@@ -31,6 +33,13 @@ buddy migrate:status                # corpus vs ledger vs live schema; lists han
 buddy migrate:align                 # plan repairs of a database that drifted from the models
 buddy migrate:align --apply         # rename legacy indexes, add missing indexes/FKs/columns, widen losslessly
 ```
+
+A non-interactive `buddy migrate` (CI, a deploy step) generates nothing unless
+given `--generate` (#2948). Generating there authored a migration nobody
+reviewed and applied it in the same run, and on a deploy box the file then
+vanished with the release directory. Generate locally, commit the files, and let
+the deploy apply them; add `--strict` in CI to fail when the models have drifted
+from the committed migrations.
 
 ## Creating a Schema Migration
 

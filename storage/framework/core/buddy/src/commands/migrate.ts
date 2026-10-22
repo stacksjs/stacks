@@ -374,6 +374,18 @@ async function reportHandWrittenMigrations(options: { list?: boolean } = {}): Pr
  * to stop rather than a message to scroll past. Deploys keep the warning:
  * repairing drift is the operator's to schedule.
  */
+/**
+ * Whether a `buddy migrate` run derives new migrations from the models.
+ *
+ * `--generate` and `--no-generate` decide outright. With neither, only an
+ * interactive run generates: there a developer sees the files appear and
+ * commits them, while in CI or on a deploy box a generated file is a schema
+ * change nobody reviewed, applied in the same breath (stacksjs/stacks#2948).
+ */
+export function generatesMigrations(flag: boolean | undefined, interactive: boolean): boolean {
+  return flag ?? interactive
+}
+
 function strictMode(options: { strict?: boolean }): boolean {
   return options.strict === true || process.env.STACKS_MIGRATE_STRICT === '1'
 }
@@ -676,7 +688,7 @@ export function migrate(buddy: CLI): void {
     force: 'Apply destructive changes (drop column/table, lossy type change) without confirmation',
     fromDb: 'Diff against the live database schema instead of the snapshot (self-heal drift)',
     noRename: 'Treat renamed columns as drop + add instead of a data-preserving rename',
-    noGenerate: 'Apply committed migration files only; do not generate new ones from your models',
+    generate: 'Generate migrations from your models before applying them. The default in an interactive terminal; a non-interactive run (CI, a deploy) applies committed files only unless this is passed. --no-generate never generates',
   }
 
   buddy
@@ -692,7 +704,11 @@ export function migrate(buddy: CLI): void {
     .option('--create-database', 'Create the database if it does not exist, without asking', { default: false })
     .option('--from-db', descriptions.fromDb, { default: false })
     .option('--no-rename', descriptions.noRename)
-    .option('--no-generate', descriptions.noGenerate)
+    // `--generate` alone, not also `--no-generate`: declaring both makes clapp
+    // default the value to true, and "not passed" has to stay distinguishable
+    // from "asked for" (see `generatesMigrations`). `--no-generate` still
+    // parses, to false.
+    .option('--generate', descriptions.generate)
     .option('--strict', 'Fail when the schema has drifted from the models, a migration is git-ignored or hand-written, or two migrations share a number (for CI)', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MigrateOptions & { auth?: boolean, createDatabase?: boolean, force?: boolean, fromDb?: boolean, rename?: boolean, generate?: boolean, strict?: boolean, dryRun?: boolean, pretend?: boolean }) => {
@@ -749,8 +765,17 @@ export function migrate(buddy: CLI): void {
       // happens to be holding. Those are not always the same SQL — a model
       // diff can produce a column type, a nullability or a default that nobody
       // looked at — and a production database is the wrong place to find out.
-      if (options.generate === false)
+      //
+      // Not passed at all, it follows whether a person is at the terminal: a
+      // non-interactive `migrate` authored migration files on a production box
+      // and applied them in the same run, so a schema change nobody reviewed
+      // reached production and its file vanished with the release directory
+      // (stacksjs/stacks#2948).
+      const generate = generatesMigrations(options.generate, hasTTY && !isCI)
+      if (!generate)
         process.env.STACKS_MIGRATE_NO_GENERATE = '1'
+      if (options.generate === undefined && !generate)
+        log.info('Applying committed migrations only: this run is not interactive, so nothing is generated from your models. Run `./buddy generate:migrations` and commit the result, or pass --generate.')
       // The runner in the action subprocess fails a batch that leaves the
       // schema short of the models (bun-query-builder's post-migrate audit).
       if (options.strict)
@@ -900,7 +925,7 @@ export function migrate(buddy: CLI): void {
       // is no model diff to approve. Previewing one anyway made every fresh
       // release directory look like it had no baseline and blocked deployment
       // before a single committed migration could run.
-      if (options.generate !== false) {
+      if (generate) {
         const proceed = await confirmDestructiveMigrations({ force: options.force, fromDb: options.fromDb, applyRenames })
         if (!proceed) {
           lock.release()

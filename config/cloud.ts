@@ -866,7 +866,9 @@ export const tsCloud: TsCloudConfig = {
         'bun build --production --splitting --conditions=development --target=bun --external=localtunnels --external=localtunnels/cloud --external=@stacksjs/bun-queue --external=meilisearch storage/framework/core/buddy/src/serve-entry.ts --outdir storage/framework/runtime/production --entry-naming serve.js --chunk-naming chunks/[name]-[hash].js',
         // `migrate` catches a database and snapshot that predate a framework
         // model rename (Driver -> Courier, stacksjs/stacks#2382) up to the new
-        // names before it diffs, so this no longer needs a script of its own.
+        // names before it applies, so this no longer needs a script of its own.
+        // Run here it is non-interactive, so it applies the committed
+        // migrations and generates none (stacksjs/stacks#2948).
         'bun --conditions development storage/framework/core/buddy/src/cli.ts migrate',
       ],
       // PORT_API is how this site's same-origin `/api` proxy finds the API,
