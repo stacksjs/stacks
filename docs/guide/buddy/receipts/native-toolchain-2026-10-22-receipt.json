@@ -1,0 +1,173 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-22T20:24:29.341Z",
+  "sources": [
+    {
+      "repository": "craft-native/craft",
+      "commit": "5ae0851aa5f5275ebb838bea0fafe163f150811d",
+      "tag": "v0.0.296",
+      "gates": [
+        {
+          "runId": 39804169474,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "validate release identity",
+            "accept exact release source",
+            "run release source suite / Android software emulator",
+            "accept exact native runtimes",
+            "run release source suite / create-craft",
+            "run release native suite / iOS Zig runtime slice",
+            "run release native suite / Harness unit tests",
+            "run release native suite / Android emulator",
+            "run release source suite / ts-maps",
+            "run release native suite / android-navigation (34)",
+            "run release native suite / iOS native UI (uikit)",
+            "run release source suite / typescript-sdk",
+            "run release native suite / iOS simulator",
+            "release-sbom / vulnerability-scan",
+            "run release native suite / iOS hybrid navigation",
+            "run release native suite / iOS native UI (navigation-unit)",
+            "run release native suite / media-cache / ios",
+            "run release source suite / ios-builder",
+            "run release native suite / iOS native UI (navigation-ui-core)",
+            "run release native suite / media-cache / android",
+            "run release source suite / windows-multi-window",
+            "run release native suite / media-cache / sdk",
+            "run release source suite / android-builder",
+            "run release source suite / zig-core (ubuntu-latest)",
+            "run release source suite / ios-native-templates",
+            "run release source suite / lint",
+            "run release native suite / iOS native UI (navigation-ui-controls)",
+            "run release source suite / zig-core (macos-latest)",
+            "run release native suite / android-navigation (35)",
+            "run release native suite / Mobile E2E summary",
+            "run release source suite / integration",
+            "verify and stage npm packages",
+            "release-sbom / generate",
+            "run release source suite / publish-commit",
+            "pantry (linux-x86-64)",
+            "pantry (darwin-arm64)",
+            "verify downloaded darwin-x64",
+            "verify downloaded darwin-arm64",
+            "verify downloaded linux-x64",
+            "verify release assets",
+            "attach and verify release SBOMs",
+            "verify downloaded windows-x64",
+            "publish complete verified release",
+            "npm",
+            "publish verified Zig package to pantry",
+            "notify registry and channel after publication"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "craft-native",
+          "version": "0.0.296",
+          "integrity": "sha512-wZJ1RoTqs4cGuguj5yobojCmZSguTJr0dr16l2066Sn1Vbn2lPr281WkoLltoldwzkpzWc/0pi9J8TFnHzdJ8Q==",
+          "tarball": "https://registry.npmjs.org/craft-native/-/craft-native-0.0.296.tgz",
+          "bytes": 1322229,
+          "filesSha256": "b49601bc4670cd0dd267754875e4d990f7c445bf646ff72a74153a2dd4cad927"
+        }
+      ],
+      "releaseCommand": "bun run release:patch",
+      "releaseScript": "bun scripts/release-version.ts --preflight && bun x --bun @stacksjs/bumpx patch --recursive --commit --tag --push --yes --no-changelog --execute \"bun scripts/release-version.ts --pending && bun scripts/generate-release-changelog.ts && git add CHANGELOG.md\""
+    },
+    {
+      "repository": "stacksjs/stx",
+      "commit": "0f6cb4113b63f572035091e3396f27d4c9b80316",
+      "tag": "v0.2.667",
+      "gates": [
+        {
+          "runId": 39827372435,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "Verify native signing on macOS 15",
+            "Verify the exact release source",
+            "npm",
+            "icons"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "stx-router",
+          "version": "0.2.667",
+          "integrity": "sha512-/eS6sko0uYINM4qOumYQYiPJa/mNiiTDgJgVZMRD30gwK1Ns7fu76j4WADH2vwjRgyS9rqdNOFziOcFbM0mpuw==",
+          "tarball": "https://registry.npmjs.org/stx-router/-/stx-router-0.2.667.tgz",
+          "bytes": 82882,
+          "filesSha256": "5c7b9455bd586068c26058cc4f5578306811941b905cdfe847265a35489f635d"
+        },
+        {
+          "name": "@stacksjs/desktop",
+          "version": "0.2.667",
+          "integrity": "sha512-pXtaX2isTELmYjAkPgLEtoX6aEMZXp56aYN8WTRdDyqH1kFOkPkGxyv3Sfsodsqf2++Vb6riO9gsgfs4AOK2Ow==",
+          "tarball": "https://registry.npmjs.org/@stacksjs/desktop/-/desktop-0.2.667.tgz",
+          "bytes": 108746,
+          "filesSha256": "dce9d95ae775ee1771f7edf3bdd88b4624c11548e278be5c4f33c811d88f14cb"
+        },
+        {
+          "name": "@stacksjs/sanitizer",
+          "version": "0.2.667",
+          "integrity": "sha512-hshaN9sVa6wPqMZ3aqyqwknTVcAQDXAkK4HvyICPw7RDxT/R3WUIHBEB9HSIZDd8qGnMAXOzyQok9xoZa1bnnA==",
+          "tarball": "https://registry.npmjs.org/@stacksjs/sanitizer/-/sanitizer-0.2.667.tgz",
+          "bytes": 4743,
+          "filesSha256": "1471d5bf6c578787c41159e5b6eac765409e6ff9e5fce7ebecb09de083c89d84"
+        },
+        {
+          "name": "bun-plugin-stx",
+          "version": "0.2.667",
+          "integrity": "sha512-UeUK5iz+2g77ym5Aw3COSetfmOqylX1qmowaS+VKLZddu1BpAU4El2PiE2frYoFtddjp4PfxOblnz7CcwZ32pw==",
+          "tarball": "https://registry.npmjs.org/bun-plugin-stx/-/bun-plugin-stx-0.2.667.tgz",
+          "bytes": 124141,
+          "filesSha256": "fa8d69263fa3d3d0d1b3404bcec530a26e51a2c716f647dcde065938341454da"
+        },
+        {
+          "name": "@stacksjs/components",
+          "version": "0.2.667",
+          "integrity": "sha512-zVU4Ce5CyoO6f756JIeJZemf9uvhdy2bsRu8E81c/KgvA+KgYszeFvIVWfa2bA6gRM75wymfgVEaKUdTssT3lQ==",
+          "tarball": "https://registry.npmjs.org/@stacksjs/components/-/components-0.2.667.tgz",
+          "bytes": 558705,
+          "filesSha256": "9520d2d42b4df522a213e5c58c6637b683297527583221dc0c61ccd1acd6d2cf"
+        },
+        {
+          "name": "@stacksjs/stx",
+          "version": "0.2.667",
+          "integrity": "sha512-WnPqKzMV/AKMLpWdpK5QDyL8hCHs9x8eljSN35EvOORpNfiqfSCOpm5KcqPxKRqDM3j8I3Ufr86EyMmXia/a/g==",
+          "tarball": "https://registry.npmjs.org/@stacksjs/stx/-/stx-0.2.667.tgz",
+          "bytes": 2282207,
+          "filesSha256": "d161e838f15c3c586f2cec2cf386e12f1aad01185eca839da86d80fa6876073d"
+        }
+      ],
+      "releaseCommand": "bun run release:patch",
+      "releaseScript": "bun x --bun @stacksjs/bumpx patch --recursive --yes"
+    }
+  ],
+  "consumer": {
+    "lockfile": "bun.lock",
+    "sha256": "3cabaed1968ce022aa6d04598ad05f8bb06523546d110a5cbc8258939e6ca976",
+    "bunVersion": "1.4.2",
+    "checks": [
+      {
+        "script": "deps:lockfile:check",
+        "exitCode": 0,
+        "outputSha256": "65f20fc2c62390e284c6e82efa29acb1091c8522fe65d57198bfb9f35d54bbb0"
+      },
+      {
+        "script": "typecheck",
+        "exitCode": 0,
+        "outputSha256": "71c7058d0dfcd53f19bb92565b921080e6b708d17891c0faec729de548bb08eb"
+      },
+      {
+        "script": "typecheck:app",
+        "exitCode": 0,
+        "outputSha256": "2a057e73d0f276cfc5e9c8609b351fbb1e15e6b25e237ac453f6309045da3ec2"
+      },
+      {
+        "script": "typecheck:views",
+        "exitCode": 0,
+        "outputSha256": "6a83fff2afa42e1ae955d951b02debcee441fee8f35f01fe125c2ecee45bdb78"
+      }
+    ]
+  }
+}

@@ -156,3 +156,18 @@ The [native archive readback](./receipts/toolchain-2026-10-21-native.json) recor
 all twelve DTSX and seven Pantry archive hashes and an actual macOS arm64 Pantry
 version probe. Archive checks do not establish execution on other platforms.
 The framework's hosted Windows build and process tests remain a separate gate.
+
+The [native toolchain plan](./receipts/native-toolchain-2026-10-22-plan.json)
+and [executed receipt](./receipts/native-toolchain-2026-10-22-receipt.json)
+verify the installed Craft 0.0.296 SDK and six stx 0.2.667 packages against
+their independently retained original archive identities. Craft's complete
+release and all four required stx jobs passed. Installed package files, the
+lockfile range gate, full framework types, application types and view types
+passed verification. The [Craft native receipt](./receipts/craft-0.0.296-native.json)
+records four original release archives and execution of the downloaded
+Darwin arm64 CLI. This adoption does not include the newer Metal surface.
+
+Initial stx icon publication failed while accepted archives remained pending.
+Each pending package's metadata and complete bytes were compared with the
+original SHA-512 and SHA-1 before retrying publication. The required icon job
+then passed; an overall workflow success alone was not accepted as evidence.
