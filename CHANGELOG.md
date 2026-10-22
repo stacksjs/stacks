@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.257...v0.75.258)
+
+## ✨ Features
+
+- **buddy**: tester notes for mobile releases ([c5e3dd9](https://github.com/stacksjs/stacks/commit/c5e3dd9)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- **skills**: count the release notes tests in the native catalog ([08c7e3f](https://github.com/stacksjs/stacks/commit/08c7e3f)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.256...v0.75.257)
 
 ## ✨ Features
