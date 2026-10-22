@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.269...v0.75.270)
+
+## 🐛 Bug Fixes
+
+- **types**: share the stx UI configuration contract ([d063b03](https://github.com/stacksjs/stacks/commit/d063b03)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- retain verified native toolchain adoption ([6cb7ba1](https://github.com/stacksjs/stacks/commit/6cb7ba1)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.268...v0.75.269)
 
 ## ✨ Features
