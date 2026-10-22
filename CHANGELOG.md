@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.260...v0.75.261)
+
+## ✨ Features
+
+- **types**: bloodGlucose and insulinDelivery Health Connect types ([eb8e9fd](https://github.com/stacksjs/stacks/commit/eb8e9fd)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **release**: verify archives after ambiguous npm uploads ([6037a9d](https://github.com/stacksjs/stacks/commit/6037a9d)) _(by Chris <chris@stacksjs.com>)_
+- **release**: check lockfile ranges before publication ([0724636](https://github.com/stacksjs/stacks/commit/0724636)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh the native skill catalog ([bd59578](https://github.com/stacksjs/stacks/commit/bd59578)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.259...v0.75.260)
 
 ## ✨ Features
