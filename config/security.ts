@@ -20,11 +20,11 @@ export default {
     rowScoping: 'deny',
 
     // Which models publish the REST API their `useApi` trait describes:
-    // 'all' (the default) includes the framework's own models, 'own' only the
-    // ones in app/Models, 'none' turns generated model APIs off, and a list
+    // 'own' (the default) only the ones in app/Models, 'all' the framework's
+    // own models as well, 'none' turns generated model APIs off, and a list
     // of model names picks exactly those (['own', 'Product'] adds one framework
-    // model to yours). STACKS_MODEL_APIS overrides it. See #2866.
-    models: 'all',
+    // model to yours). STACKS_MODEL_APIS overrides it. See #2866 and #2954.
+    models: 'own',
   },
 
   // Application rate limits (route `.rateLimit()`, `rateLimit()`, the login

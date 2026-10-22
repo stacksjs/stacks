@@ -718,7 +718,7 @@ export const defaults: StacksOptions = {
   security: {
     api: {
       rowScoping: 'deny',
-      models: 'all',
+      models: 'own',
     },
 
     rateLimit: {

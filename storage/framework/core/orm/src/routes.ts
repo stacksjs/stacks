@@ -605,7 +605,8 @@ const rowScopingPolicy = resolveRowScopingPolicy(securityApiConfig?.rowScoping, 
 
 /**
  * The `useApi` models this app publishes: `security.api.models`, overridden by
- * `STACKS_MODEL_APIS`. Unset is every one, as before. stacksjs/stacks#2866.
+ * `STACKS_MODEL_APIS`. Unset is the app's own models. stacksjs/stacks#2866,
+ * stacksjs/stacks#2954.
  */
 const apiModels = (() => {
   const selection = resolveModelApiSelection(securityApiConfig?.models, process.env.STACKS_MODEL_APIS)

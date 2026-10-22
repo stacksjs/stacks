@@ -96,9 +96,12 @@ export async function loadModelRegistry(options: ModelRegistryOptions): Promise<
  * never migrated, so they were discoverable, in the OpenAPI document, and
  * failed at runtime rather than 404ing (stacksjs/stacks#2866).
  *
- * - `'all'` - every `useApi` model, app and framework. The default, so an app
- *   that says nothing keeps the surface it had.
+ * - `'all'` - every `useApi` model, app and framework.
  * - `'own'` - only the app's own models (`app/Models`, overrides included).
+ *   The default since stacksjs/stacks#2954: `'all'` published REST and
+ *   OpenAPI for ~80 framework models in apps that never migrated their
+ *   tables, so `/api/products` answered 500 instead of 404. An app that wants
+ *   a framework model's API names it (`['own', 'Product']`).
  * - `'none'` - no generated model APIs at all.
  * - a list of model names - exactly those. `'own'` may appear in it to mean
  *   "mine, plus these defaults".
@@ -130,9 +133,9 @@ export interface ResolvedModelApiSelection {
  * value can never mean something wider than its most restrictive keyword.
  *
  * Anything that is not a string or an array of strings - a typo'd type in
- * the config - is treated as unset, which is `all`: the setting narrows a
- * surface, and an unreadable one should leave the surface as it was rather
- * than silently take an app's API down.
+ * the config - is treated as unset, which is `own`: an unreadable setting
+ * must not widen the surface to every framework model, and it never takes
+ * the app's own APIs down.
  */
 export function resolveModelApiSelection(configured: unknown, envOverride?: string | null): ResolvedModelApiSelection {
   let raw: readonly string[] | undefined
@@ -152,7 +155,7 @@ export function resolveModelApiSelection(configured: unknown, envOverride?: stri
   }
 
   if (raw === undefined)
-    return { all: true, own: false, names: new Set(), source }
+    return { all: false, own: true, names: new Set(), source }
 
   const names = raw.map(name => name.trim().toLowerCase()).filter(Boolean)
 

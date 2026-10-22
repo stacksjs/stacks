@@ -44,8 +44,10 @@ export type ApiRowScopingPolicy = 'warn' | 'deny'
 /**
  * Which models publish the REST API their `useApi` trait describes.
  *
- * - `'all'` (the default) - every `useApi` model, the framework's own included.
- * - `'own'` - only the app's models in `app/Models`, overrides included.
+ * - `'all'` - every `useApi` model, the framework's own included.
+ * - `'own'` (the default) - only the app's models in `app/Models`, overrides
+ *   included. It was `'all'` until stacksjs/stacks#2954, which published ~80
+ *   framework models' APIs over tables most apps never migrate.
  * - `'none'` - no generated model APIs.
  * - a list of model names - exactly those; `'own'` may be one of them, to mean
  *   the app's models plus the named framework ones.
@@ -60,7 +62,7 @@ export interface ApiSecurityOptions {
   /** @default 'deny' */
   rowScoping: ApiRowScopingPolicy
 
-  /** @default 'all' */
+  /** @default 'own' */
   models: ModelApiSelection
 }
 

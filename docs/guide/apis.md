@@ -76,19 +76,19 @@ export default defineModel({
 
 ### Choosing Which Models Publish an API
 
-Every model with a `useApi` trait gets these routes, and that includes the
-framework's own models (`Product`, `Order`, `Review`, `Comment`, `Tag`, and
-around 80 more). An app that only uses its own models can turn the rest off
-in `config/security.ts`:
+By default only your own models (those in `app/Models`) get these routes. The
+framework's own `useApi` models (`Product`, `Order`, `Review`, `Comment`,
+`Tag`, and around 80 more) publish nothing until you ask for them in
+`config/security.ts`:
 
 ```typescript
 // config/security.ts
 export default {
   api: {
-    // 'all' (the default): every useApi model, the framework's included
-    // 'own': only the models in app/Models (an override of a framework model counts as yours)
+    // 'own' (the default): only the models in app/Models (an override of a framework model counts as yours)
+    // 'all': every useApi model, the framework's included
     // 'none': no generated model APIs
-    models: 'own',
+    models: ['own', 'Product'],
   },
 } satisfies SecurityConfig
 ```

@@ -11,14 +11,15 @@ import { loadModelRegistryWithOrigins, resolveModelApiSelection, selectApiModels
  * Every one used to, the framework's ~80 defaults included. A forge built
  * around code review served the framework's product reviews at `/api/reviews`
  * over a table it never migrated. `security.api.models` and
- * `STACKS_MODEL_APIS` now choose, and unset is still everything.
+ * `STACKS_MODEL_APIS` now choose, and since #2954 unset is the app's own
+ * models: the framework catalogue publishes nothing until an app names it.
  */
 
 const api = (uri: string) => ({ traits: { useApi: { uri, routes: ['index', 'show'] } }, attributes: {} })
 
 describe('resolveModelApiSelection', () => {
-  it('is every model when nothing is set, so an upgrade changes no app', () => {
-    expect(resolveModelApiSelection(undefined)).toEqual({ all: true, own: false, names: new Set(), source: 'default' })
+  it('is the app\'s own models when nothing is set, not the framework catalogue (#2954)', () => {
+    expect(resolveModelApiSelection(undefined)).toEqual({ all: false, own: true, names: new Set(), source: 'default' })
   })
 
   it('reads the keywords and lists from the env var', () => {
@@ -40,9 +41,9 @@ describe('resolveModelApiSelection', () => {
     expect(resolveModelApiSelection('none', 'all')).toMatchObject({ all: true, source: 'env' })
   })
 
-  it('treats a config of the wrong type as unset rather than switching APIs off', () => {
+  it('treats a config of the wrong type as unset: the app\'s own, never widened to all', () => {
     for (const configured of [42, { own: true }, ['own', 1], null, true])
-      expect(resolveModelApiSelection(configured)).toMatchObject({ all: true, source: 'default' })
+      expect(resolveModelApiSelection(configured)).toMatchObject({ all: false, own: true, source: 'default' })
   })
 })
 
@@ -60,8 +61,12 @@ describe('selectApiModels', () => {
 
   const names = (value: string | undefined) => Object.keys(selectApiModels(registry, resolveModelApiSelection(undefined, value)).models).sort()
 
-  it('publishes every useApi model by default, and never one without the trait', () => {
-    expect(names(undefined)).toEqual(['Product', 'Repo', 'Review', 'User'])
+  it('publishes only the app\'s useApi models by default, and never one without the trait', () => {
+    expect(names(undefined)).toEqual(['Repo', 'User'])
+  })
+
+  it('publishes every useApi model under all', () => {
+    expect(names('all')).toEqual(['Product', 'Repo', 'Review', 'User'])
   })
 
   it('publishes only the app\'s models under own, counting an override of a default as the app\'s', () => {
@@ -167,8 +172,12 @@ describe('the ORM route generator', () => {
     expect(JSON.parse(line!)).toEqual({ databaseExistedAfterMetadata: false, firstQuery: 1, foreignKeys: 1, databaseExistsAfterQuery: true })
   }, 60_000)
 
-  it('serves every model\'s API when nothing is set', () => {
-    expect(boot({}).paths).toEqual(['/api/repos', '/api/repos/{id}', '/api/reviews', '/api/reviews/{id}'])
+  it('serves only the app\'s own APIs when nothing is set (#2954)', () => {
+    expect(boot({}).paths).toEqual(['/api/repos', '/api/repos/{id}'])
+  }, 60_000)
+
+  it('serves the framework\'s too under STACKS_MODEL_APIS=all', () => {
+    expect(boot({ env: 'all' }).paths).toEqual(['/api/repos', '/api/repos/{id}', '/api/reviews', '/api/reviews/{id}'])
   }, 60_000)
 
   it('serves only the app\'s own under STACKS_MODEL_APIS=own', () => {

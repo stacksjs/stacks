@@ -45,8 +45,12 @@ describe('OpenAPI model schemas', () => {
     return JSON.parse(line)
   }
 
-  it('documents every model API when nothing is selected', () => {
-    expect(generate()).toEqual({
+  it('documents only the app\'s own model APIs when nothing is selected (#2954)', () => {
+    expect(generate()).toEqual({ schemas: ['Repo'], paths: ['/api/repos', '/api/repos/{id}'] })
+  }, 60_000)
+
+  it('documents the framework\'s too when all are selected', () => {
+    expect(generate('all')).toEqual({
       schemas: ['Repo', 'Review'],
       paths: ['/api/repos', '/api/repos/{id}', '/api/reviews', '/api/reviews/{id}'],
     })
