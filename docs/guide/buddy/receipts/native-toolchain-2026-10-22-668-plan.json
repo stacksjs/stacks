@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "repository": "craft-native/craft",
+      "commit": "5ae0851aa5f5275ebb838bea0fafe163f150811d",
+      "tag": "v0.0.296",
+      "gates": [
+        {
+          "runId": 39804169474,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "validate release identity",
+            "accept exact release source",
+            "run release source suite / Android software emulator",
+            "accept exact native runtimes",
+            "run release source suite / create-craft",
+            "run release native suite / iOS Zig runtime slice",
+            "run release native suite / Harness unit tests",
+            "run release native suite / Android emulator",
+            "run release source suite / ts-maps",
+            "run release native suite / android-navigation (34)",
+            "run release native suite / iOS native UI (uikit)",
+            "run release source suite / typescript-sdk",
+            "run release native suite / iOS simulator",
+            "release-sbom / vulnerability-scan",
+            "run release native suite / iOS hybrid navigation",
+            "run release native suite / iOS native UI (navigation-unit)",
+            "run release native suite / media-cache / ios",
+            "run release source suite / ios-builder",
+            "run release native suite / iOS native UI (navigation-ui-core)",
+            "run release native suite / media-cache / android",
+            "run release source suite / windows-multi-window",
+            "run release native suite / media-cache / sdk",
+            "run release source suite / android-builder",
+            "run release source suite / zig-core (ubuntu-latest)",
+            "run release source suite / ios-native-templates",
+            "run release source suite / lint",
+            "run release native suite / iOS native UI (navigation-ui-controls)",
+            "run release source suite / zig-core (macos-latest)",
+            "run release native suite / android-navigation (35)",
+            "run release native suite / Mobile E2E summary",
+            "run release source suite / integration",
+            "verify and stage npm packages",
+            "release-sbom / generate",
+            "run release source suite / publish-commit",
+            "pantry (linux-x86-64)",
+            "pantry (darwin-arm64)",
+            "verify downloaded darwin-x64",
+            "verify downloaded darwin-arm64",
+            "verify downloaded linux-x64",
+            "verify release assets",
+            "attach and verify release SBOMs",
+            "verify downloaded windows-x64",
+            "publish complete verified release",
+            "npm",
+            "publish verified Zig package to pantry",
+            "notify registry and channel after publication"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "craft-native",
+          "version": "0.0.296",
+          "integrity": "sha512-wZJ1RoTqs4cGuguj5yobojCmZSguTJr0dr16l2066Sn1Vbn2lPr281WkoLltoldwzkpzWc/0pi9J8TFnHzdJ8Q=="
+        }
+      ]
+    },
+    {
+      "repository": "stacksjs/stx",
+      "commit": "d0d5b6cb0e31e53895ddce00812c47e43171b517",
+      "tag": "v0.2.668",
+      "gates": [
+        {
+          "runId": 39844942879,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "Verify the exact release source",
+            "Verify native signing on macOS 15",
+            "npm",
+            "icons"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "stx-router",
+          "version": "0.2.668",
+          "integrity": "sha512-rPN0Jiivr4x7vC8GgbBq5h1J7kAhnZ15lNa2PoIKbswstfi1+fP96Z4FPr//H+f1bfTmLwecZ7KfvbFyDY3bPQ=="
+        },
+        {
+          "name": "@stacksjs/sanitizer",
+          "version": "0.2.668",
+          "integrity": "sha512-BxWZxrZGoYPmujiiuaP75yHRzypAooDa8E32HnWBdQpsIAHXEqi7xGrMgOzebE/oLWkB+8xt/+cI9F6XzSkW9w=="
+        },
+        {
+          "name": "bun-plugin-stx",
+          "version": "0.2.668",
+          "integrity": "sha512-uNHgg/6Aj1ZTxxHEvS4E44YK1+LET63bjk0/pT2jHUL5GQtplxBXDI/4GmZ368KqdcbQoFYSp6jhoxrsLsl0fQ=="
+        },
+        {
+          "name": "@stacksjs/desktop",
+          "version": "0.2.668",
+          "integrity": "sha512-bNY7xlQ1tnZrQSAN1zFtZ15YMNeMBKWwCEfjipd78Yj55Oa+t/MqrfSrrB+eYdcyaax2qerqNgwAnTX95fdM6g=="
+        },
+        {
+          "name": "@stacksjs/components",
+          "version": "0.2.668",
+          "integrity": "sha512-mV+ZT7gIZK6cN9TunF5U1BPeLC+DfP/DJ0SQazwDngB9QUIZxsg3GWFftwGCWYFxeaURL8IbfOpJvYGGRIuhPA=="
+        },
+        {
+          "name": "@stacksjs/stx",
+          "version": "0.2.668",
+          "integrity": "sha512-vmG9x5ViVT3y9KgMTrghsH6WbCKTTRe+Twdn8nB4VhPX37ZoxnNxBQj+EsG128I8PukjHwZnKKMCHEv4iB7fSA=="
+        }
+      ]
+    }
+  ],
+  "checks": [
+    "deps:lockfile:check",
+    "typecheck",
+    "typecheck:app",
+    "typecheck:views"
+  ]
+}

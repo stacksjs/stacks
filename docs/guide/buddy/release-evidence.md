@@ -171,3 +171,12 @@ Initial stx icon publication failed while accepted archives remained pending.
 Each pending package's metadata and complete bytes were compared with the
 original SHA-512 and SHA-1 before retrying publication. The required icon job
 then passed; an overall workflow success alone was not accepted as evidence.
+
+The [STX 0.2.668 toolchain plan](./receipts/native-toolchain-2026-10-22-668-plan.json)
+and [executed receipt](./receipts/native-toolchain-2026-10-22-668-receipt.json)
+record a fresh installed-consumer verification in Stacks 0.75.271. All six
+STX packages matched their original publication identities and installed
+files. Craft 0.0.296, the lockfile range gate and all three type checks passed.
+All four required STX release jobs passed, including icon publication and
+native signing. The earlier receipt remains a historical verification of
+0.2.667; neither receipt qualifies the newer native graphics surface.
