@@ -9,6 +9,37 @@ The simple way to build beautiful CLIs.
 - 🚦 Elegant terminal spinners
 - ⛑️ Helper methods to run commands
 
+## Capturing bounded command output
+
+Use the narrow `@stacksjs/cli/process` entry for a finite command whose text
+output needs explicit limits. Arguments are passed directly to the executable.
+Both output streams are drained concurrently, and nonzero exit codes are returned
+with their bounded diagnostics.
+
+```ts
+import { runBoundedProcess } from '@stacksjs/cli/process'
+
+const result = await runBoundedProcess(['git', 'rev-parse', 'HEAD'], {
+  cwd: '/trusted/source',
+  timeoutMs: 10000,
+  stdoutBytes: 65536,
+  stderrBytes: 65536,
+  label: 'Source revision',
+})
+
+if (result.exitCode !== 0)
+  throw new Error('Source inspection failed', { cause: result })
+```
+
+All three limits are required positive integers. Timeouts are at most 60,000 ms;
+each stream is capped at 2,000,000 bytes before UTF-8 decoding. Stdin is ignored.
+Output overflow, read errors and deadlines reject after owned cleanup. Original
+failure values and cleanup errors are retained without coercing them to strings.
+On POSIX the command gets its own process group, which is terminated on completion
+or failure, including descendants holding inherited pipes. On Windows cleanup
+covers the direct process and readers. Use this API for finite inspection or build
+probes whose descendants should end with the command.
+
 ## 🤖 Usage
 
 ```bash
