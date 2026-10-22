@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.259...v0.75.260)
+
+## ✨ Features
+
+- **mobile**: health.getSamples for glucose, insulin and carbs ([2e8fc99](https://github.com/stacksjs/stacks/commit/2e8fc99)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **native**: require the verified Craft 0.0.290 SDK ([0b14663](https://github.com/stacksjs/stacks/commit/0b14663)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- retain Craft package and native release verification ([c433aa3](https://github.com/stacksjs/stacks/commit/c433aa3)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.258...v0.75.259)
 
 ## ✨ Features
