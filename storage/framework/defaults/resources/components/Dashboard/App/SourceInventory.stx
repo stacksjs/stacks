@@ -1,3 +1,5 @@
+@import('../UI/Table')
+
 <script client>
 import { dashboardApi } from '../../../../functions/dashboard-api'
 
@@ -44,9 +46,7 @@ const page = derived(() => mode() === 'actions'
       empty: 'No Action modules were found.',
       scaffold: 'buddy make:action MyAction',
       icon: 'i-hugeicons-energy',
-      detailLabel: 'Method',
       note: 'Application files override matching framework defaults.',
-      showOrigin: true,
       stats: [
         { key: 'total', label: 'Total Actions' },
         { key: 'application', label: 'Application Overrides' },
@@ -60,9 +60,7 @@ const page = derived(() => mode() === 'actions'
       empty: 'No command files in app/Commands.',
       scaffold: 'buddy make:command my-command',
       icon: 'i-hugeicons-command-line',
-      detailLabel: 'Aliases and options',
       note: 'Every file in app/Commands is a command. The optional app/Commands.ts only orders, aliases or disables them.',
-      showOrigin: false,
       stats: [
         { key: 'total', label: 'Commands' },
         { key: 'registered', label: 'Registry Entries' },
@@ -90,13 +88,6 @@ function statValue(key: string): number {
   return Number(stats()[key] || 0)
 }
 
-function formatDate(value: string): string {
-  if (!value)
-    return 'Unknown'
-  const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? 'Unknown' : date.toLocaleString()
-}
-
 function formatAliases(item: SourceItem): string {
   return item.aliases?.length ? item.aliases.join(', ') : 'None'
 }
@@ -105,13 +96,66 @@ function formatOptions(item: SourceItem): string {
   return item.options?.length ? item.options.join(', ') : 'None'
 }
 
-function methodClass(method = 'ANY'): string {
+/** Read-only methods, writes, and the catch-all, as the hand-rolled pill coloured them. */
+function methodTone(method = 'ANY'): string {
   if (['GET', 'HEAD', 'OPTIONS'].includes(method))
-    return 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40'
+    return 'read'
   if (method === 'ANY')
-    return 'text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800'
-  return 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40'
+    return 'any'
+  return 'write'
 }
+
+const NAME_COLUMN = { key: 'name', label: 'Name', sortable: true, subtitleKey: 'description', class: 'font-medium text-neutral-900 dark:text-white' }
+const PATH_COLUMN = { key: 'path', label: 'Path', sortable: true, class: 'font-mono text-neutral-600 text-xs dark:text-neutral-300' }
+const MODIFIED_COLUMN = { key: 'modifiedAt', label: 'Modified', type: 'datetime' as const, sortable: true, align: 'right' as const, emptyText: 'Unknown', class: 'whitespace-nowrap' }
+
+/**
+ * Actions show a method and where the file comes from. Commands have one
+ * root, so their second column is what can be typed instead.
+ */
+const COLUMNS_BY_MODE = {
+  actions: [
+    NAME_COLUMN,
+    {
+      key: 'methodTone',
+      label: 'Method',
+      type: 'badge' as const,
+      sortable: true,
+      badgeLabelKey: 'methodLabel',
+      badgeClasses: {
+        read: 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40',
+        any: 'text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800',
+        write: 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40',
+      },
+    },
+    {
+      key: 'origin',
+      label: 'Origin',
+      type: 'badge' as const,
+      sortable: true,
+      badgeClasses: {
+        Application: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40',
+        Framework: 'text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800',
+      },
+    },
+    PATH_COLUMN,
+    MODIFIED_COLUMN,
+  ],
+  commands: [
+    NAME_COLUMN,
+    { key: 'aliasesLabel', label: 'Aliases', sortable: true, subtitleKey: 'optionsLabel', class: 'text-neutral-700 text-xs dark:text-neutral-300' },
+    PATH_COLUMN,
+    MODIFIED_COLUMN,
+  ],
+}
+
+const itemRows = derived(() => filteredItems().map(item => ({
+  ...item,
+  methodTone: methodTone(item.method),
+  methodLabel: item.method || 'ANY',
+  aliasesLabel: `Aliases: ${formatAliases(item)}`,
+  optionsLabel: `Options: ${formatOptions(item)}`,
+})))
 
 async function loadInventory(): Promise<void> {
   loading.set(true)
@@ -205,50 +249,15 @@ onMount(() => {
       </label>
     </div>
 
-    <div :if="loading()" class="flex items-center justify-center py-16 text-neutral-500 text-sm dark:text-neutral-400">
-      <span class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>
-      Reading source files...
-    </div>
-
-    <EmptyState
-      :if="!loading() && !loadError() && filteredItems().length === 0"
-      :icon="page().icon"
-      :title="search() ? 'No matching source files' : page().empty"
-      :description="search() ? 'Try a different name, path, method, or alias.' : 'Use the scaffold command to add one through the native framework workflow.'"
+    <Table
+      :columns="COLUMNS_BY_MODE[mode()]"
+      :data="itemRows()"
+      :loading="loading()"
+      row-key="path"
+      paginated
+      :page-size="25"
+      :empty-title="search() ? 'No matching source files' : page().empty"
+      :empty-description="search() ? 'Try a different name, path, method, or alias.' : 'Use the scaffold command to add one through the native framework workflow.'"
     />
-
-    <div :if="!loading() && filteredItems().length > 0" class="overflow-x-auto">
-      <table class="w-full">
-        <thead class="bg-neutral-50 dark:bg-neutral-800/50">
-          <tr>
-            <th class="pl-5 pr-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Name</th>
-            <th class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">{{ page().detailLabel }}</th>
-            <th :if="page().showOrigin" class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Origin</th>
-            <th class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Path</th>
-            <th class="pr-5 py-3 font-semibold text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Modified</th>
-          </tr>
-        </thead>
-        <tbody class="divide-neutral-100 divide-y dark:divide-neutral-700">
-          <tr :for="item in filteredItems()">
-            <td class="pl-5 pr-4 py-3.5">
-              <p class="font-medium text-neutral-900 text-sm dark:text-white">{{ item.name }}</p>
-              <p class="mt-0.5 max-w-md text-neutral-500 text-xs dark:text-neutral-400">{{ item.description }}</p>
-            </td>
-            <td class="px-4 py-3.5">
-              <span :if="mode() === 'actions'" :class="'inline-flex px-2 py-0.5 font-medium text-xs rounded ' + methodClass(item.method)">{{ item.method || 'ANY' }}</span>
-              <div :if="mode() === 'commands'" class="space-y-1 text-xs">
-                <p class="text-neutral-700 dark:text-neutral-300"><span class="text-neutral-500 dark:text-neutral-400">Aliases:</span> {{ formatAliases(item) }}</p>
-                <p class="text-neutral-700 dark:text-neutral-300"><span class="text-neutral-500 dark:text-neutral-400">Options:</span> {{ formatOptions(item) }}</p>
-              </div>
-            </td>
-            <td :if="page().showOrigin" class="px-4 py-3.5">
-              <span :class="'inline-flex px-2 py-0.5 font-medium text-xs rounded ' + (item.origin === 'Application' ? 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40' : 'text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800')">{{ item.origin }}</span>
-            </td>
-            <td class="px-4 py-3.5 font-mono text-neutral-600 text-xs dark:text-neutral-300">{{ item.path }}</td>
-            <td class="pr-5 py-3.5 text-neutral-500 text-right text-xs whitespace-nowrap dark:text-neutral-400">{{ formatDate(item.modifiedAt) }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
   </Card>
 </div>

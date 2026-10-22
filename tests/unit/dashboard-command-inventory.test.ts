@@ -15,12 +15,8 @@ const actionAction = readFileSync(
   'utf8',
 )
 
-// The two halves of the component's `page()` ternary, so an assertion meant
-// for one mode cannot be satisfied by the other's copy.
-const actionsBranch = inventory.slice(
-  inventory.indexOf("title: 'Actions'"),
-  inventory.indexOf("title: 'Commands'"),
-)
+// The commands half of the component's `page()` ternary, so an assertion
+// meant for it cannot be satisfied by the actions copy.
 const commandsBranch = inventory.slice(
   inventory.indexOf("title: 'Commands'"),
   inventory.indexOf('const filteredItems'),
@@ -64,9 +60,12 @@ describe('dashboard command inventory', () => {
 
   test('keeps the Origin column to the inventory that has two origins', () => {
     // Every command row is hardcoded 'Application'; only Actions span both.
-    expect(commandsBranch).toContain('showOrigin: false')
-    expect(actionsBranch).toContain('showOrigin: true')
-    expect(inventory).toContain('<th :if="page().showOrigin"')
-    expect(inventory).toContain('<td :if="page().showOrigin"')
+    const actionColumns = inventory.slice(inventory.indexOf('  actions: ['), inventory.indexOf('  commands: ['))
+    const commandColumns = inventory.slice(inventory.indexOf('  commands: ['), inventory.indexOf('const itemRows'))
+
+    expect(actionColumns).toContain("key: 'origin'")
+    expect(commandColumns).toContain('NAME_COLUMN')
+    expect(commandColumns).not.toContain("key: 'origin'")
+    expect(inventory).toContain(':columns="COLUMNS_BY_MODE[mode()]"')
   })
 })
