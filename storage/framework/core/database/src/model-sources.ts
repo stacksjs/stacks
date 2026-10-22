@@ -274,6 +274,32 @@ function shouldIncludeFrameworkDefaults(): boolean {
 }
 
 /**
+ * Whether the framework's default models are part of the schema.
+ *
+ * Defaults are a fallback: they stand in only when userland has no models of
+ * its own, or when the app asks for them. Merging them unconditionally made
+ * every app inherit the framework's demo schema (stacksjs/stacks#2220).
+ */
+function frameworkDefaultsContribute(userModelCount: number, includeFrameworkDefaults?: boolean): boolean {
+  return (includeFrameworkDefaults ?? shouldIncludeFrameworkDefaults()) || userModelCount === 0
+}
+
+/**
+ * The framework's default models this app's schema leaves out, by the same
+ * rule {@link resolveModelSources} applies, without staging anything.
+ *
+ * For callers that only need to know what is excluded, such as the route
+ * bootstrap deciding whether a default route's action can work at all
+ * (stacksjs/stacks#2943).
+ */
+export function excludedFrameworkModels(options: { userRoot?: string, frameworkRoot?: string, includeFrameworkDefaults?: boolean } = {}): ModelSource[] {
+  const user = collectModels(options.userRoot ?? path.userModelsPath(), 'user')
+  if (frameworkDefaultsContribute(user.length, options.includeFrameworkDefaults))
+    return []
+  return collectModels(options.frameworkRoot ?? path.frameworkPath('defaults/app/Models'), 'framework')
+}
+
+/**
  * Resolve models from userland, falling back to the framework defaults.
  *
  * Returns `null` when neither root holds a model, which callers should treat as
@@ -320,12 +346,7 @@ export function resolveModelSources(options: {
   if (user.length === 0 && framework.length === 0)
     return null
 
-  const merge = options.includeFrameworkDefaults ?? shouldIncludeFrameworkDefaults()
-
-  // Defaults are a fallback: they stand in only when userland has no models of
-  // its own. Merging them made every app inherit the framework's demo schema
-  // (stacksjs/stacks#2220).
-  const useFramework = merge || user.length === 0
+  const useFramework = frameworkDefaultsContribute(user.length, options.includeFrameworkDefaults)
   const contributing = useFramework ? framework : []
   const excluded = useFramework ? [] : framework
 
