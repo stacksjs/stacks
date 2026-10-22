@@ -466,11 +466,36 @@ export interface MobileCrashReportingConfig {
   uploadSymbols?: boolean
 }
 
+/**
+ * What a mobile release tells its testers (`buddy release:ios`): TestFlight's
+ * What to Test, the GitHub release, and `buddy release:notes --play`. By
+ * default the notes are written from the conventional commits since the
+ * previous `v*-build.*` tag. `--notes` / `--notes-file` win over everything,
+ * then RELEASE_NOTES / RELEASE_NOTES_FILE, then `notes` / `notesFile` here.
+ */
+export interface MobileReleaseConfig {
+  /** The notes, word for word, instead of generated ones. */
+  notes?: string
+  /** A file (relative to the project) holding the notes. */
+  notesFile?: string
+  /** Commit types the generated notes list. Default `['feat', 'fix', 'perf', 'revert']`. */
+  noteTypes?: string[]
+  /** Scopes the generated notes leave out. Default `release`, `ci`, `deps`, `test`, `docs`, `lint`. */
+  excludeScopes?: string[]
+  /**
+   * App Store locales the What to Test is written in, e.g. `['en-US', 'de-DE']`.
+   * Default `en-US` plus the languages of `ios.nativeMessages`.
+   */
+  locales?: string[]
+}
+
 export interface MobileConfig {
   ios: IosMobileConfig
   android?: AndroidMobileConfig
   /** Crash reporting for both platforms (see MobileCrashReportingConfig). */
   crashReporting?: MobileCrashReportingConfig
+  /** Release notes for testers (see MobileReleaseConfig). */
+  release?: MobileReleaseConfig
   /**
    * Content a device may index for search: iOS Spotlight and Siri today,
    * through the activity types the iOS build declares from this.

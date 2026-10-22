@@ -211,6 +211,20 @@ number and the changes since the previous tag), using `GITHUB_TOKEN`,
 `GH_TOKEN`, the GitHub CLI's token or the git credential. When that fails the
 tag is still out; `buddy release:github <tag>` creates the missing release.
 
+Testers' notes come with every release. From the conventional commits since
+the previous `v*-build.*` tag (logsmith's parser, so the same sections as the
+changelog; `chore`, `ci`, `test`, `docs` and `chore(release)` left out),
+`release:ios` writes `storage/framework/mobile/ios/TestFlight/WhatToTest.<locale>.txt`
+(en-US plus `ios.nativeMessages` languages, under 1000 characters) into the
+release commit, where Xcode Cloud reads it, and puts the list in the GitHub
+release. Overrides, first wins: `--notes` / `--notes-file`, `RELEASE_NOTES` /
+`RELEASE_NOTES_FILE`, `release.notes` / `release.notesFile` in
+`config/mobile.ts`. `--dry-run` prints them. `--wait [minutes]` (with an App
+Store Connect key) also sets What to Test through the API once the build
+appears; `buddy release:notes <tag> --testflight` does it later, and
+`buddy release:notes <tag> --play` prints the 500-character Google Play text.
+The code is `@stacksjs/actions/release-notes`.
+
 ## Device search index
 
 `spotlight` says what of the application's own content a device may index, so

@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **365 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **366 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -58,7 +58,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `publish` | 6 |
 | `queue` | 21 |
 | `realtime` | 2 |
-| `release` | 3 |
+| `release` | 4 |
 | `route` | 1 |
 | `scaffold` | 1 |
 | `schedule` | 6 |
@@ -4807,7 +4807,29 @@ Ship the iOS app: regenerate its project for production, commit, tag and push
 | `--bump` | build \| patch \| minor \| major \| x.y.z (default: a new build of the current marketing version) | value, required | - |
 | `--keep-builds` | TestFlight builds to keep besides the new one; older ones are expired (needs an App Store Connect API key) | value, required | `1` |
 | `--skip-github-release` | Push the tag without creating its GitHub release | boolean, optional | `false` |
+| `--notes` | What to Test for this build, instead of the notes generated from the commits since the previous build | value, required | - |
+| `--notes-file` | Read What to Test from a file (also RELEASE_NOTES / RELEASE_NOTES_FILE, or release.notes in config/mobile.ts) | value, required | - |
+| `--wait` | Wait for the build to reach App Store Connect, then set its What to Test there too (default 60 minutes; needs an App Store Connect API key) | value, optional | - |
 | `--dry-run` | Run the release without actually releasing | boolean, optional | `false` |
+
+### `release:notes`
+
+Print the tester notes of a mobile release tag (default: the newest v*-build.* tag), or set them as its TestFlight What to Test
+
+- Usage: `$ buddy release:notes [tag]`
+- Namespace: `release`
+- Aliases: none
+- Arguments: `[tag]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--from` | Generate from the commits since this ref instead of the previous build tag | value, required | - |
+| `--play` | Fit the notes to Google Play's 500-character What's new | boolean, optional | `false` |
+| `--markdown` | Markdown, as the GitHub release shows the notes | boolean, optional | `false` |
+| `--testflight` | Set the notes as the TestFlight build's What to Test through App Store Connect | boolean, optional | `false` |
+| `--wait` | With --testflight: wait this long for the build to appear (default 60) | value, optional | - |
+| `--notes` | Use this text instead | value, required | - |
+| `--notes-file` | Read the text from a file instead | value, required | - |
 
 ### `release:verify`
 

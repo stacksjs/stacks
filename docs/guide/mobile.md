@@ -14,7 +14,13 @@ previous Xcode Cloud runs, including failures and builds still in flight.
 
 Each release also leaves a GitHub release for its tag, with the TestFlight
 build number and the changes since the previous tag; `buddy release:github
-<tag>` creates one a release could not. The iOS build runs Pantry's xcodegen
+<tag>` creates one a release could not. Testers get notes too: the release
+writes `TestFlight/WhatToTest.<locale>.txt` beside the Xcode project from the
+conventional commits since the previous build tag, and the GitHub release
+opens with the same list. `--notes` / `--notes-file`, `RELEASE_NOTES`, or
+`release.notes` in `config/mobile.ts` replace them; `buddy release:notes
+<tag> --play` prints them for Google Play (see
+[What to Test](./buddy/build.md#what-to-test)). The iOS build runs Pantry's xcodegen
 (`iosDependencies` in `config/deps.ts`, installed by `buddy setup:ios`); Xcode
 itself comes from the App Store, not Pantry.
 

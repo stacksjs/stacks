@@ -627,6 +627,14 @@ buddy release                # release new version via GitHub Actions
   --dry-run                  # preview without releasing
   --bump <type>              # non-interactive bump, including build, calendar, or x.y.z
   --preid <identifier>       # prerelease channel, for example beta or rc
+buddy release:ios            # iOS build: regenerate the project, commit, tag v<version>-build.<n>, push
+  --bump <type>              # build (default) | patch | minor | major | x.y.z
+  --notes <text>             # What to Test instead of the generated notes (also --notes-file, RELEASE_NOTES, config/mobile.ts release.notes)
+  --wait [minutes]           # wait for the build in App Store Connect, then set What to Test there too
+  --keep-builds <n>          # TestFlight builds kept besides the new one
+  --dry-run                  # print the tag, the notes and the GitHub release
+buddy release:notes [tag]    # a mobile tag's tester notes (--play: 500 chars for Google Play, --markdown, --testflight: set them in App Store Connect)
+buddy release:github [tag]   # create the GitHub release for a pushed tag
 buddy route                  # route management
 buddy share [type]           # share local dev server via public tunnel (localtunnel)
   -p/--port <port>           # local port

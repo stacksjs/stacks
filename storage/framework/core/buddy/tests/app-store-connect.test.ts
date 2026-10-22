@@ -3,7 +3,7 @@ import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { TestFlightBuild } from '../src/app-store-connect'
-import { AppStoreConnect, appStoreConnectCredentials, appStoreConnectToken, buildsToExpire, tagForXcodeCloudRun } from '../src/app-store-connect'
+import { AppStoreConnect, appStoreConnectCredentials, appStoreConnectToken, buildsToExpire, tagForXcodeCloudRun, waitForBuild } from '../src/app-store-connect'
 
 /** A P-256 key pair, the private half as the .p8 PEM App Store Connect hands out. */
 async function keyPair(): Promise<{ pem: string, publicKey: CryptoKey }> {
@@ -79,5 +79,46 @@ describe('App Store Connect for release:ios', () => {
     expect(calls.at(-1)!.init!.method).toBe('PATCH')
     expect(JSON.parse(String(calls.at(-1)!.init!.body))).toEqual({ data: { type: 'builds', id: 'b5', attributes: { expired: true } } })
     await expect(new AppStoreConnect('t', async () => new Response('nope', { status: 401 })).appId('x')).rejects.toThrow('answered 401')
+  })
+
+  it('finds one build by version and number, and sets its What to Test per locale', async () => {
+    const calls: Array<{ url: string, method: string, body?: any }> = []
+    const fakeFetch = async (url: string, init?: RequestInit): Promise<Response> => {
+      const method = init?.method ?? 'GET'
+      calls.push({ url, method, body: init?.body ? JSON.parse(String(init.body)) : undefined })
+      const path = new URL(url).pathname
+      if (path === '/v1/builds')
+        return Response.json({ data: [{ id: 'b93', attributes: { version: '93', uploadedDate: '2026-10-21', processingState: 'PROCESSING', expired: false } }] })
+      if (path === '/v1/builds/b93/betaBuildLocalizations')
+        return Response.json({ data: [{ id: 'loc-en', attributes: { locale: 'en-US', whatsNew: null } }] })
+      return Response.json({ data: {} }, { status: method === 'POST' ? 201 : 200 })
+    }
+    const api = new AppStoreConnect('token', fakeFetch)
+    expect(await api.build('app', '1.0.0', 93)).toEqual({ id: 'b93', number: 93, uploadedDate: '2026-10-21', processingState: 'PROCESSING', expired: false })
+    expect(decodeURIComponent(calls[0]!.url)).toContain('filter[version]=93&filter[preReleaseVersion.version]=1.0.0')
+
+    await api.setWhatToTest('b93', { 'en-US': 'Features\n- A page', 'de-DE': 'Features\n- A page' })
+    expect(calls[2]).toEqual({ url: 'https://api.appstoreconnect.apple.com/v1/betaBuildLocalizations/loc-en', method: 'PATCH', body: { data: { type: 'betaBuildLocalizations', id: 'loc-en', attributes: { whatsNew: 'Features\n- A page' } } } })
+    expect(calls[3]!.method).toBe('POST')
+    expect(calls[3]!.body).toEqual({ data: { type: 'betaBuildLocalizations', attributes: { locale: 'de-DE', whatsNew: 'Features\n- A page' }, relationships: { build: { data: { type: 'builds', id: 'b93' } } } } })
+  })
+
+  it('waits for the upload until it appears or the time is up', async () => {
+    let clock = 0
+    let looks = 0
+    const options = { intervalMs: 30_000, now: () => clock, sleep: async (ms: number) => { clock += ms } }
+    const appearsOnThirdLook = { build: async () => ++looks >= 3 ? build(93, 'PROCESSING') : null }
+    expect((await waitForBuild(appearsOnThirdLook, 'app', '1.0.0', 93, { ...options, timeoutMs: 60 * 60_000 }))?.number).toBe(93)
+    expect(clock).toBe(60_000)
+
+    clock = 0
+    looks = 0
+    const never = { build: async () => { looks++; return null } }
+    expect(await waitForBuild(never, 'app', '1.0.0', 93, { ...options, timeoutMs: 5 * 60_000 })).toBeNull()
+    // At 0, 30 s, … and the five minutes themselves.
+    expect(looks).toBe(11)
+    looks = 0
+    expect(await waitForBuild(never, 'app', '1.0.0', 93, { ...options, timeoutMs: 0 })).toBeNull()
+    expect(looks).toBe(1)
   })
 })
