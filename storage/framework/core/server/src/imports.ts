@@ -598,7 +598,50 @@ export function autoImportsAreStale(): boolean {
     }
   }
 
-  return false
+  // Times cannot see a registry generated before a file was added when every
+  // file has the same checkout time, which is every fresh clone and every CI
+  // run. A committed registry that predated an app's own `LoginAction` went on
+  // naming the framework's for a week (stacksjs/stacks#2947). The recorded
+  // listing can: it is the same on every machine.
+  return recordedSourceFingerprint() !== autoImportSourceFingerprint()
+}
+
+/**
+ * The set of files the barrels are generated from, as one hash.
+ *
+ * Project-relative paths, sorted, plus the discovered package set, so it is
+ * identical on every machine holding the same tree. Paths and not contents:
+ * the registries map names to files, so a file added, removed or renamed is
+ * what makes them wrong.
+ */
+export function autoImportSourceFingerprint(): string {
+  const root = path.projectPath()
+  const files: string[] = []
+  for (const dir of autoImportSourceDirs()) {
+    for (const file of globSync(`${dir}/**/*.ts`, { ignore: ['**/*.d.ts'] }))
+      files.push(relative(root, file))
+  }
+  files.sort()
+
+  // The package set, not the manifest's bytes: it also records when it was
+  // written, which differs on every machine.
+  let packages = ''
+  try {
+    const manifest = JSON.parse(readFileSync(path.storagePath('framework/discovered-packages.json'), 'utf8')) as { packages?: Record<string, unknown> }
+    packages = JSON.stringify(Object.keys(manifest.packages ?? {}).sort().map(name => [name, manifest.packages![name]]))
+  }
+  catch { /* no packages discovered */ }
+
+  return new Bun.CryptoHasher('sha256').update(files.join('\n')).update('\0').update(packages).digest('hex')
+}
+
+function recordedSourceFingerprint(): string | undefined {
+  try {
+    return (JSON.parse(readFileSync(path.storagePath('framework/auto-imports/sources.json'), 'utf8')) as { fingerprint?: string }).fingerprint
+  }
+  catch {
+    return undefined
+  }
 }
 
 /**
@@ -741,6 +784,10 @@ export async function generateAutoImportFiles(options: GenerateAutoImportOptions
     })),
   )
   await writeGeneratedFile(`${outputDir}/index.ts`, combinedContent)
+
+  // What the barrels were generated from, for `autoImportsAreStale` to compare
+  // on a machine where file times say nothing (stacksjs/stacks#2947).
+  await writeGeneratedFile(`${outputDir}/sources.json`, `${JSON.stringify({ fingerprint: autoImportSourceFingerprint() }, null, 2)}\n`)
 
   // Generate globals injection script
   const globalsPath = `${outputDir}/globals.ts`

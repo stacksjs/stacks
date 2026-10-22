@@ -333,6 +333,20 @@ export function generate(buddy: CLI): void {
       }
     })
 
+  // The name registries under storage/framework/auto-imports (actions,
+  // listeners, policies, middleware, jobs, models). Regenerated at dev boot and
+  // by generate:types, but a stale committed copy needed a command anyone could
+  // find from --help (stacksjs/stacks#2947).
+  buddy
+    .command('generate:auto-imports', 'Regenerate the auto-import barrels and name registries in storage/framework/auto-imports')
+    .action(async (options: GeneratorOptions) => {
+      log.debug('Running `buddy generate:auto-imports` ...', options)
+      const perf = await intro('buddy generate:auto-imports')
+      const { generateAutoImportFiles } = await import('@stacksjs/server')
+      await generateAutoImportFiles()
+      await outro('Regenerated storage/framework/auto-imports', { startTime: perf, useSeconds: true })
+    })
+
   buddy
     .command('generate:core-symlink', 'Symlink `.framework` -> storage/framework. A shortcut for core developers.')
     .action(async (options: GeneratorOptions) => {

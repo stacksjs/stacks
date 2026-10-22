@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **366 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **367 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -39,7 +39,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `forms` | 2 |
 | `gdpr` | 5 |
 | `general` | 51 |
-| `generate` | 17 |
+| `generate` | 18 |
 | `inspire` | 1 |
 | `integrations` | 1 |
 | `key` | 1 |
@@ -2628,6 +2628,15 @@ Generate the App Store screenshot set
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `generate:auto-imports`
+
+Regenerate the auto-import barrels and name registries in storage/framework/auto-imports
+
+- Usage: `$ buddy generate:auto-imports`
+- Namespace: `generate`
+- Aliases: none
+- Arguments: none
 
 ### `generate:component-meta`
 
