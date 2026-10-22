@@ -113,7 +113,7 @@ else
 
 assertCraftSupportsAndroidMapProvider(config, builder.nativeMapProviders)
 await builder.init({ name: config.appName, packageName: config.packageName, output, config: craftConfig })
-reportMobileBuildTarget({ renderer: config.renderer, site: craftConfig.devServerURL, nativeBundle: nativeBundle?.outFile, webAssets, fallbackWebAssets }, log)
+reportMobileBuildTarget({ renderer: config.renderer, site: craftConfig.devServerURL, nativeBundle: nativeBundle?.outFile, webAssets, fallbackWebAssets, production: release }, log)
 await builder.build(native
   ? { output, nativeBundlePath: nativeBundle!.outFile, iconsPath: iconsPath ?? undefined, release, bundle: appBundle, compile: process.env.STACKS_ANDROID_SKIP_GRADLE !== '1' }
   : {

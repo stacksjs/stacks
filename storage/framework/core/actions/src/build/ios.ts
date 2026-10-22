@@ -125,7 +125,7 @@ await builder.init({
 // devServerURL), which Craft reads for the start path and the API.
 const native = config.renderer === 'native'
 if (native && !nativeBundle) throw new Error('ios.renderer \'native\' needs native screens to draw: list them in ios.nativeScreens')
-reportMobileBuildTarget({ renderer: config.renderer, site: craftConfig.devServerURL, nativeBundle: nativeBundle?.outFile, webAssets, fallbackWebAssets }, log)
+reportMobileBuildTarget({ renderer: config.renderer, site: craftConfig.devServerURL, nativeBundle: nativeBundle?.outFile, webAssets, fallbackWebAssets, production: process.env.NODE_ENV === 'production' }, log)
 await builder.build(native
   ? { output, nativeBundlePath: nativeBundle!.outFile, generateProject: false }
   : {

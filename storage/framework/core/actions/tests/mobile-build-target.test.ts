@@ -6,7 +6,7 @@ import { join, resolve } from 'node:path'
 // The action is the seam: assert what a builder sees and what an operator
 // reads. Craft and the platform tools are external boundaries; this fixture
 // writes their output without running Xcode, Gradle, or any remote service.
-async function build(platform: 'ios' | 'android', options: Record<string, unknown>) {
+async function build(platform: 'ios' | 'android', options: Record<string, unknown>, env: Record<string, string> = {}) {
   const checkout = resolve(import.meta.dir, '../../../../..')
   const root = mkdtempSync(join(tmpdir(), 'stacks-mobile-target-'))
   try {
@@ -41,6 +41,7 @@ export async function build(options) { writeFileSync(join(options.output, 'build
         PATH: process.env.PATH, APP_ENV: 'test', NODE_ENV: 'test',
         CRAFT_IOS_SRC: builder, CRAFT_ANDROID_SRC: builder,
         STACKS_IOS_SKIP_XCODEGEN: '1', STACKS_ANDROID_SKIP_GRADLE: '1',
+        ...env,
       },
       stdout: 'pipe', stderr: 'pipe',
     })
@@ -99,4 +100,39 @@ test.each(['ios', 'android'] as const)('%s target reporting never prints URL cre
     expect(result.log).not.toContain(value)
   // Reporting must not alter the resolved builder input.
   expect(result.options.devServer).toBe('https://fixture-user:fixture-password@example.org/m?token=fixture-token#fixture-fragment')
+})
+
+// stacksjs/stacks#2942: a development build aimed at a live site signed a
+// tester in to production from what everyone believed was a local build.
+const warning = 'which is not a local server'
+
+test.each(['ios', 'android'] as const)('%s development build warns when it talks to a site that is not local', async (platform) => {
+  const result = await build(platform, { url: 'https://hq.example.org/m' })
+  expect(result.log).toContain(`This development build talks to https://hq.example.org/m, ${warning}`)
+  expect(result.log).toContain('config/mobile.ts')
+})
+
+test.each(['ios', 'android'] as const)('%s native development build warns about its API site too', async (platform) => {
+  const result = await build(platform, { renderer: 'native', url: 'https://hq.example.org/m', nativeScreens: { '/m': 'Home' } })
+  expect(result.log).toContain(warning)
+})
+
+test.each(['ios', 'android'] as const)('%s development build against a local server says nothing extra', async (platform) => {
+  // 10.0.2.2 is the Android emulator's name for the host, so only Android accepts it.
+  const local = ['http://localhost:3000/m', 'https://192.168.1.20:3000/m', 'https://stacks.localhost/m', ...(platform === 'android' ? ['http://10.0.2.2:3000/m'] : [])]
+  for (const url of local) {
+    const result = await build(platform, { url })
+    expect(result.log).not.toContain(warning)
+  }
+})
+
+test.each(['ios', 'android'] as const)('%s production build points at production without a warning', async (platform) => {
+  const result = await build(platform, { url: 'https://hq.example.org/m' }, { NODE_ENV: 'production' })
+  expect(result.log).toContain('Web source: https://hq.example.org/m')
+  expect(result.log).not.toContain(warning)
+})
+
+test.each(['ios', 'android'] as const)('%s bundled build has no remote site to warn about', async (platform) => {
+  const result = await build(platform, { webAssets: 'dist' })
+  expect(result.log).not.toContain(warning)
 })
