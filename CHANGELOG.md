@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.271...v0.75.272)
+
+## 📝 Documentation
+
+- retain verified STX 668 installed toolchain evidence ([622d36a](https://github.com/stacksjs/stacks/commit/622d36a)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- adopt stx native shared view runtime fixes ([4fd5dee](https://github.com/stacksjs/stacks/commit/4fd5dee)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.270...v0.75.271)
 
 ## 🐛 Bug Fixes
