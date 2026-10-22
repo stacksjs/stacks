@@ -224,7 +224,7 @@ const decrypted = decryptValue(encrypted, keypair.privateKey)
 
 ```bash
 buddy env:get APP_NAME                    # get single var
-buddy env:get --all --format json         # all vars as JSON
+buddy env:get --all --format json         # every var in the file as JSON (never the process env)
 buddy env:set APP_NAME "My App"           # set var
 buddy env:encrypt                          # encrypt .env file
 buddy env:decrypt                          # decrypt .env file

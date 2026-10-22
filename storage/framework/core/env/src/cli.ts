@@ -706,6 +706,40 @@ export function setEnv(
 }
 
 /**
+ * Why a file's encrypted values could not be read, naming the key material
+ * rather than the variable. "Key not found: DB_CONNECTION" sent people to a
+ * file where the variable plainly was, while the actual problem was a missing
+ * or mismatched private key (stacksjs/stacks#2956).
+ */
+function undecryptableMessage(
+  unreadable: string[],
+  parsed: Record<string, string>,
+  privateKey: string | undefined,
+  options: GetOptions,
+): string {
+  const file = options.file || '.env'
+  const keysFile = options.keysFile || '.env.keys'
+  const [privateKeyName] = envPrivateKeyNames(options.file)
+  const values = `${unreadable.length === 1 ? 'Value' : 'Values'} that cannot be decrypted: ${unreadable.join(', ')}.`
+
+  if (!privateKey) {
+    return [
+      `Cannot read ${file}: no private key for it.`,
+      `  Expected ${privateKeyName} in ${keysFile} or the environment, and found neither.`,
+      `  ${values}`,
+    ].join('\n')
+  }
+
+  const publicKeyName = envPublicKeyNames(options.file).find(name => parsed[name])
+  const declared = publicKeyName ? parsed[publicKeyName] : undefined
+  const reason = declared && !publicKeyMatchesPrivateKey(declared, privateKey)
+    ? `  The private key found for it does not match ${publicKeyName} in the file, so it belongs to a different key pair.`
+    : `  The private key found for it did not decrypt them. It may belong to a different key pair, or the values may be damaged.`
+
+  return [`Cannot read ${file}: its private key does not decrypt it.`, reason, `  ${values}`].join('\n')
+}
+
+/**
  * Get environment variable(s)
  */
 export function getEnv(
@@ -721,18 +755,13 @@ export function getEnv(
 
   try {
     const privateKey = resolveEnvPrivateKey(options)
-    const { privateKeyName } = envKeyNames(options.file)
 
     // Load and parse .env file
     const envContent = readFileSync(envPath, 'utf-8')
     const { parsed, skippedEncrypted } = parse(envContent, { privateKey })
     const unreadable = key && !options.all ? skippedEncrypted.filter(name => name === key) : skippedEncrypted
-    if (unreadable.length > 0) {
-      return {
-        success: false,
-        error: `Could not decrypt ${unreadable.join(', ')}. Restore ${privateKeyName} before reading this environment.`,
-      }
-    }
+    if (unreadable.length > 0)
+      return { success: false, error: undecryptableMessage(unreadable, parsed, privateKey, options) }
 
     // Get specific key
     if (key && !options.all) {
@@ -744,8 +773,10 @@ export function getEnv(
       return { success: true, output: value }
     }
 
-    // Get all keys
-    const result = options.all ? { ...process.env, ...parsed } : parsed
+    // The file, and only the file. Merging the process environment in answered
+    // a question about one file with every variable the caller had exported,
+    // which in CI wrote the runner's environment to the log (stacksjs/stacks#2956).
+    const result = parsed
 
     // Format output
     let output: string

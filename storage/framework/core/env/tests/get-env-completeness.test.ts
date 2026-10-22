@@ -2,6 +2,7 @@ import { afterEach, describe, expect, test } from 'bun:test'
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import process from 'node:process'
 import { getEnv } from '../src/cli'
 import { encryptValue, generateKeypair } from '../src/crypto'
 
@@ -57,5 +58,42 @@ describe('complete environment reads', () => {
     expect(result.success).toBe(false)
     expect(result.output).toBeUndefined()
     expect(result.error).not.toContain('controlled-value')
+  })
+
+  test('with no private key anywhere, the error names the missing key, not the variable', () => {
+    const result = getEnv('PRIVATE_VALUE', { cwd: fixture(), file: '.env.production' })
+    expect(result.error).toContain('no private key')
+    expect(result.error).toContain('DOTENV_PRIVATE_KEY_PRODUCTION')
+    expect(result.error).toContain('.env.keys')
+    expect(result.error).not.toContain('Key not found')
+  })
+
+  test('a private key from another key pair is reported as a mismatch', () => {
+    const directory = fixture()
+    const { publicKey } = generateKeypair()
+    const { privateKey } = generateKeypair()
+    writeFileSync(join(directory, '.env.production'), `DOTENV_PUBLIC_KEY_PRODUCTION=${publicKey}\nPRIVATE_VALUE="${encryptValue('controlled-value', publicKey)}"\n`)
+    writeFileSync(join(directory, '.env.keys'), `DOTENV_PRIVATE_KEY_PRODUCTION=${privateKey}\n`, { mode: 0o600 })
+    const result = getEnv('PRIVATE_VALUE', { cwd: directory, file: '.env.production' })
+    expect(result.success).toBe(false)
+    expect(result.error).toContain('different key pair')
+    expect(result.error).toContain('DOTENV_PUBLIC_KEY_PRODUCTION')
+    expect(result.error).not.toContain('no private key')
+  })
+})
+
+describe('--all is scoped to the file', () => {
+  test('it returns the file\'s variables and nothing from the calling process', () => {
+    const directory = fixture()
+    writeFileSync(join(directory, '.env.production'), 'FROM_FILE=yes\n')
+    process.env.STACKS_2956_SHELL_ONLY = 'leaked'
+    try {
+      const result = getEnv(undefined, { cwd: directory, file: '.env.production', all: true, format: 'json' })
+      expect(result.success).toBe(true)
+      expect(JSON.parse(result.output!)).toEqual({ FROM_FILE: 'yes' })
+    }
+    finally {
+      delete process.env.STACKS_2956_SHELL_ONLY
+    }
   })
 })
