@@ -24,23 +24,15 @@
 
 import { Database } from 'bun:sqlite'
 import { describe, expect, it } from 'bun:test'
-import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { applySqliteCorpus } from './fixtures/sqlite-corpus'
 
 const CORPUS = join(import.meta.dir, '../../../../../database/migrations')
 
 /** Apply the committed corpus to a throwaway in-memory database. */
 function install(): Database {
   const db = new Database(':memory:')
-  for (const file of readdirSync(CORPUS).filter(f => f.endsWith('.sql')).sort()) {
-    // A handful of files fail on prerequisites this harness does not stand up
-    // (print_devices, notifications). They are unrelated to the pivots and
-    // pre-date this test; skipping keeps the failure surface here honest.
-    try {
-      db.exec(readFileSync(join(CORPUS, file), 'utf8'))
-    }
-    catch {}
-  }
+  applySqliteCorpus(db, CORPUS)
   return db
 }
 
@@ -52,6 +44,18 @@ function references(db: Database, table: string): Record<string, string> {
 }
 
 describe('polymorphic pivot foreign keys', () => {
+  // The harness skips a file whose prerequisites it lacks. Pin which ones, so
+  // a skip that cascades through the rest of the corpus fails here instead of
+  // quietly leaving the tables below unbuilt.
+  it('skips only the files whose prerequisites this harness lacks', () => {
+    expect(applySqliteCorpus(new Database(':memory:'), CORPUS)).toEqual([
+      '0000000098-revoke-legacy-long-lived-tokens.sql',
+      '0000000132-add-trait-model-owner-ids.sql',
+      '0000000133-normalize-tag-uniques.sql',
+      '0000000134-auto-misc.sql',
+    ])
+  })
+
   it('categorizable_models.category_id references the CMS categorizables table', () => {
     expect(references(install(), 'categorizable_models').category_id).toBe('categorizables.id')
   })
