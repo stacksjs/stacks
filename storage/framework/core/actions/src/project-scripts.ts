@@ -24,206 +24,148 @@ function fail(message: string): never {
 }
 
 /** Inline so a standalone compiled Buddy needs no adjacent helper files. */
-function windowsCheckCommand(powershell: string, bun: string, script: string): string[] {
-  const source = `
-$ErrorActionPreference = 'Stop'
-$ProgressPreference = 'SilentlyContinue'
-Add-Type -TypeDefinition @'
-using System;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
-public static class StacksOwnedCheck {
-  [StructLayout(LayoutKind.Sequential)] struct BasicLimits {
-    public long ProcessTime, JobTime;
-    public uint Flags;
-    public UIntPtr MinimumWorkingSet, MaximumWorkingSet;
-    public uint ActiveProcessLimit;
-    public UIntPtr Affinity;
-    public uint Priority, Scheduling;
+function windowsCheckHost(bun: string, script: string): string {
+  // HANDLE is an integer token, not a pointer into process memory. Bun's FFI
+  // requires u64 here: https://bun.sh/docs/runtime/ffi#pointers
+  return `
+import { dlopen, FFIType as f, ptr } from 'bun:ffi'
+setInterval(() => {}, 60_000)
+let stopRequested = false
+let permit
+const permitted = new Promise(resolve => { permit = resolve })
+process.on('message', message => {
+  if (message?.stop) { stopRequested = true; permit() }
+  else if (message?.start) permit()
+})
+let api
+let lifetime = 0n
+let job = 0n
+let childProcess = 0n
+let childThread = 0n
+let failure = ''
+let exitCode = 1
+const wide = value => Uint16Array.from({ length: value.length + 1 }, (_, i) => i === value.length ? 0 : value.charCodeAt(i))
+const must = (condition, operation) => {
+  if (!condition) throw new Error('Native Windows ' + operation + ' failed (Win32 ' + api.GetLastError() + ')')
+}
+const makeJob = () => {
+  const handle = api.CreateJobObjectW(null, null)
+  must(handle !== 0n, 'job creation')
+  const limits = new BigUint64Array(18) // JOBOBJECT_EXTENDED_LIMIT_INFORMATION, Win64.
+  new DataView(limits.buffer).setUint32(16, 0x2000, true) // KILL_ON_JOB_CLOSE.
+  if (!api.SetInformationJobObject(handle, 9, ptr(limits), limits.byteLength)) {
+    api.CloseHandle(handle)
+    must(false, 'job limits')
   }
-  [StructLayout(LayoutKind.Sequential)] struct ExtendedLimits {
-    public BasicLimits Basic;
-    public ulong ReadOperations, WriteOperations, OtherOperations, ReadBytes, WriteBytes, OtherBytes;
-    public UIntPtr ProcessMemory, JobMemory, PeakProcessMemory, PeakJobMemory;
-  }
-  [StructLayout(LayoutKind.Sequential)] struct Accounting {
-    public long UserTime, KernelTime, PeriodUserTime, PeriodKernelTime;
-    public uint PageFaults, TotalProcesses, ActiveProcesses, TerminatedProcesses;
-  }
-  [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)] struct Startup {
-    public uint Size;
-    public IntPtr Reserved, Desktop, Title;
-    public uint X, Y, XSize, YSize, XChars, YChars, Fill, Flags;
-    public ushort Show, ReservedSize;
-    public IntPtr ReservedBytes, Input, Output, Error;
-  }
-  [StructLayout(LayoutKind.Sequential)] struct ProcessInfo {
-    public IntPtr Process, Thread;
-    public uint ProcessId, ThreadId;
-  }
-  [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-  static extern IntPtr CreateJobObjectW(IntPtr attributes, string name);
-  [DllImport("kernel32.dll", SetLastError = true)]
-  static extern bool SetInformationJobObject(IntPtr job, int kind, ref ExtendedLimits limits, uint size);
-  [DllImport("kernel32.dll", SetLastError = true)]
-  static extern bool QueryInformationJobObject(IntPtr job, int kind, out Accounting info, uint size, IntPtr returned);
-  [DllImport("kernel32.dll", SetLastError = true)]
-  static extern bool AssignProcessToJobObject(IntPtr job, IntPtr process);
-  [DllImport("kernel32.dll", SetLastError = true)]
-  static extern bool TerminateJobObject(IntPtr job, uint code);
-  [DllImport("kernel32.dll", SetLastError = true)]
-  static extern bool DuplicateHandle(IntPtr sourceProcess, IntPtr source, IntPtr targetProcess,
-    out IntPtr target, uint access, bool inherit, uint options);
-  [DllImport("kernel32.dll")] static extern IntPtr GetCurrentProcess();
-  [DllImport("kernel32.dll")] static extern IntPtr GetStdHandle(int kind);
-  [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-  static extern IntPtr CreateFileW(string name, uint access, uint share, IntPtr security,
-    uint disposition, uint flags, IntPtr template);
-  [DllImport("kernel32.dll", SetLastError = true)]
-  static extern bool PeekNamedPipe(IntPtr pipe, IntPtr buffer, uint size, IntPtr read,
-    out uint available, IntPtr remaining);
-  [DllImport("kernel32.dll", SetLastError = true)]
-  static extern bool ReadFile(IntPtr pipe, byte[] buffer, uint count, out uint read, IntPtr overlapped);
-  [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-  static extern bool CreateProcessW(string application, StringBuilder command, IntPtr processSecurity,
-    IntPtr threadSecurity, bool inherit, uint flags, IntPtr environment, string directory,
-    ref Startup startup, out ProcessInfo process);
-  [DllImport("kernel32.dll", SetLastError = true)] static extern uint ResumeThread(IntPtr thread);
-  [DllImport("kernel32.dll", SetLastError = true)] static extern uint WaitForSingleObject(IntPtr handle, uint timeout);
-  [DllImport("kernel32.dll", SetLastError = true)] static extern bool GetExitCodeProcess(IntPtr process, out uint code);
-  [DllImport("kernel32.dll", SetLastError = true)] static extern bool TerminateProcess(IntPtr process, uint code);
-  [DllImport("kernel32.dll", SetLastError = true)] static extern bool CloseHandle(IntPtr handle);
-  static void Require(bool success) { if (!success) throw new Win32Exception(Marshal.GetLastWin32Error()); }
-  static IntPtr InheritableStandardHandle(int kind) {
-    IntPtr source = GetStdHandle(kind);
-    if (source == IntPtr.Zero || source == new IntPtr(-1)) return IntPtr.Zero;
-    IntPtr inherited;
-    Require(DuplicateHandle(GetCurrentProcess(), source, GetCurrentProcess(), out inherited, 0, true, 2));
-    return inherited;
-  }
-  static IntPtr ConsumerInput() {
-    IntPtr source = CreateFileW("NUL", 0x80000000, 3, IntPtr.Zero, 3, 0, IntPtr.Zero);
-    Require(source != new IntPtr(-1));
+  return handle
+}
+const inherited = source => {
+  const result = new BigUint64Array(1)
+  const current = api.GetCurrentProcess()
+  must(api.DuplicateHandle(current, source, current, ptr(result), 0, 1, 2), 'standard handle inheritance')
+  return result[0]
+}
+try {
+  api = dlopen('kernel32.dll', {
+    GetLastError: { args: [], returns: f.u32 },
+    GetCurrentProcess: { args: [], returns: f.u64 },
+    GetStdHandle: { args: [f.u32], returns: f.u64 },
+    CreateJobObjectW: { args: [f.ptr, f.ptr], returns: f.u64 },
+    SetInformationJobObject: { args: [f.u64, f.i32, f.ptr, f.u32], returns: f.i32 },
+    QueryInformationJobObject: { args: [f.u64, f.i32, f.ptr, f.u32, f.ptr], returns: f.i32 },
+    AssignProcessToJobObject: { args: [f.u64, f.u64], returns: f.i32 },
+    TerminateJobObject: { args: [f.u64, f.u32], returns: f.i32 },
+    DuplicateHandle: { args: [f.u64, f.u64, f.u64, f.ptr, f.u32, f.i32, f.u32], returns: f.i32 },
+    CreateFileW: { args: [f.ptr, f.u32, f.u32, f.ptr, f.u32, f.u32, f.u64], returns: f.u64 },
+    CreateProcessW: { args: [f.ptr, f.ptr, f.ptr, f.ptr, f.i32, f.u32, f.ptr, f.ptr, f.ptr, f.ptr], returns: f.i32 },
+    ResumeThread: { args: [f.u64], returns: f.u32 },
+    WaitForSingleObject: { args: [f.u64, f.u32], returns: f.u32 },
+    GetExitCodeProcess: { args: [f.u64, f.ptr], returns: f.i32 },
+    TerminateProcess: { args: [f.u64, f.u32], returns: f.i32 },
+    CloseHandle: { args: [f.u64], returns: f.i32 },
+  }).symbols
+  // Own the host before it can create a consumer. Parent death closes this
+  // non-inheritable lifetime handle and terminates all remaining descendants.
+  lifetime = makeJob()
+  must(api.AssignProcessToJobObject(lifetime, api.GetCurrentProcess()), 'host ownership')
+  job = makeJob()
+  process.send({ ready: true })
+  await permitted
+  if (!stopRequested) {
+    const startup = new BigUint64Array(13) // STARTUPINFOW, Win64: 104 bytes.
+    const fields = new DataView(startup.buffer)
+    fields.setUint32(0, startup.byteLength, true)
+    fields.setUint32(60, 0x100, true) // STARTF_USESTDHANDLES.
+    const inputName = wide('NUL')
+    const sourceInput = api.CreateFileW(ptr(inputName), 0x80000000, 3, null, 3, 0, 0n)
+    must(sourceInput !== 0xffffffffffffffffn, 'consumer stdin')
+    const handles = []
     try {
-      IntPtr inherited;
-      Require(DuplicateHandle(GetCurrentProcess(), source, GetCurrentProcess(), out inherited, 0, true, 2));
-      return inherited;
-    } finally { CloseHandle(source); }
-  }
-  static bool StopRequested() {
-    uint available;
-    if (PeekNamedPipe(GetStdHandle(-10), IntPtr.Zero, 0, IntPtr.Zero, out available, IntPtr.Zero))
-      return available != 0;
-    int error = Marshal.GetLastWin32Error();
-    if (error == 109 || error == 232) return true; // Closed control pipe.
-    throw new Win32Exception(error);
-  }
-  static bool AwaitStart() {
-    // No consumer can exist until the live Bun host grants permission. It may
-    // safely kill a compiling or waiting helper when cancellation wins first.
-    Console.Out.WriteLine("STACKS_OWNED_CHECK_READY");
-    Console.Out.Flush();
-    while (true) {
-      uint available;
-      if (!PeekNamedPipe(GetStdHandle(-10), IntPtr.Zero, 0, IntPtr.Zero, out available, IntPtr.Zero)) {
-        int error = Marshal.GetLastWin32Error();
-        if (error == 109 || error == 232) return false;
-        throw new Win32Exception(error);
-      }
-      if (available != 0) {
-        byte[] command = new byte[1];
-        uint read;
-        Require(ReadFile(GetStdHandle(-10), command, 1, out read, IntPtr.Zero));
-        return read == 1 && command[0] == 1;
-      }
-      Thread.Sleep(10);
+      handles.push(inherited(sourceInput))
+      handles.push(inherited(api.GetStdHandle(0xfffffff5))) // STD_OUTPUT_HANDLE.
+      handles.push(inherited(api.GetStdHandle(0xfffffff4))) // STD_ERROR_HANDLE.
+      for (let i = 0; i < handles.length; i++) fields.setBigUint64(80 + i * 8, handles[i], true)
+      const processInfo = new BigUint64Array(3) // PROCESS_INFORMATION, Win64.
+      const executable = wide(${JSON.stringify(bun)})
+      const commandLine = wide(${JSON.stringify(`"${bun}" run ${script}`)})
+      const created = api.CreateProcessW(ptr(executable), ptr(commandLine), null, null, 1, 0x08000004, null, null, ptr(startup), ptr(processInfo))
+      childProcess = processInfo[0]
+      childThread = processInfo[1]
+      must(created, 'suspended consumer creation')
     }
-  }
-  static IntPtr Job() {
-    IntPtr job = CreateJobObjectW(IntPtr.Zero, null);
-    Require(job != IntPtr.Zero);
-    ExtendedLimits limits = new ExtendedLimits();
-    limits.Basic.Flags = 0x2000; // JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
-    try { Require(SetInformationJobObject(job, 9, ref limits, (uint)Marshal.SizeOf(typeof(ExtendedLimits)))); }
-    catch { CloseHandle(job); throw; }
-    return job;
-  }
-  public static int Run(string bun, string script) {
-    // The control pipe is never inherited as consumer stdin. Prepare both
-    // ownership jobs before reporting readiness or accepting startup permission.
-    if (StopRequested()) return 1;
-    // The outer job owns this host before it creates anything. If cancellation
-    // races suspended-child assignment below, host death still kills that child.
-    // Retain this non-inheritable handle until process exit; closing it earlier
-    // would terminate this host before it can return the command's exit code.
-    IntPtr lifetime = Job();
-    Require(AssignProcessToJobObject(lifetime, GetCurrentProcess()));
-    IntPtr commandJob = Job();
-    ProcessInfo child = new ProcessInfo();
-    try {
-      if (!AwaitStart() || StopRequested()) return 1;
-      Startup startup = new Startup();
-      startup.Size = (uint)Marshal.SizeOf(typeof(Startup));
-      startup.Flags = 0x100; // STARTF_USESTDHANDLES
-      // Bun can supply non-inheritable standard handles to PowerShell. A
-      // native CreateProcess child needs explicitly inheritable duplicates.
-      // Never execute user code before it belongs to the inner cleanup job.
-      try {
-        startup.Input = ConsumerInput();
-        startup.Output = InheritableStandardHandle(-11);
-        startup.Error = InheritableStandardHandle(-12);
-        Require(CreateProcessW(bun, new StringBuilder("\\\"" + bun + "\\\" run " + script),
-          IntPtr.Zero, IntPtr.Zero, true, 0x08000004, IntPtr.Zero, null, ref startup, out child));
-      } finally {
-        foreach (IntPtr handle in new[] { startup.Input, startup.Output, startup.Error })
-          if (handle != IntPtr.Zero) CloseHandle(handle);
+    finally {
+      api.CloseHandle(sourceInput)
+      for (const handle of handles) api.CloseHandle(handle)
+    }
+    // No user instruction runs until both native ownership jobs contain it.
+    must(api.AssignProcessToJobObject(job, childProcess), 'consumer ownership')
+    must(api.ResumeThread(childThread) !== 0xffffffff, 'consumer startup')
+    while (!stopRequested) {
+      const state = api.WaitForSingleObject(childProcess, 0)
+      if (state === 0) {
+        const code = new Uint32Array(1)
+        must(api.GetExitCodeProcess(childProcess, ptr(code)), 'consumer exit status')
+        exitCode = code[0] | 0
+        break
       }
-      Require(AssignProcessToJobObject(commandJob, child.Process));
-      bool cancelled = StopRequested();
-      if (!cancelled) Require(ResumeThread(child.Thread) != 0xffffffff);
-      while (!cancelled) {
-        uint state = WaitForSingleObject(child.Process, 10);
-        if (state == 0) break;
-        Require(state == 258); // WAIT_TIMEOUT, otherwise retain the native error.
-        cancelled = StopRequested();
-      }
-      uint code = 1;
-      if (!cancelled) Require(GetExitCodeProcess(child.Process, out code));
-      return unchecked((int)code);
-    } finally {
-      try {
-        // Also dispose a suspended child if assigning its inner job failed.
-        if (child.Process != IntPtr.Zero) {
-          uint state = WaitForSingleObject(child.Process, 0);
-          Require(state == 0 || state == 258);
-          if (state == 258) Require(TerminateProcess(child.Process, 1));
-        }
-        // Membership survives an exited intermediate process, unlike a PID
-        // tree. Query it on every exit path before closing the owning handle.
-        // https://learn.microsoft.com/windows/win32/procthread/job-objects
-        Require(TerminateJobObject(commandJob, 1));
-        var cleanup = System.Diagnostics.Stopwatch.StartNew();
-        while (true) {
-          Accounting info;
-          Require(QueryInformationJobObject(commandJob, 1, out info, (uint)Marshal.SizeOf(typeof(Accounting)), IntPtr.Zero));
-          if (info.ActiveProcesses == 0 && (child.Process == IntPtr.Zero || WaitForSingleObject(child.Process, 0) == 0)) break;
-          if (cleanup.ElapsedMilliseconds >= 1000) throw new TimeoutException("Owned Windows processes did not finish cleanup");
-          Thread.Sleep(10);
-        }
-      } finally {
-        if (child.Thread != IntPtr.Zero) CloseHandle(child.Thread);
-        if (child.Process != IntPtr.Zero) CloseHandle(child.Process);
-        Require(CloseHandle(commandJob));
-      }
+      must(state === 258, 'consumer wait') // WAIT_TIMEOUT.
+      await Bun.sleep(10)
     }
   }
 }
-'@
-exit [StacksOwnedCheck]::Run('${bun.replaceAll("'", "''")}', '${script}')
+catch (error) { failure = String(error) }
+try {
+  if (api && job !== 0n) {
+    try {
+      if (childProcess !== 0n) {
+        const state = api.WaitForSingleObject(childProcess, 0)
+        must(state === 0 || state === 258, 'final consumer wait')
+        if (state === 258) must(api.TerminateProcess(childProcess, 1), 'suspended consumer disposal')
+      }
+      must(api.TerminateJobObject(job, 1), 'owned process termination')
+      const accounting = new BigUint64Array(6)
+      const fields = new DataView(accounting.buffer)
+      const deadline = performance.now() + 1000
+      while (true) {
+        must(api.QueryInformationJobObject(job, 1, ptr(accounting), accounting.byteLength, null), 'owned process accounting')
+        if (fields.getUint32(40, true) === 0 && (childProcess === 0n || api.WaitForSingleObject(childProcess, 0) === 0)) break
+        if (performance.now() >= deadline) throw new Error('Owned Windows processes did not finish cleanup')
+        await Bun.sleep(10)
+      }
+    }
+    finally {
+      if (childThread !== 0n) api.CloseHandle(childThread)
+      if (childProcess !== 0n) api.CloseHandle(childProcess)
+      must(api.CloseHandle(job), 'owned job handle disposal')
+    }
+  }
+}
+catch (error) { failure += (failure ? '; ' : '') + String(error) }
+// Keep the lifetime job open until the parent disposes this owned Bun process.
+// Closing it here would kill this host before its completion report is sent.
+if (failure) process.send({ error: failure })
+else process.send({ exitCode })
 `
-  return [powershell, '-NoLogo', '-NoProfile', '-NonInteractive', '-OutputFormat', 'Text', '-EncodedCommand', Buffer.from(source, 'utf16le').toString('base64')]
 }
 
 /** Execute declared project checks with the installed Bun and owned cleanup. */
@@ -251,13 +193,10 @@ export async function runProjectScripts(options: ProjectScriptOptions): Promise<
     if (!Object.hasOwn(manifest.scripts ?? {}, script) || typeof manifest.scripts?.[script] !== 'string' || !manifest.scripts[script].trim())
       fail(`Consumer script ${script} is not declared`)
     options.signal?.throwIfAborted()
-    const windowsTaskkill = process.platform === 'win32' ? Bun.which('taskkill.exe') : undefined
-    const powershell = process.platform === 'win32' ? Bun.which('powershell.exe') ?? Bun.which('pwsh.exe') : undefined
-    if (process.platform === 'win32' && (!windowsTaskkill || !powershell))
-      fail('Windows process ownership requires taskkill.exe and PowerShell with .NET Add-Type')
-    const command = powershell ? windowsCheckCommand(powershell, bun, script) : [bun, 'run', script]
+    const windows = process.platform === 'win32'
+    const command = [bun, 'run', script]
     // Keep an owned Bun host alive after the command exits. Its IPC reports
-    // command completion without losing the live tree anchor taskkill needs.
+    // command completion while its native ownership handles remain alive.
     // POSIX additionally owns the host's process group. Deliberately detached
     // processes remain outside this cleanup contract, which is not a sandbox.
     let reportExit: (code: number) => void = () => {}
@@ -267,81 +206,7 @@ export async function runProjectScripts(options: ProjectScriptOptions): Promise<
       reportFailure = reject
     })
     let interrupted = false
-    let windowsHelperPid: number | undefined
-    let windowsNativeReady = false
-    const host = powershell ? `
-setInterval(() => {}, 60_000)
-let command
-let stopRequested = false
-let consumerPermitted = false
-let start
-const permitted = new Promise(resolve => { start = resolve })
-process.on('message', async (message) => {
-  if (message?.stop) {
-    stopRequested = true
-    start()
-    if (command) {
-      try {
-        // Buffer cancellation even while Add-Type is compiling. It cannot
-        // grant consumer permission, and the native entry checks it before
-        // creating a consumer. Let preparation release its own compiler and
-        // native handles rather than killing the owner during preparation.
-        command.stdin.write(new Uint8Array([2]))
-        await command.stdin.flush()
-      } catch (error) { process.send({ error: String(error) }) }
-    }
-  } else if (message?.prepare) start()
-  else if (message?.start && command && !stopRequested) {
-    consumerPermitted = true
-    command.stdin.write(new Uint8Array([1]))
-    await command.stdin.flush()
-  }
-})
-process.send({ ready: true })
-await permitted
-if (stopRequested) process.send({ exitCode: 1 })
-else {
-  try {
-    command = Bun.spawn(${JSON.stringify(command)}, { stdin: 'pipe', stdout: 'pipe', stderr: 'inherit' })
-    process.send({ helperPid: command.pid })
-    const forward = async () => {
-      const reader = command.stdout.getReader()
-      let prefix = Buffer.alloc(0)
-      let ready = false
-      try {
-        while (true) {
-          const next = await reader.read()
-          if (next.done) break
-          if (ready) { await Bun.write(Bun.stdout, next.value); continue }
-          prefix = Buffer.concat([prefix, Buffer.from(next.value)])
-          const line = prefix.indexOf(10)
-          if (line < 0) {
-            if (prefix.length > 128) throw new Error('Native ownership readiness was malformed')
-            continue
-          }
-          if (prefix.subarray(0, line).toString().trimEnd() !== 'STACKS_OWNED_CHECK_READY')
-            throw new Error('Native ownership readiness was malformed')
-          ready = true
-          // The outer owner must observe native readiness before granting
-          // startup. Until then it can dispose only preparation with taskkill.
-          process.send({ nativeReady: true })
-          if (prefix.length > line + 1) await Bun.write(Bun.stdout, prefix.subarray(line + 1))
-          prefix = Buffer.alloc(0)
-        }
-        if (!ready && !stopRequested) throw new Error('Native ownership readiness was not received')
-      } finally { reader.releaseLock() }
-    }
-    const [code] = await Promise.all([command.exited, forward()])
-    process.send({ exitCode: code })
-  } catch (error) {
-    if (command && !consumerPermitted) {
-      try { command.kill('SIGKILL'); await command.exited } catch {}
-    }
-    process.send({ error: String(error) })
-  }
-}
-` : `
-setInterval(() => {}, 60_000)
+    const host = windows ? windowsCheckHost(bun, script) : `setInterval(() => {}, 60_000)
 try {
   const command = Bun.spawn(${JSON.stringify(command)}, { stdin: 'ignore', stdout: 'inherit', stderr: 'inherit' })
   process.send({ exitCode: await command.exited })
@@ -357,18 +222,10 @@ try {
       stderr: 'pipe',
       detached: process.platform !== 'win32',
       ipc(message) {
-        if (powershell && message?.ready === true) {
-          try { child.send(interrupted ? { stop: true } : { prepare: true }) }
+        if (windows && message?.ready === true) {
+          try { child.send(interrupted ? { stop: true } : { start: true }) }
           catch (error) { reportFailure(new Error(`Consumer script ${script} control channel failed: ${String(error)}`)) }
         }
-        else if (powershell && message?.nativeReady === true) {
-          // Set this before sending startup permission in the same event-loop
-          // turn. Cancellation can now use the prepared native Job Objects.
-          windowsNativeReady = true
-          try { child.send(interrupted ? { stop: true } : { start: true }) }
-          catch (error) { reportFailure(new Error(`Consumer script ${script} native control channel failed: ${String(error)}`)) }
-        }
-        else if (powershell && Number.isSafeInteger(message?.helperPid) && message.helperPid > 0) windowsHelperPid = message.helperPid
         else if (Number.isInteger(message?.exitCode)) reportExit(message.exitCode)
         else reportFailure(new Error(`Consumer script ${script} host failed: ${message?.error ?? 'invalid completion report'}`))
       },
@@ -393,53 +250,22 @@ try {
       if (teardown) return teardown
       teardown = (async () => {
         const errors: string[] = []
-        if (windowsTaskkill) {
+        if (windows) {
           if (!preserveOutput) {
             // Keep the native Job Object owner alive until it has terminated
             // the check and confirmed zero active members, including children
             // whose intermediate parent has already exited.
             try {
               child.send({ stop: true })
-              // Before readiness, the private stop byte waits for bounded
-              // .NET preparation (2000 ms) and native handle/output completion
-              // (1000 ms). Consumers retain their 1000 ms cleanup grace. Do not
-              // kill a compiling helper before it can release its own children.
-              await waitWithin(reported, windowsNativeReady ? 1000 : 2000 + 1000)
+              await waitWithin(reported, 1000)
             }
             catch (error) { errors.push(`Native Windows cleanup completion was not confirmed: ${error instanceof Error ? error.message : String(error)}`) }
           }
-          // The host has now awaited its helper's native process completion.
-          // PID disappearance or taskkill's return alone cannot establish that
-          // the helper has released its working-directory handle on Windows.
-          // Query and terminate the tree before its leader disappears. Killing
-          // only the leader first loses taskkill's parent/descendant relation.
-          try {
-            const result = Bun.spawnSync([windowsTaskkill, '/PID', String(child.pid), '/T', '/F'], {
-              stdout: 'ignore', stderr: 'ignore', timeout: 2000,
-            })
-            if (result.exitCode !== 0) errors.push(`taskkill failed with exit code ${result.exitCode}`)
-          }
-          catch { errors.push('Windows process-tree cleanup could not execute taskkill') }
-          if (windowsHelperPid) {
-            const until = performance.now() + 1000
-            let alive = true
-            while (alive) {
-              try { process.kill(windowsHelperPid, 0) }
-              catch (error) {
-                if ((error as NodeJS.ErrnoException).code === 'ESRCH') alive = false
-                else break
-              }
-              if (!alive || performance.now() >= until) break
-              await new Promise<void>(resolve => setTimeout(resolve, 10))
-            }
-            if (alive) errors.push('Native Windows helper disposal was not confirmed')
-          }
-          if (errors.length) {
-            // Still dispose the direct child and readers while retaining the
-            // tree-cleanup error; this must never produce a success receipt.
-            try { child.kill('SIGKILL') }
-            catch { errors.push('Direct child cleanup also failed') }
-          }
+          // The native host confirms zero owned members before completion.
+          // Killing this direct Bun child then closes its lifetime Job Object;
+          // no external compiler, PowerShell process or PID-tree scan is needed.
+          try { child.kill('SIGKILL') }
+          catch { errors.push('Native Windows owner disposal failed') }
         }
         else {
           const signalGroup = (signal: 'SIGTERM' | 'SIGKILL'): void => {
