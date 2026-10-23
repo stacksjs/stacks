@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'bun:test'
 import { EXPECTED_LOCKFILE_VERSION } from './check-lockfile-version'
 import { isPinnedBun, mismatchWarning, pinnedBunVersion } from './check-bun-version'
+import { minimumBunVersion } from '../../storage/framework/core/utils/src/versions'
 
 const packageJson = readFileSync(resolve(import.meta.dir, '..', '..', 'package.json'), 'utf8')
 const repositoryRoot = resolve(import.meta.dir, '..', '..')
@@ -74,7 +75,9 @@ describe('pinned Bun guard', () => {
    * 1.4.2 bump still left eight workflows (their `BUN_VERSION`, `bun-version`
    * or Pantry `bun.com@` pins), the framework Dockerfile and the marketing copy
    * of config/deps.ts behind. Every workflow is read here, so a new one cannot
-   * pin its own Bun without this failing.
+   * pin its own Bun without this failing. A job may also pin the oldest Bun
+   * Stacks supports, `minimumBunVersion`, on purpose: that is a minimum-version
+   * check, not drift.
    */
   it('pins no other Bun anywhere it is written down', () => {
     const pinnedVersion = pinnedBunVersion(packageJson)
@@ -97,7 +100,7 @@ describe('pinned Bun guard', () => {
     pins.push(['resources/data/features.ts', features.match(/^\s*'bun': '([^']+)'/m)?.[1] ?? 'missing'])
 
     expect(pins.length).toBeGreaterThan(8)
-    expect(pins.filter(([, version]) => version !== pinnedVersion)).toEqual([])
+    expect(pins.filter(([, version]) => version !== pinnedVersion && version !== minimumBunVersion)).toEqual([])
   })
 
   /**
