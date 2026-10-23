@@ -1,0 +1,31 @@
+name: Windows release ownership diagnostic
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  timeout-ownership-diagnostic:
+    name: Repeated timeout disposal (diagnostic only)
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.2'
+      - run: bun install --frozen-lockfile
+      - name: Repeat the unchanged consumer deadline and immediate disposal check
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          set -o pipefail
+          bun test ./storage/framework/core/actions/tests/release-evidence.test.ts --test-name-pattern 'does not accept a timed-out check that handles termination and exits zero' --rerun-each=30 2>&1 | tee artifacts/windows-timeout-ownership.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-timeout-ownership-diagnostic
+          path: artifacts/windows-timeout-ownership.log
+          if-no-files-found: error

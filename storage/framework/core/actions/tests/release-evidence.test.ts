@@ -8,9 +8,14 @@ import { verifyReleaseEvidence } from '../src/release-evidence'
 // Public release verification catches false adoption receipts. It does not
 // establish platform fidelity or verify a registry's signing authority.
 const roots: string[] = []
+const timeoutFailures = new Map<string, string>()
 afterEach(() => {
   // Immediate removal also detects a helper still owning its working directory.
-  for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true })
+  for (const root of roots.splice(0)) {
+    try { rmSync(root, { recursive: true, force: true }) }
+    catch (cause) { throw new Error(`Immediate fixture disposal failed. Verification result: ${timeoutFailures.get(root) ?? 'not a timeout fixture'}`, { cause }) }
+    finally { timeoutFailures.delete(root) }
+  }
 })
 
 const commit = '1234567890abcdef1234567890abcdef12345678'
@@ -139,7 +144,15 @@ describe('source release and consumer evidence', () => {
     const root = consumer()
     writeFileSync(join(root, 'check.ts'), 'process.on("SIGTERM", () => process.exit(0)); await Bun.sleep(60000)')
     writeFileSync(join(root, 'package.json'), JSON.stringify({ scripts: { check: 'bun check.ts' } }))
-    await expect(verifyReleaseEvidence(plan, { cwd: root, fetch: publishedSource(), checkTimeoutMs: 300 })).rejects.toThrow('was interrupted or exceeded its execution budget')
+    let failure: unknown
+    try { await verifyReleaseEvidence(plan, { cwd: root, fetch: publishedSource(), checkTimeoutMs: 300 }) }
+    catch (error) { failure = error }
+    timeoutFailures.set(root, failure instanceof Error ? failure.message : String(failure))
+    expect(failure).toBeInstanceOf(Error)
+    expect((failure as Error).message).toContain('was interrupted or exceeded its execution budget')
+    // The failed execution still has to dispose its owned processes. Retain the
+    // cleanup cause instead of letting a subsequent EBUSY hide the diagnosis.
+    expect((failure as Error).message).not.toContain('cleanup failed')
   })
 
   test.each([false, true])('bounds termination with descendant-held output pipes (detached descendant: %s)', async (detached) => {
