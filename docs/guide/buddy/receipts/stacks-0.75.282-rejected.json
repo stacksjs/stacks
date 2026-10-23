@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "repository": "stacksjs/stacks",
+  "tag": "v0.75.282",
+  "source": "6820e1cecaf328ab0e05f74637d4b2af8ebbd773",
+  "sourceCi": 40030804027,
+  "failedJob": 120678282093,
+  "release": 40030804785,
+  "status": "rejected for downstream adoption",
+  "failure": "All 169 auth tests passed. The post-Action cleanup failed while executing /bin/ps -axo pgid=,stat= on Linux. The old diagnostic did not retain signal, exit code or timeout classification, so those are not established.",
+  "publication": "The exact-source CI gate failed; framework publishing was skipped. This tag is not qualified.",
+  "sourceFix": "https://github.com/pantry-pm/pantry/commit/8f6e6c2e09adb46014c7e48b65da630874fb97dc",
+  "qualifiedToolchainSuccessor": "pantry-0.11.123-publication.json",
+  "recovery": "Adopt the qualified owning-source repair and cut a new patch after full source CI. Preserve the rejected tag; do not retag or rerun unchanged evidence to declare acceptance."
+}

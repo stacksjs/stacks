@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "runtime": "Bun 1.4.4",
+  "nativePublisher": "Pantry 0.11.123 (ff443616a)",
+  "focusedTests": {
+    "passed": 67,
+    "failed": 0,
+    "assertions": 178
+  },
+  "normalFrozenInstallation": true,
+  "normalPantryLockRegeneration": true,
+  "originalInstalledPackages": 8,
+  "sourceAndConsumerGates": "Executed by the adjacent combined plan and receipt",
+  "publisherPathGuard": {
+    "rejects122DespiteCompatibleOverride": true,
+    "accepts123DespiteOldOverride": true
+  },
+  "productionFailureSourceFix": "Pantry8f6e6c2e09adb46014c7e48b65da630874fb97dc, shipped in0.11.123",
+  "previousFrameworkRelease": "stacks-0.75.282-rejected.json",
+  "remainingAvailabilityIssue": "https://github.com/pantry-pm/pantry/issues/249",
+  "limits": [
+    "Tooling adoption does not establish original Gold Edition or native game parity.",
+    "Separate STX Marketplace publishing remains unqualified."
+  ],
+  "logs": [
+    {
+      "name": "stacks-tooling-123-final-focused.log",
+      "sha256": "743f7ebd1cc8979e6766a58ef3b9c8c3ea3dcb0bd6d291614eb32e07a977d955",
+      "bytes": 7350
+    },
+    {
+      "name": "stacks-tooling-123-installed-verification.log",
+      "sha256": "bfba9368b843b85ff12249d66b40ed44c77b6a0a4af17c5f8f416d652a2993c3",
+      "bytes": 696
+    },
+    {
+      "name": "stacks-tooling-123-path-guard-green.log",
+      "sha256": "6819b30f0ba292e66d2da4ed9341253d00aedb63806b7240412aa9336219b83a",
+      "bytes": 559
+    },
+    {
+      "name": "stacks-tooling-123-path-guard-red.log",
+      "sha256": "dc6422c96419af3545228773c61318ae3d2e8b9ee561ce8ec80cf798755443ae",
+      "bytes": 816
+    },
+    {
+      "name": "stacks-tooling-123-bun-install.log",
+      "sha256": "b4618df5f774466a670c6a2e584159c2938bda0847d034f5416433dd87eeb50d",
+      "bytes": 251
+    },
+    {
+      "name": "stacks-tooling-123-pantry-install.log",
+      "sha256": "df605f42fd511008d29b6d457c187efae28c7fa2cce2a1832f46f3f6de43ec34",
+      "bytes": 843
+    },
+    {
+      "name": "stacks-tooling-123-frozen-install.log",
+      "sha256": "f240ed9ab5a13f50a53f435cdf2d6547fc36d941f9a3d56dc808ade8dc57392c",
+      "bytes": 207
+    }
+  ],
+  "integratedFrameworkVersion": "0.75.282"
+}
