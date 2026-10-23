@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.274...v0.75.275)
+
+## 🐛 Bug Fixes
+
+- adopt verified shared native view runtime ([8aae64b](https://github.com/stacksjs/stacks/commit/8aae64b)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.273...v0.75.274)
 
 ## 🔧 Chores
