@@ -285,8 +285,9 @@ process.on('message', async (message) => {
         if (!consumerPermitted) {
           // Retain the Bun host until the preparation helper's native process
           // handle and output have completed, even when taskkill returns first.
-          const killed = Bun.spawnSync([${JSON.stringify(windowsTaskkill)}, '/PID', String(command.pid), '/T', '/F'], { stdout: 'ignore', stderr: 'ignore', timeout: 2000 })
-          if (killed.exitCode !== 0 && command.exitCode === null) throw new Error('Native preparation cleanup failed')
+          const killed = Bun.spawnSync([${JSON.stringify(windowsTaskkill)}, '/PID', String(command.pid), '/T', '/F'], { stdout: 'pipe', stderr: 'pipe', timeout: 2000 })
+          if (killed.exitCode !== 0 && command.exitCode === null)
+            throw new Error('Native preparation cleanup failed (taskkill exit ' + killed.exitCode + '): ' + killed.stdout.toString().trim().slice(0, 1000) + ' ' + killed.stderr.toString().trim().slice(0, 1000))
         }
         else {
           command.stdin.write(new Uint8Array([2]))
