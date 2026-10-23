@@ -1,5 +1,67 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.279...v0.75.280)
+
+## ✨ Features
+
+- **dashboard**: Table returns to the first page when the parent's filters change ([a80bb74](https://github.com/stacksjs/stacks/commit/a80bb74)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2977](https://github.com/stacksjs/stacks/issues/2977))
+
+## 🐛 Bug Fixes
+
+- **dashboard**: notification delivery View and Retry acted on nothing ([932074f](https://github.com/stacksjs/stacks/commit/932074f)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2977](https://github.com/stacksjs/stacks/issues/2977))
+- **dashboard**: a page's sort select and its Table's headers no longer disagree ([1fea245](https://github.com/stacksjs/stacks/commit/1fea245)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2977](https://github.com/stacksjs/stacks/issues/2977))
+- **actions**: isolate internal ownership from application preloads ([c37c0d4](https://github.com/stacksjs/stacks/commit/c37c0d4)) _(by Chris <chris@stacksjs.com>)_
+- **actions**: integrate native job ownership and completion regressions ([6630931](https://github.com/stacksjs/stacks/commit/6630931)) _(by Chris <chris@stacksjs.com>)_
+- **actions**: own Windows consumer jobs directly from Bun ([6379323](https://github.com/stacksjs/stacks/commit/6379323)) _(by Chris <chris@stacksjs.com>)_
+- **actions**: cancel native preparation through its owned control pipe ([433ebc4](https://github.com/stacksjs/stacks/commit/433ebc4)) _(by Chris <chris@stacksjs.com>)_
+
+## ♻️ Code Refactoring
+
+- **dashboard**: errors page through UI/Table, with one pager ([efd229b](https://github.com/stacksjs/stacks/commit/efd229b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2977](https://github.com/stacksjs/stacks/issues/2977))
+- **dashboard**: notification deliveries page through UI/Table, with one pager ([199ffba](https://github.com/stacksjs/stacks/commit/199ffba)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2977](https://github.com/stacksjs/stacks/issues/2977))
+- **dashboard**: digital delivery pages through UI/Table, with one pager ([d6b9119](https://github.com/stacksjs/stacks/commit/d6b9119)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2977](https://github.com/stacksjs/stacks/issues/2977))
+- **dashboard**: shipping methods page through UI/Table, with one pager ([3cf2dfa](https://github.com/stacksjs/stacks/commit/3cf2dfa)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2977](https://github.com/stacksjs/stacks/issues/2977))
+- **dashboard**: shipping zones page through UI/Table, with one pager ([5efb01a](https://github.com/stacksjs/stacks/commit/5efb01a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2977](https://github.com/stacksjs/stacks/issues/2977))
+- **dashboard**: shipping rates page through UI/Table, with one pager ([7cafe3c](https://github.com/stacksjs/stacks/commit/7cafe3c)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2977](https://github.com/stacksjs/stacks/issues/2977))
+- **dashboard**: license keys page through UI/Table, with one pager ([c790a7b](https://github.com/stacksjs/stacks/commit/c790a7b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2977](https://github.com/stacksjs/stacks/issues/2977))
+- **dashboard**: delivery routes page through UI/Table, with one pager ([c2d65d8](https://github.com/stacksjs/stacks/commit/c2d65d8)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2977](https://github.com/stacksjs/stacks/issues/2977))
+- **dashboard**: couriers page through UI/Table, with one pager ([df52fb1](https://github.com/stacksjs/stacks/commit/df52fb1)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2977](https://github.com/stacksjs/stacks/issues/2977))
+- **dashboard**: social posts page through UI/Table, with one pager ([7fca77a](https://github.com/stacksjs/stacks/commit/7fca77a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2977](https://github.com/stacksjs/stacks/issues/2977))
+- **dashboard**: email lists page through UI/Table, with one pager ([516eba5](https://github.com/stacksjs/stacks/commit/516eba5)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2977](https://github.com/stacksjs/stacks/issues/2977))
+- **dashboard**: campaigns page through UI/Table, with one pager ([2dc656f](https://github.com/stacksjs/stacks/commit/2dc656f)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2977](https://github.com/stacksjs/stacks/issues/2977))
+- **dashboard**: abandoned carts page through UI/Table, with one pager ([27a6d6b](https://github.com/stacksjs/stacks/commit/27a6d6b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2977](https://github.com/stacksjs/stacks/issues/2977))
+- **dashboard**: reviews page through UI/Table, with one pager ([8a053c1](https://github.com/stacksjs/stacks/commit/8a053c1)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2977](https://github.com/stacksjs/stacks/issues/2977))
+- **dashboard**: print devices page through UI/Table, with one pager ([a8de33f](https://github.com/stacksjs/stacks/commit/a8de33f)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2977](https://github.com/stacksjs/stacks/issues/2977))
+- **dashboard**: orders page through UI/Table, with one pager ([344f092](https://github.com/stacksjs/stacks/commit/344f092)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2977](https://github.com/stacksjs/stacks/issues/2977))
+- **dashboard**: gift cards page through UI/Table, with one pager ([48029f4](https://github.com/stacksjs/stacks/commit/48029f4)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2977](https://github.com/stacksjs/stacks/issues/2977))
+- **dashboard**: customers and products page through UI/Table, with one pager ([a92bb9e](https://github.com/stacksjs/stacks/commit/a92bb9e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2977](https://github.com/stacksjs/stacks/issues/2977))
+- **dashboard**: coupons page through UI/Table, with one pager ([17dfe9d](https://github.com/stacksjs/stacks/commit/17dfe9d)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2977](https://github.com/stacksjs/stacks/issues/2977))
+- **dashboard**: product categories page through UI/Table, with one pager ([85eda67](https://github.com/stacksjs/stacks/commit/85eda67)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2977](https://github.com/stacksjs/stacks/issues/2977))
+- **dashboard**: campaign performance onto UI/Table, the last unbounded table ([3822fea](https://github.com/stacksjs/stacks/commit/3822fea)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2925](https://github.com/stacksjs/stacks/issues/2925))
+
+## 💄 Styles
+
+- **actions**: normalize native owner source ending ([f51af79](https://github.com/stacksjs/stacks/commit/f51af79)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **actions**: record native Windows ownership qualification ([6c0b66c](https://github.com/stacksjs/stacks/commit/6c0b66c)) _(by Chris <chris@stacksjs.com>)_
+- **actions**: qualify native job ABI and complete ownership regressions ([a32a09f](https://github.com/stacksjs/stacks/commit/a32a09f)) _(by Chris <chris@stacksjs.com>)_
+- **actions**: probe the native Windows Job Object ABI ([35aada7](https://github.com/stacksjs/stacks/commit/35aada7)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- integrate current framework release and native ownership guidance ([81c93b4](https://github.com/stacksjs/stacks/commit/81c93b4)) _(by Chris <chris@stacksjs.com>)_
+
+## 🎉 Miscellaneous
+
+- Merge remote-tracking branch 'origin/main' into codex/settlers-gold-source-evidence ([8557b8c](https://github.com/stacksjs/stacks/commit/8557b8c)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.278...v0.75.279)
 
 ## 🐛 Bug Fixes
