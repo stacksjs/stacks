@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.276...v0.75.277)
+
+## 🔧 Chores
+
+- adopt the verified Craft 0.0.301 release ([4f73549](https://github.com/stacksjs/stacks/commit/4f73549)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.275...v0.75.276)
 
 ## 🐛 Bug Fixes
