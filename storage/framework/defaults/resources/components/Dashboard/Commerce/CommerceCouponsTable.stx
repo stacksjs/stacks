@@ -1,19 +1,17 @@
+@import('../UI/Table')
+
 <script client>
 import type { CouponRecord } from '../../../../app/Actions/Dashboard/Commerce/coupon-records'
 import { formatCurrency } from '@stacksjs/commerce/money'
 
 const records = useReactiveProp('records', [] as CouponRecord[])
 const loading = useReactiveProp('loading', false)
+/** The parent's sort select: a change hands the order back from a header sort. */
+const sortResetKey = useReactiveProp<unknown>('sortResetKey', '')
+/** The parent's search and filters: a change returns to the first page. */
+const pageResetKey = useReactiveProp<unknown>('pageResetKey', '')
 const currency = useReactiveProp('currency', 'USD')
 const emit = defineEmits()
-
-function statusClass(status: string): string {
-  if (status === 'Active')
-    return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300'
-  if (status === 'Scheduled')
-    return 'bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-300'
-  return 'bg-gray-100 text-gray-700 dark:bg-neutral-700 dark:text-neutral-300'
-}
 
 // A percentage is a rate, not money; a fixed amount is integer minor units.
 function discount(record: CouponRecord): string {
@@ -22,47 +20,69 @@ function discount(record: CouponRecord): string {
     : formatCurrency(record.discountValue, currency())
 }
 
-function date(value: string): string {
-  if (!value)
-    return 'No date'
-  const parsed = new Date(`${value}T00:00:00`)
-  return Number.isNaN(parsed.getTime())
-    ? value
-    : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(parsed)
+const COLUMNS = [
+  { key: 'codeLabel', label: 'Coupon', sortable: true, subtitleKey: 'descriptionLabel', class: 'font-medium text-gray-900 dark:text-white' },
+  { key: 'discountLabel', label: 'Discount', subtitleKey: 'discountKind', searchable: false, class: 'font-semibold text-gray-700 whitespace-nowrap dark:text-neutral-200' },
+  {
+    key: 'status',
+    label: 'Status',
+    type: 'badge' as const,
+    sortable: true,
+    badgeClasses: {
+      Active: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300',
+      Scheduled: 'bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-300',
+    },
+  },
+  {
+    key: 'availability',
+    label: 'Availability',
+    type: 'badge' as const,
+    sortable: true,
+    badgeClasses: { enabled: 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40' },
+    badgeLabels: { enabled: 'Enabled', disabled: 'Disabled' },
+  },
+  { key: 'usageLabel', label: 'Usage', align: 'right' as const, searchable: false, class: 'font-mono whitespace-nowrap' },
+  // Calendar dates: parseDashboardDate reads them as that day in every zone.
+  { key: 'startDate', label: 'Starts', type: 'date' as const, sortable: true, emptyText: 'No date', class: 'whitespace-nowrap' },
+  { key: 'endDate', label: 'Ends', type: 'date' as const, sortable: true, emptyText: 'No date', class: 'whitespace-nowrap' },
+]
+
+const ROW_ACTIONS = [
+  { action: 'view', label: 'View', icon: 'i-hugeicons-view' },
+  { action: 'edit', label: 'Edit', icon: 'i-hugeicons-edit-01' },
+  { action: 'delete', label: 'Delete', icon: 'i-hugeicons-waste', class: 'text-red-500' },
+]
+
+const rows = derived(() => records().map(record => ({
+  ...record,
+  codeLabel: record.code || 'No code',
+  descriptionLabel: record.description || 'No description recorded',
+  discountLabel: discount(record),
+  discountKind: record.discountType === 'percentage' ? 'Percentage' : 'Fixed amount',
+  availability: record.isActive ? 'enabled' : 'disabled',
+  usageLabel: `${record.usageCount.toLocaleString()} / ${record.usageLimit ? record.usageLimit.toLocaleString() : 'No limit'}`,
+})))
+
+function handleRowAction(payload: { action: string, row: CouponRecord }): void {
+  emit(payload.action, payload.row)
 }
 </script>
 
-<div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
-  <div :if="loading() && records().length === 0" class="flex items-center justify-center p-10 text-gray-500 text-sm dark:text-neutral-400"><span class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Loading coupons</div>
-  <div :else-if="records().length === 0" class="p-10 text-center"><p class="font-medium text-gray-900 text-sm dark:text-white">No coupons found</p><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Add a coupon or adjust the current filters.</p></div>
-  <div :else class="overflow-x-auto">
-    <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-      <thead class="bg-gray-50 dark:bg-neutral-900/50"><tr>
-        <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Coupon</th>
-        <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Discount</th>
-        <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Status</th>
-        <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Availability</th>
-        <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-right text-xs uppercase dark:text-neutral-400">Usage</th>
-        <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Dates</th>
-        <th scope="col" class="relative px-4 py-3"><span class="sr-only">Actions</span></th>
-      </tr></thead>
-      <tbody class="divide-gray-100 divide-y dark:divide-neutral-700">
-        <template :for="record in records()" :key="record.id">
-          <tr class="hover:bg-gray-50/60 dark:hover:bg-neutral-700/40">
-            <td class="px-4 py-4 min-w-56"><Button variant="ghost" size="xs" @click="emit('view', record)">{{ record.code || 'No code' }}</Button><p class="mt-1 max-w-xs text-gray-400 text-xs truncate dark:text-neutral-500">{{ record.description || 'No description recorded' }}</p></td>
-            <td class="px-4 py-4 text-gray-700 text-sm whitespace-nowrap dark:text-neutral-200"><span class="font-semibold">{{ discount(record) }}</span><p class="mt-1 text-gray-400 text-xs">{{ record.discountType === 'percentage' ? 'Percentage' : 'Fixed amount' }}</p></td>
-            <td class="px-4 py-4 whitespace-nowrap"><span :class="'inline-flex px-2 py-1 font-semibold text-xs rounded-full ' + statusClass(record.status)">{{ record.status }}</span></td>
-            <td class="px-4 py-4 text-sm whitespace-nowrap"><span :class="record.isActive ? 'text-emerald-700 dark:text-emerald-300' : 'text-gray-500 dark:text-neutral-400'">{{ record.isActive ? 'Enabled' : 'Disabled' }}</span></td>
-            <td class="px-4 py-4 font-mono text-gray-700 text-right text-sm whitespace-nowrap dark:text-neutral-200">{{ record.usageCount.toLocaleString() }} / {{ record.usageLimit ? record.usageLimit.toLocaleString() : 'No limit' }}</td>
-            <td class="px-4 py-4 min-w-44 text-gray-500 text-sm dark:text-neutral-400"><p>{{ date(record.startDate) }}</p><p class="mt-1 text-xs">to {{ date(record.endDate) }}</p></td>
-            <td class="px-4 py-3 text-right whitespace-nowrap">
-              <Button variant="ghost" size="sm" iconOnly :ariaLabel="'View ' + record.code" @click="emit('view', record)"><span class="block h-4 w-4 text-blue-500 i-hugeicons-view"></span></Button>
-              <Button variant="ghost" size="sm" iconOnly :ariaLabel="'Edit ' + record.code" @click="emit('edit', record)"><span class="block h-4 w-4 text-blue-500 i-hugeicons-edit-01"></span></Button>
-              <Button variant="ghost" size="sm" iconOnly :ariaLabel="'Delete ' + record.code" @click="emit('delete', record)"><span class="block h-4 w-4 text-red-500 i-hugeicons-waste"></span></Button>
-            </td>
-          </tr>
-        </template>
-      </tbody>
-    </table>
-  </div>
-</div>
+{{--
+  No `searchable` or `filterable`: the parent dashboard owns the search box
+  and the filter selects. Table pages the whole filtered list the parent passes.
+--}}
+<Table
+  :sort-reset-key="sortResetKey()"
+  :page-reset-key="pageResetKey()"
+  :columns="COLUMNS"
+  :data="rows()"
+  :loading="loading()"
+  :row-actions="ROW_ACTIONS"
+  action-label-key="codeLabel"
+  paginated
+  :page-size="20"
+  empty-title="No coupons found"
+  empty-description="Add a coupon or adjust the current filters."
+  @row-action="handleRowAction"
+/>
