@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.282...v0.75.283)
+
+## 🐛 Bug Fixes
+
+- **tooling**: adopt Pantry kernel-based service cleanup ([a6d7013](https://github.com/stacksjs/stacks/commit/a6d7013)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.281...v0.75.282)
 
 ## 🐛 Bug Fixes
