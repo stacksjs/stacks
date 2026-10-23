@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-23T20:50:49.146Z",
+  "sources": [
+    {
+      "repository": "stacksjs/stx",
+      "commit": "6bd2553c7b57ff992cc772f05ca970e58db3bcb3",
+      "tag": "v0.2.676",
+      "gates": [
+        {
+          "runId": 40008752214,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "lint",
+            "native-signing",
+            "test",
+            "typecheck",
+            "publish-commit"
+          ]
+        },
+        {
+          "runId": 40008752418,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "Verify the exact release source",
+            "Verify native signing on macOS 15",
+            "npm",
+            "icons"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "@stacksjs/stx",
+          "version": "0.2.676",
+          "integrity": "sha512-j6dwPiIo24vRFJH+Sp9/EXIeHiGse6+xPoS4zYD66GzH6fGdbrq7iyaB3BjlLUeMi+6KrIhig2OrPy3dGhtfrw==",
+          "tarball": "https://registry.npmjs.org/@stacksjs/stx/-/stx-0.2.676.tgz",
+          "bytes": 2291717,
+          "filesSha256": "128b85d2a73ec70ce61fa6cbc887136392f8197ebf681754ef02fda375e7f04e"
+        },
+        {
+          "name": "@stacksjs/components",
+          "version": "0.2.676",
+          "integrity": "sha512-xK0e2xdDCj0yKv+dyYxievYmUKlROY7ywnE7eoiZDjV39opUBhI/moKMkXZK4zW6YYxoB1003LWXPgIbPUIGHQ==",
+          "tarball": "https://registry.npmjs.org/@stacksjs/components/-/components-0.2.676.tgz",
+          "bytes": 561260,
+          "filesSha256": "1236169d97059754d0831fd8cbd5ae51921165a3240b97cee7809f5cfda8e66a"
+        },
+        {
+          "name": "bun-plugin-stx",
+          "version": "0.2.676",
+          "integrity": "sha512-p+371vsqUXIimmY+gx4w+izQ9WeY9dlkSGVcnq/swY7nAvdbXmr/PbeT7B0SVsFcPPiKNlAOfEa3ea8j+4V1zw==",
+          "tarball": "https://registry.npmjs.org/bun-plugin-stx/-/bun-plugin-stx-0.2.676.tgz",
+          "bytes": 126370,
+          "filesSha256": "4befbd2d6e14d156c6fc548d3f07c2dc06229dc84e0582e763dd20f5f1125777"
+        }
+      ],
+      "releaseCommand": "bun run release:patch",
+      "releaseScript": "bun x --bun @stacksjs/bumpx patch --recursive --yes"
+    }
+  ],
+  "consumer": {
+    "lockfile": "bun.lock",
+    "sha256": "f3866b5b29a2a61e459600b5d306f226e4e110f2d22e72bcdf38f5de7b79cea8",
+    "bunVersion": "1.4.4",
+    "checks": [
+      {
+        "script": "typecheck",
+        "exitCode": 0,
+        "outputSha256": "b34b38227fe4a489713f811a1ca913f14e6a446e4755721b38b4e7f4860b1bc0"
+      }
+    ]
+  }
+}

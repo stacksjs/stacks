@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-23T19:38:12.978248+00:00",
+  "packages": [
+    {
+      "name": "@stacksjs/stx",
+      "version": "0.2.676",
+      "releaseCommit": "6bd2553c7b57ff992cc772f05ca970e58db3bcb3",
+      "repository": "stacksjs/stx",
+      "workflowId": 40008752418,
+      "ciRun": 40008752214,
+      "publicationJobId": 120609039301,
+      "publicationWorkflowPath": ".github/workflows/release.yml",
+      "status": "published",
+      "registryUrl": "https://registry.npmjs.org/%40stacksjs%2Fstx/0.2.676",
+      "npmGitHead": null,
+      "tarball": "https://registry.npmjs.org/@stacksjs/stx/-/stx-0.2.676.tgz",
+      "registryIntegrity": "sha512-j6dwPiIo24vRFJH+Sp9/EXIeHiGse6+xPoS4zYD66GzH6fGdbrq7iyaB3BjlLUeMi+6KrIhig2OrPy3dGhtfrw==",
+      "computedArchiveIntegrity": "sha512-j6dwPiIo24vRFJH+Sp9/EXIeHiGse6+xPoS4zYD66GzH6fGdbrq7iyaB3BjlLUeMi+6KrIhig2OrPy3dGhtfrw==",
+      "originalUploadIntegrity": "sha512-j6dwPiIo24vRFJH+Sp9/EXIeHiGse6+xPoS4zYD66GzH6fGdbrq7iyaB3BjlLUeMi+6KrIhig2OrPy3dGhtfrw==",
+      "registryShasum": "57b3ecdf6b52c73cb4b83dbb8f34ae062fb7cccd",
+      "archiveBytes": 2291717,
+      "integrityVerified": true,
+      "uploadIntegrityVerified": true,
+      "publicationLogSha256": "0ab6944cd480239f395d65b58d92ff5c2e46824ca8e505adc8ed573234adf435",
+      "publishedDependencies": {
+        "dependencies": {
+          "bunfig": "^0.15.21",
+          "ts-images": "^0.2.22",
+          "stx-router": "0.2.674",
+          "bun-plugin-stx": "0.2.676",
+          "@stacksjs/clapp": "^0.2.16",
+          "ts-broadcasting": "^0.0.11",
+          "@stacksjs/ts-css": "^0.3.11",
+          "@stacksjs/desktop": "0.2.674",
+          "@stacksjs/ts-i18n": "^0.1.11",
+          "@stacksjs/sanitizer": "0.2.674",
+          "ts-syntax-highlighter": "^0.2.1"
+        },
+        "peerDependencies": {},
+        "optionalDependencies": {}
+      },
+      "contentChecks": {
+        "package/dist/native/compiler/html-to-ir.js": "f43f1fcbd2e925a78f477d68122b89d93d6655bc6886b6052278b17d0ea479d4",
+        "package/dist/native/compiler/headwind-to-style.js": "4df4e2d5c0521242764942bf69a68127f75492bc9c76e02fa94a6f6dd52084ac",
+        "package/dist/signal-processing.js": "61af4c40b289ad712b2e4ae1bfc92cd96100bde6f67897cd3ccc9e9c06712f39",
+        "package/dist/client/signals-for-runtime.js": "935304a22e5741ffbec086d9e01e625d18b673591772846fe5f300966ea6beec"
+      }
+    },
+    {
+      "name": "@stacksjs/components",
+      "version": "0.2.676",
+      "releaseCommit": "6bd2553c7b57ff992cc772f05ca970e58db3bcb3",
+      "repository": "stacksjs/stx",
+      "workflowId": 40008752418,
+      "ciRun": 40008752214,
+      "publicationJobId": 120609039301,
+      "publicationWorkflowPath": ".github/workflows/release.yml",
+      "status": "published",
+      "registryUrl": "https://registry.npmjs.org/%40stacksjs%2Fcomponents/0.2.676",
+      "npmGitHead": null,
+      "tarball": "https://registry.npmjs.org/@stacksjs/components/-/components-0.2.676.tgz",
+      "registryIntegrity": "sha512-xK0e2xdDCj0yKv+dyYxievYmUKlROY7ywnE7eoiZDjV39opUBhI/moKMkXZK4zW6YYxoB1003LWXPgIbPUIGHQ==",
+      "computedArchiveIntegrity": "sha512-xK0e2xdDCj0yKv+dyYxievYmUKlROY7ywnE7eoiZDjV39opUBhI/moKMkXZK4zW6YYxoB1003LWXPgIbPUIGHQ==",
+      "originalUploadIntegrity": "sha512-xK0e2xdDCj0yKv+dyYxievYmUKlROY7ywnE7eoiZDjV39opUBhI/moKMkXZK4zW6YYxoB1003LWXPgIbPUIGHQ==",
+      "registryShasum": "1d90010594ef0bacbd09a6e34dff74e489f93396",
+      "archiveBytes": 561260,
+      "integrityVerified": true,
+      "uploadIntegrityVerified": true,
+      "publicationLogSha256": "0ab6944cd480239f395d65b58d92ff5c2e46824ca8e505adc8ed573234adf435",
+      "publishedDependencies": {
+        "dependencies": {
+          "@stacksjs/stx": "0.2.676",
+          "bun-plugin-stx": "0.2.676",
+          "ts-video-player": "^0.1.9",
+          "@iconify-json/f7": "^1.2.2",
+          "@stacksjs/ts-css": "^0.3.11",
+          "ts-syntax-highlighter": "^0.2.17"
+        },
+        "peerDependencies": {},
+        "optionalDependencies": {}
+      },
+      "contentChecks": {
+        "package/src/ui/pager/Pager.stx": "b248ade712f720a1574b97cc07124445c8008f38bfd3e59cd8c58fd533bb7ded"
+      }
+    },
+    {
+      "name": "bun-plugin-stx",
+      "version": "0.2.676",
+      "releaseCommit": "6bd2553c7b57ff992cc772f05ca970e58db3bcb3",
+      "repository": "stacksjs/stx",
+      "workflowId": 40008752418,
+      "ciRun": 40008752214,
+      "publicationJobId": 120609039301,
+      "publicationWorkflowPath": ".github/workflows/release.yml",
+      "status": "published",
+      "registryUrl": "https://registry.npmjs.org/bun-plugin-stx/0.2.676",
+      "npmGitHead": null,
+      "tarball": "https://registry.npmjs.org/bun-plugin-stx/-/bun-plugin-stx-0.2.676.tgz",
+      "registryIntegrity": "sha512-p+371vsqUXIimmY+gx4w+izQ9WeY9dlkSGVcnq/swY7nAvdbXmr/PbeT7B0SVsFcPPiKNlAOfEa3ea8j+4V1zw==",
+      "computedArchiveIntegrity": "sha512-p+371vsqUXIimmY+gx4w+izQ9WeY9dlkSGVcnq/swY7nAvdbXmr/PbeT7B0SVsFcPPiKNlAOfEa3ea8j+4V1zw==",
+      "originalUploadIntegrity": "sha512-p+371vsqUXIimmY+gx4w+izQ9WeY9dlkSGVcnq/swY7nAvdbXmr/PbeT7B0SVsFcPPiKNlAOfEa3ea8j+4V1zw==",
+      "registryShasum": "b49316fb0d1620725dc952925be4ffb6193dc3c1",
+      "archiveBytes": 126370,
+      "integrityVerified": true,
+      "uploadIntegrityVerified": true,
+      "publicationLogSha256": "0ab6944cd480239f395d65b58d92ff5c2e46824ca8e505adc8ed573234adf435",
+      "publishedDependencies": {
+        "dependencies": {
+          "stx-router": "0.2.674",
+          "@stacksjs/stx": "0.2.676"
+        },
+        "peerDependencies": {},
+        "optionalDependencies": {}
+      },
+      "contentChecks": {}
+    }
+  ],
+  "publicationState": "fully published and all exact source/release gates green",
+  "workflows": {
+    "ci": {
+      "run": 40008752214,
+      "path": ".github/workflows/ci.yml",
+      "headSha": "6bd2553c7b57ff992cc772f05ca970e58db3bcb3",
+      "conclusion": "success",
+      "requiredJobs": [
+        "lint",
+        "native-signing",
+        "test",
+        "typecheck",
+        "publish-commit"
+      ]
+    },
+    "release": {
+      "run": 40008752418,
+      "path": ".github/workflows/release.yml",
+      "headSha": "6bd2553c7b57ff992cc772f05ca970e58db3bcb3",
+      "conclusion": "success",
+      "requiredJobs": [
+        "Verify the exact release source",
+        "Verify native signing on macOS 15",
+        "npm",
+        "icons"
+      ]
+    }
+  }
+}

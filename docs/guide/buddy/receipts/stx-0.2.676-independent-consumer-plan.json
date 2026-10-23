@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "repository": "stacksjs/stx",
+      "commit": "6bd2553c7b57ff992cc772f05ca970e58db3bcb3",
+      "tag": "v0.2.676",
+      "gates": [
+        {
+          "runId": 40008752214,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "lint",
+            "native-signing",
+            "test",
+            "typecheck",
+            "publish-commit"
+          ]
+        },
+        {
+          "runId": 40008752418,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "Verify the exact release source",
+            "Verify native signing on macOS 15",
+            "npm",
+            "icons"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "@stacksjs/stx",
+          "version": "0.2.676",
+          "integrity": "sha512-j6dwPiIo24vRFJH+Sp9/EXIeHiGse6+xPoS4zYD66GzH6fGdbrq7iyaB3BjlLUeMi+6KrIhig2OrPy3dGhtfrw=="
+        },
+        {
+          "name": "@stacksjs/components",
+          "version": "0.2.676",
+          "integrity": "sha512-xK0e2xdDCj0yKv+dyYxievYmUKlROY7ywnE7eoiZDjV39opUBhI/moKMkXZK4zW6YYxoB1003LWXPgIbPUIGHQ=="
+        },
+        {
+          "name": "bun-plugin-stx",
+          "version": "0.2.676",
+          "integrity": "sha512-p+371vsqUXIimmY+gx4w+izQ9WeY9dlkSGVcnq/swY7nAvdbXmr/PbeT7B0SVsFcPPiKNlAOfEa3ea8j+4V1zw=="
+        }
+      ]
+    }
+  ],
+  "checks": [
+    "typecheck"
+  ]
+}
