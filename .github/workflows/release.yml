@@ -127,9 +127,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@3a37ec776aa9e37e17bd8e3aea2d457cdbd02c36 # v0.11.113
+        uses: pantry-pm/pantry/packages/action@3de609e1a7e305393b3d94e2848d859b39c5b5de # v0.11.120
         with:
-          version: '0.11.113'
+          version: '0.11.120'
           install: 'false'
           packages: bun.com@1.4.2 git-scm.org@2.53.0
 
@@ -193,9 +193,9 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@3a37ec776aa9e37e17bd8e3aea2d457cdbd02c36 # v0.11.113
+        uses: pantry-pm/pantry/packages/action@3de609e1a7e305393b3d94e2848d859b39c5b5de # v0.11.120
         with:
-          version: '0.11.113'
+          version: '0.11.120'
           install: 'false'
           packages: bun.com@1.4.2 git-scm.org@2.53.0
 
@@ -287,6 +287,7 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           set -euo pipefail
+          bun .github/scripts/check-pantry-version.ts
 
           if [ -z "${NPM_TOKEN:-}" ]; then
             echo "No NPM_TOKEN: publishing straight to latest (promotion needs npm auth)."
@@ -481,9 +482,9 @@ jobs:
           bun run zip:all
 
       - name: Create GitHub Release
-        uses: pantry-pm/pantry/packages/action@3a37ec776aa9e37e17bd8e3aea2d457cdbd02c36 # v0.11.113
+        uses: pantry-pm/pantry/packages/action@3de609e1a7e305393b3d94e2848d859b39c5b5de # v0.11.120
         with:
-          version: '0.11.113'
+          version: '0.11.120'
           install: 'false'
           release: 'true'
           release-tag: ${{ steps.get_version.outputs.version }}

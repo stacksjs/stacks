@@ -195,7 +195,7 @@ Native graphics and game fidelity remain independent acceptance gates.
 
 The [Pantry 0.11.119 plan](./receipts/pantry-0.11.119-plan.json) and
 [installed-consumer receipt](./receipts/pantry-0.11.119-receipt.json) record the
-published dependency now required by Buddy. The original npm archive, complete
+earlier published dependency required by Buddy. The original npm archive, complete
 installed files, framework lock and all three type checks passed. Its
 [publication record](./receipts/pantry-0.11.119-publication.json) also retains
 all seven original native archive hashes and execution of the downloaded Mac
@@ -210,6 +210,25 @@ Windows bundle files. That target-data check does not claim Windows execution.
 The generic native CLI Windows Git dependency graph remains separate from the
 verified SDK and Action route. These toolchain checks do not establish native
 game presentation or original-game fidelity.
+
+The [Pantry 0.11.120 plan](./receipts/pantry-0.11.120-plan.json) and
+[installed-consumer receipt](./receipts/pantry-0.11.120-receipt.json) record the
+current SDK, normal lock validation and all three framework type checks. The
+[publication record](./receipts/pantry-0.11.120-publication.json) verifies all
+seven original native archives, executable architectures, the normal Mac CLI
+installation, and the original npm archive. The released CLI recovers two safe
+lookup transport failures before publishing and passes ambiguous-upload and
+redirect checks with one upload per case. The registry now computes Zig package
+hashes with its provisioned native compiler and retains archive SHA-256 separately.
+
+The [rejected 0.75.280 release](./receipts/stacks-0.75.280-rejected.json) retains
+its [44 original accepted npm receipts](./receipts/stacks-0.75.280-original-npm-receipts.json).
+Its CI uploader was Pantry 0.11.113 while Buddy required SDK 0.11.119. A TLS
+initialization failure stopped the logging package before upload and left the
+framework release incomplete. CI and release jobs now pin verified Pantry
+0.11.120, and publication checks the actual `pantry` on `PATH` against Buddy's
+SDK range immediately before uploads. A local-release `PANTRY_BIN` override
+cannot make a different CI publisher pass that check.
 
 ## Framework publication requires exact source CI
 

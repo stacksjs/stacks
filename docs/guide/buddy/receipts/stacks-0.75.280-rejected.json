@@ -1,0 +1,16 @@
+{
+  "tag": "v0.75.280",
+  "source": "56dc6655912927e425b442ed82c9a67c1ea02144",
+  "runId": 39977541279,
+  "failedJob": 120509564757,
+  "acceptedOriginalNpmArchives": 44,
+  "failure": "Pantry native TLS initialization failed before logging upload; later dependency layers and homebrew did not complete.",
+  "adopted": false,
+  "publisher": {
+    "version": "0.11.113",
+    "source": "3a37ec776aa9e37e17bd8e3aea2d457cdbd02c36",
+    "log": "stacks-280-original-npm.log",
+    "logSha256": "97648dae4e638ee8ffd0982fae3b92914c3ac5e6f56c690e5f89dbbaf0397419",
+    "evidence": "Setup Pantry version 0.11.113; pantry 0.11.113 (3a37ec776) in the original npm job log. The SDK dependency version is separate."
+  }
+}

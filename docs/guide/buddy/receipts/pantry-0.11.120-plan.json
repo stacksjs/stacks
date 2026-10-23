@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "repository": "pantry-pm/pantry",
+      "commit": "3de609e1a7e305393b3d94e2848d859b39c5b5de",
+      "tag": "v0.11.120",
+      "gates": [
+        {
+          "runId": 39994392988,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "pantry",
+            "npm",
+            "discord-notification"
+          ]
+        },
+        {
+          "runId": 39994392980,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "typecheck",
+            "lint",
+            "test",
+            "action-native-services (8.4.11)",
+            "action-native-services (26.7.0)",
+            "Explicit native toolchain pins (ubuntu-latest)",
+            "action-redis-service",
+            "windows-git",
+            "native-browser",
+            "action-native-tools",
+            "zig-tests",
+            "Explicit native toolchain pins (macos-latest)",
+            "windows-native-runtime",
+            "continuous-release"
+          ]
+        },
+        {
+          "runId": 39994392885,
+          "workflow": ".github/workflows/build-zig.yml",
+          "requiredJobs": [
+            "compile-all",
+            "Native Windows CLI and compiler links"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "ts-pantry",
+          "version": "0.11.120",
+          "integrity": "sha512-09bKfpEhWUEdkeV3eUXIpn2UvZWokYXaM2ZPdhJQNtaEXVBz6Rw6LRkO1BNgUJ5xpMT8RwZ20e4tf8+PSddX0g=="
+        }
+      ]
+    }
+  ],
+  "checks": [
+    "deps:lockfile:check",
+    "typecheck",
+    "typecheck:app",
+    "typecheck:views"
+  ]
+}

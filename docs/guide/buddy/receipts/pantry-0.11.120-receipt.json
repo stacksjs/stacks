@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-23T18:01:03.457Z",
+  "sources": [
+    {
+      "repository": "pantry-pm/pantry",
+      "commit": "3de609e1a7e305393b3d94e2848d859b39c5b5de",
+      "tag": "v0.11.120",
+      "gates": [
+        {
+          "runId": 39994392988,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "pantry",
+            "npm",
+            "discord-notification"
+          ]
+        },
+        {
+          "runId": 39994392980,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "typecheck",
+            "lint",
+            "test",
+            "action-native-services (8.4.11)",
+            "action-native-services (26.7.0)",
+            "Explicit native toolchain pins (ubuntu-latest)",
+            "action-redis-service",
+            "windows-git",
+            "native-browser",
+            "action-native-tools",
+            "zig-tests",
+            "Explicit native toolchain pins (macos-latest)",
+            "windows-native-runtime",
+            "continuous-release"
+          ]
+        },
+        {
+          "runId": 39994392885,
+          "workflow": ".github/workflows/build-zig.yml",
+          "requiredJobs": [
+            "compile-all",
+            "Native Windows CLI and compiler links"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "ts-pantry",
+          "version": "0.11.120",
+          "integrity": "sha512-09bKfpEhWUEdkeV3eUXIpn2UvZWokYXaM2ZPdhJQNtaEXVBz6Rw6LRkO1BNgUJ5xpMT8RwZ20e4tf8+PSddX0g==",
+          "tarball": "https://registry.npmjs.org/ts-pantry/-/ts-pantry-0.11.120.tgz",
+          "bytes": 1384377,
+          "filesSha256": "875aad6991ee1733e6e6bd7766a2fbc1fc65c0d79c3f9f9311788f4010dc0f95"
+        }
+      ],
+      "releaseCommand": "bun run release:patch",
+      "releaseScript": "bun x --bun @stacksjs/bumpx patch --recursive --execute 'bun .github/scripts/build-release-action.ts' --commit --tag --push --yes"
+    }
+  ],
+  "consumer": {
+    "lockfile": "bun.lock",
+    "sha256": "8cbe40a20d4c3ec49a24fec99b81445a23c51fa414de0043b035d81c4ed66e76",
+    "bunVersion": "1.4.2",
+    "checks": [
+      {
+        "script": "deps:lockfile:check",
+        "exitCode": 0,
+        "outputSha256": "e44042565f2a5541c29f0e8cd31d9d532f9320c42e525d877ccf27f8e23d18aa"
+      },
+      {
+        "script": "typecheck",
+        "exitCode": 0,
+        "outputSha256": "cbaad86dc3d1e9ddb734e623bd29d43f3a45cbc66d7286d8f6477e90b508fcee"
+      },
+      {
+        "script": "typecheck:app",
+        "exitCode": 0,
+        "outputSha256": "e46796991ae43d3cead77a31bdddd2104a35a1dbeedea0bed160fd8841407ec9"
+      },
+      {
+        "script": "typecheck:views",
+        "exitCode": 0,
+        "outputSha256": "00ed0f17619b3ae7b4ed3aaedc3bfdc45d63f14fe07ca4d2e8d69903482d8c5c"
+      }
+    ]
+  }
+}
