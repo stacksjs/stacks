@@ -226,7 +226,7 @@ onMount(() => {
       <label class="flex gap-2 items-center text-gray-500 text-sm dark:text-neutral-400">Sort<select x-model="sort" class="px-3 py-1.5 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="variant">Name</option><option value="options">Most options</option><option value="product">Product</option><option value="newest">Newest</option></select></label>
     </div>
 
-    <CommerceVariantsTable :records="visibleRecords()" :loading="loading()" @edit="openEdit" @delete="openDelete" />
+    <CommerceVariantsTable :sort-reset-key="sort()" :records="visibleRecords()" :loading="loading()" @edit="openEdit" @delete="openDelete" />
   </section>
 </div>
 

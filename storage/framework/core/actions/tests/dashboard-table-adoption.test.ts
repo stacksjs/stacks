@@ -130,6 +130,39 @@ describe('UI/Table timestamp parsing', () => {
   })
 })
 
+/**
+ * A dashboard with its own sort select passes that select to its Table as
+ * `sort-reset-key`, so changing the select hands the order back from a
+ * header sort. Without it the page has two sort controls that disagree: once
+ * a column header was clicked, the select changed nothing visible
+ * (stacksjs/stacks#2977).
+ */
+describe('dashboards with a sort select hand it to their Table', () => {
+  const sources = new Map(components().map(file => [file, readFileSync(file, 'utf8')]))
+  const usesTable = new Set(
+    [...sources].filter(([, source]) => /<Table(?=[\s/>])/.test(source)).map(([file]) => file.split('/').pop()!.replace(/\.stx$/, '')),
+  )
+
+  it('finds pages to check', () => {
+    // Without this, an empty scan would make the next assertion pass.
+    expect([...sources.values()].filter(source => /x-model="sort"/.test(source)).length).toBeGreaterThan(4)
+  })
+
+  it('every Table-backed component under a sort select receives sort-reset-key', () => {
+    const missing: string[] = []
+    for (const [file, source] of sources) {
+      if (!/x-model="sort"/.test(source))
+        continue
+      for (const name of usesTable) {
+        const tag = source.match(new RegExp(`<${name}(?=[\\s/>])[^>]*>`))
+        if (tag && !tag[0].includes(':sort-reset-key='))
+          missing.push(`${file.slice(ROOT.length + 1)} renders <${name}> without :sort-reset-key`)
+      }
+    }
+    expect(missing).toEqual([])
+  })
+})
+
 describe('UI/Table $slots usage', () => {
   const TABLE = join(ROOT, 'UI/Table.stx')
 

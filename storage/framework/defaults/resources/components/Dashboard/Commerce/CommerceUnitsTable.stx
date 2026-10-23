@@ -5,6 +5,8 @@ import type { ProductUnitRecord } from '../../../../app/Actions/Dashboard/Commer
 
 const records = useReactiveProp('records', [] as ProductUnitRecord[])
 const loading = useReactiveProp('loading', false)
+/** The parent's sort select; a change hands the order back from a header sort. */
+const sortResetKey = useReactiveProp<unknown>('sortResetKey', '')
 const emit = defineEmits()
 
 /**
@@ -56,6 +58,7 @@ function handleRowAction(payload: { action: string, row: ProductUnitRecord }): v
   duplicate them. Paging is what was missing, and Table brings it.
 --}}
 <Table
+  :sort-reset-key="sortResetKey()"
   :columns="COLUMNS"
   :data="rows()"
   :loading="loading()"

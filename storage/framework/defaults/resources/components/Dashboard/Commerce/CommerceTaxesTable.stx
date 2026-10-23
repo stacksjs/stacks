@@ -5,6 +5,8 @@ import type { TaxRateRecord } from '../../../../app/Actions/Dashboard/Commerce/t
 
 const records = useReactiveProp('records', [] as TaxRateRecord[])
 const loading = useReactiveProp('loading', false)
+/** The parent's sort select; a change hands the order back from a header sort. */
+const sortResetKey = useReactiveProp<unknown>('sortResetKey', '')
 const emit = defineEmits()
 
 /**
@@ -50,6 +52,7 @@ function handleRowAction(payload: { action: string, row: TaxRateRecord }): void 
   and the filter selects. Paging is what was missing, and Table brings it.
 --}}
 <Table
+  :sort-reset-key="sortResetKey()"
   :columns="COLUMNS"
   :data="rows()"
   :loading="loading()"

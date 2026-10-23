@@ -6,6 +6,8 @@ import { formatCurrency } from '@stacksjs/commerce/money'
 
 const records = useReactiveProp('records', [] as PaymentRecord[])
 const loading = useReactiveProp('loading', false)
+/** The parent's sort select; a change hands the order back from a header sort. */
+const sortResetKey = useReactiveProp<unknown>('sortResetKey', '')
 const emit = defineEmits()
 
 /** `partiallyRefunded` and `bank_transfer` as words, each capitalized. */
@@ -83,6 +85,7 @@ function handleRowAction(payload: { action: string, row: PaymentRecord }): void 
 </script>
 
 <Table
+  :sort-reset-key="sortResetKey()"
   :columns="COLUMNS"
   :data="rows()"
   :loading="loading()"

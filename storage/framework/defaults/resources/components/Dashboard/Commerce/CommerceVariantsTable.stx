@@ -5,6 +5,8 @@ import type { ProductVariantRecord } from '../../../../app/Actions/Dashboard/Com
 
 const records = useReactiveProp('records', [] as ProductVariantRecord[])
 const loading = useReactiveProp('loading', false)
+/** The parent's sort select; a change hands the order back from a header sort. */
+const sortResetKey = useReactiveProp<unknown>('sortResetKey', '')
 const emit = defineEmits()
 
 /**
@@ -48,6 +50,7 @@ function handleRowAction(payload: { action: string, row: ProductVariantRecord })
 </script>
 
 <Table
+  :sort-reset-key="sortResetKey()"
   :columns="COLUMNS"
   :data="rows()"
   :loading="loading()"

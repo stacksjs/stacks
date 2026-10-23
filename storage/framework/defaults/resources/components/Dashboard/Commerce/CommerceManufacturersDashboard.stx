@@ -233,7 +233,7 @@ onMount(() => {
       </label>
     </div>
 
-    <CommerceManufacturersTable :records="visibleRecords()" :loading="loading()" @edit="openEdit" @delete="openDelete" />
+    <CommerceManufacturersTable :sort-reset-key="sort()" :records="visibleRecords()" :loading="loading()" @edit="openEdit" @delete="openDelete" />
   </section>
 </div>
 
