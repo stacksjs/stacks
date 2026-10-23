@@ -1,14 +1,14 @@
+@import('../UI/Table')
+
 <script client>
 import type { AbandonedCartRecord } from '../../../../app/Actions/Dashboard/Marketing/abandoned-cart-records'
-import { formatCurrency } from '@stacksjs/commerce/money'
 
 const records = useReactiveProp('records', [] as AbandonedCartRecord[])
 const loading = useReactiveProp('loading', false)
-
-/** A cart's total is integer minor units, like every commerce amount (stacksjs/stacks#2851). */
-function money(value: number, currency: string): string {
-  return formatCurrency(value, currency)
-}
+/** The parent's sort select: a change hands the order back from a header sort. */
+const sortResetKey = useReactiveProp<unknown>('sortResetKey', '')
+/** The parent's search and filters: a change returns to the first page. */
+const pageResetKey = useReactiveProp<unknown>('pageResetKey', '')
 
 /**
  * How long ago, in the units a person would actually say it in.
@@ -32,60 +32,64 @@ function contents(record: AbandonedCartRecord): string {
   return rest > 0 ? `${shown} +${rest} more` : shown
 }
 
-function stateLabel(record: AbandonedCartRecord): string {
-  if (record.state === 'recovered')
-    return 'Recovered'
-  if (record.state === 'expired')
-    return 'Expired'
-  return record.contacted ? 'Chased' : 'Cold'
+/** Recovered and expired by state; an open cart by whether anyone has chased it yet. */
+function stateKey(record: AbandonedCartRecord): string {
+  if (record.state === 'recovered' || record.state === 'expired')
+    return record.state
+  return record.contacted ? 'chased' : 'cold'
 }
 
-function stateClass(record: AbandonedCartRecord): string {
-  if (record.state === 'recovered')
-    return 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
-  if (record.state === 'expired')
-    return 'bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-300'
-  return record.contacted
-    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
-    : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
-}
+/**
+ * A cart's total is integer minor units, like every commerce amount
+ * (stacksjs/stacks#2851), so value is a currency column in the cart's own
+ * currency. Idle reads as words, and sorts by the hours behind them.
+ */
+const COLUMNS = [
+  { key: 'customerName', label: 'Customer', sortable: true, subtitleKey: 'emailLabel', class: 'font-medium text-gray-900 dark:text-white' },
+  { key: 'contentsLabel', label: 'Left behind', subtitleKey: 'cartLabel', class: 'text-gray-900 dark:text-white' },
+  { key: 'value', label: 'Value', type: 'currency' as const, currencyKey: 'currency', sortable: true, class: 'font-medium text-gray-900 dark:text-white' },
+  { key: 'idleHours', label: 'Idle', sortable: true, slotted: true },
+  {
+    key: 'stateKey',
+    label: 'State',
+    type: 'badge' as const,
+    sortable: true,
+    badgeClasses: {
+      recovered: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
+      expired: 'bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-300',
+      chased: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+      cold: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+    },
+    badgeLabels: { recovered: 'Recovered', expired: 'Expired', chased: 'Chased', cold: 'Cold' },
+  },
+]
+
+const rows = derived(() => records().map(record => ({
+  ...record,
+  emailLabel: record.customerEmail || 'No address on the cart',
+  contentsLabel: contents(record),
+  cartLabel: `Cart #${record.id}`,
+  idleLabel: idle(record.idleHours),
+  stateKey: stateKey(record),
+})))
 </script>
 
-<div class="overflow-x-auto bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
-  <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-    <thead class="bg-gray-50 dark:bg-neutral-900/50">
-      <tr>
-        <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Customer</th>
-        <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Left behind</th>
-        <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Value</th>
-        <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Idle</th>
-        <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">State</th>
-      </tr>
-    </thead>
-    <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
-      <template :if="loading()">
-        <tr><td colspan="5" class="px-4 py-12 text-center text-gray-500 text-sm dark:text-neutral-400"><span class="inline-block mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Loading carts</td></tr>
-      </template>
-      <template :else-if="records().length === 0">
-        <tr><td colspan="5" class="px-4 py-14 text-center"><span class="inline-block h-6 w-6 text-gray-400 i-hugeicons-shopping-cart-01"></span><p class="mt-2 font-medium text-gray-900 text-sm dark:text-white">No carts to chase</p><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Nothing matches these filters, which, for once, is the good outcome.</p></td></tr>
-      </template>
-      <template :else>
-        <template :for="record in records">
-          <tr class="hover:bg-gray-50/70 dark:hover:bg-neutral-700/40">
-            <td class="px-4 py-4 max-w-xs">
-              <p class="font-medium text-gray-900 text-sm dark:text-white">{{ record.customerName }}</p>
-              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ record.customerEmail || 'No address on the cart' }}</p>
-            </td>
-            <td class="px-4 py-4 max-w-sm">
-              <p class="text-gray-900 text-sm dark:text-white">{{ contents(record) }}</p>
-              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Cart #{{ record.id }}</p>
-            </td>
-            <td class="px-4 py-4"><p class="font-medium tabular-nums text-gray-900 text-sm dark:text-white">{{ money(record.value, record.currency) }}</p></td>
-            <td class="px-4 py-4"><p class="text-gray-900 text-sm dark:text-white">{{ idle(record.idleHours) }}</p></td>
-            <td class="px-4 py-4"><span :class="'inline-flex px-2 py-1 font-medium text-xs rounded-full ' + stateClass(record)">{{ stateLabel(record) }}</span></td>
-          </tr>
-        </template>
-      </template>
-    </tbody>
-  </table>
-</div>
+{{--
+  No `searchable` or `filterable`: the parent dashboard owns the search box
+  and the filter selects. Table pages the whole filtered list the parent passes.
+--}}
+<Table
+  :sort-reset-key="sortResetKey()"
+  :page-reset-key="pageResetKey()"
+  :columns="COLUMNS"
+  :data="rows()"
+  :loading="loading()"
+  paginated
+  :page-size="10"
+  empty-title="No carts to chase"
+  empty-description="Nothing matches these filters, which, for once, is the good outcome."
+>
+  <template #cell="{ row }">
+    <p class="text-gray-900 text-sm dark:text-white" x-text="row.idleLabel"></p>
+  </template>
+</Table>

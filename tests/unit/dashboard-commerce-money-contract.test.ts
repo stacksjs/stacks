@@ -105,7 +105,6 @@ describe('commerce dashboard money', () => {
 
   test('the components outside Dashboard/Commerce that show commerce money use the shared helper', () => {
     for (const name of [
-      'Marketing/AbandonedCartsTable.stx',
       'Marketing/AbandonedCartsDashboard.stx',
       'Marketing/RecoveryCampaignDialog.stx',
       'Analytics/SalesAnalytics.stx',
@@ -160,6 +159,8 @@ describe('commerce dashboard money', () => {
       if (rowCurrency)
         expect(component).toContain(rowCurrency)
     }
+    // An abandoned cart carries the currency it was priced in.
+    expect(dashboardSource('Marketing/AbandonedCartsTable.stx')).toMatch(/key: 'value',[^}]*type: 'currency' as const, currencyKey: 'currency'/)
   })
 
   test('the products table shows a stored price of 1999 as $19.99', () => {

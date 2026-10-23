@@ -8,7 +8,6 @@ import type {
 import { formatCurrency } from '@stacksjs/commerce/money'
 import { dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
-import { pageControls } from '../../../../functions/dashboard-list'
 
 const emptySummary: AbandonedCartSummary = {
   open: 0,
@@ -39,8 +38,6 @@ const search = state('')
 const stateFilter = state('open')
 const idleFilter = state('all')
 const sort = state('value')
-const page = state(1)
-const perPage = 10
 const dialogOpen = state(false)
 const saving = state(false)
 const saveError = state('')
@@ -73,22 +70,13 @@ function filteredRecords(): AbandonedCartRecord[] {
     })
 }
 
-function visibleRecords(): AbandonedCartRecord[] {
-  const start = (page() - 1) * perPage
-  return filteredRecords().slice(start, start + perPage)
+/**
+ * What the table is showing: a change returns it to the first page, as this
+ * page's own pager did before the table took over paging.
+ */
+function viewKey(): string {
+  return JSON.stringify([search(), stateFilter(), idleFilter(), sort()])
 }
-
-function totalPages(): number {
-  return Math.max(1, Math.ceil(filteredRecords().length / perPage))
-}
-
-effect(() => {
-  search()
-  stateFilter()
-  idleFilter()
-  sort()
-  page.set(1)
-})
 
 /** Cart totals and campaign thresholds are integer minor units (stacksjs/stacks#2851). */
 function money(value: number): string {
@@ -122,8 +110,6 @@ async function loadCarts(): Promise<void> {
     campaigns.set(data.campaigns)
     defaultCurrency.set(data.defaultCurrency || 'USD')
     defaultIdleHours.set(data.defaultIdleHours || 4)
-    if (page() > totalPages())
-      page.set(totalPages())
   }
   catch (error) {
     loadError.set(error instanceof Error ? error.message : String(error))
@@ -162,8 +148,6 @@ async function createCampaign(payload: Record<string, unknown>): Promise<void> {
     saving.set(false)
   }
 }
-
-const { previousPage, nextPage } = pageControls(page, totalPages)
 
 onMount(() => {
   void loadCarts()
@@ -214,8 +198,7 @@ onMount(() => {
       <label><span class="sr-only">Filter by how long the cart has been idle</span><select x-model="idleFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">Any age</option><option value="4">Idle 4h or more</option><option value="24">Idle a day or more</option><option value="72">Idle 3 days or more</option></select></label>
       <label><span class="sr-only">Sort carts</span><select x-model="sort" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="value">Highest value</option><option value="idle">Longest idle</option><option value="customer">Customer</option></select></label>
     </div>
-    <AbandonedCartsTable :records="visibleRecords()" :loading="loading()" />
-    <div :if="filteredRecords().length > perPage" class="flex items-center justify-between"><p class="text-gray-500 text-sm dark:text-neutral-400">Page {{ page() }} of {{ totalPages() }}</p><div class="flex gap-2"><Button :disabled="page() === 1" variant="secondary" @click="previousPage()">Previous</Button><Button :disabled="page() === totalPages()" variant="secondary" @click="nextPage()">Next</Button></div></div>
+    <AbandonedCartsTable :sort-reset-key="sort()" :page-reset-key="viewKey()" :records="filteredRecords()" :loading="loading()" />
   </section>
 </div>
 
