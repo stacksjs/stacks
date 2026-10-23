@@ -398,7 +398,7 @@ try {
               child.send({ stop: true })
               await waitWithin(reported, 1000)
             }
-            catch { errors.push('Native Windows cleanup completion was not confirmed') }
+            catch (error) { errors.push(`Native Windows cleanup completion was not confirmed: ${error instanceof Error ? error.message : String(error)}`) }
           }
           // Query and terminate the tree before its leader disappears. Killing
           // only the leader first loses taskkill's parent/descendant relation.
