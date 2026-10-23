@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "verifiedAt": "2026-10-23T18:01:03.457Z",
+  "verifiedAt": "2026-10-23T18:14:15.027Z",
   "sources": [
     {
       "repository": "pantry-pm/pantry",
@@ -62,17 +62,17 @@
   "consumer": {
     "lockfile": "bun.lock",
     "sha256": "8cbe40a20d4c3ec49a24fec99b81445a23c51fa414de0043b035d81c4ed66e76",
-    "bunVersion": "1.4.2",
+    "bunVersion": "1.4.4",
     "checks": [
       {
         "script": "deps:lockfile:check",
         "exitCode": 0,
-        "outputSha256": "e44042565f2a5541c29f0e8cd31d9d532f9320c42e525d877ccf27f8e23d18aa"
+        "outputSha256": "ef9a7bcde7423e80e0984fd47dd0f1e7918bf1f0f3ccb765c0577aa3fa928977"
       },
       {
         "script": "typecheck",
         "exitCode": 0,
-        "outputSha256": "cbaad86dc3d1e9ddb734e623bd29d43f3a45cbc66d7286d8f6477e90b508fcee"
+        "outputSha256": "5fb9f4de9d05b971a382d7b534ed1495eb724e38f1f33eb67ead7eaf56b51247"
       },
       {
         "script": "typecheck:app",
