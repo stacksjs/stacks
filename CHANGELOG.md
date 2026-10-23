@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.273...v0.75.274)
+
+## 🔧 Chores
+
+- **bench**: adopt the Fastify header validation security patch ([cc1795d](https://github.com/stacksjs/stacks/commit/cc1795d)) _(by Chris <chris@stacksjs.com>)_
+- adopt the verified Pantry 0.11.119 release ([e8e0cf3](https://github.com/stacksjs/stacks/commit/e8e0cf3)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.272...v0.75.273)
 
 ## 🔧 Chores
