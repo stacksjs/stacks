@@ -268,6 +268,7 @@ export async function runProjectScripts(options: ProjectScriptOptions): Promise<
     })
     let interrupted = false
     let windowsHelperPid: number | undefined
+    let windowsNativeReady = false
     const host = powershell ? `
 setInterval(() => {}, 60_000)
 let command
@@ -281,19 +282,18 @@ process.on('message', async (message) => {
     start()
     if (command) {
       try {
-        if (!consumerPermitted) {
-          // Preparation may itself spawn the C# compiler. Before permission,
-          // the entire helper tree is disposable without interrupting user code.
-          const killed = Bun.spawnSync([${JSON.stringify(windowsTaskkill)}, '/PID', String(command.pid), '/T', '/F'], { stdout: 'ignore', stderr: 'ignore', timeout: 2000 })
-          if (killed.exitCode !== 0 && command.exitCode === null) throw new Error('Native preparation cleanup failed')
-        }
-        else {
-          command.stdin.write(new Uint8Array([2]))
-          await command.stdin.flush()
-        }
+        // A buffered cancellation is safe before the native helper finishes
+        // preparation. It cannot grant consumer startup permission.
+        command.stdin.write(new Uint8Array([2]))
+        await command.stdin.flush()
       } catch (error) { process.send({ error: String(error) }) }
     }
-  } else if (message?.start) start()
+  } else if (message?.prepare) start()
+  else if (message?.start && command && !stopRequested) {
+    consumerPermitted = true
+    command.stdin.write(new Uint8Array([1]))
+    await command.stdin.flush()
+  }
 })
 process.send({ ready: true })
 await permitted
@@ -320,14 +320,9 @@ else {
           if (prefix.subarray(0, line).toString().trimEnd() !== 'STACKS_OWNED_CHECK_READY')
             throw new Error('Native ownership readiness was malformed')
           ready = true
-          if (!stopRequested) {
-            // This assignment and write share one event-loop turn. A later
-            // stop therefore uses cooperative Job Object cleanup, never the
-            // preparation-only kill once user code could be running.
-            consumerPermitted = true
-            command.stdin.write(new Uint8Array([1]))
-            await command.stdin.flush()
-          }
+          // The outer owner must observe native readiness before granting
+          // startup. Until then it can dispose only preparation with taskkill.
+          process.send({ nativeReady: true })
           if (prefix.length > line + 1) await Bun.write(Bun.stdout, prefix.subarray(line + 1))
           prefix = Buffer.alloc(0)
         }
@@ -361,8 +356,15 @@ try {
       detached: process.platform !== 'win32',
       ipc(message) {
         if (powershell && message?.ready === true) {
-          try { child.send(interrupted ? { stop: true } : { start: true }) }
+          try { child.send(interrupted ? { stop: true } : { prepare: true }) }
           catch (error) { reportFailure(new Error(`Consumer script ${script} control channel failed: ${String(error)}`)) }
+        }
+        else if (powershell && message?.nativeReady === true) {
+          // Set this before sending startup permission in the same event-loop
+          // turn. Cancellation can now use the prepared native Job Objects.
+          windowsNativeReady = true
+          try { child.send(interrupted ? { stop: true } : { start: true }) }
+          catch (error) { reportFailure(new Error(`Consumer script ${script} native control channel failed: ${String(error)}`)) }
         }
         else if (powershell && Number.isSafeInteger(message?.helperPid) && message.helperPid > 0) windowsHelperPid = message.helperPid
         else if (Number.isInteger(message?.exitCode)) reportExit(message.exitCode)
@@ -390,7 +392,7 @@ try {
       teardown = (async () => {
         const errors: string[] = []
         if (windowsTaskkill) {
-          if (!preserveOutput) {
+          if (!preserveOutput && windowsNativeReady) {
             // Keep the native Job Object owner alive until it has terminated
             // the check and confirmed zero active members, including children
             // whose intermediate parent has already exited.
@@ -400,6 +402,9 @@ try {
             }
             catch (error) { errors.push(`Native Windows cleanup completion was not confirmed: ${error instanceof Error ? error.message : String(error)}`) }
           }
+          // Before native readiness, only preparation can exist. Dispose its
+          // whole tree directly, using the existing taskkill budget, rather
+          // than waiting for an unprepared helper to acknowledge native cleanup.
           // Query and terminate the tree before its leader disappears. Killing
           // only the leader first loses taskkill's parent/descendant relation.
           try {
