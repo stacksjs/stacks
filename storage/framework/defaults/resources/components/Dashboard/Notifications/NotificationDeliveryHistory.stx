@@ -102,8 +102,17 @@ function nextPage(): void {
   void loadHistory()
 }
 
-function openDelivery(event: CustomEvent<NotificationDelivery>): void {
-  selectedDelivery.set(event.detail)
+/**
+ * A component event reaches this handler as the emitted value, not as a
+ * CustomEvent, so reading `.detail` gave undefined: View opened an empty
+ * dialog and Retry did nothing (stacksjs/stacks#2977). Accept either.
+ */
+function eventValue<T>(value: T | CustomEvent<T>): T {
+  return value instanceof CustomEvent ? value.detail : value
+}
+
+function openDelivery(event: NotificationDelivery | CustomEvent<NotificationDelivery>): void {
+  selectedDelivery.set(eventValue(event))
   showDetails.set(true)
 }
 
@@ -112,8 +121,8 @@ function closeDelivery(): void {
   selectedDelivery.set(null)
 }
 
-async function retryDelivery(event: CustomEvent<NotificationDelivery>): Promise<void> {
-  const delivery = event.detail
+async function retryDelivery(event: NotificationDelivery | CustomEvent<NotificationDelivery>): Promise<void> {
+  const delivery = eventValue(event)
   retryingId.set(delivery.id)
   const retried = await retryNotificationDelivery(delivery)
   if (retried)
