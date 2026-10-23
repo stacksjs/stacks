@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "repository": "pantry-pm/pantry",
+      "commit": "3de609e1a7e305393b3d94e2848d859b39c5b5de",
+      "tag": "v0.11.120",
+      "gates": [
+        {
+          "runId": 39994392988,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "pantry",
+            "npm",
+            "discord-notification"
+          ]
+        },
+        {
+          "runId": 39994392980,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "typecheck",
+            "lint",
+            "test",
+            "action-native-services (8.4.11)",
+            "action-native-services (26.7.0)",
+            "Explicit native toolchain pins (ubuntu-latest)",
+            "action-redis-service",
+            "windows-git",
+            "native-browser",
+            "action-native-tools",
+            "zig-tests",
+            "Explicit native toolchain pins (macos-latest)",
+            "windows-native-runtime",
+            "continuous-release"
+          ]
+        },
+        {
+          "runId": 39994392885,
+          "workflow": ".github/workflows/build-zig.yml",
+          "requiredJobs": [
+            "compile-all",
+            "Native Windows CLI and compiler links"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "ts-pantry",
+          "version": "0.11.120",
+          "integrity": "sha512-09bKfpEhWUEdkeV3eUXIpn2UvZWokYXaM2ZPdhJQNtaEXVBz6Rw6LRkO1BNgUJ5xpMT8RwZ20e4tf8+PSddX0g=="
+        }
+      ]
+    },
+    {
+      "repository": "pickier/pickier",
+      "commit": "0ce83cbbf06f23b0c05a61b332e074292d69961a",
+      "tag": "v0.1.77",
+      "gates": [
+        {
+          "runId": 39999788567,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "npm"
+          ]
+        },
+        {
+          "runId": 39999788210,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "native",
+            "lint",
+            "typecheck",
+            "test"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "pickier",
+          "version": "0.1.77",
+          "integrity": "sha512-ccrUEA9nRlPYXkRUaZ2UHncyH8L7Xy1tuX2KbSlgKN3pO//slDfXe716Q79kKCCDgL8MqoR5eCyHHXRp7qNIlg=="
+        }
+      ]
+    },
+    {
+      "repository": "stacksjs/stx",
+      "commit": "35ac8f35af9d872bdf8b5f26ab8a27da45ead8ef",
+      "tag": "v0.2.671",
+      "gates": [
+        {
+          "runId": 39905978290,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "Verify the exact release source",
+            "Verify native signing on macOS 15",
+            "npm",
+            "icons"
+          ]
+        },
+        {
+          "runId": 39905979097,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "test",
+            "native-signing",
+            "lint",
+            "typecheck",
+            "publish-commit"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "@stacksjs/stx",
+          "version": "0.2.671",
+          "integrity": "sha512-s/xLCz7gz1Spjq8nrEdqv4HcK7xt5M//Wbwg8MAreUPxsghp5PZ1pZBVVLFltbcIrcdnBAHTUWhc6C5IzW+/qg=="
+        },
+        {
+          "name": "@stacksjs/components",
+          "version": "0.2.671",
+          "integrity": "sha512-jZ6jlrIjygNETsD9jMJDx0W0Kd2KR7nR+58HwwGEuTlL9ne9xm2qUAERlkic1UWs8RLezvU5qtvV1SWJr7Lg9w=="
+        },
+        {
+          "name": "bun-plugin-stx",
+          "version": "0.2.671",
+          "integrity": "sha512-90kHceTqg3sB7mkcBl36oxmpsxgVyXtCN8boS6ZROQSdqpMhxhApeOXxrudTMEQykTgyR3ovMJA3835vX6yKZQ=="
+        }
+      ]
+    }
+  ],
+  "checks": [
+    "deps:lockfile:check",
+    "typecheck",
+    "typecheck:app",
+    "typecheck:views",
+    "lint"
+  ]
+}

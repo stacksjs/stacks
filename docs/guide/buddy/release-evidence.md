@@ -230,6 +230,17 @@ framework release incomplete. CI and release jobs now pin verified Pantry
 SDK range immediately before uploads. A local-release `PANTRY_BIN` override
 cannot make a different CI publisher pass that check.
 
+The [combined tooling plan](./receipts/upstream-tooling-2026-10-23-plan.json)
+and [installed-consumer receipt](./receipts/upstream-tooling-2026-10-23-receipt.json)
+verify Pantry 0.11.120, Pickier 0.1.77, and the three consumed STX 0.2.671
+packages against their original accepted archives and every installed file.
+The current Bun 1.4.4 lock, framework and application type checks, view checks,
+and lint all passed. `@stacksjs/lint` requires Pickier 0.1.77 at runtime, so a
+normal app upgrade receives its compiler-cache classification even when an
+older compatible linter was already locked. The [STX publication record](./receipts/stx-0.2.671-publication.json)
+retains the independent source, release and native-signing gates. Unchanged
+0.2.669 packages retain their earlier original publication identities.
+
 ## Framework publication requires exact source CI
 
 The framework Releaser now waits for a successful Main push CI run at the exact release commit before registry publication. It requires completed lint, type, compile, artifact, scaffold, test-shard, deployment and all three platform release-evidence jobs. Missing, skipped, cancelled, failed or duplicate required jobs block publication. An older green run for another commit or a pull request cannot authorize the release. The generated-document bypass does not bypass this source gate.

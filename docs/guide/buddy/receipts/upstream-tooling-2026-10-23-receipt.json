@@ -1,0 +1,186 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-23T19:10:48.884Z",
+  "sources": [
+    {
+      "repository": "pantry-pm/pantry",
+      "commit": "3de609e1a7e305393b3d94e2848d859b39c5b5de",
+      "tag": "v0.11.120",
+      "gates": [
+        {
+          "runId": 39994392988,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "pantry",
+            "npm",
+            "discord-notification"
+          ]
+        },
+        {
+          "runId": 39994392980,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "typecheck",
+            "lint",
+            "test",
+            "action-native-services (8.4.11)",
+            "action-native-services (26.7.0)",
+            "Explicit native toolchain pins (ubuntu-latest)",
+            "action-redis-service",
+            "windows-git",
+            "native-browser",
+            "action-native-tools",
+            "zig-tests",
+            "Explicit native toolchain pins (macos-latest)",
+            "windows-native-runtime",
+            "continuous-release"
+          ]
+        },
+        {
+          "runId": 39994392885,
+          "workflow": ".github/workflows/build-zig.yml",
+          "requiredJobs": [
+            "compile-all",
+            "Native Windows CLI and compiler links"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "ts-pantry",
+          "version": "0.11.120",
+          "integrity": "sha512-09bKfpEhWUEdkeV3eUXIpn2UvZWokYXaM2ZPdhJQNtaEXVBz6Rw6LRkO1BNgUJ5xpMT8RwZ20e4tf8+PSddX0g==",
+          "tarball": "https://registry.npmjs.org/ts-pantry/-/ts-pantry-0.11.120.tgz",
+          "bytes": 1384377,
+          "filesSha256": "875aad6991ee1733e6e6bd7766a2fbc1fc65c0d79c3f9f9311788f4010dc0f95"
+        }
+      ],
+      "releaseCommand": "bun run release:patch",
+      "releaseScript": "bun x --bun @stacksjs/bumpx patch --recursive --execute 'bun .github/scripts/build-release-action.ts' --commit --tag --push --yes"
+    },
+    {
+      "repository": "pickier/pickier",
+      "commit": "0ce83cbbf06f23b0c05a61b332e074292d69961a",
+      "tag": "v0.1.77",
+      "gates": [
+        {
+          "runId": 39999788567,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "npm"
+          ]
+        },
+        {
+          "runId": 39999788210,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "native",
+            "lint",
+            "typecheck",
+            "test"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "pickier",
+          "version": "0.1.77",
+          "integrity": "sha512-ccrUEA9nRlPYXkRUaZ2UHncyH8L7Xy1tuX2KbSlgKN3pO//slDfXe716Q79kKCCDgL8MqoR5eCyHHXRp7qNIlg==",
+          "tarball": "https://registry.npmjs.org/pickier/-/pickier-0.1.77.tgz",
+          "bytes": 2214547,
+          "filesSha256": "fb39fbdd89f2371d0012fbc7156a241c26e0e023441db07f69f8b23e782ea0a9"
+        }
+      ],
+      "releaseCommand": "bun run release:patch",
+      "releaseScript": "./packages/pickier/pickier run CHANGELOG.md --mode lint --fix && bunx --bun @stacksjs/bumpx patch --recursive --yes"
+    },
+    {
+      "repository": "stacksjs/stx",
+      "commit": "35ac8f35af9d872bdf8b5f26ab8a27da45ead8ef",
+      "tag": "v0.2.671",
+      "gates": [
+        {
+          "runId": 39905978290,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "Verify the exact release source",
+            "Verify native signing on macOS 15",
+            "npm",
+            "icons"
+          ]
+        },
+        {
+          "runId": 39905979097,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "test",
+            "native-signing",
+            "lint",
+            "typecheck",
+            "publish-commit"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "@stacksjs/stx",
+          "version": "0.2.671",
+          "integrity": "sha512-s/xLCz7gz1Spjq8nrEdqv4HcK7xt5M//Wbwg8MAreUPxsghp5PZ1pZBVVLFltbcIrcdnBAHTUWhc6C5IzW+/qg==",
+          "tarball": "https://registry.npmjs.org/@stacksjs/stx/-/stx-0.2.671.tgz",
+          "bytes": 2285259,
+          "filesSha256": "21ef33435f9385a1b7b5779d3958b609a6ef54ffab9dfce0982c48aa7567a377"
+        },
+        {
+          "name": "@stacksjs/components",
+          "version": "0.2.671",
+          "integrity": "sha512-jZ6jlrIjygNETsD9jMJDx0W0Kd2KR7nR+58HwwGEuTlL9ne9xm2qUAERlkic1UWs8RLezvU5qtvV1SWJr7Lg9w==",
+          "tarball": "https://registry.npmjs.org/@stacksjs/components/-/components-0.2.671.tgz",
+          "bytes": 560128,
+          "filesSha256": "621d314d7c845fb05e7678623602d4ab7f09474e1f4c395d96ad22f16ff42bb1"
+        },
+        {
+          "name": "bun-plugin-stx",
+          "version": "0.2.671",
+          "integrity": "sha512-90kHceTqg3sB7mkcBl36oxmpsxgVyXtCN8boS6ZROQSdqpMhxhApeOXxrudTMEQykTgyR3ovMJA3835vX6yKZQ==",
+          "tarball": "https://registry.npmjs.org/bun-plugin-stx/-/bun-plugin-stx-0.2.671.tgz",
+          "bytes": 124135,
+          "filesSha256": "09cf966ad627f69cbb39c2e7aa7e0e5e6c74f477e8b70ee1f537050c1edb7412"
+        }
+      ],
+      "releaseCommand": "bun run release:patch",
+      "releaseScript": "bun x --bun @stacksjs/bumpx patch --recursive --yes"
+    }
+  ],
+  "consumer": {
+    "lockfile": "bun.lock",
+    "sha256": "ffbe5d651bc083e36811b3e8d3e4716957ad31db3410635b5ec77e93c30605b1",
+    "bunVersion": "1.4.4",
+    "checks": [
+      {
+        "script": "deps:lockfile:check",
+        "exitCode": 0,
+        "outputSha256": "176d7992a912776c4263de00d1d32ea15a3798baaaffd154684431ac4ac81c21"
+      },
+      {
+        "script": "typecheck",
+        "exitCode": 0,
+        "outputSha256": "339aaefc44a7bfefba3dada05b3f22bc61c29c2f7067369ecc6e0e16fad5612c"
+      },
+      {
+        "script": "typecheck:app",
+        "exitCode": 0,
+        "outputSha256": "e46796991ae43d3cead77a31bdddd2104a35a1dbeedea0bed160fd8841407ec9"
+      },
+      {
+        "script": "typecheck:views",
+        "exitCode": 0,
+        "outputSha256": "00ed0f17619b3ae7b4ed3aaedc3bfdc45d63f14fe07ca4d2e8d69903482d8c5c"
+      },
+      {
+        "script": "lint",
+        "exitCode": 0,
+        "outputSha256": "b3977dc40d605ab268cccdc1a6308e7390bd870e985bddb8ed364a56417b09c8"
+      }
+    ]
+  }
+}

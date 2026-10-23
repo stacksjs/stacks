@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "repository": "stacksjs/stx",
+  "tag": "v0.2.671",
+  "commit": "35ac8f35af9d872bdf8b5f26ab8a27da45ead8ef",
+  "releaseRunId": 39905978290,
+  "sourceCiRunId": 39905979097,
+  "npmArchives": {
+    "packages": [
+      {
+        "name": "bun-plugin-stx",
+        "version": "0.2.671",
+        "shasum": "ae30e2200783e0cd8adf60551ae448095e3fffe3",
+        "integrity": "sha512-90kHceTqg3sB7mkcBl36oxmpsxgVyXtCN8boS6ZROQSdqpMhxhApeOXxrudTMEQykTgyR3ovMJA3835vX6yKZQ==",
+        "file": "bun-plugin-stx-0.2.671.tgz",
+        "bytes": 124135,
+        "sha256": "73806901081b35190f2382ba67a8cc8495f8b289c15912753859fd197625bcb1",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      },
+      {
+        "name": "@stacksjs/components",
+        "version": "0.2.671",
+        "shasum": "c426036033de56d8ef172c40dd5df0bf6f249059",
+        "integrity": "sha512-jZ6jlrIjygNETsD9jMJDx0W0Kd2KR7nR+58HwwGEuTlL9ne9xm2qUAERlkic1UWs8RLezvU5qtvV1SWJr7Lg9w==",
+        "file": "_stacksjs_components-0.2.671.tgz",
+        "bytes": 560128,
+        "sha256": "2453a88a5d09174754a02f3cac95bb36f3b9c7c85f9029513400f618257595c6",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      },
+      {
+        "name": "@stacksjs/stx",
+        "version": "0.2.671",
+        "shasum": "fa02fbf33c08fae6a65439ad2673c84b0e524d1c",
+        "integrity": "sha512-s/xLCz7gz1Spjq8nrEdqv4HcK7xt5M//Wbwg8MAreUPxsghp5PZ1pZBVVLFltbcIrcdnBAHTUWhc6C5IzW+/qg==",
+        "file": "_stacksjs_stx-0.2.671.tgz",
+        "bytes": 2285259,
+        "sha256": "68d0184a9d7ac140ea1ea1a3a9a45f0586a7f6dd1f8e76e24b4635b922e5d5f7",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      }
+    ],
+    "failures": []
+  },
+  "separateExtensionPublication": {
+    "runId": 39905978417,
+    "conclusion": "failure",
+    "limit": "This record does not qualify Marketplace publication."
+  },
+  "scope": "The three consumed 671 packages; unchanged 669 packages retain their original publication receipts."
+}

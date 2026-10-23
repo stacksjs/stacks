@@ -1,0 +1,54 @@
+{
+  "source": "0ce83cbbf06f23b0c05a61b332e074292d69961a",
+  "tag": "v0.1.77",
+  "archives": [
+    {
+      "name": "pickier-darwin-arm64.zip",
+      "size": 41020547,
+      "digest": "sha256:bfc1f152792a8a2d61cd3417edaaa55d6b00ab406cada7072a3162272a2eada0",
+      "zipCrcEntryAndNativeArchitectureVerified": true
+    },
+    {
+      "name": "pickier-darwin-x64.zip",
+      "size": 43637223,
+      "digest": "sha256:ec6e4bcdb427c7da3e2582f167b247e4182128a474327585c974c4dace4ff002",
+      "zipCrcEntryAndNativeArchitectureVerified": true
+    },
+    {
+      "name": "pickier-linux-arm64-musl.zip",
+      "size": 48064233,
+      "digest": "sha256:7860c56da293c4d6a68367786b0b0739622c75a9ec27152c99a10ea79b140967",
+      "zipCrcEntryAndNativeArchitectureVerified": true
+    },
+    {
+      "name": "pickier-linux-arm64.zip",
+      "size": 51841975,
+      "digest": "sha256:3cad9cfc1a27bff2310663b31fb31d5b059c3d3ed3a3976334a20299a69e9663",
+      "zipCrcEntryAndNativeArchitectureVerified": true
+    },
+    {
+      "name": "pickier-linux-x64-musl.zip",
+      "size": 48428953,
+      "digest": "sha256:497da321690e969b3ef2fac84b8029b763fb79cfca67ee1a87636076e41631e6",
+      "zipCrcEntryAndNativeArchitectureVerified": true
+    },
+    {
+      "name": "pickier-linux-x64.zip",
+      "size": 51976670,
+      "digest": "sha256:ceb9573f2e6a0a4dac31de698348d56f5db5da89a2358a6c529f575d14070219",
+      "zipCrcEntryAndNativeArchitectureVerified": true
+    },
+    {
+      "name": "pickier-windows-arm64.zip",
+      "size": 49584283,
+      "digest": "sha256:c70517dcc65984df91fc0df08bf1c1a2bb89f92a95b3df72dad2dea230ab3f17",
+      "zipCrcEntryAndNativeArchitectureVerified": true
+    },
+    {
+      "name": "pickier-windows-x64.zip",
+      "size": 54908260,
+      "digest": "sha256:6cf324fef2b6c1e25765c5f118bac0391b38cb9bae12a2ab888c37dfb7e3e65d",
+      "zipCrcEntryAndNativeArchitectureVerified": true
+    }
+  ]
+}
