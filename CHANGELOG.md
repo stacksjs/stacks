@@ -1,5 +1,22 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.277...v0.75.278)
+
+## 🐛 Bug Fixes
+
+- adopt native dark mode and logo visibility fixes ([4773bfb](https://github.com/stacksjs/stacks/commit/4773bfb)) _(by Chris <chris@stacksjs.com>)_
+- **actions**: grant consumer startup after native ownership readiness ([9ea57c6](https://github.com/stacksjs/stacks/commit/9ea57c6)) _(by Chris <chris@stacksjs.com>)_
+- **testing**: establish committed cookie jars before isolation checks ([fc8b76a](https://github.com/stacksjs/stacks/commit/fc8b76a)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **actions**: retain native Windows cleanup failure causes ([9c7ecbd](https://github.com/stacksjs/stacks/commit/9c7ecbd)) _(by Chris <chris@stacksjs.com>)_
+- **testing**: retain native shared-cookie failure observations ([27c3264](https://github.com/stacksjs/stacks/commit/27c3264)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.276...v0.75.277)
 
 ## 🔧 Chores
