@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
-import { readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 export interface ProjectScriptOptions {
@@ -189,213 +190,223 @@ export async function runProjectScripts(options: ProjectScriptOptions): Promise<
     || !Bun.semver.satisfies(bunVersion, manifest.engines?.bun ?? '>=1.3.0'))
     fail('Consumer Bun executable does not satisfy the declared toolchain')
   receipt.bunVersion = bunVersion
-  for (const script of options.scripts) {
-    if (!Object.hasOwn(manifest.scripts ?? {}, script) || typeof manifest.scripts?.[script] !== 'string' || !manifest.scripts[script].trim())
-      fail(`Consumer script ${script} is not declared`)
-    options.signal?.throwIfAborted()
-    const windows = process.platform === 'win32'
-    const command = [bun, 'run', script]
-    // Keep an owned Bun host alive after the command exits. Its IPC reports
-    // command completion while its native ownership handles remain alive.
-    // POSIX additionally owns the host's process group. Deliberately detached
-    // processes remain outside this cleanup contract, which is not a sandbox.
-    let reportExit: (code: number) => void = () => {}
-    let reportFailure: (error: Error) => void = () => {}
-    const reported = new Promise<number>((resolve, reject) => {
-      reportExit = resolve
-      reportFailure = reject
-    })
-    let interrupted = false
-    const host = windows ? windowsCheckHost(bun, script) : `setInterval(() => {}, 60_000)
-try {
-  const command = Bun.spawn(${JSON.stringify(command)}, { stdin: 'ignore', stdout: 'inherit', stderr: 'inherit' })
-  process.send({ exitCode: await command.exited })
-} catch (error) {
-  process.send({ error: String(error) })
-}
-`
-    const child = Bun.spawn([bun, '--eval', host], {
-      cwd: options.cwd,
-      env: { ...process.env, ...options.env },
-      stdin: 'ignore',
-      stdout: 'pipe',
-      stderr: 'pipe',
-      detached: process.platform !== 'win32',
-      ipc(message) {
-        if (windows && message?.ready === true) {
-          try { child.send(interrupted ? { stop: true } : { start: true }) }
-          catch (error) { reportFailure(new Error(`Consumer script ${script} control channel failed: ${String(error)}`)) }
-        }
-        else if (Number.isInteger(message?.exitCode)) reportExit(message.exitCode)
-        else reportFailure(new Error(`Consumer script ${script} host failed: ${message?.error ?? 'invalid completion report'}`))
-      },
-    })
-    const pipes = [child.stdout, child.stderr].map((stream, index) => ({ reader: stream.getReader(), done: false, source: index === 0 ? 'stdout' as const : 'stderr' as const }))
-    let teardown: Promise<void> | undefined
-    let announceStop: () => void = () => {}
-    const stopped = new Promise<void>(resolve => { announceStop = resolve })
-    const waitWithin = async <T>(promise: Promise<T>, milliseconds: number): Promise<T> => {
-      let timer: ReturnType<typeof setTimeout> | undefined
-      try {
-        return await Promise.race([promise, new Promise<never>((_, reject) => {
-          timer = setTimeout(() => reject(new Error('Process or output cleanup did not finish within its grace period')), milliseconds)
-        })])
-      }
-      finally {
-        if (timer) clearTimeout(timer)
-      }
-    }
-    let draining: Promise<void>
-    const dispose = (preserveOutput: boolean): Promise<void> => {
-      if (teardown) return teardown
-      teardown = (async () => {
-        const errors: string[] = []
-        if (windows) {
-          if (!preserveOutput) {
-            // Keep the native Job Object owner alive until it has terminated
-            // the check and confirmed zero active members, including children
-            // whose intermediate parent has already exited.
-            try {
-              child.send({ stop: true })
-              await waitWithin(reported, 1000)
-            }
-            catch (error) { errors.push(`Native Windows cleanup completion was not confirmed: ${error instanceof Error ? error.message : String(error)}`) }
+  const hostDirectory = mkdtempSync(join(tmpdir(), 'stacks-project-host-'))
+  try {
+    // The internal owner must initialize before application code can run.
+    // Keep its configuration private; the checked command still runs from
+    // the application directory with its own normal Bun configuration.
+    const hostConfig = join(hostDirectory, 'bunfig.toml')
+    writeFileSync(hostConfig, 'preload = []\n')
+    for (const script of options.scripts) {
+      if (!Object.hasOwn(manifest.scripts ?? {}, script) || typeof manifest.scripts?.[script] !== 'string' || !manifest.scripts[script].trim())
+        fail(`Consumer script ${script} is not declared`)
+      options.signal?.throwIfAborted()
+      const windows = process.platform === 'win32'
+      const command = [bun, 'run', script]
+      // Keep an owned Bun host alive after the command exits. Its IPC reports
+      // command completion while its native ownership handles remain alive.
+      // POSIX additionally owns the host's process group. Deliberately detached
+      // processes remain outside this cleanup contract, which is not a sandbox.
+      let reportExit: (code: number) => void = () => {}
+      let reportFailure: (error: Error) => void = () => {}
+      const reported = new Promise<number>((resolve, reject) => {
+        reportExit = resolve
+        reportFailure = reject
+      })
+      let interrupted = false
+      const host = windows ? windowsCheckHost(bun, script) : `setInterval(() => {}, 60_000)
+  try {
+    const command = Bun.spawn(${JSON.stringify(command)}, { stdin: 'ignore', stdout: 'inherit', stderr: 'inherit' })
+    process.send({ exitCode: await command.exited })
+  } catch (error) {
+    process.send({ error: String(error) })
+  }
+  `
+      const child = Bun.spawn([bun, `--config=${hostConfig}`, '--eval', host], {
+        cwd: options.cwd,
+        env: { ...process.env, ...options.env },
+        stdin: 'ignore',
+        stdout: 'pipe',
+        stderr: 'pipe',
+        detached: process.platform !== 'win32',
+        ipc(message) {
+          if (windows && message?.ready === true) {
+            try { child.send(interrupted ? { stop: true } : { start: true }) }
+            catch (error) { reportFailure(new Error(`Consumer script ${script} control channel failed: ${String(error)}`)) }
           }
-          // The native host confirms zero owned members before completion.
-          // Killing this direct Bun child then closes its lifetime Job Object;
-          // no external compiler, PowerShell process or PID-tree scan is needed.
-          try { child.kill('SIGKILL') }
-          catch { errors.push('Native Windows owner disposal failed') }
+          else if (Number.isInteger(message?.exitCode)) reportExit(message.exitCode)
+          else reportFailure(new Error(`Consumer script ${script} host failed: ${message?.error ?? 'invalid completion report'}`))
+        },
+      })
+      const pipes = [child.stdout, child.stderr].map((stream, index) => ({ reader: stream.getReader(), done: false, source: index === 0 ? 'stdout' as const : 'stderr' as const }))
+      let teardown: Promise<void> | undefined
+      let announceStop: () => void = () => {}
+      const stopped = new Promise<void>(resolve => { announceStop = resolve })
+      const waitWithin = async <T>(promise: Promise<T>, milliseconds: number): Promise<T> => {
+        let timer: ReturnType<typeof setTimeout> | undefined
+        try {
+          return await Promise.race([promise, new Promise<never>((_, reject) => {
+            timer = setTimeout(() => reject(new Error('Process or output cleanup did not finish within its grace period')), milliseconds)
+          })])
         }
-        else {
-          const signalGroup = (signal: 'SIGTERM' | 'SIGKILL'): void => {
-            try { process.kill(-child.pid, signal) }
-            catch (error) {
-              // The group may already have exited. Permission and other
-              // failures are cleanup errors rather than successful disposal.
-              if ((error as NodeJS.ErrnoException).code !== 'ESRCH') {
-                const cause = error as NodeJS.ErrnoException
-                errors.push(`Process-group ${signal} failed (code=${cause.code}, errno=${cause.errno}, message=${cause.message})`)
+        finally {
+          if (timer) clearTimeout(timer)
+        }
+      }
+      let draining: Promise<void>
+      const dispose = (preserveOutput: boolean): Promise<void> => {
+        if (teardown) return teardown
+        teardown = (async () => {
+          const errors: string[] = []
+          if (windows) {
+            if (!preserveOutput) {
+              // Keep the native Job Object owner alive until it has terminated
+              // the check and confirmed zero active members, including children
+              // whose intermediate parent has already exited.
+              try {
+                child.send({ stop: true })
+                await waitWithin(reported, 1000)
+              }
+              catch (error) { errors.push(`Native Windows cleanup completion was not confirmed: ${error instanceof Error ? error.message : String(error)}`) }
+            }
+            // The native host confirms zero owned members before completion.
+            // Killing this direct Bun child then closes its lifetime Job Object;
+            // no external compiler, PowerShell process or PID-tree scan is needed.
+            try { child.kill('SIGKILL') }
+            catch { errors.push('Native Windows owner disposal failed') }
+          }
+          else {
+            const signalGroup = (signal: 'SIGTERM' | 'SIGKILL'): void => {
+              try { process.kill(-child.pid, signal) }
+              catch (error) {
+                // The group may already have exited. Permission and other
+                // failures are cleanup errors rather than successful disposal.
+                if ((error as NodeJS.ErrnoException).code !== 'ESRCH') {
+                  const cause = error as NodeJS.ErrnoException
+                  errors.push(`Process-group ${signal} failed (code=${cause.code}, errno=${cause.errno}, message=${cause.message})`)
+                }
               }
             }
-          }
-          signalGroup('SIGTERM')
-          await new Promise<void>(resolve => setTimeout(resolve, 500))
-          signalGroup('SIGKILL')
-          // Signal delivery alone does not prove disposal. Wait for the owned
-          // group to disappear before a completed check can receive a receipt.
-          const until = performance.now() + 1000
-          let pendingError = ''
-          while (true) {
-            try { process.kill(-child.pid, 0) }
-            catch (error) {
-              const cause = error as NodeJS.ErrnoException
-              if (cause.code === 'ESRCH') break
-              pendingError = `signal=0, code=${cause.code}, errno=${cause.errno}, message=${cause.message}`
-              // macOS reports EPERM for a killed group while its final process
-              // is awaiting reaping. This still means disposal is unconfirmed:
-              // yield for reaping, require ESRCH, and fail if the grace expires.
-              if (cause.code !== 'EPERM') {
-                errors.push(`Process-group disposal could not be confirmed (${pendingError})`)
+            signalGroup('SIGTERM')
+            await new Promise<void>(resolve => setTimeout(resolve, 500))
+            signalGroup('SIGKILL')
+            // Signal delivery alone does not prove disposal. Wait for the owned
+            // group to disappear before a completed check can receive a receipt.
+            const until = performance.now() + 1000
+            let pendingError = ''
+            while (true) {
+              try { process.kill(-child.pid, 0) }
+              catch (error) {
+                const cause = error as NodeJS.ErrnoException
+                if (cause.code === 'ESRCH') break
+                pendingError = `signal=0, code=${cause.code}, errno=${cause.errno}, message=${cause.message}`
+                // macOS reports EPERM for a killed group while its final process
+                // is awaiting reaping. This still means disposal is unconfirmed:
+                // yield for reaping, require ESRCH, and fail if the grace expires.
+                if (cause.code !== 'EPERM') {
+                  errors.push(`Process-group disposal could not be confirmed (${pendingError})`)
+                  break
+                }
+              }
+              if (performance.now() >= until) {
+                errors.push(`Owned process group remained after cleanup${pendingError ? ` (${pendingError})` : ''}`)
                 break
               }
+              await new Promise<void>(resolve => setTimeout(resolve, 10))
             }
-            if (performance.now() >= until) {
-              errors.push(`Owned process group remained after cleanup${pendingError ? ` (${pendingError})` : ''}`)
-              break
-            }
-            await new Promise<void>(resolve => setTimeout(resolve, 10))
+          }
+          // On ordinary completion, retain all output before issuing a hash.
+          // A descendant outside our group may hold the pipe indefinitely, so
+          // even the drain has a bounded cleanup grace period.
+          if (preserveOutput) {
+            try { await waitWithin(draining, 1000) }
+            catch { errors.push('Output draining exceeded its cleanup grace period') }
+          }
+          // On interruption or a failed drain, release held readers explicitly.
+          const close = Promise.all([
+            ...pipes.filter(pipe => !pipe.done).map(async (pipe) => {
+              try { await pipe.reader.cancel() }
+              catch { errors.push('Output reader cancellation failed') }
+            }),
+            child.exited,
+          ])
+          try { await waitWithin(close, 1000) }
+          catch { errors.push('Process or output cleanup exceeded its grace period') }
+          if (errors.length) fail(`Consumer script ${script} cleanup failed: ${errors.join('; ')}`)
+        })()
+        // The interruption race awaits this exact promise below. Attach its
+        // rejection handler now so a quick cleanup failure is never unhandled.
+        void teardown.catch(() => {})
+        return teardown
+      }
+      const stop = (): void => {
+        if (interrupted) return
+        interrupted = true
+        void dispose(false)
+        announceStop()
+      }
+      void child.exited.then(code => {
+        if (!teardown) reportFailure(new Error(`Consumer script ${script} host exited before reporting completion (exit code ${code})`))
+      })
+      const deadline = setTimeout(stop, timeoutMs)
+      options.signal?.addEventListener('abort', stop, { once: true })
+      if (options.signal?.aborted) stop()
+      const output = createHash('sha256')
+      async function drain(pipe: typeof pipes[number]): Promise<void> {
+        try {
+          while (true) {
+            const next = await pipe.reader.read()
+            if (next.done) break
+            output.update(next.value)
+            options.onOutput?.(next.value.slice(), pipe.source)
           }
         }
-        // On ordinary completion, retain all output before issuing a hash.
-        // A descendant outside our group may hold the pipe indefinitely, so
-        // even the drain has a bounded cleanup grace period.
-        if (preserveOutput) {
-          try { await waitWithin(draining, 1000) }
-          catch { errors.push('Output draining exceeded its cleanup grace period') }
+        finally {
+          pipe.done = true
+          pipe.reader.releaseLock()
         }
-        // On interruption or a failed drain, release held readers explicitly.
-        const close = Promise.all([
-          ...pipes.filter(pipe => !pipe.done).map(async (pipe) => {
-            try { await pipe.reader.cancel() }
-            catch { errors.push('Output reader cancellation failed') }
-          }),
-          child.exited,
-        ])
-        try { await waitWithin(close, 1000) }
-        catch { errors.push('Process or output cleanup exceeded its grace period') }
-        if (errors.length) fail(`Consumer script ${script} cleanup failed: ${errors.join('; ')}`)
-      })()
-      // The interruption race awaits this exact promise below. Attach its
-      // rejection handler now so a quick cleanup failure is never unhandled.
-      void teardown.catch(() => {})
-      return teardown
-    }
-    const stop = (): void => {
-      if (interrupted) return
-      interrupted = true
-      void dispose(false)
-      announceStop()
-    }
-    void child.exited.then(code => {
-      if (!teardown) reportFailure(new Error(`Consumer script ${script} host exited before reporting completion (exit code ${code})`))
-    })
-    const deadline = setTimeout(stop, timeoutMs)
-    options.signal?.addEventListener('abort', stop, { once: true })
-    if (options.signal?.aborted) stop()
-    const output = createHash('sha256')
-    async function drain(pipe: typeof pipes[number]): Promise<void> {
+      }
+      let exitCode: number
       try {
-        while (true) {
-          const next = await pipe.reader.read()
-          if (next.done) break
-          output.update(next.value)
-          options.onOutput?.(next.value.slice(), pipe.source)
+        draining = Promise.all(pipes.map(drain)).then(() => {})
+        // Install the drain's handler immediately while command completion is
+        // pending so reader failures cannot become unhandled rejections.
+        void draining.catch(reportFailure)
+        const completion = reported.then(exitCode => ({ kind: 'completed' as const, exitCode }))
+        const result = await Promise.race([completion, stopped.then(() => ({ kind: 'interrupted' as const }))])
+        if (result.kind === 'interrupted' || interrupted) {
+          await teardown
+          fail(`Consumer script ${script} was interrupted or exceeded its execution budget`)
         }
+        exitCode = result.exitCode
+        await dispose(true)
+      }
+      catch (error) {
+        const wasInterrupted = interrupted
+        stop()
+        try { await teardown }
+        catch (cleanupError) {
+          // A deadline remains a failed deadline even when Windows also reports
+          // a process-tree cleanup race. Retain both causes for the operator.
+          if (wasInterrupted)
+            fail(`Consumer script ${script} was interrupted or exceeded its execution budget; ${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`)
+          throw cleanupError
+        }
+        throw error
       }
       finally {
-        pipe.done = true
-        pipe.reader.releaseLock()
+        clearTimeout(deadline)
+        options.signal?.removeEventListener('abort', stop)
       }
-    }
-    let exitCode: number
-    try {
-      draining = Promise.all(pipes.map(drain)).then(() => {})
-      // Install the drain's handler immediately while command completion is
-      // pending so reader failures cannot become unhandled rejections.
-      void draining.catch(reportFailure)
-      const completion = reported.then(exitCode => ({ kind: 'completed' as const, exitCode }))
-      const result = await Promise.race([completion, stopped.then(() => ({ kind: 'interrupted' as const }))])
-      if (result.kind === 'interrupted' || interrupted) {
-        await teardown
+      if (interrupted || options.signal?.aborted)
         fail(`Consumer script ${script} was interrupted or exceeded its execution budget`)
-      }
-      exitCode = result.exitCode
-      await dispose(true)
+      if (exitCode !== 0) fail(`Consumer script ${script} failed with exit code ${exitCode}`)
+      if (readFileSync(manifestPath, 'utf8') !== originalManifest)
+        fail(`Consumer script ${script} changed the project manifest`)
+      receipt.checks.push({ script, exitCode: 0, outputSha256: output.digest('hex') })
     }
-    catch (error) {
-      const wasInterrupted = interrupted
-      stop()
-      try { await teardown }
-      catch (cleanupError) {
-        // A deadline remains a failed deadline even when Windows also reports
-        // a process-tree cleanup race. Retain both causes for the operator.
-        if (wasInterrupted)
-          fail(`Consumer script ${script} was interrupted or exceeded its execution budget; ${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`)
-        throw cleanupError
-      }
-      throw error
-    }
-    finally {
-      clearTimeout(deadline)
-      options.signal?.removeEventListener('abort', stop)
-    }
-    if (interrupted || options.signal?.aborted)
-      fail(`Consumer script ${script} was interrupted or exceeded its execution budget`)
-    if (exitCode !== 0) fail(`Consumer script ${script} failed with exit code ${exitCode}`)
-    if (readFileSync(manifestPath, 'utf8') !== originalManifest)
-      fail(`Consumer script ${script} changed the project manifest`)
-    receipt.checks.push({ script, exitCode: 0, outputSha256: output.digest('hex') })
+    return receipt
   }
-  return receipt
+  finally { rmSync(hostDirectory, { recursive: true, force: true }) }
 }
+

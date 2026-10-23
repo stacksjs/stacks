@@ -139,3 +139,20 @@ test('cancellation at final command output cannot become a successful completion
     rmSync(root, { recursive: true, force: true })
   }
 }, 30_000)
+
+
+test('the internal owner leaves application preloads to the checked command', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'stacks-project-preload-boundary-'))
+  writeFileSync(join(root, 'package.json'), JSON.stringify({ scripts: { check: 'bun check.ts' } }))
+  writeFileSync(join(root, 'bunfig.toml'), 'preload = ["./preload.ts"]\n')
+  writeFileSync(join(root, 'preload.ts'), 'import { appendFileSync } from "node:fs"; appendFileSync("preload-pids.txt", String(process.pid) + "\\n")')
+  writeFileSync(join(root, 'check.ts'), 'await Bun.write("check.pid", String(process.pid))')
+  try {
+    const receipt = await runProjectScripts({ cwd: root, scripts: ['check'], timeoutMs: process.platform === 'win32' ? 15_000 : 3000 })
+    expect(receipt.checks[0]?.exitCode).toBe(0)
+    const checkedPid = Number(readFileSync(join(root, 'check.pid'), 'utf8'))
+    const preloadedPids = readFileSync(join(root, 'preload-pids.txt'), 'utf8').trim().split('\n').map(Number)
+    expect(preloadedPids).toEqual([checkedPid])
+  }
+  finally { rmSync(root, { recursive: true, force: true }) }
+}, 30_000)

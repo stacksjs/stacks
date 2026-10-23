@@ -83,6 +83,8 @@ terminate its job and confirm zero active members before the host is removed.
 Consumer stdin remains closed. The host retains its native lifetime job until
 the parent disposes it, and command output handles are inherited explicitly.
 Command bytes are neither filtered nor rewritten.
+The internal owner uses a private Bun configuration so application preload hooks
+run in the checked command, after ownership is ready.
 Library callers can observe those bytes with `runProjectScripts`' optional
 synchronous `onOutput(chunk, stream)` callback. The verifier retains hashes by
 default. An observer failure fails the check and triggers owned cleanup.
