@@ -5,7 +5,6 @@ import type {
 } from '../../../../app/Actions/Dashboard/Commerce/commerce-category-records'
 import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
-import { pageControls } from '../../../../functions/dashboard-list'
 
 interface CategoryIndexResponse {
   records: CommerceCategoryRecord[]
@@ -29,8 +28,6 @@ const search = state('')
 const activeFilter = state('all')
 const hierarchyFilter = state('all')
 const sort = state('order')
-const page = state(1)
-const pageSize = 20
 const loading = state(true)
 const loadError = state('')
 const dialogOpen = state(false)
@@ -72,15 +69,6 @@ function filteredRecords(): CommerceCategoryRecord[] {
     })
 }
 
-function pageCount(): number {
-  return Math.max(1, Math.ceil(filteredRecords().length / pageSize))
-}
-
-function visibleRecords(): CommerceCategoryRecord[] {
-  const selectedPage = Math.min(page(), pageCount())
-  return filteredRecords().slice((selectedPage - 1) * pageSize, selectedPage * pageSize)
-}
-
 function matchingLabel(): string {
   const count = filteredRecords().length
   return `${count} matching ${count === 1 ? 'category' : 'categories'}`
@@ -114,13 +102,13 @@ function exportHref(): string {
   return `data:text/csv;charset=utf-8,${encodeURIComponent(`\uFEFF${csv}`)}`
 }
 
-effect(() => {
-  search()
-  activeFilter()
-  hierarchyFilter()
-  sort()
-  page.set(1)
-})
+/**
+ * What the table is showing: a change returns it to the first page, as this
+ * page's own pager did before the table took over paging.
+ */
+function viewKey(): string {
+  return JSON.stringify([search(), activeFilter(), hierarchyFilter(), sort()])
+}
 
 async function loadCategories(): Promise<void> {
   loading.set(true)
@@ -129,7 +117,6 @@ async function loadCategories(): Promise<void> {
     const data = await dashboardApi<CategoryIndexResponse>('/api/dashboard/commerce/categories')
     records.set(Array.isArray(data.records) ? data.records : [])
     summary.set(data.summary ?? { ...emptySummary })
-    page.set(Math.min(page(), Math.max(1, Math.ceil((data.records?.length || 0) / pageSize))))
   }
   catch (error) {
     loadError.set('Product categories could not be loaded.')
@@ -231,8 +218,6 @@ async function deleteCategory(): Promise<void> {
   }
 }
 
-const { previousPage, nextPage } = pageControls(page, pageCount)
-
 onMount(() => {
   void loadCategories()
 })
@@ -267,14 +252,9 @@ onMount(() => {
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <p class="text-gray-500 text-sm dark:text-neutral-400">{{ matchingLabel() }}</p>
-      <div class="flex gap-2 items-center">
-        <Button variant="secondary" size="sm" :disabled="page() <= 1" @click="previousPage()">Previous</Button>
-        <span class="text-gray-500 text-sm dark:text-neutral-400">Page {{ Math.min(page(), pageCount()) }} of {{ pageCount() }}</span>
-        <Button variant="secondary" size="sm" :disabled="page() >= pageCount()" @click="nextPage()">Next</Button>
-      </div>
     </div>
 
-    <CommerceCategoriesTable :records="visibleRecords()" :all-records="records()" :loading="loading()" @view="openDetails" @edit="openEdit" @delete="openDelete" />
+    <CommerceCategoriesTable :sort-reset-key="sort()" :page-reset-key="viewKey()" :records="filteredRecords()" :all-records="records()" :loading="loading()" @view="openDetails" @edit="openEdit" @delete="openDelete" />
   </section>
 </div>
 
