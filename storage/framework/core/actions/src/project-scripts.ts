@@ -282,10 +282,16 @@ process.on('message', async (message) => {
     start()
     if (command) {
       try {
-        // A buffered cancellation is safe before the native helper finishes
-        // preparation. It cannot grant consumer startup permission.
-        command.stdin.write(new Uint8Array([2]))
-        await command.stdin.flush()
+        if (!consumerPermitted) {
+          // Retain the Bun host until the preparation helper's native process
+          // handle and output have completed, even when taskkill returns first.
+          const killed = Bun.spawnSync([${JSON.stringify(windowsTaskkill)}, '/PID', String(command.pid), '/T', '/F'], { stdout: 'ignore', stderr: 'ignore', timeout: 2000 })
+          if (killed.exitCode !== 0 && command.exitCode === null) throw new Error('Native preparation cleanup failed')
+        }
+        else {
+          command.stdin.write(new Uint8Array([2]))
+          await command.stdin.flush()
+        }
       } catch (error) { process.send({ error: String(error) }) }
     }
   } else if (message?.prepare) start()
@@ -392,19 +398,23 @@ try {
       teardown = (async () => {
         const errors: string[] = []
         if (windowsTaskkill) {
-          if (!preserveOutput && windowsNativeReady) {
+          if (!preserveOutput) {
             // Keep the native Job Object owner alive until it has terminated
             // the check and confirmed zero active members, including children
             // whose intermediate parent has already exited.
             try {
               child.send({ stop: true })
-              await waitWithin(reported, 1000)
+              // Preparation owns a bounded taskkill operation (2000 ms),
+              // followed by the same 1000 ms native-exit/output finalization
+              // grace. A competing 1000 ms timer used to kill this owner while
+              // its existing cleanup operation was still legitimately running.
+              await waitWithin(reported, windowsNativeReady ? 1000 : 2000 + 1000)
             }
             catch (error) { errors.push(`Native Windows cleanup completion was not confirmed: ${error instanceof Error ? error.message : String(error)}`) }
           }
-          // Before native readiness, only preparation can exist. Dispose its
-          // whole tree directly, using the existing taskkill budget, rather
-          // than waiting for an unprepared helper to acknowledge native cleanup.
+          // The host has now awaited its helper's native process completion.
+          // PID disappearance or taskkill's return alone cannot establish that
+          // the helper has released its working-directory handle on Windows.
           // Query and terminate the tree before its leader disappears. Killing
           // only the leader first loses taskkill's parent/descendant relation.
           try {
