@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-23T00:33:28.119Z",
+  "sources": [
+    {
+      "repository": "pantry-pm/pantry",
+      "commit": "6fbf7259c2764d18a12d915bf8bc68c500cb4931",
+      "tag": "v0.11.119",
+      "gates": [
+        {
+          "runId": 39876351498,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "pantry",
+            "npm",
+            "discord-notification"
+          ]
+        },
+        {
+          "runId": 39876350630,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "typecheck",
+            "zig-tests",
+            "action-native-services (8.4.11)",
+            "Explicit native toolchain pins (macos-latest)",
+            "native-browser",
+            "action-native-services (26.7.0)",
+            "Explicit native toolchain pins (ubuntu-latest)",
+            "test",
+            "action-redis-service",
+            "windows-git",
+            "lint",
+            "action-native-tools",
+            "windows-native-runtime",
+            "continuous-release"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "ts-pantry",
+          "version": "0.11.119",
+          "integrity": "sha512-GbEFWzpiKuT8NPYsXsDn7208KEHu6AH8L7AgywIb1K36Xjh8SqzVWrjnXHOfsPAsJ2N1HS20mThgZNiSkOdb/w==",
+          "tarball": "https://registry.npmjs.org/ts-pantry/-/ts-pantry-0.11.119.tgz",
+          "bytes": 1384085,
+          "filesSha256": "254b45c88498d33049983d5050c886d127dc0d3395ddc264084d1d36a72d06ac"
+        }
+      ],
+      "releaseCommand": "bun run release:patch",
+      "releaseScript": "bun x --bun @stacksjs/bumpx patch --recursive --execute 'bun .github/scripts/build-release-action.ts' --commit --tag --push --yes"
+    }
+  ],
+  "consumer": {
+    "lockfile": "bun.lock",
+    "sha256": "74bc33dcd97ece700191ecfb3c5e6cff88af58e03d903986a48c38069c42c879",
+    "bunVersion": "1.4.2",
+    "checks": [
+      {
+        "script": "deps:lockfile:check",
+        "exitCode": 0,
+        "outputSha256": "392e0d0f2f73971c753b30ac1193165e5e16b72018c29ee2bf3b6950aadca52b"
+      },
+      {
+        "script": "typecheck",
+        "exitCode": 0,
+        "outputSha256": "596a7aec9e6d013acd2093a4d1deb3fbbaf206190ac9889d04fa7a2c8adce134"
+      },
+      {
+        "script": "typecheck:app",
+        "exitCode": 0,
+        "outputSha256": "2a057e73d0f276cfc5e9c8609b351fbb1e15e6b25e237ac453f6309045da3ec2"
+      },
+      {
+        "script": "typecheck:views",
+        "exitCode": 0,
+        "outputSha256": "6a83fff2afa42e1ae955d951b02debcee441fee8f35f01fe125c2ecee45bdb78"
+      }
+    ]
+  }
+}

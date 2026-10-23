@@ -1,0 +1,263 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-23T00:32:59.238544+00:00",
+  "repository": "pantry-pm/pantry",
+  "source": "6fbf7259c2764d18a12d915bf8bc68c500cb4931",
+  "tag": "v0.11.119",
+  "sourceCiRunId": 39876350630,
+  "releaseRunId": 39876351498,
+  "originalNpmArchives": [
+    {
+      "name": "ts-pantry",
+      "version": "0.11.119",
+      "shasum": "6e882a82961a554af74748033a0a369e94cc64dc",
+      "integrity": "sha512-GbEFWzpiKuT8NPYsXsDn7208KEHu6AH8L7AgywIb1K36Xjh8SqzVWrjnXHOfsPAsJ2N1HS20mThgZNiSkOdb/w==",
+      "file": "ts-pantry-0.11.119.tgz",
+      "bytes": 1384085,
+      "sha256": "7f6856125800045b828b89abcb1b124b70b11c2260f5cc5d9aed9bae76665bf7",
+      "matchedOriginalMetadataAndCompleteBytes": true
+    }
+  ],
+  "nativeArchives": {
+    "tag": "v0.11.119",
+    "source": "6fbf7259c2764d18a12d915bf8bc68c500cb4931",
+    "manifestSha256": "e6fd1094b0139c42d20b7fa794478fb448862098169364a632ba61d4554ed042",
+    "archives": [
+      {
+        "name": "pantry-linux-x64.zip",
+        "size": 3111813,
+        "sha256": "df18080d277e6e7770afe19329b311a04b4fbc851c5efeccc10a68aa87607b26",
+        "matchedOriginalManifestAndGithubDigest": true
+      },
+      {
+        "name": "pantry-linux-arm64.zip",
+        "size": 2976794,
+        "sha256": "cbbb7270a3f770f31b6ce73e9a5acffb7a5faf121c13eb8651f8c0c215562b55",
+        "matchedOriginalManifestAndGithubDigest": true
+      },
+      {
+        "name": "pantry-darwin-x64.zip",
+        "size": 3126168,
+        "sha256": "c2d9c788bdd92d6e960f57173b9d4d06e0b16036606b5702227b2749ae8bd8b7",
+        "matchedOriginalManifestAndGithubDigest": true
+      },
+      {
+        "name": "pantry-darwin-arm64.zip",
+        "size": 2843344,
+        "sha256": "2f9abbd8204304df40d82e20528b2c62f64d2b3b6de14ae84393da6b7be64cb8",
+        "matchedOriginalManifestAndGithubDigest": true
+      },
+      {
+        "name": "pantry-windows-x64.zip",
+        "size": 3201062,
+        "sha256": "115076c22cb64ff874133c1d96fdc05e1d54c54b4d944bcb0ea526ed92e12bb2",
+        "matchedOriginalManifestAndGithubDigest": true
+      },
+      {
+        "name": "pantry-freebsd-x64.zip",
+        "size": 3135698,
+        "sha256": "6f6ba7696bd20ea3c14c089bae7131f0ad032acdcb7222a9083ff4878bf95e70",
+        "matchedOriginalManifestAndGithubDigest": true
+      },
+      {
+        "name": "pantry-freebsd-arm64.zip",
+        "size": 2909799,
+        "sha256": "eca12a10abc70092b335fb2746d4fbd8c892ccaa2c8b95bef1e3aec0eb6018c5",
+        "matchedOriginalManifestAndGithubDigest": true
+      }
+    ]
+  },
+  "nativeExecutableHeaders": [
+    {
+      "platform": "linux-x64",
+      "binaryBytes": 9294800,
+      "binarySha256": "7e7240a55aec5f8fa00be50097981b4494126b1d6cbe85d65df4b2726955d4a2",
+      "format": "ELF",
+      "elfOsAbi": 0,
+      "interpreter": null,
+      "notes": [],
+      "expectedArchitectureAndFormatMatched": true
+    },
+    {
+      "platform": "linux-arm64",
+      "binaryBytes": 8721280,
+      "binarySha256": "77a9b62651c3fde46a662acc9a3be6cfd9f3b75a615af7088078741de5539e8e",
+      "format": "ELF",
+      "elfOsAbi": 0,
+      "interpreter": null,
+      "notes": [],
+      "expectedArchitectureAndFormatMatched": true
+    },
+    {
+      "platform": "darwin-x64",
+      "binaryBytes": 9200457,
+      "binarySha256": "a7cef699a2641836592277bb42ca8bed1e2c1ba27f2737581bcde3a6bd4d2fe6",
+      "format": "Mach-O",
+      "expectedArchitectureAndFormatMatched": true
+    },
+    {
+      "platform": "darwin-arm64",
+      "binaryBytes": 8757512,
+      "binarySha256": "be7d9040ab7cb38dd02bad855947e9f307adac04c117872b1c68a42235aeef46",
+      "format": "Mach-O",
+      "expectedArchitectureAndFormatMatched": true
+    },
+    {
+      "platform": "windows-x64",
+      "binaryBytes": 9943040,
+      "binarySha256": "4e26f6310a261f82c13f2693f5cd7fbb8bc02129fd38a86288875a3d7da20212",
+      "format": "PE",
+      "expectedArchitectureAndFormatMatched": true
+    },
+    {
+      "platform": "freebsd-x64",
+      "binaryBytes": 9196416,
+      "binarySha256": "0ab3c7d1238a462b27a3f7c8fe27d7560c8a3d92a450aca4fb8ca689572f8490",
+      "format": "ELF",
+      "elfOsAbi": 0,
+      "interpreter": "/libexec/ld-elf.so.1",
+      "notes": [
+        {
+          "vendor": "FreeBSD",
+          "type": 1,
+          "descriptorHex": "b45e1500"
+        },
+        {
+          "vendor": "FreeBSD",
+          "type": 4,
+          "descriptorHex": "00000000"
+        },
+        {
+          "vendor": "FreeBSD",
+          "type": 2,
+          "descriptorHex": "00000000"
+        }
+      ],
+      "qualificationLimit": "The generic ELF OSABI byte is zero. The FreeBSD interpreter and ABI note identify the target; native FreeBSD execution is not established.",
+      "expectedArchitectureAndFormatMatched": true
+    },
+    {
+      "platform": "freebsd-arm64",
+      "binaryBytes": 8600320,
+      "binarySha256": "325c6abaa60bd53f0aa4cf1536d1156cd3fe1bd5fe67bed16b605b475c679dc0",
+      "format": "ELF",
+      "elfOsAbi": 0,
+      "interpreter": "/libexec/ld-elf.so.1",
+      "notes": [
+        {
+          "vendor": "FreeBSD",
+          "type": 1,
+          "descriptorHex": "b45e1500"
+        },
+        {
+          "vendor": "FreeBSD",
+          "type": 4,
+          "descriptorHex": "00000000"
+        },
+        {
+          "vendor": "FreeBSD",
+          "type": 2,
+          "descriptorHex": "00000000"
+        }
+      ],
+      "qualificationLimit": "The generic ELF OSABI byte is zero. The FreeBSD interpreter and ABI note identify the target; native FreeBSD execution is not established.",
+      "expectedArchitectureAndFormatMatched": true
+    }
+  ],
+  "executedNativeCli": {
+    "platform": "darwin-arm64",
+    "version": "pantry 0.11.119 (6fbf7259c)"
+  },
+  "nativeProviderInspection": {
+    "providerBytes": 61884464,
+    "exitCode": 0,
+    "stdoutLines": 1,
+    "stderrBytes": 0,
+    "canonicalPathMatched": true
+  },
+  "publishedSdkConsumer": {
+    "verification": {
+      "schemaVersion": 1,
+      "verifiedAt": "2026-10-23T00:30:46.811Z",
+      "sources": [
+        {
+          "repository": "pantry-pm/pantry",
+          "commit": "6fbf7259c2764d18a12d915bf8bc68c500cb4931",
+          "tag": "v0.11.119",
+          "gates": [
+            {
+              "runId": 39876351498,
+              "workflow": ".github/workflows/release.yml",
+              "requiredJobs": [
+                "pantry",
+                "npm",
+                "discord-notification"
+              ]
+            },
+            {
+              "runId": 39876350630,
+              "workflow": ".github/workflows/ci.yml",
+              "requiredJobs": [
+                "typecheck",
+                "zig-tests",
+                "action-native-services (8.4.11)",
+                "Explicit native toolchain pins (macos-latest)",
+                "native-browser",
+                "action-native-services (26.7.0)",
+                "Explicit native toolchain pins (ubuntu-latest)",
+                "test",
+                "action-redis-service",
+                "windows-git",
+                "lint",
+                "action-native-tools",
+                "windows-native-runtime",
+                "continuous-release"
+              ]
+            }
+          ],
+          "packages": [
+            {
+              "name": "ts-pantry",
+              "version": "0.11.119",
+              "integrity": "sha512-GbEFWzpiKuT8NPYsXsDn7208KEHu6AH8L7AgywIb1K36Xjh8SqzVWrjnXHOfsPAsJ2N1HS20mThgZNiSkOdb/w==",
+              "tarball": "https://registry.npmjs.org/ts-pantry/-/ts-pantry-0.11.119.tgz",
+              "bytes": 1384085,
+              "filesSha256": "254b45c88498d33049983d5050c886d127dc0d3395ddc264084d1d36a72d06ac"
+            }
+          ],
+          "releaseCommand": "bun run release:patch",
+          "releaseScript": "bun x --bun @stacksjs/bumpx patch --recursive --execute 'bun .github/scripts/build-release-action.ts' --commit --tag --push --yes"
+        }
+      ],
+      "consumer": {
+        "lockfile": "bun.lock",
+        "sha256": "5387155fbb4b746a69510f954fa93fcb0005b34abbff52a73218965fa80aece4",
+        "bunVersion": "1.4.3",
+        "checks": [
+          {
+            "script": "test:windows-git",
+            "exitCode": 0,
+            "outputSha256": "29c1f5a1be0ca4f9e8715e1bd8d6a9e7de03b359b2612c83657962a8d33ff393"
+          }
+        ]
+      }
+    },
+    "windowsBundle": {
+      "sdk": "ts-pantry@0.11.119",
+      "version": "2.53.0+windows.1",
+      "originalArchiveSha256": "82b562c918ec87b2ef5316ed79bb199e3a25719bb871a0f10294acf21ebd08cd",
+      "originalVendorFilesMatched": 384,
+      "providerSha256": "da240fe9bc24895b3e04150a4990b8a6ff329ecabcd8f19684c2cc310da5ef3f",
+      "coldAndWarmInstall": true,
+      "relativeProviderAlias": true,
+      "host": "darwin",
+      "target": "windows-x64",
+      "nativeWindowsExecution": false
+    }
+  },
+  "limits": [
+    "Windows x64 native Git execution was separately qualified in owning source CI. The fresh published SDK consumer here verifies a Windows target on macOS and does not claim Windows execution.",
+    "The generic native CLI Windows Git package route remains separate from the SDK and Action route.",
+    "Archive identity and executable headers do not establish execution on every published platform."
+  ]
+}

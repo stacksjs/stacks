@@ -189,3 +189,21 @@ archive and complete file set. A shallow release now fails before release
 files or refs change; fetching full history enables the ordinary release and
 complete changelog. The framework lock and all three type checks passed.
 Native graphics and game fidelity remain independent acceptance gates.
+
+The [Pantry 0.11.119 plan](./receipts/pantry-0.11.119-plan.json) and
+[installed-consumer receipt](./receipts/pantry-0.11.119-receipt.json) record the
+published dependency now required by Buddy. The original npm archive, complete
+installed files, framework lock and all three type checks passed. Its
+[publication record](./receipts/pantry-0.11.119-publication.json) also retains
+all seven original native archive hashes and execution of the downloaded Mac
+CLI, including the quiet provider-path check that failed on 0.11.118.
+
+On Windows, the SDK and Action select the complete official MinGit bundle,
+verify the publisher digest and retained original 2.53.0 identities, preserve
+its runtime resources and activate a relative executable alias. Owning source
+CI passed real Windows Git, submodules, HTTPS, relocation and cache restore.
+A fresh published SDK consumer on macOS independently matched all 384 original
+Windows bundle files. That target-data check does not claim Windows execution.
+The generic native CLI Windows Git dependency graph remains separate from the
+verified SDK and Action route. These toolchain checks do not establish native
+game presentation or original-game fidelity.

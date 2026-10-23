@@ -95,7 +95,6 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/bumpx": "^0.2.26",
     "@stacksjs/actions": "0.75.273",
     "@stacksjs/ai": "0.75.273",
     "@stacksjs/alias": "0.75.273",
@@ -105,6 +104,7 @@
     "@stacksjs/auth": "0.75.273",
     "@stacksjs/browser-extension": "0.75.273",
     "@stacksjs/build": "0.75.273",
+    "@stacksjs/bumpx": "^0.2.26",
     "@stacksjs/cache": "0.75.273",
     "@stacksjs/chat": "0.75.273",
     "@stacksjs/clapp": "^0.2.16",
@@ -161,7 +161,7 @@
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "bun-plugin-stx": "0.2.669",
-    "ts-pantry": "^0.11.113"
+    "ts-pantry": "^0.11.119"
   },
   "devDependencies": {
     "better-dx": "^0.2.24"
