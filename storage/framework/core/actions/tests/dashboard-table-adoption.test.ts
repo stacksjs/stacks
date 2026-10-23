@@ -20,7 +20,7 @@ import { describe, expect, it } from 'bun:test'
 const ROOT = join(import.meta.dir, '../../../defaults/resources/components/Dashboard')
 
 /** Lower this when a migration lands. Never raise it. */
-const CEILING = 22
+const CEILING = 21
 
 function components(): string[] {
   return [...new Glob('**/*.stx').scanSync(ROOT)].map(rel => join(ROOT, rel)).sort()

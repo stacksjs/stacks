@@ -1,3 +1,5 @@
+@import('../../UI/Table')
+
 <script client>
 type SerializedList = string | string[] | null | undefined
 
@@ -13,6 +15,9 @@ interface ShippingZoneRow {
 }
 
 const zones = useReactiveProp('zones', [] as ShippingZoneRow[])
+const loading = useReactiveProp('loading', false)
+/** The parent's search: a change returns to the first page. */
+const pageResetKey = useReactiveProp<unknown>('pageResetKey', '')
 const emit = defineEmits()
 
 function parseList(value: SerializedList): string[] {
@@ -33,119 +38,89 @@ function parseList(value: SerializedList): string[] {
   return []
 }
 
-function visibleItems(value: SerializedList): string[] {
-  return parseList(value).slice(0, 3)
-}
+/** Countries and regions are slotted for their chips: the first three, then a count. */
+const COLUMNS = [
+  { key: 'name', label: 'Zone', sortable: true, class: 'font-medium text-stone-800 whitespace-nowrap dark:text-white' },
+  { key: 'methodLabel', label: 'Method', sortable: true, class: 'whitespace-nowrap' },
+  { key: 'countriesText', label: 'Countries', slotted: true },
+  { key: 'regionsText', label: 'Regions', slotted: true },
+  { key: 'postalLabel', label: 'Postal codes', class: 'max-w-xs truncate' },
+  {
+    key: 'status',
+    label: 'Status',
+    type: 'badge' as const,
+    sortable: true,
+    badgeClasses: {
+      active: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300',
+      draft: 'bg-amber-50 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300',
+    },
+  },
+]
 
-function remainingItems(value: SerializedList): number {
-  return Math.max(0, parseList(value).length - 3)
-}
+const ROW_ACTIONS = [
+  { action: 'edit', label: 'Edit', icon: 'i-hugeicons-edit-01' },
+  { action: 'delete', label: 'Delete', icon: 'i-hugeicons-waste', class: 'text-red-500' },
+]
 
-function formatPostalCodes(value: SerializedList): string {
-  const postalCodes = parseList(value)
-  return postalCodes.length ? postalCodes.join(', ') : 'All postal codes'
-}
+const rows = derived(() => zones().map((zone) => {
+  const countries = parseList(zone.countries)
+  const regions = parseList(zone.regions)
+  const postal = parseList(zone.postal_codes)
+  return {
+    ...zone,
+    methodLabel: zone.shipping_method?.name || `Method #${zone.shipping_method_id}`,
+    countryChips: countries.slice(0, 3),
+    countriesMore: countries.length > 3 ? `+${countries.length - 3}` : '',
+    countriesText: countries.join(', '),
+    regionChips: regions.slice(0, 3),
+    regionsMore: regions.length > 3 ? `+${regions.length - 3}` : '',
+    regionsText: regions.join(', '),
+    postalLabel: postal.length ? postal.join(', ') : 'All postal codes',
+    actionName: `${zone.name}, record ${zone.id}`,
+  }
+}))
 
-function statusClass(status: string): string {
-  if (status === 'active')
-    return 'bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/20'
-  if (status === 'draft')
-    return 'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/20'
-
-  return 'bg-stone-100 text-stone-600 ring-stone-500/20 dark:bg-white/5 dark:text-neutral-300 dark:ring-white/10'
-}
-
-function formatStatus(status: string): string {
-  return status.charAt(0).toUpperCase() + status.slice(1)
+function handleRowAction(payload: { action: string, row: ShippingZoneRow }): void {
+  emit(payload.action, payload.row)
 }
 </script>
 
-<div class="overflow-x-auto border border-stone-200/80 rounded-xl dark:border-neutral-700 shadow-sm">
-  <table class="min-w-full divide-stone-100 divide-y dark:divide-neutral-700">
-    <thead class="bg-stone-50/80 dark:bg-neutral-800">
-      <tr>
-        <th scope="col" class="pl-6 pr-3 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Zone Name</th>
-        <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Method</th>
-        <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Countries</th>
-        <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Regions</th>
-        <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Postal Codes</th>
-        <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Status</th>
-        <th scope="col" class="relative pl-3 pr-6 py-3.5">
-          <span class="sr-only">Actions</span>
-        </th>
-      </tr>
-    </thead>
-    <tbody class="bg-white dark:bg-neutral-800 divide-stone-100 divide-y dark:divide-neutral-700">
-      <template :for="zone in zones" :key="zone.id">
-        <tr class="hover:bg-stone-50/50 dark:hover:bg-neutral-700/50 transition-colors">
-          <td class="pl-6 pr-3 py-3.5 font-medium text-sm text-stone-800 whitespace-nowrap dark:text-white">
-            {{ zone.name }}
-          </td>
-          <td class="px-4 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-300">
-            {{ zone.shipping_method?.name || 'Method #' + zone.shipping_method_id }}
-          </td>
-          <td class="px-4 py-3.5 text-sm text-stone-500 dark:text-neutral-300">
-            <div class="flex flex-wrap gap-1">
-              <template :for="country in visibleItems(zone.countries)">
-                <span class="inline-flex px-2 py-1 font-medium text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-400/10 rounded-full">
-                  {{ country }}
-                </span>
-              </template>
-              <span :if="remainingItems(zone.countries) > 0" class="inline-flex px-2 py-1 font-medium text-stone-600 text-xs dark:text-neutral-300 bg-stone-100 dark:bg-white/5 rounded-full">
-                +{{ remainingItems(zone.countries) }}
-              </span>
-              <span :if="parseList(zone.countries).length === 0">All countries</span>
-            </div>
-          </td>
-          <td class="px-4 py-3.5 text-sm text-stone-500 dark:text-neutral-300">
-            <div class="flex flex-wrap gap-1">
-              <template :for="region in visibleItems(zone.regions)">
-                <span class="inline-flex px-2 py-1 font-medium text-emerald-700 text-xs dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-400/10 rounded-full">
-                  {{ region }}
-                </span>
-              </template>
-              <span :if="remainingItems(zone.regions) > 0" class="inline-flex px-2 py-1 font-medium text-stone-600 text-xs dark:text-neutral-300 bg-stone-100 dark:bg-white/5 rounded-full">
-                +{{ remainingItems(zone.regions) }}
-              </span>
-              <span :if="parseList(zone.regions).length === 0">All regions</span>
-            </div>
-          </td>
-          <td class="px-4 py-3.5 max-w-xs text-sm text-stone-500 truncate dark:text-neutral-300">
-            {{ formatPostalCodes(zone.postal_codes) }}
-          </td>
-          <td class="px-4 py-3.5 text-sm whitespace-nowrap">
-            <span :class="'inline-flex px-2.5 py-1 font-medium text-xs ring-1 ring-inset rounded-full ' + statusClass(zone.status)">
-              {{ formatStatus(zone.status) }}
-            </span>
-          </td>
-          <td class="relative pl-3 pr-6 py-3.5 font-medium text-right text-sm whitespace-nowrap">
-            <Button
-              variant="ghost"
-              size="sm"
-              iconOnly
-              @click="emit('edit', zone)"
-              :ariaLabel="'Edit ' + zone.name + ', record ' + zone.id"
-            >
-              <span class="block h-4 w-4 text-blue-500 i-hugeicons-edit-01"></span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              iconOnly
-              @click="emit('delete', zone)"
-              :ariaLabel="'Delete ' + zone.name + ', record ' + zone.id"
-            >
-              <span class="block h-4 w-4 text-red-500 i-hugeicons-waste"></span>
-            </Button>
-          </td>
-        </tr>
-      </template>
-
-      <tr :if="zones().length === 0">
-        <td colspan="7" class="px-6 py-12 text-center text-sm text-stone-500 dark:text-neutral-400">
-          No shipping zones found.
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+{{--
+  No `searchable` or `filterable`: the parent dashboard owns the search box.
+  Table pages the whole filtered list the parent passes, and stays mounted
+  while it loads.
+--}}
+<Table
+  :page-reset-key="pageResetKey()"
+  :columns="COLUMNS"
+  :data="rows()"
+  :loading="loading()"
+  :row-actions="ROW_ACTIONS"
+  action-label-key="actionName"
+  paginated
+  :page-size="10"
+  empty-title="No shipping zones found"
+  empty-description="Add a zone, or adjust the search."
+  @row-action="handleRowAction"
+>
+  <template #cell="{ row, column }">
+    <template :if="column.key === 'countriesText'">
+      <div class="flex flex-wrap gap-1">
+        <template :for="country in row.countryChips">
+          <span class="inline-flex px-2 py-1 font-medium text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-400/10 rounded-full" x-text="country"></span>
+        </template>
+        <span :if="row.countriesMore" class="inline-flex px-2 py-1 font-medium text-stone-600 text-xs dark:text-neutral-300 bg-stone-100 dark:bg-white/5 rounded-full" x-text="row.countriesMore"></span>
+        <span :if="row.countryChips.length === 0">All countries</span>
+      </div>
+    </template>
+    <template :if="column.key === 'regionsText'">
+      <div class="flex flex-wrap gap-1">
+        <template :for="region in row.regionChips">
+          <span class="inline-flex px-2 py-1 font-medium text-emerald-700 text-xs dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-400/10 rounded-full" x-text="region"></span>
+        </template>
+        <span :if="row.regionsMore" class="inline-flex px-2 py-1 font-medium text-stone-600 text-xs dark:text-neutral-300 bg-stone-100 dark:bg-white/5 rounded-full" x-text="row.regionsMore"></span>
+        <span :if="row.regionChips.length === 0">All regions</span>
+      </div>
+    </template>
+  </template>
+</Table>
