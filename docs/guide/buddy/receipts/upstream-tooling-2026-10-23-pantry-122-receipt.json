@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "verifiedAt": "2026-10-23T21:17:06.985Z",
+  "verifiedAt": "2026-10-23T21:20:29.500Z",
   "sources": [
     {
       "repository": "pantry-pm/pantry",
@@ -221,18 +221,18 @@
   ],
   "consumer": {
     "lockfile": "bun.lock",
-    "sha256": "e66980bb61a076b61622f994ebaa72eea5e074ec32331779110112c80d8f8e51",
+    "sha256": "66452cccbf1e774555d99f6a513f9914ff798b6105c9aa4ca2c70d56bda5cd8b",
     "bunVersion": "1.4.4",
     "checks": [
       {
         "script": "deps:lockfile:check",
         "exitCode": 0,
-        "outputSha256": "35fa6b9b43081f9dfad0a7f41529fa3dc14686a18dfb3948c37ef91f0a97d661"
+        "outputSha256": "38daeaabce8b81570558501134702be8549701e9aafac0666e1274f9f4b4d59c"
       },
       {
         "script": "typecheck",
         "exitCode": 0,
-        "outputSha256": "3d132eed165a1f1a84f6351fb34a096c407ce7fcbc0819659cb3e2af827ce2f5"
+        "outputSha256": "52ab84629e8a2f2c8edf23e7190471bc8c30da0273f6e374b28470d7b0f82e7f"
       },
       {
         "script": "typecheck:app",
@@ -247,7 +247,7 @@
       {
         "script": "lint",
         "exitCode": 0,
-        "outputSha256": "a1f514b80c35633f8ada9bd7e5ebb14a57e7cafd877910602f0de61a66bc3271"
+        "outputSha256": "5c412f4e191ec502b583a3bbe33595c93489a60e1bb7accf15c9910cf2a7fc4a"
       }
     ]
   }

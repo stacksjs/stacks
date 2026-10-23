@@ -1,5 +1,37 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.280...v0.75.281)
+
+## 🐛 Bug Fixes
+
+- require the verified compiler-cache aware linter ([d1fc259](https://github.com/stacksjs/stacks/commit/d1fc259)) _(by Chris <chris@stacksjs.com>)_
+- align the shipped Pantry bootstrap with CI ([1004d53](https://github.com/stacksjs/stacks/commit/1004d53)) _(by Chris <chris@stacksjs.com>)_
+- align the CI publisher with the verified Pantry SDK ([2a6ed18](https://github.com/stacksjs/stacks/commit/2a6ed18)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- verify Pantry adoption on the current Bun toolchain ([086ff01](https://github.com/stacksjs/stacks/commit/086ff01)) _(by Chris <chris@stacksjs.com>)_
+- **ci**: let the Bun pin guard accept the minimum supported Bun ([c65e799](https://github.com/stacksjs/stacks/commit/c65e799)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2975](https://github.com/stacksjs/stacks/issues/2975))
+- **database**: selectAll survives another process adding a column ([638d3d4](https://github.com/stacksjs/stacks/commit/638d3d4)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2975](https://github.com/stacksjs/stacks/issues/2975))
+- **database**: roll back a skipped corpus file's open transaction ([938537b](https://github.com/stacksjs/stacks/commit/938537b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2975](https://github.com/stacksjs/stacks/issues/2975))
+- **ci**: guard every workflow and Dockerfile that pins Bun ([2795189](https://github.com/stacksjs/stacks/commit/2795189)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2975](https://github.com/stacksjs/stacks/issues/2975))
+
+## 🔧 Chores
+
+- adopt verified stx 0.2.676 across framework packages ([ee52ab5](https://github.com/stacksjs/stacks/commit/ee52ab5)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **deps**: pin Bun 1.4.4 ([4ee1225](https://github.com/stacksjs/stacks/commit/4ee1225)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2975](https://github.com/stacksjs/stacks/issues/2975), [oven-sh/bun#29484](https://github.com/oven-sh/bun/issues/29484), [oven-sh/bun#45304](https://github.com/oven-sh/bun/issues/45304))
+- **database**: remove the oven-sh/bun#42804 broken-pool detector ([94bf701](https://github.com/stacksjs/stacks/commit/94bf701)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([oven-sh/bun#42804](https://github.com/oven-sh/bun/issues/42804), [#2979](https://github.com/stacksjs/stacks/issues/2979), [#2975](https://github.com/stacksjs/stacks/issues/2975), [oven-sh/bun#45304](https://github.com/oven-sh/bun/issues/45304), [oven-sh/bun#40913](https://github.com/oven-sh/bun/issues/40913))
+
+## 🎉 Miscellaneous
+
+- Merge remote-tracking branch 'origin/main' into codex/settlers-gold-source-evidence ([ac19ebe](https://github.com/stacksjs/stacks/commit/ac19ebe)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.279...v0.75.280)
 
 ## ✨ Features

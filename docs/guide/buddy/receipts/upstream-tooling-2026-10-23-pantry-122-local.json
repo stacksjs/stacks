@@ -23,8 +23,8 @@
   "logs": [
     {
       "name": "stacks-tooling-122-final-focused.log",
-      "sha256": "89459dfcc93b97321c18dd98d38b8feabc537e41dcde2dc26442aad103f86657",
-      "bytes": 7369
+      "sha256": "4fab3ec6a63721013848777da908e52e62f0564d30938b1b9678faa6d1ead844",
+      "bytes": 7351
     },
     {
       "name": "stacks-tooling-122-path-guard-green.log",
@@ -41,5 +41,6 @@
       "sha256": "bfba9368b843b85ff12249d66b40ed44c77b6a0a4af17c5f8f416d652a2993c3",
       "bytes": 696
     }
-  ]
+  ],
+  "integratedFrameworkVersion": "0.75.281"
 }
