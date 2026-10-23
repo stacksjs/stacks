@@ -13,8 +13,6 @@ const title = useReactiveProp('title', 'Notification Deliveries')
 const description = useReactiveProp('description', 'Monitor notification transport attempts.')
 
 const deliveries = state<NotificationDelivery[]>([])
-const currentPage = state(1)
-const perPage = state(10)
 const isLoading = state(true)
 const searchQuery = state('')
 const selectedStatus = state('all')
@@ -46,27 +44,15 @@ const sortedDeliveries = derived(() => [...filteredDeliveries()].sort((a, b) => 
   return sortDirection() === 'asc' ? comparison : -comparison
 }))
 
-const paginatedDeliveries = derived(() => {
-  const start = (currentPage() - 1) * perPage()
-  return sortedDeliveries().slice(start, start + perPage())
-})
-
-const totalItems = derived(() => filteredDeliveries().length)
-const totalPages = derived(() => Math.max(1, Math.ceil(totalItems() / perPage())))
-const rangeStart = derived(() => totalItems() === 0 ? 0 : (currentPage() - 1) * perPage() + 1)
-const rangeEnd = derived(() => Math.min(currentPage() * perPage(), totalItems()))
-const canGoBack = derived(() => currentPage() > 1)
-const canGoForward = derived(() => currentPage() < totalPages())
 const sentCount = derived(() => deliveries().filter(delivery => delivery.status === 'sent' || delivery.status === 'delivered').length)
 const failedCount = derived(() => deliveries().filter(delivery => delivery.status === 'failed').length)
 const pendingCount = derived(() => deliveries().filter(delivery => delivery.status === 'pending').length)
 
-effect(() => {
-  searchQuery()
-  selectedStatus()
-  sortDirection()
-  currentPage.set(1)
-})
+/**
+ * What the table is showing: a change returns it to the first page, as this
+ * page's own pager did before the table took over paging.
+ */
+const viewKey = derived(() => JSON.stringify([searchQuery(), selectedStatus(), sortDirection()]))
 
 /**
  * A component event reaches this handler as the emitted value, not as a
@@ -106,16 +92,6 @@ function resetFilters(): void {
   searchQuery.set('')
   selectedStatus.set('all')
   sortDirection.set('desc')
-}
-
-function previousPage(): void {
-  if (canGoBack())
-    currentPage.update(page => page - 1)
-}
-
-function nextPage(): void {
-  if (canGoForward())
-    currentPage.update(page => page + 1)
 }
 
 onMount(loadDeliveries)
@@ -192,7 +168,10 @@ onMount(loadDeliveries)
 
     <div class="mt-8">
       <NotificationDeliveryTable
-        :deliveries="paginatedDeliveries"
+        :deliveries="sortedDeliveries"
+        :paginated="true"
+        :sort-reset-key="sortDirection"
+        :page-reset-key="viewKey"
         :loading="isLoading"
         :actions="true"
         :retryingId="retryingId"
@@ -200,16 +179,6 @@ onMount(loadDeliveries)
         @view="openDelivery($event)"
         @retry="retryDelivery($event)"
       />
-    </div>
-
-    <div class="flex items-center justify-between mt-4">
-      <p class="text-gray-700 text-sm dark:text-neutral-300">
-        Showing <span class="font-medium">{{ rangeStart }}</span> to <span class="font-medium">{{ rangeEnd }}</span> of <span class="font-medium">{{ totalItems }}</span> results
-      </p>
-      <div class="flex gap-2 items-center">
-        <Button variant="secondary" :disabled="!canGoBack" @click="previousPage()">Previous</Button>
-        <Button variant="secondary" :disabled="!canGoForward" @click="nextPage()">Next</Button>
-      </div>
     </div>
   </div>
 
