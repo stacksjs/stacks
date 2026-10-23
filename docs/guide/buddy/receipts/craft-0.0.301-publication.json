@@ -1,0 +1,447 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-23T04:59:12.213756+00:00",
+  "repository": "craft-native/craft",
+  "commit": "ed74f316788ff1ff41a3c22889b7436888539764",
+  "tag": "v0.0.301",
+  "originalNpmArtifact": {
+    "id": 12476322907,
+    "sha256": "519f5e179a6afcbaaa12e9ddc30646ab8b9ba1482553d0150be281b7f5746285"
+  },
+  "originalNpmArchives": {
+    "packages": [
+      {
+        "name": "create-craft",
+        "version": "0.0.301",
+        "integrity": "sha512-OanktQrzpsGAEw9Zq3CWDns1hKR8D7iB/b9fDYQCgIL49MeMY/EtfUBcWYcspTQflNdOHd1GX2i1DrjR3Hl5aw==",
+        "shasum": "ced393d8254a40f1f6732d8773ffc21612e9fd2a",
+        "file": "create-craft-0.0.301.tgz",
+        "bytes": 5966,
+        "sha256": "b02d81caafb47aa778067e41ab3ada907b55a31c56ee76b73b469cd1157ef168",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      },
+      {
+        "name": "@craft-native/vue",
+        "version": "0.0.301",
+        "integrity": "sha512-/O3hDPxnNiJCJ+gtIt2fzKOXG7XagJGfMKvskwNbhSUX/qkgP4SSLcoUI0vBkbJn4EwP9i0/eQWlqBctDqxjUg==",
+        "shasum": "556c0caf1a20217b6765f0e13efa772fa6f4f39a",
+        "file": "_craft-native_vue-0.0.301.tgz",
+        "bytes": 7813,
+        "sha256": "181a7b8f0a7c5342718562167bd75e14d4b251a38e7a3747424453cd91b08baa",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      },
+      {
+        "name": "@craft-native/ts-maps",
+        "version": "0.0.301",
+        "integrity": "sha512-PdaQffOmvt0d6yKH1h5tl0DLL/A+4ybFiMg+W4eqgjgdZelrROIzojiZ6h5ryj2PDvtcaLUsWimjD47D/1N7lQ==",
+        "shasum": "c5eb5b53d8dddbd5197bdc7ef66a0d5b99b4fedb",
+        "file": "_craft-native_ts-maps-0.0.301.tgz",
+        "bytes": 546331,
+        "sha256": "6a499e8c74d66957c91c7800154444dd8055a8935a48cab26b9c0635f48ee88d",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      },
+      {
+        "name": "@craft-native/svelte",
+        "version": "0.0.301",
+        "integrity": "sha512-7Z5XpBZNZsQvGvRCP2VnHdJRksreDmuKA/UzNwKXFiri2JvbCs3s+jtHDUL5ziwgkp4NzGsq0JBfaZMYl7ddtg==",
+        "shasum": "ad627783c0e065b4f4cf83bdc27477699c2d6b1b",
+        "file": "_craft-native_svelte-0.0.301.tgz",
+        "bytes": 7007,
+        "sha256": "0a8b92b9347ea5c48eff15b963e4d099ceb3306fe9446297f18a3ee676208e2d",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      },
+      {
+        "name": "craft-native",
+        "version": "0.0.301",
+        "integrity": "sha512-rBpHucPrJuOPa8VL+VkkPslNAdVEVoOG3+6Zp7aQpsm5Wcm1Q7BdBvHtf+2nFw3ODx573E3+bMfVHWs6WSw5Gw==",
+        "shasum": "4314d3b299b3be12d44a26a0474fee5dbb8eea54",
+        "file": "craft-native-0.0.301.tgz",
+        "bytes": 1327628,
+        "sha256": "57f2d80f2d9e207fec193e114d1bd94c99d7b0958305bec46ee146c2e927e56e",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      },
+      {
+        "name": "@craft-native/android",
+        "version": "0.0.301",
+        "integrity": "sha512-98DbtKaahhMxXconk24e30j63YJy5rRgvxjWIKfVBhvsHo2ieNGxLhZ0MOqS8UJXtS+iMO+XZHk2POlsEltBWA==",
+        "shasum": "7f96880121adc47a4e5106d8125b1c2934419ff2",
+        "file": "_craft-native_android-0.0.301.tgz",
+        "bytes": 394467,
+        "sha256": "ef0d41b6f40e6abf7b29a5b5fb576c52693b37e473267e8ae2276fe02b995a43",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      },
+      {
+        "name": "@craft-native/react",
+        "version": "0.0.301",
+        "integrity": "sha512-Hi0HK8LHznQ0CHPtTN6srDO8nZffovasd54reOoXiOi90yMchgJ0PkyslKl3U8S7q1cZrEDqe4LFxlsUEoMo0g==",
+        "shasum": "f40092c1ceb4eae4ee07a42ed7d4c7d0b5d56152",
+        "file": "_craft-native_react-0.0.301.tgz",
+        "bytes": 8763,
+        "sha256": "f451db08d468b55631daee8d7e93a103b867ee82b26697c50f923d3d09a9c33c",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      },
+      {
+        "name": "@craft-native/ios",
+        "version": "0.0.301",
+        "integrity": "sha512-Pi5KZ4jTagZ1p9LM3v2Ed66MxSGPtRNvgi/QwGFAj6K6mCXkQEbrSqP8c4+XBvqTlg5gD8zIoxt3qZm23UYoVA==",
+        "shasum": "fd27c8910ce4298c5b7c4159f2a0108c61a214d2",
+        "file": "_craft-native_ios-0.0.301.tgz",
+        "bytes": 510630,
+        "sha256": "a1a5cf3b986e25d347e783ca85ef50a577dc411f725b6badeadd47349598181c",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      }
+    ],
+    "failures": []
+  },
+  "originalNativeArchives": {
+    "tag": "v0.0.301",
+    "source": "ed74f316788ff1ff41a3c22889b7436888539764",
+    "manifestSha256": "95c3ad5f42c255a271ad05ec190889b28a152488be45907f735436bce87ef142",
+    "archives": [
+      {
+        "name": "craft-darwin-x64.zip",
+        "size": 5346277,
+        "sha256": "8e323a125de216479c9ace82a715431048f9183bb09f492e0649a740ba904d32",
+        "matchedOriginalManifestAndGithubDigest": true
+      },
+      {
+        "name": "craft-darwin-arm64.zip",
+        "size": 4827081,
+        "sha256": "4160178ad705bdef1f3ea14a104f6e919dda20ab541ffa95b2515badb2736969",
+        "matchedOriginalManifestAndGithubDigest": true
+      },
+      {
+        "name": "craft-linux-x64.zip",
+        "size": 5550553,
+        "sha256": "81f9b03182e32942cf415ac5961e1d26bf6d6a4c6eec3099336630782e86a8d6",
+        "matchedOriginalManifestAndGithubDigest": true
+      },
+      {
+        "name": "craft-windows-x64.zip",
+        "size": 5818811,
+        "sha256": "616f049bf3d3bce03276167392da5007c7a4adcd222fa81c98e404ece5f5652c",
+        "matchedOriginalManifestAndGithubDigest": true
+      }
+    ]
+  },
+  "executedNativeCli": {
+    "platform": "darwin-arm64",
+    "version": "craft version 0.0.301\nBuilt with Zig 0.18.0-dev.146+35accc06e\nPlatform: macOS"
+  },
+  "cleanConsumer": {
+    "manifestSha256": "1b5def91df0fbc102eb9a91670f5b734feb4bb19a8299b7e408727f91ce04864",
+    "receiptSha256": "664c106a2b7daa009580382a2f0da21a9c218209171f033c3288d4c4a84718c1",
+    "consumer": {
+      "lockfile": "bun.lock",
+      "sha256": "87c0de78148170fc312e96b1a3006a9e251f2fb47d03d941174f9b551d73b6d1",
+      "bunVersion": "1.4.2",
+      "checks": [
+        {
+          "script": "probe",
+          "exitCode": 0,
+          "outputSha256": "e91e79c5a0d3e031abf4d6779d2b1f028b08947819adc4288d34045c4a622680"
+        }
+      ]
+    },
+    "scope": "All eight published Craft packages and the published verifier matched original archive files. The public SDK resolved and executed the downloaded native CLI."
+  },
+  "gates": [
+    {
+      "runId": 39894808868,
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "accept exact release source",
+          "jobId": 120235696622,
+          "conclusion": "success"
+        },
+        {
+          "name": "validate release identity",
+          "jobId": 120235697665,
+          "conclusion": "success"
+        },
+        {
+          "name": "accept exact native runtimes",
+          "jobId": 120235698275,
+          "conclusion": "success"
+        },
+        {
+          "name": "run release native suite",
+          "jobId": 120235699032,
+          "conclusion": "skipped"
+        },
+        {
+          "name": "release-sbom / vulnerability-scan",
+          "jobId": 120235699267,
+          "conclusion": "success"
+        },
+        {
+          "name": "verify and stage npm packages",
+          "jobId": 120235699467,
+          "conclusion": "success"
+        },
+        {
+          "name": "release-sbom / generate",
+          "jobId": 120235737590,
+          "conclusion": "success"
+        },
+        {
+          "name": "pantry (darwin-arm64)",
+          "jobId": 120238740584,
+          "conclusion": "success"
+        },
+        {
+          "name": "pantry (linux-x86-64)",
+          "jobId": 120238740679,
+          "conclusion": "success"
+        },
+        {
+          "name": "run release source suite",
+          "jobId": 120238741268,
+          "conclusion": "skipped"
+        },
+        {
+          "name": "verify downloaded darwin-x64",
+          "jobId": 120242550528,
+          "conclusion": "success"
+        },
+        {
+          "name": "verify downloaded linux-x64",
+          "jobId": 120242550545,
+          "conclusion": "success"
+        },
+        {
+          "name": "verify downloaded darwin-arm64",
+          "jobId": 120242550546,
+          "conclusion": "success"
+        },
+        {
+          "name": "attach and verify release SBOMs",
+          "jobId": 120242550596,
+          "conclusion": "success"
+        },
+        {
+          "name": "verify release assets",
+          "jobId": 120242550607,
+          "conclusion": "success"
+        },
+        {
+          "name": "verify downloaded windows-x64",
+          "jobId": 120242550645,
+          "conclusion": "success"
+        },
+        {
+          "name": "publish complete verified release",
+          "jobId": 120242815594,
+          "conclusion": "success"
+        },
+        {
+          "name": "npm",
+          "jobId": 120242888380,
+          "conclusion": "success"
+        },
+        {
+          "name": "publish verified Zig package to pantry",
+          "jobId": 120242888384,
+          "conclusion": "success"
+        },
+        {
+          "name": "notify registry and channel after publication",
+          "jobId": 120242974384,
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "runId": 39894808181,
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "Android software emulator",
+          "jobId": 120232830654,
+          "conclusion": "success"
+        },
+        {
+          "name": "zig-core (ubuntu-latest)",
+          "jobId": 120232831842,
+          "conclusion": "success"
+        },
+        {
+          "name": "Software cold provisioning diagnostic (not release acceptance)",
+          "jobId": 120232832161,
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Vulkan SDK ABI (ubuntu-latest)",
+          "jobId": 120232832236,
+          "conclusion": "success"
+        },
+        {
+          "name": "windows-multi-window",
+          "jobId": 120232832538,
+          "conclusion": "success"
+        },
+        {
+          "name": "zig-core (macos-latest)",
+          "jobId": 120232832762,
+          "conclusion": "success"
+        },
+        {
+          "name": "Vulkan SDK ABI (windows-latest)",
+          "jobId": 120232832807,
+          "conclusion": "success"
+        },
+        {
+          "name": "integration",
+          "jobId": 120232833566,
+          "conclusion": "success"
+        },
+        {
+          "name": "ios-native-templates",
+          "jobId": 120232857284,
+          "conclusion": "success"
+        },
+        {
+          "name": "typescript-sdk",
+          "jobId": 120232859702,
+          "conclusion": "success"
+        },
+        {
+          "name": "create-craft",
+          "jobId": 120232860526,
+          "conclusion": "success"
+        },
+        {
+          "name": "Vulkan SDK ABI (macos-latest)",
+          "jobId": 120232866113,
+          "conclusion": "success"
+        },
+        {
+          "name": "lint",
+          "jobId": 120232866292,
+          "conclusion": "success"
+        },
+        {
+          "name": "ios-builder",
+          "jobId": 120232867793,
+          "conclusion": "success"
+        },
+        {
+          "name": "ts-maps",
+          "jobId": 120232876955,
+          "conclusion": "success"
+        },
+        {
+          "name": "android-builder",
+          "jobId": 120232878713,
+          "conclusion": "success"
+        },
+        {
+          "name": "publish-commit",
+          "jobId": 120238357308,
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "runId": 39894808219,
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "Android emulator",
+          "jobId": 120223180336,
+          "conclusion": "success"
+        },
+        {
+          "name": "iOS Zig runtime slice",
+          "jobId": 120223180445,
+          "conclusion": "success"
+        },
+        {
+          "name": "android-navigation (34)",
+          "jobId": 120223180473,
+          "conclusion": "success"
+        },
+        {
+          "name": "iOS native UI (uikit)",
+          "jobId": 120223180528,
+          "conclusion": "success"
+        },
+        {
+          "name": "iOS native Metal surface",
+          "jobId": 120223180565,
+          "conclusion": "success"
+        },
+        {
+          "name": "iOS native UI (navigation-unit)",
+          "jobId": 120223180566,
+          "conclusion": "success"
+        },
+        {
+          "name": "Harness unit tests",
+          "jobId": 120223180570,
+          "conclusion": "success"
+        },
+        {
+          "name": "iOS native UI (navigation-ui-controls)",
+          "jobId": 120223180600,
+          "conclusion": "success"
+        },
+        {
+          "name": "media-cache / ios",
+          "jobId": 120223180621,
+          "conclusion": "success"
+        },
+        {
+          "name": "media-cache / sdk",
+          "jobId": 120223180638,
+          "conclusion": "success"
+        },
+        {
+          "name": "media-cache / android",
+          "jobId": 120223180671,
+          "conclusion": "success"
+        },
+        {
+          "name": "iOS simulator",
+          "jobId": 120223180688,
+          "conclusion": "success"
+        },
+        {
+          "name": "android-navigation (35)",
+          "jobId": 120223180690,
+          "conclusion": "success"
+        },
+        {
+          "name": "iOS native UI (navigation-ui-core)",
+          "jobId": 120223180708,
+          "conclusion": "success"
+        },
+        {
+          "name": "iOS hybrid navigation",
+          "jobId": 120223180735,
+          "conclusion": "success"
+        },
+        {
+          "name": "Mobile E2E summary",
+          "jobId": 120235246347,
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "priorRejectedRelease": {
+    "version": "0.0.300",
+    "runId": 39889977954,
+    "failures": [
+      "iOS native Metal surface XCTest launch timeout",
+      "iOS runtime host pasteboard output did not retain the nonce"
+    ],
+    "limit": "The successful newer release does not by itself explain either earlier failure."
+  },
+  "limits": [
+    "Native framework acceptance does not establish a finished native Settlers game.",
+    "The published Zig module archive still needs a separate clean-consumer qualification.",
+    "Original Gold behavior and redistribution rights remain unverified."
+  ]
+}

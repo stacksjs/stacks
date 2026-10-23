@@ -213,3 +213,9 @@ game presentation or original-game fidelity.
 The framework Releaser now waits for a successful Main push CI run at the exact release commit before registry publication. It requires completed lint, type, compile, artifact, scaffold, test-shard, deployment and all three platform release-evidence jobs. Missing, skipped, cancelled, failed or duplicate required jobs block publication. An older green run for another commit or a pull request cannot authorize the release. The generated-document bypass does not bypass this source gate.
 
 This closes the publication gap observed with 0.75.275: its npm release succeeded while Windows source CI failed during timeout cleanup. The source gate rejects that existing run and accepts the independently green 0.75.274 run. This gate does not claim to repair the separate Windows cleanup failure.
+
+## Verified Craft 0.0.301 adoption
+
+The framework desktop and mobile dependencies and Actions' optional peer now require Craft 0.0.301 or later. The [adoption plan](./receipts/craft-0.0.301-plan.json) and [installed-consumer receipt](./receipts/craft-0.0.301-receipt.json) verify the SDK against its original archive and execute the committed graph, framework and application type checks. The [publication record](./receipts/craft-0.0.301-publication.json) retains the original CI artifact identity, all eight npm archives, four native archives, successful source/mobile/release gates, and a separate clean consumer that resolved and executed the native ARM64 CLI through the public SDK.
+
+The earlier 0.0.300 native acceptance failures remain recorded separately. A successful later release does not explain those failures or establish complete native game presentation. The published Zig module archive still requires its own clean-consumer qualification.

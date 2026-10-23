@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-23T04:59:46.050Z",
+  "sources": [
+    {
+      "repository": "craft-native/craft",
+      "commit": "ed74f316788ff1ff41a3c22889b7436888539764",
+      "tag": "v0.0.301",
+      "gates": [
+        {
+          "runId": 39894808868,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "accept exact release source",
+            "validate release identity",
+            "accept exact native runtimes",
+            "release-sbom / vulnerability-scan",
+            "verify and stage npm packages",
+            "release-sbom / generate",
+            "pantry (darwin-arm64)",
+            "pantry (linux-x86-64)",
+            "verify downloaded darwin-x64",
+            "verify downloaded linux-x64",
+            "verify downloaded darwin-arm64",
+            "attach and verify release SBOMs",
+            "verify release assets",
+            "verify downloaded windows-x64",
+            "publish complete verified release",
+            "npm",
+            "publish verified Zig package to pantry",
+            "notify registry and channel after publication"
+          ]
+        },
+        {
+          "runId": 39894808181,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "Android software emulator",
+            "zig-core (ubuntu-latest)",
+            "Vulkan SDK ABI (ubuntu-latest)",
+            "windows-multi-window",
+            "zig-core (macos-latest)",
+            "Vulkan SDK ABI (windows-latest)",
+            "integration",
+            "ios-native-templates",
+            "typescript-sdk",
+            "create-craft",
+            "Vulkan SDK ABI (macos-latest)",
+            "lint",
+            "ios-builder",
+            "ts-maps",
+            "android-builder",
+            "publish-commit"
+          ]
+        },
+        {
+          "runId": 39894808219,
+          "workflow": ".github/workflows/mobile-e2e.yml",
+          "requiredJobs": [
+            "Android emulator",
+            "iOS Zig runtime slice",
+            "android-navigation (34)",
+            "iOS native UI (uikit)",
+            "iOS native Metal surface",
+            "iOS native UI (navigation-unit)",
+            "Harness unit tests",
+            "iOS native UI (navigation-ui-controls)",
+            "media-cache / ios",
+            "media-cache / sdk",
+            "media-cache / android",
+            "iOS simulator",
+            "android-navigation (35)",
+            "iOS native UI (navigation-ui-core)",
+            "iOS hybrid navigation",
+            "Mobile E2E summary"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "craft-native",
+          "version": "0.0.301",
+          "integrity": "sha512-rBpHucPrJuOPa8VL+VkkPslNAdVEVoOG3+6Zp7aQpsm5Wcm1Q7BdBvHtf+2nFw3ODx573E3+bMfVHWs6WSw5Gw==",
+          "tarball": "https://registry.npmjs.org/craft-native/-/craft-native-0.0.301.tgz",
+          "bytes": 1327628,
+          "filesSha256": "6966aaf9aea3dbacd7a9b9a782d1ff4c418c29788ee9b902df4508e1de465b64"
+        }
+      ],
+      "releaseCommand": "bun run release:patch",
+      "releaseScript": "bun scripts/release-version.ts --preflight && bun x --bun @stacksjs/bumpx patch --recursive --commit --tag --push --yes --no-changelog --execute \"bun scripts/release-version.ts --pending && bun scripts/generate-release-changelog.ts && git add CHANGELOG.md\""
+    }
+  ],
+  "consumer": {
+    "lockfile": "bun.lock",
+    "sha256": "de5bc9b8db172cc3362732d142eb4841ac28735c69d3f28803a9b86f2aebbb63",
+    "bunVersion": "1.4.2",
+    "checks": [
+      {
+        "script": "deps:lockfile:check",
+        "exitCode": 0,
+        "outputSha256": "cc742ee660d347a2a8be9899044a31187d9314ee08744d0a6fd851f07e9e6e51"
+      },
+      {
+        "script": "typecheck",
+        "exitCode": 0,
+        "outputSha256": "80054e6ae56b2239a6bb243b94132a3b5ed574154b129e76cc259db2cbb64080"
+      },
+      {
+        "script": "typecheck:app",
+        "exitCode": 0,
+        "outputSha256": "2a057e73d0f276cfc5e9c8609b351fbb1e15e6b25e237ac453f6309045da3ec2"
+      },
+      {
+        "script": "typecheck:views",
+        "exitCode": 0,
+        "outputSha256": "6a83fff2afa42e1ae955d951b02debcee441fee8f35f01fe125c2ecee45bdb78"
+      }
+    ]
+  }
+}
