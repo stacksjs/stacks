@@ -226,50 +226,9 @@ exit [StacksOwnedCheck]::Run('${bun.replaceAll("'", "''")}', '${script}')
   return [powershell, '-NoLogo', '-NoProfile', '-NonInteractive', '-OutputFormat', 'Text', '-EncodedCommand', Buffer.from(source, 'utf16le').toString('base64')]
 }
 
-/** Execute declared project checks with the installed Bun and owned cleanup. */
-export async function runProjectScripts(options: ProjectScriptOptions): Promise<ProjectScriptReceipt> {
-  const timeoutMs = options.timeoutMs ?? 300_000
-  if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0
-    || !options.scripts.length || options.scripts.some(name => !/^[a-z0-9][\w:.-]*$/i.test(name))
-    || new Set(options.scripts).size !== options.scripts.length)
-    fail('Project checks need unique script names and a positive execution budget')
-  const receipt: ProjectScriptReceipt = { bunVersion: '', checks: [] }
-  const manifestPath = join(options.cwd, 'package.json')
-  const originalManifest = readFileSync(manifestPath, 'utf8')
-  const manifest = JSON.parse(originalManifest) as PackageManifest
-  // In a compiled Buddy, process.execPath is Buddy itself. Use the consumer's
-  // installed Bun toolchain rather than recursively launching this executable.
-  const bun = Bun.which('bun', { cwd: options.cwd })
-  if (!bun) fail('Consumer Bun executable is unavailable')
-  const probe = Bun.spawnSync([bun, '--version'], { cwd: options.cwd, stdout: 'pipe', stderr: 'pipe', timeout: 10_000 })
-  const bunVersion = probe.stdout.toString().trim()
-  if (probe.exitCode !== 0 || !/^\d+\.\d+\.\d+(?:-[\w.-]+)?$/.test(bunVersion)
-    || !Bun.semver.satisfies(bunVersion, manifest.engines?.bun ?? '>=1.3.0'))
-    fail('Consumer Bun executable does not satisfy the declared toolchain')
-  receipt.bunVersion = bunVersion
-  for (const script of options.scripts) {
-    if (!Object.hasOwn(manifest.scripts ?? {}, script) || typeof manifest.scripts?.[script] !== 'string' || !manifest.scripts[script].trim())
-      fail(`Consumer script ${script} is not declared`)
-    options.signal?.throwIfAborted()
-    const windowsTaskkill = process.platform === 'win32' ? Bun.which('taskkill.exe') : undefined
-    const powershell = process.platform === 'win32' ? Bun.which('powershell.exe') ?? Bun.which('pwsh.exe') : undefined
-    if (process.platform === 'win32' && (!windowsTaskkill || !powershell))
-      fail('Windows process ownership requires taskkill.exe and PowerShell with .NET Add-Type')
-    const command = powershell ? windowsCheckCommand(powershell, bun, script) : [bun, 'run', script]
-    // Keep an owned Bun host alive after the command exits. Its IPC reports
-    // command completion without losing the live tree anchor taskkill needs.
-    // POSIX additionally owns the host's process group. Deliberately detached
-    // processes remain outside this cleanup contract, which is not a sandbox.
-    let reportExit: (code: number) => void = () => {}
-    let reportFailure: (error: Error) => void = () => {}
-    const reported = new Promise<number>((resolve, reject) => {
-      reportExit = resolve
-      reportFailure = reject
-    })
-    let interrupted = false
-    let windowsHelperPid: number | undefined
-    let windowsNativeReady = false
-    const host = powershell ? `
+/** Internal Bun owner source; exported for real IPC completion-race tests. */
+export function windowsCheckHost(command: string[], windowsTaskkill: string): string {
+  return `
 setInterval(() => {}, 60_000)
 let command
 let stopRequested = false
@@ -286,8 +245,12 @@ process.on('message', async (message) => {
           // Retain the Bun host until the preparation helper's native process
           // handle and output have completed, even when taskkill returns first.
           const killed = Bun.spawnSync([${JSON.stringify(windowsTaskkill)}, '/PID', String(command.pid), '/T', '/F'], { stdout: 'pipe', stderr: 'pipe', timeout: 2000 })
-          if (killed.exitCode !== 0 && command.exitCode === null)
-            throw new Error('Native preparation cleanup failed (taskkill exit ' + killed.exitCode + '): ' + killed.stdout.toString().trim().slice(0, 1000) + ' ' + killed.stderr.toString().trim().slice(0, 1000))
+          // spawnSync prevents Bun from observing a concurrent helper exit.
+          // A stale exitCode is not evidence of a live process. The completion
+          // below still requires BOTH the native exit and the output drain;
+          // retain taskkill diagnostics only if that bounded cleanup fails.
+          if (killed.exitCode !== 0)
+            process.send({ preparationCleanupError: 'Native preparation cleanup failed (taskkill exit ' + killed.exitCode + '): ' + killed.stdout.toString().trim().slice(0, 1000) + ' ' + killed.stderr.toString().trim().slice(0, 1000) })
         }
         else {
           command.stdin.write(new Uint8Array([2]))
@@ -345,7 +308,54 @@ else {
     process.send({ error: String(error) })
   }
 }
-` : `
+`
+}
+
+/** Execute declared project checks with the installed Bun and owned cleanup. */
+export async function runProjectScripts(options: ProjectScriptOptions): Promise<ProjectScriptReceipt> {
+  const timeoutMs = options.timeoutMs ?? 300_000
+  if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0
+    || !options.scripts.length || options.scripts.some(name => !/^[a-z0-9][\w:.-]*$/i.test(name))
+    || new Set(options.scripts).size !== options.scripts.length)
+    fail('Project checks need unique script names and a positive execution budget')
+  const receipt: ProjectScriptReceipt = { bunVersion: '', checks: [] }
+  const manifestPath = join(options.cwd, 'package.json')
+  const originalManifest = readFileSync(manifestPath, 'utf8')
+  const manifest = JSON.parse(originalManifest) as PackageManifest
+  // In a compiled Buddy, process.execPath is Buddy itself. Use the consumer's
+  // installed Bun toolchain rather than recursively launching this executable.
+  const bun = Bun.which('bun', { cwd: options.cwd })
+  if (!bun) fail('Consumer Bun executable is unavailable')
+  const probe = Bun.spawnSync([bun, '--version'], { cwd: options.cwd, stdout: 'pipe', stderr: 'pipe', timeout: 10_000 })
+  const bunVersion = probe.stdout.toString().trim()
+  if (probe.exitCode !== 0 || !/^\d+\.\d+\.\d+(?:-[\w.-]+)?$/.test(bunVersion)
+    || !Bun.semver.satisfies(bunVersion, manifest.engines?.bun ?? '>=1.3.0'))
+    fail('Consumer Bun executable does not satisfy the declared toolchain')
+  receipt.bunVersion = bunVersion
+  for (const script of options.scripts) {
+    if (!Object.hasOwn(manifest.scripts ?? {}, script) || typeof manifest.scripts?.[script] !== 'string' || !manifest.scripts[script].trim())
+      fail(`Consumer script ${script} is not declared`)
+    options.signal?.throwIfAborted()
+    const windowsTaskkill = process.platform === 'win32' ? Bun.which('taskkill.exe') : undefined
+    const powershell = process.platform === 'win32' ? Bun.which('powershell.exe') ?? Bun.which('pwsh.exe') : undefined
+    if (process.platform === 'win32' && (!windowsTaskkill || !powershell))
+      fail('Windows process ownership requires taskkill.exe and PowerShell with .NET Add-Type')
+    const command = powershell ? windowsCheckCommand(powershell, bun, script) : [bun, 'run', script]
+    // Keep an owned Bun host alive after the command exits. Its IPC reports
+    // command completion without losing the live tree anchor taskkill needs.
+    // POSIX additionally owns the host's process group. Deliberately detached
+    // processes remain outside this cleanup contract, which is not a sandbox.
+    let reportExit: (code: number) => void = () => {}
+    let reportFailure: (error: Error) => void = () => {}
+    const reported = new Promise<number>((resolve, reject) => {
+      reportExit = resolve
+      reportFailure = reject
+    })
+    let interrupted = false
+    let windowsHelperPid: number | undefined
+    let windowsNativeReady = false
+    let preparationCleanupError = ''
+    const host = powershell ? windowsCheckHost(command, windowsTaskkill!) : `
 setInterval(() => {}, 60_000)
 try {
   const command = Bun.spawn(${JSON.stringify(command)}, { stdin: 'ignore', stdout: 'inherit', stderr: 'inherit' })
@@ -374,6 +384,7 @@ try {
           catch (error) { reportFailure(new Error(`Consumer script ${script} native control channel failed: ${String(error)}`)) }
         }
         else if (powershell && Number.isSafeInteger(message?.helperPid) && message.helperPid > 0) windowsHelperPid = message.helperPid
+        else if (powershell && typeof message?.preparationCleanupError === 'string') preparationCleanupError = message.preparationCleanupError
         else if (Number.isInteger(message?.exitCode)) reportExit(message.exitCode)
         else reportFailure(new Error(`Consumer script ${script} host failed: ${message?.error ?? 'invalid completion report'}`))
       },
@@ -411,7 +422,7 @@ try {
               // its existing cleanup operation was still legitimately running.
               await waitWithin(reported, windowsNativeReady ? 1000 : 2000 + 1000)
             }
-            catch (error) { errors.push(`Native Windows cleanup completion was not confirmed: ${error instanceof Error ? error.message : String(error)}`) }
+            catch (error) { errors.push(`Native Windows cleanup completion was not confirmed: ${error instanceof Error ? error.message : String(error)}${preparationCleanupError ? `; ${preparationCleanupError}` : ''}`) }
           }
           // The host has now awaited its helper's native process completion.
           // PID disappearance or taskkill's return alone cannot establish that
