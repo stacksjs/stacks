@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-23T00:45:30.424435+00:00",
+  "scope": "Isolated routing benchmark peer dependency",
+  "advisory": "https://github.com/fastify/fastify/security/advisories/GHSA-389g-gv7q-r4x8",
+  "githubAlert": 28,
+  "installedPackageVersion": "5.12.6",
+  "lockedArchiveIntegrity": "sha512-XeErl1DDsxdbhE9RPRJ05iNnfMhHRHHewVNNAJXaGTOaCY4wHb6rEizphhgzBq5YQe4JyqQWPpGd+hLh2PXXJA==",
+  "baseline": {
+    "version": "5.12.5",
+    "entry": "bench/routing/node_modules/fastify/fastify.js",
+    "status": 200,
+    "body": {
+      "accepted": true
+    },
+    "allowedStatus": 200
+  },
+  "patched": {
+    "packageVersion": "5.12.6",
+    "apiVersion": "5.12.5",
+    "entry": "bench/routing/node_modules/fastify/fastify.js",
+    "status": 400,
+    "body": {
+      "statusCode": 400,
+      "code": "FST_ERR_VALIDATION",
+      "error": "Bad Request",
+      "message": "headers must NOT be valid, headers property name must be valid"
+    },
+    "allowedStatus": 200
+  },
+  "apiIdentityLimit": "The published package manifest is 5.12.6, while Fastify exposes a hardcoded app.version value of 5.12.5. This record retains both instead of rewriting the installed package.",
+  "checks": {
+    "frozenInstall": true,
+    "existingRoutingTests": {
+      "passed": 16,
+      "failed": 0,
+      "assertions": 91
+    },
+    "benchmarkTypecheckExitCode": 0,
+    "lintExitCode": 0,
+    "realHttpParity": {
+      "packageVersion": "5.12.6",
+      "bunVersion": "1.4.2",
+      "realLoopbackHttp": true,
+      "scenarios": [
+        {
+          "scenario": "static-json",
+          "evidence": {
+            "primary": {
+              "status": 200,
+              "mediaType": "application/json",
+              "bodyBytes": 17,
+              "bodySha256": "93a23971a914e5eacbf0a8d25154cda309c3c1c72fbb9914d47c60f3cb681588"
+            },
+            "probes": []
+          }
+        },
+        {
+          "scenario": "path-param",
+          "evidence": {
+            "primary": {
+              "status": 200,
+              "mediaType": "application/json",
+              "bodyBytes": 11,
+              "bodySha256": "8aa5b6751d68bd72901cea96bbbddca8624efa387d5442a63197d5fedb2b693d"
+            },
+            "probes": []
+          }
+        },
+        {
+          "scenario": "post-validate",
+          "evidence": {
+            "primary": {
+              "status": 200,
+              "mediaType": "application/json",
+              "bodyBytes": 26,
+              "bodySha256": "0eb99c527fc8a024547c79949e1f611c6908da4d2b6c26da112a4e6328838e7d"
+            },
+            "probes": [
+              {
+                "id": "missing-required-field",
+                "response": {
+                  "status": 400,
+                  "mediaType": "application/json",
+                  "bodyBytes": 121,
+                  "bodySha256": "8fcdad2c7f91dbaeca39e4b1ee38fca157d3480f479165caba9e239a8407ead1"
+                }
+              },
+              {
+                "id": "wrong-field-types",
+                "response": {
+                  "status": 400,
+                  "mediaType": "application/json",
+                  "bodyBytes": 106,
+                  "bodySha256": "d8635e8222692a2bb5202eb35dc107877295bd7fdd0cc670d77981c224fc3631"
+                }
+              },
+              {
+                "id": "null-body",
+                "response": {
+                  "status": 400,
+                  "mediaType": "application/json",
+                  "bodyBytes": 100,
+                  "bodySha256": "9b972245157d4cee4aa0e0603bb01bad7afb9e2eadb340fb8620ef7f542b81f7"
+                }
+              },
+              {
+                "id": "array-body",
+                "response": {
+                  "status": 400,
+                  "mediaType": "application/json",
+                  "bodyBytes": 100,
+                  "bodySha256": "9b972245157d4cee4aa0e0603bb01bad7afb9e2eadb340fb8620ef7f542b81f7"
+                }
+              },
+              {
+                "id": "allow-listed-output",
+                "response": {
+                  "status": 200,
+                  "mediaType": "application/json",
+                  "bodyBytes": 26,
+                  "bodySha256": "0eb99c527fc8a024547c79949e1f611c6908da4d2b6c26da112a4e6328838e7d"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "performanceMeasured": false
+    }
+  },
+  "performanceMeasured": false,
+  "logs": [
+    {
+      "name": "fastify-header-red.log",
+      "sha256": "dac496cb5b27b1b368899325531fa57b88cb1eb2b3690b0dbe0172dace2c5fa4",
+      "bytes": 1046
+    },
+    {
+      "name": "fastify-header-green.log",
+      "sha256": "237b00bf3f98f69e2fb222686eb90d9cef41e3155118fd092143c9a2b72cca6a",
+      "bytes": 112
+    },
+    {
+      "name": "fastify-5.12.6-frozen.log",
+      "sha256": "a615fd93d43e14090f5054de9ad456f19c42ff5d812e5a945d51c83043680e68",
+      "bytes": 96
+    },
+    {
+      "name": "fastify-5.12.6-routing-tests.log",
+      "sha256": "157158e9f81276dad40c84cea74816430759237af350c3724dc6f164f5200f93",
+      "bytes": 1915
+    },
+    {
+      "name": "fastify-5.12.6-bench-types.log",
+      "sha256": "12a765364d7958583948c8542c723bcdcb7dc22c8f5689a5c002928c1d87bdf6",
+      "bytes": 717
+    },
+    {
+      "name": "fastify-5.12.6-http-proof.log",
+      "sha256": "463a6a32fe59931808abc18aa8847f6382470444a2a14e9ae9f96f25e7946a76",
+      "bytes": 111
+    }
+  ]
+}
