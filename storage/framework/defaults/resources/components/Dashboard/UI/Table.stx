@@ -221,6 +221,13 @@ const busyValue = useReactiveProp<unknown>('busyValue', '')
  * order on screen is always the one the viewer chose last.
  */
 const sortResetKey = useReactiveProp<unknown>('sortResetKey', '')
+/**
+ * The parent's search and filters, for a page that filters the rows Table
+ * receives. A change returns to the first page, as a parent that paged
+ * itself always did: a narrower result read from page 3 is a page that
+ * looks empty or unrelated to what was just typed (stacksjs/stacks#2977).
+ */
+const pageResetKey = useReactiveProp<unknown>('pageResetKey', '')
 
 const selectedKeys = state<TableKey[]>([])
 const sortKey = state('')
@@ -234,6 +241,12 @@ const query = state('')
 const columnFilters = state<Record<string, string>>({})
 const hiddenColumns = state<string[]>([])
 const page = state(1)
+
+effect(() => {
+  sortResetKey()
+  pageResetKey()
+  page.set(1)
+})
 const columnMenuOpen = state(false)
 const emit = defineEmits()
 
