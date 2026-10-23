@@ -132,6 +132,9 @@ jobs:
           DEPENDENCY_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: bun .github/scripts/check-dependency-commits.ts
 
+      - name: Verify exact release source acceptance
+        run: bun test ./.github/scripts/await-release-ci.test.ts
+
       - name: Lint
         run: bun buddy lint
 

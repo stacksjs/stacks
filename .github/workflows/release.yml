@@ -93,23 +93,33 @@ jobs:
           echo "::warning title=Release ordering::Still waiting after an hour; proceeding without waiting. Check for a wedged Releaser run."
           exit 0
 
-  # Nothing stopped a publish before this job existed. `npm` triggers straight
-  # off a `v*` tag push with no dependency on CI, and ci.yml does not even run
-  # on tags, so 24+ releases went out while the freshness checks were red. The
-  # checks were never the problem; having no consequence was.
-  #
-  # These are the same checks ci.yml runs, re-run here against the tagged
-  # commit rather than trusting a CI verdict that may be absent, cancelled, or
-  # for a different SHA. They cost about a minute against an 11 minute release
-  # that does not start publishing for over two.
-  #
-  # Break-glass: set the repository variable RELEASE_GATE_BYPASS to 'true' to
-  # ship while something unrelated is red. It is a variable rather than a code
-  # change so it can be flipped and unflipped without a commit, and it leaves a
-  # warning annotation on the run so the bypass is visible afterwards.
+  # Publication requires a completed successful Main CI run for this exact
+  # release commit, including all platform ownership checks. A successful npm
+  # build or artifact check cannot override a failed source job.
+  source-ci:
+    name: accept exact release source CI
+    needs: serialize
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.2'
+      # The committed graph supplies the repository's normal preload.
+      # Source acceptance itself makes read-only GitHub API requests.
+      - name: Install the committed dependency graph
+        run: bun install --frozen-lockfile
+      - name: Require complete CI for this exact release commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bun .github/scripts/await-release-ci.ts
+
+  # RELEASE_GATE_BYPASS applies only to the additional generated-document checks.
+  # It never bypasses exact-source CI acceptance above.
   release-gate:
     name: release gate
-    needs: serialize
+    needs: [serialize, source-ci]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

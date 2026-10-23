@@ -207,3 +207,9 @@ Windows bundle files. That target-data check does not claim Windows execution.
 The generic native CLI Windows Git dependency graph remains separate from the
 verified SDK and Action route. These toolchain checks do not establish native
 game presentation or original-game fidelity.
+
+## Framework publication requires exact source CI
+
+The framework Releaser now waits for a successful Main push CI run at the exact release commit before registry publication. It requires completed lint, type, compile, artifact, scaffold, test-shard, deployment and all three platform release-evidence jobs. Missing, skipped, cancelled, failed or duplicate required jobs block publication. An older green run for another commit or a pull request cannot authorize the release. The generated-document bypass does not bypass this source gate.
+
+This closes the publication gap observed with 0.75.275: its npm release succeeded while Windows source CI failed during timeout cleanup. The source gate rejects that existing run and accepts the independently green 0.75.274 run. This gate does not claim to repair the separate Windows cleanup failure.
