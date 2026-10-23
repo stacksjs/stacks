@@ -88,4 +88,34 @@ describe('the Pantry a release regenerates pantry.lock with', () => {
       done()
     }
   })
+
+  it('lets publishers select the same bare PATH executable they invoke', () => {
+    const { cwd, done } = workspace(framework)
+    try {
+      const asked: string[] = []
+      const toolchain = resolvePantryToolchain({ cwd, allowOverride: false, env: { PANTRY_BIN: '/local/release/pantry' }, probe: bin => {
+        asked.push(bin)
+        return { exitCode: 0, stdout: 'pantry 0.11.103' }
+      } })
+      expect(toolchain.ok).toBe(true)
+      expect(asked).toEqual(['pantry'])
+    }
+    finally { done() }
+  })
+
+  it('gives PATH-only recovery guidance when a publisher cannot use an override', () => {
+    const { cwd, done } = workspace(framework)
+    try {
+      for (const probe of [answers('pantry 0.11.80'), answers('', 127)]) {
+        const toolchain = resolvePantryToolchain({ cwd, allowOverride: false, env: { PANTRY_BIN: '/qualified/pantry' }, probe })
+        expect(toolchain.ok).toBe(false)
+        if (!toolchain.ok) {
+          expect(toolchain.message).toContain('PATH')
+          expect(toolchain.message).not.toContain('Set PANTRY_BIN')
+          expect(toolchain.message).not.toContain('set PANTRY_BIN')
+        }
+      }
+    }
+    finally { done() }
+  })
 })

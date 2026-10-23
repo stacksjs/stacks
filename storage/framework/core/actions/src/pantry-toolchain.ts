@@ -11,7 +11,7 @@
  * The workspace already declares the toolchain: `ts-pantry`, the SDK that
  * ships with each Pantry release, in `@stacksjs/buddy`'s dependencies for the
  * framework and in the root manifest for an app. CI installs that same version.
- * So the release resolves its Pantry (`PANTRY_BIN`, else `pantry` on PATH),
+ * A local release resolves its Pantry (`PANTRY_BIN`, else `pantry` on PATH),
  * asks it its version, and refuses before anything is bumped when the version
  * does not satisfy the declared range.
  */
@@ -23,6 +23,8 @@ export interface PantryToolchainOptions {
   /** The project being released. */
   cwd: string
   env?: Record<string, string | undefined>
+  /** Publishers invoking bare `pantry` must check PATH and ignore PANTRY_BIN. */
+  allowOverride?: boolean
   /** Runs `<bin> --version`; injectable for tests. */
   probe?: (bin: string) => { exitCode: number, stdout: string }
 }
@@ -72,7 +74,8 @@ function probeVersion(bin: string): { exitCode: number, stdout: string } {
 /** Resolve the Pantry this release will run, and check it against the declared toolchain. */
 export function resolvePantryToolchain(options: PantryToolchainOptions): PantryToolchain {
   const env = options.env ?? process.env
-  const bin = env.PANTRY_BIN?.trim() || 'pantry'
+  const allowOverride = options.allowOverride !== false
+  const bin = (allowOverride && env.PANTRY_BIN?.trim()) || 'pantry'
   const result = (options.probe ?? probeVersion)(bin)
   const version = result.exitCode === 0 ? parsePantryVersion(result.stdout) : undefined
   if (!version) {
@@ -80,7 +83,9 @@ export function resolvePantryToolchain(options: PantryToolchainOptions): PantryT
       ok: false,
       bin,
       message: `Release aborted: could not run \`${bin} --version\`, so the Pantry that would regenerate pantry.lock is unknown. `
-        + 'Install the declared Pantry, or set PANTRY_BIN to it, then re-run.',
+        + (allowOverride
+          ? 'Install the declared Pantry, or set PANTRY_BIN to it, then re-run.'
+          : 'Install the declared Pantry and put it first on PATH, then re-run.'),
     }
   }
 
@@ -91,7 +96,9 @@ export function resolvePantryToolchain(options: PantryToolchainOptions): PantryT
       bin,
       message: `Release aborted before any file changed: \`${bin}\` is Pantry ${version}, but ${declared.file} declares ts-pantry ${declared.range}. `
         + 'A different Pantry writes a different pantry.lock than the one CI validates. '
-        + 'Set PANTRY_BIN to a Pantry that satisfies the declared range (or put one first on PATH), then re-run.',
+        + (allowOverride
+          ? 'Set PANTRY_BIN to a Pantry that satisfies the declared range (or put one first on PATH), then re-run.'
+          : 'Install a Pantry that satisfies the declared range and put it first on PATH, then re-run.'),
     }
   }
 
