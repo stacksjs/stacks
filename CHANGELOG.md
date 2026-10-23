@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.275...v0.75.276)
+
+## 🐛 Bug Fixes
+
+- **actions**: prepare Windows jobs before granting consumer startup ([4b5d832](https://github.com/stacksjs/stacks/commit/4b5d832)) _(by Chris <chris@stacksjs.com>)_
+- **actions**: gate Windows consumer startup on native ownership readiness ([00cea03](https://github.com/stacksjs/stacks/commit/00cea03)) _(by Chris <chris@stacksjs.com>)_
+- **release**: require green CI for the exact framework source ([3d01fba](https://github.com/stacksjs/stacks/commit/3d01fba)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **actions**: expose Windows timeout disposal failures ([93369c6](https://github.com/stacksjs/stacks/commit/93369c6)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.274...v0.75.275)
 
 ## 🐛 Bug Fixes
