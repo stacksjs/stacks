@@ -25,7 +25,7 @@ const meta: MemoryRunMeta = {
   sampleIntervalMs: 100,
   settleSeconds: 1,
   runs: 1,
-  machine: { arch: 'x64', platform: 'linux', release: 'test', cpu: 'test', cores: 4, bun: '1.4.2' },
+  machine: { arch: 'x64', platform: 'linux', release: 'test', cpu: 'test', cores: 4, bun: '1.4.4' },
 }
 
 function fixture(): { artifact: MemoryArtifact, raw: MemoryRawRun } {

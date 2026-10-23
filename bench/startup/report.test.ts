@@ -12,7 +12,7 @@ function base(pairs = 15) {
     schemaVersion: 1,
     diagnosticOnly: true,
     generatedAt: '2026-09-21T00:00:00.000Z',
-    runtime: { version: '1.4.2', requirement: { range: '1.4.2', matches: true } },
+    runtime: { version: '1.4.4', requirement: { range: '1.4.4', matches: true } },
     host: { platform: 'linux', release: '6.8', architecture: 'x64', cpuModel: 'Test CPU' },
     source: {
       before: { revision: 'a'.repeat(40), dirty: false, fingerprint: 'source' },

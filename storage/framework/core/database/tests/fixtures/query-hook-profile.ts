@@ -1,9 +1,7 @@
 // Child for query-logging.test.ts: exactly which query hook kinds each profile
 // installs for one driver, named by argv[2] and by the parent's DB_CONNECTION.
 //
-// Production with query logging off installs no hooks on SQLite. On
-// PostgreSQL and MySQL it installs one onQueryError hook, the oven-sh/bun#42804
-// detector in src/utils.ts, and no hook that runs for a successful query.
+// Production with query logging off installs no hooks, on any driver.
 // Every initializeDbConfig call names the driver, and the parent pins the
 // environment, so neither the shell nor the checkout's env files pick the
 // profile under test. No query is sent.
@@ -41,7 +39,7 @@ function expectHooks(expected: string, profile: string): void {
     throw new Error(`${driver}, ${profile}: expected ${expected}, installed ${installed()}`)
 }
 
-const fastProfile = driver === 'sqlite' ? 'no hooks' : '["onQueryError"]'
+const fastProfile = 'no hooks'
 const diagnostics = '["onQueryEnd","onQueryError"]'
 
 // What the module installed from the pinned environment at import.

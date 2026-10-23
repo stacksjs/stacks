@@ -29,7 +29,7 @@ const meta: RunMeta = {
   durationSeconds: 3,
   runs: 3,
   persistentQueryLogging: false,
-  machine: { arch: 'arm64', platform: 'darwin', release: 'test', cpu: 'test', cores: 1, bun: '1.4.2' },
+  machine: { arch: 'arm64', platform: 'darwin', release: 'test', cpu: 'test', cores: 1, bun: '1.4.4' },
 }
 
 const measurement: Measurement = {

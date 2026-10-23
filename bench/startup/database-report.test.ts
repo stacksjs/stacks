@@ -21,7 +21,7 @@ function result(): DatabaseRuntimeResult {
     packages: { database: { manifest: 'database/package.json', name: '@stacksjs/database', version: '1.0.0' } },
     pairs: 15,
     rssBytes: summarizeStartupMetric(samples, 15, 'rssBytes'),
-    runtime: { requirement: { matches: true, range: '>=1.4.0' }, version: '1.4.2' },
+    runtime: { requirement: { matches: true, range: '>=1.4.0' }, version: '1.4.4' },
     samples,
     schemaVersion: 1,
     source: {

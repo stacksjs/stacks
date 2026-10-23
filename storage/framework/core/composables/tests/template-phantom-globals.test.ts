@@ -125,7 +125,7 @@ describe('stx client scripts only call names the browser has', () => {
     /*
      * Asserted as "nothing new", not as an exact match, because which names are
      * phantom depends on the installed stx version and that is not pinned to one
-     * value across every checkout: this repository requires Bun 1.4.2 and a
+     * value across every checkout: this repository requires Bun 1.4.4 and a
      * checkout on 1.4.1 resolves a different `@stacksjs/stx` than the lockfile's,
      * so an exact match is green on one machine and red in CI for a reason that
      * has nothing to do with the templates.

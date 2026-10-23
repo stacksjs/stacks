@@ -197,9 +197,8 @@ export default {
      * Persist query diagnostics to the database. Development keeps the
      * dashboard useful out of the box; production makes the write-heavy
      * history an explicit opt-in. Development keeps request-scoped query
-     * diagnostics. Production without persistence installs no query hooks on
-     * SQLite, and on PostgreSQL and MySQL only the onQueryError hook that
-     * reports a pool broken by oven-sh/bun#42804.
+     * diagnostics; production avoids the query-hook path unless persistence
+     * is explicitly enabled.
      */
     enabled: env.DB_QUERY_LOGGING_ENABLED ?? !['production', 'prod'].includes(env.APP_ENV || ''),
 

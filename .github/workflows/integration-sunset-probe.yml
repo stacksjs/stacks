@@ -30,7 +30,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  BUN_VERSION: '1.4.2'
+  BUN_VERSION: '1.4.4'
 
 jobs:
   probe:

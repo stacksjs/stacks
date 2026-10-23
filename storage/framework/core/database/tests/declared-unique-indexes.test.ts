@@ -24,21 +24,10 @@ import {
   restoreDroppedUniqueIndexes,
   uniqueIndexOnlyFile,
 } from '../src/declared-unique-indexes'
+import { applySqliteCorpus } from './fixtures/sqlite-corpus'
 
 const CORPUS = join(import.meta.dir, '../../../../../database/migrations')
 
-/** Run each file once, in order - what the migration runner does. */
-function runCorpus(db: Database, dir: string): void {
-  for (const file of readdirSync(dir).filter(f => f.endsWith('.sql')).sort()) {
-    // A handful of committed files fail on prerequisites this harness does not
-    // stand up (print_devices, notifications), exactly as in
-    // categorizable-pivot-fk.test.ts. None of them touches the tables below.
-    try {
-      db.exec(readFileSync(join(dir, file), 'utf8'))
-    }
-    catch {}
-  }
-}
 
 const REBUILD_T = `PRAGMA foreign_keys=OFF;
 BEGIN;
@@ -109,7 +98,7 @@ describe('restoreDroppedUniqueIndexes', () => {
     write('0001-create-t-table.sql', 'CREATE TABLE "t" ("id" INTEGER PRIMARY KEY AUTOINCREMENT, "a" INTEGER not null, "b" TEXT not null);')
     write('0002-create-t_owner_unique-index-in-t.sql', 'CREATE UNIQUE INDEX IF NOT EXISTS "t_owner_unique" ON "t" ("a", "b");')
     write('0003-auto-misc.sql', REBUILD_T)
-    runCorpus(db, dir)
+    applySqliteCorpus(db, dir)
     expect(hasIndex(db, 't_owner_unique')).toBe(false)
 
     expect(restoreDroppedUniqueIndexes(db, dir).map(index => index.name)).toEqual(['t_owner_unique'])
@@ -122,7 +111,7 @@ describe('restoreDroppedUniqueIndexes', () => {
     write('0001-create-t-table.sql', 'CREATE TABLE "t" ("id" INTEGER PRIMARY KEY, "a" INTEGER);')
     write('0002-index.sql', 'CREATE UNIQUE INDEX "t_a_unique" ON "t" ("a");')
     write('0003-drop.sql', 'DROP INDEX "t_a_unique";')
-    runCorpus(db, dir)
+    applySqliteCorpus(db, dir)
 
     expect(restoreDroppedUniqueIndexes(db, dir)).toEqual([])
     expect(hasIndex(db, 't_a_unique')).toBe(false)
@@ -135,7 +124,7 @@ describe('restoreDroppedUniqueIndexes', () => {
 INSERT INTO "_qb_tmp_t" ("id", "a") SELECT "id", "a" FROM "t";
 DROP TABLE "t";
 ALTER TABLE "_qb_tmp_t" RENAME TO "t";`)
-    runCorpus(db, dir)
+    applySqliteCorpus(db, dir)
 
     expect(() => restoreDroppedUniqueIndexes(db, dir)).not.toThrow()
     expect(hasIndex(db, 't_a_c_unique')).toBe(false)
@@ -145,7 +134,7 @@ ALTER TABLE "_qb_tmp_t" RENAME TO "t";`)
     write('0001-create-t-table.sql', 'CREATE TABLE "t" ("id" INTEGER PRIMARY KEY, "a" INTEGER);')
     write('0002-index.sql', 'CREATE UNIQUE INDEX "t_a_unique" ON "t" ("a");')
     write('0003-drop-t-table.sql', 'DROP TABLE "t";')
-    runCorpus(db, dir)
+    applySqliteCorpus(db, dir)
 
     expect(restoreDroppedUniqueIndexes(db, dir)).toEqual([])
   })
@@ -154,7 +143,7 @@ ALTER TABLE "_qb_tmp_t" RENAME TO "t";`)
     // Nothing says the later rebuild did not mean to remove it.
     write('0001-create-t-table.sql', 'CREATE TABLE "t" ("id" INTEGER PRIMARY KEY AUTOINCREMENT, "a" INTEGER not null, "b" TEXT not null);\nCREATE UNIQUE INDEX "t_b_unique" ON "t" ("b");')
     write('0002-auto-misc.sql', REBUILD_T)
-    runCorpus(db, dir)
+    applySqliteCorpus(db, dir)
 
     expect(restoreDroppedUniqueIndexes(db, dir)).toEqual([])
     expect(hasIndex(db, 't_b_unique')).toBe(false)
@@ -164,7 +153,7 @@ ALTER TABLE "_qb_tmp_t" RENAME TO "t";`)
     write('0001-create-t-table.sql', 'CREATE TABLE "t" ("id" INTEGER PRIMARY KEY AUTOINCREMENT, "a" INTEGER not null, "b" TEXT not null);')
     write('0002-index.sql', 'CREATE UNIQUE INDEX "t_b_unique" ON "t" ("b");')
     write('0003-auto-misc.sql', REBUILD_T)
-    runCorpus(db, dir)
+    applySqliteCorpus(db, dir)
     db.exec(`INSERT INTO t (a, b) VALUES (1, 'x'), (2, 'x')`)
 
     expect(() => restoreDroppedUniqueIndexes(db, dir)).toThrow(/t_b_unique.*0002-index\.sql.*UNIQUE constraint failed/)
@@ -176,7 +165,7 @@ describe('the committed corpus, migrated once', () => {
 
   it('ends with both trait pivot owner indexes after a single pass', () => {
     const db = new Database(':memory:')
-    runCorpus(db, CORPUS)
+    applySqliteCorpus(db, CORPUS)
     restoreDroppedUniqueIndexes(db, CORPUS)
 
     for (const name of OWNER_UNIQUES)
@@ -189,7 +178,7 @@ describe('the committed corpus, migrated once', () => {
 
   it('ends with every unique-index-only file applied', () => {
     const db = new Database(':memory:')
-    runCorpus(db, CORPUS)
+    applySqliteCorpus(db, CORPUS)
     restoreDroppedUniqueIndexes(db, CORPUS)
 
     const corpus = readdirSync(CORPUS).filter(f => f.endsWith('.sql')).map(file => ({ file, content: readFileSync(join(CORPUS, file), 'utf8') }))

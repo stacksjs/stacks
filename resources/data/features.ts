@@ -757,7 +757,7 @@ export const tsCloud: CloudConfig = {
 // JavaScript. Installed into the project, not globally.
 export const config: PantryConfig = {
   dependencies: {
-    'bun': '1.4.2',
+    'bun': '1.4.4',
     'git': '^2.47.0',
     'sqlite': '^3.47.2',
     'github.com/mail-os/mail': '^0.3.2',
