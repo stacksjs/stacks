@@ -29,39 +29,33 @@
         <h2 class="font-semibold text-lg text-neutral-900 dark:text-white">Issues</h2>
         <div class="flex flex-col gap-3 sm:flex-row">
           <div class="w-full sm:w-64">
-            <Input v-model:value="searchQuery" ariaLabel="Search errors" placeholder="Search errors..." size="sm" @input="resetFilterPage">
+            <Input v-model:value="searchQuery" ariaLabel="Search errors" placeholder="Search errors..." size="sm">
               <template #iconLeft>
                 <div class="h-4 w-4 i-hugeicons-search-01"></div>
               </template>
             </Input>
           </div>
           <div class="w-full sm:w-40">
-            <Select v-model:value="statusFilter" :options="statusOptions" ariaLabel="Error status" placeholder="" size="sm" @change="resetFilterPage" />
+            <Select v-model:value="statusFilter" :options="statusOptions" ariaLabel="Error status" placeholder="" size="sm" />
           </div>
           <div class="w-full sm:w-40">
-            <Select v-model:value="typeFilter" :options="typeOptions" ariaLabel="Error type" placeholder="" size="sm" @change="resetFilterPage" />
+            <Select v-model:value="typeFilter" :options="typeOptions" ariaLabel="Error type" placeholder="" size="sm" />
           </div>
         </div>
       </div>
     </template>
 
     <ErrorTable
-      :errors="paginatedErrors"
+      :errors="filteredErrors"
+      :pageResetKey="viewKey"
       :emptyTitle="emptyTitle"
       :emptyDescription="emptyDescription"
-      :sortColumn="sortBy"
-      :sortDirection="sortOrder"
-      @sort="handleSort"
       @row-click="viewError"
       @resolve="handleResolveError"
       @ignore="handleIgnoreError"
       @unresolve="handleUnresolveError"
       @delete="openDeleteModal"
     />
-
-    <template #footer>
-      <Pagination :currentPage="currentPage" :totalPages="totalPages" :totalItems="totalFiltered" :itemsPerPage="itemsPerPage" showTotalItems @page="setCurrentPage" />
-    </template>
   </Card>
 
   <Modal :isOpen="isDetailModalOpen()" :title="detailTitle" size="lg" @close="closeDetailModal">
@@ -171,10 +165,6 @@ const { groupedErrors, errorStats, fetchGroupedErrors, fetchErrorStats, resolveE
 const searchQuery = state('')
 const statusFilter = state('')
 const typeFilter = state('')
-const sortBy = state('last_seen')
-const sortOrder = state<'asc' | 'desc'>('desc')
-const currentPage = state(1)
-const itemsPerPage = state(10)
 
 const selectedError = state<ErrorGroup | null>(null)
 const isDetailModalOpen = state(false)
@@ -216,8 +206,6 @@ const filteredErrors = derived(() => {
   const q = searchQuery().toLowerCase()
   const status = statusFilter()
   const type = typeFilter()
-  const sb = sortBy()
-  const so = sortOrder()
   return list
     .filter((error) => {
       const matchesSearch = !q
@@ -227,38 +215,19 @@ const filteredErrors = derived(() => {
       const matchesType = !type || error.type === type
       return matchesSearch && matchesStatus && matchesType
     })
-    .sort((a, b) => {
-      let comparison = 0
-      if (sb === 'type')
-        comparison = a.type.localeCompare(b.type)
-      else if (sb === 'count')
-        comparison = a.count - b.count
-      else if (sb === 'last_seen')
-        comparison = new Date(a.last_seen).getTime() - new Date(b.last_seen).getTime()
-      else if (sb === 'first_seen')
-        comparison = new Date(a.first_seen).getTime() - new Date(b.first_seen).getTime()
-      return so === 'asc' ? comparison : -comparison
-    })
+    // Most recently seen first: the order a header sort in the table falls back to.
+    .sort((a, b) => new Date(b.last_seen).getTime() - new Date(a.last_seen).getTime())
 })
 
-const paginatedErrors = derived(() => {
-  const start = (currentPage() - 1) * itemsPerPage()
-  return filteredErrors().slice(start, start + itemsPerPage())
-})
+/** What the table is showing: a change to the search or a filter returns it to the first page. */
+const viewKey = derived(() => JSON.stringify([searchQuery(), statusFilter(), typeFilter()]))
 
-const totalFiltered = derived(() => filteredErrors().length)
-const totalPages = derived(() => Math.max(1, Math.ceil(filteredErrors().length / itemsPerPage())))
 
 const hasFilters = derived(() => searchQuery() !== '' || (statusFilter() ?? '') !== '' || (typeFilter() ?? '') !== '')
 const emptyTitle = derived(() => hasFilters() ? 'No matching errors' : 'No errors found')
 const emptyDescription = derived(() => hasFilters() ? 'Try adjusting your filters' : 'Your application is running smoothly!')
 
 const hasSelectedError = derived(() => selectedError() !== null)
-
-function setCurrentPage(page: number | CustomEvent<number>): void {
-  const nextPage = typeof page === 'number' ? page : page.detail
-  currentPage.set(Math.min(Math.max(1, nextPage), totalPages()))
-}
 const selectedIsUnresolved = derived(() => selectedError()?.status === 'unresolved')
 const selectedIsResolvedOrIgnored = derived(() => {
   const s = selectedError()?.status
@@ -279,16 +248,6 @@ function deleteMessage(): string { return errorToDelete()?.message ?? '' }
 
 function eventValue<T>(value: T | CustomEvent<T>): T {
   return value instanceof CustomEvent ? value.detail : value
-}
-
-function resetFilterPage(): void {
-  currentPage.set(1)
-}
-
-function handleSort(value: { column: string, direction: 'asc' | 'desc' } | CustomEvent<{ column: string, direction: 'asc' | 'desc' }>): void {
-  const sort = eventValue(value)
-  sortBy.set(sort.column)
-  sortOrder.set(sort.direction)
 }
 
 function viewError(value: ErrorGroup | CustomEvent<ErrorGroup>): void {
