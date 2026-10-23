@@ -282,17 +282,12 @@ process.on('message', async (message) => {
     start()
     if (command) {
       try {
-        if (!consumerPermitted) {
-          // Retain the Bun host until the preparation helper's native process
-          // handle and output have completed, even when taskkill returns first.
-          const killed = Bun.spawnSync([${JSON.stringify(windowsTaskkill)}, '/PID', String(command.pid), '/T', '/F'], { stdout: 'pipe', stderr: 'pipe', timeout: 2000 })
-          if (killed.exitCode !== 0 && command.exitCode === null)
-            throw new Error('Native preparation cleanup failed (taskkill exit ' + killed.exitCode + '): ' + killed.stdout.toString().trim().slice(0, 1000) + ' ' + killed.stderr.toString().trim().slice(0, 1000))
-        }
-        else {
-          command.stdin.write(new Uint8Array([2]))
-          await command.stdin.flush()
-        }
+        // Buffer cancellation even while Add-Type is compiling. It cannot
+        // grant consumer permission, and the native entry checks it before
+        // creating a consumer. Let preparation release its own compiler and
+        // native handles rather than killing the owner during preparation.
+        command.stdin.write(new Uint8Array([2]))
+        await command.stdin.flush()
       } catch (error) { process.send({ error: String(error) }) }
     }
   } else if (message?.prepare) start()
@@ -405,10 +400,10 @@ try {
             // whose intermediate parent has already exited.
             try {
               child.send({ stop: true })
-              // Preparation owns a bounded taskkill operation (2000 ms),
-              // followed by the same 1000 ms native-exit/output finalization
-              // grace. A competing 1000 ms timer used to kill this owner while
-              // its existing cleanup operation was still legitimately running.
+              // Before readiness, the private stop byte waits for bounded
+              // .NET preparation (2000 ms) and native handle/output completion
+              // (1000 ms). Consumers retain their 1000 ms cleanup grace. Do not
+              // kill a compiling helper before it can release its own children.
               await waitWithin(reported, windowsNativeReady ? 1000 : 2000 + 1000)
             }
             catch (error) { errors.push(`Native Windows cleanup completion was not confirmed: ${error instanceof Error ? error.message : String(error)}`) }
