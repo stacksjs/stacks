@@ -200,7 +200,7 @@ onMount(() => {
       <label class="flex gap-2 items-center text-gray-500 text-sm dark:text-neutral-400">Sort<select x-model="sort" class="px-3 py-1.5 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="amount">Highest amount</option><option value="status">Status</option></select></label>
     </div>
 
-    <CommercePaymentsTable :records="visibleRecords()" :loading="loading()" @view="openDetails" />
+    <CommercePaymentsTable :sort-reset-key="sort()" :records="visibleRecords()" :loading="loading()" @view="openDetails" />
   </section>
 </div>
 

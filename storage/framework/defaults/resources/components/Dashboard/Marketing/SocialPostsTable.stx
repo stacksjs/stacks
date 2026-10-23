@@ -1,79 +1,92 @@
+@import('../UI/Table')
+
 <script client>
 import type { SocialPostRecord } from '../../../../app/Actions/Dashboard/Marketing/social-post-records'
+import { parseDashboardDate } from '../../../../functions/dashboard-dates'
 
 const records = useReactiveProp('records', [] as SocialPostRecord[])
 const loading = useReactiveProp('loading', false)
+/** The parent's sort select: a change hands the order back from a header sort. */
+const sortResetKey = useReactiveProp<unknown>('sortResetKey', '')
+/** The parent's search and filters: a change returns to the first page. */
+const pageResetKey = useReactiveProp<unknown>('pageResetKey', '')
 const emit = defineEmits()
 
 function formatDate(value: string): string {
   if (!value)
     return 'Not set'
-  const timestamp = new Date(value.replace(' ', 'T')).getTime()
-  return Number.isFinite(timestamp)
-    ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(timestamp)
-    : value
-}
-
-function statusClass(status: string): string {
-  if (status === 'published')
-    return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
-  if (status === 'scheduled')
-    return 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
-  if (status === 'failed')
-    return 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300'
-  return 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
+  const date = parseDashboardDate(value)
+  return Number.isNaN(date.getTime())
+    ? value
+    : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date)
 }
 
 function displayPlatform(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1)
 }
+
+/** The post cell is slotted: an image link and an external id appear only when present. */
+const COLUMNS = [
+  { key: 'content', label: 'Post', slotted: true },
+  { key: 'platformLabel', label: 'Platform', sortable: true, class: 'font-medium text-gray-700 whitespace-nowrap dark:text-neutral-200' },
+  { key: 'authorName', label: 'Owner', sortable: true, subtitleKey: 'authorEmail' },
+  { key: 'timingLabel', label: 'Timing', subtitleKey: 'timingNote', class: 'whitespace-nowrap' },
+  { key: 'reach', label: 'Performance', type: 'number' as const, sortable: true, subtitleKey: 'engagementLabel', class: 'whitespace-nowrap' },
+  {
+    key: 'status',
+    label: 'Status',
+    type: 'badge' as const,
+    sortable: true,
+    badgeClasses: {
+      published: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300',
+      scheduled: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300',
+      failed: 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300',
+      draft: 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300',
+    },
+  },
+]
+
+const ROW_ACTIONS = [
+  { action: 'edit', label: 'Edit social post', icon: 'i-hugeicons-edit-01' },
+  { action: 'delete', label: 'Delete social post', icon: 'i-hugeicons-delete-02', class: 'text-red-500' },
+]
+
+const rows = derived(() => records().map(record => ({
+  ...record,
+  platformLabel: displayPlatform(record.platform),
+  timingLabel: record.status === 'published' ? formatDate(record.publishedAt) : formatDate(record.scheduledAt),
+  timingNote: record.status === 'published' ? 'Published' : record.status === 'scheduled' ? 'Scheduled' : `Created ${formatDate(record.createdAt)}`,
+  engagementLabel: `${record.engagement.toLocaleString()} interactions`,
+})))
+
+function handleRowAction(payload: { action: string, row: SocialPostRecord }): void {
+  emit(payload.action, payload.row)
+}
 </script>
 
-<div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
-  <div :if="loading() && records().length === 0" class="flex items-center justify-center py-16 text-gray-500 text-sm dark:text-neutral-400"><span class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>Loading social posts</div>
-  <div :else-if="records().length === 0" class="px-6 py-16 text-center">
-    <span class="inline-block h-8 w-8 text-gray-400 i-hugeicons-share-01"></span>
-    <p class="mt-3 font-medium text-gray-900 text-sm dark:text-white">No social posts found</p>
-    <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Adjust the filters or add a SocialPost record.</p>
-  </div>
-  <div :else class="overflow-x-auto">
-    <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-      <thead class="bg-gray-50 dark:bg-neutral-900/50">
-        <tr>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Post</th>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Platform</th>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Owner</th>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Timing</th>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Performance</th>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Status</th>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-right text-xs dark:text-neutral-300"><span class="sr-only">Actions</span></th>
-        </tr>
-      </thead>
-      <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
-        <template :for="record in records()" :key="record.id">
-          <tr class="align-top">
-            <td class="px-4 py-4 max-w-md">
-              <p class="text-gray-900 text-sm dark:text-white">{{ record.content }}</p>
-              <p :if="record.imageUrl" class="mt-1 max-w-xs text-blue-600 text-xs truncate dark:text-blue-400">{{ record.imageUrl }}</p>
-              <p :if="record.externalId" class="mt-1 font-mono text-gray-500 text-xs dark:text-neutral-400">{{ record.externalId }}</p>
-            </td>
-            <td class="px-4 py-4 font-medium text-gray-700 text-sm whitespace-nowrap dark:text-neutral-200">{{ displayPlatform(record.platform) }}</td>
-            <td class="px-4 py-4 text-gray-600 text-sm dark:text-neutral-300"><p>{{ record.authorName }}</p><p :if="record.authorEmail" class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ record.authorEmail }}</p></td>
-            <td class="px-4 py-4 text-gray-600 text-sm whitespace-nowrap dark:text-neutral-300">
-              <p>{{ record.status === 'published' ? formatDate(record.publishedAt) : formatDate(record.scheduledAt) }}</p>
-              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ record.status === 'published' ? 'Published' : record.status === 'scheduled' ? 'Scheduled' : 'Created ' + formatDate(record.createdAt) }}</p>
-            </td>
-            <td class="px-4 py-4 text-gray-600 text-sm whitespace-nowrap dark:text-neutral-300"><p>{{ record.reach.toLocaleString() }} reach</p><p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ record.engagement.toLocaleString() }} interactions</p></td>
-            <td class="px-4 py-4"><span :class="'inline-flex px-2 py-1 font-medium text-xs rounded-full ' + statusClass(record.status)">{{ record.status }}</span></td>
-            <td class="px-4 py-4">
-              <div class="flex gap-1 justify-end">
-                <Button variant="ghost" size="sm" iconOnly :ariaLabel="'Edit social post ' + record.id" @click="emit('edit', record)"><span class="block h-4 w-4 text-blue-500 i-hugeicons-edit-01"></span></Button>
-                <Button variant="ghost" size="sm" iconOnly :ariaLabel="'Delete social post ' + record.id" @click="emit('delete', record)"><span class="block h-4 w-4 text-red-500 i-hugeicons-delete-02"></span></Button>
-              </div>
-            </td>
-          </tr>
-        </template>
-      </tbody>
-    </table>
-  </div>
-</div>
+{{--
+  No `searchable` or `filterable`: the parent dashboard owns the search box
+  and the filter selects. Table pages the whole filtered list the parent passes.
+--}}
+<Table
+  :sort-reset-key="sortResetKey()"
+  :page-reset-key="pageResetKey()"
+  :columns="COLUMNS"
+  :data="rows()"
+  :loading="loading()"
+  :row-actions="ROW_ACTIONS"
+  action-label-key="id"
+  paginated
+  :page-size="10"
+  empty-title="No social posts found"
+  empty-description="Adjust the filters or add a SocialPost record."
+  @row-action="handleRowAction"
+>
+  <template #cell="{ row }">
+    <div class="max-w-md">
+      <p class="text-gray-900 text-sm dark:text-white" x-text="row.content"></p>
+      <p :if="row.imageUrl" class="mt-1 max-w-xs text-blue-600 text-xs truncate dark:text-blue-400" x-text="row.imageUrl"></p>
+      <p :if="row.externalId" class="mt-1 font-mono text-gray-500 text-xs dark:text-neutral-400" x-text="row.externalId"></p>
+    </div>
+  </template>
+</Table>

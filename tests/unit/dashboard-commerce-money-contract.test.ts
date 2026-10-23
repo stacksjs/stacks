@@ -105,7 +105,6 @@ describe('commerce dashboard money', () => {
 
   test('the components outside Dashboard/Commerce that show commerce money use the shared helper', () => {
     for (const name of [
-      'Marketing/AbandonedCartsTable.stx',
       'Marketing/AbandonedCartsDashboard.stx',
       'Marketing/RecoveryCampaignDialog.stx',
       'Analytics/SalesAnalytics.stx',
@@ -124,15 +123,12 @@ describe('commerce dashboard money', () => {
 
   test('every component that shows money imports the shared helper', () => {
     for (const name of [
-      'CommerceProductsTable.stx',
       'CommerceProductDetailDashboard.stx',
       'CommercePosCatalog.stx',
       'CommercePosCart.stx',
       'CommercePosCheckoutDialog.stx',
       'CommercePosReceiptDialog.stx',
-      'CommerceOrdersTable.stx',
       'CommerceOrderDetailsDialog.stx',
-      'CommerceCustomersTable.stx',
       'CommerceGiftCardsTable.stx',
       'CommercePaymentsTable.stx',
     ]) {
@@ -140,11 +136,39 @@ describe('commerce dashboard money', () => {
     }
   })
 
+  /**
+   * A table on UI/Table shows money through a `currency` column instead,
+   * which formats with the same helper inside Table and takes the currency
+   * from the row (stacksjs/stacks#2977). A column of another type would print
+   * the stored minor units as a bare number: 1999 rather than $19.99.
+   */
+  test('a table on UI/Table shows money through a currency column', () => {
+    const table = readFileSync(join(dashboardDir, 'UI/Table.stx'), 'utf8')
+    expect(table).toMatch(sharedFormatter)
+    expect(table).toContain('return formatCurrency(amount, code)')
+    // The row's `currency` is the store's for products and customers, and
+    // the record's own for an order, which carries the currency it was paid in.
+    for (const [name, key, rowCurrency] of [
+      ['CommerceProductsTable.stx', 'price', 'currency: currency(),'],
+      ['CommerceCustomersTable.stx', 'totalSpent', 'currency: currency(),'],
+      ['CommerceOrdersTable.stx', 'totalAmount', null],
+    ] as const) {
+      const component = source(name)
+      expect(component).toContain(`key: '${key}', label:`)
+      expect(component).toMatch(new RegExp(`key: '${key}',[^}]*type: 'currency' as const, currencyKey: 'currency'`))
+      if (rowCurrency)
+        expect(component).toContain(rowCurrency)
+    }
+    // An abandoned cart carries the currency it was priced in.
+    expect(dashboardSource('Marketing/AbandonedCartsTable.stx')).toMatch(/key: 'value',[^}]*type: 'currency' as const, currencyKey: 'currency'/)
+  })
+
   test('the products table shows a stored price of 1999 as $19.99', () => {
     const table = source('CommerceProductsTable.stx')
-    expect(table).toContain('{{ formatMoney(record.price) }}')
-    expect(table).toContain('return formatCurrency(value, currency())')
-    // The function that template expression lands on, with the table's default currency.
+    // The price column is a currency column fed the store currency per row,
+    // so Table formats it with formatCurrency(price, row.currency).
+    expect(table).toMatch(/key: 'price',[^}]*type: 'currency' as const, currencyKey: 'currency'/)
+    expect(table).toContain('currency: currency(),')
     expect(formatCurrency(1999, 'USD', 'en-US')).toBe('$19.99')
   })
 

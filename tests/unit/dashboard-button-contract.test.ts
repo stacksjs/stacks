@@ -310,7 +310,9 @@ describe('dashboard button contract', () => {
       )
       const nativeButtons = [...source.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
 
-      expect(source).toMatch(/<(?:Button|Modal|Drawer)\b/)
+      // `<Table` counts too: a table that declares its row actions through
+      // UI/Table renders them as Buttons there.
+      expect(source).toMatch(/<(?:Button|Modal|Drawer|Table)\b/)
       expect(nativeButtons.every(button => button.includes('inset-0'))).toBe(true)
     }
   })
@@ -546,14 +548,14 @@ describe('dashboard button contract', () => {
       resolve('storage/framework/defaults/resources/components/Dashboard/Monitoring/ErrorTable.stx'),
       'utf8',
     )
-    const nativeButtons = [...source.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
-
-    expect((source.match(/<Button/g) || []).length).toBe(4)
-    expect(nativeButtons.every(button =>
-      button.includes("nextSort('")
-      || button.includes("emit('row-click', error)"),
-    )).toBe(true)
-
+    // On UI/Table: sorting is Table's own header buttons and the row actions,
+    // details included, are declared and rendered as Buttons there, so the
+    // component has no native button left to keep semantic.
+    expect(source).toMatch(/<Table(?=[\s/>])/)
+    expect(source).not.toMatch(/<button\b/)
+    for (const action of ['view', 'resolve', 'ignore', 'unresolve', 'delete'])
+      expect(source).toContain(`action: '${action}'`)
+    expect(source).toContain("emit(payload.action === 'view' ? 'row-click' : payload.action, payload.row)")
   })
 
   test('keeps email navigation semantic while sharing compose and message actions', () => {

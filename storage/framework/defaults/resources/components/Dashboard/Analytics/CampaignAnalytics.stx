@@ -1,3 +1,5 @@
+@import('../UI/Table')
+
 <script client>
 import type { AnalyticsRange, CampaignAnalyticsResponse } from '../../../../functions/analytics'
 import { fetchCampaignAnalytics } from '../../../../functions/analytics'
@@ -33,6 +35,23 @@ function formatDateRange(start: string, end: string): string {
 function campaigns(): CampaignAnalyticsResponse['campaigns'] {
   return analytics()?.campaigns || []
 }
+
+/**
+ * Every campaign in the range, so this is the one table on the page that
+ * grows without bound: it pages. Counts the campaign did not record read
+ * "Not recorded" rather than 0, and spend is formatted in each campaign's own
+ * currency, never summed across them.
+ */
+const CAMPAIGN_COLUMNS = [
+  { key: 'name', label: 'Campaign', sortable: true, class: 'font-medium text-gray-900 dark:text-white' },
+  { key: 'type', label: 'Channel', sortable: true },
+  { key: 'status', label: 'Status', sortable: true },
+  { key: 'sentCount', label: 'Sent', type: 'number' as const, sortable: true, align: 'right' as const, emptyText: 'Not recorded' },
+  { key: 'opens', label: 'Opens', type: 'number' as const, sortable: true, align: 'right' as const, emptyText: 'Not recorded' },
+  { key: 'clicks', label: 'Clicks', type: 'number' as const, sortable: true, align: 'right' as const, emptyText: 'Not recorded' },
+  { key: 'conversions', label: 'Conversions', type: 'number' as const, sortable: true, align: 'right' as const, emptyText: 'Not recorded' },
+  { key: 'spent', label: 'Spent', type: 'currency' as const, currencyKey: 'currency', sortable: true, align: 'right' as const, emptyText: 'Not recorded' },
+]
 
 function channels(): CampaignAnalyticsResponse['channels'] {
   return analytics()?.channels || []
@@ -141,36 +160,15 @@ onMount(() => {
         <h2 class="font-semibold text-gray-900 dark:text-white">Campaign performance</h2>
         <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Engagement counts are derived from each campaign's recorded sent count and rates.</p>
       </div>
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-          <thead class="bg-gray-50 dark:bg-neutral-700/50">
-            <tr>
-              <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-300">Campaign</th>
-              <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-300">Channel</th>
-              <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-300">Status</th>
-              <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Sent</th>
-              <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Opens</th>
-              <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Clicks</th>
-              <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Conversions</th>
-              <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Spent</th>
-            </tr>
-          </thead>
-          <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
-            <template :for="campaign in campaigns()">
-              <tr>
-                <td class="px-4 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ campaign.name }}</td>
-                <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-300">{{ campaign.type }}</td>
-                <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-300">{{ campaign.status }}</td>
-                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(campaign.sentCount) }}</td>
-                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(campaign.opens) }}</td>
-                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(campaign.clicks) }}</td>
-                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(campaign.conversions) }}</td>
-                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatMoney(campaign.spent, campaign.currency) }}</td>
-              </tr>
-            </template>
-          </tbody>
-        </table>
-      </div>
+      <Table
+        :columns="CAMPAIGN_COLUMNS"
+        :data="campaigns()"
+        :loading="isLoading()"
+        paginated
+        :page-size="25"
+        empty-title="No campaigns in this period"
+        empty-description="Create and send campaigns from Marketing to populate this table."
+      />
     </section>
 
     <section class="grid gap-6 grid-cols-1 xl:grid-cols-2">

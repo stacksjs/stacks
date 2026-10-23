@@ -60,8 +60,6 @@ const {
   loading,
   loadError,
   search,
-  page,
-  perPage,
   editorOpen,
   editorMode,
   editing,
@@ -71,8 +69,6 @@ const {
   deleteBusy,
   deleteError,
   filteredRecords,
-  paginatedRecords,
-  goToPage,
   handleSearch,
   openCreate,
   openEdit,
@@ -81,7 +77,6 @@ const {
   closeDelete,
   upsert,
   remove,
-  clampPage,
 } = useRecordsDashboard<LicenseKeyRecord>({ filter: matchesQuery })
 
 const options = state<LicenseKeyOptions>(emptyOptions)
@@ -132,7 +127,6 @@ async function loadKeys(): Promise<void> {
       throw new TypeError('License key resources were not returned in the expected shape.')
     options.set(optionData)
     records.set(keyData.map(withRelationships))
-    clampPage()
   }
   catch (error) {
     loadError.set(error instanceof Error ? error.message : String(error))
@@ -187,7 +181,6 @@ async function confirmDelete(): Promise<void> {
     })
     remove(current)
     deleting.set(null)
-    clampPage()
     pushToast('success', 'License key deleted', { detail: current.key })
   }
   catch (error) {
@@ -222,11 +215,7 @@ onMount(() => {
       <div><h2 class="font-semibold text-gray-900 dark:text-white">Key inventory</h2><p class="mt-0.5 text-gray-500 text-xs dark:text-neutral-400">{{ filteredRecords().length }} matching records</p></div>
       <SearchFilter placeholder="Search license keys" class="w-full sm:w-80" @search="handleSearch" />
     </div>
-    <div :if="loading()" class="flex items-center justify-center py-24 text-gray-500 text-sm dark:text-neutral-400"><span class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Loading license keys</div>
-    <LicenseKeysTable :if="!loading()" :license-keys="paginatedRecords()" @edit="openEdit" @delete="requestDelete" />
-    <div :if="!loading()" class="px-4 py-3 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">
-      <DeliveryPagination :current-page="page()" :total-items="filteredRecords().length" :items-per-page="perPage()" @select="goToPage" />
-    </div>
+    <LicenseKeysTable :license-keys="filteredRecords()" :loading="loading()" :page-reset-key="search()" @edit="openEdit" @delete="requestDelete" />
   </section>
 </div>
 

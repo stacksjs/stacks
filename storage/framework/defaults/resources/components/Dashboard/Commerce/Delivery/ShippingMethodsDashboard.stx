@@ -29,8 +29,6 @@ const records = state<ShippingMethodRecord[]>([])
 const loading = state(true)
 const loadError = state('')
 const search = state('')
-const page = state(1)
-const perPage = state(10)
 const editorOpen = state(false)
 const editorMode = state<'create' | 'edit'>('create')
 const editing = state<ShippingMethodRecord | null>(null)
@@ -49,11 +47,6 @@ function filteredRecords(): ShippingMethodRecord[] {
     record.description,
     record.status,
   ].some(value => String(value || '').toLowerCase().includes(query)))
-}
-
-function paginatedRecords(): ShippingMethodRecord[] {
-  const start = (page() - 1) * perPage()
-  return filteredRecords().slice(start, start + perPage())
 }
 
 function activeCount(): number {
@@ -80,9 +73,6 @@ async function loadMethods(): Promise<void> {
     if (!Array.isArray(data))
       throw new TypeError('Shipping methods response was not an array.')
     records.set(data)
-    const lastPage = Math.max(1, Math.ceil(filteredRecords().length / perPage()))
-    if (page() > lastPage)
-      page.set(lastPage)
   }
   catch (error) {
     loadError.set(error instanceof Error ? error.message : String(error))
@@ -95,7 +85,6 @@ async function loadMethods(): Promise<void> {
 
 function handleSearch(value: string): void {
   search.set(value)
-  page.set(1)
 }
 
 function openCreate(): void {
@@ -184,9 +173,6 @@ async function confirmDelete(): Promise<void> {
     })
     records.set(records().filter(record => record.id !== current.id))
     deleting.set(null)
-    const lastPage = Math.max(1, Math.ceil(filteredRecords().length / perPage()))
-    if (page() > lastPage)
-      page.set(lastPage)
     pushToast('success', 'Shipping method deleted', { detail: current.name })
   }
   catch (error) {
@@ -195,10 +181,6 @@ async function confirmDelete(): Promise<void> {
   finally {
     deleteBusy.set(false)
   }
-}
-
-function goToPage(value: number): void {
-  page.set(value)
 }
 
 onMount(() => {
@@ -225,11 +207,7 @@ onMount(() => {
       <div><h2 class="font-semibold text-gray-900 dark:text-white">Configured methods</h2><p class="mt-0.5 text-gray-500 text-xs dark:text-neutral-400">{{ filteredRecords().length }} matching records</p></div>
       <SearchFilter placeholder="Search shipping methods" class="w-full sm:w-80" @search="handleSearch" />
     </div>
-    <div :if="loading()" class="flex items-center justify-center py-24 text-gray-500 text-sm dark:text-neutral-400"><span class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Loading shipping methods</div>
-    <ShippingMethodsTable :if="!loading()" :methods="paginatedRecords()" @edit="openEdit" @delete="requestDelete" />
-    <div :if="!loading()" class="px-4 py-3 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">
-      <DeliveryPagination :current-page="page()" :total-items="filteredRecords().length" :items-per-page="perPage()" @select="goToPage" />
-    </div>
+    <ShippingMethodsTable :methods="filteredRecords()" :loading="loading()" :page-reset-key="search()" @edit="openEdit" @delete="requestDelete" />
   </section>
 </div>
 

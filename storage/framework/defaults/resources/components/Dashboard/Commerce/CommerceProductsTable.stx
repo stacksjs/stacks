@@ -1,9 +1,14 @@
+@import('../UI/Table')
+
 <script client>
 import type { CommerceProductRecord } from '../../../../app/Actions/Dashboard/Commerce/commerce-product-records'
-import { formatCurrency } from '@stacksjs/commerce/money'
 
 const records = useReactiveProp('records', [] as CommerceProductRecord[])
 const loading = useReactiveProp('loading', false)
+/** The parent's sort select: a change hands the order back from a header sort. */
+const sortResetKey = useReactiveProp<unknown>('sortResetKey', '')
+/** The parent's search and filters: a change returns to the first page. */
+const pageResetKey = useReactiveProp<unknown>('pageResetKey', '')
 const currency = useReactiveProp('currency', 'USD')
 const emit = defineEmits()
 
@@ -11,40 +16,82 @@ function initials(name: string): string {
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]?.toUpperCase() || '').join('') || 'PR'
 }
 
-function formatMoney(value: number): string {
-  return formatCurrency(value, currency())
-}
+/**
+ * The product cell is slotted for its initials, and inventory for its colour:
+ * none in stock reads red. Everything else is a column option.
+ */
+const COLUMNS = [
+  { key: 'nameLabel', label: 'Product', sortable: true, slotted: true },
+  { key: 'categoryName', label: 'Relationships', sortable: true, subtitleKey: 'manufacturerName', class: 'text-gray-700 dark:text-neutral-200' },
+  { key: 'price', label: 'Price', type: 'currency' as const, currencyKey: 'currency', sortable: true, class: 'font-medium whitespace-nowrap' },
+  { key: 'inventoryCount', label: 'Inventory', sortable: true, slotted: true },
+  {
+    key: 'availability',
+    label: 'Availability',
+    type: 'badge' as const,
+    sortable: true,
+    badgeClasses: { available: 'bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-300' },
+    badgeLabels: { available: 'Available', unavailable: 'Unavailable' },
+  },
+  { key: 'variantsLabel', label: 'Related', subtitleKey: 'reviewsLabel', searchable: false, class: 'text-gray-500 text-xs dark:text-neutral-400' },
+]
 
-function availabilityClass(record: CommerceProductRecord): string {
-  return record.isAvailable
-    ? 'bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-300'
-    : 'bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-300'
+const ROW_ACTIONS = [
+  { action: 'view', label: 'View product', icon: 'i-hugeicons-view' },
+  { action: 'edit', label: 'Edit product', icon: 'i-hugeicons-edit-02' },
+  { action: 'delete', label: 'Delete product', icon: 'i-hugeicons-delete-02', class: 'text-red-500' },
+]
+
+const rows = derived(() => records().map(record => ({
+  ...record,
+  currency: currency(),
+  nameLabel: record.name || 'Unnamed product',
+  initials: initials(record.name),
+  descriptionLabel: record.description || 'No description',
+  outOfStock: record.inventoryCount === 0,
+  inventoryLabel: record.inventoryCount.toLocaleString(),
+  prepLabel: `${record.preparationTime} min prep`,
+  availability: record.isAvailable ? 'available' : 'unavailable',
+  variantsLabel: `${record.variantCount} variants, ${record.unitCount} units`,
+  reviewsLabel: `${record.reviewCount} reviews`,
+})))
+
+function handleRowAction(payload: { action: string, row: CommerceProductRecord }): void {
+  emit(payload.action, payload.row)
 }
 </script>
 
-<div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
-  <div :if="loading()" class="flex items-center justify-center py-16 text-gray-500 text-sm dark:text-neutral-400"><span class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Loading products</div>
-  <div :if="!loading() && records().length === 0" class="py-16 text-center">
-    <div class="mb-3 mx-auto h-8 w-8 text-gray-400 i-hugeicons-package"></div>
-    <p class="font-medium text-gray-900 text-sm dark:text-white">No products found</p>
-    <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Adjust the filters or add a native Product record.</p>
-  </div>
-  <div :if="!loading() && records().length > 0" class="overflow-x-auto">
-    <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-      <thead class="bg-gray-50 dark:bg-neutral-900/60"><tr><th class="px-4 py-3 font-semibold text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400">Product</th><th class="px-4 py-3 font-semibold text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400">Relationships</th><th class="px-4 py-3 font-semibold text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400">Price</th><th class="px-4 py-3 font-semibold text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400">Inventory</th><th class="px-4 py-3 font-semibold text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400">Availability</th><th class="px-4 py-3 font-semibold text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400">Related</th><th class="px-4 py-3"><span class="sr-only">Actions</span></th></tr></thead>
-      <tbody class="divide-gray-100 divide-y dark:divide-neutral-700">
-        <template :for="record in records()" :key="record.id">
-          <tr class="hover:bg-gray-50/70 dark:hover:bg-neutral-900/40">
-            <td class="px-4 py-3 min-w-56"><div class="flex gap-3 items-center"><div class="flex flex-none items-center justify-center h-9 w-9 font-semibold text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-md">{{ initials(record.name) }}</div><div class="min-w-0"><Button variant="ghost" size="xs" @click="emit('view', record)">{{ record.name || 'Unnamed product' }}</Button><p class="mt-1 max-w-52 text-gray-400 text-xs truncate dark:text-neutral-500">{{ record.description || 'No description' }}</p></div></div></td>
-            <td class="px-4 py-3 min-w-44"><p class="text-gray-700 text-sm dark:text-neutral-200">{{ record.categoryName }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ record.manufacturerName }}</p></td>
-            <td class="px-4 py-3 font-medium text-gray-700 text-sm whitespace-nowrap dark:text-neutral-200">{{ formatMoney(record.price) }}</td>
-            <td class="px-4 py-3 min-w-28"><p :class="'font-medium text-sm ' + (record.inventoryCount === 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-neutral-200')">{{ record.inventoryCount.toLocaleString() }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ record.preparationTime }} min prep</p></td>
-            <td class="px-4 py-3"><span :class="'inline-flex px-2 py-1 font-medium text-xs rounded-full ' + availabilityClass(record)">{{ record.isAvailable ? 'Available' : 'Unavailable' }}</span></td>
-            <td class="px-4 py-3 min-w-36 text-gray-500 text-xs dark:text-neutral-400"><p>{{ record.variantCount }} variants, {{ record.unitCount }} units</p><p class="mt-1">{{ record.reviewCount }} reviews</p></td>
-            <td class="px-4 py-3"><div class="flex gap-1 justify-end"><Button variant="ghost" size="sm" iconOnly :ariaLabel="'View product ' + record.name" @click="emit('view', record)"><span class="block h-4 w-4 text-blue-500 i-hugeicons-view"></span></Button><Button variant="ghost" size="sm" iconOnly :ariaLabel="'Edit product ' + record.name" @click="emit('edit', record)"><span class="block h-4 w-4 text-blue-500 i-hugeicons-edit-02"></span></Button><Button variant="ghost" size="sm" iconOnly :ariaLabel="'Delete product ' + record.name" @click="emit('delete', record)"><span class="block h-4 w-4 text-red-500 i-hugeicons-delete-02"></span></Button></div></td>
-          </tr>
-        </template>
-      </tbody>
-    </table>
-  </div>
-</div>
+{{--
+  No `searchable` or `filterable`: the parent dashboard owns the search box
+  and the filter selects. Table pages the whole filtered list the parent passes.
+--}}
+<Table
+  :sort-reset-key="sortResetKey()"
+  :page-reset-key="pageResetKey()"
+  :columns="COLUMNS"
+  :data="rows()"
+  :loading="loading()"
+  :row-actions="ROW_ACTIONS"
+  action-label-key="nameLabel"
+  paginated
+  :page-size="10"
+  empty-title="No products found"
+  empty-description="Adjust the filters or add a native Product record."
+  @row-action="handleRowAction"
+>
+  <template #cell="{ row, column }">
+    <template :if="column.key === 'nameLabel'">
+      <div class="flex gap-3 items-center">
+        <div class="flex flex-none items-center justify-center h-9 w-9 font-semibold text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-md" x-text="row.initials"></div>
+        <div class="min-w-0">
+          <p class="font-medium text-gray-900 text-sm dark:text-white" x-text="row.nameLabel"></p>
+          <p class="mt-1 max-w-52 text-gray-400 text-xs truncate dark:text-neutral-500" x-text="row.descriptionLabel"></p>
+        </div>
+      </div>
+    </template>
+    <template :if="column.key === 'inventoryCount'">
+      <p :class="'font-medium text-sm ' + (row.outOfStock ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-neutral-200')" x-text="row.inventoryLabel"></p>
+      <p class="mt-1 text-gray-400 text-xs dark:text-neutral-500" x-text="row.prepLabel"></p>
+    </template>
+  </template>
+</Table>

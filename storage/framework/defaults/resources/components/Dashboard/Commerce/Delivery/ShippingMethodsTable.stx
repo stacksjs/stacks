@@ -1,5 +1,6 @@
+@import('../../UI/Table')
+
 <script client>
-import { formatCurrency as formatMinorUnits } from '@stacksjs/commerce/money'
 interface ShippingZoneSummary {
   id: number
   name: string
@@ -16,96 +17,60 @@ interface ShippingMethodRow {
 }
 
 const methods = useReactiveProp('methods', [] as ShippingMethodRow[])
+const loading = useReactiveProp('loading', false)
+/** The parent's search: a change returns to the first page. */
+const pageResetKey = useReactiveProp<unknown>('pageResetKey', '')
 const emit = defineEmits()
 
-// Shipping amounts are stored as integer cents, in USD.
-function formatCurrency(cents?: number | null): string {
-  if (cents === null || cents === undefined)
-    return 'Not available'
+/** Shipping amounts are stored as integer cents, in USD: currency columns fixed to it. */
+const COLUMNS = [
+  { key: 'name', label: 'Name', sortable: true, class: 'font-medium text-stone-800 whitespace-nowrap dark:text-white' },
+  { key: 'description', label: 'Description', emptyText: 'No description', class: 'max-w-xs truncate' },
+  { key: 'base_rate', label: 'Base rate', type: 'currency' as const, currency: 'USD', sortable: true, emptyText: 'Not available', class: 'tabular-nums whitespace-nowrap' },
+  { key: 'free_shipping', label: 'Free shipping', type: 'currency' as const, currency: 'USD', sortable: true, emptyText: 'No minimum', class: 'tabular-nums whitespace-nowrap' },
+  { key: 'zoneCount', label: 'Zones', type: 'number' as const, sortable: true, class: 'tabular-nums' },
+  {
+    key: 'status',
+    label: 'Status',
+    type: 'badge' as const,
+    sortable: true,
+    badgeClasses: {
+      active: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300',
+      draft: 'bg-amber-50 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300',
+    },
+  },
+]
 
-  return formatMinorUnits(cents, 'USD', 'en-US')
-}
+const ROW_ACTIONS = [
+  { action: 'edit', label: 'Edit', icon: 'i-hugeicons-edit-01' },
+  { action: 'delete', label: 'Delete', icon: 'i-hugeicons-waste', class: 'text-red-500' },
+]
 
-function statusClass(status: string): string {
-  if (status === 'active')
-    return 'bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/20'
-  if (status === 'draft')
-    return 'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/20'
+const rows = derived(() => methods().map(method => ({
+  ...method,
+  zoneCount: method.shipping_zones?.length || 0,
+})))
 
-  return 'bg-stone-100 text-stone-600 ring-stone-500/20 dark:bg-white/5 dark:text-neutral-300 dark:ring-white/10'
-}
-
-function formatStatus(status: string): string {
-  return status.charAt(0).toUpperCase() + status.slice(1)
+function handleRowAction(payload: { action: string, row: ShippingMethodRow }): void {
+  emit(payload.action, payload.row)
 }
 </script>
 
-<div class="overflow-x-auto border border-stone-200/80 rounded-xl dark:border-neutral-700 shadow-sm">
-  <table class="min-w-full divide-stone-100 divide-y dark:divide-neutral-700">
-    <thead class="bg-stone-50/80 dark:bg-neutral-800">
-      <tr>
-        <th scope="col" class="pl-6 pr-3 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Name</th>
-        <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Description</th>
-        <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Base Rate</th>
-        <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Free Shipping</th>
-        <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Zones</th>
-        <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Status</th>
-        <th scope="col" class="relative pl-3 pr-6 py-3.5">
-          <span class="sr-only">Actions</span>
-        </th>
-      </tr>
-    </thead>
-    <tbody class="bg-white dark:bg-neutral-800 divide-stone-100 divide-y dark:divide-neutral-700">
-      <template :for="method in methods">
-        <tr class="hover:bg-stone-50/50 dark:hover:bg-neutral-700/50 transition-colors">
-          <td class="pl-6 pr-3 py-3.5 font-medium text-sm text-stone-800 whitespace-nowrap dark:text-white">
-            {{ method.name }}
-          </td>
-          <td class="px-4 py-3.5 max-w-xs text-sm text-stone-500 truncate dark:text-neutral-300">
-            {{ method.description || 'No description' }}
-          </td>
-          <td class="px-4 py-3.5 tabular-nums text-sm text-stone-500 whitespace-nowrap dark:text-neutral-300">
-            {{ formatCurrency(method.base_rate) }}
-          </td>
-          <td class="px-4 py-3.5 tabular-nums text-sm text-stone-500 whitespace-nowrap dark:text-neutral-300">
-            {{ method.free_shipping === null || method.free_shipping === undefined ? 'No minimum' : formatCurrency(method.free_shipping) }}
-          </td>
-          <td class="px-4 py-3.5 tabular-nums text-sm text-stone-500 whitespace-nowrap dark:text-neutral-300">
-            {{ method.shipping_zones?.length || 0 }}
-          </td>
-          <td class="px-4 py-3.5 text-sm whitespace-nowrap">
-            <span :class="'inline-flex px-2.5 py-1 font-medium text-xs ring-1 ring-inset rounded-full ' + statusClass(method.status)">
-              {{ formatStatus(method.status) }}
-            </span>
-          </td>
-          <td class="relative pl-3 pr-6 py-3.5 font-medium text-right text-sm whitespace-nowrap">
-            <Button
-              variant="ghost"
-              size="sm"
-              iconOnly
-              @click="emit('edit', method)"
-              :ariaLabel="'Edit ' + method.name"
-            >
-              <span class="block h-4 w-4 text-blue-500 i-hugeicons-edit-01"></span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              iconOnly
-              @click="emit('delete', method)"
-              :ariaLabel="'Delete ' + method.name"
-            >
-              <span class="block h-4 w-4 text-red-500 i-hugeicons-waste"></span>
-            </Button>
-          </td>
-        </tr>
-      </template>
-
-      <tr :if="methods().length === 0">
-        <td colspan="7" class="px-6 py-12 text-center text-sm text-stone-500 dark:text-neutral-400">
-          No shipping methods found.
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+{{--
+  No `searchable` or `filterable`: the parent dashboard owns the search box.
+  Table pages the whole filtered list the parent passes, and stays mounted
+  while it loads.
+--}}
+<Table
+  :page-reset-key="pageResetKey()"
+  :columns="COLUMNS"
+  :data="rows()"
+  :loading="loading()"
+  :row-actions="ROW_ACTIONS"
+  action-label-key="name"
+  paginated
+  :page-size="10"
+  empty-title="No shipping methods found"
+  empty-description="Add a method, or adjust the search."
+  @row-action="handleRowAction"
+/>

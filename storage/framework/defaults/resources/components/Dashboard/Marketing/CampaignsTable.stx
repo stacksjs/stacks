@@ -1,9 +1,16 @@
+@import('../UI/Table')
+
 <script client>
 import type { CampaignRecord } from '../../../../app/Actions/Dashboard/Marketing/campaign-records'
 import type { CampaignDeliveryOperation } from '../../../../app/Actions/Dashboard/Marketing/campaign-delivery'
+import { parseDashboardDate } from '../../../../functions/dashboard-dates'
 
 const records = useReactiveProp('records', [] as CampaignRecord[])
 const loading = useReactiveProp('loading', false)
+/** The parent's sort select: a change hands the order back from a header sort. */
+const sortResetKey = useReactiveProp<unknown>('sortResetKey', '')
+/** The parent's search and filters: a change returns to the first page. */
+const pageResetKey = useReactiveProp<unknown>('pageResetKey', '')
 const emit = defineEmits()
 
 function titleCase(value: string): string {
@@ -16,7 +23,7 @@ function formatDate(value: string): string {
   return new Intl.DateTimeFormat(undefined, {
     dateStyle: 'medium',
     timeStyle: 'short',
-  }).format(new Date(value.replace(' ', 'T')))
+  }).format(parseDashboardDate(value))
 }
 
 function percentage(value: number): string {
@@ -33,62 +40,78 @@ function canCancel(record: CampaignRecord): boolean {
     && ['scheduled', 'sending'].includes(record.status)
 }
 
-function requestDelivery(mode: CampaignDeliveryOperation, record: CampaignRecord): void {
-  emit('deliver', { mode, record })
+function timingNote(record: CampaignRecord): string {
+  if (record.sentAt)
+    return 'Sent'
+  if (record.status === 'scheduled')
+    return 'Scheduled'
+  if (record.startDate)
+    return 'Starts'
+  return record.scheduledAt ? 'Originally scheduled' : 'No timing'
+}
+
+const COLUMNS = [
+  { key: 'name', label: 'Campaign', sortable: true, subtitleKey: 'kindLabel', class: 'font-medium text-gray-900 dark:text-white' },
+  { key: 'emailListName', label: 'Audience', sortable: true, subtitleKey: 'audienceLabel', class: 'text-gray-900 dark:text-white' },
+  { key: 'timingLabel', label: 'Timing', subtitleKey: 'timingNote', class: 'text-gray-900 dark:text-white' },
+  { key: 'sentLabel', label: 'Delivery', subtitleKey: 'ratesLabel', class: 'text-gray-900 dark:text-white' },
+  { key: 'status', label: 'Status', type: 'badge' as const, sortable: true, badgeLabelKey: 'statusLabel' },
+]
+
+/**
+ * Delivery actions only where they apply: send and schedule to an email
+ * campaign that has not gone out, cancel while one is queued or sending.
+ * Edit and delete leave a campaign that is going or gone, which the
+ * hand-rolled buttons showed disabled.
+ */
+const ROW_ACTIONS = [
+  { action: 'send', label: 'Send now', icon: 'i-hugeicons-mail-send-02', when: { key: 'sendable', equals: true } },
+  { action: 'schedule', label: 'Schedule', icon: 'i-hugeicons-calendar-03', when: { key: 'scheduleLabel', equals: 'schedule' } },
+  { action: 'schedule', label: 'Reschedule', icon: 'i-hugeicons-calendar-03', when: { key: 'scheduleLabel', equals: 'reschedule' } },
+  { action: 'cancel', label: 'Cancel delivery of', icon: 'i-hugeicons-cancel-circle', class: 'text-red-500', when: { key: 'cancellable', equals: true } },
+  { action: 'edit', label: 'Edit', icon: 'i-hugeicons-edit-02', when: { key: 'editable', equals: true } },
+  { action: 'delete', label: 'Delete', icon: 'i-hugeicons-delete-02', class: 'text-red-500', when: { key: 'deletable', equals: true } },
+]
+
+const rows = derived(() => records().map(record => ({
+  ...record,
+  kindLabel: record.subject ? `${titleCase(record.type)} · ${record.subject}` : titleCase(record.type),
+  audienceLabel: `${record.audienceSize.toLocaleString()} available`,
+  timingLabel: formatDate(record.sentAt || record.scheduledAt || record.startDate),
+  timingNote: timingNote(record),
+  sentLabel: `${record.sentCount.toLocaleString()} sent`,
+  ratesLabel: `${percentage(record.openRate)} open · ${percentage(record.clickRate)} click`,
+  statusLabel: titleCase(record.status),
+  sendable: canSend(record),
+  scheduleLabel: canSend(record) ? (record.status === 'scheduled' ? 'reschedule' : 'schedule') : 'none',
+  cancellable: canCancel(record),
+  editable: !['sending', 'sent'].includes(record.status),
+  deletable: !['scheduled', 'sending', 'sent'].includes(record.status),
+})))
+
+function handleRowAction(payload: { action: string, row: CampaignRecord }): void {
+  if (payload.action === 'edit' || payload.action === 'delete')
+    emit(payload.action, payload.row)
+  else
+    emit('deliver', { mode: payload.action as CampaignDeliveryOperation, record: payload.row })
 }
 </script>
 
-<div class="overflow-x-auto bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
-  <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-    <thead class="bg-gray-50 dark:bg-neutral-900/50">
-      <tr>
-        <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Campaign</th>
-        <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Audience</th>
-        <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Timing</th>
-        <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Delivery</th>
-        <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Status</th>
-        <th scope="col" class="px-4 py-3"><span class="sr-only">Actions</span></th>
-      </tr>
-    </thead>
-    <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
-      <template :if="loading()">
-        <tr><td colspan="6" class="px-4 py-12 text-center text-gray-500 text-sm dark:text-neutral-400"><span class="inline-block mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Loading campaigns</td></tr>
-      </template>
-      <template :else-if="records().length === 0">
-        <tr><td colspan="6" class="px-4 py-14 text-center"><span class="inline-block h-6 w-6 text-gray-400 i-hugeicons-mail-send-01"></span><p class="mt-2 font-medium text-gray-900 text-sm dark:text-white">No campaigns found</p><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Adjust the filters or add a Campaign record.</p></td></tr>
-      </template>
-      <template :else>
-        <template :for="record in records">
-          <tr class="hover:bg-gray-50/70 dark:hover:bg-neutral-700/40">
-            <td class="px-4 py-4 max-w-sm">
-              <p class="font-medium text-gray-900 text-sm dark:text-white">{{ record.name }}</p>
-              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ titleCase(record.type) }}<span :if="record.subject"> · {{ record.subject }}</span></p>
-            </td>
-            <td class="px-4 py-4">
-              <p class="text-gray-900 text-sm dark:text-white">{{ record.emailListName }}</p>
-              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ record.audienceSize.toLocaleString() }} available</p>
-            </td>
-            <td class="px-4 py-4">
-              <p class="text-gray-900 text-sm dark:text-white">{{ formatDate(record.sentAt || record.scheduledAt || record.startDate) }}</p>
-              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ record.sentAt ? 'Sent' : record.status === 'scheduled' ? 'Scheduled' : record.startDate ? 'Starts' : record.scheduledAt ? 'Originally scheduled' : 'No timing' }}</p>
-            </td>
-            <td class="px-4 py-4">
-              <p class="text-gray-900 text-sm dark:text-white">{{ record.sentCount.toLocaleString() }} sent</p>
-              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ percentage(record.openRate) }} open · {{ percentage(record.clickRate) }} click</p>
-            </td>
-            <td class="px-4 py-4"><span class="inline-flex px-2 py-1 font-medium text-xs bg-gray-100 dark:bg-neutral-700 rounded-full">{{ titleCase(record.status) }}</span></td>
-            <td class="px-4 py-4">
-              <div class="flex gap-1 justify-end">
-                <Button :if="canSend(record)" variant="ghost" size="sm" iconOnly :ariaLabel="'Send campaign ' + record.id + ' now'" @click="requestDelivery('send', record)"><span class="block h-4 w-4 text-blue-500 i-hugeicons-mail-send-02"></span></Button>
-                <Button :if="canSend(record)" variant="ghost" size="sm" iconOnly :ariaLabel="(record.status === 'scheduled' ? 'Reschedule campaign ' : 'Schedule campaign ') + record.id" @click="requestDelivery('schedule', record)"><span class="block h-4 w-4 text-blue-500 i-hugeicons-calendar-03"></span></Button>
-                <Button :if="canCancel(record)" variant="ghost" size="sm" iconOnly :ariaLabel="'Cancel campaign ' + record.id + ' delivery'" @click="requestDelivery('cancel', record)"><span class="block h-4 w-4 text-red-500 i-hugeicons-cancel-circle"></span></Button>
-                <Button variant="ghost" size="sm" iconOnly :disabled="['sending', 'sent'].includes(record.status)" :ariaLabel="'Edit campaign ' + record.id" @click="emit('edit', record)"><span class="block h-4 w-4 text-blue-500 i-hugeicons-edit-02"></span></Button>
-                <Button variant="ghost" size="sm" iconOnly :disabled="['scheduled', 'sending', 'sent'].includes(record.status)" :ariaLabel="'Delete campaign ' + record.id" @click="emit('delete', record)"><span class="block h-4 w-4 text-red-500 i-hugeicons-delete-02"></span></Button>
-              </div>
-            </td>
-          </tr>
-        </template>
-      </template>
-    </tbody>
-  </table>
-</div>
+{{--
+  No `searchable` or `filterable`: the parent dashboard owns the search box
+  and the filter selects. Table pages the whole filtered list the parent passes.
+--}}
+<Table
+  :sort-reset-key="sortResetKey()"
+  :page-reset-key="pageResetKey()"
+  :columns="COLUMNS"
+  :data="rows()"
+  :loading="loading()"
+  :row-actions="ROW_ACTIONS"
+  action-label-key="name"
+  paginated
+  :page-size="10"
+  empty-title="No campaigns found"
+  empty-description="Adjust the filters or add a Campaign record."
+  @row-action="handleRowAction"
+/>

@@ -1,43 +1,86 @@
+@import('../UI/Table')
+
 <script client>
 import type { CommerceCategoryRecord } from '../../../../app/Actions/Dashboard/Commerce/commerce-category-records'
 
 const records = useReactiveProp('records', [] as CommerceCategoryRecord[])
 const allRecords = useReactiveProp('allRecords', [] as CommerceCategoryRecord[])
 const loading = useReactiveProp('loading', false)
-const emit = defineEmits<{
-  view: [record: CommerceCategoryRecord]
-  edit: [record: CommerceCategoryRecord]
-  delete: [record: CommerceCategoryRecord]
-}>()
+/** The parent's sort select: a change hands the order back from a header sort. */
+const sortResetKey = useReactiveProp<unknown>('sortResetKey', '')
+/** The parent's search and filters: a change returns to the first page. */
+const pageResetKey = useReactiveProp<unknown>('pageResetKey', '')
+const emit = defineEmits()
 
 function parentName(record: CommerceCategoryRecord): string {
   if (!record.parentCategoryId)
     return 'Root category'
   return allRecords().find(parent => parent.id === record.parentCategoryId)?.name || 'Unknown parent'
 }
+
+/**
+ * Only the category cell is slotted, for its initial. The parent comes from
+ * `allRecords`, which can hold categories the current filter hides, so it is
+ * resolved into the row rather than looked up per cell.
+ */
+const COLUMNS = [
+  { key: 'name', label: 'Category', sortable: true, slotted: true },
+  { key: 'parentLabel', label: 'Hierarchy', sortable: true, subtitleKey: 'slug', class: 'text-gray-700 dark:text-neutral-200' },
+  { key: 'displayOrder', label: 'Display order', type: 'number' as const, sortable: true, class: 'font-mono' },
+  {
+    key: 'availability',
+    label: 'Availability',
+    type: 'badge' as const,
+    sortable: true,
+    badgeClasses: { active: 'bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-300' },
+    badgeLabels: { active: 'Active', inactive: 'Inactive' },
+  },
+]
+
+const ROW_ACTIONS = [
+  { action: 'view', label: 'View', icon: 'i-hugeicons-view' },
+  { action: 'edit', label: 'Edit', icon: 'i-hugeicons-edit-02' },
+  { action: 'delete', label: 'Delete', icon: 'i-hugeicons-delete-02', class: 'text-red-500' },
+]
+
+const rows = derived(() => records().map(record => ({
+  ...record,
+  initial: record.name.slice(0, 1).toUpperCase(),
+  summary: record.description || record.slug,
+  parentLabel: parentName(record),
+  availability: record.isActive ? 'active' : 'inactive',
+})))
+
+function handleRowAction(payload: { action: string, row: CommerceCategoryRecord }): void {
+  emit(payload.action, payload.row)
+}
 </script>
 
-<div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
-  <div :if="loading()" class="flex items-center justify-center py-16 text-gray-500 text-sm dark:text-neutral-400"><span class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Loading categories</div>
-  <div :if="!loading() && records().length === 0" class="py-16 text-center">
-    <div class="mb-3 mx-auto h-8 w-8 text-gray-400 i-hugeicons-tags"></div>
-    <p class="font-medium text-gray-900 text-sm dark:text-white">No product categories found</p>
-    <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Adjust the filters or add a native Category record.</p>
-  </div>
-  <div :if="!loading() && records().length > 0" class="overflow-x-auto">
-    <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-      <thead class="bg-gray-50 dark:bg-neutral-900/60"><tr><th class="px-4 py-3 font-semibold text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400">Category</th><th class="px-4 py-3 font-semibold text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400">Hierarchy</th><th class="px-4 py-3 font-semibold text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400">Display order</th><th class="px-4 py-3 font-semibold text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400">Availability</th><th class="px-4 py-3"><span class="sr-only">Actions</span></th></tr></thead>
-      <tbody class="divide-gray-100 divide-y dark:divide-neutral-700">
-        <template :for="record in records()" :key="record.id">
-          <tr class="hover:bg-gray-50/70 dark:hover:bg-neutral-900/40">
-            <td class="px-4 py-3"><div class="flex gap-3 items-center"><span class="flex items-center justify-center shrink-0 h-9 w-9 font-semibold text-blue-700 text-sm dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-md">{{ record.name.slice(0, 1).toUpperCase() }}</span><div class="min-w-0"><Button variant="ghost" size="xs" @click="emit('view', record)">{{ record.name }}</Button><p class="mt-1 max-w-96 text-gray-400 text-xs truncate dark:text-neutral-500">{{ record.description || record.slug }}</p></div></div></td>
-            <td class="px-4 py-3"><p class="text-gray-700 text-sm dark:text-neutral-200">{{ parentName(record) }}</p><p class="mt-1 font-mono text-gray-400 text-xs dark:text-neutral-500">{{ record.slug }}</p></td>
-            <td class="px-4 py-3 font-mono text-gray-700 text-sm dark:text-neutral-200">{{ record.displayOrder }}</td>
-            <td class="px-4 py-3"><span :class="'inline-flex px-2 py-1 font-medium text-xs rounded-full ' + (record.isActive ? 'bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-300' : 'bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-300')">{{ record.isActive ? 'Active' : 'Inactive' }}</span></td>
-            <td class="px-4 py-3"><div class="flex gap-1 justify-end"><Button variant="ghost" size="sm" iconOnly :ariaLabel="'View ' + record.name" @click="emit('view', record)"><span class="block h-4 w-4 text-blue-500 i-hugeicons-view"></span></Button><Button variant="ghost" size="sm" iconOnly :ariaLabel="'Edit ' + record.name" @click="emit('edit', record)"><span class="block h-4 w-4 text-blue-500 i-hugeicons-edit-02"></span></Button><Button variant="ghost" size="sm" iconOnly :ariaLabel="'Delete ' + record.name" @click="emit('delete', record)"><span class="block h-4 w-4 text-red-500 i-hugeicons-delete-02"></span></Button></div></td>
-          </tr>
-        </template>
-      </tbody>
-    </table>
-  </div>
-</div>
+{{--
+  No `searchable` or `filterable`: the parent dashboard owns the search box
+  and the filter selects. Table pages the whole filtered list the parent passes.
+--}}
+<Table
+  :sort-reset-key="sortResetKey()"
+  :page-reset-key="pageResetKey()"
+  :columns="COLUMNS"
+  :data="rows()"
+  :loading="loading()"
+  :row-actions="ROW_ACTIONS"
+  action-label-key="name"
+  paginated
+  :page-size="20"
+  empty-title="No product categories found"
+  empty-description="Adjust the filters or add a native Category record."
+  @row-action="handleRowAction"
+>
+  <template #cell="{ row }">
+    <div class="flex gap-3 items-center">
+      <span class="flex items-center justify-center shrink-0 h-9 w-9 font-semibold text-blue-700 text-sm dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-md" x-text="row.initial"></span>
+      <div class="min-w-0">
+        <p class="font-medium text-gray-900 text-sm dark:text-white" x-text="row.name"></p>
+        <p class="mt-1 max-w-96 text-gray-400 text-xs truncate dark:text-neutral-500" x-text="row.summary"></p>
+      </div>
+    </div>
+  </template>
+</Table>

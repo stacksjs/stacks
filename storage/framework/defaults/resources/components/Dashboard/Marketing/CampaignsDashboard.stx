@@ -7,7 +7,6 @@ import type {
 import type { CampaignDeliveryOperation } from '../../../../app/Actions/Dashboard/Marketing/campaign-delivery'
 import { dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
-import { pageControls } from '../../../../functions/dashboard-list'
 
 interface CampaignIndexResponse {
   records: CampaignRecord[]
@@ -60,8 +59,6 @@ const typeFilter = state('all')
 const statusFilter = state('all')
 const listFilter = state('all')
 const sort = state('newest')
-const page = state(1)
-const perPage = 10
 const dialogOpen = state(false)
 const dialogMode = state<'add' | 'edit'>('add')
 const editingRecord = state<CampaignRecord | null>(null)
@@ -105,23 +102,13 @@ function filteredRecords(): CampaignRecord[] {
     })
 }
 
-function visibleRecords(): CampaignRecord[] {
-  const start = (page() - 1) * perPage
-  return filteredRecords().slice(start, start + perPage)
+/**
+ * What the table is showing: a change returns it to the first page, as this
+ * page's own pager did before the table took over paging.
+ */
+function viewKey(): string {
+  return JSON.stringify([search(), typeFilter(), statusFilter(), listFilter(), sort()])
 }
-
-function totalPages(): number {
-  return Math.max(1, Math.ceil(filteredRecords().length / perPage))
-}
-
-effect(() => {
-  search()
-  typeFilter()
-  statusFilter()
-  listFilter()
-  sort()
-  page.set(1)
-})
 
 async function loadCampaigns(): Promise<void> {
   loading.set(true)
@@ -134,8 +121,6 @@ async function loadCampaigns(): Promise<void> {
     summary.set(data.summary)
     lists.set(data.lists)
     defaultCurrency.set(data.defaultCurrency || 'USD')
-    if (page() > totalPages())
-      page.set(totalPages())
   }
   catch (error) {
     loadError.set(error instanceof Error ? error.message : String(error))
@@ -272,8 +257,6 @@ async function confirmDelivery(payload: { scheduledAt?: string }): Promise<void>
   }
 }
 
-const { previousPage, nextPage } = pageControls(page, totalPages)
-
 onMount(() => {
   void loadCampaigns()
 })
@@ -305,8 +288,7 @@ onMount(() => {
       <label><span class="sr-only">Filter campaign list</span><select x-model="listFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">All email lists</option><template :for="list in lists"><option :value="list.id">{{ list.name }}</option></template></select></label>
       <label><span class="sr-only">Sort campaigns</span><select x-model="sort" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="newest">Newest</option><option value="name">Name</option><option value="audience">Largest audience</option><option value="sent">Most sent</option></select></label>
     </div>
-    <CampaignsTable :records="visibleRecords()" :loading="loading()" @edit="openEdit" @delete="openDelete" @deliver="openDelivery" />
-    <div :if="filteredRecords().length > perPage" class="flex items-center justify-between"><p class="text-gray-500 text-sm dark:text-neutral-400">Page {{ page() }} of {{ totalPages() }}</p><div class="flex gap-2"><Button :disabled="page() === 1" variant="secondary" @click="previousPage()">Previous</Button><Button :disabled="page() === totalPages()" variant="secondary" @click="nextPage()">Next</Button></div></div>
+    <CampaignsTable :sort-reset-key="sort()" :page-reset-key="viewKey()" :records="filteredRecords()" :loading="loading()" @edit="openEdit" @delete="openDelete" @deliver="openDelivery" />
   </section>
 </div>
 

@@ -210,14 +210,43 @@ const actionLabelKey = useReactiveProp('actionLabelKey', '')
  */
 const busyKey = useReactiveProp('busyKey', '')
 const busyValue = useReactiveProp<unknown>('busyValue', '')
+/**
+ * The parent's own ordering, for a page whose sort select orders the rows
+ * Table receives.
+ *
+ * A header click overrides that order, and nothing used to hand it back:
+ * once a column was sorted, changing the select changed nothing visible, so
+ * the page had two sort controls that disagreed (stacksjs/stacks#2977). Pass
+ * the select's value here and a change to it clears the header sort, so the
+ * order on screen is always the one the viewer chose last.
+ */
+const sortResetKey = useReactiveProp<unknown>('sortResetKey', '')
+/**
+ * The parent's search and filters, for a page that filters the rows Table
+ * receives. A change returns to the first page, as a parent that paged
+ * itself always did: a narrower result read from page 3 is a page that
+ * looks empty or unrelated to what was just typed (stacksjs/stacks#2977).
+ */
+const pageResetKey = useReactiveProp<unknown>('pageResetKey', '')
 
 const selectedKeys = state<TableKey[]>([])
 const sortKey = state('')
 const sortDirection = state<SortDirection>('asc')
+
+effect(() => {
+  sortResetKey()
+  sortKey.set('')
+})
 const query = state('')
 const columnFilters = state<Record<string, string>>({})
 const hiddenColumns = state<string[]>([])
 const page = state(1)
+
+effect(() => {
+  sortResetKey()
+  pageResetKey()
+  page.set(1)
+})
 const columnMenuOpen = state(false)
 const emit = defineEmits()
 
@@ -486,10 +515,20 @@ function toggleRow(row: DashboardTableRow, event: Event): void {
 
 /* ------------------------------------------------------------------ sort */
 
+/**
+ * Ascending, descending, then off. Off is the order the rows arrived in,
+ * which on a page with its own sort select is that select's order; without
+ * a third state a header click could never be undone.
+ */
 function sort(column: DashboardTableColumn): void {
   if (!column.sortable)
     return
-  const direction: SortDirection = sortKey() === column.key && sortDirection() === 'asc' ? 'desc' : 'asc'
+  if (sortKey() === column.key && sortDirection() === 'desc') {
+    sortKey.set('')
+    emit('sort', { key: '', direction: 'asc' })
+    return
+  }
+  const direction: SortDirection = sortKey() === column.key ? 'desc' : 'asc'
   sortKey.set(column.key)
   sortDirection.set(direction)
   emit('sort', { key: column.key, direction })
@@ -498,7 +537,7 @@ function sort(column: DashboardTableColumn): void {
 function sortLabel(column: DashboardTableColumn): string {
   if (sortKey() !== column.key)
     return `Sort by ${column.label}`
-  return `Sort by ${column.label} ${sortDirection() === 'asc' ? 'descending' : 'ascending'}`
+  return sortDirection() === 'asc' ? `Sort by ${column.label} descending` : `Stop sorting by ${column.label}`
 }
 
 /** Mirrors sort state into aria-sort so screen readers announce it. */
