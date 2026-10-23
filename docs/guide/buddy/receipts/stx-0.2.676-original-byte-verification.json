@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "repository": "stacksjs/stx",
+  "tag": "v0.2.676",
+  "commit": "6bd2553c7b57ff992cc772f05ca970e58db3bcb3",
+  "sourceCiRunId": 40008752214,
+  "releaseRunId": 40008752418,
+  "npmArchives": {
+    "packages": [
+      {
+        "name": "bun-plugin-stx",
+        "version": "0.2.676",
+        "shasum": "b49316fb0d1620725dc952925be4ffb6193dc3c1",
+        "integrity": "sha512-p+371vsqUXIimmY+gx4w+izQ9WeY9dlkSGVcnq/swY7nAvdbXmr/PbeT7B0SVsFcPPiKNlAOfEa3ea8j+4V1zw==",
+        "file": "bun-plugin-stx-0.2.676.tgz",
+        "bytes": 126370,
+        "sha256": "776d40ee0f8ec5e1978db87017942d3b3dd5efbcd818c12eb3d993810edf06f6",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      },
+      {
+        "name": "@stacksjs/components",
+        "version": "0.2.676",
+        "shasum": "1d90010594ef0bacbd09a6e34dff74e489f93396",
+        "integrity": "sha512-xK0e2xdDCj0yKv+dyYxievYmUKlROY7ywnE7eoiZDjV39opUBhI/moKMkXZK4zW6YYxoB1003LWXPgIbPUIGHQ==",
+        "file": "_stacksjs_components-0.2.676.tgz",
+        "bytes": 561260,
+        "sha256": "b2dbf74633f0f150792595f1722cf8b5783dba4bb4dda69c57f8c5c672c9ae04",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      },
+      {
+        "name": "@stacksjs/stx",
+        "version": "0.2.676",
+        "shasum": "57b3ecdf6b52c73cb4b83dbb8f34ae062fb7cccd",
+        "integrity": "sha512-j6dwPiIo24vRFJH+Sp9/EXIeHiGse6+xPoS4zYD66GzH6fGdbrq7iyaB3BjlLUeMi+6KrIhig2OrPy3dGhtfrw==",
+        "file": "_stacksjs_stx-0.2.676.tgz",
+        "bytes": 2291717,
+        "sha256": "ff914d3a77609629fbde5aa2a831fbd8854ba5854262e05f75c1da91e36c4cb9",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      }
+    ],
+    "failures": []
+  },
+  "separateExtensionPublication": {
+    "runId": 40008752490,
+    "conclusion": "failure",
+    "limit": "Marketplace publication is not qualified by the consumed core package gates."
+  },
+  "scope": "The three consumed core packages at676; desktop, sanitizer and router use674 with separate original receipts."
+}

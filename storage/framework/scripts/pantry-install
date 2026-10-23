@@ -10,7 +10,7 @@ fi
 # with no change in the app: one release turned a long-unresolvable `craft`
 # entry into a hard install failure and stopped an app deploying for three days
 # (stacksjs/stacks#2919). Set PANTRY_VERSION to choose another.
-curl -fsSL https://pantry.dev | PANTRY_VERSION="${PANTRY_VERSION:-0.11.120}" bash
+curl -fsSL https://pantry.dev | PANTRY_VERSION="${PANTRY_VERSION:-0.11.122}" bash
 
 if ! command -v pantry >/dev/null 2>&1; then
   export PATH="${HOME}/.local/bin:${PATH}"

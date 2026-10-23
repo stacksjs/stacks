@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "repository": "stacksjs/stx",
+  "tag": "v0.2.674",
+  "commit": "a3bf9037110fecbf3d8977a97352276eb15ee382",
+  "sourceCiRunId": 39918923980,
+  "releaseRunId": 39918923597,
+  "npmArchives": {
+    "packages": [
+      {
+        "name": "stx-router",
+        "version": "0.2.674",
+        "shasum": "2239f4386cda5f2b7a782ffbc3987102bcab399e",
+        "integrity": "sha512-Zq+oB9/SkjyJFX5EKQcfYHfLvOUAXqg9ET5q3ccB3mTNnDGMuOcClffCcywcTzZ9oxTLj3TsfTF3SQCiRtMdbQ==",
+        "file": "stx-router-0.2.674.tgz",
+        "bytes": 82884,
+        "sha256": "17f4890356c619116621005e1183fec8f39f0768042192a7e7f61acd0380365b",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      },
+      {
+        "name": "@stacksjs/desktop",
+        "version": "0.2.674",
+        "shasum": "4844b20cb44ac6e1e31a5c811721f064af694f1d",
+        "integrity": "sha512-vXxP99G2fpozgTxrbP6SZkCXvKwKeq5htwCCI2Ib3c6k8FcmciA636HipJ8WONzH7j5hy+6I4wrSERP9l006Qg==",
+        "file": "_stacksjs_desktop-0.2.674.tgz",
+        "bytes": 108740,
+        "sha256": "b041772bd705080b84000f784db43c9002d52bd2bffcf1eb081454caf1a6a99f",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      },
+      {
+        "name": "@stacksjs/sanitizer",
+        "version": "0.2.674",
+        "shasum": "e73822cd5d04662e202b06e8b47fdb7eda4ea94c",
+        "integrity": "sha512-ywLrWkKncFc8ag0Cn/KO3QYMQnPp2TMQfC/vnNgBSmVTL7+CLv5DzeRTlSGGfD2pEAVprL9urAIeKuSGSdIMaQ==",
+        "file": "_stacksjs_sanitizer-0.2.674.tgz",
+        "bytes": 4741,
+        "sha256": "316a2f805e010f00d9df402eede123ef646214fcf108de56d0e71f4fbeccd36a",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      }
+    ],
+    "failures": []
+  },
+  "separateExtensionPublication": {
+    "runId": 39918923591,
+    "conclusion": "failure",
+    "limit": "Marketplace publication is not qualified by the consumed core package gates."
+  },
+  "scope": "The three consumed runtime packages at674."
+}

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "repository": "pantry-pm/pantry",
+  "tag": "v0.11.121",
+  "commit": "fe28b17f050f37ac0f587eba78bcc958407bd5f9",
+  "sourceCiRun": 40014324787,
+  "failedJob": 120622371117,
+  "failedStep": "Verify Android tools installation with the source Linux CLI",
+  "cause": "The real installation overlapped deployment restart and exhausted registry metadata GET retries with HTTP502.",
+  "releaseRun": 40014324977,
+  "releaseConclusion": "cancelled before any GitHub release existed",
+  "qualifiedForAdoption": false,
+  "originalFailedAndroidArtifact": {
+    "id": 12528436415,
+    "sha256": "285a5c95ac6e7ef7729fb460bb01706c960362dc0639861c110114ea940f29c1"
+  },
+  "sourceOrderingFix": "15c99fa2cec89dbbc1fe9d532a8ee62edc47e803",
+  "qualifiedSuccessor": "v0.11.122",
+  "remainingAvailabilityIssue": "https://github.com/pantry-pm/pantry/issues/249"
+}

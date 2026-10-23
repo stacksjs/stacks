@@ -1,0 +1,254 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-23T21:17:06.985Z",
+  "sources": [
+    {
+      "repository": "pantry-pm/pantry",
+      "commit": "64e0e11def9fa0b4aa54cddf920ae85dd3c13b1b",
+      "tag": "v0.11.122",
+      "gates": [
+        {
+          "runId": 40019850708,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "source-ci / verify exact full source CI",
+            "pantry",
+            "npm",
+            "discord-notification"
+          ]
+        },
+        {
+          "runId": 40019850083,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "typecheck",
+            "lint",
+            "test",
+            "action-native-services (8.4.11)",
+            "action-native-services (26.7.0)",
+            "Explicit native toolchain pins (ubuntu-latest)",
+            "action-redis-service",
+            "windows-git",
+            "native-browser",
+            "action-native-tools",
+            "zig-tests",
+            "Explicit native toolchain pins (macos-latest)",
+            "windows-native-runtime",
+            "continuous-release"
+          ]
+        },
+        {
+          "runId": 40019850066,
+          "workflow": ".github/workflows/build-zig.yml",
+          "requiredJobs": [
+            "compile-all",
+            "Native Windows CLI and compiler links"
+          ]
+        },
+        {
+          "runId": 40019850095,
+          "workflow": ".github/workflows/deploy-registry.yml",
+          "requiredJobs": [
+            "verify / Registry checks (Bun 1.4.2)",
+            "verify / Registry checks (Bun 1.4.3)",
+            "source-ci / verify exact full source CI",
+            "hetzner",
+            "discord-notification"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "ts-pantry",
+          "version": "0.11.122",
+          "integrity": "sha512-e+FPLYmvvMZrYcEUif4dp9m07AFj6HdtSkXs+BunJ4MEr/8OTaP/RdL2WXoqRk/pG/BLbdm+jwWcHzpI2hTY1g==",
+          "tarball": "https://registry.npmjs.org/ts-pantry/-/ts-pantry-0.11.122.tgz",
+          "bytes": 1384503,
+          "filesSha256": "8c83ebbeb653f4af9bedf88b94afa55bb81d924587abd1f40fe4aaf84c77d93b"
+        }
+      ],
+      "releaseCommand": "bun run release:patch",
+      "releaseScript": "bun x --bun @stacksjs/bumpx patch --recursive --execute 'bun .github/scripts/build-release-action.ts' --commit --tag --push --yes"
+    },
+    {
+      "repository": "pickier/pickier",
+      "commit": "0ce83cbbf06f23b0c05a61b332e074292d69961a",
+      "tag": "v0.1.77",
+      "gates": [
+        {
+          "runId": 39999788567,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "npm"
+          ]
+        },
+        {
+          "runId": 39999788210,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "native",
+            "lint",
+            "typecheck",
+            "test"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "pickier",
+          "version": "0.1.77",
+          "integrity": "sha512-ccrUEA9nRlPYXkRUaZ2UHncyH8L7Xy1tuX2KbSlgKN3pO//slDfXe716Q79kKCCDgL8MqoR5eCyHHXRp7qNIlg==",
+          "tarball": "https://registry.npmjs.org/pickier/-/pickier-0.1.77.tgz",
+          "bytes": 2214547,
+          "filesSha256": "fb39fbdd89f2371d0012fbc7156a241c26e0e023441db07f69f8b23e782ea0a9"
+        }
+      ],
+      "releaseCommand": "bun run release:patch",
+      "releaseScript": "./packages/pickier/pickier run CHANGELOG.md --mode lint --fix && bunx --bun @stacksjs/bumpx patch --recursive --yes"
+    },
+    {
+      "repository": "stacksjs/stx",
+      "commit": "6bd2553c7b57ff992cc772f05ca970e58db3bcb3",
+      "tag": "v0.2.676",
+      "gates": [
+        {
+          "runId": 40008752214,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "lint",
+            "native-signing",
+            "test",
+            "typecheck",
+            "publish-commit"
+          ]
+        },
+        {
+          "runId": 40008752418,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "Verify the exact release source",
+            "Verify native signing on macOS 15",
+            "npm",
+            "icons"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "@stacksjs/stx",
+          "version": "0.2.676",
+          "integrity": "sha512-j6dwPiIo24vRFJH+Sp9/EXIeHiGse6+xPoS4zYD66GzH6fGdbrq7iyaB3BjlLUeMi+6KrIhig2OrPy3dGhtfrw==",
+          "tarball": "https://registry.npmjs.org/@stacksjs/stx/-/stx-0.2.676.tgz",
+          "bytes": 2291717,
+          "filesSha256": "128b85d2a73ec70ce61fa6cbc887136392f8197ebf681754ef02fda375e7f04e"
+        },
+        {
+          "name": "@stacksjs/components",
+          "version": "0.2.676",
+          "integrity": "sha512-xK0e2xdDCj0yKv+dyYxievYmUKlROY7ywnE7eoiZDjV39opUBhI/moKMkXZK4zW6YYxoB1003LWXPgIbPUIGHQ==",
+          "tarball": "https://registry.npmjs.org/@stacksjs/components/-/components-0.2.676.tgz",
+          "bytes": 561260,
+          "filesSha256": "1236169d97059754d0831fd8cbd5ae51921165a3240b97cee7809f5cfda8e66a"
+        },
+        {
+          "name": "bun-plugin-stx",
+          "version": "0.2.676",
+          "integrity": "sha512-p+371vsqUXIimmY+gx4w+izQ9WeY9dlkSGVcnq/swY7nAvdbXmr/PbeT7B0SVsFcPPiKNlAOfEa3ea8j+4V1zw==",
+          "tarball": "https://registry.npmjs.org/bun-plugin-stx/-/bun-plugin-stx-0.2.676.tgz",
+          "bytes": 126370,
+          "filesSha256": "4befbd2d6e14d156c6fc548d3f07c2dc06229dc84e0582e763dd20f5f1125777"
+        }
+      ],
+      "releaseCommand": "bun run release:patch",
+      "releaseScript": "bun x --bun @stacksjs/bumpx patch --recursive --yes"
+    },
+    {
+      "repository": "stacksjs/stx",
+      "commit": "a3bf9037110fecbf3d8977a97352276eb15ee382",
+      "tag": "v0.2.674",
+      "gates": [
+        {
+          "runId": 39918923980,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "lint",
+            "native-signing",
+            "test",
+            "typecheck",
+            "publish-commit"
+          ]
+        },
+        {
+          "runId": 39918923597,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "Verify the exact release source",
+            "Verify native signing on macOS 15",
+            "npm",
+            "icons"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "@stacksjs/desktop",
+          "version": "0.2.674",
+          "integrity": "sha512-vXxP99G2fpozgTxrbP6SZkCXvKwKeq5htwCCI2Ib3c6k8FcmciA636HipJ8WONzH7j5hy+6I4wrSERP9l006Qg==",
+          "tarball": "https://registry.npmjs.org/@stacksjs/desktop/-/desktop-0.2.674.tgz",
+          "bytes": 108740,
+          "filesSha256": "76470ad4de0e88b82461cb1dd6a34ece0b6695c225de94f1f0c55719a8d4d6cb"
+        },
+        {
+          "name": "@stacksjs/sanitizer",
+          "version": "0.2.674",
+          "integrity": "sha512-ywLrWkKncFc8ag0Cn/KO3QYMQnPp2TMQfC/vnNgBSmVTL7+CLv5DzeRTlSGGfD2pEAVprL9urAIeKuSGSdIMaQ==",
+          "tarball": "https://registry.npmjs.org/@stacksjs/sanitizer/-/sanitizer-0.2.674.tgz",
+          "bytes": 4741,
+          "filesSha256": "e73a1a483dba61252535554c9017ee014a5e95d03171c2767ddd2230451333e0"
+        },
+        {
+          "name": "stx-router",
+          "version": "0.2.674",
+          "integrity": "sha512-Zq+oB9/SkjyJFX5EKQcfYHfLvOUAXqg9ET5q3ccB3mTNnDGMuOcClffCcywcTzZ9oxTLj3TsfTF3SQCiRtMdbQ==",
+          "tarball": "https://registry.npmjs.org/stx-router/-/stx-router-0.2.674.tgz",
+          "bytes": 82884,
+          "filesSha256": "18178281f9ae4e2b4a8d454cbd0b5bab87db65507236f6b7d0efea00ae0b763e"
+        }
+      ],
+      "releaseCommand": "bun run release:patch",
+      "releaseScript": "bun x --bun @stacksjs/bumpx patch --recursive --yes"
+    }
+  ],
+  "consumer": {
+    "lockfile": "bun.lock",
+    "sha256": "e66980bb61a076b61622f994ebaa72eea5e074ec32331779110112c80d8f8e51",
+    "bunVersion": "1.4.4",
+    "checks": [
+      {
+        "script": "deps:lockfile:check",
+        "exitCode": 0,
+        "outputSha256": "35fa6b9b43081f9dfad0a7f41529fa3dc14686a18dfb3948c37ef91f0a97d661"
+      },
+      {
+        "script": "typecheck",
+        "exitCode": 0,
+        "outputSha256": "3d132eed165a1f1a84f6351fb34a096c407ce7fcbc0819659cb3e2af827ce2f5"
+      },
+      {
+        "script": "typecheck:app",
+        "exitCode": 0,
+        "outputSha256": "e46796991ae43d3cead77a31bdddd2104a35a1dbeedea0bed160fd8841407ec9"
+      },
+      {
+        "script": "typecheck:views",
+        "exitCode": 0,
+        "outputSha256": "00ed0f17619b3ae7b4ed3aaedc3bfdc45d63f14fe07ca4d2e8d69903482d8c5c"
+      },
+      {
+        "script": "lint",
+        "exitCode": 0,
+        "outputSha256": "a1f514b80c35633f8ada9bd7e5ebb14a57e7cafd877910602f0de61a66bc3271"
+      }
+    ]
+  }
+}

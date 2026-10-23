@@ -1,0 +1,275 @@
+{
+  "schemaVersion": 1,
+  "repository": "pantry-pm/pantry",
+  "tag": "v0.11.122",
+  "commit": "64e0e11def9fa0b4aa54cddf920ae85dd3c13b1b",
+  "workflows": {
+    "release": {
+      "id": 40019850708,
+      "workflow": ".github/workflows/release.yml",
+      "source": "64e0e11def9fa0b4aa54cddf920ae85dd3c13b1b",
+      "conclusion": "success"
+    },
+    "ci": {
+      "id": 40019850083,
+      "workflow": ".github/workflows/ci.yml",
+      "source": "64e0e11def9fa0b4aa54cddf920ae85dd3c13b1b",
+      "conclusion": "success"
+    },
+    "native": {
+      "id": 40019850066,
+      "workflow": ".github/workflows/build-zig.yml",
+      "source": "64e0e11def9fa0b4aa54cddf920ae85dd3c13b1b",
+      "conclusion": "success"
+    },
+    "deploy": {
+      "id": 40019850095,
+      "workflow": ".github/workflows/deploy-registry.yml",
+      "source": "64e0e11def9fa0b4aa54cddf920ae85dd3c13b1b",
+      "conclusion": "success"
+    }
+  },
+  "npmArchives": {
+    "packages": [
+      {
+        "name": "ts-pantry",
+        "version": "0.11.122",
+        "shasum": "7f4828b2231ef8606dd0190fe03ce60257479e83",
+        "integrity": "sha512-e+FPLYmvvMZrYcEUif4dp9m07AFj6HdtSkXs+BunJ4MEr/8OTaP/RdL2WXoqRk/pG/BLbdm+jwWcHzpI2hTY1g==",
+        "file": "ts-pantry-0.11.122.tgz",
+        "bytes": 1384503,
+        "sha256": "e53936c4f61fc20c095069d51180d2f368ccc734706fca5db939c3a4667c046a",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      }
+    ],
+    "failures": []
+  },
+  "nativeArchives": {
+    "tag": "v0.11.122",
+    "source": "64e0e11def9fa0b4aa54cddf920ae85dd3c13b1b",
+    "manifestSha256": "4c4213558ec6ee9bcefdc6a07b571eb8637b64f504c2a5238ea0ed7045620ebf",
+    "archives": [
+      {
+        "name": "pantry-linux-x64.zip",
+        "size": 3112090,
+        "sha256": "718f35a1fe484e381c9e0f6e7b35e8aadd5575071eb10d4133ac37ad1533e5b0",
+        "matchedOriginalManifestAndGithubDigest": true,
+        "zipCrcEntryAndNativeArchitectureVerified": true
+      },
+      {
+        "name": "pantry-linux-arm64.zip",
+        "size": 2976268,
+        "sha256": "42e8a027c2822003c63f1561dac2d66b43502e20b3486e0c97b022248c443c2e",
+        "matchedOriginalManifestAndGithubDigest": true,
+        "zipCrcEntryAndNativeArchitectureVerified": true
+      },
+      {
+        "name": "pantry-darwin-arm64.zip",
+        "size": 2843210,
+        "sha256": "c3004b1a06fc3b102871e91ecba54a89bc929e849ae0ca3736aa886bfce76e90",
+        "matchedOriginalManifestAndGithubDigest": true,
+        "zipCrcEntryAndNativeArchitectureVerified": true
+      },
+      {
+        "name": "pantry-darwin-x64.zip",
+        "size": 3126357,
+        "sha256": "ecbaca3779d6d6db261147eb8b1e8bf25c470dc4360047b7143830c8dba3f056",
+        "matchedOriginalManifestAndGithubDigest": true,
+        "zipCrcEntryAndNativeArchitectureVerified": true
+      },
+      {
+        "name": "pantry-windows-x64.zip",
+        "size": 3200536,
+        "sha256": "3b5ddd0bf68ad623ec9d832c150a754e87f985f30f2a3e36dec672587f1b23a5",
+        "matchedOriginalManifestAndGithubDigest": true,
+        "zipCrcEntryAndNativeArchitectureVerified": true
+      },
+      {
+        "name": "pantry-freebsd-arm64.zip",
+        "size": 2909420,
+        "sha256": "512689548627092abe44f4f2f3aa7629d8a3964c22d9dac13ab11d9c6c14f569",
+        "matchedOriginalManifestAndGithubDigest": true,
+        "zipCrcEntryAndNativeArchitectureVerified": true
+      },
+      {
+        "name": "pantry-freebsd-x64.zip",
+        "size": 3135822,
+        "sha256": "ccabf9929e9ae70e92e55d216a0aa5488844ba3f704ec96a53d0172bc076e3be",
+        "matchedOriginalManifestAndGithubDigest": true,
+        "zipCrcEntryAndNativeArchitectureVerified": true
+      }
+    ]
+  },
+  "nativeInstallation": {
+    "source": "64e0e11def9fa0b4aa54cddf920ae85dd3c13b1b",
+    "version": "pantry 0.11.122 (64e0e11de)",
+    "installerSha256": "cfdd3374c97ef179c0d32e71b8fdfa394674e917d32e20c822fa083790fc0cfe",
+    "nativeExecutableSha256": "303fcb976b118b9b3efa8fbb79f260c88bd84c2fdbf65a5c9e3c0ab02052db0c",
+    "normalVersionAndPrefixInstaller": true,
+    "allInstalledAliasesMatch": true,
+    "originalArchiveBytesMatched": true
+  },
+  "nativePublicationContracts": {
+    "source": "64e0e11def9fa0b4aa54cddf920ae85dd3c13b1b",
+    "actualOriginalReleasedExecutable": "pantry 0.11.122 (64e0e11de)",
+    "normalInstallReceipt": "normal-cli-install-receipt.json",
+    "verifiedGroups": [
+      {
+        "log": "native-original-precheck-recovery.log",
+        "sha256": "23307d0c5fb86803b350ecb9dc253862a97e5c036b822601ca42f4afb713f2aa",
+        "cases": [
+          {
+            "mode": "precheck-recovers",
+            "code": 0,
+            "uploads": 1,
+            "metadataReads": 4,
+            "tarballReads": 1,
+            "foreignRequests": 0,
+            "foreignCredentialRequests": 0,
+            "hook": true,
+            "prematureHook": false
+          }
+        ]
+      },
+      {
+        "log": "native-original-upload-transport.log",
+        "sha256": "e5fea7fe9b80251f6511e854a2f163d0f93d798c2987d17896ca74ce8d33cba2",
+        "cases": [
+          {
+            "mode": "lost-response",
+            "code": 0,
+            "uploads": 1,
+            "metadataReads": 2,
+            "tarballReads": 1,
+            "foreignRequests": 0,
+            "foreignCredentialRequests": 0,
+            "hook": true,
+            "prematureHook": false
+          },
+          {
+            "mode": "server-error-after-commit",
+            "code": 0,
+            "uploads": 1,
+            "metadataReads": 2,
+            "tarballReads": 1,
+            "foreignRequests": 0,
+            "foreignCredentialRequests": 0,
+            "hook": true,
+            "prematureHook": false
+          },
+          {
+            "mode": "upload-redirect",
+            "code": 1,
+            "uploads": 1,
+            "metadataReads": 19,
+            "tarballReads": 0,
+            "foreignRequests": 0,
+            "foreignCredentialRequests": 0,
+            "hook": false,
+            "prematureHook": false
+          },
+          {
+            "mode": "stalled-upload-response",
+            "code": 0,
+            "uploads": 1,
+            "metadataReads": 2,
+            "tarballReads": 1,
+            "foreignRequests": 0,
+            "foreignCredentialRequests": 0,
+            "hook": true,
+            "prematureHook": false
+          }
+        ]
+      }
+    ],
+    "productionDeadlinesUnchanged": true
+  },
+  "installedSdkConsumer": {
+    "schemaVersion": 1,
+    "verifiedAt": "2026-10-23T20:58:19.279Z",
+    "sources": [
+      {
+        "repository": "pantry-pm/pantry",
+        "commit": "64e0e11def9fa0b4aa54cddf920ae85dd3c13b1b",
+        "tag": "v0.11.122",
+        "gates": [
+          {
+            "runId": 40019850708,
+            "workflow": ".github/workflows/release.yml",
+            "requiredJobs": [
+              "source-ci / verify exact full source CI",
+              "pantry",
+              "npm",
+              "discord-notification"
+            ]
+          },
+          {
+            "runId": 40019850083,
+            "workflow": ".github/workflows/ci.yml",
+            "requiredJobs": [
+              "typecheck",
+              "lint",
+              "test",
+              "action-native-services (8.4.11)",
+              "action-native-services (26.7.0)",
+              "Explicit native toolchain pins (ubuntu-latest)",
+              "action-redis-service",
+              "windows-git",
+              "native-browser",
+              "action-native-tools",
+              "zig-tests",
+              "Explicit native toolchain pins (macos-latest)",
+              "windows-native-runtime",
+              "continuous-release"
+            ]
+          },
+          {
+            "runId": 40019850066,
+            "workflow": ".github/workflows/build-zig.yml",
+            "requiredJobs": [
+              "compile-all",
+              "Native Windows CLI and compiler links"
+            ]
+          },
+          {
+            "runId": 40019850095,
+            "workflow": ".github/workflows/deploy-registry.yml",
+            "requiredJobs": [
+              "verify / Registry checks (Bun 1.4.2)",
+              "verify / Registry checks (Bun 1.4.3)",
+              "source-ci / verify exact full source CI",
+              "hetzner",
+              "discord-notification"
+            ]
+          }
+        ],
+        "packages": [
+          {
+            "name": "ts-pantry",
+            "version": "0.11.122",
+            "integrity": "sha512-e+FPLYmvvMZrYcEUif4dp9m07AFj6HdtSkXs+BunJ4MEr/8OTaP/RdL2WXoqRk/pG/BLbdm+jwWcHzpI2hTY1g==",
+            "tarball": "https://registry.npmjs.org/ts-pantry/-/ts-pantry-0.11.122.tgz",
+            "bytes": 1384503,
+            "filesSha256": "8c83ebbeb653f4af9bedf88b94afa55bb81d924587abd1f40fe4aaf84c77d93b"
+          }
+        ],
+        "releaseCommand": "bun run release:patch",
+        "releaseScript": "bun x --bun @stacksjs/bumpx patch --recursive --execute 'bun .github/scripts/build-release-action.ts' --commit --tag --push --yes"
+      }
+    ],
+    "consumer": {
+      "lockfile": "bun.lock",
+      "sha256": "6a0a2d696bf6ecbf97375b36b17ea1881d617fdf870445007857089222eb2505",
+      "bunVersion": "1.4.3",
+      "checks": [
+        {
+          "script": "test:windows-git",
+          "exitCode": 0,
+          "outputSha256": "29c1f5a1be0ca4f9e8715e1bd8d6a9e7de03b359b2612c83657962a8d33ff393"
+        }
+      ]
+    }
+  },
+  "remainingProductionAvailabilityIssue": "https://github.com/pantry-pm/pantry/issues/249",
+  "scope": "Original published artifacts, normal native/SDK installation, full installed-file identity and real CLI publication contracts. The production restart availability gap remains open."
+}

@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "runtime": "Bun1.4.4",
+  "nativePublisher": "Pantry0.11.122 (64e0e11de)",
+  "focusedTests": {
+    "passed": 67,
+    "failed": 0,
+    "assertions": 178
+  },
+  "normalFrozenInstallation": true,
+  "originalInstalledPackages": 8,
+  "sourceAndConsumerGates": "Executed by the adjacent combined plan and receipt",
+  "publisherPathGuard": {
+    "rejectsOld113DespiteCompatibleOverride": true,
+    "accepts122DespiteOldOverride": true,
+    "recoveryGuidanceNamesPath": true
+  },
+  "remainingAvailabilityIssue": "https://github.com/pantry-pm/pantry/issues/249",
+  "limits": [
+    "This is tooling adoption, not original Gold or native game parity.",
+    "Separate STX Marketplace publishing remains unqualified."
+  ],
+  "logs": [
+    {
+      "name": "stacks-tooling-122-final-focused.log",
+      "sha256": "89459dfcc93b97321c18dd98d38b8feabc537e41dcde2dc26442aad103f86657",
+      "bytes": 7369
+    },
+    {
+      "name": "stacks-tooling-122-path-guard-green.log",
+      "sha256": "405ece95ec2513fd163effd60ca69cada86d1ab22ade03af6a08f89c6e9196e7",
+      "bytes": 559
+    },
+    {
+      "name": "stacks-tooling-122-path-guard-red.log",
+      "sha256": "63485706e183ee21fdaf6accd02321049c5b03432ff8e156a3c988630d43a7e2",
+      "bytes": 816
+    },
+    {
+      "name": "stacks-tooling-122-installed-verification.log",
+      "sha256": "bfba9368b843b85ff12249d66b40ed44c77b6a0a4af17c5f8f416d652a2993c3",
+      "bytes": 696
+    }
+  ]
+}

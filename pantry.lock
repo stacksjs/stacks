@@ -55,7 +55,7 @@
         "@stacksjs/database": "0.75.280",
         "@stacksjs/datetime": "0.75.280",
         "@stacksjs/defaults": "0.75.280",
-        "@stacksjs/desktop": "0.2.669",
+        "@stacksjs/desktop": "0.2.674",
         "@stacksjs/desktop-build": "0.75.280",
         "@stacksjs/dns": "0.75.280",
         "@stacksjs/docs": "0.75.280",
@@ -374,7 +374,7 @@
         "ajv": "^8.20.0",
         "ajv-formats": "^3.0.1",
         "bun-plugin-stx": "0.2.676",
-        "ts-pantry": "^0.11.120"
+        "ts-pantry": "^0.11.122"
       },
       "devDependencies": {
         "better-dx": "^0.2.24"
@@ -611,7 +611,7 @@
         "@iconify-json/f7": "^1.2.2",
         "@iconify-json/hugeicons": "^1.2.35",
         "@stacksjs/mobile": "0.75.280",
-        "@stacksjs/sanitizer": "0.2.669",
+        "@stacksjs/sanitizer": "0.2.674",
         "@stacksjs/stx": "0.2.676",
         "@xterm/addon-fit": "^0.11.0",
         "@xterm/xterm": "^6.0.0",
