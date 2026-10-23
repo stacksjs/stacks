@@ -409,4 +409,3 @@ export async function runProjectScripts(options: ProjectScriptOptions): Promise<
   }
   finally { rmSync(hostDirectory, { recursive: true, force: true }) }
 }
-
