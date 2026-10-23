@@ -60,8 +60,14 @@ describe.skipIf(!chrome || process.platform === 'win32')('a shared Chrome', () =
     try {
       await open(keep.cdp)
       await open(clear.cdp)
-      await keep.cdp.evaluate(`document.cookie = 'kept=yes; path=/'; true`)
-      await clear.cdp.evaluate(`document.cookie = 'gone=yes; path=/'; true`)
+      // A renderer cookie assignment queues a write on a different IPC pipe
+      // from DevTools deletion. Establish committed native jars before asking
+      // whether clearing one context preserves the other; no timing delay is
+      // a substitute for the cookie manager's acknowledged write.
+      expect((await keep.cdp.send('Network.setCookie', { name: 'kept', value: 'yes', url: origin, path: '/' })).success).toBe(true)
+      expect((await clear.cdp.send('Network.setCookie', { name: 'gone', value: 'yes', url: origin, path: '/' })).success).toBe(true)
+      expect((await keep.cdp.send('Network.getCookies', { urls: [origin] })).cookies.map((cookie: { name: string, value: string }) => `${cookie.name}=${cookie.value}`)).toEqual(['kept=yes'])
+      expect((await clear.cdp.send('Network.getCookies', { urls: [origin] })).cookies.map((cookie: { name: string, value: string }) => `${cookie.name}=${cookie.value}`)).toEqual(['gone=yes'])
       await clear.cdp.send('Network.clearBrowserCookies')
       const cleared = await clear.cdp.evaluate(`document.cookie`)
       if (cleared !== '') {
