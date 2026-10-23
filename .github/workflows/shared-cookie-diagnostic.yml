@@ -1,0 +1,43 @@
+name: Shared Chrome cookie diagnostic
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  shared-cookie-diagnostic:
+    name: Repeated native cookie isolation (diagnostic only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.2'
+      - run: bun install --frozen-lockfile
+      - name: Build packages imported by subpath
+        shell: bash
+        run: |
+          stacks_subpath_targets=$(bun .github/scripts/subpath-packages.ts)
+          for pkg in $stacks_subpath_targets; do
+            (cd "storage/framework/core/$pkg" && bun run build)
+          done
+      - name: Require an actual browser
+        run: bun -e 'import { findChrome } from "./storage/framework/core/testing/src/browser"; const chrome = findChrome(); if (!chrome) throw new Error("Native Chrome is required"); console.log(chrome)'
+      - name: Repeat unchanged isolation assertions
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          set -o pipefail
+          bun test ./storage/framework/core/testing/tests/browser-shared.test.ts --test-name-pattern 'clearing cookies in one session' --rerun-each=50 2>&1 | tee artifacts/shared-cookie-diagnostic.log
+      - name: Require fifty actual passing repetitions
+        run: |
+          bun -e 'import { stripVTControlCharacters } from "node:util"; const text = stripVTControlCharacters(await Bun.file("artifacts/shared-cookie-diagnostic.log").text()); if (!/\b50 pass\b/.test(text) || /\b[1-9]\d* (?:fail|skip)\b/.test(text)) throw new Error("Expected fifty actual passes without failures or skips")'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: shared-cookie-diagnostic
+          path: artifacts/shared-cookie-diagnostic.log
+          if-no-files-found: error

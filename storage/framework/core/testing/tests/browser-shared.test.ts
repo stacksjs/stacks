@@ -63,7 +63,22 @@ describe.skipIf(!chrome || process.platform === 'win32')('a shared Chrome', () =
       await keep.cdp.evaluate(`document.cookie = 'kept=yes; path=/'; true`)
       await clear.cdp.evaluate(`document.cookie = 'gone=yes; path=/'; true`)
       await clear.cdp.send('Network.clearBrowserCookies')
-      expect(await clear.cdp.evaluate(`document.cookie`)).toBe('')
+      const cleared = await clear.cdp.evaluate(`document.cookie`)
+      if (cleared !== '') {
+        // Preserve the failing observation before diagnostic commands yield.
+        // A stale renderer read and an uncleared native cookie jar are different bugs.
+        try {
+          console.error('shared-cookie-failure', JSON.stringify({
+            observed: cleared,
+            version: await clear.cdp.send('Browser.getVersion'),
+            clearedJar: await clear.cdp.send('Network.getCookies', { urls: [origin] }),
+            retainedJar: await keep.cdp.send('Network.getCookies', { urls: [origin] }),
+            subsequentDom: await clear.cdp.evaluate(`document.cookie`),
+          }))
+        }
+        catch (error) { console.error('shared-cookie-diagnostic-failure', String(error)) }
+      }
+      expect(cleared).toBe('')
       expect(await keep.cdp.evaluate(`document.cookie`)).toBe('kept=yes')
     }
     finally {
