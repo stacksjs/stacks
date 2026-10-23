@@ -1,5 +1,6 @@
+@import('../../UI/Table')
+
 <script client>
-import { formatCurrency as formatMinorUnits } from '@stacksjs/commerce/money'
 interface ResourceSummary {
   id: number
   name: string
@@ -17,84 +18,70 @@ interface ShippingRateRow {
 }
 
 const rates = useReactiveProp('rates', [] as ShippingRateRow[])
+const loading = useReactiveProp('loading', false)
+/** The parent's search: a change returns to the first page. */
+const pageResetKey = useReactiveProp<unknown>('pageResetKey', '')
 const emit = defineEmits()
-
-// Shipping amounts are stored as integer cents, in USD.
-function formatCurrency(cents: number): string {
-  return formatMinorUnits(cents, 'USD', 'en-US')
-}
 
 function formatWeight(weight: number): string {
   return `${new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(weight)} kg`
 }
 
-function actionLabel(action: string, rate: ShippingRateRow): string {
+/**
+ * Shipping amounts are stored as integer cents, in USD, so the rate is a
+ * currency column with that code. Weights carry their unit and sort by the number.
+ */
+const COLUMNS = [
+  { key: 'methodLabel', label: 'Method', sortable: true, class: 'font-medium text-stone-800 whitespace-nowrap dark:text-white' },
+  { key: 'zoneLabel', label: 'Zone', sortable: true, class: 'whitespace-nowrap' },
+  { key: 'weight_from', label: 'From', sortable: true, slotted: true },
+  { key: 'weight_to', label: 'To', sortable: true, slotted: true },
+  { key: 'rate', label: 'Rate', type: 'currency' as const, currency: 'USD', sortable: true, class: 'font-medium tabular-nums text-stone-800 whitespace-nowrap dark:text-white' },
+]
+
+const ROW_ACTIONS = [
+  { action: 'edit', label: 'Edit', icon: 'i-hugeicons-edit-01' },
+  { action: 'delete', label: 'Delete', icon: 'i-hugeicons-waste', class: 'text-red-500' },
+]
+
+const rows = derived(() => rates().map((rate) => {
   const method = rate.shipping_method?.name || `method ${rate.shipping_method_id}`
   const zone = rate.shipping_zone?.name || `zone ${rate.shipping_zone_id}`
-  return `${action} ${method} rate for ${zone}, ${formatWeight(rate.weight_from)} to ${formatWeight(rate.weight_to)}`
+  return {
+    ...rate,
+    methodLabel: rate.shipping_method?.name || `Method #${rate.shipping_method_id}`,
+    zoneLabel: rate.shipping_zone?.name || `Zone #${rate.shipping_zone_id}`,
+    fromLabel: formatWeight(rate.weight_from),
+    toLabel: formatWeight(rate.weight_to),
+    actionName: `${method} rate for ${zone}, ${formatWeight(rate.weight_from)} to ${formatWeight(rate.weight_to)}`,
+  }
+}))
+
+function handleRowAction(payload: { action: string, row: ShippingRateRow }): void {
+  emit(payload.action, payload.row)
 }
 </script>
 
-<div class="overflow-x-auto border border-stone-200/80 rounded-xl dark:border-neutral-700 shadow-sm">
-  <table class="min-w-full divide-stone-100 divide-y dark:divide-neutral-700">
-    <thead class="bg-stone-50/80 dark:bg-neutral-800">
-      <tr>
-        <th scope="col" class="pl-6 pr-3 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Method</th>
-        <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Zone</th>
-        <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Weight From</th>
-        <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Weight To</th>
-        <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Rate</th>
-        <th scope="col" class="relative pl-3 pr-6 py-3.5">
-          <span class="sr-only">Actions</span>
-        </th>
-      </tr>
-    </thead>
-    <tbody class="bg-white dark:bg-neutral-800 divide-stone-100 divide-y dark:divide-neutral-700">
-      <template :for="rate in rates" :key="rate.id">
-        <tr class="hover:bg-stone-50/50 dark:hover:bg-neutral-700/50 transition-colors">
-          <td class="pl-6 pr-3 py-3.5 font-medium text-sm text-stone-800 whitespace-nowrap dark:text-white">
-            {{ rate.shipping_method?.name || 'Method #' + rate.shipping_method_id }}
-          </td>
-          <td class="px-4 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-300">
-            {{ rate.shipping_zone?.name || 'Zone #' + rate.shipping_zone_id }}
-          </td>
-          <td class="px-4 py-3.5 tabular-nums text-sm text-stone-500 whitespace-nowrap dark:text-neutral-300">
-            {{ formatWeight(rate.weight_from) }}
-          </td>
-          <td class="px-4 py-3.5 tabular-nums text-sm text-stone-500 whitespace-nowrap dark:text-neutral-300">
-            {{ formatWeight(rate.weight_to) }}
-          </td>
-          <td class="px-4 py-3.5 font-medium tabular-nums text-sm text-stone-800 whitespace-nowrap dark:text-white">
-            {{ formatCurrency(rate.rate) }}
-          </td>
-          <td class="relative pl-3 pr-6 py-3.5 font-medium text-right text-sm whitespace-nowrap">
-            <Button
-              variant="ghost"
-              size="sm"
-              iconOnly
-              @click="emit('edit', rate)"
-              :ariaLabel="actionLabel('Edit', rate)"
-            >
-              <span class="block h-4 w-4 text-blue-500 i-hugeicons-edit-01"></span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              iconOnly
-              @click="emit('delete', rate)"
-              :ariaLabel="actionLabel('Delete', rate)"
-            >
-              <span class="block h-4 w-4 text-red-500 i-hugeicons-waste"></span>
-            </Button>
-          </td>
-        </tr>
-      </template>
-
-      <tr :if="rates().length === 0">
-        <td colspan="6" class="px-6 py-12 text-center text-sm text-stone-500 dark:text-neutral-400">
-          No shipping rates found.
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+{{--
+  No `searchable` or `filterable`: the parent dashboard owns the search box.
+  Table pages the whole filtered list the parent passes, and stays mounted
+  while it loads.
+--}}
+<Table
+  :page-reset-key="pageResetKey()"
+  :columns="COLUMNS"
+  :data="rows()"
+  :loading="loading()"
+  :row-actions="ROW_ACTIONS"
+  action-label-key="actionName"
+  paginated
+  :page-size="10"
+  empty-title="No shipping rates found"
+  empty-description="Add a rate, or adjust the search."
+  @row-action="handleRowAction"
+>
+  <template #cell="{ row, column }">
+    <span :if="column.key === 'weight_from'" class="tabular-nums whitespace-nowrap" x-text="row.fromLabel"></span>
+    <span :if="column.key === 'weight_to'" class="tabular-nums whitespace-nowrap" x-text="row.toLabel"></span>
+  </template>
+</Table>

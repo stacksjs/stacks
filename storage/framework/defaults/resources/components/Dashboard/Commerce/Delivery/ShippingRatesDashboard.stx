@@ -44,8 +44,6 @@ const {
   loading,
   loadError,
   search,
-  page,
-  perPage,
   editorOpen,
   editorMode,
   editing,
@@ -55,8 +53,6 @@ const {
   deleteBusy,
   deleteError,
   filteredRecords,
-  paginatedRecords,
-  goToPage,
   handleSearch,
   openCreate,
   openEdit,
@@ -65,7 +61,6 @@ const {
   closeDelete,
   upsert,
   remove,
-  clampPage,
 } = useRecordsDashboard<ShippingRateRecord>({ filter: matchesQuery })
 
 const methods = state<ShippingResourceOption[]>([])
@@ -122,7 +117,6 @@ async function loadRates(): Promise<void> {
     methods.set(methodData)
     zones.set(zoneData)
     records.set(rateData.map(withRelations))
-    clampPage()
   }
   catch (error) {
     loadError.set(error instanceof Error ? error.message : String(error))
@@ -179,7 +173,6 @@ async function confirmDelete(): Promise<void> {
     })
     remove(current)
     deleting.set(null)
-    clampPage()
     pushToast('success', 'Shipping rate deleted', {
       detail: `${current.shipping_method?.name || 'Method'} for ${current.shipping_zone?.name || 'zone'}`,
     })
@@ -217,11 +210,7 @@ onMount(() => {
       <div><h2 class="font-semibold text-gray-900 dark:text-white">Configured weight bands</h2><p class="mt-0.5 text-gray-500 text-xs dark:text-neutral-400">{{ filteredRecords().length }} matching records</p></div>
       <SearchFilter placeholder="Search shipping rates" class="w-full sm:w-80" @search="handleSearch" />
     </div>
-    <div :if="loading()" class="flex items-center justify-center py-24 text-gray-500 text-sm dark:text-neutral-400"><span class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Loading shipping rates</div>
-    <ShippingRatesTable :if="!loading()" :rates="paginatedRecords()" @edit="openEdit" @delete="requestDelete" />
-    <div :if="!loading()" class="px-4 py-3 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">
-      <DeliveryPagination :current-page="page()" :total-items="filteredRecords().length" :items-per-page="perPage()" @select="goToPage" />
-    </div>
+    <ShippingRatesTable :rates="filteredRecords()" :loading="loading()" :page-reset-key="search()" @edit="openEdit" @delete="requestDelete" />
   </section>
 </div>
 
