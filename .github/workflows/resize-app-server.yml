@@ -42,7 +42,7 @@ jobs:
         with:
           version: '0.11.75'
           install: 'false'
-          packages: 'bun@1.4.2'
+          packages: 'bun@1.4.4'
 
       - name: Install dependencies
         run: bun install --frozen-lockfile

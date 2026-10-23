@@ -10,7 +10,7 @@
   ],
   "license": "MIT",
   "engines": {
-    "bun": "1.4.2"
+    "bun": "1.4.4"
   },
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks#readme",

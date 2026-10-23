@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 env:
-  BUN_VERSION: '1.4.2'
+  BUN_VERSION: '1.4.4'
 
 concurrency:
   group: idle-memory-benchmark

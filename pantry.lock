@@ -14,7 +14,7 @@
         "bun-plugin-stx": "0.2.671"
       },
       "system": {
-        "bun.sh": "1.4.2",
+        "bun.sh": "1.4.4",
         "curl.se": "^8.22.0",
         "git-scm.org": "^2.53.0",
         "sqlite.org": "^3.53.4"
@@ -1423,11 +1423,11 @@
     }
   },
   "packages": {
-    "bun.sh@1.4.2": {
+    "bun.sh@1.4.4": {
       "name": "bun.sh",
-      "version": "1.4.2",
+      "version": "1.4.4",
       "source": "pantry",
-      "resolved": "registry:bun.sh@1.4.2"
+      "resolved": "registry:bun.sh@1.4.4"
     },
     "curl.se/ca-certs@2026.3.19": {
       "name": "curl.se/ca-certs",

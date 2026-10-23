@@ -35,7 +35,7 @@ const meta: RunMeta = {
   durationSeconds: 30,
   runs: 1,
   persistentQueryLogging: false,
-  machine: { arch: 'x64', platform: 'linux', release: 'test', cpu: 'test', cores: 4, bun: '1.4.2', clockTicksPerSecond: 100 },
+  machine: { arch: 'x64', platform: 'linux', release: 'test', cpu: 'test', cores: 4, bun: '1.4.4', clockTicksPerSecond: 100 },
 }
 
 const measurement: Measurement = {
