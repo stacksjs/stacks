@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'bun:test'
 import { EXPECTED_LOCKFILE_VERSION } from './check-lockfile-version'
@@ -67,6 +67,33 @@ describe('pinned Bun guard', () => {
     expect(serverDockerfile.match(/^ARG BUN_VERSION=(\S+)$/m)?.[1]).toBe(pinnedVersion)
     expect(pantryLock.workspaces[''].system['bun.sh']).toBe(pinnedVersion)
     expect(pantryLock.packages[`bun.sh@${pinnedVersion}`]?.version).toBe(pinnedVersion)
+  })
+
+  /**
+   * The list above names the files that existed when it was written, and the
+   * 1.4.2 bump still left five workflows, the framework Dockerfile and the
+   * marketing copy of config/deps.ts behind. Every workflow is read here, so a
+   * new one cannot pin its own Bun without this failing.
+   */
+  it('pins no other Bun anywhere it is written down', () => {
+    const pinnedVersion = pinnedBunVersion(packageJson)
+    const workflows = resolve(repositoryRoot, '.github/workflows')
+    const pins: Array<[string, string]> = []
+
+    for (const name of readdirSync(workflows).filter(file => /\.ya?ml$/.test(file))) {
+      const source = readFileSync(resolve(workflows, name), 'utf8')
+      for (const match of source.matchAll(/^\s*(?:BUN_VERSION|bun-version):\s*'([^'$]+)'/gm))
+        pins.push([name, match[1]!])
+    }
+
+    const frameworkDockerfile = readFileSync(resolve(repositoryRoot, 'storage/framework/Dockerfile'), 'utf8')
+    pins.push(['storage/framework/Dockerfile', frameworkDockerfile.match(/^ARG BUN_VERSION=(\S+)$/m)?.[1] ?? 'missing'])
+
+    const features = readFileSync(resolve(repositoryRoot, 'resources/data/features.ts'), 'utf8')
+    pins.push(['resources/data/features.ts', features.match(/^\s*'bun': '([^']+)'/m)?.[1] ?? 'missing'])
+
+    expect(pins.length).toBeGreaterThan(8)
+    expect(pins.filter(([, version]) => version !== pinnedVersion)).toEqual([])
   })
 
   /**
