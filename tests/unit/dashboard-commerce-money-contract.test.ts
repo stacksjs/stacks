@@ -129,7 +129,6 @@ describe('commerce dashboard money', () => {
       'CommercePosCart.stx',
       'CommercePosCheckoutDialog.stx',
       'CommercePosReceiptDialog.stx',
-      'CommerceOrdersTable.stx',
       'CommerceOrderDetailsDialog.stx',
       'CommerceGiftCardsTable.stx',
       'CommercePaymentsTable.stx',
@@ -148,14 +147,18 @@ describe('commerce dashboard money', () => {
     const table = readFileSync(join(dashboardDir, 'UI/Table.stx'), 'utf8')
     expect(table).toMatch(sharedFormatter)
     expect(table).toContain('return formatCurrency(amount, code)')
-    for (const [name, key] of [
-      ['CommerceProductsTable.stx', 'price'],
-      ['CommerceCustomersTable.stx', 'totalSpent'],
-    ]) {
+    // The row's `currency` is the store's for products and customers, and
+    // the record's own for an order, which carries the currency it was paid in.
+    for (const [name, key, rowCurrency] of [
+      ['CommerceProductsTable.stx', 'price', 'currency: currency(),'],
+      ['CommerceCustomersTable.stx', 'totalSpent', 'currency: currency(),'],
+      ['CommerceOrdersTable.stx', 'totalAmount', null],
+    ] as const) {
       const component = source(name)
       expect(component).toContain(`key: '${key}', label:`)
       expect(component).toMatch(new RegExp(`key: '${key}',[^}]*type: 'currency' as const, currencyKey: 'currency'`))
-      expect(component).toContain('currency: currency(),')
+      if (rowCurrency)
+        expect(component).toContain(rowCurrency)
     }
   })
 

@@ -1,66 +1,93 @@
+@import('../UI/Table')
+
 <script client>
 import type { CommerceOrderRecord } from '../../../../app/Actions/Dashboard/Commerce/commerce-order-records'
-import { formatCurrency } from '@stacksjs/commerce/money'
 
 const records = useReactiveProp('records', [] as CommerceOrderRecord[])
 const loading = useReactiveProp('loading', false)
+/** The parent's sort select: a change hands the order back from a header sort. */
+const sortResetKey = useReactiveProp<unknown>('sortResetKey', '')
+/** The parent's search and filters: a change returns to the first page. */
+const pageResetKey = useReactiveProp<unknown>('pageResetKey', '')
 const emit = defineEmits()
 
 function label(value: string): string {
   return value.replaceAll('_', ' ').toLowerCase().replace(/\b\w/g, letter => letter.toUpperCase())
 }
 
-function formatMoney(value: number, currency: string): string {
-  return formatCurrency(value, currency)
+/**
+ * The pill's colour by tone rather than by status, so a status the table
+ * has not named still reads as pending, as the hand-rolled pill did.
+ */
+function statusTone(status: string): string {
+  const value = status.toUpperCase()
+  if (['DELIVERED', 'COMPLETED', 'PAID'].includes(value))
+    return 'done'
+  if (['CANCELED', 'CANCELLED', 'REFUNDED'].includes(value))
+    return 'stopped'
+  if (['PREPARING', 'PROCESSING', 'READY', 'SHIPPED'].includes(value))
+    return 'moving'
+  return 'pending'
 }
 
-function formatDate(value: string): string {
-  if (!value)
-    return 'Not recorded'
-  const normalized = /^\d{4}-\d{2}-\d{2} \d/.test(value)
-    ? `${value.replace(' ', 'T')}Z`
-    : value
-  const date = new Date(normalized)
-  return Number.isNaN(date.getTime())
-    ? value
-    : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date)
-}
+const COLUMNS = [
+  { key: 'orderLabel', label: 'Order', sortable: true, subtitleKey: 'itemsLabel', class: 'font-medium text-gray-900 whitespace-nowrap dark:text-white' },
+  { key: 'customerLabel', label: 'Customer', sortable: true, subtitleKey: 'customerEmail', class: 'text-gray-700 dark:text-neutral-200' },
+  // Integer minor units of the order's own currency.
+  { key: 'totalAmount', label: 'Total', type: 'currency' as const, currencyKey: 'currency', sortable: true, class: 'font-medium' },
+  { key: 'fulfillmentLabel', label: 'Fulfillment', sortable: true, subtitleKey: 'deliveryAddress', class: 'text-gray-700 dark:text-neutral-200' },
+  {
+    key: 'statusTone',
+    label: 'Status',
+    type: 'badge' as const,
+    sortable: true,
+    badgeLabelKey: 'statusLabel',
+    badgeClasses: {
+      done: 'bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-300',
+      stopped: 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300',
+      moving: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300',
+      pending: 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300',
+    },
+  },
+  { key: 'createdAt', label: 'Created', type: 'datetime' as const, sortable: true, emptyText: 'Not recorded', class: 'whitespace-nowrap' },
+]
 
-function statusClass(record: CommerceOrderRecord): string {
-  const status = record.status.toUpperCase()
-  if (['DELIVERED', 'COMPLETED', 'PAID'].includes(status))
-    return 'bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-300'
-  if (['CANCELED', 'CANCELLED', 'REFUNDED'].includes(status))
-    return 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300'
-  if (['PREPARING', 'PROCESSING', 'READY', 'SHIPPED'].includes(status))
-    return 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
-  return 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
+const ROW_ACTIONS = [
+  { action: 'view', label: 'View order', icon: 'i-hugeicons-view' },
+  { action: 'edit', label: 'Edit order', icon: 'i-hugeicons-edit-02' },
+  { action: 'delete', label: 'Delete order', icon: 'i-hugeicons-delete-02', class: 'text-red-500' },
+]
+
+const rows = derived(() => records().map(record => ({
+  ...record,
+  orderLabel: `ORD-${record.id.padStart(5, '0')}`,
+  itemsLabel: `${record.itemCount} ${record.itemCount === 1 ? 'item' : 'items'}`,
+  customerLabel: record.customerName || 'Unassigned customer',
+  fulfillmentLabel: label(record.orderType),
+  statusTone: statusTone(record.status),
+  statusLabel: label(record.status),
+})))
+
+function handleRowAction(payload: { action: string, row: CommerceOrderRecord }): void {
+  emit(payload.action, payload.row)
 }
 </script>
 
-<div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
-  <div :if="loading()" class="flex items-center justify-center py-16 text-gray-500 text-sm dark:text-neutral-400"><span class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Loading orders</div>
-  <div :if="!loading() && records().length === 0" class="py-16 text-center">
-    <div class="mb-3 mx-auto h-8 w-8 text-gray-400 i-hugeicons-invoice-03"></div>
-    <p class="font-medium text-gray-900 text-sm dark:text-white">No orders found</p>
-    <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Adjust the filters or add a native Order record.</p>
-  </div>
-  <div :if="!loading() && records().length > 0" class="overflow-x-auto">
-    <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-      <thead class="bg-gray-50 dark:bg-neutral-900/60"><tr><th class="px-4 py-3 font-semibold text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400">Order</th><th class="px-4 py-3 font-semibold text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400">Customer</th><th class="px-4 py-3 font-semibold text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400">Total</th><th class="px-4 py-3 font-semibold text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400">Fulfillment</th><th class="px-4 py-3 font-semibold text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400">Status</th><th class="px-4 py-3 font-semibold text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400">Created</th><th class="px-4 py-3"><span class="sr-only">Actions</span></th></tr></thead>
-      <tbody class="divide-gray-100 divide-y dark:divide-neutral-700">
-        <template :for="record in records()" :key="record.id">
-          <tr class="hover:bg-gray-50/70 dark:hover:bg-neutral-900/40">
-            <td class="px-4 py-3 min-w-28 whitespace-nowrap"><Button variant="ghost" size="xs" @click="emit('view', record)">ORD-{{ record.id.padStart(5, '0') }}</Button><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ record.itemCount }} {{ record.itemCount === 1 ? 'item' : 'items' }}</p></td>
-            <td class="px-4 py-3 min-w-40"><p class="text-gray-700 text-sm dark:text-neutral-200">{{ record.customerName || 'Unassigned customer' }}</p><p :if="record.customerEmail" class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ record.customerEmail }}</p></td>
-            <td class="px-4 py-3 font-medium text-gray-700 text-sm dark:text-neutral-200">{{ formatMoney(record.totalAmount, record.currency) }}</td>
-            <td class="px-4 py-3 min-w-36"><p class="text-gray-700 text-sm dark:text-neutral-200">{{ label(record.orderType) }}</p><p :if="record.deliveryAddress" class="mt-1 max-w-48 text-gray-400 text-xs truncate dark:text-neutral-500">{{ record.deliveryAddress }}</p></td>
-            <td class="px-4 py-3"><span :class="'inline-flex px-2 py-1 font-medium text-xs rounded-full ' + statusClass(record)">{{ label(record.status) }}</span></td>
-            <td class="px-4 py-3 text-gray-700 text-sm whitespace-nowrap dark:text-neutral-200">{{ formatDate(record.createdAt) }}</td>
-            <td class="px-4 py-3"><div class="flex gap-1 justify-end"><Button variant="ghost" size="sm" iconOnly :ariaLabel="'View order ' + record.id" @click="emit('view', record)"><span class="block h-4 w-4 text-blue-500 i-hugeicons-view"></span></Button><Button variant="ghost" size="sm" iconOnly :ariaLabel="'Edit order ' + record.id" @click="emit('edit', record)"><span class="block h-4 w-4 text-blue-500 i-hugeicons-edit-02"></span></Button><Button variant="ghost" size="sm" iconOnly :ariaLabel="'Delete order ' + record.id" @click="emit('delete', record)"><span class="block h-4 w-4 text-red-500 i-hugeicons-delete-02"></span></Button></div></td>
-          </tr>
-        </template>
-      </tbody>
-    </table>
-  </div>
-</div>
+{{--
+  No `searchable` or `filterable`: the parent dashboard owns the search box
+  and the filter selects. Table pages the whole filtered list the parent passes.
+--}}
+<Table
+  :sort-reset-key="sortResetKey()"
+  :page-reset-key="pageResetKey()"
+  :columns="COLUMNS"
+  :data="rows()"
+  :loading="loading()"
+  :row-actions="ROW_ACTIONS"
+  action-label-key="id"
+  paginated
+  :page-size="12"
+  empty-title="No orders found"
+  empty-description="Adjust the filters or add a native Order record."
+  @row-action="handleRowAction"
+/>
