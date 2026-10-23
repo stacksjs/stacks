@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-23T15:08:18.551682+00:00",
+  "repository": "stacksjs/stacks",
+  "source": "f51af7955f5bf6173bc4e0d4c8602c3af35e678b",
+  "workflow": ".github/workflows/release-ownership-diagnostic.yml",
+  "event": "workflow_dispatch",
+  "runId": 39917582131,
+  "conclusion": "success",
+  "jobs": [
+    {
+      "name": "Native Job Object ABI on minimum Bun",
+      "jobId": 120294601693,
+      "conclusion": "success"
+    },
+    {
+      "name": "Repeated timeout disposal (diagnostic only)",
+      "jobId": 120294601942,
+      "conclusion": "success"
+    }
+  ],
+  "originalArtifact": {
+    "id": 12485741952,
+    "sha256": "abd5531f2cba3489fa54791f1886daf88e81d6bda3f00dabaa508a550c0a398f",
+    "bytes": 2994,
+    "crcVerified": true,
+    "logs": [
+      {
+        "name": "windows-timeout-ownership.log",
+        "passes": 100,
+        "failures": 0,
+        "sha256": "5009cc96be61a7cd67548a69cca2b162a71a97be4b12465aad85fe7b60dd5e5e",
+        "bytes": 22916
+      },
+      {
+        "name": "windows-owner-regressions.log",
+        "passes": 23,
+        "failures": 0,
+        "sha256": "4bac51fc60dd027705b0f51ebdca22c370f94e115e0d0da44b28e7ae00135723",
+        "bytes": 3048
+      },
+      {
+        "name": "windows-completion-race.log",
+        "passes": 50,
+        "failures": 0,
+        "sha256": "40066e98cfb6ff6144eb1042a7d54d5a5bfeb328eab14491cc6f53819bce1345",
+        "bytes": 9511
+      }
+    ]
+  },
+  "minimumBunAbi": {
+    "version": "1.3.0+b0a6feca5",
+    "jobId": 120294601693,
+    "logSha256": "d1d7f4ec93bbc3c3b7d30237740221dd5737de6cc1e37e874a4baec3abca0e31",
+    "scope": "Actual kernel32 Job Object creation, limits, accounting, integer handles and disposal. This is not a full framework suite on minimum Bun."
+  },
+  "runtime": "Bun 1.4.2 on native Windows for timeout, process ownership, complete output, cancellation and application preload regressions.",
+  "invariants": [
+    "The 300 ms timed consumer check and immediate directory disposal assertions are unchanged.",
+    "Windows cleanup confirms native zero-active-member accounting and direct process handle completion.",
+    "All Windows owner cleanup phases retain a 1000 ms confirmation grace.",
+    "Application preload hooks run in the checked command; the internal owner uses a private minimal Bun configuration.",
+    "The owner requires no PowerShell, external C# compiler or PID-tree cleanup helper."
+  ],
+  "limits": [
+    "This is native Windows process and configuration ownership evidence. It does not establish native game rendering or original Gold Edition parity.",
+    "Publication and downstream installation require separate successful source, release, original artifact and installed-consumer gates."
+  ]
+}
