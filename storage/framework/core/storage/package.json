@@ -2,7 +2,7 @@
   "name": "@stacksjs/storage",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.281",
+  "version": "0.75.282",
   "description": "The Stacks file system.",
   "author": "Chris Breuer",
   "contributors": [

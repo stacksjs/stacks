@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.281...v0.75.282)
+
+## 🐛 Bug Fixes
+
+- **tooling**: adopt qualified Pantry and align stx runtime dependencies ([7dc5872](https://github.com/stacksjs/stacks/commit/7dc5872)) _(by Chris <chris@stacksjs.com>)_
+- **release**: select publisher tooling explicitly from PATH ([33a5044](https://github.com/stacksjs/stacks/commit/33a5044)) _(by Chris <chris@stacksjs.com>)_
+- **release**: retain provenance upload receipts across batch failures ([4d8e1a0](https://github.com/stacksjs/stacks/commit/4d8e1a0)) _(by Chris <chris@stacksjs.com>)_
+
+## 🎉 Miscellaneous
+
+- Merge remote-tracking branch 'origin/main' into codex/settlers-gold-source-evidence ([67a4663](https://github.com/stacksjs/stacks/commit/67a4663)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.280...v0.75.281)
 
 ## 🐛 Bug Fixes

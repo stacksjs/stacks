@@ -2,7 +2,7 @@
   "name": "@stacksjs/registry",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.281",
+  "version": "0.75.282",
   "description": "The Stacks Registry.",
   "author": "Chris Breuer",
   "contributors": [
