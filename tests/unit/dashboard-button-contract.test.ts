@@ -310,7 +310,9 @@ describe('dashboard button contract', () => {
       )
       const nativeButtons = [...source.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
 
-      expect(source).toMatch(/<(?:Button|Modal|Drawer)\b/)
+      // `<Table` counts too: a table that declares its row actions through
+      // UI/Table renders them as Buttons there.
+      expect(source).toMatch(/<(?:Button|Modal|Drawer|Table)\b/)
       expect(nativeButtons.every(button => button.includes('inset-0'))).toBe(true)
     }
   })
