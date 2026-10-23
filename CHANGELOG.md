@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.278...v0.75.279)
+
+## 🐛 Bug Fixes
+
+- **actions**: await native completion after preparation termination ([35b4529](https://github.com/stacksjs/stacks/commit/35b4529)) _(by Chris <chris@stacksjs.com>)_
+- **actions**: await native helper handles before disposing the owner ([7cf8997](https://github.com/stacksjs/stacks/commit/7cf8997)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **actions**: run completion race in every platform evidence gate ([b65283b](https://github.com/stacksjs/stacks/commit/b65283b)) _(by Chris <chris@stacksjs.com>)_
+- **actions**: retain preparation taskkill exit diagnostics ([d5cbd2b](https://github.com/stacksjs/stacks/commit/d5cbd2b)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.277...v0.75.278)
 
 ## 🐛 Bug Fixes
