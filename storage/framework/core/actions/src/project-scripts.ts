@@ -84,6 +84,8 @@ public static class StacksOwnedCheck {
   [DllImport("kernel32.dll", SetLastError = true)]
   static extern bool PeekNamedPipe(IntPtr pipe, IntPtr buffer, uint size, IntPtr read,
     out uint available, IntPtr remaining);
+  [DllImport("kernel32.dll", SetLastError = true)]
+  static extern bool ReadFile(IntPtr pipe, byte[] buffer, uint count, out uint read, IntPtr overlapped);
   [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
   static extern bool CreateProcessW(string application, StringBuilder command, IntPtr processSecurity,
     IntPtr threadSecurity, bool inherit, uint flags, IntPtr environment, string directory,
@@ -118,6 +120,27 @@ public static class StacksOwnedCheck {
     if (error == 109 || error == 232) return true; // Closed control pipe.
     throw new Win32Exception(error);
   }
+  static bool AwaitStart() {
+    // No consumer can exist until the live Bun host grants permission. It may
+    // safely kill a compiling or waiting helper when cancellation wins first.
+    Console.Out.WriteLine("STACKS_OWNED_CHECK_READY");
+    Console.Out.Flush();
+    while (true) {
+      uint available;
+      if (!PeekNamedPipe(GetStdHandle(-10), IntPtr.Zero, 0, IntPtr.Zero, out available, IntPtr.Zero)) {
+        int error = Marshal.GetLastWin32Error();
+        if (error == 109 || error == 232) return false;
+        throw new Win32Exception(error);
+      }
+      if (available != 0) {
+        byte[] command = new byte[1];
+        uint read;
+        Require(ReadFile(GetStdHandle(-10), command, 1, out read, IntPtr.Zero));
+        return read == 1 && command[0] == 1;
+      }
+      Thread.Sleep(10);
+    }
+  }
   static IntPtr Job() {
     IntPtr job = CreateJobObjectW(IntPtr.Zero, null);
     Require(job != IntPtr.Zero);
@@ -130,7 +153,7 @@ public static class StacksOwnedCheck {
   public static int Run(string bun, string script) {
     // A queued stop must prevent startup even when Add-Type took most of the
     // check's budget. The control pipe is never inherited as consumer stdin.
-    if (StopRequested()) return 1;
+    if (!AwaitStart() || StopRequested()) return 1;
     // The outer job owns this host before it creates anything. If cancellation
     // races suspended-child assignment below, host death still kills that child.
     // Retain this non-inheritable handle until process exit; closing it earlier
@@ -248,6 +271,7 @@ export async function runProjectScripts(options: ProjectScriptOptions): Promise<
 setInterval(() => {}, 60_000)
 let command
 let stopRequested = false
+let consumerPermitted = false
 let start
 const permitted = new Promise(resolve => { start = resolve })
 process.on('message', async (message) => {
@@ -256,8 +280,16 @@ process.on('message', async (message) => {
     start()
     if (command) {
       try {
-        command.stdin.write(new Uint8Array([1]))
-        await command.stdin.flush()
+        if (!consumerPermitted) {
+          // Preparation may itself spawn the C# compiler. Before permission,
+          // the entire helper tree is disposable without interrupting user code.
+          const killed = Bun.spawnSync([${JSON.stringify(windowsTaskkill)}, '/PID', String(command.pid), '/T', '/F'], { stdout: 'ignore', stderr: 'ignore', timeout: 2000 })
+          if (killed.exitCode !== 0 && command.exitCode === null) throw new Error('Native preparation cleanup failed')
+        }
+        else {
+          command.stdin.write(new Uint8Array([2]))
+          await command.stdin.flush()
+        }
       } catch (error) { process.send({ error: String(error) }) }
     }
   } else if (message?.start) start()
@@ -267,10 +299,48 @@ await permitted
 if (stopRequested) process.send({ exitCode: 1 })
 else {
   try {
-    command = Bun.spawn(${JSON.stringify(command)}, { stdin: 'pipe', stdout: 'inherit', stderr: 'inherit' })
+    command = Bun.spawn(${JSON.stringify(command)}, { stdin: 'pipe', stdout: 'pipe', stderr: 'inherit' })
     process.send({ helperPid: command.pid })
-    process.send({ exitCode: await command.exited })
-  } catch (error) { process.send({ error: String(error) }) }
+    const forward = async () => {
+      const reader = command.stdout.getReader()
+      let prefix = Buffer.alloc(0)
+      let ready = false
+      try {
+        while (true) {
+          const next = await reader.read()
+          if (next.done) break
+          if (ready) { await Bun.write(Bun.stdout, next.value); continue }
+          prefix = Buffer.concat([prefix, Buffer.from(next.value)])
+          const line = prefix.indexOf(10)
+          if (line < 0) {
+            if (prefix.length > 128) throw new Error('Native ownership readiness was malformed')
+            continue
+          }
+          if (prefix.subarray(0, line).toString().trimEnd() !== 'STACKS_OWNED_CHECK_READY')
+            throw new Error('Native ownership readiness was malformed')
+          ready = true
+          if (!stopRequested) {
+            // This assignment and write share one event-loop turn. A later
+            // stop therefore uses cooperative Job Object cleanup, never the
+            // preparation-only kill once user code could be running.
+            consumerPermitted = true
+            command.stdin.write(new Uint8Array([1]))
+            await command.stdin.flush()
+          }
+          if (prefix.length > line + 1) await Bun.write(Bun.stdout, prefix.subarray(line + 1))
+          prefix = Buffer.alloc(0)
+        }
+        if (!ready && !stopRequested) throw new Error('Native ownership readiness was not received')
+      } finally { reader.releaseLock() }
+    }
+    const [code] = await Promise.all([command.exited, forward()])
+    process.send({ exitCode: code })
+  } catch (error) {
+    if (command && !consumerPermitted) {
+      try { command.kill('SIGKILL'); await command.exited } catch {}
+    }
+    process.send({ error: String(error) })
+  }
 }
 ` : `
 setInterval(() => {}, 60_000)
