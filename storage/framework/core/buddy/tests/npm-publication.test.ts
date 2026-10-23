@@ -32,6 +32,29 @@ test('an ambiguous upload cannot replace a previous original receipt', () => {
   expect(acceptedPublications('Error: OIDC authentication failed')).toEqual([])
 })
 
+function provenanceUpload(integrity = receipt.integrity, acknowledgedName = receipt.name) {
+  return [
+    `Publishing ${receipt.name}@${receipt.version}...`,
+    `Shasum: ${receipt.shasum}`,
+    `Integrity: ${integrity}`,
+    '  accepted by npm; read back once a package needs it or the batch is uploaded',
+    '✓ Sigstore provenance attached',
+    `✓ Uploaded ${acknowledgedName}@${receipt.version} with provenance`,
+  ].join('\n')
+}
+
+test('retains a provenance upload before a later package fails', () => {
+  expect(acceptedPublications(`${provenanceUpload()}\nPublishing @stacksjs/next@${receipt.version}...\nError: registry unavailable`)).toEqual([receipt])
+  expect(acceptedPublications(provenanceUpload().split('\n').slice(0, -1).join('\n'))).toEqual([])
+})
+
+test('provenance acknowledgements require complete matching original archive identity', () => {
+  expect(() => acceptedPublications(provenanceUpload('missing'))).toThrow('no complete original archive receipt')
+  expect(() => acceptedPublications(provenanceUpload(receipt.integrity, '@stacksjs/other'))).toThrow('does not match')
+  const different = `sha512-${createHash('sha512').update('different bytes').digest('base64')}`
+  expect(() => acceptedPublications(`${log(messages[0])}\n${provenanceUpload(different)}`)).toThrow('Conflicting original archive receipts')
+})
+
 test('an ambiguous outcome still needs matching metadata and complete original bytes', async () => {
   const original = acceptedPublications(log(messages[1]))[0]
   expect(original).toEqual(receipt)

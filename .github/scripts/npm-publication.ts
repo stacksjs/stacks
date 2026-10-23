@@ -14,6 +14,7 @@ export function acceptedPublications(log: string): AcceptedPublication[] {
   let current: Partial<AcceptedPublication> | undefined
   for (const raw of log.split('\n')) {
     const line = stripVTControlCharacters(raw).trim()
+    const provenanceUpload = /^(?:✓\s+)?Uploaded (.+)@([^ ]+) with provenance$/.exec(line)
     if (line.startsWith('Publishing ')) {
       const match = /^Publishing (.+)@([^ ]+)\.\.\.$/.exec(line)
       current = match ? { name: match[1], version: match[2] } : undefined
@@ -21,12 +22,15 @@ export function acceptedPublications(log: string): AcceptedPublication[] {
     else if (line.startsWith('Integrity: ') && current) current.integrity = line.slice(11)
     else if (line.startsWith('Shasum: ') && current) current.shasum = line.slice(8)
     else if (line.includes('Upload accepted; publication is pending public metadata')
-      || line.includes('Upload outcome is pending public verification. Do not send another upload while this version may be staged.')) {
+      || line.includes('Upload outcome is pending public verification. Do not send another upload while this version may be staged.')
+      || provenanceUpload) {
       if (!current?.name || !current.version
         || !/^sha512-[A-Za-z0-9+/]{86}==$/.test(current.integrity ?? '')
         || !/^[a-f0-9]{40}$/.test(current.shasum ?? '')) {
         throw new Error('Accepted publication has no complete original archive receipt; refusing to resume')
       }
+      if (provenanceUpload && (provenanceUpload[1] !== current.name || provenanceUpload[2] !== current.version))
+        throw new Error('Provenance upload acknowledgement does not match the original archive receipt')
       const receipt = current as AcceptedPublication
       const key = `${receipt.name}@${receipt.version}`
       const previous = accepted.get(key)
