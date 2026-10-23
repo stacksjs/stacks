@@ -151,9 +151,9 @@ public static class StacksOwnedCheck {
     return job;
   }
   public static int Run(string bun, string script) {
-    // A queued stop must prevent startup even when Add-Type took most of the
-    // check's budget. The control pipe is never inherited as consumer stdin.
-    if (!AwaitStart() || StopRequested()) return 1;
+    // The control pipe is never inherited as consumer stdin. Prepare both
+    // ownership jobs before reporting readiness or accepting startup permission.
+    if (StopRequested()) return 1;
     // The outer job owns this host before it creates anything. If cancellation
     // races suspended-child assignment below, host death still kills that child.
     // Retain this non-inheritable handle until process exit; closing it earlier
@@ -163,6 +163,7 @@ public static class StacksOwnedCheck {
     IntPtr commandJob = Job();
     ProcessInfo child = new ProcessInfo();
     try {
+      if (!AwaitStart() || StopRequested()) return 1;
       Startup startup = new Startup();
       startup.Size = (uint)Marshal.SizeOf(typeof(Startup));
       startup.Flags = 0x100; // STARTF_USESTDHANDLES
