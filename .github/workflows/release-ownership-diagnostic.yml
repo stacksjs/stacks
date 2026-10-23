@@ -20,36 +20,36 @@ jobs:
       - name: Observe the native Win32 Job Object ABI
         shell: bash
         run: |
-          bun --eval '
-          import { dlopen, FFIType as f, ptr } from "bun:ffi";
-          const { symbols: api } = dlopen("kernel32.dll", {
-            GetCurrentProcess: { args: [], returns: f.u64 },
-            CreateJobObjectW: { args: [f.ptr, f.ptr], returns: f.u64 },
-            SetInformationJobObject: { args: [f.u64, f.i32, f.ptr, f.u32], returns: f.i32 },
-            QueryInformationJobObject: { args: [f.u64, f.i32, f.ptr, f.u32, f.ptr], returns: f.i32 },
-            CloseHandle: { args: [f.u64], returns: f.i32 },
-          });
-          if (api.GetCurrentProcess() !== 0xffffffffffffffffn) throw Error("Unexpected process pseudo-handle");
-          const job = api.CreateJobObjectW(null, null);
-          if (job === 0n) throw Error("Job Object creation failed");
-          const limits = new BigUint64Array(18);
-          new DataView(limits.buffer).setUint32(16, 0x2000, true);
-          if (!api.SetInformationJobObject(job, 9, ptr(limits), limits.byteLength)) throw Error("Job limits failed");
-          const accounting = new BigUint64Array(6);
-          if (!api.QueryInformationJobObject(job, 1, ptr(accounting), accounting.byteLength, null)) throw Error("Job accounting failed");
-          if (new DataView(accounting.buffer).getUint32(40, true) !== 0) throw Error("Unexpected active member");
-          if (!api.CloseHandle(job)) throw Error("Job handle close failed");
-          console.log("Native Win32 job ABI available; zero active members; handles valid.");
-          '
+          bun .github/scripts/windows-job-abi.ts
       - name: Repeat the unchanged consumer deadline and immediate disposal check
         shell: bash
         run: |
           mkdir -p artifacts
           set -o pipefail
           bun test ./storage/framework/core/actions/tests/release-evidence.test.ts --test-name-pattern 'does not accept a timed-out check that handles termination and exits zero' --rerun-each=100 2>&1 | tee artifacts/windows-timeout-ownership.log
+      - name: Execute the complete native ownership regressions
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          set -o pipefail
+          bun test ./storage/framework/core/actions/tests/release-evidence.test.ts ./storage/framework/core/actions/tests/project-scripts.test.ts 2>&1 | tee artifacts/windows-owner-regressions.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: windows-timeout-ownership-diagnostic
-          path: artifacts/windows-timeout-ownership.log
+          path: artifacts/windows-*.log
           if-no-files-found: error
+
+  minimum-bun-native-job-abi:
+    name: Native Job Object ABI on minimum Bun
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.0'
+      - name: Require the actual minimum-version native ABI
+        shell: bash
+        run: bun .github/scripts/windows-job-abi.ts
