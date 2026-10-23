@@ -55,6 +55,14 @@ test('provenance acknowledgements require complete matching original archive ide
   expect(() => acceptedPublications(`${log(messages[0])}\n${provenanceUpload(different)}`)).toThrow('Conflicting original archive receipts')
 })
 
+test('a verified provenance publication retains its original receipt if a later hook or package fails', () => {
+  const published = provenanceUpload().replace('✓ Uploaded ', '✓ Published ')
+  expect(acceptedPublications(`${published}\nError: postpublish failed`)).toEqual([receipt])
+  expect(() => acceptedPublications(published.replace(receipt.integrity, 'missing'))).toThrow('no complete original archive receipt')
+  expect(() => acceptedPublications(published.replace(`✓ Published ${receipt.name}@`, '✓ Published @stacksjs/other@'))).toThrow('does not match')
+  expect(acceptedPublications(published.split('\n').slice(0, -1).join('\n'))).toEqual([])
+})
+
 test('an ambiguous outcome still needs matching metadata and complete original bytes', async () => {
   const original = acceptedPublications(log(messages[1]))[0]
   expect(original).toEqual(receipt)

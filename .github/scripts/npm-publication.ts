@@ -14,7 +14,7 @@ export function acceptedPublications(log: string): AcceptedPublication[] {
   let current: Partial<AcceptedPublication> | undefined
   for (const raw of log.split('\n')) {
     const line = stripVTControlCharacters(raw).trim()
-    const provenanceUpload = /^(?:✓\s+)?Uploaded (.+)@([^ ]+) with provenance$/.exec(line)
+    const provenanceUpload = /^(?:✓\s+)?(?:Uploaded|Published) (.+)@([^ ]+) with provenance$/.exec(line)
     if (line.startsWith('Publishing ')) {
       const match = /^Publishing (.+)@([^ ]+)\.\.\.$/.exec(line)
       current = match ? { name: match[1], version: match[2] } : undefined
