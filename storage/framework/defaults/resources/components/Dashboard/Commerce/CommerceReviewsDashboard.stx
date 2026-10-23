@@ -43,8 +43,6 @@ const productFilter = state('all')
 const ratingFilter = state('all')
 const moderationFilter = state('all')
 const sort = state('newest')
-const page = state(1)
-const pageSize = 12
 const loading = state(true)
 const loadError = state('')
 const editingReview = state<ReviewRecord | null>(null)
@@ -109,24 +107,6 @@ function filteredRecords(): ReviewRecord[] {
     })
 }
 
-function totalPages(): number {
-  return Math.max(1, Math.ceil(filteredRecords().length / pageSize))
-}
-
-function visibleRecords(): ReviewRecord[] {
-  const safePage = Math.min(page(), totalPages())
-  const offset = (safePage - 1) * pageSize
-  return filteredRecords().slice(offset, offset + pageSize)
-}
-
-function rangeStart(): number {
-  return filteredRecords().length === 0 ? 0 : (Math.min(page(), totalPages()) - 1) * pageSize + 1
-}
-
-function rangeEnd(): number {
-  return Math.min(Math.min(page(), totalPages()) * pageSize, filteredRecords().length)
-}
-
 function metricCards(): Array<{ label: string, value: string }> {
   return [
     { label: 'Recorded', value: String(summary().total) },
@@ -137,14 +117,13 @@ function metricCards(): Array<{ label: string, value: string }> {
   ]
 }
 
-effect(() => {
-  search()
-  productFilter()
-  ratingFilter()
-  moderationFilter()
-  sort()
-  page.set(1)
-})
+/**
+ * What the table is showing: a change returns it to the first page, as this
+ * page's own pager did before the table took over paging.
+ */
+function viewKey(): string {
+  return JSON.stringify([search(), productFilter(), ratingFilter(), moderationFilter(), sort()])
+}
 
 async function loadReviews(): Promise<void> {
   loading.set(true)
@@ -154,8 +133,6 @@ async function loadReviews(): Promise<void> {
     records.set(Array.isArray(data.records) ? data.records : [])
     summary.set(data.summary ?? { ...emptySummary })
     products.set(Array.isArray(data.products) ? data.products : [])
-    if (page() > totalPages())
-      page.set(totalPages())
   }
   catch (error) {
     loadError.set('Review records could not be loaded.')
@@ -335,7 +312,7 @@ onMount(() => {
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <p class="text-gray-500 text-sm dark:text-neutral-400">
-        Showing {{ rangeStart() }} to {{ rangeEnd() }} of {{ filteredRecords().length }} reviews
+        {{ filteredRecords().length }} matching {{ filteredRecords().length === 1 ? 'review' : 'reviews' }}
       </p>
       <label class="flex gap-2 items-center text-gray-500 text-sm dark:text-neutral-400">
         Sort
@@ -350,7 +327,9 @@ onMount(() => {
     </div>
 
     <CommerceReviewsTable
-      :reviews="visibleRecords()"
+      :sort-reset-key="sort()"
+      :page-reset-key="viewKey()"
+      :reviews="filteredRecords()"
       :loading="loading()"
       :busy-id="busyId()"
       @approve="toggleApproval"
@@ -359,11 +338,6 @@ onMount(() => {
       @delete="openDelete"
     />
 
-    <nav :if="totalPages() > 1" aria-label="Review pages" class="flex items-center justify-between">
-      <Button variant="secondary" :disabled="page() <= 1" @click="page.update(value => value - 1)">Previous</Button>
-      <span class="text-gray-500 text-sm dark:text-neutral-400">Page {{ page() }} of {{ totalPages() }}</span>
-      <Button variant="secondary" :disabled="page() >= totalPages()" @click="page.update(value => value + 1)">Next</Button>
-    </nav>
   </section>
 </div>
 
