@@ -34,6 +34,13 @@ jobs:
           mkdir -p artifacts
           set -o pipefail
           bun test ./storage/framework/core/actions/tests/release-evidence.test.ts ./storage/framework/core/actions/tests/project-scripts.test.ts 2>&1 | tee artifacts/windows-owner-regressions.log
+      - name: Repeat real final-output cancellation ordering
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          set -o pipefail
+          bun test ./storage/framework/core/actions/tests/project-scripts.test.ts --test-name-pattern 'cancellation at final command output' --rerun-each=50 2>&1 | tee artifacts/windows-completion-race.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:

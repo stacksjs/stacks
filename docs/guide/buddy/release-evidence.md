@@ -72,16 +72,17 @@ can set cancellation and tighter budgets through
 
 Completed checks dispose their normal background descendants before a receipt
 is issued. POSIX uses an owned process group and confirms its disappearance.
-Windows requires PowerShell with .NET `Add-Type` and `taskkill.exe`; native Job
-Objects retain child ownership across intermediate process exits. A command
-starts suspended, joins its job, then resumes. Missing ownership support or
+Windows calls the native Job Object APIs directly from its owned Bun host through
+`bun:ffi`. Job Objects retain child ownership across intermediate process exits.
+A command starts suspended, joins its job, then resumes. Missing ownership support or
 failed cleanup blocks verification. This is process cleanup, not a sandbox for
 deliberately escaping POSIX groups or privileged external services.
 
-Windows cancellation uses a separate control pipe so the native owner can
+Windows cancellation uses Bun's separate IPC channel so the native owner can
 terminate its job and confirm zero active members before the host is removed.
-Consumer stdin remains closed. PowerShell's own progress output is disabled and
-its transport uses text output; command bytes are neither filtered nor rewritten.
+Consumer stdin remains closed. The host retains its native lifetime job until
+the parent disposes it, and command output handles are inherited explicitly.
+Command bytes are neither filtered nor rewritten.
 Library callers can observe those bytes with `runProjectScripts`' optional
 synchronous `onOutput(chunk, stream)` callback. The verifier retains hashes by
 default. An observer failure fails the check and triggers owned cleanup.
