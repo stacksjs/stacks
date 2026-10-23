@@ -108,3 +108,34 @@ test('cancellation disposes an already started owned check before rejecting', as
     rmSync(root, { recursive: true, force: true })
   }
 }, 30_000)
+
+
+test('cancellation at final command output cannot become a successful completion', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'stacks-project-completion-race-'))
+  const marker = 'final output before zero exit\n'
+  const controller = new AbortController()
+  const output: Buffer[] = []
+  writeFileSync(join(root, 'package.json'), JSON.stringify({ scripts: { check: 'bun check.ts' } }))
+  writeFileSync(join(root, 'check.ts'), `await Bun.write(Bun.stdout, ${JSON.stringify(marker)}); process.exit(0)`)
+  try {
+    // Exercise the actual public runner and native process completion. The
+    // removed preparation helper no longer has a Bun exitCode getter to mock.
+    const execution = runProjectScripts({
+      cwd: root, scripts: ['check'], signal: controller.signal,
+      timeoutMs: process.platform === 'win32' ? 15_000 : 3000,
+      onOutput(chunk, stream) {
+        if (stream !== 'stdout') return
+        output.push(Buffer.from(chunk))
+        if (Buffer.concat(output).toString().includes(marker)) controller.abort()
+      },
+    })
+    await expect(execution).rejects.toThrow('was interrupted or exceeded its execution budget')
+    expect(controller.signal.aborted).toBe(true)
+    expect(Buffer.concat(output).toString()).toContain(marker)
+  }
+  finally {
+    controller.abort()
+    // No delay or deletion retry: native completion must release the fixture.
+    rmSync(root, { recursive: true, force: true })
+  }
+}, 30_000)
