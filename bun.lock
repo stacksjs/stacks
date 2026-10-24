@@ -1214,6 +1214,7 @@
       "version": "0.75.299",
       "dependencies": {
         "@stacksjs/config": "workspace:*",
+        "@stacksjs/database": "workspace:*",
         "@stacksjs/error-handling": "workspace:*",
         "@stacksjs/logging": "workspace:*",
         "@stacksjs/orm": "workspace:*",

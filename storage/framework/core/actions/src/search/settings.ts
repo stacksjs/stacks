@@ -6,7 +6,8 @@ const result = await updateIndexSettings()
 
 if (result?.isErr) {
   console.error(result.error)
-  await log.error('generateMigrations failed', result.error)
+  await log.error('Updating search settings failed', result.error)
+  process.exit(1)
 }
 
 process.exit(0)

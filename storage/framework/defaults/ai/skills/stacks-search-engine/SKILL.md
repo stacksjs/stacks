@@ -118,6 +118,7 @@ Environment variables: `MEILISEARCH_HOST`, `MEILISEARCH_KEY`, `SEARCH_ENGINE_DRI
 - Meilisearch requires a running Meilisearch server
 - Algolia requires API keys from your Algolia dashboard
 - Settings updates don't re-index - run `search-engine:update` after changes
+- Bulk reindex, flush and settings updates use the schema's model scope: application models override defaults, nested models are included, and framework defaults are a fallback unless explicitly enabled. Maintenance commands exit nonzero on provider errors.
 
 
 ## Readiness and driver boundaries
