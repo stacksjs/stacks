@@ -1,5 +1,32 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.287...v0.75.288)
+
+## ✨ Features
+
+- build recording uploads through the native file contract ([4453cd0](https://github.com/stacksjs/stacks/commit/4453cd0)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- align application frontend packages with framework upgrades ([cbc7c8b](https://github.com/stacksjs/stacks/commit/cbc7c8b)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh native mobile upload export guidance ([63711f2](https://github.com/stacksjs/stacks/commit/63711f2)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- align remaining STX packages on verified 0.2.679 ([f362574](https://github.com/stacksjs/stacks/commit/f362574)) _(by Chris <chris@stacksjs.com>)_
+
+## 🎉 Miscellaneous
+
+- Merge remote-tracking branch 'origin/main' into feat/coaching-voice-primitives ([567a72e](https://github.com/stacksjs/stacks/commit/567a72e)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.286...v0.75.287)
 
 ## 🐛 Bug Fixes
