@@ -1,0 +1,248 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "repository": "pantry-pm/pantry",
+      "commit": "91ded221f8de3badd9fc5ab1d4072d561c1eb1d4",
+      "tag": "v0.11.126",
+      "gates": [
+        {
+          "runId": 40057270032,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "source-ci / verify exact full source CI",
+            "pantry",
+            "npm",
+            "discord-notification"
+          ]
+        },
+        {
+          "runId": 40057269977,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "typecheck",
+            "lint",
+            "test",
+            "action-native-services (8.4.11)",
+            "action-native-services (26.7.0)",
+            "Explicit native toolchain pins (ubuntu-latest)",
+            "action-redis-service",
+            "windows-git",
+            "native-browser",
+            "action-native-tools",
+            "zig-tests",
+            "Explicit native toolchain pins (macos-latest)",
+            "windows-native-runtime",
+            "continuous-release"
+          ]
+        },
+        {
+          "runId": 40057270011,
+          "workflow": ".github/workflows/build-zig.yml",
+          "requiredJobs": [
+            "compile-all",
+            "Native Windows CLI and compiler links"
+          ]
+        },
+        {
+          "runId": 40057270018,
+          "workflow": ".github/workflows/deploy-registry.yml",
+          "requiredJobs": [
+            "verify / Registry checks (Bun 1.4.2)",
+            "verify / Registry checks (Bun 1.4.3)",
+            "source-ci / verify exact full source CI",
+            "hetzner",
+            "discord-notification"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "ts-pantry",
+          "version": "0.11.126",
+          "integrity": "sha512-gKiXcAGuVplVGO0C3i8j5eh7pvIzK3HKXtCfrsE/+nHj9oMBXJwa9Ybc+0rjpdr4PDgULHp5TT/vRMjiH+fiKg=="
+        }
+      ]
+    },
+    {
+      "repository": "pickier/pickier",
+      "commit": "0ce83cbbf06f23b0c05a61b332e074292d69961a",
+      "tag": "v0.1.77",
+      "gates": [
+        {
+          "runId": 39999788567,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "npm"
+          ]
+        },
+        {
+          "runId": 39999788210,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "native",
+            "lint",
+            "typecheck",
+            "test"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "pickier",
+          "version": "0.1.77",
+          "integrity": "sha512-ccrUEA9nRlPYXkRUaZ2UHncyH8L7Xy1tuX2KbSlgKN3pO//slDfXe716Q79kKCCDgL8MqoR5eCyHHXRp7qNIlg=="
+        }
+      ]
+    },
+    {
+      "repository": "stacksjs/stx",
+      "commit": "e2b4b9010cf11dd3abbf1df096a57f3eb5b28366",
+      "tag": "v0.2.679",
+      "gates": [
+        {
+          "runId": 40068280139,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "lint",
+            "native-signing",
+            "test",
+            "typecheck",
+            "publish-commit"
+          ]
+        },
+        {
+          "runId": 40068280213,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "Verify the exact release source",
+            "Verify native signing on macOS 15",
+            "npm",
+            "icons"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "@stacksjs/desktop",
+          "version": "0.2.679",
+          "integrity": "sha512-f2ES+M8wMcQ6ldIc8yc8HkYJiDSBvT2rcL98h09cc5mcVT4V11w8EKE0hXcDw4v4L6YR1ZnOOngOfNzeD558vA=="
+        },
+        {
+          "name": "@stacksjs/sanitizer",
+          "version": "0.2.679",
+          "integrity": "sha512-/AXpigo5YCWXrzDMxBYtTynDr6zWG/ttNlQvDTKjDmc1NuDGD5bFg2bQ7kuPGMtV8zcqJEJbdlsP7ARnGyyUvg=="
+        },
+        {
+          "name": "stx-router",
+          "version": "0.2.679",
+          "integrity": "sha512-5GZl8aIS91kjHJC684mGYcFvcJT53Q9QPUnr/On9UwcfmW9frpCwvPbUDog/UhqI6M11dtvzaiR/iM49gTstDQ=="
+        },
+        {
+          "name": "bun-plugin-stx",
+          "version": "0.2.679",
+          "integrity": "sha512-8HffRWiedgje/6zxFrnzf10arhm01cMjXXbvdRrWvHNcv3hBLYqwtcsu6zS+ib6o3X0MozgB9+yiV1qNGcPXDg=="
+        },
+        {
+          "name": "@stacksjs/stx",
+          "version": "0.2.679",
+          "integrity": "sha512-/lSGwBNU5E8Dg7BeGp5Le+58EmoFZE0NFaWuSCoLn7lzo0z6kDPkzlSZnBTsHYSqDY8S9N/D3537H1tlNLZRRg=="
+        },
+        {
+          "name": "@stacksjs/components",
+          "version": "0.2.679",
+          "integrity": "sha512-Nxpvn/CZwbZVF/acFjPZa+7RY9xOEBLsfQ4CMYyGTTq5XAT2diuVlWwYe/dwuz8/9Fy+2YFTmq62Qe+dZqaHLw=="
+        }
+      ]
+    },
+    {
+      "repository": "craft-native/craft",
+      "commit": "1fbc91e435afa5a75e65c71b7a15741b4d7927e5",
+      "tag": "v0.0.319",
+      "gates": [
+        {
+          "runId": 40045955871,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "accept exact release source",
+            "validate release identity",
+            "accept exact native runtimes",
+            "release-sbom / vulnerability-scan",
+            "verify and stage npm packages",
+            "release-sbom / generate",
+            "pantry (darwin-arm64)",
+            "pantry (linux-x86-64)",
+            "verify downloaded darwin-x64",
+            "verify downloaded linux-x64",
+            "verify downloaded darwin-arm64",
+            "attach and verify release SBOMs",
+            "verify release assets",
+            "verify downloaded windows-x64",
+            "publish complete verified release",
+            "npm",
+            "publish verified Zig package to pantry",
+            "notify registry and channel after publication"
+          ]
+        },
+        {
+          "runId": 40045956605,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "Android software emulator",
+            "zig-core (ubuntu-latest)",
+            "Vulkan SDK ABI (ubuntu-latest)",
+            "windows-multi-window",
+            "zig-core (macos-latest)",
+            "Vulkan SDK ABI (windows-latest)",
+            "integration",
+            "ios-native-templates",
+            "typescript-sdk",
+            "create-craft",
+            "Vulkan SDK ABI (macos-latest)",
+            "lint",
+            "ios-builder",
+            "ts-maps",
+            "android-builder",
+            "publish-commit"
+          ]
+        },
+        {
+          "runId": 40045956722,
+          "workflow": ".github/workflows/mobile-e2e.yml",
+          "requiredJobs": [
+            "Android emulator",
+            "iOS Zig runtime slice",
+            "android-navigation (34)",
+            "iOS native UI (uikit)",
+            "iOS native Metal surface",
+            "iOS native UI (navigation-unit)",
+            "Harness unit tests",
+            "iOS native UI (navigation-ui-controls)",
+            "media-cache / ios",
+            "media-cache / sdk",
+            "media-cache / android",
+            "iOS simulator",
+            "android-navigation (35)",
+            "iOS native UI (navigation-ui-core)",
+            "iOS hybrid navigation",
+            "Mobile E2E summary"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "craft-native",
+          "version": "0.0.319",
+          "integrity": "sha512-6tJG3C8V3SXB1JWPPxQZq127wCECGq2wu6DWx412IUJCsmtQH/9Z2dQiMZBocUucxNMY3CX472i+R/o/ecfdgg=="
+        }
+      ]
+    }
+  ],
+  "checks": [
+    "deps:lockfile:check",
+    "typecheck",
+    "typecheck:app",
+    "typecheck:views",
+    "lint"
+  ]
+}

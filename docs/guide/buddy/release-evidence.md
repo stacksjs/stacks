@@ -278,3 +278,11 @@ The [Pantry plan](./receipts/pantry-0.11.126-plan.json) and [installed-consumer 
 The [publication record](./receipts/pantry-0.11.126-publication.json) retains all seven original native archives, the original npm archive, a normal native installation, four workspace lifecycle tests and five publication transport scenarios. The SDK consumer compared all 384 original Windows Git files; the separate native Windows artifact records compiler execution and install-prefix relocation.
 
 Pantry now gives the registry compiler a managed cache directory when the service has no home directory. Each upload keeps a separate package directory. Registry deployment also checks out the exact approved commit when newer commits arrive during CI. Version 0.11.125 was rejected for adoption because that deployment check failed. This receipt qualifies the four declared toolchain workflows; the optional mirror workflow and full native game parity require separate evidence.
+
+## Verified combined tooling adoption
+
+The [combined plan](./receipts/upstream-tooling-126-679-319-plan.json) and [installed-consumer receipt](./receipts/upstream-tooling-126-679-319-receipt.json) verify Pantry 0.11.126, Pickier 0.1.77, all six consumed STX 0.2.679 packages and Craft 0.0.319. Each installed file matches its original published archive. Exact source and release gates, frozen installation, lock consistency, framework types, application types, view types and lint passed with Bun 1.4.4.
+
+The meta-package's desktop dependency and Defaults' sanitizer dependency now also use STX 0.2.679. Normal Bun and Pantry installs removed the older duplicate dependency versions and regenerated both locks.
+
+The [STX publication record](./receipts/stx-0.2.679-publication.json) retains the six original SDK archives and the successful complete source and release gates. An accepted icon upload was initially unreadable. Its original metadata, SHA-512 and SHA-1 were verified before the failed job resumed through its existing checks. The separate VS Code marketplace workflow is outside this qualification. These tooling checks leave native game presentation and Gold Edition fidelity unverified.
