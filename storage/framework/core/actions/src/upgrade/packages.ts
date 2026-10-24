@@ -76,8 +76,38 @@ export function installedStacksVersion(projectRoot: string): string | null {
 }
 
 /** Whether the declared target still needs to be installed locally. */
-export function needsFrameworkInstall(projectRoot: string, target: string): boolean {
-  return installedStacksVersion(projectRoot) !== target
+export function needsFrameworkInstall(projectRoot: string, target: string, runtimePins: Record<string, string> = {}): boolean {
+  try {
+    const metaRoot = join(projectRoot, 'node_modules/stacks')
+    const installed = JSON.parse(readFileSync(join(metaRoot, 'package.json'), 'utf8')) as { version?: string, dependencies?: Record<string, string> }
+    if (installed.version !== target) return true
+
+    // Bun can replace the meta-package before a later download fails. Its
+    // version alone does not prove the transaction or lockfile completed.
+    const lockPath = join(projectRoot, 'bun.lock')
+    if (existsSync(lockPath)) {
+      const lock = Bun.JSONC.parse(readFileSync(lockPath, 'utf8')) as { packages?: Record<string, unknown[]> }
+      if (lock.packages?.stacks?.[0] !== `stacks@${target}`) return true
+    }
+    for (const [name, version] of Object.entries(installed.dependencies ?? {})) {
+      if (!name.startsWith('@stacksjs/') || version !== target) continue
+      const manifest = JSON.parse(readFileSync(Bun.resolveSync(`${name}/package.json`, metaRoot), 'utf8')) as { version?: string }
+      if (manifest.version !== target) return true
+    }
+    if (Object.keys(runtimePins).length) {
+      const project = JSON.parse(readFileSync(join(projectRoot, 'package.json'), 'utf8')) as { dependencies?: Record<string, string>, devDependencies?: Record<string, string> }
+      const declared = { ...project.dependencies, ...project.devDependencies }
+      for (const [name, version] of Object.entries(runtimePins)) {
+        if (!Object.hasOwn(declared, name)) continue
+        const manifest = JSON.parse(readFileSync(Bun.resolveSync(`${name}/package.json`, projectRoot), 'utf8')) as { version?: string }
+        if (manifest.version !== baseVersion(version)) return true
+      }
+    }
+    return false
+  }
+  catch {
+    return true
+  }
 }
 
 async function updateStandalonePackage(projectRoot: string, options: PackageUpgradeOptions): Promise<never> {
@@ -376,17 +406,16 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
   // interrupted (or a just-published dependency has not propagated yet), the
   // next run sees the target constraint and used to skip `bun update`, leaving
   // package.json at the new version while bun.lock + node_modules stayed old.
-  // Treat the installed meta-package as part of upgrade state so rerunning the
-  // same command repairs an incomplete upgrade without requiring --force or a
-  // manual package-manager workaround.
-  const dependenciesNeedInstall = needsFrameworkInstall(projectRoot, target)
+  // Check the lockfile and installed core/frontend cohort as well as the meta
+  // version, so the same command repairs even a partially completed install.
+  const dependenciesNeedInstall = needsFrameworkInstall(projectRoot, target, runtimePins)
 
   if (changes.length > 0 || manifestChanges.length > 0 || projectManifestChanges.length > 0 || dependenciesNeedInstall || options.force) {
     console.log('  Installing…\n')
     const result = await runCommand(frameworkPackageUpdateCommand(options.force), { cwd: projectRoot })
 
     if (result.isErr) {
-      console.error('\n✗ The install step failed. Your package.json was updated - resolve the error and re-run `bun update`.\n')
+      console.error(`\n✗ The install step failed. Your package.json was updated - resolve the error and re-run \`buddy upgrade --version ${target}\`.\n`)
       process.exit(1)
     }
   }

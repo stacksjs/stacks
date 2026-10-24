@@ -48,6 +48,64 @@ describe('package-only buddy updates', () => {
     writeFileSync(join(project, 'node_modules/stacks/package.json'), '{')
     expect(installedStacksVersion(project)).toBeNull()
   })
+
+  it('repairs an upgrade that replaced stacks before its lockfile was saved', () => {
+    const project = mkdtempSync(join(tmpdir(), 'stacks-upgrade-'))
+    temporaryProjects.push(project)
+    mkdirSync(join(project, 'node_modules/stacks'), { recursive: true })
+    writeFileSync(join(project, 'node_modules/stacks/package.json'), JSON.stringify({ version: '0.74.11' }))
+    writeFileSync(join(project, 'bun.lock'), '{"packages":{"stacks":["stacks@0.74.9"],},}')
+    expect(needsFrameworkInstall(project, '0.74.11')).toBeTrue()
+    writeFileSync(join(project, 'bun.lock'), '{"packages":{"stacks":["stacks@0.74.11"],},}')
+    expect(needsFrameworkInstall(project, '0.74.11')).toBeFalse()
+    writeFileSync(join(project, 'bun.lock'), '{')
+    expect(needsFrameworkInstall(project, '0.74.11')).toBeTrue()
+  })
+
+  it('repairs a missing core package after the meta-package moved', () => {
+    const project = mkdtempSync(join(tmpdir(), 'stacks-upgrade-'))
+    temporaryProjects.push(project)
+    mkdirSync(join(project, 'node_modules/stacks'), { recursive: true })
+    writeFileSync(join(project, 'node_modules/stacks/package.json'), JSON.stringify({ version: '0.74.11', dependencies: { '@stacksjs/env': '0.74.11' } }))
+    expect(needsFrameworkInstall(project, '0.74.11')).toBeTrue()
+  })
+
+  it('repairs an older core package after the meta-package moved', () => {
+    const project = mkdtempSync(join(tmpdir(), 'stacks-upgrade-'))
+    temporaryProjects.push(project)
+    mkdirSync(join(project, 'node_modules/stacks'), { recursive: true })
+    writeFileSync(join(project, 'node_modules/stacks/package.json'), JSON.stringify({ version: '0.74.11', dependencies: { '@stacksjs/env': '0.74.11' } }))
+    mkdirSync(join(project, 'node_modules/@stacksjs/env'), { recursive: true })
+    writeFileSync(join(project, 'node_modules/@stacksjs/env/package.json'), JSON.stringify({ version: '0.74.9' }))
+    expect(needsFrameworkInstall(project, '0.74.11')).toBeTrue()
+    writeFileSync(join(project, 'node_modules/@stacksjs/env/package.json'), JSON.stringify({ version: '0.74.11' }))
+    expect(needsFrameworkInstall(project, '0.74.11')).toBeFalse()
+  })
+
+  it('checks core resolution from stacks when the installer keeps nested versions', () => {
+    const project = mkdtempSync(join(tmpdir(), 'stacks-upgrade-'))
+    temporaryProjects.push(project)
+    mkdirSync(join(project, 'node_modules/stacks/node_modules/@stacksjs/env'), { recursive: true })
+    mkdirSync(join(project, 'node_modules/@stacksjs/env'), { recursive: true })
+    writeFileSync(join(project, 'node_modules/stacks/package.json'), JSON.stringify({ version: '0.74.11', dependencies: { '@stacksjs/env': '0.74.11' } }))
+    writeFileSync(join(project, 'node_modules/stacks/node_modules/@stacksjs/env/package.json'), JSON.stringify({ version: '0.74.11' }))
+    writeFileSync(join(project, 'node_modules/@stacksjs/env/package.json'), JSON.stringify({ version: '0.74.9' }))
+    expect(needsFrameworkInstall(project, '0.74.11')).toBeFalse()
+  })
+
+  it('repairs an interrupted frontend cohort update even if core did not change', () => {
+    const project = mkdtempSync(join(tmpdir(), 'stacks-upgrade-'))
+    temporaryProjects.push(project)
+    mkdirSync(join(project, 'node_modules/stacks'), { recursive: true })
+    mkdirSync(join(project, 'node_modules/@stacksjs/stx'), { recursive: true })
+    writeFileSync(join(project, 'package.json'), JSON.stringify({ dependencies: { stacks: '0.74.11', '@stacksjs/stx': '0.2.686' } }))
+    writeFileSync(join(project, 'node_modules/stacks/package.json'), JSON.stringify({ version: '0.74.11' }))
+    writeFileSync(join(project, 'node_modules/@stacksjs/stx/package.json'), JSON.stringify({ version: '0.2.682' }))
+    const pins = { '@stacksjs/stx': '0.2.686', 'stx-router': '0.2.686' }
+    expect(needsFrameworkInstall(project, '0.74.11', pins)).toBeTrue()
+    writeFileSync(join(project, 'node_modules/@stacksjs/stx/package.json'), JSON.stringify({ version: '0.2.686' }))
+    expect(needsFrameworkInstall(project, '0.74.11', pins)).toBeFalse()
+  })
 })
 
 // stacksjs/stacks#2078: buddy upgrade must not drag independently-versioned
