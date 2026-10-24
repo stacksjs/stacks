@@ -174,6 +174,8 @@ export interface DomainRouteTarget {
 }
 
 export interface ServerConfig {
+  /** Headers on matching response paths. Keys are exact paths or prefixes ending in /*. */
+  headers?: Record<string, Record<string, string>>
   /** Which requests reach the API process. See {@link ApiProxyOptions}. */
   proxy?: ApiProxyOptions
 

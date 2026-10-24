@@ -324,6 +324,22 @@ export default defineAuth({
 
 ## Server Config
 
+Public component modules embedded on another domain need CORS headers on their
+JavaScript files, including relative runtime imports. Configure only those
+asset paths; both `buddy dev` and `buddy serve` apply these rules after their
+usual security headers. Exact paths and trailing `/*` prefixes are supported.
+
+```ts
+export default {
+  headers: {
+    '/assets/elements/*': {
+      'Access-Control-Allow-Origin': '*',
+      'Cross-Origin-Resource-Policy': 'cross-origin',
+    },
+  },
+} satisfies ServerConfig
+```
+
 `config/server.ts` controls the views server in the split views/API topology,
 which is what both `buddy dev` and `buddy serve` run.
 

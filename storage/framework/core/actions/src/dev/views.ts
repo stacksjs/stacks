@@ -59,7 +59,7 @@ catch {
 async function startDefaultServer() {
   await overridesReady
 
-  const { applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, describeRewriteRules, injectGlobalAutoImports, isApiBoundRequest, loadRouteRedirects, proxyToBackend, resolveApiProxyRules, resolveEmbeddableRules, resolveRedirect, resolveRedirectRules, resolveRewrite, resolveRewriteRules, viewClientAddress } = await import('@stacksjs/server')
+  const { applyResponseHeaders, applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, describeRewriteRules, injectGlobalAutoImports, isApiBoundRequest, loadRouteRedirects, proxyToBackend, resolveApiProxyRules, resolveEmbeddableRules, resolveRedirect, resolveRedirectRules, resolveRewrite, resolveRewriteRules, viewClientAddress } = await import('@stacksjs/server')
   const { applyRequestLocale } = await import('@stacksjs/i18n')
   await injectGlobalAutoImports()
 
@@ -359,7 +359,8 @@ async function startDefaultServer() {
     //      to /login or /register can immediately submit to the API.
     // Production applies all three.
     onResponse: async (req: Request, response: Response) => {
-      const secured = applyViewSecurityHeaders(req, response, embeddableRules)
+      const securityResponse = applyViewSecurityHeaders(req, response, embeddableRules)
+      const secured = applyResponseHeaders(req, securityResponse ?? response, config.server?.headers) ?? securityResponse
 
       // `baseline` is what to return when nothing further changes: the rebuilt
       // response when the headers could not be set in place, else the

@@ -51,7 +51,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/stx": "0.2.682",
+    "@stacksjs/stx": "0.2.684",
     "@stacksjs/datetime": "workspace:*"
   },
   "devDependencies": {

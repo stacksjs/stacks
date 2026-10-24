@@ -193,7 +193,7 @@ export async function startProductionServer(options?: { port?: string | number, 
   const { ensureDiscoveredPackages } = await import('@stacksjs/actions')
   await ensureDiscoveredPackages()
 
-  const { applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, describeRewriteRules, injectGlobalAutoImports, loadRouteRedirects, resolveApiBase, resolveApiProxyRules, resolveEmbeddableRules, resolveRedirectRules, resolveRewriteRules, viewClientAddress } = await import('@stacksjs/server')
+  const { applyResponseHeaders, applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, describeRewriteRules, injectGlobalAutoImports, loadRouteRedirects, resolveApiBase, resolveApiProxyRules, resolveEmbeddableRules, resolveRedirectRules, resolveRewriteRules, viewClientAddress } = await import('@stacksjs/server')
   // The one copy of this. It used to be duplicated here verbatim — the shared
   // module was extracted precisely so the dev and production servers could not
   // drift, and then this half kept its own.
@@ -552,7 +552,8 @@ export async function startProductionServer(options?: { port?: string | number, 
           // below this point is GET/HEAD-only page work, but the security
           // headers belong on every response this server makes - a 405 or an
           // error page is still a document a browser will render.
-          const secured = applyViewSecurityHeaders(req, response, embeddableRules)
+          const securityResponse = applyViewSecurityHeaders(req, response, embeddableRules)
+          const secured = applyResponseHeaders(req, securityResponse ?? response, config.server?.headers) ?? securityResponse
 
           const method = req.method.toUpperCase()
           if (method !== 'GET' && method !== 'HEAD')
