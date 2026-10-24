@@ -82,3 +82,39 @@ test('invalid budgets reject before a child can create its marker', async () => 
     }
   })
 })
+
+for (const stream of ['stdout', 'stderr'] as const) {
+  for (const bytes of [[0xC3, 0x28], [0xE2, 0x82]]) {
+    test(`strict UTF-8 rejects ${stream} bytes ${bytes.join(',')} and reaps a live producer`, async () => {
+      await fixture(async (directory, args) => {
+        const script = join(directory, 'encoding.ts'), pid = join(directory, 'encoding.pid')
+        const fd = stream === 'stdout' ? 1 : 2
+        await writeFile(script, `import { writeSync, closeSync } from 'node:fs'; await Bun.write(${JSON.stringify(pid)}, String(process.pid)); writeSync(${fd}, new Uint8Array(${JSON.stringify(bytes)})); closeSync(${fd}); await Bun.sleep(60000)`)
+        await expect(runBoundedProcess([...args, script], { ...options, timeoutMs: 5000, strictUtf8: true })).rejects.toThrow(TypeError)
+        const producer = Number(await readFile(pid, 'utf8'))
+        expect(Number.isSafeInteger(producer)).toBe(true)
+        expect(() => process.kill(producer, 0)).toThrow()
+      })
+    }, 10000)
+  }
+}
+
+test('strict UTF-8 preserves a BOM and a multibyte character split across writes', async () => {
+  await fixture(async (directory, args) => {
+    const script = join(directory, 'valid-encoding.ts')
+    await writeFile(script, "import { writeSync } from 'node:fs'; for (const byte of [239,187,191,226,130,172,10]) { writeSync(1, new Uint8Array([byte])); await Bun.sleep(1) }")
+    const result = await runBoundedProcess([...args, script], { ...options, timeoutMs: 5000, strictUtf8: true })
+    expect(result).toEqual({ exitCode: 0, stdout: '\uFEFF€\n', stderr: '' })
+  })
+})
+
+test('default and explicitly permissive capture retain BOMs and replacement decoding on both streams', async () => {
+  await fixture(async (directory, args) => {
+    const script = join(directory, 'permissive-encoding.ts')
+    await writeFile(script, "import { writeSync } from 'node:fs'; for (const fd of [1,2]) writeSync(fd, new Uint8Array([239,187,191,195,40]))")
+    for (const mode of [{}, { strictUtf8: false }]) {
+      const result = await runBoundedProcess([...args, script], { ...options, ...mode, timeoutMs: 5000 })
+      expect(result).toEqual({ exitCode: 0, stdout: '\uFEFF�(', stderr: '\uFEFF�(' })
+    }
+  })
+})
