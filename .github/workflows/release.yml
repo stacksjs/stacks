@@ -352,15 +352,6 @@ jobs:
           cd "$smoke_dir"
           echo '{"name":"stacks-release-smoke","private":true}' > package.json
 
-          # Does the registry itself list this exact version? Asked of the
-          # source of truth rather than of an installer reading a cache, which
-          # is the whole distinction this step turns on.
-          registry_has() {
-            code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 \
-              "https://registry.npmjs.org/$1/$2" 2>/dev/null || echo 000)"
-            [ "$code" = "200" ]
-          }
-
           installed=false
           attempts=30
           for attempt in $(seq 1 "$attempts"); do
@@ -416,35 +407,17 @@ jobs:
             exit 0
           fi
 
-          # The budget is gone. Decide what actually happened.
-          waiting_on="$(grep -oE 'for specifier "[^"]+"' install.log | sed 's/for specifier //; s/"//g' | sort -u)"
-          [ -n "$waiting_on" ] || waiting_on="stacks"
-
-          missing=""
-          for pkg in $waiting_on; do
-            registry_has "$pkg" "$version" || missing="$missing $pkg"
-          done
-
-          if [ -n "$missing" ]; then
-            cat install.log
-            echo "::error::stacks@$version is incomplete - the registry has no$missing at $version. The publish lost a package; re-run the release."
-            exit 1
-          fi
-
-          # Every version the installer wanted is in the registry, so what we
-          # published is correct and complete and only the edges are behind.
-          # Say so loudly and let the release finish: the steps below this one
-          # ship the GitHub release assets, and skipping those over a slow CDN
-          # is a worse outcome than a warning nobody had to act on.
+          # Metadata alone does not prove that a consumer can fetch the
+          # archives, resolve the graph, and execute the installed CLI.
           cat install.log
-          echo "::warning::stacks@$version is published and complete, but npm had not propagated it to this runner within the retry budget. Every awaited version exists in the registry ($(echo $waiting_on | tr '\n' ' ')). Continuing; no action needed."
+          echo "::error::stacks@$version could not be installed and verified from a clean project after $attempts attempts. Publication requires investigation before this release can be accepted."
           {
-            echo "### Release verification"
+            echo "### Release verification failed"
             echo ""
-            echo "\`stacks@$version\` published successfully. The clean-project install did not"
-            echo "resolve within the retry budget, but every awaited version is present in the"
-            echo "registry, so this is npm propagation rather than a bad artifact."
+            echo "Clean-project installation of \`stacks@$version\` did not succeed within the retry budget."
+            echo "Registry metadata alone cannot establish that the published framework is usable."
           } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
 
       - name: Publish Dummy Libraries
         run: ./storage/framework/scripts/publish-dummy-libs
