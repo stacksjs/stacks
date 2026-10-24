@@ -1,5 +1,31 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.285...v0.75.286)
+
+## ✨ Features
+
+- share owned voice recordings across browser and native hosts ([ee89816](https://github.com/stacksjs/stacks/commit/ee89816)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- allow durable direct checkout retry keys ([0c173eb](https://github.com/stacksjs/stacks/commit/0c173eb)) _(by Chris Breuer <chris@stacksjs.com>)_
+- retain the published voice recorder type contract ([122a389](https://github.com/stacksjs/stacks/commit/122a389)) _(by Chris Breuer <chris@stacksjs.com>)_
+- decode seekable phone audio without retaining uploads ([3728ec9](https://github.com/stacksjs/stacks/commit/3728ec9)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- reject external media references in voice uploads ([6f3cb52](https://github.com/stacksjs/stacks/commit/6f3cb52)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- align framework packages on STX 0.2.679 ([6bea322](https://github.com/stacksjs/stacks/commit/6bea322)) _(by Chris Breuer <chris@stacksjs.com>)_
+- refresh the STX workspace Pantry lock ([5801c1c](https://github.com/stacksjs/stacks/commit/5801c1c)) _(by Chris Breuer <chris@stacksjs.com>)_
+- align framework packages on STX 0.2.678 ([149694c](https://github.com/stacksjs/stacks/commit/149694c)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.284...v0.75.285)
 
 ## ✨ Features
