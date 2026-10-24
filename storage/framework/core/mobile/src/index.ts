@@ -568,3 +568,6 @@ export const mobile: MobileApi = {
   onReady: onMobileReady,
   withFeedback: withNativeFeedback,
 }
+
+export { createVoiceRecorder } from './voice-recorder'
+export type { VoiceRecorderOptions, VoiceRecorderSnapshot, VoiceRecorderStatus } from './voice-recorder'
