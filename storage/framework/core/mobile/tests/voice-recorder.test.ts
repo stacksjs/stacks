@@ -1,5 +1,6 @@
+import { NativeFormData } from '@stacksjs/stx/native/runtime/jsc-globals'
 import { expect, test } from 'bun:test'
-import { createVoiceRecorder } from '../src/voice-recorder'
+import { createVoiceRecorder, voiceRecordingFormData } from '../src/voice-recorder'
 
 test('recording cancellation owns delayed permissions and releases every track', async () => {
   const original = Object.getOwnPropertyDescriptor(globalThis, 'navigator')
@@ -97,5 +98,32 @@ test('native recordings keep their file until upload and cancel by owner after a
   finally {
     if (previous) Object.defineProperty(globalThis, 'window', previous)
     else Reflect.deleteProperty(globalThis, 'window')
+  }
+})
+
+test('recording uploads preserve browser blobs and reject native descriptors on a browser host', async () => {
+  const audio = new Blob(['recorded'], { type: 'audio/wav' })
+  const form = voiceRecordingFormData(audio, { client_key: 'voice-request' })
+  expect(await (form.get('audio') as File).text()).toBe('recorded')
+  expect(form.get('client_key')).toBe('voice-request')
+  expect(() => voiceRecordingFormData({ path: '/private/voice.m4a', name: 'voice.m4a', type: 'audio/mp4', size: 300, durationSeconds: 2 })).toThrow('native upload host')
+})
+
+test('recording uploads use the actual native FormData file contract', () => {
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'window')
+  const previousForm = Object.getOwnPropertyDescriptor(globalThis, 'FormData')
+  const audio = { path: '/private/voice.m4a', name: 'voice.m4a', type: 'audio/mp4', size: 300, durationSeconds: 2 }
+  Object.defineProperty(globalThis, 'window', { configurable: true, value: { craft: { audioRecording: { stop: async () => audio } } } })
+  try {
+    expect(() => voiceRecordingFormData(audio)).toThrow('did not preserve')
+    Object.defineProperty(globalThis, 'FormData', { configurable: true, value: NativeFormData })
+    const form = voiceRecordingFormData(audio, { product_id: '2' })
+    expect(form.get('audio')).toMatchObject({ path: audio.path, type: 'audio/mp4' })
+    expect(form.get('product_id')).toBe('2')
+  }
+  finally {
+    if (previous) Object.defineProperty(globalThis, 'window', previous)
+    else Reflect.deleteProperty(globalThis, 'window')
+    if (previousForm) Object.defineProperty(globalThis, 'FormData', previousForm)
   }
 })

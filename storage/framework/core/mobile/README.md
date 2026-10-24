@@ -544,7 +544,10 @@ owned workout recovery requires the registered-ID protocol.
 owned microphone session for a browser or a native screen. Subscribe to its
 `idle`, `requesting`, `recording`, `ready` and `error` snapshots, call `start()`
 from a user gesture, then `stop()`. A ready snapshot contains a browser `Blob`
-or a native file descriptor suitable for the native `FormData` upload bridge.
+or a native file descriptor. `voiceRecordingFormData(audio, { client_key })`
+builds a multipart body through the current host, preserving a native file
+descriptor instead of coercing it to a browser Blob. The helper rejects a
+native descriptor if the upload host would turn it into text.
 Call `cancel()` after the upload or when switching accounts, and `dispose()`
 when the screen ends. Both release the microphone and discard the retained
 recording; late permission answers cannot start an abandoned session.

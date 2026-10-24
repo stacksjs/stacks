@@ -120,3 +120,23 @@ export function createVoiceRecorder(options: VoiceRecorderOptions = {}): VoiceRe
     subscribe(listener: (value: VoiceRecorderSnapshot) => void) { listeners.add(listener); listener({ ...snapshot }); return () => { listeners.delete(listener) } },
   }
 }
+
+/** Build an upload using the host's real FormData; native recordings remain file descriptors. */
+export function voiceRecordingFormData(audio: Blob | NativeVoiceFile, fields: Record<string, string> = {}, name = 'audio'): FormData {
+  if (!name || Object.hasOwn(fields, name)) throw new TypeError('Use a distinct recording field name')
+  const form = new FormData()
+  if (typeof Blob !== 'undefined' && audio instanceof Blob) form.append(name, audio, 'feedback')
+  else {
+    if (!audio || !('path' in audio) || typeof audio.path !== 'string' || !audio.path || !nativeFunctionNow('audioRecording.stop')) throw new TypeError('A native recording requires its native upload host')
+    // STX's native FormData accepts NativeFile, while the DOM overload accepts
+    // Blob. Invoke the native contract without pretending a file is a Blob.
+    Reflect.apply(form.append, form, [name, audio])
+    const stored = form.get(name)
+    if (!stored || typeof stored !== 'object' || !('path' in stored) || stored.path !== audio.path) throw new TypeError('The upload host did not preserve the native recording file')
+  }
+  for (const [field, value] of Object.entries(fields)) {
+    if (typeof value !== 'string') throw new TypeError('Upload fields must be strings')
+    form.append(field, value)
+  }
+  return form
+}

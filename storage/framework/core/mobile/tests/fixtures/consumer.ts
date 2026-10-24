@@ -57,7 +57,7 @@ function verifyOwnedNativeApis() {
 void verifyOwnedNativeApis
 
 // The published voice factory retains callable methods and typed snapshots.
-import { createVoiceRecorder } from '@stacksjs/mobile'
+import { createVoiceRecorder, voiceRecordingFormData } from '@stacksjs/mobile'
 const voiceRecorder = createVoiceRecorder()
 const voiceStart: Promise<void> = voiceRecorder.start()
 const voiceStop: Promise<void> = voiceRecorder.stop()
@@ -69,3 +69,7 @@ voiceRecorder.subscribe(snapshot => {
   void error
 })
 void [voiceStart, voiceStop, voiceStatus]
+
+export function recordingUpload(audio: import('@stacksjs/mobile').NativeVoiceFile): FormData {
+  return voiceRecordingFormData(audio, { client_key: 'recording-upload' })
+}
