@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.295...v0.75.296)
+
+## 🐛 Bug Fixes
+
+- align the complete STX renderer family ([425f85b](https://github.com/stacksjs/stacks/commit/425f85b)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.294...v0.75.295)
 
 ## 🔧 Chores
