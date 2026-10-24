@@ -4013,6 +4013,7 @@ Repair a live database that drifted from the models, without writing migrations 
 | --- | --- | --- | --- |
 | `--apply` | Run the safe repairs, in one transaction | boolean, optional | `false` |
 | `--widen-integers` | Also widen integer columns the models declare as bigint (rewrites those tables) | boolean, optional | `false` |
+| `--relax-constraints` | Also remove obsolete NOT NULL constraints and foreign keys on polymorphic references | boolean, optional | `false` |
 | `-f`, `--force` | With --apply, skip the confirmation | boolean, optional | `false` |
 | `--json` | Emit the plan as JSON | boolean, optional | `false` |
 
