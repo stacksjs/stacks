@@ -23,7 +23,7 @@ jobs:
           ref: 5e7ecd713bf194e2ee54f5b8f2d28861f2f1040c
       - name: Replay the original published action and complete native tool/service inputs
         id: pantry
-        uses: pantry-pm/pantry/packages/action@b03b029482c11bc0ad32998c90a8be2eb7b5cd13 # v0.11.102
+        uses: pantry-pm/pantry/packages/action@91ded221f8de3badd9fc5ab1d4072d561c1eb1d4 # v0.11.126
         with:
           version: 0.11.102
           install: 'false'
