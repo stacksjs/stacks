@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.298...v0.75.299)
+
+## 🐛 Bug Fixes
+
+- install the requested framework release ([6e2c34f](https://github.com/stacksjs/stacks/commit/6e2c34f)) _(by Chris Breuer <chris@stacksjs.com>)_
+- require bunpress message preview support ([6d3b276](https://github.com/stacksjs/stacks/commit/6d3b276)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- regenerate native skills evidence catalog ([19864cc](https://github.com/stacksjs/stacks/commit/19864cc)) _(by Chris Breuer <chris@stacksjs.com>)_
+- refresh documentation dependency lock ([d083e64](https://github.com/stacksjs/stacks/commit/d083e64)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.297...v0.75.298)
 
 ## 🐛 Bug Fixes
