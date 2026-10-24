@@ -665,7 +665,7 @@
       "name": "@stacksjs/docs",
       "version": "0.75.298",
       "dependencies": {
-        "@stacksjs/bunpress": "^0.2.15",
+        "@stacksjs/bunpress": "^0.2.25",
         "@stacksjs/config": "workspace:*",
         "@stacksjs/path": "workspace:*"
       },
