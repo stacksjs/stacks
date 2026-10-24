@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'bun:test'
+import { Database } from 'bun:sqlite'
+import { readFileSync } from 'node:fs'
 import { statementReferencesTable, statementTable, withoutGatedStatements } from '../src/migrations'
 
 // Verbatim from `0000000133-normalize-tag-uniques.sql`, the statement that
@@ -57,6 +59,28 @@ describe('statementReferencesTable', () => {
 })
 
 describe('withoutGatedStatements', () => {
+  it('gates the documented errors backfill without turning its comment into SQL', () => {
+    const sql = readFileSync(new URL('../../../../../database/migrations/1789486698564-backfill-errors-resolution.sql', import.meta.url), 'utf8')
+    expect(withoutGatedStatements(sql, new Set(['errors']))).toBe('')
+  })
+
+  it('preserves quoted semicolons when a documented mixed migration is filtered', () => {
+    const sql = `-- Triage changed; keep application data intact.
+UPDATE errors SET resolution = 'resolved';
+-- The disabled errors table does not own this statement.
+UPDATE users SET name = 'a; -- b';`
+    const out = withoutGatedStatements(sql, new Set(['errors']))
+    const database = new Database(':memory:')
+    try {
+      database.exec("CREATE TABLE users (name TEXT); INSERT INTO users VALUES ('before');")
+      database.exec(out)
+      expect(database.query('SELECT name FROM users').get()).toEqual({ name: 'a; -- b' })
+    }
+    finally {
+      database.close()
+    }
+  })
+
   it('drops a CTE-led UPDATE against a gated table', () => {
     // The #2323 failure. CMS off means `0000000100-create-tags-table.sql` is
     // hidden and `tags` never exists, but this statement was kept and ran,

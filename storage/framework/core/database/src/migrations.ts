@@ -1545,7 +1545,10 @@ export function withoutGatedStatements(sql: string, gated: ReadonlySet<string>):
   if (gated.size === 0)
     return sql
 
-  const statements = sql.split(';').map(s => s.trim()).filter(Boolean)
+  // Comments and quoted semicolons are not statement boundaries. Splitting
+  // them here can turn a disabled migration's documentation into executable
+  // SQL, or change a kept statement's stored string value during reassembly.
+  const statements = sqlStatementsOf(sql)
   const kept = statements.filter((statement) => {
     // A rebuild's temp-table statements resolve to the table being rebuilt, so
     // every statement in the block gates together (stacksjs/stacks#2534).
