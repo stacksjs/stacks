@@ -5,7 +5,7 @@ import { homedir } from 'node:os'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
-import { runAction } from '@stacksjs/actions'
+import { runAction } from '@stacksjs/actions/run-action'
 import { assertPublicationAllowed } from '@stacksjs/actions/publication-preflight'
 import { italic, onUnknownSubcommand, outro, prompts } from "@stacksjs/cli"
 import { app, dns as dnsConfig, email as emailConfig } from '@stacksjs/config'
@@ -20,7 +20,6 @@ import { withDeployNotification } from '../deploy-notify'
 import type { DeploymentRevisionCheck } from '../deployment-revision'
 import { assertCurrentDeploymentRevision, assertNotBehindLiveRelease, automatedDeploymentRevision, liveReleasesCommand } from '../deployment-revision'
 import { dnsCredentialFix, envFileForEnvironment, resolveZoneNameservers } from '../dns-credentials'
-import { ensureAppKey, ensureDeployEnvIsSet, ensureEnvIsSet } from './setup'
 import { resultFailed } from '../result'
 import { findUnbackedManagedServices, hasOffsiteBackupDestination, unbackedDataMessage } from '../unbacked-data'
 import { applyDeploymentDomainOverride, createDeploymentPreview, deploymentPreviewJsonPrefix, formatDeploymentPreview, resolveDeploymentEnvironment } from './deploy-preview'
@@ -220,6 +219,9 @@ async function findPantryMailBinary(): Promise<string | null> {
 }
 
 async function ensureDeployPrerequisites(verbose = false, environment = 'production'): Promise<void> {
+  // Setup loads the development/build toolchain. Publication policy must run
+  // before any deployment prerequisites are loaded or executed.
+  const { ensureAppKey, ensureDeployEnvIsSet, ensureEnvIsSet } = await import('./setup')
   const cwd = p.projectPath()
 
   await ensureEnvIsSet({ cwd, verbose })

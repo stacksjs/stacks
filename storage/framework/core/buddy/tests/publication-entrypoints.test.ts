@@ -25,7 +25,7 @@ function iosFixture(root: string) {
   git(root, 'commit', '-qm', 'fixture')
 }
 
-async function command(args: string[], setup?: (root: string) => void) {
+async function command(args: string[], setup?: (root: string) => void, guardStartup = false) {
   const checkout = resolve(import.meta.dir, '../../../../..')
   const root = mkdtempSync(join(tmpdir(), 'buddy-publication-entry-'))
   try {
@@ -34,6 +34,16 @@ async function command(args: string[], setup?: (root: string) => void) {
     setup?.(root)
     const head = existsSync(join(root, '.git')) ? git(root, 'rev-parse', 'HEAD') : undefined
     const runner = join(root, 'buddy.ts')
+    const startupGuard = join(root, 'startup-guard.ts')
+    if (guardStartup) {
+      // Observe actual runtime module loads in the child without replacing any
+      // deployment implementation or changing the original startup deadline.
+      writeFileSync(startupGuard, `Bun.plugin({ setup(build) {
+  build.onLoad({ filter: /[\\\\/]core[\\\\/](?:actions[\\\\/]src[\\\\/]index|buddy[\\\\/]src[\\\\/]commands[\\\\/](?:setup|dev))\\.ts$/ }, (args) => {
+    throw new Error('Publication startup loaded deployment machinery: ' + args.path)
+  })
+} })`)
+    }
     writeFileSync(runner, `import { cli } from ${JSON.stringify(join(checkout, 'storage/framework/core/cli/src/index.ts'))}
 import { release } from ${JSON.stringify(join(checkout, 'storage/framework/core/buddy/src/commands/release.ts'))}
 import { deploy } from ${JSON.stringify(join(checkout, 'storage/framework/core/buddy/src/commands/deploy.ts'))}
@@ -44,7 +54,8 @@ deploy(buddy)
 await buddy.parse()
 `)
     const child = Bun.spawn([
-      process.execPath, '--no-env-file', '--tsconfig-override', join(checkout, 'storage/framework/tsconfig.framework.json'), runner, ...args,
+      process.execPath, '--no-env-file', '--tsconfig-override', join(checkout, 'storage/framework/tsconfig.framework.json'),
+      ...(guardStartup ? ['--preload', startupGuard] : []), runner, ...args,
     ], { cwd: root, env: { ...publicationEnvironment(), GIT_TRACE: join(root, 'git-trace.log') }, stdout: 'pipe', stderr: 'pipe', timeout: 10_000 })
     const [code, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
     return {
@@ -57,6 +68,13 @@ await buddy.parse()
     rmSync(root, { recursive: true, force: true })
   }
 }
+
+test.each(['deploy', 'deploy:preview'])('%s rejects policy before loading deployment machinery', async (name) => {
+  const result = await command(name === 'deploy' ? [name] : [name, 'policy-fixture'], undefined, true)
+  expect(result.output).not.toContain('Publication startup loaded deployment machinery:')
+  expect(result.output).toContain('publication:check failed with exit code 9')
+  expect(result.ran).toBe(true)
+}, 15_000)
 
 for (const args of [
   ['deploy'], ['deploy:preview', 'policy-fixture'], ['release:ios'], ['release:github', 'fixture-tag'],
