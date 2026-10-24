@@ -1,5 +1,22 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.289...v0.75.290)
+
+## 🐛 Bug Fixes
+
+- adopt verified Craft 329 for native builds ([82b7ed4](https://github.com/stacksjs/stacks/commit/82b7ed4)) _(by Chris <chris@stacksjs.com>)_
+- align all direct STX runtimes during framework upgrades ([888293a](https://github.com/stacksjs/stacks/commit/888293a)) _(by Chris <chris@stacksjs.com>)_
+- keep all shipped STX runtime packages aligned ([7ae3207](https://github.com/stacksjs/stacks/commit/7ae3207)) _(by Chris <chris@stacksjs.com>)_
+- send native navigation keys in browser scenarios ([a8774bb](https://github.com/stacksjs/stacks/commit/a8774bb)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- record verified STX 682 publication ([7ede3dc](https://github.com/stacksjs/stacks/commit/7ede3dc)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.288...v0.75.289)
 
 ## 🐛 Bug Fixes
