@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "verifiedConsumerCommit": "7a582e062e5a676bbc215e95fcf011850f580282",
+  "plan": "upstream-tooling-126-686-330-plan.json",
+  "receipt": "upstream-tooling-126-686-330-receipt.json",
+  "scope": "Successful verification of all nine installed upstream tooling packages and all five framework checks at the stated consumer source commit. This historical receipt does not qualify later dependency changes.",
+  "frameworkSourceCI": 40115592747,
+  "frameworkSourceCIConclusion": "success",
+  "upstreamVersions": {
+    "ts-pantry": "0.11.126",
+    "pickier": "0.1.77",
+    "stxAllSix": "0.2.686",
+    "craft-native": "0.0.330"
+  }
+}
