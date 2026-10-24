@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.284...v0.75.285)
+
+## ✨ Features
+
+- add bounded disposable voice recording ([aeb3aa2](https://github.com/stacksjs/stacks/commit/aeb3aa2)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh voice recorder native references ([e031dbe](https://github.com/stacksjs/stacks/commit/e031dbe)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.283...v0.75.284)
 
 ## ✨ Features
