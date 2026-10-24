@@ -1,5 +1,28 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.283...v0.75.284)
+
+## ✨ Features
+
+- validate and bound speech audio before transcription ([64193ba](https://github.com/stacksjs/stacks/commit/64193ba)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **native**: adopt fully verified Craft 0.0.319 ([5998c86](https://github.com/stacksjs/stacks/commit/5998c86)) _(by Chris <chris@stacksjs.com>)_
+- **bootstrap**: align the Pantry installer with verified CI ([e2bd50b](https://github.com/stacksjs/stacks/commit/e2bd50b)) _(by Chris <chris@stacksjs.com>)_
+- **tooling**: adopt verified Pantry setup failure handling ([b51e5eb](https://github.com/stacksjs/stacks/commit/b51e5eb)) _(by Chris <chris@stacksjs.com>)_
+- **database**: preserve SQL boundaries when gating migrations ([801f002](https://github.com/stacksjs/stacks/commit/801f002)) _(by Chris <chris@stacksjs.com>)_
+- **release**: retain verified provenance publication receipts ([5f2044b](https://github.com/stacksjs/stacks/commit/5f2044b)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh native audio capability references ([d30605e](https://github.com/stacksjs/stacks/commit/d30605e)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.282...v0.75.283)
 
 ## 🐛 Bug Fixes
