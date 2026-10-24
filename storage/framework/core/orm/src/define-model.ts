@@ -2494,7 +2494,13 @@ export type ModelSearchStatics<TDef> = TDef extends { traits: { useSearch: infer
   }
   : {}
 
-export type StacksModelStatic<TDef extends ModelDefinition> = Omit<QueryModel<TDef>, 'update' | 'delete' | 'paginate'> & TDef & TraitMethods & ModelSearchStatics<TDef> & {
+/** Static soft-delete policies exist only when a supported trait flag is enabled. */
+export type ModelSoftDeleteStatics<TDef> = TDef extends
+  { traits: { useSoftDeletes: true | object } } | { traits: { softDeletable: true | object } }
+  ? Pick<ReturnType<typeof createSoftDeleteMethods>, 'softDelete' | 'restore' | 'forceDelete'>
+  : {}
+
+export type StacksModelStatic<TDef extends ModelDefinition> = Omit<QueryModel<TDef>, 'update' | 'delete' | 'paginate' | keyof ModelSoftDeleteStatics<TDef>> & TDef & TraitMethods & ModelSearchStatics<TDef> & ModelSoftDeleteStatics<TDef> & {
   readonly [MODEL_DEFINITION]: TDef
   paginate: (perPage?: number, page?: number) => Promise<Paginator<Awaited<ReturnType<QueryModel<TDef>['paginate']>>['data'][number]>>
   update: (id: number | string, data: ModelWriteData<TDef>) => ReturnType<QueryModel<TDef>['find']>
@@ -2663,7 +2669,8 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
   // `delete` it installs survives any later wrapping. We also gate
   // entirely on the trait flag — without it, models keep their
   // existing hard-delete semantics.
-  const softDeleteFlag = (definition as { traits?: { useSoftDeletes?: unknown } }).traits?.useSoftDeletes
+  const softDeleteTraits = (definition as { traits?: { useSoftDeletes?: unknown, softDeletable?: unknown } }).traits
+  const softDeleteFlag = softDeleteTraits?.useSoftDeletes || softDeleteTraits?.softDeletable
   if (softDeleteFlag) {
     applySoftDeletes(baseModel, defWithHooks as BQBModelDefinition, softDeleteFlag)
   }
