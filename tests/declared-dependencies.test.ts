@@ -74,6 +74,24 @@ describe('published package dependencies', () => {
     expect(packages.length).toBeGreaterThan(50)
   })
 
+  it('ships one STX release across compiler, runtime, desktop and sanitizer declarations', async () => {
+    const root = await Bun.file(join(import.meta.dir, '../package.json')).json()
+    const umbrella = await Bun.file(join(coreDir, 'package.json')).json()
+    const expected = root.dependencies['@stacksjs/stx']
+    expect(expected).toMatch(/^\d+\.\d+\.\d+(?:-[\w.-]+)?$/)
+    const runtimePackages = new Set(['@stacksjs/stx', '@stacksjs/components', 'bun-plugin-stx', '@stacksjs/desktop', '@stacksjs/sanitizer', 'stx-router'])
+    const mismatched: string[] = []
+    for (const manifest of [root, umbrella, ...packages.map(pkg => pkg.json)]) {
+      for (const field of ['dependencies', 'devDependencies', 'optionalDependencies']) {
+        for (const [name, version] of Object.entries(manifest[field] ?? {})) {
+          if (runtimePackages.has(name) && version !== expected)
+            mismatched.push(`${manifest.name}: ${field}.${name} is ${version}; expected ${expected}`)
+        }
+      }
+    }
+    expect(mismatched.sort()).toEqual([])
+  })
+
   it('declares every package its source imports', async () => {
     const undeclared: string[] = []
 

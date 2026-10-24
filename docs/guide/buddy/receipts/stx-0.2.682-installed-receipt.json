@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-24T12:01:19.455Z",
+  "sources": [
+    {
+      "repository": "stacksjs/stx",
+      "commit": "9cc3d0aaf3859ce902a8bdec31964c3d9c91b374",
+      "tag": "v0.2.682",
+      "gates": [
+        {
+          "runId": 40074269291,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "typecheck",
+            "test",
+            "native-signing",
+            "lint",
+            "publish-commit"
+          ]
+        },
+        {
+          "runId": 40074269243,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "icons",
+            "Verify native signing on macOS 15",
+            "Verify the exact release source",
+            "npm"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "@stacksjs/desktop",
+          "version": "0.2.682",
+          "integrity": "sha512-lsYJoW4xaSAVsPDURaWBYQRL79AGCygVHsPsHPoFRi0zIHP+25qFNAKZaI9kDIhAiLvSH3FDaG+vzUYJ2FBU5Q==",
+          "tarball": "https://registry.npmjs.org/@stacksjs/desktop/-/desktop-0.2.682.tgz",
+          "bytes": 109006,
+          "filesSha256": "e917b70c409305349332b70702fcd3a54ec2bec439dcc4534ce5bc5bf937c0b9"
+        },
+        {
+          "name": "@stacksjs/sanitizer",
+          "version": "0.2.682",
+          "integrity": "sha512-nnrkIEk+/KnJQEQbVeG1yegvPbcgKV0+7UMu2svAaJaEFGX2SDw/CW0TSlYTjO9alfilCR7mUeYNHh9BgWX/Fg==",
+          "tarball": "https://registry.npmjs.org/@stacksjs/sanitizer/-/sanitizer-0.2.682.tgz",
+          "bytes": 4744,
+          "filesSha256": "c6b4f886a5ced9695a1247daac8cc6d9794e6166784eadd1802a98b434fa9558"
+        },
+        {
+          "name": "stx-router",
+          "version": "0.2.682",
+          "integrity": "sha512-Ru5XFdkruvX9QW/5w0VgIL6UQIxuD2dta5YPAc2mXbp/SB04emMokzWuqqCJVVJcX3Fxt+/Xk7/DGbygWtjVJA==",
+          "tarball": "https://registry.npmjs.org/stx-router/-/stx-router-0.2.682.tgz",
+          "bytes": 82882,
+          "filesSha256": "5816fc742572a759df288032e77ef3e7fc4ceb5708b76eeb7254effd1c45fb61"
+        },
+        {
+          "name": "bun-plugin-stx",
+          "version": "0.2.682",
+          "integrity": "sha512-ZGb1pjxQPUVYnGQqg7lSUTd2tMWo6OE1S9AYWUHC/xbu+/mlqTukRZBkzFVO5b47awJ2LOCXueZ1sdIus1pOhQ==",
+          "tarball": "https://registry.npmjs.org/bun-plugin-stx/-/bun-plugin-stx-0.2.682.tgz",
+          "bytes": 126380,
+          "filesSha256": "7fd07148014a00eb7ae8c4bbb546cbcc5439b85d8ca10d6435d6b175b790af62"
+        },
+        {
+          "name": "@stacksjs/stx",
+          "version": "0.2.682",
+          "integrity": "sha512-OtpTkXm1+4N1xy4YdjwMxyQweTnyWLb7wG1dmrVvHpf93CkUPyK+7K1VrlgIS1QdFnOhZaxzOwmKJzgkqQ5aQQ==",
+          "tarball": "https://registry.npmjs.org/@stacksjs/stx/-/stx-0.2.682.tgz",
+          "bytes": 2303868,
+          "filesSha256": "aa023f44f1469ff2457e41644e4e1c75e9cbe3f0b9f165379d9f73274fe798b7"
+        },
+        {
+          "name": "@stacksjs/components",
+          "version": "0.2.682",
+          "integrity": "sha512-FI7HN2OnoT0xm/L8oV1vvbwM4d2KsBFDCAlLWsZpv57zLypQTsy9gsDQZ4MrSbtdVqGVAROZ8Sf/POWOzBVU/w==",
+          "tarball": "https://registry.npmjs.org/@stacksjs/components/-/components-0.2.682.tgz",
+          "bytes": 561268,
+          "filesSha256": "06004faadb2608403835086442864d732b47959baf5dbec52dc83d7d2be68ab4"
+        }
+      ],
+      "releaseCommand": "bun run release:patch",
+      "releaseScript": "bun x --bun @stacksjs/bumpx patch --recursive --yes"
+    }
+  ],
+  "consumer": {
+    "lockfile": "bun.lock",
+    "sha256": "2441077c90fc8f9cef176e385d07ceeaf331b54c5673bd6e75a4176900d1016f",
+    "bunVersion": "1.4.4",
+    "checks": [
+      {
+        "script": "deps:lockfile:check",
+        "exitCode": 0,
+        "outputSha256": "b6161bd23541825641d817a5174741c8e2e8ef2cf16573c659876f623abb6b2a"
+      },
+      {
+        "script": "typecheck",
+        "exitCode": 0,
+        "outputSha256": "7f6b465c51258023d6b7e9c378ce20289d7fa5eae1c756633c26e86dfc9c5434"
+      },
+      {
+        "script": "typecheck:app",
+        "exitCode": 0,
+        "outputSha256": "e46796991ae43d3cead77a31bdddd2104a35a1dbeedea0bed160fd8841407ec9"
+      },
+      {
+        "script": "typecheck:views",
+        "exitCode": 0,
+        "outputSha256": "00ed0f17619b3ae7b4ed3aaedc3bfdc45d63f14fe07ca4d2e8d69903482d8c5c"
+      },
+      {
+        "script": "lint",
+        "exitCode": 0,
+        "outputSha256": "b18c197596f81cd0a7cb745dcbb691cfebdd03426f79b961908991fe70caf5c1"
+      }
+    ]
+  }
+}
