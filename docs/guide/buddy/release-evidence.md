@@ -262,3 +262,11 @@ Buddy, Config and Browser Extension now require Pantry SDK 0.11.124. All framewo
 The original published native CLI passed four setup lifecycle tests with 65 assertions and five publication transport cases. Required project setup failures now fail explicit installation, a forced failed setup invalidates the previous completion marker, and optional setup remains optional. Pantry also owns TypeScript configuration values independently of the JSON parser arena. This fixes the invalid free exposed by fresh hosted native tests.
 
 These toolchain checks do not establish native game presentation or Gold Edition fidelity. Registry deployment handover availability remains tracked separately.
+
+## Verified Craft 0.0.319 adoption
+
+The desktop and mobile runtime dependencies and Actions' optional peer now require Craft 0.0.319 or later. The [adoption plan](./receipts/craft-0.0.319-plan.json) and [installed-consumer receipt](./receipts/craft-0.0.319-receipt.json) verify the SDK against its original public archive and every installed file. Normal Bun and Pantry installs regenerated both locks. Lock consistency, framework types, application types, view types and lint passed.
+
+The [publication record](./receipts/craft-0.0.319-publication.json) retains successful exact-source, full mobile and release gates, all eight original npm archives, four original native archives, and a separate normal SDK consumer that resolved and executed the original macOS CLI. The public Zig URL and advertised native hash also passed the maintained graphics fixture with its declared compiler and fresh caches. That fixture checked exact bitmap, terrain, glyph and atomic frame pixels on the CPU. Original iOS Metal evidence retained two passing native tests and three inspected screenshots covering initial presentation, resize and background/resume.
+
+The registry's earlier user-cache failure and the owning Pantry fix remain recorded. These package and native fixture checks leave native game presentation and Gold Edition fidelity unverified.
