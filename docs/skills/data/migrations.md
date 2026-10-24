@@ -61,3 +61,9 @@ The skill has been checked against current source and retained tests. Read its
 entrypoint and linked references for the actual contract; summaries here are
 discovery pointers. [Native capabilities](/skills/platform/native) maps every
 core package and records driver evidence without claiming universal parity.
+
+`migrate:align --relax-constraints` also plans removal of legacy NOT NULL
+constraints where the current model allows null, and foreign keys on polymorphic
+id/type pairs where the model declares no single-table reference. It never makes
+nullable data required or relaxes primary keys. Inspect the plan, then add `--apply`
+to run it. The default continues to report these differences without changing them.

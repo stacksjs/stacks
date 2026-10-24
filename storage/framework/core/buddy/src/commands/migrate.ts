@@ -1750,15 +1750,16 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
     .command('migrate:align', 'Repair a live database that drifted from the models, without writing migrations (PostgreSQL)')
     .option('--apply', 'Run the safe repairs, in one transaction', { default: false })
     .option('--widen-integers', 'Also widen integer columns the models declare as bigint (rewrites those tables)', { default: false })
+    .option('--relax-constraints', 'Also remove obsolete NOT NULL constraints and foreign keys on polymorphic references', { default: false })
     .option('-f, --force', 'With --apply, skip the confirmation', { default: false })
     .option('--json', 'Emit the plan as JSON', { default: false })
-    .action(async (options: { apply?: boolean, widenIntegers?: boolean, force?: boolean, json?: boolean }) => {
+    .action(async (options: { apply?: boolean, widenIntegers?: boolean, relaxConstraints?: boolean, force?: boolean, json?: boolean }) => {
       const perf = options.json ? undefined : await intro('buddy migrate:align')
       const { alignSchema } = await import('@stacksjs/database')
 
       let planned: Awaited<ReturnType<typeof alignSchema>>
       try {
-        planned = await alignSchema({ widenIntegers: options.widenIntegers })
+        planned = await alignSchema({ widenIntegers: options.widenIntegers, relaxConstraints: options.relaxConstraints })
       }
       catch (error) {
         log.syncError(`Could not compare the database with the models: ${error instanceof Error ? error.message : String(error)}`)
@@ -1822,7 +1823,7 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
       try {
         // Planned again rather than replaying the plan above: the database may
         // have moved while the prompt waited.
-        const applied = await alignSchema({ apply: true, widenIntegers: options.widenIntegers })
+        const applied = await alignSchema({ apply: true, widenIntegers: options.widenIntegers, relaxConstraints: options.relaxConstraints })
         await log.success(`Applied ${applied.applied.length} repair(s).`)
         for (const action of applied.plan.refused)
           await log.warn(`Refused: ${action.detail}: ${action.reason}`)

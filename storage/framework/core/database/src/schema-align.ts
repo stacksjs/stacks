@@ -28,7 +28,10 @@
  *     only on request, because it rewrites the table);
  *   - an enum type the model extends gets the new labels.
  *
- * Everything else - extra columns, narrowing, nullability, defaults, an index
+ * With `relaxConstraints`, also remove obsolete NOT NULL constraints when the
+ * model allows null, and foreign keys on polymorphic id/type pairs. Neither
+ * repair deletes data. Tightening nullability always remains report-only.
+ * Everything else - extra columns, narrowing, defaults, an index
  * whose definition differs from its name's - is reported and left alone.
  * Deciding those is a human's job: each one either destroys data or changes
  * what the application is allowed to write.
@@ -118,7 +121,7 @@ export interface LiveAlignSchema {
   populated?: Set<string>
 }
 
-export type AlignActionKind = 'create-enum-type' | 'add-enum-value' | 'add-column' | 'widen-column' | 'rename-index' | 'create-index' | 'add-foreign-key'
+export type AlignActionKind = 'create-enum-type' | 'add-enum-value' | 'add-column' | 'widen-column' | 'rename-index' | 'create-index' | 'add-foreign-key' | 'relax-nullability' | 'drop-polymorphic-foreign-key'
 
 export interface AlignAction {
   kind: AlignActionKind
@@ -388,6 +391,8 @@ export function planSchemaAlignment(
   options: {
     /** Widen integer columns the model declares as bigint (rewrites the table). */
     widenIntegers?: boolean
+    /** Remove legacy constraints the models explicitly no longer require. */
+    relaxConstraints?: boolean
     /** Whether a live type satisfies a declared one, for everything this does not repair itself. */
     typeSatisfies?: (declaredType: string, liveSqlType: string) => boolean
   } = {},
@@ -534,10 +539,17 @@ export function planSchemaAlignment(
         reports.push({ kind: 'type', table, name: column.name, detail: `${table}.${column.name} is ${liveSql}; the model declares ${column.type}` })
       }
 
-      // Nullability: reported, never changed.
+      // Relaxing is lossless and opt-in. Tightening needs a data migration.
       const wantNullable = column.isNullable
       if (wantNullable !== current.nullable) {
-        reports.push({
+        if (options.relaxConstraints && wantNullable && !column.isPrimaryKey) {
+          actions.push({
+            kind: 'relax-nullability', table, name: column.name,
+            detail: `allow NULL in ${table}.${column.name}, as the model declares`,
+            sql: `ALTER TABLE ${quote(table)} ALTER COLUMN ${quote(column.name)} DROP NOT NULL`,
+          })
+        }
+        else reports.push({
           kind: 'nullability',
           table,
           name: column.name,
@@ -647,6 +659,25 @@ export function planSchemaAlignment(
   }
 
   // Foreign keys.
+  const obsolete = new Set<string>()
+  for (const foreignKey of live.foreignKeys) {
+    const columns = desired.tables.get(foreignKey.table)
+    const column = columns?.find(value => value.name === foreignKey.column)
+    const typeColumn = foreignKey.column.replace(/_id$/, '_type')
+    const key = `${foreignKey.table}:${foreignKey.name}`
+    if (!column || column.references || typeColumn === foreignKey.column
+      || !columns?.some(value => value.name === typeColumn) || obsolete.has(key)) continue
+    obsolete.add(key)
+    if (options.relaxConstraints) {
+      actions.push({
+        kind: 'drop-polymorphic-foreign-key', table: foreignKey.table, name: foreignKey.name,
+        detail: `remove ${foreignKey.name}: ${foreignKey.column} has a polymorphic type column`,
+        sql: `ALTER TABLE ${quote(foreignKey.table)} DROP CONSTRAINT ${quote(foreignKey.name)}`,
+      })
+    }
+    else reports.push({ kind: 'foreign-key', table: foreignKey.table, name: foreignKey.name,
+      detail: `${foreignKey.name} constrains a polymorphic reference to one table; use --relax-constraints to remove it` })
+  }
   const foreignKeys: AlignAction[] = []
   for (const [table, columns] of desired.tables) {
     const liveColumns = live.tables.get(table)
@@ -888,6 +919,7 @@ export async function evaluateAlignChecks(plan: AlignmentPlan, run: AlignSqlRunn
 export async function alignSchema(options: {
   apply?: boolean
   widenIntegers?: boolean
+  relaxConstraints?: boolean
   dialect?: string
   /** Read from, and write to, a database other than the configured one. */
   run?: AlignSqlRunner
@@ -929,7 +961,7 @@ export async function alignSchema(options: {
   }
   catch { /* type families are a report nicety; the repairs do not need them */ }
 
-  const plan = planSchemaAlignment(desired, live, { widenIntegers: options.widenIntegers, typeSatisfies })
+  const plan = planSchemaAlignment(desired, live, { widenIntegers: options.widenIntegers, relaxConstraints: options.relaxConstraints, typeSatisfies })
 
   const kept = await evaluateAlignChecks(plan, run)
   plan.actions = kept

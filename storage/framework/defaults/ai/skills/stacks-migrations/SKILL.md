@@ -33,6 +33,7 @@ buddy generate:migrations --dialect all       # the connected dialect and every 
 buddy migrate:regenerate <dialect>  # rebuild the whole corpus from the models
 buddy migrate:status                # corpus vs ledger vs live schema; lists hand-written files
 buddy migrate:align                 # plan repairs of a database that drifted from the models
+buddy migrate:align --relax-constraints # also plan lossless removal of obsolete constraints
 buddy migrate:align --apply         # rename legacy indexes, add missing indexes/FKs/columns, widen losslessly
 ```
 
@@ -237,3 +238,9 @@ lossless widenings; reports everything destructive), then
 - 239 migration files exist by default for all framework models
 - SQLite >= 3.47.2 is required (system requirement)
 - For the database API (queries, connections), see the `stacks-database` skill
+
+`migrate:align --relax-constraints` also plans removal of legacy NOT NULL
+constraints where the current model allows null, and foreign keys on polymorphic
+id/type pairs where the model declares no single-table reference. It never makes
+nullable data required or relaxes primary keys. Inspect the plan, then add `--apply`
+to run it. The default continues to report these differences without changing them.

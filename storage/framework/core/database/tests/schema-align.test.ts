@@ -453,3 +453,44 @@ describe('align checks that cannot be answered yet', () => {
       .rejects.toThrow('connection terminated')
   })
 })
+
+describe('opt-in model constraint relaxation', () => {
+  it('relaxes a legacy NOT NULL only when the model allows NULL and the option is enabled', () => {
+    const [desired, live] = schemas(
+      { tables: new Map([['releases', [column('type')]]]) },
+      { tables: new Map([['releases', new Map([['type', liveColumn('type', 'character varying', { nullable: false })]])]]) },
+    )
+    expect(planSchemaAlignment(desired, live).actions).toHaveLength(0)
+    const plan = planSchemaAlignment(desired, live, { relaxConstraints: true })
+    expect(plan.actions.map(action => action.sql)).toEqual(['ALTER TABLE "releases" ALTER COLUMN "type" DROP NOT NULL'])
+    expect(plan.reports.filter(report => report.kind === 'nullability')).toHaveLength(0)
+  })
+
+  it('never makes nullable data required or relaxes a primary key', () => {
+    const [desired, live] = schemas(
+      { tables: new Map([['records', [column('required', { isNullable: false }), column('id', { isPrimaryKey: true })]]]) },
+      { tables: new Map([['records', new Map([
+        ['required', liveColumn('required', 'text')], ['id', liveColumn('id', 'bigint', { nullable: false })],
+      ])]]) },
+    )
+    const plan = planSchemaAlignment(desired, live, { relaxConstraints: true })
+    expect(plan.actions.filter(action => action.kind === 'relax-nullability')).toHaveLength(0)
+    expect(plan.reports.filter(report => report.kind === 'nullability').map(report => report.name)).toEqual(['required'])
+  })
+
+  it('removes a foreign key on a polymorphic pair without changing its data', () => {
+    const [desired, live] = schemas(
+      { tables: new Map([['comments', [column('subject_id'), column('subject_type')]]]) },
+      { tables: new Map([['comments', new Map([
+        ['subject_id', liveColumn('subject_id', 'integer')], ['subject_type', liveColumn('subject_type', 'text')],
+      ])]]), foreignKeys: [{ name: 'comments_subject_fkey', table: 'comments', column: 'subject_id', refTable: 'issues', refColumn: 'id', onDelete: 'NO ACTION', onUpdate: 'NO ACTION' }] },
+    )
+    expect(planSchemaAlignment(desired, live).actions).toHaveLength(0)
+    const plan = planSchemaAlignment(desired, live, { relaxConstraints: true })
+    expect(plan.actions.map(action => action.sql)).toEqual(['ALTER TABLE "comments" DROP CONSTRAINT "comments_subject_fkey"'])
+    desired.tables.set('comments', [column('subject_id', { references: { table: 'issues', column: 'id' } }), column('subject_type')])
+    expect(planSchemaAlignment(desired, live, { relaxConstraints: true }).actions.filter(action => action.kind === 'drop-polymorphic-foreign-key')).toHaveLength(0)
+    desired.tables.set('comments', [column('subject_id')])
+    expect(planSchemaAlignment(desired, live, { relaxConstraints: true }).actions.filter(action => action.kind === 'drop-polymorphic-foreign-key')).toHaveLength(0)
+  })
+})
