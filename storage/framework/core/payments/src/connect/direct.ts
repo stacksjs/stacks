@@ -162,8 +162,10 @@ export async function connectedCustomer(
 /**
  * A Checkout Session on the connected account, as `manageCheckout.create`
  * makes one on the platform: the user's customer there unless `params` names
- * one, return URLs held to the app's origin, and a fresh idempotency key so a
- * retried request does not open a second session.
+ * one and return URLs held to the app's origin. Persist and pass a request
+ * idempotencyKey to replay one logical attempt with identical parameters.
+ * Without one each call starts a new attempt. Reconcile expired attempts
+ * before reusing a key beyond the provider's retention window.
  *
  * @example
  * await directCheckout(user, gym.stripe_account_id, {
@@ -177,8 +179,10 @@ export async function directCheckout(
   accountId: string,
   params: Stripe.Checkout.SessionCreateParams,
   client: Pick<Stripe, 'customers' | 'checkout'> = stripe,
+  request: { idempotencyKey?: string } = {},
 ): Promise<Stripe.Response<Stripe.Checkout.Session>> {
   requireAccountId(accountId, 'directCheckout')
+  if (request.idempotencyKey !== undefined && (typeof request.idempotencyKey !== 'string' || !/^[\x21-\x7e]{1,255}$/.test(request.idempotencyKey))) throw new TypeError('A checkout idempotency key must contain 1-255 printable ASCII characters')
   assertSameOriginUrl(params.success_url, 'success_url')
   assertSameOriginUrl(params.cancel_url, 'cancel_url')
   const customer = params.customer ?? (params.customer_email ? undefined : (await connectedCustomer(user as any, accountId, client)).id)
@@ -186,10 +190,12 @@ export async function directCheckout(
     mode: 'payment',
     ...params,
     ...(customer ? { customer } : {}),
-  }, asAccount(accountId, { idempotencyKey: freshIdempotencyKey('connect.checkout.create', user.id, accountId) }))
+  }, asAccount(accountId, { idempotencyKey: request.idempotencyKey ?? freshIdempotencyKey('connect.checkout.create', user.id, accountId) }))
 }
 
 export interface DirectSubscriptionCheckoutOptions {
+  /** A durable logical attempt. Replays must use exactly the original options. */
+  idempotencyKey?: string
   /** The merchant's connected account the subscription is made on. */
   account: string
   /** A catalog price on that account (`price_...`) or an inline recurring price. */
@@ -238,7 +244,7 @@ export const manageDirectSubscription: ManageDirectSubscription = (() => {
       ...(options.clientReferenceId ? { client_reference_id: options.clientReferenceId } : {}),
       ...(options.metadata ? { metadata: options.metadata } : {}),
       ...options.sessionParams,
-    }, client)
+    }, client, { idempotencyKey: options.idempotencyKey })
   }
 
   return { subscriptionData, checkout }

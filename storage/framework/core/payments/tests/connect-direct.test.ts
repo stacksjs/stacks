@@ -136,6 +136,15 @@ describe('a direct checkout', () => {
     expect(session.params.customer).toBe('cus_named')
     await expect(directCheckout({ id: 7 } as any, account, { success_url: 'https://evil.example/ok', cancel_url: 'https://stacks.localhost/no' }, client)).rejects.toThrow(/origin/)
   })
+  test('reuses a caller-owned logical checkout attempt without changing its parameters', async () => {
+    const options = { account, customer: 'cus_named', price: { amount: 1999, currency: 'EUR', interval: 'month' as const, productName: 'Running' }, successUrl: 'https://stacks.localhost/ok', cancelUrl: 'https://stacks.localhost/no', idempotencyKey: 'coaching-attempt-1' }
+    const first: any = await manageDirectSubscription.checkout({ id: 7 } as any, options, client)
+    const second: any = await manageDirectSubscription.checkout({ id: 7 } as any, options, client)
+    expect(first.options.idempotencyKey).toBe('coaching-attempt-1')
+    expect(second.options).toEqual(first.options)
+    expect(second.params).toEqual(first.params)
+  })
+
 })
 
 describe('refunding a direct charge', () => {
