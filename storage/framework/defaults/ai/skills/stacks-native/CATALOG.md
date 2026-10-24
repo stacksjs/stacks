@@ -17,7 +17,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/analytics` | [`stacks-analytics`](../stacks-analytics/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/analytics/src/index.ts) | 6 |
 | `@stacksjs/api` | [`stacks-api`](../stacks-api/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/api/src/index.ts) | 9 |
 | `@stacksjs/arrays` | [`stacks-arrays`](../stacks-arrays/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/arrays/src/index.ts) | 6 |
-| `@stacksjs/audio` | [`stacks-audio`](../stacks-audio/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/audio/src/index.ts) | 2 |
+| `@stacksjs/audio` | [`stacks-audio`](../stacks-audio/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/audio/src/index.ts) | 3 |
 | `@stacksjs/auth` | [`stacks-auth`](../stacks-auth/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/auth/src/index.ts) | 120 |
 | `@stacksjs/browser` | [`stacks-browser`](../stacks-browser/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/browser/src/index.ts) | 8 |
 | `@stacksjs/browser-extension` | [`stacks-browser-extension`](../stacks-browser-extension/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/browser-extension/src/index.ts) | 7 |
@@ -173,9 +173,11 @@ Evidence directory: [6 retained tests](https://github.com/stacksjs/stacks/blob/m
 
 Guidance: [`stacks-audio`](../stacks-audio/SKILL.md). Source: [storage/framework/core/audio/src/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/audio/src/index.ts).
 
-Declared runtime exports: `AudioBuilder`, `assertAudioPlanExecutable`, `audio`, `audioResponseHeaders`, `createProtectedAudioPlaylist`, `createWaveform`, `negotiateAudioOutput`, `normalizeTranscript`, `processAudioPlan`, `recommendAudioBitrate`, `signAudioAsset`, `verifyAudioAsset`.
+Declared runtime exports: `AudioBuilder`, `assertAudioPlanExecutable`, `audio`, `audioResponseHeaders`, `createProtectedAudioPlaylist`, `createWaveform`, `negotiateAudioOutput`, `normalizeTranscript`, `prepareSpeechAudio`, `processAudioPlan`, `recommendAudioBitrate`, `signAudioAsset`, `verifyAudioAsset`.
 
-Evidence directory: [2 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/audio/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Local source modules: [src/speech-input.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/audio/src/speech-input.ts).
+
+Evidence directory: [3 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/audio/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/auth
 
