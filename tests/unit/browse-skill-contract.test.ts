@@ -114,6 +114,28 @@ describe('browse skill contract', () => {
     }
   })
 
+  test('delivers native virtual key codes for browser navigation and editing', async () => {
+    const block = script.slice(script.indexOf("  if (step.action === 'press')"), script.indexOf("  if (step.action === 'evaluate')"))
+    const press = new Function('cdp', 'step', `return (async () => { ${block} })()`)
+    for (const [key, keyCode] of [['ArrowLeft', 37], ['ArrowUp', 38], ['ArrowRight', 39], ['ArrowDown', 40], ['Home', 36], ['End', 35], ['PageUp', 33], ['PageDown', 34], ['Backspace', 8], ['Delete', 46], ['Insert', 45]] as const) {
+      const events: Record<string, unknown>[] = []
+      await press({ send: async (method: string, event: Record<string, unknown>) => { expect(method).toBe('Input.dispatchKeyEvent'); events.push(event) } }, { action: 'press', key })
+      expect(events).toHaveLength(2)
+      expect(events[0]).toMatchObject({ type: 'keyDown', key, code: key, windowsVirtualKeyCode: keyCode })
+      expect(events[1]).toMatchObject({ type: 'keyUp', key, code: key, windowsVirtualKeyCode: keyCode })
+      expect(events[0]?.text).toBeUndefined()
+      expect(events[1]?.text).toBeUndefined()
+    }
+  })
+
+  test('rejects an unsupported named key before dispatching a false successful press', async () => {
+    const block = script.slice(script.indexOf("  if (step.action === 'press')"), script.indexOf("  if (step.action === 'evaluate')"))
+    const press = new Function('cdp', 'step', `return (async () => { ${block} })()`)
+    const events: unknown[] = []
+    await expect(press({ send: async (...event: unknown[]) => { events.push(event) } }, { action: 'press', key: 'ArrowDwon' })).rejects.toThrow('Unsupported scenario key')
+    expect(events).toEqual([])
+  })
+
   test('uses isolated page targets and relaunches a failed browser session', () => {
     const crawl = script.slice(script.indexOf("else if (command === 'crawl')"))
     const connection = crawl.indexOf('let browserPage = await createPage(session.port)')

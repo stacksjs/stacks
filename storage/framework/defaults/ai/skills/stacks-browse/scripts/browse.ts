@@ -701,7 +701,15 @@ export async function runScenarioStep(cdp: Pick<Cdp, 'send'>, step: ScenarioStep
 
   if (step.action === 'press') {
     const key = step.key || ''
-    const keyCode = key.length === 1 ? key.charCodeAt(0) : ({ Enter: 13, Escape: 27, Tab: 9 }[key] || 0)
+    // CDP's key name alone does not perform native navigation or scrolling.
+    // Supply the matching virtual key on both events, as a real keyboard does.
+    const keyCode = key.length === 1 ? key.charCodeAt(0) : ({
+      Backspace: 8, Tab: 9, Enter: 13, Escape: 27,
+      PageUp: 33, PageDown: 34, End: 35, Home: 36,
+      ArrowLeft: 37, ArrowUp: 38, ArrowRight: 39, ArrowDown: 40,
+      Insert: 45, Delete: 46,
+    }[key] || 0)
+    if (!keyCode) throw new Error(`Unsupported scenario key: ${JSON.stringify(key)}`)
     // Enter's text generates the keypress that activates native buttons/forms.
     const text = key === 'Enter' ? '\r' : undefined
     await cdp.send('Input.dispatchKeyEvent', { type: 'keyDown', key, code: key, windowsVirtualKeyCode: keyCode, text, unmodifiedText: text })
