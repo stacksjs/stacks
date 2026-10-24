@@ -42,3 +42,14 @@ test('phone M4A containers with their index after the audio can be decoded', asy
   expect(prepared.durationSeconds).toBeGreaterThanOrEqual(60)
   expect(prepared.durationSeconds).toBeLessThan(60.1)
 })
+
+test('seekable upload decoding cannot fetch a playlist’s external segments', async () => {
+  let requests = 0
+  const server = Bun.serve({ port: 0, fetch() { requests++; return new Response('not audio') } })
+  try {
+    const playlist = new TextEncoder().encode(`#EXTM3U\n#EXT-X-TARGETDURATION:1\n#EXTINF:1,\nhttp://127.0.0.1:${server.port}/private-audio.ts\n#EXT-X-ENDLIST\n`)
+    await expect(prepareSpeechAudio(playlist)).rejects.toThrow()
+    expect(requests).toBe(0)
+  }
+  finally { await server.stop(true) }
+})
