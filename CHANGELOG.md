@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.294...v0.75.295)
+
+## 🔧 Chores
+
+- align Stacks with STX 0.2.687 ([bcce77e](https://github.com/stacksjs/stacks/commit/bcce77e)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.293...v0.75.294)
 
 ## 🔧 Chores
