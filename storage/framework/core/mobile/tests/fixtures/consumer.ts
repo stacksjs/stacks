@@ -55,3 +55,17 @@ function verifyOwnedNativeApis() {
   heartRate.acknowledgeRecording({ expectedId: 42 })
 }
 void verifyOwnedNativeApis
+
+// The published voice factory retains callable methods and typed snapshots.
+import { createVoiceRecorder } from '@stacksjs/mobile'
+const voiceRecorder = createVoiceRecorder()
+const voiceStart: Promise<void> = voiceRecorder.start()
+const voiceStop: Promise<void> = voiceRecorder.stop()
+voiceRecorder.cancel()
+voiceRecorder.dispose()
+const voiceStatus: string = voiceRecorder.snapshot().status
+voiceRecorder.subscribe(snapshot => {
+  const error: string | null = snapshot.error
+  void error
+})
+void [voiceStart, voiceStop, voiceStatus]

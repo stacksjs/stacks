@@ -5,7 +5,18 @@ export type VoiceRecorderStatus = 'idle' | 'requesting' | 'recording' | 'ready' 
 export interface NativeVoiceFile { path: string, name: string, type: string, size: number, durationSeconds: number }
 export interface VoiceRecorderSnapshot { status: VoiceRecorderStatus, audio: Blob | NativeVoiceFile | null, error: string | null }
 
-export function createVoiceRecorder(options: VoiceRecorderOptions = {}) {
+/** Stable public contract shared by browser and native recording hosts. */
+export interface VoiceRecorder {
+  start: () => Promise<void>
+  stop: () => Promise<void>
+  cancel: () => void
+  dispose: () => void
+  supported: () => boolean
+  snapshot: () => VoiceRecorderSnapshot
+  subscribe: (listener: (value: VoiceRecorderSnapshot) => void) => () => void
+}
+
+export function createVoiceRecorder(options: VoiceRecorderOptions = {}): VoiceRecorder {
   const maxSeconds = options.maxSeconds ?? 300
   const maxBytes = options.maxBytes ?? 12 * 1024 * 1024
   if (![maxSeconds, maxBytes].every(value => Number.isSafeInteger(value) && value > 0) || maxSeconds > 300) throw new TypeError('Invalid voice recording limits')
