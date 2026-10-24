@@ -25,6 +25,7 @@ const result = await runBoundedProcess(['git', 'rev-parse', 'HEAD'], {
   stdoutBytes: 65536,
   stderrBytes: 65536,
   label: 'Source revision',
+  strictUtf8: true,
 })
 
 if (result.exitCode !== 0)
@@ -33,6 +34,9 @@ if (result.exitCode !== 0)
 
 All three limits are required positive integers. Timeouts are at most 120,000 ms;
 each stream is capped at 2,000,000 bytes before UTF-8 decoding. Stdin is ignored.
+Set `strictUtf8: true` to reject malformed or truncated UTF-8 on either stream,
+including when the producer is still running. Valid text retains its byte-order
+mark. Omit the option or pass `false` to keep replacement decoding.
 Output overflow, read errors and deadlines reject after owned cleanup. Original
 failure values and cleanup errors are retained without coercing them to strings.
 On POSIX the command gets its own process group, which is terminated on completion

@@ -5,6 +5,8 @@ export interface BoundedProcessOptions {
   stdoutBytes: number
   stderrBytes: number
   label: string
+  /** Reject malformed UTF-8 on either stream. Valid text keeps its BOM. */
+  strictUtf8?: boolean
 }
 
 export interface BoundedProcessResult {
@@ -46,7 +48,12 @@ export async function runBoundedProcess(command: string[], options: BoundedProce
     try {
       while (true) {
         const { done, value } = await reader.read()
-        if (done) return Buffer.concat(chunks, bytes).toString('utf8')
+        if (done) {
+          const output = Buffer.concat(chunks, bytes)
+          return options.strictUtf8 === true
+            ? new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(output)
+            : output.toString('utf8')
+        }
         if (value.byteLength > limit - bytes) {
           const error = new Error(`${options.label} ${label} exceeds byte limit`)
           stop(error, `${label} exceeds byte limit`)
@@ -68,7 +75,9 @@ export async function runBoundedProcess(command: string[], options: BoundedProce
   catch (error) { stop(error); throw error }
   finally {
     clearTimeout(timer)
-    terminate()
+    // A failure already terminated this owned group. Killing again can race
+    // Bun's exit notification and report EPERM for the reaped child.
+    if (!stopped) terminate()
     if (child.exitCode === null) stop(new Error(`${options.label} interrupted`))
     await Promise.allSettled([child.exited, stdout, stderr, ...cancellations])
     for (const reader of readers) {
