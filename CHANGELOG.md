@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.296...v0.75.297)
+
+## 🐛 Bug Fixes
+
+- recover partial framework and frontend installs on upgrade ([db55ddb](https://github.com/stacksjs/stacks/commit/db55ddb)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- retain verified upstream publication evidence ([97732c2](https://github.com/stacksjs/stacks/commit/97732c2)) _(by Chris <chris@stacksjs.com>)_
+
+## 🎉 Miscellaneous
+
+- Merge remote-tracking branch 'origin/main' into codex/upgrade-install-recovery ([bd56d56](https://github.com/stacksjs/stacks/commit/bd56d56)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.295...v0.75.296)
 
 ## 🐛 Bug Fixes
