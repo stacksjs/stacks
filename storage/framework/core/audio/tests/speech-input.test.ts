@@ -35,3 +35,10 @@ test('speech preparation respects cancellation before launching the decoder', as
   controller.abort()
   await expect(prepareSpeechAudio(wav(1), { signal: controller.signal })).rejects.toThrow()
 })
+
+test('phone M4A containers with their index after the audio can be decoded', async () => {
+  const bytes = new Uint8Array(await Bun.file(import.meta.dir + '/fixtures/voice.m4a').arrayBuffer())
+  const prepared = await prepareSpeechAudio(bytes)
+  expect(prepared.durationSeconds).toBeGreaterThanOrEqual(60)
+  expect(prepared.durationSeconds).toBeLessThan(60.1)
+})

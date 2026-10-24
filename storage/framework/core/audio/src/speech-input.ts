@@ -25,7 +25,10 @@ export async function prepareSpeechAudio(input: Uint8Array, options: SpeechAudio
   if (!executable) throw new Error('Speech audio preparation needs FFmpeg installed on the server')
   // No filenames, external protocols, playlists or shell interpolation. Decode
   // one second beyond the limit so a falsely short container header cannot pass.
-  const child = Bun.spawn([executable, '-nostdin', '-hide_banner', '-v', 'error', '-threads', '1', '-protocol_whitelist', 'pipe', '-i', 'pipe:0', '-map', '0:a:0', '-vn', '-t', String(maxDuration + 1), '-ac', '1', '-ar', '16000', '-c:a', 'pcm_s16le', '-f', 'wav', 'pipe:1'], { stdin: new Blob([new Uint8Array(input)]), stdout: 'pipe', stderr: 'pipe' })
+  // Phone M4A indexes may follow the media: FFmpeg's bounded cache protocol
+  // makes the input seekable using its anonymous temporary file. Only the
+  // supplied pipe is readable; external files and network protocols stay denied.
+  const child = Bun.spawn([executable, '-nostdin', '-hide_banner', '-v', 'error', '-threads', '1', '-protocol_whitelist', 'cache,pipe', '-read_ahead_limit', String(Math.min(maxBytes, 2147483647)), '-i', 'cache:pipe:0', '-map', '0:a:0', '-vn', '-t', String(maxDuration + 1), '-ac', '1', '-ar', '16000', '-c:a', 'pcm_s16le', '-f', 'wav', 'pipe:1'], { stdin: new Blob([new Uint8Array(input)]), stdout: 'pipe', stderr: 'pipe' })
   let timedOut = false
   const stop = () => { if (child.exitCode === null) child.kill('SIGKILL') }
   const timer = setTimeout(() => {
