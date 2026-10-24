@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.286...v0.75.287)
+
+## 🐛 Bug Fixes
+
+- defer deployment setup until publication policy passes ([9298f57](https://github.com/stacksjs/stacks/commit/9298f57)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- merge verified Pantry tooling into coaching release ([02eaaf8](https://github.com/stacksjs/stacks/commit/02eaaf8)) _(by Chris Breuer <chris@stacksjs.com>)_
+- adopt verified Pantry 0.11.126 source and packages ([2a51025](https://github.com/stacksjs/stacks/commit/2a51025)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.285...v0.75.286)
 
 ## ✨ Features
