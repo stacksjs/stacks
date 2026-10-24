@@ -12,6 +12,7 @@ const result = await importModelDocuments(modelOption)
 if (result?.isErr) {
   console.error(result.error)
   await log.error('Import to search engine failed', result.error)
+  process.exit(1)
 }
 
 process.exit(0)

@@ -3,14 +3,13 @@ import type { Model } from '@stacksjs/types'
 import { err, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { getTableName } from '@stacksjs/orm'
-import { path } from '@stacksjs/path'
 import { useSearchEngine } from '@stacksjs/search-engine'
-import { globSync } from '@stacksjs/storage'
+import { searchModelFiles } from './models'
 import { searchIndexName, settingsFromSearchTrait } from './trait-settings'
 
 export async function updateIndexSettings(): Promise<Result<string, string>> {
   try {
-    const modelFiles = globSync([path.userModelsPath('*.ts'), path.defaultsPath('app/Models/**/*.ts')], { absolute: true })
+    const modelFiles = await searchModelFiles()
     const { updateSettings } = useSearchEngine()
 
     for (const model of modelFiles) {
