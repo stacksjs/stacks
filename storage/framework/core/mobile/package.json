@@ -40,7 +40,7 @@
   "dependencies": {
     "@bughq/sdk": "^0.3.0",
     "@stacksjs/types": "workspace:*",
-    "craft-native": ">=0.0.329"
+    "craft-native": ">=0.0.330"
   },
   "devDependencies": {
     "@stacksjs/build": "workspace:*",
