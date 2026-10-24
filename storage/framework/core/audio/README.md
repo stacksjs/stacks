@@ -68,3 +68,7 @@ Native HLS AES-128 uses Web Crypto. Proprietary DRM metadata is accepted only fo
 The library player includes play, seek, time, mute, volume, speed, settings, waveform seeking, AirPlay, and Remote Playback. Native audio controls remain available before custom elements load and when JavaScript is unavailable.
 
 `drm` accepts the same Widevine, PlayReady and FairPlay descriptors as `<Video>` and applies them to DASH sources. `artwork` supplies a cover image; `crossorigin` controls media CORS.
+
+## Bounded speech uploads
+
+`prepareSpeechAudio(bytes, { maxBytes, maxDurationSeconds, timeoutMs, signal })` decodes an untrusted upload to mono 16 kHz PCM WAV, measures the decoded samples and refuses audio beyond the duration limit. Defaults are 12 MiB input, five minutes and a 30-second decoder deadline. Install FFmpeg in the server runtime; an absent decoder is an explicit error. The decoder reads and writes pipes, disables external input protocols, bounds both output streams, and keeps no temporary recording files. `decoderPath` is a deployment option, never HTTP input.

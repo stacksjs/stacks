@@ -1,4 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
+export { prepareSpeechAudio } from './speech-input'
+export type { SpeechAudioOptions, PreparedSpeechAudio } from './speech-input'
 
 export type AudioFormat = 'opus' | 'aac' | 'mp3'
 export type AudioContent = 'speech' | 'music' | 'general'
