@@ -1,0 +1,475 @@
+{
+  "schemaVersion": 1,
+  "version": "0.0.330",
+  "maintainedReleaseCommand": "bun run release:patch",
+  "originalNpmPackages": 8,
+  "originalNativeArchives": 4,
+  "originalZigPackageVerified": true,
+  "unchangedPublicZigColdConsumerPassed": true,
+  "installedSdkOriginalFullTreeAndExact50RequiredJobsPassed": true,
+  "actualOriginalMacCliExecutedThroughSdkPathResolution": true,
+  "iosNativeMetalTests": 2,
+  "macNativeMetalUITests": 1,
+  "nativeScreenshotsPersonallyInspected": 6,
+  "sourceReceipt": "installed-sdk-receipt.json",
+  "limitations": [
+    "Vulkan implementation belongs to subsequent source work and is not present in this release.",
+    "Full native game integration and Gold Edition fidelity remain unfinished."
+  ],
+  "verifiedAt": "2026-10-24T17:16:16.210345+00:00",
+  "repository": "craft-native/craft",
+  "tag": "v0.0.330",
+  "commit": "5407363b43b6240377c56ceed75e308a39554cf8",
+  "workflows": [
+    {
+      "runId": 40106747905,
+      "workflow": ".github/workflows/release.yml",
+      "requiredJobs": [
+        "validate release identity",
+        "accept exact native runtimes",
+        "accept exact release source",
+        "release-sbom / generate",
+        "release-sbom / vulnerability-scan",
+        "verify and stage npm packages",
+        "pantry (darwin-arm64)",
+        "pantry (linux-x86-64)",
+        "verify downloaded linux-x64",
+        "verify downloaded windows-x64",
+        "verify downloaded darwin-arm64",
+        "attach and verify release SBOMs",
+        "verify release assets",
+        "verify downloaded darwin-x64",
+        "publish complete verified release",
+        "publish verified Zig package to pantry",
+        "npm",
+        "notify registry and channel after publication"
+      ]
+    },
+    {
+      "runId": 40106747661,
+      "workflow": ".github/workflows/ci.yml",
+      "requiredJobs": [
+        "windows-multi-window",
+        "Vulkan SDK ABI (windows-latest)",
+        "create-craft",
+        "typescript-sdk",
+        "Vulkan SDK ABI (macos-latest)",
+        "android-builder",
+        "Vulkan SDK ABI (ubuntu-latest)",
+        "lint",
+        "zig-core (macos-latest)",
+        "Android SDK emulator",
+        "ts-maps",
+        "ios-native-templates",
+        "zig-core (ubuntu-latest)",
+        "ios-builder",
+        "integration",
+        "publish-commit"
+      ]
+    },
+    {
+      "runId": 40106747701,
+      "workflow": ".github/workflows/mobile-e2e.yml",
+      "requiredJobs": [
+        "iOS hybrid navigation",
+        "Harness unit tests",
+        "android-navigation (34)",
+        "iOS simulator",
+        "iOS Zig runtime slice",
+        "iOS native Metal surface",
+        "android-navigation (35)",
+        "Android emulator",
+        "iOS native UI (uikit)",
+        "iOS native UI (navigation-ui-core)",
+        "media-cache / ios",
+        "media-cache / android",
+        "iOS native UI (navigation-unit)",
+        "media-cache / sdk",
+        "iOS native UI (navigation-ui-controls)",
+        "Mobile E2E summary"
+      ]
+    }
+  ],
+  "npm": {
+    "packages": [
+      {
+        "name": "@craft-native/android",
+        "version": "0.0.330",
+        "shasum": "f1a0866847cab710713e700e3faaeb292348359e",
+        "integrity": "sha512-Oj6HesdxCUWKxUqiBOLjJa4gx1HNuvwc7S45BGkv2H29aPaLP3mVnbGuW5JvN6pU2dlGf0w23708coO3SFBfZw==",
+        "originalFile": "1.tgz",
+        "originalSha256": "0d8652f404bc934a208f48b1f81981b57d3d45fbde997d59d3feae09cd13e96f",
+        "file": "_craft-native_android-0.0.330.tgz",
+        "bytes": 400440,
+        "sha256": "0d8652f404bc934a208f48b1f81981b57d3d45fbde997d59d3feae09cd13e96f",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      },
+      {
+        "name": "@craft-native/ios",
+        "version": "0.0.330",
+        "shasum": "3bcdebb4a6b237524ebab2d61dd8b958e1425da9",
+        "integrity": "sha512-BOf5X67LEKUYLUgCY5XYnW3fUQhhU23ZBz5yb671oCXazHMPV/vds/KzZ/sdHEx4c2VXXNyeADJgsmV2VyqPjw==",
+        "originalFile": "2.tgz",
+        "originalSha256": "1cc15cdd6dfebe282695347c9ec96f9283bf20a598e922124a30e8963b1a4266",
+        "file": "_craft-native_ios-0.0.330.tgz",
+        "bytes": 518420,
+        "sha256": "1cc15cdd6dfebe282695347c9ec96f9283bf20a598e922124a30e8963b1a4266",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      },
+      {
+        "name": "craft-native",
+        "version": "0.0.330",
+        "shasum": "713b1f45d0a041d42a51a9738c9581d5f362b365",
+        "integrity": "sha512-m48b+dBRQb4b8Ax92UtT85MQmIoI7ILzTdCVrj/4LkKeKjXovZuckgZtRs8znnMZlCmhh5d8gyVnuWuqxZjfDQ==",
+        "originalFile": "0.tgz",
+        "originalSha256": "a04c61a8cb95b06fb6c55aa00523dcc1e1113a9f6d6477aae8478c6ba653c279",
+        "file": "craft-native-0.0.330.tgz",
+        "bytes": 1340801,
+        "sha256": "a04c61a8cb95b06fb6c55aa00523dcc1e1113a9f6d6477aae8478c6ba653c279",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      },
+      {
+        "name": "@craft-native/react",
+        "version": "0.0.330",
+        "shasum": "1e56ffeff621c987dcf64e10302c5ac28cdd580b",
+        "integrity": "sha512-CNbYdH8MKgEEImJf7aIaSJcayZdmp74hD5SPycZSaupevjnL9PYN0gArvv2BOTRrWea1rxNOcfa/j62BhGPHSg==",
+        "originalFile": "3.tgz",
+        "originalSha256": "186fd7e203c637a8eccb43db7df4ad3c04ef363036f506d92a2f3463df7aeb15",
+        "file": "_craft-native_react-0.0.330.tgz",
+        "bytes": 8762,
+        "sha256": "186fd7e203c637a8eccb43db7df4ad3c04ef363036f506d92a2f3463df7aeb15",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      },
+      {
+        "name": "@craft-native/svelte",
+        "version": "0.0.330",
+        "shasum": "c4cbc66955a13cef06dda268ebf30da57223d962",
+        "integrity": "sha512-DwJ9M+w+POJngEyxRW6T6Tv0tGhvMdEv0L23a8RXYF0s7tv83Z2yuMJ4IGNvaWRdgbRTAjb6pGqMfzTViYjaGg==",
+        "originalFile": "4.tgz",
+        "originalSha256": "b576781b39ba9601a491d98260af50090dc06a5b548885e8a9d08e339afe994a",
+        "file": "_craft-native_svelte-0.0.330.tgz",
+        "bytes": 7007,
+        "sha256": "b576781b39ba9601a491d98260af50090dc06a5b548885e8a9d08e339afe994a",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      },
+      {
+        "name": "@craft-native/vue",
+        "version": "0.0.330",
+        "shasum": "4d29102010f7125595aeb09c9e16ea6194c8b628",
+        "integrity": "sha512-frIq8xX0+N1o12bH6xEMcTSkBvyIobvRtEPQrlmKDNukGDnpETxPxOj4toGjC4R+OCkJ4Jz5/kVIqNmTxoe/kQ==",
+        "originalFile": "6.tgz",
+        "originalSha256": "d423edd952e24fb28fc71f8c6b1398292caf49b12de7131f6e06e2155b6d3fbd",
+        "file": "_craft-native_vue-0.0.330.tgz",
+        "bytes": 7813,
+        "sha256": "d423edd952e24fb28fc71f8c6b1398292caf49b12de7131f6e06e2155b6d3fbd",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      },
+      {
+        "name": "create-craft",
+        "version": "0.0.330",
+        "shasum": "6a8e8beb60044f39946126012e3398cb4631ad96",
+        "integrity": "sha512-AGkQ7wqMcX0jf2GlXix7mGfpEyamjYKDJM6SatME44kWpAsJKVg67+zozfQT8X3Ycmysfy/de4nLn/iplnx16Q==",
+        "originalFile": "7.tgz",
+        "originalSha256": "e568a0f38b5997e5f182f675e139afadccb44e2de813247fcb7225d6164f17a0",
+        "file": "create-craft-0.0.330.tgz",
+        "bytes": 5966,
+        "sha256": "e568a0f38b5997e5f182f675e139afadccb44e2de813247fcb7225d6164f17a0",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      },
+      {
+        "name": "@craft-native/ts-maps",
+        "version": "0.0.330",
+        "shasum": "e490260bd1b7fabdb9c91b1add9019ad6bf5ec26",
+        "integrity": "sha512-P9iIee4mgzMJrjykiahKNPgoOotU5Ct135Ud/aES/DhCEUvUz6uQ/baPSAcMjkGoz4O7BiE8fEpDX0MrMmphnQ==",
+        "originalFile": "5.tgz",
+        "originalSha256": "81047d81f9b85c04edfa8b6e254afcabc77b0a2844682f52af1a68697bdbba68",
+        "file": "_craft-native_ts-maps-0.0.330.tgz",
+        "bytes": 546332,
+        "sha256": "81047d81f9b85c04edfa8b6e254afcabc77b0a2844682f52af1a68697bdbba68",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      }
+    ],
+    "failures": []
+  },
+  "native": {
+    "tag": "v0.0.330",
+    "source": "5407363b43b6240377c56ceed75e308a39554cf8",
+    "manifestSha256": "b5b21970bb51107a9254cfa7a62fabce29806d8f99f7cfba2219886e1b2a4131",
+    "archives": [
+      {
+        "name": "craft-darwin-arm64.zip",
+        "size": 4844285,
+        "sha256": "3c401d32385608273691288c68bac471d528b34e8a1e0c12cf07ca1f42b21ec6",
+        "matchedOriginalManifestAndGithubDigest": true,
+        "zipCrcEntriesAndArchitectureVerified": true
+      },
+      {
+        "name": "craft-darwin-x64.zip",
+        "size": 5364178,
+        "sha256": "ccf63c6fd4658f581e4b5c62d4bfa902240884012dde9084bf0c665e7adeaa19",
+        "matchedOriginalManifestAndGithubDigest": true,
+        "zipCrcEntriesAndArchitectureVerified": true
+      },
+      {
+        "name": "craft-linux-x64.zip",
+        "size": 5550547,
+        "sha256": "3ab40eed4698b650ef8163fa087c07b045521cd659b29447730cc7d2c4e66cf0",
+        "matchedOriginalManifestAndGithubDigest": true,
+        "zipCrcEntriesAndArchitectureVerified": true
+      },
+      {
+        "name": "craft-windows-x64.zip",
+        "size": 5819128,
+        "sha256": "3d223a8087d23867997204b8752db2313c06fa280aa9cdb0b33e1af2549877a1",
+        "matchedOriginalManifestAndGithubDigest": true,
+        "zipCrcEntriesAndArchitectureVerified": true
+      }
+    ]
+  },
+  "zig": {
+    "source": "5407363b43b6240377c56ceed75e308a39554cf8",
+    "publisher": {
+      "success": true,
+      "message": "Published craft@0.0.330",
+      "hash": "craft-0.0.330-HIz1i553PwEw6LNX0gdUAoj1XJ81mGcDSKk_ueVb5NFd",
+      "artifactSha256": "85787c958c252aeafa08508d78f8740b1a7fdb9fbeac8361ddecc737126897f1",
+      "tarballUrl": "https://pantry.dev/zig/packages/craft/0.0.330/tarball",
+      "fetchCommand": "zig fetch --save 'https://pantry.dev/zig/packages/craft/0.0.330/tarball'",
+      "dependency": ".craft = .{\n    .url = \"https://pantry.dev/zig/packages/craft/0.0.330/tarball\",\n    .hash = \"craft-0.0.330-HIz1i553PwEw6LNX0gdUAoj1XJ81mGcDSKk_ueVb5NFd\",\n},",
+      "scan": {
+        "verdict": "clean",
+        "engine": "clamav",
+        "scannedAt": "2026-10-24T16:33:29.577Z",
+        "durationMs": 5999,
+        "artifactSha256": "85787c958c252aeafa08508d78f8740b1a7fdb9fbeac8361ddecc737126897f1"
+      }
+    },
+    "bytes": 4939916,
+    "fullOriginalSha256Matched": true,
+    "verifiedAt": "2026-10-24T17:08:20.155Z"
+  },
+  "installedSdk": {
+    "schemaVersion": 1,
+    "verifiedAt": "2026-10-24T17:14:35.364Z",
+    "sources": [
+      {
+        "repository": "craft-native/craft",
+        "commit": "5407363b43b6240377c56ceed75e308a39554cf8",
+        "tag": "v0.0.330",
+        "gates": [
+          {
+            "runId": 40106747905,
+            "workflow": ".github/workflows/release.yml",
+            "requiredJobs": [
+              "validate release identity",
+              "accept exact native runtimes",
+              "accept exact release source",
+              "release-sbom / generate",
+              "release-sbom / vulnerability-scan",
+              "verify and stage npm packages",
+              "pantry (darwin-arm64)",
+              "pantry (linux-x86-64)",
+              "verify downloaded linux-x64",
+              "verify downloaded windows-x64",
+              "verify downloaded darwin-arm64",
+              "attach and verify release SBOMs",
+              "verify release assets",
+              "verify downloaded darwin-x64",
+              "publish complete verified release",
+              "publish verified Zig package to pantry",
+              "npm",
+              "notify registry and channel after publication"
+            ]
+          },
+          {
+            "runId": 40106747661,
+            "workflow": ".github/workflows/ci.yml",
+            "requiredJobs": [
+              "windows-multi-window",
+              "Vulkan SDK ABI (windows-latest)",
+              "create-craft",
+              "typescript-sdk",
+              "Vulkan SDK ABI (macos-latest)",
+              "android-builder",
+              "Vulkan SDK ABI (ubuntu-latest)",
+              "lint",
+              "zig-core (macos-latest)",
+              "Android SDK emulator",
+              "ts-maps",
+              "ios-native-templates",
+              "zig-core (ubuntu-latest)",
+              "ios-builder",
+              "integration",
+              "publish-commit"
+            ]
+          },
+          {
+            "runId": 40106747701,
+            "workflow": ".github/workflows/mobile-e2e.yml",
+            "requiredJobs": [
+              "iOS hybrid navigation",
+              "Harness unit tests",
+              "android-navigation (34)",
+              "iOS simulator",
+              "iOS Zig runtime slice",
+              "iOS native Metal surface",
+              "android-navigation (35)",
+              "Android emulator",
+              "iOS native UI (uikit)",
+              "iOS native UI (navigation-ui-core)",
+              "media-cache / ios",
+              "media-cache / android",
+              "iOS native UI (navigation-unit)",
+              "media-cache / sdk",
+              "iOS native UI (navigation-ui-controls)",
+              "Mobile E2E summary"
+            ]
+          }
+        ],
+        "packages": [
+          {
+            "name": "craft-native",
+            "version": "0.0.330",
+            "integrity": "sha512-m48b+dBRQb4b8Ax92UtT85MQmIoI7ILzTdCVrj/4LkKeKjXovZuckgZtRs8znnMZlCmhh5d8gyVnuWuqxZjfDQ==",
+            "tarball": "https://registry.npmjs.org/craft-native/-/craft-native-0.0.330.tgz",
+            "bytes": 1340801,
+            "filesSha256": "217305c79b8e81c894a5643be07a64b562a8d4579ab489576e6655f1ca8e6aa5"
+          }
+        ],
+        "releaseCommand": "bun run release:patch",
+        "releaseScript": "bun scripts/release-version.ts --preflight && bun x --bun @stacksjs/bumpx patch --recursive --commit --tag --push --yes --no-changelog --execute \"bun scripts/release-version.ts --pending && bun scripts/generate-release-changelog.ts && git add CHANGELOG.md\""
+      }
+    ],
+    "consumer": {
+      "lockfile": "bun.lock",
+      "sha256": "8307d5a10a2015f788eba13942f8dcde726bc28ff56a0c9a8fb074c8b7ff6dad",
+      "bunVersion": "1.4.4",
+      "checks": [
+        {
+          "script": "verify:native",
+          "exitCode": 0,
+          "outputSha256": "5b26ef0f806bb351a6244c513042cef7afff090be235803632b0e36a429bf37d"
+        }
+      ]
+    }
+  },
+  "iosMetal": {
+    "schemaVersion": 1,
+    "source": "5407363b43b6240377c56ceed75e308a39554cf8",
+    "runId": 40106747701,
+    "artifactId": 12564678540,
+    "originalArtifactSha256": "0d04ed368b5c0f9e89e32a0b96d587ac8a635839d3092465f1edf397e1635858",
+    "completeBytesAndZipCrcVerified": true,
+    "actualNativeTestsPassed": 2,
+    "failed": 0,
+    "skipped": 0,
+    "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-26-2",
+    "screenshots": [
+      {
+        "name": "Native Metal resumed frame_0_A7E44094-C757-4076-84D3-200DE5EFC593.png",
+        "file": "5B1EBC1E-1F4A-47B1-ABDE-2A546797C89D.png",
+        "sha256": "d369580b42356d4116ceee8401678b365ca8bd4e45a01ed3910776a2d7ae9d41",
+        "width": 1206,
+        "height": 2622,
+        "personallyInspected": true
+      },
+      {
+        "name": "Native Metal resized frame_0_9057F79B-F495-4429-BFFA-D6A0D3A4BE12.png",
+        "file": "7AAD6BAB-8079-44EC-8C1F-112791C0CB3C.png",
+        "sha256": "7a65d57ca38f3542e223d92cb0411f96604c917bd37bff95ea61fd6a3c9a6419",
+        "width": 1206,
+        "height": 2622,
+        "personallyInspected": true
+      },
+      {
+        "name": "Native Metal initial frame_0_39E003F9-714D-4CE9-8E25-CFCF78D50E01.png",
+        "file": "D86EA844-5719-453B-B506-45835E19F1C9.png",
+        "sha256": "24f879a80b63a869b9aad608b4d69706b0e06f418b61b173e2c182479104fc5d",
+        "width": 1206,
+        "height": 2622,
+        "personallyInspected": true
+      }
+    ],
+    "inspected": true,
+    "observed": "Original XCTest captures show first-party colored quadrants at frame60, resized frame61 and continued presentation after background/resume at62.",
+    "scope": "Native Metal fixture only. Full native game and Gold fidelity remain unfinished.",
+    "verifiedAt": "2026-10-24T17:13:14.456883+00:00"
+  },
+  "macMetal": {
+    "source": "5407363b43b6240377c56ceed75e308a39554cf8",
+    "artifact": 12565227606,
+    "originalZipSha256": "sha256:6cf3680c4b413cec804c05fa2353f2a7f9eed39975e0e55aefd893173b46c351",
+    "originalZipBytes": 95383,
+    "originalZipCrcPassed": true,
+    "exactCommittedHarnessSurfaceFixtureHashes": true,
+    "rawSourceDirty": true,
+    "rawStatus": "?? artifacts/native-metal-macos/run-j4eAax/verification.json\n",
+    "trackedSourceUnchanged": true,
+    "actualXCTest": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "db556573707de9b397ebeb429f696a355b9ad34f",
+            "deviceName": "My Mac",
+            "modelName": "Apple Virtual Machine 1",
+            "osBuildNumber": "25G83",
+            "osVersion": "26.6.2",
+            "platform": "macOS"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 1,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "MacMetalSurfaceFixture \u00b7 Built with macOS 26.6.2",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1792856085.85,
+      "passedTests": 1,
+      "result": "Passed",
+      "skippedTests": 0,
+      "startTime": 1792856064.61,
+      "statistics": [],
+      "testFailures": [],
+      "title": "Test - MacMetalSurfaceFixture",
+      "topInsights": [],
+      "totalTestCount": 1
+    },
+    "applicationsDisposed": true,
+    "workspaceDisposed": true,
+    "visualInspection": "All3 original exported captures personally inspected",
+    "scope": "Native AppKit Metal fixture only. Not native game rendering.",
+    "frames": [
+      {
+        "file": "attachments/4DE2080A-1009-4EB2-A75C-5FA23917F458.png",
+        "sha256": "c7d74255ed3ae9e703fd40321b18a4fe39d28c6760c6e759447985ee219ebcff",
+        "bytes": 5120,
+        "width": 256,
+        "height": 192,
+        "personallyInspected": true
+      },
+      {
+        "file": "attachments/4F48809A-8FE5-4778-B871-88AB3F573937.png",
+        "sha256": "05f1a758e777a8ecb4e939a34d8f1d2c00e0e99750b688bcfd691fce362d998f",
+        "bytes": 4338,
+        "width": 160,
+        "height": 120,
+        "personallyInspected": true
+      },
+      {
+        "file": "attachments/5A01F628-CCB9-4C74-8386-29880CBBEB54.png",
+        "sha256": "452013eab32591679d4a70e8b1c678ae8602a4e42e6bfbe5eaf84a6911e9781b",
+        "bytes": 4336,
+        "width": 160,
+        "height": 120,
+        "personallyInspected": true
+      }
+    ]
+  }
+}
