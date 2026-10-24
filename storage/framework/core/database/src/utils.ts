@@ -411,6 +411,19 @@ export function qbSnapshotDir(): string {
   return snapshotDirForQueryBuilder()
 }
 
+let migrationDirOrigin: { value: string | undefined } | undefined
+
+/**
+ * The user's directory, captured before either connection setup or migration
+ * generation writes a resolved corpus into shared query-builder config.
+ * Capturing only in the generator was too late after MySQL connection setup:
+ * a later Postgres generation inherited the MySQL directory (#2949).
+ */
+export function qbMigrationDir(): string | undefined {
+  migrationDirOrigin ??= { value: queryBuilderConfig.migrationDir }
+  return migrationDirOrigin.value
+}
+
 /**
  * Process-wide query-builder soft-delete filtering must stay disabled.
  *
@@ -579,7 +592,7 @@ function updateQueryBuilderConfig(): void {
     // library default and writes a second copy to `.qb` in the project root -
     // the exact directory moving it was meant to remove.
     snapshotDir: qbSnapshotDir(),
-    migrationDir: relativeMigrationDirectory(resolveMigrationDirectory(toQueryBuilderDialect(dialect), { snapshotDir: qbSnapshotDir() })),
+    migrationDir: relativeMigrationDirectory(resolveMigrationDirectory(toQueryBuilderDialect(dialect), { configured: qbMigrationDir(), snapshotDir: qbSnapshotDir() })),
     timestamps: {
       createdAt: 'created_at',
       updatedAt: 'updated_at',

@@ -19,6 +19,10 @@ The current focus is on stabilizing the core framework:
 - **CLI (Buddy)** - Comprehensive command-line tooling
 - **Cloud Deployment** - AWS deployment automation
 
+### Database Migration Hardening
+
+- [x] Keep each dialect in its own migration corpus after connection setup, including MySQL development with an existing Postgres production corpus.
+
 ## Near Term
 
 ### Enhanced Developer Experience

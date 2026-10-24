@@ -39,7 +39,7 @@ import {
   saveMigrationSnapshot,
   setConfig,
 } from '@stacksjs/query-builder'
-import { db, ensureDatabaseConfigLoaded, qbSnapshotDir, resetDatabaseConnection, resolvedDatabaseConfig } from './utils'
+import { db, ensureDatabaseConfigLoaded, qbMigrationDir, qbSnapshotDir, resetDatabaseConnection, resolvedDatabaseConfig } from './utils'
 import {
   classifyConnectionError,
   createDatabase,
@@ -178,7 +178,7 @@ function getQbDialect(): 'sqlite' | 'mysql' | 'singlestore' | 'vitess' | 'postgr
 
 function migrationDirectory(dialect: string = getQbDialect()): string {
   const committed = resolveMigrationDirectory(dialect, {
-    configured: userMigrationDir(),
+    configured: qbMigrationDir(),
     snapshotDir: qbSnapshotDir(),
   })
   // During a run, the corpus being run is the staged copy (see `stageRunCorpus`).
@@ -231,22 +231,6 @@ function listCorpusEntries(dir: string): string[] {
   catch {
     return []
   }
-}
-
-/**
- * The migration directory the app configured, read before this module wrote
- * its own.
- *
- * `configureQueryBuilder` writes the resolved directory into the shared config,
- * and reading that back as the app's choice pinned every later dialect to the
- * first one's corpus: after a Postgres generate, a MySQL one resolved to
- * `database/migrations/postgres` and deduplicated against it, writing nothing
- * (stacksjs/stacks#2949). Captured on first use, which is before the first write.
- */
-let capturedMigrationDir: { value: string | undefined } | undefined
-function userMigrationDir(): string | undefined {
-  capturedMigrationDir ??= { value: (qbConfig as { migrationDir?: string }).migrationDir }
-  return capturedMigrationDir.value
 }
 
 /**
