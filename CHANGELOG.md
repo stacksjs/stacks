@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.293...v0.75.294)
+
+## 🔧 Chores
+
+- adopt verified Craft 0.0.330 native presentation ([7a582e0](https://github.com/stacksjs/stacks/commit/7a582e0)) _(by Chris <chris@stacksjs.com>)_
+
+## 🎉 Miscellaneous
+
+- Merge remote-tracking branch 'origin/main' into codex/lsu-preview-headers ([8fbb3d8](https://github.com/stacksjs/stacks/commit/8fbb3d8)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.292...v0.75.293)
 
 ## 🐛 Bug Fixes
