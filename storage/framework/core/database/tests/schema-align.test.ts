@@ -455,6 +455,33 @@ describe('align checks that cannot be answered yet', () => {
 })
 
 describe('opt-in model constraint relaxation', () => {
+  it('removes a conflicting parent only after the model reference is enforced', () => {
+    const correct = { name: 'issues_author_id_fkey', table: 'issues', column: 'author_id', refTable: 'users', refColumn: 'id', onDelete: 'NO ACTION', onUpdate: 'NO ACTION' }
+    const wrong = { ...correct, name: 'issues_author_id_fk', refTable: 'authors' }
+    const [desired, live] = schemas(
+      { tables: new Map([['issues', [column('author_id', { type: 'bigint', references: { table: 'users', column: 'id' } })]]]) },
+      { tables: new Map([
+        ['issues', new Map([['author_id', liveColumn('author_id', 'bigint')]])],
+        ['users', new Map([['id', liveColumn('id', 'bigint')]])],
+      ]), foreignKeys: [wrong, correct] },
+    )
+    expect(planSchemaAlignment(desired, live).actions).toEqual([])
+    expect(planSchemaAlignment(desired, live).reports[0]?.name).toBe(wrong.name)
+    const plan = planSchemaAlignment(desired, live, { relaxConstraints: true })
+    expect(plan.actions.map(action => action.sql)).toEqual(['ALTER TABLE "issues" DROP CONSTRAINT "issues_author_id_fk"'])
+    expect(plan.actions[0]?.kind).toBe('drop-conflicting-foreign-key')
+    expect(plan.reports).toEqual([])
+
+    live.foreignKeys = [wrong]
+    const missing = planSchemaAlignment(desired, live, { relaxConstraints: true })
+    expect(missing.actions.map(action => action.kind)).toEqual(['add-foreign-key'])
+    expect(missing.actions[0]?.check?.kind).toBe('orphans')
+    expect(missing.reports[0]?.name).toBe(wrong.name)
+
+    desired.tables.set('issues', [column('author_id')])
+    expect(planSchemaAlignment(desired, live, { relaxConstraints: true }).actions).toEqual([])
+  })
+
   it('relaxes a legacy NOT NULL only when the model allows NULL and the option is enabled', () => {
     const [desired, live] = schemas(
       { tables: new Map([['releases', [column('type')]]]) },

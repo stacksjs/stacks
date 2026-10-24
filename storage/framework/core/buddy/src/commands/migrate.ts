@@ -1750,7 +1750,7 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
     .command('migrate:align', 'Repair a live database that drifted from the models, without writing migrations (PostgreSQL)')
     .option('--apply', 'Run the safe repairs, in one transaction', { default: false })
     .option('--widen-integers', 'Also widen integer columns the models declare as bigint (rewrites those tables)', { default: false })
-    .option('--relax-constraints', 'Also remove obsolete NOT NULL constraints and foreign keys on polymorphic references', { default: false })
+    .option('--relax-constraints', 'Also remove obsolete NOT NULL constraints, polymorphic foreign keys, and conflicting keys with an enforced model reference', { default: false })
     .option('-f, --force', 'With --apply, skip the confirmation', { default: false })
     .option('--json', 'Emit the plan as JSON', { default: false })
     .action(async (options: { apply?: boolean, widenIntegers?: boolean, relaxConstraints?: boolean, force?: boolean, json?: boolean }) => {

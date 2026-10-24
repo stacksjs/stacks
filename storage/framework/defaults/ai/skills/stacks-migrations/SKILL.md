@@ -241,6 +241,9 @@ lossless widenings; reports everything destructive), then
 
 `migrate:align --relax-constraints` also plans removal of legacy NOT NULL
 constraints where the current model allows null, and foreign keys on polymorphic
-id/type pairs where the model declares no single-table reference. It never makes
+id/type pairs where the model declares no single-table reference. It also removes
+a conflicting parent reference when the model's correct foreign key is already
+enforced. If that key is missing, the first pass adds it after an orphan check;
+a later pass can remove the obsolete key. It never makes
 nullable data required or relaxes primary keys. Inspect the plan, then add `--apply`
 to run it. The default continues to report these differences without changing them.
