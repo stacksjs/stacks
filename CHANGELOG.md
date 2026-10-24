@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.291...v0.75.292)
+
+## ✨ Features
+
+- configure response headers for cross-origin component assets ([6c05a3e](https://github.com/stacksjs/stacks/commit/6c05a3e)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh published native primitive catalog ([710372e](https://github.com/stacksjs/stacks/commit/710372e)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- refresh paired UI dependency locks ([560876b](https://github.com/stacksjs/stacks/commit/560876b)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.290...v0.75.291)
 
 ## 🐛 Bug Fixes
