@@ -23,8 +23,8 @@ describe('package-only buddy updates', () => {
   })
 
   it('refreshes a Stacks app through the declared meta-package only', () => {
-    expect(frameworkPackageUpdateCommand()).toBe('bun update stacks')
-    expect(frameworkPackageUpdateCommand(true)).toBe('bun update stacks --force')
+    expect(frameworkPackageUpdateCommand('0.74.66')).toBe('bun update stacks@0.74.66')
+    expect(frameworkPackageUpdateCommand('0.74.66', true)).toBe('bun update stacks@0.74.66 --force')
   })
 
   it('detects an interrupted upgrade whose manifest changed but install did not', () => {

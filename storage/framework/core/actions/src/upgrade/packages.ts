@@ -60,8 +60,12 @@ export function standalonePackageUpdateCommand(): string {
  * already-declared `stacks` package refreshes its dependency graph without
  * rewriting the application's ownership boundary.
  */
-export function frameworkPackageUpdateCommand(force = false): string {
-  return force ? 'bun update stacks --force' : 'bun update stacks'
+export function frameworkPackageUpdateCommand(target: string, force = false): string {
+  if (!/^\d+\.\d+\.\d+(?:-[\w.-]+)?(?:\+[\w.-]+)?$/.test(target))
+    throw new Error('The framework install target must be a published version.')
+  // A bare `bun update stacks` follows the app's caret/tilde range and can
+  // advance past the release whose metadata and project files we selected.
+  return `bun update stacks@${target}${force ? ' --force' : ''}`
 }
 
 /** The installed meta-package version, or null when dependencies are absent/incomplete. */
@@ -405,7 +409,7 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
 
   if (options.noPostinstall) {
     console.log('  --no-postinstall: skipping install. Run this to pull the new versions:')
-    console.log(`    ${frameworkPackageUpdateCommand()}\n`)
+    console.log(`    ${frameworkPackageUpdateCommand(target)}\n`)
     process.exit(0)
   }
 
@@ -419,12 +423,18 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
 
   if (changes.length > 0 || manifestChanges.length > 0 || projectManifestChanges.length > 0 || dependenciesNeedInstall || options.force) {
     console.log('  Installing…\n')
-    const result = await runCommand(frameworkPackageUpdateCommand(options.force), { cwd: projectRoot })
+    const result = await runCommand(frameworkPackageUpdateCommand(target, options.force), { cwd: projectRoot })
 
     if (result.isErr) {
       console.error(`\n✗ The install step failed. Your package.json was updated - resolve the error and re-run \`buddy upgrade --version ${target}\`.\n`)
       process.exit(1)
     }
+  }
+
+  const installed = installedStacksVersion(projectRoot)
+  if (installed !== target) {
+    console.error(`\n✗ Requested stacks@${target}, but the installed package reports ${installed ?? 'no readable version'}. The installed files are retained for diagnosis; managed defaults were not synchronized.\n`)
+    process.exit(1)
   }
 
   const defaultsPackageRoot = join(projectRoot, 'node_modules/@stacksjs/defaults')
