@@ -105,7 +105,7 @@ async function updateStandalonePackage(projectRoot: string, options: PackageUpgr
 }
 
 /** Resolve the target version + the `stacks` meta's declared dependency ranges. */
-async function resolveTarget(options: PackageUpgradeOptions): Promise<{ version: string, metaDeps: Record<string, string> }> {
+async function resolveTarget(options: PackageUpgradeOptions): Promise<{ version: string, metaDeps: Record<string, string>, runtimePins: Record<string, string> }> {
   const res = await fetch('https://registry.npmjs.org/stacks').catch(() => null)
   if (!res || !res.ok)
     throw new Error('Could not reach the npm registry to resolve the target `stacks` version.')
@@ -139,8 +139,48 @@ async function resolveTarget(options: PackageUpgradeOptions): Promise<{ version:
   // drags an independent package to a framework version it doesn't publish
   // (stacksjs/stacks#2078).
   const metaDeps = versions[version]?.dependencies ?? {}
+  // STX has its own release line, but its compiler, components and runtime
+  // must agree with the framework being installed. Resolve that release's
+  // published actions manifest, never the independently moving latest tag.
+  const actions = await fetch(`https://registry.npmjs.org/@stacksjs%2factions/${version}`)
+  if (!actions.ok)
+    throw new Error(`Could not resolve the frontend dependencies shipped by @stacksjs/actions@${version}.`)
+  const manifest = await actions.json() as { version?: string, dependencies?: Record<string, string> }
+  if (manifest.version !== version)
+    throw new Error('The published actions manifest does not match the requested framework release.')
+  return { version, metaDeps, runtimePins: publishedRuntimePins(manifest.dependencies ?? {}) }
+}
 
-  return { version, metaDeps }
+/** Independently versioned frontend packages paired with a published framework. */
+export function publishedRuntimePins(dependencies: Record<string, string>): Record<string, string> {
+  const pins: Record<string, string> = {}
+  for (const name of ['@stacksjs/stx', '@stacksjs/components', 'bun-plugin-stx']) {
+    const version = dependencies[name]
+    if (version && /^\d+\.\d+\.\d+(?:-[\w.-]+)?$/.test(version))
+      pins[name] = version
+  }
+  return pins
+}
+
+/** Align existing direct declarations and flat installer rules; never add dependencies. */
+export function applyRuntimePins(pkg: PkgJson, pins: Record<string, string>): Array<{ name: string, from: string, to: string, field?: 'overrides' | 'resolutions' }> {
+  const changes: Array<{ name: string, from: string, to: string, field?: 'overrides' | 'resolutions' }> = []
+  for (const field of ['dependencies', 'devDependencies', 'overrides', 'resolutions'] as const) {
+    const declarations = pkg[field]
+    if (!declarations || typeof declarations !== 'object' || Array.isArray(declarations))
+      continue
+    for (const [name, target] of Object.entries(pins)) {
+      const spec = declarations[name]
+      if (typeof spec !== 'string' || !/^[\^~]?\d+\.\d+\.\d+(?:-[\w.-]+)?$/.test(spec))
+        continue
+      const next = `${/^[\^~]/.test(spec) ? spec[0] : ''}${target}`
+      if (next === spec)
+        continue
+      changes.push({ name, from: spec, to: next, ...(field === 'overrides' || field === 'resolutions' ? { field } : {}) })
+      declarations[name] = next
+    }
+  }
+  return changes
 }
 
 /** Strip a range operator (`^`, `~`, `>=`, …) so a declared range compares to a bare version. */
@@ -235,7 +275,7 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
   if (!hasStacksDependency(pkg))
     return updateStandalonePackage(projectRoot, options)
 
-  const { version: target, metaDeps } = await resolveTarget(options).catch((err: Error) => {
+  const { version: target, metaDeps, runtimePins } = await resolveTarget(options).catch((err: Error) => {
     console.error(`✗ ${err.message}`)
     process.exit(1)
   })
@@ -245,7 +285,7 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
     console.log(`  current \`stacks\` constraint: ${current}\n`)
 
   const lockstep = lockstepPackages(metaDeps, target)
-  const changes = applyBumps(pkg, target, lockstep)
+  const changes = [...applyBumps(pkg, target, lockstep), ...applyRuntimePins(pkg, runtimePins)]
   const projectManifestChanges = migratePackageProjectManifest(pkg)
 
   // The root manifest is not the whole story. An app that keeps parts of the

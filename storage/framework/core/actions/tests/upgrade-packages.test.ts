@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'bun:test'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { applyBumps, baseVersion, frameworkPackageUpdateCommand, hasStacksDependency, installedStacksVersion, lockstepPackages, needsFrameworkInstall, standalonePackageUpdateCommand } from '../src/upgrade/packages'
+import { applyBumps, applyRuntimePins, baseVersion, frameworkPackageUpdateCommand, hasStacksDependency, installedStacksVersion, lockstepPackages, needsFrameworkInstall, publishedRuntimePins, standalonePackageUpdateCommand } from '../src/upgrade/packages'
 
 const temporaryProjects: string[] = []
 
@@ -64,6 +64,28 @@ const META_DEPS = {
   'better-dx': '^0.2.17', // independent, not @stacksjs
 }
 const TARGET = '0.70.161'
+
+describe('frontend versions paired with a published framework', () => {
+  it('repairs direct runtime/compiler pins even when stacks already matches the target', () => {
+    const pins = publishedRuntimePins({ '@stacksjs/stx': '0.2.679', '@stacksjs/components': '0.2.679', 'bun-plugin-stx': '0.2.679', 'better-dx': '^0.2.38' })
+    const pkg = {
+      dependencies: { stacks: '0.75.287', '@stacksjs/stx': '0.2.676', '@stacksjs/components': '^0.2.676' },
+      devDependencies: { 'bun-plugin-stx': '~0.2.676', 'better-dx': '^0.2.38' },
+      overrides: { '@stacksjs/stx': '0.2.676' },
+    }
+    expect(applyRuntimePins(pkg, pins)).toHaveLength(4)
+    expect(pkg.dependencies).toEqual({ stacks: '0.75.287', '@stacksjs/stx': '0.2.679', '@stacksjs/components': '^0.2.679' })
+    expect(pkg.devDependencies).toEqual({ 'bun-plugin-stx': '~0.2.679', 'better-dx': '^0.2.38' })
+    expect(pkg.overrides['@stacksjs/stx']).toBe('0.2.679')
+    expect(applyRuntimePins(pkg, pins)).toEqual([])
+  })
+
+  it('does not add absent packages or replace explicit source and scoped installer rules', () => {
+    const pkg = { dependencies: { '@stacksjs/stx': 'workspace:*' }, resolutions: { '**/bun-plugin-stx': '0.2.600' } }
+    expect(applyRuntimePins(pkg, publishedRuntimePins({ '@stacksjs/stx': '0.2.679', 'bun-plugin-stx': '0.2.679' }))).toEqual([])
+    expect(publishedRuntimePins({ '@stacksjs/stx': '^0.2.679', '@stacksjs/components': 'latest' })).toEqual({})
+  })
+})
 
 describe('framework version bump scoping (stacksjs/stacks#2078)', () => {
   it('strips range operators to a bare version', () => {
