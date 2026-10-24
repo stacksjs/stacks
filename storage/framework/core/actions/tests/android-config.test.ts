@@ -2,6 +2,13 @@ import { describe, expect, it } from 'bun:test'
 import { assertCraftSupportsAndroid, assertCraftSupportsAndroidMapProvider, CRAFT_ANDROID_FLOORS, androidCraftFeatures, toCraftAndroidConfig, validateAndroidMobileConfig } from '../src/build/android-config'
 
 describe('Android mobile build configuration', () => {
+  it('requires and forwards the native microphone implementation', () => {
+    const config = { appName: 'Voice', packageName: 'training.hq.voice', capabilities: { audioRecording: true } }
+    expect(toCraftAndroidConfig(config).enableAudioRecording).toBe(true)
+    expect(() => assertCraftSupportsAndroid(config, '0.0.323', 'test')).toThrow('audioRecording')
+    expect(() => assertCraftSupportsAndroid(config, '0.0.324', 'test')).not.toThrow()
+  })
+
   it('preserves the native key-free provider without inventing a Google map key', () => {
     const config = { appName: 'Wildloop', packageName: 'org.wildloop.app', renderer: 'native' as const, url: 'https://wildloop.org/feed', nativeScreens: { '/': 'Home' }, mapProvider: 'maplibre' as const }
     const result = toCraftAndroidConfig(config)

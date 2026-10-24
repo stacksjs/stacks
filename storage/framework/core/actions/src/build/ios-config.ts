@@ -107,6 +107,7 @@ const CAPABILITY_KEYS = {
  * accepted are not listed.
  */
 export const CRAFT_CAPABILITY_FLOORS = {
+  audioRecording: '0.0.324',
   appleMusic: '0.0.144',
   heartRate: '0.0.152',
   backgroundAudio: '0.0.162',

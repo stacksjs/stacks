@@ -537,3 +537,22 @@ planned ID whose sensor never started does not authorize adopting another
 native recording. Native start refuses active, archived, or acknowledged
 ID reuse. The ordinary no-ID API remains available for legacy callers;
 owned workout recovery requires the registered-ID protocol.
+
+### Voice recordings
+
+`createVoiceRecorder({ maxSeconds: 300, maxBytes: 12 * 1024 * 1024 })` creates an
+owned microphone session for a browser or a native screen. Subscribe to its
+`idle`, `requesting`, `recording`, `ready` and `error` snapshots, call `start()`
+from a user gesture, then `stop()`. A ready snapshot contains a browser `Blob`
+or a native file descriptor suitable for the native `FormData` upload bridge.
+Call `cancel()` after the upload or when switching accounts, and `dispose()`
+when the screen ends. Both release the microphone and discard the retained
+recording; late permission answers cannot start an abandoned session.
+
+Native builds require `capabilities.audioRecording: true`, Craft >= 0.0.324 and
+STX >= 0.2.678. The builders declare microphone permission; recording still
+requires the person's permission. Native recordings use a private temporary
+file and stop when the app backgrounds. iOS additionally binds pending capture
+to the native screen lifetime. The helper never uploads automatically: let the
+person review a transcript before sending feedback. Decode and enforce limits
+again on the server with `@stacksjs/audio` `prepareSpeechAudio`.

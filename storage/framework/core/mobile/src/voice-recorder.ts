@@ -1,7 +1,9 @@
+import { nativeFunctionNow } from './bridge'
 /** A bounded, disposable microphone session. Audio is never persisted by this helper. */
 export interface VoiceRecorderOptions { maxSeconds?: number, maxBytes?: number }
 export type VoiceRecorderStatus = 'idle' | 'requesting' | 'recording' | 'ready' | 'error'
-export interface VoiceRecorderSnapshot { status: VoiceRecorderStatus, audio: Blob | null, error: string | null }
+export interface NativeVoiceFile { path: string, name: string, type: string, size: number, durationSeconds: number }
+export interface VoiceRecorderSnapshot { status: VoiceRecorderStatus, audio: Blob | NativeVoiceFile | null, error: string | null }
 
 export function createVoiceRecorder(options: VoiceRecorderOptions = {}) {
   const maxSeconds = options.maxSeconds ?? 300
@@ -10,6 +12,7 @@ export function createVoiceRecorder(options: VoiceRecorderOptions = {}) {
   let snapshot: VoiceRecorderSnapshot = { status: 'idle', audio: null, error: null }
   const listeners = new Set<(value: VoiceRecorderSnapshot) => void>()
   let owner: object = {}
+  let nativeOwner: string | null = null
   let recorder: MediaRecorder | null = null
   let stream: MediaStream | null = null
   let timer: ReturnType<typeof setTimeout> | undefined
@@ -17,6 +20,11 @@ export function createVoiceRecorder(options: VoiceRecorderOptions = {}) {
   const stopTracks = () => { clearTimeout(timer); stream?.getTracks().forEach(track => track.stop()); stream = null }
   function cancel() {
     owner = {}
+    if (nativeOwner) {
+      const key = nativeOwner
+      nativeOwner = null
+      void Promise.resolve(nativeFunctionNow('audioRecording.cancel')?.(key)).catch(() => {})
+    }
     const previous = recorder
     recorder = null
     if (previous && previous.state !== 'inactive') previous.stop()
@@ -28,6 +36,16 @@ export function createVoiceRecorder(options: VoiceRecorderOptions = {}) {
     const mine = owner
     publish({ status: 'requesting', audio: null, error: null })
     try {
+      const startNative = nativeFunctionNow('audioRecording.start')
+      if (startNative) {
+        const key = globalThis.crypto.randomUUID()
+        nativeOwner = key
+        await startNative(key, { maxSeconds })
+        if (owner !== mine) return
+        timer = setTimeout(() => { if (owner === mine) void stop() }, maxSeconds * 1000 - 250)
+        publish({ status: 'recording', audio: null, error: null })
+        return
+      }
       if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') throw new Error('Microphone recording is unavailable. Upload an audio recording instead.')
       const input = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1 }, video: false })
       if (owner !== mine) { input.getTracks().forEach(track => track.stop()); return }
@@ -57,19 +75,36 @@ export function createVoiceRecorder(options: VoiceRecorderOptions = {}) {
         publish(tooLarge || !audio.size ? { status: 'error', audio: null, error: tooLarge ? 'The recording exceeds the upload limit.' : 'The recording was empty.' } : { status: 'ready', audio, error: null })
       }
       current.start(1000)
-      timer = setTimeout(() => { if (owner === mine && current.state !== 'inactive') current.stop() }, maxSeconds * 1000)
+      timer = setTimeout(() => { if (owner === mine && current.state !== 'inactive') current.stop() }, maxSeconds * 1000 - 250)
       publish({ status: 'recording', audio: null, error: null })
     }
     catch (error) {
       if (owner !== mine) return
-      stopTracks()
+      cancel()
       publish({ status: 'error', audio: null, error: error instanceof Error ? error.message : 'Microphone permission was refused.' })
+    }
+  }
+  async function stop() {
+    if (!nativeOwner) { if (recorder && recorder.state !== 'inactive') recorder.stop(); return }
+    const mine = owner
+    const key = nativeOwner
+    clearTimeout(timer)
+    try {
+      const audio = await nativeFunctionNow('audioRecording.stop')?.(key) as NativeVoiceFile | undefined
+      if (owner !== mine) return
+      if (!audio?.path || !audio.size || audio.size > maxBytes || !Number.isFinite(audio.durationSeconds) || audio.durationSeconds <= 0 || audio.durationSeconds > maxSeconds + 1) throw new Error('The recording is empty or exceeds its limits.')
+      publish({ status: 'ready', audio, error: null })
+    }
+    catch (error) {
+      if (owner !== mine) return
+      cancel()
+      publish({ status: 'error', audio: null, error: error instanceof Error ? error.message : 'Recording failed.' })
     }
   }
   return {
     start, cancel, dispose() { cancel(); listeners.clear() },
-    stop() { if (recorder && recorder.state !== 'inactive') recorder.stop() },
-    supported: () => typeof navigator !== 'undefined' && Boolean(navigator.mediaDevices?.getUserMedia) && typeof MediaRecorder !== 'undefined',
+    stop,
+    supported: () => Boolean(nativeFunctionNow('audioRecording.start')) || typeof navigator !== 'undefined' && Boolean(navigator.mediaDevices?.getUserMedia) && typeof MediaRecorder !== 'undefined',
     snapshot: () => ({ ...snapshot }),
     subscribe(listener: (value: VoiceRecorderSnapshot) => void) { listeners.add(listener); listener({ ...snapshot }); return () => { listeners.delete(listener) } },
   }

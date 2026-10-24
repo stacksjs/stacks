@@ -40,6 +40,7 @@ export interface CraftAndroidConfig {
 
 const CAPABILITY_KEYS = {
   speechRecognition: 'enableSpeechRecognition',
+  audioRecording: 'enableAudioRecording',
   haptics: 'enableHaptics',
   share: 'enableShare',
   camera: 'enableCamera',
@@ -67,6 +68,7 @@ const CAPABILITY_KEYS = {
  * Connect reads and no background refresh.
  */
 export const CRAFT_ANDROID_FLOORS = {
+  audioRecording: '0.0.324',
   /** The native app shell: tabs, paths to screens, the app script, synchronous stores. */
   nativeShell: '0.0.169',
   /** Verified HTTPS hosts and ordered website path exclusions. */
@@ -102,6 +104,7 @@ export function androidCraftFeatures(config: AndroidMobileConfig, options: { app
   if (config.appLinks?.length && config.capabilities?.deepLinks) features.push('appLinks')
   if (config.capabilities?.bluetooth) features.push('bluetooth')
   if (config.capabilities?.heartRate) features.push('heartRate')
+  if (config.capabilities?.audioRecording) features.push('audioRecording')
   if (config.capabilities?.healthConnect && config.renderer === 'native') features.push('healthConnect')
   if (config.backgroundRefresh?.enabled) features.push('backgroundRefresh')
   if (options.appBundle) features.push('appBundle')

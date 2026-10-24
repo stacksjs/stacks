@@ -64,3 +64,38 @@ test('a stopped recording is reviewable, bounded, and erased on dispose', async 
     globalThis.MediaRecorder = previousRecorder
   }
 })
+
+test('native recordings keep their file until upload and cancel by owner after account changes', async () => {
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'window')
+  const cancelled: string[] = []
+  let owner = ''
+  let release!: () => void
+  let pending = false
+  Object.defineProperty(globalThis, 'window', { configurable: true, value: { craft: { audioRecording: {
+    start: async (key: string) => { owner = key; if (pending) await new Promise<void>(resolve => { release = resolve }); return true },
+    stop: async (key: string) => { expect(key).toBe(owner); return { path: '/private/voice.m4a', name: 'voice.m4a', type: 'audio/mp4', size: 300, durationSeconds: 2 } },
+    cancel: async (key: string) => { cancelled.push(key); return true },
+  } } } })
+  try {
+    const recorder = createVoiceRecorder()
+    expect(recorder.supported()).toBe(true)
+    await recorder.start()
+    await recorder.stop()
+    expect(recorder.snapshot().status).toBe('ready')
+    expect(recorder.snapshot().audio).toMatchObject({ path: '/private/voice.m4a' })
+    recorder.cancel()
+    expect(cancelled).toEqual([owner])
+    pending = true
+    const starting = recorder.start()
+    recorder.cancel()
+    release()
+    await starting
+    expect(recorder.snapshot().status).toBe('idle')
+    expect(cancelled).toHaveLength(2)
+    recorder.dispose()
+  }
+  finally {
+    if (previous) Object.defineProperty(globalThis, 'window', previous)
+    else Reflect.deleteProperty(globalThis, 'window')
+  }
+})
