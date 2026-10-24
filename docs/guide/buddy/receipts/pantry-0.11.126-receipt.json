@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-24T06:12:35.637Z",
+  "sources": [
+    {
+      "repository": "pantry-pm/pantry",
+      "commit": "91ded221f8de3badd9fc5ab1d4072d561c1eb1d4",
+      "tag": "v0.11.126",
+      "gates": [
+        {
+          "runId": 40057270032,
+          "workflow": ".github/workflows/release.yml",
+          "requiredJobs": [
+            "source-ci / verify exact full source CI",
+            "pantry",
+            "npm",
+            "discord-notification"
+          ]
+        },
+        {
+          "runId": 40057269977,
+          "workflow": ".github/workflows/ci.yml",
+          "requiredJobs": [
+            "typecheck",
+            "lint",
+            "test",
+            "action-native-services (8.4.11)",
+            "action-native-services (26.7.0)",
+            "Explicit native toolchain pins (ubuntu-latest)",
+            "action-redis-service",
+            "windows-git",
+            "native-browser",
+            "action-native-tools",
+            "zig-tests",
+            "Explicit native toolchain pins (macos-latest)",
+            "windows-native-runtime",
+            "continuous-release"
+          ]
+        },
+        {
+          "runId": 40057270011,
+          "workflow": ".github/workflows/build-zig.yml",
+          "requiredJobs": [
+            "compile-all",
+            "Native Windows CLI and compiler links"
+          ]
+        },
+        {
+          "runId": 40057270018,
+          "workflow": ".github/workflows/deploy-registry.yml",
+          "requiredJobs": [
+            "verify / Registry checks (Bun 1.4.2)",
+            "verify / Registry checks (Bun 1.4.3)",
+            "source-ci / verify exact full source CI",
+            "hetzner",
+            "discord-notification"
+          ]
+        }
+      ],
+      "packages": [
+        {
+          "name": "ts-pantry",
+          "version": "0.11.126",
+          "integrity": "sha512-gKiXcAGuVplVGO0C3i8j5eh7pvIzK3HKXtCfrsE/+nHj9oMBXJwa9Ybc+0rjpdr4PDgULHp5TT/vRMjiH+fiKg==",
+          "tarball": "https://registry.npmjs.org/ts-pantry/-/ts-pantry-0.11.126.tgz",
+          "bytes": 1384999,
+          "filesSha256": "3a5c88639081df9176a60c32cb4a10e9517dd563dbb750f8e6473c9061e39791"
+        }
+      ],
+      "releaseCommand": "bun run release:patch",
+      "releaseScript": "bun x --bun @stacksjs/bumpx patch --recursive --execute 'bun .github/scripts/build-release-action.ts' --commit --tag --push --yes"
+    }
+  ],
+  "consumer": {
+    "lockfile": "bun.lock",
+    "sha256": "9335575a2a36006021ae587d8db06e2e0106f02ca88126ce53e0e4806bc1ae54",
+    "bunVersion": "1.4.4",
+    "checks": [
+      {
+        "script": "deps:lockfile:check",
+        "exitCode": 0,
+        "outputSha256": "54ce291d971e259600c6d70767d099df61e14606da6c829cbc2b49304dd9b488"
+      },
+      {
+        "script": "typecheck",
+        "exitCode": 0,
+        "outputSha256": "43e6d643df47cba71eaa32cb5d9284974565b1b77b202738669b7194efac5fb4"
+      },
+      {
+        "script": "typecheck:app",
+        "exitCode": 0,
+        "outputSha256": "c71d923f76efc740ed4e871f00994b522600f3b02af522f570f2b7b38f9d07d7"
+      },
+      {
+        "script": "typecheck:views",
+        "exitCode": 0,
+        "outputSha256": "7ff7bb9341fd8e2f6f8b84cfb3481de4e1b0424182e64d8e896bf9ac9af9d3de"
+      },
+      {
+        "script": "lint",
+        "exitCode": 0,
+        "outputSha256": "bad4615405b48a28736664d0cfa887f1740274c2af3ae1001f4c7becd913b4ca"
+      }
+    ]
+  }
+}
