@@ -1,0 +1,346 @@
+{
+  "schemaVersion": 1,
+  "repository": "pantry-pm/pantry",
+  "tag": "v0.11.124",
+  "commit": "22b00e5f6ca39fb254071c59a2566f79dfe9d9e4",
+  "workflows": [
+    {
+      "runId": 40047770671,
+      "workflow": ".github/workflows/release.yml",
+      "requiredJobs": [
+        "source-ci / verify exact full source CI",
+        "pantry",
+        "npm",
+        "discord-notification"
+      ],
+      "conclusion": "success"
+    },
+    {
+      "runId": 40047771263,
+      "workflow": ".github/workflows/ci.yml",
+      "requiredJobs": [
+        "typecheck",
+        "lint",
+        "test",
+        "action-native-services (8.4.11)",
+        "action-native-services (26.7.0)",
+        "Explicit native toolchain pins (ubuntu-latest)",
+        "action-redis-service",
+        "windows-git",
+        "native-browser",
+        "action-native-tools",
+        "zig-tests",
+        "Explicit native toolchain pins (macos-latest)",
+        "windows-native-runtime",
+        "continuous-release"
+      ],
+      "conclusion": "success"
+    },
+    {
+      "runId": 40047771283,
+      "workflow": ".github/workflows/build-zig.yml",
+      "requiredJobs": [
+        "compile-all",
+        "Native Windows CLI and compiler links"
+      ],
+      "conclusion": "success"
+    },
+    {
+      "runId": 40047771255,
+      "workflow": ".github/workflows/deploy-registry.yml",
+      "requiredJobs": [
+        "verify / Registry checks (Bun 1.4.2)",
+        "verify / Registry checks (Bun 1.4.3)",
+        "source-ci / verify exact full source CI",
+        "hetzner",
+        "discord-notification"
+      ],
+      "conclusion": "success"
+    }
+  ],
+  "maintainedRelease": {
+    "command": "bun run release:patch",
+    "preReleaseSource": "bff2ee6c27026aec66a65215a23a22d33e8fb73b",
+    "preReleaseCi": 40046676761,
+    "preReleaseCiConclusion": "success, all14requiredjobs",
+    "source": "22b00e5f6ca39fb254071c59a2566f79dfe9d9e4",
+    "tag": "v0.11.124",
+    "author": "Chris <chris@stacksjs.com>",
+    "committer": "Chris <chris@stacksjs.com>",
+    "coauthors": [],
+    "normalFastForwardMainAndTagPush": true,
+    "commandExitCode": 0,
+    "runtime": "Bun1.4.3",
+    "publisherBootstrap": "qualified native Pantry0.11.123",
+    "logSha256": "ee27bbfccde5608a139f3a6531f029723d987fc646e293b84c24b1a55b00e848",
+    "sourceCi": 40047771263,
+    "releaser": 40047770671,
+    "nativePlatforms": 40047771283,
+    "deploy": 40047771255,
+    "publicationQualification": "qualified: exacttag4workflows, all7native1npm originals, normalnativeinstallerSDK, actualWindows and4lifecycle/5publicationcontracts",
+    "recordedAt": "2026-10-24T01:03:40.996590+00:00"
+  },
+  "npmArchives": {
+    "packages": [
+      {
+        "name": "ts-pantry",
+        "version": "0.11.124",
+        "shasum": "e4c368ad3086caeeb2e07f6dd998db202f596ae5",
+        "integrity": "sha512-iJXVawvPhDU7/xh754XWfvkuur0YBZlhCgy68ujtnGK/DKhLAN0+ghe4+vkXyA4xu+dBwi0JDh0FyO2ziVLoYw==",
+        "file": "ts-pantry-0.11.124.tgz",
+        "bytes": 1384416,
+        "sha256": "24b27078cedae4beaba24e346947b4d281857ed2b7d4392fcd5cbe586e7ecf43",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      }
+    ],
+    "failures": []
+  },
+  "nativeArchives": {
+    "tag": "v0.11.124",
+    "source": "22b00e5f6ca39fb254071c59a2566f79dfe9d9e4",
+    "manifestSha256": "d37f4163981fe4d0f7451a564b5cf40549db5a45ab54143097ff3f07f56f3a9b",
+    "archives": [
+      {
+        "name": "pantry-linux-x64.zip",
+        "size": 3111995,
+        "sha256": "447d01568793b485a3243d67279027717cb3fcca5fa457a8674be20f636098d0",
+        "matchedOriginalManifestAndGithubDigest": true,
+        "zipCrcEntryAndNativeArchitectureVerified": true
+      },
+      {
+        "name": "pantry-darwin-x64.zip",
+        "size": 3126169,
+        "sha256": "337c0ed4ef97effd20dcef796f8e846e301b65a949bd62e7dfe4a2dc82058eef",
+        "matchedOriginalManifestAndGithubDigest": true,
+        "zipCrcEntryAndNativeArchitectureVerified": true
+      },
+      {
+        "name": "pantry-linux-arm64.zip",
+        "size": 2975967,
+        "sha256": "67a1e1429ce1b39f9168d8cf4c6ca4893da2a29cf64de694c4938400bf8b17f2",
+        "matchedOriginalManifestAndGithubDigest": true,
+        "zipCrcEntryAndNativeArchitectureVerified": true
+      },
+      {
+        "name": "pantry-darwin-arm64.zip",
+        "size": 2842699,
+        "sha256": "dcf85fe12d3578ea15506020823e0e516d07315f1a50ee72983082342403b50a",
+        "matchedOriginalManifestAndGithubDigest": true,
+        "zipCrcEntryAndNativeArchitectureVerified": true
+      },
+      {
+        "name": "pantry-windows-x64.zip",
+        "size": 3201245,
+        "sha256": "c2ef409d39342b6ccf55c96fa635b6d83ef6b6b6c7c9c369a9ec2b8f28693689",
+        "matchedOriginalManifestAndGithubDigest": true,
+        "zipCrcEntryAndNativeArchitectureVerified": true
+      },
+      {
+        "name": "pantry-freebsd-x64.zip",
+        "size": 3135477,
+        "sha256": "096bf715e500a22e212b9fef6941297478962ecdf118f174c1100bff74591f85",
+        "matchedOriginalManifestAndGithubDigest": true,
+        "zipCrcEntryAndNativeArchitectureVerified": true
+      },
+      {
+        "name": "pantry-freebsd-arm64.zip",
+        "size": 2909499,
+        "sha256": "69a84d64f036cbd1f2b64857941adc16fbca52872895dfe37d0483149350e905",
+        "matchedOriginalManifestAndGithubDigest": true,
+        "zipCrcEntryAndNativeArchitectureVerified": true
+      }
+    ]
+  },
+  "nativeInstallation": {
+    "source": "22b00e5f6ca39fb254071c59a2566f79dfe9d9e4",
+    "version": "pantry 0.11.124 (22b00e5f6)",
+    "installerSha256": "cfdd3374c97ef179c0d32e71b8fdfa394674e917d32e20c822fa083790fc0cfe",
+    "nativeExecutableSha256": "3a3530410daf8247873b73acb9e1b01147129ab5775e16c52c9a634bcffded95",
+    "normalVersionAndPrefixInstaller": true,
+    "allInstalledAliasesMatch": true,
+    "originalArchiveBytesMatched": true,
+    "shellProfileUnmodifiedBecausePrefixWasAlreadyOnPath": true
+  },
+  "nativePublicationContracts": {
+    "cases": [
+      {
+        "mode": "precheck-recovers",
+        "code": 0,
+        "uploads": 1,
+        "metadataReads": 4,
+        "tarballReads": 1,
+        "foreignRequests": 0,
+        "foreignCredentialRequests": 0,
+        "hook": true,
+        "prematureHook": false
+      },
+      {
+        "mode": "lost-response",
+        "code": 0,
+        "uploads": 1,
+        "metadataReads": 2,
+        "tarballReads": 1,
+        "foreignRequests": 0,
+        "foreignCredentialRequests": 0,
+        "hook": true,
+        "prematureHook": false
+      },
+      {
+        "mode": "server-error-after-commit",
+        "code": 0,
+        "uploads": 1,
+        "metadataReads": 2,
+        "tarballReads": 1,
+        "foreignRequests": 0,
+        "foreignCredentialRequests": 0,
+        "hook": true,
+        "prematureHook": false
+      },
+      {
+        "mode": "upload-redirect",
+        "code": 1,
+        "uploads": 1,
+        "metadataReads": 19,
+        "tarballReads": 0,
+        "foreignRequests": 0,
+        "foreignCredentialRequests": 0,
+        "hook": false,
+        "prematureHook": false
+      },
+      {
+        "mode": "stalled-upload-response",
+        "code": 0,
+        "uploads": 1,
+        "metadataReads": 2,
+        "tarballReads": 1,
+        "foreignRequests": 0,
+        "foreignCredentialRequests": 0,
+        "hook": true,
+        "prematureHook": false
+      }
+    ],
+    "logs": [
+      {
+        "path": "native-original-lookup-recovery.log",
+        "sha256": "23307d0c5fb86803b350ecb9dc253862a97e5c036b822601ca42f4afb713f2aa"
+      },
+      {
+        "path": "native-original-transport.log",
+        "sha256": "e5fea7fe9b80251f6511e854a2f163d0f93d798c2987d17896ca74ce8d33cba2"
+      }
+    ]
+  },
+  "nativeLifecycleContracts": {
+    "tests": 4,
+    "assertions": 65,
+    "failures": 0,
+    "actualPublicBinary": true,
+    "logSha256": "3fdbbe317e558f3bc0268ddf8f861487b427de30431f6b5e74ec4c2cc387b1ef"
+  },
+  "installedSdkConsumer": {
+    "schemaVersion": 1,
+    "verifiedAt": "2026-10-24T01:47:56.458Z",
+    "sources": [
+      {
+        "repository": "pantry-pm/pantry",
+        "commit": "22b00e5f6ca39fb254071c59a2566f79dfe9d9e4",
+        "tag": "v0.11.124",
+        "gates": [
+          {
+            "runId": 40047770671,
+            "workflow": ".github/workflows/release.yml",
+            "requiredJobs": [
+              "source-ci / verify exact full source CI",
+              "pantry",
+              "npm",
+              "discord-notification"
+            ]
+          },
+          {
+            "runId": 40047771263,
+            "workflow": ".github/workflows/ci.yml",
+            "requiredJobs": [
+              "typecheck",
+              "lint",
+              "test",
+              "action-native-services (8.4.11)",
+              "action-native-services (26.7.0)",
+              "Explicit native toolchain pins (ubuntu-latest)",
+              "action-redis-service",
+              "windows-git",
+              "native-browser",
+              "action-native-tools",
+              "zig-tests",
+              "Explicit native toolchain pins (macos-latest)",
+              "windows-native-runtime",
+              "continuous-release"
+            ]
+          },
+          {
+            "runId": 40047771283,
+            "workflow": ".github/workflows/build-zig.yml",
+            "requiredJobs": [
+              "compile-all",
+              "Native Windows CLI and compiler links"
+            ]
+          },
+          {
+            "runId": 40047771255,
+            "workflow": ".github/workflows/deploy-registry.yml",
+            "requiredJobs": [
+              "verify / Registry checks (Bun 1.4.2)",
+              "verify / Registry checks (Bun 1.4.3)",
+              "source-ci / verify exact full source CI",
+              "hetzner",
+              "discord-notification"
+            ]
+          }
+        ],
+        "packages": [
+          {
+            "name": "ts-pantry",
+            "version": "0.11.124",
+            "integrity": "sha512-iJXVawvPhDU7/xh754XWfvkuur0YBZlhCgy68ujtnGK/DKhLAN0+ghe4+vkXyA4xu+dBwi0JDh0FyO2ziVLoYw==",
+            "tarball": "https://registry.npmjs.org/ts-pantry/-/ts-pantry-0.11.124.tgz",
+            "bytes": 1384416,
+            "filesSha256": "ee61ee441afb596e6c7c8f44571c3dcc3e4710756af12be2cc18f25678e5935b"
+          }
+        ],
+        "releaseCommand": "bun run release:patch",
+        "releaseScript": "bun x --bun @stacksjs/bumpx patch --recursive --execute 'bun .github/scripts/build-release-action.ts' --commit --tag --push --yes"
+      }
+    ],
+    "consumer": {
+      "lockfile": "bun.lock",
+      "sha256": "d5ea7b01131d19562c0524662f9c71e5a3f167f1617a4a6cdb48d137a51795e7",
+      "bunVersion": "1.4.3",
+      "checks": [
+        {
+          "script": "test:windows-git",
+          "exitCode": 0,
+          "outputSha256": "29c1f5a1be0ca4f9e8715e1bd8d6a9e7de03b359b2612c83657962a8d33ff393"
+        }
+      ]
+    }
+  },
+  "windowsGitPayload": {
+    "sdk": "ts-pantry@0.11.124",
+    "version": "2.53.0+windows.1",
+    "originalArchiveSha256": "82b562c918ec87b2ef5316ed79bb199e3a25719bb871a0f10294acf21ebd08cd",
+    "originalVendorFilesMatched": 384,
+    "providerSha256": "da240fe9bc24895b3e04150a4990b8a6ff329ecabcd8f19684c2cc310da5ef3f",
+    "coldAndWarmInstall": true,
+    "relativeProviderAlias": true,
+    "host": "darwin",
+    "target": "windows-x64",
+    "nativeWindowsExecution": false
+  },
+  "nativeWindows": {
+    "cliVersion": "pantry 0.11.124 (22b00e5f6)",
+    "compilerSha256": "f54b14f02a4d7d8ac62a94a0663486eb166bba3745d85b466238c1b93e723d46",
+    "prefixRelocatedByNativeWindows": true,
+    "passed": true,
+    "cleaned": true
+  },
+  "scope": "Published toolchain qualification. Gold Edition and native game parity are not established. Registry deployment handover issue249 remains open."
+}

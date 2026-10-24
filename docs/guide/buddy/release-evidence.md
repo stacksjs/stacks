@@ -252,3 +252,13 @@ This closes the publication gap observed with 0.75.275: its npm release succeede
 The framework desktop and mobile dependencies and Actions' optional peer now require Craft 0.0.301 or later. The [adoption plan](./receipts/craft-0.0.301-plan.json) and [installed-consumer receipt](./receipts/craft-0.0.301-receipt.json) verify the SDK against its original archive and execute the committed graph, framework and application type checks. The [publication record](./receipts/craft-0.0.301-publication.json) retains the original CI artifact identity, all eight npm archives, four native archives, successful source/mobile/release gates, and a separate clean consumer that resolved and executed the native ARM64 CLI through the public SDK.
 
 The earlier 0.0.300 native acceptance failures remain recorded separately. A successful later release does not explain those failures or establish complete native game presentation. The published Zig module archive still requires its own clean-consumer qualification.
+
+## Verified Pantry 0.11.124 adoption
+
+The [tooling plan](./receipts/upstream-tooling-2026-10-24-plan.json) and [installed-consumer receipt](./receipts/upstream-tooling-2026-10-24-receipt.json) verify Pantry 0.11.124, Pickier 0.1.77 and the six consumed STX packages against their original published archives and every installed file. Normal Bun and Pantry installs regenerated both locks. The lock consistency, framework types, application types, view types and lint checks passed.
+
+Buddy, Config and Browser Extension now require Pantry SDK 0.11.124. All framework CI and release Action pins use its exact source, `22b00e5f6ca39fb254071c59a2566f79dfe9d9e4`. The [publication record](./receipts/pantry-0.11.124-publication.json) retains all seven native archives, the original npm receipt, successful source/release/native/deployment gates, the normal native installer and SDK consumer, and real Windows compiler execution and prefix relocation.
+
+The original published native CLI passed four setup lifecycle tests with 65 assertions and five publication transport cases. Required project setup failures now fail explicit installation, a forced failed setup invalidates the previous completion marker, and optional setup remains optional. Pantry also owns TypeScript configuration values independently of the JSON parser arena. This fixes the invalid free exposed by fresh hosted native tests.
+
+These toolchain checks do not establish native game presentation or Gold Edition fidelity. Registry deployment handover availability remains tracked separately.
