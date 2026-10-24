@@ -81,6 +81,13 @@ export function needsFrameworkInstall(projectRoot: string, target: string, runti
     const metaRoot = join(projectRoot, 'node_modules/stacks')
     const installed = JSON.parse(readFileSync(join(metaRoot, 'package.json'), 'utf8')) as { version?: string, dependencies?: Record<string, string> }
     if (installed.version !== target) return true
+    const projectPath = join(projectRoot, 'package.json')
+    const project = existsSync(projectPath) ? JSON.parse(readFileSync(projectPath, 'utf8')) as PkgJson : {}
+    const publishedRange = /^[\^~]?\d+\.\d+\.\d+(?:-[\w.-]+)?$/
+    const customResolution = (name: string): boolean => {
+      const rule = project.overrides?.[name] ?? project.resolutions?.[name]
+      return rule !== undefined && (typeof rule !== 'string' || !publishedRange.test(rule))
+    }
 
     // Bun can replace the meta-package before a later download fails. Its
     // version alone does not prove the transaction or lockfile completed.
@@ -90,15 +97,15 @@ export function needsFrameworkInstall(projectRoot: string, target: string, runti
       if (lock.packages?.stacks?.[0] !== `stacks@${target}`) return true
     }
     for (const [name, version] of Object.entries(installed.dependencies ?? {})) {
-      if (!name.startsWith('@stacksjs/') || version !== target) continue
+      if (!name.startsWith('@stacksjs/') || version !== target || customResolution(name)) continue
       const manifest = JSON.parse(readFileSync(Bun.resolveSync(`${name}/package.json`, metaRoot), 'utf8')) as { version?: string }
       if (manifest.version !== target) return true
     }
     if (Object.keys(runtimePins).length) {
-      const project = JSON.parse(readFileSync(join(projectRoot, 'package.json'), 'utf8')) as { dependencies?: Record<string, string>, devDependencies?: Record<string, string> }
       const declared = { ...project.dependencies, ...project.devDependencies }
       for (const [name, version] of Object.entries(runtimePins)) {
-        if (!Object.hasOwn(declared, name)) continue
+        const spec = declared[name]
+        if (typeof spec !== 'string' || !publishedRange.test(spec) || customResolution(name)) continue
         const manifest = JSON.parse(readFileSync(Bun.resolveSync(`${name}/package.json`, projectRoot), 'utf8')) as { version?: string }
         if (manifest.version !== baseVersion(version)) return true
       }

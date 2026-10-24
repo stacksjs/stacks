@@ -106,6 +106,20 @@ describe('package-only buddy updates', () => {
     writeFileSync(join(project, 'node_modules/@stacksjs/stx/package.json'), JSON.stringify({ version: '0.2.686' }))
     expect(needsFrameworkInstall(project, '0.74.11', pins)).toBeFalse()
   })
+
+  it('does not repeatedly reinstall intentional source and installer rules', () => {
+    const project = mkdtempSync(join(tmpdir(), 'stacks-upgrade-'))
+    temporaryProjects.push(project)
+    mkdirSync(join(project, 'node_modules/stacks'), { recursive: true })
+    writeFileSync(join(project, 'node_modules/stacks/package.json'), JSON.stringify({ version: '0.74.11', dependencies: { '@stacksjs/env': '0.74.11' } }))
+    for (const field of ['overrides', 'resolutions']) {
+      writeFileSync(join(project, 'package.json'), JSON.stringify({
+        dependencies: { stacks: '0.74.11', '@stacksjs/stx': 'file:../stx', 'bun-plugin-stx': '0.2.686' },
+        [field]: { '@stacksjs/env': 'file:../env', 'bun-plugin-stx': { '.': 'workspace:*' } },
+      }))
+      expect(needsFrameworkInstall(project, '0.74.11', { '@stacksjs/stx': '0.2.686', 'bun-plugin-stx': '0.2.686' })).toBeFalse()
+    }
+  })
 })
 
 // stacksjs/stacks#2078: buddy upgrade must not drag independently-versioned
