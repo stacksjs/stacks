@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.292...v0.75.293)
+
+## 🐛 Bug Fixes
+
+- align all published UI runtime dependencies ([567ddf2](https://github.com/stacksjs/stacks/commit/567ddf2)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.291...v0.75.292)
 
 ## ✨ Features
