@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'bun:test'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { applyBumps, applyRuntimePins, baseVersion, frameworkPackageUpdateCommand, hasStacksDependency, installedStacksVersion, lockstepPackages, needsFrameworkInstall, publishedRuntimePins, standalonePackageUpdateCommand } from '../src/upgrade/packages'
+import { applyBumps, applyRuntimePins, baseVersion, frameworkPackageUpdateCommand, hasStacksDependency, installedStacksVersion, lockstepPackages, needsFrameworkInstall, publishedRuntimePins, resolvePublishedRuntimePins, standalonePackageUpdateCommand } from '../src/upgrade/packages'
 
 const temporaryProjects: string[] = []
 
@@ -66,6 +66,17 @@ const META_DEPS = {
 const TARGET = '0.70.161'
 
 describe('frontend versions paired with a published framework', () => {
+  it('aligns direct desktop, sanitizer and router declarations from the published runtime dependencies', () => {
+    const pins = publishedRuntimePins({ '@stacksjs/stx': '0.2.682', '@stacksjs/desktop': '0.2.682', '@stacksjs/sanitizer': '0.2.682', 'stx-router': '0.2.682' })
+    const pkg = {
+      dependencies: { '@stacksjs/desktop': '0.2.679', 'stx-router': '^0.2.679' },
+      devDependencies: { '@stacksjs/sanitizer': '~0.2.679' },
+    }
+    expect(applyRuntimePins(pkg, pins)).toHaveLength(3)
+    expect(pkg.dependencies).toEqual({ '@stacksjs/desktop': '0.2.682', 'stx-router': '^0.2.682' })
+    expect(pkg.devDependencies).toEqual({ '@stacksjs/sanitizer': '~0.2.682' })
+  })
+
   it('repairs direct runtime/compiler pins even when stacks already matches the target', () => {
     const pins = publishedRuntimePins({ '@stacksjs/stx': '0.2.679', '@stacksjs/components': '0.2.679', 'bun-plugin-stx': '0.2.679', 'better-dx': '^0.2.38' })
     const pkg = {
@@ -78,6 +89,40 @@ describe('frontend versions paired with a published framework', () => {
     expect(pkg.devDependencies).toEqual({ 'bun-plugin-stx': '~0.2.679', 'better-dx': '^0.2.38' })
     expect(pkg.overrides['@stacksjs/stx']).toBe('0.2.679')
     expect(applyRuntimePins(pkg, pins)).toEqual([])
+  })
+
+  it('reads the requested STX manifest and preserves the paired compiler and component versions', async () => {
+    const requested: string[] = []
+    const pins = await resolvePublishedRuntimePins({ '@stacksjs/stx': '0.2.682', '@stacksjs/components': '0.2.682', 'bun-plugin-stx': '0.2.682' }, (async (url) => {
+      requested.push(String(url))
+      return Response.json({ name: '@stacksjs/stx', version: '0.2.682', dependencies: {
+        '@stacksjs/desktop': '0.2.682', '@stacksjs/sanitizer': '0.2.682', 'stx-router': '0.2.682', 'bun-plugin-stx': '0.2.682', bunfig: '^0.15.21',
+      } })
+    }) as typeof fetch)
+    expect(requested).toEqual(['https://registry.npmjs.org/@stacksjs%2fstx/0.2.682'])
+    expect(pins).toEqual({ '@stacksjs/stx': '0.2.682', '@stacksjs/components': '0.2.682', 'bun-plugin-stx': '0.2.682', '@stacksjs/desktop': '0.2.682', '@stacksjs/sanitizer': '0.2.682', 'stx-router': '0.2.682' })
+  })
+
+  it('refuses missing, mismatched or conflicting runtime metadata', async () => {
+    const dependencies = { '@stacksjs/stx': '0.2.682', 'bun-plugin-stx': '0.2.682' }
+    for (const response of [
+      new Response('', { status: 404 }),
+      Response.json({ name: '@stacksjs/stx', version: '0.2.683' }),
+      Response.json({ name: 'another-package', version: '0.2.682' }),
+      Response.json({ name: '@stacksjs/stx', version: '0.2.682', dependencies: { 'bun-plugin-stx': '0.2.683' } }),
+    ]) {
+      await expect(resolvePublishedRuntimePins(dependencies, (async () => response) as typeof fetch)).rejects.toThrow()
+    }
+    expect(dependencies).toEqual({ '@stacksjs/stx': '0.2.682', 'bun-plugin-stx': '0.2.682' })
+  })
+
+  it('does not query an invented runtime version for older manifests without exact STX pins', async () => {
+    let requests = 0
+    expect(await resolvePublishedRuntimePins({ '@stacksjs/stx': '^0.2.100' }, (async () => {
+      requests++
+      throw new Error('Unexpected request')
+    }) as typeof fetch)).toEqual({})
+    expect(requests).toBe(0)
   })
 
   it('does not add absent packages or replace explicit source and scoped installer rules', () => {

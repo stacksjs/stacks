@@ -148,16 +148,36 @@ async function resolveTarget(options: PackageUpgradeOptions): Promise<{ version:
   const manifest = await actions.json() as { version?: string, dependencies?: Record<string, string> }
   if (manifest.version !== version)
     throw new Error('The published actions manifest does not match the requested framework release.')
-  return { version, metaDeps, runtimePins: publishedRuntimePins(manifest.dependencies ?? {}) }
+  return { version, metaDeps, runtimePins: await resolvePublishedRuntimePins(manifest.dependencies ?? {}) }
 }
 
 /** Independently versioned frontend packages paired with a published framework. */
 export function publishedRuntimePins(dependencies: Record<string, string>): Record<string, string> {
   const pins: Record<string, string> = {}
-  for (const name of ['@stacksjs/stx', '@stacksjs/components', 'bun-plugin-stx']) {
+  for (const name of ['@stacksjs/stx', '@stacksjs/components', 'bun-plugin-stx', '@stacksjs/desktop', '@stacksjs/sanitizer', 'stx-router']) {
     const version = dependencies[name]
     if (version && /^\d+\.\d+\.\d+(?:-[\w.-]+)?$/.test(version))
       pins[name] = version
+  }
+  return pins
+}
+
+/** Read the exact STX release's nested runtime pins before changing an app. */
+export async function resolvePublishedRuntimePins(dependencies: Record<string, string>, read: typeof fetch = fetch): Promise<Record<string, string>> {
+  const pins = publishedRuntimePins(dependencies)
+  const version = pins['@stacksjs/stx']
+  if (!version)
+    return pins
+  const response = await read(`https://registry.npmjs.org/@stacksjs%2fstx/${version}`)
+  if (!response.ok)
+    throw new Error(`Could not resolve the runtime dependencies shipped by @stacksjs/stx@${version}.`)
+  const manifest = await response.json() as { name?: string, version?: string, dependencies?: Record<string, string> }
+  if (manifest.name !== '@stacksjs/stx' || manifest.version !== version)
+    throw new Error('The published STX manifest does not match the requested runtime release.')
+  for (const [name, target] of Object.entries(publishedRuntimePins(manifest.dependencies ?? {}))) {
+    if (pins[name] && pins[name] !== target)
+      throw new Error(`The published framework and STX manifests disagree on ${name}.`)
+    pins[name] = target
   }
   return pins
 }
