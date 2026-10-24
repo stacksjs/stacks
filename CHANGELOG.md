@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.290...v0.75.291)
+
+## 🐛 Bug Fixes
+
+- require a successful published framework installation ([96632b4](https://github.com/stacksjs/stacks/commit/96632b4)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.289...v0.75.290)
 
 ## 🐛 Bug Fixes
