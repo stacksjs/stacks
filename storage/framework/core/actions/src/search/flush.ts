@@ -12,6 +12,7 @@ const result = await flushModelDocuments(modelOption)
 if (result?.isErr) {
   console.error(result.error)
   await log.error('Flushing search engine failed', result.error)
+  process.exit(1)
 }
 
 process.exit(0)

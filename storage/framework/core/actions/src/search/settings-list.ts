@@ -12,6 +12,7 @@ const result = await listIndexSettings(modelOption)
 if (result?.isErr) {
   console.error(result.error)
   await log.error('Listing index settings failed', result.error)
+  process.exit(1)
 }
 
 process.exit(0)

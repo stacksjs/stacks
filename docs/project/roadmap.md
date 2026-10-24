@@ -21,6 +21,10 @@ The current focus is on stabilizing the core framework:
 
 ### Database Migration Hardening
 
+- [x] Reindex only the application's model scope and make search maintenance commands fail when the provider returns an error.
+
+- [x] Remove an obsolete conflicting parent foreign key on request only when the model's correct reference is already enforced.
+
 - [x] Keep each dialect in its own migration corpus after connection setup, including MySQL development with an existing Postgres production corpus.
 
 - [x] Offer opt-in, model-derived removal of obsolete NOT NULL constraints and foreign keys on polymorphic references without deleting data.

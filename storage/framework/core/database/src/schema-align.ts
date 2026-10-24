@@ -29,7 +29,8 @@
  *   - an enum type the model extends gets the new labels.
  *
  * With `relaxConstraints`, also remove obsolete NOT NULL constraints when the
- * model allows null, and foreign keys on polymorphic id/type pairs. Neither
+ * model allows null, foreign keys on polymorphic id/type pairs, and conflicting
+ * foreign keys when the model's correct reference is already enforced. Neither
  * repair deletes data. Tightening nullability always remains report-only.
  * Everything else - extra columns, narrowing, defaults, an index
  * whose definition differs from its name's - is reported and left alone.
@@ -121,7 +122,7 @@ export interface LiveAlignSchema {
   populated?: Set<string>
 }
 
-export type AlignActionKind = 'create-enum-type' | 'add-enum-value' | 'add-column' | 'widen-column' | 'rename-index' | 'create-index' | 'add-foreign-key' | 'relax-nullability' | 'drop-polymorphic-foreign-key'
+export type AlignActionKind = 'create-enum-type' | 'add-enum-value' | 'add-column' | 'widen-column' | 'rename-index' | 'create-index' | 'add-foreign-key' | 'relax-nullability' | 'drop-polymorphic-foreign-key' | 'drop-conflicting-foreign-key'
 
 export interface AlignAction {
   kind: AlignActionKind
@@ -694,6 +695,21 @@ export function planSchemaAlignment(
         continue
 
       const present = live.foreignKeys.find(fk => fk.table === table && fk.column === column.name && fk.refTable === refTable && fk.refColumn === refColumn)
+      const conflicts = live.foreignKeys.filter(fk => fk.table === table && fk.column === column.name && (fk.refTable !== refTable || fk.refColumn !== refColumn))
+      for (const conflict of conflicts) {
+        // Keep the intended relationship enforced throughout the repair. When
+        // it is missing, the checked add below must land before a later pass
+        // can remove the obsolete reference.
+        if (present && options.relaxConstraints) {
+          actions.push({
+            kind: 'drop-conflicting-foreign-key', table, name: conflict.name,
+            detail: `remove ${conflict.name}: ${table}.${column.name} already references the model's ${refTable}.${refColumn}`,
+            sql: `ALTER TABLE ${quote(table)} DROP CONSTRAINT ${quote(conflict.name)}`,
+          })
+        }
+        else reports.push({ kind: 'foreign-key', table, name: conflict.name,
+          detail: `${conflict.name} references ${conflict.refTable}.${conflict.refColumn} instead of ${refTable}.${refColumn}; removal requires --relax-constraints and an enforced model reference` })
+      }
       if (present) {
         const wantDelete = foreignKeyAction(ref.onDelete)
         const wantUpdate = foreignKeyAction(ref.onUpdate)
