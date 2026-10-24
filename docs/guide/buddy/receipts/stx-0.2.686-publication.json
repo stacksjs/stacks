@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "repository": "stacksjs/stx",
+  "source": "6c6fb7931848fe4a6aade97ad58c9cbdc9ac7858",
+  "tag": "v0.2.686",
+  "recordedAt": "2026-10-24T18:19:42.204884+00:00",
+  "sourceCI": {
+    "id": 40110859384,
+    "conclusion": "success"
+  },
+  "release": {
+    "id": 40110859631,
+    "attempt": 4,
+    "conclusion": "success",
+    "requiredJobs": [
+      "icons",
+      "npm",
+      "Verify native signing on macOS 15",
+      "Verify the exact release source"
+    ]
+  },
+  "originalConsumedArchives": {
+    "packages": [
+      {
+        "name": "@stacksjs/desktop",
+        "version": "0.2.686",
+        "shasum": "114a029f40dd8dc5d44da65914df9287c3261699",
+        "integrity": "sha512-zn9QtBylJSYC5YvT4e0R909ocztR3D30c53n81EzZ2s+k5fCme2MplRZe/pZkFTIteSbcXwavTg9uofbaBId4w==",
+        "file": "_stacksjs_desktop-0.2.686.tgz",
+        "bytes": 109003,
+        "sha256": "e773875a216dfb3aa5ff7628c6f3b11e7085bd67512694c24c7a08a0e9a0d303",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      },
+      {
+        "name": "@stacksjs/sanitizer",
+        "version": "0.2.686",
+        "shasum": "0932d570fe1f17a37ab062dff2f837c7b7415c3e",
+        "integrity": "sha512-ImSPL1kXzdY8ZUR6BVi6alSDk3/uInCt6GM/92OxfPtiTjTWeT03RJ8mKhXmVOhHFuUnj2GjtUXbKOBnbbAzsQ==",
+        "file": "_stacksjs_sanitizer-0.2.686.tgz",
+        "bytes": 4742,
+        "sha256": "d819559f52b4c0fca2e3f97f59b6a6f7655fe5b27fb22b5509387bee9cc10006",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      },
+      {
+        "name": "stx-router",
+        "version": "0.2.686",
+        "shasum": "8811c44a4d79170d1b5bce7b0f0de807d6e3b9f5",
+        "integrity": "sha512-7rYQmg44A3TTnyId81lctNYQN18Sem+3G0w2B1uwXIZWU8jM+Fcv4HKTJYg9mOSoj66U6HxxLBMlWFRlztrSHg==",
+        "file": "stx-router-0.2.686.tgz",
+        "bytes": 83004,
+        "sha256": "9c67ecf8658bb6c40036fb28d4eefc969eaf26588355ee89aef444f273702b44",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      },
+      {
+        "name": "bun-plugin-stx",
+        "version": "0.2.686",
+        "shasum": "35a4af06584e15fc75be3657dc06e8c6410756e7",
+        "integrity": "sha512-t9mvT7C0y8dIVAqLW4QfLtWHucPtXP11qYWOQSXt0KOsP2VfaLB0nt+3cGlUFDkSrLVL6EmSCwzoX7uKoeGpCw==",
+        "file": "bun-plugin-stx-0.2.686.tgz",
+        "bytes": 126371,
+        "sha256": "8fbaff5831c44d39339bfe676297c1bb2ca1c90177bdac21738294490aeb9d14",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      },
+      {
+        "name": "@stacksjs/stx",
+        "version": "0.2.686",
+        "shasum": "fca3e7bb57c1536d8376f2cbe750cface128ff1e",
+        "integrity": "sha512-hqx22g/pNGwLdJMuMCu6eOW38XFNN7qBvFReikUgoQfzXoUkIwNIDIeF2OmSDYfLj+QAPM8iQ6bqamzVoeFPIQ==",
+        "file": "_stacksjs_stx-0.2.686.tgz",
+        "bytes": 2304143,
+        "sha256": "09f0358f0b0d3b517618014b983629b2f496de3e40caf45051dcd44805f8f757",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      },
+      {
+        "name": "@stacksjs/components",
+        "version": "0.2.686",
+        "shasum": "5ce6514d3a1726db30c471438e85e1fecf1832b8",
+        "integrity": "sha512-Z4oHRClrTczd/iXwfdfqJeFv9K/0X87jjif1/gCUCHL/Y+Ip4a7n+UWGcAz29PBNsuRWSKxtCIO3EdjsFhLsKQ==",
+        "file": "_stacksjs_components-0.2.686.tgz",
+        "bytes": 561244,
+        "sha256": "848c2a4ec32f7a4d6dda8dd54aefd48cc53919944819709f390a1131255f8a3b",
+        "matchedOriginalMetadataAndCompleteBytes": true
+      }
+    ],
+    "failures": [],
+    "verifiedAt": "2026-10-24T17:22:20.977Z"
+  },
+  "pendingIconRecovery": {
+    "source": "6c6fb7931848fe4a6aade97ad58c9cbdc9ac7858",
+    "receipt": {
+      "name": "@stacksjs/iconify-emojione-v1",
+      "version": "0.2.686",
+      "shasum": "955bd3650798cf8a1071bb14d137bed2db452b37",
+      "integrity": "sha512-db7m515zOdBCdC+xhRhAgjKMJpiK2DWnbF5zOx16UOnO1izbA4vrBDpQ/u0h3UQhjEoL5kCcMh7D1rFLGc/SHw=="
+    },
+    "verified": true,
+    "archive": {
+      "bytes": 7660458,
+      "sha256": "fa396a27031da155014085debd7f7ee6ec9d9d3cdf46e5aa538598cb5ec1d514"
+    },
+    "verifiedAt": "2026-10-24T18:11:35.561Z",
+    "readOnly": true,
+    "noRepublication": true
+  },
+  "recovery": "One failed-job rerun was dispatched by this chat only after original accepted icon bytes matched publicly. The authoritative latest release attempt is recorded independently; no source/gate change, new upload or republish was performed by this chat.",
+  "scope": "Original six SDK publication identity and complete bytes, exact source/native-signing/release gates. No native game or Gold-fidelity claim."
+}
