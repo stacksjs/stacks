@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.288...v0.75.289)
+
+## 🐛 Bug Fixes
+
+- pair framework rendering and recording with verified runtimes ([4425ed8](https://github.com/stacksjs/stacks/commit/4425ed8)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.287...v0.75.288)
 
 ## ✨ Features
