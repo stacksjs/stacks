@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.314...v0.75.315)
+
+## 🐛 Bug Fixes
+
+- validate the bootstrap Pantry pin before publishing ([c3613ea](https://github.com/stacksjs/stacks/commit/c3613ea)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.313...v0.75.314)
 
 ## 🐛 Bug Fixes
