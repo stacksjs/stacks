@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.303...v0.75.304)
+
+## 🐛 Bug Fixes
+
+- align umbrella stx desktop runtime and trace browser discovery ([78a5c02](https://github.com/stacksjs/stacks/commit/78a5c02)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- isolate real CDP disconnection from browser discovery ([f937a39](https://github.com/stacksjs/stacks/commit/f937a39)) _(by Chris Breuer <chris@stacksjs.com>)_
+- retain native browser discovery and protocol timing ([a65ae3f](https://github.com/stacksjs/stacks/commit/a65ae3f)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.302...v0.75.303)
 
 ## 🐛 Bug Fixes
