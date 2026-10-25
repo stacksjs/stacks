@@ -39,12 +39,29 @@ test('a disconnected real scenario retains its completed steps and failed observ
   // Trace discovery in this child only. Keep the real executables, arguments
   // and results so a stuck system browser identifies its boundary on CI.
   const trace = join(directory, 'discovery-trace.ts')
-  writeFileSync(trace, `const original = Bun.spawnSync
+  writeFileSync(trace, `const started = performance.now()
+const log = (...values) => console.error(Math.round(performance.now() - started), ...values)
+const original = Bun.spawnSync
 Bun.spawnSync = function (...args) {
-  console.error('Browser discovery start:', JSON.stringify(args[0]))
+  log('Browser discovery start:', JSON.stringify(args[0]))
   const result = original.apply(Bun, args)
-  console.error('Browser discovery end:', result.exitCode)
+  log('Browser discovery end:', result.exitCode)
   return result
+}
+const send = WebSocket.prototype.send
+WebSocket.prototype.send = function (data) {
+  const message = JSON.parse(String(data))
+  log('CDP send:', message.id, message.method)
+  return send.call(this, data)
+}
+const listen = WebSocket.prototype.addEventListener
+WebSocket.prototype.addEventListener = function (type, listener, ...options) {
+  if (type !== 'message') return listen.call(this, type, listener, ...options)
+  return listen.call(this, type, function (event) {
+    const message = JSON.parse(event.data)
+    if (message.id || message.method === 'Page.loadEventFired') log('CDP received:', message.id, message.method)
+    return listener.call(this, event)
+  }, ...options)
 }
 `)
   // This dependency-free public CLI runs in a new process group and a fresh
@@ -58,6 +75,7 @@ Bun.spawnSync = function (...args) {
   browserPid = child.pid
   try {
     const [code, output, error] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
+    console.info('Real browser fixture timing:', JSON.stringify({ phases, trace: error }))
     if (!disconnected) throw new Error(`The fixture did not close its owned target: ${JSON.stringify({ phases, code, output, error })}`)
     expect(code).toBe(1)
     const report = JSON.parse(output)
