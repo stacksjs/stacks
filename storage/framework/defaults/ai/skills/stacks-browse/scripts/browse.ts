@@ -1001,8 +1001,11 @@ async function main() {
           await Bun.sleep(step.settle ?? 250)
       }
 
-      const finalState = await cdp.send('Runtime.evaluate', {
-        expression: `({
+      const collectionErrors: { phase: string, error: string }[] = []
+      let finalState: unknown = null
+      try {
+        const collected = await cdp.send('Runtime.evaluate', {
+          expression: `({
           url: location.href,
           title: document.title,
           focusHistory: window.__browseFocusHistory || [],
@@ -1016,26 +1019,38 @@ async function main() {
           } : null,
           bodyText: (document.body.innerText || '').replace(/\\s+/g, ' ').trim().slice(0, 500),
         })`,
-        returnByValue: true,
-      })
+          returnByValue: true,
+        })
+        finalState = collected.result?.value ?? null
+      }
+      catch (error) {
+        collectionErrors.push({ phase: 'final-state', error: error instanceof Error ? error.message : String(error) })
+      }
       let screenshot: string | null = null
       if (typeof flags.out === 'string') {
-        screenshot = flags.out
-        mkdirSync(screenshot.split('/').slice(0, -1).join('/') || '.', { recursive: true })
-        await Bun.write(screenshot, await captureScreenshot(cdp, { full: !!flags.full }))
+        try {
+          const output = flags.out
+          mkdirSync(output.split('/').slice(0, -1).join('/') || '.', { recursive: true })
+          await Bun.write(output, await captureScreenshot(cdp, { full: !!flags.full }))
+          screenshot = output
+        }
+        catch (error) {
+          collectionErrors.push({ phase: 'screenshot', error: error instanceof Error ? error.message : String(error) })
+        }
       }
       const failedRequests = state.responses.filter(response => response.status >= 400)
       console.log(JSON.stringify({
         url,
         viewport: `${viewport.w}x${viewport.h}`,
         steps: results,
-        final: finalState.result?.value,
+        final: finalState,
         screenshot,
+        collectionErrors,
         consoleMessages: state.console,
         consoleErrors: state.consoleErrors,
         failedRequests,
       }, null, 2))
-      if (scenarioFailed || state.consoleErrors.length || failedRequests.length)
+      if (scenarioFailed || collectionErrors.length || state.consoleErrors.length || failedRequests.length)
         process.exitCode = 1
       state.dispose()
       cdp.close()

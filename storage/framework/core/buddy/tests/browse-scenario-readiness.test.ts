@@ -1,6 +1,69 @@
 import { expect, spyOn, test } from 'bun:test'
+import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
+import process from 'node:process'
 import { runInNewContext } from 'node:vm'
 import { parseScenarioStep, runScenarioStep } from '../../../defaults/ai/skills/stacks-browse/scripts/browse'
+
+test('a disconnected real scenario retains its completed steps and failed observation phases', async () => {
+  const directory = mkdtempSync(join(tmpdir(), 'browse-disconnect-report-'))
+  let browserPid = 0, disconnected = false, phase = 'launch'
+  const server = Bun.serve({
+    hostname: '127.0.0.1', port: 0,
+    async fetch(request) {
+      if (new URL(request.url).pathname === '/disconnect') {
+        phase = 'disconnect-requested'
+        // Only this child's uniquely owned profile and this fixture's page
+        // qualify. Never enumerate or close a user's browser session.
+        const profile = readdirSync(tmpdir()).find(name => name.startsWith(`stacks-browse-${browserPid}-`))
+        if (!profile) throw new Error('The scenario did not own a browser profile')
+        const port = Number(readFileSync(join(tmpdir(), profile, 'DevToolsActivePort'), 'utf8').split('\n')[0])
+        phase = 'target-list'
+        const pages = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json() as { id: string, url: string }[]
+        const page = pages.find(page => page.url === server.url.href)
+        if (!page) throw new Error('The owned fixture page was not found')
+        phase = 'target-close'
+        const closed = await fetch(`http://127.0.0.1:${port}/json/close/${encodeURIComponent(page.id)}`)
+        if (!closed.ok) throw new Error('Chrome did not close the owned target')
+        disconnected = true
+        return new Response('Closed the owned target')
+      }
+      phase = 'fixture-requested'
+      return new Response('<h1>Before disconnect</h1>', { headers: { 'content-type': 'text/html' } })
+    },
+  })
+  const driver = resolve(import.meta.dir, '../../../defaults/ai/skills/stacks-browse/scripts/browse.ts')
+  const capture = join(directory, 'capture.png')
+  // This dependency-free public CLI runs in a new process group and a fresh
+  // directory, with no application runtime or user state substituted. Its
+  // existing startup, CDP and load bounds total 40s before scenario execution.
+  const child = Bun.spawn([process.execPath, '--no-env-file', driver, 'scenario', server.url.href,
+    '--out', capture,
+    '--step', JSON.stringify({ action: 'assert', selector: 'h1', text: 'Before disconnect' }),
+    '--step', JSON.stringify({ action: 'evaluate', expression: `fetch(${JSON.stringify(new URL('/disconnect', server.url).href)}).then(response => response.text())` }),
+  ], { cwd: directory, detached: true, stdout: 'pipe', stderr: 'pipe', timeout: 45_000 })
+  browserPid = child.pid
+  try {
+    const [code, output, error] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
+    if (!disconnected) throw new Error(`The fixture did not close its owned target: ${JSON.stringify({ phase, code, output, error })}`)
+    expect(code).toBe(1)
+    const report = JSON.parse(output)
+    expect(report.steps).toHaveLength(2)
+    expect(report.steps[0]).toMatchObject({ action: 'assert', ok: true, text: 'Before disconnect' })
+    expect(report.steps[1]).toMatchObject({ action: 'evaluate', ok: false, step: 2 })
+    expect(report.final).toBeNull()
+    expect(report.screenshot).toBeNull()
+    expect(report.collectionErrors.map((error: { phase: string }) => error.phase)).toEqual(['final-state', 'screenshot'])
+    expect(await Bun.file(capture).exists()).toBe(false)
+  }
+  finally {
+    try { process.kill(-child.pid, 'SIGTERM') }
+    catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ESRCH') throw error }
+    server.stop(true)
+    rmSync(directory, { recursive: true, force: true })
+  }
+}, 50_000)
 
 test('keyboard scenarios send physical digit and letter codes on both events', async () => {
   for (const [key, code, virtual] of [['1', 'Digit1', 49], ['9', 'Digit9', 57], ['h', 'KeyH', 72], ['S', 'KeyS', 83], [' ', 'Space', 32]]) {
@@ -40,10 +103,16 @@ function page(delayMs: number) {
 }
 
 test('bounded assertions observe asynchronous visible state instead of a fixed sleep', async () => {
-  const browser = page(80)
-  const step = parseScenarioStep(JSON.stringify({ action: 'assert', selector: 'button', text: 'Sound on', timeoutMs: 1000 }))
-  expect(await runScenarioStep(browser, step)).toMatchObject({ ok: true, text: 'Sound on' })
-  expect(browser.probes()).toBeGreaterThan(1)
+  let now = 0
+  const clock = spyOn(performance, 'now').mockImplementation(() => now)
+  try {
+    const browser = page(80), send = browser.send
+    browser.send = async (...args) => { now += 40; return send(...args) }
+    const step = parseScenarioStep(JSON.stringify({ action: 'assert', selector: 'button', text: 'Sound on', timeoutMs: 1000 }))
+    expect(await runScenarioStep(browser, step)).toMatchObject({ ok: true, text: 'Sound on' })
+    expect(browser.probes()).toBe(2)
+  }
+  finally { clock.mockRestore() }
 })
 
 test('bounded assertions retain failure when the visible result never arrives', async () => {
