@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.304...v0.75.305)
+
+## 🐛 Bug Fixes
+
+- prefer installed Chrome before distribution Chromium launchers ([992ff46](https://github.com/stacksjs/stacks/commit/992ff46)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.303...v0.75.304)
 
 ## 🐛 Bug Fixes
