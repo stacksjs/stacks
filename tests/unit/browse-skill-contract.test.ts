@@ -88,7 +88,9 @@ describe('browse skill contract', () => {
     expect(script).toContain('consoleMessages: state.console')
     expect(script).toContain('state.consoleErrors.length || failedRequests.length')
     expect(script).toContain('step: results.length + 1')
-    expect(script).toContain('if (scenarioFailed || state.consoleErrors.length || failedRequests.length)')
+    expect(skill).toContain('`collectionErrors`')
+    expect(skill).toContain('sets the missing result to')
+    expect(skill).toContain('exits nonzero')
   })
 
   test('keeps crawling within the starting origin', () => {
