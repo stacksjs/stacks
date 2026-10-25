@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.308...v0.75.309)
+
+## ✨ Features
+
+- **cli**: support request cancellation in bounded commands ([9423413](https://github.com/stacksjs/stacks/commit/9423413)) _(by Chris Breuer <chris@stacksjs.com>)_ ([#2988](https://github.com/stacksjs/stacks/issues/2988))
+
+## ✅ Tests
+
+- **cli**: isolate async output fixtures ([a12cef8](https://github.com/stacksjs/stacks/commit/a12cef8)) _(by Chris Breuer <chris@stacksjs.com>)_ ([#2989](https://github.com/stacksjs/stacks/issues/2989))
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.307...v0.75.308)
 
 ## 🐛 Bug Fixes
