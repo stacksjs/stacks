@@ -445,6 +445,35 @@ export function traitTablePrerequisiteSql(corpus: string, sql: SqlHelpers): stri
   return plan
 }
 
+/** Restore required owners only when an empty SQLite pivot has no rows to backfill. */
+async function reconcileEmptySqlitePivots(sql: SqlHelpers): Promise<void> {
+  if (!sql.isSqlite)
+    return
+
+  for (const [table, column] of [
+    ['taggable_models', 'taggable_id'],
+    ['categorizable_models', 'categorizable_id'],
+  ]) {
+    const columns = await db.unsafe(`PRAGMA table_info(${table})`).execute() as Array<{ name: string }>
+    if (columns.some(existing => existing.name === column))
+      continue
+
+    const rows = await db.unsafe(`SELECT 1 FROM ${table} LIMIT 1`).execute()
+    if (rows.length > 0)
+      throw new Error(`Cannot infer ${table}.${column} for existing rows. Restore the owner IDs from an authoritative backup or repair the pivot explicitly, then rerun migrate.`)
+
+    try {
+      // No default owner is legitimate. SQLite checks this NOT NULL addition
+      // atomically, so an intervening insert cannot turn into a guessed owner.
+      await db.unsafe(`ALTER TABLE ${table} ADD COLUMN ${column} ${sql.bigInteger} NOT NULL`).execute()
+    }
+    catch (error) {
+      if (!isDuplicateColumnError(error))
+        throw error
+    }
+  }
+}
+
 /**
  * Create the polymorphic trait tables. Idempotent (`IF NOT EXISTS`), so it's
  * safe to run on every `buddy migrate`.
@@ -512,6 +541,8 @@ export async function migrateTraitTables(options: { verbose?: boolean } = {}): P
           throw error
       }
     }
+
+    await reconcileEmptySqlitePivots(sql)
 
     for (const statement of traitTableIndexSql()) {
       try {

@@ -981,6 +981,7 @@ export function migrate(buddy: CLI): void {
       // pre-creating `notification_preferences` used to suppress the generated
       // model migration and silently discard its user_id foreign key. These
       // guarantees are still attempted before the failure exit below (#1952).
+      let traitMigrationError: string | undefined
       if (options.auth !== false) {
         try {
           const { ensureUtcDatetimeColumns, ensureUtcTimestampDefaults, migrateNotificationTables, migrateRbacTables, migrateTraitTables } = await import('@stacksjs/database')
@@ -996,7 +997,8 @@ export function migrate(buddy: CLI): void {
 
           const traitResult = await migrateTraitTables({ verbose: options.verbose })
           if (!traitResult.success) {
-            log.error(`Failed to migrate polymorphic trait tables: ${traitResult.error}`)
+            traitMigrationError = traitResult.error || 'Polymorphic trait table migration failed'
+            log.error(`Failed to migrate polymorphic trait tables: ${traitMigrationError}`)
           }
 
           // MySQL TIMESTAMP columns convert through the session timezone;
@@ -1015,18 +1017,20 @@ export function migrate(buddy: CLI): void {
           }
         }
         catch (error) {
+          traitMigrationError = error instanceof Error ? error.message : String(error)
           log.error('Failed to migrate notification/RBAC/trait tables:', error)
         }
       }
 
       // Surface the model-migration failure only after the guarantee
       // tables above have had their chance to run (#1952).
-      if (resultFailed(result)) {
+      if (resultFailed(result) || traitMigrationError) {
         await outro(
           'While running the migrate command, there was an issue',
           { startTime: perf, useSeconds: true },
-          result.error,
+          resultFailed(result) ? result.error : traitMigrationError,
         )
+        await log.flush()
         process.exit(ExitCode.FatalError)
       }
 
@@ -1239,7 +1243,12 @@ export function migrate(buddy: CLI): void {
       await preflightDatabase({ createDatabase: options.createDatabase, command: 'migrate:fresh' })
       await ensureDatabaseOrExit()
 
-      const result = await runAction(Action.MigrateFresh, options)
+      const result = await runAction(Action.MigrateFresh, {
+        ...options,
+        // False flags are omitted from action argv. Carry the opt-out through
+        // the native subprocess environment so child guarantees agree with us.
+        env: { ...options.env, STACKS_MIGRATE_NO_AUTH: options.auth === false ? '1' : '0' },
+      })
 
       if (resultFailed(result)) {
         // Same ordering rule as `buddy migrate` (#1952): the guarantee
@@ -1249,6 +1258,7 @@ export function migrate(buddy: CLI): void {
       }
 
       // Auth/oauth tables migrate by default. Pass --no-auth to opt out.
+      let traitMigrationError: string | undefined
       if (options.auth !== false) {
         // Step-progress at debug — the auth-tables SQL is all
         // `CREATE TABLE IF NOT EXISTS`, so re-runs are no-ops and the
@@ -1285,10 +1295,12 @@ export function migrate(buddy: CLI): void {
           // missing table.
           const traitResult = await migrateTraitTables({ verbose: options.verbose })
           if (!traitResult.success) {
-            log.error(`Failed to migrate polymorphic trait tables: ${traitResult.error}`)
+            traitMigrationError = traitResult.error || 'Polymorphic trait table migration failed'
+            log.error(`Failed to migrate polymorphic trait tables: ${traitMigrationError}`)
           }
         }
         catch (error) {
+          traitMigrationError = error instanceof Error ? error.message : String(error)
           log.error('Failed to migrate auth/notification/RBAC/trait tables:', error)
         }
       }
@@ -1307,12 +1319,13 @@ export function migrate(buddy: CLI): void {
 
       // Surface the model-migration failure only after the guarantee
       // tables above have had their chance to run (#1952).
-      if (resultFailed(result)) {
+      if (resultFailed(result) || traitMigrationError) {
         await outro(
           'While running the migrate:fresh command, there was an issue',
           { startTime: perf, useSeconds: true },
-          result.error,
+          resultFailed(result) ? result.error : traitMigrationError,
         )
+        await log.flush()
         process.exit(ExitCode.FatalError)
       }
 

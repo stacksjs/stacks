@@ -28,6 +28,24 @@ import * as database from '@stacksjs/database'
 
 Learn more in the docs.
 
+## Legacy SQLite trait pivots
+
+`buddy migrate` and `buddy migrate:fresh` reconcile missing `taggable_id` or
+`categorizable_id` columns in empty legacy SQLite pivot tables before creating
+trait indexes. Added owner columns remain required and have no default value.
+Existing rows and IDs are preserved when the table already has its owner column.
+
+A nonempty pivot without an owner column needs an authoritative owner mapping.
+Migration refuses it with the affected table and column in the error; it does
+not assign zero or guess owners. Restore the missing IDs from a trustworthy
+backup or repair the pivot explicitly before rerunning migration.
+
+The default trait guarantees run unless the command receives `--no-auth`.
+Trait migration failures return a nonzero command status. Applications should
+let deployment stop on that failure instead of suppressing migration errors.
+`migrateTraitTables()` returns `{ success: false, error }` for programmatic
+callers. Automatic empty-pivot reconciliation is implemented for SQLite.
+
 ## 🧪 Testing
 
 ```bash
