@@ -1,5 +1,5 @@
 import { expect, spyOn, test } from 'bun:test'
-import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import process from 'node:process'
@@ -7,6 +7,16 @@ import { runInNewContext } from 'node:vm'
 import { parseScenarioStep, runScenarioStep } from '../../../defaults/ai/skills/stacks-browse/scripts/browse'
 
 test('a disconnected real scenario retains its completed steps and failed observation phases', async () => {
+  // This fixture tests a real target disconnection, not browser discovery.
+  // Linux CI's chromium launchers each consumed a full 15s fallback bound
+  // before Chrome started. Select the host explicitly through the public CLI
+  // option instead of timing unrelated candidate fallbacks inside this test.
+  const browser = process.env.BROWSE_BROWSER
+    ?? Bun.which('google-chrome-stable') ?? Bun.which('google-chrome')
+    ?? ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      join(process.env.PROGRAMFILES ?? '', 'Google/Chrome/Application/chrome.exe'),
+      join(process.env.LOCALAPPDATA ?? '', 'Google/Chrome/Application/chrome.exe')].find(path => existsSync(path))
+  if (!browser || !existsSync(browser)) throw new Error('The real scenario fixture requires Chrome or an explicit BROWSE_BROWSER path.')
   const directory = mkdtempSync(join(tmpdir(), 'browse-disconnect-report-'))
   let browserPid = 0, disconnected = false
   const phases: string[] = ['launch']
@@ -36,46 +46,17 @@ test('a disconnected real scenario retains its completed steps and failed observ
   })
   const driver = resolve(import.meta.dir, '../../../defaults/ai/skills/stacks-browse/scripts/browse.ts')
   const capture = join(directory, 'capture.png')
-  // Trace discovery in this child only. Keep the real executables, arguments
-  // and results so a stuck system browser identifies its boundary on CI.
-  const trace = join(directory, 'discovery-trace.ts')
-  writeFileSync(trace, `const started = performance.now()
-const log = (...values) => console.error(Math.round(performance.now() - started), ...values)
-const original = Bun.spawnSync
-Bun.spawnSync = function (...args) {
-  log('Browser discovery start:', JSON.stringify(args[0]))
-  const result = original.apply(Bun, args)
-  log('Browser discovery end:', result.exitCode)
-  return result
-}
-const send = WebSocket.prototype.send
-WebSocket.prototype.send = function (data) {
-  const message = JSON.parse(String(data))
-  log('CDP send:', message.id, message.method)
-  return send.call(this, data)
-}
-const listen = WebSocket.prototype.addEventListener
-WebSocket.prototype.addEventListener = function (type, listener, ...options) {
-  if (type !== 'message') return listen.call(this, type, listener, ...options)
-  return listen.call(this, type, function (event) {
-    const message = JSON.parse(event.data)
-    if (message.id || message.method === 'Page.loadEventFired') log('CDP received:', message.id, message.method)
-    return listener.call(this, event)
-  }, ...options)
-}
-`)
   // This dependency-free public CLI runs in a new process group and a fresh
   // directory, with no application runtime or user state substituted. Its
-  // existing startup, CDP and load bounds total 40s before scenario execution.
-  const child = Bun.spawn([process.execPath, '--no-env-file', '--preload', trace, driver, 'scenario', server.url.href,
+  // selected host has separate startup, CDP and page-load bounds.
+  const child = Bun.spawn([process.execPath, '--no-env-file', driver, 'scenario', server.url.href,
     '--out', capture,
     '--step', JSON.stringify({ action: 'assert', selector: 'h1', text: 'Before disconnect' }),
     '--step', JSON.stringify({ action: 'evaluate', expression: `fetch(${JSON.stringify(new URL('/disconnect', server.url).href)}).then(response => response.text())` }),
-  ], { cwd: directory, detached: true, stdout: 'pipe', stderr: 'pipe', timeout: 45_000 })
+  ], { cwd: directory, env: { ...process.env, BROWSE_BROWSER: browser }, detached: true, stdout: 'pipe', stderr: 'pipe', timeout: 45_000 })
   browserPid = child.pid
   try {
     const [code, output, error] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
-    console.info('Real browser fixture timing:', JSON.stringify({ phases, trace: error }))
     if (!disconnected) throw new Error(`The fixture did not close its owned target: ${JSON.stringify({ phases, code, output, error })}`)
     expect(code).toBe(1)
     const report = JSON.parse(output)
