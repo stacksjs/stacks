@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.307...v0.75.308)
+
+## 🐛 Bug Fixes
+
+- preserve per-launch browser deadlines and startup evidence ([2ef394a](https://github.com/stacksjs/stacks/commit/2ef394a)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.306...v0.75.307)
 
 ## 🐛 Bug Fixes
