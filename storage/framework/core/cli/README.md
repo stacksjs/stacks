@@ -44,6 +44,21 @@ or failure, including descendants holding inherited pipes. On Windows cleanup
 covers the direct process and readers. Use this API for finite inspection or build
 probes whose descendants should end with the command.
 
+### Request cancellation
+
+Pass a native `AbortSignal` as `signal`, for example an HTTP request's
+`request.signal`. An already-aborted signal rejects before launching a process.
+Later cancellation terminates the owned process scope and waits for the child
+and readers to settle before rejecting with `Error('<label> canceled')`.
+The signal's reason is retained as `cause` without converting it to text.
+
+The first observed failure wins when cancellation overlaps an output or deadline
+failure. Listeners are removed after settlement, so later cancellation cannot
+change a completed capture. Nonzero exits still return the original result
+shape. Cancellation keeps the same POSIX process-group and Windows direct-child
+cleanup scope described above; it does not contain a descendant that deliberately
+escapes that group.
+
 ## 🤖 Usage
 
 ```bash

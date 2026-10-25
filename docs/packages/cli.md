@@ -28,6 +28,28 @@ const cli = new CLI('myapp')
 cli.run()
 ```
 
+## Bounded commands and cancellation
+
+Import `runBoundedProcess` from `@stacksjs/cli/process` when a finite worker or
+inspection command needs explicit time and stdout/stderr byte limits. It passes
+an argument vector directly, drains both streams, waits for exit and returns
+`{ exitCode, stdout, stderr }`, including nonzero exits. Set `strictUtf8: true`
+when malformed text must be rejected.
+
+The optional `signal` accepts a native `AbortSignal`, such as `request.signal`.
+A canceled request prevents launch if it is already aborted, or terminates and
+settles the owned process and readers before rejection. The error message is
+`<label> canceled`; the original reason stays in `cause` without coercion.
+The first failure retains precedence, and cancellation after completion has no
+effect. On POSIX cleanup covers the owned process group, including inherited
+pipes; Windows cleanup covers the direct child and readers. Descendants that
+escape the owned group are outside this contract.
+
+The [package reference](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cli/README.md#capturing-bounded-command-output)
+documents the limits and full options. Choose the executable, argument vector,
+working directory and environment on the server. A bounded worker does not
+authenticate its caller or grant authority to publish its result.
+
 ## Creating Commands
 
 ### Basic Command

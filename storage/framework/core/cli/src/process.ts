@@ -7,6 +7,8 @@ export interface BoundedProcessOptions {
   label: string
   /** Reject malformed UTF-8 on either stream. Valid text keeps its BOM. */
   strictUtf8?: boolean
+  /** Cancel this owned command and settle its child and output readers before rejecting. */
+  signal?: AbortSignal
 }
 
 export interface BoundedProcessResult {
@@ -21,6 +23,10 @@ export async function runBoundedProcess(command: string[], options: BoundedProce
   for (const limit of [options.stdoutBytes, options.stderrBytes]) {
     if (!Number.isSafeInteger(limit) || limit < 1 || limit > 2_000_000) throw new Error('Invalid bounded process output limit')
   }
+  const signal = options.signal
+  if (signal !== undefined && !(signal instanceof AbortSignal)) throw new TypeError('Invalid bounded process signal')
+  const cancellationError = () => new Error(`${options.label} canceled`, { cause: signal?.reason })
+  if (signal?.aborted) throw cancellationError()
   const ownsGroup = process.platform !== 'win32'
   const child = Bun.spawn(command, { cwd: options.cwd, env: options.env ?? process.env, stdin: 'ignore', stdout: 'pipe', stderr: 'pipe', detached: ownsGroup })
   const readers = [child.stdout.getReader(), child.stderr.getReader()]
@@ -42,6 +48,7 @@ export async function runBoundedProcess(command: string[], options: BoundedProce
     terminate()
     for (const reader of readers) cancellations.push(reader.cancel().catch(error => { cleanupFailures.push(error) }))
   }
+  const onAbort = () => stop(cancellationError(), 'canceled')
   async function consume(reader: ReadableStreamDefaultReader<Uint8Array>, limit: number, label: string) {
     const chunks: Uint8Array[] = []
     let bytes = 0
@@ -68,12 +75,17 @@ export async function runBoundedProcess(command: string[], options: BoundedProce
   const timer = setTimeout(() => stop(new Error(`${options.label} timed out`), 'timed out'), options.timeoutMs)
   const stdout = consume(readers[0]!, options.stdoutBytes, 'stdout'), stderr = consume(readers[1]!, options.stderrBytes, 'stderr')
   try {
+    signal?.addEventListener('abort', onAbort, { once: true })
+    // Cancellation can happen after admission but before the listener is armed.
+    if (signal?.aborted) onAbort()
     const [exitCode, output, diagnostic] = await Promise.all([child.exited, stdout, stderr])
     if (failed) throw failure
     return { exitCode, stdout: output, stderr: diagnostic }
   }
-  catch (error) { stop(error); throw error }
+  catch (error) { stop(error); throw failure }
   finally {
+    try { signal?.removeEventListener('abort', onAbort) }
+    catch (error) { cleanupFailures.push(error) }
     clearTimeout(timer)
     // A failure already terminated this owned group. Killing again can race
     // Bun's exit notification and report EPERM for the reaped child.
