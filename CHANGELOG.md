@@ -1,5 +1,31 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.301...v0.75.302)
+
+## ✨ Features
+
+- **ai**: generate runtime auto-import references for skills ([5df9072](https://github.com/stacksjs/stacks/commit/5df9072)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- send physical keyboard codes in browser scenarios ([b6654a3](https://github.com/stacksjs/stacks/commit/b6654a3)) _(by Chris <chris@stacksjs.com>)_
+- **cli**: let stx resolve to the template compiler ([4bdb095](https://github.com/stacksjs/stacks/commit/4bdb095)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh native CLI test catalog ([0941476](https://github.com/stacksjs/stacks/commit/0941476)) _(by Chris <chris@stacksjs.com>)_
+- distinguish Buddy aliases from the STX compiler ([eaf63c6](https://github.com/stacksjs/stacks/commit/eaf63c6)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- integrate framework patch release ([d3da4de](https://github.com/stacksjs/stacks/commit/d3da4de)) _(by Chris <chris@stacksjs.com>)_
+- integrate current framework main ([12038b4](https://github.com/stacksjs/stacks/commit/12038b4)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.300...v0.75.301)
 
 ## ✨ Features
