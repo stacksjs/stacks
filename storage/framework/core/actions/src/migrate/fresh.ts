@@ -2,6 +2,9 @@ import process from 'node:process'
 import { ensureUtcDatetimeColumns, generateMigrations, migrateAuthTables, migrateNotificationTables, migrateRbacTables, migrateTraitTables, resetDatabase, runDatabaseMigration } from '@stacksjs/database'
 import { log } from '@stacksjs/logging'
 
+// The parent carries --no-auth across the action subprocess explicitly.
+const includeAuth = process.env.STACKS_MIGRATE_NO_AUTH !== '1'
+
 // First, reset the database
 const resetResult = await resetDatabase()
 
@@ -25,8 +28,8 @@ if ((genResult)?.isErr) {
 // (0000000098-revoke-legacy-long-lived-tokens.sql) writes to
 // oauth_access_tokens/oauth_refresh_tokens directly — it needs those tables
 // to already exist.
-const authResult = await migrateAuthTables()
-if (!authResult.success)
+const authResult = includeAuth ? await migrateAuthTables() : undefined
+if (authResult && !authResult.success)
   log.error(`Failed to migrate auth tables: ${authResult.error}`)
 
 // No notification bootstrap here. `runDatabaseMigration()` below already does
@@ -58,16 +61,16 @@ const migrateResult = await runDatabaseMigration()
 // the framework fallback first makes CREATE TABLE IF NOT EXISTS suppress the
 // model-defined constraints. Still attempt the guarantees before surfacing a
 // model migration failure so partial/legacy databases remain repairable.
-const notifResult = await migrateNotificationTables()
-if (!notifResult.success)
+const notifResult = includeAuth ? await migrateNotificationTables() : undefined
+if (notifResult && !notifResult.success)
   log.error(`Failed to migrate notification tables: ${notifResult.error}`)
 
-const rbacResult = await migrateRbacTables()
-if (!rbacResult.success)
+const rbacResult = includeAuth ? await migrateRbacTables() : undefined
+if (rbacResult && !rbacResult.success)
   log.error(`Failed to migrate RBAC tables: ${rbacResult.error}`)
 
-const traitResult = await migrateTraitTables()
-if (!traitResult.success)
+const traitResult = includeAuth ? await migrateTraitTables() : undefined
+if (traitResult && !traitResult.success)
   log.error(`Failed to migrate polymorphic trait tables: ${traitResult.error}`)
 
 const datetimeResult = await ensureUtcDatetimeColumns()
@@ -77,6 +80,12 @@ if (!datetimeResult.success)
 if ((migrateResult).isErr) {
   await log.error('runDatabaseMigration failed')
   await log.error((migrateResult).error)
+  await log.flush()
+  process.exit(1)
+}
+
+if (traitResult && !traitResult.success) {
+  await log.flush()
   process.exit(1)
 }
 
