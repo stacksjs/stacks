@@ -78,6 +78,10 @@ review the generated SQL and snapshot, then apply with `./buddy migrate`.
 and `stacks-router` for selection, authentication, ownership, and mount behavior.
 Use `stacks-auto-imports` to distinguish browser bindings from declarations
 and explicit module imports.
+Before adding imports in app code, read the relevant section of
+`storage/framework/auto-imports/RUNTIME.md` and use its listed names directly
+in their stated context. `buddy generate`, `buddy generate:auto-imports` and
+`buddy setup:ai` refresh this inventory from the runtime registries.
 
 **Subsystem reference**, one per area (`stacks-orm`, `stacks-router`,
 `stacks-queue`, ...), each documenting it authoritatively. Read the relevant

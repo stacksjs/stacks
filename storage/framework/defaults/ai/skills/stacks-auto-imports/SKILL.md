@@ -1,12 +1,27 @@
 ---
 name: stacks-auto-imports
-description: Use when checking browser/server binding delivery, model globals, registry generation, or the difference between ambient declarations and runtime imports. Covers Stacks auto-imports, stx client delivery, server boot and generated registries (107 models).
+description: Use before adding imports in Stacks app code, checking available runtime functions, browser/server delivery, model globals, or registry generation. Covers Stacks auto-imports, the generated runtime inventory, stx client delivery and server boot (107 models).
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
 ---
 
 # Auto-imports and runtime delivery
+
+## Available names in this project
+
+Before adding imports, read the relevant section of
+`storage/framework/auto-imports/RUNTIME.md` (relative to the project root).
+Use its listed names directly in their stated execution context to avoid
+redundant imports. This compact reference groups server globals by package
+and barrel, and STX client helpers by runtime, macro and demand delivery.
+It is generated from runtime registries, including app helpers and overrides.
+
+`buddy generate`, `buddy generate:types`, `buddy generate:auto-imports` and
+`buddy setup:ai` refresh it. If missing, run `buddy generate:auto-imports`.
+The inventory stays in the project so copied skills read the current app's
+names after subsequent generation. Keep package implementation files and
+standalone scripts self-contained with explicit imports.
 
 A declaration, a delivered client binding, and an initialized server global are
 three different facts. Inspect the relevant runtime rather than inferring all
@@ -48,9 +63,10 @@ utilities are imported types; UserRequest/UserRequestModel are not generated
 runtime model variants. Names colliding with built-ins, such as Error/Request,
 need explicit imports and safe local aliases.
 
-Import Action, route, response, schema, path, storage, logging and Auth from their
-packages. An ambient helper declaration alone does not establish its global
-runtime initialization. Follow the built-in action's import pattern.
+The server's primitiveModules registry also injects framework helpers such as
+Action, route, response, schema, path, storage, log and Auth. Use the generated
+inventory to select bare names after Stacks boot. Package internals, standalone
+tools and tests without boot still import their dependencies explicitly.
 
 ## Generation and project overrides
 

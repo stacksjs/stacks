@@ -205,6 +205,12 @@ scheduling. Existing explicit authorization carries forward.
 
 ## Auto-imports
 
+Before adding imports in app code, read the relevant section of
+`storage/framework/auto-imports/RUNTIME.md` and use its listed names directly
+in their stated context. `buddy generate`, `buddy generate:auto-imports` and
+`buddy setup:ai` refresh this inventory from the runtime registries. Read
+`stacks-auto-imports` for boot and module boundaries.
+
 Auto-imports let app code skip many `import` statements, but the rules differ by context and the
 framework's own code is the source of truth (verified against the manifests, not just the docs).
 Manifests: `storage/framework/{browser,server}-auto-imports.json`. Generated types:
@@ -310,11 +316,11 @@ What is actually injected is verifiable rather than a matter of documentation:
 controllers on disk, and `storage/framework/core/server/tests/generated-declarations.test.ts`
 fails if it ever declares a name the runtime does not provide.
 
-**Import these explicitly (the framework does).** `types/auto-imports.d.ts` also declares `Action`,
-`route`, `response`, `schema`, `slug`, `path`, `storage`, `log`, and `Auth` as ambient global types,
-but the built-in actions and models import them from their packages anyway (`@stacksjs/actions`,
-`@stacksjs/router`, `@stacksjs/validation`, ...), and so should you. `defineModel` is always imported
-from `@stacksjs/orm`. When unsure, copy the import pattern from `storage/framework/defaults/app/`.
+**Framework helpers after server boot.** The server's `primitiveModules` registry injects
+`Action`, `route`, `response`, `schema`, `path`, `storage`, `log`, `Auth`, `defineModel` and
+other helpers listed in the generated runtime inventory. Use them directly in booted app
+code. Framework packages, standalone scripts and tests without Stacks boot import their
+dependencies explicitly. Type-only symbols always require type imports.
 Add your own auto-imports by exporting from `resources/functions/` (browser) or the auto-import
 barrel, then run `buddy generate`.
 

@@ -9,6 +9,7 @@ import { autoImports, generateRuntimeIndex, generateGlobalsScript } from 'bun-pl
 import { globSync } from '@stacksjs/storage/glob'
 import { primitiveAutoImportEntries, primitiveModules } from './primitive-imports'
 import { defaultImportSpecifier, isFrameworkSourceCheckout } from './default-import-specifier'
+import { browserAutoImportSurface, renderAutoImportReference } from './auto-import-reference'
 
 interface ExportInfo {
   name: string
@@ -651,7 +652,7 @@ function recordedSourceFingerprint(): string | undefined {
  */
 export interface GenerateAutoImportOptions {
   /**
-   * Also rewrite the TypeScript declarations. Default true.
+   * Also rewrite the TypeScript declarations and AI runtime reference. Default true.
    *
    * A deployed server regenerates the barrels at boot when an installed
    * package moved (stacksjs/stacks#2445), and it must not touch
@@ -1179,6 +1180,33 @@ export async function generateServerAutoImportTypes(): Promise<void> {
   await Bun.write(
     path.storagePath('framework/server-auto-imports.json'),
     `${JSON.stringify({ globals: Object.fromEntries(Object.keys(globals).sort().map(k => [k, true])) }, null, 2)}\n`,
+  )
+
+  // Agent instructions consume the same runtime registries as boot. Keep the
+  // app-specific inventory outside bundled skills, which can be read-only or
+  // copied into an agent directory by setup:ai.
+  const groups = primitiveModules.map(([source, names]) => ({ source: `\`${source}\``, names: [...names] as string[] }))
+  for (const barrel of COMBINED_BARRELS) {
+    const file = path.storagePath(`framework/auto-imports/${barrel}.ts`)
+    const exported = existsSync(file) ? barrelExportNames(readFileSync(file, 'utf8')) : new Map()
+    const names = [...exported].filter(([name, info]) => !info.typeOnly && !GLOBAL_SHADOW_BLOCKLIST.has(name)).map(([name]) => name)
+    if (barrel === 'models') {
+      names.push(...valueExports.filter(exp => !exp.isDefault).map(exp => exp.name))
+    }
+    groups.push({ source: `\`auto-imports/${barrel}.ts\`${barrel === 'models' ? ' + ORM proxies' : ''}`, names })
+  }
+  // Later barrels win collisions, just as injectGlobalAutoImports assigns them.
+  const claimed = new Set<string>()
+  for (const group of [...groups].reverse()) {
+    group.names = group.names.filter((name) => {
+      if (claimed.has(name)) return false
+      claimed.add(name)
+      return true
+    })
+  }
+  await writeGeneratedFile(
+    path.storagePath('framework/auto-imports/RUNTIME.md'),
+    renderAutoImportReference(groups, await browserAutoImportSurface()),
   )
 }
 

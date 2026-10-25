@@ -48,6 +48,10 @@ the cases that require an action, job, policy, or explicit route.
 
 ## Important boundaries
 
+- Before adding imports in app code, consult the context-specific names in
+  `storage/framework/auto-imports/RUNTIME.md` at the project root. Use listed
+  runtime helpers directly; read `stacks-auto-imports` for initialization and
+  module boundaries. Generation refreshes the inventory for this app.
 - `app/` overrides framework defaults. Use `extendModel` for additive model
   changes; an ordinary override replaces the definition.
 - Generated CRUD defaults to authenticated routes. Ownership and policies

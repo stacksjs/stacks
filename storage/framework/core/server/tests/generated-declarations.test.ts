@@ -71,6 +71,19 @@ describe('the auto-import declarations describe the runtime', () => {
     expect(missing).toEqual([])
   })
 
+  it('the generated AI reference only advertises values the server injects', async () => {
+    const { injectGlobalAutoImports } = await import('../src/imports')
+    await injectGlobalAutoImports()
+    const reference = readFileSync(path.storagePath('framework/auto-imports/RUNTIME.md'), 'utf8')
+    const server = reference.split('## STX client scripts')[0]!
+    const names = server.split('\n')
+      .filter(line => line.startsWith('| `'))
+      .flatMap(line => [...(line.split('|')[2] ?? '').matchAll(/`([A-Za-z_$][\w$]*)`/g)].map(match => match[1]!))
+
+    expect(names.length).toBeGreaterThan(100)
+    expect(names.filter(name => (globalThis as Record<string, unknown>)[name] === undefined)).toEqual([])
+  })
+
   it('agrees with the eslint globals manifest, name for name', () => {
     /*
      * Two files describing the same set. They are written from one filtered

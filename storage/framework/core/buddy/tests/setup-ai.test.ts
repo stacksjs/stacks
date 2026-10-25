@@ -38,7 +38,8 @@ function registeredCommands(): ReturnType<typeof commandInventoryEntry>[] {
           this.options.push({ rawName: flags, description, config, name: flags })
           return this
         },
-        action() {
+        action(handler: (...args: any[]) => unknown) {
+          ;(this as any).handler = handler
           return this
         },
         example() {
@@ -121,6 +122,7 @@ describe('AI defaults', () => {
 describe('bundled prose skills in a fresh app', () => {
   const defaults = frameworkPath('defaults/ai')
   const resources = [
+    'stacks-auto-imports/SKILL.md',
     'stacks-native/SKILL.md',
     'stacks-native/CATALOG.md',
     'stacks-native/CAPABILITIES.md',
@@ -148,6 +150,38 @@ describe('bundled prose skills in a fresh app', () => {
     'stacks-flow/ENGINEERING.md',
     'stacks-flow/upstream-skills.json',
   ]
+
+  it('setup:ai refreshes the runtime reference while preserving authored agent instructions', async () => {
+    const scratch = mkdtempSync(join(tmpdir(), 'stacks-runtime-skill-'))
+    const previousCwd = process.cwd()
+    const command = registeredCommands().find(entry => (entry as any).name.startsWith('setup:ai')) as any
+    try {
+      cpSync(defaults, join(scratch, 'storage/framework/defaults/ai'), { recursive: true })
+      mkdirSync(join(scratch, 'resources/functions'), { recursive: true })
+      const helper = join(scratch, 'resources/functions/project.ts')
+      writeFileSync(helper, 'export function firstProjectHelper() {}\n')
+      const authored = '# Project rules\n\nKeep our instructions.\n'
+      writeFileSync(join(scratch, 'AGENTS.md'), authored)
+      process.chdir(scratch)
+
+      await command.handler('claude', { copy: true })
+      const reference = join(scratch, 'storage/framework/auto-imports/RUNTIME.md')
+      expect(readFileSync(reference, 'utf8')).toContain('`firstProjectHelper`')
+      const copiedSkill = readFileSync(join(scratch, '.claude/skills/stacks-auto-imports/SKILL.md'), 'utf8')
+      expect(copiedSkill).toContain('storage/framework/auto-imports/RUNTIME.md')
+
+      writeFileSync(helper, 'export function secondProjectHelper() {}\n')
+      await command.handler('claude', { copy: true })
+      expect(readFileSync(reference, 'utf8')).toContain('`secondProjectHelper`')
+      expect(readFileSync(reference, 'utf8')).not.toContain('`firstProjectHelper`')
+      expect(readFileSync(join(scratch, 'AGENTS.md'), 'utf8')).toBe(authored)
+      expect(readFileSync(join(scratch, '.claude/skills/stacks-auto-imports/SKILL.md'), 'utf8')).toBe(copiedSkill)
+    }
+    finally {
+      process.chdir(previousCwd)
+      rmSync(scratch, { recursive: true, force: true })
+    }
+  }, 30_000)
 
   it.each([false, true])('installs complete skill directories with copy=%s', (copy) => {
     const scratch = mkdtempSync(join(tmpdir(), 'stacks-prose-skills-'))

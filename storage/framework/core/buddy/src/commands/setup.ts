@@ -186,6 +186,8 @@ export function setup(buddy: CLI): void {
       }
 
       const definition = AI_PROVIDERS.find(entry => entry.id === id)!
+      const { generateAutoImportFiles } = await import('@stacksjs/server/imports')
+      await generateAutoImportFiles()
       reportAiSetup(definition, setupAiProvider(id, { copy: options.copy, force: options.force }))
     })
 

@@ -12,6 +12,10 @@ Choose the execution surface before copying a composable signature. An STX
 client script, an explicitly imported `@stacksjs/composables` module, and a
 server script can expose similarly named functions with different contracts.
 Read [BROWSER.md](BROWSER.md) for template delivery, forms and motion examples.
+For the complete installed client surface, read the STX section of
+`storage/framework/auto-imports/RUNTIME.md` at the project root. Use those
+helpers directly in client scripts; generation refreshes runtime, macro and
+demand names from the installed STX registries.
 
 ## Eager window aliases
 

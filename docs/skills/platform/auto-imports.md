@@ -6,9 +6,15 @@ description: "Use when checking browser/server binding delivery, model globals, 
 
 `stacks-auto-imports` · Platform · model-invoked
 
-What is available without an import, which differs between browser and server, and
-the manifests and generated declarations that decide it. Worth reading before you
-assume a name is global.
+Use runtime-provided names directly in their execution context. The generated
+`storage/framework/auto-imports/RUNTIME.md` lists this app's server helpers by
+package and barrel, plus the installed STX runtime bindings, macros and demand
+helpers. Read the relevant section before adding imports.
+
+`buddy generate`, `buddy generate:types`, `buddy generate:auto-imports` and
+`buddy setup:ai` refresh the reference from runtime registries. The bundled
+skills point to this project file, so copied skills stay current after generation.
+Standalone modules and scripts without Stacks boot still use explicit imports.
 
 ## When to reach for it
 
@@ -26,13 +32,11 @@ auto-import pipeline at storage/framework/auto-imports/.
 
 The sections an agent reads once the skill loads.
 
-- Key Paths
-- How Auto-Imports Work
-- What Gets Auto-Imported
-- Auto-Import Type Declarations
-- Generation Commands
-- Server Auto-Import Initialization
-- Gotchas
+- Available names in this project
+- Browser delivery paths
+- Server boot and globals
+- Generation and project overrides
+- Verification and gotchas
 
 ## Where the code lives
 
@@ -40,12 +44,12 @@ The sections an agent reads once the skill loads.
 - Auto-import models: `storage/framework/auto-imports/models.ts`
 - Auto-import index: `storage/framework/auto-imports/index.ts`
 - Auto-import globals: `storage/framework/auto-imports/globals.ts`
-- Global type declarations: `storage/framework/auto-imports/globals.d.ts`
+- Generated AI reference: `storage/framework/auto-imports/RUNTIME.md`
 - Browser manifest: `storage/framework/browser-auto-imports.json`
 - Server manifest: `storage/framework/server-auto-imports.json`
-- Browser type declarations: `storage/framework/types/browser-auto-imports.d.ts` (~80KB)
+- Browser type declarations: `storage/framework/types/browser-auto-imports.d.ts` (legacy declarations are pruned; STX supplies its own types)
 - Server type declarations: `storage/framework/types/server-auto-imports.d.ts`
-- General auto-import types: `storage/framework/types/auto-imports.d.ts`
+- Server primitive registry: `storage/framework/core/server/src/primitive-imports.ts`
 
 ## Using it
 

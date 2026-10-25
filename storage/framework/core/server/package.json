@@ -69,6 +69,7 @@
     "@stacksjs/payments": "workspace:*",
     "@stacksjs/router": "workspace:*",
     "@stacksjs/storage": "workspace:*",
+    "@stacksjs/stx": "0.2.687",
     "bun-plugin-auto-imports": "^0.4.4"
   },
   "devDependencies": {
