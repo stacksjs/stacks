@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.311...v0.75.312)
+
+## ✨ Features
+
+- delegate native app publishing to Pantry ([c8424dd](https://github.com/stacksjs/stacks/commit/c8424dd)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.310...v0.75.311)
 
 ## 🐛 Bug Fixes
