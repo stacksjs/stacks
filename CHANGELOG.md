@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.309...v0.75.310)
+
+## 🐛 Bug Fixes
+
+- **browse**: share updater-safe Chrome preparation ([acaab20](https://github.com/stacksjs/stacks/commit/acaab20)) _(by Chris Breuer <chris@stacksjs.com>)_ ([#2992](https://github.com/stacksjs/stacks/issues/2992))
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.308...v0.75.309)
 
 ## ✨ Features
