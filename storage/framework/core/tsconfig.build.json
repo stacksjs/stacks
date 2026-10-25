@@ -29,6 +29,7 @@
       "@stacksjs/config/*": ["./config/src/*"],
       "@stacksjs/cli/output": ["./cli/src/output.ts"],
       "@stacksjs/env/*": ["./env/src/*"],
+      "@stacksjs/security/*": ["./security/src/*"],
       "@stacksjs/features/*": ["./features/src/*"],
       "@stacksjs/server/*": ["./server/src/*"],
       // Deep runtime entrypoints must resolve to source in a clean checkout.

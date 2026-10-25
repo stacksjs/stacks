@@ -26,6 +26,7 @@
       "@stacksjs/desktop-build/*": ["./core/desktop/src/*"],
       "@stacksjs/cli/output": ["./core/cli/src/output.ts"],
       "@stacksjs/env/*": ["./core/env/src/*"],
+      "@stacksjs/security/*": ["./core/security/src/*"],
       "@stacksjs/features/*": ["./core/features/src/*"],
       "@stacksjs/server/*": ["./core/server/src/*"],
       "@stacksjs/database/*": ["./core/database/src/*"],
