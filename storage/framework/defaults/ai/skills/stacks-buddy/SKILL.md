@@ -1,6 +1,6 @@
 ---
 name: stacks-buddy
-description: Use when working with the Stacks CLI (buddy/bud/stacks/stx) - understanding every command with its flags and options, adding custom commands, the make:* scaffolding commands, development server commands, build commands, deployment commands, email/mail commands, environment management, or domain/DNS commands. Covers @stacksjs/buddy and all CLI command files.
+description: Use when working with the Stacks CLI (buddy/bud/stacks) - understanding every command with its flags and options, adding custom commands, the make:* scaffolding commands, development server commands, build commands, deployment commands, email/mail commands, environment management, or domain/DNS commands. Covers @stacksjs/buddy and all CLI command files.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -22,7 +22,8 @@ The complete CLI runtime for the Stacks framework, lazy-loaded for fast cold sta
 - Make templates: `storage/framework/defaults/`
 
 ## CLI Aliases
-All invoke the same CLI: `./buddy`, `bud`, `stacks`, `stx`
+`./buddy`, `bud`, and `stacks` invoke the Stacks CLI. The `stx` binary belongs
+to the STX template engine; use it for template and native screen compilation.
 
 ## Architecture
 
