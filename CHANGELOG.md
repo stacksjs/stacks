@@ -1,5 +1,45 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.300...v0.75.301)
+
+## ✨ Features
+
+- **buddy**: select the dialect for generated database types ([a341125](https://github.com/stacksjs/stacks/commit/a341125)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **cli**: support strict UTF-8 process output ([f6e544a](https://github.com/stacksjs/stacks/commit/f6e544a)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **deps**: synchronize Pantry cloud dependency floors ([2a7d141](https://github.com/stacksjs/stacks/commit/2a7d141)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **cloud**: require nonblocking storage maintenance ([ced322f](https://github.com/stacksjs/stacks/commit/ced322f)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **database**: reconcile empty legacy trait pivots ([ea9b108](https://github.com/stacksjs/stacks/commit/ea9b108)) _(by Chris Breuer <chris@stacksjs.com>)_ ([#2984](https://github.com/stacksjs/stacks/issues/2984))
+- **orm**: order search rebuild pages by primary key ([0fd524f](https://github.com/stacksjs/stacks/commit/0fd524f)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **orm**: propagate search batch failures without loading all rows ([fb18512](https://github.com/stacksjs/stacks/commit/fb18512)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **ci**: retain pending release source checks ([8df5113](https://github.com/stacksjs/stacks/commit/8df5113)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh native migration evidence counts ([985fe5a](https://github.com/stacksjs/stacks/commit/985fe5a)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **buddy**: allow cold startup in publication fixtures ([002de98](https://github.com/stacksjs/stacks/commit/002de98)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- integrate current main before pivot release ([839a1ed](https://github.com/stacksjs/stacks/commit/839a1ed)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🎉 Miscellaneous
+
+- Merge remote-tracking branch 'origin/main' into codex/migration-corpus-origin ([d78affd](https://github.com/stacksjs/stacks/commit/d78affd)) _(by Chris Breuer <chris@stacksjs.com>)_
+- Merge remote-tracking branch 'origin/main' into codex/legacy-trait-pivot-reconciliation ([830520b](https://github.com/stacksjs/stacks/commit/830520b)) _(by Chris Breuer <chris@stacksjs.com>)_
+- Merge remote-tracking branch 'origin/main' into codex/cli-strict-utf8 ([75c9f68](https://github.com/stacksjs/stacks/commit/75c9f68)) _(by Chris Breuer <chris@stacksjs.com>)_
+- Merge remote-tracking branch 'origin/main' into codex/migration-corpus-origin ([ed21ec5](https://github.com/stacksjs/stacks/commit/ed21ec5)) _(by Chris Breuer <chris@stacksjs.com>)_
+- Merge remote-tracking branch 'origin/main' into codex/cli-strict-utf8 ([4d4ba95](https://github.com/stacksjs/stacks/commit/4d4ba95)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.299...v0.75.300)
 
 ## ✨ Features
