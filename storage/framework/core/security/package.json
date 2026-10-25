@@ -32,6 +32,12 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
+    "./key": {
+      "types": "./dist/key.d.ts",
+      "bun": "./dist/key.js",
+      "import": "./dist/key.js",
+      "default": "./dist/key.js"
+    },
     "./*": {
       "types": "./dist/*.d.ts",
       "bun": "./dist/*.js",

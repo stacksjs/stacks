@@ -1,7 +1,10 @@
 /** Offline desktop apps use stx's native packager without a server or database. */
-import { chmodSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { basename, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { setEnv } from '@stacksjs/env/cli'
+import { generateAppKey } from '@stacksjs/security/key'
+import { auditNativeEnvironment, defaultCraftRuntime, prepareNativeAppBuild, readNativeAppConfig, recordNativeArtifact } from 'ts-pantry/native'
 
 interface NativePackage {
   name?: string
@@ -38,7 +41,7 @@ export function scaffoldNativeProject(root: string, options: { adopt?: boolean, 
   pkg.stacks = { ...pkg.stacks, type: 'native' }
   pkg.devDependencies = { '@stacksjs/buddy': `^${options.buddyVersion}`, ...pkg.devDependencies }
   pkg.dependencies = { '@stacksjs/stx': `^${options.stxVersion}`, '@stacksjs/desktop': `^${options.stxVersion}`, ...pkg.dependencies }
-  pkg.scripts = { dev: './buddy dev', build: './buddy build', package: './buddy package', ...pkg.scripts }
+  pkg.scripts = { dev: './buddy dev', build: './buddy build', package: './buddy package', 'release:patch': './buddy release --bump patch', 'release:minor': './buddy release --bump minor', 'release:major': './buddy release --bump major', ...pkg.scripts }
 
   mkdirSync(root, { recursive: true })
   const writeMissing = (name: string, content: string) => {
@@ -50,8 +53,27 @@ export function scaffoldNativeProject(root: string, options: { adopt?: boolean, 
   writeMissing('buddy', `#!/bin/sh\nset -eu\ncd -- "$(dirname -- "$0")"\nBUDDY_NATIVE_ENTRY=$(bun --print 'Bun.resolveSync("@stacksjs/buddy/cli", process.cwd())')\nexec bun "$BUDDY_NATIVE_ENTRY" "$@"\n`)
   chmodSync(join(root, 'buddy'), 0o755)
   writeMissing('craft.config.ts', `export default {\n  name: ${JSON.stringify(name)},\n  input: 'src/app.stx',\n  target: 'macos',\n  bundleId: ${JSON.stringify(`com.example.${basename(root).toLowerCase().replace(/[^a-z0-9-]/g, '-')}`)},\n  window: { title: ${JSON.stringify(name)}, width: 640, height: 480 },\n}\n`)
+  const pantryFile = join(root, 'pantry.json')
+  const pantry = existsSync(pantryFile) ? JSON.parse(readFileSync(pantryFile, 'utf8')) : {}
+  pantry.native = { environment: 'production', runtime: defaultCraftRuntime, ...pantry.native, macos: { notarize: true, ...pantry.native?.macos } }
+  writeFileSync(pantryFile, `${JSON.stringify(pantry, null, 2)}\n`)
   if (!options.adopt) writeMissing('src/app.stx', `<!doctype html>\n<html lang="en">\n<head><meta charset="utf-8"><title>${name.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</title></head>\n<body><h1>${name.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</h1><p>Your Stacks native app is ready.</p></body>\n</html>\n`)
-  writeMissing('.gitignore', 'node_modules/\ndist/\n.stx/\n')
+  writeMissing('.gitignore', 'node_modules/\ndist/\n.stx/\n.pantry/\n')
+  const ignoreFile = join(root, '.gitignore')
+  let ignore = readFileSync(ignoreFile, 'utf8')
+  for (const pattern of ['.env.keys', '.env.local', '.env.*.local']) {
+    if (!ignore.split('\n').includes(pattern)) ignore = `${ignore.trimEnd()}\n${pattern}\n`
+  }
+  // Protect the private half before generating any keys, including on failure.
+  writeFileSync(ignoreFile, ignore)
+  if (!existsSync(join(root, '.env.production'))) {
+    for (const [key, value] of Object.entries({ APP_ENV: 'production', APP_KEY: generateAppKey() })) {
+      const result = setEnv(key, value, { cwd: root, file: '.env.production' })
+      if (!result.success) throw new Error(result.error || 'Could not create the native production environment')
+    }
+  }
+  auditNativeEnvironment(root, 'production')
+  if (!ignore.split('\n').includes('!.env.production')) writeFileSync(ignoreFile, `${ignore.trimEnd()}\n!.env.production\n`)
   writeFileSync(manifest, `${JSON.stringify(pkg, null, 2)}\n`)
 }
 
@@ -63,31 +85,57 @@ export async function buildNativeProject(root: string, args: string[] = []): Pro
   // Resolve from the app: its declared stx version owns compilation, even when
   // Buddy itself is running from a local framework checkout.
   const { buildNative } = await import(pathToFileURL(Bun.resolveSync('@stacksjs/stx/craft', root)).href)
-  const output = resolve(root, config.output ?? 'dist')
-  if (output === root || !output.startsWith(`${root}/`)) throw new Error('Native output must be a directory inside the app.')
-  const result = await buildNative({
-    ...config,
-    input: resolve(root, config.input ?? 'src/app.stx'),
-    output,
-    version: pkg.version,
-    description: pkg.description,
-    author: pkg.author,
-    ...(config.icon ? { icon: resolve(root, config.icon) } : {}),
-    ...(config.backend ? { backend: { ...config.backend, entry: resolve(root, config.backend.entry) } } : {}),
-    ...(args.includes('--dmg') ? { format: 'dmg' } : {}),
-    verbose: args.includes('--verbose'),
-  })
-  if (!result.success || !result.outputPath) throw new Error(result.error ?? 'Native build produced no artifact.')
-  return result.outputPath
+  const prepared = await prepareNativeAppBuild(root, config)
+  try {
+    const output = resolve(root, prepared.overrides.output ?? config.output ?? 'dist')
+    if (output === root || !output.startsWith(`${root}/`)) throw new Error('Native output must be a directory inside the app.')
+    const buildNumber = process.env.PANTRY_BUILD_NUMBER || config.infoPlist?.CFBundleVersion || pkg.version
+    const result = await buildNative({
+      ...config,
+      ...prepared.overrides,
+      input: resolve(root, config.input ?? 'src/app.stx'),
+      output,
+      version: pkg.version,
+      description: pkg.description,
+      author: pkg.author,
+      infoPlist: { ...config.infoPlist, CFBundleVersion: buildNumber },
+      ...(config.icon ? { icon: resolve(root, config.icon) } : {}),
+      ...(config.backend ? { backend: { ...config.backend, entry: resolve(root, config.backend.entry) } } : {}),
+      ...(args.includes('--dmg') ? { format: 'dmg' } : {}),
+      verbose: args.includes('--verbose'),
+    })
+    if (!result.success || !result.outputPath) throw new Error(result.error ?? 'Native build produced no artifact.')
+    if (readNativeAppConfig(root)) recordNativeArtifact(root, {
+      path: result.outputPath,
+      ...(result.target === 'macos' ? { appPath: join(output, `${config.name}.app`) } : {}),
+      name: config.name,
+      bundleId: config.bundleId,
+      version: pkg.version!,
+      buildNumber: String(buildNumber),
+      target: result.target,
+      minimumSystemVersion: config.minimumSystemVersion,
+    })
+    return result.outputPath
+  }
+  finally { prepared.cleanup() }
 }
 
 /** Return false to let the ordinary Buddy registry handle unrelated commands. */
 export async function runNativeProjectCommand(root: string, args: string[]): Promise<boolean> {
   const [command = 'help', ...flags] = args
-  if (!['build', 'build:desktop', 'build:native', 'package', 'dev', 'dev:desktop', 'dev:native', 'upgrade', 'update'].includes(command))
+  if (!['build', 'build:desktop', 'build:native', 'package', 'dev', 'dev:desktop', 'dev:native', 'upgrade', 'update', 'release'].includes(command))
     return false
   if (flags.includes('--help') || flags.includes('-h')) {
-    console.log(`buddy ${command} (native app)\n\nBuild: --dmg --verbose\nUpgrade: --dry-run\n\nConfiguration: craft.config.ts. Runtime: craft on PATH, or CRAFT_BIN.`)
+    console.log(`buddy ${command} (native app)\n\nBuild: --dmg --verbose\nUpgrade: --dry-run\nRelease: --bump patch|minor|major --dry-run\n\nApplication: craft.config.ts. Runtime and publishing: pantry.json. Development runtime override: CRAFT_BIN.`)
+    return true
+  }
+  if (command === 'release') {
+    const index = flags.indexOf('--bump')
+    const bump = index >= 0 ? flags[index + 1] : 'patch'
+    if (!bump || !['patch', 'minor', 'major'].includes(bump) || flags.some((flag, position) => flag !== '--dry-run' && flag !== '--bump' && !(index >= 0 && position === index + 1)))
+      throw new Error('Native releases support --bump patch|minor|major and --dry-run')
+    const { releaseNativeApp } = await import('ts-pantry/native/release')
+    await releaseNativeApp(root, { bump: bump as 'patch' | 'minor' | 'major', dryRun: flags.includes('--dry-run') })
     return true
   }
   if (command === 'upgrade' || command === 'update') {

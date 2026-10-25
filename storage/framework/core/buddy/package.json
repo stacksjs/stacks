@@ -138,10 +138,10 @@
     "@stacksjs/payments": "0.75.311",
     "@stacksjs/realtime": "0.75.311",
     "@stacksjs/router": "0.75.311",
+    "@stacksjs/security": "0.75.311",
     "@stacksjs/rpx": "^0.11.54",
     "@stacksjs/scheduler": "0.75.311",
     "@stacksjs/search-engine": "0.75.311",
-    "@stacksjs/security": "0.75.311",
     "@stacksjs/server": "0.75.311",
     "@stacksjs/sites": "0.75.311",
     "@stacksjs/skills": "0.75.311",
@@ -161,7 +161,7 @@
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "bun-plugin-stx": "0.2.691",
-    "ts-pantry": "^0.11.127"
+    "ts-pantry": "^0.11.130"
   },
   "devDependencies": {
     "better-dx": "^0.2.24"
