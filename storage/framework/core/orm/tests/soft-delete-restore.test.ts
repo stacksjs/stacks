@@ -12,6 +12,23 @@ const Model = defineModel({
   traits: { observe: true, useSoftDeletes: true },
   attributes: { label: { type: 'string', fillable: true } },
 } as const)
+const AliasModels = [
+  defineModel({
+    name: 'RestoreBooleanAlias', table: 'restore_boolean_aliases',
+    traits: { softDeletable: true },
+    attributes: { label: { type: 'string', fillable: true } },
+  }),
+  defineModel({
+    name: 'RestoreObjectAlias', table: 'restore_object_aliases',
+    traits: { softDeletable: { cascade: [] } },
+    attributes: { label: { type: 'string', fillable: true } },
+  }),
+  defineModel({
+    name: 'RestoreFallbackAlias', table: 'restore_fallback_aliases',
+    traits: { useSoftDeletes: false, softDeletable: true },
+    attributes: { label: { type: 'string', fillable: true } },
+  }),
+] as const
 const subscriptions: Array<() => void> = []
 function on(event: string, handler: (payload: unknown) => unknown): void {
   const key = `restorescopeprobe:${event}` as Parameters<typeof listen>[0]
@@ -25,10 +42,14 @@ describe('restore includes the deleted row in its update', () => {
     unlock = await acquireDbConfigLock()
     configureOrm({ database: ':memory:' })
     getDatabase().run('CREATE TABLE restore_scope_probes (id INTEGER PRIMARY KEY AUTOINCREMENT, label TEXT, deleted_at TEXT)')
+    for (const Alias of AliasModels)
+      getDatabase().run(`CREATE TABLE ${Alias.table} (id INTEGER PRIMARY KEY AUTOINCREMENT, label TEXT, deleted_at TEXT)`)
   })
   afterEach(() => {
     for (const unsubscribe of subscriptions.splice(0)) unsubscribe()
     getDatabase().run('DELETE FROM restore_scope_probes')
+    for (const Alias of AliasModels)
+      getDatabase().run(`DELETE FROM ${Alias.table}`)
   })
   afterAll(() => {
     releaseOrm()
@@ -47,6 +68,24 @@ describe('restore includes the deleted row in its update', () => {
     expect(await Model.find(Number(second.id))).toBeUndefined()
     expect(getDatabase().query('SELECT deleted_at FROM restore_scope_probes WHERE id = ?').get(Number(second.id))).not.toEqual({ deleted_at: null })
   })
+
+  for (const Alias of AliasModels) {
+    it(`supports selected-row deletion, restore and permanent deletion through ${Alias.name}`, async () => {
+      const first = await Alias.create({ label: 'first' })
+      const second = await Alias.create({ label: 'second' })
+      const id = Number(first.id)
+      expect(await Alias.softDelete(id)).toBe(true)
+      expect(await Alias.find(id)).toBeUndefined()
+      expect((await Alias.find(Number(second.id)))?.label).toBe('second')
+      expect(await Alias.restore(id)).toBe(true)
+      expect((await Alias.find(id))?.label).toBe('first')
+      expect(getDatabase().query(`SELECT deleted_at FROM ${Alias.table} WHERE id = ?`).get(id)).toEqual({ deleted_at: null })
+      expect(await Alias.softDelete(id)).toBe(true)
+      expect(await Alias.forceDelete(id)).toBe(true)
+      expect(getDatabase().query(`SELECT id FROM ${Alias.table} WHERE id = ?`).get(id)).toBeNull()
+      expect((await Alias.find(Number(second.id)))?.label).toBe('second')
+    })
+  }
 
   it('honors current cancellation listeners and emits after the row is restored', async () => {
     const row = await Model.create({ label: 'restore' })
