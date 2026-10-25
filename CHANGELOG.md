@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.305...v0.75.306)
+
+## 🐛 Bug Fixes
+
+- adopt verified pantry DNS recovery in source CI ([d2580b8](https://github.com/stacksjs/stacks/commit/d2580b8)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.304...v0.75.305)
 
 ## 🐛 Bug Fixes
