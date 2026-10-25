@@ -1,5 +1,5 @@
 import { expect, spyOn, test } from 'bun:test'
-import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs'
+import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import process from 'node:process'
@@ -8,37 +8,49 @@ import { parseScenarioStep, runScenarioStep } from '../../../defaults/ai/skills/
 
 test('a disconnected real scenario retains its completed steps and failed observation phases', async () => {
   const directory = mkdtempSync(join(tmpdir(), 'browse-disconnect-report-'))
-  let browserPid = 0, disconnected = false, phase = 'launch'
+  let browserPid = 0, disconnected = false
+  const phases: string[] = ['launch']
   const server = Bun.serve({
     hostname: '127.0.0.1', port: 0,
     async fetch(request) {
+      phases.push(`request:${new URL(request.url).pathname}`)
       if (new URL(request.url).pathname === '/disconnect') {
-        phase = 'disconnect-requested'
+        phases.push('disconnect-requested')
         // Only this child's uniquely owned profile and this fixture's page
         // qualify. Never enumerate or close a user's browser session.
         const profile = readdirSync(tmpdir()).find(name => name.startsWith(`stacks-browse-${browserPid}-`))
         if (!profile) throw new Error('The scenario did not own a browser profile')
         const port = Number(readFileSync(join(tmpdir(), profile, 'DevToolsActivePort'), 'utf8').split('\n')[0])
-        phase = 'target-list'
+        phases.push('target-list')
         const pages = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json() as { id: string, url: string }[]
         const page = pages.find(page => page.url === server.url.href)
         if (!page) throw new Error('The owned fixture page was not found')
-        phase = 'target-close'
+        phases.push('target-close')
         const closed = await fetch(`http://127.0.0.1:${port}/json/close/${encodeURIComponent(page.id)}`)
         if (!closed.ok) throw new Error('Chrome did not close the owned target')
         disconnected = true
         return new Response('Closed the owned target')
       }
-      phase = 'fixture-requested'
       return new Response('<h1>Before disconnect</h1>', { headers: { 'content-type': 'text/html' } })
     },
   })
   const driver = resolve(import.meta.dir, '../../../defaults/ai/skills/stacks-browse/scripts/browse.ts')
   const capture = join(directory, 'capture.png')
+  // Trace discovery in this child only. Keep the real executables, arguments
+  // and results so a stuck system browser identifies its boundary on CI.
+  const trace = join(directory, 'discovery-trace.ts')
+  writeFileSync(trace, `const original = Bun.spawnSync
+Bun.spawnSync = function (...args) {
+  console.error('Browser discovery start:', JSON.stringify(args[0]))
+  const result = original.apply(Bun, args)
+  console.error('Browser discovery end:', result.exitCode)
+  return result
+}
+`)
   // This dependency-free public CLI runs in a new process group and a fresh
   // directory, with no application runtime or user state substituted. Its
   // existing startup, CDP and load bounds total 40s before scenario execution.
-  const child = Bun.spawn([process.execPath, '--no-env-file', driver, 'scenario', server.url.href,
+  const child = Bun.spawn([process.execPath, '--no-env-file', '--preload', trace, driver, 'scenario', server.url.href,
     '--out', capture,
     '--step', JSON.stringify({ action: 'assert', selector: 'h1', text: 'Before disconnect' }),
     '--step', JSON.stringify({ action: 'evaluate', expression: `fetch(${JSON.stringify(new URL('/disconnect', server.url).href)}).then(response => response.text())` }),
@@ -46,7 +58,7 @@ test('a disconnected real scenario retains its completed steps and failed observ
   browserPid = child.pid
   try {
     const [code, output, error] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
-    if (!disconnected) throw new Error(`The fixture did not close its owned target: ${JSON.stringify({ phase, code, output, error })}`)
+    if (!disconnected) throw new Error(`The fixture did not close its owned target: ${JSON.stringify({ phases, code, output, error })}`)
     expect(code).toBe(1)
     const report = JSON.parse(output)
     expect(report.steps).toHaveLength(2)

@@ -55,7 +55,7 @@
         "@stacksjs/database": "0.75.303",
         "@stacksjs/datetime": "0.75.303",
         "@stacksjs/defaults": "0.75.303",
-        "@stacksjs/desktop": "0.2.687",
+        "@stacksjs/desktop": "0.2.691",
         "@stacksjs/desktop-build": "0.75.303",
         "@stacksjs/dns": "0.75.303",
         "@stacksjs/docs": "0.75.303",
