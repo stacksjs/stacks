@@ -21,6 +21,8 @@ The current focus is on stabilizing the core framework:
 
 ### Database Migration Hardening
 
+- [x] Expose the database type generator's explicit dialect through the CLI for applications that develop and deploy on different engines.
+
 - [x] Reindex only the application's model scope and make search maintenance commands fail when the provider returns an error.
 
 - [x] Remove an obsolete conflicting parent foreign key on request only when the model's correct reference is already enforced.

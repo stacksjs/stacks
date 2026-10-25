@@ -30,6 +30,7 @@ buddy seed                          # seed database
 buddy generate:migrations           # generate migrations from model diffs
 buddy generate:migrations --dialect postgres  # into another dialect's corpus, no Postgres needed
 buddy generate:migrations --dialect all       # the connected dialect and every other corpus
+buddy generate:db-types --dialect postgres    # generate committed raw-row types for an explicit target
 buddy migrate:regenerate <dialect>  # rebuild the whole corpus from the models
 buddy migrate:status                # corpus vs ledger vs live schema; lists hand-written files
 buddy migrate:align                 # plan repairs of a database that drifted from the models
