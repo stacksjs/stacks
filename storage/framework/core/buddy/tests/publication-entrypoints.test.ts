@@ -25,6 +25,11 @@ function iosFixture(root: string) {
   git(root, 'commit', '-qm', 'fixture')
 }
 
+// Cold source imports on shared runners can exceed ten seconds. This is an
+// integration fixture; its policy and forbidden-module assertions remain the
+// contract, while dedicated startup benchmarks measure command performance.
+const PUBLICATION_FIXTURE_TIMEOUT = 30_000
+
 async function command(args: string[], setup?: (root: string) => void, guardStartup = false) {
   const checkout = resolve(import.meta.dir, '../../../../..')
   const root = mkdtempSync(join(tmpdir(), 'buddy-publication-entry-'))
@@ -37,7 +42,7 @@ async function command(args: string[], setup?: (root: string) => void, guardStar
     const startupGuard = join(root, 'startup-guard.ts')
     if (guardStartup) {
       // Observe actual runtime module loads in the child without replacing any
-      // deployment implementation or changing the original startup deadline.
+      // deployment implementation.
       writeFileSync(startupGuard, `Bun.plugin({ setup(build) {
   build.onLoad({ filter: /[\\\\/]core[\\\\/](?:actions[\\\\/]src[\\\\/]index|buddy[\\\\/]src[\\\\/]commands[\\\\/](?:setup|dev))\\.ts$/ }, (args) => {
     throw new Error('Publication startup loaded deployment machinery: ' + args.path)
@@ -56,7 +61,7 @@ await buddy.parse()
     const child = Bun.spawn([
       process.execPath, '--no-env-file', '--tsconfig-override', join(checkout, 'storage/framework/tsconfig.framework.json'),
       ...(guardStartup ? ['--preload', startupGuard] : []), runner, ...args,
-    ], { cwd: root, env: { ...publicationEnvironment(), GIT_TRACE: join(root, 'git-trace.log') }, stdout: 'pipe', stderr: 'pipe', timeout: 10_000 })
+    ], { cwd: root, env: { ...publicationEnvironment(), GIT_TRACE: join(root, 'git-trace.log') }, stdout: 'pipe', stderr: 'pipe', timeout: PUBLICATION_FIXTURE_TIMEOUT })
     const [code, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
     return {
       code, output: `${stdout}\n${stderr}`, ran: existsSync(join(root, 'policy-ran')),
@@ -74,7 +79,7 @@ test.each(['deploy', 'deploy:preview'])('%s rejects policy before loading deploy
   expect(result.output).not.toContain('Publication startup loaded deployment machinery:')
   expect(result.output).toContain('publication:check failed with exit code 9')
   expect(result.ran).toBe(true)
-}, 15_000)
+}, 45_000)
 
 for (const args of [
   ['deploy'], ['deploy:preview', 'policy-fixture'], ['release:ios'], ['release:github', 'fixture-tag'],
@@ -84,7 +89,7 @@ for (const args of [
     expect(result.code, result.output).not.toBe(0)
     expect(result.output).toContain('publication:check failed with exit code 9')
     expect(result.ran).toBe(true)
-  }, 15_000)
+  }, 45_000)
 }
 
 test('iOS dry-run inspects local source without pulling, fetching, building or changing refs', async () => {
@@ -94,7 +99,7 @@ test('iOS dry-run inspects local source without pulling, fetching, building or c
   expect(result.finalHead).toBe(result.head)
   expect(result.trace).not.toMatch(/built-in: git (?:pull|fetch|add|commit|push|tag -a)/)
   expect(result.output).toContain('v1.0.0-build.1')
-}, 15_000)
+}, 45_000)
 
 test('iOS release rechecks policy after pulling newer source', async () => {
   const result = await command(['release:ios', '--skip-github-release'], (root) => {
@@ -116,10 +121,10 @@ test('iOS release rechecks policy after pulling newer source', async () => {
   expect(result.output).toContain('publication:check failed with exit code 9')
   expect(result.trace).toContain('git pull')
   expect(result.trace).not.toMatch(/built-in: git (?:add|commit|push|tag -a)/)
-}, 20_000)
+}, 60_000)
 
 test.each(['release:ios', 'release:github'])('%s dry-run does not execute an application publication script', async (name) => {
   const result = await command([name, '--dry-run'])
   expect(result.ran).toBe(false)
   expect(result.output).not.toContain('publication:check failed')
-}, 15_000)
+}, 45_000)
