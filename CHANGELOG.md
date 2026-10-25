@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.313...v0.75.314)
+
+## 🐛 Bug Fixes
+
+- align publishing Pantry toolchains before release ([85bfb9c](https://github.com/stacksjs/stacks/commit/85bfb9c)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.312...v0.75.313)
 
 ## 🐛 Bug Fixes
