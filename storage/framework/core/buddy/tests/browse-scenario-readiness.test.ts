@@ -1,6 +1,21 @@
-import { expect, test } from 'bun:test'
+import { expect, spyOn, test } from 'bun:test'
 import { runInNewContext } from 'node:vm'
 import { parseScenarioStep, runScenarioStep } from '../../../defaults/ai/skills/stacks-browse/scripts/browse'
+
+test('keyboard scenarios send physical digit and letter codes on both events', async () => {
+  for (const [key, code, virtual] of [['1', 'Digit1', 49], ['9', 'Digit9', 57], ['h', 'KeyH', 72], ['S', 'KeyS', 83], [' ', 'Space', 32]]) {
+    const events: Record<string, unknown>[] = []
+    const browser = { send: async (method: string, params: Record<string, unknown> = {}) => {
+      expect(method).toBe('Input.dispatchKeyEvent')
+      events.push(params)
+      return {}
+    } }
+    await runScenarioStep(browser, parseScenarioStep(JSON.stringify({ action: 'press', key })))
+    expect(events).toHaveLength(2)
+    expect(events[0]).toMatchObject({ type: 'keyDown', key, code, windowsVirtualKeyCode: virtual })
+    expect(events[1]).toMatchObject({ type: 'keyUp', key, code, windowsVirtualKeyCode: virtual })
+  }
+})
 
 function page(delayMs: number) {
   const started = performance.now()
@@ -32,10 +47,18 @@ test('bounded assertions observe asynchronous visible state instead of a fixed s
 })
 
 test('bounded assertions retain failure when the visible result never arrives', async () => {
-  const browser = page(Infinity)
-  const step = parseScenarioStep(JSON.stringify({ action: 'assert', selector: 'button', text: 'Sound on', timeoutMs: 80 }))
-  await expect(runScenarioStep(browser, step)).rejects.toThrow('Scenario assert failed: Element not found (button)')
-  expect(browser.probes()).toBeGreaterThan(1)
+  // Advance the deadline at the CDP boundary. A loaded event loop may spend
+  // the whole real 80ms budget on one probe, so wall time cannot count retries.
+  let now = 0
+  const clock = spyOn(performance, 'now').mockImplementation(() => now)
+  try {
+    const browser = page(Infinity), send = browser.send
+    browser.send = async (...args) => { const result = await send(...args); now += 40; return result }
+    const step = parseScenarioStep(JSON.stringify({ action: 'assert', selector: 'button', text: 'Sound on', timeoutMs: 80 }))
+    await expect(runScenarioStep(browser, step)).rejects.toThrow('Scenario assert failed: Element not found (button)')
+    expect(browser.probes()).toBe(2)
+  }
+  finally { clock.mockRestore() }
 })
 
 test('ordinary assertions remain immediate and protocol errors are not retried', async () => {
