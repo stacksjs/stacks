@@ -14,6 +14,8 @@ on:
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  # Release source commits must survive bursts of pushes to main.
+  queue: ${{ github.event_name == 'pull_request' && 'single' || 'max' }}
 
 permissions:
   contents: read
