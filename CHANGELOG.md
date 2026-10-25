@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.306...v0.75.307)
+
+## 🐛 Bug Fixes
+
+- align pantry bootstrap with verified CI toolchain ([0e03732](https://github.com/stacksjs/stacks/commit/0e03732)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.305...v0.75.306)
 
 ## 🐛 Bug Fixes
