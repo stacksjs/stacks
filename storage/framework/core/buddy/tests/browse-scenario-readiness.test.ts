@@ -58,8 +58,10 @@ test('a disconnected real scenario retains its completed steps and failed observ
     expect(await Bun.file(capture).exists()).toBe(false)
   }
   finally {
-    try { process.kill(-child.pid, 'SIGTERM') }
-    catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ESRCH') throw error }
+    if (child.exitCode === null) {
+      try { process.kill(-child.pid, 'SIGTERM') }
+      catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ESRCH') throw error }
+    }
     server.stop(true)
     rmSync(directory, { recursive: true, force: true })
   }
