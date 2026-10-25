@@ -38,6 +38,11 @@ describe('the Pantry a release regenerates pantry.lock with', () => {
         expect(result.message).toContain('before any file changed')
       }
       writeFileSync(workflow, 'jobs:\n  npm:\n    steps:\n      - uses: pantry-pm/pantry/packages/action@qualified\n        with:\n          version: 0.11.130\n')
+      const bootstrap = join(cwd, 'storage/framework/scripts/pantry-install')
+      mkdirSync(join(bootstrap, '..'), { recursive: true })
+      writeFileSync(bootstrap, 'PANTRY_VERSION="${PANTRY_VERSION:-0.11.127}"\n')
+      expect(resolvePantryToolchain(options).ok).toBe(false)
+      writeFileSync(bootstrap, 'PANTRY_VERSION="${PANTRY_VERSION:-0.11.130}"\n')
       expect(resolvePantryToolchain(options).ok).toBe(true)
     }
     finally { done() }

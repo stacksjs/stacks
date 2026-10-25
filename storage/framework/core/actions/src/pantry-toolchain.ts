@@ -123,12 +123,20 @@ export function resolvePantryToolchain(options: PantryToolchainOptions): PantryT
 
   if (declared?.file === 'storage/framework/core/buddy/package.json') {
     try {
-      const mismatches = declaredPantryWorkflowVersions(options.cwd)
+      const pins = declaredPantryWorkflowVersions(options.cwd)
+      const bootstrap = 'storage/framework/scripts/pantry-install'
+      const bootstrapPath = join(options.cwd, bootstrap)
+      if (existsSync(bootstrapPath)) pins.push({
+        file: bootstrap,
+        job: 'bootstrap',
+        version: readFileSync(bootstrapPath, 'utf8').match(/PANTRY_VERSION:-([0-9.]+)/)?.[1] ?? '',
+      })
+      const mismatches = pins
         .filter(pin => !/^\d+\.\d+\.\d+$/.test(pin.version) || !Bun.semver.satisfies(pin.version, declared.range))
       if (mismatches.length) return {
         ok: false,
         bin,
-        message: `Release aborted before any file changed: CI Pantry pins do not satisfy ts-pantry ${declared.range}: `
+        message: `Release aborted before any file changed: Pantry toolchain pins do not satisfy ts-pantry ${declared.range}: `
           + mismatches.map(pin => `${pin.file} (${pin.job}): ${pin.version || 'missing version'}`).join('; ')
           + '. Update the pinned Pantry action and CLI together before releasing.',
       }
