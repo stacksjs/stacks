@@ -70,7 +70,7 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/stx": "0.2.687",
-    "@stacksjs/ts-cloud": "^0.16.58",
+    "@stacksjs/ts-cloud": "^0.16.69",
     "@stacksjs/utils": "workspace:*"
   },
   "devDependencies": {
