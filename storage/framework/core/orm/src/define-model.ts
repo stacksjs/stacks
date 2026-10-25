@@ -1544,39 +1544,47 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
     // indexed.
     if (typeof baseModel.makeAllSearchable !== 'function') {
       baseModel.makeAllSearchable = async function (chunkSize: number = 500): Promise<number> {
-        const all = baseModel.all as Function | undefined
-        if (typeof all !== 'function')
-          throw new Error(`[ORM] ${definition.name}.makeAllSearchable cannot run: the underlying query builder did not expose all()`)
+        if (!Number.isSafeInteger(chunkSize) || chunkSize < 1)
+          throw new RangeError('[ORM] Search indexing chunk size must be a positive integer')
 
         const { useSearchEngine } = await import('@stacksjs/search-engine')
         const engine = useSearchEngine()
         let total = 0
 
-        // Try the chunking path first — far cheaper for large
-        // tables. Falls through to .all() if the builder doesn't
-        // expose .query().chunk() (some test mocks).
+        // Fall back only when chunking is unavailable. An indexing or query
+        // failure must propagate: retrying the whole table through all() can
+        // exhaust memory while hiding the original rejected document.
         const query = baseModel.query as Function | undefined
         if (typeof query === 'function') {
-          try {
-            const q = query.call(baseModel) as { chunk?: (size: number, cb: (rows: any[]) => Promise<void>) => Promise<void> }
-            if (q && typeof q.chunk === 'function') {
-              await q.chunk(chunkSize, async (rows: any[]) => {
-                const docs = await projectDocumentsFromTrait(rows, searchConfig)
-                if (docs.length > 0) await engine.addDocuments(indexName, docs)
-                total += docs.length
-              })
-              return total
-            }
+          type ChunkQuery = {
+            orderBy?: (column: string, direction: 'asc') => ChunkQuery
+            chunk?: (size: number, cb: (rows: any[]) => Promise<void>) => Promise<void>
           }
-          catch {
-            // Fall through to .all() — chunking is an optimization, not a requirement.
+          let q = query.call(baseModel) as ChunkQuery
+          if (q && typeof q.chunk === 'function') {
+            // OFFSET pages without ORDER BY can repeat and omit rows, even
+            // while the table is unchanged (for example synchronized PG scans).
+            if (typeof q.orderBy === 'function') q = q.orderBy(pk, 'asc')
+            await q.chunk!(chunkSize, async (rows: any[]) => {
+              const docs = await projectDocumentsFromTrait(rows, searchConfig)
+              if (docs.length > 0) await engine.addDocuments(indexName, docs)
+              total += docs.length
+            })
+            return total
           }
         }
 
+        const all = baseModel.all as Function | undefined
+        if (typeof all !== 'function')
+          throw new Error(`[ORM] ${definition.name}.makeAllSearchable cannot run: the underlying query builder did not expose all()`)
+
         const rows = (await all.call(baseModel)) || []
-        const docs = await projectDocumentsFromTrait(rows as Record<string, unknown>[], searchConfig)
-        if (docs.length > 0) await engine.addDocuments(indexName, docs)
-        return docs.length
+        for (let offset = 0; offset < rows.length; offset += chunkSize) {
+          const docs = await projectDocumentsFromTrait(rows.slice(offset, offset + chunkSize), searchConfig)
+          if (docs.length > 0) await engine.addDocuments(indexName, docs)
+          total += docs.length
+        }
+        return total
       }
     }
 

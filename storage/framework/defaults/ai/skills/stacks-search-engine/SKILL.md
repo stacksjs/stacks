@@ -119,6 +119,8 @@ Environment variables: `MEILISEARCH_HOST`, `MEILISEARCH_KEY`, `SEARCH_ENGINE_DRI
 - Algolia requires API keys from your Algolia dashboard
 - Settings updates don't re-index - run `search-engine:update` after changes
 - Bulk reindex, flush and settings updates use the schema's model scope: application models override defaults, nested models are included, and framework defaults are a fallback unless explicitly enabled. Maintenance commands exit nonzero on provider errors.
+- Model reindexing uses bounded chunks. Query, projection and provider failures propagate without retrying the entire table through `all()`. Legacy adapters without chunking still send bounded projection and write batches.
+- Chunk queries order by the model's primary key, so database page plans cannot repeat or omit unchanged records during a rebuild.
 
 
 ## Readiness and driver boundaries

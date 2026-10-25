@@ -147,6 +147,79 @@ describe('Model.search() through the Typesense driver', () => {
   })
 })
 
+describe('Model.makeAllSearchable()', () => {
+  test('orders native chunk queries by the primary key before reading pages', async () => {
+    const originalQuery = Gadget.query
+    const originalAdd = driver.addDocuments
+    const ordered = { chunk: async (size: number, callback: (rows: any[]) => Promise<void>) => {
+      expect(size).toBe(2)
+      await callback([{ id: 1, name: 'A', status: 'open' }])
+    } }
+    Gadget.query = () => ({
+      chunk: async () => { throw new Error('unordered pages') },
+      orderBy: (column: string, direction: string) => {
+        expect([column, direction]).toEqual(['id', 'asc'])
+        return ordered
+      },
+    })
+    driver.addDocuments = async (index, documents) => {
+      expect(index).toBe('gadgets')
+      expect(documents.map(row => row.id)).toEqual(['1'])
+      return {} as any
+    }
+    try { expect(await Gadget.makeAllSearchable(2)).toBe(1) }
+    finally {
+      Gadget.query = originalQuery
+      driver.addDocuments = originalAdd
+    }
+  })
+
+  test('propagates a rejected chunk without retrying the whole table', async () => {
+    const originalQuery = Gadget.query
+    const originalAll = Gadget.all
+    const originalAdd = driver.addDocuments
+    let allCalls = 0
+    let batchCalls = 0
+    Gadget.query = () => ({ chunk: async (size: number, callback: (rows: any[]) => Promise<void>) => {
+      expect(size).toBe(2)
+      await callback([{ id: 1, name: 'A', status: 'open' }])
+    } })
+    Gadget.all = async () => { allCalls++; return [] }
+    driver.addDocuments = async () => { batchCalls++; throw new Error('rejected document') }
+    try {
+      await expect(Gadget.makeAllSearchable(2)).rejects.toThrow('rejected document')
+      expect(batchCalls).toBe(1)
+      expect(allCalls).toBe(0)
+    }
+    finally {
+      Gadget.query = originalQuery
+      Gadget.all = originalAll
+      driver.addDocuments = originalAdd
+    }
+  })
+
+  test('bounds legacy projection and write batches when chunking is unavailable', async () => {
+    const originalQuery = Gadget.query
+    const originalAll = Gadget.all
+    const originalAdd = driver.addDocuments
+    const batches: number[] = []
+    Gadget.query = undefined
+    Gadget.all = async () => Array.from({ length: 5 }, (_, id) => ({ id: id + 1, name: `Item ${id}`, status: 'open' }))
+    driver.addDocuments = async (index, documents) => { expect(index).toBe('gadgets'); batches.push(documents.length); return {} as any }
+    try {
+      expect(await Gadget.makeAllSearchable(2)).toBe(5)
+      expect(batches).toEqual([2, 2, 1])
+      await expect(Gadget.makeAllSearchable(0)).rejects.toThrow('positive integer')
+      await expect(Gadget.makeAllSearchable(Number.NaN)).rejects.toThrow('positive integer')
+    }
+    finally {
+      Gadget.query = originalQuery
+      Gadget.all = originalAll
+      driver.addDocuments = originalAdd
+    }
+  })
+})
+
 describe('Model.removeAllFromSearch()', () => {
   test('empties the index through the driver\'s deleteAllDocuments', async () => {
     setOption('opensearch', { host: 'os.example.test', protocol: 'https', port: 9443, auth: '' })
