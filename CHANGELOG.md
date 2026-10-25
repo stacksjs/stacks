@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.310...v0.75.311)
+
+## 🐛 Bug Fixes
+
+- **browse**: validate complete prepared Chrome signatures ([e7e0770](https://github.com/stacksjs/stacks/commit/e7e0770)) _(by Chris Breuer <chris@stacksjs.com>)_ ([#2994](https://github.com/stacksjs/stacks/issues/2994))
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.309...v0.75.310)
 
 ## 🐛 Bug Fixes
