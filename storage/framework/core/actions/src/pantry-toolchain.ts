@@ -61,6 +61,25 @@ export function declaredPantryRange(cwd: string): { range: string, file: string 
   return undefined
 }
 
+/** The source and publication jobs must use the SDK's declared toolchain too. */
+export function declaredPantryWorkflowVersions(cwd: string): Array<{ file: string, job: string, version: string }> {
+  const versions: Array<{ file: string, job: string, version: string }> = []
+  for (const file of ['.github/workflows/ci.yml', '.github/workflows/release.yml']) {
+    const path = join(cwd, file)
+    if (!existsSync(path)) continue
+    const workflow = Bun.YAML.parse(readFileSync(path, 'utf8')) as {
+      jobs?: Record<string, { steps?: Array<{ uses?: string, with?: { version?: unknown } }> }>
+    }
+    for (const [job, config] of Object.entries(workflow.jobs ?? {})) {
+      for (const step of config.steps ?? []) {
+        if (step.uses?.startsWith('pantry-pm/pantry/packages/action@'))
+          versions.push({ file, job, version: String(step.with?.version ?? '') })
+      }
+    }
+  }
+  return versions
+}
+
 function probeVersion(bin: string): { exitCode: number, stdout: string } {
   try {
     const result = Bun.spawnSync([bin, '--version'], { stdout: 'pipe', stderr: 'pipe' })
@@ -99,6 +118,23 @@ export function resolvePantryToolchain(options: PantryToolchainOptions): PantryT
         + (allowOverride
           ? 'Set PANTRY_BIN to a Pantry that satisfies the declared range (or put one first on PATH), then re-run.'
           : 'Install a Pantry that satisfies the declared range and put it first on PATH, then re-run.'),
+    }
+  }
+
+  if (declared?.file === 'storage/framework/core/buddy/package.json') {
+    try {
+      const mismatches = declaredPantryWorkflowVersions(options.cwd)
+        .filter(pin => !/^\d+\.\d+\.\d+$/.test(pin.version) || !Bun.semver.satisfies(pin.version, declared.range))
+      if (mismatches.length) return {
+        ok: false,
+        bin,
+        message: `Release aborted before any file changed: CI Pantry pins do not satisfy ts-pantry ${declared.range}: `
+          + mismatches.map(pin => `${pin.file} (${pin.job}): ${pin.version || 'missing version'}`).join('; ')
+          + '. Update the pinned Pantry action and CLI together before releasing.',
+      }
+    }
+    catch (error) {
+      return { ok: false, bin, message: `Could not validate CI Pantry versions before release: ${error instanceof Error ? error.message : String(error)}` }
     }
   }
 

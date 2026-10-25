@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'bun:test'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
-import { declaredPantryRange, parsePantryVersion, resolvePantryToolchain } from '../src/pantry-toolchain'
+import { join, resolve } from 'node:path'
+import { declaredPantryRange, declaredPantryWorkflowVersions, parsePantryVersion, resolvePantryToolchain } from '../src/pantry-toolchain'
 
 function workspace(manifests: Record<string, object>): { cwd: string, done: () => void } {
   const cwd = mkdtempSync(join(tmpdir(), 'pantry-toolchain-'))
@@ -21,6 +21,39 @@ const framework = {
 const answers = (output: string, exitCode = 0) => () => ({ exitCode, stdout: output })
 
 describe('the Pantry a release regenerates pantry.lock with', () => {
+  it('rejects an older CI publisher even when the local executable satisfies the SDK', () => {
+    const { cwd, done } = workspace({
+      ...framework,
+      'storage/framework/core/buddy/package.json': { dependencies: { 'ts-pantry': '^0.11.130' } },
+    })
+    const workflow = join(cwd, '.github/workflows/release.yml')
+    mkdirSync(join(workflow, '..'), { recursive: true })
+    writeFileSync(workflow, 'jobs:\n  npm:\n    steps:\n      - uses: pantry-pm/pantry/packages/action@old\n        with:\n          version: 0.11.127\n')
+    try {
+      const options = { cwd, env: {}, probe: answers('pantry 0.11.130') }
+      const result = resolvePantryToolchain(options)
+      expect(result.ok).toBe(false)
+      if (!result.ok) {
+        expect(result.message).toContain('release.yml (npm): 0.11.127')
+        expect(result.message).toContain('before any file changed')
+      }
+      writeFileSync(workflow, 'jobs:\n  npm:\n    steps:\n      - uses: pantry-pm/pantry/packages/action@qualified\n        with:\n          version: 0.11.130\n')
+      expect(resolvePantryToolchain(options).ok).toBe(true)
+    }
+    finally { done() }
+  })
+
+  it('keeps the actual source and release workflows compatible with the declared SDK', () => {
+    const root = resolve(import.meta.dir, '../../../../..')
+    const declared = declaredPantryRange(root)
+    expect(declared).toBeDefined()
+    const pins = declaredPantryWorkflowVersions(root)
+    expect(pins.some(pin => pin.file.endsWith('ci.yml'))).toBe(true)
+    expect(pins.some(pin => pin.file.endsWith('release.yml') && pin.job === 'npm')).toBe(true)
+    for (const pin of pins)
+      expect(Bun.semver.satisfies(pin.version, declared!.range), `${pin.file} (${pin.job}) uses Pantry ${pin.version}`).toBe(true)
+  })
+
   it('reads the version a Pantry CLI reports', () => {
     expect(parsePantryVersion('pantry 0.11.103 (986749281)')).toBe('0.11.103')
     expect(parsePantryVersion('pantry v0.11.80\n')).toBe('0.11.80')
