@@ -1,7 +1,7 @@
 // Shared Chrome executable preparation for the standalone skill and testing package.
-import { existsSync, mkdirSync, mkdtempSync, renameSync, rmSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, renameSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { basename, join } from 'node:path'
 import process from 'node:process'
 
 const MAC_CHROMES = [
@@ -56,12 +56,33 @@ export interface PreparedChrome {
   reused: boolean
 }
 
+/** Postorder, without following symlinks: nested frameworks must be sealed before their parents. */
+function frameworkVersions(directory: string): { path: string, identifier: string }[] {
+  const result: { path: string, identifier: string }[] = []
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue
+    const child = join(directory, entry.name)
+    result.push(...frameworkVersions(child))
+    if (!entry.name.endsWith('.framework') || !existsSync(join(child, 'Versions'))) continue
+    const identifier = plist(join(child, 'Resources/Info.plist'), 'Print :CFBundleIdentifier')
+    if (!identifier.ok || !identifier.out) throw new Error(`Framework has no signing identifier: ${child}`)
+    for (const version of readdirSync(join(child, 'Versions'), { withFileTypes: true }).filter(item => item.isDirectory()).sort((a, b) => a.name.localeCompare(b.name)))
+      result.push({ path: join(child, 'Versions', version.name), identifier: identifier.out })
+  }
+  return result
+}
+
+function validSignature(app: string): boolean {
+  return Bun.spawnSync(['codesign', '--verify', '--deep', '--strict', app], { stdout: 'pipe', stderr: 'pipe' }).exitCode === 0
+}
+
 /**
  * A private clone of a macOS Chrome that GoogleUpdater leaves alone (see the
  * module docs): `cp -cR`, the `KS*` keys deleted from `Info.plist`, its own
- * `CFBundleIdentifier`, `codesign --force --deep --sign -`. Kept in
- * `directory` (default a per-version folder in the temp directory) and
- * reused while its version matches the source's.
+ * `CFBundleIdentifier`, and a complete ad-hoc signature. Every framework
+ * version shares an explicit designated requirement, as required for a
+ * multi-version bundle (Apple TN2206). Kept in `directory` (default a
+ * per-version temp folder) and reused only after strict signature validation.
  */
 export function prepareMacChrome(options: { source?: string, directory?: string } = {}): PreparedChrome {
   if (process.platform !== 'darwin') throw new Error('prepareMacChrome is for macOS; elsewhere launch Chrome as installed')
@@ -73,12 +94,15 @@ export function prepareMacChrome(options: { source?: string, directory?: string 
   const executableName = plist(sourceInfo, 'Print :CFBundleExecutable').out || 'Google Chrome'
   const directory = options.directory ?? join(tmpdir(), `stacks-chrome-${version.replace(/[^\w.-]/g, '_')}`)
   const app = join(directory, 'Chrome.app')
-  const executable = join(app, 'Contents/MacOS', executableName)
-  const info = join(app, 'Contents/Info.plist')
-
-  if (existsSync(executable) && plist(info, 'Print :CFBundleIdentifier').out === PRIVATE_BUNDLE_ID
-    && plist(info, 'Print :CFBundleShortVersionString').out === version)
-    return { executable, app, reused: true }
+  const candidates = existsSync(directory) ? readdirSync(directory, { withFileTypes: true })
+    .filter(entry => entry.isDirectory() && (entry.name === 'Chrome.app' || (entry.name.startsWith('Chrome-') && entry.name.endsWith('.app'))))
+    .map(entry => join(directory, entry.name)).sort() : []
+  for (const candidate of candidates) {
+    const executable = join(candidate, 'Contents/MacOS', executableName), info = join(candidate, 'Contents/Info.plist')
+    if (existsSync(executable) && plist(info, 'Print :CFBundleIdentifier').out === PRIVATE_BUNDLE_ID
+      && plist(info, 'Print :CFBundleShortVersionString').out === version && validSignature(candidate))
+      return { executable, app: candidate, reused: true }
+  }
 
   // Build beside the final path and move it in, so a run killed half-way
   // never leaves a half-signed app that a later run would reuse.
@@ -94,13 +118,26 @@ export function prepareMacChrome(options: { source?: string, directory?: string 
     const stagedInfo = join(staged, 'Contents/Info.plist')
     for (const key of UPDATER_KEYS) plist(stagedInfo, `Delete :${key}`)
     run(['/usr/libexec/PlistBuddy', '-c', `Set :CFBundleIdentifier ${PRIVATE_BUNDLE_ID}`, stagedInfo], 'Renaming the Chrome bundle')
-    run(['codesign', '--force', '--deep', '--sign', '-', staged], 'Re-signing Chrome')
-    rmSync(app, { recursive: true, force: true })
-    renameSync(staged, app)
+    const versions = frameworkVersions(staged)
+    // --deep only signs the current framework version. Prepare the code in
+    // every version first, then seal nested frameworks and their parents.
+    for (const item of versions) run(['codesign', '--force', '--deep', '--sign', '-', item.path], 'Re-signing framework code')
+    for (const item of versions) run(['codesign', '--force', '--sign', '-', '--requirements', `=designated => identifier ${JSON.stringify(item.identifier)}`, item.path], 'Sealing a framework version')
+    run(['codesign', '--force', ...(versions.length ? [] : ['--deep']), '--sign', '-', staged], 'Sealing Chrome')
+    run(['codesign', '--verify', '--deep', '--strict', staged], 'Verifying Chrome')
+    // Never remove a cached bundle that another browser process may still be
+    // using. An invalid cache, or a concurrent preparation, gets a new generation.
+    let destination = existsSync(app) ? join(directory, `Chrome-${basename(staging)}.app`) : app
+    try { renameSync(staged, destination) }
+    catch (error) {
+      if (destination !== app || !['EEXIST', 'ENOTEMPTY'].includes((error as NodeJS.ErrnoException).code ?? '')) throw error
+      destination = join(directory, `Chrome-${basename(staging)}.app`)
+      renameSync(staged, destination)
+    }
+    return { executable: join(destination, 'Contents/MacOS', executableName), app: destination, reused: false }
   }
   finally {
     rmSync(staging, { recursive: true, force: true })
   }
-  return { executable, app, reused: false }
 }
 

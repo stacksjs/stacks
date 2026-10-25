@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-25T17:41:27.572568+00:00",
+  "base": "f04f723835f504d8e46def4dfba64fcb6fee971c",
+  "issue": "https://github.com/stacksjs/stacks/issues/2994",
+  "status": "Source qualified locally; maintained patch release and published-consumer adoption are still required.",
+  "problem": "Root deep signing only signs the current framework version; an updated Chrome with retained older versions produces a private app that fails strict verification. The cache previously trusted only bundle identifier and version.",
+  "actualSource": {
+    "installedChrome": "156.0.8078.47",
+    "frameworkVersions": [
+      "155.0.8059.85",
+      "156.0.8078.47"
+    ],
+    "installedAppStrictVerification": "pass",
+    "priorPrivateCopiesStrictVerification": "fail: embedded framework contains modified or invalid version"
+  },
+  "correction": [
+    "Prepare and seal every framework version, nested frameworks first, with one consistent explicit designated requirement per framework.",
+    "Strictly verify the complete app before publication and before cached reuse.",
+    "Publish a replacement generation without deleting an older cached bundle that may still be running.",
+    "A live owned browser retains its validated immutable generation, so additional contexts and browsers avoid repeated full-app verification. Once that owner stops, preparation validates the cache again.",
+    "Keep existing browser flags, sandbox and startup/scenario deadlines. Installed Chrome is only read."
+  ],
+  "primarySource": "https://developer.apple.com/library/archive/technotes/tn2206/",
+  "regression": {
+    "publicAPI": "prepareMacChrome()",
+    "fixture": "Two real compiled Mach-O framework versions, a source app and a deliberately invalidated cached resource. Real macOS signing and strict verification.",
+    "red": "One fixture fails at prepared-app strict verification; the pre-existing copy test passes.",
+    "green": {
+      "pass": 2,
+      "fail": 0,
+      "assertions": 42
+    },
+    "coldActualChromePreparationMs": 25460.562208
+  },
+  "checks": {
+    "browser": {
+      "pass": 45,
+      "fail": 0,
+      "assertions": 230,
+      "logSha256": "886a01b6002ab36e70b5dc7e27b68e0e924341ed74fd9c940aee0ab579b37bb5"
+    },
+    "scenario": {
+      "pass": 10,
+      "fail": 0,
+      "assertions": 65,
+      "logSha256": "6db2538f06799fb066bcf8e469168d09eb7ea829503a4bcf7e97de3e478ccb2a"
+    },
+    "contracts": {
+      "pass": 13,
+      "fail": 0,
+      "assertions": 190,
+      "logSha256": "be5d89aee745e15d1ce9e39cfb7275f2564ac8b0d46300a2f6eb4a9766cb391c"
+    },
+    "declarations": {
+      "pass": 3,
+      "fail": 0,
+      "assertions": 10,
+      "logSha256": "cf4149ba15e6f5d96d39f922876613bbc42b2b998e38da066be9c26573e1af04"
+    },
+    "lint": {
+      "exitCode": 0,
+      "logSha256": "a56436aff0c8d29e3d88d67cc3a56070a3de4f52bd3bb6530d89fcfdc5e04cb1",
+      "files": 5285,
+      "errors": 0,
+      "warnings": 0
+    },
+    "typecheck": {
+      "exitCode": 0,
+      "logSha256": "6c2e96249ba218649c5c221478db5bb5ac340a8f9ad9e8874ed9b820979bd150"
+    },
+    "testingBuild": {
+      "exitCode": 0,
+      "logSha256": "9980379bf3876fc9a4a51124ff2d1565be35bc93eafd0cf571fbdad761a0f323"
+    }
+  },
+  "sourceFilesSha256": {
+    "storage/framework/defaults/ai/skills/stacks-browse/scripts/chrome.ts": "a86047d043f2984af1082da364c435af1cab2bb8e23ba9a3f22616ff34140737",
+    "storage/framework/core/testing/src/browser.ts": "ca38160dac983846e8c2b2a93ba87e5cc5b43b3d2dcd5de45b5d61390f14e8ba",
+    "storage/framework/core/testing/tests/browser-prepare.test.ts": "3b47e4310782a1fb58f27d6256fef863ac773624032e4eaeb4cdce4b843fe072"
+  },
+  "preservedFailureEvidence": [
+    "The original full game battle reached defeat and saved, but its reload assertion timed out.",
+    "Fresh standalone launches also exceeded their unchanged deadline while the old copy failed strict verification.",
+    "An earlier source test candidate repeated cold signing while disk space fell below 1 GB; that owned run was stopped and its log retained.",
+    "The first cache-validation implementation failed the existing warm-session timing check. The live-generation reuse correction passes that same check."
+  ],
+  "gameStatus": "Application issue #193 is implemented and 278 game unit tests pass, but it remains unpushed until the framework release and renewed browser acceptance. Issue #194 separately tracks neutral-granite planning.",
+  "scopeLimit": "Browser testing infrastructure only. This does not qualify full Gold gameplay, native presentation or every host-load condition."
+}

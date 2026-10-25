@@ -27,18 +27,13 @@
  * while an update is pending. To a test that looks like a hung page: CDP
  * commands time out, even `Debugger.pause`. Renaming or copying the app does
  * not help, because the updater finds it by bundle id. What works is a private
- * clone with the updater's keys removed and its own bundle id, re-signed
- * ad hoc:
- *
- * ```sh
- * /bin/cp -cR "/Applications/Google Chrome.app" /tmp/chrome/Chrome.app
- * for key in KSProductID KSUpdateURL KSChannelID KSVersion; do
- *   /usr/libexec/PlistBuddy -c "Delete :$key" /tmp/chrome/Chrome.app/Contents/Info.plist
- * done
- * /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier dev.stacks.testing.chrome" /tmp/chrome/Chrome.app/Contents/Info.plist
- * codesign --force --deep --sign - /tmp/chrome/Chrome.app
- * CHROME_PATH="/tmp/chrome/Chrome.app/Contents/MacOS/Google Chrome" bun tests/browser/journeys.ts
- * ```
+ * clone with the updater's keys removed and its own bundle id. The shared
+ * `prepareMacChrome()` helper signs every framework version with a consistent
+ * designated requirement, then strictly verifies the complete app. Signing
+ * only the current version leaves updated Chromes with invalid older versions.
+ * Use that helper rather than assembling a copy by hand. It also validates
+ * cached signatures and retains invalid copies while publishing a replacement
+ * generation, so a running browser's bundle is never removed.
  *
  * Launch it with `--use-mock-keychain` (`launch()` always does): to the
  * Keychain the clone is a new app, so its first cookie read raises a "Chrome
@@ -705,14 +700,24 @@ export async function quietLiveReload(cdp: Cdp, patterns: readonly string[] = LI
   })
 }
 
+const preparedMacExecutables = new Map<string, string>()
+
 function resolveChrome(options: LaunchOptions): string {
   const named = options.chromePath ?? process.env.CHROME_PATH
   if (named) return named
   const found = findChrome()
   if (!found) throw new Error('No Chrome found: install Google Chrome or Chromium, or set CHROME_PATH')
   const stable = options.stableMacChrome ?? true
-  if (stable && process.platform === 'darwin' && chromeHasUpdater(found))
-    return prepareMacChrome({ source: found }).executable
+  if (stable && process.platform === 'darwin' && chromeHasUpdater(found)) {
+    const prepared = preparedMacExecutables.get(found)
+    // A live shared process already owns its validated, immutable generation.
+    // Additional browsers and contexts can use that same bundle until its
+    // owner stops; preparing it again would reverify gigabytes of live code.
+    if (prepared && [...sharedProcesses.values()].some(chrome => chrome.chromePath === prepared && !chrome.exited())) return prepared
+    const executable = prepareMacChrome({ source: found }).executable
+    preparedMacExecutables.set(found, executable)
+    return executable
+  }
   return found
 }
 
@@ -915,7 +920,7 @@ interface SharedChrome {
 
 const sharedChromes = new Map<string, Promise<SharedChrome>>()
 /** Shared Chromes still running, by pid, with the temporary profile to remove. */
-const sharedProcesses = new Map<number, string>()
+const sharedProcesses = new Map<number, { profile: string, chromePath: string, exited: () => boolean }>()
 let exitHookInstalled = false
 
 /**
@@ -927,7 +932,7 @@ function installExitHook(): void {
   if (exitHookInstalled) return
   exitHookInstalled = true
   process.once('exit', () => {
-    for (const [pid, profile] of sharedProcesses) {
+    for (const [pid, { profile }] of sharedProcesses) {
       try { process.kill(pid, 'SIGKILL') }
       catch {}
       try { if (profile) rmSync(profile, { recursive: true, force: true }) }
@@ -966,7 +971,7 @@ async function acquireShared(key: string, options: LaunchOptions, chromePath: st
   }
   const starting = (async (): Promise<SharedChrome> => {
     const chrome = await startChrome(options, chromePath, started, timeoutMs, progress)
-    if (chrome.pid !== null) sharedProcesses.set(chrome.pid, chrome.profile)
+    if (chrome.pid !== null) sharedProcesses.set(chrome.pid, { profile: chrome.profile, chromePath: chrome.chromePath, exited: chrome.exited })
     try {
       if (!chrome.browserPath.startsWith('/devtools/browser/')) throw new Error('Chrome wrote no browser endpoint in DevToolsActivePort')
       startupPhase(progress, 'browser-connect')
