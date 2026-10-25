@@ -512,10 +512,17 @@ the Chrome stops shortly after the last one. A launch with a `profile` (which
 remains caller-owned) or `shared: false` gets a Chrome of its own.
 
 `startTimeoutMs` bounds process startup, target discovery, and session setup;
-target discovery also keeps its 12-second cap. A `ChromeLaunchError` retains
+target discovery also keeps its 12-second cap. Each launch keeps its own
+deadline while waiting for a shared Chrome to start. A short wait timing out
+does not stop the native process another caller is still starting.
+A `ChromeLaunchError` retains
 the original cause and structured `diagnostics`: executable, PID, profile,
 exit status before and after cleanup, port-file evidence, a capped stderr tail,
-and any cleanup error. Inspect this evidence when a runner cannot start Chrome.
+and any cleanup error. Its `phase` identifies the operation that was pending;
+`phaseStartedMs` records when each reached phase began, measured from that
+launch's start. A failed warm session reports its own phases and elapsed time,
+including when its shared Chrome process is older. Inspect this evidence when
+a runner cannot start Chrome.
 Cleanup waits for the owned process to exit, escalates to SIGKILL when needed,
 and preserves a profile if process exit cannot be confirmed.
 

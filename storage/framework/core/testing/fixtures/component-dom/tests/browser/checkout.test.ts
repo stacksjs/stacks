@@ -13,15 +13,15 @@ describe('Checkout', () => {
     email.value = 'test@example.com'
     email.dispatchEvent(new Event('input', { bubbles: true }))
 
-    let submittedEmail: string | null = null
+    const submittedEmails: string[] = []
     document.querySelector('form')!.addEventListener('submit', (event) => {
       event.preventDefault()
       const form = event.target as HTMLFormElement
-      submittedEmail = form.querySelector<HTMLInputElement>('[name="email"]')!.value
+      submittedEmails.push(form.querySelector<HTMLInputElement>('[name="email"]')!.value)
     })
 
     document.querySelector<HTMLButtonElement>('button[type="submit"]')!.click()
 
-    expect(submittedEmail).toBe('test@example.com')
+    expect(submittedEmails).toEqual(['test@example.com'])
   })
 })

@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, test } from 'bun:test'
 import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import process from 'node:process'
 import type { ChromeLaunchDiagnostics } from '../src/browser'
-import { launch } from '../src/browser'
+import { closeSharedBrowsers, launch, waitFor } from '../src/browser'
 
 const fixtures: string[] = []
 afterEach(() => fixtures.splice(0).forEach(path => rmSync(path, { recursive: true, force: true })))
@@ -92,12 +92,14 @@ describe.skipIf(process.platform === 'win32')('browser startup failure evidence'
     expect(() => process.kill(error.diagnostics.pid!, 0)).toThrow()
   }, 15_000)
 
-  const protocolProcess = (respond: boolean, handshake = true) => `
+  const protocolProcess = (respond: boolean, handshake: boolean | string = true, numberedTargets = false) => `
     const profile = process.argv.find(value => value.startsWith('--user-data-dir='))!.slice(16)
+    let target = 0
     const server = Bun.serve({ hostname: '127.0.0.1', port: 0,
       fetch(request, server) {
         if (new URL(request.url).pathname.startsWith('/devtools/')) {
-          if (!${handshake}) return new Promise(() => {})
+          const handshake = ${JSON.stringify(handshake)}
+          if (handshake === false || new URL(request.url).pathname === handshake) return new Promise(() => {})
           if (server.upgrade(request)) return
           return new Response('not upgraded', { status: 400 })
         }
@@ -107,7 +109,9 @@ describe.skipIf(process.platform === 'win32')('browser startup failure evidence'
         if (!${respond}) return
         const { id, method } = JSON.parse(String(raw))
         const results = { 'Browser.getVersion': { userAgent: 'HeadlessChrome Fixture' }, 'Target.createBrowserContext': { browserContextId: 'fixture-context' }, 'Target.createTarget': { targetId: 'fixture' } }
-        socket.send(JSON.stringify({ id, result: results[method] ?? {} }))
+        const result = results[method] ?? {}
+        if (${numberedTargets} && method === 'Target.createTarget') result.targetId = 'fixture-' + (++target)
+        socket.send(JSON.stringify({ id, result }))
       } },
     })
     await Bun.write(profile + '/fixture.pid', String(process.pid))
@@ -131,6 +135,63 @@ describe.skipIf(process.platform === 'win32')('browser startup failure evidence'
     expect(error.diagnostics.stderrTail).toContain('protocol fixture ready')
     expect(error.diagnostics.cleanupError).toBeNull()
     expect(() => process.kill(error.diagnostics.pid!, 0)).toThrow()
+  }, 8_000)
+
+  test('distinguishes a stalled page connection from cold process and browser startup', async () => {
+    const error = await failure(executable(protocolProcess(true, '/devtools/page/fixture')), 2_000)
+    expect(error.diagnostics.phase).toBe('page-connect')
+    const phases = error.diagnostics.phaseStartedMs ?? {}
+    expect(Object.keys(phases)).toEqual(['process-acquire', 'process-start', 'devtools-port', 'browser-connect', 'context-create', 'target-create', 'page-connect'])
+    expect(phases['process-acquire']).toBe(0)
+    const times = Object.values(phases) as number[]
+    expect(times).toEqual([...times].sort((a, b) => a - b))
+    expect(times.every(value => value >= 0 && value < error.diagnostics.elapsedMs)).toBe(true)
+    expect(error.diagnostics.elapsedMs).toBeLessThan(3_000)
+    expect(error.diagnostics.cleanupError).toBeNull()
+    expect(existsSync(error.diagnostics.profile)).toBe(false)
+    expect(() => process.kill(error.diagnostics.pid!, 0)).toThrow()
+  }, 8_000)
+
+  test('a failed warm session reports its own phases and keeps the other session alive', async () => {
+    const path = executable(protocolProcess(true, '/devtools/page/fixture-2', true))
+    const started = Date.now()
+    const first = await launch({ chromePath: path, startTimeoutMs: 2_000 })
+    try {
+      // Separate the process's age from the next launch's own deadline.
+      await Bun.sleep(150)
+      const error = await failure(path, 2_000)
+      expect(error.diagnostics.phase).toBe('page-connect')
+      expect(Object.keys(error.diagnostics.phaseStartedMs ?? {})).toEqual(['process-acquire', 'context-create', 'target-create', 'page-connect'])
+      expect(error.diagnostics.elapsedMs).toBeLessThan(Date.now() - started - 100)
+      expect(first.cdp.closed).toBe(false)
+      expect((await first.cdp.send('Browser.getVersion')).userAgent).toBe('HeadlessChrome Fixture')
+      expect(error.diagnostics.cleanupError).toBeNull()
+      expect(existsSync(error.diagnostics.profile)).toBe(true)
+    }
+    finally {
+      await first.close()
+      await closeSharedBrowsers()
+    }
+  }, 8_000)
+
+  test('a second launch keeps its own deadline while another caller starts Chrome', async () => {
+    const path = executable(`${protocolProcess(true, false)}\nawait Bun.write(import.meta.dir + '/ready', String(process.pid))`)
+    const first = launch({ chromePath: path, startTimeoutMs: 2_000 }).catch(error => error)
+    try {
+      const ready = join(dirname(path), 'ready')
+      await waitFor(() => existsSync(ready), 1_000)
+      const pid = Number(readFileSync(ready, 'utf8'))
+      const started = Date.now()
+      const error = await launch({ chromePath: path, startTimeoutMs: 100 }).catch(error => error)
+      expect(error).toBeInstanceOf(Error)
+      expect(Date.now() - started).toBeLessThan(1_000)
+      // This caller owns a shorter wait, not the still-starting native process.
+      expect(() => process.kill(pid, 0)).not.toThrow()
+    }
+    finally {
+      await first
+      await closeSharedBrowsers()
+    }
   }, 8_000)
 
   test('opens a real protocol session and concurrent close calls await the same cleanup', async () => {
