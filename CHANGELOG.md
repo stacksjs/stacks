@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.302...v0.75.303)
+
+## 🐛 Bug Fixes
+
+- retain browser scenario diagnostics after disconnects ([2bb2029](https://github.com/stacksjs/stacks/commit/2bb2029)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- guard browser fixture cleanup with child liveness ([0a2ef1f](https://github.com/stacksjs/stacks/commit/0a2ef1f)) _(by Chris <chris@stacksjs.com>)_
+- assert the browser diagnostic report contract ([9ae8223](https://github.com/stacksjs/stacks/commit/9ae8223)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- adopt verified stx 691 and Craft 341 ([2e0b644](https://github.com/stacksjs/stacks/commit/2e0b644)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.301...v0.75.302)
 
 ## ✨ Features
