@@ -1556,9 +1556,16 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
         // exhaust memory while hiding the original rejected document.
         const query = baseModel.query as Function | undefined
         if (typeof query === 'function') {
-          const q = query.call(baseModel) as { chunk?: (size: number, cb: (rows: any[]) => Promise<void>) => Promise<void> }
+          type ChunkQuery = {
+            orderBy?: (column: string, direction: 'asc') => ChunkQuery
+            chunk?: (size: number, cb: (rows: any[]) => Promise<void>) => Promise<void>
+          }
+          let q = query.call(baseModel) as ChunkQuery
           if (q && typeof q.chunk === 'function') {
-            await q.chunk(chunkSize, async (rows: any[]) => {
+            // OFFSET pages without ORDER BY can repeat and omit rows, even
+            // while the table is unchanged (for example synchronized PG scans).
+            if (typeof q.orderBy === 'function') q = q.orderBy(pk, 'asc')
+            await q.chunk!(chunkSize, async (rows: any[]) => {
               const docs = await projectDocumentsFromTrait(rows, searchConfig)
               if (docs.length > 0) await engine.addDocuments(indexName, docs)
               total += docs.length

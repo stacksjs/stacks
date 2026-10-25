@@ -148,6 +148,32 @@ describe('Model.search() through the Typesense driver', () => {
 })
 
 describe('Model.makeAllSearchable()', () => {
+  test('orders native chunk queries by the primary key before reading pages', async () => {
+    const originalQuery = Gadget.query
+    const originalAdd = driver.addDocuments
+    const ordered = { chunk: async (size: number, callback: (rows: any[]) => Promise<void>) => {
+      expect(size).toBe(2)
+      await callback([{ id: 1, name: 'A', status: 'open' }])
+    } }
+    Gadget.query = () => ({
+      chunk: async () => { throw new Error('unordered pages') },
+      orderBy: (column: string, direction: string) => {
+        expect([column, direction]).toEqual(['id', 'asc'])
+        return ordered
+      },
+    })
+    driver.addDocuments = async (index, documents) => {
+      expect(index).toBe('gadgets')
+      expect(documents.map(row => row.id)).toEqual(['1'])
+      return {} as any
+    }
+    try { expect(await Gadget.makeAllSearchable(2)).toBe(1) }
+    finally {
+      Gadget.query = originalQuery
+      driver.addDocuments = originalAdd
+    }
+  })
+
   test('propagates a rejected chunk without retrying the whole table', async () => {
     const originalQuery = Gadget.query
     const originalAll = Gadget.all
