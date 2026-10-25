@@ -264,3 +264,49 @@ void (0 as unknown as ExplicitCreatedAtWins)
 void (0 as unknown as ExplicitUpdatedAtWins)
 void relationCardinalityContracts
 void polymorphicCardinalityContracts
+
+const DisabledSoftDelete = defineModel({
+  name: 'DisabledSoftDelete',
+  table: 'disabled_soft_deletes',
+  traits: { useSoftDeletes: false, softDeletable: false },
+  attributes: { label: { type: 'string', fillable: true } },
+})
+const ObjectSoftDelete = defineModel({
+  name: 'ObjectSoftDelete',
+  table: 'object_soft_deletes',
+  traits: { useSoftDeletes: { cascade: [] } },
+  attributes: { label: { type: 'string', fillable: true } },
+})
+const FallbackSoftDeleteAlias = defineModel({
+  name: 'FallbackSoftDeleteAlias',
+  table: 'fallback_soft_delete_aliases',
+  traits: { useSoftDeletes: false, softDeletable: true },
+  attributes: { label: { type: 'string', fillable: true } },
+})
+
+function softDeleteStaticContracts() {
+  const ordinaryPurge = Minimal.forceDelete(1)
+  const deleted: Promise<boolean> = TraitModel.softDelete(1)
+  const restored: Promise<boolean> = TraitModel.restore('1')
+  const purged: Promise<boolean> = TraitModel.forceDelete(1)
+  const objectRestored: Promise<boolean> = ObjectSoftDelete.restore(1)
+  const aliasRestored: Promise<boolean> = AliasTraitModel.restore(1)
+  const fallbackRestored: Promise<boolean> = FallbackSoftDeleteAlias.restore(1)
+  // @ts-expect-error static restore accepts an ID, not a row object
+  TraitModel.restore({ id: 1 })
+  // @ts-expect-error static force-delete requires an ID
+  TraitModel.forceDelete()
+  // @ts-expect-error a disabled trait supplies no restore static
+  DisabledSoftDelete.restore(1)
+  // @ts-expect-error a model without the trait supplies no restore static
+  Minimal.restore(1)
+  void [ordinaryPurge, deleted, restored, purged, objectRestored, aliasRestored, fallbackRestored]
+}
+void softDeleteStaticContracts
+
+type RestoreReturnIsBoolean = Expect<Equal<ReturnType<typeof TraitModel.restore>, Promise<boolean>>>
+type RestoreIdIsScalar = Expect<Equal<Parameters<typeof TraitModel.restore>[0], number | string>>
+type AliasRestoreReturnIsBoolean = Expect<Equal<ReturnType<typeof AliasTraitModel.restore>, Promise<boolean>>>
+void (0 as unknown as RestoreReturnIsBoolean)
+void (0 as unknown as RestoreIdIsScalar)
+void (0 as unknown as AliasRestoreReturnIsBoolean)

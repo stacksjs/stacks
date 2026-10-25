@@ -1,5 +1,34 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.299...v0.75.300)
+
+## ✨ Features
+
+- align obsolete model constraints without deleting data ([e0e136f](https://github.com/stacksjs/stacks/commit/e0e136f)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **orm**: expose native soft-delete policies and aliases ([d577cff](https://github.com/stacksjs/stacks/commit/d577cff)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **search**: respect model scope and report maintenance failures ([0ce1865](https://github.com/stacksjs/stacks/commit/0ce1865)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **database**: remove conflicting legacy foreign keys safely ([2ac7494](https://github.com/stacksjs/stacks/commit/2ac7494)) _(by Chris Breuer <chris@stacksjs.com>)_
+- preserve migration directory before connection setup ([c47986d](https://github.com/stacksjs/stacks/commit/c47986d)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh migration alignment command references ([f03bc04](https://github.com/stacksjs/stacks/commit/f03bc04)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- sync search dependency in pantry lockfile ([cf58280](https://github.com/stacksjs/stacks/commit/cf58280)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🎉 Miscellaneous
+
+- Merge remote-tracking branch 'origin/main' into codex/orm-soft-delete-statics ([5fff1ff](https://github.com/stacksjs/stacks/commit/5fff1ff)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.298...v0.75.299)
 
 ## 🐛 Bug Fixes

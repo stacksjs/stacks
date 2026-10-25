@@ -133,7 +133,10 @@ export function generate(buddy: CLI): void {
     .command('generate:db-types', 'Refresh database/types.d.ts for db.selectFrom autocomplete (stacksjs/stacks#1923)')
     .option('--dry-run', 'Print the would-be file content without writing', { default: false })
     .option('--framework', 'Write the framework\'s own FrameworkSchema instead of the app\'s DatabaseSchema', { default: false })
-    .action(async (options: { dryRun?: boolean, framework?: boolean }) => {
+    .option('--dialect <dialect>', 'Raw column dialect: sqlite, mysql, or postgres')
+    .action(async (options: { dryRun?: boolean, framework?: boolean, dialect?: 'sqlite' | 'mysql' | 'postgres' }) => {
+      if (options.dialect && !['sqlite', 'mysql', 'postgres'].includes(options.dialect))
+        throw new Error('Database types require dialect sqlite, mysql, or postgres')
       const { buildDatabaseSchema } = await import('@stacksjs/orm')
 
       /*
@@ -147,12 +150,13 @@ export function generate(buddy: CLI): void {
         ? {
             dryRun: options.dryRun,
             target: 'framework',
+            dialect: options.dialect,
             outFile: frameworkPath('core/database/src/framework-schema.ts'),
             // The corpus lives beside the APP's schema, not beside this out
             // file - `core/database/src/migrations` does not exist.
             migrationsDir: projectPath('database/migrations'),
           }
-        : { dryRun: options.dryRun })
+        : { dryRun: options.dryRun, dialect: options.dialect })
 
       if (options.dryRun) console.log(result.content)
       for (const e of result.errors)

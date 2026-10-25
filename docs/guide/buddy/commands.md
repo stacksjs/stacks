@@ -2673,6 +2673,7 @@ Refresh database/types.d.ts for db.selectFrom autocomplete (stacksjs/stacks#1923
 | --- | --- | --- | --- |
 | `--dry-run` | Print the would-be file content without writing | boolean, optional | `false` |
 | `--framework` | Write the framework's own FrameworkSchema instead of the app's DatabaseSchema | boolean, optional | `false` |
+| `--dialect` | Raw column dialect: sqlite, mysql, or postgres | value, required | - |
 
 ### `generate:entries`
 
