@@ -45,7 +45,9 @@ function collectCandidates(): string[] {
   if (process.env.BROWSE_BROWSER)
     add(process.env.BROWSE_BROWSER)
 
-  for (const bin of ['chromium', 'chromium-browser', 'google-chrome-stable', 'google-chrome', 'brave-browser', 'microsoft-edge', 'chrome'])
+  // Some distribution Chromium launchers answer --version but cannot open a
+  // DevTools target. Prefer an installed Chrome before spending their bounds.
+  for (const bin of ['google-chrome-stable', 'google-chrome', 'chromium', 'chromium-browser', 'brave-browser', 'microsoft-edge', 'chrome'])
     add(which(bin))
 
   for (const p of [

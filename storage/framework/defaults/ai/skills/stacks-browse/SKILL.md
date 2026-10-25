@@ -28,7 +28,7 @@ The driver finds a browser at runtime in this order, and falls through to the ne
 won't launch:
 
 1. `$BROWSE_BROWSER` (explicit override — set to an absolute browser path)
-2. PATH: `chromium`, `google-chrome`, `brave-browser`, `microsoft-edge`, …
+2. PATH: `google-chrome-stable`, `google-chrome`, `chromium`, `chromium-browser`, `brave-browser`, `microsoft-edge`, …
 3. macOS app bundles (Google Chrome, Chromium, Brave, Edge)
 4. A Chromium binary already cached on disk (e.g. under `~/Library/Caches/ms-playwright`) —
    the **binary only** is borrowed; Playwright is never imported.

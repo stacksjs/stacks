@@ -1,22 +1,27 @@
 import { expect, spyOn, test } from 'bun:test'
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import process from 'node:process'
 import { runInNewContext } from 'node:vm'
 import { parseScenarioStep, runScenarioStep } from '../../../defaults/ai/skills/stacks-browse/scripts/browse'
 
-test('a disconnected real scenario retains its completed steps and failed observation phases', async () => {
-  // This fixture tests a real target disconnection, not browser discovery.
-  // Linux CI's chromium launchers each consumed a full 15s fallback bound
-  // before Chrome started. Select the host explicitly through the public CLI
-  // option instead of timing unrelated candidate fallbacks inside this test.
+function fixtureBrowser(): string {
   const browser = process.env.BROWSE_BROWSER
     ?? Bun.which('google-chrome-stable') ?? Bun.which('google-chrome')
     ?? ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
       join(process.env.PROGRAMFILES ?? '', 'Google/Chrome/Application/chrome.exe'),
       join(process.env.LOCALAPPDATA ?? '', 'Google/Chrome/Application/chrome.exe')].find(path => existsSync(path))
   if (!browser || !existsSync(browser)) throw new Error('The real scenario fixture requires Chrome or an explicit BROWSE_BROWSER path.')
+  return browser
+}
+
+test('a disconnected real scenario retains its completed steps and failed observation phases', async () => {
+  // This fixture tests a real target disconnection, not browser discovery.
+  // Linux CI's chromium launchers each consumed a full 15s fallback bound
+  // before Chrome started. Select the host explicitly through the public CLI
+  // option instead of timing unrelated candidate fallbacks inside this test.
+  const browser = fixtureBrowser()
   const directory = mkdtempSync(join(tmpdir(), 'browse-disconnect-report-'))
   let browserPid = 0, disconnected = false
   const phases: string[] = ['launch']
@@ -76,6 +81,39 @@ test('a disconnected real scenario retains its completed steps and failed observ
     server.stop(true)
     rmSync(directory, { recursive: true, force: true })
   }
+}, 50_000)
+
+test('default discovery chooses installed Chrome before a Chromium launcher that cannot start', async () => {
+  const browser = fixtureBrowser(), directory = mkdtempSync(join(tmpdir(), 'browse-default-host-'))
+  const quote = (value: string): string => `'${value.replaceAll("'", "'\\''")}'`
+  const attempted = join(directory, 'chromium-attempted'), launched = join(directory, 'chrome-launched')
+  const server = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch: () => new Response('<h1>Actual Chrome</h1>', { headers: { 'content-type': 'text/html' } }) })
+  try {
+    // Match the CI failure: the Chromium launcher answers --version but cannot
+    // expose a browser target. The Chrome launcher executes the actual host.
+    writeFileSync(join(directory, 'chromium'), `#!/bin/sh
+printf attempted > ${quote(attempted)}
+if [ "$1" = "--version" ]; then printf 'Chromium fixture\n'; exit 0; fi
+exit 1
+`, { mode: 0o755 })
+    writeFileSync(join(directory, 'google-chrome-stable'), `#!/bin/sh
+printf launched > ${quote(launched)}
+exec ${quote(browser)} "$@"
+`, { mode: 0o755 })
+    const driver = resolve(import.meta.dir, '../../../defaults/ai/skills/stacks-browse/scripts/browse.ts')
+    const child = Bun.spawn([process.execPath, '--no-env-file', driver, 'scenario', server.url.href,
+      '--step', JSON.stringify({ action: 'assert', selector: 'h1', text: 'Actual Chrome' }),
+    ], { cwd: directory, env: { ...process.env, PATH: `${directory}${process.platform === 'win32' ? ';' : ':'}${process.env.PATH ?? ''}`, BROWSE_BROWSER: '' }, stdout: 'pipe', stderr: 'pipe', timeout: 45_000 })
+    const [code, output, error] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
+    expect(code, error).toBe(0)
+    expect(existsSync(launched)).toBe(true)
+    expect(existsSync(attempted), 'A usable Chrome host must precede the unlaunchable Chromium candidate').toBe(false)
+    const report = JSON.parse(output)
+    expect(report.steps).toEqual([{ action: 'assert', selector: 'h1', tag: 'h1', text: 'Actual Chrome', ok: true }])
+    expect(report.consoleErrors).toEqual([])
+    expect(report.failedRequests).toEqual([])
+  }
+  finally { server.stop(true); rmSync(directory, { recursive: true, force: true }) }
 }, 50_000)
 
 test('keyboard scenarios send physical digit and letter codes on both events', async () => {
