@@ -24,6 +24,8 @@ describe('published declarations', () => {
 
   test('browser.d.ts types the Cdp session and every default', async () => {
     const declarations = await emit('browser.ts')
+    expect(declarations).not.toContain('defaults/ai/')
+    expect(declarations).toContain('prepareMacChrome(options?: {')
     expect(declarations).toContain('inFlight: Map<string, string>;')
     expect(declarations).toContain('closed: boolean;')
     expect(declarations).toContain('readonly diagnostics: ChromeLaunchDiagnostics;')

@@ -124,7 +124,7 @@ const related = useCase
               <p class="section-copy">Every one of these ships in the same install. Follow one to see what it covers.</p>
             </div>
 
-            <div class="stack-strip rise">
+            <div class="rise stack-strip">
               @foreach (stack as feature)
                 <a class="stack-chip" href="/features/{{ feature.slug }}">
                   <i class="{{ feature.icon }}" aria-hidden="true"></i>

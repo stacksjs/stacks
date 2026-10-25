@@ -121,7 +121,7 @@ const related = comparison
             </div>
 
             <div class="versus-grid">
-              <article class="versus versus--them rise">
+              <article class="rise versus versus--them">
                 <h3 class="versus-title">
                   <i class="i-hugeicons-balance-scale" aria-hidden="true"></i>
                   Pick {{ comparison.name }} for
@@ -136,7 +136,7 @@ const related = comparison
                 </ul>
               </article>
 
-              <article class="versus versus--us rise">
+              <article class="rise versus versus--us">
                 <h3 class="versus-title">
                   <i class="i-hugeicons-layers-01" aria-hidden="true"></i>
                   Pick Stacks for
@@ -159,7 +159,7 @@ const related = comparison
               <p class="section-copy">The dimensions teams actually decide on.</p>
             </div>
 
-            <div class="table-scroll rise">
+            <div class="rise table-scroll">
               <table class="compare-table">
                 <thead>
                   <tr>
@@ -204,12 +204,12 @@ const related = comparison
             </div>
 
             <div class="verdict-grid">
-              <article class="verdict rise">
+              <article class="rise verdict">
                 <h3>Choose {{ comparison.name }} when</h3>
                 <p>{{ comparison.page.verdict.pickThem }}</p>
               </article>
 
-              <article class="verdict verdict--stacks rise">
+              <article class="rise verdict verdict--stacks">
                 <h3>Choose Stacks when</h3>
                 <p>{{ comparison.page.verdict.pickStacks }}</p>
               </article>

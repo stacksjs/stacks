@@ -23,6 +23,7 @@ import { spawn } from 'bun'
 import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { chromeHasUpdater, findChrome, prepareMacChrome } from './chrome'
 
 // ── Browser discovery ──────────────────────────────────────────────────────
 
@@ -49,6 +50,7 @@ function collectCandidates(): string[] {
   // DevTools target. Prefer an installed Chrome before spending their bounds.
   for (const bin of ['google-chrome-stable', 'google-chrome', 'chromium', 'chromium-browser', 'brave-browser', 'microsoft-edge', 'chrome'])
     add(which(bin))
+  add(findChrome())
 
   for (const p of [
     '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
@@ -199,17 +201,19 @@ export async function waitForBrowserPort(proc: { exitCode: number | null }, port
 }
 
 async function tryLaunch(browser: string): Promise<Session | null> {
+  const executable = chromeHasUpdater(browser) ? prepareMacChrome({ source: browser }).executable : browser
   const userDataDir = join(tmpdir(), `stacks-browse-${process.pid}-${Math.floor(Number(process.hrtime.bigint() % 1000000n))}`)
   mkdirSync(userDataDir, { recursive: true })
 
-  const isHeadlessShell = /chrome-headless-shell|headless_shell/.test(browser)
+  const isHeadlessShell = /chrome-headless-shell|headless_shell/.test(executable)
   const proc = spawn([
-    browser,
+    executable,
     ...(isHeadlessShell ? [] : ['--headless=new']),
     '--remote-debugging-port=0',
     `--user-data-dir=${userDataDir}`,
     '--no-first-run',
     '--no-default-browser-check',
+    ...(process.platform === 'darwin' ? ['--use-mock-keychain'] : []),
     '--disable-gpu',
     '--disable-dev-shm-usage',
     '--hide-scrollbars',
@@ -223,7 +227,7 @@ async function tryLaunch(browser: string): Promise<Session | null> {
   let port: number | null = null
   try {
     port = await waitForBrowserPort(proc, portFile, 15_000)
-    if (port !== null) return { proc, port, userDataDir, browser }
+    if (port !== null) return { proc, port, userDataDir, browser: executable }
   }
   finally {
     if (port === null) {

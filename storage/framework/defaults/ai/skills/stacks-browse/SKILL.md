@@ -15,6 +15,10 @@ Protocol (CDP) using only Bun's native `Bun.spawn`, `fetch`, and `WebSocket`.
 
 The driver lives at `storage/framework/defaults/ai/skills/stacks-browse/scripts/browse.ts`. Run it with `bun`:
 
+Keep `chrome.ts` beside the driver when copying the standalone skill. It is the
+Chrome executable preparation shared with `@stacksjs/testing/browser` and uses
+only Bun and Node APIs.
+
 ```bash
 bun storage/framework/defaults/ai/skills/stacks-browse/scripts/browse.ts <command> <url> [flags]
 ```

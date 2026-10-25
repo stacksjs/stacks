@@ -83,6 +83,32 @@ test('a disconnected real scenario retains its completed steps and failed observ
   }
 }, 50_000)
 
+test('a real browser scenario remains connected after a long idle wait', async () => {
+  const directory = mkdtempSync(join(tmpdir(), 'browse-idle-host-'))
+  const server = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch: () => new Response('<p id="idle">Still here</p>', { headers: { 'content-type': 'text/html' } }) })
+  const driver = resolve(import.meta.dir, '../../../defaults/ai/skills/stacks-browse/scripts/browse.ts')
+  try {
+    const child = Bun.spawn([process.execPath, '--no-env-file', driver, 'scenario', server.url.href,
+      '--step', JSON.stringify({ action: 'wait', ms: 30000 }),
+      '--step', JSON.stringify({ action: 'wait', ms: 30000 }),
+      '--step', JSON.stringify({ action: 'wait', ms: 5000 }),
+      '--step', JSON.stringify({ action: 'assert', selector: '#idle', text: 'Still here' }),
+    ], { cwd: directory, env: { ...process.env, BROWSE_BROWSER: fixtureBrowser() }, stdout: 'pipe', stderr: 'pipe', timeout: 95000 })
+    const [code, output, error] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
+    expect(code, error).toBe(0)
+    const report = JSON.parse(output)
+    expect(report.steps).toHaveLength(4)
+    expect(report.steps.every((step: { ok: boolean }) => step.ok)).toBe(true)
+    expect(report.collectionErrors).toEqual([])
+    expect(report.consoleErrors).toEqual([])
+    expect(report.failedRequests).toEqual([])
+  }
+  finally {
+    server.stop(true)
+    rmSync(directory, { recursive: true, force: true })
+  }
+}, 100000)
+
 test('default discovery chooses installed Chrome before a Chromium launcher that cannot start', async () => {
   const browser = fixtureBrowser(), directory = mkdtempSync(join(tmpdir(), 'browse-default-host-'))
   const quote = (value: string): string => `'${value.replaceAll("'", "'\\''")}'`
