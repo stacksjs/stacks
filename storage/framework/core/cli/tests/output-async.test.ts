@@ -7,6 +7,13 @@ const payload = '航🌱é'.repeat(300000)
 let directory: string
 let script: string
 let binary: string
+let config: string
+
+const environment: Record<string, string> = { APP_ENV: 'test', NODE_ENV: 'test' }
+for (const name of ['PATH', 'TMPDIR', 'TMP', 'TEMP', 'SystemRoot', 'WINDIR']) {
+  const value = process.env[name]
+  if (value !== undefined) environment[name] = value
+}
 
 beforeAll(async () => {
   const runtime = join(import.meta.dir, '../../../runtime')
@@ -14,6 +21,8 @@ beforeAll(async () => {
   directory = await mkdtemp(join(runtime, 'cli-output-'))
   script = join(directory, 'writer.ts')
   binary = join(directory, process.platform === 'win32' ? 'writer.exe' : 'writer')
+  config = join(directory, 'bunfig.toml')
+  await writeFile(config, 'preload=[]\n[install]\nauto="disable"\n')
   await writeFile(script, `
 import { writeSync } from 'node:fs'
 import { printAsync, printErrorAsync } from ${JSON.stringify(output)}
@@ -52,7 +61,7 @@ for (const compiled of [false, true]) {
     const channel = diagnostic ? 'stderr' : 'stdout'
     const name = `${compiled ? 'compiled binary' : 'Bun process'} ${channel}`
     test(`${name} awaits complete Unicode output through a slow pipe before immediate exit`, async () => {
-      const child = Bun.spawn([...(compiled ? [binary] : [process.execPath, '--no-env-file', script]), channel], { stdout: 'pipe', stderr: 'pipe' })
+      const child = Bun.spawn([...(compiled ? [binary] : [process.execPath, '--no-install', '--no-env-file', `--config=${config}`, script]), channel], { cwd: directory, env: environment, stdout: 'pipe', stderr: 'pipe' })
       const timeout = setTimeout(() => child.kill(), 10000)
       try {
         const stream = diagnostic ? child.stderr : child.stdout
@@ -78,7 +87,7 @@ for (const compiled of [false, true]) {
     }, 15000)
 
     test(`${name} rejects a broken pipe without leaving an error listener`, async () => {
-      const child = Bun.spawn([...(compiled ? [binary] : [process.execPath, '--no-env-file', script]), `broken-${channel}`], { stdin: 'pipe', stdout: 'pipe', stderr: 'pipe' })
+      const child = Bun.spawn([...(compiled ? [binary] : [process.execPath, '--no-install', '--no-env-file', `--config=${config}`, script]), `broken-${channel}`], { cwd: directory, env: environment, stdin: 'pipe', stdout: 'pipe', stderr: 'pipe' })
       const timeout = setTimeout(() => child.kill(), 10000)
       try {
         const stream = diagnostic ? child.stderr : child.stdout
