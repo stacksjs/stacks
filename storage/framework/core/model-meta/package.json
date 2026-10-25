@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/model-meta",
   "type": "module",
-  "version": "0.75.312",
+  "version": "0.75.313",
   "description": "Model metadata the ORM declares and the database layer reads: table names, pivot tables, relations.",
   "author": "Chris Breuer",
   "contributors": [

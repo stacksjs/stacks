@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.312...v0.75.313)
+
+## 🐛 Bug Fixes
+
+- resolve native key generation from framework source ([c9090d4](https://github.com/stacksjs/stacks/commit/c9090d4)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.311...v0.75.312)
 
 ## ✨ Features
