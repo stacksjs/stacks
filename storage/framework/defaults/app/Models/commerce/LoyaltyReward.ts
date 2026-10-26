@@ -98,7 +98,9 @@ export default defineModel({
       validation: {
         rule: schema.string(),
       },
-      factory: faker => faker.helpers.maybe(() => faker.string.uuid(), { probability: 0.4 }),
+      // Stored and shown, never resolved: nothing redeems or joins on it yet,
+      // so what it holds is left to the feature that does. No factory, so a
+      // seed does not invent one (stacksjs/stacks#3002).
     },
 
     isActive: {

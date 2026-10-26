@@ -136,9 +136,12 @@ export default defineModel({
       order: 10,
       fillable: true,
       validation: {
-        rule: schema.string().required(),
+        // Optional: a cart without a coupon is the common case.
+        rule: schema.string(),
       },
-      factory: () => 'test-coupon-id',
+      // Stored and shown, never resolved: nothing redeems or joins on it yet,
+      // so what it holds is left to the feature that does. No factory, so a
+      // seed does not invent one (stacksjs/stacks#3002).
     },
   },
 

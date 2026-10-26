@@ -7880,7 +7880,7 @@
             "type": "string",
             "isPrimaryKey": false,
             "isUnique": false,
-            "isNullable": false,
+            "isNullable": true,
             "hasDefault": false
           },
           {
@@ -13796,7 +13796,7 @@
       }
     ]
   },
-  "hash": "3a101e58f9c0b5dd70487e37db08e6e3002c6d4d18871cd14b6ae3d8242d917d",
+  "hash": "72a6f188872713b525c04f00469c3908a74e17a79ac3ce157c0d8d085bbb5b9a",
   "dialect": "sqlite",
-  "updatedAt": "2026-10-26T12:20:35.725Z"
+  "updatedAt": "2026-10-26T12:27:09.873Z"
 }
