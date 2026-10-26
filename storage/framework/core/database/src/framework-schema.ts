@@ -159,6 +159,7 @@ export interface FrameworkSchema {
     color: string
     position: number
     archived: number
+    team_id: number
   }
   campaign_sends: {
     // columns
@@ -247,6 +248,18 @@ export interface FrameworkSchema {
     user_id: number
     assigned_by_user_id: number | null
     created_at: string | null
+  }
+  card_attachments: {
+    // columns
+    id: number
+    uuid: string
+    created_at: string
+    updated_at: string | null
+    disk: string
+    path: string
+    mime_type: string
+    size_bytes: number
+    card_id: number
   }
   card_comments: {
     // columns
@@ -391,8 +404,6 @@ export interface FrameworkSchema {
     commentables_id: number
     commentables_type: string
     user_id: number | null
-    author_name: string | null
-    author_email: string | null
     is_active: number | null
     created_at: string
     updated_at: string | null
@@ -669,6 +680,7 @@ export interface FrameworkSchema {
     message: string
     stack: string
     status: number
+    resolution: "unresolved" | "resolved" | "ignored"
     additional_info: string
   }
   failed_jobs: {
@@ -685,6 +697,20 @@ export interface FrameworkSchema {
     max_attempts: number
     duration_ms: number
     failed_at: string
+  }
+  feedback_tokens: {
+    // columns
+    id: number
+    uuid: string
+    created_at: string
+    updated_at: string | null
+    token: string
+    label: string
+    revoked_at: string
+    expires_at: string
+    last_used_at: string
+    created_by_user_id: number
+    board_id: number
   }
   form_fields: {
     // columns
@@ -729,6 +755,19 @@ export interface FrameworkSchema {
     status: "draft" | "active" | "closed"
     settings: unknown
     site_id: number
+  }
+  gdpr_requests: {
+    // columns
+    id: number
+    uuid: string
+    created_at: string
+    updated_at: string | null
+    type: "access" | "erasure" | "retention"
+    subject_id: number
+    actor: string
+    status: "completed" | "failed"
+    summary: unknown
+    occurred_at: string
   }
   gift_cards: {
     // columns
@@ -847,6 +886,7 @@ export interface FrameworkSchema {
     description: string
     expiry_date: string
     is_used: number
+    customer_id: number
   }
   loyalty_rewards: {
     // columns
@@ -965,6 +1005,27 @@ export interface FrameworkSchema {
     data: string
     read_at: string
     user_id: number
+  }
+  oauth_access_tokens: {
+    // columns
+    id: number
+    created_at: string
+    updated_at: string | null
+    tokenable_type: string
+    tokenable_id: number
+    name: string
+    token: string
+    scopes: string
+    revoked: number
+    expires_at: string
+    user_agent: string
+    ip_address: string
+    user_id: number
+    oauth_client_id: number
+    oauth_grant_id: string
+    resources: string
+    audiences: string
+    workspace_id: string
   }
   order_idempotency: {
     // columns
@@ -1138,6 +1199,7 @@ export interface FrameworkSchema {
     level: string
     status: "pending" | "confirmed" | "cancelled"
     auction_id: number
+    customer_id: number
   }
   posts: {
     // columns
@@ -1285,6 +1347,25 @@ export interface FrameworkSchema {
     status_code: number
     source: "slug-change" | "manual"
     site_id: number
+  }
+  referral_codes: {
+    // columns
+    id: number
+    created_at: string
+    updated_at: string | null
+    user_id: number
+    code: string
+  }
+  referrals: {
+    // columns
+    id: number
+    created_at: string
+    updated_at: string | null
+    referrer_id: number
+    referred_user_id: number
+    code: string
+    status: "registered" | "qualified"
+    qualified_at: string | null
   }
   releases: {
     // columns
@@ -1460,6 +1541,31 @@ export interface FrameworkSchema {
     image_url: string
     external_id: string
     user_id: number
+  }
+  storage_item_tasks: {
+    // columns
+    id: number
+    uuid: string
+    created_at: string
+    updated_at: string | null
+    disk: string
+    path: string
+    kind: "optimize" | "transcode" | "tag" | "preview"
+    state: "queued" | "running" | "done" | "failed" | "skipped"
+    attempts: number
+    error: string
+    started_at: string
+    finished_at: string
+  }
+  storage_items: {
+    // columns
+    id: number
+    uuid: string
+    created_at: string
+    updated_at: string | null
+    disk: string
+    path: string
+    favorite: number
   }
   subscriber_emails: {
     // columns
