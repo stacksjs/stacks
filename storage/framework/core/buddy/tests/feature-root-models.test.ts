@@ -17,8 +17,6 @@ const rootModels: Array<[FeatureName, string, string]> = [
   ['commerce', 'PaymentMethod', 'payment_methods'],
   ['commerce', 'PaymentProduct', 'payment_products'],
   ['commerce', 'PaymentTransaction', 'payment_transactions'],
-  ['commerce', 'Subscriber', 'subscribers'],
-  ['commerce', 'SubscriberEmail', 'subscriber_emails'],
   ['commerce', 'Subscription', 'subscriptions'],
 ]
 
@@ -76,3 +74,17 @@ test('an application-owned model with a different name can still claim its own t
 
   expect(appModelClaimsTable('subscribers', target)).toBe(true)
 })
+
+// Newsletter subscribers are not commerce and run ungated (#2995), so
+// removing commerce must leave an app's Subscriber models where they are.
+for (const model of ['Subscriber', 'SubscriberEmail']) {
+  test(`commerce neither installs nor removes the ungated ${model} model`, async () => {
+    const rel = `app/Models/${model}.ts`
+    writeFileSync(join(source, rel), `export default {}\n`)
+    writeFileSync(join(target, rel), `export default {}\n`)
+
+    expect((await copyFeatureFiles('commerce', { source, target })).copied).not.toContain(rel)
+    expect((await deleteFeatureFiles('commerce', target, { source })).removed).not.toContain(rel)
+    expect(existsSync(join(target, rel))).toBe(true)
+  })
+}
