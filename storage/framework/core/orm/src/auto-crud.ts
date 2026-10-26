@@ -632,7 +632,13 @@ export function validateWriteBody(
   let hasErrors = false
   for (const validator of validators) {
     const { definition, field, hasDefault, rule } = validator
-    const present = Object.prototype.hasOwnProperty.call(data, field)
+    // The attribute's camelCase name or its column's snake_case: the
+    // dashboard's model actions write `toSnakeCaseKeys(data)`, so a required
+    // camelCase attribute read as missing on every create, and an update
+    // skipped validation altogether (stacksjs/stacks#3007).
+    const column = toSnakeCase(field)
+    const key = Object.prototype.hasOwnProperty.call(data, field) ? field : column
+    const present = Object.prototype.hasOwnProperty.call(data, key)
     if (!present && hook === 'updating') continue
 
     // An absent field on create is worth `default`, not `undefined`.
@@ -649,7 +655,7 @@ export function validateWriteBody(
     // `hasOwnProperty`, not a truthiness test: `default: 0` and `default: ''`
     // are values, and are exactly the defaults most likely to be declared.
     const raw = present
-      ? data[field]
+      ? data[key]
       : hasDefault ? definition.default : undefined
 
     // The default is validated rather than waved through, so a default that

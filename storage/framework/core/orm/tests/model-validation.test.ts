@@ -265,3 +265,23 @@ describe('normalizeTimestampWrites', () => {
     expect(normalizeTimestampWrites(null, stamped)).toBeNull()
   })
 })
+
+// Writes arrive as the attribute's camelCase or as the column's snake_case:
+// the dashboard's model actions pass toSnakeCaseKeys(data) (stacksjs/stacks#3007).
+describe('validateWriteBody with snake_case keys', () => {
+  const pledge = {
+    name: 'Pledge',
+    attributes: {
+      donorName: { fillable: true, validation: { rule: schema.string().required().max(10) } },
+    },
+  }
+
+  it('finds a required camelCase attribute sent under its column name', () => {
+    expect(validateWriteBody({ donor_name: 'Ada' }, pledge, 'creating').valid).toBe(true)
+  })
+
+  it('still validates a value sent under its column name, on create and update', () => {
+    expect(validateWriteBody({ donor_name: 'x'.repeat(11) }, pledge, 'creating').valid).toBe(false)
+    expect(validateWriteBody({ donor_name: 'x'.repeat(11) }, pledge, 'updating').valid).toBe(false)
+  })
+})
