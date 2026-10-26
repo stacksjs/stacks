@@ -329,6 +329,14 @@ export interface FrameworkSchema {
     currency: string
     notes: string
     applied_coupon_id: string
+    session_token: string
+    checkout_step: "cart" | "shipping" | "payment" | "placed"
+    email: string
+    shipping_name: string
+    shipping_address: string
+    shipping_city: string
+    shipping_state: string
+    shipping_zip: string
     customer_id: number
     coupon_id: number
   }
@@ -1414,6 +1422,7 @@ export interface FrameworkSchema {
     images: string
     product_id: number
     customer_id: number
+    order_id: number
   }
   role_permissions: {
     // columns

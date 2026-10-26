@@ -34,7 +34,9 @@ export default defineModel({
     observe: true,
   },
 
-  belongsTo: ['Product', 'Customer'],
+  // The order a storefront review was left for: one review per product per
+  // order, and the proof the reviewer bought it (stacksjs/stacks#3017).
+  belongsTo: ['Product', 'Customer', 'Order'],
 
   attributes: {
     /**

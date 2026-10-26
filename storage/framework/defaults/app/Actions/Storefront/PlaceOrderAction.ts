@@ -1,4 +1,6 @@
+import { randomUUIDv7 } from 'bun'
 import { Action } from '@stacksjs/actions/runtime'
+import { customers } from '@stacksjs/commerce'
 import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database/runtime'
 import { response } from '@stacksjs/router'
@@ -62,17 +64,10 @@ export default new Action({
       .selectAll()
       .executeTakeFirst()
 
-    if (!customer) {
-      await (db as any)
-        .insertInto('customers')
-        .values({ name: cart.shipping_name, email: cart.email })
-        .execute()
-      customer = await (db as any)
-        .selectFrom('customers')
-        .where('email', '=', cart.email)
-        .selectAll()
-        .executeTakeFirst()
-    }
+    // Through commerce's store, which fills what the table requires and the
+    // checkout does not ask for, such as the avatar (#3017).
+    if (!customer)
+      customer = await customers.store({ name: cart.shipping_name, email: cart.email, uuid: randomUUIDv7() } as never)
 
     // Integer minor units of the cart's currency, like every amount here.
     const currency = storefrontCurrency(cart.currency)

@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions/runtime'
 import { config } from '@stacksjs/config'
-import { db } from '@stacksjs/database/runtime'
+import { db, sqlDateTime } from '@stacksjs/database/runtime'
 import { response } from '@stacksjs/router'
 import { randomUUIDv7 } from 'bun'
 import { readCartCookie, writeCartCookie } from '../../Storefront/CartCookie'
@@ -71,6 +71,8 @@ export default new Action({
           currency: storefrontCurrency(config.commerce?.currency),
           session_token: token,
           checkout_step: 'cart',
+          // The cart lasts as long as the cookie that finds it (#3017).
+          expires_at: sqlDateTime(new Date(Date.now() + COOKIE_OPTS.maxAge * 1000)),
         })
         .execute()
       // Re-read by session_token: bun-query-builder's `returningAll()`

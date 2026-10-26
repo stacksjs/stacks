@@ -4197,6 +4197,18 @@
             "isUnique": true,
             "isNullable": true,
             "hasDefault": false
+          },
+          {
+            "name": "order_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "references": {
+              "table": "orders",
+              "column": "id"
+            }
           }
         ],
         "indexes": [
@@ -7947,6 +7959,84 @@
             "isUnique": true,
             "isNullable": true,
             "hasDefault": false
+          },
+          {
+            "name": "session_token",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": true,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
+            "name": "checkout_step",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": true,
+            "defaultValue": "cart",
+            "enumValues": [
+              "cart",
+              "shipping",
+              "payment",
+              "placed"
+            ]
+          },
+          {
+            "name": "email",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
+            "name": "shipping_name",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
+            "name": "shipping_address",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
+            "name": "shipping_city",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
+            "name": "shipping_state",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 100
+          },
+          {
+            "name": "shipping_zip",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 20
           }
         ],
         "indexes": [
@@ -7954,6 +8044,13 @@
             "name": "carts_uuid_unique",
             "columns": [
               "uuid"
+            ],
+            "type": "unique"
+          },
+          {
+            "name": "carts_session_token_unique",
+            "columns": [
+              "session_token"
             ],
             "type": "unique"
           }
@@ -13798,7 +13895,7 @@
       }
     ]
   },
-  "hash": "b7b14f2b5d5b4b9334c931ef35363f86a676358ef282efd054ec2da6e983a3fc",
+  "hash": "60a0df9e25a7034cf74ac2a82e0162f4108d11339ec1e0536c24c1731659c077",
   "dialect": "sqlite",
-  "updatedAt": "2026-10-26T18:04:17.790Z"
+  "updatedAt": "2026-10-26T18:08:18.640Z"
 }
