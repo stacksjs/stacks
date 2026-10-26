@@ -54,7 +54,9 @@ if (import.meta.main) {
     if (!Array.isArray(pages)) throw new Error('Source CI API returned invalid pages')
     return pages
   }
-  const deadline = performance.now() + 40 * 60_000
+  // Include time queued behind an earlier full CI/deployment run. Publication
+  // still requires every job to succeed on this exact immutable source.
+  const deadline = performance.now() + 90 * 60_000
   while (true) {
     const runs = read(`repos/${repository}/actions/workflows/ci.yml/runs?head_sha=${sha}&event=push&per_page=100`)
       .flatMap(page => (page as { workflow_runs: SourceRun[] }).workflow_runs)

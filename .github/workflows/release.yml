@@ -100,7 +100,7 @@ jobs:
     name: accept exact release source CI
     needs: serialize
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 100
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
