@@ -22,7 +22,7 @@ const dbFile = join(dir, 'partial-writes.sqlite')
 process.env.DB_CONNECTION = 'sqlite'
 process.env.DB_DATABASE_PATH = dbFile
 
-const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
+const { acquireDbConfigLock, commentablesTableSql, db, ensureDatabaseConfigLoaded, initializeDbConfig, sqlHelpers } = await import('@stacksjs/database')
 
 // The actions name their model as a server global, which only a booted app defines.
 ;(globalThis as any).Customer ??= {}
@@ -37,6 +37,7 @@ const { default: PaymentUpdateAction } = await import(`${actions}/PaymentUpdateA
 const cms = '../../storage/framework/defaults/app/Actions/Cms'
 const { default: AuthorUpdateAction } = await import(`${cms}/AuthorUpdateAction`)
 const { default: CategorizableUpdateAction } = await import(`${cms}/CategorizableUpdateAction`)
+const { default: CommentStoreAction } = await import(`${cms}/CommentStoreAction`)
 const { default: PostUpdateAction } = await import(`${cms}/PostUpdateAction`)
 const { default: TaggableUpdateAction } = await import(`${cms}/TaggableUpdateAction`)
 
@@ -99,6 +100,7 @@ describe('actions write only the fields the request sent', () => {
       id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, slug TEXT, description TEXT,
       is_active INTEGER DEFAULT 1, taggable_id INTEGER, taggable_type TEXT, created_at TEXT, updated_at TEXT
     )`)
+    await run(commentablesTableSql(sqlHelpers('sqlite')))
     await run(`CREATE TABLE authors (
       id INTEGER PRIMARY KEY AUTOINCREMENT, uuid TEXT, name TEXT, email TEXT, user_id INTEGER,
       created_at TEXT, updated_at TEXT
@@ -211,5 +213,18 @@ describe('actions write only the fields the request sent', () => {
 
     expect(await one(`SELECT name, email FROM authors WHERE id = ?`, id))
       .toEqual({ name: 'Rear Admiral Hopper', email: 'grace@example.com' })
+  })
+
+  it('keeps the comment defaults for a comment created without a status', async () => {
+    const created = await json(await CommentStoreAction.handle(request({}, {
+      title: 'Fits well',
+      body: 'True to size.',
+      commentables_id: 1,
+      commentables_type: 'products',
+    })))
+
+    const row = await one(`SELECT status, is_active FROM commentables WHERE id = ?`, created.id)
+    expect(row.status).toBe('pending')
+    expect(Boolean(row.is_active)).toBe(true)
   })
 })

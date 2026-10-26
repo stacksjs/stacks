@@ -149,14 +149,17 @@ export async function store(data: CommentStore): Promise<CommentablesTable> {
       throw new Error(`Invalid comment status: ${data.status}`)
     }
 
+    // An absent status or is_active is left out so the column defaults
+    // ('pending', true) apply. Written as undefined it binds NULL, which
+    // both NOT NULL columns reject (stacksjs/stacks#3010).
     const commentData = {
       title: data.title,
       body: data.body,
-      status: data.status,
       commentables_id: data.commentables_id,
       commentables_type: data.commentables_type,
       user_id: data.user_id,
-      is_active: data.is_active,
+      ...(data.status !== undefined && { status: data.status }),
+      ...(data.is_active !== undefined && { is_active: data.is_active }),
     }
 
     const written = await db
