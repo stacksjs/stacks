@@ -9,15 +9,12 @@ export default new Action({
   async handle(request: RequestInstance) {
     await request.validate()
 
-    const data = {
-      order_id: request.get<number>('order_id'),
-      customer_id: request.get<number>('customer_id'),
-      amount: request.get<number>('amount'),
-      method: request.get('method'),
-      status: request.get('status'),
-    }
+    // Only the fields the request sent: an absent one copied through
+    // request.get() reached the query as undefined, which binds NULL and
+    // erased the stored value or the column default (stacksjs/stacks#3010).
+    const data = request.only(['order_id', 'customer_id', 'amount', 'method', 'status'])
 
-    const model = await payments.store(data)
+    const model = await payments.store(data as Parameters<typeof payments.store>[0])
 
     return response.json(model)
   },

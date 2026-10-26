@@ -14,13 +14,11 @@ export default new Action({
   async handle(request) {
     await request.validate()
 
+    // Only the fields the request sent: an absent one copied through
+    // request.get() reached the query as undefined, which binds NULL and
+    // erased the stored value or the column default (stacksjs/stacks#3010).
     const data = toSnakeCaseKeys({
-      name: request.get('name'),
-      email: request.get('email'),
-      phone: request.get('phone'),
-      totalSpent: request.get('totalSpent'),
-      status: request.get('status'),
-      avatar: request.get('avatar'),
+      ...request.only(['name', 'email', 'phone', 'totalSpent', 'status', 'avatar']),
       uuid: randomUUIDv7(),
       ...(request.get('lastOrder') && { lastOrder: request.get('lastOrder') }),
     })

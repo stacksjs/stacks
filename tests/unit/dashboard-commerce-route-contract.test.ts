@@ -51,9 +51,10 @@ describe('dashboard commerce route contract', () => {
       expect(action).toContain('model: Customer')
       expect(action).toContain('await request.validate()')
       expect(action).toContain('toSnakeCaseKeys({')
-      expect(action).toContain("request.get('totalSpent')")
+      // Only the fields the request sent, so an edit never writes NULL over
+      // one it did not mention (#3010).
+      expect(action).toContain("request.only(['name', 'email', 'phone', 'totalSpent', 'status', 'avatar'])")
       expect(action).toContain("request.get('lastOrder')")
-      expect(action).toContain("request.get('avatar')")
     }
 
     expect(storeAction).not.toContain('user_id: 1')

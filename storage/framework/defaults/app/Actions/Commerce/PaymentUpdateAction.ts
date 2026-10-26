@@ -14,24 +14,27 @@ export default new Action({
     const { id } = identifier
 
     await request.validate()
-    const data = {
-      order_id: request.get<number>('order_id'),
-      customer_id: request.get<number>('customer_id'),
-      amount: request.get<number>('amount'),
-      method: request.get('method'),
-      status: request.get('status'),
-      currency: request.get('currency'),
-      reference_number: request.get('reference_number'),
-      card_last_four: request.get('card_last_four'),
-      card_brand: request.get('card_brand'),
-      billing_email: request.get('billing_email'),
-      transaction_id: request.get('transaction_id'),
-      payment_provider: request.get('payment_provider'),
-      refund_amount: request.get<number>('refund_amount'),
-      notes: request.get('notes'),
-    }
+    // Only the fields the request sent: an absent one copied through
+    // request.get() reached the query as undefined, which binds NULL and
+    // erased the stored value or the column default (stacksjs/stacks#3010).
+    const data = request.only([
+      'order_id',
+      'customer_id',
+      'amount',
+      'method',
+      'status',
+      'currency',
+      'reference_number',
+      'card_last_four',
+      'card_brand',
+      'billing_email',
+      'transaction_id',
+      'payment_provider',
+      'refund_amount',
+      'notes',
+    ])
 
-    const model = await payments.update(id, data)
+    const model = await payments.update(id, data as Parameters<typeof payments.update>[1])
     if (!model)
       return commerceNotFound('Payment', id)
 
