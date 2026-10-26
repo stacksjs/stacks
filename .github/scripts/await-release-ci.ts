@@ -15,7 +15,7 @@ type Decision = { kind: 'pending' } | { kind: 'accepted', runId: number } | { ki
 // Required source contracts. PR-only lock maintenance and the release commit's
 // intentionally skipped publication commit are not execution evidence.
 export const requiredSourceJobs = [
-  'lint', 'typecheck', 'compile', 'artifact-freshness', 'scaffold-smoke',
+  'lint', 'typecheck', 'compile', 'artifact-freshness', 'scaffold-smoke', 'browser-device-scale',
   'test (auth-1)', 'test (auth-2)', 'test (auth-3)', 'test (auth-4)',
   'test (buddy)', 'test (core-1)', 'test (core-2)',
   'Release evidence (ubuntu-latest)', 'Release evidence (macos-latest)', 'Release evidence (windows-latest)',

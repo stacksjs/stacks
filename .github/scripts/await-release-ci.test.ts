@@ -37,3 +37,10 @@ test('invalid source identity fails and registry writes depend on the source gat
   expect(workflow.jobs['source-ci'].steps.some((step: any) => step.run === 'bun .github/scripts/await-release-ci.ts')).toBe(true)
   expect(workflow.jobs.npm.needs).toBe('release-gate')
 })
+
+test('native browser device-scale evidence is required before publication', () => {
+  const withoutBrowser = jobs().filter(job => job.name !== 'browser-device-scale')
+  expect(evaluateReleaseCi(sha, [run], withoutBrowser).kind).toBe('rejected')
+  expect(evaluateReleaseCi(sha, [run], [...withoutBrowser, { name: 'browser-device-scale', status: 'completed', conclusion: 'skipped' }]).kind).toBe('rejected')
+  expect(evaluateReleaseCi(sha, [run], [...withoutBrowser, { name: 'browser-device-scale', status: 'completed', conclusion: 'success' }])).toEqual({ kind: 'accepted', runId: 42 })
+})
