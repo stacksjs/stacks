@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.316...v0.75.317)
+
+## ✨ Features
+
+- render notification email templates with saved data ([50e757a](https://github.com/stacksjs/stacks/commit/50e757a)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.315...v0.75.316)
 
 ## 🐛 Bug Fixes
