@@ -1,6 +1,6 @@
 <script client>
 import type { CommerceCategoryRecord } from '../../../../app/Actions/Dashboard/Commerce/commerce-category-records'
-import { formErrorMessages } from '../../../../functions/dashboard-form'
+import { formErrorMessages, slugify } from '../../../../functions/dashboard-form'
 
 const open = useReactiveProp('open', false)
 const mode = useReactiveProp('mode', 'add')
@@ -18,16 +18,6 @@ const parentCategoryId = state('')
 const displayOrder = state('0')
 let hydrationKey = ''
 let slugTouched = false
-
-function slugify(value: string): string {
-  return value
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036F]/g, '')
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-}
 
 effect(() => {
   if (!open()) {

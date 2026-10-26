@@ -15,6 +15,7 @@ describe('dashboard commerce product records', () => {
     const record = normalizeCommerceProductRecord({
       id: 5,
       name: 'Native Kit',
+      slug: 'native-kit',
       price: 125,
       is_available: 1,
       inventory_count: 7,
@@ -29,6 +30,7 @@ describe('dashboard commerce product records', () => {
     expect(record).toMatchObject({
       id: '5',
       name: 'Native Kit',
+      slug: 'native-kit',
       price: 125,
       isAvailable: true,
       inventoryCount: 7,
@@ -72,6 +74,7 @@ describe('dashboard commerce product records', () => {
       normalizeCommerceProductRecord({
         id: 1,
         name: 'Available',
+        slug: 'available',
         price: 100,
         isAvailable: true,
         inventoryCount: 3,
@@ -81,6 +84,7 @@ describe('dashboard commerce product records', () => {
       normalizeCommerceProductRecord({
         id: 2,
         name: 'Unavailable',
+        slug: 'unavailable',
         price: 100,
         isAvailable: false,
         inventoryCount: 0,
@@ -101,6 +105,7 @@ describe('dashboard commerce product records', () => {
     const base = {
       id: 1,
       name: 'Native Kit',
+      slug: 'native-kit',
       price: 125,
       is_available: 1,
       inventory_count: 7,

@@ -4,6 +4,8 @@ import { commerceTimestamp } from './commerce-record'
 export interface CommerceProductRecord {
   id: string
   name: string
+  /** The storefront address, /products/{slug} (stacksjs/stacks#3005). */
+  slug: string
   description: string
   /** Integer minor units of the store currency (1999 is $19.99 in USD). */
   price: number
@@ -68,6 +70,7 @@ export interface ProductReviewSummary {
  */
 export interface ProductFormFields {
   name: string
+  slug: string
   description: string
   price: string
   imageUrl: string
@@ -83,6 +86,7 @@ export interface ProductFormFields {
 /** What the dialog sends to `POST`/`PATCH /api/dashboard/commerce/products`. */
 export interface ProductWritePayload {
   name: string
+  slug: string
   description: string
   /** Integer minor units, never a decimal (stacksjs/stacks#2851). */
   price: number
@@ -116,6 +120,7 @@ export function productWritePayload(form: ProductFormFields, currency: string): 
   const allergens = form.allergens.split(',').map(item => item.trim()).filter(Boolean)
   return {
     name: form.name.trim(),
+    slug: form.slug.trim(),
     description: form.description.trim(),
     price: parseMoneyInput(form.price, currency, { min: MIN_PRODUCT_PRICE }),
     imageUrl: form.imageUrl.trim(),
@@ -285,6 +290,7 @@ export function normalizeCommerceProductRecord(
   return {
     id,
     name: requiredText(value(product, 'name'), source, 'name'),
+    slug: requiredText(value(product, 'slug'), source, 'slug'),
     description: optionalText(value(product, 'description'), source, 'description'),
     price: number(value(product, 'price'), source, 'price', { min: 0 }),
     imageUrl: optionalText(value(product, 'image_url', 'imageUrl'), source, 'image_url'),

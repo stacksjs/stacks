@@ -28,3 +28,20 @@ export function formErrorMessages(errors: Record<string, string>): string[] {
     return `${label.charAt(0).toUpperCase()}${label.slice(1)}: ${message}`
   })
 }
+
+/**
+ * A slug a dialog proposes from a name: accents folded, lowercase, and every
+ * run of anything but a letter or digit one hyphen.
+ *
+ * The category dialog defined this inline; the product dialog needs the same
+ * rule (stacksjs/stacks#3005), so it lives here once.
+ */
+export function slugify(value: string): string {
+  return value
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}

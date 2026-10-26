@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { formErrorMessages } from './dashboard-form'
+import { formErrorMessages, slugify } from './dashboard-form'
 
 /**
  * stacksjs/stacks#2918 — this was duplicated across fourteen dialogs. The
@@ -37,5 +37,14 @@ describe('formErrorMessages', () => {
 
   it('leaves an already-capitalised single word alone', () => {
     expect(formErrorMessages({ Name: 'is required' })).toEqual(['Name: is required'])
+  })
+})
+
+describe('slugify', () => {
+  it('turns a name into the slug a dialog proposes', () => {
+    expect(slugify('Trail Runner')).toBe('trail-runner')
+    expect(slugify('  Café & Bar  ')).toBe('cafe-bar')
+    expect(slugify('50% off: Summer!')).toBe('50-off-summer')
+    expect(slugify('---')).toBe('')
   })
 })

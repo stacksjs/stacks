@@ -1,5 +1,5 @@
 <script client>
-import { formErrorMessages } from '../../../../functions/dashboard-form'
+import { formErrorMessages, slugify } from '../../../../functions/dashboard-form'
 import type {
   CommerceProductRecord,
   ProductOption,
@@ -20,6 +20,7 @@ const busy = useReactiveProp('busy', false)
 const errors = useReactiveProp('errors', {} as Record<string, string>)
 const emit = defineEmits(['submit', 'close'])
 const name = state('')
+const slug = state('')
 const description = state('')
 // The price as typed, in major units ("19.99"). It is stored as integer
 // minor units (1999), converted once in `productWritePayload`.
@@ -33,6 +34,9 @@ const manufacturerId = state('')
 const allergens = state('')
 const nutritionalInfo = state('{}')
 let hydrationKey = ''
+// The slug follows the name until someone edits it, and an existing product
+// keeps the one it has: changing it would break links to it.
+let slugTouched = false
 
 effect(() => {
   if (!open()) {
@@ -45,6 +49,8 @@ effect(() => {
     return
   hydrationKey = key
   name.set(current?.name || '')
+  slug.set(current?.slug || '')
+  slugTouched = Boolean(current?.slug)
   description.set(current?.description || '')
   price.set(current ? minorToInput(current.price, currency()) : '')
   imageUrl.set(current?.imageUrl || '')
@@ -56,6 +62,22 @@ effect(() => {
   allergens.set(current?.allergens.join(', ') || '')
   nutritionalInfo.set(current?.nutritionalInfoRaw || '{}')
 })
+
+effect(() => {
+  if (!open() || slugTouched)
+    return
+  slug.set(slugify(name()))
+})
+
+function markSlugTouched(): void {
+  slugTouched = true
+}
+
+function normalizeSlug(): void {
+  const normalized = slugify(slug())
+  if (normalized !== slug())
+    slug.set(normalized)
+}
 
 function nutritionValid(): boolean {
   const raw = nutritionalInfo().trim()
@@ -79,6 +101,7 @@ function valid(): boolean {
   const parsedPreparation = Number(preparationTime())
   return Boolean(
     name().trim()
+    && slugify(slug())
     && !priceError()
     && Number.isFinite(parsedInventory)
     && parsedInventory >= 0
@@ -95,6 +118,7 @@ function submit(): void {
     return
   emit('submit', productWritePayload({
     name: name(),
+    slug: slugify(slug()),
     description: description(),
     price: price(),
     imageUrl: imageUrl(),
@@ -126,6 +150,7 @@ function errorMessages(): string[] {
         </ul>
         <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
           <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span><input x-model="name" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Slug</span><input x-model="slug" type="text" maxlength="255" required spellcheck="false" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="markSlugTouched" @blur="normalizeSlug" /><span class="block mt-1 text-gray-400 text-xs dark:text-neutral-500">The storefront address, /products/{{ slug() || 'slug' }}.</span></label>
           <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Description</span><textarea x-model="description" rows="3" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea></label>
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Price ({{ currency() }})</span><input x-model="price" type="number" min="0" :step="moneyInputStep(currency())" inputmode="decimal" required :aria-invalid="price() !== '' && priceError() !== ''" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /><span :if="price() !== '' && priceError()" class="block mt-1 text-red-600 text-xs dark:text-red-400">{{ priceError() }}</span></label>
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Inventory count</span><input x-model="inventoryCount" type="number" min="0" step="1" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
