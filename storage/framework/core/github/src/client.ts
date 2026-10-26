@@ -14,6 +14,10 @@ export interface GitHubClientOptions {
   token?: string
   /** Public-only requests, without reading environment credentials. */
   anonymous?: boolean
+  /** Cancel a request, including desktop searches that have been superseded. */
+  signal?: AbortSignal
+  /** Set false for interactive clients that show rate-limit errors immediately. */
+  retry?: boolean
   apiUrl?: string
   fetch?: typeof globalThis.fetch
 }
@@ -71,9 +75,10 @@ export async function githubRequest(
   const url = path.startsWith('http') ? path : `${options.apiUrl ?? GITHUB_API}${path.startsWith('/') ? path : `/${path}`}`
   const response = await fetcher(url, {
     ...init,
+    signal: init.signal ?? options.signal,
     headers: { ...githubHeaders(options.token, options.anonymous), ...init.headers },
   })
-  if (response.ok || attempt >= 3)
+  if (response.ok || attempt >= 3 || options.retry === false)
     return response
   const waitMs = retryDelay(response, attempt)
   if (waitMs === null)

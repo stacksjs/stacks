@@ -20,3 +20,14 @@ test('notifications send only the supplied account token and surface permission 
     return Response.json({ message: 'Insufficient notification permissions' }, { status: 401 })
   }) as typeof fetch })).rejects.toThrow('Insufficient notification permissions')
 })
+
+test('interactive searches forward cancellation and surface rate limits without delayed retries', async () => {
+  const controller = new AbortController()
+  let requests = 0
+  await expect(searchGitHubRepositories('stacksjs', { anonymous: true, signal: controller.signal, retry: false, fetch: (async (_url: unknown, init?: RequestInit) => {
+    requests++
+    expect(init?.signal).toBe(controller.signal)
+    return Response.json({ message: 'API rate limit exceeded' }, { status: 403, headers: { 'x-ratelimit-remaining': '0', 'retry-after': '30' } })
+  }) as typeof fetch })).rejects.toThrow('API rate limit exceeded')
+  expect(requests).toBe(1)
+})
