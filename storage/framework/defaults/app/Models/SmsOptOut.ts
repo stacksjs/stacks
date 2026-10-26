@@ -13,13 +13,6 @@ export default defineModel({
   primaryKey: 'id',
   autoIncrement: true,
 
-  indexes: [
-    {
-      name: 'sms_opt_outs_phone_unique',
-      columns: ['phone'],
-      unique: true,
-    },
-  ],
 
   traits: {
     gdpr: { erasure: 'keep', basis: 'legal_obligation', purpose: 'Honouring SMS STOP replies, keyed by phone number' },

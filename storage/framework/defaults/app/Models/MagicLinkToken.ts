@@ -15,13 +15,6 @@ export default defineModel({
   primaryKey: 'id',
   autoIncrement: true,
 
-  indexes: [
-    {
-      name: 'magic_link_tokens_token_unique',
-      columns: ['token'],
-      unique: true,
-    },
-  ],
 
   traits: {
     gdpr: { erasure: 'delete', basis: 'contract', purpose: 'Passwordless sign-in links' },

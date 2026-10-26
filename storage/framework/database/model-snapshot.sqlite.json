@@ -12422,13 +12422,6 @@
               "token"
             ],
             "type": "unique"
-          },
-          {
-            "name": "magic_link_tokens_token_unique",
-            "columns": [
-              "token"
-            ],
-            "type": "unique"
           }
         ]
       },
@@ -12489,13 +12482,6 @@
           }
         ],
         "indexes": [
-          {
-            "name": "sms_opt_outs_phone_unique",
-            "columns": [
-              "phone"
-            ],
-            "type": "unique"
-          },
           {
             "name": "sms_opt_outs_phone_unique",
             "columns": [
@@ -13812,7 +13798,7 @@
       }
     ]
   },
-  "hash": "8c392dacb9d34da80f9e6a25310b7f356b28886e388686df94505df5e718dbeb",
+  "hash": "b7b14f2b5d5b4b9334c931ef35363f86a676358ef282efd054ec2da6e983a3fc",
   "dialect": "sqlite",
-  "updatedAt": "2026-10-26T17:43:30.635Z"
+  "updatedAt": "2026-10-26T18:04:17.790Z"
 }
