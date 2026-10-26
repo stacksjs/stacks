@@ -27,10 +27,18 @@ const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig 
 // The actions name their model as a server global, which only a booted app defines.
 ;(globalThis as any).Customer ??= {}
 
+const { configureOrm } = await import('bun-query-builder')
+
 const actions = '../../storage/framework/defaults/app/Actions/Commerce'
 const { default: CustomerStoreAction } = await import(`${actions}/CustomerStoreAction`)
 const { default: CustomerUpdateAction } = await import(`${actions}/CustomerUpdateAction`)
 const { default: PaymentUpdateAction } = await import(`${actions}/PaymentUpdateAction`)
+
+const cms = '../../storage/framework/defaults/app/Actions/Cms'
+const { default: AuthorUpdateAction } = await import(`${cms}/AuthorUpdateAction`)
+const { default: CategorizableUpdateAction } = await import(`${cms}/CategorizableUpdateAction`)
+const { default: PostUpdateAction } = await import(`${cms}/PostUpdateAction`)
+const { default: TaggableUpdateAction } = await import(`${cms}/TaggableUpdateAction`)
 
 /** The slice of a request these actions read, with the router's semantics. */
 function request(params: Record<string, unknown>, input: Record<string, unknown>): any {
@@ -62,6 +70,10 @@ describe('actions write only the fields the request sent', () => {
         connections: { sqlite: { database: dbFile, prefix: '' }, mysql: {}, postgres: {} },
       },
     })
+    // `Author.find()` goes through the ORM, which keeps its own connection
+    // and loads its models after boot.
+    configureOrm({ database: dbFile })
+    await (await import('@stacksjs/orm')).ormReady
 
     await run(`CREATE TABLE customers (
       id INTEGER PRIMARY KEY AUTOINCREMENT, uuid TEXT, name TEXT NOT NULL, email TEXT NOT NULL,
@@ -73,6 +85,23 @@ describe('actions write only the fields the request sent', () => {
       method TEXT, status TEXT, currency TEXT DEFAULT 'USD', reference_number TEXT, card_last_four TEXT,
       card_brand TEXT, billing_email TEXT, transaction_id TEXT, payment_provider TEXT,
       refund_amount INTEGER, notes TEXT, uuid TEXT, created_at TEXT, updated_at TEXT
+    )`)
+    await run(`CREATE TABLE posts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, uuid TEXT, author_id INTEGER, title TEXT NOT NULL, excerpt TEXT,
+      content TEXT, status TEXT, poster TEXT, views INTEGER DEFAULT 0, published_at TEXT,
+      created_at TEXT, updated_at TEXT
+    )`)
+    await run(`CREATE TABLE categorizables (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, slug TEXT, description TEXT,
+      categorizable_type TEXT, is_active INTEGER DEFAULT 1, created_at TEXT, updated_at TEXT
+    )`)
+    await run(`CREATE TABLE taggables (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, slug TEXT, description TEXT,
+      is_active INTEGER DEFAULT 1, taggable_id INTEGER, taggable_type TEXT, created_at TEXT, updated_at TEXT
+    )`)
+    await run(`CREATE TABLE authors (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, uuid TEXT, name TEXT, email TEXT, user_id INTEGER,
+      created_at TEXT, updated_at TEXT
     )`)
   })
 
@@ -140,5 +169,47 @@ describe('actions write only the fields the request sent', () => {
     expect(row).toMatchObject({ status: 'completed', method: 'card', currency: 'EUR', card_brand: 'visa', notes: 'Paid at the counter' })
     expect(row.amount).toBe(4200)
     expect(row.order_id).toBe(7)
+  })
+
+  it('changes only the post fields an edit sends', async () => {
+    await run(`INSERT INTO posts (title, excerpt, content, status, poster)
+      VALUES ('Spring menu', 'What is new', 'The long version', 'draft', 'https://example.com/p.png')`)
+    const { id } = await one(`SELECT id FROM posts WHERE title = 'Spring menu'`)
+
+    await PostUpdateAction.handle(request({ id: String(id) }, { status: 'published' }))
+
+    const row = await one(`SELECT * FROM posts WHERE id = ?`, id)
+    expect(row).toMatchObject({
+      title: 'Spring menu',
+      excerpt: 'What is new',
+      content: 'The long version',
+      status: 'published',
+      poster: 'https://example.com/p.png',
+    })
+  })
+
+  it('changes only the category and tag fields an edit sends', async () => {
+    await run(`INSERT INTO categorizables (name, slug, description, categorizable_type) VALUES ('Shoes', 'shoes', 'Footwear', 'products')`)
+    await run(`INSERT INTO taggables (name, slug, description, taggable_type) VALUES ('Sale', 'sale', 'Marked down', 'products')`)
+    const category = await one(`SELECT id FROM categorizables WHERE slug = 'shoes'`)
+    const tag = await one(`SELECT id FROM taggables WHERE slug = 'sale'`)
+
+    await CategorizableUpdateAction.handle(request({ id: String(category.id) }, { description: 'Boots and trainers' }))
+    await TaggableUpdateAction.handle(request({ id: String(tag.id) }, { description: 'Cut prices' }))
+
+    expect(await one(`SELECT name, slug, description FROM categorizables WHERE id = ?`, category.id))
+      .toEqual({ name: 'Shoes', slug: 'shoes', description: 'Boots and trainers' })
+    expect(await one(`SELECT name, slug, description FROM taggables WHERE id = ?`, tag.id))
+      .toEqual({ name: 'Sale', slug: 'sale', description: 'Cut prices' })
+  })
+
+  it('changes only the author fields an edit sends', async () => {
+    await run(`INSERT INTO authors (name, email) VALUES ('Grace Hopper', 'grace@example.com')`)
+    const { id } = await one(`SELECT id FROM authors WHERE email = 'grace@example.com'`)
+
+    await AuthorUpdateAction.handle(request({ id: String(id) }, { name: 'Rear Admiral Hopper' }))
+
+    expect(await one(`SELECT name, email FROM authors WHERE id = ?`, id))
+      .toEqual({ name: 'Rear Admiral Hopper', email: 'grace@example.com' })
   })
 })

@@ -31,10 +31,10 @@ export default new Action({
 
     const id = Number(request.getParam('id'))
 
-    const data = {
-      name: request.get('name'),
-      description: request.get('description'),
-    }
+    // Only the fields the request sent: an absent one copied through
+    // request.get() reached the query as undefined, which binds NULL and
+    // erased the stored value (stacksjs/stacks#3010).
+    const data = request.only(['name', 'description'])
 
     const model = await categorizable.update({ id, ...data })
 

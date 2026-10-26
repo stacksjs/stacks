@@ -16,12 +16,11 @@ export default new Action({
 
     const id = Number(request.getParam('id'))
 
+    // Only the fields the request sent: an absent one copied through
+    // request.get() reached the query as undefined, which binds NULL and
+    // erased the stored value (stacksjs/stacks#3010).
     const data = {
-      title: request.get('title'),
-      excerpt: request.get('excerpt'),
-      content: request.get('content'),
-      status: request.get('status'),
-      poster: request.get('poster'),
+      ...request.only(['title', 'excerpt', 'content', 'status', 'poster']),
       updated_at: formatDate(new Date()),
     }
 

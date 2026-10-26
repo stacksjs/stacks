@@ -14,10 +14,10 @@ export default new Action({
       return response.json({ error: 'Author not found' }, 404)
     }
 
-    const result = await author.update({
-      name: request.get('name'),
-      email: request.get('email'),
-    })
+    // Only the fields the request sent: an absent one copied through
+    // request.get() reached the query as undefined, which binds NULL and
+    // erased the stored value (stacksjs/stacks#3010).
+    const result = await author.update(request.only(['name', 'email']))
 
     return response.json(result)
   },
