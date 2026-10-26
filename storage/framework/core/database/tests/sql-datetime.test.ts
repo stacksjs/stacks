@@ -1,6 +1,6 @@
 import { Database } from 'bun:sqlite'
 import { describe, expect, setSystemTime, test } from 'bun:test'
-import { parseSqlDateTime, sqlDateTime, sqlDateTimeLiteral } from '../src/sql-helpers'
+import { parseSqlDateTime, sqlDateTime, sqlDateTimeInput, sqlDateTimeLiteral } from '../src/sql-helpers'
 
 /**
  * The framework's canonical datetime format.
@@ -198,5 +198,30 @@ describe('expiry comparison against the database clock', () => {
     ).all()
     expect(live).toHaveLength(1)
     db.close()
+  })
+})
+
+// What a client may send for a schema.timestamp() attribute (stacksjs/stacks#3006).
+describe('sqlDateTimeInput - a timestamp a caller sent', () => {
+  test('reads a number as Unix seconds, as the timestamp validator does', () => {
+    expect(sqlDateTimeInput(1767225600)).toBe('2026-01-01T00:00:00.000')
+    expect(sqlDateTimeInput('1767225600')).toBe('2026-01-01T00:00:00.000')
+  })
+
+  test('reads a number too large to be seconds as milliseconds', () => {
+    expect(sqlDateTimeInput(1767225600123)).toBe('2026-01-01T00:00:00.123')
+  })
+
+  test('canonicalises date strings and dates', () => {
+    expect(sqlDateTimeInput('2026-01-01 10:30:00')).toBe('2026-01-01T10:30:00.000')
+    expect(sqlDateTimeInput('2026-01-01T10:30:00Z')).toBe('2026-01-01T10:30:00.000')
+    expect(sqlDateTimeInput(new Date(Date.UTC(2026, 0, 1, 10, 30)))).toBe('2026-01-01T10:30:00.000')
+  })
+
+  test('clears an empty value and leaves an unreadable one for validation', () => {
+    expect(sqlDateTimeInput(undefined)).toBeUndefined()
+    expect(sqlDateTimeInput(null)).toBeNull()
+    expect(sqlDateTimeInput('')).toBeNull()
+    expect(sqlDateTimeInput('next tuesday')).toBe('next tuesday')
   })
 })

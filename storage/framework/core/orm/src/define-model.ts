@@ -9,7 +9,7 @@ import { snakeCase } from '@stacksjs/strings'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { type Paginator, toCursorPaginator, toPaginator, toSimplePaginator } from '@stacksjs/pagination'
 import { enrichPaginatorUrls, resolveCursorArgs, resolvePageArgs } from './paginator-request'
-import { hasWriteValidators, validateWriteBody } from './auto-crud'
+import { hasWriteValidators, normalizeTimestampWrites, validateWriteBody } from './auto-crud'
 import type { BelongsToForeignKeys } from './model-types'
 import type { GdprTraitOptions, PersonalAttribute } from './gdpr/types'
 
@@ -2191,7 +2191,7 @@ function wrapWritesWithValidation(baseModel: Record<string, unknown>, definition
   if (typeof origCreate === 'function') {
     baseModel.create = async function (this: unknown, data: Record<string, unknown>, ...rest: unknown[]) {
       check(data, 'creating')
-      return await (origCreate as Function).call(this, data, ...rest)
+      return await (origCreate as Function).call(this, normalizeTimestampWrites(data, definition), ...rest)
     }
   }
 
@@ -2204,7 +2204,8 @@ function wrapWritesWithValidation(baseModel: Record<string, unknown>, definition
         for (const data of items)
           check(data, 'creating')
       }
-      return await (origCreateMany as Function).call(this, items, ...rest)
+      const normalized = Array.isArray(items) ? items.map(data => normalizeTimestampWrites(data, definition)) : items
+      return await (origCreateMany as Function).call(this, normalized, ...rest)
     }
   }
 
@@ -2213,7 +2214,7 @@ function wrapWritesWithValidation(baseModel: Record<string, unknown>, definition
   if (typeof origUpdate === 'function') {
     baseModel.update = async function (this: unknown, id: unknown, data: Record<string, unknown>, ...rest: unknown[]) {
       check(data, 'updating')
-      return await (origUpdate as Function).call(this, id, data, ...rest)
+      return await (origUpdate as Function).call(this, id, normalizeTimestampWrites(data, definition), ...rest)
     }
   }
 }

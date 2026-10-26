@@ -1,4 +1,4 @@
-import { db } from '@stacksjs/database/runtime'
+import { db, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 
 type LicenseKeyWriteData = Record<string, unknown>
 
@@ -36,15 +36,17 @@ function optionalId(
 }
 
 function expiryTimestamp(value: unknown): number {
+  // PostgreSQL and MySQL hand a stored datetime back as a Date.
+  if (value instanceof Date)
+    return Math.floor(value.getTime() / 1000)
   if (typeof value === 'number')
     return value > 2147483647 ? Math.floor(value / 1000) : value
   if (typeof value === 'string' && /^\d{10,13}$/.test(value))
     return value.length === 13 ? Math.floor(Number(value) / 1000) : Number(value)
   if (typeof value === 'string') {
-    const normalized = /^\d{4}-\d{2}-\d{2} \d/.test(value)
-      ? `${value.replace(' ', 'T')}Z`
-      : value
-    return Math.floor(new Date(normalized).getTime() / 1000)
+    // UTC whatever the spelling, including the offset-less literal stored.
+    const parsed = parseSqlDateTime(value)
+    return parsed ? Math.floor(parsed.getTime() / 1000) : Number.NaN
   }
   return Number.NaN
 }
@@ -97,7 +99,10 @@ export async function validateLicenseKeyWrite(
     ...input,
     key,
     template,
-    expiry_date: expiryDate,
+    // Checked as Unix seconds above, stored as the datetime the column is:
+    // PostgreSQL refuses an integer there, and SQLite kept a bare number in a
+    // text column (stacksjs/stacks#3006).
+    expiry_date: sqlDateTime(new Date(expiryDate * 1000)),
     status,
     customer_id: customerId,
     product_id: productId,

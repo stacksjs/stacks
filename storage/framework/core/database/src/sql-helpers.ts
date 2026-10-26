@@ -218,6 +218,45 @@ export function parseSqlDateTime(value: unknown): Date | null {
 }
 
 /**
+ * A timestamp a caller sent, in the form a datetime column stores.
+ *
+ * `schema.timestamp()` is how the framework's models declare a date-time, and
+ * the column it generates is a `datetime`. The validator, though, accepts Unix
+ * seconds as well as date strings, so a client may send either: the gift card
+ * dialog sends seconds. Written as is, a number landed in the column as an
+ * integer, which PostgreSQL refuses ("column is of type timestamp without time
+ * zone but expression is of type integer") and SQLite stores as a meaningless
+ * number in a text column (stacksjs/stacks#3006).
+ *
+ * A number, or a string of digits, is Unix time: seconds, as the validator
+ * defines it, or milliseconds when it is too large to be seconds (from 1e11,
+ * about the year 5138). A date string or a `Date` is read with
+ * {@link parseSqlDateTime}. All become {@link sqlDateTime}'s canonical literal.
+ * `null`, `undefined` and `''` pass through as `null`/`undefined` so an
+ * optional column can be cleared, and anything unreadable is returned
+ * unchanged for validation to report rather than silently replaced.
+ */
+export function sqlDateTimeInput(value: unknown): unknown {
+  if (value === undefined)
+    return undefined
+  if (value === null || value === '')
+    return null
+
+  let date: Date | null = null
+  if (value instanceof Date)
+    date = Number.isNaN(value.getTime()) ? null : value
+  else if (typeof value === 'number' || (typeof value === 'string' && /^\s*\d+\s*$/.test(value))) {
+    const unix = Number(value)
+    if (Number.isFinite(unix))
+      date = new Date(unix >= 1e11 ? unix : unix * 1000)
+  }
+  else if (typeof value === 'string')
+    date = parseSqlDateTime(value)
+
+  return date && !Number.isNaN(date.getTime()) ? sqlDateTime(date) : value
+}
+
+/**
  * Read a `DATE` column back out as the `YYYY-MM-DD` it stores.
  *
  * A `DATE` is a day on a calendar with no time and no zone, but drivers hand

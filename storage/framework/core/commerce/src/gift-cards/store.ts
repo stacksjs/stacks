@@ -2,11 +2,25 @@ import type { GiftCard, ModelRow, NewModelData } from '@stacksjs/orm'
 type GiftCardJsonResponse = ModelRow<typeof GiftCard>
 type NewGiftCard = NewModelData<typeof GiftCard>
 import { randomUUIDv7 } from 'bun'
-import { db } from '@stacksjs/database/runtime'
+import { db, sqlDateTimeInput } from '@stacksjs/database/runtime'
 import { asModelRow } from '../utils/model-row'
 import { HttpError } from '@stacksjs/error-handling'
 import { isUniqueViolation } from '@stacksjs/orm'
 import { insertedId } from '../utils/inserted-id'
+
+/**
+ * The card's dates in the form their datetime columns store. The timestamp
+ * rule accepts Unix seconds, and the dashboard sends them, which PostgreSQL
+ * refuses in a datetime column (stacksjs/stacks#3006).
+ */
+export function giftCardDates(data: Record<string, unknown>): Record<string, unknown> {
+  const dates: Record<string, unknown> = {}
+  for (const column of ['expiry_date', 'last_used_date']) {
+    if (Object.prototype.hasOwnProperty.call(data, column))
+      dates[column] = sqlDateTimeInput(data[column])
+  }
+  return dates
+}
 
 /**
  * Create a new gift card
@@ -18,6 +32,7 @@ export async function store(data: NewGiftCard): Promise<GiftCardJsonResponse | u
   const d = data as Record<string, unknown>
   const giftCardData = {
     ...data,
+    ...giftCardDates(d),
     current_balance: d.current_balance ?? d.initial_balance,
     status: data.status || 'ACTIVE',
     is_active: d.is_active ?? true,

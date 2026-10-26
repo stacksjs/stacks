@@ -29,7 +29,7 @@ initializeDbConfig({ app: { env: 'test' }, database: {
 
 // The schema comes from the model definitions, as the package's SQLite harness
 // (../setup.ts) builds it, but for this dialect and only the tables under test.
-const TABLES = ['carts', 'categories', 'coupons', 'gift_cards', 'payments', 'receipts']
+const TABLES = ['carts', 'categories', 'coupons', 'gift_cards', 'license_keys', 'payments', 'receipts']
 const { buildMigrationPlan, generateSql, loadModels } = await import('bun-query-builder')
 const modelsDir = join(import.meta.dir, '../../../../../defaults/app/Models')
 const models = { ...(await loadModels({ modelsDir })), ...(await loadModels({ modelsDir: join(modelsDir, 'commerce') })) }
@@ -50,6 +50,10 @@ const { redeem } = await import('../../coupons/update')
 const { store: storeCoupon } = await import('../../coupons/store')
 const { updateBalance } = await import('../../gift-cards/update')
 const { store: storeGiftCard } = await import('../../gift-cards/store')
+const { update: updateGiftCard } = await import('../../gift-cards/update')
+const { store: storeLicenseKey } = await import('../../shippings/license-keys/store')
+const { update: updateLicenseKey } = await import('../../shippings/license-keys/update')
+const { parseSqlDateTime } = await import('@stacksjs/database')
 const { cleanupAbandonedCarts } = await import('../../orders/guards')
 const { recordRefund } = await import('../../payments/update')
 const { store: storePayment } = await import('../../payments/store')
@@ -187,6 +191,26 @@ try {
     await assert.rejects(updateBalance(Number(card.id), -10), /expired/, `${dialect}: a redemption on an expired card must say it expired`)
     await assert.rejects(updateBalance(Number(card.id), 0), /expired/, `${dialect}: a zero adjustment on an expired card must be refused, not reported as success`)
     assert.equal(Number(await column('gift_cards', card.id, 'current_balance')), 100)
+  })
+
+  // The timestamp rule accepts Unix seconds and the dashboard sends them; a
+  // datetime column on PostgreSQL refused the integer, and SQLite kept a bare
+  // number in text (stacksjs/stacks#3006).
+  await check('gift card and license key dates sent as Unix seconds', async () => {
+    const stored = async (table: string, id: unknown, name: string) => parseSqlDateTime(await column(table, id, name) as never)?.toISOString()
+    const card = await storeGiftCard({ code: `GC-DATES-${dialect}`, initial_balance: 50, current_balance: 50, currency: 'USD', status: 'ACTIVE', is_active: true, expiry_date: 1798761600 } as never)
+    assert(card?.id, 'gift card with a seconds expiry')
+    assert.equal(await stored('gift_cards', card.id, 'expiry_date'), '2027-01-01T00:00:00.000Z')
+    await updateGiftCard(Number(card.id), { expiry_date: 1830297600 } as never)
+    assert.equal(await stored('gift_cards', card.id, 'expiry_date'), '2028-01-01T00:00:00.000Z')
+
+    const key = await storeLicenseKey({ key: 'ABCD-EFGH-IJKL-MNOP-QRST', template: 'Standard License', status: 'unassigned', expiry_date: 1798761600 } as never)
+    assert(key?.id, 'license key with a seconds expiry')
+    assert.equal(await stored('license_keys', key.id, 'expiry_date'), '2027-01-01T00:00:00.000Z')
+    // A partial update re-reads the stored expiry, which PostgreSQL and MySQL
+    // hand back as a Date.
+    await updateLicenseKey(Number(key.id), { status: 'active' } as never)
+    assert.equal(await stored('license_keys', key.id, 'expiry_date'), '2027-01-01T00:00:00.000Z')
   })
 
   await check('payments recordRefund', async () => {

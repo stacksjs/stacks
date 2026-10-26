@@ -13,7 +13,7 @@
 
 import { describe, expect, it } from 'bun:test'
 import { schema } from '@stacksjs/validation/runtime'
-import { validateWriteBody } from '../src/auto-crud'
+import { normalizeTimestampWrites, validateWriteBody } from '../src/auto-crud'
 import { defineModel } from '../src/define-model'
 
 const model = {
@@ -240,5 +240,28 @@ describe('defaults and required', () => {
 
   it('leaves the update path alone', () => {
     expect(validateWriteBody({ name: 'x' }, defaulted, 'updating').valid).toBe(true)
+  })
+})
+
+// A timestamp() attribute accepts Unix seconds, and its column is a datetime
+// (stacksjs/stacks#3006).
+describe('normalizeTimestampWrites', () => {
+  const stamped = {
+    name: 'Suppression',
+    attributes: {
+      suppressedAt: { fillable: true, validation: { rule: schema.timestamp() } },
+      reason: { fillable: true, validation: { rule: schema.string() } },
+    },
+  }
+
+  it('writes a Unix seconds value as the datetime its column stores, under either key', () => {
+    expect(normalizeTimestampWrites({ suppressedAt: 1767225600 }, stamped)).toEqual({ suppressedAt: '2026-01-01T00:00:00.000' })
+    expect(normalizeTimestampWrites({ suppressed_at: '1767225600' }, stamped)).toEqual({ suppressed_at: '2026-01-01T00:00:00.000' })
+  })
+
+  it('leaves other attributes, and data with nothing to convert, as they were', () => {
+    const data = { reason: '1767225600' }
+    expect(normalizeTimestampWrites(data, stamped)).toBe(data)
+    expect(normalizeTimestampWrites(null, stamped)).toBeNull()
   })
 })

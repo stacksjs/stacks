@@ -10,7 +10,7 @@
 // Lives in @stacksjs/error-handling, where the queue and other packages that
 // cannot depend on the ORM can use it too. Re-exported for existing callers.
 export { isUniqueViolation } from '@stacksjs/error-handling'
-import { parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
+import { parseSqlDateTime, sqlDateTime, sqlDateTimeInput } from '@stacksjs/database/runtime'
 import { isUniqueViolation } from '@stacksjs/error-handling'
 
 /**
@@ -571,6 +571,38 @@ function resolveWriteValidators(attributes: Record<string, any>): WriteValidator
 
   writeValidatorsByAttributes.set(attributes, validators)
   return validators
+}
+
+/**
+ * `data` with every `schema.timestamp()` attribute in the form its datetime
+ * column stores.
+ *
+ * The timestamp validator accepts Unix seconds as well as date strings, so a
+ * caller may send either, and nothing converted a number before it reached a
+ * datetime column: PostgreSQL refused it, SQLite stored a bare number in text
+ * (stacksjs/stacks#3006). Applied after validation, which is written against
+ * the raw input. Both spellings of the key are converted, since a write may
+ * arrive in the attribute's own camelCase or as the column's snake_case.
+ */
+export function normalizeTimestampWrites<T>(data: T, model: any): T {
+  if (!data || typeof data !== 'object' || Array.isArray(data))
+    return data
+  let result = data as Record<string, any>
+  for (const { field, rule } of resolveWriteValidators(model?.attributes ?? {})) {
+    if (rule?.name !== 'timestamp')
+      continue
+    for (const key of new Set([field, toSnakeCase(field)])) {
+      if (!Object.prototype.hasOwnProperty.call(data, key))
+        continue
+      const converted = sqlDateTimeInput((data as Record<string, any>)[key])
+      if (converted !== (data as Record<string, any>)[key]) {
+        if (result === data)
+          result = { ...(data as Record<string, any>) }
+        result[key] = converted
+      }
+    }
+  }
+  return result as T
 }
 
 export function hasWriteValidators(model: any): boolean {

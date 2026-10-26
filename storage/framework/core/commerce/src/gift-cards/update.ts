@@ -6,6 +6,7 @@ import { formatDate, isUniqueViolation } from '@stacksjs/orm'
 type GiftCardJsonResponse = ModelRow<typeof GiftCard>
 type GiftCardUpdate = UpdateModelData<typeof GiftCard>
 import { fetchById } from './fetch'
+import { giftCardDates } from './store'
 
 /**
  * Update a gift card by ID
@@ -26,6 +27,7 @@ export async function update(id: number, data: Omit<GiftCardUpdate, 'id'>): Prom
       .updateTable('gift_cards')
       .set({
         ...data,
+        ...giftCardDates(data as Record<string, unknown>),
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
