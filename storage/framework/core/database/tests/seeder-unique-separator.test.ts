@@ -55,7 +55,9 @@ describe('a disambiguated unique value', () => {
   it('keeps an email addressable, which a space would not', () => {
     // Listed in the issue among the things a space breaks, and it has no space
     // of its own, so it takes the hyphen too.
-    expect(collide('tiny.email+tag@example.com')).toBe('tiny.email+tag@example.com-2')
+    // The suffix goes in the local part: after the domain it made the domain
+    // `example.com-2`, which no mail reaches either.
+    expect(collide('tiny.email+tag@example.com')).toBe('tiny.email+tag-2@example.com')
   })
 
   it('does not disambiguate at all until the retries are spent', () => {

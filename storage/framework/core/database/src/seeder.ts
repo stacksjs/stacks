@@ -1074,6 +1074,11 @@ function uniqueColumns(attributes: Record<string, Attribute>): string[] {
  * valid in all of the above.
  */
 function withSuffix(value: string, suffix: number): string {
+  // An email takes the suffix in its local part: `a@b.com-2` is not an address
+  // anything can deliver to, `a-2@b.com` is.
+  const email = /^([^@\s]+)@([^@\s]+\.[^@\s]+)$/.exec(value)
+  if (email)
+    return `${email[1]}-${suffix}@${email[2]}`
   return /\s/.test(value) ? `${value} ${suffix}` : `${value}-${suffix}`
 }
 
@@ -1092,7 +1097,11 @@ export function claimUniqueValues(
   used: Map<string, Set<unknown>>,
   suffix: number,
 ): boolean {
-  let distinct = true
+  const distinct = columns.every(column => record[column] == null || !used.get(column)?.has(record[column]))
+  // The regeneration pass records nothing for a record it is about to throw
+  // away, or its values would count as taken when the replacement is claimed.
+  if (!distinct && suffix === 0)
+    return false
 
   for (const column of columns) {
     const value = record[column]
@@ -1107,12 +1116,9 @@ export function claimUniqueValues(
       continue
     }
 
-    distinct = false
-    if (suffix > 0) {
-      const disambiguated = typeof value === 'number' ? value + suffix : withSuffix(String(value), suffix)
-      record[column] = disambiguated
-      seen.add(disambiguated)
-    }
+    const disambiguated = typeof value === 'number' ? value + suffix : withSuffix(String(value), suffix)
+    record[column] = disambiguated
+    seen.add(disambiguated)
   }
 
   return distinct
@@ -1197,9 +1203,16 @@ async function generateRecords(model: SeederModel, options: SeederConfig = {}): 
     if (unique.length > 0) {
       // Three retries, then disambiguate. A factory drawing from a small pool
       // would otherwise spin forever on the last few rows.
-      for (let attempt = 0; attempt < 3 && !claimUniqueValues(record, unique, used, 0); attempt++)
+      // A distinct record is claimed by the check itself; claiming it again
+      // found its own value already taken and suffixed every unique column of
+      // every row.
+      let distinct = claimUniqueValues(record, unique, used, 0)
+      for (let attempt = 0; attempt < 3 && !distinct; attempt++) {
         record = await generateRecord(model.attributes, model.name, false, context)
-      claimUniqueValues(record, unique, used, i + 1)
+        distinct = claimUniqueValues(record, unique, used, 0)
+      }
+      if (!distinct)
+        claimUniqueValues(record, unique, used, i + 1)
     }
     const fixture = model.fixtures[i]
 
