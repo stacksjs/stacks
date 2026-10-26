@@ -109,6 +109,10 @@ export function findShadowedColumnDrops(
     return []
 
   for (const statement of statements) {
+    // COLUMN is optional SQL syntax. A MySQL DROP FOREIGN KEY (or another
+    // constraint drop) must not become a fictitious column named FOREIGN.
+    if (/^\s*ALTER\s+TABLE\s+["`']?[\w.$]+["`']?\s+DROP\s+(?:FOREIGN\s+KEY|PRIMARY\s+KEY|CONSTRAINT|INDEX|CHECK)\b/i.test(statement))
+      continue
     const match = DROP_COLUMN.exec(statement)
     if (!match)
       continue

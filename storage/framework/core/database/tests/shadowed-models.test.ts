@@ -85,6 +85,23 @@ describe('findShadowedColumnDrops', () => {
     return [{ name: 'Release', userFile: user, frameworkFile: framework }]
   }
 
+  it('distinguishes constraint replacement from column deletion', () => {
+    withModels(({ user, framework }) => {
+      const userFile = join(user, 'Release.ts')
+      const frameworkFile = join(framework, 'Release.ts')
+      writeFileSync(userFile, modelSource('Release', 'releases'))
+      writeFileSync(frameworkFile, modelSource('Release', 'releases'))
+      const statements = [
+        'ALTER TABLE `releases` DROP FOREIGN KEY `releases_repository_id_fk`;',
+        'ALTER TABLE "releases" DROP CONSTRAINT "releases_repository_id_fk";',
+        'ALTER TABLE `releases` DROP INDEX `releases_title_index`;',
+        'ALTER TABLE `releases` DROP PRIMARY KEY;',
+      ]
+      expect(findShadowedColumnDrops(statements, shadow(userFile, frameworkFile))).toEqual([])
+      expect(findShadowedColumnDrops([...statements, 'ALTER TABLE `releases` DROP COLUMN `FOREIGN`;'], shadow(userFile, frameworkFile))).toEqual([{ model: 'Release', table: 'releases', columns: ['FOREIGN'] }])
+    })
+  })
+
   it('finds a drop on a table an override took over', () => {
     withModels(({ user, framework }) => {
       const userFile = join(user, 'Release.ts')
