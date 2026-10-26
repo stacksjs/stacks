@@ -30,6 +30,8 @@ export async function store(data: NewCustomer): Promise<CustomerJsonResponse> {
     const result = await db
       .insertInto('customers')
       .values(customerData)
+      // PostgreSQL reports no insert id without RETURNING (#3004).
+      .returningAll()
       .executeTakeFirst()
 
     if (!result)

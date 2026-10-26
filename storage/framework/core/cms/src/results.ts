@@ -26,8 +26,12 @@ export function isRow<T extends object>(value: unknown): value is T {
  * The id of a freshly inserted row, or undefined if the driver reported none.
  */
 export function insertedId(result: unknown): number | undefined {
-  if (isRow<{ id: unknown }>(result) && typeof result.id === 'number')
-    return result.id
+  if (isRow<{ id: unknown }>(result)) {
+    // PostgreSQL gives a BIGSERIAL id back as a string.
+    const id = Number(result.id)
+    if (Number.isSafeInteger(id) && id > 0)
+      return id
+  }
 
   const rowid = (result as WriteResult | undefined)?.lastInsertRowid
 

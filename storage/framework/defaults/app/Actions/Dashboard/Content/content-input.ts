@@ -20,11 +20,16 @@ export function timestamp(): string {
   return new Date().toISOString().slice(0, 19).replace('T', ' ')
 }
 
-/** The new row's id, across the driver shapes we may get back from an insert. */
+/**
+ * The new row's id, across the driver shapes an insert answers with: the row
+ * itself from `returningAll()` (PostgreSQL, which reports no id at all without
+ * RETURNING, and gives a BIGSERIAL id back as a string), `lastInsertRowid`
+ * (SQLite) or `insertId` (MySQL). 0 when none of them names a row.
+ */
 export function insertedId(result: unknown): number {
-  const row = result as { lastInsertRowid?: number | bigint, insertId?: number | bigint } | undefined
-
-  return Number(row?.lastInsertRowid ?? row?.insertId ?? 0)
+  const answer = (Array.isArray(result) ? result[0] : result) as { id?: unknown, lastInsertRowid?: unknown, insertId?: unknown } | undefined
+  const id = Number(answer?.id ?? answer?.lastInsertRowid ?? answer?.insertId ?? 0)
+  return Number.isSafeInteger(id) && id > 0 ? id : 0
 }
 
 /** The `{id}` route param, or 0 when it is not a usable row id. */

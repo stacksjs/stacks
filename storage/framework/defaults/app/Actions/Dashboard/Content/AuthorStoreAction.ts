@@ -52,6 +52,8 @@ export default new Action({
             created_at: now,
             updated_at: now,
           } as any)
+          // PostgreSQL reports no insert id without RETURNING (#3004).
+          .returningAll()
           .executeTakeFirst()
 
         const id = insertedId(result)

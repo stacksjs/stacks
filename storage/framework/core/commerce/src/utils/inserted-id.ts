@@ -36,7 +36,9 @@ export function insertedId(result: unknown): number | undefined {
   }
 
   const record = result as Record<string, unknown>
-  for (const key of ['lastInsertRowid', 'insertId', 'lastInsertId']) {
+  // `id` is the row `returningAll()` answers with; PostgreSQL reports no id
+  // any other way, and gives a BIGSERIAL id back as a string.
+  for (const key of ['id', 'lastInsertRowid', 'insertId', 'lastInsertId']) {
     const value = record[key]
     if (value === undefined || value === null)
       continue

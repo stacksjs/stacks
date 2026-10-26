@@ -38,7 +38,7 @@ initializeDbConfig({ app: { env: 'test' }, database: {
   queryLogging: { enabled: false },
 } })
 
-const TABLES = ['carts', 'categories', 'product_units', 'product_variants', 'products', 'shipping_methods', 'shipping_rates', 'shipping_zones']
+const TABLES = ['carts', 'categories', 'customers', 'product_units', 'product_variants', 'products', 'shipping_methods', 'shipping_rates', 'shipping_zones']
 const { buildMigrationPlan, generateSql, loadModels } = await import('bun-query-builder')
 const modelsDir = join(import.meta.dir, '../../../../../defaults/app/Models')
 const models = { ...(await loadModels({ modelsDir })), ...(await loadModels({ modelsDir: join(modelsDir, 'commerce') })) }
@@ -58,6 +58,7 @@ const { update: updateVariant } = await import('../../products/variants/update')
 const { update: updateUnit } = await import('../../products/units/update')
 const { update: updateRate } = await import('../../shippings/shipping-rates/update')
 const { store: storeCategory } = await import('../../products/categories/store')
+const { store: storeCustomer } = await import('../../customers/store')
 
 async function stored(table: string, id: unknown): Promise<Record<string, unknown> | undefined> {
   return await db.selectFrom(table).selectAll().where('id', '=', id).executeTakeFirst() as Record<string, unknown> | undefined
@@ -121,6 +122,14 @@ try {
     assert(row?.id, `${dialect}: the inserted category comes back with its id`)
     assert.equal(row.name, 'Shoes')
     assert.equal((await stored('categories', row.id))?.slug, `shoes-${dialect}`, `${dialect}: the stored category`)
+  })
+
+  await check('customers store', async () => {
+    // PostgreSQL reports no insert id unless the insert asks for the row back,
+    // and this read one it never got (stacksjs/stacks#3004).
+    const row = await storeCustomer({ name: 'Ada', email: `ada-${dialect}@example.test`, phone: '+15555550100', status: 'Active' } as never) as Record<string, unknown>
+    assert(row?.id, `${dialect}: the stored customer comes back with its id`)
+    assert.equal((await stored('customers', row.id))?.email, `ada-${dialect}@example.test`, `${dialect}: the stored customer`)
   })
 
   assert.deepEqual(failures, [], `${dialect}: every returningAll() write must apply and return its row`)

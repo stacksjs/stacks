@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { describe, expect, test } from 'bun:test'
-import { rowId } from './content-input'
+import { insertedId, rowId } from './content-input'
 import { parseAuthorInput } from './author-input'
 import { parsePageInput, parsePublished } from './page-input'
 
@@ -49,4 +49,23 @@ describe('dashboard content record input', () => {
 test('content identifiers use the shared safe-integer contract', () => {
   for (const value of [true, {}, [], Number.MAX_SAFE_INTEGER + 1]) expect(rowId({ getParam: () => value } as unknown as RequestInstance)).toBe(0)
   expect(rowId({ getParam: () => '42' } as unknown as RequestInstance)).toBe(42)
+})
+
+// What an insert answers with on each driver (stacksjs/stacks#3004).
+describe('the id of an inserted content row', () => {
+  test('reads the row returningAll() gives back, with PostgreSQL\'s string id', () => {
+    expect(insertedId({ id: '64', name: 'Example' })).toBe(64)
+    expect(insertedId([{ id: 7 }])).toBe(7)
+  })
+
+  test('reads SQLite\'s and MySQL\'s insert reports', () => {
+    expect(insertedId({ changes: 1, lastInsertRowid: 12 })).toBe(12)
+    expect(insertedId({ insertId: 9n })).toBe(9)
+  })
+
+  test('is 0 when nothing names a row, as PostgreSQL answers without RETURNING', () => {
+    expect(insertedId([])).toBe(0)
+    expect(insertedId(undefined)).toBe(0)
+    expect(insertedId({ id: 'not-an-id' })).toBe(0)
+  })
 })
