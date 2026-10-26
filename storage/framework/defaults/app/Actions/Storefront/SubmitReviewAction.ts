@@ -14,9 +14,9 @@ const CART_COOKIE = 'stacks_cart'
  *     `email` on the order against the `email` they're posting with,
  *     and additionally accepts a still-valid cart cookie path for
  *     guest shoppers who haven't enrolled in account auth.
- *   - Marks `is_verified_purchase=1` only when that email-on-order
+ *   - Marks `is_verified_purchase` true only when that email-on-order
  *     check passes.
- *   - Always inserts with `is_approved=0`. The dashboard's reviews
+ *   - Always inserts with `is_approved` false. The dashboard's reviews
  *     index shows pending entries to admins for moderation.
  *
  * Spam handling: rate-limit per IP (5/min) so a hostile actor can't
@@ -123,9 +123,10 @@ export default new Action({
         rating,
         title,
         content,
-        is_verified_purchase: 1,
-        is_approved: 0,
-        is_featured: 0,
+        // Booleans, which PostgreSQL requires of these columns (#3005).
+        is_verified_purchase: true,
+        is_approved: false,
+        is_featured: false,
         helpful_votes: 0,
         unhelpful_votes: 0,
         purchase_date: order.created_at || new Date().toISOString(),

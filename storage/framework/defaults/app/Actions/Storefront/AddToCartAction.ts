@@ -41,7 +41,8 @@ export default new Action({
     const product = await (db as any)
       .selectFrom('products')
       .where('slug', '=', slug)
-      .where('is_available', '=', 1)
+      // A boolean, not 1: PostgreSQL has no boolean = integer (#3005).
+      .where('is_available', '=', true)
       .selectAll()
       .executeTakeFirst()
 
