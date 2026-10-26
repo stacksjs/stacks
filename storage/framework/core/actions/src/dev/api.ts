@@ -12,7 +12,7 @@ import { path } from '@stacksjs/path'
 import type { Middleware } from '@stacksjs/router'
 import { disableViewRouting, route } from '@stacksjs/router'
 import { autoImportsAreStale, generateAutoImportFiles, generateServerAutoImportTypes, injectGlobalAutoImports, warnShadowedSecurityDefaults } from '@stacksjs/server'
-import { resolveApiHost } from '../helpers/api-host'
+import { reportApiReady, resolveApiHost, resolveApiPort } from '../helpers/api-host'
 import { exitWithParent } from './exit-with-parent'
 
 const _options = parseOptions()
@@ -32,7 +32,7 @@ await generateServerAutoImportTypes()
 // because the user config loader runs in the background and hasn't
 // resolved yet. Env var wins so users can override via .env / shell.
 await overridesReady
-const port = Number(process.env.PORT_API) || config.ports?.api || 3008
+const port = resolveApiPort(process.env.PORT_API, config.ports?.api)
 const hostname = resolveApiHost()
 
 // Regenerate the model + function auto-import manifest when it is missing
@@ -229,13 +229,13 @@ disableViewRouting(route.bunRouter)
 // `./buddy dev` runner prints its own combined banner; this one is for
 // `./buddy dev:api` invoked standalone.
 try {
-  await route.serve({
+  const server = await route.serve({
     port,
     hostname,
   })
   // Most terminals turn `http://localhost:3008` into a click-through
   // link; the leading newline gives the previous output room to breathe.
-  console.log(`\n  ➜  API server ready: http://${hostname}:${port}\n`)
+  reportApiReady(server)
 }
 catch (err: any) {
   const code = err?.code || err?.errno
