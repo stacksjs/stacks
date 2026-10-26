@@ -23,7 +23,7 @@
  */
 
 import type { PermissionRecord, RbacStore, RoleRecord } from './rbac'
-import { db } from '@stacksjs/database/runtime'
+import { db, parseSqlDateTime } from '@stacksjs/database/runtime'
 // `isUniqueViolation` now lives in the cycle-free `@stacksjs/orm` package so
 // every framework write path (auto-CRUD routes, commerce/cms) can share it —
 // see stacksjs/stacks#1957. Re-exported here so existing consumers
@@ -46,6 +46,16 @@ export function swallowDuplicate(err: unknown): void {
     throw err
 }
 
+// PostgreSQL and MySQL return a timestamp as a Date, which String() spelled
+// in the host's zone ("Mon Oct 26 2026 22:52:45 GMT+0800"), and SQLite an
+// offset-less literal that is UTC by convention. Both leave as ISO 8601 UTC
+// so every driver reports the same instant (stacksjs/stacks#3009).
+function timestamp(value: unknown): string | undefined {
+  if (value == null)
+    return undefined
+  return parseSqlDateTime(value)?.toISOString() ?? String(value)
+}
+
 /**
  * Map a raw DB row to a typed record. Both `roles` and `permissions` share
  * the same shape, so one mapper covers both — the call site provides the
@@ -59,8 +69,8 @@ export function toRecord<T extends RoleRecord | PermissionRecord>(row: Record<st
     name: String(row.name),
     guard_name: String(row.guard_name),
     description: row.description == null ? undefined : String(row.description),
-    created_at: row.created_at == null ? undefined : String(row.created_at),
-    updated_at: row.updated_at == null ? undefined : String(row.updated_at),
+    created_at: timestamp(row.created_at),
+    updated_at: timestamp(row.updated_at),
   } as T
 }
 

@@ -144,6 +144,18 @@ describe('toRecord', () => {
     expect(r.created_at).toBe('2026-05-19T00:00:00.000Z')
     expect(r.updated_at).toBe('2026-05-19T00:00:00.000Z')
   })
+
+  // PostgreSQL and MySQL hand a timestamp back as a Date, and String(date)
+  // answered "Mon Oct 26 2026 22:52:45 GMT+0800 (Philippine Standard Time)":
+  // the host's zone, not an instant a client can rely on. SQLite's stored
+  // literal carries no offset, which new Date() reads as local time.
+  test('gives a timestamp as ISO 8601 UTC whatever the driver returned', () => {
+    const fromDate = toRecord<RoleRecord>({ id: 1, name: 'a', guard_name: 'web', created_at: new Date(Date.UTC(2026, 9, 26, 14, 52, 45)), updated_at: null })!
+    expect(fromDate.created_at).toBe('2026-10-26T14:52:45.000Z')
+    const fromSqlite = toRecord<RoleRecord>({ id: 1, name: 'a', guard_name: 'web', created_at: '2026-10-26 14:52:45', updated_at: '2026-10-26T14:52:45.123' })!
+    expect(fromSqlite.created_at).toBe('2026-10-26T14:52:45.000Z')
+    expect(fromSqlite.updated_at).toBe('2026-10-26T14:52:45.123Z')
+  })
 })
 
 // ─── Migrations 0000000101-0000000105 ───────────────────────────────
