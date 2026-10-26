@@ -1,5 +1,65 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.318...v0.75.319)
+
+## ✨ Features
+
+- **dashboard**: edit a product's slug, proposed from its name ([f40dde4](https://github.com/stacksjs/stacks/commit/f40dde4)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3005](https://github.com/stacksjs/stacks/issues/3005))
+- **commerce**: give a product created without a slug one from its name ([91e8d0c](https://github.com/stacksjs/stacks/commit/91e8d0c)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3005](https://github.com/stacksjs/stacks/issues/3005))
+- **commerce**: give every product the slug the storefront looks it up by ([4f88340](https://github.com/stacksjs/stacks/commit/4f88340)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3005](https://github.com/stacksjs/stacks/issues/3005))
+- **seeder**: seed the built-in models dashboard pages list ([7db4730](https://github.com/stacksjs/stacks/commit/7db4730)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3000](https://github.com/stacksjs/stacks/issues/3000), [#3001](https://github.com/stacksjs/stacks/issues/3001), [#2996](https://github.com/stacksjs/stacks/issues/2996))
+
+## 🐛 Bug Fixes
+
+- adopt released event types and prepare browser QA builds ([4a3a28b](https://github.com/stacksjs/stacks/commit/4a3a28b)) _(by Chris Breuer <chris@stacksjs.com>)_
+- honor native browser device scale in QA commands ([dc6e23c](https://github.com/stacksjs/stacks/commit/dc6e23c)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **storefront**: let a shopper add to the cart, check out and review ([cd4f065](https://github.com/stacksjs/stacks/commit/cd4f065)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3017](https://github.com/stacksjs/stacks/issues/3017))
+- **database**: distinguish constraint drops from shadowed columns ([372b15e](https://github.com/stacksjs/stacks/commit/372b15e)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **models**: declare the SMS opt-out and magic link unique indexes once ([a34a7f1](https://github.com/stacksjs/stacks/commit/a34a7f1)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3018](https://github.com/stacksjs/stacks/issues/3018))
+- **storefront**: compare and write booleans as booleans ([72e61c1](https://github.com/stacksjs/stacks/commit/72e61c1)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3005](https://github.com/stacksjs/stacks/issues/3005))
+- **dashboard**: declare the events every default component emits ([a7966cc](https://github.com/stacksjs/stacks/commit/a7966cc)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3016](https://github.com/stacksjs/stacks/issues/3016))
+- **models**: declare a text column for long-form attributes ([88d5dee](https://github.com/stacksjs/stacks/commit/88d5dee)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3015](https://github.com/stacksjs/stacks/issues/3015), [#2965](https://github.com/stacksjs/stacks/issues/2965))
+- **database**: write seeded and ORM datetimes in the form MySQL accepts ([8b7c96f](https://github.com/stacksjs/stacks/commit/8b7c96f)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3014](https://github.com/stacksjs/stacks/issues/3014))
+- **dashboard**: send a category's parent as the number the model declares ([f573671](https://github.com/stacksjs/stacks/commit/f573671)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3013](https://github.com/stacksjs/stacks/issues/3013), [#3002](https://github.com/stacksjs/stacks/issues/3002))
+- **router**: answer a validation error thrown by a handler with its field errors ([046b268](https://github.com/stacksjs/stacks/commit/046b268)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3012](https://github.com/stacksjs/stacks/issues/3012))
+- **cms**: let a new comment take the status and is_active defaults ([9da7bee](https://github.com/stacksjs/stacks/commit/9da7bee)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3010](https://github.com/stacksjs/stacks/issues/3010))
+- **cms**: write only the post, author, category and tag fields an edit sends ([6e4909c](https://github.com/stacksjs/stacks/commit/6e4909c)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3010](https://github.com/stacksjs/stacks/issues/3010))
+- **commerce**: write only the customer and payment fields a request sends ([9b92c01](https://github.com/stacksjs/stacks/commit/9b92c01)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3010](https://github.com/stacksjs/stacks/issues/3010))
+- **auth**: report RBAC timestamps as ISO 8601 UTC on every driver ([9e7e612](https://github.com/stacksjs/stacks/commit/9e7e612)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3009](https://github.com/stacksjs/stacks/issues/3009))
+- validate model writes sent under their column names, and say which field failed ([f9a3329](https://github.com/stacksjs/stacks/commit/f9a3329)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3007](https://github.com/stacksjs/stacks/issues/3007), [#3001](https://github.com/stacksjs/stacks/issues/3001))
+- store a timestamp sent as Unix seconds as the datetime its column is ([3611345](https://github.com/stacksjs/stacks/commit/3611345)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3006](https://github.com/stacksjs/stacks/issues/3006), [#3001](https://github.com/stacksjs/stacks/issues/3001))
+- **dashboard**: create content categories with a real boolean ([215b3d8](https://github.com/stacksjs/stacks/commit/215b3d8)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3004](https://github.com/stacksjs/stacks/issues/3004), [#3001](https://github.com/stacksjs/stacks/issues/3001))
+- read the new row's id on PostgreSQL, which reports none without RETURNING ([7f2617a](https://github.com/stacksjs/stacks/commit/7f2617a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3004](https://github.com/stacksjs/stacks/issues/3004), [#3001](https://github.com/stacksjs/stacks/issues/3001))
+- **browse**: clear the Chrome clone's extended attributes before signing ([174a6bb](https://github.com/stacksjs/stacks/commit/174a6bb)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3003](https://github.com/stacksjs/stacks/issues/3003), [#3001](https://github.com/stacksjs/stacks/issues/3001))
+- **commerce**: stop seeding fake coupon and product references ([6c82afc](https://github.com/stacksjs/stacks/commit/6c82afc)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3002](https://github.com/stacksjs/stacks/issues/3002), [#3001](https://github.com/stacksjs/stacks/issues/3001))
+- **commerce**: store a category's parent as a number ([709404a](https://github.com/stacksjs/stacks/commit/709404a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3002](https://github.com/stacksjs/stacks/issues/3002), [#3001](https://github.com/stacksjs/stacks/issues/3001))
+- **models**: store Log and Websocket times as bigint ([51ac6e8](https://github.com/stacksjs/stacks/commit/51ac6e8)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2996](https://github.com/stacksjs/stacks/issues/2996), [#3001](https://github.com/stacksjs/stacks/issues/3001))
+- **models**: let the seeder fill belongsTo foreign keys ([e209c65](https://github.com/stacksjs/stacks/commit/e209c65)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3000](https://github.com/stacksjs/stacks/issues/3000))
+- **features**: stop gating subscribers as commerce ([46ed323](https://github.com/stacksjs/stacks/commit/46ed323)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2995](https://github.com/stacksjs/stacks/issues/2995), [#3001](https://github.com/stacksjs/stacks/issues/3001))
+- **dashboard**: a review without a star rating no longer fails the list ([6c47f35](https://github.com/stacksjs/stacks/commit/6c47f35)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2999](https://github.com/stacksjs/stacks/issues/2999), [#3001](https://github.com/stacksjs/stacks/issues/3001))
+- pass groupBy columns as arguments, not an array ([414c4da](https://github.com/stacksjs/stacks/commit/414c4da)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2998](https://github.com/stacksjs/stacks/issues/2998), [#3001](https://github.com/stacksjs/stacks/issues/3001))
+- **seeder**: leave a unique value alone unless it collided ([d1b5b04](https://github.com/stacksjs/stacks/commit/d1b5b04)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2997](https://github.com/stacksjs/stacks/issues/2997))
+
+## 📝 Documentation
+
+- refresh framework declarations and native guidance ([e3b1e9c](https://github.com/stacksjs/stacks/commit/e3b1e9c)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **commerce**: give the dashboard pricing fixture the slug its form now carries ([2e028b8](https://github.com/stacksjs/stacks/commit/2e028b8)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3005](https://github.com/stacksjs/stacks/issues/3005))
+- **buddy**: commerce no longer owns the Subscriber models ([e9c31ba](https://github.com/stacksjs/stacks/commit/e9c31ba)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2995](https://github.com/stacksjs/stacks/issues/2995))
+
+## 🔧 Chores
+
+- **deps**: bump stx to 0.2.708 ([dd3ca97](https://github.com/stacksjs/stacks/commit/dd3ca97)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3008](https://github.com/stacksjs/stacks/issues/3008), [#3001](https://github.com/stacksjs/stacks/issues/3001), [stacksjs/stacks#3008](https://github.com/stacksjs/stacks/issues/3008), [stacksjs/stx#2122](https://github.com/stacksjs/stx/issues/2122))
+- **database**: regenerate the framework table types ([081a60e](https://github.com/stacksjs/stacks/commit/081a60e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3002](https://github.com/stacksjs/stacks/issues/3002))
+- **deps**: bump bun-query-builder to 0.3.22 ([4612442](https://github.com/stacksjs/stacks/commit/4612442)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2996](https://github.com/stacksjs/stacks/issues/2996), [#3001](https://github.com/stacksjs/stacks/issues/3001), [stacksjs/bun-query-builder#1194](https://github.com/stacksjs/bun-query-builder/issues/1194), [stacksjs/bun-query-builder#1195](https://github.com/stacksjs/bun-query-builder/issues/1195))
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.317...v0.75.318)
 
 ## 🐛 Bug Fixes
