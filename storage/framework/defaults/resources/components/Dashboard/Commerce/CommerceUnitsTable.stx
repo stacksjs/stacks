@@ -7,7 +7,7 @@ const records = useReactiveProp('records', [] as ProductUnitRecord[])
 const loading = useReactiveProp('loading', false)
 /** The parent's sort select; a change hands the order back from a header sort. */
 const sortResetKey = useReactiveProp<unknown>('sortResetKey', '')
-const emit = defineEmits()
+const emit = defineEmits(['edit', 'delete'])
 
 /**
  * No slots. `UI/Table`'s `cell` and `actions` slots cannot be used yet -

@@ -8,7 +8,7 @@ const replying = useReactiveProp('replying', false)
 const replyText = useReactiveProp('replyText', '')
 const canSendReply = useReactiveProp('canSendReply', false)
 const mailbox = useReactiveProp('mailbox', '')
-const emit = defineEmits()
+const emit = defineEmits(['close', 'toggle-read', 'request-delete', 'cancel-delete', 'confirm-delete', 'update:reply', 'reply'])
 
 function message(): DashboardInboxEmail | null {
   return email() as DashboardInboxEmail | null

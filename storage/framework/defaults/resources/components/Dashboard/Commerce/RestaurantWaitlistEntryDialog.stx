@@ -11,7 +11,7 @@ const record = useReactiveProp('record', null as RestaurantWaitlistRecord | null
 const options = useReactiveProp('options', { customers: [] } as RestaurantWaitlistOptions)
 const busy = useReactiveProp('busy', false)
 const errors = useReactiveProp('errors', {} as Record<string, string>)
-const emit = defineEmits()
+const emit = defineEmits(['submit', 'close'])
 
 const customerId = state<number | string>('')
 const name = state('')

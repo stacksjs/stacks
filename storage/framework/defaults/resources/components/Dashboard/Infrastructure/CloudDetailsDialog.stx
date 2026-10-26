@@ -3,7 +3,7 @@ import type { DashboardCloudResource } from '../../../../app/Actions/Dashboard/C
 
 const open = useReactiveProp('open', false)
 const item = useReactiveProp('item', null as DashboardCloudResource | null)
-const emit = defineEmits()
+const emit = defineEmits(['close'])
 </script>
 
 <Modal :isOpen="open() && Boolean(item())" :title="item()?.name || 'Cloud resource'" :description="`${item()?.category || 'Cloud'} resource`" size="md" @close="emit('close')">

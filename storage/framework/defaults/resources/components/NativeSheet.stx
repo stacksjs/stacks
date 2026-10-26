@@ -30,7 +30,7 @@ import { coverTabBar, liftToBody, observeSheetDrag, presentPageAsCard } from '@s
  * sheet opened over a drawer, closes with one Escape and leaves the layer
  * under it up, locked and in charge of the keyboard.
  */
-const emit = defineEmits()
+const emit = defineEmits(['close'])
 const open = useModel('open', { default: false })
 const title = useReactiveProp<string>('title', '')
 const doneLabel = useReactiveProp<string>('doneLabel', 'Done')

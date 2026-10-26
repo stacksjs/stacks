@@ -3,7 +3,7 @@ import type { DashboardMailbox } from '../../../../app/Actions/Dashboard/Infrast
 
 const open = useReactiveProp('open', false)
 const mailbox = useReactiveProp('mailbox', null as DashboardMailbox | null)
-const emit = defineEmits()
+const emit = defineEmits(['close'])
 </script>
 
 <Modal :isOpen="open() && Boolean(mailbox())" :title="mailbox()?.email || 'Mailbox'" description="Configured mailbox" size="md" @close="emit('close')">

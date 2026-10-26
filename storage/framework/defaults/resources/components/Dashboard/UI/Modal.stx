@@ -52,7 +52,7 @@ const liveShowCloseButton = useReactiveProp('showCloseButton', true)
 const dialog = useRef<HTMLDialogElement>('dashboardModalDialog')
 const activeElement = useActiveElement()
 const scrollLocked = useScrollLock()
-const emit = defineEmits()
+const emit = defineEmits(['close'])
 let restoreFocus: HTMLElement | null = null
 
 type ModalCloseReason = 'backdrop' | 'button' | 'escape'

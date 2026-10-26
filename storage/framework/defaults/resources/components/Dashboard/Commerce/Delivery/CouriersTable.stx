@@ -18,7 +18,7 @@ const couriers = useReactiveProp('couriers', [] as CourierRow[])
 const loading = useReactiveProp('loading', false)
 /** The parent's search: a change returns to the first page. */
 const pageResetKey = useReactiveProp<unknown>('pageResetKey', '')
-const emit = defineEmits()
+const emit = defineEmits(['edit', 'delete'])
 
 const COLUMNS = [
   { key: 'name', label: 'Courier', sortable: true, class: 'font-medium text-stone-800 whitespace-nowrap dark:text-white' },

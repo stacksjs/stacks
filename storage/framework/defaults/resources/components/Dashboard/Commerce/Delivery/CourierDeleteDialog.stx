@@ -8,7 +8,7 @@ const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as CourierRecord | null)
 const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
-const emit = defineEmits()
+const emit = defineEmits(['close', 'confirm'])
 const description = derived(() => `Delete ${record()?.name || 'the selected courier'} permanently. Couriers referenced by delivery routes may be protected by the database.`)
 </script>
 

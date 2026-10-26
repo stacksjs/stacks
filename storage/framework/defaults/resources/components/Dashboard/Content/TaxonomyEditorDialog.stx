@@ -13,7 +13,7 @@ const name = state('')
 const slug = state('')
 const description = state('')
 const slugTouched = state(false)
-const emit = defineEmits()
+const emit = defineEmits(['close', 'submit'])
 let wasOpen = false
 
 function slugify(value: string): string {

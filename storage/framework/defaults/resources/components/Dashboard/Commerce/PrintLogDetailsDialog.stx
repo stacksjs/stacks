@@ -4,7 +4,7 @@ import { printLogTimestamp } from '../../../../app/Actions/Dashboard/Commerce/pr
 
 const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as PrintLogRecord | null)
-const emit = defineEmits()
+const emit = defineEmits(['close'])
 
 function date(value: string): string {
   const timestamp = printLogTimestamp(value)

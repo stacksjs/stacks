@@ -4,7 +4,7 @@ import { formatCurrency } from '@stacksjs/commerce/money'
 
 const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as GiftCardRecord | null)
-const emit = defineEmits()
+const emit = defineEmits(['edit', 'close', 'delete'])
 
 function money(value: number, currency: string): string {
   return formatCurrency(value, currency)

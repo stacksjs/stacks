@@ -2,7 +2,7 @@
 import type { DeploymentPreview, DeploymentPreviewOperation } from '@stacksjs/types'
 
 const plan = useReactiveProp<DeploymentPreview | null>('plan', null)
-const emit = defineEmits()
+const emit = defineEmits(['close', 'deploy'])
 
 const phaseIcons: Record<DeploymentPreviewOperation['phase'], string> = {
   validate: 'i-hugeicons-task-01',

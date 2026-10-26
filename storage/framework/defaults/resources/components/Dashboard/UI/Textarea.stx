@@ -17,7 +17,7 @@ const liveName = useReactiveProp('name', '')
 const liveId = useReactiveProp('id', '')
 const liveAriaLabel = useReactiveProp('ariaLabel', '')
 const liveClass = useReactiveProp('class', '')
-const emit = defineEmits()
+const emit = defineEmits(['update:value', 'input', 'change', 'blur'])
 const generatedId = useId('textarea')
 
 const resizeClasses: Record<TextareaResize, string> = {

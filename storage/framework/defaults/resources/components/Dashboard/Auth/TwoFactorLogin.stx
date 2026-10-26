@@ -1,7 +1,7 @@
 @import('../UI/Input', '../UI/Button')
 
 <script client>
-const emit = defineEmits()
+const emit = defineEmits(['submit', 'restart'])
 const isLoading = useReactiveProp<boolean>('isLoading', false)
 const error = useReactiveProp<string>('error', '')
 const code = state('')

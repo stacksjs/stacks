@@ -13,7 +13,7 @@ import { haptics, observeLongPress, showContextMenuFor } from '@stacksjs/mobile'
  * `symbol` an SF Symbol for the native menu, `icon` an Iconify class for the
  * web one. Listen for `select`, which carries the chosen id.
  */
-const emit = defineEmits()
+const emit = defineEmits(['select'])
 const items = useReactiveProp<ContextMenuItem[]>('items', [])
 const title = useReactiveProp<string>('title', '')
 const delay = useReactiveProp<number>('delay', 500)

@@ -4,7 +4,7 @@ import type { CommerceCategoryRecord } from '../../../../app/Actions/Dashboard/C
 const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as CommerceCategoryRecord | null)
 const records = useReactiveProp('records', [] as CommerceCategoryRecord[])
-const emit = defineEmits()
+const emit = defineEmits(['edit', 'close', 'delete'])
 
 function parentName(): string {
   const parentId = record()?.parentCategoryId

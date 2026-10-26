@@ -28,7 +28,7 @@ const expiryMinutes = state('10080')
 const selectedScopes = state<string[]>(['read'])
 const localError = state('')
 const copied = state(false)
-const emit = defineEmits()
+const emit = defineEmits(['submit', 'close'])
 let wasOpen = false
 
 effect(() => {

@@ -2,7 +2,7 @@
 const liveId = useReactiveProp('id', '')
 const liveShow = useReactiveProp('show', true)
 const liveAriaLabel = useReactiveProp('ariaLabel', 'Dialog')
-const emit = defineEmits()
+const emit = defineEmits(['update:show', 'close'])
 const generatedId = useId('modal')
 
 const modalId = derived(() => liveId() || generatedId)

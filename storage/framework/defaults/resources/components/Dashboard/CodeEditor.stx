@@ -6,7 +6,7 @@ const liveLanguage = useReactiveProp('language', 'text' as CodeEditorLanguage)
 const liveLabel = useReactiveProp('label', 'Code editor')
 const liveLoading = useReactiveProp('loading', false)
 const liveReadonly = useReactiveProp('readonly', false)
-const emit = defineEmits()
+const emit = defineEmits(['update:value', 'input', 'save', 'format'])
 
 const lineCount = derived(() => Math.max(1, liveValue().split('\n').length))
 const characterCount = derived(() => liveValue().length)

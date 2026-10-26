@@ -8,7 +8,7 @@ const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as DeliveryRouteRecord | null)
 const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
-const emit = defineEmits()
+const emit = defineEmits(['close', 'confirm'])
 const description = derived(() => `Delete route #${record()?.id} for ${record()?.courier || 'the selected courier'} permanently.`)
 </script>
 

@@ -24,7 +24,7 @@ const liveVariant = useReactiveProp('variant', 'macos' as WindowControlVariant)
 const liveSize = useReactiveProp('size', 'md' as WindowControlSize)
 const liveShowLabels = useReactiveProp('showLabels', false)
 const liveDisabled = useReactiveProp('disabled', false)
-const emit = defineEmits()
+const emit = defineEmits(['close', 'minimize', 'maximize'])
 const windowControls = useWindowControls()
 
 const sizeConfig: Record<WindowControlSize, { button: string, gap: string, icon: string }> = {

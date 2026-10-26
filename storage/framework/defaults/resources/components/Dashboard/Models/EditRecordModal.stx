@@ -11,7 +11,7 @@ const modelName = useReactiveProp('modelName', 'Record')
 const fields = useReactiveProp('fields', [] as EditField[])
 const busy = useReactiveProp('busy', false)
 const values = state<Record<string, string>>({})
-const emit = defineEmits()
+const emit = defineEmits(['submit', 'close'])
 let hydrationKey = ''
 
 effect(() => {

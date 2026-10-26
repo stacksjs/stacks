@@ -4,7 +4,7 @@ import type { CouponRecord } from '../../../../app/Actions/Dashboard/Commerce/co
 const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as CouponRecord | null)
 const busy = useReactiveProp('busy', false)
-const emit = defineEmits()
+const emit = defineEmits(['close', 'confirm'])
 const description = derived(() => `Delete "${record()?.code || 'Unnamed coupon'}" permanently? Recorded order relationships may prevent deletion.`)
 </script>
 

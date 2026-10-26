@@ -4,7 +4,7 @@ import type { ManufacturerRecord } from '../../../../app/Actions/Dashboard/Comme
 const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as ManufacturerRecord | null)
 const busy = useReactiveProp('busy', false)
-const emit = defineEmits()
+const emit = defineEmits(['close', 'confirm'])
 const description = derived(() => `Delete "${record()?.name || 'Unnamed manufacturer'}" permanently?`)
 const warning = derived(() => record()?.productCount
   ? `It is linked to ${record()?.productCount} products and deletion may be rejected.`

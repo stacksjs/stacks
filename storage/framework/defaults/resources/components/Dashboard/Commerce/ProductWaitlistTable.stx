@@ -9,7 +9,7 @@ const options = useReactiveProp('options', {
   customers: [],
 } as ProductWaitlistOptions)
 const loading = useReactiveProp('loading', false)
-const emit = defineEmits()
+const emit = defineEmits(['edit', 'delete'])
 
 const STATUS_CLASSES = {
   purchased: 'text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/30',

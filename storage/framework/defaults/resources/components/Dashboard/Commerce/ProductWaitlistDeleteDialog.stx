@@ -4,7 +4,7 @@ import type { ProductWaitlistRecord } from '../../../../app/Actions/Dashboard/Co
 const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as ProductWaitlistRecord | null)
 const busy = useReactiveProp('busy', false)
-const emit = defineEmits()
+const emit = defineEmits(['close', 'confirm'])
 const description = derived(() => `${record()?.name || 'This entry'} will be permanently removed from the WaitlistProduct model.`)
 </script>
 

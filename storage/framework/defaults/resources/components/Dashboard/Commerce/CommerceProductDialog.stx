@@ -18,7 +18,7 @@ const manufacturers = useReactiveProp('manufacturers', [] as ProductOption[])
 const currency = useReactiveProp('currency', 'USD')
 const busy = useReactiveProp('busy', false)
 const errors = useReactiveProp('errors', {} as Record<string, string>)
-const emit = defineEmits()
+const emit = defineEmits(['submit', 'close'])
 const name = state('')
 const description = state('')
 // The price as typed, in major units ("19.99"). It is stored as integer

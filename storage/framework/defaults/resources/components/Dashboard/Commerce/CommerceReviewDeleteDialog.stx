@@ -4,7 +4,7 @@ import type { ReviewRecord } from '../../../../app/Actions/Dashboard/Commerce/re
 const open = useReactiveProp('open', false)
 const review = useReactiveProp('review', null as ReviewRecord | null)
 const busy = useReactiveProp('busy', false)
-const emit = defineEmits()
+const emit = defineEmits(['close', 'confirm'])
 const description = derived(() => `Delete "${review()?.title || 'Untitled review'}" permanently? This cannot be undone.`)
 </script>
 

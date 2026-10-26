@@ -4,7 +4,7 @@ import { formatCurrency } from '@stacksjs/commerce/money'
 
 const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as CommerceOrderRecord | null)
-const emit = defineEmits()
+const emit = defineEmits(['edit', 'close', 'delete'])
 
 function label(value: string): string {
   return value.replaceAll('_', ' ').toLowerCase().replace(/\b\w/g, letter => letter.toUpperCase())

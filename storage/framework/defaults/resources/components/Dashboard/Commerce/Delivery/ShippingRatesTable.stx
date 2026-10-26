@@ -21,7 +21,7 @@ const rates = useReactiveProp('rates', [] as ShippingRateRow[])
 const loading = useReactiveProp('loading', false)
 /** The parent's search: a change returns to the first page. */
 const pageResetKey = useReactiveProp<unknown>('pageResetKey', '')
-const emit = defineEmits()
+const emit = defineEmits(['edit', 'delete'])
 
 function formatWeight(weight: number): string {
   return `${new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(weight)} kg`

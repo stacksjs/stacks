@@ -21,7 +21,7 @@ const busy = useReactiveProp('busy', false)
 const emptyMessage = useReactiveProp('emptyMessage', 'No assignments are available.')
 const selected = state<string[]>([])
 const guardValue = state('')
-const emit = defineEmits()
+const emit = defineEmits(['guard-change', 'close', 'save'])
 
 effect(() => {
   selected.set([...initialSelected()])

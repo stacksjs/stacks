@@ -11,7 +11,7 @@ const busy = useReactiveProp('busy', false)
 const disabled = useReactiveProp('disabled', false)
 const warning = useReactiveProp('warning', '')
 const error = useReactiveProp('error', '')
-const emit = defineEmits()
+const emit = defineEmits(['close', 'confirm'])
 
 function close(): void {
   if (!busy())

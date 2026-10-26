@@ -9,7 +9,7 @@ const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as ShippingRateRecord | null)
 const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
-const emit = defineEmits()
+const emit = defineEmits(['close', 'confirm'])
 const description = derived(() => `Delete the ${record()?.shipping_method?.name || 'selected method'} rate for ${record()?.shipping_zone?.name || 'the selected zone'} permanently.`)
 </script>
 

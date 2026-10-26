@@ -18,7 +18,7 @@ const zones = useReactiveProp('zones', [] as ShippingZoneRow[])
 const loading = useReactiveProp('loading', false)
 /** The parent's search: a change returns to the first page. */
 const pageResetKey = useReactiveProp<unknown>('pageResetKey', '')
-const emit = defineEmits()
+const emit = defineEmits(['edit', 'delete'])
 
 function parseList(value: SerializedList): string[] {
   if (Array.isArray(value))

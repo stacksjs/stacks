@@ -4,7 +4,7 @@ import type { TaxRateRecord } from '../../../../app/Actions/Dashboard/Commerce/t
 const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as TaxRateRecord | null)
 const busy = useReactiveProp('busy', false)
-const emit = defineEmits()
+const emit = defineEmits(['close', 'confirm'])
 const description = derived(() => `${record()?.name || 'This tax rate'} will be permanently removed.`)
 const warning = derived(() => record()?.isDefault
   ? 'This rate is marked as default. No replacement is selected automatically.'

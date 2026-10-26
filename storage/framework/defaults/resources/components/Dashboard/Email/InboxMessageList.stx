@@ -7,7 +7,7 @@ const error = useReactiveProp('error', '')
 const search = useReactiveProp('search', '')
 const emptyTitle = useReactiveProp('emptyTitle', 'No messages found')
 const panelOpen = useReactiveProp('panelOpen', false)
-const emit = defineEmits()
+const emit = defineEmits(['search', 'select'])
 
 function rows(): DashboardInboxEmail[] {
   return emails() as DashboardInboxEmail[]

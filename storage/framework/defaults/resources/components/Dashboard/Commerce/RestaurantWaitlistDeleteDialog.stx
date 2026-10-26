@@ -4,7 +4,7 @@ import type { RestaurantWaitlistRecord } from '../../../../app/Actions/Dashboard
 const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as RestaurantWaitlistRecord | null)
 const busy = useReactiveProp('busy', false)
-const emit = defineEmits()
+const emit = defineEmits(['close', 'confirm'])
 const description = derived(() => `${record()?.name || 'This party'} will be permanently removed from the WaitlistRestaurant model.`)
 </script>
 

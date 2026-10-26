@@ -11,7 +11,7 @@ const busyId = useReactiveProp('busyId', '')
 const sortResetKey = useReactiveProp<unknown>('sortResetKey', '')
 /** The parent's search and filters: a change returns to the first page. */
 const pageResetKey = useReactiveProp<unknown>('pageResetKey', '')
-const emit = defineEmits()
+const emit = defineEmits(['approve', 'feature', 'edit', 'delete'])
 
 /** Epoch seconds or milliseconds as well as stored timestamps, as the API sends either. */
 function formatDate(value: string): string {

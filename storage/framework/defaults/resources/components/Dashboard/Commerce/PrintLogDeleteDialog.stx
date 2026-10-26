@@ -4,7 +4,7 @@ import type { PrintLogRecord } from '../../../../app/Actions/Dashboard/Commerce/
 const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as PrintLogRecord | null)
 const busy = useReactiveProp('busy', false)
-const emit = defineEmits()
+const emit = defineEmits(['close', 'confirm'])
 const description = derived(() => `This permanently deletes ${record()?.document || `print log #${record()?.id}`} from the native Receipt history. It does not affect the printed document.`)
 </script>
 

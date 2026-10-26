@@ -6,7 +6,7 @@ const open = useReactiveProp('open', false)
 const review = useReactiveProp('review', null as ReviewRecord | null)
 const busy = useReactiveProp('busy', false)
 const errors = useReactiveProp('errors', {} as Record<string, string>)
-const emit = defineEmits()
+const emit = defineEmits(['submit', 'close'])
 const title = state('')
 const content = state('')
 // A string, so the select can hold "no rating" as well as 1 to 5.

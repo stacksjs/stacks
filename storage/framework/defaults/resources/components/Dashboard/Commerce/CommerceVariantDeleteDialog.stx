@@ -4,7 +4,7 @@ import type { ProductVariantRecord } from '../../../../app/Actions/Dashboard/Com
 const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as ProductVariantRecord | null)
 const busy = useReactiveProp('busy', false)
-const emit = defineEmits()
+const emit = defineEmits(['close', 'confirm'])
 const description = derived(() => `${record()?.variant || 'This product variant'} will be permanently removed.${record()?.productName ? ` The linked product ${record()?.productName} will remain.` : ''}`)
 </script>
 

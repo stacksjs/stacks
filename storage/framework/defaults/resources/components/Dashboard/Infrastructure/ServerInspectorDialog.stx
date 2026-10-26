@@ -37,7 +37,7 @@ interface ServerDeployment {
 
 const server = useReactiveProp('server', null as ServerDefinition | null)
 const deployment = useReactiveProp('deployment', null as ServerDeployment | null)
-const emit = defineEmits()
+const emit = defineEmits(['close'])
 const title = derived(() => server()?.name || deployment()?.serverName || 'Server details')
 const detailsPath = derived(() => {
   const identifier = server()?.key || deployment()?.id

@@ -5,7 +5,7 @@ const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
 const files = state<File[]>([])
 const fileInput = useRef<HTMLInputElement>('dashboardFileUploadInput')
-const emit = defineEmits()
+const emit = defineEmits(['close', 'submit'])
 let wasOpen = false
 
 const selectedFilesLabel = derived(() => {

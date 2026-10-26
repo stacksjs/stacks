@@ -3,7 +3,7 @@ import type { DashboardDnsRecord } from '../../../../app/Actions/Dashboard/Infra
 
 const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as DashboardDnsRecord | null)
-const emit = defineEmits()
+const emit = defineEmits(['close'])
 
 function ttlLabel(): string {
   return record()?.ttl === null ? 'Provider default' : `${record()?.ttl} seconds`

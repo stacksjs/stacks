@@ -9,7 +9,7 @@ const liveType = useReactiveProp('type', 'warning' as ToastType)
 const liveTitle = useReactiveProp('title', '')
 const livePosition = useReactiveProp('position', 'top-right' as ToastPosition)
 const liveId = useReactiveProp('id', '')
-const emit = defineEmits()
+const emit = defineEmits(['update:show', 'close'])
 const generatedId = useId('toast')
 
 const toastId = derived(() => liveId() || generatedId)

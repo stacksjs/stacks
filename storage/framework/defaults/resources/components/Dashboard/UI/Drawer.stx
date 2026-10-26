@@ -25,7 +25,7 @@ const liveDescription = useReactiveProp('description', '')
 const dialog = useRef<HTMLDialogElement>('dashboardDrawerDialog')
 const activeElement = useActiveElement()
 const scrollLocked = useScrollLock()
-const emit = defineEmits()
+const emit = defineEmits(['close'])
 let restoreFocus: HTMLElement | null = null
 
 function close(): void {

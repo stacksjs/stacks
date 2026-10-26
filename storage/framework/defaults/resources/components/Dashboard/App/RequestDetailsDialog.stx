@@ -13,7 +13,7 @@ interface RequestRow {
 }
 
 const request = useReactiveProp('request', null as RequestRow | null)
-const emit = defineEmits()
+const emit = defineEmits(['close'])
 
 function formatDate(value: string | undefined): string {
   if (!value)

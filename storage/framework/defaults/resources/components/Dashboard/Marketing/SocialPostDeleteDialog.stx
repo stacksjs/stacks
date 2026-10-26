@@ -5,7 +5,7 @@ const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as SocialPostRecord | null)
 const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
-const emit = defineEmits()
+const emit = defineEmits(['close', 'confirm'])
 const description = derived(() => `The persisted ${record()?.platform || 'social'} post will be permanently removed. This does not remove a post already published on the external platform.`)
 </script>
 

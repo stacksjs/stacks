@@ -4,7 +4,7 @@ const location = useReactiveProp('location', 'Storage root')
 const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
 const folderName = state('')
-const emit = defineEmits()
+const emit = defineEmits(['close', 'submit'])
 let wasOpen = false
 
 effect(() => {

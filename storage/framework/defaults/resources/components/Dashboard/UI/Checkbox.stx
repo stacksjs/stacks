@@ -11,7 +11,7 @@ const liveError = useReactiveProp('error', '')
 const liveName = useReactiveProp('name', '')
 const liveId = useReactiveProp('id', '')
 const liveAriaLabel = useReactiveProp('ariaLabel', '')
-const emit = defineEmits()
+const emit = defineEmits(['update:checked', 'update:indeterminate', 'change'])
 const generatedId = useId('checkbox')
 
 const sizeClasses: Record<CheckboxSize, { control: string, icon: string, label: string, description: string }> = {

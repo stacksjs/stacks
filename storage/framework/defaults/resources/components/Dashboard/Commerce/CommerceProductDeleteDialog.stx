@@ -4,7 +4,7 @@ import type { CommerceProductRecord } from '../../../../app/Actions/Dashboard/Co
 const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as CommerceProductRecord | null)
 const busy = useReactiveProp('busy', false)
-const emit = defineEmits()
+const emit = defineEmits(['close', 'confirm'])
 const description = derived(() => `Delete "${record()?.name || 'Unnamed product'}" permanently?`)
 const warning = derived(() => record()?.variantCount || record()?.unitCount || record()?.reviewCount
   ? 'Related variants, units, or reviews may cause deletion to be rejected.'

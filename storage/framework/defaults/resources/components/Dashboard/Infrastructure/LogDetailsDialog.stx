@@ -3,7 +3,7 @@ import type { DashboardLogRecord } from '../../../../app/Actions/Dashboard/Infra
 
 const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as DashboardLogRecord | null)
-const emit = defineEmits()
+const emit = defineEmits(['close'])
 
 function formatDate(value: string | undefined): string {
   if (!value)

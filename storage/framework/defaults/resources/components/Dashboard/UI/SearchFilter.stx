@@ -16,7 +16,7 @@
 const placeholder = useReactiveProp('placeholder', 'Search...')
 const requested = useReactiveProp('searchValue', '')
 const query = state(requested())
-const emit = defineEmits()
+const emit = defineEmits(['update:searchValue', 'search'])
 
 effect(() => {
   query.set(requested())

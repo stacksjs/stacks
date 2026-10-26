@@ -3,7 +3,7 @@ const record = useReactiveProp('record', {} as Record<string, unknown>)
 const modelName = useReactiveProp('modelName', 'Record')
 const canUpdate = useReactiveProp('canUpdate', false)
 const canDestroy = useReactiveProp('canDestroy', false)
-const emit = defineEmits()
+const emit = defineEmits(['edit', 'delete'])
 </script>
 
 <div class="flex gap-1 items-center justify-end">

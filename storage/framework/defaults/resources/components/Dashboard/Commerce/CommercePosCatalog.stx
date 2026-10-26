@@ -10,7 +10,7 @@ const category = useReactiveProp('category', 'all')
 const availability = useReactiveProp('availability', 'sellable')
 const currency = useReactiveProp('currency', 'USD')
 const loading = useReactiveProp('loading', false)
-const emit = defineEmits()
+const emit = defineEmits(['search', 'category', 'availability', 'add'])
 
 function initials(name: string): string {
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]?.toUpperCase() || '').join('') || 'PR'

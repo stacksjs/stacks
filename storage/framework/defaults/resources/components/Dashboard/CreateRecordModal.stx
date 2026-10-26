@@ -17,7 +17,7 @@ const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
 const errors = useReactiveProp('errors', {} as Record<string, string[]>)
 const values = state<Record<string, unknown>>({})
-const emit = defineEmits()
+const emit = defineEmits(['submit', 'close'])
 let hydrationKey = ''
 
 effect(() => {

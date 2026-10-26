@@ -3,7 +3,7 @@ const currentPage = useReactiveProp('current-page', 1)
 const totalItems = useReactiveProp('total-items', 0)
 const itemsPerPage = useReactiveProp('items-per-page', 10)
 const maxDisplayedPages = useReactiveProp('max-displayed-pages', 5)
-const emit = defineEmits()
+const emit = defineEmits(['select', 'prev', 'next', 'page'])
 
 const totalPages = derived(() => Math.ceil(totalItems() / Math.max(1, itemsPerPage())))
 const startItem = derived(() => totalItems() === 0 ? 0 : ((currentPage() - 1) * itemsPerPage()) + 1)

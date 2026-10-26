@@ -6,7 +6,7 @@ import type { SchedulerTask } from '../../../../functions/operations'
 const tasks = useReactiveProp('tasks', [])
 const loading = useReactiveProp('loading', false)
 const busyTask = useReactiveProp('busyTask', '')
-const emit = defineEmits()
+const emit = defineEmits(['run', 'toggle'])
 
 const COLUMNS = [
   { key: 'name', label: 'Task', sortable: true, subtitleKey: 'timezone', class: 'font-medium text-gray-900 dark:text-white' },

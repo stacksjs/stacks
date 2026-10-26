@@ -11,7 +11,7 @@ const liveLabelPosition = useReactiveProp('labelPosition', 'right' as ToggleLabe
 const liveName = useReactiveProp('name', '')
 const liveId = useReactiveProp('id', '')
 const liveAriaLabel = useReactiveProp('ariaLabel', '')
-const emit = defineEmits()
+const emit = defineEmits(['update:checked', 'change'])
 const generatedId = useId('toggle')
 
 const trackSizes: Record<ToggleSize, string> = {

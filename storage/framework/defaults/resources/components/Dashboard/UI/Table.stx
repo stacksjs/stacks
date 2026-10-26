@@ -248,7 +248,7 @@ effect(() => {
   page.set(1)
 })
 const columnMenuOpen = state(false)
-const emit = defineEmits()
+const emit = defineEmits(['column-visibility-change', 'page-change', 'page-size-change', 'update:selectedKeys', 'selection-change', 'sort', 'filter-change', 'search', 'export', 'row-action'])
 
 /* ---------------------------------------------------------------- columns */
 

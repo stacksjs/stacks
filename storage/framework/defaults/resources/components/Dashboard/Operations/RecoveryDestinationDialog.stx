@@ -3,7 +3,7 @@ import type { RecoveryDestinationInput } from '../../../../functions/operations'
 
 const open = useReactiveProp('isOpen', false)
 const busy = useReactiveProp('busy', false)
-const emit = defineEmits()
+const emit = defineEmits(['close', 'save'])
 
 const name = state('')
 const provider = state<RecoveryDestinationInput['provider']>('aws_s3')

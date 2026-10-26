@@ -8,7 +8,7 @@ const itemsPerPage = useReactiveProp('itemsPerPage', 20)
 const showItemsPerPage = useReactiveProp('showItemsPerPage', false)
 const showTotalItems = useReactiveProp('showTotalItems', true)
 const maxVisiblePages = useReactiveProp('maxVisiblePages', 5)
-const emit = defineEmits()
+const emit = defineEmits(['page', 'prev', 'next', 'per-page'])
 const selectedItemsPerPage = state(20)
 
 const perPageOptions = [10, 20, 25, 50, 100]

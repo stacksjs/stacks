@@ -5,7 +5,7 @@ import { formatCurrency, minorToInput, moneyInputError, moneyInputStep, parseMon
 const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as PaymentRecord | null)
 const busy = useReactiveProp('busy', false)
-const emit = defineEmits()
+const emit = defineEmits(['submit', 'close'])
 const amount = state('')
 let hydrationKey = ''
 

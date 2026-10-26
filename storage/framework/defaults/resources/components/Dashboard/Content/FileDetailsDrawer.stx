@@ -17,7 +17,7 @@ const item = useReactiveProp('item', null as FileItem | null)
 const disk = useReactiveProp('disk', '')
 const title = derived(() => item()?.name || 'File details')
 const description = derived(() => `File details · ${disk()} disk`)
-const emit = defineEmits()
+const emit = defineEmits(['close'])
 </script>
 
 <Drawer :isOpen="Boolean(item())" :title="title()" :description="description()" size="sm" @close="emit('close')">

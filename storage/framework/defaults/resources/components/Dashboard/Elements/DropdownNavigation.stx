@@ -9,7 +9,7 @@ const requestedOpen = useReactiveProp('open', false)
 const elements = useReactiveProp('elements', [] as DropdownNavigationElement[])
 const disabled = useReactiveProp('disabled', false)
 const isOpen = state(requestedOpen())
-const emit = defineEmits()
+const emit = defineEmits(['update:open', 'open', 'close'])
 
 effect(() => {
   isOpen.set(requestedOpen())

@@ -4,7 +4,7 @@ import type { DashboardJob } from '../../../../functions/jobs'
 const jobs = useReactiveProp('jobs', [])
 const loading = useReactiveProp('loading', false)
 const emptyTitle = useReactiveProp('emptyTitle', 'No jobs found')
-const emit = defineEmits()
+const emit = defineEmits(['retry'])
 
 function rows(): DashboardJob[] {
   return jobs() as DashboardJob[]

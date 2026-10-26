@@ -4,7 +4,7 @@ import type { ProductUnitRecord } from '../../../../app/Actions/Dashboard/Commer
 const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as ProductUnitRecord | null)
 const busy = useReactiveProp('busy', false)
-const emit = defineEmits()
+const emit = defineEmits(['close', 'confirm'])
 const description = derived(() => `${record()?.name || 'This product unit'} will be permanently removed.${record()?.productName ? ` The linked product ${record()?.productName} will remain.` : ''}`)
 const warning = derived(() => record()?.isDefault
   ? `This is the current default for ${record()?.type || 'this unit type'}. No replacement is selected automatically.`

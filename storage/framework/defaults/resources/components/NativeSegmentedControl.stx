@@ -12,7 +12,7 @@ import { focusSegment, haptics, observeSegmentScrub, segmentForKey } from '@stac
  */
 interface SegmentOption { label: string, value: string }
 
-const emit = defineEmits()
+const emit = defineEmits(['change'])
 const rawOptions = useReactiveProp<Array<string | SegmentOption>>('options', [])
 const ariaLabel = useReactiveProp<string>('label', 'View')
 const className = useReactiveProp<string>('class', '')

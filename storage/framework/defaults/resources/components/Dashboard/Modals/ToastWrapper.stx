@@ -5,7 +5,7 @@ type ToastWrapperPosition = 'center' | 'top' | 'top-right' | 'top-left'
 
 const liveWidth = useReactiveProp('width', 30)
 const livePosition = useReactiveProp('position', 'top-right' as ToastWrapperPosition)
-const emit = defineEmits()
+const emit = defineEmits(['close'])
 
 const containerClass = derived(() => [
   'pointer-events-none fixed z-[60] flex p-4 sm:p-6',

@@ -5,7 +5,7 @@ const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as CampaignRecord | null)
 const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
-const emit = defineEmits()
+const emit = defineEmits(['close', 'confirm'])
 const description = derived(() => `The persisted campaign ${record()?.name || ''} will be permanently removed. Campaigns with delivery history are retained.`)
 </script>
 

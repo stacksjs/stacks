@@ -4,7 +4,7 @@ import type { CommerceCategoryRecord } from '../../../../app/Actions/Dashboard/C
 const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as CommerceCategoryRecord | null)
 const busy = useReactiveProp('busy', false)
-const emit = defineEmits()
+const emit = defineEmits(['close', 'confirm'])
 const description = derived(() => `Delete "${record()?.name || 'Unnamed category'}" permanently? Linked products and child categories may prevent deletion.`)
 </script>
 

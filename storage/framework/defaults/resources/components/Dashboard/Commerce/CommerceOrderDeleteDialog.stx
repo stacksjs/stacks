@@ -4,7 +4,7 @@ import type { CommerceOrderRecord } from '../../../../app/Actions/Dashboard/Comm
 const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as CommerceOrderRecord | null)
 const busy = useReactiveProp('busy', false)
-const emit = defineEmits()
+const emit = defineEmits(['close', 'confirm'])
 const description = derived(() => `Delete order ${record()?.id || 'not recorded'} permanently? Linked items, payments, and license keys may prevent deletion.`)
 </script>
 

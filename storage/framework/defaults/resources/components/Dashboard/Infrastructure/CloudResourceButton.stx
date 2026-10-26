@@ -2,7 +2,7 @@
 import type { DashboardCloudResource } from '../../../../app/Actions/Dashboard/Cloud/cloud-overview'
 
 const item = useReactiveProp('item', null as DashboardCloudResource | null)
-const emit = defineEmits()
+const emit = defineEmits(['inspect'])
 
 function iconClass(): string {
   const category = item()?.category

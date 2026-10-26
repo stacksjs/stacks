@@ -4,7 +4,7 @@ import type { GiftCardRecord } from '../../../../app/Actions/Dashboard/Commerce/
 const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as GiftCardRecord | null)
 const busy = useReactiveProp('busy', false)
-const emit = defineEmits()
+const emit = defineEmits(['close', 'confirm'])
 const description = derived(() => `Delete "${record()?.code || 'Unnamed gift card'}" permanently? Recorded customer or order relationships may prevent deletion.`)
 </script>
 

@@ -9,7 +9,7 @@ import {
 const records = useReactiveProp('records', [] as RestaurantWaitlistRecord[])
 const loading = useReactiveProp('loading', false)
 const busyId = useReactiveProp('busyId', '')
-const emit = defineEmits()
+const emit = defineEmits(['seat', 'no-show', 'edit', 'delete'])
 
 const STATUS_CLASSES = {
   seated: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/30',

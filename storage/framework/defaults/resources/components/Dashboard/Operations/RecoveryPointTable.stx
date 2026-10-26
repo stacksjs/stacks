@@ -6,7 +6,7 @@ import type { RecoveryPoint, RecoveryPolicy } from '../../../../functions/operat
 const pointItems = useReactiveProp('points', [])
 const policyItems = useReactiveProp('policies', [])
 const busyId = useReactiveProp('busyId', '')
-const emit = defineEmits()
+const emit = defineEmits(['verify', 'restore', 'protect'])
 
 function policyName(id?: string): string {
   return (policyItems() as RecoveryPolicy[]).find(policy => policy.id === id)?.name || 'Manual recovery point'

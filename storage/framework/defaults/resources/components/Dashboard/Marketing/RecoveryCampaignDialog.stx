@@ -9,7 +9,7 @@ const defaultIdleHours = useReactiveProp('defaultIdleHours', 4)
 const defaultCurrency = useReactiveProp('defaultCurrency', 'USD')
 const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
-const emit = defineEmits()
+const emit = defineEmits(['submit', 'close'])
 
 const name = state('')
 const subject = state('')

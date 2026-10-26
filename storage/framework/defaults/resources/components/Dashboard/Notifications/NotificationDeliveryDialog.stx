@@ -3,7 +3,7 @@ import type { NotificationDelivery } from '../../../../functions/notifications/d
 
 const open = useReactiveProp('open', false)
 const delivery = useReactiveProp('delivery', null as NotificationDelivery | null)
-const emit = defineEmits()
+const emit = defineEmits(['close'])
 
 function formatDate(value?: string): string {
   if (!value)

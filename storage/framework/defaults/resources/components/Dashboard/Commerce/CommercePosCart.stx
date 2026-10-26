@@ -15,7 +15,7 @@ const subtotal = useReactiveProp('subtotal', 0)
 const taxRate = useReactiveProp('taxRate', 0)
 const taxAmount = useReactiveProp('taxAmount', 0)
 const totalAmount = useReactiveProp('totalAmount', 0)
-const emit = defineEmits()
+const emit = defineEmits(['clear', 'remove', 'decrease', 'increase', 'instructions', 'checkout'])
 
 function formatMoney(value: number): string {
   return formatCurrency(value, currency())

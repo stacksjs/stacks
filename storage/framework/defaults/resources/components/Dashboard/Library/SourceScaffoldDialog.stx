@@ -6,7 +6,7 @@ const kind = useReactiveProp('kind', 'component' as SourceKind)
 const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
 const sourceName = state('')
-const emit = defineEmits()
+const emit = defineEmits(['close', 'submit'])
 const actionLabel = derived(() => `Create ${kind()}`)
 let wasOpen = false
 

@@ -8,7 +8,7 @@ const mode = useReactiveProp('mode', 'add')
 const record = useReactiveProp('record', null as GiftCardRecord | null)
 const busy = useReactiveProp('busy', false)
 const errors = useReactiveProp('errors', {} as Record<string, string>)
-const emit = defineEmits()
+const emit = defineEmits(['submit', 'close'])
 const code = state('')
 // Balances as typed, in major units. Stored as integer minor units.
 const initialBalance = state('50.00')

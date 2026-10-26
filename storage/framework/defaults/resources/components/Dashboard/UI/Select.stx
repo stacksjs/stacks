@@ -21,7 +21,7 @@ const liveRequired = useReactiveProp('required', false)
 const liveSize = useReactiveProp('size', 'md' as SelectSize)
 const liveName = useReactiveProp('name', '')
 const liveId = useReactiveProp('id', '')
-const emit = defineEmits()
+const emit = defineEmits(['change', 'update:value'])
 const generatedId = useId('select')
 
 const sizeClasses: Record<SelectSize, string> = {

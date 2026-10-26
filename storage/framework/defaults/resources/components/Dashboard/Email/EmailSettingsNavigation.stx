@@ -7,7 +7,7 @@ interface SettingsSection {
 
 const activeSection = useReactiveProp('activeSection', 'general')
 const sections = useReactiveProp('sections', [] as SettingsSection[])
-const emit = defineEmits()
+const emit = defineEmits(['select'])
 
 function sectionClass(sectionId: string): string {
   return activeSection() === sectionId

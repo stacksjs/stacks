@@ -8,7 +8,7 @@ const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as LicenseKeyRecord | null)
 const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
-const emit = defineEmits()
+const emit = defineEmits(['close', 'confirm'])
 const description = derived(() => `Delete ${record()?.key || 'the selected license key'} permanently.`)
 </script>
 

@@ -22,7 +22,7 @@ const name = state('')
 const email = state('')
 const bio = state('')
 const avatar = state('')
-const emit = defineEmits()
+const emit = defineEmits(['close', 'submit'])
 let wasOpen = false
 
 effect(() => {

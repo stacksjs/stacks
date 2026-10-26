@@ -23,7 +23,7 @@ interface PosReceipt {
 
 const open = useReactiveProp('open', false)
 const receipt = useReactiveProp('receipt', null as PosReceipt | null)
-const emit = defineEmits()
+const emit = defineEmits(['close'])
 
 function formatMoney(value: number): string {
   return formatCurrency(value, receipt()?.currency || 'USD')

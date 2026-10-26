@@ -9,7 +9,7 @@ const loading = useReactiveProp('loading', false)
 const sortResetKey = useReactiveProp<unknown>('sortResetKey', '')
 /** The parent's search and filters: a change returns to the first page. */
 const pageResetKey = useReactiveProp<unknown>('pageResetKey', '')
-const emit = defineEmits()
+const emit = defineEmits(['view', 'edit', 'delete'])
 
 function formatHeartbeat(value: number): string {
   if (!value)

@@ -14,7 +14,7 @@ import { dialog } from '@stacksjs/mobile'
  * For a sheet asked from code rather than declared, `useActionSheet()` and
  * `confirmAction()` from @stacksjs/mobile do the same in one call.
  */
-const emit = defineEmits()
+const emit = defineEmits(['select', 'close'])
 const open = useModel('open', { default: false })
 const title = useReactiveProp<string>('title', '')
 const message = useReactiveProp<string>('message', '')

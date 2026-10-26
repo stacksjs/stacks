@@ -4,7 +4,7 @@ import type { PrintDeviceRecord } from '../../../../app/Actions/Dashboard/Commer
 const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as PrintDeviceRecord | null)
 const busy = useReactiveProp('busy', false)
-const emit = defineEmits()
+const emit = defineEmits(['close', 'confirm'])
 const description = derived(() => `Delete "${record()?.name || 'Unnamed printer'}" permanently? Existing receipt logs remain separate records.`)
 </script>
 

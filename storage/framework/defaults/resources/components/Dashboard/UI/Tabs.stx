@@ -17,7 +17,7 @@ const variant = useReactiveProp<TabsVariant>('variant', 'underline')
 const size = useReactiveProp<TabsSize>('size', 'md')
 const fullWidth = useReactiveProp('fullWidth', false)
 const activeTab = state(requestedTab())
-const emit = defineEmits()
+const emit = defineEmits(['update:activeTab', 'change'])
 
 const sizeClasses: Record<TabsSize, string> = {
   sm: 'text-sm py-2 px-3',

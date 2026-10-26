@@ -17,7 +17,7 @@ const emptyTitle = useReactiveProp('emptyTitle', 'No errors found')
 const emptyDescription = useReactiveProp('emptyDescription', 'Your application is running smoothly!')
 /** The parent's search and filters: a change returns to the first page. */
 const pageResetKey = useReactiveProp<unknown>('pageResetKey', '')
-const emit = defineEmits()
+const emit = defineEmits(['view', 'resolve', 'ignore', 'unresolve', 'delete'])
 
 function formatRelativeTime(value: string): string {
   if (!value)

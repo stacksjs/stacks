@@ -4,7 +4,7 @@ const description = useReactiveProp('description', '')
 const dateRange = useReactiveProp('dateRange', '')
 const range = useReactiveProp('range', 'month')
 const loading = useReactiveProp('loading', false)
-const emit = defineEmits()
+const emit = defineEmits(['range-change', 'refresh'])
 const selectedRange = state('month')
 
 effect(() => {

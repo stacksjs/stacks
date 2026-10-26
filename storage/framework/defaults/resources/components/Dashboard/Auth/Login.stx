@@ -1,7 +1,7 @@
 @import('../UI/Input', '../UI/Button')
 
 <script client>
-const emit = defineEmits()
+const emit = defineEmits(['submit'])
 const title = useReactiveProp<string>('title', 'Welcome back')
 const subtitle = useReactiveProp<string>('subtitle', 'Sign in to your account')
 const isLoading = useReactiveProp<boolean>('isLoading', false)

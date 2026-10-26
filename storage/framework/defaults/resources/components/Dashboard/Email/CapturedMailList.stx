@@ -5,7 +5,7 @@ const messages = useReactiveProp<CapturedMailSummary[]>('messages', [])
 const selectedId = useReactiveProp('selectedId', '')
 const loading = useReactiveProp('loading', false)
 const error = useReactiveProp('error', '')
-const emit = defineEmits()
+const emit = defineEmits(['select'])
 
 function rows(): CapturedMailSummary[] {
   return messages()

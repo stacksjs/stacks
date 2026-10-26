@@ -11,7 +11,7 @@ const sortResetKey = useReactiveProp<unknown>('sortResetKey', '')
 /** The parent's search and filters: a change returns to the first page. */
 const pageResetKey = useReactiveProp<unknown>('pageResetKey', '')
 const currency = useReactiveProp('currency', 'USD')
-const emit = defineEmits()
+const emit = defineEmits(['view', 'edit', 'delete'])
 
 // A percentage is a rate, not money; a fixed amount is integer minor units.
 function discount(record: CouponRecord): string {

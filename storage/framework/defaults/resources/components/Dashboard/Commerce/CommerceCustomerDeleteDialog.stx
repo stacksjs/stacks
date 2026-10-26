@@ -4,7 +4,7 @@ import type { CommerceCustomerRecord } from '../../../../app/Actions/Dashboard/C
 const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as CommerceCustomerRecord | null)
 const busy = useReactiveProp('busy', false)
-const emit = defineEmits()
+const emit = defineEmits(['close', 'confirm'])
 const description = derived(() => `Delete "${record()?.name || 'Unnamed customer'}" permanently? Linked orders, reviews, payments, and gift cards may prevent deletion.`)
 </script>
 

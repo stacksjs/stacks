@@ -4,7 +4,7 @@ const subject = useReactiveProp('subject', '')
 const body = useReactiveProp('body', '')
 const sending = useReactiveProp('sending', false)
 const canSend = useReactiveProp('canSend', false)
-const emit = defineEmits()
+const emit = defineEmits(['send', 'cancel', 'update:to', 'update:subject', 'update:body'])
 
 function submit(): void {
   if (canSend())

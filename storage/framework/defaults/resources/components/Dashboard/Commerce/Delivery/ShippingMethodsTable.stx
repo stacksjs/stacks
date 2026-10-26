@@ -20,7 +20,7 @@ const methods = useReactiveProp('methods', [] as ShippingMethodRow[])
 const loading = useReactiveProp('loading', false)
 /** The parent's search: a change returns to the first page. */
 const pageResetKey = useReactiveProp<unknown>('pageResetKey', '')
-const emit = defineEmits()
+const emit = defineEmits(['edit', 'delete'])
 
 /** Shipping amounts are stored as integer cents, in USD: currency columns fixed to it. */
 const COLUMNS = [

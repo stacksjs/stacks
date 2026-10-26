@@ -7,7 +7,7 @@ const mode = useReactiveProp('mode', 'send' as CampaignDeliveryOperation)
 const record = useReactiveProp('record', null as CampaignRecord | null)
 const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
-const emit = defineEmits()
+const emit = defineEmits(['confirm', 'close'])
 const scheduledAt = state('')
 let hydrationKey = ''
 

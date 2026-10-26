@@ -17,7 +17,7 @@ const folders = useReactiveProp('folders', [] as MailFolder[])
 const unreadCounts = useReactiveProp('unreadCounts', {} as Record<string, number>)
 const mailbox = useReactiveProp('mailbox', 'Configured mailbox')
 const categories = useReactiveProp('categories', [] as MailCategory[])
-const emit = defineEmits()
+const emit = defineEmits(['compose', 'update:active-folder', 'category'])
 
 function unreadCount(folderId: string): number {
   return Number(unreadCounts()[folderId] || 0)

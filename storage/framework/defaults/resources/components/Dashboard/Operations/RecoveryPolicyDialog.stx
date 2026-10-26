@@ -6,7 +6,7 @@ const busy = useReactiveProp('busy', false)
 const destinationItems = useReactiveProp('destinations', [])
 const resourceItems = useReactiveProp('resources', [])
 const serviceItems = useReactiveProp('dataServices', [])
-const emit = defineEmits()
+const emit = defineEmits(['close', 'save'])
 
 const name = state('')
 const destinationId = state('')

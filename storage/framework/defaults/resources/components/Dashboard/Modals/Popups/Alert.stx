@@ -7,7 +7,7 @@ const liveType = useReactiveProp('type', 'info' as AlertType)
 const liveConfirmationText = useReactiveProp('confirmationText', 'Confirm')
 const liveAbortText = useReactiveProp('abortText', 'Cancel')
 const liveShow = useReactiveProp('show', true)
-const emit = defineEmits()
+const emit = defineEmits(['update:show', 'close', 'cancel', 'confirm'])
 
 const normalizedType = derived((): Exclude<AlertType, 'danger'> => {
   const type = liveType()

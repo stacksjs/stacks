@@ -5,7 +5,7 @@ import { formatCurrency } from '@stacksjs/commerce/money'
 
 const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as PaymentRecord | null)
-const emit = defineEmits()
+const emit = defineEmits(['close', 'request-refund'])
 
 function label(value: string): string {
   return value.replace(/([a-z])([A-Z])/g, '$1 $2').replaceAll('_', ' ')

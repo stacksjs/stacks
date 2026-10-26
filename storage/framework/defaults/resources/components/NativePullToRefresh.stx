@@ -16,7 +16,7 @@ import { observeNativeRefresh, observePullToRefresh, refresh, resolveScrollHost,
  * (by CSS selector) a container the screen scrolls in instead of the page;
  * the native control covers only the page, so a scroll host uses the gesture.
  */
-const emit = defineEmits()
+const emit = defineEmits(['refresh'])
 const threshold = useReactiveProp<number>('threshold', 72)
 const label = useReactiveProp<string>('label', 'Refreshing')
 const scrollHost = useReactiveProp<string>('scrollHost', '')

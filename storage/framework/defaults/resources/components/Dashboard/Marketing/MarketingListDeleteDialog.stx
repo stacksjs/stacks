@@ -5,7 +5,7 @@ const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as MarketingListRecord | null)
 const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
-const emit = defineEmits()
+const emit = defineEmits(['close', 'confirm'])
 const protectedRecord = derived(() => Boolean(record()?.subscriberCount) || Boolean(record()?.campaignCount))
 const description = derived(() => protectedRecord()
   ? `${record()?.name || 'This email list'} has membership or campaign history. Archive it instead to preserve relationships.`

@@ -9,7 +9,7 @@ const disabled = useReactiveProp('disabled', false)
 const isOpen = state(requestedOpen())
 const root = useRef('dropdownRoot')
 const menu = useRef('dropdownMenu')
-const emit = defineEmits()
+const emit = defineEmits(['update:open', 'open', 'close'])
 
 const widthClasses: Record<DropdownWidth, string> = {
   auto: 'min-w-[12rem]',

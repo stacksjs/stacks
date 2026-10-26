@@ -6,7 +6,7 @@ const pointValue = useReactiveProp('point', null)
 const pointItems = useReactiveProp('points', [])
 const busy = useReactiveProp('busy', false)
 const planValue = useReactiveProp('plan', null)
-const emit = defineEmits()
+const emit = defineEmits(['close', 'preview', 'execute'])
 
 const mode = state<'isolated' | 'in_place'>('isolated')
 const targetName = state('')

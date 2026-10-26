@@ -34,7 +34,7 @@ const options = useReactiveProp('options', {
 } as LicenseKeyOptions)
 const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
-const emit = defineEmits()
+const emit = defineEmits(['invalid', 'submit', 'close'])
 const keyValue = state('')
 const templateValue = state('Standard License')
 const customerId = state('')

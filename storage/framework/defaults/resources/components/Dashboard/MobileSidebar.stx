@@ -3,7 +3,7 @@ import { useScrollLock } from '@stacksjs/composables'
 const isOpen = state(false)
 const isDesktop = useMediaQuery('(min-width: 1024px)')
 const scrollLocked = useScrollLock()
-const emit = defineEmits()
+const emit = defineEmits(['open', 'close'])
 const menuButton = useRef<HTMLButtonElement>('dashboardMobileMenuButton')
 const closeButton = useRef<HTMLButtonElement>('dashboardMobileCloseButton')
 const dialog = useRef<HTMLElement>('dashboardMobileNavigation')

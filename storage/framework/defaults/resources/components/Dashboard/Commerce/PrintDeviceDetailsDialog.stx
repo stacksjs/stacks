@@ -3,7 +3,7 @@ import type { PrintDeviceRecord } from '../../../../app/Actions/Dashboard/Commer
 
 const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as PrintDeviceRecord | null)
-const emit = defineEmits()
+const emit = defineEmits(['edit', 'close', 'delete'])
 
 function formatDate(value: number | string): string {
   if (!value)

@@ -3,7 +3,7 @@ const title = useReactiveProp('title', '')
 const description = useReactiveProp('description', '')
 const placeholder = useReactiveProp('placeholder', '')
 const items = useReactiveProp('items', [] as string[])
-const emit = defineEmits()
+const emit = defineEmits(['add', 'remove'])
 const input = state('')
 
 function addItem(): void {

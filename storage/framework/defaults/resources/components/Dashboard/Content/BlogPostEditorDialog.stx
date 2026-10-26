@@ -43,7 +43,7 @@ const poster = state('')
 const body = state('')
 const draft = state(true)
 const featured = state(false)
-const emit = defineEmits()
+const emit = defineEmits(['close', 'submit', 'retry'])
 let wasOpen = false
 let activeSlug = ''
 

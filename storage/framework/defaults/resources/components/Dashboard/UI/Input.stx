@@ -17,7 +17,7 @@ const liveId = useReactiveProp('id', '')
 const liveSize = useReactiveProp('size', 'md' as InputSize)
 const liveName = useReactiveProp('name', '')
 const liveFullWidth = useReactiveProp('fullWidth', true)
-const emit = defineEmits()
+const emit = defineEmits(['update:value', 'input', 'change', 'blur'])
 const generatedId = useId('input')
 
 const sizeClasses: Record<InputSize, string> = {

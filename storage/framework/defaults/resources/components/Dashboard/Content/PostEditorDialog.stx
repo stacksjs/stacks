@@ -47,7 +47,7 @@ const authorId = state('')
 const featured = state(false)
 const categoryIds = state<string[]>([])
 const tagIds = state<string[]>([])
-const emit = defineEmits()
+const emit = defineEmits(['close', 'submit'])
 let wasOpen = false
 
 effect(() => {

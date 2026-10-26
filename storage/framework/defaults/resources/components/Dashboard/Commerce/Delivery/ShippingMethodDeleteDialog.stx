@@ -8,7 +8,7 @@ const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as ShippingMethodRecord | null)
 const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
-const emit = defineEmits()
+const emit = defineEmits(['close', 'confirm'])
 const description = derived(() => `Delete ${record()?.name || 'the selected shipping method'} permanently. Methods referenced by shipping zones may be protected by the database.`)
 </script>
 

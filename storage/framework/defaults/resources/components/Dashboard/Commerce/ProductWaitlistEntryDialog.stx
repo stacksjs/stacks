@@ -13,7 +13,7 @@ const options = useReactiveProp('options', {
 } as ProductWaitlistOptions)
 const busy = useReactiveProp('busy', false)
 const errors = useReactiveProp('errors', {} as Record<string, string>)
-const emit = defineEmits()
+const emit = defineEmits(['submit', 'close'])
 
 const productId = state<number | string>('')
 const customerId = state<number | string>('')
