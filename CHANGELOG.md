@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.315...v0.75.316)
+
+## 🐛 Bug Fixes
+
+- announce owned ephemeral API listeners ([8aa9e4d](https://github.com/stacksjs/stacks/commit/8aa9e4d)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.314...v0.75.315)
 
 ## 🐛 Bug Fixes
