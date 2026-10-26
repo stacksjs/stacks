@@ -1,7 +1,7 @@
 import { Database } from 'bun:sqlite'
 import { chmodSync, mkdirSync } from 'node:fs'
 import { dirname, isAbsolute } from 'node:path'
-import { buildMigrationPlan, configureOrm, generateDiffOperations } from '@stacksjs/query-builder'
+import { buildMigrationPlan, configureOrm, generateDiffOperations, setConfig } from '@stacksjs/query-builder'
 import type { MigrationPlan } from '@stacksjs/query-builder'
 import { apiBasePath, filterFillable, getWritableFields, mapWriteError, resolveIndexPageArgs } from './auto-crud'
 import { MODEL_DEFINITION, toAttrs } from './define-model'
@@ -28,6 +28,9 @@ export function openNativeDatabase(options: { path: string, models: Record<strin
   if (options.path !== ':memory:') mkdirSync(dirname(options.path), { recursive: true, mode: 0o700 })
   const db = new Database(options.path, { create: true })
   try {
+    // Native helpers reserve stdout for their readiness handshake. Use the
+    // query builder's quiet mode before deriving or applying schema changes.
+    setConfig({ verbose: false })
     if (options.path !== ':memory:') chmodSync(options.path, 0o600)
     db.exec('PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;')
     const models = Object.fromEntries(Object.entries(options.models).map(([name, model]) => [name, model[MODEL_DEFINITION]]))

@@ -1,9 +1,9 @@
-import { afterEach, expect, test } from 'bun:test'
+import { afterEach, expect, spyOn, test } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { releaseOrm } from '@stacksjs/query-builder'
+import { config, releaseOrm, setConfig } from '@stacksjs/query-builder'
 import { schema } from '@stacksjs/validation/runtime'
 import { defineModel } from '../src/define-model'
 import { createNativeModelApi, openNativeDatabase } from '../src/native'
@@ -75,4 +75,18 @@ test('additive model upgrades preserve rows and destructive upgrades roll back',
   const check = new Database(path)
   expect(check.query('SELECT title FROM native_notes').get()).toEqual({ title: 'Original' })
   check.close()
+})
+
+test('native schema upgrades keep stdout available for the backend readiness handshake', () => {
+  const previous = config.verbose
+  const output = spyOn(console, 'log')
+  try {
+    setConfig({ verbose: true })
+    const path = fixture()
+    const original = openNativeDatabase({ path, models: { Note: makeModel() } })
+    releaseOrm(); original.close()
+    handles.push(openNativeDatabase({ path, models: { Note: makeModel({ tag: { type: 'string', default: 'inbox' } }) } }))
+    expect(output).not.toHaveBeenCalled()
+  }
+  finally { output.mockRestore(); setConfig({ verbose: previous }) }
 })
