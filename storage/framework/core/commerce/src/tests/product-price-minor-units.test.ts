@@ -24,6 +24,7 @@ import { refreshDatabase } from './setup'
 
 const form = {
   name: 'Native Kit',
+  slug: 'native-kit',
   description: 'A kit',
   price: '19.99',
   imageUrl: '',
