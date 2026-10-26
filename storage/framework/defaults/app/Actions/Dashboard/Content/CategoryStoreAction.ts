@@ -53,7 +53,8 @@ export default new Action({
             name,
             slug,
             description,
-            is_active: 1,
+            // A real boolean: on PostgreSQL the column is boolean and refuses 1.
+            is_active: true,
             display_order: Number(displayOrder?.max_display_order || 0) + 1,
             created_at: now,
             updated_at: now,
