@@ -1797,6 +1797,15 @@
             "isUnique": true,
             "isNullable": true,
             "hasDefault": false
+          },
+          {
+            "name": "slug",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": true,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 255
           }
         ],
         "indexes": [
@@ -1804,6 +1813,13 @@
             "name": "products_uuid_unique",
             "columns": [
               "uuid"
+            ],
+            "type": "unique"
+          },
+          {
+            "name": "products_slug_unique",
+            "columns": [
+              "slug"
             ],
             "type": "unique"
           }
@@ -13796,7 +13812,7 @@
       }
     ]
   },
-  "hash": "e85b0988019d1a56500a008f9ca0887a5b64c53de71010f3f519008f56809f7b",
+  "hash": "8c392dacb9d34da80f9e6a25310b7f356b28886e388686df94505df5e718dbeb",
   "dialect": "sqlite",
-  "updatedAt": "2026-10-26T16:24:06.121Z"
+  "updatedAt": "2026-10-26T17:43:30.635Z"
 }

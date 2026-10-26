@@ -1,4 +1,5 @@
 import { defineModel } from '@stacksjs/orm'
+import { slug } from '@stacksjs/strings'
 import { schema } from '@stacksjs/validation/runtime'
 
 export default defineModel({
@@ -54,6 +55,18 @@ export default defineModel({
         },
       },
       factory: faker => faker.commerce.productName(),
+    },
+
+    // The storefront's address for a product: /products/{slug}, and what a
+    // cart line keeps in product_sku (stacksjs/stacks#3005).
+    slug: {
+      order: 1,
+      unique: true,
+      fillable: true,
+      validation: {
+        rule: schema.string().required().max(255),
+      },
+      factory: (_faker, attributes) => slug(String(attributes.name)),
     },
 
     description: {

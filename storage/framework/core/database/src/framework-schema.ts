@@ -1273,6 +1273,7 @@ export interface FrameworkSchema {
     created_at: string
     updated_at: string | null
     name: string
+    slug: string
     description: string
     price: number
     image_url: string

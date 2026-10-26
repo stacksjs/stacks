@@ -4,7 +4,8 @@ import { join } from 'node:path'
 
 /**
  * Run each `.sql` file in `dir` once, in order - what the migration runner
- * does - and return the files that failed.
+ * does - and return the files that failed. `only` picks a slice of the corpus,
+ * so a test can write rows between two migrations.
  *
  * A handful of committed files fail on prerequisites these in-memory harnesses
  * do not stand up (print_devices, notifications). They are unrelated to what
@@ -15,9 +16,9 @@ import { join } from 'node:path'
  * every later file failed too and the corpus silently stopped at the first
  * skip. Rolling back, as the file would have, keeps one skip to one file.
  */
-export function applySqliteCorpus(db: Database, dir: string): string[] {
+export function applySqliteCorpus(db: Database, dir: string, only: (file: string) => boolean = () => true): string[] {
   const failed: string[] = []
-  for (const file of readdirSync(dir).filter(f => f.endsWith('.sql')).sort()) {
+  for (const file of readdirSync(dir).filter(f => f.endsWith('.sql') && only(f)).sort()) {
     try {
       db.exec(readFileSync(join(dir, file), 'utf8'))
     }
