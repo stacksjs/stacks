@@ -6,7 +6,7 @@ import { chat, email, push, sms } from './drivers'
 import { BroadcastNotificationDriver } from './drivers/broadcast'
 import { DatabaseNotificationDriver } from './drivers/database'
 import { makeDeliveryRecord, recordNotificationDelivery } from './delivery'
-import { type NotificationAction, type NotificationFrameLocale, type NotificationUnsubscribe, notificationEmailMessage, notificationSmsBody } from './email-body'
+import { type NotificationAction, type NotificationEmailTemplate, type NotificationFrameLocale, type NotificationUnsubscribe, notificationEmailMessage, notificationSmsBody } from './email-body'
 import { filterChannelsByPreferences } from './preferences'
 
 const config = _notification as NotificationOptions | undefined
@@ -57,6 +57,7 @@ export interface EmailTransport {
  * text's opt-out line. The subject and body are sent as given.
  */
 export interface NotificationPayload extends NotificationFrameLocale {
+  emailTemplate?: NotificationEmailTemplate
   subject?: string
   body: string
   data?: Record<string, unknown>
@@ -425,7 +426,7 @@ export {
 } from './preferences'
 export type { NotificationPreferenceRow, PreferenceChannel } from './preferences'
 export { DEFAULT_SMS_OPT_OUT, DEFAULT_UNSUBSCRIBE_NOTICE, emailParagraphs, listUnsubscribeHeaders, notificationEmailHtml, notificationEmailMessage, notificationEmailText, notificationSmsBody, SMS_SENDER_MAX_LENGTH, smsSenderPrefix } from './email-body'
-export type { EmailBodyPart, NotificationAction, NotificationEmailPayload, NotificationFrameLocale, NotificationUnsubscribe } from './email-body'
+export type { EmailBodyPart, NotificationAction, NotificationEmailPayload, NotificationEmailTemplate, NotificationFrameLocale, NotificationUnsubscribe } from './email-body'
 export { NOTIFICATION_FRAME_STRINGS, notificationFrameStrings, notificationLanguageTag } from './frame-strings'
 export type { NotificationFrameStrings } from './frame-strings'
 export { advanceSequence, isQuietTime, nextSendableTime, sequenceTimeline } from './sequences'

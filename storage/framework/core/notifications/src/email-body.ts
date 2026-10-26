@@ -71,6 +71,12 @@ export const DEFAULT_UNSUBSCRIBE_NOTICE: string = NOTIFICATION_FRAME_STRINGS.en.
  */
 export const DEFAULT_SMS_OPT_OUT: string = NOTIFICATION_FRAME_STRINGS.en.smsOptOut
 
+/** A named STX email. The normal notification frame and text part stay shared. */
+export interface NotificationEmailTemplate {
+  name: string
+  variables?: Record<string, unknown>
+}
+
 /** What the email builders read from a notification payload. */
 export interface NotificationEmailPayload extends NotificationFrameLocale {
   subject?: string
@@ -78,6 +84,7 @@ export interface NotificationEmailPayload extends NotificationFrameLocale {
   action?: NotificationAction
   unsubscribe?: NotificationUnsubscribe
   headers?: Record<string, string>
+  emailTemplate?: NotificationEmailTemplate
 }
 
 const URL_PATTERN = /https?:\/\/[^\s<>"']+[^\s<>"'.,;:!?)\]]/g
@@ -133,9 +140,10 @@ export async function notificationEmailHtml(payload: NotificationEmailPayload): 
   const unsubscribe = payload.unsubscribe?.url ? payload.unsubscribe : undefined
   const strings = notificationFrameStrings(payload.locale, payload.strings)
   try {
-    const { html } = await templateByName('notification', {
+    const { html } = await templateByName(payload.emailTemplate?.name || 'notification', {
       subject: payload.subject ?? '',
       variables: {
+        ...payload.emailTemplate?.variables,
         subject: payload.subject ?? '',
         paragraphs: emailParagraphs(payload.body),
         preheader: String(payload.body ?? '').replace(/\s+/g, ' ').trim().slice(0, 140),

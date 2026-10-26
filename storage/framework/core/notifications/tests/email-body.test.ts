@@ -22,6 +22,30 @@ describe('emailParagraphs', () => {
 })
 
 describe('notificationEmailHtml', () => {
+  test('uses a named email template and its data while preserving the notification subject', async () => {
+    const message = await notificationEmailMessage('athlete@example.com', {
+      subject: 'Your training is ready', body: 'Plain summary with https://example.com/workout/7',
+      emailTemplate: { name: 'welcome', variables: { userName: '<Chris>', subject: 'Must not replace the subject' } },
+    })
+    expect(message.html).toContain('Hi &lt;Chris&gt;,')
+    expect(message.html).toContain('<title>Your training is ready</title>')
+    expect(message.html).not.toContain('Must not replace the subject')
+    expect(message.text).toBe('Plain summary with https://example.com/workout/7')
+  })
+
+  test('template data cannot replace the shared notification frame or opt-out links', async () => {
+    const html = await notificationEmailHtml({
+      subject: 'Plan', body: 'Saved plan', locale: 'de',
+      unsubscribe: { url: 'https://example.com/unsubscribe' },
+      emailTemplate: { name: 'notification', variables: { lang: 'en', paragraphs: [[{ text: 'Wrong body' }]], unsubscribeUrl: 'https://example.com/wrong' } },
+    })
+    expect(html).toContain('<html lang="de">')
+    expect(html).toContain('Saved plan')
+    expect(html).toContain('href="https://example.com/unsubscribe"')
+    expect(html).not.toContain('Wrong body')
+    expect(html).not.toContain('https://example.com/wrong')
+  })
+
   test('renders the notification template, escaped, with the action as a button', async () => {
     const html = await notificationEmailHtml({
       subject: 'Coach commented',

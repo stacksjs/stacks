@@ -252,6 +252,17 @@ Postmaster Tools is the only view of why Gmail files mail as spam when SPF, DKIM
 
 When no configured provider can write the zone (no credentials for the provider its nameservers name, e.g. a Cloudflare zone with no `CLOUDFLARE_API_TOKEN`), nothing is published, on this deploy or any later one. The deploy warns with the exact fix (`buddy env:set CLOUDFLARE_API_TOKEN <value> -f .env.production`) and the records to add by hand. `buddy doctor` reports the same without deploying: "Mail DNS provider" (which provider the nameservers name, and whether its keys are in `.env.production`, by name only), "Mail DNS records" (MX, SPF, DKIM at `mail._domainkey`, DMARC in public DNS, each exactly once, the DMARC policy against config, SPF against the MX host's address) and "Postmaster Tools". Code: `core/buddy/src/mail-dns-health.ts`, `core/buddy/src/dns-credentials.ts`.
 
+## Notification email templates
+
+`notify()` and `notificationEmailMessage()` accept
+`emailTemplate: { name: 'workout-reminder', variables: { workouts } }`.
+The named STX template receives the normal subject, paragraphs, locale, action
+and unsubscribe frame alongside the supplied variables. Frame values take
+precedence so template data cannot replace the recipient's opt-out links or
+language. Keep the notification `body` complete, including per-item links: it
+is still the plain-text part and rendering fallback. Persist template data
+with queued notifications so a retry renders the same content.
+
 ## Application Mail Example
 
 ```typescript
