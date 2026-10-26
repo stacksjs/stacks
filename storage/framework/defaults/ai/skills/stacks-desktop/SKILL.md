@@ -100,6 +100,29 @@ interface Desktop {
 
 ## Local-first apps: owning the launcher
 
+### Model-backed offline native apps
+
+An app created with `buddy new <name> --native` can use `craft.config.ts`'s
+`backend: { entry: 'app/Desktop/api.ts' }` to bundle a Bun backend. The native
+host owns an authenticated ephemeral loopback session and the backend's lifetime.
+The binary does not need an installed Bun, external server or source files.
+
+Define models under `app/Models` with `defineModel` from `@stacksjs/orm/define-model`.
+In the backend, import those models explicitly and use `openNativeDatabase` and
+`createNativeModelApi` from `@stacksjs/orm/native`. Pass an absolute SQLite path
+inside Application Support and an explicit model registry. The same query-builder
+migration planner derives the schema and atomically records its snapshot in the
+database. Additive upgrades preserve rows; destructive changes are refused.
+
+CRUD follows `traits.useApi.uri` and its explicit `routes` list. Native models
+declare `middleware: []` because the transport owns session authorization.
+`createNativeModelApi` requires an `authorize(request, model, ability)` callback
+on every request. Only return true unconditionally when the handler runs solely
+behind stx's authenticated native backend. Never expose that handler through an
+unprotected HTTP server. Web middleware declarations are refused by this native
+adapter instead of silently skipped. Writes use the model's validation, fillable
+allowlist and hidden-field serialization; index requests have bounded pagination.
+
 The launcher Stacks compiles opens a Craft window on the URL in `desktop.json`,
 which is what a hosted Stacks application wants. An app whose subject is the
 machine it runs on - a disk cleaner, a log viewer, a device tool - has no such
