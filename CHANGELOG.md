@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.319...v0.75.320)
+
+## 🐛 Bug Fixes
+
+- gate temporary backfill tables with their source features ([00200a9](https://github.com/stacksjs/stacks/commit/00200a9)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 💚 Continuous Integration
+
+- require native browser scale evidence for publication ([a028d27](https://github.com/stacksjs/stacks/commit/a028d27)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.318...v0.75.319)
 
 ## ✨ Features
