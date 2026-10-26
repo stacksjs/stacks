@@ -12,7 +12,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 - Database package: `storage/framework/core/database/src/`
 - Configuration: `config/database.ts`
 - QB config: `config/query-builder.ts`
-- Migrations: `database/migrations/` (239 migration files, `.sql` format)
+- Migrations: `database/migrations/` (247 migration files, `.sql` format)
 - QB state: `.qb/`
 - ORM: `storage/framework/orm/`
 
