@@ -229,7 +229,7 @@ try {
 
     await check('product bulkUpdate counts rows already holding the values', async () => {
       for (const id of [1, 2])
-        await db.insertInto('products').values({ id, name: `product-${id}`, price: 100, preparation_time: 5 }).execute()
+        await db.insertInto('products').values({ id, name: `product-${id}`, slug: `product-${id}`, price: 100, preparation_time: 5 }).execute()
 
       const rows = [{ id: 1, name: 'product-1' }, { id: 2, name: 'product-2' }]
       assert.equal(await bulkUpdateItems(rows as never), 2)

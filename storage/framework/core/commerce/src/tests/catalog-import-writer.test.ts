@@ -196,7 +196,10 @@ describe('importCatalog into the database', () => {
     expect(products[0]!.handle).toBe(products[1]!.handle)
 
     await importCatalog({ adapter: staticAdapter('shopify', products), storeUrl: SHOP, repository: createDatabaseRepository(), now: NOW })
-    expect(await rows('products')).toHaveLength(2)
+    // Each keeps a storefront address of its own, the first the handle itself
+    // (stacksjs/stacks#3005).
+    const handle = products[0]!.handle
+    expect((await rows('products')).map(row => row.slug)).toEqual([handle, `${handle}-2`])
   })
 
   it('looks a page up in chunks, so a large catalog never trips the bind limit', async () => {

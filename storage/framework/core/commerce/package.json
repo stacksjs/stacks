@@ -67,6 +67,7 @@
     "@stacksjs/orm": "workspace:*",
     "@stacksjs/payments": "workspace:*",
     "@stacksjs/realtime": "workspace:*",
+    "@stacksjs/slug": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "ts-spreadsheets": "^0.2.0"

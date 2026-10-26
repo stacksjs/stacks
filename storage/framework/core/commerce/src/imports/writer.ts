@@ -2,6 +2,7 @@ import type { CatalogAdapter, CatalogFetchOptions, CatalogProduct, CatalogVarian
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database/runtime'
 import { formatDate } from '@stacksjs/orm'
+import { uniqueSlug } from '@stacksjs/slug'
 import { normalizeStoreUrl, storeHost } from './http'
 import { catalogUuid } from './identity'
 
@@ -47,6 +48,8 @@ import { catalogUuid } from './identity'
 export interface ProductRow {
   uuid: string
   name: string
+  /** Set on create only: the storefront address, owned by the operator after that. */
+  slug?: string
   description: string | null
   price: number
   image_url: string | null
@@ -206,6 +209,9 @@ export function productRow(product: CatalogProduct, host: string, refs: ProductR
   }
 
   if (mode === 'create') {
+    // The source store's own URL handle, so an imported product keeps its
+    // address; the repository makes it unique (stacksjs/stacks#3005).
+    row.slug = product.handle || product.name
     row.inventory_count = inventory ?? 0
     row.preparation_time = DEFAULT_PREPARATION_TIME
     row.category_id = refs.categoryId
@@ -577,7 +583,10 @@ export function createDatabaseRepository(connection: any = db): CatalogRepositor
       return idsByUuid('products', uuids)
     },
     async createProduct(row) {
-      await connection.insertInto('products').values(row).execute()
+      // Checked on this connection, so a product written earlier in the same
+      // import counts as taken.
+      const slug = await uniqueSlug(row.slug || row.name, { table: 'products', column: 'slug', connection })
+      await connection.insertInto('products').values({ ...row, slug }).execute()
       return idByUuid('products', row.uuid)
     },
     async updateProduct(id, row) {

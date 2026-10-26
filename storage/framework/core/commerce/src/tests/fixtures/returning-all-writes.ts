@@ -59,6 +59,7 @@ const { update: updateUnit } = await import('../../products/units/update')
 const { update: updateRate } = await import('../../shippings/shipping-rates/update')
 const { store: storeCategory } = await import('../../products/categories/store')
 const { store: storeCustomer } = await import('../../customers/store')
+const { bulkStore: bulkStoreItems, store: storeItem } = await import('../../products/items/store')
 
 async function stored(table: string, id: unknown): Promise<Record<string, unknown> | undefined> {
   return await db.selectFrom(table).selectAll().where('id', '=', id).executeTakeFirst() as Record<string, unknown> | undefined
@@ -78,12 +79,16 @@ try {
     await db.unsafe(statement).execute()
 
   await db.insertInto('carts').values({ id: 1, status: 'active', expires_at: '2030-02-01 00:00:00', applied_coupon_id: 'none' }).execute()
-  await db.insertInto('products').values({ id: 1, name: 'before', price: 100, preparation_time: 5 }).execute()
+  await db.insertInto('products').values({ id: 1, name: 'before', slug: 'before', price: 100, preparation_time: 5 }).execute()
   await db.insertInto('product_variants').values({ id: 1, variant: 'Size', type: 'dropdown', status: 'active' }).execute()
   await db.insertInto('product_units').values({ id: 1, name: 'gram', abbreviation: 'g', type: 'weight' }).execute()
   await db.insertInto('shipping_methods').values({ id: 1, name: 'standard', base_rate: 500, status: 'active' }).execute()
   await db.insertInto('shipping_zones').values({ id: 1, name: 'domestic', status: 'active', shipping_method_id: 1 }).execute()
   await db.insertInto('shipping_rates').values({ id: 1, weight_from: 0, weight_to: 10, rate: 100, shipping_method_id: 1, shipping_zone_id: 1 }).execute()
+  // An explicit id leaves a PostgreSQL sequence where it was, so the next
+  // generated product id would collide with the one seeded above.
+  if (dialect === 'postgres')
+    await db.unsafe(`SELECT setval(pg_get_serial_sequence('products', 'id'), (SELECT MAX("id") FROM "products"))`).execute()
 
   // Each returns the row it wrote, and the row is actually written: on MySQL
   // before the fix the statement failed to parse, so neither held.
@@ -130,6 +135,26 @@ try {
     const row = await storeCustomer({ name: 'Ada', email: `ada-${dialect}@example.test`, phone: '+15555550100', status: 'Active' } as never) as Record<string, unknown>
     assert(row?.id, `${dialect}: the stored customer comes back with its id`)
     assert.equal((await stored('customers', row.id))?.email, `ada-${dialect}@example.test`, `${dialect}: the stored customer`)
+  })
+
+  // A product that names no slug gets one from its name, unique among the
+  // products already stored and among the others in its own batch: the
+  // storefront looks products up by it (stacksjs/stacks#3005).
+  await check('product items store gives each product a slug', async () => {
+    const first = await storeItem({ name: 'Trail Runner', price: 100, preparation_time: 5 } as never) as Record<string, unknown>
+    const second = await storeItem({ name: 'Trail Runner', price: 100, preparation_time: 5 } as never) as Record<string, unknown>
+    assert.equal(first?.slug, 'trail-runner', `${dialect}: the first product's slug`)
+    assert.equal(second?.slug, 'trail-runner-2', `${dialect}: a second product with the same name`)
+    const named = await storeItem({ name: 'Desk Lamp', slug: 'reading-lamp', price: 100, preparation_time: 5 } as never) as Record<string, unknown>
+    assert.equal(named?.slug, 'reading-lamp', `${dialect}: a slug the caller chose is kept`)
+
+    assert.equal(await bulkStoreItems([
+      { name: 'Trail Runner', price: 100, preparation_time: 5 },
+      { name: 'Trail Runner', price: 100, preparation_time: 5 },
+    ] as never), 2, `${dialect}: both bulk products are written`)
+    const slugs = (await db.selectFrom('products').select('slug').where('name', '=', 'Trail Runner').execute() as Array<{ slug: string }>)
+      .map(row => row.slug).sort()
+    assert.deepEqual(slugs, ['trail-runner', 'trail-runner-2', 'trail-runner-3', 'trail-runner-4'], `${dialect}: every Trail Runner has its own slug`)
   })
 
   assert.deepEqual(failures, [], `${dialect}: every returningAll() write must apply and return its row`)

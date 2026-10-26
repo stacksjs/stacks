@@ -3,8 +3,28 @@ type ProductJsonResponse = ModelRow<typeof Product>
 type NewProduct = NewModelData<typeof Product>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database/runtime'
+import { uniqueSlug } from '@stacksjs/slug'
 import { insertedId } from '../../utils/inserted-id'
 import { fetchById, getProductByUuid } from './fetch'
+
+/**
+ * The slug a product is stored under: the caller's, or one made from its name
+ * that no other product has. The storefront looks products up by it
+ * (stacksjs/stacks#3005). `connection` and `claimed` let a batch see its own
+ * rows before they are committed.
+ */
+async function productSlug(
+  data: NewProduct,
+  connection?: NonNullable<Parameters<typeof uniqueSlug>[1]>['connection'],
+  claimed?: Set<string>,
+): Promise<string> {
+  const chosen = (data as { slug?: unknown }).slug
+  if (typeof chosen === 'string' && chosen.trim()) {
+    claimed?.add(chosen.trim())
+    return chosen.trim()
+  }
+  return uniqueSlug(String(data.name ?? ''), { table: 'products', column: 'slug', connection, claimed })
+}
 
 /**
  * Create a new product item
@@ -16,6 +36,7 @@ export async function store(data: NewProduct): Promise<ProductJsonResponse> {
   try {
     const itemData = {
       ...data,
+      slug: await productSlug(data),
       uuid: randomUUIDv7(),
     }
 
@@ -64,9 +85,11 @@ export async function bulkStore(data: NewProduct[]): Promise<number> {
 
   try {
     await db.transaction(async (trx) => {
+      const claimed = new Set<string>()
       for (const item of data) {
         const itemData = {
           ...item,
+          slug: await productSlug(item, trx, claimed),
           uuid: randomUUIDv7(),
         }
 

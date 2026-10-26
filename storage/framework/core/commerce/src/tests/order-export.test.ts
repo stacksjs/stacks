@@ -25,8 +25,8 @@ async function insert(table: string, values: Record<string, unknown>): Promise<n
 async function seedOrders(): Promise<{ euroOrder: number, yenOrder: number, guestOrder: number }> {
   const ada = await insert('customers', { name: 'Ada Lovelace', email: 'ada@example.com', phone: '555-0100', status: 'Active', avatar: '' })
   const grace = await insert('customers', { name: 'Grace Hopper', email: 'grace@example.com', phone: '555-0101', status: 'Active', avatar: '' })
-  const mug = await insert('products', { name: 'Enamel Mug', price: 1250, is_available: true, preparation_time: 1 })
-  const beans = await insert('products', { name: 'Coffee Beans', price: 1999, is_available: true, preparation_time: 1 })
+  const mug = await insert('products', { name: 'Enamel Mug', slug: 'enamel-mug', price: 1250, is_available: true, preparation_time: 1 })
+  const beans = await insert('products', { name: 'Coffee Beans', slug: 'coffee-beans', price: 1999, is_available: true, preparation_time: 1 })
 
   // Inserted in this order so a customer id and an order id disagree: a join
   // that let customers.id overwrite orders.id would show up as a wrong id.

@@ -6,6 +6,17 @@ import { slugify } from 'ts-slug'
 interface SlugifyOptions {
   table: TableNames
   column: string
+  /**
+   * What to check against. Defaults to the shared connection; pass an open
+   * transaction so its own uncommitted rows count as taken.
+   */
+  connection?: { selectFrom: (table: any) => any }
+  /**
+   * Slugs already handed out in this batch but not yet written. They count as
+   * taken, and the slug returned is added, so a bulk insert or an import never
+   * gives two rows the same one (stacksjs/stacks#3005).
+   */
+  claimed?: Set<string>
 }
 
 /**
@@ -25,19 +36,25 @@ export async function uniqueSlug(value: string, options?: SlugifyOptions): Promi
   if (!options?.table || !options?.column)
     return baseSlug
 
+  const connection = options.connection ?? db
+  const claim = (slug: string): string => {
+    options.claimed?.add(slug)
+    return slug
+  }
+
   let slug = baseSlug
   let counter = 1
   const MAX_ATTEMPTS = 1000
 
   while (counter <= MAX_ATTEMPTS) {
-    const exists = await db
+    const exists = options.claimed?.has(slug) || await connection
       .selectFrom(options.table)
       .select(['id'])
       .where(options.column, '=', slug)
       .executeTakeFirst()
 
     if (!exists)
-      return slug
+      return claim(slug)
 
     counter++
     slug = `${baseSlug}-${counter}`
@@ -53,7 +70,7 @@ export async function uniqueSlug(value: string, options?: SlugifyOptions): Promi
   // suffix. The 6 raw bytes encode to 8 base36 chars of unguessable
   // entropy — same length as the previous Math.random suffix.
   const suffix = randomBytes(6).toString('base64url').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 8)
-  return `${baseSlug}-${suffix}`
+  return claim(`${baseSlug}-${suffix}`)
 }
 
 // Re-export the original slugify for convenience
