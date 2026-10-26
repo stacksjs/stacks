@@ -59,6 +59,7 @@ export default defineModel({
     description: {
       order: 2,
       fillable: true,
+      type: 'text',
       validation: {
         rule: schema.string(),
       },
@@ -139,6 +140,7 @@ export default defineModel({
     nutritionalInfo: {
       order: 10,
       fillable: true,
+      type: 'text',
       validation: {
         rule: schema.string(),
       },

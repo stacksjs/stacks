@@ -47,6 +47,7 @@ export default defineModel({
       required: false,
       nullable: true,
       fillable: true,
+      type: 'text',
       validation: { rule: schema.string() },
     },
     isActive: {

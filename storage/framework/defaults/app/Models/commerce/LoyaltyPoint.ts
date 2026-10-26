@@ -81,6 +81,7 @@ export default defineModel({
     description: {
       order: 5,
       fillable: true,
+      type: 'text',
       validation: {
         rule: schema.string(),
       },

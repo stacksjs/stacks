@@ -111,6 +111,7 @@ export default defineModel({
     error: {
       required: false,
       fillable: true,
+      type: 'text',
       validation: {
         rule: schema.string(),
       },

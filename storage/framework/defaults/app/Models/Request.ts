@@ -132,6 +132,7 @@ export default defineModel({
 
     error_message: {
       fillable: true,
+      type: 'text',
       validation: {
         rule: schema.string(),
         message: {

@@ -32,6 +32,7 @@ export default defineModel({
 
     description: {
       fillable: true,
+      type: 'text',
       validation: {
         rule: schema.string(),
         message: {

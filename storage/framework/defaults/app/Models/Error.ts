@@ -34,6 +34,7 @@ export default defineModel({
 
     message: {
       fillable: true,
+      type: 'text',
       validation: {
         rule: schema.string().required(),
         message: {
@@ -45,6 +46,7 @@ export default defineModel({
 
     stack: {
       fillable: true,
+      type: 'text',
       validation: {
         rule: schema.string(),
         message: {
@@ -88,6 +90,7 @@ export default defineModel({
 
     additional_info: {
       fillable: true,
+      type: 'text',
       validation: {
         rule: schema.string(),
         message: {

@@ -142,6 +142,7 @@ export default defineModel({
       personal: true,
       order: 11,
       fillable: true,
+      type: 'text',
       validation: {
         rule: schema.string(),
       },
