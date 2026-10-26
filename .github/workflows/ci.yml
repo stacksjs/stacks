@@ -34,6 +34,14 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: ${{ env.BUN_VERSION }}
+      - name: Install the committed dependency graph
+        run: bun install --frozen-lockfile
+      - name: Build packages imported by subpath
+        run: |
+          stacks_subpath_targets=$(bun .github/scripts/subpath-packages.ts)
+          for pkg in $stacks_subpath_targets; do
+            (cd "storage/framework/core/$pkg" && bun run build)
+          done
       - name: Verify actual browser device scale
         working-directory: ${{ runner.temp }}
         run: bun "${{ github.workspace }}/tests/browser/browse-device-scale.ts"

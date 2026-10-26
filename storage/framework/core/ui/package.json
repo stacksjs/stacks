@@ -55,7 +55,7 @@
   },
   "dependencies": {
     "@stacksjs/ts-css": "^0.3.18",
-    "@stacksjs/components": "0.2.708",
+    "@stacksjs/components": "0.2.711",
     "@stacksjs/config": "workspace:*"
   },
   "devDependencies": {

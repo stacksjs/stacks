@@ -165,7 +165,7 @@ describe('subpath imports', () => {
           }
         }
       }
-      expect(exercised).toBe(8)
+      expect(exercised).toBe(9)
     }
     finally { rmSync(directory, { recursive: true, force: true }) }
   })
