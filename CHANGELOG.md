@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.320...v0.75.321)
+
+## ✨ Features
+
+- **orm**: support model-backed native desktop applications ([4e46578](https://github.com/stacksjs/stacks/commit/4e46578)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh native desktop skill catalog ([0272bd1](https://github.com/stacksjs/stacks/commit/0272bd1)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.319...v0.75.320)
 
 ## 🐛 Bug Fixes
