@@ -108,7 +108,8 @@ function submit(): void {
     slug: slugify(slug()),
     imageUrl: imageUrl().trim(),
     isActive: isActive(),
-    parentCategoryId: parentCategoryId(),
+    // The select holds the id as text; the model declares a number (#3013).
+    parentCategoryId: parentCategoryId() ? Number(parentCategoryId()) : null,
     displayOrder: Number(displayOrder()),
   })
 }

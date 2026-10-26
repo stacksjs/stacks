@@ -60,6 +60,14 @@ describe('dashboard commerce route contract', () => {
     expect(storeAction).not.toContain('user_id: 1')
   })
 
+  test('category dialog sends the parent as the number the model declares', () => {
+    const dialog = source('storage/framework/defaults/resources/components/Dashboard/Commerce/CommerceCategoryDialog.stx')
+
+    // A select holds "15"; the Category rule is a number, so the text was
+    // refused and no child category could be saved (#3013).
+    expect(dialog).toContain('parentCategoryId: parentCategoryId() ? Number(parentCategoryId()) : null')
+  })
+
   test('gift card mutations use guarded dashboard routes and model field normalization', () => {
     const routes = source('storage/framework/defaults/routes/dashboard-api.ts')
     const giftCards = source('storage/framework/defaults/resources/components/Dashboard/Commerce/CommerceGiftCardsDashboard.stx')

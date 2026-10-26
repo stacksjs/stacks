@@ -17,7 +17,7 @@ interface CategoryWritePayload {
   slug: string
   imageUrl: string
   isActive: boolean
-  parentCategoryId: string
+  parentCategoryId: number | null
   displayOrder: number
 }
 
