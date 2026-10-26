@@ -68,8 +68,7 @@ export const FEATURE_FILES: Record<FeatureName, readonly string[]> = {
     'app/Models/PaymentMethod.ts',
     'app/Models/PaymentProduct.ts',
     'app/Models/PaymentTransaction.ts',
-    'app/Models/Subscriber.ts',
-    'app/Models/SubscriberEmail.ts',
+    // Not Subscriber or SubscriberEmail: see the tables below.
     'app/Models/Subscription.ts',
     'resources/components/Dashboard/Commerce/',
     'resources/views/dashboard/commerce/',
@@ -189,7 +188,14 @@ export const FEATURE_TABLES: Record<FeatureName, readonly string[]> = {
     'products', 'product_variants', 'product_units', 'manufacturers',
     'orders', 'order_items', 'order_idempotency', 'carts', 'cart_items',
     'payments', 'payment_methods', 'payment_products', 'payment_transactions', 'payment_webhook_events',
-    'customers', 'subscribers', 'subscriber_emails', 'subscriptions',
+    // Not `subscribers` or `subscriber_emails`. They are newsletter
+    // subscribers, not commerce: nothing in commerce uses them, while the
+    // newsletter signup, marketing's campaign sends and list memberships, and
+    // the dashboard do, and the ORM loads `Subscriber` with the account models
+    // every app gets. Gated here, they disappeared with commerce off - the
+    // default - and marketing's migrations died on the missing parent on
+    // PostgreSQL and MySQL (stacksjs/stacks#2995). They run ungated now.
+    'customers', 'subscriptions',
     'gift_cards', 'coupons', 'transactions', 'reviews',
     // `delivery_stops` keys to `delivery_routes` and `courier_pings` to
     // `couriers`, so both have to be hidden alongside them. Unclaimed, their
@@ -221,8 +227,8 @@ export const FEATURE_TABLES: Record<FeatureName, readonly string[]> = {
     // Dashboard observability tables
     'requests', 'logs',
   ],
-  // These do generate tables, and two of them reference `subscribers`,
-  // which commerce owns and gates.
+  // Two of these reference `subscribers`, which is ungated so they always
+  // have it (stacksjs/stacks#2995).
   marketing: [
     'campaigns', 'campaign_sends', 'email_lists', 'email_list_subscribers',
     'social_posts', 'mail_preferences',

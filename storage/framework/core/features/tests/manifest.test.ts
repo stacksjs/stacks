@@ -103,6 +103,29 @@ describe('the manifest describes the corpus on disk', () => {
     expect(orphans).toEqual({})
   })
 
+  it('never lets a feature key into a table another feature gates', () => {
+    // The same failure across two features. Marketing's campaign_sends and
+    // email_list_subscribers key into subscribers, which commerce gated, and
+    // commerce is off by default: a fresh PostgreSQL database stopped at
+    // campaign_sends with 'relation "subscribers" does not exist'. SQLite
+    // never checks that a referenced table exists, so only Postgres and
+    // MySQL showed it (stacksjs/stacks#2995).
+    const owner = new Map(FEATURE_NAMES.flatMap(feature => FEATURE_TABLES[feature].map(table => [table, feature] as const)))
+    const crossings: Record<string, string[]> = {}
+    for (const [table, file] of createdBy) {
+      const feature = owner.get(table)
+      if (!feature) continue
+      const parents = [...new Set(
+        [...readFileSync(join(MIGRATIONS, file), 'utf8')
+          .matchAll(/references\s+["`']?([a-z0-9_]+)["`']?/gi)].map(m => m[1]!),
+      )].filter(parent => owner.has(parent) && owner.get(parent) !== feature)
+
+      if (parents.length) crossings[`${feature}:${table}`] = parents.map(parent => `${owner.get(parent)}:${parent}`)
+    }
+
+    expect(crossings).toEqual({})
+  })
+
   it('never lets one feature install a model whose table another feature gates', () => {
     // The hazard is asymmetric. An UNCLAIMED table always runs, so a feature
     // installing a model with no claim on its table is safe - that is exactly
