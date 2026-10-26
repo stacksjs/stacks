@@ -259,6 +259,20 @@ describe('normalizeTimestampWrites', () => {
     expect(normalizeTimestampWrites({ suppressed_at: '1767225600' }, stamped)).toEqual({ suppressed_at: '2026-01-01T00:00:00.000' })
   })
 
+  // timestampTz() and datetime() map to the same column, and MySQL refuses
+  // the ISO form a factory or a client sends (stacksjs/stacks#3014).
+  it('converts every attribute whose column is a datetime, ISO input included', () => {
+    const columns = {
+      name: 'Receipt',
+      attributes: {
+        printedAt: { fillable: true, validation: { rule: schema.timestampTz() } },
+        scheduledFor: { fillable: true, validation: { rule: schema.datetime() } },
+      },
+    }
+    expect(normalizeTimestampWrites({ printedAt: '2026-01-01T00:00:00.000Z', scheduled_for: '2026-01-01T00:00:00Z' }, columns))
+      .toEqual({ printedAt: '2026-01-01T00:00:00.000', scheduled_for: '2026-01-01T00:00:00.000' })
+  })
+
   it('leaves other attributes, and data with nothing to convert, as they were', () => {
     const data = { reason: '1767225600' }
     expect(normalizeTimestampWrites(data, stamped)).toBe(data)

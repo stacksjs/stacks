@@ -11,6 +11,7 @@
 
 import type { DialectCapabilityOptions } from './dialect'
 import { dialectCapabilities } from './dialect'
+import { isDatetimeValidator, isTimestampTzValidator, isTimestampValidator } from './validators'
 
 export interface SqlDialectHelpers {
   driver: string
@@ -254,6 +255,20 @@ export function sqlDateTimeInput(value: unknown): unknown {
     date = parseSqlDateTime(value)
 
   return date && !Number.isNaN(date.getTime()) ? sqlDateTime(date) : value
+}
+
+/**
+ * Whether an attribute's validation rule gives it a DATETIME column.
+ *
+ * `timestamp()`, `timestampTz()` and `datetime()` all map to one. A value
+ * written there goes through `sqlDateTimeInput` first: MySQL refuses the ISO
+ * 8601 form factories and clients produce (stacksjs/stacks#3014).
+ */
+export function isDateTimeColumnRule(rule: unknown): boolean {
+  if (!rule || typeof rule !== 'object')
+    return false
+  const validator = rule as Parameters<typeof isTimestampValidator>[0]
+  return isTimestampValidator(validator) || isTimestampTzValidator(validator) || isDatetimeValidator(validator)
 }
 
 /**

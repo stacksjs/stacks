@@ -14,6 +14,7 @@ import { pathToFileURL } from 'node:url'
 import { log } from '@stacksjs/logging'
 // Local relative import — see drivers/mysql.ts for the cycle-deadlock rationale.
 import { db, ensureDatabaseConfigLoaded } from './utils'
+import { isDateTimeColumnRule, sqlDateTimeInput } from './sql-helpers'
 import { faker } from '@stacksjs/faker'
 import { path } from '@stacksjs/path'
 import { hashMake } from '@stacksjs/security'
@@ -766,6 +767,12 @@ async function generateRecord(
         // Keep the unhashed value as fallback
       }
     }
+
+    // A factory's toISOString() is refused by a MySQL DATETIME, so write the
+    // form every driver accepts. `generated` keeps what the factory returned
+    // (stacksjs/stacks#3014).
+    if (isDateTimeColumnRule(attr.validation?.rule))
+      value = sqlDateTimeInput(value)
 
     record[columnName] = value
   }

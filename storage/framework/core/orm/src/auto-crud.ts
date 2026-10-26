@@ -10,7 +10,7 @@
 // Lives in @stacksjs/error-handling, where the queue and other packages that
 // cannot depend on the ORM can use it too. Re-exported for existing callers.
 export { isUniqueViolation } from '@stacksjs/error-handling'
-import { parseSqlDateTime, sqlDateTime, sqlDateTimeInput } from '@stacksjs/database/runtime'
+import { isDateTimeColumnRule, parseSqlDateTime, sqlDateTime, sqlDateTimeInput } from '@stacksjs/database/runtime'
 import { isUniqueViolation } from '@stacksjs/error-handling'
 
 /**
@@ -574,13 +574,14 @@ function resolveWriteValidators(attributes: Record<string, any>): WriteValidator
 }
 
 /**
- * `data` with every `schema.timestamp()` attribute in the form its datetime
- * column stores.
+ * `data` with every attribute whose column is a datetime (`timestamp()`,
+ * `timestampTz()`, `datetime()`) in the form that column stores.
  *
  * The timestamp validator accepts Unix seconds as well as date strings, so a
  * caller may send either, and nothing converted a number before it reached a
  * datetime column: PostgreSQL refused it, SQLite stored a bare number in text
- * (stacksjs/stacks#3006). Applied after validation, which is written against
+ * (stacksjs/stacks#3006), and MySQL refuses an ISO string with its zone
+ * suffix (stacksjs/stacks#3014). Applied after validation, which is written against
  * the raw input. Both spellings of the key are converted, since a write may
  * arrive in the attribute's own camelCase or as the column's snake_case.
  */
@@ -589,7 +590,7 @@ export function normalizeTimestampWrites<T>(data: T, model: any): T {
     return data
   let result = data as Record<string, any>
   for (const { field, rule } of resolveWriteValidators(model?.attributes ?? {})) {
-    if (rule?.name !== 'timestamp')
+    if (!isDateTimeColumnRule(rule))
       continue
     for (const key of new Set([field, toSnakeCase(field)])) {
       if (!Object.prototype.hasOwnProperty.call(data, key))
