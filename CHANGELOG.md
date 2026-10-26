@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.317...v0.75.318)
+
+## 🐛 Bug Fixes
+
+- validate OS-assigned API listener ports ([827c94d](https://github.com/stacksjs/stacks/commit/827c94d)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.316...v0.75.317)
 
 ## ✨ Features
