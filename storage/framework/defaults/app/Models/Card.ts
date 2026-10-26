@@ -62,7 +62,6 @@ export default defineModel({
       // query stays single-table. The kanban API keeps it in sync on
       // card create/move (Phase 2).
       validation: { rule: schema.number().required() },
-      factory: () => 1,
     },
 
     title: {

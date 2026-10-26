@@ -47,7 +47,6 @@ export default defineModel({
       order: 1,
       fillable: true,
       validation: { rule: schema.number().required() },
-      factory: () => 1,
     },
 
     name: {

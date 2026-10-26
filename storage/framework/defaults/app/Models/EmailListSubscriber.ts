@@ -39,7 +39,6 @@ export default defineModel({
       validation: {
         rule: schema.number(),
       },
-      factory: faker => faker.number.int({ min: 1, max: 8 }),
     },
 
     subscriberId: {
@@ -48,7 +47,6 @@ export default defineModel({
       validation: {
         rule: schema.number(),
       },
-      factory: faker => faker.number.int({ min: 1, max: 100 }),
     },
 
     status: {
