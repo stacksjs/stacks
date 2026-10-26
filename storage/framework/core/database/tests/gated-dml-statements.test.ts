@@ -108,3 +108,56 @@ UPDATE users SET name = 'a; -- b';`
     expect(withoutGatedStatements(sql, new Set())).toBe(sql)
   })
 })
+
+describe('temporary backfill tables and disabled features', () => {
+  const productBackfill = readFileSync(new URL('../../../../../database/migrations/1789486698569-backfill-products-slug.sql', import.meta.url), 'utf8')
+
+  it('removes the complete product-slug temporary-table lifecycle when commerce is disabled', () => {
+    const gated = new Set(['products'])
+    const sql = withoutGatedStatements(`${productBackfill}\nCREATE TABLE application_audit (id INTEGER);`, gated)
+    const db = new Database(':memory:')
+    try {
+      expect(() => db.exec(sql)).not.toThrow()
+      expect(withoutGatedStatements(productBackfill, gated)).toBe('')
+      expect(db.query("SELECT name FROM sqlite_master WHERE type = 'table'").all()).toEqual([{ name: 'application_audit' }])
+      expect(db.query('SELECT name FROM sqlite_temp_master').all()).toEqual([])
+    }
+    finally { db.close() }
+  })
+
+  it('preserves and executes the original backfill when its feature is enabled', () => {
+    const sql = withoutGatedStatements(productBackfill, new Set(['posts']))
+    expect(sql).toBe(productBackfill)
+    const db = new Database(':memory:')
+    try {
+      db.exec(`CREATE TABLE products (id INTEGER PRIMARY KEY, name TEXT, slug TEXT UNIQUE);
+INSERT INTO products (name) VALUES ('Trail Runner'), ('Trail Runner'), ('Café & Bar'), ('!!!');`)
+      db.exec(sql)
+      expect(db.query('SELECT slug FROM products ORDER BY id').all()).toEqual([{ slug: 'trail-runner-1' }, { slug: 'trail-runner-2' }, { slug: 'café-bar' }, { slug: 'product-4' }])
+      expect(db.query('SELECT name FROM sqlite_temp_master').all()).toEqual([])
+    }
+    finally { db.close() }
+  })
+
+  it('follows chained temporary dependencies and keeps independent work', () => {
+    const sql = `CREATE TEMP TABLE first_stage (id INTEGER);
+INSERT INTO first_stage SELECT id FROM products;
+CREATE TEMPORARY TABLE second_stage AS SELECT id FROM first_stage;
+UPDATE users SET name = 'gated' WHERE id IN (SELECT id FROM second_stage);
+DROP TABLE second_stage; DROP TABLE first_stage;
+CREATE TEMP TABLE allowed_stage AS SELECT id FROM users;
+UPDATE users SET name = 'kept' WHERE id IN (SELECT id FROM allowed_stage);
+DROP TABLE allowed_stage;`
+    const filtered = withoutGatedStatements(sql, new Set(['products']))
+    const db = new Database(':memory:')
+    try {
+      db.exec("CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT); INSERT INTO users VALUES (1, 'before');")
+      db.exec(filtered)
+      expect(db.query('SELECT name FROM users').all()).toEqual([{ name: 'kept' }])
+      expect(db.query('SELECT name FROM sqlite_temp_master').all()).toEqual([])
+      expect(filtered).not.toContain('first_stage')
+      expect(filtered).not.toContain('second_stage')
+    }
+    finally { db.close() }
+  })
+})

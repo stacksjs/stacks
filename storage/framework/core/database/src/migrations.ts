@@ -1441,7 +1441,7 @@ export function statementTable(statement: string): string | null {
   const body = afterCommonTableExpressions(statement)
   const patterns = [
     /^\s*ALTER\s+TABLE\s+["`]?([a-z0-9_]+)["`]?/i,
-    /^\s*CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["`]?([a-z0-9_]+)["`]?/i,
+    /^\s*CREATE\s+(?:(?:TEMP|TEMPORARY)\s+)?TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["`]?([a-z0-9_]+)["`]?/i,
     /^\s*DROP\s+TABLE\s+(?:IF\s+EXISTS\s+)?["`]?([a-z0-9_]+)["`]?/i,
     /^\s*CREATE\s+(?:UNIQUE\s+)?INDEX\s+(?:IF\s+NOT\s+EXISTS\s+)?["`]?[a-z0-9_]+["`]?\s+ON\s+["`]?([a-z0-9_]+)["`]?/i,
     /^\s*UPDATE\s+["`]?([a-z0-9_]+)["`]?/i,
@@ -1533,15 +1533,35 @@ export function withoutGatedStatements(sql: string, gated: ReadonlySet<string>):
   // them here can turn a disabled migration's documentation into executable
   // SQL, or change a kept statement's stored string value during reassembly.
   const statements = sqlStatementsOf(sql)
+  // A temporary backfill table depends on the feature supplying its rows.
+  // Gate its whole lifecycle, including cleanup and downstream readers, when
+  // that source is absent. Otherwise a filtered CREATE leaves an orphan DROP.
+  const excluded = new Set(gated)
+  const temporary = new Set(statements
+    .filter(statement => /^\s*CREATE\s+(?:TEMP|TEMPORARY)\s+TABLE\b/i.test(statement))
+    .map(statement => statementTable(statement))
+    .filter((table): table is string => table !== null))
+  let changed = true
+  while (changed) {
+    changed = false
+    for (const statement of statements) {
+      const table = statementTable(statement)
+      if (!table || !temporary.has(table) || excluded.has(table)) continue
+      if ([...excluded].some(source => statementReferencesTable(statement, source))) {
+        excluded.add(table)
+        changed = true
+      }
+    }
+  }
   const kept = statements.filter((statement) => {
     // A rebuild's temp-table statements resolve to the table being rebuilt, so
     // every statement in the block gates together (stacksjs/stacks#2534).
     const table = rebuiltTable(statement) ?? statementTable(statement)
-    if (table && gated.has(table))
+    if (table && excluded.has(table))
       return false
 
     // Not only the target: a gated table read in a subquery is just as absent.
-    for (const candidate of gated) {
+    for (const candidate of excluded) {
       if (statementReferencesTable(statement, candidate))
         return false
     }
