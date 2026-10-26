@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.321...v0.75.322)
+
+## ✨ Features
+
+- **github**: add public search and account notification APIs ([1082d2a](https://github.com/stacksjs/stacks/commit/1082d2a)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.320...v0.75.321)
 
 ## ✨ Features
