@@ -115,6 +115,10 @@ export function prepareMacChrome(options: { source?: string, directory?: string 
   }
   try {
     run(['/bin/cp', '-cR', sourceApp, staged], 'Cloning Chrome')
+    // The clone keeps the installed app's extended attributes (Finder info,
+    // provenance, quarantine), and codesign refuses to sign over them:
+    // "resource fork, Finder information, or similar detritus not allowed".
+    run(['/usr/bin/xattr', '-cr', staged], 'Clearing extended attributes')
     const stagedInfo = join(staged, 'Contents/Info.plist')
     for (const key of UPDATER_KEYS) plist(stagedInfo, `Delete :${key}`)
     run(['/usr/libexec/PlistBuddy', '-c', `Set :CFBundleIdentifier ${PRIVATE_BUNDLE_ID}`, stagedInfo], 'Renaming the Chrome bundle')

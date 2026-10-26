@@ -37,6 +37,11 @@ describe.skipIf(process.platform !== 'darwin')('macOS browser preparation', () =
       symlinkSync('Versions/Current/Resources', join(framework, 'Resources'))
       run(['/usr/bin/codesign', '--force', '--sign', '-', join(root, 'Source.app')])
       run(['/usr/bin/codesign', '--verify', '--deep', '--strict', join(root, 'Source.app')])
+      // An installed app carries extended attributes the clone keeps, and
+      // codesign refuses to seal a bundle that has Finder info on it
+      // ("resource fork, Finder information, or similar detritus not
+      // allowed"). Google Chrome 155 does, so preparation failed outright.
+      run(['/usr/bin/xattr', '-wx', 'com.apple.FinderInfo', `01${'0'.repeat(62)}`, join(root, 'Source.app')])
       const script = join(root, 'prepare.ts'), directory = join(root, 'prepared')
       const browser = pathToFileURL(join(import.meta.dir, '../src/browser.ts')).href
       writeFileSync(script, `import { prepareMacChrome } from ${JSON.stringify(browser)}\nconsole.log(JSON.stringify(prepareMacChrome(${JSON.stringify({ source, directory })})))\n`)
@@ -59,6 +64,10 @@ describe.skipIf(process.platform !== 'darwin')('macOS browser preparation', () =
       run(['/usr/bin/codesign', '--verify', '--deep', '--strict', replacement.app])
       expect(await prepare()).toEqual({ ...replacement, reused: true })
       expect(readFileSync(join(contents, 'Resources/payload'), 'utf8')).toBe('original payload')
+      // Preparation clears attributes on its clone, never on the installed app.
+      const attributes = Bun.spawnSync(['/usr/bin/xattr', join(root, 'Source.app')], { stdout: 'pipe' }).stdout.toString()
+      expect(attributes).toContain('com.apple.FinderInfo')
+      run(['/usr/bin/xattr', '-c', join(root, 'Source.app')])
       run(['/usr/bin/codesign', '--verify', '--deep', '--strict', join(root, 'Source.app')])
     }
     finally {
