@@ -12,6 +12,8 @@ export const GITHUB_API_VERSION = '2022-11-28'
 
 export interface GitHubClientOptions {
   token?: string
+  /** Public-only requests, without reading environment credentials. */
+  anonymous?: boolean
   apiUrl?: string
   fetch?: typeof globalThis.fetch
 }
@@ -36,9 +38,9 @@ export function ghHeaders(): Record<string, string> {
   return githubHeaders()
 }
 
-export function githubHeaders(token?: string): Record<string, string> {
+export function githubHeaders(token?: string, anonymous = false): Record<string, string> {
   return {
-    'Authorization': `Bearer ${resolveToken(token)}`,
+    ...(anonymous ? {} : { Authorization: `Bearer ${resolveToken(token)}` }),
     'Accept': 'application/vnd.github+json',
     'X-GitHub-Api-Version': GITHUB_API_VERSION,
   }
@@ -69,7 +71,7 @@ export async function githubRequest(
   const url = path.startsWith('http') ? path : `${options.apiUrl ?? GITHUB_API}${path.startsWith('/') ? path : `/${path}`}`
   const response = await fetcher(url, {
     ...init,
-    headers: { ...githubHeaders(options.token), ...init.headers },
+    headers: { ...githubHeaders(options.token, options.anonymous), ...init.headers },
   })
   if (response.ok || attempt >= 3)
     return response

@@ -11,6 +11,8 @@
 export { fetchBotPRCounts, fetchPullRequestCounts } from './bots'
 export { ghFetch, ghHeaders, githubHeaders, githubJson, githubRequest, GITHUB_API, GITHUB_API_VERSION, mapWithConcurrency } from './client'
 export type { GitHubClientOptions } from './client'
+export { searchGitHubRepositories, searchGitHubIssues, fetchGitHubNotifications, fetchGitHubViewer } from './search'
+export type { GitHubSearchPage, GitHubRepositoryResult, GitHubIssueResult, GitHubNotification, GitHubViewer } from './search'
 export { clearDashboardCache, getDashboardData } from './dashboard'
 export { detectNewlyFailedRuns } from './failure-detector'
 export type { DetectOptions, FailedTransition, PreviousRunState } from './failure-detector'
