@@ -337,7 +337,7 @@
           },
           {
             "name": "parent_category_id",
-            "type": "string",
+            "type": "integer",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
@@ -13796,7 +13796,7 @@
       }
     ]
   },
-  "hash": "8e88cf512522230e3cdbc2db9f7ef6cc11f36ced86fe4a7a41179bd3a5d19e7a",
+  "hash": "3a101e58f9c0b5dd70487e37db08e6e3002c6d4d18871cd14b6ae3d8242d917d",
   "dialect": "sqlite",
-  "updatedAt": "2026-10-26T12:14:21.928Z"
+  "updatedAt": "2026-10-26T12:20:35.725Z"
 }

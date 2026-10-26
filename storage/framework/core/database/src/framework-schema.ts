@@ -343,7 +343,7 @@ export interface FrameworkSchema {
     slug: string
     image_url: string
     is_active: number
-    parent_category_id: string
+    parent_category_id: number
     display_order: number
   }
   categorizable_models: {

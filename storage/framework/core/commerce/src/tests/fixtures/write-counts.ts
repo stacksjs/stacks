@@ -44,6 +44,7 @@ for (const table of plan.tables) {
 const statements = generateSql(plan)
 
 const { deactivate, deactivateChildCategories } = await import('../../products/categories/destroy')
+const { fetchStats: fetchCategoryStats } = await import('../../products/categories/fetch')
 const { registerPersistentQueryHooks } = await import('@stacksjs/query-builder')
 const { redeem } = await import('../../coupons/update')
 const { store: storeCoupon } = await import('../../coupons/store')
@@ -259,6 +260,27 @@ try {
     }
     finally { unregister() }
     assert.equal(await db.selectFrom('categories').selectAll().where('id', '=', doomed).executeTakeFirst(), undefined)
+  })
+
+  await check('category stats name the parent with the most children', async () => {
+    // A self-join on parent_category_id. It could not be written until
+    // bun-query-builder 0.3.22 let a join alias its table, and then failed on
+    // PostgreSQL with "operator does not exist: text = bigint", because the
+    // model declared the column a string (stacksjs/stacks#3002).
+    const insert = async (name: string, parentId: number | null) => {
+      await db.insertInto('categories').values({
+        uuid: crypto.randomUUID(), name, slug: `${name}-${dialect}`, display_order: 1,
+        is_active: true, parent_category_id: parentId, created_at: sqlDateTime(), updated_at: sqlDateTime(),
+      } as never).execute()
+      const row = await db.selectFrom('categories').selectAll().where('name', '=', name).executeTakeFirst() as { id: number }
+      return Number(row.id)
+    }
+    const parent = await insert('stats-parent', null)
+    for (const child of ['x', 'y', 'z'])
+      await insert(`stats-child-${child}`, parent)
+
+    const stats = await fetchCategoryStats()
+    assert.deepEqual(stats.top_parent_categories[0], { id: String(parent), name: 'stats-parent', child_count: 3 })
   })
 
   await check('receipts bulkStore', async () => {

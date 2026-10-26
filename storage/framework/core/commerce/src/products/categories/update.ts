@@ -19,8 +19,8 @@ export async function update(id: number, data: CategoryWriteData): Promise<Categ
   if (!existingCategory)
     return undefined
 
+  const parentCategoryId = data.parent_category_id ? Number(data.parent_category_id) : undefined
   if (Object.hasOwn(data, 'parent_category_id')) {
-    const parentCategoryId = data.parent_category_id ? Number(data.parent_category_id) : undefined
     if (parentCategoryId !== undefined && (!Number.isSafeInteger(parentCategoryId) || parentCategoryId <= 0))
       throw new HttpError(422, 'Parent category ID must be a positive integer')
     if (parentCategoryId === id)
@@ -33,7 +33,7 @@ export async function update(id: number, data: CategoryWriteData): Promise<Categ
 
   try {
     const parentUpdate = Object.hasOwn(data, 'parent_category_id')
-      ? { parent_category_id: data.parent_category_id || null }
+      ? { parent_category_id: parentCategoryId ?? null }
       : {}
     const result = await db
       .updateTable('categories')
@@ -175,7 +175,7 @@ export async function updateParent(id: number, newParentId: string | null): Prom
 
   try {
     // Update the category's parent
-    const updateObject: { updated_at: string, parent_category_id?: string | undefined } = {
+    const updateObject: { updated_at: string } = {
       updated_at: formatDate(new Date()),
     }
 
@@ -195,7 +195,8 @@ export async function updateParent(id: number, newParentId: string | null): Prom
         .updateTable('categories')
         .set({
           ...updateObject,
-          parent_category_id: newParentId,
+          // The number the string names: the column is numeric (#3002).
+          parent_category_id: Number(newParentId),
         })
         .where('id', '=', id)
         .execute()

@@ -37,7 +37,7 @@ export async function store(data: CategoryWriteData): Promise<CategoryJsonRespon
       ...data,
       uuid: randomUUIDv7(),
       is_active: data.is_active ?? true,
-      parent_category_id: data.parent_category_id || null,
+      parent_category_id: parentCategoryId ?? null,
     }
 
     const result = await db

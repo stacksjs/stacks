@@ -101,7 +101,10 @@ export default defineModel({
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        // Another category's id, so a number like the id it points at. As a
+        // string it was a text column, and joining it to categories.id failed
+        // on PostgreSQL with "text = bigint" (stacksjs/stacks#3002).
+        rule: schema.number(),
       },
       factory: () => null, // Most categories won't have a parent
     },
