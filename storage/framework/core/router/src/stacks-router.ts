@@ -4723,6 +4723,17 @@ let generateRequestId = (): string => {
   return generateRequestId()
 }
 
+/** The `{ field: messages[] }` map a validation error carries, if it carries one. */
+function validationFieldErrors(error: unknown): Record<string, string[]> | undefined {
+  const errors = ((error as { details?: unknown })?.details as { errors?: unknown } | undefined)?.errors
+  if (!errors || typeof errors !== 'object' || Array.isArray(errors))
+    return undefined
+  const entries = Object.entries(errors as Record<string, unknown>)
+  if (entries.length === 0 || !entries.every(([, messages]) => Array.isArray(messages) && messages.every(m => typeof m === 'string')))
+    return undefined
+  return errors as Record<string, string[]>
+}
+
 /** Share action error status validation and redaction with inline handlers. */
 function createHandlerErrorResponse(error: unknown, req: EnhancedRequest, handlerPath: string, router?: Router): Promise<Response> {
   // Explicit bun-router error handlers own the response. Let the dispatcher
@@ -4736,6 +4747,13 @@ function createHandlerErrorResponse(error: unknown, req: EnhancedRequest, handle
   const status = typeof rawStatus === 'number' && Number.isInteger(rawStatus) && rawStatus >= 400 && rawStatus < 600
     ? rawStatus
     : undefined
+  // `request.validate()` inside a handler throws its field map on the error.
+  // Answer the way a `validations:` block does, so the caller reads `errors`
+  // either way: the generic path nested it under `details` in production and
+  // dropped it in development (stacksjs/stacks#3012).
+  const fieldErrors = status === 422 ? validationFieldErrors(error) : undefined
+  if (fieldErrors)
+    return Promise.resolve(validationFailureResponse(fieldErrors))
   return createErrorResponse(
     error instanceof Error ? error : new Error(String(error)),
     req,
