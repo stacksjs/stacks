@@ -72,7 +72,10 @@ export default defineModel({
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.number(),
+        // A Unix timestamp in milliseconds, so a bigint column: `number()`
+        // generated a 32-bit integer that Date.now() overflows on PostgreSQL
+        // and MySQL (stacksjs/stacks#2996).
+        rule: schema.unix(),
         message: {
           date: 'Time must be a valid timestamp',
         },

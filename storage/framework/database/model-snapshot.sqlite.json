@@ -160,7 +160,7 @@
           },
           {
             "name": "time",
-            "type": "integer",
+            "type": "bigint",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
@@ -6666,7 +6666,7 @@
           },
           {
             "name": "timestamp",
-            "type": "integer",
+            "type": "bigint",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
@@ -13796,7 +13796,7 @@
       }
     ]
   },
-  "hash": "fb7db37146d4e15dfdbf31834f8e08623261456c098f699ee995e8853d2fa644",
+  "hash": "8e88cf512522230e3cdbc2db9f7ef6cc11f36ced86fe4a7a41179bd3a5d19e7a",
   "dialect": "sqlite",
-  "updatedAt": "2026-10-26T12:08:00.205Z"
+  "updatedAt": "2026-10-26T12:14:21.928Z"
 }
