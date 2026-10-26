@@ -16,7 +16,7 @@ interface ReviewIndexResponse {
 interface ReviewEditPayload {
   title: string
   content: string
-  rating: number
+  rating: number | null
   isApproved: boolean
   isFeatured: boolean
 }
@@ -67,6 +67,13 @@ function timestamp(value: string): number {
   return Number.isFinite(result) ? result : 0
 }
 
+/** Rated reviews in `direction` order, unrated ones last either way. */
+function byRating(left: ReviewRecord, right: ReviewRecord, direction: 1 | -1): number {
+  if (left.rating === null || right.rating === null)
+    return Number(left.rating === null) - Number(right.rating === null)
+  return (left.rating - right.rating) * direction
+}
+
 function filteredRecords(): ReviewRecord[] {
   const query = search().trim().toLowerCase()
   const product = productFilter()
@@ -76,7 +83,7 @@ function filteredRecords(): ReviewRecord[] {
     .filter((review) => {
       if (product !== 'all' && review.productId !== product)
         return false
-      if (rating !== 'all' && String(review.rating) !== rating)
+      if (rating !== 'all' && String(review.rating ?? 'none') !== rating)
         return false
       if (moderation === 'approved' && !review.approved)
         return false
@@ -98,9 +105,9 @@ function filteredRecords(): ReviewRecord[] {
       if (sort() === 'oldest')
         return timestamp(left.createdAt) - timestamp(right.createdAt)
       if (sort() === 'rating-high')
-        return right.rating - left.rating || timestamp(right.createdAt) - timestamp(left.createdAt)
+        return byRating(left, right, -1) || timestamp(right.createdAt) - timestamp(left.createdAt)
       if (sort() === 'rating-low')
-        return left.rating - right.rating || timestamp(right.createdAt) - timestamp(left.createdAt)
+        return byRating(left, right, 1) || timestamp(right.createdAt) - timestamp(left.createdAt)
       if (sort() === 'helpful')
         return right.helpfulVotes - left.helpfulVotes || timestamp(right.createdAt) - timestamp(left.createdAt)
       return timestamp(right.createdAt) - timestamp(left.createdAt)
@@ -296,6 +303,7 @@ onMount(() => {
           <option value="3">3 stars</option>
           <option value="2">2 stars</option>
           <option value="1">1 star</option>
+          <option value="none">No rating</option>
         </select>
       </label>
       <label>

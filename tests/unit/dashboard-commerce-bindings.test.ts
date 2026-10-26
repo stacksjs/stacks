@@ -119,7 +119,10 @@ describe('commerce dashboard filter bindings', () => {
       ),
       'utf8',
     )
-    expect(review).toContain('x-model.number="rating"')
+    // A string model, so the select can hold "No rating" as well as 1 to 5
+    // (stacksjs/stacks#2999); the dialog converts it to a number or null.
+    expect(review).toContain('x-model="rating"')
+    expect(review).toContain('<option value="">No rating</option>')
   })
 
   test('gift card dialog uses native field models with isolated balance syncing', () => {

@@ -352,9 +352,14 @@ export function summarizeCommerceProducts(records: CommerceProductRecord[]): Com
 }
 
 export function summarizeProductReviews(records: any[]): ProductReviewSummary {
-  const ratings = records.map((record, index) =>
-    number(value(record, 'rating'), `Review ${index + 1}`, 'rating', { min: 1, max: 5 }),
-  )
+  // A review can be words without stars; it counts toward the total, not the
+  // average.
+  const ratings = records.flatMap((record, index) => {
+    const rating = value(record, 'rating')
+    return rating === null || rating === undefined
+      ? []
+      : [number(rating, `Review ${index + 1}`, 'rating', { min: 1, max: 5 })]
+  })
   const approved = records.filter((record, index) =>
     boolean(value(record, 'is_approved', 'isApproved'), `Review ${index + 1}`, 'is_approved'),
   ).length

@@ -108,6 +108,18 @@ describe('dashboard review records', () => {
     })
   })
 
+  // A review can be words with no stars (9b8dd223e8), and one unrated review
+  // made the whole list answer 503 (stacksjs/stacks#2999).
+  test('keeps a review without a star rating, and averages only the rated ones', () => {
+    const unrated = normalizeReviewRecord(review({ rating: null }), new Map(), new Map())
+    expect(unrated.rating).toBeNull()
+    expect(() => normalizeReviewRecord(review({ rating: 6 }), new Map(), new Map())).toThrow('rating must be at most 5')
+
+    const rated = normalizeReviewRecord(review({ id: 10, rating: 4 }), new Map(), new Map())
+    expect(summarizeReviews([unrated, rated]).averageRating).toBe(4)
+    expect(summarizeReviews([unrated]).averageRating).toBe(0)
+  })
+
   test('validates Product options and Customer context records', () => {
     expect(normalizeReviewProductOption({ id: 4, name: 'Native Kit' }))
       .toEqual({ id: '4', label: 'Native Kit' })

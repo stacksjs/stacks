@@ -9,7 +9,8 @@ const errors = useReactiveProp('errors', {} as Record<string, string>)
 const emit = defineEmits()
 const title = state('')
 const content = state('')
-const rating = state(5)
+// A string, so the select can hold "no rating" as well as 1 to 5.
+const rating = state('5')
 const approved = state(false)
 const featured = state(false)
 let hydratedId = ''
@@ -25,7 +26,7 @@ effect(() => {
   hydratedId = current.id
   title.set(current.title)
   content.set(current.content)
-  rating.set(current.rating)
+  rating.set(current.rating === null ? '' : String(current.rating))
   approved.set(current.approved)
   featured.set(current.featured)
 })
@@ -36,7 +37,7 @@ function submit(): void {
   emit('submit', {
     title: title().trim(),
     content: content().trim(),
-    rating: rating(),
+    rating: rating() === '' ? null : Number(rating()),
     isApproved: approved(),
     isFeatured: featured(),
   })
@@ -70,12 +71,13 @@ function errorMessages(): string[] {
           </label>
           <label class="block">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Rating</span>
-            <select x-model.number="rating" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
+            <select x-model="rating" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
               <option value="5">5 stars</option>
               <option value="4">4 stars</option>
               <option value="3">3 stars</option>
               <option value="2">2 stars</option>
               <option value="1">1 star</option>
+              <option value="">No rating</option>
             </select>
           </label>
           <div class="grid gap-3 grid-cols-1 sm:grid-cols-2">

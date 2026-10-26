@@ -132,6 +132,8 @@ describe('dashboard commerce product records', () => {
       new Map(),
       new Map(),
     )).toThrow('references missing Category 99')
+    // An unrated review counts as a review, not as a 0-star one (#2999).
+    expect(summarizeProductReviews([{ rating: null, is_approved: 1 }, { rating: 4, is_approved: 0 }]).averageRating).toBe(4)
     expect(() => summarizeProductReviews([{ rating: 'unknown', is_approved: 1 }]))
       .toThrow('Review 1.rating must be a finite number')
     expect(() => normalizeCommerceCurrency('US')).toThrow('three-letter currency code')

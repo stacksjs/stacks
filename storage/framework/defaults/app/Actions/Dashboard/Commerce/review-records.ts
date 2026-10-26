@@ -3,6 +3,7 @@ import {
   commerceEmail,
   commerceIdentifier,
   commerceNumber,
+  commerceOptionalNumber,
   commerceOptionalIdentifier,
   commerceOptionalString,
   commerceRequiredString,
@@ -17,7 +18,8 @@ export interface ReviewRecord {
   customerId: string
   customerName: string
   customerEmail: string
-  rating: number
+  /** Null for a review that is words without stars. */
+  rating: number | null
   title: string
   content: string
   approved: boolean
@@ -73,7 +75,7 @@ export function normalizeReviewRecord(
     customerId,
     customerName: customer?.name || '',
     customerEmail: customer?.email || '',
-    rating: commerceNumber(commerceValue(review, 'rating'), source, 'rating', {
+    rating: commerceOptionalNumber(commerceValue(review, 'rating'), source, 'rating', {
       min: 1,
       max: 5,
       integer: true,
@@ -135,15 +137,18 @@ export function normalizeReviewCustomerContext(customer: any): {
 }
 
 export function summarizeReviews(records: ReviewRecord[]): ReviewSummary {
-  const totalRating = records.reduce((sum, review) => sum + review.rating, 0)
+  // An unrated review is a review, not a 0-star one, so the average is taken
+  // over the rated reviews only.
+  const ratings = records.flatMap(review => review.rating === null ? [] : [review.rating])
+  const totalRating = ratings.reduce((sum, rating) => sum + rating, 0)
   return {
     total: records.length,
     approved: records.filter(review => review.approved).length,
     pending: records.filter(review => !review.approved).length,
     featured: records.filter(review => review.featured).length,
     verified: records.filter(review => review.verifiedPurchase).length,
-    averageRating: records.length > 0
-      ? Math.round(totalRating / records.length * 10) / 10
+    averageRating: ratings.length > 0
+      ? Math.round(totalRating / ratings.length * 10) / 10
       : 0,
   }
 }
