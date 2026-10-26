@@ -58,7 +58,7 @@
   },
   "dependencies": {
     "@stacksjs/datetime": "workspace:*",
-    "@stacksjs/stx": "0.2.691"
+    "@stacksjs/stx": "0.2.708"
   },
   "devDependencies": {
     "@stacksjs/browser": "workspace:*",
