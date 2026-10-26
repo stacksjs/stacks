@@ -16,6 +16,8 @@ export default defineModel({
   ],
 
   traits: {
+    // So a fresh seed fills its dashboard page (stacksjs/stacks#3000).
+    useSeeder: { count: 5 },
     gdpr: { erasure: 'anonymize', basis: 'legitimate_interests', purpose: 'Byline on published content' },
     useAuth: {
       usePasskey: true,

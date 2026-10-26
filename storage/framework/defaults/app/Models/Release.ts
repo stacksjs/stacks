@@ -8,6 +8,8 @@ export default defineModel({
   autoIncrement: true,
 
   traits: {
+    // So a fresh seed fills its dashboard page (stacksjs/stacks#3000).
+    useSeeder: { count: 5 },
     useUuid: true,
     useTimestamps: true,
     useSearch: {

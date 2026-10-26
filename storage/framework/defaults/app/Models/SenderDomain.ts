@@ -6,6 +6,8 @@ export default defineModel({
   table: 'sender_domains',
   belongsTo: ['Team'],
   traits: {
+    // So a fresh seed fills its dashboard page (stacksjs/stacks#3000).
+    useSeeder: { count: 3 },
     useUuid: true,
     useTimestamps: true,
     useApi: { uri: 'sender-domains', routes: ['index', 'store', 'show', 'update', 'destroy'], middleware: ['auth', 'team'] },

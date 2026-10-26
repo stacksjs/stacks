@@ -25,6 +25,8 @@ export default defineModel({
   ],
 
   traits: {
+    // So a fresh seed fills its dashboard page (stacksjs/stacks#3000).
+    useSeeder: { count: 10 },
     useTimestamps: true,
   },
 

@@ -8,6 +8,8 @@ export default defineModel({
   autoIncrement: true, // defaults to true
   belongsTo: ['User'],
   traits: {
+    // So a fresh seed fills its dashboard page (stacksjs/stacks#3000).
+    useSeeder: { count: 10 },
     gdpr: { erasure: 'keep', basis: 'legal_obligation', purpose: 'Billing records' },
     useUuid: true,
   },

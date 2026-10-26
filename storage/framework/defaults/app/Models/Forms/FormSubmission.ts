@@ -18,6 +18,8 @@ export default defineModel({
   autoIncrement: true,
 
   traits: {
+    // So a fresh seed fills its dashboard page (stacksjs/stacks#3000).
+    useSeeder: { count: 10 },
     gdpr: { subject: { email: 'email' }, erasure: 'anonymize', basis: 'consent', purpose: 'Form submissions' },
     useUuid: true,
     useTimestamps: true,

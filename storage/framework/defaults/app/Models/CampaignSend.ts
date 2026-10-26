@@ -17,6 +17,8 @@ export default defineModel({
   ],
 
   traits: {
+    // So a fresh seed fills its dashboard page (stacksjs/stacks#3000).
+    useSeeder: { count: 20 },
     gdpr: { subject: { via: 'Subscriber' }, erasure: 'anonymize', basis: 'legitimate_interests', purpose: 'Campaign delivery statistics' },
     useUuid: true,
     useTimestamps: true,

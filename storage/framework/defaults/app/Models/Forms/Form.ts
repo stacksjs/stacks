@@ -28,6 +28,8 @@ export default defineModel({
   ownership: siteOwnership(),
 
   traits: {
+    // So a fresh seed fills its dashboard page (stacksjs/stacks#3000).
+    useSeeder: { count: 3 },
     useUuid: true,
     useTimestamps: true,
     useApi: {
