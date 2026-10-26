@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.323...v0.75.324)
+
+## 🐛 Bug Fixes
+
+- **orm**: make native schema rebuilds atomic ([3d9173f](https://github.com/stacksjs/stacks/commit/3d9173f)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.322...v0.75.323)
 
 ## ✨ Features
