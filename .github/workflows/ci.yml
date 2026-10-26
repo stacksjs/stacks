@@ -24,6 +24,20 @@ env:
   BUN_VERSION: '1.4.4'
 
 jobs:
+  browser-device-scale:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Set up the declared Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+      - name: Verify actual browser device scale
+        working-directory: ${{ runner.temp }}
+        run: bun "${{ github.workspace }}/tests/browser/browse-device-scale.ts"
+
   release-evidence:
     name: Release evidence (${{ matrix.os }})
     runs-on: ${{ matrix.os }}

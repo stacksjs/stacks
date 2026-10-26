@@ -26,6 +26,13 @@ bun storage/framework/defaults/ai/skills/stacks-browse/scripts/browse.ts <comman
 Every command prints a JSON result. Screenshots are written under `storage/framework/runtime/shots/` by
 default; **Read the PNG** to view it.
 
+Every command accepts `--scale N` for the native device-pixel ratio, defaulting
+to `1`. It must be one positive finite number. The driver applies it before
+navigation, including scenario runs and every responsive or crawl page. To
+qualify Retina behavior, inspect the page's actual `devicePixelRatio`, canvas
+backing dimensions or resolution media query; a requested value alone is not
+evidence. Scenario reports include the requested `scale`.
+
 ## Browser discovery (no install step)
 
 The driver finds a browser at runtime in this order, and falls through to the next if one
@@ -112,6 +119,7 @@ Extracts headings, links (`text -> href`), buttons, forms (action + field count)
 ### Scenario (stateful SPA interactions)
 ```bash
 bun storage/framework/defaults/ai/skills/stacks-browse/scripts/browse.ts scenario <url> \
+  --scale 2 \
   --step '{"action":"click","selector":"button[data-open]"}' \
   --step '{"action":"focus","selector":"input[name=name]"}' \
   --step '{"action":"evaluate","expression":"window.__stxDevtools?.stats()"}' \

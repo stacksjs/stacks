@@ -600,6 +600,14 @@ function parseViewport(value: string | undefined): { w: number, h: number } {
   return { w, h }
 }
 
+export function parseDeviceScale(value: string | boolean | Array<string | boolean> | undefined): number {
+  if (value === undefined) return 1
+  if (typeof value !== 'string' || !value.trim()) throw new TypeError('--scale requires one positive finite device-pixel ratio, for example --scale 2.')
+  const scale = Number(value)
+  if (!Number.isFinite(scale) || scale <= 0) throw new TypeError(`Invalid --scale "${value}". Expected a positive finite device-pixel ratio.`)
+  return scale
+}
+
 /** `--scroll-y` on `screenshot`: an explicit document Y to jump to before
  *  capturing just the viewport, for content a full-page capture cannot show
  *  (sticky/fixed elements, scroll-linked animation) at a specific fold. */
@@ -851,6 +859,7 @@ async function main() {
     process.exit(url ? 0 : 1)
   }
 
+  const scale = parseDeviceScale(flags.scale)
   let session = await launch()
   const cookies = flagList(flags.cookie)
   const settleMs = flags.settle ? Number(flags.settle) : undefined
@@ -869,7 +878,7 @@ async function main() {
     if (command === 'navigate' || command === 'go') {
       const cdp = await openPage(session.port)
       const t0 = performance.now()
-      const state = await gotoAndInstrument(cdp, url, { cookies, settleMs, scheme })
+      const state = await gotoAndInstrument(cdp, url, { scale, cookies, settleMs, scheme })
       const loadMs = Math.round(performance.now() - t0)
       console.log(JSON.stringify({
         browser: session.browser,
@@ -887,7 +896,6 @@ async function main() {
     else if (command === 'screenshot') {
       const cdp = await openPage(session.port)
       const viewport = parseViewport(typeof flags.viewport === 'string' ? flags.viewport : undefined)
-      const scale = flags.scale ? Number(flags.scale) : 1
       const scrollY = parseScrollY(flags['scroll-y'])
       const modes = [flags.full && 'full', flags.element && 'element', scrollY != null && 'scroll-y'].filter(Boolean)
       if (modes.length > 1)
@@ -908,7 +916,7 @@ async function main() {
       const results: any[] = []
       for (const bp of BREAKPOINTS) {
         const cdp = await openPage(session.port)
-        const state = await gotoAndInstrument(cdp, url, { viewport: { w: bp.w, h: bp.h }, cookies, settleMs, scheme, reducedMotion: true })
+        const state = await gotoAndInstrument(cdp, url, { viewport: { w: bp.w, h: bp.h }, scale, cookies, settleMs, scheme, reducedMotion: true })
         const overflow = await cdp.send('Runtime.evaluate', {
           // Mobile Chrome may expand innerWidth to fit overflowing content.
           // Compare the page with the requested device width, not that expansion.
@@ -927,7 +935,7 @@ async function main() {
     else if (command === 'monitor') {
       const cdp = await openPage(session.port)
       const ms = flags.ms ? Number(flags.ms) : 5000
-      const state = await gotoAndInstrument(cdp, url, { cookies, settleMs, scheme })
+      const state = await gotoAndInstrument(cdp, url, { scale, cookies, settleMs, scheme })
       await Bun.sleep(ms)
       const failed = state.responses.filter(r => r.status >= 400)
       const slow = state.responses.filter(r => r.ms > 3000)
@@ -950,7 +958,7 @@ async function main() {
       // auto-imported `state` signal factory, which has no `dispose`, so
       // `browse snapshot` threw on its last line and left the CDP listeners
       // attached.
-      const state = await gotoAndInstrument(cdp, url, { cookies, settleMs, scheme })
+      const state = await gotoAndInstrument(cdp, url, { scale, cookies, settleMs, scheme })
       const expr = `(() => {
         const sel = (q) => Array.from(document.querySelectorAll(q));
         const txt = (e) => (e.innerText || e.textContent || '').trim().slice(0, 80);
@@ -976,7 +984,7 @@ async function main() {
 
       const cdp = await openPage(session.port)
       const viewport = parseViewport(typeof flags.viewport === 'string' ? flags.viewport : undefined)
-      const state = await gotoAndInstrument(cdp, url, { viewport, cookies, settleMs, scheme, reducedMotion: !!flags.full })
+      const state = await gotoAndInstrument(cdp, url, { viewport, scale, cookies, settleMs, scheme, reducedMotion: !!flags.full })
       const results: Record<string, unknown>[] = []
       await cdp.send('Page.bringToFront')
       await cdp.send('Runtime.evaluate', {
@@ -1048,6 +1056,7 @@ async function main() {
       console.log(JSON.stringify({
         url,
         viewport: `${viewport.w}x${viewport.h}`,
+        scale,
         steps: results,
         final: finalState,
         screenshot,
@@ -1115,6 +1124,7 @@ async function main() {
           let state: PageState | undefined
           try {
             state = await gotoAndInstrument(cdp, current, {
+              scale,
               cookies,
               settleMs: crawlSettleMs,
               scheme,
