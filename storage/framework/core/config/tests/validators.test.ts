@@ -29,12 +29,27 @@ describe('validateConfig (stacksjs/stacks#1874 F-6)', () => {
     expect(issues).toEqual([])
   })
 
+  test('accepts an OS-assigned API listener without relaxing other ports', () => {
+    for (const api of [0, '0'])
+      expect(validateConfig({ ports: { api } } as any)).toEqual([])
+
+    for (const name of ['frontend', 'admin', 'docs', 'systemTray', 'desktop']) {
+      const issues = validateConfig({ ports: { [name]: 0 } } as any)
+      expect(issues.map(issue => issue.path)).toEqual([`ports.${name}`])
+    }
+  })
+
+  test('keeps ephemeral API ports within the integer listener range', () => {
+    for (const api of [-1, '-1', 0.5, 65536])
+      expect(validateConfig({ ports: { api } } as any)).toHaveLength(1)
+  })
+
   test('rejects numeric strings out of range', () => {
     const issues = validateConfig({
       ports: { api: '99999' as any },
     } as any)
     expect(issues).toHaveLength(1)
-    expect(issues[0].message).toContain('expected integer in [1, 65535]')
+    expect(issues[0].message).toContain('expected integer in [0, 65535]')
   })
 
   test('catches an out-of-range port', () => {
@@ -43,7 +58,7 @@ describe('validateConfig (stacksjs/stacks#1874 F-6)', () => {
     } as any)
     expect(issues).toHaveLength(1)
     expect(issues[0].path).toBe('ports.api')
-    expect(issues[0].message).toContain('expected integer in [1, 65535]')
+    expect(issues[0].message).toContain('expected integer in [0, 65535]')
   })
 
   test('catches a typoed database driver', () => {

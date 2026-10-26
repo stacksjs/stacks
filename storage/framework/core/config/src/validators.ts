@@ -120,7 +120,9 @@ const SCHEMA: Partial<Record<keyof StacksConfig, SchemaSection>> = {
   ports: {
     rules: {
       'frontend': PORT_CHECK,
-      'api': PORT_CHECK,
+      // The API entry supports an OS-assigned listener and announces its
+      // actual address over IPC. Keep the other services on fixed ports.
+      'api': checkInteger(0, 65535),
       'admin': PORT_CHECK,
       'docs': PORT_CHECK,
       'systemTray': PORT_CHECK,

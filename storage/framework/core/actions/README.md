@@ -33,6 +33,8 @@ Set `PORT_API=0` when a test or supervising tool needs an available port. The
 operating system assigns it while starting the listener; the ready banner
 prints that actual address. An omitted or empty value uses `config.ports.api`,
 then port 3008. Invalid port values fail before startup.
+Configuration validation accepts zero for the API listener; other services
+continue to require a fixed port from 1 through 65535.
 
 When the API entry is spawned with Bun IPC, it sends
 `{ type: 'stacks:api-ready', port: number, url: string }` after routes load and
