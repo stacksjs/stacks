@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { config, releaseOrm, setConfig } from '@stacksjs/query-builder'
 import { schema } from '@stacksjs/validation/runtime'
-import { defineModel } from '../src/define-model'
+import { defineModel, MODEL_DEFINITION } from '../src/define-model'
 import { createNativeModelApi, openNativeDatabase } from '../src/native'
 
 const roots: string[] = []
@@ -89,4 +89,27 @@ test('native schema upgrades keep stdout available for the backend readiness han
     expect(output).not.toHaveBeenCalled()
   }
   finally { output.mockRestore(); setConfig({ verbose: previous }) }
+})
+
+test('enum rebuilds preserve data and roll back schema plus snapshot if a later index fails', async () => {
+  const path = fixture()
+  const initial = makeModel({ status: { required: true, fillable: true, validation: { rule: schema.enum(['one', 'two']).required() } } })
+  const db = openNativeDatabase({ path, models: { Note: initial } })
+  await initial.create({ title: 'Same title', status: 'one' })
+  await initial.create({ title: 'Same title', status: 'two' })
+  const snapshot = db.query('SELECT snapshot FROM _stacks_native_schema').get()
+  releaseOrm(); db.close()
+  const expanded = makeModel({ status: { required: true, fillable: true, validation: { rule: schema.enum(['one', 'two', 'three']).required() } } })
+  const conflicting = defineModel({ ...expanded[MODEL_DEFINITION], indexes: [{ name: 'native_note_title_unique', columns: ['title'], unique: true }] })
+  expect(() => openNativeDatabase({ path, models: { Note: conflicting } })).toThrow()
+  const check = new Database(path)
+  expect(check.query('SELECT snapshot FROM _stacks_native_schema').get()).toEqual(snapshot)
+  expect(check.query('SELECT count(*) AS count FROM native_notes').get()).toEqual({ count: 2 })
+  expect(() => check.exec("INSERT INTO native_notes (title, status) VALUES ('New', 'three')")).toThrow()
+  check.close()
+  const upgraded = openNativeDatabase({ path, models: { Note: expanded } })
+  handles.push(upgraded)
+  await expanded.create({ title: 'New', status: 'three' })
+  expect(upgraded.query('SELECT count(*) AS count FROM native_notes').get()).toEqual({ count: 3 })
+  expect(upgraded.query('PRAGMA foreign_keys').get()).toEqual({ foreign_keys: 1 })
 })

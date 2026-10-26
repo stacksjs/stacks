@@ -32,21 +32,26 @@ export function openNativeDatabase(options: { path: string, models: Record<strin
     // query builder's quiet mode before deriving or applying schema changes.
     setConfig({ verbose: false })
     if (options.path !== ':memory:') chmodSync(options.path, 0o600)
-    db.exec('PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;')
+    // SQLite rebuilds must disable FK actions before BEGIN, then verify all
+    // references before committing. The connection is not exposed until done.
+    db.exec('PRAGMA foreign_keys = OFF; PRAGMA busy_timeout = 5000;')
     const models = Object.fromEntries(Object.entries(options.models).map(([name, model]) => [name, model[MODEL_DEFINITION]]))
     const next = buildMigrationPlan(models, { dialect: 'sqlite' })
     db.transaction(() => {
       db.exec('CREATE TABLE IF NOT EXISTS _stacks_native_schema (id INTEGER PRIMARY KEY CHECK (id = 1), snapshot TEXT NOT NULL)')
       const saved = db.query('SELECT snapshot FROM _stacks_native_schema WHERE id = 1').get() as { snapshot: string } | null
       const previous = saved ? JSON.parse(saved.snapshot) as MigrationPlan : undefined
-      const diff = generateDiffOperations(previous, next)
+      const diff = generateDiffOperations(previous, next, { externalTransaction: true })
       if (diff.operations.some(operation => operation.destructive))
         throw new Error('Native model upgrade contains destructive changes; provide an explicit data migration')
       for (const statement of diff.statements) {
         if (statement.replace(/--[^\n]*/g, '').trim()) db.exec(statement)
       }
+      if (db.query('PRAGMA foreign_key_check').all().length)
+        throw new Error('Native model upgrade violates foreign-key constraints')
       db.query('INSERT INTO _stacks_native_schema (id, snapshot) VALUES (1, ?) ON CONFLICT (id) DO UPDATE SET snapshot = excluded.snapshot').run(JSON.stringify(next))
     }).immediate()
+    db.exec('PRAGMA foreign_keys = ON;')
     configureOrm({ database: db })
     return db
   }

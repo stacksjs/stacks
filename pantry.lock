@@ -1029,7 +1029,7 @@
       "name": "@stacksjs/query-builder",
       "version": "0.75.323",
       "dependencies": {
-        "bun-query-builder": "^0.3.22"
+        "bun-query-builder": "^0.3.26"
       },
       "devDependencies": {
         "@stacksjs/database": "workspace:*",
