@@ -32,7 +32,7 @@ export default new Action({
         db
           .selectFrom('campaign_sends')
           .select(['campaign_id', 'status', db.fn.count('id').as('count')])
-          .groupBy(['campaign_id', 'status'])
+          .groupBy('campaign_id', 'status')
           .execute(),
         db
           .selectFrom('campaign_sends')

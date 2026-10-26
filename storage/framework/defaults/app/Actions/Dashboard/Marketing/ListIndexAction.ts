@@ -22,7 +22,7 @@ export default new Action({
         db
           .selectFrom('email_list_subscribers')
           .select(['email_list_id', 'status', db.fn.count('id').as('count')])
-          .groupBy(['email_list_id', 'status'])
+          .groupBy('email_list_id', 'status')
           .execute(),
         db
           .selectFrom('email_list_subscribers')

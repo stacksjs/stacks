@@ -42,7 +42,7 @@ async function notificationDeliveryOverview() {
     db
       .selectFrom('notification_deliveries')
       .select(['channel', 'status', db.fn.count('id').as('count')])
-      .groupBy(['channel', 'status'])
+      .groupBy('channel', 'status')
       .execute() as unknown as Promise<ChannelStatusCountRow[]>,
     db
       .selectFrom('notification_deliveries')

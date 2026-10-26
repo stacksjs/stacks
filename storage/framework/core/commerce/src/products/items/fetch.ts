@@ -265,7 +265,7 @@ export async function fetchTopProducts(limit: number = 5): Promise<TopProductRow
         // current product price if order_items.price is null (older data).
         sql`SUM(COALESCE(order_items.price, products.price) * order_items.quantity)`.as('revenue'),
       ])
-      .groupBy(['products.id', 'products.name', 'products.inventory_count'])
+      .groupBy('products.id', 'products.name', 'products.inventory_count')
       .orderBy('units_sold', 'desc')
       .limit(limit)
       .execute()
