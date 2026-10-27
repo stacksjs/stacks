@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.332...v0.75.333)
+
+## 🐛 Bug Fixes
+
+- **path**: preserve nested package-based application roots ([53b4178](https://github.com/stacksjs/stacks/commit/53b4178)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **cloud**: run Launchpad website build from its checkout ([f549364](https://github.com/stacksjs/stacks/commit/f549364)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.331...v0.75.332)
 
 ## ✨ Features
