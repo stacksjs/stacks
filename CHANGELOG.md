@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.325...v0.75.326)
+
+## 🔧 Chores
+
+- **build**: use corrected const assertion declarations ([bafb521](https://github.com/stacksjs/stacks/commit/bafb521)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.324...v0.75.325)
 
 ## ✨ Features
