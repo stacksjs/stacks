@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.326...v0.75.327)
+
+## 🔧 Chores
+
+- adopt verified STX dialog pointer fix ([323556c](https://github.com/stacksjs/stacks/commit/323556c)) _(by Chris <chris@stacksjs.com>)_
+- adopt verified Buddy scanner fixes ([997e75c](https://github.com/stacksjs/stacks/commit/997e75c)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.325...v0.75.326)
 
 ## 🔧 Chores
