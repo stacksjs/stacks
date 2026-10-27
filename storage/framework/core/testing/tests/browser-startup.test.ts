@@ -16,7 +16,9 @@ function executable(body: string): string {
   const binary = join(root, 'fake-chrome')
   const quote = (value: string) => `'${value.replaceAll("'", "'\\''")}'`
   writeFileSync(script, body)
-  writeFileSync(binary, `#!/bin/sh\nexec ${quote(process.execPath)} ${quote(script)} "$@"\n`)
+  // The fixture is a standalone executable. Loading the caller's Bun config
+  // here would boot its application before the protocol process even starts.
+  writeFileSync(binary, `#!/bin/sh\ncd ${quote(root)} || exit 1\nexec ${quote(process.execPath)} ${quote(script)} "$@"\n`)
   chmodSync(binary, 0o755)
   return binary
 }
