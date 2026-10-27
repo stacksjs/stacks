@@ -939,6 +939,16 @@ export const tsCloud: TsCloudConfig = {
       pathRewriteStyle: 'directory',
     },
 
+    launchpad: {
+      // The deployment job prepares this public app checkout before Buddy builds it.
+      deploy: 'server',
+      root: 'storage/framework/runtime/sites/launchpad/dist/site',
+      path: '/',
+      domain: 'launchpad.stacksjs.com',
+      build: 'bun --cwd storage/framework/runtime/sites/launchpad run build:site',
+      pathRewriteStyle: 'directory',
+    },
+
     // Redirect-only sites (gateway answers with a 301; nothing is shipped).
     // The alternate adblock domain → canonical, and www → apex for stacksjs.com.
     // MTA-STS policy host. Its own site because RFC 8461 requires the policy at

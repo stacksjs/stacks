@@ -761,6 +761,18 @@ jobs:
           ssh-keygen -y -f ~/.ssh/id_ed25519 > ~/.ssh/id_ed25519.pub
           chmod 644 ~/.ssh/id_ed25519.pub
 
+      - name: Checkout Launchpad website
+        uses: actions/checkout@v6
+        with:
+          repository: stacksjs/launchpad
+          ref: main
+          path: storage/framework/runtime/sites/launchpad
+          persist-credentials: false
+
+      - name: Install Launchpad website dependencies
+        working-directory: storage/framework/runtime/sites/launchpad
+        run: bun install --frozen-lockfile
+
       # Pinned host keys for a `cloud.provider: 'ssh'` target. Optional: the
       # deploy falls back to accepting a key on first contact, which is what
       # the Hetzner path has always done. Note that a runner on GitHub's
