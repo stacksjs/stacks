@@ -945,7 +945,7 @@ export const tsCloud: TsCloudConfig = {
       root: 'storage/framework/runtime/sites/launchpad/dist/site',
       path: '/',
       domain: 'launchpad.stacksjs.com',
-      build: 'bun --cwd storage/framework/runtime/sites/launchpad run build:site',
+      build: 'bun run --cwd storage/framework/runtime/sites/launchpad build:site',
       pathRewriteStyle: 'directory',
     },
 
