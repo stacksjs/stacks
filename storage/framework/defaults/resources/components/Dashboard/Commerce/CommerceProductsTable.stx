@@ -85,13 +85,13 @@ function handleRowAction(payload: { action: string, row: CommerceProductRecord }
         <div class="flex flex-none items-center justify-center h-9 w-9 font-semibold text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-md" x-text="row.initials"></div>
         <div class="min-w-0">
           <p class="font-medium text-gray-900 text-sm dark:text-white" x-text="row.nameLabel"></p>
-          <p class="mt-1 max-w-52 text-gray-400 text-xs truncate dark:text-neutral-500" x-text="row.descriptionLabel"></p>
+          <p class="mt-1 max-w-52 text-gray-500 text-xs truncate dark:text-neutral-500" x-text="row.descriptionLabel"></p>
         </div>
       </div>
     </template>
     <template :if="column.key === 'inventoryCount'">
       <p :class="'font-medium text-sm ' + (row.outOfStock ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-neutral-200')" x-text="row.inventoryLabel"></p>
-      <p class="mt-1 text-gray-400 text-xs dark:text-neutral-500" x-text="row.prepLabel"></p>
+      <p class="mt-1 text-gray-500 text-xs dark:text-neutral-500" x-text="row.prepLabel"></p>
     </template>
   </template>
 </Table>

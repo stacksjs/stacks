@@ -88,12 +88,12 @@ function money(value: number, currency: string): string {
   <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
     <div class="flex items-start justify-between">
       <h2 class="font-semibold text-gray-900 text-sm dark:text-white">Gross captured by currency</h2>
-      <span class="text-gray-400 text-xs dark:text-neutral-500">Current view</span>
+      <span class="text-gray-500 text-xs dark:text-neutral-500">Current view</span>
     </div>
     <div class="mt-4 divide-gray-100 divide-y dark:divide-neutral-700">
       <template :for="item in currencyRows()" :key="item.currency">
         <div class="flex items-center justify-between py-2 first:pt-0 last:pb-0">
-          <div><p class="font-medium text-gray-900 text-sm dark:text-white">{{ item.currency }}</p><p class="text-gray-400 text-xs dark:text-neutral-500">Refunded {{ money(item.refunded, item.currency) }}</p></div>
+          <div><p class="font-medium text-gray-900 text-sm dark:text-white">{{ item.currency }}</p><p class="text-gray-500 text-xs dark:text-neutral-500">Refunded {{ money(item.refunded, item.currency) }}</p></div>
           <p class="font-semibold text-gray-700 text-sm dark:text-neutral-200">{{ money(item.captured, item.currency) }}</p>
         </div>
       </template>

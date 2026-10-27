@@ -74,7 +74,7 @@ function handleRowAction(payload: { action: string, row: ProductVariantRecord })
           <span class="px-2 py-0.5 text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-full" x-text="option"></span>
         </template>
         <span :if="row.moreOptions" class="px-2 py-0.5 text-gray-600 text-xs dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700 rounded-full" x-text="row.moreOptions"></span>
-        <span :if="row.shownOptions.length === 0" class="text-gray-400 text-xs">No options</span>
+        <span :if="row.shownOptions.length === 0" class="text-gray-500 text-xs dark:text-gray-400">No options</span>
       </div>
     </template>
   </template>

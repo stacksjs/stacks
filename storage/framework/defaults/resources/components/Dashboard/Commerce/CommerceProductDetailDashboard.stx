@@ -170,7 +170,7 @@ onMount(() => {
     <div class="flex gap-3 items-start">
       <Button variant="secondary" size="md" iconOnly ariaLabel="Back to products" @click="goBack()"><span class="block h-4 w-4 i-hugeicons-arrow-left-02"></span></Button>
       <div>
-        <p class="font-medium text-gray-400 text-xs tracking-wide uppercase dark:text-neutral-500">Product {{ productId() }}</p>
+        <p class="font-medium text-gray-500 text-xs tracking-wide uppercase dark:text-neutral-500">Product {{ productId() }}</p>
         <h1 class="mt-1 font-bold text-2xl text-gray-900 dark:text-white">{{ record()?.name || (loading() ? 'Loading product' : 'Product details') }}</h1>
         <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Persisted Product fields and native commerce relationships.</p>
       </div>
@@ -191,7 +191,7 @@ onMount(() => {
       <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Inventory</p><p class="mt-2 font-semibold text-gray-900 text-xl dark:text-white">{{ (record()?.inventoryCount || 0).toLocaleString() }}</p></article>
       <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Variants</p><p class="mt-2 font-semibold text-gray-900 text-xl dark:text-white">{{ variants().length }}</p></article>
       <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Units</p><p class="mt-2 font-semibold text-gray-900 text-xl dark:text-white">{{ units().length }}</p></article>
-      <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Reviews</p><p class="mt-2 font-semibold text-gray-900 text-xl dark:text-white">{{ reviews().total }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ reviews().averageRating }} average rating</p></article>
+      <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Reviews</p><p class="mt-2 font-semibold text-gray-900 text-xl dark:text-white">{{ reviews().total }}</p><p class="mt-1 text-gray-500 text-xs dark:text-neutral-500">{{ reviews().averageRating }} average rating</p></article>
     </section>
 
     <div class="grid gap-6 grid-cols-1 xl:grid-cols-3">
@@ -204,11 +204,11 @@ onMount(() => {
           <div class="flex flex-none items-center justify-center h-16 w-16 font-bold text-blue-700 text-lg dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-lg"><span class="h-7 w-7 i-hugeicons-package"></span></div>
         </div>
         <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 mt-6 pt-5 border-gray-200 border-t dark:border-neutral-700">
-          <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Category</dt><dd class="mt-1 font-medium text-gray-800 text-sm dark:text-neutral-100">{{ record()?.categoryName || 'Unassigned category' }}</dd></div>
-          <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Manufacturer</dt><dd class="mt-1 font-medium text-gray-800 text-sm dark:text-neutral-100">{{ record()?.manufacturerName || 'Unassigned manufacturer' }}</dd></div>
-          <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Preparation time</dt><dd class="mt-1 text-gray-700 text-sm dark:text-neutral-200">{{ record()?.preparationTime || 0 }} minutes</dd></div>
-          <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Created</dt><dd class="mt-1 text-gray-700 text-sm dark:text-neutral-200">{{ formatDate(record()?.createdAt || '') }}</dd></div>
-          <div class="sm:col-span-2"><dt class="text-gray-400 text-xs dark:text-neutral-500">Persisted image URL</dt><dd class="mt-1 break-all font-mono text-gray-600 text-xs dark:text-neutral-300">{{ record()?.imageUrl || 'No image URL recorded.' }}</dd></div>
+          <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Category</dt><dd class="mt-1 font-medium text-gray-800 text-sm dark:text-neutral-100">{{ record()?.categoryName || 'Unassigned category' }}</dd></div>
+          <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Manufacturer</dt><dd class="mt-1 font-medium text-gray-800 text-sm dark:text-neutral-100">{{ record()?.manufacturerName || 'Unassigned manufacturer' }}</dd></div>
+          <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Preparation time</dt><dd class="mt-1 text-gray-700 text-sm dark:text-neutral-200">{{ record()?.preparationTime || 0 }} minutes</dd></div>
+          <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Created</dt><dd class="mt-1 text-gray-700 text-sm dark:text-neutral-200">{{ formatDate(record()?.createdAt || '') }}</dd></div>
+          <div class="sm:col-span-2"><dt class="text-gray-500 text-xs dark:text-neutral-500">Persisted image URL</dt><dd class="mt-1 break-all font-mono text-gray-600 text-xs dark:text-neutral-300">{{ record()?.imageUrl || 'No image URL recorded.' }}</dd></div>
         </dl>
       </section>
 
@@ -242,7 +242,7 @@ onMount(() => {
 
     <div class="grid gap-6 grid-cols-1 xl:grid-cols-2">
       <section class="p-5 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><h2 class="font-semibold text-gray-900 dark:text-white">Allergens</h2><div :if="(record()?.allergens || []).length > 0" class="flex flex-wrap gap-2 mt-4"><template :for="allergen in (record()?.allergens || [])" :key="allergen"><span class="px-2.5 py-1 font-medium text-amber-700 text-xs dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 rounded-full">{{ allergen }}</span></template></div><p :if="(record()?.allergens || []).length === 0" class="mt-4 text-gray-500 text-sm dark:text-neutral-400">No allergens recorded.</p></section>
-      <section class="p-5 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><h2 class="font-semibold text-gray-900 dark:text-white">Nutritional information</h2><dl :if="nutritionEntries().length > 0" class="grid gap-3 grid-cols-2 mt-4"><template :for="item in nutritionEntries()" :key="item.label"><div class="p-3 bg-gray-50 dark:bg-neutral-900/50 rounded-md"><dt class="text-gray-400 text-xs dark:text-neutral-500">{{ item.label }}</dt><dd class="mt-1 font-medium text-gray-800 text-sm dark:text-neutral-100">{{ item.value }}</dd></div></template></dl><p :if="nutritionEntries().length === 0" class="mt-4 text-gray-500 text-sm dark:text-neutral-400">No nutritional information recorded.</p></section>
+      <section class="p-5 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><h2 class="font-semibold text-gray-900 dark:text-white">Nutritional information</h2><dl :if="nutritionEntries().length > 0" class="grid gap-3 grid-cols-2 mt-4"><template :for="item in nutritionEntries()" :key="item.label"><div class="p-3 bg-gray-50 dark:bg-neutral-900/50 rounded-md"><dt class="text-gray-500 text-xs dark:text-neutral-500">{{ item.label }}</dt><dd class="mt-1 font-medium text-gray-800 text-sm dark:text-neutral-100">{{ item.value }}</dd></div></template></dl><p :if="nutritionEntries().length === 0" class="mt-4 text-gray-500 text-sm dark:text-neutral-400">No nutritional information recorded.</p></section>
     </div>
   </template>
 </div>

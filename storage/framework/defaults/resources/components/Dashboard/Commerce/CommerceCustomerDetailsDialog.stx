@@ -56,11 +56,11 @@ function deleteRecord(): void {
     <span class="px-2 py-1 font-semibold text-gray-700 text-xs dark:text-neutral-200 bg-gray-100 dark:bg-neutral-700 rounded-full">{{ record()?.status || 'Unknown' }}</span>
   </template>
   <dl class="grid gap-4 grid-cols-2">
-    <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Phone</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ record()?.phone || 'Not recorded' }}</dd></div>
-    <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Recorded spend</dt><dd class="mt-1 font-medium text-gray-900 text-sm dark:text-white">{{ formatMoney(record()?.totalSpent || 0) }}</dd></div>
-    <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Last order</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ formatDate(record()?.lastOrder || '') }}</dd></div>
-    <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Record ID</dt><dd class="mt-1 font-mono text-gray-900 text-sm dark:text-white">{{ record()?.id || 'Not recorded' }}</dd></div>
-    <div class="col-span-2"><dt class="text-gray-400 text-xs dark:text-neutral-500">Avatar URL</dt><dd class="mt-1 break-all text-gray-900 text-sm dark:text-white">{{ record()?.avatar || 'Not configured' }}</dd></div>
+    <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Phone</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ record()?.phone || 'Not recorded' }}</dd></div>
+    <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Recorded spend</dt><dd class="mt-1 font-medium text-gray-900 text-sm dark:text-white">{{ formatMoney(record()?.totalSpent || 0) }}</dd></div>
+    <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Last order</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ formatDate(record()?.lastOrder || '') }}</dd></div>
+    <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Record ID</dt><dd class="mt-1 font-mono text-gray-900 text-sm dark:text-white">{{ record()?.id || 'Not recorded' }}</dd></div>
+    <div class="col-span-2"><dt class="text-gray-500 text-xs dark:text-neutral-500">Avatar URL</dt><dd class="mt-1 break-all text-gray-900 text-sm dark:text-white">{{ record()?.avatar || 'Not configured' }}</dd></div>
   </dl>
   <template #footer>
     <div class="flex gap-2 justify-between w-full"><Button variant="danger" @click="deleteRecord()">Delete</Button><div class="flex gap-2"><Button variant="secondary" @click="emit('close')">Close</Button><Button @click="editRecord()">Edit customer</Button></div></div>

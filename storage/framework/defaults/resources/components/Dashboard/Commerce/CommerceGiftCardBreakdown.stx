@@ -26,7 +26,7 @@ function money(value: number, currency: string): string {
     <ul :if="summary.currencies.length > 0" class="mt-4 space-y-3">
       <template :for="item in summary.currencies" :key="item.currency">
         <li class="flex gap-4 justify-between text-sm">
-          <span class="text-gray-500 dark:text-neutral-400">{{ item.currency }} <span class="text-gray-400 text-xs dark:text-neutral-500">({{ item.cards }})</span></span>
+          <span class="text-gray-500 dark:text-neutral-400">{{ item.currency }} <span class="text-gray-500 text-xs dark:text-neutral-500">({{ item.cards }})</span></span>
           <span class="font-medium text-gray-900 dark:text-white">{{ money(item.currentBalance, item.currency) }}</span>
         </li>
       </template>

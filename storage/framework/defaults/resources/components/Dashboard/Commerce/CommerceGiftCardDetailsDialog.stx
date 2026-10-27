@@ -45,17 +45,17 @@ function deleteRecord(): void {
     <span class="px-2 py-1 font-semibold text-gray-700 text-xs dark:text-neutral-200 bg-gray-100 dark:bg-neutral-700 rounded-full">{{ record()?.status || 'Not recorded' }}</span>
   </template>
       <dl class="grid gap-4 grid-cols-1 sm:grid-cols-2">
-        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Current balance</dt><dd class="mt-1 font-semibold text-gray-900 text-sm dark:text-white">{{ money(record()?.currentBalance || 0, record()?.currency || 'USD') }}</dd></div>
-        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Initial balance</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ money(record()?.initialBalance || 0, record()?.currency || 'USD') }}</dd></div>
-        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Availability</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ record()?.isActive ? 'Enabled' : 'Disabled' }}</dd></div>
-        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Delivery</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ record()?.isDigital ? 'Digital' : 'Physical' }} · {{ record()?.isReloadable ? 'Reloadable' : 'Single use' }}</dd></div>
-        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Recipient email</dt><dd class="mt-1 break-all text-gray-900 text-sm dark:text-white">{{ record()?.recipientEmail || 'Not recorded' }}</dd></div>
-        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Purchaser ID</dt><dd class="mt-1 break-all font-mono text-gray-900 text-sm dark:text-white">{{ record()?.purchaserId || 'Not recorded' }}</dd></div>
-        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Customer ID</dt><dd class="mt-1 font-mono text-gray-900 text-sm dark:text-white">{{ record()?.customerId || 'Not linked' }}</dd></div>
-        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Template ID</dt><dd class="mt-1 break-all font-mono text-gray-900 text-sm dark:text-white">{{ record()?.templateId || 'Not configured' }}</dd></div>
-        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Expiry date</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ dateTime(record()?.expiryDate || '') }}</dd></div>
-        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Last used date</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ dateTime(record()?.lastUsedDate || '') }}</dd></div>
-        <div class="sm:col-span-2"><dt class="text-gray-400 text-xs dark:text-neutral-500">Personal message</dt><dd class="mt-1 text-gray-900 text-sm whitespace-pre-wrap dark:text-white">{{ record()?.personalMessage || 'No message recorded.' }}</dd></div>
+        <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Current balance</dt><dd class="mt-1 font-semibold text-gray-900 text-sm dark:text-white">{{ money(record()?.currentBalance || 0, record()?.currency || 'USD') }}</dd></div>
+        <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Initial balance</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ money(record()?.initialBalance || 0, record()?.currency || 'USD') }}</dd></div>
+        <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Availability</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ record()?.isActive ? 'Enabled' : 'Disabled' }}</dd></div>
+        <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Delivery</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ record()?.isDigital ? 'Digital' : 'Physical' }} · {{ record()?.isReloadable ? 'Reloadable' : 'Single use' }}</dd></div>
+        <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Recipient email</dt><dd class="mt-1 break-all text-gray-900 text-sm dark:text-white">{{ record()?.recipientEmail || 'Not recorded' }}</dd></div>
+        <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Purchaser ID</dt><dd class="mt-1 break-all font-mono text-gray-900 text-sm dark:text-white">{{ record()?.purchaserId || 'Not recorded' }}</dd></div>
+        <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Customer ID</dt><dd class="mt-1 font-mono text-gray-900 text-sm dark:text-white">{{ record()?.customerId || 'Not linked' }}</dd></div>
+        <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Template ID</dt><dd class="mt-1 break-all font-mono text-gray-900 text-sm dark:text-white">{{ record()?.templateId || 'Not configured' }}</dd></div>
+        <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Expiry date</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ dateTime(record()?.expiryDate || '') }}</dd></div>
+        <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Last used date</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ dateTime(record()?.lastUsedDate || '') }}</dd></div>
+        <div class="sm:col-span-2"><dt class="text-gray-500 text-xs dark:text-neutral-500">Personal message</dt><dd class="mt-1 text-gray-900 text-sm whitespace-pre-wrap dark:text-white">{{ record()?.personalMessage || 'No message recorded.' }}</dd></div>
       </dl>
   <template #footer>
     <div class="flex gap-2 justify-between w-full">

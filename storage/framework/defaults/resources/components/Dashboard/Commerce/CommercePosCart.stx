@@ -48,7 +48,7 @@ function formatMoney(value: number): string {
           <Button variant="secondary" size="xs" iconOnly :ariaLabel="'Decrease ' + line.name + ' quantity'" @click="emit('decrease', line.productId)"><span class="block h-3.5 w-3.5 i-hugeicons-minus-sign"></span></Button>
           <span class="min-w-8 font-semibold text-center text-gray-800 text-sm dark:text-neutral-100">{{ line.quantity }}</span>
           <Button variant="secondary" size="xs" iconOnly :disabled="line.quantity >= line.inventoryCount" :ariaLabel="'Increase ' + line.name + ' quantity'" @click="emit('increase', line.productId)"><span class="block h-3.5 w-3.5 i-hugeicons-plus-sign"></span></Button>
-          <span class="ml-auto text-gray-400 text-xs dark:text-neutral-500">{{ line.inventoryCount }} available</span>
+          <span class="ml-auto text-gray-500 text-xs dark:text-neutral-500">{{ line.inventoryCount }} available</span>
         </div>
         <label class="block mt-3"><span class="sr-only">Instructions for {{ line.name }}</span><input :value="line.specialInstructions" type="text" maxlength="500" placeholder="Optional line instructions" class="px-3 py-1.5 w-full text-gray-900 text-xs dark:text-white bg-gray-50 dark:bg-neutral-900 border border-gray-200 rounded-md dark:border-neutral-700" @input="emit('instructions', { productId: line.productId, event: $event })" /></label>
       </li>

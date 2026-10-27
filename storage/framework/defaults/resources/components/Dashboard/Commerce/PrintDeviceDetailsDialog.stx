@@ -49,12 +49,12 @@ function deleteRecord(): void {
     <span class="px-2 py-1 capitalize font-semibold text-gray-700 text-xs dark:text-neutral-200 bg-gray-100 dark:bg-neutral-700 rounded-full">{{ label(record()?.status || '') }}</span>
   </template>
       <dl class="grid gap-4 grid-cols-2">
-        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Location</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ record()?.location || 'Not recorded' }}</dd></div>
-        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Terminal</dt><dd class="mt-1 font-mono text-gray-900 text-sm dark:text-white">{{ record()?.terminal || 'Not recorded' }}</dd></div>
-        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Recorded prints</dt><dd class="mt-1 font-mono text-gray-900 text-sm dark:text-white">{{ (record()?.printCount || 0).toLocaleString() }}</dd></div>
-        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Record ID</dt><dd class="mt-1 font-mono text-gray-900 text-sm dark:text-white">{{ record()?.id || 'Not recorded' }}</dd></div>
-        <div class="col-span-2"><dt class="text-gray-400 text-xs dark:text-neutral-500">Last heartbeat</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ formatDate(record()?.lastPing || 0) }}</dd></div>
-        <div class="col-span-2"><dt class="text-gray-400 text-xs dark:text-neutral-500">Created</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ formatDate(record()?.createdAt || '') }}</dd></div>
+        <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Location</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ record()?.location || 'Not recorded' }}</dd></div>
+        <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Terminal</dt><dd class="mt-1 font-mono text-gray-900 text-sm dark:text-white">{{ record()?.terminal || 'Not recorded' }}</dd></div>
+        <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Recorded prints</dt><dd class="mt-1 font-mono text-gray-900 text-sm dark:text-white">{{ (record()?.printCount || 0).toLocaleString() }}</dd></div>
+        <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Record ID</dt><dd class="mt-1 font-mono text-gray-900 text-sm dark:text-white">{{ record()?.id || 'Not recorded' }}</dd></div>
+        <div class="col-span-2"><dt class="text-gray-500 text-xs dark:text-neutral-500">Last heartbeat</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ formatDate(record()?.lastPing || 0) }}</dd></div>
+        <div class="col-span-2"><dt class="text-gray-500 text-xs dark:text-neutral-500">Created</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ formatDate(record()?.createdAt || '') }}</dd></div>
       </dl>
   <template #footer>
     <div class="flex gap-2 justify-between w-full">

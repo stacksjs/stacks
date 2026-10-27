@@ -79,7 +79,7 @@ function handleRowAction(payload: { action: string, row: CommerceCategoryRecord 
       <span class="flex items-center justify-center shrink-0 h-9 w-9 font-semibold text-blue-700 text-sm dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-md" x-text="row.initial"></span>
       <div class="min-w-0">
         <p class="font-medium text-gray-900 text-sm dark:text-white" x-text="row.name"></p>
-        <p class="mt-1 max-w-96 text-gray-400 text-xs truncate dark:text-neutral-500" x-text="row.summary"></p>
+        <p class="mt-1 max-w-96 text-gray-500 text-xs truncate dark:text-neutral-500" x-text="row.summary"></p>
       </div>
     </div>
   </template>

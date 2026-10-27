@@ -54,19 +54,19 @@ function deleteRecord(): void {
     <span class="px-2 py-1 font-semibold text-gray-700 text-xs dark:text-neutral-200 bg-gray-100 dark:bg-neutral-700 rounded-full">{{ label(record()?.status || 'UNKNOWN') }}</span>
   </template>
       <dl class="grid gap-4 grid-cols-2">
-        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Total</dt><dd class="mt-1 font-semibold text-gray-900 text-sm dark:text-white">{{ formatMoney(record()?.totalAmount || 0, record()?.currency || 'USD') }}</dd></div>
-        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Order type</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ label(record()?.orderType || 'UNKNOWN') }}</dd></div>
-        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Items</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ record()?.itemCount || 0 }}</dd></div>
-        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Created</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ formatDate(record()?.createdAt || '') }}</dd></div>
-        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Tax</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ formatMoney(record()?.taxAmount || 0, record()?.currency || 'USD') }}</dd></div>
-        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Discount</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ formatMoney(record()?.discountAmount || 0, record()?.currency || 'USD') }}</dd></div>
-        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Delivery fee</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ formatMoney(record()?.deliveryFee || 0, record()?.currency || 'USD') }}</dd></div>
-        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Tip</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ formatMoney(record()?.tipAmount || 0, record()?.currency || 'USD') }}</dd></div>
-        <div class="col-span-2"><dt class="text-gray-400 text-xs dark:text-neutral-500">Estimated delivery</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ formatDate(record()?.estimatedDeliveryTime || '') }}</dd></div>
-        <div class="col-span-2"><dt class="text-gray-400 text-xs dark:text-neutral-500">Delivery address</dt><dd class="mt-1 text-gray-900 text-sm whitespace-pre-wrap dark:text-white">{{ record()?.deliveryAddress || 'Not recorded' }}</dd></div>
-        <div class="col-span-2"><dt class="text-gray-400 text-xs dark:text-neutral-500">Special instructions</dt><dd class="mt-1 text-gray-900 text-sm whitespace-pre-wrap dark:text-white">{{ record()?.specialInstructions || 'None recorded' }}</dd></div>
-        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Coupon relation ID</dt><dd class="mt-1 font-mono text-gray-900 text-sm dark:text-white">{{ record()?.couponId || 'Not linked' }}</dd></div>
-        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Applied coupon reference</dt><dd class="mt-1 font-mono text-gray-900 text-sm dark:text-white">{{ record()?.appliedCouponId || 'Not linked' }}</dd></div>
+        <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Total</dt><dd class="mt-1 font-semibold text-gray-900 text-sm dark:text-white">{{ formatMoney(record()?.totalAmount || 0, record()?.currency || 'USD') }}</dd></div>
+        <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Order type</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ label(record()?.orderType || 'UNKNOWN') }}</dd></div>
+        <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Items</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ record()?.itemCount || 0 }}</dd></div>
+        <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Created</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ formatDate(record()?.createdAt || '') }}</dd></div>
+        <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Tax</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ formatMoney(record()?.taxAmount || 0, record()?.currency || 'USD') }}</dd></div>
+        <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Discount</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ formatMoney(record()?.discountAmount || 0, record()?.currency || 'USD') }}</dd></div>
+        <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Delivery fee</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ formatMoney(record()?.deliveryFee || 0, record()?.currency || 'USD') }}</dd></div>
+        <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Tip</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ formatMoney(record()?.tipAmount || 0, record()?.currency || 'USD') }}</dd></div>
+        <div class="col-span-2"><dt class="text-gray-500 text-xs dark:text-neutral-500">Estimated delivery</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ formatDate(record()?.estimatedDeliveryTime || '') }}</dd></div>
+        <div class="col-span-2"><dt class="text-gray-500 text-xs dark:text-neutral-500">Delivery address</dt><dd class="mt-1 text-gray-900 text-sm whitespace-pre-wrap dark:text-white">{{ record()?.deliveryAddress || 'Not recorded' }}</dd></div>
+        <div class="col-span-2"><dt class="text-gray-500 text-xs dark:text-neutral-500">Special instructions</dt><dd class="mt-1 text-gray-900 text-sm whitespace-pre-wrap dark:text-white">{{ record()?.specialInstructions || 'None recorded' }}</dd></div>
+        <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Coupon relation ID</dt><dd class="mt-1 font-mono text-gray-900 text-sm dark:text-white">{{ record()?.couponId || 'Not linked' }}</dd></div>
+        <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Applied coupon reference</dt><dd class="mt-1 font-mono text-gray-900 text-sm dark:text-white">{{ record()?.appliedCouponId || 'Not linked' }}</dd></div>
       </dl>
   <template #footer>
     <div class="flex gap-2 justify-between w-full"><Button variant="danger" @click="deleteRecord()">Delete</Button><div class="flex gap-2"><Button variant="secondary" @click="emit('close')">Close</Button><Button @click="editRecord()">Edit order</Button></div></div>

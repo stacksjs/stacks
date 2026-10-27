@@ -182,7 +182,7 @@ onMount(() => {
             <span :class="'h-5 w-5 text-blue-600 dark:text-blue-400 ' + statIcon(item.label)"></span>
           </div>
           <p class="mt-2 font-semibold tabular-nums text-2xl text-gray-900 dark:text-white">{{ item.value }}</p>
-          <p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ item.detail }}</p>
+          <p class="mt-1 text-gray-500 text-xs dark:text-neutral-500">{{ item.detail }}</p>
         </article>
       </template>
     </section>

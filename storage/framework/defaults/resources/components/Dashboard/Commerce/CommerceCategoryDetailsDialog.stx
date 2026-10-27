@@ -47,11 +47,11 @@ function deleteRecord(): void {
   </template>
   <p class="text-gray-600 text-sm whitespace-pre-wrap dark:text-neutral-300">{{ record()?.description || 'No description recorded.' }}</p>
   <dl class="grid gap-4 grid-cols-2 mt-6">
-    <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Parent</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ parentName() }}</dd></div>
-    <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Display order</dt><dd class="mt-1 font-mono text-gray-900 text-sm dark:text-white">{{ record()?.displayOrder || 0 }}</dd></div>
-    <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Direct children</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ children().length }}</dd></div>
-    <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Record ID</dt><dd class="mt-1 font-mono text-gray-900 text-sm dark:text-white">{{ record()?.id || 'Not recorded' }}</dd></div>
-    <div class="col-span-2"><dt class="text-gray-400 text-xs dark:text-neutral-500">Image URL</dt><dd class="mt-1 break-all text-gray-900 text-sm dark:text-white">{{ record()?.imageUrl || 'Not configured' }}</dd></div>
+    <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Parent</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ parentName() }}</dd></div>
+    <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Display order</dt><dd class="mt-1 font-mono text-gray-900 text-sm dark:text-white">{{ record()?.displayOrder || 0 }}</dd></div>
+    <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Direct children</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ children().length }}</dd></div>
+    <div><dt class="text-gray-500 text-xs dark:text-neutral-500">Record ID</dt><dd class="mt-1 font-mono text-gray-900 text-sm dark:text-white">{{ record()?.id || 'Not recorded' }}</dd></div>
+    <div class="col-span-2"><dt class="text-gray-500 text-xs dark:text-neutral-500">Image URL</dt><dd class="mt-1 break-all text-gray-900 text-sm dark:text-white">{{ record()?.imageUrl || 'Not configured' }}</dd></div>
   </dl>
   <template #footer>
     <div class="flex gap-2 justify-between w-full"><Button variant="danger" @click="deleteRecord()">Delete</Button><div class="flex gap-2"><Button variant="secondary" @click="emit('close')">Close</Button><Button @click="editRecord()">Edit category</Button></div></div>
