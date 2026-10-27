@@ -83,6 +83,15 @@ try {
       await Model.update(created.id, { created_at: later })
       assert.match(await stored(table, created.id, 'created_at'), /^2026-02-03[T ]04:05:06/)
     })
+    // The write owns updated_at, so a caller's is replaced by the time of the
+    // write, once: sent twice, Postgres refused the update
+    // (stacksjs/bun-query-builder#1196).
+    await check(`${label} update of updated_at`, async () => {
+      const created = await Model.create({ title: 'touched' })
+      await Model.update(created.id, { title: 'touched again', updated_at: later })
+      assert.doesNotMatch(await stored(table, created.id, 'updated_at'), /^2026-02-03/)
+      assert.equal(await stored(table, created.id, 'title'), 'touched again')
+    })
     await check(`${label} updateOrCreate`, async () => {
       const created = await Model.updateOrCreate({ title: `upsert ${label}` }, { created_at: backdated })
       assert.match(await stored(table, created.id, 'created_at'), /^2026-01-02[T ]03:04:05/)
