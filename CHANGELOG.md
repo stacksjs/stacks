@@ -1,5 +1,37 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.329...v0.75.330)
+
+## ✨ Features
+
+- **buddy**: serve native app marketing sites through stx ([dbe6432](https://github.com/stacksjs/stacks/commit/dbe6432)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **dashboard**: darken faint light-mode text in the remaining pages and shell ([0c591ce](https://github.com/stacksjs/stacks/commit/0c591ce)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3027](https://github.com/stacksjs/stacks/issues/3027))
+- **dashboard**: darken faint light-mode text on infrastructure and CI pages ([e1993a8](https://github.com/stacksjs/stacks/commit/e1993a8)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3027](https://github.com/stacksjs/stacks/issues/3027))
+- **dashboard**: darken faint light-mode text on content and file pages ([efb7c6e](https://github.com/stacksjs/stacks/commit/efb7c6e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3027](https://github.com/stacksjs/stacks/issues/3027))
+- **dashboard**: darken faint light-mode text on commerce pages ([abb56b8](https://github.com/stacksjs/stacks/commit/abb56b8)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3027](https://github.com/stacksjs/stacks/issues/3027))
+- **dashboard**: darken faint light-mode text in shared UI components ([2c7129e](https://github.com/stacksjs/stacks/commit/2c7129e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3027](https://github.com/stacksjs/stacks/issues/3027))
+- **orm**: write explicit trait timestamps in the form MySQL accepts ([e258004](https://github.com/stacksjs/stacks/commit/e258004)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3014](https://github.com/stacksjs/stacks/issues/3014))
+
+## 📝 Documentation
+
+- refresh native capability catalog after site support ([435c74e](https://github.com/stacksjs/stacks/commit/435c74e)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **orm**: pin that a caller's updated_at no longer breaks an update ([99da6a0](https://github.com/stacksjs/stacks/commit/99da6a0)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3014](https://github.com/stacksjs/stacks/issues/3014))
+
+## 🔧 Chores
+
+- **deps**: bump bun-query-builder to 0.3.28 ([56a2b11](https://github.com/stacksjs/stacks/commit/56a2b11)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3014](https://github.com/stacksjs/stacks/issues/3014), [stacksjs/bun-query-builder#1196](https://github.com/stacksjs/bun-query-builder/issues/1196))
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.328...v0.75.329)
 
 ## 🐛 Bug Fixes
