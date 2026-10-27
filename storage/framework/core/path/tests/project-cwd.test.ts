@@ -1,5 +1,5 @@
 import { expect, it } from 'bun:test'
-import { mkdirSync, mkdtempSync, rmSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -81,6 +81,39 @@ it('does not climb out of a project because an ancestor is named storage', () =>
     `, underStorage, underStorageFramework, named, namedFramework], { stdout: 'pipe', stderr: 'pipe' })
     expect(result.exitCode, result.stderr.toString()).toBe(0)
     expect(result.stdout.toString()).toContain('storage ancestors passed')
+  }
+  finally {
+    rmSync(fixture, { recursive: true, force: true })
+  }
+})
+
+
+it('keeps package-based applications inside another project storage directory as their own roots', () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'stacks-nested-app-'))
+  const parent = join(fixture, 'owner')
+  const native = join(parent, 'storage/framework/runtime/sites/native')
+  const web = join(parent, 'storage/framework/runtime/sites/web')
+  const frameworkPackage = join(parent, 'storage/framework/core/image')
+  for (const directory of [native, join(web, 'config'), frameworkPackage])
+    mkdirSync(directory, { recursive: true })
+  writeFileSync(join(native, 'package.json'), JSON.stringify({ name: 'native-app', stacks: { type: 'native' } }))
+  writeFileSync(join(web, 'package.json'), JSON.stringify({ name: 'web-app' }))
+  writeFileSync(join(web, 'config/app.ts'), 'export default {}')
+  writeFileSync(join(frameworkPackage, 'package.json'), JSON.stringify({ name: '@stacksjs/image' }))
+
+  try {
+    const result = Bun.spawnSync([process.execPath, '-e', `
+      import assert from 'node:assert/strict'
+      import { realpathSync } from 'node:fs'
+      const [parent, native, web, frameworkPackage] = process.argv.slice(1).map(realpathSync)
+      const { projectPath } = await import(${JSON.stringify(new URL('../src/project.ts', import.meta.url).href)})
+      for (const [cwd, root] of [[native, native], [web, web], [frameworkPackage, parent], [native, native]]) {
+        process.chdir(cwd)
+        assert.equal(projectPath(), root, cwd)
+        assert.equal(projectPath('assets/fonts/title.ttf'), root + '/assets/fonts/title.ttf')
+      }
+    `, parent, native, web, frameworkPackage], { stdout: 'pipe', stderr: 'pipe' })
+    expect(result.exitCode, result.stderr.toString()).toBe(0)
   }
   finally {
     rmSync(fixture, { recursive: true, force: true })

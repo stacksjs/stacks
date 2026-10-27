@@ -1,4 +1,4 @@
-import { existsSync, lstatSync, realpathSync, rmSync, symlinkSync } from 'node:fs'
+import { existsSync, lstatSync, readFileSync, realpathSync, rmSync, symlinkSync } from 'node:fs'
 import { dirname, join, relative, resolve, sep } from 'node:path'
 import process from 'node:process'
 
@@ -23,6 +23,22 @@ let cachedProjectRoot = ''
 function projectRootFor(cwd: string): string {
   if (existsSync(join(cwd, 'storage', 'framework')))
     return cwd
+
+  // Package-based apps need not have generated storage/framework yet. Keep
+  // their declared root even when a server stages them inside its own storage.
+  // An arbitrary framework package.json is not an application boundary.
+  const manifest = join(cwd, 'package.json')
+  if (existsSync(manifest)) {
+    if (existsSync(join(cwd, 'config', 'app.ts')))
+      return cwd
+    try {
+      if (JSON.parse(readFileSync(manifest, 'utf8')).stacks?.type === 'native')
+        return cwd
+    }
+    catch {
+      // Invalid or unreadable manifests cannot establish an app boundary.
+    }
+  }
 
   const segments = cwd.split(sep)
   const candidates: string[] = []
