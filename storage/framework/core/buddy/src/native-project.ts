@@ -129,6 +129,11 @@ export async function runNativeProjectCommand(root: string, args: string[]): Pro
   const [command = 'help', ...flags] = args
   if (!['build', 'build:desktop', 'build:native', 'package', 'dev', 'dev:desktop', 'dev:native', 'upgrade', 'update', 'release', 'desktop:apple:package', 'desktop:apple:publish', 'desktop:apple:submit'].includes(command))
     return false
+  if (flags.includes('--site')) {
+    const { runNativeSiteCommand } = await import('./native-site')
+    await runNativeSiteCommand(root, command, flags)
+    return true
+  }
   if (flags.includes('--help') || flags.includes('-h')) {
     console.log(`buddy ${command} (native app)\n\nBuild: --dmg --verbose\nUpgrade: --dry-run\nRelease: --bump patch|minor|major --dry-run\nApple: --build-number N --validate-only --submit-for-review\n\nApplication: craft.config.ts. Runtime and publishing: pantry.json. Development runtime override: CRAFT_BIN.`)
     return true

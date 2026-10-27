@@ -39,3 +39,31 @@ occupied directories. Set scripts to `./buddy dev`, `./buddy build`, and
 relative to the app. A status-item app with a live UI sets `trayPopover: true`;
 `menubarOnly: true` creates a status item without a page. Native upgrades update
 the declared packages through Bun; `--dry-run` previews without writing.
+
+## A website alongside a native app
+
+Native projects can keep their marketing pages under `resources/` and use the
+same stx compiler, components and ts-css configuration as the desktop UI.
+Declare the website directory in `stx.config.ts`:
+
+```ts
+export default {
+  root: 'resources',
+  pagesDir: 'views/site',
+  componentsDir: 'components',
+  css: { config: 'config/css.ts' },
+}
+```
+
+Create `resources/views/site/index.stx`, place public images in `public/`, then run:
+
+```sh
+./buddy dev --site --port 3000
+./buddy build --site
+```
+
+The development server binds to loopback and includes stx hot reload. Website
+builds go to `dist/site`, so cleaning their output preserves signed desktop
+artifacts. Plain `buddy dev`, `buddy build` and `buddy package` continue to use
+the desktop entry in `craft.config.ts`. The website does not start the desktop
+backend or require the Craft toolchain.
