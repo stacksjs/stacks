@@ -1,11 +1,31 @@
 #!/usr/bin/env bash
 
-set -u
+set -euo pipefail
 
 script_dir="$(cd "$(dirname "$0")" && pwd)"
 workspace_root="$script_dir/.."
 normalize_package="$script_dir/normalize-workspace-deps-for-publish"
+validate_package="$script_dir/validate-publish-exports.ts"
 publish_flags="--access public --ignore-scripts"
+failed=0
+package_backup=""
+package_archive_dir=""
+
+restore_package() {
+  if [ -n "$package_backup" ]; then
+    cp "$package_backup" "$package_file"
+    rm -f "$package_backup"
+    package_backup=""
+  fi
+  if [ -n "$package_archive_dir" ]; then
+    rm -rf "$package_archive_dir"
+    package_archive_dir=""
+  fi
+}
+
+trap restore_package EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 if [ "${PUBLISH_DRY_RUN:-}" = "1" ]; then
   publish_flags="$publish_flags --dry-run"
@@ -47,7 +67,8 @@ for package_file in "${package_files[@]}"; do
   package_version=$(node -e "const p = require(process.argv[1]); process.stdout.write(p.version || '')" "$package_file")
 
   if [ -z "$package_name" ] || [ -z "$package_version" ]; then
-    echo "⚠️  Dummy library publish skipped: missing package name or version"
+    echo "❌ Dummy library is missing its package name or version"
+    failed=1
     continue
   fi
 
@@ -56,28 +77,36 @@ for package_file in "${package_files[@]}"; do
     continue
   fi
 
-  package_backup=$(mktemp)
-  cp "$package_file" "$package_backup"
+  backup_candidate=$(mktemp)
+  if ! cp "$package_file" "$backup_candidate"; then
+    rm -f "$backup_candidate"
+    exit 1
+  fi
+  package_backup="$backup_candidate"
 
   if ! node "$normalize_package" "$package_file" "$workspace_root"; then
-    echo "⚠️  Dummy library publish skipped: unable to resolve workspace dependencies"
-    cp "$package_backup" "$package_file"
-    rm -f "$package_backup"
+    echo "❌ Unable to resolve dummy library workspace dependencies"
+    restore_package
+    failed=1
     continue
   fi
 
-  (
-    cd "$dir"
-    bun run build
-    bun publish $publish_flags
-  )
-
-  status=$?
-  cp "$package_backup" "$package_file"
-  rm -f "$package_backup"
+  package_archive_dir=$(mktemp -d)
+  if (
+    cd "$dir" &&
+    bun run build &&
+    bun "$validate_package" "$package_file" "$package_archive_dir/package.tgz" &&
+    bun publish "$package_archive_dir/package.tgz" $publish_flags
+  ); then
+    status=0
+  else
+    status=$?
+  fi
+  restore_package
 
   if [ $status -ne 0 ]; then
-    echo "⚠️  Dummy library publish skipped after failure ($status): $dir"
+    echo "❌ Dummy library build or publication failed ($status): $dir"
+    failed=1
     continue
   fi
 
@@ -88,4 +117,4 @@ for package_file in "${package_files[@]}"; do
   fi
 done
 
-exit 0
+exit "$failed"

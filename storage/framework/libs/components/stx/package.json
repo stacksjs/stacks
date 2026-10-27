@@ -37,8 +37,8 @@
     "dist"
   ],
   "scripts": {
-    "dev": "bunx --bun vite -c ../../../core/vite-config/src/components.ts",
-    "build": "bunx --bun vite build -c ../../../core/vite-config/src/components.ts",
+    "dev": "../../../../../buddy dev:components",
+    "build": "bun build.ts",
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {

@@ -1,4 +1,5 @@
 import type { ComponentLibraryBuildResult } from '@stacksjs/stx'
+import { validateDeclarations, validateRuntimeExports } from '@stacksjs/build'
 import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
 import { hasComponents } from '@stacksjs/storage'
@@ -52,6 +53,10 @@ export async function buildStxComponentLibrary(): Promise<ComponentLibraryBuildR
     minify: true,
     sourcemap: 'external',
   })
+
+  const packageDir = projectPath('storage/framework/libs/components/stx')
+  await validateDeclarations(packageDir)
+  await validateRuntimeExports(packageDir)
 
   log.success(`Built ${result.components.length} components to ${outputDir}`)
   return result

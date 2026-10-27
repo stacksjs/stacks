@@ -38,8 +38,8 @@ export async function validateDeclarations(dir: string): Promise<void> {
  *
  * Loading happens in a subprocess because it EXECUTES module top-level code;
  * a package that needs env or a database at import must not fail its build
- * for that reason. Only the link-error family is fatal, and anything else is
- * left alone deliberately.
+ * for that reason. Syntax and link errors are fatal. Runtime requirements
+ * such as a browser DOM are left alone deliberately.
  */
 export async function validateRuntimeExports(dir: string): Promise<void> {
   const entry = p.resolve(dir, 'dist', 'index.js')
@@ -47,7 +47,9 @@ export async function validateRuntimeExports(dir: string): Promise<void> {
     return
 
   const proc = Bun.spawnSync({
-    cmd: [process.execPath, '-e', `await import(${JSON.stringify(entry)})`],
+    // Handle the import rejection explicitly. An application's unhandled
+    // rejection listener can otherwise log a broken module and still exit 0.
+    cmd: [process.execPath, '-e', `try { await import(${JSON.stringify(entry)}) } catch (error) { console.error(error); process.exit(1) }`],
     stdout: 'ignore',
     stderr: 'pipe',
     env: { ...process.env, NODE_ENV: 'test' },
@@ -57,12 +59,13 @@ export async function validateRuntimeExports(dir: string): Promise<void> {
     return
 
   const stderr = new TextDecoder().decode(proc.stderr ?? new Uint8Array())
-  const linkError = /needs to refer to a top-level declared variable|does not provide an export named|Export named .* not found/i
+  const invalidModule = /SyntaxError|needs to refer to a top-level declared variable|does not provide an export named|Export named .* not found/i
 
-  if (linkError.test(stderr)) {
+  if (invalidModule.test(stderr)) {
+    const diagnostic = stderr.split('\n').find(line => invalidModule.test(line)) ?? stderr.trim().split('\n')[0]
     throw new Error(
-      `Built package at ${entry} cannot be imported: ${stderr.trim().split('\n')[0]}\n`
-      + 'This is the minified-barrel failure. Build with `transpilePackage` instead of a minifying `Bun.build`.',
+      `Built package at ${entry} cannot be imported: ${diagnostic}\n`
+      + 'Fix the generated module at its source before publishing.',
     )
   }
 }

@@ -181,6 +181,8 @@ async function buildComponentPackage(pkg: ResolvedLibraryPackage, config: Librar
   log.debug(`${pkg.name}: compiled ${result.components.length} components (${result.totalBytes} bytes)`)
 
   await writeManifest(pkg, config, version)
+  await validateDeclarations(pkg.dir)
+  await validateRuntimeExports(pkg.dir)
 }
 
 /**
