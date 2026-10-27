@@ -109,7 +109,7 @@ onMount(() => {
             <span class="h-4 w-4 i-hugeicons-command-line"></span>
             Open terminal
           </Button>
-          <span :if="!entry.terminal" class="text-gray-400 text-xs dark:text-neutral-500">Named commands only</span>
+          <span :if="!entry.terminal" class="text-gray-500 text-xs dark:text-neutral-500">Named commands only</span>
         </li>
       </template>
     </ul>

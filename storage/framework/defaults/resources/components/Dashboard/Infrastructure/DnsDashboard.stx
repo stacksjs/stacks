@@ -254,7 +254,7 @@ onMount(() => {
   <section class="overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
     <header class="flex items-center justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-700">
       <div><h2 class="font-semibold text-neutral-900 dark:text-white">Nameservers</h2><p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Configured delegation targets.</p></div>
-      <span class="font-mono text-neutral-400 text-xs">{{ nameservers().length }}</span>
+      <span class="font-mono text-neutral-500 text-xs dark:text-neutral-400">{{ nameservers().length }}</span>
     </header>
     <div :if="nameservers().length > 0" class="grid gap-3 sm:grid-cols-2 p-5">
       <div :for="nameserver in nameservers()" class="flex gap-3 items-center p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
@@ -263,7 +263,7 @@ onMount(() => {
       </div>
     </div>
     <p :if="nameservers().length === 0" class="p-5 text-neutral-500 text-sm dark:text-neutral-400">No nameservers configured.</p>
-    <p :if="generatedAt()" class="px-5 py-3 text-neutral-400 text-xs dark:text-neutral-500 bg-neutral-50 dark:bg-neutral-800/50 border-neutral-100 border-t dark:border-neutral-800">Snapshot {{ formatDate(generatedAt()) }}</p>
+    <p :if="generatedAt()" class="px-5 py-3 text-neutral-500 text-xs dark:text-neutral-500 bg-neutral-50 dark:bg-neutral-800/50 border-neutral-100 border-t dark:border-neutral-800">Snapshot {{ formatDate(generatedAt()) }}</p>
   </section>
 
   <DnsRecordDialog :open="Boolean(selectedRecord())" :record="selectedRecord()" @close="closeRecord" />

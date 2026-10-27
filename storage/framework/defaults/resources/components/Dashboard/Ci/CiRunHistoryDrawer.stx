@@ -88,7 +88,7 @@ function failedJobs(runId: number) {
               <span class="font-medium text-sm text-zinc-800 truncate dark:text-zinc-200" :text="run.name"></span>
             </div>
             <p :if="run.commitMessage" class="mt-1 text-xs text-zinc-500 truncate" :text="truncate(run.commitMessage, 80)"></p>
-            <div class="flex gap-2 items-center mt-1 text-[10px] text-zinc-400">
+            <div class="flex gap-2 items-center mt-1 text-[10px] text-zinc-500 dark:text-zinc-400">
               <span class="font-mono" :text="run.headShaShort"></span>
               <span :if="run.headBranch" :text="run.headBranch"></span>
               <span :if="run.commitAuthor">·</span>
@@ -105,13 +105,13 @@ function failedJobs(runId: number) {
 
       <div :if="expandedRunId() === run.id" class="px-3 py-2 bg-zinc-50 dark:bg-zinc-900/50 border-t border-zinc-100 dark:border-zinc-900">
         <div :if="loadingJobsRunId() === run.id" class="py-2 text-xs text-zinc-500">Loading jobs...</div>
-        <div :if="loadingJobsRunId() !== run.id && jobsForRun(run.id).length === 0" class="py-1 italic text-xs text-zinc-400">No job detail.</div>
+        <div :if="loadingJobsRunId() !== run.id && jobsForRun(run.id).length === 0" class="py-1 italic text-xs text-zinc-500 dark:text-zinc-400">No job detail.</div>
         <div :if="loadingJobsRunId() !== run.id && failedJobs(run.id).length > 0" class="space-y-1.5">
           <p class="text-[10px] text-zinc-500 tracking-wide uppercase">Failed jobs</p>
           <a :for="job in failedJobs(run.id)" :href="job.url" target="_blank" rel="noreferrer" @click.stop class="flex gap-1.5 items-center no-underline text-red-700 text-xs dark:text-red-400 hover:underline">
             <span aria-hidden="true" class="h-2.5 w-2.5 i-hugeicons-cancel-circle"></span>
             <span :text="job.name"></span>
-            <span :if="job.durationMs" class="text-zinc-400" :text="'(' + formatDuration(job.durationMs) + ')'"></span>
+            <span :if="job.durationMs" class="text-zinc-500 dark:text-zinc-400" :text="'(' + formatDuration(job.durationMs) + ')'"></span>
           </a>
         </div>
         <div :if="loadingJobsRunId() !== run.id && jobsForRun(run.id).length > 0 && failedJobs(run.id).length === 0" class="py-1 text-xs text-zinc-500">

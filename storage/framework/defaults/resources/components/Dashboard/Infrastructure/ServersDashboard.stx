@@ -268,7 +268,7 @@ onMount(() => {
         <h2 class="font-semibold text-neutral-900 dark:text-white">Configured request path</h2>
         <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">A structural view of declared routing, with no inferred health data.</p>
       </div>
-      <p class="text-neutral-400 text-xs dark:text-neutral-500">Source: config/cloud.ts</p>
+      <p class="text-neutral-500 text-xs dark:text-neutral-500">Source: config/cloud.ts</p>
     </div>
     <div class="grid gap-3 grid-cols-1 md:grid-cols-[1fr_auto_1fr_auto_1fr] mt-5">
       <div class="flex gap-3 items-center p-4 bg-rose-50 dark:bg-rose-950/25 border border-rose-100 rounded-xl dark:border-rose-900/50">
@@ -312,7 +312,7 @@ onMount(() => {
       <div class="overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
         <div class="flex items-center justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-700">
           <div><h3 class="font-semibold text-neutral-900 text-sm dark:text-white">Definitions</h3><p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">Desired compute configuration</p></div>
-          <span class="font-mono text-neutral-400 text-xs">{{ filteredServers().length }}</span>
+          <span class="font-mono text-neutral-500 text-xs dark:text-neutral-400">{{ filteredServers().length }}</span>
         </div>
         <div class="divide-neutral-100 divide-y dark:divide-neutral-800">
           <button :for="server in filteredServers()" type="button" class="flex gap-4 items-center px-5 py-4 w-full text-left hover:bg-neutral-50 dark:hover:bg-neutral-800/70" @click="inspectServer(server)">
@@ -327,7 +327,7 @@ onMount(() => {
       <div class="overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
         <div class="flex items-center justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-700">
           <div><h3 class="font-semibold text-neutral-900 text-sm dark:text-white">Deployments</h3><p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">Persisted provider state</p></div>
-          <span class="font-mono text-neutral-400 text-xs">{{ filteredDeployments().length }}</span>
+          <span class="font-mono text-neutral-500 text-xs dark:text-neutral-400">{{ filteredDeployments().length }}</span>
         </div>
         <div class="divide-neutral-100 divide-y dark:divide-neutral-800">
           <button :for="deployment in filteredDeployments()" type="button" class="flex gap-4 items-center px-5 py-4 w-full text-left hover:bg-neutral-50 dark:hover:bg-neutral-800/70" @click="inspectDeployment(deployment)">
@@ -352,7 +352,7 @@ onMount(() => {
         <article :for="event in events()" class="flex gap-3 px-5 py-4">
           <span :class="'mt-0.5 h-5 w-5 shrink-0 ' + eventIcon(event)"></span>
           <div class="flex-1 min-w-0"><p class="font-medium text-neutral-900 text-sm dark:text-white">{{ event.service }}</p><p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">{{ event.message }}</p></div>
-          <time class="shrink-0 text-neutral-400 text-xs dark:text-neutral-500">{{ formatDate(event.timestamp) }}</time>
+          <time class="shrink-0 text-neutral-500 text-xs dark:text-neutral-500">{{ formatDate(event.timestamp) }}</time>
         </article>
       </div>
     </div>
@@ -366,7 +366,7 @@ onMount(() => {
         </div>
         <p :if="environments().length === 0" class="text-neutral-500 text-sm dark:text-neutral-400">No environments configured.</p>
       </div>
-      <p :if="generatedAt()" class="mt-5 pt-4 text-neutral-400 text-xs dark:text-neutral-500 border-neutral-100 border-t dark:border-neutral-800">Snapshot {{ formatDate(generatedAt()) }}</p>
+      <p :if="generatedAt()" class="mt-5 pt-4 text-neutral-500 text-xs dark:text-neutral-500 border-neutral-100 border-t dark:border-neutral-800">Snapshot {{ formatDate(generatedAt()) }}</p>
     </div>
   </section>
 

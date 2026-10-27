@@ -81,7 +81,7 @@ function icon(operation: DeploymentPreviewOperation): string {
             </div>
             <div class="flex-1 min-w-0">
               <div class="flex gap-2 items-center">
-                <span class="font-mono text-neutral-400 text-xs">{{ index + 1 }}</span>
+                <span class="font-mono text-neutral-500 text-xs dark:text-neutral-400">{{ index + 1 }}</span>
                 <h5 class="font-semibold text-neutral-900 text-sm dark:text-white">{{ operation.label }}</h5>
               </div>
               <p class="mt-1 text-neutral-600 text-sm dark:text-neutral-300">{{ operation.detail }}</p>

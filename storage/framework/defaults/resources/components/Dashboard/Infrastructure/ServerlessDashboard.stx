@@ -240,7 +240,7 @@ onMount(() => {
     </div>
   </section>
 
-  <footer :if="generatedAt()" class="text-neutral-400 text-right text-xs dark:text-neutral-500">Snapshot {{ formatDate(generatedAt()) }}</footer>
+  <footer :if="generatedAt()" class="text-neutral-500 text-right text-xs dark:text-neutral-500">Snapshot {{ formatDate(generatedAt()) }}</footer>
 
   <CloudDetailsDialog :open="Boolean(selectedResource())" :item="selectedResource()" @close="closeResource" />
 </div>

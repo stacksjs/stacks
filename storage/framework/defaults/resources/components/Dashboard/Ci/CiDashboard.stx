@@ -168,7 +168,7 @@
   <div :if="loading && !disabled" class="flex items-center justify-center" style="min-height: 50vh">
     <div class="flex flex-col gap-4 items-center">
       <span aria-hidden="true" class="h-7 w-7 text-violet-500 animate-spin i-hugeicons-loading-03"></span>
-      <span class="text-sm text-zinc-400">Fetching CI status…</span>
+      <span class="text-sm text-zinc-500 dark:text-zinc-400">Fetching CI status…</span>
     </div>
   </div>
 
@@ -206,7 +206,7 @@
     <div class="flex flex-wrap gap-x-4 gap-y-1 items-center mb-2 text-sm">
       <span class="font-medium text-emerald-600 dark:text-emerald-400" :text="passingText"></span>
       <span class="font-medium text-red-500 dark:text-red-400" :text="failingText"></span>
-      <span class="text-zinc-400" :text="totalText"></span>
+      <span class="text-zinc-500 dark:text-zinc-400" :text="totalText"></span>
       <span class="text-zinc-300 dark:text-zinc-700">·</span>
       <span class="text-zinc-500 dark:text-zinc-400" :text="runnersText"></span>
     </div>
@@ -215,7 +215,7 @@
         on `ci.alerts.enabled`). Drawn inline as a single SVG path
         so we don't pull a chart library for 20 datapoints. -->
     <div :if="hasHistory()" class="flex gap-2 items-center mb-5">
-      <span class="text-[10px] text-zinc-400 tracking-wide uppercase">Queue depth (last hour)</span>
+      <span class="text-[10px] text-zinc-500 tracking-wide uppercase dark:text-zinc-400">Queue depth (last hour)</span>
       <svg width="200" height="24" viewBox="0 0 200 24" class="text-violet-400">
         <path :d="sparklinePath()" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" />
       </svg>
@@ -251,8 +251,8 @@
                 in a new tab" rather than triggering the drilldown
                 drawer on the parent card. -->
             <a :href="repo.url" target="_blank" @click.stop class="font-medium no-underline text-sm text-zinc-900 dark:text-zinc-100 hover:underline" :text="repo.name"></a>
-            <span :if="repo.commitSha" class="font-mono text-xs text-zinc-400" :text="repo.commitSha"></span>
-            <span :if="repo.updatedAt" class="text-xs text-zinc-400" :text="timeAgo(repo.updatedAt)"></span>
+            <span :if="repo.commitSha" class="font-mono text-xs text-zinc-500 dark:text-zinc-400" :text="repo.commitSha"></span>
+            <span :if="repo.updatedAt" class="text-xs text-zinc-500 dark:text-zinc-400" :text="timeAgo(repo.updatedAt)"></span>
           </div>
 
           <div :if="repo.commitMessage" class="mt-1">
@@ -260,11 +260,11 @@
           </div>
 
           <div :if="repo.commitAuthor" class="mt-0.5">
-            <span class="text-xs text-zinc-400" :text="repo.commitAuthor"></span>
+            <span class="text-xs text-zinc-500 dark:text-zinc-400" :text="repo.commitAuthor"></span>
           </div>
 
           <div :if="repo.buddyBotPRs > 0 || repo.actionsPRs > 0" class="mt-2 pt-2 border-t border-zinc-200/60 dark:border-zinc-800">
-            <div class="mb-1 text-xs text-zinc-400">Pull Requests</div>
+            <div class="mb-1 text-xs text-zinc-500 dark:text-zinc-400">Pull Requests</div>
             <div class="flex flex-wrap gap-x-3 gap-y-0.5">
               <a :if="repo.buddyBotPRs > 0" :href="repo.buddyBotPRsUrl" target="_blank" rel="noreferrer" @click.stop class="no-underline text-xs text-zinc-500 dark:text-zinc-400 hover:underline">
                 buddy-bot: <span :text="repo.buddyBotPRs"></span>
