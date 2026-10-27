@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.330...v0.75.331)
+
+## 🐛 Bug Fixes
+
+- publish validated native STX sample libraries ([f288690](https://github.com/stacksjs/stacks/commit/f288690)) _(by Chris <chris@stacksjs.com>)_ ([#3029](https://github.com/stacksjs/stacks/issues/3029), [#3023](https://github.com/stacksjs/stacks/issues/3023))
+
+## ✅ Tests
+
+- isolate browser startup fixtures from application boot ([0534114](https://github.com/stacksjs/stacks/commit/0534114)) _(by Chris <chris@stacksjs.com>)_ ([#3031](https://github.com/stacksjs/stacks/issues/3031))
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.329...v0.75.330)
 
 ## ✨ Features
