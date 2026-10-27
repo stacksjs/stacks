@@ -19,6 +19,8 @@ test.each([
   const marker = join(root, 'published')
   try {
     await Promise.all([mkdir(scriptDir, { recursive: true }), mkdir(libraryDir, { recursive: true }), mkdir(binDir)])
+    const npmUserConfig = join(root, 'empty.npmrc')
+    await writeFile(npmUserConfig, '')
     await writeFile(join(root, 'framework/package.json'), JSON.stringify({ name: '@stacksjs/fixture-dependency', version: '1.2.3' }))
     for (const name of ['publish-dummy-libs', 'normalize-workspace-deps-for-publish', 'validate-publish-exports.ts'])
       await copyFile(join(scripts, name), join(scriptDir, name))
@@ -39,7 +41,12 @@ import { createHash } from 'node:crypto'
 const archive = process.argv[3]
 if (!archive?.endsWith('.tgz')) throw new Error('Registry did not receive a prepared archive')
 const bytes = new Uint8Array(await Bun.file(archive).arrayBuffer())
-const dryRun = Bun.spawnSync([process.execPath, 'publish', archive, '--dry-run', '--access', 'public', '--ignore-scripts'], { stdout: 'pipe', stderr: 'pipe' })
+// Bun checks authentication even for a dry run. This credential belongs only
+// to the non-publishing probe; the publisher under test has no registry token.
+const dryRun = Bun.spawnSync([process.execPath, 'publish', archive, '--dry-run', '--access', 'public', '--ignore-scripts', '--registry', 'http://127.0.0.1:1'], {
+  env: { ...process.env, NPM_CONFIG_TOKEN: 'fixture-dry-run-token', BUN_CONFIG_TOKEN: 'fixture-dry-run-token' },
+  stdout: 'pipe', stderr: 'pipe',
+})
 if (dryRun.exitCode !== 0) throw new Error(new TextDecoder().decode(dryRun.stderr))
 await Bun.write(process.env.PUBLISH_MARKER!, JSON.stringify({ sha512: 'sha512-' + createHash('sha512').update(bytes).digest('base64'), sha1: createHash('sha1').update(bytes).digest('hex') }))
 process.exit(Number(process.env.PUBLISH_EXIT))
@@ -49,7 +56,7 @@ process.exit(Number(process.env.PUBLISH_EXIT))
     await Promise.all(['bun', 'npm'].map(name => chmod(join(binDir, name), 0o755)))
     const child = Bun.spawn(['bash', join(scriptDir, 'publish-dummy-libs')], {
       cwd: root,
-      env: { ...process.env, PATH: `${binDir}:${process.env.PATH}`, REAL_BUN: process.execPath, PUBLISH_MARKER: marker, PUBLISH_PROBE: join(binDir, 'publish-probe.ts'), PUBLISH_EXIT: String(publishExit) },
+      env: { ...process.env, NPM_CONFIG_USERCONFIG: npmUserConfig, NPM_CONFIG_TOKEN: '', BUN_CONFIG_TOKEN: '', PATH: `${binDir}:${process.env.PATH}`, REAL_BUN: process.execPath, PUBLISH_MARKER: marker, PUBLISH_PROBE: join(binDir, 'publish-probe.ts'), PUBLISH_EXIT: String(publishExit) },
       stdout: 'pipe', stderr: 'pipe',
     })
     const [code, out, err] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
