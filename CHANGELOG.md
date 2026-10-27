@@ -1,5 +1,27 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.328...v0.75.329)
+
+## 🐛 Bug Fixes
+
+- **dashboard**: make the captured mail size readable in dark mode ([53dc3e6](https://github.com/stacksjs/stacks/commit/53dc3e6)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3027](https://github.com/stacksjs/stacks/issues/3027))
+- **dashboard**: let tabs scroll sideways on a narrow screen ([c5e0980](https://github.com/stacksjs/stacks/commit/c5e0980)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3026](https://github.com/stacksjs/stacks/issues/3026))
+- **dashboard**: open the file manager's storage panel in a drawer on a phone ([8efeb1f](https://github.com/stacksjs/stacks/commit/8efeb1f)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3025](https://github.com/stacksjs/stacks/issues/3025))
+- **dashboard**: let metric cards shrink to a phone screen ([6a94bb0](https://github.com/stacksjs/stacks/commit/6a94bb0)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3024](https://github.com/stacksjs/stacks/issues/3024))
+
+## 📝 Documentation
+
+- refresh dashboard component counts ([433b7c5](https://github.com/stacksjs/stacks/commit/433b7c5)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- adopt verified STX caller-slot event scopes ([64d7ea0](https://github.com/stacksjs/stacks/commit/64d7ea0)) _(by Chris <chris@stacksjs.com>)_ ([#3023](https://github.com/stacksjs/stacks/issues/3023))
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.327...v0.75.328)
 
 ## 🐛 Bug Fixes
