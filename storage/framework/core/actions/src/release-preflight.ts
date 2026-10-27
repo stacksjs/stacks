@@ -8,9 +8,9 @@
  *
  * The check list is DERIVED from package.json rather than written out again.
  * There are already copies in ci.yml and release.yml, and a third hand-kept
- * list would be the same drift problem this whole gate exists to prevent: add a
- * `docs:*:check` script, forget one list, and the gate silently stops covering
- * it. Anything matching `docs:*:check` is picked up automatically.
+ * list would be the same drift problem this whole gate exists to prevent.
+ * Declaration freshness and every registered `docs:*:check` run before a tag
+ * is created, including runtime inventories changed by dependency upgrades.
  */
 
 import { readFileSync } from 'node:fs'
@@ -26,7 +26,7 @@ export interface PreflightResult {
 }
 
 /**
- * The pinned suite: every `docs:…:check` script.
+ * The pinned suite: declaration freshness and every `docs:…:check` script.
  *
  * Deliberately narrow. `types:check`, `format:check` and `deps:lockfile:check`
  * also end in `:check` but are not generated-artifact freshness checks, they
@@ -36,7 +36,7 @@ export function pinnedCheckScripts(scripts: Record<string, unknown>): string[] {
   return Object.keys(scripts)
     // The middle segment is optional so a bare `docs:check` would still be
     // picked up; requiring one silently dropped the unsegmented scripts.
-    .filter(name => /^docs:(?:[\w:-]+:)?check$/.test(name))
+    .filter(name => name === 'declarations:check' || /^docs:(?:[\w:-]+:)?check$/.test(name))
     .sort()
 }
 

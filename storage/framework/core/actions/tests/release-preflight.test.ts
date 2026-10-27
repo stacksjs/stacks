@@ -10,6 +10,9 @@
 
 import { describe, expect, it } from 'bun:test'
 import { createHash } from 'node:crypto'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { acceptedPublications, publicationMatchesOriginal } from '../../../../../.github/scripts/npm-publication'
 import { BYPASS_ENV, formatPreflightFailure, pinnedCheckScripts, runPinnedChecks } from '../src/release-preflight'
 
@@ -121,6 +124,24 @@ describe('pinnedCheckScripts', () => {
 })
 
 describe('runPinnedChecks', () => {
+  it('discovers and runs declaration freshness before accepting a release', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'stacks-release-declarations-'))
+    try {
+      writeFileSync(join(root, 'package.json'), JSON.stringify({ scripts: { 'declarations:check': 'bun check.ts' } }))
+      writeFileSync(join(root, 'check.ts'), `if (await Bun.file('generated.txt').text() !== 'current') { console.error('Generated bindings are stale'); process.exit(1) }`)
+      writeFileSync(join(root, 'generated.txt'), 'stale')
+      const stale = await runPinnedChecks({ cwd: root, env: {} })
+      expect(stale.ran).toEqual(['declarations:check'])
+      expect(stale.failures).toHaveLength(1)
+      expect(stale.failures[0]?.output).toContain('Generated bindings are stale')
+      writeFileSync(join(root, 'generated.txt'), 'current')
+      const current = await runPinnedChecks({ cwd: root, env: {} })
+      expect(current.ran).toEqual(['declarations:check'])
+      expect(current.failures).toEqual([])
+    }
+    finally { rmSync(root, { recursive: true, force: true }) }
+  })
+
   it('skips everything when the bypass is set', async () => {
     // Without an escape hatch, one chronically red unrelated check would brick
     // releasing entirely, which is worse than the problem being solved.
