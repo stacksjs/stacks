@@ -60,7 +60,7 @@ function formatBytes(value: number): string {
         </div>
         <div class="flex-shrink-0 text-right">
           <time class="block text-gray-500 text-xs dark:text-neutral-400" :datetime="selected()?.sentAt || ''">{{ formatDate(selected()?.sentAt || '') }}</time>
-          <span class="block mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ formatBytes(selected()?.size || 0) }}</span>
+          <span class="block mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ formatBytes(selected()?.size || 0) }}</span>
         </div>
       </div>
     </header>
