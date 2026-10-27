@@ -11,6 +11,7 @@ import { fs, globSync } from '@stacksjs/storage'
 import { pruneVendoredCoreFromWorkflows, splitFrameworkTypecheckScript } from '../workflow-prune'
 import { detectInstaller, findCoreReferences, INSTALL_RETRY_DELAYS_MS, installWithRetry, isDanglingLink, rewriteCoreCommandPaths, rewriteCoreSourceImports, rewriteSurvivingFrameworkManifests } from '../unvendor-rewrite'
 import { fetchPublishedVersions } from '../registry'
+import { locateDefaultStx, pointImportsAtDefaults, type StxResourceKind } from '../publish-stx'
 import { adoptPackagedDefaults, unignoreDefaults, VENDORED_DEFAULTS } from '../scaffold-package-app'
 import { ExitCode } from '@stacksjs/types'
 
@@ -35,6 +36,8 @@ export function publish(buddy: CLI): void {
     controller: 'Publish a default controller from storage/framework/defaults/app/Controllers/ to app/Controllers/',
     middleware: 'Publish a default middleware from storage/framework/defaults/app/Middleware/ to app/Middleware/',
     action: 'Publish a default action from storage/framework/defaults/app/Actions/ to app/Actions/',
+    component: 'Publish a default component to the same path under resources/components/, by name or by its path there',
+    view: 'Publish a default view to resources/views/<path>, e.g. dashboard/commerce/orders or login',
     core: 'Publish a framework package source from node_modules/@stacksjs/<pkg>/ into storage/framework/core/<pkg>/ for editing',
     unpublishCore: 'Drop a vendored storage/framework/core/<pkg>/ and go back to the installed @stacksjs/<pkg>',
     all: 'Unvendor the whole framework: remove storage/framework/core and resolve every @stacksjs package from the `stacks` dependency in package.json',
@@ -105,6 +108,26 @@ export function publish(buddy: CLI): void {
         userDir: path.userActionsPath(),
         force: !!options.force,
       })
+    })
+
+  buddy
+    .command('publish:component <name>', descriptions.component)
+    .option('--force', descriptions.force, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .example('buddy publish:component Pagination')
+    .example('buddy publish:component Storefront/ProductCard')
+    .action(async (name: string, options: PublishOptions) => {
+      await publishStx('component', name, !!options.force)
+    })
+
+  buddy
+    .command('publish:view <path>', descriptions.view)
+    .option('--force', descriptions.force, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .example('buddy publish:view login')
+    .example('buddy publish:view dashboard/commerce/orders')
+    .action(async (name: string, options: PublishOptions) => {
+      await publishStx('view', name, !!options.force)
     })
 
   buddy
@@ -214,6 +237,8 @@ export function publish(buddy: CLI): void {
           userDir: path.userActionsPath(),
           force: !!options.force,
         }),
+        component: () => publishStx('component', name, !!options.force),
+        view: () => publishStx('view', name, !!options.force),
         core: () => publishCorePackage(name, !!options.force),
       }
 
@@ -221,7 +246,7 @@ export function publish(buddy: CLI): void {
 
       if (!handler) {
         await log.error(`Unknown publishable resource: ${italic(resource)}`)
-        log.info('Available: model, controller, middleware, action, core')
+        log.info('Available: model, controller, middleware, action, component, view, core')
         await log.flush()
         process.exit(ExitCode.FatalError)
       }
@@ -381,6 +406,42 @@ async function publishResource(ctx: PublishContext): Promise<void> {
   log.success(`Published ${kind} ${italic(name)} → ${italic(targetPath.replace(`${process.cwd()}/`, ''))}`)
   for (const file of carried)
     log.info(`  + ${italic(file.replace(`${process.cwd()}/`, ''))} (imported by it)`)
+}
+
+/**
+ * Publish one default `.stx` component or view to where the app's copy is
+ * read, with its imports of the framework's helpers pointed at
+ * `@stacksjs/defaults` (see `../publish-stx`).
+ */
+async function publishStx(kind: StxResourceKind, name: string, force: boolean): Promise<void> {
+  const root = path.projectPath()
+  const defaultsRoot = path.frameworkPath('defaults')
+  const found = locateDefaultStx(kind, name, defaultsRoot, root)
+
+  if (!found.ok) {
+    await log.error(found.message)
+    for (const line of found.details)
+      log.info(`  ${line}`)
+    await log.flush()
+    process.exit(ExitCode.FatalError)
+  }
+
+  if (existsSync(found.target) && !force) {
+    await log.error(`Already exists: ${italic(found.target.replace(`${root}/`, ''))}`)
+    log.info('Pass --force to overwrite.')
+    await log.flush()
+    process.exit(ExitCode.FatalError)
+  }
+
+  const source = await fs.promises.readFile(found.source, 'utf-8')
+  const { code, rewritten } = pointImportsAtDefaults(source, found.source, defaultsRoot)
+
+  mkdirSync(dirname(found.target), { recursive: true })
+  await fs.promises.writeFile(found.target, code)
+
+  log.success(`Published ${kind} ${italic(name)} → ${italic(found.target.replace(`${root}/`, ''))}`)
+  if (rewritten > 0)
+    log.info(`  ${rewritten} import${rewritten === 1 ? '' : 's'} of the framework's own files now read from @stacksjs/defaults`)
 }
 
 /**

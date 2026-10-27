@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **367 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **369 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -55,7 +55,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `phone` | 4 |
 | `ports` | 2 |
 | `projects` | 1 |
-| `publish` | 6 |
+| `publish` | 8 |
 | `queue` | 21 |
 | `realtime` | 2 |
 | `release` | 4 |
@@ -4371,6 +4371,27 @@ Publish a default action from storage/framework/defaults/app/Actions/ to app/Act
 | `--force` | Overwrite an existing userland file | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
+### `publish:component`
+
+Publish a default component to the same path under resources/components/, by name or by its path there
+
+- Usage: `$ buddy publish:component <name>`
+- Namespace: `publish`
+- Aliases: none
+- Arguments: `<name>`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--force` | Overwrite an existing userland file | boolean, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy publish:component Pagination
+buddy publish:component Storefront/ProductCard
+```
+
 ### `publish:controller`
 
 Publish a default controller from storage/framework/defaults/app/Controllers/ to app/Controllers/
@@ -4455,6 +4476,27 @@ Publish a default model from storage/framework/defaults/app/Models/ to app/Model
 | --- | --- | --- | --- |
 | `--force` | Overwrite an existing userland file | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `publish:view`
+
+Publish a default view to resources/views/<path>, e.g. dashboard/commerce/orders or login
+
+- Usage: `$ buddy publish:view <path>`
+- Namespace: `publish`
+- Aliases: none
+- Arguments: `<path>`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--force` | Overwrite an existing userland file | boolean, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy publish:view login
+buddy publish:view dashboard/commerce/orders
+```
 
 ### `queue:clear`
 
