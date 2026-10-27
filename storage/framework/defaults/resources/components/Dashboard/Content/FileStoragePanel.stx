@@ -50,7 +50,7 @@ function navRowClass(active: boolean): string {
 <div class="flex flex-col h-full">
   <div class="p-4 border-b border-black/[0.06] dark:border-white/[0.08]">
     <label class="block">
-      <span class="font-semibold text-[11px] text-stone-400 tracking-wider uppercase dark:text-neutral-500">Storage disk</span>
+      <span class="font-semibold text-[11px] text-stone-500 tracking-wider uppercase dark:text-neutral-500">Storage disk</span>
       <select x-model="disk" :disabled="busy()" class="mt-2 px-2.5 py-2 w-full text-sm text-stone-800 dark:text-white bg-white/80 dark:bg-neutral-800 border border-stone-200 rounded-lg dark:border-neutral-700 disabled:opacity-60" @change="emit('disk', $event.target.value)">
         <template :for="option in disks"><option :value="option.name">{{ option.name }}{{ option.public ? ' (public)' : '' }}</option></template>
       </select>
@@ -59,7 +59,7 @@ function navRowClass(active: boolean): string {
 
   <div class="p-4 border-b border-black/[0.06] dark:border-white/[0.08]">
     <div class="flex items-center justify-between">
-      <p class="font-semibold text-[11px] text-stone-400 tracking-wider uppercase dark:text-neutral-500">Stored content</p>
+      <p class="font-semibold text-[11px] text-stone-500 tracking-wider uppercase dark:text-neutral-500">Stored content</p>
       <span class="font-mono text-[11px] text-stone-500 dark:text-neutral-400">{{ summary().contentSize }}</span>
     </div>
     <div class="grid gap-2 grid-cols-2 mt-3">
@@ -69,11 +69,11 @@ function navRowClass(active: boolean): string {
   </div>
 
   <div class="p-4 border-b border-black/[0.06] dark:border-white/[0.08]">
-    <p class="font-semibold text-[11px] text-stone-400 tracking-wider uppercase dark:text-neutral-500">Content by type</p>
+    <p class="font-semibold text-[11px] text-stone-500 tracking-wider uppercase dark:text-neutral-500">Content by type</p>
     <div class="mt-3 space-y-3">
       <template :for="row in typeRows">
         <div>
-          <div class="flex items-center justify-between text-[11px]"><span class="text-stone-600 dark:text-neutral-300">{{ row.label }}</span><span class="font-mono text-stone-400 dark:text-neutral-500">{{ row.size }}</span></div>
+          <div class="flex items-center justify-between text-[11px]"><span class="text-stone-600 dark:text-neutral-300">{{ row.label }}</span><span class="font-mono text-stone-500 dark:text-neutral-500">{{ row.size }}</span></div>
           <div class="overflow-hidden mt-1 h-1.5 bg-black/[0.06] dark:bg-white/[0.08] rounded-full"><div :class="'h-full rounded-full ' + row.color" :style="row.barStyle"></div></div>
         </div>
       </template>
@@ -81,7 +81,7 @@ function navRowClass(active: boolean): string {
   </div>
 
   <div :if="summary().capacityKnown" class="p-4 border-b border-black/[0.06] dark:border-white/[0.08]">
-    <div class="flex items-center justify-between"><p class="font-semibold text-[11px] text-stone-400 tracking-wider uppercase dark:text-neutral-500">Volume capacity</p><span class="font-mono text-[11px] text-stone-500 dark:text-neutral-400">{{ summary().capacityPercent.toFixed(0) }}%</span></div>
+    <div class="flex items-center justify-between"><p class="font-semibold text-[11px] text-stone-500 tracking-wider uppercase dark:text-neutral-500">Volume capacity</p><span class="font-mono text-[11px] text-stone-500 dark:text-neutral-400">{{ summary().capacityPercent.toFixed(0) }}%</span></div>
     <div class="overflow-hidden mt-2 h-1.5 bg-black/[0.06] dark:bg-white/[0.08] rounded-full"><div class="h-full bg-blue-500 rounded-full" :style="'width: ' + summary().capacityPercent.toFixed(2) + '%'"></div></div>
     <p class="mt-2 text-[11px] text-stone-500 dark:text-neutral-400">{{ summary().available }} available of {{ summary().total }}</p>
   </div>
@@ -89,7 +89,7 @@ function navRowClass(active: boolean): string {
   <nav aria-label="Storage folders" class="overflow-y-auto flex-1 p-2">
     <button type="button" :class="navRowClass(currentPath() === '')" @click="emit('navigate', '')"><span class="h-[18px] w-[18px] text-blue-500 i-hugeicons-home-02"></span>Home</button>
     <template :for="folder in folders">
-      <button type="button" :class="navRowClass(currentPath() === folder.path)" @click="emit('navigate', folder.path)"><span class="h-[18px] w-[18px] text-amber-500 i-hugeicons-folder-02"></span><span class="truncate">{{ folder.name }}</span><span class="ml-auto tabular-nums text-[11px] text-stone-400 dark:text-neutral-500">{{ folder.count }}</span></button>
+      <button type="button" :class="navRowClass(currentPath() === folder.path)" @click="emit('navigate', folder.path)"><span class="h-[18px] w-[18px] text-amber-500 i-hugeicons-folder-02"></span><span class="truncate">{{ folder.name }}</span><span class="ml-auto tabular-nums text-[11px] text-stone-500 dark:text-neutral-500">{{ folder.count }}</span></button>
     </template>
   </nav>
 

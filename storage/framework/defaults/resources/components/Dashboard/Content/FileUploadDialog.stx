@@ -73,7 +73,7 @@ function submit(): void {
     </label>
     <ul :if="files().length" class="overflow-y-auto mt-4 space-y-1 max-h-32 text-sm">
       <template :for="file in files">
-        <li class="flex gap-4 items-center justify-between px-3 py-2 bg-stone-50 dark:bg-neutral-900 rounded-lg"><span class="text-stone-700 truncate dark:text-neutral-200">{{ file.name }}</span><span class="flex-shrink-0 font-mono text-stone-400 text-xs dark:text-neutral-500">{{ formatFileSize(file.size) }}</span></li>
+        <li class="flex gap-4 items-center justify-between px-3 py-2 bg-stone-50 dark:bg-neutral-900 rounded-lg"><span class="text-stone-700 truncate dark:text-neutral-200">{{ file.name }}</span><span class="flex-shrink-0 font-mono text-stone-500 text-xs dark:text-neutral-500">{{ formatFileSize(file.size) }}</span></li>
       </template>
     </ul>
   </form>

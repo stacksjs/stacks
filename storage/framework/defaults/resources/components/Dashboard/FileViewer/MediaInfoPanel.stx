@@ -90,10 +90,10 @@ const kindLabel = derived(() => currentItem().type === 'folder' ? 'Folder' : `${
   </div>
   <h4 class="mt-4 break-words font-semibold text-[15px] text-stone-800 dark:text-white">{{ currentItem().name }}</h4>
   <dl class="mt-4 space-y-3 text-[13px]">
-    <div class="flex gap-4 items-start justify-between"><dt class="text-stone-400 dark:text-neutral-500">Type</dt><dd class="capitalize font-medium text-right text-stone-700 dark:text-neutral-200">{{ kindLabel() }}</dd></div>
-    <div class="flex gap-4 items-start justify-between"><dt class="text-stone-400 dark:text-neutral-500">Size</dt><dd class="font-medium text-right text-stone-700 dark:text-neutral-200">{{ sizeLabel() }}</dd></div>
-    <div class="flex gap-4 items-start justify-between"><dt class="text-stone-400 dark:text-neutral-500">Location</dt><dd class="break-all font-medium text-right text-stone-700 dark:text-neutral-200">{{ locationLabel() }}</dd></div>
-    <div class="flex gap-4 items-start justify-between"><dt class="text-stone-400 dark:text-neutral-500">Modified</dt><dd class="font-medium text-right text-stone-700 dark:text-neutral-200">{{ formatWhen(currentItem().lastModified) }}</dd></div>
+    <div class="flex gap-4 items-start justify-between"><dt class="text-stone-500 dark:text-neutral-500">Type</dt><dd class="capitalize font-medium text-right text-stone-700 dark:text-neutral-200">{{ kindLabel() }}</dd></div>
+    <div class="flex gap-4 items-start justify-between"><dt class="text-stone-500 dark:text-neutral-500">Size</dt><dd class="font-medium text-right text-stone-700 dark:text-neutral-200">{{ sizeLabel() }}</dd></div>
+    <div class="flex gap-4 items-start justify-between"><dt class="text-stone-500 dark:text-neutral-500">Location</dt><dd class="break-all font-medium text-right text-stone-700 dark:text-neutral-200">{{ locationLabel() }}</dd></div>
+    <div class="flex gap-4 items-start justify-between"><dt class="text-stone-500 dark:text-neutral-500">Modified</dt><dd class="font-medium text-right text-stone-700 dark:text-neutral-200">{{ formatWhen(currentItem().lastModified) }}</dd></div>
   </dl>
   <span :if="currentItem().shared" class="inline-flex gap-1 items-center self-start mt-5 px-2 py-1 font-medium text-[11px] text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-500/15 rounded-full"><span class="h-3 w-3 i-hugeicons-share-01"></span>Public disk</span>
 </div>

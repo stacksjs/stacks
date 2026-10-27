@@ -293,7 +293,7 @@ onMount(() => { void loadPosts() })
             <span :if="row.featured" x-tooltip="Featured" title="Featured" class="flex-shrink-0 h-4 w-4 text-amber-500 i-hugeicons-star"></span>
           </div>
           <p class="mt-1 text-gray-500 text-xs truncate dark:text-neutral-400" x-text="row.summaryLabel"></p>
-          <p class="mt-1 text-gray-400 text-xs dark:text-neutral-500" x-text="row.authorLabel"></p>
+          <p class="mt-1 text-gray-500 text-xs dark:text-neutral-500" x-text="row.authorLabel"></p>
         </template>
         <template :else>
           <p class="text-gray-500 text-xs truncate dark:text-neutral-400"><span class="font-medium text-gray-700 dark:text-neutral-200">Categories:</span> <span x-text="row.categoriesLabel"></span></p>

@@ -70,7 +70,7 @@ function submit(): void {
     <div>
       <div class="flex items-center justify-between">
         <label for="seo-meta-description" class="block font-medium text-neutral-700 text-sm dark:text-neutral-300">Meta description</label>
-        <span class="tabular-nums text-neutral-400 text-xs">{{ metaDescription().length }}/160</span>
+        <span class="tabular-nums text-neutral-500 text-xs dark:text-neutral-400">{{ metaDescription().length }}/160</span>
       </div>
       <textarea
         id="seo-meta-description"

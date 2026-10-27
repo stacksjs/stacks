@@ -136,12 +136,12 @@ function submit(): void {
     <label>
       <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Excerpt</span>
       <textarea x-model="excerpt" name="excerpt" rows="3" maxlength="500" placeholder="Optional, at least 10 characters when provided" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea>
-      <span class="block mt-1 text-gray-400 text-xs">{{ excerpt().length }}/500</span>
+      <span class="block mt-1 text-gray-500 text-xs dark:text-gray-400">{{ excerpt().length }}/500</span>
     </label>
     <label>
       <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Content</span>
       <textarea x-model="content" name="content" required minlength="10" maxlength="100000" rows="10" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea>
-      <span class="block mt-1 text-gray-400 text-xs">{{ content().length }}/100000</span>
+      <span class="block mt-1 text-gray-500 text-xs dark:text-gray-400">{{ content().length }}/100000</span>
     </label>
     <div class="grid gap-4 lg:grid-cols-2">
       <fieldset class="p-4 border border-gray-200 rounded-lg dark:border-neutral-700">
