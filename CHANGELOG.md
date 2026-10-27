@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.324...v0.75.325)
+
+## ✨ Features
+
+- **buddy**: publish native Apple apps through Pantry ([dd8cc36](https://github.com/stacksjs/stacks/commit/dd8cc36)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **ci**: align native publishing with Pantry 0.11.138 ([c65b3fa](https://github.com/stacksjs/stacks/commit/c65b3fa)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.323...v0.75.324)
 
 ## 🐛 Bug Fixes
