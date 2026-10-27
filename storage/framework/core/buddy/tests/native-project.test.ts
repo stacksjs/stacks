@@ -2,7 +2,7 @@ import { afterEach, describe, expect, test } from 'bun:test'
 import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { buildNativeProject, isNativeProject, scaffoldNativeProject, runNativeProjectCommand } from '../src/native-project'
+import { buildNativeProject, isNativeProject, parseNativeAppleFlags, scaffoldNativeProject, runNativeProjectCommand } from '../src/native-project'
 
 const roots: string[] = []
 const options = { buddyVersion: '0.75.255', stxVersion: '0.2.637' }
@@ -18,6 +18,9 @@ describe('native app creation and adoption', () => {
     const root = temporary()
     scaffoldNativeProject(root, options)
     expect(isNativeProject(root)).toBe(true)
+    expect(readFileSync(join(root, '.github/workflows/buddy-bot.yml'), 'utf8')).toBe(readFileSync(join(import.meta.dir, '../../../defaults/vcs/github/workflows/buddy-bot.yml'), 'utf8').replaceAll('\r\n', '\n'))
+    expect(readFileSync(join(root, 'config/buddy-bot.ts'), 'utf8')).not.toContain('__APP_SLUG__')
+    expect(JSON.parse(readFileSync(join(root, '.github/renovate.json'), 'utf8')).enabled).toBe(false)
     expect(existsSync(join(root, 'src/app.stx'))).toBe(true)
     expect(existsSync(join(root, 'craft.config.ts'))).toBe(true)
     const pantry = JSON.parse(readFileSync(join(root, 'pantry.json'), 'utf8'))
@@ -163,3 +166,22 @@ test('Pantry prepares distribution inputs and records the exact compiled artifac
     }
   }
 })
+
+test('native Apple flags validate before any provider side effects', () => {
+  expect(parseNativeAppleFlags(['--build-number', '23', '--submit-for-review'])).toEqual({ buildNumber: '23', submitForReview: true })
+  for (const flags of [['--build-number'], ['--build-number', '0'], ['--build-number', '../x'], ['--unknown'], ['--validate-only', '--submit-for-review'], ['--package-only', '--validate-only']])
+    expect(() => parseNativeAppleFlags(flags)).toThrow()
+})
+
+test('compiled native scaffolding carries the canonical bot templates without source files', () => {
+  const directory = temporary()
+  const root = join(directory, 'created')
+  const source = join(directory, 'fixture.ts')
+  const executable = join(directory, process.platform === 'win32' ? 'scaffold.exe' : 'scaffold')
+  writeFileSync(source, `import { scaffoldNativeProject } from ${JSON.stringify(join(import.meta.dir, '../src/native-project.ts'))}; scaffoldNativeProject(${JSON.stringify(root)}, ${JSON.stringify(options)});`)
+  const compiled = Bun.spawnSync([process.execPath, 'build', source, '--compile', '--outfile', executable], { cwd: directory })
+  expect(compiled.exitCode).toBe(0)
+  const created = Bun.spawnSync([executable], { cwd: directory })
+  expect(created.exitCode).toBe(0)
+  expect(readFileSync(join(root, '.github/workflows/buddy-bot.yml'), 'utf8')).toBe(readFileSync(join(import.meta.dir, '../../../defaults/vcs/github/workflows/buddy-bot.yml'), 'utf8').replaceAll('\r\n', '\n'))
+}, 30000)

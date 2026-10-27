@@ -1,7 +1,8 @@
-/** Offline desktop apps use stx's native packager without a server or database. */
+/** Standalone native apps use stx and Pantry without the web framework boot. */
 import { chmodSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { basename, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { nativeProjectTemplates } from './native-project-templates'
 import { setEnv } from '@stacksjs/env/cli'
 import { generateAppKey } from '@stacksjs/security/key'
 import { auditNativeEnvironment, defaultCraftRuntime, prepareNativeAppBuild, readNativeAppConfig, recordNativeArtifact } from 'ts-pantry/native'
@@ -39,7 +40,7 @@ export function scaffoldNativeProject(root: string, options: { adopt?: boolean, 
     throw new Error('This project already declares a different Stacks application type.')
   const name = basename(root).replace(/(^|[-_ ])\w/g, word => word.replace(/[-_ ]/g, ' ').toUpperCase())
   pkg.stacks = { ...pkg.stacks, type: 'native' }
-  pkg.devDependencies = { '@stacksjs/buddy': `^${options.buddyVersion}`, ...pkg.devDependencies }
+  pkg.devDependencies = { '@buddysh/buddy': '^0.11.13', '@stacksjs/buddy': `^${options.buddyVersion}`, ...pkg.devDependencies }
   pkg.dependencies = { '@stacksjs/stx': `^${options.stxVersion}`, '@stacksjs/desktop': `^${options.stxVersion}`, ...pkg.dependencies }
   pkg.scripts = { dev: './buddy dev', build: './buddy build', package: './buddy package', 'release:patch': './buddy release --bump patch', 'release:minor': './buddy release --bump minor', 'release:major': './buddy release --bump major', ...pkg.scripts }
 
@@ -58,6 +59,9 @@ export function scaffoldNativeProject(root: string, options: { adopt?: boolean, 
   pantry.native = { environment: 'production', runtime: defaultCraftRuntime, ...pantry.native, macos: { notarize: true, ...pantry.native?.macos } }
   writeFileSync(pantryFile, `${JSON.stringify(pantry, null, 2)}\n`)
   if (!options.adopt) writeMissing('src/app.stx', `<!doctype html>\n<html lang="en">\n<head><meta charset="utf-8"><title>${name.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</title></head>\n<body><h1>${name.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</h1><p>Your Stacks native app is ready.</p></body>\n</html>\n`)
+  for (const [destination, source] of Object.entries(nativeProjectTemplates))
+    writeMissing(destination, source.replaceAll('__APP_SLUG__', pkg.name ?? basename(root)))
+  writeMissing('.github/renovate.json', `${JSON.stringify({ enabled: false }, null, 2)}\n`)
   writeMissing('.gitignore', 'node_modules/\ndist/\n.stx/\n.pantry/\n')
   const ignoreFile = join(root, '.gitignore')
   let ignore = readFileSync(ignoreFile, 'utf8')
@@ -123,10 +127,26 @@ export async function buildNativeProject(root: string, args: string[] = []): Pro
 /** Return false to let the ordinary Buddy registry handle unrelated commands. */
 export async function runNativeProjectCommand(root: string, args: string[]): Promise<boolean> {
   const [command = 'help', ...flags] = args
-  if (!['build', 'build:desktop', 'build:native', 'package', 'dev', 'dev:desktop', 'dev:native', 'upgrade', 'update', 'release'].includes(command))
+  if (!['build', 'build:desktop', 'build:native', 'package', 'dev', 'dev:desktop', 'dev:native', 'upgrade', 'update', 'release', 'desktop:apple:package', 'desktop:apple:publish', 'desktop:apple:submit'].includes(command))
     return false
   if (flags.includes('--help') || flags.includes('-h')) {
-    console.log(`buddy ${command} (native app)\n\nBuild: --dmg --verbose\nUpgrade: --dry-run\nRelease: --bump patch|minor|major --dry-run\n\nApplication: craft.config.ts. Runtime and publishing: pantry.json. Development runtime override: CRAFT_BIN.`)
+    console.log(`buddy ${command} (native app)\n\nBuild: --dmg --verbose\nUpgrade: --dry-run\nRelease: --bump patch|minor|major --dry-run\nApple: --build-number N --validate-only --submit-for-review\n\nApplication: craft.config.ts. Runtime and publishing: pantry.json. Development runtime override: CRAFT_BIN.`)
+    return true
+  }
+  if (command.startsWith('desktop:apple:')) {
+    const options = parseNativeAppleFlags(flags)
+    const { publishNativeApple, submitNativeApple } = await import('ts-pantry/native')
+    if (command === 'desktop:apple:submit') {
+      if (!options.buildNumber) throw new Error('Submitting an uploaded build requires --build-number N')
+      if (options.validateOnly || options.packageOnly) throw new Error('Submit does not support package-only or validation-only')
+      const loaded = await import(pathToFileURL(join(root, 'craft.config.ts')).href)
+      const config = loaded.default ?? loaded.config
+      if (!config?.bundleId) throw new Error('craft.config.ts must declare bundleId')
+      await submitNativeApple(root, { ...options, buildNumber: options.buildNumber, bundleId: config.bundleId })
+    }
+    else {
+      await publishNativeApple(root, { ...options, ...(command === 'desktop:apple:package' ? { packageOnly: true } : {}) })
+    }
     return true
   }
   if (command === 'release') {
@@ -171,4 +191,24 @@ export async function runNativeProjectCommand(root: string, args: string[]): Pro
     }
   }
   return true
+}
+
+/** Reject misspelled release flags before building, signing or contacting Apple. */
+export function parseNativeAppleFlags(flags: string[]): { buildNumber?: string, packageOnly?: boolean, validateOnly?: boolean, submitForReview?: boolean } {
+  const options: ReturnType<typeof parseNativeAppleFlags> = {}
+  for (let index = 0; index < flags.length; index++) {
+    const flag = flags[index]
+    if (flag === '--build-number') {
+      const value = flags[++index]
+      if (!value || !/^[1-9]\d*$/.test(value)) throw new Error('--build-number requires a positive integer')
+      options.buildNumber = value
+    }
+    else if (flag === '--package-only') options.packageOnly = true
+    else if (flag === '--validate-only') options.validateOnly = true
+    else if (flag === '--submit-for-review') options.submitForReview = true
+    else throw new Error(`Unsupported native Apple option: ${flag}`)
+  }
+  if (options.packageOnly && (options.validateOnly || options.submitForReview)) throw new Error('Package-only cannot validate or submit a release')
+  if (options.validateOnly && options.submitForReview) throw new Error('Validation-only cannot submit a release')
+  return options
 }

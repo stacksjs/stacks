@@ -1,5 +1,8 @@
 import { frameworkExternal, intro, outro, transpilePackage } from '../build/src'
 import { version } from './package.json'
+import { generateNativeTemplates } from './scripts/native-templates'
+
+generateNativeTemplates()
 
 const { startTime } = await intro({
   dir: import.meta.dir,

@@ -4,6 +4,21 @@ Stacks builds desktop apps through [Craft](https://github.com/home-lang/craft), 
 runtime that hosts your existing views in a platform window. `buddy dev desktop` runs one
 locally; `buddy build desktop` packages it.
 
+## Standalone native applications
+
+A project created with `buddy new --native` uses its own `craft.config.ts` and Pantry's native pipeline. This path is separate from the framework desktop driver matrix below. It supports local model APIs, encrypted release environments, and app-owned signing credentials. New native projects include the canonical Buddy Bot workflow and configuration.
+
+Use `buddy build` for a development bundle, `buddy package` for a development disk image, and `buddy release --bump patch` to qualify and tag a release. The publisher runs the configured checks before versioning.
+
+Enable `native.macos.appStore` in `pantry.json` and provide `app-store.config.ts` or JSON for Apple publishing:
+
+- `buddy desktop:apple:package` qualifies and signs a Store package.
+- `buddy desktop:apple:publish --build-number 12` signs, uploads, waits for Apple processing, attaches the build, and prepares the listing.
+- `buddy desktop:apple:publish --validate-only` validates a signed package without uploading it.
+- `buddy desktop:apple:submit --build-number 12 --submit-for-review` submits the build already uploaded by CI.
+
+Review contact details can stay in encrypted `APP_STORE_REVIEW_CONTACT`, with public review instructions in `reviewNotes`. Keep certificates, profiles, API credentials and private environment keys out of source control. Every operation uses the same `ts-pantry/native` pipeline, including its signed bundle qualification and delivery receipts. Apple processing and review remain external gates; an upload does not establish approval.
+
 ## Support status
 
 **Every desktop target is experimental.** Craft output is useful for development and for
