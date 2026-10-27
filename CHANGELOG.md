@@ -1,5 +1,26 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.331...v0.75.332)
+
+## ✨ Features
+
+- **buddy**: publish:component and publish:view ([46ad7a8](https://github.com/stacksjs/stacks/commit/46ad7a8)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3032](https://github.com/stacksjs/stacks/issues/3032))
+- **cloud**: host Launchpad marketing on the Stacks server ([7358501](https://github.com/stacksjs/stacks/commit/7358501)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh native capability catalog for deployment ([1557c47](https://github.com/stacksjs/stacks/commit/1557c47)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- verify sample publication through a local registry ([ce99617](https://github.com/stacksjs/stacks/commit/ce99617)) _(by Chris Breuer <chris@stacksjs.com>)_ ([#3029](https://github.com/stacksjs/stacks/issues/3029))
+- isolate sample publication dry-run credentials ([1682a55](https://github.com/stacksjs/stacks/commit/1682a55)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.330...v0.75.331)
 
 ## 🐛 Bug Fixes
