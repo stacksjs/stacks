@@ -589,21 +589,49 @@ export function normalizeTimestampWrites<T>(data: T, model: any): T {
   if (!data || typeof data !== 'object' || Array.isArray(data))
     return data
   let result = data as Record<string, any>
-  for (const { field, rule } of resolveWriteValidators(model?.attributes ?? {})) {
-    if (!isDateTimeColumnRule(rule))
+  for (const key of dateTimeWriteKeys(model)) {
+    if (!Object.prototype.hasOwnProperty.call(data, key))
       continue
-    for (const key of new Set([field, toSnakeCase(field)])) {
-      if (!Object.prototype.hasOwnProperty.call(data, key))
-        continue
-      const converted = sqlDateTimeInput((data as Record<string, any>)[key])
-      if (converted !== (data as Record<string, any>)[key]) {
-        if (result === data)
-          result = { ...(data as Record<string, any>) }
-        result[key] = converted
-      }
+    const converted = sqlDateTimeInput((data as Record<string, any>)[key])
+    if (converted !== (data as Record<string, any>)[key]) {
+      if (result === data)
+        result = { ...(data as Record<string, any>) }
+      result[key] = converted
     }
   }
   return result as T
+}
+
+/**
+ * The write keys `normalizeTimestampWrites` converts: every attribute whose
+ * rule makes its column a datetime, under both spellings, and the columns the
+ * traits add. `created_at` and `updated_at` (on unless timestamps are switched
+ * off) and `deleted_at` (under soft deletes) are not declared in `attributes`,
+ * so no rule names them, yet they are always datetimes and a backdated write
+ * to them is ordinary (stacksjs/stacks#3014). A model that does declare one of
+ * those columns itself owns it, and its own rule decides.
+ */
+export function dateTimeWriteKeys(model: any): Set<string> {
+  const keys = new Set<string>()
+  const attributes = model?.attributes ?? {}
+  const declared = new Set(Object.keys(attributes).map(toSnakeCase))
+  const traits = model?.traits ?? {}
+  const traitColumns: string[] = []
+  if ((traits.useTimestamps ?? traits.timestampable) !== false)
+    traitColumns.push('created_at', 'updated_at')
+  if (traits.useSoftDeletes ?? traits.softDeletable)
+    traitColumns.push('deleted_at')
+  for (const column of traitColumns) {
+    if (!declared.has(column))
+      keys.add(column)
+  }
+  for (const { field, rule } of resolveWriteValidators(attributes)) {
+    if (isDateTimeColumnRule(rule)) {
+      keys.add(field)
+      keys.add(toSnakeCase(field))
+    }
+  }
+  return keys
 }
 
 export function hasWriteValidators(model: any): boolean {

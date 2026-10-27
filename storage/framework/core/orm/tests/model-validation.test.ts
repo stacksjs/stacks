@@ -273,6 +273,27 @@ describe('normalizeTimestampWrites', () => {
       .toEqual({ printedAt: '2026-01-01T00:00:00.000', scheduled_for: '2026-01-01T00:00:00.000' })
   })
 
+  // The trait columns are never declared, so no rule names them, and a
+  // backdated created_at is an ordinary write (stacksjs/stacks#3014).
+  it('converts the columns the timestamp and soft-delete traits add', () => {
+    const traited = { name: 'Activity', traits: { useTimestamps: true, useSoftDeletes: true }, attributes: {} }
+    expect(normalizeTimestampWrites({ created_at: '2026-01-01T00:00:00.000Z', updated_at: '2026-01-01T00:00:00Z', deleted_at: '2026-01-01T00:00:00.000Z' }, traited))
+      .toEqual({ created_at: '2026-01-01T00:00:00.000', updated_at: '2026-01-01T00:00:00.000', deleted_at: '2026-01-01T00:00:00.000' })
+    // Timestamps are on unless switched off, as the schema has them.
+    expect(normalizeTimestampWrites({ created_at: '2026-01-01T00:00:00.000Z' }, { name: 'Plain', attributes: {} }))
+      .toEqual({ created_at: '2026-01-01T00:00:00.000' })
+  })
+
+  it('leaves a trait column alone when its trait is off', () => {
+    const data = { created_at: '2026-01-01T00:00:00.000Z', deleted_at: '2026-01-01T00:00:00.000Z' }
+    expect(normalizeTimestampWrites(data, { name: 'Untimed', traits: { useTimestamps: false }, attributes: {} })).toBe(data)
+  })
+
+  it('leaves a trait column to the model when the model declares it itself', () => {
+    const data = { created_at: '2026-10-22' }
+    expect(normalizeTimestampWrites(data, { name: 'Dated', attributes: { createdAt: { fillable: true } } })).toBe(data)
+  })
+
   it('leaves other attributes, and data with nothing to convert, as they were', () => {
     const data = { reason: '1767225600' }
     expect(normalizeTimestampWrites(data, stamped)).toBe(data)

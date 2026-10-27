@@ -9,7 +9,7 @@ import { snakeCase } from '@stacksjs/strings'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { type Paginator, toCursorPaginator, toPaginator, toSimplePaginator } from '@stacksjs/pagination'
 import { enrichPaginatorUrls, resolveCursorArgs, resolvePageArgs } from './paginator-request'
-import { hasWriteValidators, normalizeTimestampWrites, validateWriteBody } from './auto-crud'
+import { dateTimeWriteKeys, hasWriteValidators, normalizeTimestampWrites, validateWriteBody } from './auto-crud'
 import type { BelongsToForeignKeys } from './model-types'
 import type { GdprTraitOptions, PersonalAttribute } from './gdpr/types'
 
@@ -2175,12 +2175,15 @@ function wrapWritesWithMassAssignment(baseModel: Record<string, unknown>, defini
  * they call internally.
  */
 function wrapWritesWithValidation(baseModel: Record<string, unknown>, definition: BQBModelDefinition): void {
-  if (!hasWriteValidators(definition)) return
+  // A model with no rules still has datetime columns to normalize: the ones
+  // its timestamp and soft-delete traits add (stacksjs/stacks#3014).
+  const validates = hasWriteValidators(definition)
+  if (!validates && dateTimeWriteKeys(definition).size === 0) return
 
   const modelName = String((definition)?.name ?? baseModel.name ?? 'Model')
 
   const check = (data: unknown, hook: 'creating' | 'updating'): void => {
-    if (validationIsSuppressed()) return
+    if (!validates || validationIsSuppressed()) return
     if (!data || typeof data !== 'object' || Array.isArray(data)) return
     const result = validateWriteBody(data as Record<string, any>, definition, hook)
     if (!result.valid)
