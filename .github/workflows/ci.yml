@@ -773,6 +773,16 @@ jobs:
         working-directory: storage/framework/runtime/sites/launchpad
         run: bun install --frozen-lockfile
 
+      # Attached sites qualify this exact framework source before it is
+      # published. The runner-only link leaves the app's manifest and lock
+      # untouched; only the resulting static files ship to the server.
+      - name: Build framework path contract for attached sites
+        working-directory: storage/framework/core/path
+        run: bun run build
+
+      - name: Link framework source into Launchpad website build
+        run: ./buddy link:core path --path "$GITHUB_WORKSPACE" --cwd "$GITHUB_WORKSPACE/storage/framework/runtime/sites/launchpad"
+
       # Pinned host keys for a `cloud.provider: 'ssh'` target. Optional: the
       # deploy falls back to accepting a key on first contact, which is what
       # the Hetzner path has always done. Note that a runner on GitHub's

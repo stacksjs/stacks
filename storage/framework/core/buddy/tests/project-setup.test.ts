@@ -19,6 +19,11 @@ describe('Buddy project setup guards', () => {
     expect(shouldSkipAppKeyCheck('upgrade:dependencies')).toBe(true)
   })
 
+  it('links framework packages without creating application secrets', () => {
+    expect(shouldSkipAppKeyCheck('link:core')).toBe(true)
+    expect(shouldSkipAppKeyCheck('unlink:core')).toBe(true)
+  })
+
   it('retains initialization for commands that require an application', () => {
     expect(shouldSkipAppKeyCheck('dev')).toBe(false)
   })

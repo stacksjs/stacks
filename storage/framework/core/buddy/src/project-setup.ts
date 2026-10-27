@@ -13,6 +13,9 @@ const APP_KEY_OPTIONAL_COMMANDS = [
   // Apple signing/provisioning also serves standalone Stacks native apps.
   'desktop:apple',
   'build',
+  // Linking build dependencies changes no application data or secrets.
+  'link:core',
+  'unlink:core',
   'lint',
   'docs',
   'release',

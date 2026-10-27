@@ -3003,6 +3003,7 @@ Point this app's @stacksjs/* at a local framework checkout
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--path` | Framework checkout to link against | value, required | - |
+| `--cwd` | Application directory to link (defaults to the working directory) | value, required | - |
 | `--all` | Link every core package the app has installed | boolean, optional | `false` |
 
 Examples:
@@ -5808,6 +5809,10 @@ Go back to the installed @stacksjs/* packages (all of them, unless you name some
 - Namespace: `unlink`
 - Aliases: none
 - Arguments: `[packages...]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--cwd` | Application directory to unlink (defaults to the working directory) | value, required | - |
 
 Examples:
 

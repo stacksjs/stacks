@@ -31,8 +31,8 @@ import { ExitCode } from '@stacksjs/types'
  */
 
 /** Where the linked set is recorded, so `unlink:core` knows what to undo. */
-function recordPath(): string {
-  return join(process.cwd(), 'storage/framework/runtime/linked-core.json')
+function recordPath(root = process.cwd()): string {
+  return join(root, 'storage/framework/runtime/linked-core.json')
 }
 
 interface LinkRecord {
@@ -40,18 +40,18 @@ interface LinkRecord {
   packages: string[]
 }
 
-function readRecord(): LinkRecord | null {
+function readRecord(root: string): LinkRecord | null {
   try {
-    return JSON.parse(fs.readFileSync(recordPath(), 'utf-8')) as LinkRecord
+    return JSON.parse(fs.readFileSync(recordPath(root), 'utf-8')) as LinkRecord
   }
   catch {
     return null
   }
 }
 
-function writeRecord(record: LinkRecord): void {
-  fs.mkdirSync(join(process.cwd(), 'storage/framework/runtime'), { recursive: true })
-  fs.writeFileSync(recordPath(), `${JSON.stringify(record, null, 2)}\n`)
+function writeRecord(record: LinkRecord, root: string): void {
+  fs.mkdirSync(join(root, 'storage/framework/runtime'), { recursive: true })
+  fs.writeFileSync(recordPath(root), `${JSON.stringify(record, null, 2)}\n`)
 }
 
 /**
@@ -61,16 +61,16 @@ function writeRecord(record: LinkRecord): void {
  * checkout is not where the conventions expect; then the two conventional
  * places — a sibling of this project, and `~/Code/stacks`.
  */
-function resolveFrameworkPath(explicit?: string): string | null {
+function resolveFrameworkPath(explicit: string | undefined, root: string): string | null {
   const candidates = [
     explicit,
     process.env.STACKS_FRAMEWORK_PATH,
-    resolve(process.cwd(), '../stacks'),
+    resolve(root, '../stacks'),
     join(homedir(), 'Code/stacks'),
   ].filter(Boolean) as string[]
 
   for (const candidate of candidates) {
-    const full = resolve(candidate)
+    const full = resolve(root, candidate)
     if (existsSync(join(full, 'storage/framework/core')))
       return full
   }
@@ -124,11 +124,13 @@ export function link(buddy: CLI): void {
   buddy
     .command('link:core [...packages]', 'Point this app\'s @stacksjs/* at a local framework checkout')
     .option('--path <path>', 'Framework checkout to link against')
+    .option('--cwd <path>', 'Application directory to link (defaults to the working directory)')
     .option('--all', 'Link every core package the app has installed', { default: false })
     .example('buddy link:core auth router')
     .example('buddy link:core --all --path ../stacks')
-    .action(async (packages: string[] | undefined, options?: { path?: string, all?: boolean }) => {
-      const framework = resolveFrameworkPath(options?.path)
+    .action(async (packages: string[] | undefined, options?: { path?: string, all?: boolean, cwd?: string }) => {
+      const root = resolve(options?.cwd ?? process.cwd())
+      const framework = resolveFrameworkPath(options?.path, root)
 
       if (!framework) {
         await log.error('No framework checkout found.')
@@ -138,7 +140,7 @@ export function link(buddy: CLI): void {
       }
 
       const available = corePackages(framework)
-      const modulesDir = join(process.cwd(), 'node_modules')
+      const modulesDir = join(root, 'node_modules')
 
       const wanted = (packages?.length ?? 0) > 0
         ? packages!.map(normalize)
@@ -180,7 +182,7 @@ export function link(buddy: CLI): void {
           unbuilt.push(name)
       }
 
-      writeRecord({ framework, packages: linked })
+      writeRecord({ framework, packages: linked }, root)
 
       log.success(`Linked ${linked.length} package${linked.length === 1 ? '' : 's'} to ${italic(framework)}`)
 
@@ -201,10 +203,12 @@ export function link(buddy: CLI): void {
 
   buddy
     .command('unlink:core [...packages]', 'Go back to the installed @stacksjs/* packages (all of them, unless you name some)')
+    .option('--cwd <path>', 'Application directory to unlink (defaults to the working directory)')
     .example('buddy unlink:core')
-    .action(async (packages: string[] | undefined) => {
-      const record = readRecord()
-      const modulesDir = join(process.cwd(), 'node_modules')
+    .action(async (packages: string[] | undefined, options?: { cwd?: string }) => {
+      const root = resolve(options?.cwd ?? process.cwd())
+      const record = readRecord(root)
+      const modulesDir = join(root, 'node_modules')
 
       const wanted = (packages?.length ?? 0) > 0
         ? packages!.map(normalize)
@@ -233,9 +237,9 @@ export function link(buddy: CLI): void {
       const survivors = (record?.packages ?? []).filter(name => !unlinked.has(name))
 
       if (survivors.length > 0)
-        writeRecord({ framework: record!.framework, packages: survivors })
+        writeRecord({ framework: record!.framework, packages: survivors }, root)
       else
-        fs.rmSync(recordPath(), { force: true })
+        fs.rmSync(recordPath(root), { force: true })
 
       if (removed === 0) {
         log.info('Nothing was linked.')
@@ -245,7 +249,7 @@ export function link(buddy: CLI): void {
 
       log.info(`Unlinked ${removed} package${removed === 1 ? '' : 's'}; reinstalling the published copies...`)
 
-      const install = Bun.spawn(['bun', 'install', '--force'], { cwd: process.cwd(), stdout: 'inherit', stderr: 'inherit' })
+      const install = Bun.spawn(['bun', 'install', '--force'], { cwd: root, stdout: 'inherit', stderr: 'inherit' })
       const code = await install.exited
 
       if (code !== 0) {
