@@ -44,7 +44,7 @@ const iconClass = derived(() => [
 const labelClass = derived(() => [
   sizeClasses[liveSize()]?.label || sizeClasses.md.label,
   'font-medium',
-  liveDisabled() ? 'text-neutral-400 dark:text-neutral-500' : 'text-neutral-700 dark:text-neutral-200',
+  liveDisabled() ? 'text-neutral-500 dark:text-neutral-500' : 'text-neutral-700 dark:text-neutral-200',
 ].join(' '))
 const descriptionClass = derived(() => [
   sizeClasses[liveSize()]?.description || sizeClasses.md.description,

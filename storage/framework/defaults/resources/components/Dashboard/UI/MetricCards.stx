@@ -26,7 +26,7 @@ const columns = useReactiveProp('columns', 'grid-cols-2 lg:grid-cols-4')
     <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
       <p class="text-gray-500 text-xs dark:text-neutral-400">{{ item.label }}</p>
       <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ item.value }}</p>
-      <p :if="item.detail" class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ item.detail }}</p>
+      <p :if="item.detail" class="mt-1 text-gray-500 text-xs dark:text-neutral-500">{{ item.detail }}</p>
     </article>
   </template>
 </section>

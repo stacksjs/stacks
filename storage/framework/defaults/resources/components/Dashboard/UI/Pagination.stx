@@ -100,7 +100,7 @@ function emitItemsPerPage(event: Event): void {
     </Button>
 
     <template :for="page in visiblePages()">
-      <span :if="typeof page !== 'number'" class="px-2 text-neutral-400 dark:text-neutral-500">...</span>
+      <span :if="typeof page !== 'number'" class="px-2 text-neutral-500 dark:text-neutral-500">...</span>
       <Button :if="typeof page === 'number' && page === currentPage()" @click="goToPage(page)">
         <span aria-current="page">{{ page }}</span>
       </Button>

@@ -51,7 +51,7 @@ const thumbClass = derived(() => [
 ].join(' '))
 const labelClass = derived(() => [
   'text-[13px] font-medium tracking-tight',
-  liveDisabled() ? 'text-neutral-400 dark:text-neutral-600' : 'text-neutral-700 dark:text-neutral-200',
+  liveDisabled() ? 'text-neutral-500 dark:text-neutral-600' : 'text-neutral-700 dark:text-neutral-200',
 ].join(' '))
 const descriptionClass = derived(() => [
   'mt-0.5 text-[12px]',
