@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.333...v0.75.334)
+
+## 🐛 Bug Fixes
+
+- **buddy**: link attached-site builds to exact framework source ([886f7df](https://github.com/stacksjs/stacks/commit/886f7df)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh native catalog for cross-project core links ([2f45372](https://github.com/stacksjs/stacks/commit/2f45372)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.332...v0.75.333)
 
 ## 🐛 Bug Fixes
