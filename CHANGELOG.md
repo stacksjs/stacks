@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.327...v0.75.328)
+
+## 🐛 Bug Fixes
+
+- check generated declarations before releasing ([ecb8657](https://github.com/stacksjs/stacks/commit/ecb8657)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.326...v0.75.327)
 
 ## 🔧 Chores
