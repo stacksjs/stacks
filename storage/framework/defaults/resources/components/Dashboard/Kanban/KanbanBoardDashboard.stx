@@ -376,7 +376,7 @@
         <div>
           <h1 class="font-semibold text-2xl text-zinc-900 dark:text-zinc-100" :text="board.name"></h1>
           <p :if="board.description" class="mt-1 text-sm text-zinc-500" :text="board.description"></p>
-          <p class="mt-2 text-xs text-zinc-400">
+          <p class="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
             <span :text="columns.length + ' columns'"></span>
             <span> · </span>
             <span :text="totalCards() + ' cards'"></span>

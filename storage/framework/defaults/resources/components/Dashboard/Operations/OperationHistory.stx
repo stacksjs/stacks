@@ -55,7 +55,7 @@ function statusVariant(state: OperatorOperation['state']): 'default' | 'primary'
         <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ operation.actorName }} at {{ formatDate(operation.finishedAt || operation.createdAt) }}</p>
         <p :if="operation.error" class="mt-1 text-red-600 text-xs dark:text-red-400">{{ operation.error }}</p>
       </div>
-      <code class="font-mono text-[11px] text-gray-400 dark:text-neutral-500">{{ operation.id }}</code>
+      <code class="font-mono text-[11px] text-gray-500 dark:text-neutral-500">{{ operation.id }}</code>
     </li>
   </ul>
 </Card>

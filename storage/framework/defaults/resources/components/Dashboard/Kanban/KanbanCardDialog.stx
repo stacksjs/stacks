@@ -294,7 +294,7 @@ function formatTimestamp(iso: string | null | undefined): string {
               </div>
               <div class="px-2 py-1.5">
                 <p class="text-[10px] text-zinc-500 dark:text-zinc-400" :text="attachment.mimeType"></p>
-                <p class="text-[10px] text-zinc-400" :text="formatBytes(attachment.sizeBytes)"></p>
+                <p class="text-[10px] text-zinc-500 dark:text-zinc-400" :text="formatBytes(attachment.sizeBytes)"></p>
               </div>
             </li>
           </ul>
@@ -317,14 +317,14 @@ function formatTimestamp(iso: string | null | undefined): string {
             </div>
           </div>
 
-          <div :if="cardComments().length === 0 && !loadingCard()" class="italic text-xs text-zinc-400">No comments yet.</div>
+          <div :if="cardComments().length === 0 && !loadingCard()" class="italic text-xs text-zinc-500 dark:text-zinc-400">No comments yet.</div>
           <ul class="space-y-3">
             <li :for="comment in cardComments" class="flex gap-3">
               <span class="inline-flex flex-shrink-0 items-center justify-center h-7 w-7 font-medium text-[10px] text-white bg-violet-500 rounded-full" :text="initialsOf(comment.authorName, comment.authorEmail)"></span>
               <div class="flex-1 min-w-0">
                 <div class="flex flex-wrap gap-2 items-baseline">
                   <span class="font-medium text-xs text-zinc-700 dark:text-zinc-200" :text="comment.authorName || comment.authorEmail || 'Unknown'"></span>
-                  <span class="text-[10px] text-zinc-400" :text="formatTimestamp(comment.createdAt)"></span>
+                  <span class="text-[10px] text-zinc-500 dark:text-zinc-400" :text="formatTimestamp(comment.createdAt)"></span>
                   <template :if="editingCommentId() !== comment.id">
                     <Button variant="ghost" size="xs" @click="startCommentEdit(comment.id, comment.body)">Edit</Button>
                     <Button variant="ghost" size="xs" @click="requestDelete('comment', comment.id)"><span class="text-red-500">Delete</span></Button>
@@ -365,7 +365,7 @@ function formatTimestamp(iso: string | null | undefined): string {
 
           <div :if="!showLabelPicker()" class="flex flex-wrap gap-1">
             <span :for="label in cardLabels" :class="`px-2 py-0.5 text-xs font-medium rounded ${labelChipClass(label.color)}`" :text="label.name"></span>
-            <span :if="cardLabels().length === 0" class="italic text-xs text-zinc-400">None</span>
+            <span :if="cardLabels().length === 0" class="italic text-xs text-zinc-500 dark:text-zinc-400">None</span>
           </div>
 
           <div :if="showLabelPicker()" class="space-y-2">
@@ -407,11 +407,11 @@ function formatTimestamp(iso: string | null | undefined): string {
               <span class="inline-flex items-center justify-center h-6 w-6 font-medium text-[10px] text-white bg-violet-500 rounded-full" :text="initialsOf(assignee.name, assignee.email)"></span>
               <span :text="assignee.name || assignee.email || 'Unknown'"></span>
             </div>
-            <span :if="cardAssignees().length === 0" class="italic text-xs text-zinc-400">Unassigned</span>
+            <span :if="cardAssignees().length === 0" class="italic text-xs text-zinc-500 dark:text-zinc-400">Unassigned</span>
           </div>
 
           <div :if="showAssigneePicker()" class="overflow-y-auto space-y-1 max-h-48">
-            <p :if="kanban.users().length === 0" class="italic text-xs text-zinc-400">No users to assign.</p>
+            <p :if="kanban.users().length === 0" class="italic text-xs text-zinc-500 dark:text-zinc-400">No users to assign.</p>
             <button :for="user in kanban.users" type="button" :aria-pressed="String(cardAssignees().some(assignee => assignee.userId === user.id))" @click="toggleAssignee(user.id)" class="flex gap-2 items-center px-2 py-1.5 w-full text-left text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded">
               <span class="inline-flex flex-shrink-0 items-center justify-center h-6 w-6 font-medium text-[10px] text-white bg-violet-500 rounded-full" :text="initialsOf(user.name, user.email)"></span>
               <span class="flex-1 text-zinc-700 truncate dark:text-zinc-200" :text="user.name || user.email"></span>
@@ -426,8 +426,8 @@ function formatTimestamp(iso: string | null | undefined): string {
         </section>
 
         <section class="pt-3 border-t border-zinc-200 dark:border-zinc-800">
-          <p class="text-[10px] text-zinc-400">Created <span :text="formatTimestamp(openCard()?.createdAt)"></span></p>
-          <p :if="openCard()?.updatedAt && openCard()?.updatedAt !== openCard()?.createdAt" class="text-[10px] text-zinc-400">Updated <span :text="formatTimestamp(openCard()?.updatedAt)"></span></p>
+          <p class="text-[10px] text-zinc-500 dark:text-zinc-400">Created <span :text="formatTimestamp(openCard()?.createdAt)"></span></p>
+          <p :if="openCard()?.updatedAt && openCard()?.updatedAt !== openCard()?.createdAt" class="text-[10px] text-zinc-500 dark:text-zinc-400">Updated <span :text="formatTimestamp(openCard()?.updatedAt)"></span></p>
         </section>
       </aside>
     </div>

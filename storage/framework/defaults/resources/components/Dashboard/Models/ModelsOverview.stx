@@ -204,7 +204,7 @@ onMount(() => {
             <div :if="model.apiUri" class="flex gap-2 items-center mt-4">
               <span class="inline-flex px-2 py-0.5 font-medium text-green-700 text-xs dark:text-green-300 bg-green-50 dark:bg-green-950/40 rounded">API</span>
               <code class="text-neutral-500 text-xs truncate dark:text-neutral-400">{{ model.apiUri }}</code>
-              <span class="ml-auto text-neutral-400 text-xs">{{ model.apiRoutes.length }} routes</span>
+              <span class="ml-auto text-neutral-500 text-xs dark:text-neutral-400">{{ model.apiRoutes.length }} routes</span>
             </div>
           </StxLink>
         </div>

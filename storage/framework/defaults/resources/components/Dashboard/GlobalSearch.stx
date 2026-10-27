@@ -152,7 +152,7 @@ onDestroy(() => {
         @input="scheduleSearch($event.target.value)"
       />
       <span :if="isSearching()" class="shrink-0 h-5 w-5 text-blue-500 animate-spin i-hugeicons-loading-03"></span>
-      <kbd :if="!isSearching()" class="shrink-0 px-1.5 py-0.5 font-medium text-[10px] text-neutral-400 bg-neutral-100 dark:bg-neutral-700 border border-neutral-200 rounded dark:border-neutral-600">
+      <kbd :if="!isSearching()" class="shrink-0 px-1.5 py-0.5 font-medium text-[10px] text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-700 border border-neutral-200 rounded dark:border-neutral-600">
         ESC
       </kbd>
     </div>
@@ -170,7 +170,7 @@ onDestroy(() => {
       <template :if="!error() && Object.keys(results()).length > 0">
         <template :for="group in resultGroups()">
           <div class="pb-1 pt-3 px-3">
-            <h3 class="px-1 font-semibold text-neutral-400 text-xs tracking-wider uppercase">
+            <h3 class="px-1 font-semibold text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">
               {{ group.type }}
             </h3>
           </div>
@@ -203,11 +203,11 @@ onDestroy(() => {
       </div>
 
       <div :if="!error() && !query().trim() && !isSearching()" class="px-4 py-8 text-center">
-        <p class="text-neutral-400 text-sm">Search fields declared by each model's useSearch trait.</p>
+        <p class="text-neutral-500 text-sm dark:text-neutral-400">Search fields declared by each model's useSearch trait.</p>
       </div>
     </div>
 
-    <div class="flex gap-4 items-center px-4 py-2.5 text-neutral-400 text-xs border-neutral-200 border-t dark:border-neutral-700">
+    <div class="flex gap-4 items-center px-4 py-2.5 text-neutral-500 text-xs dark:text-neutral-400 border-neutral-200 border-t dark:border-neutral-700">
       <span class="flex gap-1 items-center">
         <kbd class="px-1 py-0.5 text-[10px] bg-neutral-100 dark:bg-neutral-700 border border-neutral-200 rounded dark:border-neutral-600">↑↓</kbd>
         Navigate

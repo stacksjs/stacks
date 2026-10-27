@@ -58,12 +58,12 @@ useClickOutside(userMenu, () => setDropdownOpen(false))
   <div class="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
     <StxLink
       to="/models"
-      class="flex relative flex-1 items-center pl-8 text-gray-400 sm:text-sm hover:text-gray-600 dark:hover:text-neutral-200 transition-colors"
+      class="flex relative flex-1 items-center pl-8 text-gray-500 sm:text-sm dark:text-gray-400 hover:text-gray-600 dark:hover:text-neutral-200 transition-colors"
       aria-label="Search model records"
     >
       <span aria-hidden="true" class="absolute left-0 h-5 w-5 i-hugeicons-search-01"></span>
       <span>Search model records</span>
-      <kbd class="ml-auto px-1.5 py-0.5 font-medium text-[10px] text-neutral-400 bg-neutral-100 dark:bg-neutral-700 border border-neutral-200 rounded dark:border-neutral-600">
+      <kbd class="ml-auto px-1.5 py-0.5 font-medium text-[10px] text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-700 border border-neutral-200 rounded dark:border-neutral-600">
         ⌘K
       </kbd>
     </StxLink>

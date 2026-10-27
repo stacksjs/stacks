@@ -221,7 +221,7 @@ function another() {
           </label>
 
           <label class="block mb-4">
-            <span class="block mb-1.5 font-medium text-neutral-700 text-sm dark:text-neutral-200">Details <span class="font-normal text-neutral-400">(optional)</span></span>
+            <span class="block mb-1.5 font-medium text-neutral-700 text-sm dark:text-neutral-200">Details <span class="font-normal text-neutral-500 dark:text-neutral-400">(optional)</span></span>
             <textarea
               x-model="description"
               rows="6"
@@ -233,7 +233,7 @@ function another() {
           </label>
 
           <div class="mb-5">
-            <span class="block mb-1.5 font-medium text-neutral-700 text-sm dark:text-neutral-200">Screenshot <span class="font-normal text-neutral-400">(optional)</span></span>
+            <span class="block mb-1.5 font-medium text-neutral-700 text-sm dark:text-neutral-200">Screenshot <span class="font-normal text-neutral-500 dark:text-neutral-400">(optional)</span></span>
 
             <div :if="screenshot()" class="flex gap-3 items-center p-3 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 rounded-lg dark:border-neutral-700">
               <img :src="preview()" alt="The screenshot you chose" class="object-cover h-14 w-14 bg-white dark:bg-neutral-900 border border-neutral-200 rounded dark:border-neutral-700" />
@@ -246,7 +246,7 @@ function another() {
             <label :else class="flex flex-col items-center justify-center px-4 py-6 text-center border border-dashed border-neutral-300 rounded-lg dark:border-neutral-600 hover:border-blue-400 dark:hover:border-blue-600 transition-colors cursor-pointer" @dragover.prevent @drop.prevent="drop($event)">
               <span class="h-6 w-6 text-neutral-400 i-hugeicons-image-upload"></span>
               <span class="mt-2 font-medium text-neutral-700 text-sm dark:text-neutral-200">Choose an image, drop it here, or paste it</span>
-              <span class="mt-1 text-neutral-400 text-xs">PNG, JPEG, WebP or GIF, up to {{ megabytes(sizeLimit()) }}</span>
+              <span class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">PNG, JPEG, WebP or GIF, up to {{ megabytes(sizeLimit()) }}</span>
               <input
                 ref="feedbackScreenshotInput"
                 type="file"
@@ -269,7 +269,7 @@ function another() {
           </button>
         </form>
 
-        <p class="mt-4 text-center text-neutral-400 text-xs dark:text-neutral-500">
+        <p class="mt-4 text-center text-neutral-500 text-xs dark:text-neutral-500">
           This link lets you send feedback. It does not sign you in, and it cannot read anything back.
         </p>
       </div>

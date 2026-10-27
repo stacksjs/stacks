@@ -200,7 +200,7 @@
               class="mt-1 line-clamp-2 text-xs text-zinc-500"
               :text="board.description"
             ></p>
-            <p class="mt-3 text-xs text-zinc-400" :text="cardCountText(board.cardCount)"></p>
+            <p class="mt-3 text-xs text-zinc-500 dark:text-zinc-400" :text="cardCountText(board.cardCount)"></p>
           </div>
         </StxLink>
         <span class="absolute right-3 top-4 opacity-0 focus-within:opacity-100 group-hover:opacity-100 transition-opacity">
@@ -232,7 +232,7 @@
         </div>
 
         <div>
-          <label for="kanban-board-description" class="block mb-1 font-medium text-xs text-zinc-700 dark:text-zinc-300">Description <span class="text-zinc-400">(optional)</span></label>
+          <label for="kanban-board-description" class="block mb-1 font-medium text-xs text-zinc-700 dark:text-zinc-300">Description <span class="text-zinc-500 dark:text-zinc-400">(optional)</span></label>
           <textarea
             id="kanban-board-description"
             x-model="draftDescription"

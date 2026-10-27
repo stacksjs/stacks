@@ -26,7 +26,7 @@ function variant(status: RecoveryJob['status']): 'default' | 'primary' | 'succes
         <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ job.progress.phase || 'queued' }} · {{ formatDate(job.finishedAt || job.startedAt || job.createdAt) }}</p>
         <p :if="job.error" class="mt-1 text-red-600 text-xs dark:text-red-400">{{ job.error }}</p>
       </div>
-      <code class="font-mono text-[11px] text-gray-400 dark:text-neutral-500">{{ job.id }}</code>
+      <code class="font-mono text-[11px] text-gray-500 dark:text-neutral-500">{{ job.id }}</code>
     </li>
   </ul>
 </Card>

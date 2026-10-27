@@ -220,7 +220,7 @@ void loadFiles()
           >
             <span class="flex-none h-4 w-4 i-hugeicons-settings-02"></span>
             <span class="flex-1 font-medium text-sm truncate">{{ file.title }}</span>
-            <span class="text-[10px] text-neutral-400">{{ file.size < 1024 ? file.size + ' B' : Math.round(file.size / 1024) + ' KB' }}</span>
+            <span class="text-[10px] text-neutral-500 dark:text-neutral-400">{{ file.size < 1024 ? file.size + ' B' : Math.round(file.size / 1024) + ' KB' }}</span>
           </button>
         </template>
       </nav>
