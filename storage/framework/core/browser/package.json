@@ -78,7 +78,7 @@
     "@stacksjs/datetime": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/stx": "0.2.720",
-    "bun-query-builder": "^0.3.22"
+    "bun-query-builder": "^0.3.28"
   },
   "peerDependencies": {
     "@stripe/stripe-js": "^10.0.0"
