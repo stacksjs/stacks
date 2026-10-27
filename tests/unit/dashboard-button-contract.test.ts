@@ -480,7 +480,11 @@ describe('dashboard button contract', () => {
       resolve('storage/framework/defaults/resources/components/Dashboard/Content/FileUploadDialog.stx'),
       'utf8',
     )
-    const nativeButtons = [...source.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
+    const storagePanel = readFileSync(
+      resolve('storage/framework/defaults/resources/components/Dashboard/Content/FileStoragePanel.stx'),
+      'utf8',
+    )
+    const nativeButtons = [...source.matchAll(/<button\b[^>]*>/g), ...storagePanel.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
     const semanticNavigation = [
       'navRowClass',
       'aria-label="Grid view"',
@@ -496,6 +500,9 @@ describe('dashboard button contract', () => {
     expect(source).toContain('<ConfirmDialog')
     expect(source).not.toContain('fixed inset-0')
     expect(source).not.toContain('fixed inset-y-0')
+    expect(storagePanel).not.toContain('fixed inset')
+    expect(source).toMatch(/<Drawer :isOpen="storageDrawerOpen\(\)"[^>]*>\s*<FileStoragePanel /)
+    expect(storagePanel).toContain('<Button :disabled="busy()" fullWidth @click="emit(\'upload\')">')
     expect(details).toContain('<Drawer')
     expect(details).toContain('<Button :if="item()?.url" tag="a" :href="item()?.url"')
     expect(folder).toContain('<Modal')

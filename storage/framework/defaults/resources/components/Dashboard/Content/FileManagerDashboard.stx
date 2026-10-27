@@ -77,7 +77,11 @@ const searchQuery = state('')
 const sortBy = state<'name' | 'lastModified' | 'size'>('name')
 const sortOrder = state<'asc' | 'desc'>('asc')
 const viewMode = state<'grid' | 'list'>('grid')
-const showSidePanel = state(true)
+// A wide screen shows the storage panel beside the files; a narrow one has
+// no room for it, so the same panel opens in a drawer instead.
+const sidePanelOpen = state(true)
+const storageDrawerOpen = state(false)
+const isWideScreen = useMediaQuery('(min-width: 1024px)')
 const loading = state(true)
 const loadError = state('')
 const truncated = state(false)
@@ -165,7 +169,7 @@ const typeRows = derived(() => [
   { key: 'videos', label: 'Videos', bytes: stats().byType.videos, color: 'bg-amber-500' },
   { key: 'audio', label: 'Audio', bytes: stats().byType.audio, color: 'bg-emerald-500' },
   { key: 'other', label: 'Other', bytes: stats().byType.other, color: 'bg-stone-400 dark:bg-neutral-500' },
-])
+].map(row => ({ key: row.key, label: row.label, color: row.color, size: formatFileSize(row.bytes), barStyle: typeBarStyle(row.bytes) })))
 
 const volumePercent = derived(() => {
   const total = stats().disk.totalBytes
@@ -173,22 +177,37 @@ const volumePercent = derived(() => {
   return total && used !== null ? Math.min(100, Math.max(0, used / total * 100)) : 0
 })
 const capacityKnown = derived(() => stats().disk.totalBytes !== null && stats().disk.availableBytes !== null)
+const storageSummary = derived(() => ({
+  files: stats().files,
+  folders: stats().folders,
+  contentSize: formatFileSize(stats().contentBytes),
+  capacityKnown: capacityKnown(),
+  capacityPercent: volumePercent(),
+  available: formatFileSize(stats().disk.availableBytes),
+  total: formatFileSize(stats().disk.totalBytes),
+}))
+const storageFolders = derived(() => topLevelFolders().map(folder => ({ path: folder.path, name: folder.name, count: (folder.items || []).length })))
 const currentFolderLabel = derived(() => currentFolderPath() || 'Storage root')
 const emptyHint = derived(() => searchQuery() ? 'No items match your search.' : 'This folder is empty.')
-const sidePanelClass = derived(() => `border-r border-black/[0.06] dark:border-white/[0.08] bg-[#F5F3EE]/70 dark:bg-neutral-900/40 backdrop-blur-2xl transition-all duration-300 ${showSidePanel() ? 'w-64' : 'w-0 overflow-hidden'}`)
+
+function toggleSidePanel(): void {
+  if (isWideScreen())
+    sidePanelOpen.set(!sidePanelOpen())
+  else
+    storageDrawerOpen.set(true)
+}
+
+effect(() => {
+  if (isWideScreen() && storageDrawerOpen())
+    storageDrawerOpen.set(false)
+})
+
 const segmentBase = 'inline-flex items-center px-2.5 py-1.5 rounded-md text-sm font-medium transition-colors'
 const segmentActive = 'bg-white dark:bg-neutral-700 text-stone-800 dark:text-white shadow-sm'
 const segmentInactive = 'text-stone-500 dark:text-neutral-400 hover:text-stone-700 dark:hover:text-neutral-200'
 const gridViewClass = derived(() => `${segmentBase} ${viewMode() === 'grid' ? segmentActive : segmentInactive}`)
 const listViewClass = derived(() => `${segmentBase} ${viewMode() === 'list' ? segmentActive : segmentInactive}`)
 const sortOrderIconClass = derived(() => `${sortOrder() === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02'} h-5 w-5`)
-
-function navRowClass(active: boolean): string {
-  const base = 'group flex items-center gap-2.5 px-2.5 py-1.5 w-full text-left font-medium text-[13px] rounded-lg transition-colors'
-  return active
-    ? `${base} bg-black/[0.06] dark:bg-white/[0.09] text-stone-900 dark:text-white`
-    : `${base} text-stone-600 dark:text-neutral-300 hover:bg-black/[0.04] dark:hover:bg-white/[0.06]`
-}
 
 function gridCardClass(item: FileItem): string {
   const selected = selectedItem()?.id === item.id
@@ -273,6 +292,22 @@ function loadMore(): void {
 function navigateToFolder(folder: FileItem): void {
   currentFolderPath.set(folder.path)
   selectedItem.set(null)
+}
+
+function openStorageFolder(path: string): void {
+  currentFolderPath.set(path)
+  selectedItem.set(null)
+  storageDrawerOpen.set(false)
+}
+
+function selectStorageDisk(name: string): void {
+  selectedDisk.set(name)
+  changeDisk()
+}
+
+function uploadFromStoragePanel(): void {
+  storageDrawerOpen.set(false)
+  openUpload()
 }
 
 function onItemClick(item: FileItem): void {
@@ -409,56 +444,9 @@ onMount(() => { void loadFiles() })
 </script>
 
 <div class="flex min-h-[calc(100dvh-3rem)] bg-white dark:bg-neutral-900">
-  <aside :class="sidePanelClass()">
-    <div class="flex flex-col h-full min-h-[calc(100dvh-3rem)] w-64">
-      <div class="p-4 border-b border-black/[0.06] dark:border-white/[0.08]">
-        <label class="block">
-          <span class="font-semibold text-[11px] text-stone-400 tracking-wider uppercase dark:text-neutral-500">Storage disk</span>
-          <select x-model="selectedDisk" :disabled="loading()" class="mt-2 px-2.5 py-2 w-full text-sm text-stone-800 dark:text-white bg-white/80 dark:bg-neutral-800 border border-stone-200 rounded-lg dark:border-neutral-700 disabled:opacity-60" @change="changeDisk()">
-            <template :for="disk in disks"><option :value="disk.name">{{ disk.name }}{{ disk.public ? ' (public)' : '' }}</option></template>
-          </select>
-        </label>
-      </div>
-
-      <div class="p-4 border-b border-black/[0.06] dark:border-white/[0.08]">
-        <div class="flex items-center justify-between">
-          <p class="font-semibold text-[11px] text-stone-400 tracking-wider uppercase dark:text-neutral-500">Stored content</p>
-          <span class="font-mono text-[11px] text-stone-500 dark:text-neutral-400">{{ formatFileSize(stats().contentBytes) }}</span>
-        </div>
-        <div class="grid gap-2 grid-cols-2 mt-3">
-          <div class="p-2.5 bg-white/65 dark:bg-white/[0.05] rounded-lg"><p class="font-semibold text-lg text-stone-900 dark:text-white">{{ stats().files }}</p><p class="text-[11px] text-stone-500 dark:text-neutral-400">Files</p></div>
-          <div class="p-2.5 bg-white/65 dark:bg-white/[0.05] rounded-lg"><p class="font-semibold text-lg text-stone-900 dark:text-white">{{ stats().folders }}</p><p class="text-[11px] text-stone-500 dark:text-neutral-400">Folders</p></div>
-        </div>
-      </div>
-
-      <div class="p-4 border-b border-black/[0.06] dark:border-white/[0.08]">
-        <p class="font-semibold text-[11px] text-stone-400 tracking-wider uppercase dark:text-neutral-500">Content by type</p>
-        <div class="mt-3 space-y-3">
-          <template :for="row in typeRows">
-            <div>
-              <div class="flex items-center justify-between text-[11px]"><span class="text-stone-600 dark:text-neutral-300">{{ row.label }}</span><span class="font-mono text-stone-400 dark:text-neutral-500">{{ formatFileSize(row.bytes) }}</span></div>
-              <div class="overflow-hidden mt-1 h-1.5 bg-black/[0.06] dark:bg-white/[0.08] rounded-full"><div :class="'h-full rounded-full ' + row.color" :style="typeBarStyle(row.bytes)"></div></div>
-            </div>
-          </template>
-        </div>
-      </div>
-
-      <div :if="capacityKnown()" class="p-4 border-b border-black/[0.06] dark:border-white/[0.08]">
-        <div class="flex items-center justify-between"><p class="font-semibold text-[11px] text-stone-400 tracking-wider uppercase dark:text-neutral-500">Volume capacity</p><span class="font-mono text-[11px] text-stone-500 dark:text-neutral-400">{{ volumePercent().toFixed(0) }}%</span></div>
-        <div class="overflow-hidden mt-2 h-1.5 bg-black/[0.06] dark:bg-white/[0.08] rounded-full"><div class="h-full bg-blue-500 rounded-full" :style="'width: ' + volumePercent().toFixed(2) + '%'"></div></div>
-        <p class="mt-2 text-[11px] text-stone-500 dark:text-neutral-400">{{ formatFileSize(stats().disk.availableBytes) }} available of {{ formatFileSize(stats().disk.totalBytes) }}</p>
-      </div>
-
-      <nav aria-label="Storage folders" class="overflow-y-auto flex-1 p-2">
-        <button type="button" :class="navRowClass(currentFolderPath() === '')" @click="currentFolderPath.set('')"><span class="h-[18px] w-[18px] text-blue-500 i-hugeicons-home-02"></span>Home</button>
-        <template :for="folder in topLevelFolders">
-          <button type="button" :class="navRowClass(currentFolderPath() === folder.path)" @click="navigateToFolder(folder)"><span class="h-[18px] w-[18px] text-amber-500 i-hugeicons-folder-02"></span><span class="truncate">{{ folder.name }}</span><span class="ml-auto tabular-nums text-[11px] text-stone-400 dark:text-neutral-500">{{ (folder.items || []).length }}</span></button>
-        </template>
-      </nav>
-
-      <div class="p-3 border-black/[0.06] border-t dark:border-white/[0.08]">
-        <Button :disabled="loading()" fullWidth @click="openUpload()"><span aria-hidden="true" class="h-4 w-4 i-hugeicons-upload-01"></span>Upload files</Button>
-      </div>
+  <aside class="hidden lg:block shrink-0 bg-[#F5F3EE]/70 dark:bg-neutral-900/40 border-black/[0.06] border-r dark:border-white/[0.08] backdrop-blur-2xl duration-300 transition-all" :class="sidePanelOpen() ? 'w-64' : 'w-0 overflow-hidden'">
+    <div class="h-full min-h-[calc(100dvh-3rem)] w-64">
+      <FileStoragePanel :disks="disks()" :disk="selectedDisk()" :busy="loading()" :summary="storageSummary()" :type-rows="typeRows()" :folders="storageFolders()" :current-path="currentFolderPath()" @disk="selectStorageDisk" @navigate="openStorageFolder" @upload="uploadFromStoragePanel()" />
     </div>
   </aside>
 
@@ -466,7 +454,7 @@ onMount(() => { void loadFiles() })
     <header class="sticky top-0 z-10 p-4 bg-white/85 dark:bg-neutral-900/85 border-b border-black/[0.06] dark:border-white/[0.08] backdrop-blur-xl">
       <div class="flex flex-wrap gap-3 items-center justify-between">
         <div class="flex items-center min-w-0">
-          <Button variant="ghost" iconOnly ariaLabel="Toggle storage sidebar" @click="showSidePanel.set(!showSidePanel())"><span class="block h-5 w-5 i-hugeicons-menu-01"></span></Button>
+          <Button variant="ghost" iconOnly ariaLabel="Toggle storage sidebar" @click="toggleSidePanel()"><span class="block h-5 w-5 i-hugeicons-menu-01"></span></Button>
           <div class="ml-3 min-w-0"><p class="font-semibold text-stone-900 truncate dark:text-white">{{ currentFolderLabel }}</p><p class="mt-0.5 text-stone-500 text-xs dark:text-neutral-400">{{ selectedDisk }} disk</p></div>
         </div>
         <div class="flex flex-wrap gap-2 items-center">
@@ -540,6 +528,10 @@ onMount(() => { void loadFiles() })
     </div>
   </div>
 </div>
+
+<Drawer :isOpen="storageDrawerOpen()" title="Storage" :description="selectedDisk() + ' disk'" size="sm" @close="storageDrawerOpen.set(false)">
+  <FileStoragePanel :disks="disks()" :disk="selectedDisk()" :busy="loading()" :summary="storageSummary()" :type-rows="typeRows()" :folders="storageFolders()" :current-path="currentFolderPath()" @disk="selectStorageDisk" @navigate="openStorageFolder" @upload="uploadFromStoragePanel()" />
+</Drawer>
 
 <FileDetailsDrawer :item="selectedItem()" :disk="selectedDisk()" @close="selectedItem.set(null)" />
 
