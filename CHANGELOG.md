@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.343...v0.75.344)
+
+## 🐛 Bug Fixes
+
+- **mobile**: retry transient cloud installer downloads ([6dff392](https://github.com/stacksjs/stacks/commit/6dff392)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.342...v0.75.343)
 
 ## ✨ Features
