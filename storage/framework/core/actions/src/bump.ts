@@ -297,6 +297,13 @@ async function refreshPantryLock(): Promise<void> {
       cwd: p.projectPath(),
       stdin: 'inherit',
       throwOnError: true,
+      // Pantry adds the services the project's `.env` names (DB_CONNECTION=
+      // postgres -> postgresql.org) and records them in pantry.lock. That is
+      // the releasing machine's local database, not the workspace's: v0.75.335
+      // was cut on a Postgres checkout, its lock gained postgresql.org and
+      // two libraries CI does not install, and the release never published
+      // (pantry-pm/pantry#253). The lock describes declared dependencies only.
+      env: { PANTRY_ENV_DEPS: '0' },
     })
     if (!existsSync(lockPath))
       throw new Error('Pantry completed without writing pantry.lock')

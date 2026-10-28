@@ -44,6 +44,18 @@ describe('framework release artifact staging', () => {
   })
 
   /**
+   * Pantry records the services a project's `.env` names in pantry.lock, so a
+   * release cut on a checkout whose `.env` says DB_CONNECTION=postgres wrote
+   * postgresql.org into the lock and CI rejected it (v0.75.335,
+   * pantry-pm/pantry#253). The refresh turns that inference off.
+   */
+  test('refreshes the Pantry lockfile without the local .env\'s services', () => {
+    const refresh = source().slice(source().indexOf('async function refreshPantryLock'))
+    const install = refresh.slice(0, refresh.indexOf('catch (error)'))
+    expect(install).toContain("env: { PANTRY_ENV_DEPS: '0' },")
+  })
+
+  /**
    * An app that provisions system dependencies per machine gitignores
    * `pantry.lock`. Staging it because it exists on disk aborted the release
    * after the bump had already written every artifact.
