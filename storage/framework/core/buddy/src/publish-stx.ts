@@ -10,8 +10,9 @@
  * Two things make a published template more than a copy:
  *
  * - **It has to be read.** Each tree below names where its app copy lives, and
- *   the subtrees no server reads an app copy of are refused rather than
- *   published as a file that silently does nothing.
+ *   every server that renders a default reads that path first: the site, both
+ *   dashboard servers (pages, layouts and components), email templates and the
+ *   system tray.
  * - **It has to run.** Default templates import the framework's helpers by
  *   relative path (`../../../../functions/dashboard-api`), which resolves
  *   inside the defaults tree and nowhere else. Those imports are pointed at
@@ -31,16 +32,11 @@ interface StxTree {
   from: string
   /** Where the app's copy of a file in it goes, relative to the project root. */
   to: string
-  /** First path segments no server reads an app copy of, with the reason. */
-  frameworkOnly?: Record<string, string>
 }
 
 export const COMPONENT_TREE: StxTree = {
   from: 'resources/components',
   to: 'resources/components',
-  frameworkOnly: {
-    Email: 'email templates resolve components from the framework\'s Email directory only (stacksjs/stacks#3032)',
-  },
 }
 
 /**
@@ -50,13 +46,8 @@ export const COMPONENT_TREE: StxTree = {
  * same path.
  */
 export const VIEW_TREES: StxTree[] = [
-  {
-    from: 'views/dashboard',
-    to: 'resources/views/dashboard',
-    frameworkOnly: {
-      layouts: 'the dashboard renders its layouts from the framework only',
-    },
-  },
+  { from: 'views/dashboard', to: 'resources/views/dashboard' },
+  { from: 'views/system-tray', to: 'resources/views/system-tray' },
   { from: 'resources/views', to: 'resources/views' },
 ]
 
@@ -70,10 +61,6 @@ function normalizeName(name: string): string | undefined {
   if (!cleaned || cleaned.split('/').includes('..'))
     return undefined
   return cleaned
-}
-
-function refusal(tree: StxTree, relativePath: string): string | undefined {
-  return tree.frameworkOnly?.[relativePath.split('/')[0] ?? '']
 }
 
 /**
@@ -103,10 +90,6 @@ function locateComponent(name: string, defaultsRoot: string, projectRoot: string
   }
 
   const relativePath = matches[0]!
-  const reason = refusal(tree, relativePath)
-  if (reason)
-    return { ok: false, message: `${relativePath} cannot be overridden from the app: ${reason}.`, details: [] }
-
   return { ok: true, source: join(base, relativePath), target: join(projectRoot, tree.to, relativePath) }
 }
 
@@ -130,10 +113,6 @@ function locateView(name: string, defaultsRoot: string, projectRoot: string): St
     for (const relativePath of candidates) {
       if (!existsSync(join(base, relativePath)))
         continue
-
-      const reason = refusal(tree, relativePath)
-      if (reason)
-        return { ok: false, message: `${name} cannot be overridden from the app: ${reason}.`, details: [] }
 
       return { ok: true, source: join(base, relativePath), target: join(projectRoot, tree.to, relativePath) }
     }

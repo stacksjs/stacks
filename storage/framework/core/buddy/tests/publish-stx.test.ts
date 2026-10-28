@@ -2,16 +2,16 @@
 //
 // A published template is only worth having if a server reads it and its
 // imports still resolve. Both are checked here: the lookup puts the copy where
-// the app's copy is read and refuses the trees no server reads one from, and
-// the import rewrite is run over every default template that has relative
-// imports, against the real tree.
+// the app's copy is read, and the import rewrite is run over every default
+// template that has relative imports, against the real tree. That the servers
+// read those paths first is pinned beside each server (dashboard, site, email).
 
 import { describe, expect, test } from 'bun:test'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { globSync } from '@stacksjs/storage'
-import { COMPONENT_TREE, locateDefaultStx, pointImportsAtDefaults, VIEW_TREES } from '../src/publish-stx'
+import { locateDefaultStx, pointImportsAtDefaults, VIEW_TREES } from '../src/publish-stx'
 
 const DEFAULTS = join(import.meta.dir, '../../../defaults')
 
@@ -74,13 +74,11 @@ describe('publish:component', () => {
     }
   })
 
-  test('refuses the trees whose app copy no server reads', () => {
+  test('publishes an email component where email rendering reads it first', () => {
     const { defaults, project, cleanup } = fixture(['resources/components/Email/EmailLayout.stx'])
     try {
       const found = locateDefaultStx('component', 'EmailLayout', defaults, project)
-      expect(found.ok).toBeFalse()
-      if (!found.ok)
-        expect(found.message).toContain('cannot be overridden from the app')
+      expect(found.ok && found.target).toBe(join(project, 'resources/components/Email/EmailLayout.stx'))
     }
     finally {
       cleanup()
@@ -117,6 +115,7 @@ describe('publish:view', () => {
     'views/dashboard/index.stx',
     'views/dashboard/commerce/orders.stx',
     'views/dashboard/layouts/default.stx',
+    'views/system-tray/index.stx',
   ]
 
   test('names a view by its path under resources/views', () => {
@@ -148,10 +147,15 @@ describe('publish:view', () => {
     }
   })
 
-  test('refuses the dashboard layouts, which only the framework\'s are read for', () => {
+  test('publishes the dashboard layout and the system tray, which their servers read first', () => {
     const { defaults, project, cleanup } = fixture(files)
     try {
-      expect(locateDefaultStx('view', 'dashboard/layouts/default', defaults, project).ok).toBeFalse()
+      const cases: Array<[string, string, string]> = [
+        ['dashboard/layouts/default', 'views/dashboard/layouts/default.stx', 'resources/views/dashboard/layouts/default.stx'],
+        ['system-tray', 'views/system-tray/index.stx', 'resources/views/system-tray/index.stx'],
+      ]
+      for (const [name, from, to] of cases)
+        expect(locateDefaultStx('view', name, defaults, project)).toEqual({ ok: true, source: join(defaults, from), target: join(project, to) })
     }
     finally {
       cleanup()
@@ -160,18 +164,13 @@ describe('publish:view', () => {
 })
 
 describe('against the real defaults tree', () => {
-  test('every refused subtree still exists, so the refusal list is not stale', () => {
-    expect(Object.keys(COMPONENT_TREE.frameworkOnly ?? {}).length).toBeGreaterThan(0)
-    for (const segment of Object.keys(COMPONENT_TREE.frameworkOnly ?? {}))
-      expect(existsSync(join(DEFAULTS, COMPONENT_TREE.from, segment))).toBeTrue()
-    for (const tree of VIEW_TREES) {
-      for (const segment of Object.keys(tree.frameworkOnly ?? {}))
-        expect(existsSync(join(DEFAULTS, tree.from, segment))).toBeTrue()
-    }
+  test('every view tree exists, so no lookup silently searches nothing', () => {
+    for (const tree of VIEW_TREES)
+      expect(existsSync(join(DEFAULTS, tree.from))).toBeTrue()
   })
 
   test('every relative import in a default template is pointed at a file @stacksjs/defaults has', () => {
-    const templates = globSync(['resources/components/**/*.stx', 'resources/views/**/*.stx', 'views/dashboard/**/*.stx'], { cwd: DEFAULTS, absolute: true })
+    const templates = globSync(['resources/components/**/*.stx', 'resources/views/**/*.stx', 'views/**/*.stx'], { cwd: DEFAULTS, absolute: true })
     let checked = 0
 
     for (const file of templates) {
