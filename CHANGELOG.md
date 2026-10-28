@@ -1,5 +1,26 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.336...v0.75.337)
+
+## ✨ Features
+
+- **env**: let a parent process withhold keys from a child's .env load ([6882742](https://github.com/stacksjs/stacks/commit/6882742)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3028](https://github.com/stacksjs/stacks/issues/3028))
+
+## 🐛 Bug Fixes
+
+- **release**: keep dev-shell overrides out of a release:ios build ([9374032](https://github.com/stacksjs/stacks/commit/9374032)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3028](https://github.com/stacksjs/stacks/issues/3028))
+- **upgrade**: refuse a release that moves an app dependency backwards ([d23b37a](https://github.com/stacksjs/stacks/commit/d23b37a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3011](https://github.com/stacksjs/stacks/issues/3011))
+- **messaging**: keep an attachment's name and refuse keys the trait cannot record ([b4b8d4d](https://github.com/stacksjs/stacks/commit/b4b8d4d)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3022](https://github.com/stacksjs/stacks/issues/3022))
+
+## 📝 Documentation
+
+- **mobile**: document withheld dev overrides and the local-site refusal ([961eeeb](https://github.com/stacksjs/stacks/commit/961eeeb)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3028](https://github.com/stacksjs/stacks/issues/3028))
+- **upgrade**: document the downgrade refusal and --allow-downgrade ([b1c57f2](https://github.com/stacksjs/stacks/commit/b1c57f2)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3011](https://github.com/stacksjs/stacks/issues/3011))
+
+## Contributors
+
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.335...v0.75.336)
 
 ## 🐛 Bug Fixes
