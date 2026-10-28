@@ -314,6 +314,7 @@ export function toCraftIosConfig(config: IosMobileConfig): CraftIosConfig {
 }
 
 export function validateIosMobileConfig(config: IosMobileConfig): void {
+  if (config.tintColor !== undefined && !/^#[0-9a-f]{6}$/i.test(config.tintColor)) throw new Error('ios.tintColor must be a #RRGGBB color')
   if (!config.appName?.trim()) throw new Error('config/mobile.ts must define ios.appName')
   if (!/^[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/.test(config.bundleId)) {
     throw new Error(`Invalid iOS bundle identifier: ${config.bundleId}`)
@@ -434,6 +435,11 @@ export function resolveNativeFonts(fonts: IosMobileConfig['nativeFonts'], root: 
 }
 
 export const CRAFT_NATIVE_FONTS_FLOOR = '0.0.229'
+
+export function assertCraftSupportsTint(color: IosMobileConfig['tintColor'], version?: string): void {
+  if (color === undefined || (version && Bun.semver.satisfies(version, '>=0.0.380'))) return
+  throw new Error('ios.tintColor needs craft-native >= 0.0.380; install a published version that supports native tint in both runtimes.')
+}
 
 export function assertCraftSupportsAppShortcuts(shortcuts: IosMobileConfig['appShortcuts'], version?: string): void {
   if (!shortcuts?.length) return

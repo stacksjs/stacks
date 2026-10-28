@@ -5,9 +5,15 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { compileNativeScreens, nativeScreenFiles, nativeScreenName } from '../src/build/native-screens'
 import { toCraftAndroidConfig } from '../src/build/android-config'
+import { assertCraftSupportsTint } from '../src/build/ios-config'
 import { assertCraftSupportsAppShortcuts, assertCraftSupportsNativeFonts, resolveNativeFonts, assertCraftSupportsCapabilities, normalizeMobileUrl, portablePaths, resolveMobilePath, resolveSwipeNavigation, toCraftIosConfig, unsupportedCraftCapabilities, validateIosMobileConfig, withActivityTypes, writeIosActivityTypes } from '../src/build/ios-config'
 
 describe('build-owned iOS shortcuts', () => {
+  it('rejects a builder that cannot retain the configured native tint', () => {
+    expect(() => assertCraftSupportsTint('#dd0f15', '0.0.377')).toThrow('>= 0.0.380')
+    expect(() => assertCraftSupportsTint('#dd0f15', '0.0.380')).not.toThrow()
+    expect(() => assertCraftSupportsTint(undefined, '0.0.377')).not.toThrow()
+  })
   it('forwards native App Intents and refuses a builder that would omit them', () => {
     const shortcuts = [{ id: 'saved', title: 'Saved', symbol: 'heart.fill', url: 'example://saved', phrases: ['Saved in {app}'] }]
     const config = { ...MOBILE.ios, urlSchemes: ['example'], appShortcuts: shortcuts }

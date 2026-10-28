@@ -12,6 +12,7 @@ import { generateXcodeProject, resolveXcodegen } from './ios-toolchain'
 import { compileNativeScreens } from './native-screens'
 import { writeIosShellSupport } from './ios-shell'
 import { reportMobileBuildTarget } from './mobile-target'
+import { assertCraftSupportsTint } from './ios-config'
 
 // Action runners install a global exception reporter. Start pessimistically so
 // a reported exception can never look like a successful CI build.
@@ -109,6 +110,7 @@ if (nativeBundle) {
 // so the build fails here rather than ship an app that lacks it.
 const craftVersion = craftBuilderVersion(craftIosEntry(), projectPath())
 assertCraftSupportsNativeFonts(config.nativeFonts, craftVersion?.version)
+assertCraftSupportsTint(config.tintColor, craftVersion?.version)
 assertCraftSupportsAppShortcuts(config.appShortcuts, craftVersion?.version)
 if (craftVersion) {
   assertCraftSupportsCapabilities(config.capabilities, craftVersion.version, craftVersion.manifest)
