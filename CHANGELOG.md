@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.338...v0.75.339)
+
+## ✅ Tests
+
+- **browse**: find the live owned target after browser launch fallbacks ([c726b9f](https://github.com/stacksjs/stacks/commit/c726b9f)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.337...v0.75.338)
 
 ## ✨ Features
