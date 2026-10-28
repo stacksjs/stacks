@@ -285,6 +285,21 @@ describe('a session does not outlive its purpose', () => {
     await expect(manager.close(id, alice)).rejects.toThrow('No such terminal session')
     expect(audit.log.slice(1)).toEqual(['input rm -rf /tmp/build', 'closed closed in=17 out=0'])
   })
+
+  it('shuts down only once every process has exited, so nothing it made outlives it', async () => {
+    // The real spawner removes its temp directory when the process exits; a
+    // shutdown that returned on the kill raced the process exiting (#2978).
+    let exit!: (code: number) => void
+    const { manager } = sessions({
+      spawn: () => ({ write: () => {}, resize: () => {}, kill: () => {}, exited: new Promise<number>((resolve) => { exit = resolve }) }),
+    })
+    await manager.open({ user: alice, hosts, hostKey: 'app', authorizer: allowAll, cols: 80, rows: 24 })
+
+    const closing = manager.closeAll().then(() => 'closed')
+    expect(await Promise.race([closing, Bun.sleep(20).then(() => 'waiting')])).toBe('waiting')
+    exit(-1)
+    expect(await closing).toBe('closed')
+  })
 })
 
 describe('the event stream', () => {

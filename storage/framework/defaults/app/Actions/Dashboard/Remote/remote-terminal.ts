@@ -261,9 +261,15 @@ export class TerminalSessions {
     await this.end(this.find(id, user), 'closed')
   }
 
-  /** End every session, for a server shutting down. */
+  /**
+   * End every session, for a server shutting down, and wait for each process
+   * to exit: the spawner cleans up after the process, and a server that exits
+   * first leaves that behind.
+   */
   async closeAll(): Promise<void> {
-    await Promise.all([...this.sessions.values()].map(session => this.end(session, 'shutdown')))
+    const open = [...this.sessions.values()]
+    await Promise.all(open.map(session => this.end(session, 'shutdown')))
+    await Promise.all(open.map(session => session.process.exited))
   }
 
   /**
