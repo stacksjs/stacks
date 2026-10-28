@@ -417,6 +417,31 @@ await serve({ port: 3000 })
 const response = await serverResponse(request)
 ```
 
+### Boot and shutdown hooks
+
+```typescript
+import { route } from '@stacksjs/router'
+
+// Once, after the routes load and before the first request. Optional
+// preparation only: a hook that throws is logged and the boot continues.
+route.booting('warm grammars', () => highlighter.load())
+
+// When the server is told to stop. For whatever would otherwise outlive the
+// process or end unrecorded: open sessions, child processes, a buffer to flush.
+route.stopping('terminal sessions', () => terminalSessions.closeAll())
+```
+
+- Boot hooks run in order, once per process, from `serve()`.
+- Shutdown hooks run concurrently, once per process (a second signal waits on
+  the same run). One that throws is logged and the rest still run.
+- The production API server (`core/actions/src/serve/api.ts`) runs them on
+  SIGTERM alongside draining in-flight requests. `SHUTDOWN_GRACE_MS` (default
+  fifteen seconds) caps both, so a hook that hangs cannot hold the process.
+- The list lives on `globalThis`, so a module registering through a second copy
+  of `@stacksjs/router` still reaches the one the server runs.
+- `buddy dev:api` has no shutdown handler: Ctrl-C ends the process group, and
+  shutdown hooks do not run there.
+
 ## URL Generation
 
 ```typescript
