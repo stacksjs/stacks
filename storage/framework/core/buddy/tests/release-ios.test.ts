@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'bun:test'
-import { bumpedVersion, iosReleaseSummary, iosVersionIn, nextBuildTag, withIosVersion } from '../src/release-ios'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { bumpedVersion, iosReleaseSummary, iosVersionIn, nextBuildTag, unreleasableSite, withIosVersion } from '../src/release-ios'
 
 const CONFIG = `export default {
   ios: {
@@ -66,5 +68,43 @@ describe('buddy release:ios', () => {
     expect(counted.body).not.toContain('TestFlight build **39**')
     expect(counted.body).toContain('may differ')
     expect(() => iosReleaseSummary('v1.0.0', { numberedByXcodeCloud: true })).toThrow()
+  })
+})
+
+describe('a release that would ship a dev server (#3028)', () => {
+  it('refuses a local devServerURL in the generated config, whatever set it', () => {
+    for (const site of ['http://localhost:3010/m', 'http://127.0.0.1:3000', 'http://10.0.2.2:3010/m', 'http://192.168.1.20:3010/m', 'https://hq.localhost/m', 'http://[::1]:3000'])
+      expect(unreleasableSite({ devServerURL: site })).toContain('local address')
+    expect(unreleasableSite({ devServerURL: 'not a url' })).toContain('is not a URL')
+  })
+
+  it('lets a production site, or no site at all, through', () => {
+    expect(unreleasableSite({ devServerURL: 'https://hq.training/m' })).toBeNull()
+    expect(unreleasableSite({})).toBeNull()
+  })
+
+  // The build is a child process, so these are wiring, not logic: without
+  // them the parent's delete is undone by the child's .env load. Comments are
+  // stripped first, so prose about the calls cannot satisfy the checks.
+  const code = (relative: string): string => new Bun.Transpiler({ loader: 'ts' }).transformSync(readFileSync(join(import.meta.dir, relative), 'utf8'))
+
+  it('withholds the dev overrides from the build and checks the artifact before anything is committed', () => {
+    const release = code('../src/commands/release.ts')
+    const build = release.indexOf('runAction(Action.BuildIos')
+    expect(build).toBeGreaterThan(-1)
+    expect(release.slice(build, release.indexOf(')', build))).toContain('withholdEnv(')
+    const guard = release.indexOf('unreleasableSite(')
+    expect(guard).toBeGreaterThan(build)
+    // The transpiler prints string literals double-quoted.
+    const commit = release.indexOf('git("add"')
+    expect(commit).toBeGreaterThan(guard)
+  })
+
+  it('removes withheld keys in the build before the app config is read', () => {
+    const ios = code('../../actions/src/build/ios.ts')
+    const applied = ios.indexOf('applyWithheldEnv()')
+    const config = ios.indexOf('pathToFileURL(configPath)')
+    expect(applied).toBeGreaterThan(-1)
+    expect(config).toBeGreaterThan(applied)
   })
 })

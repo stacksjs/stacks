@@ -12,10 +12,11 @@ import { runAction } from '@stacksjs/actions/run-action'
 import { intro, italic, log, onUnknownSubcommand, outro } from '@stacksjs/cli'
 import { printAsync } from '@stacksjs/cli/output'
 import { Action } from '@stacksjs/enums'
+import { withholdEnv } from '@stacksjs/env'
 import { ExitCode } from '@stacksjs/types'
 import type { ReleaseNotesConfig } from '@stacksjs/actions/release-notes'
 import { AppStoreConnect, appStoreConnectCredentials, buildsToExpire, waitForBuild } from '../app-store-connect'
-import { bumpedVersion, iosReleaseSummary, iosVersionIn, nextBuildTag, withIosVersion } from '../release-ios'
+import { bumpedVersion, iosReleaseSummary, iosVersionIn, nextBuildTag, unreleasableSite, withIosVersion } from '../release-ios'
 import { appStoreLocales, commitsBetween, committedWhatToTest, fitNotes, NO_VISIBLE_CHANGES, PLAY_NOTES_LIMIT, previousMobileTag, resolveNotes, TESTFLIGHT_NOTES_LIMIT, testerNotes, writeWhatToTest, XCODE_CLOUD_NOTES_LIMIT } from '@stacksjs/actions/release-notes'
 import { resultFailed } from '../result'
 
@@ -221,11 +222,25 @@ async function releaseIos(options: IosReleaseOptions): Promise<string> {
     }
   }
 
-  for (const key of ['MOBILE_URL', 'IOS_APP_VERSION', 'IOS_BUILD_NUMBER'])
+  // Dev-shell overrides stay out of a release build. Deleting them here is
+  // not enough on its own: the build is a child process, and Bun and the env
+  // loader both read them back out of .env, so the child is told to withhold
+  // them as well (#3028).
+  const devOverrides = ['MOBILE_URL', 'IOS_APP_VERSION', 'IOS_BUILD_NUMBER']
+  for (const key of devOverrides)
     delete process.env[key]
-  const result = await runAction(Action.BuildIos, {})
+  const result = await runAction(Action.BuildIos, { env: withholdEnv(devOverrides) })
   if (resultFailed(result))
     throw result.error ?? new Error('the iOS build failed')
+
+  // The artifact itself, whatever produced it: a release that would talk to
+  // a laptop stops before anything is committed, tagged or pushed.
+  const craftConfigPath = join(root, IOS_PROJECT_DIR, 'craft.config.json')
+  if (existsSync(craftConfigPath)) {
+    const problem = unreleasableSite(JSON.parse(readFileSync(craftConfigPath, 'utf8')) as { devServerURL?: unknown })
+    if (problem)
+      throw new Error(`${problem}. Set ios.url in config/mobile.ts to the production site. Nothing was committed, tagged or pushed; restore the build output and any version bump with \`git checkout -- ${paths.join(' ')}\`.`)
+  }
 
   // Xcode Cloud reads TestFlight/WhatToTest.<locale>.txt beside the project
   // when it uploads the build, so the notes ride in the release commit.

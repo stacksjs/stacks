@@ -3,6 +3,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
+import { applyWithheldEnv } from '@stacksjs/env'
 import { projectPath, storagePath } from '@stacksjs/path'
 import { craftBuilderSpecifier, craftBuilderVersion } from './craft-entry'
 import { resolveCraftBuilderProvenance } from './craft-provenance'
@@ -62,6 +63,10 @@ if (!existsSync(configPath)) {
   throw new Error('Missing config/mobile.ts. Add an ios section before running `buddy build:ios`.')
 }
 
+// `buddy release:ios` withholds the dev-shell overrides the app's config may
+// read (MOBILE_URL, the version pins). Bun loaded them from .env before any
+// of this ran, so they are removed here, before the config sees them (#3028).
+applyWithheldEnv()
 const configModule = await import(`${pathToFileURL(configPath).href}?t=${Date.now()}`) as { default: MobileConfig }
 const mobile = configModule.default
 const config = mobile.ios

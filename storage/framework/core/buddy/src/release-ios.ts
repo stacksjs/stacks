@@ -12,6 +12,7 @@
  */
 
 import { incrementVersion, nextBuildNumber, SemVer } from '@stacksjs/bumpx'
+import { isLocalSite } from '@stacksjs/actions/build/mobile-target'
 
 function marketingVersion(version: string): string {
   const parsed = new SemVer(version)
@@ -90,4 +91,24 @@ export function iosReleaseSummary(tag: string, options: { numberedByXcodeCloud: 
       ? `Version ${version}, TestFlight build **${build}**: Xcode Cloud builds this tag, and its run number is the build number TestFlight shows.`
       : `Version ${version}, build tag ${build}. Xcode Cloud builds this tag; it was cut without an App Store Connect key, so the build number TestFlight shows may differ.`,
   }
+}
+
+/**
+ * Why a built project cannot ship: its `devServerURL` (what the app talks to)
+ * is the developer's own machine or network, which no tester's phone reaches.
+ * Checked on the generated `craft.config.json`, so it catches the address
+ * whatever set it - a `.env` override, a shell, or the config itself (#3028).
+ */
+export function unreleasableSite(craftConfig: { devServerURL?: unknown }): string | null {
+  const site = craftConfig.devServerURL
+  if (typeof site !== 'string' || !site)
+    return null
+  let url: URL
+  try {
+    url = new URL(site)
+  }
+  catch {
+    return `devServerURL ${JSON.stringify(site)} is not a URL`
+  }
+  return isLocalSite(url) ? `devServerURL ${url.origin}${url.pathname} is a local address, which a tester's phone cannot reach` : null
 }
