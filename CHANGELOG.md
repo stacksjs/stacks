@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.339...v0.75.340)
+
+## 🐛 Bug Fixes
+
+- **mobile**: reject builders that silently omit native tint ([cdbd542](https://github.com/stacksjs/stacks/commit/cdbd542)) _(by Chris Breuer <chris@stacksjs.com>)_ ([stacksjs/hq.training#341](https://github.com/stacksjs/hq.training/issues/341))
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.338...v0.75.339)
 
 ## ✅ Tests
