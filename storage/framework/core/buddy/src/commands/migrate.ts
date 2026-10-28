@@ -1573,6 +1573,9 @@ export function migrate(buddy: CLI): void {
       }
 
       const { files, removed, removedObsolete, removedDataOnly, preserved, preservedOutOfScope, preservedData, relocated, models, modelRoots, unrebuildable } = plan.value
+      // Where the corpus actually is: DB_MIGRATIONS_PATH, or a per-dialect
+      // directory, can put it somewhere other than database/migrations.
+      const corpusDir = relativeMigrationDirectory(plan.value.dir)
 
       // Preserved files are the ones no rerun can recreate, so they are the
       // only part of this plan a user cannot undo by running the command
@@ -1668,7 +1671,7 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
   Regenerate plan: ${target}
   ─────────────────────────────────────────────
   • ${models} model(s) read from ${rootList}
-  • ${files.length} migration file(s) will be written
+  • ${files.length} migration file(s) will be written to ${corpusDir}
   • ${removed.length} existing file(s) will be removed${obsoleteBlock}${dataOnlyBlock}${dataBlock}${protectedHistoryBlock}${outOfScopeBlock}${unrebuildableBlock}
   • These files are tracked in git, so review with \`git diff\` afterwards
   ─────────────────────────────────────────────
@@ -1698,7 +1701,7 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
         process.exit(ExitCode.FatalError)
       }
 
-      log.success(`Wrote ${result.value.files.length} ${target} migration file(s) to database/migrations.`)
+      log.success(`Wrote ${result.value.files.length} ${target} migration file(s) to ${relativeMigrationDirectory(result.value.dir)}.`)
 
       // Regeneration just renumbered every file, and the ledger keys on the
       // filename — so without this, every migration this database had already
