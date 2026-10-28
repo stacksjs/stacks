@@ -27,6 +27,7 @@ export * from './speech'
 
 // Semantic search, embeddings & RAG
 export * from './search'
+export * from './documents'
 
 // Personalization, sentiment & classification
 export * from './personalization'
