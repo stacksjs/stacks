@@ -577,6 +577,8 @@ buddy upgrade                # upgrade Stacks framework (alias: update)
   --canary                   # upgrade to canary build
   --stable                   # switch to stable release
   -f/--force                 # force re-download
+  --dry-run                  # preview; marks any (downgrade) a real run refuses
+  --allow-downgrade          # accept a release older than the app's own pins
 buddy upgrade:all            # upgrade framework + dependencies + Bun + binary
 buddy upgrade:dependencies   # upgrade dependencies (alias: upgrade:deps)
 buddy upgrade:bun            # upgrade Bun runtime

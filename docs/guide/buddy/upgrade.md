@@ -33,6 +33,7 @@ buddy upgrade:<type> [options]
 | `--canary` | Upgrade to the latest canary (bleeding-edge `main`) build |
 | `--stable` | Switch to the latest vetted stable release |
 | `--dry-run` | Preview which dependencies and managed project files would change, without writing or installing |
+| `--allow-downgrade` | Accept a release that moves a dependency this app declares to an older version (refused by default) |
 | `-f, --force` | Force re-download, bypassing cache and version checks |
 | `--from <path>` | Sync from a local stacks checkout (e.g. ~/Code/stacks), skips GitHub |
 | `--no-postinstall` | Skip post-sync hooks (auto-imports, bun install, migrate) |
@@ -54,6 +55,28 @@ release. The preview labels those changes by field, including when an override
 is the only stale declaration. Independently versioned packages, scoped or
 nested rules, aliases, local links and `$dependency` references keep their
 application-defined values.
+
+### When the release is behind your app
+
+A framework release pins the STX, components and runtime versions it was built
+with. If your app already declares a newer one, upgrading to that release would
+move it **backwards**. `buddy upgrade` lists those separately, marked
+`(downgrade)`, and refuses by default with nothing written:
+
+```text
+  The following dependencies would be downgraded, because stacks@0.75.318 declares older versions than this app does:
+    @stacksjs/stx              0.2.706  →  0.2.691   (downgrade)
+    @stacksjs/stx (overrides)  0.2.706  →  0.2.691   (downgrade)
+
+✗ Refusing to downgrade 2 dependencies. Nothing was written or installed.
+```
+
+Wait for a release that declares those versions or newer
+(`buddy upgrade --version <version> --dry-run` checks one), or pass
+`--allow-downgrade` to accept them. `--dry-run` shows the same section and says
+whether a real run would refuse. A downgrade is a separate decision from an
+upgrade because its symptoms appear at runtime, far from the command that
+caused them.
 
 ### Why `bun install` is not the whole upgrade
 

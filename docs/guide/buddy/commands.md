@@ -5889,6 +5889,7 @@ Upgrade the Stacks framework to the latest version
 | `--canary` | Upgrade to the latest canary (bleeding-edge `main`) build | boolean, optional | `false` |
 | `--stable` | Switch to the latest vetted stable release | boolean, optional | `false` |
 | `--dry-run` | Preview the upgrade (which dependencies would change) without writing or installing | boolean, optional | `false` |
+| `--allow-downgrade` | Accept a release that moves a dependency this app declares to an older version (refused by default) | boolean, optional | `false` |
 | `-f`, `--force` | Force re-download, bypassing cache and version checks | boolean, optional | `false` |
 | `--from` | Sync from a local stacks checkout (e.g. ~/Code/stacks). Skips GitHub. | value, required | - |
 | `--no-postinstall` | Skip post-sync hooks (auto-imports, bun install, migrate) | boolean, optional, negated | `true` |
@@ -5902,6 +5903,7 @@ buddy update
 buddy upgrade --from ~/Code/stacks
 buddy upgrade --version 0.70.23
 buddy upgrade --dry-run
+buddy upgrade --allow-downgrade
 buddy upgrade --canary
 buddy upgrade --stable
 buddy upgrade --force
