@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import process from 'node:process'
 import type { PageAuditEvent } from '../src/browser'
-import { auditPage, Cdp, duplicateRequests, findChrome, formatPageAudit, launch, loadDuplicates, matchesUrlPattern, navigate, pageAuditClean, pausedRequestMatches, quietLiveReload, splitPageLoads, waitFor } from '../src/browser'
+import { auditPage, Cdp, click, duplicateRequests, findChrome, formatPageAudit, launch, loadDuplicates, matchesUrlPattern, navigate, pageAuditClean, pausedRequestMatches, quietLiveReload, splitPageLoads, waitFor } from '../src/browser'
 
 /** A socket double: records what the session sends and lets the test speak for Chrome. */
 class FakeSocket extends EventTarget {
@@ -446,6 +446,10 @@ describe.skipIf(!realChrome)('a real Chrome', () => {
         if (pathname === '/api/missing') return new Response('nope', { status: 404 })
         if (pathname === '/clean') return new Response('<title>Clean</title><script>fetch("/api/me")</script>', { headers: { 'Content-Type': 'text/html' } })
         if (pathname === '/dialog') return new Response('<script>confirm("Leave?")</script>', { headers: { 'Content-Type': 'text/html' } })
+        if (pathname === '/click') return new Response(`<div style="height:2400px"></div>
+          <button disabled onclick="document.body.dataset.clicked='yes'"><span>Record feedback</span></button>
+          <div id="cover" style="position:fixed;inset:0;background:white"></div>
+          <script>setTimeout(() => { document.querySelector('button').disabled=false; document.querySelector('#cover').remove() }, 250)</script>`, { headers: { 'Content-Type': 'text/html' } })
         return new Response(`<title>Busy</title><script>
           fetch('/api/me'); fetch('/api/me'); fetch('/api/missing');
           console.error('something broke')
@@ -454,6 +458,19 @@ describe.skipIf(!realChrome)('a real Chrome', () => {
     })
   })
   afterAll(() => server?.stop(true))
+
+  test('click waits for scrolling, an enabled control and an unobscured hit target', async () => {
+    const { cdp, close } = await launch()
+    try {
+      await cdp.send('Page.navigate', { url: `http://127.0.0.1:${server.port}/click` })
+      await click(cdp, { selector: 'button', text: 'Record feedback' })
+      expect(await cdp.evaluate('document.body.dataset.clicked')).toBe('yes')
+      await expect(click(cdp, '#missing', { timeoutMs: 100 })).rejects.toThrow(/unobscured #missing/)
+      await cdp.evaluate(`document.body.insertAdjacentHTML('beforeend', '<button>Record feedback</button>')`)
+      await expect(click(cdp, { selector: 'button', text: 'Record feedback' })).rejects.toThrow(/Ambiguous click target/)
+    }
+    finally { await close() }
+  }, 90_000)
 
   test('audits a page: duplicates, failures and console errors', async () => {
     const report = await auditPage(`http://127.0.0.1:${server.port}/busy`, { quietMs: 300 })

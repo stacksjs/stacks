@@ -268,6 +268,9 @@ expect(pageAuditClean(report)).toBe(true) // no duplicate /api/ requests, failed
   `matchesUrlPattern(pattern, url)` and `pausedRequestMatches(pattern, paused)` are Chrome's
   matching rules (`*`, `?`, `\` escape; stage and resource type).
 - `settle(cdp, { quietMs, timeoutMs })` resolves false (not throws) when a page never goes quiet.
+- `click(cdp, selector | { selector, text }, { timeoutMs? })` scrolls the unique target into view,
+  waits for layout, enabled state and an unobscured hit test, then uses Chrome's real mouse input.
+  Use it for journey controls instead of local coordinate-click helpers or DOM-dispatched clicks.
 - `auditPage(url, { cdp?, launch?, viewport?, isApiRequest?, beforeNavigate?, pageLoads?, quietMs, timeoutMs })`
   returns `{ url, finalUrl, apiRequests, duplicates, loads, failed, errors, settled, durationMs }`
   and never throws for a page problem. `beforeNavigate` is where to seed a token

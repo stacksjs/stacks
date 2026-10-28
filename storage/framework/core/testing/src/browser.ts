@@ -70,6 +70,31 @@ export async function waitFor<T>(read: () => Promise<T> | T, timeoutMs: number =
   return value as NonNullable<T>
 }
 
+/** Scroll, wait for layout and hit testing, then click through Chrome's real input path. */
+export async function click(cdp: Cdp, target: string | { selector: string, text?: string }, options: { timeoutMs?: number } = {}): Promise<void> {
+  const selector = typeof target === 'string' ? target : target.selector
+  const text = typeof target === 'string' ? undefined : target.text
+  const point = await waitFor(() => cdp.evaluate<{ x: number, y: number } | null>(`(async () => {
+    const matches = [...document.querySelectorAll(${JSON.stringify(selector)})].filter(node => ${text === undefined ? 'true' : `node.textContent.trim() === ${JSON.stringify(text)}`})
+    if (matches.length > 1) throw new Error('Ambiguous click target: ' + ${JSON.stringify(selector)})
+    const node = matches[0]
+    if (!node || node.matches(':disabled') || node.getAttribute('aria-disabled') === 'true') return null
+    node.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' })
+    // A synchronous bounding rect can precede the compositor's scroll/hit-test update.
+    await new Promise(requestAnimationFrame)
+    await new Promise(requestAnimationFrame)
+    if (!node.isConnected || node.matches(':disabled')) return null
+    const rect = node.getBoundingClientRect()
+    if (!rect.width || !rect.height || rect.bottom <= 0 || rect.right <= 0 || rect.top >= innerHeight || rect.left >= innerWidth) return null
+    const x = Math.max(0, Math.min(innerWidth - 1, rect.x + rect.width / 2))
+    const y = Math.max(0, Math.min(innerHeight - 1, rect.y + rect.height / 2))
+    const hit = document.elementFromPoint(x, y)
+    return hit && node.contains(hit) ? { x, y } : null
+  })()`), options.timeoutMs ?? 12_000, { label: `an enabled, unobscured ${selector}${text === undefined ? '' : ` named ${JSON.stringify(text)}`}` })
+  await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', ...point, button: 'left', clickCount: 1 })
+  await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', ...point, button: 'left', clickCount: 1 })
+}
+
 // ---------------------------------------------------------------------------
 // The protocol session
 // ---------------------------------------------------------------------------
