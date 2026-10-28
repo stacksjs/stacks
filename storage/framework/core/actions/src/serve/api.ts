@@ -24,6 +24,7 @@ import { appPath, frameworkPath } from '@stacksjs/path'
 import { disableViewRouting, route } from '@stacksjs/router'
 import { ensureDiscoveredPackages } from '../discover-packages'
 import { resolveApiHost } from '../helpers/api-host'
+import { shutDownApiServer } from '../helpers/api-shutdown'
 
 /**
  * Resolve a file from the scaffold defaults tree.
@@ -202,13 +203,15 @@ const server = await route.serve({
 } as Parameters<typeof route.serve>[0])
 
 // Graceful drain for the zero-downtime cutover: when systemd stops the
-// old release's instance (SIGTERM), stop accepting new connections but
-// let in-flight requests finish; hard-exit after a grace window so a
-// stuck keep-alive can't ride into systemd's SIGKILL mid-request.
+// old release's instance (SIGTERM), stop accepting new connections, let
+// in-flight requests finish and run the shutdown hooks (`route.stopping`);
+// hard-exit after a grace window so a stuck keep-alive can't ride into
+// systemd's SIGKILL mid-request.
 process.on('SIGTERM', () => {
-  const graceMs = Number(process.env.SHUTDOWN_GRACE_MS) || 15_000
-  setTimeout(() => process.exit(0), graceMs).unref()
-  Promise.resolve(server?.stop()).then(() => process.exit(0))
+  void shutDownApiServer(server, {
+    graceMs: Number(process.env.SHUTDOWN_GRACE_MS) || 15_000,
+    exit: code => process.exit(code),
+  })
 })
 
 log.info(`[Stacks API] Server running at http://${hostname}:${port}`)
