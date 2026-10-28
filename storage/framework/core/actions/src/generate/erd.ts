@@ -13,9 +13,9 @@
  * `app/Models` would draw a schema missing most of itself.
  */
 
-import type { DiagrammableModel } from '@stacksjs/database'
+import type { DiagrammableModel, ErdDetail } from '@stacksjs/database'
 import { dirname } from 'node:path'
-import { renderErd, resolveModelSources, toDiagrammableModel } from '@stacksjs/database'
+import { MERMAID_MAX_TEXT_SIZE, renderErd, resolveModelSources, toDiagrammableModel } from '@stacksjs/database'
 import { log } from '@stacksjs/logging'
 import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
@@ -25,15 +25,51 @@ export interface GenerateErdOptions {
   dryRun?: boolean
   /** Output path, relative to the project root. */
   out?: string
-  /** Relationships only, no column lists. */
+  /** Relationships only, no column lists. Same as `detail: 'none'`. */
   noColumns?: boolean
+  /**
+   * How much of each table to draw. Left unset, the diagram starts at `full`
+   * and steps down until it renders; set explicitly, it is obeyed.
+   */
+  detail?: ErdDetail
   /** Restrict to these tables or model names, plus their mutual relationships. */
   only?: string[]
 }
 
 export type GenerateErdResult =
   | { ok: false, error: string }
-  | { ok: true, diagram: string, path: string, modelCount: number, skipped: string[] }
+  | { ok: true, diagram: string, path: string, modelCount: number, skipped: string[], detail: ErdDetail, characters: number, truncated: boolean }
+
+/** Steps down in the order a reader loses the least by. */
+const DETAIL_STEPS: ErdDetail[] = ['full', 'keys', 'none']
+
+/**
+ * The most detail that still renders.
+ *
+ * Mermaid does not degrade: a diagram one character past `maxTextSize` is
+ * replaced wholesale by an error box, so a generator that ignores the limit
+ * does not produce a cluttered diagram, it produces no diagram at all. This
+ * walks down the levels and takes the first that fits, which is why a small
+ * schema is untouched - it never reaches the limit - and a large one comes
+ * back as a real, complete ERD instead of a pink box.
+ *
+ * An explicit `detail` is obeyed whatever its size, because someone asking for
+ * every column of a 300-table schema may be feeding a tool rather than a page.
+ */
+function fitDiagram(models: DiagrammableModel[], options: GenerateErdOptions): { diagram: string, detail: ErdDetail } {
+  const only = options.only && options.only.length > 0 ? { only: options.only } : {}
+  const asked: ErdDetail | undefined = options.detail ?? (options.noColumns ? 'none' : undefined)
+  if (asked)
+    return { diagram: renderErd(models, { detail: asked, ...only }), detail: asked }
+
+  let last = ''
+  for (const detail of DETAIL_STEPS) {
+    last = renderErd(models, { detail, ...only })
+    if (last.length <= MERMAID_MAX_TEXT_SIZE)
+      return { diagram: last, detail }
+  }
+  return { diagram: last, detail: DETAIL_STEPS[DETAIL_STEPS.length - 1]! }
+}
 
 /**
  * Resolve a model file's table name.
@@ -100,10 +136,13 @@ export async function generateErd(options: GenerateErdOptions = {}): Promise<Gen
   if (models.length === 0)
     return { ok: false, error: 'Every model failed to load; nothing to diagram.' }
 
-  const diagram = renderErd(models, {
-    columns: !options.noColumns,
-    ...(options.only && options.only.length > 0 ? { only: options.only } : {}),
-  })
+  const { diagram, detail } = fitDiagram(models, options)
+  const truncated = diagram.length > MERMAID_MAX_TEXT_SIZE
+
+  if (truncated)
+    log.warn(`[generate:erd] ${diagram.length} characters is past Mermaid's ${MERMAID_MAX_TEXT_SIZE} limit; it will draw an error box rather than a diagram. Narrow it with --only.`)
+  else if (detail !== 'full')
+    log.info(`[generate:erd] drew ${detail === 'keys' ? 'key columns only' : 'relationships only'}, so the diagram stays inside Mermaid's ${MERMAID_MAX_TEXT_SIZE}-character limit.`)
 
   const outPath = path.projectPath(options.out ?? 'docs/erd.md')
 
@@ -112,5 +151,5 @@ export async function generateErd(options: GenerateErdOptions = {}): Promise<Gen
     await Bun.write(outPath, wrapForTarget(diagram, outPath))
   }
 
-  return { ok: true, diagram, path: outPath, modelCount: models.length, skipped }
+  return { ok: true, diagram, path: outPath, modelCount: models.length, skipped, detail, characters: diagram.length, truncated }
 }

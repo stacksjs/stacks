@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { columnType, relatedModelNames, relationEdges, renderErd, toDiagrammableModel } from '../src/erd'
+import { columnType, erdDetailFrom, relatedModelNames, relationEdges, renderErd, toDiagrammableModel } from '../src/erd'
 
 const model = (name: string, table: string, extra: Record<string, unknown> = {}) =>
   toDiagrammableModel({ name, table, ...extra }, table)
@@ -136,6 +136,31 @@ describe('renderErd', () => {
     expect(output).toContain('users ||--o{ posts')
     // No entity blocks. Checking for a bare `{` would match the cardinality.
     expect(output).not.toMatch(/^\s+\w+ \{$/m)
+  })
+
+  it('keeps only the key columns at `keys`, which is what a relationship is made of', () => {
+    const output = renderErd(models, { detail: 'keys' })
+    // The box stays, and so do the columns a reader follows between tables.
+    expect(output).toContain('users {')
+    expect(output).toContain('    string email UK')
+    expect(output).toContain('    number user_id FK')
+    // Everything carrying no key marker is gone.
+    expect(output).not.toMatch(/^ {4}\w+ \w+$/m)
+  })
+
+  it('reads smaller at `keys` than at `full`, which is the whole point', () => {
+    // Mermaid replaces a diagram past maxTextSize with an error box rather
+    // than drawing less of it, so the levels have to actually shrink.
+    expect(renderErd(models, { detail: 'keys' }).length).toBeLessThan(renderErd(models).length)
+    expect(renderErd(models, { detail: 'none' }).length).toBeLessThan(renderErd(models, { detail: 'keys' }).length)
+  })
+
+  it('still honours `columns: false`, which said `none` before the dial existed', () => {
+    expect(renderErd(models, { columns: false })).toBe(renderErd(models, { detail: 'none' }))
+    expect(erdDetailFrom({ columns: false })).toBe('none')
+    expect(erdDetailFrom({})).toBe('full')
+    // An explicit level wins over the older option.
+    expect(erdDetailFrom({ columns: false, detail: 'keys' })).toBe('keys')
   })
 
   it('filters to a subset by table or model name', () => {
