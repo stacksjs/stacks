@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.335...v0.75.336)
+
+## 🐛 Bug Fixes
+
+- **deps**: drop the .env-inferred postgres from pantry.lock ([04d864e](https://github.com/stacksjs/stacks/commit/04d864e)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **release**: refresh pantry.lock without the local .env's services ([01254a0](https://github.com/stacksjs/stacks/commit/01254a0)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([pantry-pm/pantry#253](https://github.com/pantry-pm/pantry/issues/253))
+
+## 🔧 Chores
+
+- **deps**: stx 0.2.736 ([8908226](https://github.com/stacksjs/stacks/commit/8908226)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stx#2131](https://github.com/stacksjs/stx/issues/2131), [#3032](https://github.com/stacksjs/stacks/issues/3032))
+
+## Contributors
+
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.334...v0.75.335)
 
 ## ✨ Features
