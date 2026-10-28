@@ -75,17 +75,23 @@ describe('publish:component', () => {
   })
 
   test('refuses the trees whose app copy no server reads', () => {
-    const { defaults, project, cleanup } = fixture([
-      'resources/components/Email/EmailLayout.stx',
-      'resources/components/Dashboard/Commerce/CommerceOrdersTable.stx',
-    ])
+    const { defaults, project, cleanup } = fixture(['resources/components/Email/EmailLayout.stx'])
     try {
-      for (const name of ['EmailLayout', 'CommerceOrdersTable']) {
-        const found = locateDefaultStx('component', name, defaults, project)
-        expect(found.ok).toBeFalse()
-        if (!found.ok)
-          expect(found.message).toContain('cannot be overridden from the app')
-      }
+      const found = locateDefaultStx('component', 'EmailLayout', defaults, project)
+      expect(found.ok).toBeFalse()
+      if (!found.ok)
+        expect(found.message).toContain('cannot be overridden from the app')
+    }
+    finally {
+      cleanup()
+    }
+  })
+
+  test('publishes a dashboard component where the dashboard servers now read it first', () => {
+    const { defaults, project, cleanup } = fixture(['resources/components/Dashboard/Commerce/CommerceOrdersTable.stx'])
+    try {
+      const found = locateDefaultStx('component', 'CommerceOrdersTable', defaults, project)
+      expect(found.ok && found.target).toBe(join(project, 'resources/components/Dashboard/Commerce/CommerceOrdersTable.stx'))
     }
     finally {
       cleanup()

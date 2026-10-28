@@ -39,7 +39,6 @@ export const COMPONENT_TREE: StxTree = {
   from: 'resources/components',
   to: 'resources/components',
   frameworkOnly: {
-    Dashboard: 'the dashboard servers read only the framework\'s dashboard components so far (stacksjs/stacks#3032)',
     Email: 'email templates resolve components from the framework\'s Email directory only (stacksjs/stacks#3032)',
   },
 }
