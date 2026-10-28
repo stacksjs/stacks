@@ -1,7 +1,7 @@
 import type { UserModel } from '@stacksjs/orm'
 import type { RemoteHost } from './remote-commands'
 import type { TerminalAuditSink, TerminalEvent, TerminalProcess, TerminalSessionOptions } from './remote-terminal'
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it, jest } from 'bun:test'
 import { existsSync, readdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { sshTerminalArgv } from './remote-commands'
@@ -236,16 +236,28 @@ describe('a session does not outlive its purpose', () => {
   })
 
   it('input keeps it alive; the max duration ends it regardless', async () => {
-    const { manager, fakes, audit } = sessions({ idleTimeoutMs: 40, maxDurationMs: 120, detachGraceMs: 10_000 })
-    const { id } = await manager.open({ user: alice, hosts, hostKey: 'app', authorizer: allowAll, cols: 80, rows: 24 })
-    for (let i = 0; i < 4; i++) {
-      await Bun.sleep(25)
-      await manager.input(id, alice, 'x')
+    // The clock is driven, not slept on: the deadlines under test run on the
+    // same clock a sleep waits on, so under load a sleep overshot them (#2978).
+    jest.useFakeTimers()
+    try {
+      const { manager, fakes, audit } = sessions({ idleTimeoutMs: 40, maxDurationMs: 120, detachGraceMs: 10_000 })
+      const { id } = await manager.open({ user: alice, hosts, hostKey: 'app', authorizer: allowAll, cols: 80, rows: 24 })
+      for (let i = 0; i < 4; i++) {
+        jest.advanceTimersByTime(25)
+        await manager.input(id, alice, 'x')
+      }
+      const ending = take(manager.watch(id, alice), 1)
+      // 119ms in: more than twice the idle timeout, kept open by the input.
+      jest.advanceTimersByTime(19)
+      expect(fakes[0]!.killed).toBe(false)
+      jest.advanceTimersByTime(1)
+      expect(fakes[0]!.killed).toBe(true)
+      expect((await ending).map(text)).toEqual(['<max-duration>'])
+      expect(audit.log.at(-1)).toStartWith('closed max-duration')
     }
-    expect(fakes[0]!.killed).toBe(false)
-    await Bun.sleep(60)
-    expect(fakes[0]!.killed).toBe(true)
-    expect(audit.log.at(-1)).toStartWith('closed max-duration')
+    finally {
+      jest.useRealTimers()
+    }
   })
 
   it('ends when nobody attaches, and a grace period after the last viewer leaves', async () => {
