@@ -486,17 +486,19 @@ export async function templateByName(
   // chain. Dynamic import so test runs / CLI scripts that never load
   // an email template pay zero startup cost for the stx graph.
   //
-  // `componentsDir` points stx at the bundled `<EmailLayout>` /
-  // `<EmailButton>` / etc. component library (stacksjs/stacks#1901)
-  // so email templates can drop them in by name. Userland is free
-  // to define its own components alongside its templates — stx
-  // walks the standard `components/` paths too — but the bundled
-  // set is always reachable from this directory.
+  // The bundled `<EmailLayout>` / `<EmailButton>` / etc. component
+  // library (stacksjs/stacks#1901) is always reachable, so email
+  // templates can drop them in by name; the app's own
+  // `resources/components/Email` is searched ahead of it.
   if (resolved.type === 'stx') {
     try {
       const { renderEmail } = await import('@stacksjs/stx')
+      // The app's own `resources/components/Email` first, so a copy made with
+      // `buddy publish:component` replaces the bundled one by name, then the
+      // bundled set (stacksjs/stacks#3032).
       const result = await renderEmail(resolved.path, allVariables, {
-        componentsDir: defaultsResourcesPath('components/Email'),
+        componentsDir: resourcesPath('components/Email'),
+        additionalComponentsDirs: [defaultsResourcesPath('components/Email')],
       })
       // CSS inlining pass (stacksjs/stacks#1902 B2). The bundled
       // <EmailLayout> & co. components are already inline-styled, so
