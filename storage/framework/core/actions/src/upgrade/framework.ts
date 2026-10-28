@@ -60,6 +60,8 @@ interface UpgradeOptions {
   noPostinstall?: boolean
   /** Run post-sync hooks (default true). Inverse of --no-postinstall. */
   postinstall?: boolean
+  /** Accept a release that moves an app dependency backwards (#3011). */
+  allowDowngrade?: boolean
 }
 
 const options = parseOptions() as UpgradeOptions
@@ -79,6 +81,7 @@ if (!existsSync(p.projectPath('storage/framework/core'))) {
     force: options.force,
     dryRun: options.dryRun,
     noPostinstall: options.noPostinstall ?? options.postinstall === false,
+    allowDowngrade: options.allowDowngrade,
   })
 }
 

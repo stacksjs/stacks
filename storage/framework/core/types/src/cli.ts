@@ -376,7 +376,7 @@ export type MakeOptions = {
   [key in MakeStringOption]?: string
 } & CliOptions
 
-export type UpgradeBoolean = 'framework' | 'dependencies' | 'bun' | 'shell' | 'binary' | 'all' | 'force' | 'canary' | 'stable' | 'noPostinstall' | 'postinstall'
+export type UpgradeBoolean = 'framework' | 'dependencies' | 'bun' | 'shell' | 'binary' | 'all' | 'force' | 'canary' | 'stable' | 'noPostinstall' | 'postinstall' | 'allowDowngrade'
 
 export type UpgradeString = 'version' | 'from'
 

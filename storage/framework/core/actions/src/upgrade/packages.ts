@@ -34,6 +34,13 @@ export interface PackageUpgradeOptions {
   dryRun?: boolean
   /** Skip the post-bump `bun install`. */
   noPostinstall?: boolean
+  /**
+   * Accept a target that moves a dependency the app already declares to an
+   * older version. Refused by default: an upgrade that goes backwards is not
+   * expected, not diagnosable from its symptoms, and nobody re-reads an
+   * upgrade's output looking for smaller numbers (stacksjs/stacks#3011).
+   */
+  allowDowngrade?: boolean
 }
 
 export interface PkgJson {
@@ -250,6 +257,18 @@ export function baseVersion(range: string): string {
 }
 
 /**
+ * Whether rewriting a declaration from `from` to `to` lowers the version it
+ * names. Only plain versions under an optional range operator are compared, so
+ * a `workspace:` reference, a link or a tag is never called a downgrade.
+ */
+export function isDowngrade(from: string, to: string): boolean {
+  const before = baseVersion(from)
+  const after = baseVersion(to)
+  const plain = /^\d+\.\d+\.\d+(?:-[\w.-]+)?$/
+  return plain.test(before) && plain.test(after) && Bun.semver.order(after, before) < 0
+}
+
+/**
  * The packages `buddy upgrade` may move to the framework `target`: the `stacks`
  * meta itself, plus every `@stacksjs/*` dependency the meta declares AT that
  * target version. Independently-versioned `@stacksjs/*` packages — the ones the
@@ -353,30 +372,72 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
   // framework in its own tree has manifests under storage/framework that
   // declare their own @stacksjs/* dependencies, and an upgrade that ignores
   // them leaves the app describing two framework versions at once — or, once
-  // a vendored core is removed, unable to install at all.
-  const manifestChanges = reconcileVendoredManifests(projectRoot, target, {
-    dryRun: options.dryRun,
-    // The same lockstep knowledge the root manifest gets, so vendored
-    // manifests cannot be bumped to a version their package never published.
-    context: { lockstep, metaDeps },
-  })
+  // a vendored core is removed, unable to install at all. Previewed here and
+  // written below, so a refused downgrade leaves every manifest as it was.
+  // The same lockstep knowledge the root manifest gets, so vendored manifests
+  // cannot be bumped to a version their package never published.
+  const manifestContext = { lockstep, metaDeps }
+  const manifestChanges = reconcileVendoredManifests(projectRoot, target, { dryRun: true, context: manifestContext })
 
-  if (changes.length > 0) {
+  // A downgrade is reported apart from the upgrades: printed as one list of
+  // arrows, six of them going backwards read exactly like thirty-four going
+  // forwards, and that is how an app lost fifteen STX releases (#3011).
+  const backwards = (change: { from: string, to: string }): boolean => isDowngrade(change.from, change.to)
+  const forwards = changes.filter(change => !backwards(change))
+  const downgrades = [
+    ...changes.filter(backwards).map(change => ({ ...change, label: change.field ? `${change.name} (${change.field})` : change.name, where: '' })),
+    ...manifestChanges.filter(backwards).map(change => ({ ...change, label: change.name, where: `   ${change.file}` })),
+  ]
+
+  if (forwards.length > 0) {
     console.log('  The following dependencies will be updated:')
-    const reported = changes.map(change => ({ ...change, label: change.field ? `${change.name} (${change.field})` : change.name }))
+    const reported = forwards.map(change => ({ ...change, label: change.field ? `${change.name} (${change.field})` : change.name }))
     const width = Math.max(...reported.map(c => c.label.length))
     for (const c of reported)
       console.log(`    ${c.label.padEnd(width)}  ${c.from}  →  ${c.to}`)
     console.log('')
   }
 
-  if (manifestChanges.length > 0) {
-    console.log(`  Vendored manifests under storage/framework (${manifestChanges.length}):`)
-    const width = Math.max(...manifestChanges.map(c => c.name.length))
-    for (const c of manifestChanges)
+  const vendoredForwards = manifestChanges.filter(change => !backwards(change))
+  if (vendoredForwards.length > 0) {
+    console.log(`  Vendored manifests under storage/framework (${vendoredForwards.length}):`)
+    const width = Math.max(...vendoredForwards.map(c => c.name.length))
+    for (const c of vendoredForwards)
       console.log(`    ${c.name.padEnd(width)}  ${c.from}  →  ${c.to}   ${c.file}`)
     console.log('')
   }
+
+  if (downgrades.length > 0) {
+    // Named, so it reads as the framework pulling the app back rather than
+    // the app moving forward: the app's own declaration lost to the release.
+    const verb = options.allowDowngrade ? 'will be downgraded' : 'would be downgraded'
+    console.log(`  The following dependencies ${verb}, because stacks@${target} declares older versions than this app does:`)
+    const width = Math.max(...downgrades.map(c => c.label.length))
+    for (const c of downgrades)
+      console.log(`    ${c.label.padEnd(width)}  ${c.from}  →  ${c.to}   (downgrade)${c.where}`)
+    console.log('')
+
+    if (!options.allowDowngrade) {
+      const advice = options.version
+        ? [`  --version ${target} asks for an older release than this app declares. Re-run with --allow-downgrade to confirm it.\n`]
+        : [
+            `  Wait for a framework release that declares these versions or newer, or re-run with --allow-downgrade to accept them.`,
+            `  Checking for one: \`npm view stacks versions\`, then \`buddy upgrade --version <version> --dry-run\`.\n`,
+          ]
+      if (options.dryRun) {
+        console.log(`  A real run refuses this upgrade unless --allow-downgrade is passed.`)
+        console.log(advice.join('\n'))
+      }
+      else {
+        console.error(`✗ Refusing to downgrade ${downgrades.length} ${downgrades.length === 1 ? 'dependency' : 'dependencies'}. Nothing was written or installed.`)
+        console.error(advice.join('\n'))
+        process.exit(1)
+      }
+    }
+  }
+
+  if (!options.dryRun && manifestChanges.length > 0)
+    reconcileVendoredManifests(projectRoot, target, { context: manifestContext })
 
   if (projectManifestChanges.length > 0)
     console.log(`  Project manifest migrations: ${projectManifestChanges.length}\n`)

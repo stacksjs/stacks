@@ -13,6 +13,7 @@ export function upgrade(buddy: CLI): void {
     canary: 'Upgrade to the latest canary (bleeding-edge `main`) build',
     stable: 'Switch to the latest vetted stable release',
     dryRun: 'Preview the upgrade (which dependencies would change) without writing or installing',
+    allowDowngrade: 'Accept a release that moves a dependency this app declares to an older version (refused by default)',
     force: 'Force re-download, bypassing cache and version checks',
     from: 'Sync from a local stacks checkout (e.g. ~/Code/stacks). Skips GitHub.',
     noPostinstall: 'Skip post-sync hooks (auto-imports, bun install, migrate)',
@@ -32,6 +33,7 @@ export function upgrade(buddy: CLI): void {
     .option('--canary', descriptions.canary, { default: false })
     .option('--stable', descriptions.stable, { default: false })
     .option('--dry-run', descriptions.dryRun, { default: false })
+    .option('--allow-downgrade', descriptions.allowDowngrade, { default: false })
     .option('-f, --force', descriptions.force, { default: false })
     .option('--from <path>', descriptions.from)
     // No `default` here — cac treats `--no-postinstall` as a negation flag and
@@ -47,6 +49,7 @@ export function upgrade(buddy: CLI): void {
     .example('buddy upgrade --from ~/Code/stacks')
     .example('buddy upgrade --version 0.70.23')
     .example('buddy upgrade --dry-run')
+    .example('buddy upgrade --allow-downgrade')
     .example('buddy upgrade --canary')
     .example('buddy upgrade --stable')
     .example('buddy upgrade --force')
