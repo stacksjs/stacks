@@ -16,6 +16,8 @@ interface TrayActionRequest {
 const preferredPort = Number(process.env.PORT_SYSTEM_TRAY) || 3009
 const port = await findAvailablePort(preferredPort)
 const trayViews = defaultsPath('views/system-tray')
+// An app's own copy (`buddy publish:view system-tray`) is served first.
+const userTrayViews = projectPath('resources/views/system-tray')
 const appUrl = process.env.APP_URL || 'stacks.test'
 const domain = appUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')
 const hasPrettyDomain = !domain.includes('localhost:') && domain !== 'localhost'
@@ -158,9 +160,12 @@ async function handleAction(input: TrayActionRequest): Promise<Response> {
 
 const { serve } = await import('bun-plugin-stx/serve')
 const serverPromise = serve({
-  patterns: [trayViews],
+  patterns: [userTrayViews, trayViews],
   port,
-  componentsDir: defaultsPath('resources/components'),
+  // The app's components first, then the framework's, as on the site
+  // (stacksjs/stacks#3032).
+  componentsDir: projectPath('resources/components'),
+  additionalComponentsDirs: [defaultsPath('resources/components')],
   quiet: true,
   auth: false,
   routes: {

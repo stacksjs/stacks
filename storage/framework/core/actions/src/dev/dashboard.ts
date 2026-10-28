@@ -410,7 +410,13 @@ async function startStxServer(): Promise<void> {
     // `@stacksjs/components`. Searched last, so an app's own component of
     // the same name still wins (stacksjs/stacks#2641).
     fallbackComponentsDir: resolveComponentsLibraryRoot(),
-    layoutsDir: dashboardPath,
+    // Both are the `layouts` directories: stx looks `layouts/default` up as
+    // `default.stx` inside them. An app's
+    // `resources/views/dashboard/layouts/default.stx` (`buddy
+    // publish:view dashboard/layouts/default`) replaces the dashboard chrome;
+    // every layout it does not have comes from the framework (#3032).
+    layoutsDir: projectPath('resources/views/dashboard/layouts'),
+    fallbackLayoutsDir: defaultsPath('views/dashboard/layouts'),
     partialsDir: dashboardPath,
     // Pin the app's canonical public root. Dashboard pages can be discovered
     // from framework storage while the assets they reference still belong to
@@ -434,9 +440,6 @@ async function startStxServer(): Promise<void> {
     watchDirs: [
       projectPath('resources/functions'),
       defaultsPath('resources/functions'),
-      // stx watches `componentsDir`, now the app's. The framework's changes
-      // too when the framework itself is the project.
-      dashboardComponentsPath,
     ],
     quiet: true,
     routes: configRoutes,

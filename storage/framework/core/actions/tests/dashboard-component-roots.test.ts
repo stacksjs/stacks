@@ -141,3 +141,48 @@ test('both dashboard servers search the app\'s dashboard components ahead of the
     expect(source).not.toMatch(/componentsDir: (defaultsPath|join\(defaultsRoot)/)
   }
 })
+
+/**
+ * The dashboard chrome is a layout every page extends (`@extends('layouts/
+ * default')`). The app's `resources/views/dashboard` is `layoutsDir` and the
+ * framework's dashboard views the fallback, so `buddy publish:view
+ * dashboard/layouts/default` replaces the chrome and every other layout still
+ * resolves (stacksjs/stacks#3032).
+ */
+test('an app copy of a dashboard layout replaces the framework\'s, and the rest still resolve', async () => {
+  const frameworkDashboard = join(import.meta.dir, '../../../defaults/views/dashboard')
+  const app = mkdtempSync(join(scratch, 'app-views-'))
+  const page = join(scratch, `page-${Math.random().toString(36).slice(2)}.stx`)
+  writeFileSync(page, `@extends('layouts/guest')\n\n@section('content')\n<p>PAGE</p>\n@endsection\n`)
+
+  const roots = { layoutsDir: join(app, 'layouts'), fallbackLayoutsDir: join(frameworkDashboard, 'layouts') }
+  const framework = await renderTemplate(page, { options: roots })
+  expect(framework).toContain('PAGE')
+  expect(framework).not.toContain('data-app-layout')
+
+  const { mkdirSync } = await import('node:fs')
+  mkdirSync(join(app, 'layouts'), { recursive: true })
+  writeFileSync(join(app, 'layouts/guest.stx'), '<main data-app-layout="guest">@yield(\'content\')</main>\n')
+  const overridden = await renderTemplate(page, { options: roots })
+  expect(overridden).toContain('data-app-layout="guest"')
+  expect(overridden).toContain('PAGE')
+}, 60_000)
+
+test('both dashboard servers read the app\'s dashboard layouts before the framework\'s', async () => {
+  const pins: Array<[string, string, string]> = [
+    ['../src/dev/dashboard.ts', 'layoutsDir: projectPath(\'resources/views/dashboard/layouts\'),', 'fallbackLayoutsDir: defaultsPath(\'views/dashboard/layouts\'),'],
+    ['../src/serve/dashboard.ts', 'layoutsDir: join(appDashboard, \'layouts\'),', 'fallbackLayoutsDir: join(frameworkDashboard, \'layouts\'),'],
+  ]
+  for (const [file, app, framework] of pins) {
+    const source = await Bun.file(join(import.meta.dir, file)).text()
+    expect(source).toContain(app)
+    expect(source).toContain(framework)
+  }
+})
+
+test('the system tray serves the app\'s views and components before the framework\'s', async () => {
+  const source = await Bun.file(join(import.meta.dir, '../src/dev/system-tray.ts')).text()
+  expect(source).toContain('patterns: [userTrayViews, trayViews],')
+  expect(source).toContain('componentsDir: projectPath(\'resources/components\'),')
+  expect(source).toContain('additionalComponentsDirs: [defaultsPath(\'resources/components\')],')
+})

@@ -111,7 +111,13 @@ await serve({
   port,
 
   // The dashboard's own chrome and components, NOT the site's.
-  layoutsDir: frameworkDashboard,
+  // Both are the `layouts` directories: stx looks `layouts/default` up as
+  // `default.stx` inside them. An app's
+  // `resources/views/dashboard/layouts/default.stx` (`buddy
+  // publish:view dashboard/layouts/default`) replaces the dashboard chrome;
+  // every layout it does not have comes from the framework (#3032).
+  layoutsDir: join(appDashboard, 'layouts'),
+  fallbackLayoutsDir: join(frameworkDashboard, 'layouts'),
   partialsDir: frameworkDashboard,
   // The app's own dashboard components first, then the framework's, both
   // ahead of the library below, which shares names with them
