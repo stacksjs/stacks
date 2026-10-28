@@ -20,7 +20,7 @@ set -eu
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 ROOT="\${CI_PRIMARY_REPOSITORY_PATH:-$(git -C "$PROJECT_DIR" rev-parse --show-toplevel)}"
 if ! command -v bun >/dev/null 2>&1; then
-  curl -fsSL https://bun.com/install -o /tmp/stacks-install-bun.sh
+  curl -fsSL --retry 3 --retry-all-errors --connect-timeout 20 --max-time 90 --retry-max-time 180 https://bun.com/install -o /tmp/stacks-install-bun.sh
   bash /tmp/stacks-install-bun.sh "bun-v${version}"
   export PATH="$HOME/.bun/bin:$PATH"
 fi

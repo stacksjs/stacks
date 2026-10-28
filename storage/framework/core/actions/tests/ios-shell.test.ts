@@ -15,6 +15,10 @@ test('a cloud clone restores ignored native sources from the locked package', ()
     const path = join(output, 'ci_scripts/ci_post_clone.sh')
     const script = readFileSync(path, 'utf8')
     expect(script).toContain('bun-v1.3.14')
+    // Cloud runners can reset the TLS connection before any build starts.
+    // Retry that transport failure with finite budgets, preserving TLS checks.
+    expect(script).toContain('--retry 3 --retry-all-errors --connect-timeout 20 --max-time 90 --retry-max-time 180')
+    expect(script).not.toContain('--insecure')
     expect(script).toContain('bun install --frozen-lockfile')
     expect(script).toContain('@stacksjs/mobile/testing')
     expect(script).toContain('--config="$PROJECT_DIR/ci_scripts/bunfig.toml"')
