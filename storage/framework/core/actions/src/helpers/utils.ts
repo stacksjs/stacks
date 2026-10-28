@@ -308,6 +308,9 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
   const optionsWithCwd: CliOptions = {
     cwd: options?.cwd || p.projectPath(),
     ...options,
+    // A supervisor can signal only buddy, rather than its whole process group.
+    // The queue worker owns the actual drain and must receive that signal.
+    forwardSignals: action === ActionEnum.QueueWork || options?.forwardSignals,
     stdout: shouldInherit ? 'inherit' : undefined,
     stderr: shouldInherit ? 'inherit' : undefined,
     // Dev server subprocesses (`bun --watch dev/*.ts`) run the bunfig preloader

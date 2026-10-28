@@ -9,6 +9,18 @@ The simple way to build beautiful CLIs.
 - 🚦 Elegant terminal spinners
 - ⛑️ Helper methods to run commands
 
+## Forwarding shutdown signals
+
+For a supervised, long-running command, pass `forwardSignals: true` to `exec`
+or `runCommand`. On POSIX, SIGINT and SIGTERM received by the parent are forwarded
+to its direct child; the child remains responsible for draining its work and
+exiting. Forwarding listeners are removed when the child exits. This is opt-in
+and does not terminate a process tree or impose a drain deadline.
+
+`buddy queue:work` enables forwarding automatically so a supervisor that signals
+only Buddy still reaches the queue worker. Importing CLI prompts does not install
+an exit handler; Ctrl+C exits an active interactive prompt only.
+
 ## Capturing bounded command output
 
 Use the narrow `@stacksjs/cli/process` entry for a finite command whose text

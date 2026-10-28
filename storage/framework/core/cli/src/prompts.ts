@@ -15,12 +15,6 @@ process.stdin.destroy = function(this: any, error?: Error) {
   return this
 }
 
-// Handle Ctrl+C gracefully
-process.on('SIGINT', () => {
-  console.log('\n')
-  process.exit(130) // Standard exit code for SIGINT
-})
-
 // Single global readline interface that we reuse
 let globalRl: Interface | null = null
 
@@ -34,13 +28,6 @@ function getGlobalRl(): Interface {
       output: process.stdout,
       terminal: isTTY,
     })
-
-    // Set up Ctrl+C handler (only attach when stdin is a TTY)
-    if (isTTY && typeof process.stdin.setRawMode === 'function') {
-      globalRl.on('SIGINT', () => {
-        process.emit('SIGINT')
-      })
-    }
 
     // Drop the cached interface once it closes. It was previously kept
     // forever, so the SECOND prompt in a process whose stdin had reached EOF
@@ -78,6 +65,7 @@ function readLineOrEof(prompt: string): Promise<string | typeof EOF> {
         return
       settled = true
       rl.off('close', onClose)
+      rl.off('SIGINT', onInterrupt)
       resolve(answer)
     }
 
@@ -90,7 +78,15 @@ function readLineOrEof(prompt: string): Promise<string | typeof EOF> {
     // every caller already handles as "take the default / cancel".
     const onClose = () => finish(EOF)
 
+    // Only an active prompt owns this exit. Importing the CLI must leave
+    // supervising commands free to forward signals and drain workers.
+    const onInterrupt = () => {
+      console.log('\n')
+      process.exit(130)
+    }
+
     rl.once('close', onClose)
+    rl.once('SIGINT', onInterrupt)
 
     try {
       rl.question(prompt, finish)

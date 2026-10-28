@@ -182,7 +182,7 @@ export function buddyOptionArgs(options: Record<string, any>): string[] {
   for (const [key, value] of Object.entries(options)) {
     // cac reserves `--` for arguments after the option separator and some
     // callers use `_` for positional arguments. Neither is a CLI option.
-    if (key === '--' || key === '_' || value === false || value === undefined || value === null)
+    if (key === '--' || key === '_' || key === 'forwardSignals' || value === false || value === undefined || value === null)
       continue
     if (typeof value === 'object' && !Array.isArray(value))
       continue

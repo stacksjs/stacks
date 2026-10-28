@@ -32,7 +32,7 @@ describe('buddyOptionArgs', () => {
   })
 
   it('does not send runner settings as flags', () => {
-    expect(buddyOptionArgs({ env: { A: '1' }, stdout: { pipe: true }, domain: 'example.com' })).toEqual(['--domain', 'example.com'])
+    expect(buddyOptionArgs({ env: { A: '1' }, stdout: { pipe: true }, forwardSignals: true, domain: 'example.com' })).toEqual(['--domain', 'example.com'])
   })
 
   it('leaves out cac\'s own bookkeeping keys', () => {

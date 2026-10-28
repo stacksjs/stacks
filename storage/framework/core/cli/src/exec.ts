@@ -60,6 +60,23 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
     },
   })
 
+  if (options?.forwardSignals) {
+    const forward = (signal: NodeJS.Signals) => {
+      if (proc.exitCode !== null || proc.signalCode) return
+      try { proc.kill(signal) }
+      catch { /* The child can exit between the check and signal delivery. */ }
+    }
+    const interrupt = () => forward('SIGINT')
+    const terminate = () => forward('SIGTERM')
+    process.on('SIGINT', interrupt)
+    process.on('SIGTERM', terminate)
+    const stop = () => {
+      process.off('SIGINT', interrupt)
+      process.off('SIGTERM', terminate)
+    }
+    void proc.exited.then(stop, stop)
+  }
+
   // Check if we need to write to stdin
   // this is currently only used for `buddy aws:configure`
   if (options?.stdin === 'pipe' && options.input) {

@@ -100,6 +100,10 @@ export type CliOptionsKeys = keyof CliOptions
  * The options to pass to the CLI.
  */
 export interface CliOptions {
+  /** Forward parent-only SIGINT/SIGTERM to this awaited child; the caller owns
+   * its shutdown policy. Listeners are removed when the child exits. */
+  forwardSignals?: boolean
+
   /**
    * **Throw On A Non-Zero Exit**
    *

@@ -1,7 +1,7 @@
 import type { CLI, CliQueueOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
-import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
+import { intro, log, onUnknownSubcommand, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
 import { resultFailed } from '../result'
@@ -40,10 +40,8 @@ export function queue(buddy: CLI): void {
       // directly and drains. This handler's job is only to keep the parent
       // alive so the awaited `runAction` can observe the child's graceful exit,
       // with a backstop that force-exits if the child overruns its grace.
-      // (Docker PID-1 / KillMode=process, where only the parent is signalled,
-      // still needs the parent to forward the signal to the child — tracked in
-      // #1984 as a follow-up; it needs the child handle threaded through
-      // runCommand + real multi-process signal testing.)
+      // runAction opts this child into exec's signal forwarding, so supervisors
+      // that signal only buddy also reach the worker's drain handler (#3038).
       const SHUTDOWN_GRACE_MS = Number(process.env.STACKS_QUEUE_SHUTDOWN_GRACE_MS) || 10_000
       const PARENT_BACKSTOP_MS = SHUTDOWN_GRACE_MS + 5_000
       let shuttingDown = false
