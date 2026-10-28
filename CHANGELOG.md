@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.344...v0.75.345)
+
+## 🐛 Bug Fixes
+
+- **queue**: forward supervisor signals to the worker process ([424f57b](https://github.com/stacksjs/stacks/commit/424f57b)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- **native**: refresh generated references for queue shutdown changes ([55c6113](https://github.com/stacksjs/stacks/commit/55c6113)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.343...v0.75.344)
 
 ## 🐛 Bug Fixes
