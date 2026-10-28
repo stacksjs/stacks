@@ -135,6 +135,15 @@ const changed = await Payment.changeSubscription(user, 'enterprise-monthly')
 
 ### Direct charges (Managed Risk, the default for new accounts)
 
+For financial reconciliation, `directChargeFinancials(paymentIntentId, originalAccount)`
+retrieves the successful charge, every refund/dispute, its platform application fee
+and fee refunds, and their balance transactions. Call it after acquiring the
+application's payment lock. It verifies the object graph and fully paginates;
+`DirectChargeFinancialsPendingError` means retry through the durable queue while
+holding unsettled liabilities. Returned provider objects are server-only. Movement
+amounts/fees/net retain their settlement currency and exchange rate; never mix them
+with presentment-currency contributor shares or infer a fee refund from a charge refund.
+
 `createConnectedAccount` makes a Managed Risk account unless you pass `type` or
 `controller` (`MANAGED_RISK_CONTROLLER`: Stripe carries losses, full Stripe
 Dashboard, Stripe-hosted onboarding). Stripe refuses `type: 'express'`/`'custom'`

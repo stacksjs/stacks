@@ -61,3 +61,13 @@ Many thanks to the following core technologies & people who have contributed to 
 The MIT License (MIT). Please see [LICENSE](https://github.com/stacksjs/stacks/tree/main/LICENSE.md) for more information.
 
 Made with 💙
+
+## Direct-charge financial reconciliation
+
+`directChargeFinancials(paymentIntentId, originalAccount)` reads canonical provider facts on the payment's original connected account. It returns the successful charge, every refund and dispute, its application fee and fee refunds, and their balance transactions. Platform fee reads stay on the platform. All lists are paginated, ownership is verified, and incomplete pagination fails. Importing the helper does not initialize Stripe.
+
+Call after acquiring the application's payment lock. Persist immutable movement IDs with their account scope, and use the normal durable queue to retry `DirectChargeFinancialsPendingError`: fees and balance transactions can appear asynchronously. A missing fee is never inferred to be zero. Do not expose the returned Stripe objects in public responses.
+
+Balance amounts, fees and net remain in their actual settlement currency with the provider exchange rate. Contributor allocations belong in their own presentment-currency ledger; a dispute status alone does not prove reinstatement, and a charge refund does not prove that the application fee was returned.
+
+References: [direct charges](https://docs.stripe.com/connect/direct-charges), [refund pagination](https://docs.stripe.com/api/refunds/list), [disputes](https://docs.stripe.com/api/disputes/list), [application fees](https://docs.stripe.com/api/application_fees/list).
