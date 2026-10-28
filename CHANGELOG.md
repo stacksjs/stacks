@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.341...v0.75.342)
+
+## ✨ Features
+
+- **testing**: wait for actionable browser controls before clicking ([bb90f15](https://github.com/stacksjs/stacks/commit/bb90f15)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.340...v0.75.341)
 
 ## ✅ Tests
