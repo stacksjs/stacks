@@ -33,13 +33,26 @@ test('a disconnected real scenario retains its completed steps and failed observ
         phases.push('disconnect-requested')
         // Only this child's uniquely owned profile and this fixture's page
         // qualify. Never enumerate or close a user's browser session.
-        const profile = readdirSync(tmpdir()).find(name => name.startsWith(`stacks-browse-${browserPid}-`))
-        if (!profile) throw new Error('The scenario did not own a browser profile')
-        const port = Number(readFileSync(join(tmpdir(), profile, 'DevToolsActivePort'), 'utf8').split('\n')[0])
+        // Discovery may have abandoned a failed candidate before starting the
+        // working browser. A profile's port file outlives that process, so the
+        // first directory with this child's prefix is not necessarily live.
+        const profiles = readdirSync(tmpdir()).filter(name => name.startsWith(`stacks-browse-${browserPid}-`))
+        let owned: { port: number, page: { id: string, url: string } } | undefined
         phases.push('target-list')
-        const pages = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json() as { id: string, url: string }[]
-        const page = pages.find(page => page.url === server.url.href)
-        if (!page) throw new Error('The owned fixture page was not found')
+        for (const profile of profiles) {
+          const file = join(tmpdir(), profile, 'DevToolsActivePort')
+          if (!existsSync(file)) continue
+          const port = Number(readFileSync(file, 'utf8').split('\n')[0])
+          if (!Number.isInteger(port) || port < 1 || port > 65535) continue
+          try {
+            const pages = await (await fetch(`http://127.0.0.1:${port}/json/list`, { signal: AbortSignal.timeout(1000) })).json() as { id: string, url: string }[]
+            const page = pages.find(page => page.url === server.url.href)
+            if (page) { owned = { port, page }; break }
+          }
+          catch { /* An abandoned launch is not the scenario's live target. */ }
+        }
+        if (!owned) throw new Error('The owned fixture page was not found in a live child profile')
+        const { port, page } = owned
         phases.push('target-close')
         const closed = await fetch(`http://127.0.0.1:${port}/json/close/${encodeURIComponent(page.id)}`)
         if (!closed.ok) throw new Error('Chrome did not close the owned target')
