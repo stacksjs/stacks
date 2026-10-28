@@ -11,6 +11,7 @@ import { decryptValue, getPrivateKey } from './crypto'
 import { parse } from './parser'
 import { isEncryptedValue } from './encrypted-value'
 import { plaintextEnv } from './plaintext-env'
+import { applyWithheldEnv, withheldEnvKeys } from './withheld'
 
 export interface EnvPluginOptions {
   /**
@@ -221,6 +222,8 @@ export function loadEnv(options: EnvPluginOptions = {}): { loaded: number, error
   const paths = Array.isArray(envPaths) ? envPaths : [envPaths]
   const errors: string[] = []
   let loaded = 0
+  // Keys the parent process withheld are not this file's to supply (#3028).
+  const withheld = withheldEnvKeys()
 
   // Snapshot genuine shell/CI overrides before loading any files. Values that
   // Bun preloaded as ciphertext are not usable overrides and may be replaced.
@@ -309,7 +312,7 @@ export function loadEnv(options: EnvPluginOptions = {}): { loaded: number, error
       let applied = 0
       for (const [key, value] of Object.entries(parsed)) {
         // Skip DOTENV_PUBLIC_KEY
-        if (key === 'DOTENV_PUBLIC_KEY') {
+        if (key === 'DOTENV_PUBLIC_KEY' || withheld.has(key)) {
           continue
         }
 
@@ -352,6 +355,8 @@ export function loadEnv(options: EnvPluginOptions = {}): { loaded: number, error
   }
 
   scrubForeignCiphertext(privateKey)
+  // Bun's native load ran before this code and knows nothing of the list.
+  applyWithheldEnv()
 
   return { loaded, errors }
 }
