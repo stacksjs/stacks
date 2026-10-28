@@ -1,5 +1,6 @@
 <script client>
 import type { RemoteCommandResult, RemoteRegistry } from '../../../../functions/remote'
+import { DashboardApiError } from '../../../../functions/dashboard-api'
 import { fetchRemoteRegistry, requestRemoteCommand } from '../../../../functions/remote'
 import { registerRemoteTerminal } from '../../../../functions/remote-terminal-element'
 import { pushToast } from '../../../../functions/toasts'
@@ -9,6 +10,9 @@ void registerRemoteTerminal()
 const registry = state<RemoteRegistry | null>(null)
 const isLoading = state(true)
 const loadError = state('')
+// Remote access needs a signed-in account even where the rest of the dev
+// dashboard does not, so a 401 here asks for a sign-in rather than failing.
+const authenticationRequired = state(false)
 const selectedHost = state('')
 const selectedCommand = state('')
 const isRunning = state(false)
@@ -27,6 +31,7 @@ const commandsForHost = derived(() => {
 async function load(): Promise<void> {
   isLoading.set(true)
   loadError.set('')
+  authenticationRequired.set(false)
   try {
     const data = await fetchRemoteRegistry()
     registry.set(data)
@@ -34,7 +39,10 @@ async function load(): Promise<void> {
       selectedHost.set(data.hosts[0].key)
   }
   catch (error) {
-    loadError.set(error instanceof Error ? error.message : 'The remote hosts could not be loaded.')
+    if (error instanceof DashboardApiError && error.status === 401)
+      authenticationRequired.set(true)
+    else
+      loadError.set(error instanceof Error ? error.message : 'The remote hosts could not be loaded.')
   }
   finally {
     isLoading.set(false)
@@ -86,6 +94,20 @@ onMount(() => {
   </div>
 
   <div :if="isLoading()" class="text-gray-500 text-sm dark:text-neutral-400">Loading hosts</div>
+
+  <EmptyState
+    :if="!isLoading() && authenticationRequired()"
+    icon="i-hugeicons-user-lock-01"
+    title="Sign in to use remote access"
+    description="Running commands and opening terminals on your servers needs a signed-in account, in every environment. Each run and session is recorded under it."
+  >
+    <template #action>
+      <Button tag="a" href="/login?redirect=/remote">
+        <span class="h-4 w-4 i-hugeicons-login-03"></span>
+        Sign in
+      </Button>
+    </template>
+  </EmptyState>
 
   <section :if="!isLoading() && registry() && hosts().length === 0" class="p-6 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
     <h2 class="font-semibold text-gray-900 dark:text-white">No hosts are configured</h2>
