@@ -221,7 +221,7 @@ onMount(() => {
       <span class="h-4 w-4 i-hugeicons-key-02"></span>
       Create Token
     </Button>
-    <Button :if="!loading() && authenticationRequired()" tag="a" href="/login">
+    <Button :if="!loading() && authenticationRequired()" tag="a" href="/login?redirect=/access-tokens">
       <span class="h-4 w-4 i-hugeicons-login-03"></span>
       Sign in
     </Button>
@@ -271,7 +271,7 @@ onMount(() => {
       description="Personal access tokens belong to an authenticated account. Sign in to create, inspect, or revoke them."
     >
       <template #action>
-        <Button tag="a" href="/login">
+        <Button tag="a" href="/login?redirect=/access-tokens">
           <span class="h-4 w-4 i-hugeicons-login-03"></span>
           Sign in
         </Button>
