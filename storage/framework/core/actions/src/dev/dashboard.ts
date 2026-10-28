@@ -47,6 +47,10 @@ console.warn = (...args: unknown[]) => {
 // commerce/, content/, …) plus index.stx for the canonical structure.
 const dashboardPath = defaultsPath('views/dashboard')
 const userDashboardPath = projectPath('resources/views/dashboard')
+// The app's own copies of dashboard components (`buddy publish:component`),
+// searched ahead of the framework's (stacksjs/stacks#3032).
+const dashboardComponentsPath = defaultsPath('resources/components/Dashboard')
+const userDashboardComponentsPath = projectPath('resources/components/Dashboard')
 const preferredPort = Number(process.env.PORT_ADMIN) || 3002
 // eslint-disable-next-line ts/no-top-level-await
 const dashboardPort = await findAvailablePort(preferredPort)
@@ -232,7 +236,7 @@ async function startStxServer(): Promise<void> {
   let dashboardIconCss: Promise<string> | null = null
   async function buildDashboardIconCss(): Promise<string> {
     const { generateCss } = await import('@stacksjs/stx')
-    const dirs = [dashboardPath, userDashboardPath, defaultsPath('resources/components/Dashboard')]
+    const dirs = [dashboardPath, userDashboardPath, dashboardComponentsPath, userDashboardComponentsPath]
     const icons = new Set<string>()
     for (const dir of dirs) {
       if (!existsSync(dir))
@@ -396,7 +400,12 @@ async function startStxServer(): Promise<void> {
     root: projectPath('resources'),
     patterns: [userDashboardPath, dashboardPath],
     port: dashboardPort,
-    componentsDir: defaultsPath('resources/components/Dashboard'),
+    // The app's dashboard components first, then the framework's, both ahead
+    // of `@stacksjs/components` below: that library shares names with the
+    // dashboard's own (`Button`, `Card`, `Table`, ...), so the framework's
+    // cannot be the fallback (stacksjs/stacks#3032, stacksjs/stx#2130).
+    componentsDir: userDashboardComponentsPath,
+    additionalComponentsDirs: [dashboardComponentsPath],
     // The layout's `<Sidebar>` and `<SidebarHeader>` ship in
     // `@stacksjs/components`. Searched last, so an app's own component of
     // the same name still wins (stacksjs/stacks#2641).
@@ -425,6 +434,9 @@ async function startStxServer(): Promise<void> {
     watchDirs: [
       projectPath('resources/functions'),
       defaultsPath('resources/functions'),
+      // stx watches `componentsDir`, now the app's. The framework's changes
+      // too when the framework itself is the project.
+      dashboardComponentsPath,
     ],
     quiet: true,
     routes: configRoutes,

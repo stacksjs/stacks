@@ -113,7 +113,11 @@ await serve({
   // The dashboard's own chrome and components, NOT the site's.
   layoutsDir: frameworkDashboard,
   partialsDir: frameworkDashboard,
-  componentsDir: join(defaultsRoot, 'resources/components/Dashboard'),
+  // The app's own dashboard components first, then the framework's, both
+  // ahead of the library below, which shares names with them
+  // (stacksjs/stacks#3032).
+  componentsDir: projectPath('resources/components/Dashboard'),
+  additionalComponentsDirs: [join(defaultsRoot, 'resources/components/Dashboard')],
   // Same as the dev server: the layout's sidebar tags come from
   // `@stacksjs/components`, searched after the dashboard's own directory
   // (stacksjs/stacks#2641).

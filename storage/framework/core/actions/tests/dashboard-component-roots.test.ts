@@ -93,3 +93,51 @@ test('both dashboard servers pass the library root to serve()', async () => {
     expect(source).toContain('componentsDir:')
   }
 })
+
+/**
+ * An app overrides a dashboard component by keeping its own copy under
+ * `resources/components/Dashboard` (`buddy publish:component`,
+ * stacksjs/stacks#3032). The app's directory is `componentsDir`, the
+ * framework's comes next in `additionalComponentsDirs`, and the library stays
+ * the fallback. The framework's directory cannot be the fallback instead: the
+ * library is a plugin directory too, and plugins rank above the fallback, so
+ * its `Button` would replace the dashboard's.
+ */
+test('an app copy of a dashboard component wins, and the framework\'s still beat the library\'s', async () => {
+  const app = mkdtempSync(join(scratch, 'app-components-'))
+  writeFileSync(join(app, 'CommerceOrdersTable.stx'), '<section data-app-override="orders"></section>\n')
+  const roots = {
+    componentsDir: app,
+    additionalComponentsDirs: [dashboardComponents],
+    fallbackComponentsDir: resolveComponentsLibraryRoot(),
+  }
+
+  expect(await render('CommerceOrdersTable', roots)).toContain('data-app-override="orders"')
+  // The way the dashboard actually reaches it: rendered by its framework
+  // sibling, which used to find the framework's copy beside itself first.
+  expect(await render('CommerceOrdersDashboard', roots)).toContain('data-app-override="orders"')
+  // Without the app's copy, the framework's renders: a nested component found
+  // through the additional root.
+  expect(await render('CommerceOrdersTable', { ...roots, componentsDir: join(scratch, 'no-such-dir') })).not.toContain('data-app-override')
+  expect(await resolves('CommerceOrdersTable', { ...roots, componentsDir: join(scratch, 'no-such-dir') })).toBe(true)
+
+  // A name the library shares: the dashboard's own must win. Scope ids are
+  // random per render, so they are blanked before comparing; the library's
+  // own Button is rendered too, so the comparison can tell the two apart.
+  const unscoped = (html: string) => html.replace(/stx_[a-z0-9_]+/g, 'stx_')
+  const dashboardButton = unscoped(await render('Button', { componentsDir: dashboardComponents }))
+  const libraryButton = unscoped(await render('Button', { componentsDir: join(scratch, 'no-such-dir'), fallbackComponentsDir: resolveComponentsLibraryRoot() }))
+  expect(libraryButton).not.toBe(dashboardButton)
+  expect(unscoped(await render('Button', roots))).toBe(dashboardButton)
+
+  // And the layout's library tags still resolve.
+  expect(await render('Sidebar', roots)).toContain('data-sidebar')
+}, 60_000)
+
+test('both dashboard servers search the app\'s dashboard components ahead of the framework\'s', async () => {
+  for (const file of ['../src/dev/dashboard.ts', '../src/serve/dashboard.ts']) {
+    const source = await Bun.file(join(import.meta.dir, file)).text()
+    expect(source, `${file} must pass the framework's dashboard components as an additional root`).toMatch(/additionalComponentsDirs: \[(dashboardComponentsPath|join\(defaultsRoot, 'resources\/components\/Dashboard'\))\]/)
+    expect(source).not.toMatch(/componentsDir: (defaultsPath|join\(defaultsRoot)/)
+  }
+})
