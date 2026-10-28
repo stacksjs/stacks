@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.340...v0.75.341)
+
+## ✅ Tests
+
+- **errors**: await the reported error write before checking persistence ([0306472](https://github.com/stacksjs/stacks/commit/0306472)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.339...v0.75.340)
 
 ## 🐛 Bug Fixes
