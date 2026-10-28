@@ -136,6 +136,63 @@ export function resetBootHooks(): void {
   bootHooksRun = false
 }
 
+/**
+ * Work to do when the server is told to stop (stacksjs/stacks#3034).
+ *
+ * For what a process holds that would otherwise outlive it or end unrecorded:
+ * terminal sessions keep a shell, a temp directory and an audit entry waiting
+ * on their close. The production API server runs these on SIGTERM, alongside
+ * draining in-flight requests and inside the same grace window, so a hook
+ * that hangs cannot keep the process past it.
+ */
+export interface ShutdownHook {
+  /** Named, so a failure says which one failed rather than "a hook". */
+  name: string
+  run: () => void | Promise<void>
+}
+
+// On globalThis, like `route` itself: a module that registers through a
+// second copy of this package still has to reach the list the server runs.
+const SHUTDOWN_HOOKS_KEY = Symbol.for('@stacksjs/router:shutdown-hooks')
+
+interface ShutdownHooks {
+  hooks: ShutdownHook[]
+  running?: Promise<void>
+}
+
+function shutdownHooks(): ShutdownHooks {
+  return ((globalThis as Record<symbol, unknown>)[SHUTDOWN_HOOKS_KEY] ??= { hooks: [] }) as ShutdownHooks
+}
+
+/**
+ * Run every registered shutdown hook, once per process; a second signal waits
+ * on the same run.
+ *
+ * Concurrent, unlike boot hooks: the grace window is the whole budget, and one
+ * hook waiting should not spend another's share of it. A hook that throws is
+ * logged and the others still run.
+ */
+export function runShutdownHooks(): Promise<void> {
+  const state = shutdownHooks()
+  state.running ??= Promise.all(state.hooks.map(async (hook) => {
+    try {
+      await hook.run()
+    }
+    catch (error) {
+      // Awaited: the process exits right after, and an unawaited log is lost.
+      await log.error(`[router] shutdown hook "${hook.name}" failed:`, error)
+    }
+  })).then(() => {})
+  return state.running
+}
+
+/** For tests. */
+export function resetShutdownHooks(): void {
+  const state = shutdownHooks()
+  state.hooks.length = 0
+  state.running = undefined
+}
+
 export function warnOnMultipleRouterInstances(): boolean {
   if (loadedRouterInstances.size <= 1)
     return false
@@ -5520,6 +5577,14 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       return stacksRouter
     },
 
+    /**
+     * Register work to do when the server is told to stop. See `ShutdownHook`.
+     */
+    stopping(name: string, run: () => void | Promise<void>) {
+      shutdownHooks().hooks.push({ name, run })
+      return stacksRouter
+    },
+
     // Serve the router
     async serve(options: ServerOptions = {}): Promise<Server<unknown>> {
       // Warn (don't crash) on a split router (#1975/#1982). The route table is
@@ -6072,6 +6137,12 @@ export interface StacksRouterInstance {
    * that throws is logged and the boot continues; see `BootHook`.
    */
   booting: (name: string, run: () => void | Promise<void>) => StacksRouterInstance
+  /**
+   * Work to do when the server is told to stop: closing what would otherwise
+   * outlive the process or end unrecorded. Run alongside the drain, inside
+   * the shutdown grace window; see `ShutdownHook`.
+   */
+  stopping: (name: string, run: () => void | Promise<void>) => StacksRouterInstance
   serve: (options?: ServerOptions) => Promise<Server<unknown>>
   handleRequest: (req: Request) => Promise<Response>
   /**
