@@ -1,5 +1,37 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.337...v0.75.338)
+
+## ✨ Features
+
+- **ai**: add bounded document chunking and private text retrieval ([bc4df59](https://github.com/stacksjs/stacks/commit/bc4df59)) _(by Chris Breuer <chris@stacksjs.com>)_ ([stacksjs/hq.training#321](https://github.com/stacksjs/hq.training/issues/321))
+- **mobile**: pass native tint through the iOS builder ([df82f3a](https://github.com/stacksjs/stacks/commit/df82f3a)) _(by Chris Breuer <chris@stacksjs.com>)_ ([stacksjs/hq.training#341](https://github.com/stacksjs/hq.training/issues/341))
+- **router**: route.stopping registers work for when the server stops ([501885b](https://github.com/stacksjs/stacks/commit/501885b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3034](https://github.com/stacksjs/stacks/issues/3034))
+
+## 🐛 Bug Fixes
+
+- **payments**: retain ledger identity when retrying payouts and refunds ([34ee6af](https://github.com/stacksjs/stacks/commit/34ee6af)) _(by Chris Breuer <chris@stacksjs.com>)_ ([stacksjs/hq.training#322](https://github.com/stacksjs/hq.training/issues/322))
+- **dashboard**: signing in from Access Tokens returns to Access Tokens ([a8bb50f](https://github.com/stacksjs/stacks/commit/a8bb50f)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3001](https://github.com/stacksjs/stacks/issues/3001))
+- **dashboard**: the Remote page asks you to sign in instead of failing ([8fd382a](https://github.com/stacksjs/stacks/commit/8fd382a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3001](https://github.com/stacksjs/stacks/issues/3001))
+- **buddy**: migrate:regenerate names the directory it actually wrote ([cccb78e](https://github.com/stacksjs/stacks/commit/cccb78e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3001](https://github.com/stacksjs/stacks/issues/3001))
+- **remote**: a stopping server closes its terminal sessions ([a712278](https://github.com/stacksjs/stacks/commit/a712278)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3034](https://github.com/stacksjs/stacks/issues/3034))
+- **actions**: the production API server runs shutdown hooks on SIGTERM ([e882f96](https://github.com/stacksjs/stacks/commit/e882f96)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3034](https://github.com/stacksjs/stacks/issues/3034))
+- **remote**: closeAll waits for each terminal process to exit ([61fbf77](https://github.com/stacksjs/stacks/commit/61fbf77)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2978](https://github.com/stacksjs/stacks/issues/2978))
+
+## 📝 Documentation
+
+- **router**: document boot and shutdown hooks ([a2f8888](https://github.com/stacksjs/stacks/commit/a2f8888)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3034](https://github.com/stacksjs/stacks/issues/3034))
+
+## ✅ Tests
+
+- **remote**: assert the PTY test's own directory is gone, not a temp-dir count ([b6483c9](https://github.com/stacksjs/stacks/commit/b6483c9)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2978](https://github.com/stacksjs/stacks/issues/2978))
+- **remote**: drive the clock in the max-duration test instead of sleeping on it ([fafd84c](https://github.com/stacksjs/stacks/commit/fafd84c)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2978](https://github.com/stacksjs/stacks/issues/2978))
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.336...v0.75.337)
 
 ## ✨ Features
