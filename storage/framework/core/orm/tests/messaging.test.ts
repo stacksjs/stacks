@@ -116,6 +116,18 @@ describe('persistent direct messaging', () => {
     expect((await coach.send(id, 'Just words', 'words')).attachments).toEqual([])
   })
 
+  it('keeps the name a document was sent under, beside the stored file (#3022)', async () => {
+    const plan = [{ file: '9337c5e381d28329b843b53d20194d0b.pdf', type: 'application/pdf', name: '  Week 42 plan.pdf ', size: 383 }]
+    const sent = await coach.send(id, '', 'plan', plan)
+    const kept = [{ file: '9337c5e381d28329b843b53d20194d0b.pdf', type: 'application/pdf', name: 'Week 42 plan.pdf', size: 383 }]
+    expect(sent.attachments).toEqual(kept)
+    // Read back out of the column, which is where the name used to go missing.
+    expect((await athlete.messages(id)).messages.at(-1)?.attachments).toEqual(kept)
+    await expect(coach.send(id, 'ok', 'blank-name', [{ file: 'a.pdf', name: '   ' }])).rejects.toMatchObject({ status: 422 })
+    await expect(coach.send(id, 'ok', 'long-name', [{ file: 'a.pdf', name: 'x'.repeat(256) }])).rejects.toMatchObject({ status: 422 })
+    await expect(coach.send(id, 'ok', 'odd-name', [{ file: 'a.pdf', name: 42 as any }])).rejects.toMatchObject({ status: 422 })
+  })
+
   it('refuses attachments it cannot record, and stores only the keys it knows', async () => {
     const many = Array.from({ length: 11 }, (_, i) => ({ file: `${i}.jpeg` }))
     await expect(coach.send(id, '   ', 'nothing', [])).rejects.toMatchObject({ status: 422 })
@@ -124,10 +136,12 @@ describe('persistent direct messaging', () => {
     await expect(coach.send(id, 'ok', 'no-file', [{ file: '  ' }])).rejects.toMatchObject({ status: 422 })
     await expect(coach.send(id, 'ok', 'bad-size', [{ file: 'a.jpeg', size: -1 }])).rejects.toMatchObject({ status: 422 })
     await expect(coach.send(id, 'ok', 'long', [{ file: 'a.jpeg', type: 'x'.repeat(256) }])).rejects.toMatchObject({ status: 422 })
-    // Anything the caller adds is dropped, so the column cannot become a
-    // second message body.
-    const extras = await coach.send(id, 'with extras', 'extras', [{ file: 'b.jpeg', secret: 'do not store me' } as any])
-    expect(extras.attachments).toEqual([{ file: 'b.jpeg' }])
+    // A key the trait does not know is refused, not dropped: the column cannot
+    // become a second message body, and the caller hears it at the call
+    // instead of finding the value missing later (#3022).
+    await expect(coach.send(id, 'with extras', 'extras', [{ file: 'b.jpeg', secret: 'do not store me' } as any])).rejects.toMatchObject({ status: 422, message: expect.stringContaining('`secret`') })
+    await expect(coach.send(id, 'with bytes', 'bytes', [{ file: 'b.pdf', bytes: 383 } as any])).rejects.toMatchObject({ status: 422 })
+    expect((await athlete.messages(id)).messages.some(message => message.body === 'with extras' || message.body === 'with bytes')).toBe(false)
   })
 
   it('binds an opt-in model instance to its own identity', async () => {

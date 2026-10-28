@@ -513,15 +513,20 @@ Receipts acknowledge only messages through the id actually displayed.
 `send(id, body, retryKey, attachments?)` records files the application has
 already stored. The trait keeps a reference, never bytes: `file` is the
 application's own name for the upload (a disk path, a bucket key, an id), and
-`type`, `size`, `width` and `height` are optional. Resolving and authorizing
-the file stays with the application, so a disk, a bucket and a CDN look the
-same from here.
+`type`, `name`, `size`, `width` and `height` are optional. `name` is what the
+sender called the file (`Week 42 plan.pdf`): `file` is an unguessable stored
+name, so for a document `name` is the only thing that tells the recipient what
+they were sent. Resolving and authorizing the file stays with the application,
+so a disk, a bucket and a CDN look the same from here.
 
 ```ts
 import type { DirectMessageAttachment } from '@stacksjs/chat'
 
 const photo: DirectMessageAttachment = { file: upload.key, type: 'image/jpeg', size: upload.size, width: 1200, height: 900 }
 await messenger.send(thread.id, '', retryKey, [photo])
+
+const plan: DirectMessageAttachment = { file: upload.key, type: 'application/pdf', name: upload.originalName, size: upload.size }
+await messenger.send(thread.id, '', retryKey, [plan])
 ```
 
 - A photo with no caption is a message: `body` may be empty when there is at
@@ -531,8 +536,10 @@ await messenger.send(thread.id, '', retryKey, [photo])
 - A retry key covers the attachments too. The same key with a different file
   is a different message and returns 409, rather than silently keeping the
   first photo.
-- At most 10 attachments, 4000 characters once serialised. Keys the trait does
-  not know are dropped, so the column cannot become a second message body.
+- At most 10 attachments, 4000 characters once serialised. `type` and `name`
+  are 1 to 255 characters. A key the trait does not know is refused with a 422
+  that names it, rather than dropped, so the column cannot become a second
+  message body and nothing a caller sent goes missing silently.
 - The column is `chat_messages.attachments`, added by `buddy migrate` to a
   database created before it. A database that has not migrated yet still sends
   text.

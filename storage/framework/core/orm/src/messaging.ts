@@ -47,6 +47,12 @@ export interface DirectMessageAttachment {
   file: string
   /** Its media type, where the application knows it. */
   type?: string
+  /**
+   * What the sender called it, such as `Week 42 plan.pdf`. `file` is the
+   * application's unguessable stored name, so for a document this is the only
+   * thing that tells the recipient what they were sent. Inert to the trait.
+   */
+  name?: string
   /** Bytes, and pixels for an image, where the application knows them. */
   size?: number
   width?: number
@@ -82,10 +88,18 @@ function whole(value: unknown, name: string): number {
   if (!Number.isSafeInteger(value) || Number(value) < 0) throw new MessagingError(`An attachment ${name} is a whole number of 0 or more`, 422)
   return Number(value)
 }
+/** The keys an attachment may carry, in the order they are stored. */
+const ATTACHMENT_KEYS = new Set(['file', 'type', 'name', 'size', 'width', 'height'])
+function text(value: unknown, name: string): string {
+  if (typeof value !== 'string' || !value.trim() || value.length > 255) throw new MessagingError(`An attachment ${name} is 1 to 255 characters`, 422)
+  return value.trim()
+}
 /**
  * The attachments as they are stored and compared: the keys this trait knows,
- * in one order, and nothing else. Anything the caller adds is dropped rather
- * than persisted, so the column cannot become a second message body.
+ * in one order, and nothing else. A key the trait does not know is refused
+ * rather than dropped, so the column cannot become a second message body and a
+ * caller learns at the call, not from a round trip through the database, that
+ * part of what it sent would not be kept.
  */
 function attachmentsOf(value: unknown): DirectMessageAttachment[] {
   if (value === undefined || value === null) return []
@@ -95,11 +109,11 @@ function attachmentsOf(value: unknown): DirectMessageAttachment[] {
     const item = (entry ?? {}) as Record<string, unknown>
     const file = typeof item.file === 'string' ? item.file.trim() : ''
     if (!file || file.length > 255) throw new MessagingError('Each attachment needs a file of 1 to 255 characters', 422)
+    const unknown = Object.keys(item).find(key => !ATTACHMENT_KEYS.has(key))
+    if (unknown !== undefined) throw new MessagingError(`An attachment cannot carry \`${unknown.slice(0, 64)}\`; it may carry ${[...ATTACHMENT_KEYS].join(', ')}`, 422)
     const out: DirectMessageAttachment = { file }
-    if (item.type !== undefined) {
-      if (typeof item.type !== 'string' || !item.type.trim() || item.type.length > 255) throw new MessagingError('An attachment type is 1 to 255 characters', 422)
-      out.type = item.type.trim()
-    }
+    if (item.type !== undefined) out.type = text(item.type, 'type')
+    if (item.name !== undefined) out.name = text(item.name, 'name')
     if (item.size !== undefined) out.size = whole(item.size, 'size')
     if (item.width !== undefined) out.width = whole(item.width, 'width')
     if (item.height !== undefined) out.height = whole(item.height, 'height')
