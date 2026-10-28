@@ -1,5 +1,28 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.334...v0.75.335)
+
+## ✨ Features
+
+- **buddy**: publish email components, dashboard layouts and the system tray ([a73610c](https://github.com/stacksjs/stacks/commit/a73610c)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3032](https://github.com/stacksjs/stacks/issues/3032))
+- **email**: read the app's email components before the bundled ones ([c3729e1](https://github.com/stacksjs/stacks/commit/c3729e1)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3032](https://github.com/stacksjs/stacks/issues/3032))
+- **dashboard**: read the app's dashboard layouts and system tray views first ([3c4698b](https://github.com/stacksjs/stacks/commit/3c4698b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3032](https://github.com/stacksjs/stacks/issues/3032))
+- **buddy**: publish:component accepts dashboard components ([241dad6](https://github.com/stacksjs/stacks/commit/241dad6)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3032](https://github.com/stacksjs/stacks/issues/3032))
+- **dashboard**: search the app's dashboard components before the framework's ([5e7db33](https://github.com/stacksjs/stacks/commit/5e7db33)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3032](https://github.com/stacksjs/stacks/issues/3032))
+
+## ✅ Tests
+
+- **views**: an app component wins inside the framework component that renders it ([00edf36](https://github.com/stacksjs/stacks/commit/00edf36)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3033](https://github.com/stacksjs/stacks/issues/3033))
+
+## 🔧 Chores
+
+- **deps**: stx 0.2.735 ([77bf00d](https://github.com/stacksjs/stacks/commit/77bf00d)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stx#2130](https://github.com/stacksjs/stx/issues/2130), [#3032](https://github.com/stacksjs/stacks/issues/3032))
+- **deps**: stx 0.2.733 ([e752d37](https://github.com/stacksjs/stacks/commit/e752d37)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stx#2130](https://github.com/stacksjs/stx/issues/2130), [#3032](https://github.com/stacksjs/stacks/issues/3032), [#3033](https://github.com/stacksjs/stacks/issues/3033), [#3030](https://github.com/stacksjs/stacks/issues/3030))
+
+## Contributors
+
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.333...v0.75.334)
 
 ## 🐛 Bug Fixes
