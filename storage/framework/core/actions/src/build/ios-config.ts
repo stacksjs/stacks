@@ -14,6 +14,7 @@ export interface CraftIosConfig {
   darkMode?: boolean
   appearance?: IosMobileConfig['appearance']
   backgroundColor?: string
+  tintColor?: string
   backgroundColorDark?: string
   swipeNavigation?: boolean
   allowsLinkPreview?: boolean
@@ -262,6 +263,7 @@ export function toCraftIosConfig(config: IosMobileConfig): CraftIosConfig {
     darkMode: config.darkMode,
     appearance: config.appearance,
     backgroundColor: config.backgroundColor,
+    tintColor: config.tintColor,
     backgroundColorDark: config.backgroundColorDark,
     swipeNavigation: resolveSwipeNavigation(config),
     allowsLinkPreview: config.allowsLinkPreview,

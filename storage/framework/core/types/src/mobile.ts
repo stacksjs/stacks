@@ -159,6 +159,8 @@ export interface IosMobileConfig {
    */
   appearance?: 'light' | 'dark' | 'system'
   backgroundColor?: string
+  /** Default iOS native control and selected-tab tint, as #RRGGBB. */
+  tintColor?: string
   /** The launch and webview background while the phone is in Dark Mode. */
   backgroundColorDark?: string
   /**

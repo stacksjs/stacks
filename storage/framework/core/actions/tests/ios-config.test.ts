@@ -297,11 +297,13 @@ describe('iOS mobile build configuration', () => {
       url: 'https://hq.training/m',
       appearance: 'system',
       backgroundColor: '#f8fafc',
+      tintColor: '#dd0f15',
       backgroundColorDark: '#020617',
       swipeNavigation: true,
     })
 
     expect(config.appearance).toBe('system')
+    expect(config.tintColor).toBe('#dd0f15')
     expect(config.backgroundColorDark).toBe('#020617')
     expect(config.swipeNavigation).toBe(true)
     expect(config.devServerURL).toBe('https://hq.training/m')
