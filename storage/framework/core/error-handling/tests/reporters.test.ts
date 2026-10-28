@@ -73,7 +73,10 @@ describe('error reporters', () => {
 
   test('contains a reporter that throws without interrupting error persistence', async () => {
     const reports: ErrorReport[] = []
-    const appendFile = spyOn(fs.promises, 'appendFile').mockResolvedValue(undefined)
+    const written = Promise.withResolvers<void>()
+    const appendFile = spyOn(fs.promises, 'appendFile').mockImplementation(async (file, data) => {
+      if (String(data).includes('Error: original failure')) written.resolve()
+    })
     attach([], {
       name: 'broken',
       report: () => { throw new Error('reporter failed') },
@@ -86,7 +89,7 @@ describe('error reporters', () => {
     expect(handled).toBe(error)
     expect(reports).toHaveLength(1)
     expect(reports[0]?.error).toBe(error)
-    await Bun.sleep(0)
+    await written.promise
     expect(appendFile).toHaveBeenCalled()
     appendFile.mockRestore()
   })
