@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.342...v0.75.343)
+
+## ✨ Features
+
+- **payments**: retrieve canonical direct-charge financials ([72dab6e](https://github.com/stacksjs/stacks/commit/72dab6e)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh generated native skill references ([91924ef](https://github.com/stacksjs/stacks/commit/91924ef)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.341...v0.75.342)
 
 ## ✨ Features
