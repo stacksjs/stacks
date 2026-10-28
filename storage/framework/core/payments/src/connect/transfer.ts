@@ -24,11 +24,13 @@ export interface CreateTransferOptions {
   sourceTransaction?: string
   description?: string
   metadata?: Stripe.MetadataParam
+  /** Stable key persisted with a logical payout, reused after an uncertain response. */
+  idempotencyKey?: string
 }
 
 export interface ManageTransfer {
   createTransfer: (options: CreateTransferOptions) => Promise<Stripe.Response<Stripe.Transfer>>
-  reverseTransfer: (transferId: string, amount?: number) => Promise<Stripe.Response<Stripe.TransferReversal>>
+  reverseTransfer: (transferId: string, amount?: number, options?: { idempotencyKey?: string }) => Promise<Stripe.Response<Stripe.TransferReversal>>
   listTransfers: (params?: Stripe.TransferListParams) => Promise<Stripe.Response<Stripe.ApiList<Stripe.Transfer>>>
   retrieveTransfer: (transferId: string) => Promise<Stripe.Response<Stripe.Transfer>>
 }
@@ -59,7 +61,7 @@ export const manageTransfer: ManageTransfer = (() => {
     }
 
     return await stripe.transfers.create(params, {
-      idempotencyKey: freshIdempotencyKey('connect.transfer.create', options.destination, options.amount),
+      idempotencyKey: options.idempotencyKey ?? freshIdempotencyKey('connect.transfer.create', options.destination, options.amount),
     })
   }
 
@@ -70,7 +72,7 @@ export const manageTransfer: ManageTransfer = (() => {
    * the merchant - the platform eats the refund unless the transfer is reversed
    * too. A marketplace that refunds an order almost always wants both.
    */
-  async function reverseTransfer(transferId: string, amount?: number): Promise<Stripe.Response<Stripe.TransferReversal>> {
+  async function reverseTransfer(transferId: string, amount?: number, options: { idempotencyKey?: string } = {}): Promise<Stripe.Response<Stripe.TransferReversal>> {
     if (!transferId || typeof transferId !== 'string')
       throw new Error('[payments/connect] reverseTransfer requires a transfer id')
 
@@ -85,7 +87,7 @@ export const manageTransfer: ManageTransfer = (() => {
     // money twice, and "reverse this much of this transfer" is the same
     // instruction however often it is sent.
     return await stripe.transfers.createReversal(transferId, params, {
-      idempotencyKey: `stacks:connect.transfer.reverse:${transferId}:${amount ?? 'full'}:v1`,
+      idempotencyKey: options.idempotencyKey ?? `stacks:connect.transfer.reverse:${transferId}:${amount ?? 'full'}:v1`,
     })
   }
 
