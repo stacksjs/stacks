@@ -194,6 +194,20 @@ autoLoadEnv()  // .env, .env.local, .env.<effectiveEnv>, .env.<effectiveEnv>.loc
 envPlugin()
 ```
 
+To keep a key out of a child process, withhold it rather than deleting it.
+`delete process.env.X` before a spawn does nothing useful: Bun loads `.env`
+natively in the child and `loadEnv` fills anything absent, so the child reads
+the value straight back from disk (#3028). Pass `withholdEnv(keys)` into the
+child's `env` (it sets `STACKS_ENV_WITHHOLD`). `loadEnv` then skips those keys
+in every file and removes any copy Bun loaded natively; a child that runs no
+Stacks preload calls `applyWithheldEnv()` before reading config.
+
+```typescript
+import { withholdEnv } from '@stacksjs/env'
+
+await runAction(Action.BuildIos, { env: withholdEnv(['MOBILE_URL']) })
+```
+
 ## .env Parser
 
 ```typescript

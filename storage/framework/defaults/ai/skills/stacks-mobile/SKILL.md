@@ -206,6 +206,12 @@ While an app is in TestFlight before its first public release, keep the iOS
 marketing version at `1.0.0` and run `buddy release:ios --bump build`. Each
 upload needs a new build number, not a patch to the marketing version.
 
+A release never reads dev-shell overrides. `release:ios` withholds
+`MOBILE_URL`, `IOS_APP_VERSION` and `IOS_BUILD_NUMBER` from its build child
+(`withholdEnv` from `@stacksjs/env`, since deleting them from `process.env` is
+undone by the child's own `.env` load), and refuses a generated
+`devServerURL` on a local address before committing or tagging (#3028).
+
 Each `release:ios` also creates the tag's GitHub release (the TestFlight build
 number and the changes since the previous tag), using `GITHUB_TOKEN`,
 `GH_TOKEN`, the GitHub CLI's token or the git credential. When that fails the

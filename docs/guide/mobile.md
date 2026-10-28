@@ -12,6 +12,13 @@ Ship another test build with `buddy release:ios` or the explicit
 allocate the next build number with Bumpx, accounting for release tags and
 previous Xcode Cloud runs, including failures and builds still in flight.
 
+A release is built from what the repository says, not from your dev shell.
+`MOBILE_URL`, `IOS_APP_VERSION` and `IOS_BUILD_NUMBER` are withheld from the
+build even when `.env` sets them for simulator work, and a build whose
+`craft.config.json` would talk to a local address (`localhost`, a `.test` name,
+a private network address) stops before anything is committed, tagged or
+pushed. Point `ios.url` in `config/mobile.ts` at the production site.
+
 Each release also leaves a GitHub release for its tag, with the TestFlight
 build number and the changes since the previous tag; `buddy release:github
 <tag>` creates one a release could not. Testers get notes too: the release
