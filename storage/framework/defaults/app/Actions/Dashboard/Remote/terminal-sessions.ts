@@ -1,5 +1,6 @@
 import type { TerminalAuthorizer, TerminalEvent } from './remote-terminal'
 import { Gate } from '@stacksjs/auth'
+import { route } from '@stacksjs/router'
 import { TerminalSessions } from './remote-terminal'
 import { createPtySpawner, loggingTerminalAuditSink } from './ssh-runner'
 
@@ -17,6 +18,10 @@ export const terminalSessions: TerminalSessions = new TerminalSessions({
   spawn: createPtySpawner(),
   audit: loggingTerminalAuditSink,
 })
+
+// A server that stops closes its sessions first, so each one records why it
+// ended and its temp directory goes with its process (stacksjs/stacks#3034).
+route.stopping('terminal sessions', () => terminalSessions.closeAll())
 
 /**
  * The `open-remote-terminal` gate, or undefined when the app has not defined

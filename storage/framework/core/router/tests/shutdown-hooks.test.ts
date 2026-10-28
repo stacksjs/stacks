@@ -7,8 +7,24 @@
  * work registers, and the server runs it on SIGTERM.
  */
 
-import { describe, expect, it } from 'bun:test'
+import type { ShutdownHook } from '../src/stacks-router'
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { resetShutdownHooks, route, runShutdownHooks } from '../src/stacks-router'
+
+// The list is process-wide and the suite shares a process: a module loaded by
+// an earlier test file (the terminal sessions) registered its hook already,
+// and resetting here must not take it away from a later file.
+const registry = () => (globalThis as Record<symbol, { hooks: ShutdownHook[] }>)[Symbol.for('@stacksjs/router:shutdown-hooks')]
+let registeredBefore: ShutdownHook[] = []
+
+beforeAll(() => {
+  registeredBefore = [...(registry()?.hooks ?? [])]
+})
+
+afterAll(() => {
+  resetShutdownHooks()
+  registry()!.hooks.push(...registeredBefore)
+})
 
 describe('shutdown hooks', () => {
   it('runs every registered hook', async () => {

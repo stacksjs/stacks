@@ -8,7 +8,7 @@ import { dirname } from 'node:path'
 import { sshTerminalArgv } from './remote-commands'
 import { TerminalSessions } from './remote-terminal'
 import { createPtySpawner } from './ssh-runner'
-import { encodeTerminalEvent, terminalEventStream } from './terminal-sessions'
+import { encodeTerminalEvent, terminalEventStream, terminalSessions } from './terminal-sessions'
 
 /**
  * Interactive terminal sessions (stacksjs/stacks#960). Every rule is asserted
@@ -299,6 +299,25 @@ describe('a session does not outlive its purpose', () => {
     expect(await Promise.race([closing, Bun.sleep(20).then(() => 'waiting')])).toBe('waiting')
     exit(-1)
     expect(await closing).toBe('closed')
+  })
+
+  it('is closed by the server stopping, through the router\'s shutdown hooks (#3034)', async () => {
+    const registered = (globalThis as Record<symbol, { hooks: Array<{ name: string, run: () => unknown }> }>)[Symbol.for('@stacksjs/router:shutdown-hooks')]
+    const hook = registered?.hooks.find(entry => entry.name === 'terminal sessions')
+    expect(hook).toBeDefined()
+
+    // The app's own sessions, not a copy: the hook has to reach the manager
+    // the terminal actions open sessions on.
+    const closeAll = terminalSessions.closeAll
+    let closed = 0
+    terminalSessions.closeAll = async () => { closed += 1 }
+    try {
+      await hook!.run()
+    }
+    finally {
+      terminalSessions.closeAll = closeAll
+    }
+    expect(closed).toBe(1)
   })
 })
 
