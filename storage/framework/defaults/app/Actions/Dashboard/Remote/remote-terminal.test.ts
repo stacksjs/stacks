@@ -2,8 +2,9 @@ import type { UserModel } from '@stacksjs/orm'
 import type { RemoteHost } from './remote-commands'
 import type { TerminalAuditSink, TerminalEvent, TerminalProcess, TerminalSessionOptions } from './remote-terminal'
 import { describe, expect, it, jest } from 'bun:test'
-import { existsSync, readdirSync } from 'node:fs'
+import { existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
+import { dirname } from 'node:path'
 import { sshTerminalArgv } from './remote-commands'
 import { TerminalSessions } from './remote-terminal'
 import { createPtySpawner } from './ssh-runner'
@@ -316,7 +317,6 @@ describe('the PTY spawner', () => {
   })
 
   it('carries output, input and a window resize through a real PTY, and cleans up', async () => {
-    const before = readdirSync(tmpdir()).filter(name => name.startsWith('stacks-terminal-')).length
     let knownHosts = ''
     const spawn = createPtySpawner((_host, path) => {
       knownHosts = path
@@ -327,7 +327,10 @@ describe('the PTY spawner', () => {
     const process = await spawn(shellHost, { cols: 100, rows: 30 }, (bytes) => { output += new TextDecoder().decode(bytes) })
     expect(existsSync(knownHosts)).toBe(true)
 
-    await Bun.sleep(150)
+    // Resize once the shell has reported the size it started at, not after a
+    // guess at how long that takes.
+    for (let i = 0; i < 200 && !output.includes('30 100'); i++)
+      await Bun.sleep(10)
     process.resize(132, 40)
     process.write('hello\r')
     expect(await process.exited).toBe(0)
@@ -336,8 +339,9 @@ describe('the PTY spawner', () => {
     expect(output).toContain('30 100')
     expect(output).toContain('40 132')
     expect(output).toContain('got:hello')
-    expect(existsSync(knownHosts)).toBe(false)
-    expect(readdirSync(tmpdir()).filter(name => name.startsWith('stacks-terminal-')).length).toBe(before)
+    // The directory this spawn created, not a count of the shared temp
+    // directory, which other processes change underneath the test (#2978).
+    expect(existsSync(dirname(knownHosts))).toBe(false)
   })
 })
 
