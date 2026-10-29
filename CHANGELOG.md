@@ -1,5 +1,28 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.370...v0.75.371)
+
+## ✨ Features
+
+- **dashboard**: keep rendered pages across dev server restarts ([f598fd2](https://github.com/stacksjs/stacks/commit/f598fd2)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3035](https://github.com/stacksjs/stacks/issues/3035))
+- **erd**: draw a diagram that renders instead of an error box ([d18332f](https://github.com/stacksjs/stacks/commit/d18332f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **router**: show a person the error page when middleware refuses them ([c6ae95d](https://github.com/stacksjs/stacks/commit/c6ae95d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 📝 Documentation
+
+- **dashboard**: the render cache is kept across restarts, and never prewarmed ([066ea99](https://github.com/stacksjs/stacks/commit/066ea99)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3035](https://github.com/stacksjs/stacks/issues/3035), [#2964](https://github.com/stacksjs/stacks/issues/2964))
+
+## 🔧 Chores
+
+- **deps**: stx 0.2.744 ([47d1a61](https://github.com/stacksjs/stacks/commit/47d1a61)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3035](https://github.com/stacksjs/stacks/issues/3035), [stacksjs/stx#2133](https://github.com/stacksjs/stx/issues/2133))
+
+## Contributors
+
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.369...v0.75.370)
 
 ## 🐛 Bug Fixes
