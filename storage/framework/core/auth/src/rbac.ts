@@ -471,6 +471,16 @@ export async function hasRole(user: UserModel | { id: number } | number, roleNam
 }
 
 /**
+ * Check a role against the store without the process-local RBAC cache.
+ * Use for privileged operations that must observe revocation by another
+ * worker immediately. Store errors propagate rather than granting access.
+ */
+export async function hasFreshRole(user: UserModel | { id: number } | number, roleName: string, guardName: string = 'web'): Promise<boolean> {
+  const roles = await getStore().getUserRoles(getUserId(user))
+  return roles.some(role => role.name === roleName && role.guard_name === guardName)
+}
+
+/**
  * Check if a user has any of the given roles
  */
 export async function hasAnyRole(user: UserModel | { id: number } | number, roleNames: string[], guardName: string = 'web'): Promise<boolean> {
@@ -752,6 +762,7 @@ export const Rbac = {
   removeAllRoles,
   syncRoles,
   hasRole,
+  hasFreshRole,
   hasAnyRole,
   hasAllRoles,
 

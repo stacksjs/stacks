@@ -85,6 +85,12 @@ routes: minting and revoking both carry semantics a generic route does not.
 - `Auth.id(): Promise<number | undefined>` - get authenticated user ID
 - `Auth.setUser(user: UserModel | undefined): void` - set or clear the current request user
 
+For a privileged operation that must immediately observe role revocation by a
+different worker, use `hasFreshRole(user, roleName, guardName)` instead of the
+process-cached `hasRole`. It reads the configured RBAC store and propagates
+store errors. It does not authenticate the caller or create an audit trail;
+the operation must do both separately.
+
 ### Token Creation
 - `Auth.createTokenForUser(user, options?: TokenCreateOptions): Promise<NewAccessToken>`
 - `Auth.createToken(user, name?, abilities?): Promise<AuthToken>`
