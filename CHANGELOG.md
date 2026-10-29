@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.355...v0.75.356)
+
+## ✨ Features
+
+- **payments**: preserve invoice tax credits and reconciliation facts ([fadeeb0](https://github.com/stacksjs/stacks/commit/fadeeb0)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.354...v0.75.355)
 
 ## ✨ Features
