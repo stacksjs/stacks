@@ -15,6 +15,7 @@ export * from './charge'
 export * from './destination'
 export * from './direct'
 export * from './financials'
+export * from './invoice-fee'
 export * from './payout'
 export * from './refund'
 export * from './subscription'
@@ -27,6 +28,7 @@ import { asAccount, connectedCustomer, directCheckout, directCheckoutPaymentData
 import { checkoutLineItemsTotal, destinationCheckoutPaymentData, destinationCheckoutSubscriptionData, destinationFeeCents, destinationFeePercent, destinationPaymentIntentParams, destinationSubscriptionParams, splitFee } from './destination'
 import { managePayout } from './payout'
 import { directChargeFinancials } from './financials'
+import { prepareDirectInvoiceFee } from './invoice-fee'
 import { connectRefund, connectRefundParams, isDestinationCharge } from './refund'
 import { manageDestinationSubscription } from './subscription'
 import { manageTransfer } from './transfer'
@@ -64,6 +66,7 @@ export const connect = {
   customer: connectedCustomer,
   directCheckout,
   directChargeFinancials,
+  prepareDirectInvoiceFee,
   directPaymentIntentParams,
   directCheckoutPaymentData,
   directCheckoutSubscriptionData,

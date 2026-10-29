@@ -172,6 +172,28 @@ await stripe.checkout.sessions.retrieve(sessionId, asAccount(account))
 await connectRefund(paymentIntentId, { account, amount: 500 })
 ```
 
+#### Fees after tax
+
+Inline recurring prices accept `taxBehavior: 'inclusive' | 'exclusive'` and an
+optional merchant `taxCode` (`txcd_` followed by eight digits). These preserve
+price treatment; enable `automatic_tax` separately and configure the merchant's
+own tax registrations. A language or currency never selects a jurisdiction.
+
+Stripe's `application_fee_percent` applies to the invoice total, including tax.
+For a share contracted AFTER tax, use `prepareDirectInvoiceFee(invoiceId,
+account, { customer, subscription?, currency, platformFeePercent })` on an
+editable draft invoice. It retrieves current provider amounts, verifies the
+original merchant/customer/subscription/currency, requires complete balanced tax
+facts, computes the exact fee and sets `auto_advance: false` with the fee. The
+caller owns durable retries and finalization/payment. Changed amounts or credits
+requiring separate settlement are errors, never an assumed zero tax.
+
+Renewals can prepare fees from `invoice.created`. An ordinary Checkout
+subscription's first invoice is already finalized; use a subscription schedule
+when the first invoice needs editing. Do not grant paid access from a schedule's
+active status before its initial invoice is paid. The helper does not finalize
+invoices, collect payment, or implement the application's access policy.
+
 ### Destination charges (a platform that took on loss liability)
 
 ```typescript
