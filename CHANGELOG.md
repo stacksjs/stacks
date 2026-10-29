@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.345...v0.75.346)
+
+## 🐛 Bug Fixes
+
+- **deploy**: run application gates for native providers ([2b175fa](https://github.com/stacksjs/stacks/commit/2b175fa)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.344...v0.75.345)
 
 ## 🐛 Bug Fixes
