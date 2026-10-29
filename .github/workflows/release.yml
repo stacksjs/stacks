@@ -131,7 +131,7 @@ jobs:
         with:
           version: '0.11.138'
           install: 'false'
-          packages: bun.com@1.4.4 git-scm.org@2.53.0
+          packages: bun.com@1.4.4 git-scm.org
 
       - name: Use Cached node_modules
         uses: actions/cache@v5
@@ -197,7 +197,7 @@ jobs:
         with:
           version: '0.11.138'
           install: 'false'
-          packages: bun.com@1.4.4 git-scm.org@2.53.0
+          packages: bun.com@1.4.4 git-scm.org
 
       - name: Use Cached node_modules
         uses: actions/cache@v5
