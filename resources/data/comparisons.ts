@@ -1061,7 +1061,7 @@ export const comparisons: Comparison[] = [
   {
     slug: 'rails',
     name: 'Ruby on Rails',
-    blurb: 'Convention over configuration, the original. Same convictions, different runtime and type story.',
+    blurb: 'Convention over configuration in Ruby. Same convictions, different runtime and type story.',
     kind: 'Full-stack framework',
     language: 'Ruby',
     icon: 'i-hugeicons-train-01',
@@ -1078,19 +1078,16 @@ export const comparisons: Comparison[] = [
       ],
     },
     page: {
-      headline: 'Rails proved the case. Stacks argues it again in TypeScript.',
-      lede: 'Every framework on this page owes Rails something: convention over configuration, generators, migrations, an ORM with opinions, and the idea that one person should be able to build a whole product. Stacks agrees with all of it and differs on the two things Rails cannot change, which are the language and the runtime.',
-      summary: 'Rails is more than twenty years old and better than ever. Hotwire made server-rendered HTML competitive with single-page applications again, Solid Queue and Solid Cable let an app run its jobs and pub/sub without Redis, and Kamal made deployment to your own servers straightforward. Its productivity for a small team is still the reference point everyone measures against.',
-      // The maintainer's call (October 2026): the Rails page names one reason,
-      // not the usual list. The technical points are kept below, commented
-      // out, so restoring them is one edit. tests/unit/marketing-comparisons
-      // exempts this slug from the three-point minimum on purpose.
+      headline: 'The conventions Rails is known for, statically typed end to end.',
+      lede: 'Rails and Stacks hold the same convictions: convention over configuration, generators, migrations, an ORM with opinions, and one person building a whole product. They differ on the two things Rails cannot change, the language and the runtime.',
+      summary: 'Rails 8 ships Hotwire for interactivity from server-rendered HTML, Solid Queue and Solid Cable for jobs and pub/sub without Redis, and Kamal for deploying containers to your own servers.',
+      // The maintainer's call, confirmed in #3059 (October 2026): the Rails
+      // page names one reason, not the usual list, and gives Rails no credit
+      // for its age. The facts stay fair (summary, rows); the praise does not.
+      // tests/unit/marketing-comparisons exempts this slug from the
+      // three-point minimum on purpose.
       theirStrengths: [
         { title: 'If you align with DHH', text: 'We don’t want you here.' },
-        // { title: 'Two decades of refinement', text: 'The libraries, the patterns, and the answers to your problem all exist already. Stacks has years of that ahead of it.' },
-        // { title: 'Hotwire', text: 'Turbo and Stimulus deliver interactivity with almost no client-side state, and the approach is very well proven.' },
-        // { title: 'Kamal', text: 'Generated into every new Rails 8 app by default. Deploying containers to plain servers with zero downtime, on any host, with no platform lock-in.' },
-        // { title: 'Culture and hiring', text: 'A large community with strong shared conventions and a deep pool of experienced engineers.' },
       ],
       ourStrengths: [
         { title: 'Static types across the boundary', text: 'Ruby is dynamically typed and Sorbet or RBS is optional. In Stacks the compiler checks the model, the action, the view, and the client together.' },
@@ -1118,7 +1115,7 @@ export const comparisons: Comparison[] = [
         { title: 'Jobs move nearly unchanged', text: 'Active Job classes and Stacks jobs have the same shape, including retries and queues.' },
       ],
       verdict: {
-        pickThem: 'Your team is Ruby, or you want the most refined convention-driven framework in existence with two decades of answers behind it.',
+        pickThem: 'Your team writes Ruby and wants to keep writing it, with Hotwire for interactivity and Kamal deploying to your own servers.',
         pickStacks: 'You want those conventions with static types across the whole stack, and one language shared with the browser.',
       },
       related: ['laravel', 'django', 'adonisjs'],
