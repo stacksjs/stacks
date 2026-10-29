@@ -80,7 +80,7 @@ export interface Comparison {
   icon: string
   group: 'fullstack' | 'backends' | 'ecosystems'
   matrix: ComparisonMatrix
-  checked?: ComparisonCheck
+  checked: ComparisonCheck
   page: {
     headline: string
     lede: string

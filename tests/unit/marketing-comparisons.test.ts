@@ -127,21 +127,16 @@ describe('the fairness policy these pages promise', () => {
 })
 
 describe('what each page was checked against (#2932)', () => {
-  // The pages whose claims about the other side have been checked against
-  // that project's own current pages. It grows one page at a time until it
-  // is every comparison, at which point `checked` stops being optional.
-  const checkedSlugs = ['laravel', 'adonisjs', 'nextjs', 'rails', 'django', 'nuxt', 'sveltekit', 'remix', 'astro', 'redwoodjs', 't3-stack', 'nestjs', 'express', 'hono', 'elysia', 'encore', 'supabase', 'firebase']
-
-  test('the pages that have been checked say so', () => {
-    for (const slug of checkedSlugs)
-      expect(comparisonBySlug(slug)?.checked, slug).toBeDefined()
+  // Every comparison carries one. `checked` is required by the type, and this
+  // keeps a new page from shipping with an empty or placeholder record.
+  test('every comparison says what it was checked against', () => {
+    for (const comparison of comparisons)
+      expect(comparison.checked, comparison.slug).toBeDefined()
   })
 
   test('a check names the release, a real day that has passed, and the pages it rests on', () => {
     for (const comparison of comparisons) {
       const checked = comparison.checked
-      if (!checked)
-        continue
 
       expect(checked.version.trim().length, comparison.slug).toBeGreaterThan(0)
       expect(checked.on, comparison.slug).toMatch(/^\d{4}-\d{2}-\d{2}$/)
