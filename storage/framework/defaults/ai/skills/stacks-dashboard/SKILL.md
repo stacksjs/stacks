@@ -490,11 +490,28 @@ Port: 3002 (configured in `config/ports.ts` as `admin`)
 ### Render performance
 
 The dashboard dev action opts into STX's dependency-aware rendered HTML cache
-with `renderCache: true`, `renderCacheVary: 'source'`, and four prewarm workers.
+with `renderCache: true`, `renderCacheVary: 'source'`, and no prewarming.
 This is correct because static dashboard routes render source-derived shells
-and load live records through `dashboardApi()` after hydration. Keep the
-project and framework `resources/functions` roots in `watchDirs` so a
-composable edit invalidates its client bundle.
+and load live records through `dashboardApi()` after hydration. A page's first
+visit costs its own render (about a second); later visits come from the cache.
+Prewarming rendered every route on the serving thread, and pages took 3-28s
+while it ran (stacksjs/stacks#2964), so it stays off.
+
+`renderCachePersist: true` keeps those renders in `storage/framework/stx/render-cache/`,
+so a restart serves pages already rendered instead of rendering them again
+(stacksjs/stacks#3035). A kept page is used only while nothing it was rendered
+from has changed: its templates, every watched file, the lockfiles, `.env`
+files and stx config. Watched roots therefore matter twice. Keep in `watchDirs`:
+
+- the project and framework `resources/functions` roots, so a composable edit
+  invalidates its client bundle;
+- `config/` and `storage/framework/runtime/dashboard/`, which hold what the
+  layout builds the sidebar from (`config/dashboard.ts` and the models
+  manifest). Without them a restart after a config edit serves the old sidebar.
+
+Anything else a dashboard server script reads at render time belongs in
+`watchDirs` too. The models manifest is written only when its content changes,
+so a restart alone does not discard the kept pages.
 
 Do not add request-specific server output to a source-cached static dashboard
 route. If a route must render cookies, identity, query-dependent data, or

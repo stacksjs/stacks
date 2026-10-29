@@ -37,7 +37,9 @@ describe('dashboard skill contract', () => {
 
   test('documents native rendered shell caching boundaries', () => {
     expect(skill).toContain("`renderCache: true`, `renderCacheVary: 'source'`")
-    expect(skill).toContain('four prewarm workers')
+    expect(skill).toContain('and no prewarming')
+    expect(skill).toContain('`renderCachePersist: true` keeps those renders')
+    expect(skill).not.toContain('four prewarm workers')
     expect(skill).toContain('set `const __stx_skip_cache = true`')
     expect(skill).toContain('Dynamic file routes remain uncached')
   })
