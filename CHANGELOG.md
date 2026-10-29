@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.366...v0.75.367)
+
+## 🐛 Bug Fixes
+
+- **payments**: recover invoice collection without a saved card ([dae4156](https://github.com/stacksjs/stacks/commit/dae4156)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.365...v0.75.366)
 
 ## 🐛 Bug Fixes
