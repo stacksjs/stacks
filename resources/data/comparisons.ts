@@ -933,6 +933,15 @@ export const comparisons: Comparison[] = [
     icon: 'i-hugeicons-cloud-server',
     group: 'backends',
     matrix: { auth: 'partial', orm: 'partial', jobs: 'built-in', mail: 'byo', admin: 'byo', realtime: 'partial', deploy: 'partial', updates: 'byo', mailbox: 'byo' },
+    checked: {
+      version: 'Encore.ts 1.58',
+      on: '2026-10-29',
+      sources: [
+        { label: 'Encore Cloud pricing and preview environments', url: 'https://encore.dev/pricing' },
+        { label: 'The Rust runtime behind Encore.ts', url: 'https://encore.dev/blog/rust-runtime' },
+        { label: 'CLI reference, including encore version update', url: 'https://encore.dev/docs/ts/cli/cli-reference' },
+      ],
+    },
     page: {
       headline: 'Two frameworks that think infrastructure belongs in the code.',
       lede: 'Encore reads your source, works out which databases, queues, and cron jobs it implies, and provisions them. Stacks reaches the same conclusion from the other end: the infrastructure is declared in config in the repository, and one command applies it. The difference is that Encore is built for many services and Stacks is built for one application.',
