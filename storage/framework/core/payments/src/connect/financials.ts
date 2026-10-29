@@ -26,6 +26,40 @@ export interface DirectChargeFinancials {
  * through the caller's durable queue; absence must never mean a zero fee. */
 export class DirectChargeFinancialsPendingError extends Error {}
 
+export interface DirectChargeFeeAmounts {
+  currency: string
+  chargedCents: number
+  returnedCents: number | null
+  remainingCents: number | null
+  requiresReview: boolean
+}
+
+/** Presentment fee amounts from canonical direct-charge facts. An unknown
+ * partial foreign-currency return must never become an inferred FX amount. */
+export function directChargeFeeAmounts(facts: DirectChargeFinancials): DirectChargeFeeAmounts {
+  const cents = (value: unknown) => {
+    if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 0) throw new Error('Invalid direct-charge fee amount')
+    return value
+  }
+  const currency = facts.charge.currency.toUpperCase()
+  const chargedCents = cents(facts.charge.application_fee_amount ?? 0)
+  const unknown = () => ({ currency, chargedCents, returnedCents: null, remainingCents: null, requiresReview: true })
+  const known = (returnedCents: number) => ({ currency, chargedCents, returnedCents, remainingCents: chargedCents - returnedCents, requiresReview: false })
+  const fee = facts.applicationFee
+  if (!fee) return chargedCents === 0 && !facts.applicationFeeRefunds.length ? known(0) : unknown()
+  const amount = cents(fee.amount)
+  const returned = cents(fee.amount_refunded)
+  const recorded = facts.applicationFeeRefunds.reduce((sum, refund) => sum + cents(refund.amount), 0)
+  if (id(fee.account) !== facts.account || id(fee.charge) !== facts.charge.id || facts.applicationFeeRefunds.some(refund => id(refund.fee) !== fee.id || refund.currency.toUpperCase() !== fee.currency.toUpperCase() || refund.amount <= 0) || !Number.isSafeInteger(recorded) || recorded !== returned || returned > amount || (chargedCents === 0 && amount > 0)) return unknown()
+  if (fee.currency.toUpperCase() === currency) return amount === chargedCents ? known(returned) : unknown()
+  // No fee return leaves the charge's exact presentment fee intact. Returning
+  // the entire platform fee reverses all of that same fee, regardless of FX.
+  // Partial settlement-currency returns establish neither presentment amount.
+  if (returned === 0) return known(0)
+  if (returned === amount) return known(chargedCents)
+  return unknown()
+}
+
 function id(value: unknown): string {
   return typeof value === 'string' ? value : String((value as { id?: string } | null)?.id || '')
 }

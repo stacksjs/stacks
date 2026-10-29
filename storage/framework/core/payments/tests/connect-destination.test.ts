@@ -191,6 +191,13 @@ describe('checkoutOutcome', () => {
     expect(outcome.subscriptionId).toBe('sub_1')
   })
 
+  test('saving a payment method or an unknown checkout mode never establishes a payment outcome', () => {
+    for (const mode of ['setup', null, undefined, 'future_mode']) {
+      for (const type of ['checkout.session.completed', 'checkout.session.async_payment_succeeded', 'checkout.session.async_payment_failed', 'checkout.session.expired'])
+        expect(checkoutOutcome(event(type, { mode, payment_status: 'no_payment_required' }))).toBeNull()
+    }
+  })
+
   test('the async events and expiry', () => {
     expect(checkoutOutcome(event('checkout.session.async_payment_succeeded', { payment_status: 'paid' }))!.status).toBe('paid')
     expect(checkoutOutcome(event('checkout.session.async_payment_failed', { payment_status: 'unpaid' }))!.status).toBe('failed')

@@ -1,6 +1,6 @@
 import type Stripe from 'stripe'
 import { describe, expect, test } from 'bun:test'
-import { directChargeFinancials, DirectChargeFinancialsPendingError } from '../src/connect/financials'
+import { directChargeFeeAmounts, directChargeFinancials, DirectChargeFinancialsPendingError } from '../src/connect/financials'
 
 function fixture() {
   const calls: Array<{ resource: string, params?: any, options?: any }> = []
@@ -106,5 +106,33 @@ describe('direct-charge canonical financials', () => {
     expect(actual.currency).toBe('usd')
     expect(actual.amount).toBe(12340)
     expect(actual.exchange_rate).toBe(1.234)
+  })
+
+  test('knows a fully retained or fully returned fee across settlement currencies without estimating an FX rate', async () => {
+    for (const returned of [0, 1234]) {
+      const f = fixture()
+      Object.assign(f.fee, { currency: 'usd', amount: 1234, amount_refunded: returned })
+      Object.assign(f.transactions.txn_fee, { currency: 'usd', amount: 1234, fee: 0, net: 1234 })
+      Object.assign(f.feeRefund, { amount: returned, currency: 'usd' })
+      Object.assign(f.transactions.txn_fee_refund, { currency: 'usd', amount: -returned, fee: 0, net: -returned })
+      if (!returned) f.api.applicationFees.listRefunds = async () => ({ data: [], has_more: false })
+      expect(directChargeFeeAmounts(await f.load())).toEqual({ currency: 'EUR', chargedCents: 1000, returnedCents: returned ? 1000 : 0, remainingCents: returned ? 0 : 1000, requiresReview: false })
+    }
+  })
+
+  test('preserves uncertainty for partial foreign-currency fee returns and inconsistent provider totals', async () => {
+    const f = fixture()
+    Object.assign(f.fee, { currency: 'usd', amount: 1234, amount_refunded: 500 })
+    Object.assign(f.feeRefund, { amount: 500, currency: 'usd' })
+    expect(directChargeFeeAmounts(await f.load())).toMatchObject({ chargedCents: 1000, remainingCents: null, returnedCents: null, requiresReview: true })
+    f.fee.currency = 'eur'
+    f.feeRefund.currency = 'eur'
+    f.fee.amount = 1000
+    expect(directChargeFeeAmounts(await f.load())).toMatchObject({ remainingCents: 500, returnedCents: 500, requiresReview: false })
+    f.feeRefund.amount = 499
+    expect(directChargeFeeAmounts(await f.load()).requiresReview).toBe(true)
+    f.feeRefund.amount = -1
+    const invalid = await f.load()
+    expect(() => directChargeFeeAmounts(invalid)).toThrow(/fee amount/)
   })
 })

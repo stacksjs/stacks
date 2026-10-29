@@ -144,6 +144,12 @@ holding unsettled liabilities. Returned provider objects are server-only. Moveme
 amounts/fees/net retain their settlement currency and exchange rate; never mix them
 with presentment-currency contributor shares or infer a fee refund from a charge refund.
 
+`directChargeFeeAmounts(facts)` reports the charge's exact retained presentment
+fee when no fee was returned, and exact zero after the full fee was returned,
+including across settlement currencies. A partial foreign-currency fee return
+has null remaining/returned presentment cents and requires review; do not infer
+an FX amount. Same-currency returns use the provider's actual minor units.
+
 `createConnectedAccount` makes a Managed Risk account unless you pass `type` or
 `controller` (`MANAGED_RISK_CONTROLLER`: Stripe carries losses, full Stripe
 Dashboard, Stripe-hosted onboarding). Stripe refuses `type: 'express'`/`'custom'`
@@ -369,6 +375,10 @@ plainly. Pass a deterministic `idempotencyKey`; without one each call is a new
 refund. Also `Payment.connect.refund` / `.refundParams` / `.isDestinationCharge`.
 
 #### Checkout outcomes: `checkoutOutcome(event)`
+
+Only `payment` and `subscription` modes have payment outcomes. Setup sessions
+save a payment method and return null, as do unknown or absent modes. Never
+fulfil a purchase from a setup session's `no_payment_required` status.
 
 ```typescript
 import { checkoutOutcome } from '@stacksjs/payments'

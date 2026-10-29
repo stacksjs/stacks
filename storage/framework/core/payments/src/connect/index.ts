@@ -33,7 +33,7 @@ import { manageDestinationCharge } from './charge'
 import { asAccount, connectedCustomer, directCheckout, directCheckoutPaymentData, directCheckoutSubscriptionData, directPaymentIntentParams, directSubscriptionParams, manageDirectSubscription } from './direct'
 import { checkoutLineItemsTotal, destinationCheckoutPaymentData, destinationCheckoutSubscriptionData, destinationFeeCents, destinationFeePercent, destinationPaymentIntentParams, destinationSubscriptionParams, splitFee } from './destination'
 import { managePayout } from './payout'
-import { directChargeFinancials } from './financials'
+import { directChargeFeeAmounts, directChargeFinancials } from './financials'
 import { prepareDirectInvoiceFee } from './invoice-fee'
 import { collectDirectInvoice } from './invoice-collection'
 import { ensureDirectInvoicePrice } from './invoice-price'
@@ -77,6 +77,7 @@ export const connect = {
   customer: connectedCustomer,
   directCheckout,
   directChargeFinancials,
+  directChargeFeeAmounts,
   prepareDirectInvoiceFee,
   collectDirectInvoice,
   ensureDirectInvoicePrice,

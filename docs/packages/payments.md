@@ -368,11 +368,22 @@ answer the two questions on their own. Pass `connectRefund` a deterministic
 Stripe client it reads and refunds through: a test double, or one scoped to a
 connected account.
 
+## Direct-charge financial statements
+
+For direct-charge financial statements, read canonical facts with
+`directChargeFinancials` and use `directChargeFeeAmounts(facts)` for the fee in
+the charge currency. Fully retained and fully returned fees are exact even
+when the platform settles in another currency. Partial foreign-currency fee
+returns have null remaining/returned cents and require review; never estimate
+their presentment amount from an FX rate.
+
 ## Checkout outcomes
 
 Four `checkout.session.*` events and a `payment_status` combine into four
 outcomes. `checkoutOutcome(event)` reads them, and returns null for any other
-event:
+event. Only `payment` and `subscription` sessions have payment outcomes. Setup
+sessions save a payment method; their `no_payment_required` does not establish
+payment. Setup sessions and unknown or absent modes return null:
 
 ```ts
 import { checkoutOutcome } from '@stacksjs/payments'

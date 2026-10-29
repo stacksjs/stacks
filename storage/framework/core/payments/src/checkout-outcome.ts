@@ -18,6 +18,9 @@ import type Stripe from 'stripe'
  * `processing` is a delayed method (SEPA Direct Debit, Bacs, ACH, a bank
  * redirect): the buyer finished, the money has not arrived, and one of the
  * async events follows in a few days. Fulfil on `paid` only.
+ * Only `payment` and `subscription` sessions have payment outcomes. Setup
+ * sessions save a payment method and report `no_payment_required` even before
+ * a purchase exists; they and unknown modes return null.
  *
  * Every other event type is `null`, so a handler can call this first and
  * return early. It reads only the event; verify the signature and match the
@@ -66,6 +69,7 @@ export function checkoutOutcome(event: { type: string, data?: { object?: unknown
   if (!event || typeof event.type !== 'string' || !event.type.startsWith('checkout.session.')) return null
   const session = event.data?.object as Stripe.Checkout.Session | undefined
   if (!session || typeof session !== 'object' || typeof session.id !== 'string') return null
+  if (session.mode !== 'payment' && session.mode !== 'subscription') return null
 
   const paymentStatus = String(session.payment_status ?? '')
   let status: CheckoutOutcomeStatus | null = null
