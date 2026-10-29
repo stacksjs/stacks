@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.364...v0.75.365)
+
+## 🐛 Bug Fixes
+
+- **ci**: use released Pantry action with Linux service exit handling ([6c4bb30](https://github.com/stacksjs/stacks/commit/6c4bb30)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **payments**: distinguish setup consent from payment and reconcile exact fees ([ff43949](https://github.com/stacksjs/stacks/commit/ff43949)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.363...v0.75.364)
 
 ## 🐛 Bug Fixes
