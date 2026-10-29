@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.357...v0.75.358)
+
+## 🐛 Bug Fixes
+
+- isolate test files in Buddy suites ([6e17ec6](https://github.com/stacksjs/stacks/commit/6e17ec6)) _(by Chris Breuer <chris@stacksjs.com>)_
+- preserve published support-session result types ([6d04b42](https://github.com/stacksjs/stacks/commit/6d04b42)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh action test evidence catalog ([2ce0628](https://github.com/stacksjs/stacks/commit/2ce0628)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- check emitted support-session declarations ([bbca1c6](https://github.com/stacksjs/stacks/commit/bbca1c6)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.356...v0.75.357)
 
 ## 🐛 Bug Fixes
