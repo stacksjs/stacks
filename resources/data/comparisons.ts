@@ -314,6 +314,16 @@ export const comparisons: Comparison[] = [
     icon: 'i-hugeicons-flash',
     group: 'fullstack',
     matrix: { auth: 'partial', orm: 'partial', jobs: 'byo', mail: 'byo', admin: 'byo', realtime: 'byo', deploy: 'partial', updates: 'partial', mailbox: 'byo' },
+    checked: {
+      version: 'SvelteKit 3.1',
+      on: '2026-10-29',
+      sources: [
+        { label: 'Official adapters, Bun included', url: 'https://svelte.dev/docs/kit/adapters' },
+        { label: 'sv add, with drizzle and better-auth', url: 'https://svelte.dev/docs/cli/sv-add' },
+        { label: 'Remote functions, marked experimental', url: 'https://svelte.dev/docs/kit/remote-functions' },
+        { label: 'sv migrate, including SvelteKit 3', url: 'https://svelte.dev/docs/cli/sv-migrate' },
+      ],
+    },
     page: {
       headline: 'SvelteKit ships the least JavaScript. Stacks ships the most application.',
       lede: 'SvelteKit is the most elegant front end story in this comparison and the most deliberately minimal backend one. Load functions, form actions, and adapters are the whole server surface; the database, the auth, the queue, and the admin are yours to select.',
