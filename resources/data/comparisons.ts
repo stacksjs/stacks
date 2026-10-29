@@ -188,6 +188,17 @@ export const comparisons: Comparison[] = [
     icon: 'i-hugeicons-layers-01',
     group: 'fullstack',
     matrix: { auth: 'byo', orm: 'byo', jobs: 'byo', mail: 'byo', admin: 'byo', realtime: 'byo', deploy: 'partial', updates: 'partial', mailbox: 'byo' },
+    checked: {
+      version: 'Next.js 16.4',
+      on: '2026-10-29',
+      sources: [
+        { label: 'Next.js 16.4 release notes', url: 'https://nextjs.org/blog/next-16-4' },
+        { label: 'Next.js 16: Cache Components', url: 'https://nextjs.org/blog/next-16' },
+        { label: 'The Adapter API, stable since 16.2', url: 'https://nextjs.org/docs/app/api-reference/config/next-config-js/adapterPath' },
+        { label: 'Upgrading with @next/codemod', url: 'https://nextjs.org/docs/app/guides/upgrading/codemods' },
+        { label: 'next/font', url: 'https://nextjs.org/docs/app/api-reference/components/font' },
+      ],
+    },
     page: {
       headline: 'Next.js decides how your pages render. Stacks decides the rest too.',
       lede: 'Next.js is a rendering framework with route handlers attached. Everything behind the request, the database layer, the auth, the queue, the mail, the admin, is a decision you make and maintain. Stacks makes those decisions and ships them typed against each other.',
@@ -196,7 +207,7 @@ export const comparisons: Comparison[] = [
         { title: 'The React ecosystem', text: 'Every component library, every hiring pool, every Stack Overflow answer. If your interface is React and your team is React, that gravity is real and it is worth something.' },
         { title: 'Server components and streaming', text: 'The RSC model has the deepest production track record and tooling for partial rendering and client bundle size. STX has server components, streaming, and islands too, but React\'s version has far more teams and years behind it.' },
         { title: 'Vercel', text: 'Preview deploys per pull request, edge rendering, and analytics with no infrastructure work at all. Stacks deploys to infrastructure you own, a Hetzner box, AWS, or any Linux server over SSH, which is more control and more responsibility.' },
-        { title: 'Asset pipelines', text: 'next/font self-hosts and subsets fonts with no layout shift, and next/image is heavily battle-tested. STX has an Image component with srcset and WebP/AVIF output, but fonts are still a manual link and @font-face.' },
+        { title: 'Asset pipelines', text: 'next/font self-hosts and subsets fonts with no layout shift, and next/image is heavily battle-tested. STX has an Image component with srcset and WebP/AVIF output, and fonts are declared in config, but Google families load from Google's servers and nothing subsets them or adjusts the fallback to stop the layout shifting.' },
       ],
       ourStrengths: [
         { title: 'The backend is not an exercise', text: 'Models, migrations, auth, roles, queues, mail, storage, search, realtime, and an admin dashboard are in the install, not in a list of packages to evaluate.' },
