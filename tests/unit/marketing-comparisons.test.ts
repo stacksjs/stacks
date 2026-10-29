@@ -126,6 +126,46 @@ describe('the fairness policy these pages promise', () => {
   })
 })
 
+describe('what each page was checked against (#2932)', () => {
+  // The pages whose claims about the other side have been checked against
+  // that project's own current pages. It grows one page at a time until it
+  // is every comparison, at which point `checked` stops being optional.
+  const checkedSlugs = ['laravel']
+
+  test('the pages that have been checked say so', () => {
+    for (const slug of checkedSlugs)
+      expect(comparisonBySlug(slug)?.checked, slug).toBeDefined()
+  })
+
+  test('a check names the release, a real day that has passed, and the pages it rests on', () => {
+    for (const comparison of comparisons) {
+      const checked = comparison.checked
+      if (!checked)
+        continue
+
+      expect(checked.version.trim().length, comparison.slug).toBeGreaterThan(0)
+      expect(checked.on, comparison.slug).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+      const day = new Date(`${checked.on}T00:00:00Z`)
+      expect(day.toISOString().slice(0, 10), comparison.slug).toBe(checked.on)
+      expect(day.getTime(), comparison.slug).toBeLessThanOrEqual(Date.now())
+
+      // A single link is a citation, not a check.
+      expect(checked.sources.length, comparison.slug).toBeGreaterThanOrEqual(3)
+      expect(new Set(checked.sources.map(source => source.url)).size, comparison.slug).toBe(checked.sources.length)
+      for (const source of checked.sources) {
+        expect(source.label.trim().length, comparison.slug).toBeGreaterThan(0)
+        expect(source.url, comparison.slug).toMatch(/^https:\/\/[^\s/]+\.[^\s/]+/)
+      }
+    }
+  })
+
+  test('the page shows the check', () => {
+    const view = readFileSync(join(import.meta.dir, '../../resources/views/compare/[slug].stx'), 'utf8')
+    expect(view).toContain('Checked against {{ checked.version }}.')
+    expect(view).toContain('@foreach (checked.sources as source)')
+  })
+})
+
 describe('the /compare/:slug route', () => {
   const view = readFileSync(join(import.meta.dir, '../../resources/views/compare/[slug].stx'), 'utf8')
 

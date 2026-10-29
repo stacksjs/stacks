@@ -45,6 +45,29 @@ export interface ComparisonRow {
   other: string
 }
 
+export interface ComparisonSource {
+  /** What the link backs up, in a few words. */
+  label: string
+  url: string
+}
+
+/**
+ * What the claims about the other side were checked against, and when
+ * (stacksjs/stacks#2932).
+ *
+ * "X cannot do Y" ages badly, and a reader who already suspects a comparison
+ * written by one side has every reason to check. So each page names the
+ * release it describes, the day it was checked, and the other project's own
+ * pages the claims rest on, and shows all three.
+ */
+export interface ComparisonCheck {
+  /** The release the page describes, spelled the way the other project does. */
+  version: string
+  /** The day the claims were last checked against the sources, YYYY-MM-DD. */
+  on: string
+  sources: ComparisonSource[]
+}
+
 export interface Comparison {
   slug: string
   /** The other framework, spelled the way its own docs spell it. */
@@ -57,6 +80,7 @@ export interface Comparison {
   icon: string
   group: 'fullstack' | 'backends' | 'ecosystems'
   matrix: ComparisonMatrix
+  checked?: ComparisonCheck
   page: {
     headline: string
     lede: string
@@ -840,6 +864,20 @@ export const comparisons: Comparison[] = [
     icon: 'i-hugeicons-gem',
     group: 'ecosystems',
     matrix: { auth: 'built-in', orm: 'built-in', jobs: 'built-in', mail: 'built-in', admin: 'partial', realtime: 'built-in', deploy: 'partial', updates: 'partial', mailbox: 'byo' },
+    checked: {
+      version: 'Laravel 13',
+      on: '2026-10-29',
+      sources: [
+        { label: 'Laravel 13 release notes, including the AI SDK', url: 'https://laravel.com/docs/releases' },
+        { label: 'Forge plans and Laravel VPS', url: 'https://laravel.com/forge/pricing' },
+        { label: 'Laravel Cloud plans, autoscaling, and scale to zero', url: 'https://laravel.com/cloud/pricing' },
+        { label: 'Nova licenses', url: 'https://nova.laravel.com/' },
+        { label: 'Laravel Shift prices per upgrade', url: 'https://laravelshift.com/shifts' },
+        { label: 'Shifty Plans', url: 'https://laravelshift.com/' },
+        { label: 'Wayfinder, and what it types', url: 'https://github.com/laravel/wayfinder' },
+        { label: 'Filament, MIT licensed', url: 'https://github.com/filamentphp/filament' },
+      ],
+    },
     page: {
       headline: 'Everything you like about Laravel, in the language your front end already speaks.',
       lede: 'Stacks does not pretend to be an independent invention. Models, migrations, queues, mail, events, gates, and an expressive CLI are Laravel ideas, and they are good ones. What changes is the language: one TypeScript type graph from the database row to the rendered view, with no boundary in between.',
@@ -856,9 +894,9 @@ export const comparisons: Comparison[] = [
         { title: 'Front end in the box', text: 'STX is part of the framework: server rendering, static generation with incremental regeneration, island hydration, streaming, and fine-grained signals. There is no Livewire or Inertia decision to make, and no choice between React, Vue, and Svelte after that.' },
         { title: 'Infrastructure in the repository', text: 'DNS records, TLS certificates, mail records, and a CDN (Cloudflare, or CloudFront on AWS) are declared in config and applied by buddy deploy, with DNS through Route53, Cloudflare, Porkbun, or GoDaddy, without a paid platform.' },
         { title: 'One runtime for everything', text: 'The server, the CLI, the tests, and the build all run on Bun, so there is no separate Node toolchain beside the PHP one. Bun is the runtime today, with more runtimes planned.' },
-        { title: 'Automated updates, free in the box', text: 'Laravel Shift is a third-party service that charges per upgrade, $19 to $29 for each version jump, and opens a pull request once you pay. Stacks includes the whole job. buddy upgrade previews every change, refuses to overwrite uncommitted edits, then moves the framework, dependencies, migrations, and CI to the next release, and buddy-bot, configured in every new app, opens dependency pull requests every two hours with a dashboard issue to track them.' },
+        { title: 'Automated updates, free in the box', text: 'Laravel Shift is a third-party service that charges per upgrade, $19 for 12 to 13 and $29 for 11 to 12, and opens a pull request once you pay; its yearly Shifty Plans, billed per repository, add pull requests that keep an app current between majors. Stacks includes the whole job. buddy upgrade previews every change, refuses to overwrite uncommitted edits, then moves the framework, dependencies, migrations, and CI to the next release, and buddy-bot, configured in every new app, opens dependency pull requests every two hours with a dashboard issue to track them.' },
         { title: 'The machine sets itself up', text: 'Herd and Sail give Laravel a polished local environment. Pantry installs exactly the tools config/deps.ts declares into the project, starts the database, and migrates and seeds it, and CI installs from the same lockfile.' },
-        { title: 'No deploy platform subscription', text: 'Forge runs $12 to $39 a month on top of the servers it manages, and Laravel Cloud starts at $5 a month plus usage, on AWS, with your database living on their platform. buddy deploy ships in the framework itself, so the only recurring cost is the server: a Hetzner box, an AWS account, or any Linux machine you already pay for. One small box can host several apps, and the data stays on hardware you control.' },
+        { title: 'No deploy platform subscription', text: 'Forge runs $12 to $39 a month on top of the servers it manages, and Laravel Cloud starts at $5 a month plus usage, on AWS, where its managed databases run too (you can bring your own). buddy deploy ships in the framework itself, so the only recurring cost is the server: a Hetzner box, an AWS account, or any Linux machine you already pay for. One small box can host several apps, and the data stays on hardware you control.' },
         { title: 'A mail server, not just a mail sender', text: 'Laravel pairs with SES, Postmark, or Resend for sending and Google Workspace or Fastmail for real mailboxes. Stacks can run its own self-hostable SMTP and IMAP server, so a custom mailbox on your domain is infrastructure you already have rather than another subscription.' },
         { title: 'Real products, not a demo', text: 'BugHQ (bughq.org), StatusHQ (statushq.org), AnalyticsHQ (analyticshq.org), LogHQ (loghq.org), and CommsHQ (commshq.org) are Stacks applications running in production today. Each one is MIT licensed and free to self-host on your own servers, with an optional hosted plan for teams who would rather not run it.' },
       ],
@@ -868,9 +906,9 @@ export const comparisons: Comparison[] = [
         { dimension: 'Views', stacks: 'STX: SSR, SSG, islands, signals', other: 'Blade with Livewire, or Inertia with React, Vue, or Svelte' },
         { dimension: 'Queues', stacks: 'Included, with retries, dead-letter queue, and a dashboard', other: 'Included, Horizon for Redis queues' },
         { dimension: 'Realtime', stacks: 'WebSocket channels and broadcasting, included', other: 'Reverb (first-party) or Pusher, via Echo' },
-        { dimension: 'Admin', stacks: 'Dashboard generated from models', other: 'Filament (free) or Nova (paid, from $99)' },
+        { dimension: 'Admin', stacks: 'Dashboard generated from models', other: 'Filament (free) or Nova ($99, then $79 a year)' },
         { dimension: 'Local setup', stacks: 'Pantry, per project, from config/deps.ts', other: 'Herd, Sail (Docker), or Valet' },
-        { dimension: 'Automated updates', stacks: 'buddy upgrade and buddy-bot, free and built in', other: 'Laravel Shift, $19-29 per upgrade, or by hand' },
+        { dimension: 'Automated updates', stacks: 'buddy upgrade and buddy-bot, free and built in', other: 'Laravel Shift, $19-29 per upgrade or a yearly Shifty Plan, or by hand' },
         { dimension: 'Deploy', stacks: 'buddy deploy to Hetzner, AWS, or any Linux box over SSH, no platform fee', other: 'Forge $12-39/mo plus servers, or Cloud from $5/mo plus usage' },
         { dimension: 'Mail server', stacks: 'Built in: SMTP, IMAP, real mailboxes', other: 'None; a hosted inbox provider, billed per seat' },
         { dimension: 'Ecosystem age', stacks: 'Young', other: 'Mature' },

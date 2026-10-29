@@ -1636,6 +1636,31 @@ input[type="email"]:focus {
   line-height: 1.65;
 }
 
+.compare-sources {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 0.5rem 1.25rem;
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  list-style: none;
+  background: var(--surface);
+}
+
+.compare-sources a {
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  text-decoration: underline;
+  text-decoration-color: var(--line);
+  text-underline-offset: 3px;
+}
+
+.compare-sources a:hover {
+  color: inherit;
+  text-decoration-color: currentColor;
+}
+
 .compare-summary {
   padding: clamp(1.25rem, 3vw, 1.9rem);
   border: 1px solid var(--line);

@@ -54,6 +54,13 @@ const glance = comparison
 const related = comparison
   ? comparison.page.related.map(comparisonBySlug).filter(entry => entry !== undefined)
   : []
+
+// Which release the claims about the other side describe, and the day they
+// were checked, written out rather than left as an ISO date (#2932).
+const checked = comparison?.checked
+const checkedOn = checked
+  ? new Date(`${checked.on}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
+  : ''
 </script>
 
 <!DOCTYPE html>
@@ -215,6 +222,23 @@ const related = comparison
               </article>
             </div>
           </section>
+
+          @if (checked)
+            <section class="section site-shell" aria-labelledby="sources-heading">
+              <div class="section-head">
+                <h2 id="sources-heading" class="section-title">Checked against {{ checked.version }}.</h2>
+                <p class="section-copy">On {{ checkedOn }}, against the pages below. If one of them now says otherwise, it wins.</p>
+              </div>
+
+              <ul class="compare-sources rise">
+                @foreach (checked.sources as source)
+                  <li>
+                    <a href="{{ source.url }}" rel="noopener" target="_blank">{{ source.label }}</a>
+                  </li>
+                @endforeach
+              </ul>
+            </section>
+          @endif
 
           <section class="section site-shell" aria-labelledby="related-heading">
             <div class="section-head">
