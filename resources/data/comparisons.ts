@@ -1196,6 +1196,16 @@ export const comparisons: Comparison[] = [
     icon: 'i-hugeicons-database',
     group: 'ecosystems',
     matrix: { auth: 'hosted', orm: 'hosted', jobs: 'partial', mail: 'byo', admin: 'hosted', realtime: 'hosted', deploy: 'hosted', updates: 'hosted', mailbox: 'byo' },
+    checked: {
+      version: 'Supabase, October 2026',
+      on: '2026-10-29',
+      sources: [
+        { label: 'Pricing: Pro, and compute per project', url: 'https://supabase.com/pricing' },
+        { label: 'Queues, built on pgmq', url: 'https://supabase.com/docs/guides/queues' },
+        { label: 'Cron, built on pg_cron', url: 'https://supabase.com/docs/guides/cron' },
+        { label: 'Auth: social providers, magic links, MFA', url: 'https://supabase.com/docs/guides/auth' },
+      ],
+    },
     page: {
       headline: 'Supabase gives you a backend. Stacks gives you somewhere to put your logic.',
       lede: 'This is the least like-for-like comparison on the page, and worth making because teams genuinely choose between them. Supabase is a hosted Postgres with auth, storage, realtime, and edge functions in front of it. Stacks is a framework you run. Plenty of applications use both.',
