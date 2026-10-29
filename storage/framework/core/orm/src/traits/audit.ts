@@ -44,6 +44,7 @@
 
 import { sqlDateTime } from '@stacksjs/database/runtime'
 import { log } from '@stacksjs/logging'
+import { resolveRequestTrailActorId } from './actor'
 
 /**
  * Field-name patterns whose values should never end up in an audit row.
@@ -101,23 +102,7 @@ export function setAuditUser(id: number | string | null): void {
 async function resolveAuditUserId(): Promise<number | string | null> {
   if (_explicitAuditUserId != null) return _explicitAuditUserId
 
-  try {
-    // Lazy-imported because @stacksjs/router may not be installed in all
-    // runtimes that consume @stacksjs/orm (e.g. CLI build steps).
-    const mod = await import('@stacksjs/router').catch(() => null)
-    if (!mod) return null
-    const getCurrentRequest = (mod as { getCurrentRequest?: () => unknown }).getCurrentRequest
-    if (typeof getCurrentRequest !== 'function') return null
-    const request = getCurrentRequest() as { user?: { id?: number | string }, _user?: { id?: number | string } } | null | undefined
-    if (!request) return null
-    // Different middleware sets the user under slightly different names;
-    // try the common ones rather than forcing every caller into one shape.
-    const user = request.user ?? request._user
-    return user?.id ?? null
-  }
-  catch {
-    return null
-  }
+  return resolveRequestTrailActorId()
 }
 
 /**

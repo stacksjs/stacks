@@ -60,6 +60,11 @@ export async function resolveTrailActorId(): Promise<number | string | null> {
   if (explicitActorId != null)
     return explicitActorId
 
+  return resolveRequestTrailActorId()
+}
+
+/** Resolve only the request identity, independently of CLI/job overrides. */
+export async function resolveRequestTrailActorId(): Promise<number | string | null> {
   try {
     const mod = await import('@stacksjs/router').catch(() => null)
     if (!mod)
@@ -71,8 +76,8 @@ export async function resolveTrailActorId(): Promise<number | string | null> {
 
     // Middleware sets the user under slightly different names; try the common
     // ones rather than forcing every caller into one shape.
-    const request = getCurrentRequest() as { user?: { id?: number | string }, _user?: { id?: number | string } } | null | undefined
-    return request?.user?.id ?? request?._user?.id ?? null
+    const request = getCurrentRequest() as { _authenticatedUser?: { id?: number | string }, user?: { id?: number | string }, _user?: { id?: number | string } } | null | undefined
+    return request?._authenticatedUser?.id ?? request?.user?.id ?? request?._user?.id ?? null
   }
   catch {
     return null
