@@ -1,6 +1,7 @@
 import type { DashboardModelOptions } from '@stacksjs/types'
 import { Glob } from 'bun'
-import { existsSync } from 'node:fs'
+import { randomUUID } from 'node:crypto'
+import { existsSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
 import { connect } from 'node:net'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -253,6 +254,35 @@ export function buildManifest(models: DiscoveredModel[]): DiscoveredModelManifes
       row.dashboard = m.dashboard
     return row
   })
+}
+
+/**
+ * Write `content` to `file` only when it differs from what is there, and
+ * report whether it wrote.
+ *
+ * The models manifest is regenerated on every boot and is an input of the
+ * kept render cache (`renderCachePersist`): rewriting identical bytes moves
+ * its mtime, which reads as a change, so every restart would discard every
+ * kept page (stacksjs/stacks#3035). Written aside and renamed, so a reader
+ * never sees half a file.
+ */
+export function writeFileIfChanged(file: string, content: string): boolean {
+  try {
+    if (readFileSync(file, 'utf8') === content)
+      return false
+  }
+  catch { /* not there yet */ }
+
+  const temporary = `${file}.${process.pid}.${randomUUID()}.tmp`
+  try {
+    writeFileSync(temporary, content, { flag: 'wx' })
+    renameSync(temporary, file)
+  }
+  finally {
+    if (existsSync(temporary))
+      unlinkSync(temporary)
+  }
+  return true
 }
 
 /** Check if a port is available by attempting to listen on it */

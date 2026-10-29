@@ -1,6 +1,5 @@
 import process from 'node:process'
-import { randomUUID } from 'node:crypto'
-import { existsSync, mkdirSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync } from 'node:fs'
 import { connect } from 'node:net'
 import { bold, cyan, dim, green } from '@stacksjs/cli'
 import { defaultsPath, projectPath, publicPath, storagePath } from '@stacksjs/path'
@@ -9,7 +8,7 @@ import { resolveComponentsLibraryRoot } from './defaults-resources'
 import { shouldDelegateDashboardRequest } from './dashboard-request-routing'
 import { resolveDashboardCraftExecutable, type CraftBinaryResolver } from './dashboard-native'
 import { resolveDashboardDomain, resolveDashboardProxyStrategy } from './dashboard-proxy'
-import { buildManifest, discoverModels, findAvailablePort, waitForServer } from './dashboard-utils'
+import { buildManifest, discoverModels, findAvailablePort, waitForServer, writeFileIfChanged } from './dashboard-utils'
 import { runDashboardSupervisor } from './dashboard-supervisor'
 import { ensureDiscoveredPackages } from '../discover-packages'
 import { resolveStxSource } from '../stx-source'
@@ -437,9 +436,22 @@ async function startStxServer(): Promise<void> {
     // cache above in under 10ms. Concurrency 1 did not help: each render holds
     // the thread for about a second, so even cached pages still waited 1-3s.
     prewarmRenderCache: false,
+    // And keep those renders across restarts, so a restart does not cost
+    // every page its ~1s render again (stacksjs/stacks#3035). A kept page is
+    // used only while nothing it was rendered from has changed, which is why
+    // the sidebar's inputs are watched below.
+    renderCachePersist: true,
     watchDirs: [
       projectPath('resources/functions'),
       defaultsPath('resources/functions'),
+      // The layout's server script builds the sidebar from the models manifest
+      // written below (the models and `config/dashboard.ts`'s sections, as of
+      // boot) and reads `config/dashboard.ts` itself; no page template pulls
+      // either in. Watched, a change to either discards the kept pages, so the
+      // restart after a config edit renders the new sidebar. Unwatched, that
+      // restart served the old one.
+      projectPath('config'),
+      storagePath('framework/runtime/dashboard'),
     ],
     quiet: true,
     routes: configRoutes,
@@ -630,15 +642,7 @@ const manifestPayload = {
   sections: dashboardToggles,
   nav: dashboardNav,
 }
-const manifestTempPath = `${manifestPath}.${process.pid}.${randomUUID()}.tmp`
-try {
-  writeFileSync(manifestTempPath, JSON.stringify(manifestPayload, null, 2), { flag: 'wx' })
-  renameSync(manifestTempPath, manifestPath)
-}
-finally {
-  if (existsSync(manifestTempPath))
-    unlinkSync(manifestTempPath)
-}
+writeFileIfChanged(manifestPath, JSON.stringify(manifestPayload, null, 2))
 
 // Wait briefly for STX server (it's usually ready by now)
 // eslint-disable-next-line ts/no-top-level-await

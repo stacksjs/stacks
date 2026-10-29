@@ -29,4 +29,17 @@ describe('dashboard rendered route cache', () => {
     expect(dashboardDevSource).toContain("projectPath('resources/functions')")
     expect(dashboardDevSource).toContain("defaultsPath('resources/functions')")
   })
+
+  test('keeps renders across restarts, watching what the sidebar is built from', () => {
+    // A restart used to cost every page its ~1s render again (#3035). A kept
+    // page is served only while its inputs are unchanged, and the sidebar
+    // reads `config/dashboard.ts` and the models manifest at render time, so
+    // both must be watched or a kept page would show an old sidebar.
+    expect(dashboardDevSource).toContain('renderCachePersist: true')
+    expect(dashboardDevSource).toContain("projectPath('config')")
+    expect(dashboardDevSource).toContain("storagePath('framework/runtime/dashboard')")
+    // Rewriting an unchanged manifest would move its mtime on every boot,
+    // which reads as a change and discards every kept page.
+    expect(dashboardDevSource).toContain('writeFileIfChanged(manifestPath,')
+  })
 })
