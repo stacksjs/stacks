@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.350...v0.75.351)
+
+## 🐛 Bug Fixes
+
+- **payments**: verify fee-refund balances against their parent fee ([a5a9ea7](https://github.com/stacksjs/stacks/commit/a5a9ea7)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.349...v0.75.350)
 
 ## ✨ Features
