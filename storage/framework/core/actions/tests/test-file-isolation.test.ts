@@ -1,7 +1,8 @@
 import { afterEach, expect, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { delimiter, dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const projects: string[] = []
 afterEach(() => {
@@ -32,14 +33,14 @@ test('starts with its own global', () => {
     files.push('tests/unit/failure.test.ts')
     writeFileSync(join(project, files.at(-1)!), `import { test } from 'bun:test'\ntest('intentional failure', () => { throw new Error('fixture failure') })\n`)
   }
-  const runner = new URL('../src/test/runner.ts', import.meta.url).pathname
+  const runner = fileURLToPath(new URL('../src/test/runner.ts', import.meta.url))
   writeFileSync(join(project, 'driver.ts'), `
 import { runTestSuites } from ${JSON.stringify(runner)}
 await runTestSuites(['unit'], 5000, ${JSON.stringify(named ? files : [])})
 `)
   const child = Bun.spawn([process.execPath, '--no-env-file', `--config=${join(project, 'bunfig.toml')}`, join(project, 'driver.ts')], {
     cwd: project,
-    env: { ...process.env, PATH: `${dirname(process.execPath)}:${process.env.PATH ?? ''}`, APP_ENV: 'test', NODE_ENV: 'test' },
+    env: { ...process.env, PATH: `${dirname(process.execPath)}${delimiter}${process.env.PATH ?? ''}`, APP_ENV: 'test', NODE_ENV: 'test' },
     stdout: 'pipe', stderr: 'pipe',
   })
   const [exitCode, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
