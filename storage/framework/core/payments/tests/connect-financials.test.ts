@@ -10,7 +10,7 @@ function fixture() {
   const fee: any = { id: 'fee_hq', account: 'acct_original', charge: 'ch_sale', balance_transaction: 'txn_fee' }
   const feeRefund: any = { id: 'fr_one', fee: 'fee_hq', balance_transaction: 'txn_fee_refund' }
   const transactions: Record<string, any> = Object.fromEntries([
-    ['txn_sale', 'ch_sale', 10000, 1300], ['txn_refund', 're_one', -5000, 0], ['txn_debit', 'du_one', -1000, 1500], ['txn_credit', 'du_one', 1000, 0], ['txn_fee', 'fee_hq', 1000, 0], ['txn_fee_refund', 'fr_one', -500, 0],
+    ['txn_sale', 'ch_sale', 10000, 1300], ['txn_refund', 're_one', -5000, 0], ['txn_debit', 'du_one', -1000, 1500], ['txn_credit', 'du_one', 1000, 0], ['txn_fee', 'fee_hq', 1000, 0], ['txn_fee_refund', 'fee_hq', -500, 0],
   ].map(([id, source, amount, fee]) => [id, { id, source, amount, fee, net: Number(amount) - Number(fee), currency: 'eur', exchange_rate: null, created: 1700000000 }]))
   const list = (resource: string, rows: any[]) => async (params: any, options?: any) => {
     calls.push({ resource, params, options })
@@ -37,6 +37,7 @@ describe('direct-charge canonical financials', () => {
     const result = await f.load()
     expect(result.movements).toHaveLength(6)
     expect(result.disputes[0]!.status).toBe('won')
+    expect(result.movements.find(row => row.kind === 'application_fee_refund')!.sourceId).toBe('fr_one')
     expect(result.movements.find(row => row.transaction.id === 'txn_debit')!.transaction.fee).toBe(1500)
     for (const call of f.calls) {
       const platform = ['fee', 'feeRefunds', 'movement:txn_fee', 'movement:txn_fee_refund'].includes(call.resource)
@@ -82,6 +83,7 @@ describe('direct-charge canonical financials', () => {
       (f: ReturnType<typeof fixture>) => { f.fee.charge = 'ch_foreign' },
       (f: ReturnType<typeof fixture>) => { f.feeRefund.fee = 'fee_foreign' },
       (f: ReturnType<typeof fixture>) => { f.transactions.txn_sale.source = 'ch_foreign' },
+      (f: ReturnType<typeof fixture>) => { f.transactions.txn_fee_refund.source = 'fee_foreign' },
     ]) {
       const f = fixture()
       corrupt(f)

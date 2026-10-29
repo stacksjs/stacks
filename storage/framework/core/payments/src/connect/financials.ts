@@ -77,7 +77,7 @@ export async function directChargeFinancials(paymentIntentId: string, account: s
   if (applicationFeeRefunds.some(refund => id(refund.fee) !== applicationFee!.id)) throw new Error('Foreign application-fee refund')
   const movements: DirectChargeMovement[] = []
   const seen = new Map<string, DirectChargeMovement>()
-  async function movement(reference: unknown, sourceId: string, kind: DirectChargeMovement['kind'], scope: string, required = true) {
+  async function movement(reference: unknown, sourceId: string, kind: DirectChargeMovement['kind'], scope: string, required = true, providerSourceId = sourceId) {
     const transactionId = id(reference)
     if (!transactionId) {
       if (required) throw new DirectChargeFinancialsPendingError('A provider balance transaction is not available yet')
@@ -85,7 +85,7 @@ export async function directChargeFinancials(paymentIntentId: string, account: s
     }
     if (!/^txn_[a-z0-9_]+$/i.test(transactionId)) throw new Error('Invalid provider balance transaction')
     const transaction = await client.balanceTransactions.retrieve(transactionId, {}, scope === 'platform' ? undefined : options)
-    if (transaction.id !== transactionId || (id(transaction.source) && id(transaction.source) !== sourceId)) throw new Error('Foreign provider balance transaction')
+    if (transaction.id !== transactionId || (id(transaction.source) && id(transaction.source) !== providerSourceId)) throw new Error('Foreign provider balance transaction')
     const entry: DirectChargeMovement = { account: scope, sourceId, kind, transaction }
     const key = `${scope}:${transactionId}`
     if (seen.has(key)) {
@@ -103,6 +103,8 @@ export async function directChargeFinancials(paymentIntentId: string, account: s
   for (const dispute of disputes)
     for (const transaction of dispute.balance_transactions) await movement(transaction, dispute.id, 'dispute', account)
   if (applicationFee) await movement(applicationFee.balance_transaction, applicationFee.id, 'application_fee', 'platform')
-  for (const refund of applicationFeeRefunds) await movement(refund.balance_transaction, refund.id, 'application_fee_refund', 'platform')
+  // Stripe's platform debit points to the parent fee. Keep the refund's own
+  // identity for reconciliation while checking that verified provider parent.
+  for (const refund of applicationFeeRefunds) await movement(refund.balance_transaction, refund.id, 'application_fee_refund', 'platform', true, applicationFee!.id)
   return { account, charge, refunds, disputes, applicationFee, applicationFeeRefunds, movements }
 }
