@@ -811,6 +811,15 @@ export const comparisons: Comparison[] = [
     icon: 'i-hugeicons-globe',
     group: 'backends',
     matrix: { auth: 'partial', orm: 'byo', jobs: 'byo', mail: 'byo', admin: 'byo', realtime: 'partial', deploy: 'byo', updates: 'byo', mailbox: 'byo' },
+    checked: {
+      version: 'Hono 4.13',
+      on: '2026-10-29',
+      sources: [
+        { label: 'Supported runtimes and built-in helpers', url: 'https://hono.dev/docs/' },
+        { label: 'RPC mode and what the client needs', url: 'https://hono.dev/docs/guides/rpc' },
+        { label: 'Hono 4.13 on npm', url: 'https://www.npmjs.com/package/hono' },
+      ],
+    },
     page: {
       headline: 'Hono runs anywhere. Stacks runs an application.',
       lede: 'Hono is a few kilobytes of extremely well-made routing that works on Cloudflare Workers, Deno, Bun, Node, and Lambda, with typed middleware and an RPC mode. It is the right tool for edge services. It is not trying to be the place your models, jobs, mail, and admin live.',
@@ -818,7 +827,7 @@ export const comparisons: Comparison[] = [
       theirStrengths: [
         { title: 'Runtime portability', text: 'One codebase on Workers, Fastly, Deno, Bun, Node, Lambda, Vercel, and Netlify. Stacks runs on Bun today, with more runtimes planned, and does not deploy to edge platforms.' },
         { title: 'Cold starts and size', text: 'For workers measured in kilobytes and milliseconds, Hono is in a category Stacks is not competing in.' },
-        { title: 'Type inference', text: 'The RPC client infers types from every route with no opt-in and no generation step. Stacks infers only from routes registered through its typed router.' },
+        { title: 'Type inference', text: 'Export the app type, chain the routes, and the hc client infers every request and response from them, with no generation step. Stacks infers only from routes registered through its typed router.' },
         { title: 'Simplicity', text: 'The whole framework can be read in an afternoon, which is worth a lot for a service you will maintain for years.' },
       ],
       ourStrengths: [
