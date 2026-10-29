@@ -21,6 +21,7 @@ import { withDeployNotification } from '../deploy-notify'
 import type { DeploymentRevisionCheck } from '../deployment-revision'
 import { assertCurrentDeploymentRevision, assertNotBehindLiveRelease, automatedDeploymentRevision, liveReleasesCommand } from '../deployment-revision'
 import { dnsCredentialFix, envFileForEnvironment, resolveZoneNameservers } from '../dns-credentials'
+import { assertComputeResidency } from '@stacksjs/ts-cloud'
 import { resultFailed } from '../result'
 import { findUnbackedManagedServices, hasOffsiteBackupDestination, unbackedDataMessage } from '../unbacked-data'
 import { applyDeploymentDomainOverride, createDeploymentPreview, deploymentPreviewJsonPrefix, formatDeploymentPreview, resolveDeploymentEnvironment } from './deploy-preview'
@@ -1193,7 +1194,7 @@ export function mergeSiteDeployEnv(sites: Record<string, any>, resolvedDeployEnv
       if (!site)
         return [siteName, site]
 
-      const base = { ...resolvedDeployEnv }
+      const base = site.inheritEnv === false ? {} : { ...resolvedDeployEnv }
       if (site.port !== undefined)
         delete base.PORT
       return [siteName, { ...site, env: { ...base, ...(site.env || {}) } }]
@@ -1749,6 +1750,18 @@ export function siteDatabaseDrivers(sites: Record<string, any>): string[] {
   }
 
   return [...drivers]
+}
+
+/** A multi-source deployment audits each shipped application's own migration corpus. */
+export function siteDatabaseCorpora(sites: Record<string, any>, projectRoot: string): Array<{ root: string, driver: string }> {
+  const corpora = new Map<string, { root: string, driver: string }>()
+  for (const site of Object.values(sites ?? {})) {
+    for (const driver of siteDatabaseDrivers({ site })) {
+      const root = resolve(projectRoot, site.root || '.')
+      corpora.set(`${root}\0${driver}`, { root, driver })
+    }
+  }
+  return [...corpora.values()]
 }
 
 /**
@@ -2671,6 +2684,14 @@ async function runSshDeploy(args: {
     }
     ip = box.publicIp
     ipv6 = box.publicIpv6
+    if (tsCloudConfig.cloud?.residency) {
+      if (provider !== 'hetzner') throw new Error('Residency requires fresh Hetzner provider evidence for the attached host')
+      const fresh = await resolveAttachTargetBox(attachTo, environment, tsCloudConfig)
+      if (!fresh.box || fresh.box.publicIp !== box.publicIp || (box.serverId && fresh.box.serverId !== box.serverId))
+        throw new Error('Cannot verify residency of the pinned attachment target')
+      assertAttachResidency(tsCloudConfig.cloud.residency, fresh.box)
+      log.info(`Verified attached host residency: ${fresh.box.country}/${fresh.box.location}`)
+    }
 
     // A tenant's slug names the files its deploy OWNS on the shared box: the
     // rpx gateway fragment `/etc/rpx/sites.d/<slug>.json` and the per-tenant
@@ -3030,8 +3051,8 @@ async function runSshDeploy(args: {
    * too: STACKS_ALLOW_DIALECT_MISMATCH=1.
    */
   const { validateMigrationDialect } = await import('./migrate')
-  for (const driver of siteDatabaseDrivers(sitesWithResolvedEnv)) {
-    const dialect = validateMigrationDialect(p.projectPath(), { driver })
+  for (const { root, driver } of siteDatabaseCorpora(sitesWithResolvedEnv, p.projectPath())) {
+    const dialect = validateMigrationDialect(root, { driver })
     if (!dialect.valid) {
       log.error(dialect.error ?? `The committed migrations cannot run on ${driver}.`)
       throw new Error(`Refusing to deploy: the migrations cannot run on ${driver}.`)
@@ -3531,11 +3552,17 @@ export function resolveHetznerApiToken(tsCloudConfig?: TsCloudConfig): string | 
  * mean either lying about the pin or re-checking it at every use.
  */
 export interface AttachTargetBox {
+  country?: string
+  location?: string
   /** Absent for the ssh provider: there is no provider API issuing server ids. */
   serverId?: number
   serverName: string
   publicIp?: string
   publicIpv6?: string
+}
+
+export function assertAttachResidency(policy: { countries: string[], locations?: string[] }, box: Pick<AttachTargetBox, 'country' | 'location'>): void {
+  assertComputeResidency(policy, box)
 }
 
 /**
@@ -3658,6 +3685,8 @@ export async function resolveAttachTargetBox(
   return {
     box: {
       serverId: chosen.id,
+      country: chosen.location?.country || chosen.datacenter?.location?.country,
+      location: chosen.location?.name || chosen.datacenter?.location?.name,
       serverName: chosen.name,
       publicIp: chosen.public_net?.ipv4?.ip,
       publicIpv6: typeof normalizePublicIpv6 === 'function' ? normalizePublicIpv6(reportedIpv6) : undefined,

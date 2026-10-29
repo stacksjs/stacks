@@ -68,3 +68,13 @@ describe('siteDatabaseDrivers', () => {
     expect(siteDatabaseDrivers({})).toEqual([])
   })
 })
+
+it('audits each shipped source root rather than the umbrella application schema', async () => {
+  const { siteDatabaseCorpora } = await import('../src/commands/deploy')
+  const corpora = siteDatabaseCorpora({
+    website: migrating({DB_CONNECTION:'sqlite'}),
+    training: {...migrating({DB_CONNECTION:'postgres'}),root:'storage/native/hq/immutable-source'},
+    api: {...migrating({DB_CONNECTION:'postgres'}),root:'storage/native/hq/immutable-source'},
+  },'/application')
+  expect(corpora).toEqual([{root:'/application',driver:'sqlite'},{root:'/application/storage/native/hq/immutable-source',driver:'postgres'}])
+})
