@@ -10,6 +10,11 @@ export interface ImpersonationSession {
   endedAt: number | null
 }
 
+export interface ImpersonationGrant {
+  credential: string
+  session: ImpersonationSession
+}
+
 export interface ImpersonationAccess {
   method: string
   /** Path only. Queries can contain credentials or personal data. */
@@ -57,7 +62,7 @@ function validId(id: number): boolean {
  */
 export function createImpersonationService(store: ImpersonationStore, authority: ImpersonationAuthority) {
   return {
-    async start(subjectId: number, reason: string): Promise<{ credential: string, session: ImpersonationSession }> {
+    async start(subjectId: number, reason: string): Promise<ImpersonationGrant> {
       const actor = await authority.currentActor()
       if (!actor || actor.impersonating || !validId(actor.userId) || !actor.sessionId
         || !validId(subjectId) || actor.userId === subjectId)

@@ -28,6 +28,7 @@ import { withVerifiedPassword } from './credential-version'
 import { tokenDate, tokenTimestamps } from './token-dates'
 import { schedulePasswordRehash } from './password-rehash'
 import { IMPERSONATION_HEADER } from './impersonation'
+import type { ImpersonationGrant } from './impersonation'
 import { authenticatedImpersonationService, resolveRequestImpersonation } from './impersonation-auth'
 
 interface VerifiedCredentials {
@@ -891,7 +892,7 @@ export class Auth {
   }
 
   /** Start support viewing using the real current session, never a supplied actor id. */
-  public static async startImpersonation(subjectId: number, reason: string) {
+  public static async startImpersonation(subjectId: number, reason: string): Promise<ImpersonationGrant> {
     const currentRequest = getCurrentRequest()
     if (!currentRequest || currentRequest.headers.has(IMPERSONATION_HEADER))
       throw new HttpError(403, 'Impersonation is not authorized.')
