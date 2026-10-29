@@ -1,5 +1,29 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.372...v0.75.373)
+
+## ✨ Features
+
+- **deploy**: enforce enterprise source and residency isolation ([63c014c](https://github.com/stacksjs/stacks/commit/63c014c)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **marketing**: keep the Rails page's one reason and drop the credit for its age ([d9e2da4](https://github.com/stacksjs/stacks/commit/d9e2da4)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3059](https://github.com/stacksjs/stacks/issues/3059))
+
+## 📝 Documentation
+
+- refresh native skill evidence inventory ([5a381e5](https://github.com/stacksjs/stacks/commit/5a381e5)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 💚 Continuous Integration
+
+- let pantry.lock decide curl, sqlite and git in every Pantry setup ([9b1345c](https://github.com/stacksjs/stacks/commit/9b1345c)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3061](https://github.com/stacksjs/stacks/issues/3061))
+- check the lockfiles strictly and drop the structural pantry.lock script ([30d0712](https://github.com/stacksjs/stacks/commit/30d0712)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2905](https://github.com/stacksjs/stacks/issues/2905), [#2899](https://github.com/stacksjs/stacks/issues/2899), [pantry-pm/pantry#260](https://github.com/pantry-pm/pantry/issues/260))
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.370...v0.75.372)
 
 ## ✨ Features
