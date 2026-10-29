@@ -194,6 +194,26 @@ when the first invoice needs editing. Do not grant paid access from a schedule's
 active status before its initial invoice is paid. The helper does not finalize
 invoices, collect payment, or implement the application's access policy.
 
+After a successful direct-charge refund, `creditDirectInvoiceRefund(invoiceId,
+account, refundId, [{ invoiceLineItem, amount }])` links it to the original
+invoice lines without moving money again. `amount` uses the original price's
+tax behavior (inclusive prices use inclusive minor units). Stripe's preview must
+equal the actual refund; its tax breakdown is retained. Amount-only credit notes
+can omit tax. The operation verifies the paid invoice/refund relationship on the
+original merchant and returns an existing matching credit on replay, including
+after the provider's idempotency window. Pending refunds and differing existing
+credits remain errors for durable retry/review. It sends no email; applications
+own receipt delivery.
+
+`directInvoiceTaxFinancials(invoiceId, paymentIntentId, account)` reads canonical
+collected/credited gross, net and tax plus `requiresReview`. Read it under the
+application's payment lock alongside `directChargeFinancials`, and compare its
+gross/currency with the original captured payment before releasing contributor
+amounts. Missing tax credits, pending refunds, bulk or non-cash credits stay
+under review. `invoiceTaxAmounts` validates balanced provider totals without
+inventing tax when a calculation is missing. These are accounting facts, not
+the merchant's available Stripe balance or a tax remittance operation.
+
 ### Destination charges (a platform that took on loss liability)
 
 ```typescript

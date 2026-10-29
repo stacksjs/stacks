@@ -4,6 +4,7 @@ import { stacksIdempotencyKey } from '../idempotency'
 import { asAccount } from './direct'
 import { splitFee } from './destination'
 import { manageDestinationSubscription } from './subscription'
+import { invoiceTaxAmounts } from './tax'
 
 export interface DirectInvoiceFeeOptions {
   /** Original merchant customer and, for recurring sales, subscription. */
@@ -28,18 +29,10 @@ function id(value: string | { id: string } | null | undefined): string | undefin
 }
 
 function amounts(invoice: Stripe.Invoice): Pick<DirectInvoiceFee, 'gross' | 'tax' | 'net'> {
-  const gross = invoice.total
-  const net = invoice.total_excluding_tax
-  if (!Number.isSafeInteger(gross) || gross < 0 || net == null || !Number.isSafeInteger(net) || net < 0 || net > gross)
-    throw new Error('[payments/connect] Invoice has no valid tax-exclusive amount')
-  const tax = gross - net
-  if (!Array.isArray(invoice.total_taxes) || invoice.total_taxes.some(row => !Number.isSafeInteger(row.amount) || row.amount < 0) || invoice.total_taxes.reduce((sum, row) => sum + row.amount, 0) !== tax)
-    throw new Error('[payments/connect] Invoice tax amounts do not balance')
-  if (invoice.automatic_tax?.enabled && invoice.automatic_tax.status !== 'complete')
-    throw new Error('[payments/connect] Invoice tax calculation is not complete')
-  if (invoice.amount_due !== gross)
+  const totals = invoiceTaxAmounts(invoice)
+  if (invoice.amount_due !== totals.gross)
     throw new Error('[payments/connect] Invoice credits or balance adjustments require a separate fee settlement')
-  return { gross, tax, net }
+  return totals
 }
 
 /** Set an exact tax-exclusive fee on a draft invoice on its original merchant.

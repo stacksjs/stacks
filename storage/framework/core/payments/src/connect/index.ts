@@ -16,6 +16,9 @@ export * from './destination'
 export * from './direct'
 export * from './financials'
 export * from './invoice-fee'
+export * from './invoice-credit'
+export * from './tax'
+export * from './invoice-tax'
 export * from './payout'
 export * from './refund'
 export * from './subscription'
@@ -29,6 +32,8 @@ import { checkoutLineItemsTotal, destinationCheckoutPaymentData, destinationChec
 import { managePayout } from './payout'
 import { directChargeFinancials } from './financials'
 import { prepareDirectInvoiceFee } from './invoice-fee'
+import { creditDirectInvoiceRefund } from './invoice-credit'
+import { directInvoiceTaxFinancials } from './invoice-tax'
 import { connectRefund, connectRefundParams, isDestinationCharge } from './refund'
 import { manageDestinationSubscription } from './subscription'
 import { manageTransfer } from './transfer'
@@ -67,6 +72,8 @@ export const connect = {
   directCheckout,
   directChargeFinancials,
   prepareDirectInvoiceFee,
+  creditDirectInvoiceRefund,
+  directInvoiceTaxFinancials,
   directPaymentIntentParams,
   directCheckoutPaymentData,
   directCheckoutSubscriptionData,

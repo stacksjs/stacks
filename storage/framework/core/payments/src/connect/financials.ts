@@ -1,6 +1,7 @@
 import type Stripe from 'stripe'
 import { stripe } from '../drivers/stripe'
 import { asAccount } from './direct'
+import { allPages } from './pagination'
 
 export interface DirectChargeMovement {
   account: string | 'platform'
@@ -29,23 +30,6 @@ function id(value: unknown): string {
   return typeof value === 'string' ? value : String((value as { id?: string } | null)?.id || '')
 }
 
-async function allPages<T extends { id: string }>(read: (after?: string) => Promise<{ data: T[], has_more: boolean }>): Promise<T[]> {
-  const rows: T[] = []
-  const seen = new Set<string>()
-  let after: string | undefined
-  for (let page = 0; page < 100; page++) {
-    const result = await read(after)
-    for (const row of result.data) {
-      if (!row.id || seen.has(row.id)) throw new Error('Incomplete or repeated Stripe financial page')
-      seen.add(row.id)
-      rows.push(row)
-    }
-    if (!result.has_more) return rows
-    if (!result.data.length) throw new Error('Incomplete Stripe financial page')
-    after = result.data.at(-1)!.id
-  }
-  throw new Error('Stripe financial pagination exceeded its bound')
-}
 
 /** Retrieve current facts on the ORIGINAL direct-charge account. Call after
  * acquiring the application's payment lock, not before it. Every list is fully
