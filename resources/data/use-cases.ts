@@ -290,7 +290,7 @@ export default defineModel({
       capabilities: [
         { title: 'STX views', text: 'Single-file components with server and client scripts, layouts, and partials, rendered on the server with no build config to own.' },
         { title: 'Forms that go somewhere', text: 'Newsletter, contact, and lead forms post to actions, validate against the same schema, and queue their mail.' },
-        { title: 'Crosswind styling', text: 'Utility CSS with a design-token layer, dark mode, and no runtime cost on the page.' },
+        { title: 'ts-css styling', text: 'Utility CSS with a design-token layer, dark mode, and no runtime cost on the page.' },
         { title: 'Content behind it', text: 'The CMS models are there when a landing page becomes a resource library.' },
         { title: 'First-party analytics', text: 'Fathom or the self-hosted driver, configured in config/analytics.ts, without a tag manager.' },
         { title: 'Deploys in one command', text: 'buddy deploy builds the site, publishes the CDN, and updates DNS and certificates from config/cloud.ts.' },

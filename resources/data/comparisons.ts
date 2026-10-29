@@ -872,19 +872,28 @@ export const comparisons: Comparison[] = [
     icon: 'i-hugeicons-rocket-01',
     group: 'backends',
     matrix: { auth: 'partial', orm: 'byo', jobs: 'byo', mail: 'byo', admin: 'byo', realtime: 'partial', deploy: 'byo', updates: 'byo', mailbox: 'byo' },
+    checked: {
+      version: 'Elysia 1.4',
+      on: '2026-10-29',
+      sources: [
+        { label: 'Elysia at a glance: runtimes, Standard Schema, code generation', url: 'https://elysiajs.com/at-glance.html' },
+        { label: 'Eden, and the app type it reads', url: 'https://elysiajs.com/eden/overview.html' },
+        { label: 'Elysia 1.4 on npm', url: 'https://www.npmjs.com/package/elysia' },
+      ],
+    },
     page: {
       headline: 'Both are Bun-first. One is a router, one is an application framework.',
       lede: 'Elysia is the strongest argument for Bun on the server: schema-validated routes, inferred types, an Eden client with no code generation, and throughput near the top of public benchmarks. Stacks shares the runtime bet and answers a different question, which is everything you need once the router is chosen.',
       summary: 'Elysia is built for Bun first, with adapters for Node, Deno, and Workers, and uses Bun to do things portable frameworks cannot, including a JIT compiler that builds optimised handlers per route. TypeBox or any Standard Schema library such as Zod validates requests and produces types, plugins compose cleanly, and Eden gives a fully typed client. For a high-performance Bun API it is an excellent choice.',
       theirStrengths: [
         { title: 'Raw performance', text: 'Elysia is faster at the routing layer than a full framework will be, and if requests per second per core is your metric, it wins.' },
-        { title: 'Eden', text: 'Eden infers types from every route with no opt-in. Stacks has a typed client with no generation step too, but only for routes registered through its typed router.' },
+        { title: 'Eden', text: 'Export the app type and Eden infers every route from it, with no generation step. Stacks has a typed client with no generation step too, but only for routes registered through its typed router.' },
         { title: 'Small surface', text: 'Fewer concepts to learn, and nothing you do not use.' },
         { title: 'Plugin composition', text: 'The plugin model is clean and makes sharing behaviour between services straightforward.' },
       ],
       ourStrengths: [
         { title: 'Batteries, not building blocks', text: 'ORM, migrations, auth, RBAC, queues, mail, storage, search, realtime, CMS, commerce, and an admin dashboard.' },
-        { title: 'Views and assets', text: 'A front end in the same project: SSR, static generation, islands, and SPA navigation, with a component model and Crosswind styling.' },
+        { title: 'Views and assets', text: 'A front end in the same project: SSR, static generation, islands, and SPA navigation, with a component model and ts-css styling.' },
         { title: 'Structure that survives growth', text: 'Conventions for where things live, so the tenth feature looks like the first.' },
         { title: 'Deploy and operations', text: 'Infrastructure from config, a dashboard for jobs and mail, and CI that ships on push.' },
         mailServerStrength,
