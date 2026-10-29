@@ -66,21 +66,21 @@ describe('the user\'s customer on a connected account', () => {
 
   test('is found by email when it carries the user\'s id', async () => {
     const { client, calls } = fakeClient([{ id: 'cus_other', metadata: {} }, { id: 'cus_ava', metadata: { stacks_user_id: '7' } }])
-    expect((await connectedCustomer(user as any, account, client)).id).toBe('cus_ava')
+    expect((await connectedCustomer(user, account, client)).id).toBe('cus_ava')
     expect(calls).toHaveLength(1)
     expect(calls[0]!.options).toEqual({ stripeAccount: account })
   })
 
   test('is found by metadata when the email changed', async () => {
     const { client, calls } = fakeClient([], [{ id: 'cus_ava', metadata: { stacks_user_id: '7' } }])
-    expect((await connectedCustomer(user as any, account, client)).id).toBe('cus_ava')
+    expect((await connectedCustomer(user, account, client)).id).toBe('cus_ava')
     expect(calls.map(call => call.op)).toEqual(['list', 'search'])
     expect(calls[1]!.params.query).toBe('metadata[\'stacks_user_id\']:\'7\'')
   })
 
   test('is created on the account with a stable idempotency key otherwise', async () => {
     const { client, calls } = fakeClient()
-    const customer = await connectedCustomer(user as any, account, client)
+    const customer = await connectedCustomer(user, account, client)
     expect(customer.id).toBe('cus_new')
     const create = calls.find(call => call.op === 'create')!
     expect(create.params).toEqual({ email: 'ava@example.com', name: 'Ava Stone', metadata: { stacks_user_id: '7' } })
@@ -125,16 +125,16 @@ describe('a direct checkout', () => {
   } as any
 
   test('is a payment on the account for the user\'s customer there', async () => {
-    const session: any = await directCheckout({ id: 7, email: 'a@b.c' } as any, account, { line_items: [], success_url: 'https://stacks.localhost/ok', cancel_url: 'https://stacks.localhost/no' }, client)
+    const session: any = await directCheckout({ id: 7, email: 'a@b.c' }, account, { line_items: [], success_url: 'https://stacks.localhost/ok', cancel_url: 'https://stacks.localhost/no' }, client)
     expect(session.params.mode).toBe('payment')
     expect(session.params.customer).toBe('cus_new')
     expect(session.options.stripeAccount).toBe(account)
   })
 
   test('keeps a customer the caller named, and refuses a foreign return URL', async () => {
-    const session: any = await directCheckout({ id: 7 } as any, account, { customer: 'cus_named', success_url: 'https://stacks.localhost/ok', cancel_url: 'https://stacks.localhost/no' }, client)
+    const session: any = await directCheckout({ id: 7 }, account, { customer: 'cus_named', success_url: 'https://stacks.localhost/ok', cancel_url: 'https://stacks.localhost/no' }, client)
     expect(session.params.customer).toBe('cus_named')
-    await expect(directCheckout({ id: 7 } as any, account, { success_url: 'https://evil.example/ok', cancel_url: 'https://stacks.localhost/no' }, client)).rejects.toThrow(/origin/)
+    await expect(directCheckout({ id: 7 }, account, { success_url: 'https://evil.example/ok', cancel_url: 'https://stacks.localhost/no' }, client)).rejects.toThrow(/origin/)
   })
   test('reuses a caller-owned logical checkout attempt without changing its parameters', async () => {
     const options = { account, customer: 'cus_named', price: { amount: 1999, currency: 'EUR', interval: 'month' as const, productName: 'Running' }, successUrl: 'https://stacks.localhost/ok', cancelUrl: 'https://stacks.localhost/no', idempotencyKey: 'coaching-attempt-1' }

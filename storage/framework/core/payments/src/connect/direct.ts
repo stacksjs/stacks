@@ -106,6 +106,9 @@ export function directSubscriptionParams(options: Pick<DirectFeeOptions, 'feePer
 /** The Stripe customer calls a connected customer needs. */
 type CustomerClient = Pick<Stripe, 'customers'>
 
+/** Connect needs a payer identity, independent of an application's ORM traits. */
+export type ConnectPayer = Pick<UserModel, 'id'> & { email?: string | null, name?: string | null }
+
 /**
  * The idempotency key for creating `user`'s customer on `accountId`: the same
  * for every attempt with the same details, so two requests racing to create
@@ -126,7 +129,7 @@ export function connectedCustomerIdempotencyKey(accountId: string, userId: numbe
  * key, so nothing on the app's side has to remember it.
  */
 export async function connectedCustomer(
-  user: Pick<UserModel, 'id' | 'email' | 'name'> & { email?: string | null, name?: string | null },
+  user: ConnectPayer,
   accountId: string,
   client: CustomerClient = stripe,
 ): Promise<Stripe.Customer> {
@@ -175,7 +178,7 @@ export async function connectedCustomer(
  * })
  */
 export async function directCheckout(
-  user: UserModel,
+  user: ConnectPayer,
   accountId: string,
   params: Stripe.Checkout.SessionCreateParams,
   client: Pick<Stripe, 'customers' | 'checkout'> = stripe,
@@ -185,7 +188,7 @@ export async function directCheckout(
   if (request.idempotencyKey !== undefined && (typeof request.idempotencyKey !== 'string' || !/^[\x21-\x7e]{1,255}$/.test(request.idempotencyKey))) throw new TypeError('A checkout idempotency key must contain 1-255 printable ASCII characters')
   assertSameOriginUrl(params.success_url, 'success_url')
   assertSameOriginUrl(params.cancel_url, 'cancel_url')
-  const customer = params.customer ?? (params.customer_email ? undefined : (await connectedCustomer(user as any, accountId, client)).id)
+  const customer = params.customer ?? (params.customer_email ? undefined : (await connectedCustomer(user, accountId, client)).id)
   return await client.checkout.sessions.create({
     mode: 'payment',
     ...params,
@@ -215,7 +218,7 @@ export interface DirectSubscriptionCheckoutOptions {
 
 export interface ManageDirectSubscription {
   subscriptionData: (options?: Pick<DirectSubscriptionCheckoutOptions, 'trialDays' | 'platformFeePercent' | 'metadata'>) => Stripe.Checkout.SessionCreateParams.SubscriptionData
-  checkout: (user: UserModel, options: DirectSubscriptionCheckoutOptions, client?: Pick<Stripe, 'customers' | 'checkout'>) => Promise<Stripe.Response<Stripe.Checkout.Session>>
+  checkout: (user: ConnectPayer, options: DirectSubscriptionCheckoutOptions, client?: Pick<Stripe, 'customers' | 'checkout'>) => Promise<Stripe.Response<Stripe.Checkout.Session>>
 }
 
 /** Subscriptions billed on the merchant's account, the platform paid its fee from each invoice. */
@@ -231,9 +234,9 @@ export const manageDirectSubscription: ManageDirectSubscription = (() => {
     }
   }
 
-  async function checkout(user: UserModel, options: DirectSubscriptionCheckoutOptions, client: Pick<Stripe, 'customers' | 'checkout'> = stripe): Promise<Stripe.Response<Stripe.Checkout.Session>> {
+  async function checkout(user: ConnectPayer, options: DirectSubscriptionCheckoutOptions, client: Pick<Stripe, 'customers' | 'checkout'> = stripe): Promise<Stripe.Response<Stripe.Checkout.Session>> {
     requireAccountId(options.account, 'manageDirectSubscription.checkout')
-    const customer = options.customer ?? (await connectedCustomer(user as any, options.account, client)).id
+    const customer = options.customer ?? (await connectedCustomer(user, options.account, client)).id
     return await directCheckout(user, options.account, {
       mode: 'subscription',
       customer,
