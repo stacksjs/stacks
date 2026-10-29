@@ -995,6 +995,9 @@ export function migrate(buddy: CLI): void {
             log.error(`Failed to migrate RBAC tables: ${rbacResult.error}`)
           }
 
+          const { migrateEnabledImpersonationTables } = await import('@stacksjs/auth/impersonation-store')
+          await migrateEnabledImpersonationTables()
+
           const traitResult = await migrateTraitTables({ verbose: options.verbose })
           if (!traitResult.success) {
             traitMigrationError = traitResult.error || 'Polymorphic trait table migration failed'
@@ -1293,6 +1296,9 @@ export function migrate(buddy: CLI): void {
           // and comment upvotes. None has a model, so the model-derived
           // generator never produced them and every trait call hit a
           // missing table.
+          const { migrateEnabledImpersonationTables } = await import('@stacksjs/auth/impersonation-store')
+          await migrateEnabledImpersonationTables()
+
           const traitResult = await migrateTraitTables({ verbose: options.verbose })
           if (!traitResult.success) {
             traitMigrationError = traitResult.error || 'Polymorphic trait table migration failed'

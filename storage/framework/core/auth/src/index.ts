@@ -1,4 +1,7 @@
 export * from './authentication'
+export * from './impersonation'
+export * from './impersonation-auth'
+export * from './impersonation-store'
 export * from './authenticator'
 export * from './client'
 export * from './credential-user'

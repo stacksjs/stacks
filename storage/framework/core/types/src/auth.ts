@@ -255,6 +255,12 @@ export interface AuthOptions {
    * once.
    */
   rbacCacheTtl?: number
+  /** Audited support viewing. Disabled unless explicitly enabled by the host. */
+  impersonation?: {
+    enabled: boolean
+    /** Reject suspended or otherwise ineligible actors and subjects. */
+    eligible: (userId: number) => boolean | Promise<boolean>
+  }
 
   /** First-party browser-session expiry and refresh policy. */
   browserSession?: BrowserSessionConfig

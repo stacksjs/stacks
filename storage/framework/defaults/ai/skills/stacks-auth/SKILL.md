@@ -85,6 +85,35 @@ routes: minting and revoking both carry semantics a generic route does not.
 - `Auth.id(): Promise<number | undefined>` - get authenticated user ID
 - `Auth.setUser(user: UserModel | undefined): void` - set or clear the current request user
 
+### Audited support viewing
+
+Enable `auth.impersonation` with an `eligible(userId)` policy covering suspended
+or deleted actors and subjects. `buddy migrate` installs the framework session
+and privileged-audit tables when enabled. `migrateImpersonationTables()` is the
+explicit installation API for isolated tests. Never install tables in a request.
+
+Grant native RBAC role `super-admin` in guard `platform` through a trusted
+operator flow. `Auth.startImpersonation(subjectId, reason)` requires a live
+ordinary token, rejects nesting and self-viewing, and returns a separate
+15-minute credential. The host should require a fresh password or passkey
+confirmation before calling it.
+
+Keep the real login credential. Attach the returned credential in the
+`x-stacks-impersonation` header alongside the ordinary bearer. Central
+`Auth.getUserFromToken()` resolves the viewed user only after checking the
+exact parent session, fresh platform role, actor/subject eligibility, expiry,
+revocation and a durable access audit. Support viewing permits GET/HEAD only.
+`requestImpersonation()` exposes trusted actor/subject metadata; ORM trails
+attribute writes to the original actor. `Auth.endImpersonation(credential)`
+requires the original actor request without the support header.
+
+Store viewing state independently from the actor's login and cached profile,
+show a persistent disclosure and Exit control, disable offline persistence,
+and clear the viewed page on expiry or denial. Platform administration routes
+must reject the support header and separately check the current platform role.
+`recordPrivilegedAccess(actorId, action, subjectId?)` is a fail-closed audit
+primitive for these routes; do not put request bodies or credentials in logs.
+
 For a privileged operation that must immediately observe role revocation by a
 different worker, use `hasFreshRole(user, roleName, guardName)` instead of the
 process-cached `hasRole`. It reads the configured RBAC store and propagates

@@ -27,6 +27,8 @@ import { RateLimiter } from './rate-limiter'
 import { withVerifiedPassword } from './credential-version'
 import { tokenDate, tokenTimestamps } from './token-dates'
 import { schedulePasswordRehash } from './password-rehash'
+import { IMPERSONATION_HEADER } from './impersonation'
+import { authenticatedImpersonationService, resolveRequestImpersonation } from './impersonation-auth'
 
 interface VerifiedCredentials {
   user: UserModel
@@ -875,7 +877,39 @@ export class Auth {
     if (stateForToken)
       stateForToken.currentToken = this.tokenFromRow({ ...accessToken, updated_at: updatedAt })
 
+    const currentRequest = getCurrentRequest()
+    if (currentRequest?.headers.has(IMPERSONATION_HEADER)) {
+      // Bind the support context to the same credential the request actually
+      // supplied. An arbitrary token passed by application code cannot switch it.
+      if (requestToken(currentRequest) !== token) return undefined
+      const session = await resolveRequestImpersonation(Number(user.id), String(accessToken.id))
+      if (!session) return undefined
+      return await User.find(session.subjectId) ?? undefined
+    }
     return user
+  }
+
+  /** Start support viewing using the real current session, never a supplied actor id. */
+  public static async startImpersonation(subjectId: number, reason: string) {
+    const currentRequest = getCurrentRequest()
+    if (!currentRequest || currentRequest.headers.has(IMPERSONATION_HEADER))
+      throw new HttpError(403, 'Impersonation is not authorized.')
+    const bearer = requestToken(currentRequest)
+    const actor = bearer ? await this.getUserFromToken(bearer) : undefined
+    const token = await this.currentAccessToken()
+    if (!actor || !token) throw new HttpError(401, 'Unauthenticated.')
+    return authenticatedImpersonationService(Number(actor.id), String(token.id)).start(subjectId, reason)
+  }
+
+  public static async endImpersonation(credential: string): Promise<void> {
+    const currentRequest = getCurrentRequest()
+    if (!currentRequest || currentRequest.headers.has(IMPERSONATION_HEADER))
+      throw new HttpError(403, 'Use the original administrator session to exit support viewing.')
+    const bearer = requestToken(currentRequest)
+    const actor = bearer ? await this.getUserFromToken(bearer) : undefined
+    const token = await this.currentAccessToken()
+    if (!actor || !token) throw new HttpError(401, 'Unauthenticated.')
+    await authenticatedImpersonationService(Number(actor.id), String(token.id)).end(credential)
   }
 
   /**

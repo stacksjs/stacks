@@ -773,6 +773,9 @@ try {
       if (!result.success) failures.push(`${name}: ${result.error}`)
     }
 
+    const { migrateEnabledImpersonationTables } = await import('@stacksjs/auth/impersonation-store')
+    await migrateEnabledImpersonationTables()
+
     if (failures.length > 0) {
       frameworkTablesSpinner.stop()
       console.log(`⚠ Some framework tables could not be migrated: ${failures.join('; ')}`)
