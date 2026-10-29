@@ -21,6 +21,18 @@ function fixture() {
 }
 
 describe('direct invoice collection', () => {
+  test('a missing saved method returns the original payment page, and paid recovery needs no card', async () => {
+    const f = fixture()
+    expect(await collectDirectInvoice('in_sale', 'acct_merchant', { ...f.options, paymentMethod: undefined }, f.client)).toMatchObject({ status: 'requires_payment', paymentUrl: 'https://invoice.stripe.com/test', fee: 168 })
+    expect(f.invoice.status).toBe('open')
+    expect(f.invoice.auto_advance).toBe(false)
+    expect(f.calls.some(call => ['pay', 'method'].includes(call.action))).toBe(false)
+    f.invoice.status = 'paid'
+    f.intent.status = 'succeeded'
+    const before = f.calls.length
+    expect((await collectDirectInvoice('in_sale', 'acct_merchant', { ...f.options, paymentMethod: undefined }, f.client)).status).toBe('paid')
+    expect(f.calls.slice(before).some(call => ['update', 'finalize', 'pay', 'method'].includes(call.action))).toBe(false)
+  })
   test('holds the invoice, prepares an after-tax fee, then finalizes and collects the approved amount', async () => {
     const f = fixture()
     expect(await f.collect()).toMatchObject({ status: 'paid', gross: 1999, net: 1680, tax: 319, fee: 168 })

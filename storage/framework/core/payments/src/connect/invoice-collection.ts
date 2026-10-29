@@ -12,8 +12,9 @@ import { invoiceTaxAmounts } from './tax'
 export interface DirectInvoiceCollectionOptions extends DirectInvoiceFeeOptions {
   /** The inclusive amount the buyer approved, in minor units. Zero for a trial. */
   approvedTotal: number
-  /** A saved payment method belonging to the original merchant customer. */
-  paymentMethod: string
+  /** A saved payment method belonging to the original merchant customer.
+   * Without one, return the held invoice's payment page; paid replays need no card. */
+  paymentMethod?: string
 }
 
 export interface DirectInvoiceCollection {
@@ -41,7 +42,7 @@ function id(value: string | { id: string } | null | undefined): string | undefin
  */
 export async function collectDirectInvoice(invoiceId: string, account: string, options: DirectInvoiceCollectionOptions, client: Pick<Stripe, 'invoices' | 'invoicePayments' | 'paymentMethods' | 'paymentIntents'> = stripe): Promise<DirectInvoiceCollection> {
   const request = asAccount(account)
-  if (!/^in_[a-z0-9_]+$/i.test(invoiceId) || !/^cus_[a-z0-9_]+$/i.test(options.customer) || (options.subscription != null && !/^sub_[a-z0-9_]+$/i.test(options.subscription)) || !/^[a-z]{3}$/i.test(options.currency) || !/^pm_[a-z0-9_]+$/i.test(options.paymentMethod) || !Number.isSafeInteger(options.approvedTotal) || options.approvedTotal < 0)
+  if (!/^in_[a-z0-9_]+$/i.test(invoiceId) || !/^cus_[a-z0-9_]+$/i.test(options.customer) || (options.subscription != null && !/^sub_[a-z0-9_]+$/i.test(options.subscription)) || !/^[a-z]{3}$/i.test(options.currency) || (options.paymentMethod !== undefined && !/^pm_[a-z0-9_]+$/i.test(options.paymentMethod)) || !Number.isSafeInteger(options.approvedTotal) || options.approvedTotal < 0)
     throw new Error('[payments/connect] Expected original invoice, customer, subscription, currency, saved method and approved total')
   if (options.platformFeePercent == null) throw new Error('[payments/connect] An explicit invoice fee percentage is required')
   manageDestinationSubscription.feePercentFor({ platformFeePercent: options.platformFeePercent })
@@ -68,7 +69,7 @@ export async function collectDirectInvoice(invoiceId: string, account: string, o
     })
     stable(invoice)
   }
-  if (invoice.status !== 'paid' && basis.gross > 0) {
+  if (invoice.status !== 'paid' && basis.gross > 0 && options.paymentMethod) {
     const method = await client.paymentMethods.retrieve(options.paymentMethod, {}, request)
     if (method.id !== options.paymentMethod || id(method.customer) !== options.customer)
       throw new Error('[payments/connect] Saved payment method belongs to another customer')
@@ -111,6 +112,7 @@ export async function collectDirectInvoice(invoiceId: string, account: string, o
   if (intent.status === 'requires_action') return result('requires_payment', intent)
   if (!['requires_confirmation', 'requires_payment_method'].includes(intent.status))
     throw new Error('[payments/connect] Invoice payment is not ready for automatic collection')
+  if (!options.paymentMethod) return result('requires_payment', intent)
   try {
     invoice = await client.invoices.pay(invoiceId, { payment_method: options.paymentMethod, off_session: true }, {
       ...request, idempotencyKey: stacksIdempotencyKey('connect.invoice.pay', account, invoiceId, intentId, options.paymentMethod, basis.gross, basis.tax, fee),
