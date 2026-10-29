@@ -1,4 +1,8 @@
+// This contract deliberately checks emitted declarations: source imports hide
+// declaration-generator regressions from consumers.
+// eslint-disable-next-line pickier/no-import-dist
 import { Auth } from '../dist/authentication'
+// eslint-disable-next-line pickier/no-import-dist
 import type { ImpersonationSession } from '../dist/impersonation'
 
 // Consumers compile against the published declaration, not the source's
