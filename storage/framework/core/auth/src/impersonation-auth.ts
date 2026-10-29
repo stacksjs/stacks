@@ -27,6 +27,11 @@ export function authenticatedImpersonationService(actorId: number, actorSessionI
         && await hasFreshRole(actorId, 'super-admin', 'platform')
         && await policy.eligible(actorId) && await policy.eligible(subjectId)
     },
+    async workspaceId(subjectId) {
+      const request = getCurrentRequest()
+      const resolve = config.auth.impersonation?.workspaceId
+      return request && resolve ? await resolve(request, subjectId) : null
+    },
   })
 }
 

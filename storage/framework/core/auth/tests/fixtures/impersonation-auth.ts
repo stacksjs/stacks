@@ -26,6 +26,10 @@ try {
   await ensureFrameworkAuthTables()
   await migrateImpersonationTables()
   config.auth.impersonation = { enabled: true, eligible: async id => Boolean(await db.primary.selectFrom('users').select('id').where('id', '=', id).executeTakeFirst()) }
+  config.auth.impersonation.workspaceId = async (request, subjectId) => {
+    assert.equal(new URL(request.url).pathname, '/api/health')
+    return subjectId === 2 ? 'workspace-55' : null
+  }
   const actor = await createToken(1, 'admin', ['*'], { withRefreshToken: false })
   const other = await createToken(1, 'other admin session', ['*'], { withRefreshToken: false })
   const restricted = await createToken(1, 'restricted integration', ['profile:read'], { withRefreshToken: false })
@@ -61,6 +65,8 @@ try {
   assert.equal(await runWithRequest(req(actor.plainTextToken, 'GET', issued.credential), () => Auth.getUserFromToken(actor.plainTextToken)), undefined)
   const audit = await db.selectFrom('auth_privileged_audits').select('event').where('event', '=', 'accessed').execute()
   assert.equal(audit.length, 1, 'denied requests never acquire a subject identity')
+  const detail = await db.selectFrom('auth_privileged_audits').select('details').where('event', '=', 'accessed').executeTakeFirst()
+  assert.equal(JSON.parse(String(detail?.details)).workspaceId, 'workspace-55')
   console.log('impersonation authentication OK')
 }
 finally { await releaseOrm(); await resetDatabaseConnection() }

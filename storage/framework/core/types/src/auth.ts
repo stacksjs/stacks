@@ -260,6 +260,8 @@ export interface AuthOptions {
     enabled: boolean
     /** Reject suspended or otherwise ineligible actors and subjects. */
     eligible: (userId: number) => boolean | Promise<boolean>
+    /** Resolved tenant identity for privileged access audits. Never return raw request data. */
+    workspaceId?: (request: Request, subjectId: number) => string | number | null | Promise<string | number | null>
   }
 
   /** First-party browser-session expiry and refresh policy. */

@@ -92,6 +92,11 @@ or deleted actors and subjects. `buddy migrate` installs the framework session
 and privileged-audit tables when enabled. `migrateImpersonationTables()` is the
 explicit installation API for isolated tests. Never install tables in a request.
 
+For tenant-scoped applications, configure `workspaceId(request, subjectId)` to
+resolve the viewed account's actual workspace membership. The resolver runs
+after support authority checks and its bounded identifier is included in the
+durable access audit. A raw client-supplied tenant header is not membership proof.
+
 Grant native RBAC role `super-admin` in guard `platform` through a trusted
 operator flow. `Auth.startImpersonation(subjectId, reason)` requires a live
 ordinary token, rejects nesting and self-viewing, and returns a separate

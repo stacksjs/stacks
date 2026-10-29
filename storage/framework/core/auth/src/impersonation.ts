@@ -14,6 +14,7 @@ export interface ImpersonationAccess {
   method: string
   /** Path only. Queries can contain credentials or personal data. */
   path: string
+  workspaceId?: string
 }
 
 /**
@@ -33,6 +34,8 @@ export interface ImpersonationAuthority {
   currentActor(): Promise<{ userId: number, sessionId: string, impersonating: boolean } | null>
   /** Read current grant, actor session revocation and account eligibility. */
   mayImpersonate(actorId: number, actorSessionId: string, subjectId: number): Promise<boolean>
+  /** Resolve the viewed account's actual workspace, after authorization. */
+  workspaceId?: (subjectId: number) => string | number | null | Promise<string | number | null>
 }
 
 export const IMPERSONATION_HEADER = 'x-stacks-impersonation'
@@ -84,7 +87,11 @@ export function createImpersonationService(store: ImpersonationStore, authority:
         || !Number.isFinite(session.expiresAt) || session.expiresAt <= Date.now()) return null
       if (!await authority.mayImpersonate(session.actorId, session.actorSessionId, session.subjectId)) return null
       // Audit failures propagate. A missing audit record cannot grant access.
-      if (!await store.acceptAccess(session.id, access, Date.now())) return null
+      const workspace = await authority.workspaceId?.(session.subjectId)
+      const workspaceId = workspace == null ? undefined : String(workspace)
+      if (workspaceId !== undefined && !/^[A-Za-z0-9._:-]{1,128}$/.test(workspaceId))
+        throw new TypeError('Invalid support-view workspace identifier.')
+      if (!await store.acceptAccess(session.id, { method: access.method, path: access.path, ...(workspaceId === undefined ? {} : { workspaceId }) }, Date.now())) return null
       return session
     },
 
