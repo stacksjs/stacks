@@ -1027,6 +1027,16 @@ export const comparisons: Comparison[] = [
     icon: 'i-hugeicons-dashboard-square-01',
     group: 'ecosystems',
     matrix: { auth: 'built-in', orm: 'built-in', jobs: 'partial', mail: 'built-in', admin: 'built-in', realtime: 'partial', deploy: 'byo', updates: 'partial', mailbox: 'byo' },
+    checked: {
+      version: 'Django 6.1',
+      on: '2026-10-29',
+      sources: [
+        { label: 'Django 6.1.2 and the 5.2 LTS', url: 'https://www.djangoproject.com/download/' },
+        { label: 'The Tasks framework, and why it needs an outside worker', url: 'https://docs.djangoproject.com/en/stable/topics/tasks/' },
+        { label: 'Channels, an official Django project', url: 'https://github.com/django/channels' },
+        { label: 'django-upgrade, a community tool', url: 'https://github.com/adamchainz/django-upgrade' },
+      ],
+    },
     page: {
       headline: 'Django got there first on the admin. Stacks generates one too, in your language.',
       lede: 'Django has been the batteries-included argument for twenty years, and its admin is still the single best reason to choose it. Stacks makes the same argument for TypeScript teams, and adds the parts Django leaves out, which are the background workers, the interactive front end, and the deploy.',
