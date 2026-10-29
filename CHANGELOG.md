@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.349...v0.75.350)
+
+## ✨ Features
+
+- add audited session-bound support viewing ([4b382f2](https://github.com/stacksjs/stacks/commit/4b382f2)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.348...v0.75.349)
 
 ## ✨ Features
