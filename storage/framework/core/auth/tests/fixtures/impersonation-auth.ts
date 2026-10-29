@@ -28,10 +28,12 @@ try {
   config.auth.impersonation = { enabled: true, eligible: async id => Boolean(await db.primary.selectFrom('users').select('id').where('id', '=', id).executeTakeFirst()) }
   const actor = await createToken(1, 'admin', ['*'], { withRefreshToken: false })
   const other = await createToken(1, 'other admin session', ['*'], { withRefreshToken: false })
+  const restricted = await createToken(1, 'restricted integration', ['profile:read'], { withRefreshToken: false })
   const req = (bearer: string, method = 'GET', context?: string) => enhanceRequest(new Request('https://hq.invalid/api/health', {
     method, headers: { authorization: `Bearer ${bearer}`, ...(context ? { 'x-stacks-impersonation': context } : {}) },
   }))
   const issued = await runWithRequest(req(actor.plainTextToken), () => Auth.startImpersonation(2, 'Investigate missing workout'))
+  await assert.rejects(() => runWithRequest(req(restricted.plainTextToken), () => Auth.startImpersonation(2, 'Investigate missing workout')), /full administrator session/)
   await runWithRequest(req(actor.plainTextToken, 'GET', issued.credential), async () => {
     assert.equal(Number((await Auth.getUserFromToken(actor.plainTextToken))?.id), 2)
     assert.equal(requestImpersonation()?.actorId, 1)

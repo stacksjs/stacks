@@ -879,6 +879,7 @@ export class Auth {
 
     const currentRequest = getCurrentRequest()
     if (currentRequest?.headers.has(IMPERSONATION_HEADER)) {
+      if (!parseScopes(accessToken.scopes).includes('*')) return undefined
       // Bind the support context to the same credential the request actually
       // supplied. An arbitrary token passed by application code cannot switch it.
       if (requestToken(currentRequest) !== token) return undefined
@@ -898,6 +899,7 @@ export class Auth {
     const actor = bearer ? await this.getUserFromToken(bearer) : undefined
     const token = await this.currentAccessToken()
     if (!actor || !token) throw new HttpError(401, 'Unauthenticated.')
+    if (!token.abilities.includes('*')) throw new HttpError(403, 'A full administrator session is required.')
     return authenticatedImpersonationService(Number(actor.id), String(token.id)).start(subjectId, reason)
   }
 
