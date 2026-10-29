@@ -223,6 +223,8 @@ for (const dialect of ['sqlite', 'postgres'] as const) {
   Use it inside the isolated fixture after configuring its disposable database;
   it does not order model dependencies, disable constraints, or replace production
   migrations (for example, concurrent indexes require their own migration policy).
+  Standalone fixture scripts import it from `@stacksjs/testing/schema`; the root
+  testing barrel registers Bun test-runner hooks and is for `bun test` files.
 
 ## Browser tests: `@stacksjs/testing/browser`
 
