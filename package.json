@@ -101,7 +101,7 @@
     "docs:native-skills:check": "./buddy docs:native-skills:check"
   },
   "dependencies": {
-    "@stacksjs/stx": "0.2.736",
+    "@stacksjs/stx": "0.2.744",
     "stacks": "workspace:*"
   },
   "workspaces": [
@@ -120,8 +120,8 @@
     "commit-msg": "bun x gitlint --edit \"$1\""
   },
   "devDependencies": {
-    "@stacksjs/components": "0.2.736",
+    "@stacksjs/components": "0.2.744",
     "better-dx": "^0.2.37",
-    "bun-plugin-stx": "0.2.736"
+    "bun-plugin-stx": "0.2.744"
   }
 }
