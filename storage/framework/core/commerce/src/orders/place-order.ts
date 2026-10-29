@@ -86,7 +86,7 @@ export interface PlaceOrderInput {
  */
 export type PlaceOrderResult =
   | { ok: true, order: OrderJsonResponse, items?: OrderItemJsonResponse[], payment?: PaymentJsonResponse }
-  | { ok: false, reason: 'out-of-stock' | 'duplicate-payment' | 'duplicate-idempotency-key' | 'unknown', failedAt?: string, error?: unknown }
+  | { ok: false, reason: 'out-of-stock' | 'duplicate-order' | 'duplicate-payment' | 'duplicate-idempotency-key' | 'unknown', failedAt?: string, error?: unknown }
 
 /**
  * Look up an existing order by idempotency key — returns the
@@ -167,10 +167,19 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
         created_at: now,
         updated_at: now,
       }
-      await trx
-        .insertInto('orders')
-        .values(orderData as NewOrder)
-        .executeTakeFirst()
+      try {
+        await trx
+          .insertInto('orders')
+          .values(orderData as NewOrder)
+          .executeTakeFirst()
+      }
+      catch (err) {
+        // Invoice/provider identities can race before an application's lookup.
+        // Roll back this placement and let it reconcile the canonical order.
+        if (isUniqueViolation(err))
+          throw Object.assign(new Error('duplicate order identity', { cause: err }), { __placeFail: true, failedAt: 'order', reason: 'duplicate-order' })
+        throw err
+      }
 
       // Insert metadata varies by driver: SQLite reports lastInsertRowid,
       // MySQL reports insertId, and PostgreSQL requires RETURNING. The
