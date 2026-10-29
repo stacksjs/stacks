@@ -251,6 +251,17 @@ export const comparisons: Comparison[] = [
     icon: 'i-hugeicons-layers-02',
     group: 'fullstack',
     matrix: { auth: 'partial', orm: 'partial', jobs: 'byo', mail: 'partial', admin: 'byo', realtime: 'partial', deploy: 'partial', updates: 'partial', mailbox: 'byo' },
+    checked: {
+      version: 'Nuxt 4.6',
+      on: '2026-10-29',
+      sources: [
+        { label: 'Nuxt 4.6, which adds sessions', url: 'https://nuxt.com/blog/v4-6' },
+        { label: 'NuxtHub Database, on Drizzle', url: 'https://hub.nuxt.com/docs/database' },
+        { label: 'Nitro scheduled tasks, marked experimental', url: 'https://nitro.build/guide/tasks' },
+        { label: 'The nuxt upgrade command', url: 'https://nuxt.com/docs/4.x/api/commands/upgrade' },
+        { label: 'The Nuxt 4 upgrade guide and its codemods', url: 'https://nuxt.com/docs/4.x/getting-started/upgrade' },
+      ],
+    },
     page: {
       headline: 'Nuxt has the best module ecosystem in the space. Stacks has the application in the box.',
       lede: 'Nuxt covers more of the stack than most meta-frameworks: Nitro gives it a real server, and there is a module for nearly everything. The difference is that a Nuxt application is assembled out of modules you selected, and a Stacks application is one thing that already fits together.',
@@ -274,12 +285,12 @@ export const comparisons: Comparison[] = [
         { dimension: 'Server', stacks: 'Bun server, routes, actions, middleware', other: 'Nitro server routes' },
         { dimension: 'Data layer', stacks: 'First-party ORM and model-driven migrations', other: 'Drizzle via NuxtHub, or Prisma and others' },
         { dimension: 'Auth', stacks: 'Included, with RBAC, passkeys and 2FA', other: 'Built-in sessions (4.6), plus nuxt-auth-utils or a service' },
-        { dimension: 'Background work', stacks: 'Queues, jobs, schedules, workers included', other: 'Scheduled tasks in Nitro, otherwise your own' },
+        { dimension: 'Background work', stacks: 'Queues, jobs, schedules, workers included', other: 'Scheduled tasks in Nitro (experimental), otherwise your own' },
         { dimension: 'Admin surface', stacks: 'Generated from your models', other: 'Build it yourself' },
         { dimension: 'Deploy targets', stacks: 'Driver-based: Hetzner, AWS, or any SSH box', other: 'Many platforms through Nitro presets' },
         { dimension: 'Auto-imports', stacks: 'Models and jobs on the server, composables in views', other: 'Components, composables, and utilities' },
         mailServerRow('None; inboxes come from a hosted provider'),
-        updatesRow('nuxi upgrade and codemods; a dependency bot is yours to set up'),
+        updatesRow('nuxt upgrade, and codemods for the move to 4; a dependency bot is yours to set up'),
       ],
       migration: [
         { title: 'Nuxt on the front, Stacks behind', text: 'Point a Nuxt app at a Stacks API, its typed client, or its OpenAPI spec. Nothing about the front end has to change.' },
