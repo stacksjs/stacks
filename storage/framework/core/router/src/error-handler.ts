@@ -391,20 +391,47 @@ export async function createMiddlewareErrorResponse(
   const status = error.statusCode ?? error.status ?? 500
   const isDevelopment = isDebugAllowed()
 
-  // For 4xx errors, return JSON in both dev and prod
+  // For 4xx errors, answer in the shape the caller asked for.
   if (status >= 400 && status < 500) {
-    // Merge in any per-error headers (e.g. `Retry-After` from
-    // rate-limit 429s — stacksjs/stacks#1870 R-8). JSON headers
-    // win on collision so content-type stays correct.
-    const headers = getJsonHeaders(error.headers)
-    return new Response(
-      buildErrorJson({
-        error: error.name || 'ClientError',
-        message: error.message,
-        status,
-      }),
-      { status, headers },
-    )
+    if (isApiRequest(request)) {
+      // Merge in any per-error headers (e.g. `Retry-After` from
+      // rate-limit 429s — stacksjs/stacks#1870 R-8). JSON headers
+      // win on collision so content-type stays correct.
+      const headers = getJsonHeaders(error.headers)
+      return new Response(
+        buildErrorJson({
+          error: error.name || 'ClientError',
+          message: error.message,
+          status,
+        }),
+        { status, headers },
+      )
+    }
+
+    /*
+     * A browser navigation gets the page, not the JSON.
+     *
+     * `createErrorResponse` has always asked `isApiRequest` before choosing a
+     * shape, and its comment says this function mirrors it. It did not: every
+     * 4xx raised by middleware answered in JSON whatever the caller was, so a
+     * form post that failed the CSRF check put `{"error":"HttpError",...}` on
+     * screen instead of the 403 page. The same was true of every other 4xx a
+     * middleware raises before an action is ever reached - the 401 from auth,
+     * the 429 from the rate limiter, maintenance mode - which is the whole
+     * class of error a visitor is most likely to meet.
+     *
+     * In development the full error page is more use than the production one,
+     * and it is the same page `createErrorResponse` draws there, so defer to
+     * it rather than keeping a second opinion about what a developer sees.
+     */
+    if (isDevelopment)
+      return await createErrorResponse(error, request, { status })
+
+    const { renderProductionErrorPage } = await import('@stacksjs/error-handling/error-page')
+    return new Response(renderProductionErrorPage(status), {
+      status,
+      headers: getErrorHeaders('text/html; charset=utf-8', error.headers),
+    })
   }
 
   // For 5xx errors in development, show full error page
