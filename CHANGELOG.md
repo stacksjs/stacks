@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.352...v0.75.353)
+
+## ✨ Features
+
+- **payments**: preserve tax treatment for recurring prices ([23ccd60](https://github.com/stacksjs/stacks/commit/23ccd60)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.351...v0.75.352)
 
 ## 🐛 Bug Fixes
