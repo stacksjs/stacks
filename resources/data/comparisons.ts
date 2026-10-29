@@ -960,10 +960,20 @@ export const comparisons: Comparison[] = [
     icon: 'i-hugeicons-train-01',
     group: 'ecosystems',
     matrix: { auth: 'partial', orm: 'built-in', jobs: 'built-in', mail: 'built-in', admin: 'partial', realtime: 'built-in', deploy: 'built-in', updates: 'partial', mailbox: 'byo' },
+    checked: {
+      version: 'Rails 8.1',
+      on: '2026-10-29',
+      sources: [
+        { label: 'Rails 8.1.4, the current release', url: 'https://rubyonrails.org/' },
+        { label: 'Rails 8.0 release notes: Kamal 2, the authentication generator, the Solid adapters', url: 'https://guides.rubyonrails.org/8_0_release_notes.html' },
+        { label: 'Rails 8: no PaaS required', url: 'https://rubyonrails.org/2024/11/7/rails-8-no-paas-required' },
+        { label: 'Rails 7.2 release notes: Dependabot and CI in new apps', url: 'https://guides.rubyonrails.org/7_2_release_notes.html' },
+      ],
+    },
     page: {
       headline: 'Rails proved the case. Stacks argues it again in TypeScript.',
       lede: 'Every framework on this page owes Rails something: convention over configuration, generators, migrations, an ORM with opinions, and the idea that one person should be able to build a whole product. Stacks agrees with all of it and differs on the two things Rails cannot change, which are the language and the runtime.',
-      summary: 'Rails is twenty years old and better than ever. Hotwire made server-rendered HTML competitive with single-page applications again, Solid Queue and Solid Cable removed Redis from the default stack, and Kamal made deployment to your own servers straightforward. Its productivity for a small team is still the reference point everyone measures against.',
+      summary: 'Rails is more than twenty years old and better than ever. Hotwire made server-rendered HTML competitive with single-page applications again, Solid Queue and Solid Cable let an app run its jobs and pub/sub without Redis, and Kamal made deployment to your own servers straightforward. Its productivity for a small team is still the reference point everyone measures against.',
       // The maintainer's call (October 2026): the Rails page names one reason,
       // not the usual list. The technical points are kept below, commented
       // out, so restoring them is one edit. tests/unit/marketing-comparisons
@@ -993,7 +1003,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Deploy', stacks: 'buddy deploy to Hetzner, AWS, or any SSH box', other: 'Kamal to any servers' },
         { dimension: 'Admin', stacks: 'Generated dashboard', other: 'ActiveAdmin or Avo' },
         mailServerRow('Action Mailbox routes inbound mail; inboxes are a provider'),
-        updatesRow('bin/rails app:update, interactive; a dependency bot is yours to set up'),
+        updatesRow('bin/rails app:update, interactive; new apps come with Dependabot configured'),
       ],
       migration: [
         { title: 'Active Record models become defineModel()', text: 'Associations, validations, callbacks, and scopes have direct counterparts as relationships, attribute rules, and traits.' },
