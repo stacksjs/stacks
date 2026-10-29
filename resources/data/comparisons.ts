@@ -750,6 +750,15 @@ export const comparisons: Comparison[] = [
     icon: 'i-hugeicons-share-08',
     group: 'backends',
     matrix: { auth: 'byo', orm: 'byo', jobs: 'byo', mail: 'byo', admin: 'byo', realtime: 'byo', deploy: 'byo', updates: 'byo', mailbox: 'byo' },
+    checked: {
+      version: 'Express 5.3 and Fastify 5.12',
+      on: '2026-10-29',
+      sources: [
+        { label: 'Express 5.3, first published in 2010', url: 'https://www.npmjs.com/package/express' },
+        { label: 'Fastify 5.12', url: 'https://www.npmjs.com/package/fastify' },
+        { label: 'Fastify validation and serialisation with JSON Schema', url: 'https://fastify.dev/docs/latest/Reference/Validation-and-Serialization/' },
+      ],
+    },
     page: {
       headline: 'A router is not a framework, and sometimes a router is all you want.',
       lede: 'Express and Fastify do one job well: take a request, run some middleware, return a response. That minimalism is why they are everywhere and why every Express codebase is different. Stacks is the opposite trade: conventions and batteries, at the cost of doing things its way.',
