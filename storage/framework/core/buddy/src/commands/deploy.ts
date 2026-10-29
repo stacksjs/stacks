@@ -7,6 +7,7 @@ import process from 'node:process'
 import { pathToFileURL } from 'node:url'
 import { runAction } from '@stacksjs/actions/run-action'
 import { assertPublicationAllowed } from '@stacksjs/actions/publication-preflight'
+import { runBeforeDeployHook } from '@stacksjs/actions/deploy/hooks'
 import { italic, onUnknownSubcommand, outro, prompts } from "@stacksjs/cli"
 import { app, dns as dnsConfig, email as emailConfig } from '@stacksjs/config'
 import { addDomain, hasUserDomainBeenAddedToCloud, syncDnsConfig } from '@stacksjs/dns'
@@ -2069,6 +2070,10 @@ async function deployOverSsh(tsCloudConfig: any, deployEnv: string, options: Dep
   const verbose = options.verbose === true
   const environment = (deployEnv === 'prod' ? 'production' : deployEnv) as 'production' | 'staging' | 'development'
   const provider = resolveProvider(tsCloudConfig)
+
+  // Native providers bypass the AWS action, which otherwise owns this gate.
+  // A rejected application hook must stop before any provider or host writes.
+  await runBeforeDeployHook(p.projectPath(), { environment, region: tsCloudConfig.project?.region || 'us-east-1' })
 
   const persistedAttachBox = resolvePersistedAttachTargetBox(tsCloudConfig, environment)
   let sshTarget: SshTarget | undefined
@@ -5512,6 +5517,7 @@ async function removePreview(target: ReturnType<typeof previewTarget>, base: str
  * process runner, filesystem and ts-cloud, and reports the outcome.
  */
 async function deployToFlyProvider(tsCloudConfig: any, environment: string, verbose: boolean): Promise<void> {
+  await runBeforeDeployHook(p.projectPath(), { environment, region: tsCloudConfig.project?.region || 'us-east-1' })
   const { FlyDeployError, runFlyDeploy } = await import('./deploy-fly')
   const api = await loadTsCloudDeployApi()
   if (typeof (api as { deployToFly?: unknown }).deployToFly !== 'function') {
