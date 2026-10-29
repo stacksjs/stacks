@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.363...v0.75.364)
+
+## 🐛 Bug Fixes
+
+- **database**: honor dialect overrides in migration previews ([b6cefde](https://github.com/stacksjs/stacks/commit/b6cefde)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.362...v0.75.363)
 
 ## 🐛 Bug Fixes
