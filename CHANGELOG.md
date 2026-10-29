@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.367...v0.75.368)
+
+## 🐛 Bug Fixes
+
+- **payments**: identify expired invoice attempts with no uncertain purchase ([052108a](https://github.com/stacksjs/stacks/commit/052108a)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.366...v0.75.367)
 
 ## 🐛 Bug Fixes
