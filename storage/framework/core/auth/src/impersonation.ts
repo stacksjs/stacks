@@ -80,7 +80,9 @@ export function createImpersonationService(store: ImpersonationStore, authority:
       if (!CREDENTIAL.test(credential)) return null
       // Support viewing cannot enroll credentials, change a password, mint an
       // API key, or mutate the viewed account. Writes require the real actor.
-      if (!['GET', 'HEAD'].includes(access.method) || !/^\/(?!\/)[^?#\r\n]*$/.test(access.path)) return null
+      // Multiplexed application actions can distinguish GET from every other
+      // verb. HEAD must not fall into their write branch during support viewing.
+      if (access.method !== 'GET' || !/^\/(?!\/)[^?#\r\n]*$/.test(access.path)) return null
       const session = await store.find(credentialHash(credential))
       if (!session || !validId(session.actorId) || !validId(session.subjectId)
         || session.actorId === session.subjectId || session.endedAt !== null

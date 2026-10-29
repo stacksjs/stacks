@@ -107,7 +107,8 @@ Keep the real login credential. Attach the returned credential in the
 `x-stacks-impersonation` header alongside the ordinary bearer. Central
 `Auth.getUserFromToken()` resolves the viewed user only after checking the
 exact parent session, fresh platform role, actor/subject eligibility, expiry,
-revocation and a durable access audit. Support viewing permits GET/HEAD only.
+revocation and a durable access audit. Support viewing permits GET only. HEAD
+is rejected because multiplexed application actions can handle it as a write.
 `requestImpersonation()` exposes trusted actor/subject metadata; ORM trails
 attribute writes to the original actor. `Auth.endImpersonation(credential)`
 requires the original actor request without the support header.

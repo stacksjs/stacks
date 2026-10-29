@@ -44,6 +44,7 @@ try {
     await assert.rejects(() => Auth.startImpersonation(2, 'Attempt a nested session'))
   })
   assert.equal(await runWithRequest(req(actor.plainTextToken, 'POST', issued.credential), () => Auth.getUserFromToken(actor.plainTextToken)), undefined)
+  assert.equal(await runWithRequest(req(actor.plainTextToken, 'HEAD', issued.credential), () => Auth.getUserFromToken(actor.plainTextToken)), undefined)
   assert.equal(await runWithRequest(req(other.plainTextToken, 'GET', issued.credential), () => Auth.getUserFromToken(other.plainTextToken)), undefined)
   await db.updateTable('auth_impersonations').set({ expires_at: Date.now() }).where('id', '=', issued.session.id).execute()
   assert.equal(await runWithRequest(req(actor.plainTextToken, 'GET', issued.credential), () => Auth.getUserFromToken(actor.plainTextToken)), undefined)

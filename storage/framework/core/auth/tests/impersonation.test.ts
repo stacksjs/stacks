@@ -52,6 +52,7 @@ test('nested sessions, self impersonation, mutations and sensitive query logging
   await expect(f.service.start(1, 'Investigate missing workout')).rejects.toThrow()
   const { credential } = await f.service.start(2, 'Investigate missing workout')
   expect(await f.service.resolve(credential, { method: 'POST', path: '/auth/change-password' })).toBeNull()
+  expect(await f.service.resolve(credential, { method: 'HEAD', path: '/payments' })).toBeNull()
   expect(await f.service.resolve(credential, { method: 'GET', path: '/health?token=secret' })).toBeNull()
   expect(await f.service.resolve(`${credential}0`, { method: 'GET', path: '/health' })).toBeNull()
   expect(f.accesses()).toBe(0)
