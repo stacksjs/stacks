@@ -106,7 +106,7 @@ export function renderSemanticSigil(kind, { x, y, size = SEMANTIC_SIGIL_SIZE, ic
   const normalized = Object.hasOwn(SIGIL_SHAPE, selected) ? selected : 'neutral';
   const tone = SIGIL_TONE[kind] || 'external';
   const scale = size / 16;
-  return `<g aria-hidden="true" data-semantic-sigil="${esc(normalized)}" class="semantic-sigil s-${tone}" transform="translate(${x} ${y}) scale(${scale})">
+  return `<g aria-hidden="true" data-semantic-sigil="${esc(normalized)}" class="s-${tone} semantic-sigil" transform="translate(${x} ${y}) scale(${scale})">
             ${SIGIL_SHAPE[normalized]}
           </g>`;
 }

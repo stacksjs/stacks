@@ -5107,12 +5107,12 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
               aria-keyshortcuts="S">
         <span class="preset-control-mark" aria-hidden="true"></span>
         <span id="preset-label">{{i18n:viewer.preset.style}}</span>
-        <span class="toolbar-icon toolbar-chevron" aria-hidden="true"></span>
+        <span class="toolbar-chevron toolbar-icon" aria-hidden="true"></span>
       </button>
       <div class="preset-menu" id="preset-menu" role="menu" aria-label="{{i18n:viewer.preset.menu}}">
         <div class="preset-menu-heading" role="presentation"><span>{{i18n:viewer.preset.identity}}</span><span class="preset-menu-shortcut"><kbd>S</kbd>{{i18n:viewer.preset.cycles}}</span></div>
         <button class="preset-option" data-preset-value="classic" type="button" role="menuitemradio" aria-checked="false" tabindex="-1">
-          <span class="preset-option-swatch classic" aria-hidden="true"></span>
+          <span class="classic preset-option-swatch" aria-hidden="true"></span>
           <span class="preset-option-copy"><strong>{{i18n:viewer.preset.classic}}</strong><small>{{i18n:viewer.preset.classic.hint}}</small></span>
           <span class="preset-option-check" aria-hidden="true"></span>
         </button>
@@ -5122,12 +5122,12 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <span class="preset-option-check" aria-hidden="true"></span>
         </button>
         <button class="preset-option" data-preset-value="blueprint" type="button" role="menuitemradio" aria-checked="false" tabindex="-1">
-          <span class="preset-option-swatch blueprint" aria-hidden="true"></span>
+          <span class="blueprint preset-option-swatch" aria-hidden="true"></span>
           <span class="preset-option-copy"><strong>{{i18n:viewer.preset.blueprint}}</strong><small>{{i18n:viewer.preset.blueprint.hint}}</small></span>
           <span class="preset-option-check" aria-hidden="true"></span>
         </button>
         <button class="preset-option" data-preset-value="editorial" type="button" role="menuitemradio" aria-checked="false" tabindex="-1">
-          <span class="preset-option-swatch editorial" aria-hidden="true"></span>
+          <span class="editorial preset-option-swatch" aria-hidden="true"></span>
           <span class="preset-option-copy"><strong>{{i18n:viewer.preset.editorial}}</strong><small>{{i18n:viewer.preset.editorial.hint}}</small></span>
           <span class="preset-option-check" aria-hidden="true"></span>
         </button>
@@ -5155,7 +5155,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
               aria-haspopup="menu"
               aria-expanded="false"
               aria-controls="export-menu">
-        {{i18n:viewer.export.button}} <span class="toolbar-icon toolbar-chevron" aria-hidden="true"></span>
+        {{i18n:viewer.export.button}} <span class="toolbar-chevron toolbar-icon" aria-hidden="true"></span>
       </button>
       <div class="export-menu" id="export-menu" role="menu" aria-label="{{i18n:viewer.export.menu}}">
         <div class="export-menu-header" role="presentation">
@@ -5394,7 +5394,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <p class="diagram-guide-feedback" id="diagram-guide-feedback" aria-live="polite"></p>
         <a class="diagram-guide-credit" href="https://github.com/tt-a1i/archify" target="_blank" rel="noopener noreferrer"><span>{{i18n:viewer.guide.credit}}</span><span class="diagram-guide-credit-link"><span class="diagram-guide-star" aria-hidden="true"></span>{{i18n:viewer.guide.star}} <span aria-hidden="true">&#8599;</span></span></a>
       </div>
-      <div class="node-finder no-print" id="node-finder" hidden role="dialog" aria-modal="false" aria-labelledby="node-finder-title">
+      <div class="no-print node-finder" id="node-finder" hidden role="dialog" aria-modal="false" aria-labelledby="node-finder-title">
         <div class="node-finder-head">
           <strong id="node-finder-title">{{i18n:viewer.finder.title}}</strong>
           <button class="node-finder-close" id="node-finder-close" type="button" aria-label="{{i18n:viewer.finder.close}}">&#215;</button>
@@ -5408,7 +5408,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <p class="node-finder-empty" id="node-finder-empty" hidden>{{i18n:viewer.finder.empty}}</p>
         <p class="node-finder-status" id="node-finder-status" aria-live="polite"></p>
       </div>
-      <div class="focus-chip relationship-lens no-print" id="focus-chip" hidden role="region" aria-labelledby="relationship-lens-title">
+      <div class="focus-chip no-print relationship-lens" id="focus-chip" hidden role="region" aria-labelledby="relationship-lens-title">
         <div class="relationship-lens-head">
           <button class="relationship-lens-drag-handle" id="btn-focus-move" type="button" data-focus-drag-handle aria-label="{{i18n:viewer.passport.move}}" title="{{i18n:viewer.passport.move}}"></button>
           <div class="relationship-lens-copy">
@@ -5451,7 +5451,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         </div>
         <div class="relationship-lens-list" id="relationship-lens-list" aria-label="{{i18n:viewer.passport.relations.list}}"></div>
       </div>
-      <div class="route-probe no-print" id="route-probe" hidden role="region" aria-labelledby="route-probe-title" data-state="idle">
+      <div class="no-print route-probe" id="route-probe" hidden role="region" aria-labelledby="route-probe-title" data-state="idle">
         <div class="route-probe-head">
           <span class="route-probe-copy">
             <span class="route-probe-eyebrow">{{i18n:viewer.route.eyebrow}}</span>
@@ -5477,7 +5477,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         </div>
         <small class="route-probe-status" id="route-probe-status" aria-live="polite">{{i18n:viewer.route.instructions}}</small>
       </div>
-      <div class="semantic-lens no-print" id="semantic-lens" hidden role="dialog" aria-modal="false" aria-labelledby="semantic-lens-title">
+      <div class="no-print semantic-lens" id="semantic-lens" hidden role="dialog" aria-modal="false" aria-labelledby="semantic-lens-title">
         <div class="semantic-lens-head">
           <span>
             <span class="semantic-lens-eyebrow">{{i18n:viewer.lens.eyebrow}}</span>
@@ -5493,7 +5493,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <button id="semantic-lens-clear" type="button" aria-label="{{i18n:viewer.lens.clear}}">{{i18n:viewer.common.clear}}</button>
         </div>
       </div>
-      <div class="overview-map no-print" id="overview-map" hidden role="region" aria-labelledby="overview-map-title">
+      <div class="no-print overview-map" id="overview-map" hidden role="region" aria-labelledby="overview-map-title">
         <div class="overview-map-head">
           <span class="overview-map-live" aria-hidden="true"></span>
           <span class="overview-map-copy">
@@ -5506,8 +5506,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <div class="overview-map-surface" id="overview-map-surface" tabindex="0" role="group" aria-label="{{i18n:viewer.radar.surface}}"></div>
         <div class="overview-map-hint" aria-hidden="true"><span>{{i18n:viewer.radar.click}}</span><span>{{i18n:viewer.radar.drag}}</span></div>
       </div>
-      <p class="overview-map-feedback no-print" id="overview-map-feedback" role="status" aria-live="polite" hidden>{{i18n:viewer.radar.space}}</p>
-      <button class="rail-reveal no-print" id="rail-reveal" type="button" hidden aria-controls="reader-rail" aria-expanded="false"><span class="rail-reveal-icon" aria-hidden="true"></span><span>{{i18n:viewer.rail.show}}</span></button>
+      <p class="no-print overview-map-feedback" id="overview-map-feedback" role="status" aria-live="polite" hidden>{{i18n:viewer.radar.space}}</p>
+      <button class="no-print rail-reveal" id="rail-reveal" type="button" hidden aria-controls="reader-rail" aria-expanded="false"><span class="rail-reveal-icon" aria-hidden="true"></span><span>{{i18n:viewer.rail.show}}</span></button>
       <div class="diagram-nav no-print" role="toolbar" aria-label="{{i18n:viewer.nav.controls}}">
         <button id="btn-route-probe" type="button" aria-label="{{i18n:viewer.nav.route}}" aria-pressed="false" aria-controls="route-probe" title="{{i18n:viewer.nav.route.title}}">{{i18n:viewer.nav.route.short}}</button>
         <button id="btn-overview-map" type="button" aria-label="{{i18n:viewer.nav.radar}}" aria-expanded="false" aria-controls="overview-map" title="{{i18n:viewer.nav.radar.title}}">{{i18n:viewer.nav.radar.short}}</button>
@@ -5521,9 +5521,9 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     </div>
 
     <aside class="reader-rail" id="reader-rail">
-    <div class="rail-controls no-print" role="toolbar" aria-label="{{i18n:viewer.rail.controls}}">
-      <button class="rail-control" id="rail-placement" type="button" hidden aria-label="{{i18n:viewer.rail.bottom}}" title="{{i18n:viewer.rail.bottom}}" data-placement="right"><span class="rail-control-icon placement" aria-hidden="true"></span></button>
-      <button class="rail-control" id="rail-collapse" type="button" hidden aria-controls="reader-rail" aria-expanded="true" aria-label="{{i18n:viewer.rail.collapse}}" title="{{i18n:viewer.rail.collapse}}"><span class="rail-control-icon collapse" aria-hidden="true"></span></button>
+    <div class="no-print rail-controls" role="toolbar" aria-label="{{i18n:viewer.rail.controls}}">
+      <button class="rail-control" id="rail-placement" type="button" hidden aria-label="{{i18n:viewer.rail.bottom}}" title="{{i18n:viewer.rail.bottom}}" data-placement="right"><span class="placement rail-control-icon" aria-hidden="true"></span></button>
+      <button class="rail-control" id="rail-collapse" type="button" hidden aria-controls="reader-rail" aria-expanded="true" aria-label="{{i18n:viewer.rail.collapse}}" title="{{i18n:viewer.rail.collapse}}"><span class="collapse rail-control-icon" aria-hidden="true"></span></button>
     </div>
     <!-- ARCHIFY:CARDS_SLOT_START -->
     <div class="cards">
@@ -5567,7 +5567,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       </div>
     </div>
     <!-- ARCHIFY:CARDS_SLOT_END -->
-    <nav class="node-outline no-print" id="node-outline" hidden aria-labelledby="node-outline-title">
+    <nav class="no-print node-outline" id="node-outline" hidden aria-labelledby="node-outline-title">
       <div class="node-outline-head">
         <strong id="node-outline-title">{{i18n:viewer.outline.title}}</strong>
         <span class="node-outline-count" id="node-outline-count"></span>

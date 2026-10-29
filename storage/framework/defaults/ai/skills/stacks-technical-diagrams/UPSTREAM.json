@@ -7,6 +7,7 @@
     "Bun runtime isolation for every child process",
     "Pinned, offline delivery; no update network requests",
     "Stacks launcher and publication guidance",
-    "Legacy technical-diagrams entrypoint retained"
+    "Legacy technical-diagrams entrypoint retained",
+    "Canonical emitted class attributes for shared Pickier lint policy"
   ]
 }
