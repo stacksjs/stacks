@@ -172,6 +172,14 @@ function openAICredentials(config: ConfiguredAIOptions): { apiKey: string, baseU
   return { apiKey, baseUrl: (customBase || OPENAI_BASE_URL).replace(/\/+$/, '') }
 }
 
+/** Keep HTTP failures actionable for callers without parsing provider message text. */
+export class SpeechRequestError extends Error {
+  constructor(message: string, readonly status: number, readonly retryAfter: string | null = null) {
+    super(message)
+    this.name = 'SpeechRequestError'
+  }
+}
+
 async function failure(provider: string, operation: string, response: Response): Promise<Error> {
   let body = ''
   try {
@@ -179,7 +187,7 @@ async function failure(provider: string, operation: string, response: Response):
   }
   catch {}
   const snippet = body.length > 500 ? `${body.slice(0, 500)}...` : body
-  return new Error(`${provider} ${operation} failed with HTTP ${response.status}${snippet ? `: ${snippet}` : ''}`)
+  return new SpeechRequestError(`${provider} ${operation} failed with HTTP ${response.status}${snippet ? `: ${snippet}` : ''}`, response.status, response.headers.get('retry-after'))
 }
 
 // ============================================================================

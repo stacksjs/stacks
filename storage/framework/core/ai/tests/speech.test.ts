@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createLocalStorage, createMemoryStorage, Storage } from '@stacksjs/storage'
-import { SPEECH_DRIVERS, speechMimeType, speechToText, storeSpeech, textToSpeech } from '../src/speech'
+import { SPEECH_DRIVERS, SpeechRequestError, speechMimeType, speechToText, storeSpeech, textToSpeech } from '../src/speech'
 
 const originalFetch = globalThis.fetch
 const originalKey = process.env.OPENAI_API_KEY
@@ -229,4 +229,14 @@ describe('speechToText', () => {
     await expect(speechToText(audioBytes, { config: openaiConfig }))
       .rejects.toThrow('OpenAI speech-to-text failed with HTTP 400: bad audio')
   })
+})
+
+
+test('speech HTTP failures preserve retry status without requiring message parsing', async () => {
+  mockFetch(() => Response.json({ error: { message: 'busy' } }, { status: 503, headers: { 'Retry-After': '3' } }))
+  let failure: unknown
+  try { await speechToText(new Blob([audioBytes]), { config: openaiConfig, retry: { maxRetries: 0 } }) }
+  catch (error) { failure = error }
+  expect(failure).toBeInstanceOf(SpeechRequestError)
+  expect(failure).toMatchObject({ status: 503, retryAfter: '3' })
 })

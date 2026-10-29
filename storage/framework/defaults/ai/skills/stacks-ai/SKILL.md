@@ -462,3 +462,25 @@ callbacks. Later changes to the supplied objects cannot relax an active server's
 policy. Invalid schema types and bounds fail at registration; enum/const accept
 JSON primitives only. String bounds count Unicode code points. Diagnostics and
 response-metadata callback failures cannot reject the protocol handler.
+
+
+## Local CPU transcription
+
+`@stacksjs/ai/local-speech` exports `createLocalSpeechHandler` and
+`whisperTranscriber`. Bind the handler to loopback with Bun.serve, supply a
+private bearer token (at least 24 characters), and provide the installed
+whisper.cpp executable and a checksum-pinned model path. The handler accepts
+decoded WAV multipart files at `/v1/audio/transcriptions` and returns `{ text }`,
+so `speechToText` uses the normal OpenAI-compatible driver with a custom base URL.
+
+Set the server's `maxRequestBodySize` to the configured audio limit plus 65536.
+The handler also bounds its own streamed read, caps concurrent inference, aborts
+timed-out work, rejects invalid audio, and removes temporary recordings and
+transcripts after every outcome. Its health route is authenticated too. The
+engine gets no application/provider credentials in its child environment. A
+custom local transcriber must honor the supplied AbortSignal.
+
+`SpeechRequestError` preserves HTTP `status` and `retryAfter` for speech failures.
+Use these fields for a busy/retry message instead of treating service failures as
+invalid audio. A successful mocked test is not proof of real recognition; verify
+the installed native engine with an actual recording on the deployment host.

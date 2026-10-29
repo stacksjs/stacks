@@ -6,5 +6,6 @@
 # the host application's `preload` list or its .env file.
 set -e
 skill_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+export ARCHIFY_UPDATE_CHECK_DISABLED=1
 exec bun --config="$skill_root/runtime.toml" --no-env-file \
   "$skill_root/bin/technical-diagrams.mjs" "$@"

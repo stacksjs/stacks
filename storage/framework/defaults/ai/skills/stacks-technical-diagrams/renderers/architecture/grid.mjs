@@ -1,4 +1,4 @@
-/** Grid placement for architecture IR (#8). Not auto-layout - fixed cell math only. */
+/** Grid placement for architecture IR (#8). Not auto-layout — fixed cell math only. */
 
 export const DEFAULT_GRID = {
   mode: 'grid',

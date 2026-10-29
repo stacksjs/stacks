@@ -22,7 +22,7 @@ const MAX_HTML_BYTES = 256 * 1024;
 const MAX_IMAGE_BYTES = 1024 * 1024;
 const MAX_CAPTURE_CONCURRENCY = 3;
 const DEFAULT_CAPTURE_TIMEOUT_MS = 8000;
-const USER_AGENT = 'stacks-technical-diagrams brand-preview';
+const USER_AGENT = 'Archify/2.15 brand-preview';
 
 function lookupForms(value) {
   const raw = String(value ?? '').trim().toLocaleLowerCase('en-US');
@@ -48,6 +48,17 @@ function asUrl(value) {
   } catch {
     return null;
   }
+}
+
+// Public provenance is separate from the URL used to reproduce a pinned asset.
+export function normalizeBrandSourceUrl(value) {
+  const url = asUrl(value);
+  if (!url) return null;
+  url.username = '';
+  url.password = '';
+  url.search = '';
+  url.hash = '';
+  return url.href;
 }
 
 function domainMark(hostname) {
@@ -181,7 +192,7 @@ function requestPinned(url, accept, target, deadline) {
     const request = transport.request(url, {
       method: 'GET',
       signal: timeoutSignal(Math.max(1, Math.min(4500, deadline - Date.now()))),
-      headers: { accept, 'user-agent': USER_AGENT },
+      headers: { accept, 'accept-encoding': 'identity', 'user-agent': USER_AGENT },
       // Reuse the exact public address that passed validation. This closes the
       // DNS-rebinding gap between checking a hostname and opening its socket.
       lookup(_hostname, options, callback) {
@@ -223,6 +234,13 @@ async function checkedFetch(input, accept, deadline) {
     if (!response.ok) {
       response.body.resume();
       throw new Error(`brand link returned HTTP ${response.status}`);
+    }
+    // Raw HTTP responses are not decompressed. Check successful bodies before
+    // HTML discovery or image validation so byte limits and digests stay valid.
+    const contentEncoding = (response.headers.get('content-encoding') || '').trim().toLowerCase();
+    if (contentEncoding && contentEncoding !== 'identity') {
+      response.body.destroy();
+      throw new Error(`unsupported brand content encoding ${contentEncoding}`);
     }
     return { response, finalUrl: current };
   }
@@ -269,24 +287,135 @@ async function readLimited(response, maximum) {
   return Buffer.concat(chunks, total);
 }
 
-function attribute(tag, name) {
-  const match = tag.match(new RegExp(`\\b${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))`, 'i'));
-  return match ? (match[1] ?? match[2] ?? match[3] ?? '') : '';
+// Read only the bounded head, independent of network chunk boundaries. Scan
+// bytes once so many tiny chunks cannot cause repeated concatenation/rescanning.
+// Collect link tags in the same pass: markup in comments, raw text, attributes
+// or templates must not become an icon candidate or an early head ending.
+async function readHtmlHeadLinks(response, maximum, mediaType) {
+  const chunks = response.body && typeof response.body[Symbol.asyncIterator] === 'function'
+    ? response.body : [await readLimited(response, maximum)];
+  const buffer = Buffer.alloc(maximum);
+  const links = [];
+  let total = 0;
+  let tagStart = -1;
+  let quote = 0;
+  let comment = false;
+  let rawClosing = '';
+  let matched = 0;
+  let templateDepth = 0;
+  for await (const value of chunks) {
+    const chunk = Buffer.from(value);
+    const length = Math.min(chunk.length, maximum - total);
+    chunk.copy(buffer, total, 0, length);
+    for (let offset = 0; offset < length; offset++) {
+      const byte = chunk[offset];
+      const position = total + offset;
+      if (comment) {
+        if (byte === 0x3e && buffer[position - 1] === 0x2d && buffer[position - 2] === 0x2d) comment = false;
+        continue;
+      }
+      if (rawClosing) {
+        const lower = byte >= 65 && byte <= 90 ? byte + 32 : byte;
+        if (matched === rawClosing.length && [9, 10, 12, 13, 32, 47, 62].includes(byte)) {
+          tagStart = position - matched;
+          rawClosing = '';
+          matched = 0;
+        } else {
+          matched = lower === rawClosing.charCodeAt(matched) ? matched + 1 : (byte === 0x3c ? 1 : 0);
+          continue;
+        }
+      }
+      if (tagStart < 0) {
+        if (byte === 0x3c) tagStart = position;
+        continue;
+      }
+      if (position === tagStart + 1 && !((byte >= 65 && byte <= 90) || (byte >= 97 && byte <= 122) || [33, 47, 63].includes(byte))) {
+        tagStart = byte === 0x3c ? position : -1;
+        continue;
+      }
+      if (position === tagStart + 3 && buffer[tagStart + 1] === 0x21 && buffer[tagStart + 2] === 0x2d && byte === 0x2d) {
+        comment = true;
+        tagStart = -1;
+        continue;
+      }
+      if (quote) {
+        if (byte === quote) quote = 0;
+        continue;
+      }
+      if (byte === 0x22 || byte === 0x27) {
+        quote = byte;
+        continue;
+      }
+      if (byte === 0x3e) {
+        const tag = buffer.toString('utf8', tagStart, position + 1);
+        if (!templateDepth && /^<\/head[\t\n\f\r ]*>$/i.test(tag)) {
+          response.body?.destroy?.();
+          return links;
+        }
+        const emptyXhtmlElement = mediaType === 'application/xhtml+xml' && tag.endsWith('/>');
+        if (!emptyXhtmlElement && /^<template(?=[\t\n\f\r />])/i.test(tag)) templateDepth += 1;
+        else if (/^<\/template(?=[\t\n\f\r />])/i.test(tag)) templateDepth = Math.max(0, templateDepth - 1);
+        else if (!templateDepth && /^<link(?=[\t\n\f\r />])/i.test(tag)) links.push(tag);
+        const raw = /^<(script|style|title|textarea|xmp|iframe|noembed|noframes)(?=[\t\n\f\r />])/i.exec(tag)
+          || (mediaType === 'text/html' && /^<(noscript)(?=[\t\n\f\r />])/i.exec(tag));
+        if (raw && !emptyXhtmlElement) rawClosing = `</${raw[1].toLowerCase()}`;
+        tagStart = -1;
+      }
+    }
+    total += length;
+    if (chunk.length > length) {
+      response.body?.destroy?.();
+      throw new Error('brand asset is too large');
+    }
+  }
+  return links;
 }
 
-function iconCandidates(html, pageUrl) {
+function linkAttribute(tag, name) {
+  // Consume entire attributes so data-href and quoted examples cannot supply
+  // a real href. As in HTML, the first occurrence wins, even when valueless.
+  const attributes = tag.slice(5, -1).matchAll(/([^\t\n\f\r />=]+)(?:[\t\n\f\r ]*=[\t\n\f\r ]*(?:"([^"]*)"|'([^']*)'|([^\t\n\f\r >]+)))?/g);
+  for (const match of attributes) {
+    if (match[1].toLowerCase() === name) return match[2] ?? match[3] ?? match[4] ?? '';
+  }
+  return '';
+}
+
+// HTML numeric references in the C1 range use the legacy Windows-1252 mapping.
+// https://html.spec.whatwg.org/multipage/parsing.html#numeric-character-reference-end-state
+const HTML_C1_REFERENCES = [
+  0x20ac, 0x81, 0x201a, 0x192, 0x201e, 0x2026, 0x2020, 0x2021,
+  0x2c6, 0x2030, 0x160, 0x2039, 0x152, 0x8d, 0x17d, 0x8f,
+  0x90, 0x2018, 0x2019, 0x201c, 0x201d, 0x2022, 0x2013, 0x2014,
+  0x2dc, 0x2122, 0x161, 0x203a, 0x153, 0x9d, 0x17e, 0x178,
+];
+const BASIC_HTML_REFERENCES = { amp: '&', quot: '"', apos: "'", lt: '<', gt: '>' };
+
+function decodeIconHref(value) {
+  // Decode only after extracting the attribute, in one pass. Leave percent
+  // escapes to URL parsing and do not reinterpret decoded quotes as markup.
+  return value.replace(/&#(?:[xX]([0-9a-fA-F]+)|([0-9]+));?|&(amp|AMP|quot|QUOT|lt|LT|gt|GT)(?:;|(?![A-Za-z0-9=]))|&(apos);/g,
+    (_match, hex, decimal, named, apostrophe) => {
+      if (named || apostrophe) return BASIC_HTML_REFERENCES[(named || apostrophe).toLowerCase()];
+      let point = Number.parseInt(hex || decimal, hex ? 16 : 10);
+      if (point === 0 || point > 0x10ffff || (point >= 0xd800 && point <= 0xdfff)) return '\uFFFD';
+      if (point >= 0x80 && point <= 0x9f) point = HTML_C1_REFERENCES[point - 0x80];
+      return String.fromCodePoint(point);
+    });
+}
+
+function iconCandidates(links, pageUrl) {
   const candidates = [];
-  for (const match of html.matchAll(/<link\b[^>]*>/gi)) {
-    const tag = match[0];
-    const rel = attribute(tag, 'rel').toLocaleLowerCase('en-US').split(/\s+/);
+  for (const tag of links) {
+    const rel = linkAttribute(tag, 'rel').toLocaleLowerCase('en-US').split(/\s+/);
     if (!rel.some((value) => value === 'icon' || value === 'apple-touch-icon' || value === 'mask-icon')) continue;
-    const href = attribute(tag, 'href');
+    const href = decodeIconHref(linkAttribute(tag, 'href'));
     if (!href) continue;
     try {
       const url = new URL(href, pageUrl);
       if (!['https:', 'http:'].includes(url.protocol)) continue;
-      const type = attribute(tag, 'type').toLocaleLowerCase('en-US');
-      const sizes = attribute(tag, 'sizes');
+      const type = linkAttribute(tag, 'type').toLocaleLowerCase('en-US');
+      const sizes = linkAttribute(tag, 'sizes');
       const area = [...sizes.matchAll(/(\d+)x(\d+)/gi)]
         .reduce((best, size) => Math.max(best, Number(size[1]) * Number(size[2])), 0);
       const score = (type.includes('svg') || /\.svg(?:$|[?#])/i.test(url.href) ? 1000000 : 0)
@@ -302,6 +431,20 @@ function iconCandidates(html, pageUrl) {
   const unique = new Map(candidates.map((candidate) => [candidate.url.href, candidate]));
   unique.delete(fallback.href);
   return [...unique.values()].slice(0, 5).concat({ url: fallback, score: -1 });
+}
+
+function validIcoImageRanges(buffer) {
+  if (buffer.length < 6 || buffer.readUInt16LE(0) !== 0 || buffer.readUInt16LE(2) !== 1) return false;
+  const count = buffer.readUInt16LE(4);
+  const directoryEnd = 6 + count * 16;
+  if (count === 0 || directoryEnd > buffer.length) return false;
+  for (let index = 0; index < count; index += 1) {
+    const entry = 6 + index * 16;
+    const size = buffer.readUInt32LE(entry + 8);
+    const offset = buffer.readUInt32LE(entry + 12);
+    if (size === 0 || offset < directoryEnd || offset + size > buffer.length) return false;
+  }
+  return true;
 }
 
 async function imageData(response) {
@@ -335,10 +478,7 @@ async function imageData(response) {
           && buffer.toString('ascii', 0, 4) === 'RIFF'
           && buffer.toString('ascii', 8, 12) === 'WEBP'
           && buffer.readUInt32LE(4) + 8 <= buffer.length
-        : buffer.length >= 22
-          && buffer[0] === 0 && buffer[1] === 0 && buffer[2] === 1 && buffer[3] === 0
-          && buffer.readUInt16LE(4) > 0
-          && 6 + buffer.readUInt16LE(4) * 16 <= buffer.length));
+        : validIcoImageRanges(buffer)));
   if (!signatureMatches) throw new Error(`brand asset bytes do not match ${contentType}`);
   return {
     dataUrl: `data:${contentType};base64,${buffer.toString('base64')}`,
@@ -349,13 +489,14 @@ async function imageData(response) {
 
 async function captureRemoteBrand(value, deadline = Date.now() + captureTimeoutMilliseconds()) {
   const sourceUrl = new URL(value);
+  const publicSourceUrl = normalizeBrandSourceUrl(sourceUrl);
   const fallback = (reason) => ({
     id: sourceUrl.hostname,
     title: sourceUrl.hostname,
     category: 'link',
     kind: 'fallback',
     status: 'unavailable',
-    sourceUrl: sourceUrl.href,
+    sourceUrl: publicSourceUrl,
     reason,
   });
   try {
@@ -369,7 +510,7 @@ async function captureRemoteBrand(value, deadline = Date.now() + captureTimeoutM
         category: 'link',
         kind: 'remote',
         status: 'captured',
-        sourceUrl: sourceUrl.href,
+        sourceUrl: publicSourceUrl,
         resolvedUrl: page.finalUrl.href,
         ...image,
       };
@@ -378,9 +519,11 @@ async function captureRemoteBrand(value, deadline = Date.now() + captureTimeoutM
       page.response.body?.destroy?.();
       return fallback('linked page is not HTML');
     }
-    const html = (await readLimited(page.response, MAX_HTML_BYTES)).toString('utf8');
+    // Distinguish HTML noscript and XHTML empty elements without executing scripts.
+    const mediaType = pageType.split(';')[0].trim();
+    const links = await readHtmlHeadLinks(page.response, MAX_HTML_BYTES, mediaType);
     const iconErrors = [];
-    for (const candidate of iconCandidates(html, page.finalUrl)) {
+    for (const candidate of iconCandidates(links, page.finalUrl)) {
       try {
         const fetched = await checkedFetch(candidate.url, 'image/*', deadline);
         const image = await imageData(fetched.response);
@@ -390,7 +533,7 @@ async function captureRemoteBrand(value, deadline = Date.now() + captureTimeoutM
           category: 'link',
           kind: 'remote',
           status: 'captured',
-          sourceUrl: sourceUrl.href,
+          sourceUrl: publicSourceUrl,
           resolvedUrl: fetched.finalUrl.href,
           ...image,
         };
@@ -399,7 +542,7 @@ async function captureRemoteBrand(value, deadline = Date.now() + captureTimeoutM
         // Try the next declared favicon before using the generic link mark.
       }
     }
-    const usefulError = iconErrors.find((error) => /unsupported brand image type/i.test(error?.message))
+    const usefulError = iconErrors.find((error) => /unsupported brand (?:image type|content encoding)/i.test(error?.message))
       || iconErrors.at(-1);
     return fallback(usefulError?.message || 'no usable site icon was found');
   } catch (error) {
@@ -483,7 +626,7 @@ export async function prepareDiagramBrandMarks(diagramType, diagram) {
     }
     const url = asUrl(node.brand);
     if (url) {
-      unknown.push(`/${collection}/${index}/brand ${JSON.stringify(node.brand)} is an unpinned URL; capture it first with \`diagrams brands capture ${url.href} --json\``);
+      unknown.push(`/${collection}/${index}/brand ${JSON.stringify(node.brand)} is an unpinned URL; capture it first with \`archify brands capture ${url.href} --json\``);
       return;
     }
     unknown.push(`/${collection}/${index}/brand ${JSON.stringify(node.brand)} is not a built-in brand; closest IDs: ${suggestions(node.brand).join(', ')}`);
@@ -498,8 +641,8 @@ export async function prepareDiagramBrandMarks(diagramType, diagram) {
       subject: { diagramType, collection },
       evidence: {},
       supportedFixes: message.includes('is an unpinned URL')
-        ? ['run `diagrams brands capture <url> --json` and author the returned digest-pinned brand object']
-        : ['choose an ID from `diagrams brands`', 'run `diagrams brands capture <url> --json` for an unknown official site'],
+        ? ['run `archify brands capture <url> --json` and author the returned digest-pinned brand object']
+        : ['choose an ID from `archify brands`', 'run `archify brands capture <url> --json` for an unknown official site'],
     })));
   }
 }
@@ -528,7 +671,7 @@ export function brandTopRailProblem(node, width, minimumFontSize, subject = 'Nod
   const required = textUnits(node.label) * minimumFontSize * 0.6;
   if (available >= required) return null;
   return `${subject} "${node.id}" brand top rail leaves ${Math.max(0, available)}px for its label, but `
-    + `"${node.label}" needs ~${Math.ceil(required)}px at the ${minimumFontSize}px legible minimum - widen the node or shorten the label.`;
+    + `"${node.label}" needs ~${Math.ceil(required)}px at the ${minimumFontSize}px legible minimum — widen the node or shorten the label.`;
 }
 
 function markAttrs(mark) {

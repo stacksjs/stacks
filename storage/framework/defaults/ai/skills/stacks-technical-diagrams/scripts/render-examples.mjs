@@ -1,10 +1,10 @@
+import { runtimeArgs } from '../renderers/shared/bun-runtime.mjs';
 // Re-render every bundled example from its JSON IR. Installed skills keep HTML
 // beside the JSON examples; the development script passes the golden directory.
 
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { runtimeArgs } from '../renderers/shared/bun-runtime.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const skillRoot = path.resolve(__dirname, '..');
@@ -16,6 +16,16 @@ const TARGETS = [
   ['dataflow', 'product-analytics.dataflow.json', 'dataflow-product-analytics.html'],
   ['lifecycle', 'agent-run.lifecycle.json', 'lifecycle-agent-run.html'],
   ['architecture', 'web-app.architecture.json', 'web-app-rendered.html'],
+  ['erd', 'orders.erd.json', 'erd-orders-rendered.html'],
+  ['erd', 'subscription-billing.erd.json', 'subscription-billing-rendered.html'],
+  ['tree', 'payment-platform.tree.json', 'tree-payment-platform-rendered.html'],
+  ['tree', 'archify-repository.tree.json', 'tree-archify-repository-rendered.html'],
+  ['class', 'payments.class.json', 'class-payments-rendered.html'],
+  ['class', 'payment-processors.class.json', 'class-payment-processors-rendered.html'],
+  ['timeline', 'payment-incident.timeline.json', 'timeline-payment-incident-rendered.html'],
+  ['timeline', 'archify-dev-activity.timeline.json', 'timeline-archify-dev-activity-rendered.html'],
+  ['waterfall', 'checkout-request.waterfall.json', 'waterfall-checkout-request-rendered.html'],
+  ['waterfall', 'example-rebuild.waterfall.json', 'waterfall-example-rebuild-rendered.html'],
 ];
 
 for (const [mode, input, output] of TARGETS) {

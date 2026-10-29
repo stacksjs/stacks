@@ -1,115 +1,104 @@
 # Lifecycle Renderer
 
-Render `diagram_type: "lifecycle"` JSON files into the standalone technical diagram HTML
+Render `diagram_type: "lifecycle"` JSON files into the standard Archify HTML
 template.
 
 ```bash
-node .claude/skills/stacks-technical-diagrams/renderers/lifecycle/render-lifecycle.mjs input.lifecycle.json output.html
+node archify/renderers/lifecycle/render-lifecycle.mjs input.lifecycle.json output.html
 ```
 
-The renderer validates input against `.claude/skills/stacks-technical-diagrams/schemas/lifecycle.schema.json`
+The renderer validates input against `archify/schemas/lifecycle.schema.json`
 with the bundled standalone validator. No dependency installation is required.
-
-If `output.html` is omitted, the renderer uses `meta.output` from the JSON file
-or falls back to `lifecycle.html` in the current working directory.
+If `output.html` is omitted, the renderer uses the required `meta.output` value
+from the JSON file.
 
 ## Input
 
-Lifecycle JSON files must set:
-
 ```json
 {
-  "schema_version": 1,
+  "schema_version": 3,
   "diagram_type": "lifecycle",
-  "meta": {
-    "title": "Agent Run Lifecycle",
-    "viewBox": [980, 660]
-  },
-  "lanes": [],
+  "meta": { "title": "Deployment Release Lifecycle", "output": "deployment-release.html" },
+  "mainPath": ["queued", "building", "verifying", "ready", "live"],
   "states": [],
   "transitions": [],
   "cards": []
 }
 ```
 
-Lane ids are semantic and reserved: a lane with id `main` is required and maps
-to the top phase band; `terminal` maps to the bottom outcome band; every other
-lane id (up to 4 lanes total) shares the single middle event band. The three
-band headers render from your lane labels - the middle band joins the labels of
-all event lanes with a `+` separator. A complete worked example lives at
-`.claude/skills/stacks-technical-diagrams/examples/agent-run.lifecycle.json`.
+A complete example lives at `archify/examples/deployment-release.lifecycle.json`.
 
-The schema lives at:
+- `mainPath` is the happy path from the initial state. Every consecutive pair
+  needs a transition; the first such transition is drawn as the main row.
+- `states[]` carry meaning only: `id`, `type`, `label`, optional `sublabel`,
+  `tag`, `step`, `icon`, `brand` and `sources`.
+- `transitions[]` carry `from`, `to`, optional `id`, `label`, `note` and
+  `variant`. There are no routing or label-position controls.
 
-```text
-.claude/skills/stacks-technical-diagrams/schemas/lifecycle.schema.json
-```
+## Layout
 
-## Legend
+The geometry follows from the structure alone:
 
-The default legend derives kinds from `states[].type`. Supported
+| Element | Placement |
+|---------|-----------|
+| Main path | One left-to-right row. Each gap fits its transition label. The first state receives the UML initial marker. |
+| Loops and skips | A transition between two non-consecutive main-path states (or back to an earlier one, or a self-transition) is an arc above the row. Shorter arcs nest inside longer ones; ports order so an outer riser never crosses an inner arc. |
+| Other states | One row per distance from the main path. A state starts under the states it connects to in the row above; overlapping states pack side by side. |
+| Between rows | Orthogonal routes through a shared gap. Horizontal runs take separate tracks, chosen to minimise crossings; near-vertical routes snap straight or widen to a readable jog. |
+| Shared exits | A target with exactly one group of identical label, note and variant from at least two main-path phases shares an exit: consecutive phases receive a dashed composite frame, as in a UML superstate; non-consecutive phases share a bus with junction dots. Other exits keep separate connectors and their own labels. If several groups qualify for the same target, all exits stay separate. |
+| Same lower row | Neighbours connect side to side, parallel transitions fanning out around the shared edge (at most five per pair of states). Dense parallel labels and notes increase their lane spacing and the height of that lower row to keep clear; other pairs loop under the row. |
+| Labels | Above main-path arrows, on arc and loop runs, otherwise beside the segment next to the lower state. Every label keeps clear of other routes, states and labels; if one cannot, lower-row and route spacing grow and layout repeats, for at most five rounds. Main-path gaps stop growing before their minimum row width exceeds the text readability budget; gaps still fit their transition text. |
+
+Every route carries a crossover halo, so an unavoidable crossing (for example,
+two overlapping loops) stays legible. Lines are orthogonal with rounded corners.
+Keep a distinct note on its original transition. Do not remove or copy notes to
+make different exits qualify for sharing. The final width and label-clearance
+checks still apply after layout retries.
+
+## Legend and state marks
+
+State color follows `states[].type`: active and start are cyan, waiting amber,
+decision purple, success green, failure rose, neutral and external slate. The
+first main-path state carries the initial marker; a state with no outgoing
+transition gets a double border as a final state. The default legend derives
+kinds from the rendered states, always lists the initial marker, and adds a
+non-interactive `final` entry when a final state exists. Supported
 `meta.legend.entries` keys, in stable order, are `start`, `active`, `waiting`,
-`decision`, `success`, `failure`, `neutral`, and `external`. Labels and
-visibility may be overridden through the shared legend contract; only kinds
-backed by rendered states receive Semantic Legend controls.
+`decision`, `success`, `failure`, `neutral`, and `external`.
 
-## Layout budget
+State decorations share one top rail: the type sigil and `step` on the left and
+the brand mark at the right corner. Only states a reader should notice get a
+default sigil: `waiting` (hourglass), `decision` (diamond), `success` (check),
+`failure` (cross) and `external`; `start`, `active` and `neutral` states have
+none unless `icon` sets one, except as a final state, which gets a stop sigil
+so every outcome is marked. State width grows from 140px to 220px to fit its
+text at the preferred size (12px label, 9px sublabel, 8px tag) before the text
+shrinks.
 
-| Band | Lane id | Top y | Column centers | Default state |
-|------|---------|-------|----------------|---------------|
-| Phase | `main` (required) | 126 | `col` 0-4 → x = 94, 248, 402, 556, 710 | 118×62 |
-| Event | any other id | 278 | `col` 0-2 → x = 402, 556, 710 | 126×58 |
-| Outcome | `terminal` | 450 | `col` 0-2 → x = 402, 556, 710 | 118×58 |
+## Validation
 
-Event and terminal columns are intentionally offset from the main rail:
-event/terminal `col: N` uses the same x coordinate as main `col: N + 2`.
-For example, lower-band columns 0, 1, and 2 align beneath main columns 2, 3,
-and 4 respectively.
+Schema violations exit non-zero with path-prefixed messages. The renderer also
+rejects duplicate state ids, unknown or repeated `mainPath` states, a
+`mainPath` step without a transition, unknown transition endpoints, state text
+that cannot fit the widest state, a canvas wider than its smallest text allows
+on a desktop (`lifecycle/too-wide`), and a label that cannot be placed after the
+spacing rounds (`lifecycle/label-unplaced`), and more than five parallel
+transitions between two neighbouring states
+(`lifecycle/crowded-side-transitions`). Each failure is a typed diagnostic
+with supported fixes.
 
-| Constant | Value |
-|----------|-------|
-| viewBox | default `[980, 660]`; schema minimum `[420, 566]` |
-| State area | x within `[32, width − 32]`; state bottom at or above `height − 122` |
-| State spacing | ≥10px between any two states - checked across lanes, because all event lanes share one band; separate same-band states with `col` or `yOffset` |
-| Transition length | ≥32px between endpoints |
-| Legend row | final baseline y = height − 36; extra measured rows wrap upward |
+The final artifact check applies the shared composition gates (orthogonal
+segments, crossings, corridors, label clearance and route rhythm). Routes of one
+shared-exit bus declare `data-composition-junction`; they may share only that
+horizontal bus, the identical first tick from the same source port, and, when
+they end at the same state, the merged drop into it. Internal vertical runs
+remain subject to the corridor check.
 
-The primary lifecycle rail runs along the phase band and extends to the
-furthest occupied phase column. Route presets for transitions: `straight`,
-`drop` (bend at `channelY`, defaulting to the vertical midpoint),
-`bottom-channel`, `top-channel`, `right-channel`, `left-channel`, explicit
-`via` points, or the default `auto`. Multi-segment transitions get rounded
-corners; tune them with `cornerRadius` (default 10, `0` for sharp bends).
+## Design rules
 
-## Design Rules
-
-- Treat lifecycle diagrams as a phase map, not a dense state-transition graph.
-- Put the primary lifecycle on one horizontal rail using the `main` lane.
-- Use `step` labels for ordered phases, such as `01`, `02`, and `03`.
-- Use lower lanes only for interruptions, recovery, and terminal exits.
-- Keep transition labels out of the main SVG unless the label is essential;
-  prefer node labels, tags, legend entries, and summary cards.
-- Avoid diagonal and crossing lines. Terminal exits should drop vertically from
-  their source event whenever possible.
-- Use `success` for completion, `failure` for failure/terminal exits,
-  `waiting` for pauses, and `decision` for quality gates.
-
-Schema violations exit non-zero with path-prefixed messages annotated with the
-element's id or label. The renderer additionally fails when it can detect
-layout problems, including a missing `main` lane, duplicate state IDs, unknown
-lanes, unknown transition endpoints, states outside the lifecycle area,
-overlapping states (including across lanes), labels colliding with states or
-other labels, labels wider than their state, unreadably short transitions, or
-transitions crossing unrelated states (2px Clean Flow clearance). Lifecycle
-bands remain intentional pass-through containers.
-Text width is estimated CJK-aware: fullwidth glyphs count as two units.
-
-Set `meta.quality_profile` to `showcase` for polished delivery. Unrelated proper
-X crossings then fail with `composition/proper-crossing`; default `standard`
-keeps them as artifact-receipt warnings. The final artifact check samples
-rounded `Q` corners. Collinear corridors remain outside the proper-X rule, but
-a separate gate warns in `standard` and fails in `showcase` when unrelated
-transitions overlap for at least 8px. Shared semantic endpoints, point touches,
-and shorter overlaps remain valid. Showcase also rejects any route segment
-below 8px and any interior turn segment below 16px; ordinary 8-15px endpoint
-stubs remain valid.
+- Treat the main path as the story: about six phases at most.
+- Put interruptions, waits and exits off the main path; the renderer places them.
+- Give an exit shared by several phases one label, such as “cancel”.
+- A recoverable failure needs a real transition back.
+- Use `success` for completion, `failure` for failure exits, `waiting` for
+  pauses, and `decision` for quality gates.

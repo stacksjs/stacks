@@ -1,318 +1,158 @@
 ---
 name: stacks-technical-diagrams
-description: Create polished, validated architecture, workflow, sequence, data-flow, and lifecycle diagrams for Stacks applications as explorable standalone HTML with inline SVG, dark/light themes, four visual presets, optional trace motion, and PNG/JPEG/WebP/SVG/WebM export. Accepts plain-language requirements or pasted Mermaid; reads repository evidence when the diagram must reflect real code; compares two architecture snapshots as a Before/Delta/After review. Use for system or cloud architecture, security boundaries, network topology, technical workflows, CI/CD, runbooks, API call sequences, request lifecycles, data pipelines, lineage, PII boundaries, state machines, status transitions, or converting Mermaid into a purpose-built diagram.
-license: MIT
+description: "Create validated architecture, workflow, sequence, data-flow, lifecycle/state, ERD, class, tree, timeline, and waterfall diagrams as explorable standalone HTML with dark/light themes, motion and image/SVG/WebM export. Accept requirements or Mermaid; inspect repository evidence for code-backed diagrams. Use when visualizing systems, API calls, pipelines, schemas, histories, timings, or everyday steps, parts, relationships and states. Also turn an answer into a one-page explainer, with the conclusion first, structured panels, native diagrams and charts, when the user asks for a page, an explainer or an answer to share (做成一页, 用页面讲), or proactively when the user's rules opt in with an [archify explainer: ...] line. Not for dashboards."
+license: Apache-2.0
 metadata:
   source: tt-a1i/archify
-  source_version: "2.17.0-dev.1"
-  source_commit: 18911058008f17dc065af23a2cdc9bfeff6d3f7a
-  based_on: Cocoon-AI/architecture-diagram-generator (MIT, v1.0)
+  source_commit: d6059331abbddb49bca380ff46dca8ce33158b04
+  source_version: "3.2.0"
+  version: "3.2"
+  author: tt-a1i
 ---
 
 # Technical Diagrams for Stacks
 
-Turn a small typed JSON specification into one self-contained, interactive HTML diagram. Static
-output is the default; motion is opt-in.
+This is the Stacks Bun port of [Archify](https://github.com/tt-a1i/archify), pinned to
+`d6059331abbddb49bca380ff46dca8ce33158b04` (3.2.0). Preserve the bundled Apache-2.0
+license, MIT origin notice and third-party notices. Updates belong in Stacks source;
+the renderer never checks for or downloads an update.
 
-Every delivered artifact carries a theme toggle (persists in `localStorage`, respects
-`prefers-color-scheme`), pan/zoom, node search, focus with authored upstream/downstream reach, route
-probing, a semantic lens, an overview radar, presentation mode, guided stories, and an export menu
-(clipboard PNG; PNG/JPEG/WebP raster at up to 4x; dual-theme SVG; WebM for motion; 1200x630 share
-cards). Those are reader capabilities that already exist in the output, not authoring work.
+Use `storage/framework/defaults/ai/skills/stacks-technical-diagrams/bin/diagrams`
+(or its `.claude/skills/` generated link) instead of `node bin/archify.mjs` in the
+examples below. The launcher and child processes run Bun with this skill's empty
+`runtime.toml` and `--no-env-file`; application preloads and env files must stay out.
 
-## Attribution
+In a Stacks documentation project, honor the requested destination. By default put
+each artifact at `docs/public/diagrams/<slug>/index.html`, with its source alongside
+it, and add a Markdown guide linking `/diagrams/<slug>`; BunPress applies `/docs`.
+A bare `<slug>.html` can be redirected to a missing extensionless path by the docs
+host. Keep diagrams white-labeled when the application requires it. Repository
+provenance can remain in a private validation receipt when publishing it would
+expose an underlying implementation that the user asked to keep private.
 
-This skill ports the renderer, validator, and viewer from
-[Archify](https://github.com/tt-a1i/archify) 2.17.0-dev.1 by tt-a1i under the MIT license. Archify is
-itself a fork and rewrite of Cocoon AI's `architecture-diagram-generator` 1.0. Preserve `LICENSE` and
-`THIRD_PARTY_NOTICES.md` when redistributing this skill or substantial portions of its source.
 
-## Running the CLI
+Create checked standalone HTML as a native diagram or a one-page explainer that answers a question.
 
-Every command below is one launcher invocation from the Stacks project root:
+Run commands from your working directory. Unless the user names another location, give each new artifact request its own folder `.archify/<type>-<slug>-<YYYYMMDD-HHMMSS>/` there (local time, chosen once): keep the candidate and `<slug>.html` in it and reuse it for repairs. Native diagrams use `candidate.json` with `meta.output` relative to the working directory; explainers may use `candidate.archify.md` and a portable output filename. A later request gets a new folder. Replace `bin/archify.mjs` in every command with the installed package's absolute path, or its path relative to your working directory; CLI input and output paths resolve from that directory.
 
-```bash
-.claude/skills/stacks-technical-diagrams/bin/diagrams doctor
-```
+For a native diagram of a real codebase, read [Repository authoring](references/repository-authoring.md) while tracing the requested behavior. A system description uses the native steps below; a frozen candidate uses the handoff path.
 
-The launcher runs Bun against the skill's own empty `runtime.toml` with `--no-env-file`, so a diagram
-render never inherits the application's `preload` chain or its `.env`. Never call the renderers with
-a bare `bun`; use the launcher (or `bun --config=<skill>/runtime.toml --no-env-file
-<skill>/bin/technical-diagrams.mjs` if you need the explicit form).
+## Choose the artifact
 
-Commands: `render`, `validate`, `deliver`, `compare`, `preview`, `visual-check`, `check`, `inspect`,
-`migrate`, `guide`, `brands`, `examples`, `doctor`, `demo`. Run `diagrams` with no arguments for the
-full usage block.
+- When the user asks to draw or visualize a system, flow, schema or history, use a native diagram and the Type router.
+- Use `explainer` when the user asks for the answer as a page: a page, one page, an explainer, something to share (“做成一页”, “用页面讲”, “answer with a page”). Without such a request, answer in text or draw the requested diagram. A page made on request ends its reply with the one-line mode offer under Output.
+- A rules line in context changes this. `[archify explainer: proactive]`: also make a page, unasked, for an explanation, comparison, trade-off, decision, diagnosis, review or plan that needs a table, steps or several sections. `[archify explainer: always-on]`: every reply that reaches a conclusion also gets a compact page of at most four panels, delivered without opening it, its link closing the reply. `[archify explainer: on-demand]`: only when asked, and never offer a mode.
+- In every mode a page needs a conclusion with some structure behind it: chat, one-line answers, raw command output and text-only requests get none.
+- For `explainer`, read [Explainer authoring](references/explainer-authoring.md) for its conclusion, reasons, scope, board layout and optional native diagrams. Write the complete draft, then run `finalize explainer` for validation, atomic delivery and artifact checks. Use panel patch for local content revisions.
 
-## Fast authoring path
+## Existing candidate handoff
 
-Use this bounded path for ordinary generation.
+When the user supplies a frozen candidate, run `finalize` first as one CLI invocation. Its passing receipt completes the automated gates; follow any visual review recommendation under Delivery before claiming visual quality. For repair, follow step 5.
 
-1. Choose `architecture`, `workflow`, `sequence`, `dataflow`, or `lifecycle` from the question. When
-   ambiguous, run `diagrams guide "<scenario>" --json`.
-2. Read one matching schema in `schemas/`, plus `schemas/common.schema.json`, plus one matching JSON
-   example in `examples/`. Read only those files. Use the example for field shape, never for facts.
-   New workflow sources use `schema_version: 2`; keep `schema_version: 1` only when preserving an
-   existing workflow's fixed geometry.
-3. Artifact first: the next tool action writes the candidate JSON. Do not plan exact coordinates in
-   prose and do not read renderer internals before the first candidate. Start with one clear main
-   path, short side branches, sparse labels, and at most 12 primary nodes. Set
-   `meta.quality_profile: "showcase"` unless the user explicitly wants a dense `standard` map. Start
-   with automatic routes and labels; do not add `via`, `channelX`, `channelY`, or `labelAt` before a
-   diagnostic asks for one, and apply at most one diagnosed geometry control per repair.
-4. Validate after every candidate edit and immediately before handoff:
+`finalize` includes a bounded update check in its delivery receipt; see Update awareness.
+
+## Native diagram authoring
+
+Use this path for ordinary generation. Read branch references only when their stated trigger applies.
+
+1. Choose `architecture`, `workflow`, `sequence`, `dataflow`, `lifecycle`, `erd`, `class`, `tree`, `timeline`, or `waterfall` from the question.
+2. Use the exact schema and example paths in the Type router without listing their directories. Read [Authoring defaults](references/authoring-defaults.md) and the mode's example in a bounded batch separate from project documents and complete schemas so neither is truncated; recover any missing section before writing. For Architecture, use the matching showcase example. For every mode except Architecture, also read the mode and common schemas. Read the relevant schema definition before choosing any new field, enum, or constrained text, especially boundary kinds. Examples teach shape, not facts. Use fresh IDs, wording, and layout. Go directly to the candidate without preliminary help, doctor, starter validation, temporary diagrams, or output-path listing. Query brands only for an explicitly requested mark; read [Brand marks](references/brand-marks.md) for an unknown mark with a user-provided URL.
+3. Once the requested scope and, for a real codebase, [source evidence](references/repository-authoring.md) are covered, write the complete candidate directly without planning coordinates in prose. Choose Architecture abstraction and connected placement using Authoring defaults before coordinates: show the main user journey and necessary branches, preserve control roles and behavior-changing conditions, and leave enough room for actual relationship labels. No node, relationship, source, view, card, or boundary count is a target or ceiling. Use automatic routes first; add explicit routing only for necessary branch, return, supplied geometry, or measured repair. Set `meta.quality_profile` to `"showcase"` unless the user requests dense `standard`. For ERD, use a table-first layout: show every physical column in `entities[].attributes`, keep its SQL type and source comment, state every key role a column carries (`key` takes a role or a list, so a junction column is `["pk", "fk"]`, and every `fk` column also needs `references` like `"orders.id"`), and never move columns into cards as a substitute for the table. Classify tables into functional domains before placement, give each domain a concise `tag`, and place its members in one solid rectangle of grid cells — a single row, a single column, or a filled rectangular block, not an L or diagonal. A tagged table always needs `row`/`col`, because absolute coordinates have no grid cells and a domain whose tables do not fill one rectangle cannot be drawn as a band: the renderer reports `erd/domain-not-drawn` instead of publishing a diagram that cannot name the domain. A multi-domain schema reads best as one domain per column — each `tag` a vertical run — because the reader scales a wide canvas up to the reader width and shrinks a tall one until the page fits, so the wide arrangement is the one that stays complete and legible inside a laptop viewport. A schema-first ERD over roughly 8 tables or 50 fields is itself a dense map: author its first complete-field pass at `standard` and upgrade only once the layout still reads.
+4. Once the complete first candidate is written, run `finalize` directly. Its first gate is showcase validation; successful first drafts need no separate pre-validation. Keep the candidate unchanged while the command runs:
 
    ```bash
-   .claude/skills/stacks-technical-diagrams/bin/diagrams validate <type> <candidate.json> --quality showcase --json
+   node bin/archify.mjs finalize <type> <candidate.json> <output.html> --quality showcase --json
    ```
 
-   A receipt with only 4 artifact checks is basic validation, never showcase acceptance. A showcase
-   pass reports all 9 artifact checks with 0 composition errors and 0 warnings. For a workflow v2
-   geometry diagnosis, run `validate workflow <candidate.json> --layout-json` and read the stable
-   compiler receipt; solver internals are not authoring controls. A passing final validation freezes
-   the candidate: do not edit it afterward.
-5. Deliver once, as the final acceptance step:
+   For a repository-backed candidate, include evidence on the first draft and use the complete first command: `node bin/archify.mjs finalize <type> <candidate.json> <output.html> --repo-root <repo-root> --quality showcase --json`. Pass the `--quality` that matches `meta.quality_profile`, such as `standard` for a dense first ERD pass.
 
-   ```bash
-   .claude/skills/stacks-technical-diagrams/bin/diagrams deliver <type> <candidate.json> <output.html> --quality showcase --json
-   ```
+   A passing receipt proves the included `validate`, `deliver`, strict `check`, and real-browser `browser-check` gates passed. Use its compact summary; run standalone commands only for a separate request or focused failure diagnosis.
 
-   A non-zero exit is never success. On failure, change only the diagnosed `subject`, verify
-   `evidence`, choose from `supportedFixes`, and rerun. Keep correcting while the objective error
-   count reaches a new minimum; if two consecutive rounds do not improve that best count, stop and
-   report the unresolved diagnostics truthfully.
+5. A non-zero exit is never success. Read compact stdout or `evidence.summaryReceipt`, then [repair the failed gate](references/delivery-contract.md#failed-finalize-and-candidate-repair), including its repair limit. Preserve requested meaning and source evidence. For several tangled Architecture routes, read [Architecture layout repair](references/architecture-layout-repair.md); for measured field or geometry failures, read [Authoring contract](references/authoring-contract.md). Edit the connected neighborhood and rerun the complete `finalize` command from step 4. Once a run has reached `browser-check`, the output path owns that evidence: give every later run its own `--out-dir <folder>/review-<n>`.
 
-Inspect renderer or validator source only after an unsupported internal diagnostic or two failed
-focused repairs.
+## Update awareness
 
-## Stacks repository workflow
-
-1. Inspect the implementation before drawing. Treat `app/` as overrides and
-   `storage/framework/defaults/app/` as fallbacks. Follow registrations in `app/Routes.ts`, route
-   files, actions, jobs, listeners, middleware, models, config, resources, and the framework entry
-   points that matter to the requested view.
-2. Read the relevant Stacks domain skill before mapping an unfamiliar subsystem. Common companions
-   are `stacks-router`, `stacks-actions`, `stacks-models`, `stacks-database`, `stacks-jobs`,
-   `stacks-events`, `stacks-realtime`, and `stacks-cloud`.
-3. Draw one question per diagram. For a runtime overview, prefer browser or client -> stx/router ->
-   action or service -> model/query -> database, then add only the external systems and trust
-   boundaries that story needs.
-4. Write output to the user's requested path. When no path is given, use
-   `docs/public/diagrams/<descriptive-name>/index.html` and keep the source JSON beside it. That
-   path matters: BunPress only renders `docs/**/*.md` and copies `docs/public/**`, so a diagram
-   written anywhere else under `docs/` never reaches the built site. The directory-plus-`index.html`
-   shape is what the deployed docs host serves at the clean URL
-   `/docs/diagrams/<descriptive-name>`; a bare `<name>.html` is redirected to an extensionless path
-   that does not exist. Link to it from a docs page as `/diagrams/<descriptive-name>` (BunPress adds
-   the `/docs` base).
-
-To pin architecture nodes to real code, pass `--repo-root .` and author `meta.repository`; nodes then
-mark themselves `SRC n` and open Git-verified files and line ranges at one pinned commit. See
-`references/authoring-contract.md`.
+This port is offline and versioned with Stacks. Do not install a second skill or run
+upstream update helpers. Update the pinned sources in the Stacks repository, run
+its focused verification and publish the changed defaults package when requested.
 
 ## Type router
 
-| Type | Use for |
-|---|---|
-| `architecture` | Components, services, cloud/security boundaries, infrastructure |
-| `workflow` | Processes, approval gates, tool calls, runbooks, CI/CD, incident response |
-| `sequence` | API call chains, request lifecycles, cache fallback, async traces, returns |
-| `dataflow` | Pipelines, ETL/ELT, lineage, PII and governance boundaries, consumers |
-| `lifecycle` | State/status transitions, retries, waiting and terminal states |
+| Type | Use for | Schema | Example |
+|---|---|---|---|
+| `architecture` | Components, services, cloud/security boundaries, infrastructure; what something everyday is made of | `schemas/architecture.schema.json` | System descriptions, services, libraries, and CLI repos: `examples/web-app.architecture.json`; deployment repos: `examples/production-deployment.architecture.json` |
+| `workflow` | Processes, approval gates, tool calls, runbooks, CI/CD; plans and step-by-step life processes | `schemas/workflow.schema.json` | `examples/agent-tool-call.workflow.json` |
+| `sequence` | API call chains, request lifecycles, async traces, returns; back-and-forth between people | `schemas/sequence.schema.json` | `examples/cache-miss-request.sequence.json` |
+| `dataflow` | Pipelines, ETL/ELT, lineage, governance, consumers; where money or documents go | `schemas/dataflow.schema.json` | `examples/product-analytics.dataflow.json` |
+| `lifecycle` | State/status transitions, retries, waiting and terminal states; where an application or order stands | `schemas/lifecycle.schema.json` | `examples/deployment-release.lifecycle.json` |
+| `erd` | Tables/entities, attributes, primary/foreign/unique keys, cardinality between them | `schemas/erd.schema.json` | `examples/orders.erd.json` |
+| `tree` | Single-parent containment: repository/module trees, capability or feature breakdowns, org-style decomposition | `schemas/tree.schema.json` | `examples/payment-platform.tree.json` |
+| `class` | Classes, interfaces, selected members, and dependency/association/inheritance/realization/composition between types | `schemas/class.schema.json` | `examples/payments.class.json` |
+| `timeline` | When things happened: incident reviews, release histories, timestamped events on a proportional clock with source lanes | `schemas/timeline.schema.json` | `examples/payment-incident.timeline.json` |
+| `waterfall` | Where the time went: span durations, overlap, and nesting of one request or agent run on a common time axis | `schemas/waterfall.schema.json` | `examples/checkout-request.waterfall.json` |
 
-Trigger phrases: "architecture/system/cloud diagram" -> `architecture` (unless clearly
-process-oriented). "workflow/flow/process/runbook/approval/CI-CD/incident" -> `workflow`.
-"sequence/interaction/call chain/who calls whom" -> `sequence`. "data
-flow/pipeline/ETL/lineage/PII/governance" -> `dataflow`. "state/status/lifecycle/state
-machine/retry/terminal" -> `lifecycle`.
+When choosing among native diagram types is ambiguous, run `node bin/archify.mjs guide "<scenario>" --json`. Scenario proof examples are structural references, not facts to copy.
+
+For an everyday subject, keep the same diagram modes and semantic types, then name them for the reader: use everyday `icon` values and `meta.legend` labels as in [Node icons](references/authoring-contract.md#node-icons). Ask for missing personal facts instead of inventing dates, amounts, or rules.
 
 ## Mermaid input
 
-Read Mermaid for topology and meaning, then author fresh JSON. Do not parse or re-render Mermaid
-styling.
+Read Mermaid for topology and meaning, then author fresh Archify JSON; do not mechanically render Mermaid styling.
 
-- `flowchart` / `graph` -> `workflow`, or `architecture` for a component map. `subgraph` becomes a
-  lane or a boundary; a diamond node becomes a decision or security node.
-- `sequenceDiagram` -> `sequence`. `participant` becomes a semantic participant, `->>` a message,
-  `-->>` a `return` variant, `Note` a message note, `rect` a segment.
-- `stateDiagram` -> `lifecycle`. `[*]` becomes the `start` type or the `terminal` lane; transition
-  labels stay event-like.
+- `flowchart` / `graph` → `workflow`, or `architecture` for a component map.
+- `sequenceDiagram` → `sequence`; participants become semantic participants and arrows become messages.
+- `stateDiagram` → `lifecycle`; states and transitions retain meaning, not Mermaid style.
+- `erDiagram` → `erd`; entity and relationship names, keys, and cardinality retain meaning, not Mermaid style.
+- `classDiagram` → `class`; type kinds, selected members, and relationship kinds retain meaning, not Mermaid style.
 
-Drop Mermaid styling and keep only topology and meaning. Grouping, lane order, and emphasis are your
-judgment, and that judgment is the product.
+## Delivery
 
-## Authoring invariants
+Use the `finalize` command above for the first candidate and after a repair.
 
-- One obvious main path; side branches leave the nearest main-path node. Remove low-value edges
-  before adding routing controls. If a diagram needs 20+ edges, remove edges until the main path is
-  obvious.
-- Detail belongs in summary `cards`, not in extra arrows.
-- Omit `meta.visual_preset` by default so every diagram opens in `classic`. Color mode and visual
-  preset are independent: switching light/dark preserves the preset. Set `signal-flow`, `blueprint`,
-  or `editorial` only when the user asks for that style.
-- Omit `meta.subtitle` by default. Never invent one that restates the title, nodes, or cards.
-- Omit `meta.legend` for the truthful `auto` default. When needed, use only `mode: auto|all|hidden`
-  and renderer-supported `entries.<kind>.label|visible`. Labels never change semantics.
-- Component types are `frontend`, `backend`, `database`, `cloud`, `security`, `messagebus`,
-  `external`. Variants are `default`, `emphasis`, `security`, `dashed`.
-- Relationship labels are semantic data. When one collides, move the label, adjust the route or
-  spacing, then shorten the wording while preserving meaning. Delete wording only when both endpoints
-  fully imply it and it carries no protocol, action, direction, sync/async behavior, or
-  cross-boundary mechanism. Deleting a meaningful label is not a geometry repair.
-- Spacing means clear gap, not center distance. A label's clear gap must exceed its measured mask
-  width.
-- Automatic routes own their endpoint sides: the first and final segment leave and enter
-  perpendicular to that side. Automatic Port Spread is default behavior for architecture, workflow,
-  dataflow, and lifecycle; it stands down for explicit `via`, `channelX`, `channelY`, `labelAt`, or a
-  non-`auto` route.
-- Never accept an edge crossing an unrelated opaque node, an ambiguous shared corridor, or a label
-  masking another route.
-- For sequence diagrams, omit `meta.column_fit` for the stable `fixed` layout. Set `"spread"` when a
-  wide viewBox leaves unused horizontal space or meaningful participant labels do not fit; do not
-  shorten semantic labels first.
-- Lifecycle phase columns `0..4` occupy the main rail; an event or terminal column `N` in `0..2`
-  aligns beneath main column `N + 2`. A recoverable state uses `type: "failure"` plus a real
-  transition back to the active state.
-- Omit `meta.engineering_profile` by default. Enable `deployment-ownership` only when the user
-  explicitly asks for production deployment topology, ownership handoff, or a fail-closed deployment
-  review, and the facts are known. It fails closed on missing owners, region placement, private
-  database scope, or named crossings; repair the facts rather than removing the profile.
-- Set `meta.animation: "trace"` only for a demo or presentation view. It respects
-  `prefers-reduced-motion` and leaves static output unchanged.
-- `meta.views` is optional: at most five curated chapters built from stable node IDs.
-- `meta.locale` (`en` or `zh-CN`) localizes renderer-owned viewer UI only, never authored content.
-  For any other language, omit it and say plainly that the fixed viewer UI and `<html lang>` fall
-  back to English.
-- Treat the artifact as a first-screen desktop composition. One responsive artifact serves laptops
-  and external displays; never emit device-specific HTML or alternate topology. Before handoff the
-  page must not scroll horizontally or vertically at 1440x900, 1600x1000, and 1920x1080 (plus
-  2048x1320 for a large-display composition). Repair overflow by removing genuinely redundant content
-  or compacting spacing before shrinking nodes or labels. Never counterfeit a pass with
-  `overflow: hidden`, clipping, an internal scroller, a stretched SVG, or smaller typography.
+`finalize` stops at the first non-passing gate. Its compact stdout and `<output-stem>.finalize-summary.json` are ordinary evidence. A passing run creates no screenshots and reports `visualReview: "not-requested"`.
 
-Read `references/authoring-contract.md` only when you need field enums, spacing math, geometry repair
-rules, repository evidence, or mode-specific placement.
+When a passing Architecture receipt reports `visualReviewRecommendation.signals.resolvedCrossovers`, copy the candidate aside and apply the hints in one edit that changes only node positions and sizes: every node, relationship (including its `from` and `to`), label, and source stays as it was. Rerun the complete `finalize` once with `--out-dir <folder>/review-2`, because the previous HTML already owns its browser evidence. `--out-dir` relocates the new browser-check and default finalize receipts, not the HTML or its delivery receipt. Successful delivery rewrites that pair at the requested output path; earlier review evidence remains bound to its original artifact bytes. See [review evidence paths](references/delivery-contract.md#a-new-candidate-at-an-existing-output-path). If that run fails, reports more crossings, or reports the same crossings with more `signals.routesOverSuggestedBends`, restore the copy and finalize it with `--out-dir <folder>/review-3`. Do not start a second placement round. Hints about extra bends alone are optional.
 
-## Delivery evidence
+When `layoutReviewRecommendation.action` is `inspect-sequence-width`, follow [Sequence width review](references/delivery-contract.md#sequence-width-review) before handing off a newly authored Sequence.
 
-`deliver` freezes the specification bytes into a private same-directory snapshot, renders and checks
-that snapshot, atomically commits the HTML, and reports SHA-256 plus byte counts for both
-specification and artifact. It proves deterministic artifact checks; it does not exercise the viewer
-in a browser.
+Perceptual review is optional for ordinary generation, including a newly positioned Architecture. Use [Optional capture evidence](references/delivery-contract.md#optional-capture-evidence), with `--out-dir <folder>/visual-check`, when the user requests visual review, during development audits, or for a concrete route/browser concern. `visualReviewRecommendation` is advisory. Inspect captures before claiming visual quality; qualify any check claim as automated when perceptual review has not occurred.
+
+Read [Delivery contract](references/delivery-contract.md) for failed gates, standalone commands, provenance/recovery, repeated delivery, exports, or opening. Native diagram recovery follows `deliver` → strict provenance `check` → `browser-check`; captures require strict provenance. Explainer delivery uses validate, deliver and check as described in its authoring guide.
+
+For workflow viewport overflow, read [Workflow viewport repair](references/authoring-contract.md#workflow-viewport-repair) before the next layout edit.
+
+When reporting verification details, distinguish artifact checks, browser evidence, captures, and actual perceptual review. For an explicitly requested immediate preview or active desktop loop, see [Optional opening](references/delivery-contract.md#optional-opening).
+
+## Optional viewer capabilities
+
+Live motion is enabled by default for every rendered diagram; omit `meta.animation`. The Viewer’s Live/Still button controls playback.
+
+Read `references/viewer-runtime.md` only when the user explicitly asks for Share Cards, Route/Reach cards, motion, deep links, presentation, search/focus, or another Viewer Runtime feature.
+
+## Setup and fallback
+
+No install is required inside the skill package. For setup diagnosis, verify with:
 
 ```bash
-.claude/skills/stacks-technical-diagrams/bin/diagrams visual-check <output.html> --json
+node bin/archify.mjs doctor
+node bin/archify.mjs demo <output-directory>
 ```
 
-`visual-check` drives a system Chrome over the DevTools Protocol against the exact delivered HTML,
-without rerendering it, and writes screenshots plus a machine-readable receipt. It exits 2 (skipped)
-when no Chrome is installed. Keep three claims separate: `deliver` proves artifact checks,
-`visual-check` proves bounded browser behavior, and perceptual review requires a human or an
-image-capable reviewer. Never run `visual-check` after a failed delivery: it would inspect the stale
-last-good artifact.
-
-For an active authoring loop, `preview` watches one JSON file on a random loopback port and reloads
-only after a candidate passes every gate, keeping the last verified diagram visible through failures:
-
-```bash
-.claude/skills/stacks-technical-diagrams/bin/diagrams preview <type> <input>.json <output>.html --quality showcase
-```
-
-Never start `preview` by default. `deliver --open` is an opt-in one-shot handoff after commit. Full
-receipt fields, coverage, sidecars, and exit behavior: `references/delivery-contract.md`.
-
-## Architecture Delta
-
-For design or PR review, compare two validated architecture snapshots as Before / Delta / After with
-a machine receipt of exactly what was added, removed, changed, moved, and rerouted:
-
-```bash
-.claude/skills/stacks-technical-diagrams/bin/diagrams compare architecture base.json head.json delta.html --receipt delta.receipt.json --json
-```
-
-Component identity is `components[].id`, relationship identity is `connections[].id` (required for
-compare), and boundary identity is derived from `kind` + `label`. The delta reports authored facts
-only; it infers no impact, risk, or merge safety.
-
-## Brand marks
-
-Brand identity is optional and explicit. When a node names a real product, look up a canonical
-built-in ID from the bundled catalogue of 107 marks:
-
-```bash
-.claude/skills/stacks-technical-diagrams/bin/diagrams brands "postgres" --json
-```
-
-Never infer a brand from a vague role such as "database", and never let a badge replace the semantic
-`type`, label, or relationship facts. `brands capture <url>` is the one command in this skill that
-makes a network request: it is user-initiated, it pins the result by SHA-256, and `render`,
-`validate`, `deliver`, and `compare` never perform an unpinned capture. See
-`references/brand-marks.md`.
-
-## Dependency-free and offline contract
-
-Do not install packages or fetch runtime assets. Standalone validators for all five schemas are
-checked in, the renderers use Bun's Node compatibility modules, and delivered HTML embeds its own
-subsetted JetBrains Mono, so a page renders with no network access. Upstream's update-notifier
-scripts are deliberately not vendored: this port is pinned by `metadata.source_commit` and is updated
-by re-porting, never by a runtime download.
-
-Verify the install with `diagrams doctor`, and generate a ready-to-open example with
-`diagrams demo <output-directory>` before the first custom diagram.
-
-## Deeper references
-
-Read one of these only when the fast path calls for it.
-
-| Need | Read |
-|---|---|
-| Field enums, spacing math, geometry repair, repository evidence, placement | `references/authoring-contract.md` |
-| Receipt fields, coverage, sidecars, exit behavior, preview, export receipts | `references/delivery-contract.md` |
-| Share cards, route/reach cards, motion, stories, deep links, presentation | `references/viewer-runtime.md` |
-| Brand catalogue rules and capture | `references/brand-marks.md`, `brand-marks/README.md` |
-| Per-mode layout budgets, route presets, semantic types | `renderers/<mode>/README.md` |
-| IR overview across all five modes | `schemas/README.md` |
-
-## Hand-placed fallback (no Bun available)
-
-When the CLI cannot run, copy `assets/template.html`, place SVG by hand using the design system
-below, and run the self-review checklist before delivering.
-
-**The cardinal rule: CSS classes, not inline colors.** The theme toggle switches CSS custom
-properties, so `fill="rgba(...)"` or `stroke="#22d3ee"` will not follow the theme.
-
-```svg
-<rect x="X" y="Y" width="W" height="H" rx="6" class="c-mask"/>
-<rect x="X" y="Y" width="W" height="H" rx="6" class="c-backend" stroke-width="1.5"/>
-<text x="CX" y="CY" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">API Server</text>
-<text x="CX" y="CY+16" class="t-muted" font-size="9" text-anchor="middle">FastAPI :8000</text>
-```
-
-Component fills `c-frontend`, `c-backend`, `c-database`, `c-cloud`, `c-security`, `c-messagebus`,
-`c-external`; text accents `t-<same>` plus `t-primary` / `t-muted` / `t-dim`. Arrows `a-default`,
-`a-emphasis` (hot path), `a-security` (dashed), `a-dashed` (async), each with an explicit
-`stroke-width` and a matching `marker-end="url(#arrowhead[-variant])"`. Boundaries:
-`c-security-group` (dashed rose), `c-region` (dashed amber), `c-lane`. Typography inherits JetBrains
-Mono from the SVG root: 11-12px component names, 9px sublabels, 8px annotations, 7px tiny labels.
-
-Hard layout rules: an opaque `c-mask` rect immediately before every styled `c-<type>` rect; all
-arrows before all component rects in document order; at least 40px vertical gap between components;
-boundary `y` = inner `y` - 30 and boundary `height` = inner `height` + 50 with the label baseline 18px
-below the boundary top; the legend outside every boundary and at least 20px below the lowest one.
-
-Self-review before delivering:
-
-1. `grep -E 'fill="(#|rgb)|stroke="(#|rgb)' out.html` inside the SVG returns nothing but the
-   template's own defs.
-2. Every `c-<type>` rect has an identical-geometry `c-mask` rect immediately before it.
-3. All arrows appear before all component rects in document order.
-4. max(y + height) over all SVG elements is at least 20px inside the viewBox height; same for x.
-5. Legend y is below every boundary's y + height.
-6. The `.toolbar`, `<script>` blocks, and `:root` / `[data-theme]` CSS are untouched. They are the
-   theme toggle, viewer, and export menu.
+For native diagrams, when shell access is unavailable, hand-place architecture SVG into `assets/template.html`, use CSS semantic classes rather than inline colors, and follow the visual review contract in `references/delivery-contract.md`. Explainers require their renderer and real delivery gates; if those are unavailable, report the limitation and give a text answer when useful, without claiming HTML delivery.
 
 ## Output
 
-Report the checked HTML path, the diagram type, the validation summary, the specification and
-artifact receipt, the browser-evidence status, and a truthful visual-review status. Never claim
-success for a non-zero command, and never claim a visual inspection you did not perform.
+Reply in the user's language, as briefly as the result allows; the diagram carries the content, so a single diagram usually needs one line.
+
+- Lead with a clickable Markdown link to the HTML: a descriptive title, not the file name, and its absolute path, wrapped in `<...>` when it contains spaces.
+- When the user wants to understand a system or codebase rather than draw a described subject, add one or two sentences with the key takeaway. Skip sentences that only restate what the diagram obviously shows.
+- State anything that changes how the diagram should be read: the abstraction level or deliberately omitted parts when a reader might expect them, illustrative rather than measured values, missing source evidence, or requested content dropped or merged during repair.
+- For several diagrams, report completion once with a link to an existing overview or compact per-diagram links, not a directory path.
+
+Do not recap commands, repair rounds, hashes, quality profiles, or check lists; they stay in the receipts. If asked whether the diagram was verified, answer in one line, such as “Automated checks passed; not visually reviewed.” Give receipt links and details only for reproducibility or troubleshooting. Disclose requested visual review that could not run, and claim visual inspection only when performed. Keep the required update notice under Update awareness.
+
+Example: `Created [Checkout request timing](/abs/path/checkout-timing.html). Durations are illustrative, not measured.`
+
+For an explainer, reply in two or three lines: the conclusion and the page link. Mention gates only when one failed or writing warnings remain; do not paste the draft.
+
+After an explainer made on request, when no `[archify explainer: ...]` line is in context, end the reply with one optional line offering the proactive mode, once per conversation, for example: “需要的话，以后遇到解释、对比、排查这类问题，我可以主动做成这样的页面，要开启吗？” If the user accepts, add `[archify explainer: proactive] Make an Archify explainer page, unasked, for explanations, comparisons, decisions, diagnoses, reviews and plans that need a table, steps or several sections.` to the global rules file of the current agent (such as `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md` or `~/.config/devin/AGENTS.md`) and name the file; deleting the line turns it off. If the user declines, offer to add `[archify explainer: on-demand]` so the question does not return.

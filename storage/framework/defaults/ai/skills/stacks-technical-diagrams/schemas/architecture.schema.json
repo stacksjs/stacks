@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/tt-a1i/archify/schemas/architecture.schema.json",
-  "title": "Technical Architecture Diagram",
+  "title": "Archify Architecture Diagram",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "diagram_type", "meta", "components"],
@@ -11,30 +11,18 @@
     "meta": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["title"],
+      "required": ["title", "output"],
       "properties": {
         "title": { "type": "string", "minLength": 1 },
         "locale": { "$ref": "common.schema.json#/$defs/locale" },
+        "translations": { "$ref": "common.schema.json#/$defs/translations" },
         "subtitle": { "type": "string" },
-        "output": { "type": "string" },
+        "output": { "$ref": "common.schema.json#/$defs/portableOutputPath" },
         "animation": { "$ref": "common.schema.json#/$defs/animation" },
         "visual_preset": { "$ref": "common.schema.json#/$defs/visualPreset" },
         "quality_profile": { "$ref": "common.schema.json#/$defs/qualityProfile" },
         "engineering_profile": { "enum": ["deployment-ownership"] },
-        "repository": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["url", "revision"],
-          "properties": {
-            "url": {
-              "type": "string",
-              "minLength": 1
-            },
-            "provider": { "enum": ["github", "gitee"] },
-            "link_mode": { "enum": ["web", "local-only"] },
-            "revision": { "type": "string", "pattern": "^[a-fA-F0-9]{40}$" }
-          }
-        },
+        "repository": { "$ref": "common.schema.json#/$defs/repository" },
         "views": { "$ref": "common.schema.json#/$defs/guidedViews" },
         "legend": {
           "type": "object",
@@ -95,23 +83,9 @@
           "label": { "type": "string", "minLength": 1 },
           "sublabel": { "type": "string" },
           "tag": { "type": "string" },
+          "icon": { "$ref": "common.schema.json#/$defs/nodeIcon" },
           "brand": { "$ref": "common.schema.json#/$defs/brandMark" },
-          "sources": {
-            "type": "array",
-            "minItems": 1,
-            "maxItems": 3,
-            "items": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": ["path"],
-              "properties": {
-                "path": { "type": "string", "minLength": 1, "maxLength": 240 },
-                "line": { "type": "integer", "minimum": 1 },
-                "end_line": { "type": "integer", "minimum": 1 },
-                "label": { "type": "string", "minLength": 1, "maxLength": 48 }
-              }
-            }
-          },
+          "sources": { "$ref": "common.schema.json#/$defs/sourceReferences" },
           "row": { "type": "integer", "minimum": 0 },
           "col": { "type": "integer", "minimum": 0 },
           "pos": { "$ref": "common.schema.json#/$defs/point" },

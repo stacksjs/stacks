@@ -1,0 +1,12 @@
+{
+  "repository": "https://github.com/tt-a1i/archify",
+  "commit": "d6059331abbddb49bca380ff46dca8ce33158b04",
+  "version": "3.2.0",
+  "license": "Apache-2.0",
+  "adaptations": [
+    "Bun runtime isolation for every child process",
+    "Pinned, offline delivery; no update network requests",
+    "Stacks launcher and publication guidance",
+    "Legacy technical-diagrams entrypoint retained"
+  ]
+}
