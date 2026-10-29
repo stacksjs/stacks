@@ -376,10 +376,20 @@ export const comparisons: Comparison[] = [
     icon: 'i-hugeicons-structure-03',
     group: 'fullstack',
     matrix: { auth: 'byo', orm: 'byo', jobs: 'byo', mail: 'byo', admin: 'byo', realtime: 'byo', deploy: 'partial', updates: 'partial', mailbox: 'byo' },
+    checked: {
+      version: 'React Router 8.5',
+      on: '2026-10-29',
+      sources: [
+        { label: 'React Router v8, and what breaks', url: 'https://remix.run/blog/react-router-v8' },
+        { label: 'React Router 8.5.1 on npm', url: 'https://www.npmjs.com/package/react-router' },
+        { label: 'Remix 3.1 on npm, with its own component, auth, session, and data packages', url: 'https://www.npmjs.com/package/remix' },
+        { label: 'The Remix blog: React Router 8 and the Remix 3 releases', url: 'https://remix.run/blog' },
+      ],
+    },
     page: {
       headline: 'Remix bet on the platform. Stacks makes the same bet and keeps going past the request.',
       lede: 'Loaders, actions, forms, and nested routes are a genuinely good model, and Stacks shares most of the philosophy: server first, HTML first, no state library needed to show a list of rows. The difference is what happens after the response, where Remix stops and Stacks has a queue, a mailer, a scheduler, and an admin.',
-      summary: 'Remix v2 became the framework mode of React Router 7, and React Router 8 (June 2026) continues it as a non-breaking upgrade. The Remix name now belongs to Remix 3, a separate full-stack framework with its own auth, sessions, and database integrations, built on its own component model rather than React and in release candidate since August 2026; this page compares the React Router path. It is built around web standards: Request and Response, forms that post, nested routes that own their data and their errors. It runs anywhere a fetch handler runs, and the mental model is smaller than most of its peers. Teams that adopted it rarely wanted to go back to client-side data fetching, and that is a strong signal.',
+      summary: 'Remix v2 became the framework mode of React Router 7, and React Router 8 (June 2026) continues it, with breaking changes small enough to make in v7 first. The Remix name now belongs to Remix 3, a separate full-stack framework with its own auth, sessions, and database integrations, built on its own component model rather than React and stable since October 2026; this page compares the React Router path. It is built around web standards: Request and Response, forms that post, nested routes that own their data and their errors. It runs anywhere a fetch handler runs, and the mental model is smaller than most of its peers. Teams that adopted it rarely wanted to go back to client-side data fetching, and that is a strong signal.',
       theirStrengths: [
         { title: 'Nested routing and error boundaries', text: 'Data, pending state, and errors scoped per route segment is a better model than most frameworks offer. Stacks has layouts and @errorBoundary blocks, but no per-segment loader model.' },
         { title: 'Standards all the way down', text: 'Request, Response, FormData, and fetch means less framework-specific knowledge to carry between jobs.' },
