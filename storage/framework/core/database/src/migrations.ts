@@ -2788,6 +2788,16 @@ export async function pendingMigrationOperations(options: GenerateMigrationsOpti
   // The app's config/database.ts, before anything reads the connection (see `dbConfig`).
   await ensureDatabaseConfigLoaded()
 
+  if (!options.dialect || options.dialect === attachedDriver())
+    return pendingMigrationOperationsForDialect(options)
+  if (!(MIGRATION_DIALECTS as readonly string[]).includes(options.dialect))
+    throw new Error(`Unknown migration dialect "${options.dialect}". Use one of: ${MIGRATION_DIALECTS.join(', ')}.`)
+  if (resolveGenerateOptions(options).fromDb)
+    throw new Error(`--from-db diffs against the attached ${attachedDriver()} database, so it cannot inspect ${options.dialect} migrations.`)
+  return withGenerationDialect(options.dialect, () => pendingMigrationOperationsForDialect(options))
+}
+
+async function pendingMigrationOperationsForDialect(options: GenerateMigrationsOptions): Promise<MigrationOperation[]> {
   configureQueryBuilder()
   const dialect = getDialect()
   const { modelsDir, skip, protectedTables } = prepareMigrationModelsDir()

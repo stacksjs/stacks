@@ -31,10 +31,10 @@ const elsewhere = { host: '127.0.0.1', port: trap.port, name: 'generate_other_di
 
 const { overridesReady } = await import('@stacksjs/config')
 await overridesReady
-const { ensureDatabaseConfigLoaded, initializeDbConfig } = await import('../../src/utils')
+const { ensureDatabaseConfigLoaded, getDatabaseDialect, initializeDbConfig } = await import('../../src/utils')
 await ensureDatabaseConfigLoaded()
 initializeDbConfig({ app: { env: 'test' }, database: { default: 'sqlite', connections: { sqlite: { database: join(root, 'app.sqlite') }, postgres: elsewhere, mysql: elsewhere }, models: { includeFrameworkDefaults: false }, queryLogging: { enabled: false } } })
-const { dialectsBehindModels, generateMigrations, siblingMigrationDialects } = await import('../../src/migrations')
+const { dialectsBehindModels, generateMigrations, pendingMigrationOperations, previewPendingMigrations, siblingMigrationDialects } = await import('../../src/migrations')
 
 const sql = (dir: string) => readdirSync(dir).filter(file => file.endsWith('.sql')).sort()
 const ok = (result: { isOk: boolean, error?: unknown }) => assert.equal(result.isOk, true, String(result.error))
@@ -63,11 +63,29 @@ assert.equal(sql(sqliteDir).length, 2)
 assert.equal(sql(postgresDir).length, 1)
 assert.deepEqual(await dialectsBehindModels(), ['postgres'])
 
+// A read-only check must inspect the requested committed snapshot, even when
+// the development connection uses a different dialect. It must not advance
+// either snapshot or connect to the foreign database.
+const snapshots = join(root, 'storage/framework/database')
+const beforePreview = readdirSync(snapshots).sort().map(file => [file, readFileSync(join(snapshots, file), 'utf8')])
+assert.deepEqual((await pendingMigrationOperations({ dialect: 'postgres', fromDb: false })).map(operation => [operation.kind, operation.table]), [['create_table', 'gadgets']])
+assert.deepEqual((await previewPendingMigrations({ dialect: 'postgres', fromDb: false })).map(operation => [operation.kind, operation.table]), [['create_table', 'gadgets']])
+assert.deepEqual(await pendingMigrationOperations({ fromDb: false }), [])
+assert.equal(getDatabaseDialect(), 'sqlite')
+assert.deepEqual(readdirSync(snapshots).sort().map(file => [file, readFileSync(join(snapshots, file), 'utf8')]), beforePreview)
+assert.equal(sql(sqliteDir).length, 2)
+assert.equal(sql(postgresDir).length, 1)
+await assert.rejects(() => pendingMigrationOperations({ dialect: 'postgres', fromDb: true }), /attached sqlite database/)
+// Intentionally invalid typed API input must fail before any database access.
+await assert.rejects(() => pendingMigrationOperations({ dialect: 'not-a-dialect' as never }), /Unknown migration dialect/)
+assert.equal(getDatabaseDialect(), 'sqlite')
+
 // --dialect postgres brings it up to date, and the warning goes away.
 ok(await generateMigrations({ dialect: 'postgres' }))
 assert.equal(sql(postgresDir).length, 2)
 assert.match(readFileSync(join(postgresDir, sql(postgresDir)[1]!), 'utf8'), /"gadgets"/)
 assert.deepEqual(await dialectsBehindModels(), [])
+assert.deepEqual(await pendingMigrationOperations({ dialect: 'postgres', fromDb: false }), [])
 // The connected dialect's corpus was not touched by the Postgres run.
 assert.equal(sql(sqliteDir).length, 2)
 
