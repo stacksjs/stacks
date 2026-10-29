@@ -49,9 +49,16 @@ export function directChargeFeeAmounts(facts: DirectChargeFinancials): DirectCha
   if (!fee) return chargedCents === 0 && !facts.applicationFeeRefunds.length ? known(0) : unknown()
   const amount = cents(fee.amount)
   const returned = cents(fee.amount_refunded)
-  const recorded = facts.applicationFeeRefunds.reduce((sum, refund) => sum + cents(refund.amount), 0)
-  if (id(fee.account) !== facts.account || id(fee.charge) !== facts.charge.id || facts.applicationFeeRefunds.some(refund => id(refund.fee) !== fee.id || refund.currency.toUpperCase() !== fee.currency.toUpperCase() || refund.amount <= 0) || !Number.isSafeInteger(recorded) || recorded !== returned || returned > amount || (chargedCents === 0 && amount > 0)) return unknown()
-  if (fee.currency.toUpperCase() === currency) return amount === chargedCents ? known(returned) : unknown()
+  const feeCurrency = fee.currency?.toUpperCase()
+  const refunds = facts.applicationFeeRefunds
+  // Stripe's amount_refunded is denominated in the fee currency. Individual
+  // FeeRefunds may settle in a different currency, so their amounts cannot be
+  // summed against that aggregate. Preserve that check only for matching units.
+  const amounts = refunds.map(refund => cents(refund.amount))
+  const sameCurrency = refunds.every(refund => refund.currency?.toUpperCase() === feeCurrency)
+  const recorded = sameCurrency ? amounts.reduce((sum, value) => sum + value, 0) : null
+  if (id(fee.account) !== facts.account || id(fee.charge) !== facts.charge.id || !/^[A-Z]{3}$/.test(feeCurrency || '') || refunds.some(refund => id(refund.fee) !== fee.id || !/^[a-z]{3}$/i.test(refund.currency || '') || refund.amount <= 0) || (recorded !== null && (!Number.isSafeInteger(recorded) || recorded !== returned)) || (returned > 0) !== (refunds.length > 0) || returned > amount || (chargedCents === 0 && amount > 0)) return unknown()
+  if (feeCurrency === currency) return amount === chargedCents ? known(returned) : unknown()
   // No fee return leaves the charge's exact presentment fee intact. Returning
   // the entire platform fee reverses all of that same fee, regardless of FX.
   // Partial settlement-currency returns establish neither presentment amount.

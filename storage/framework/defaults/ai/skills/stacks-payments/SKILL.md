@@ -148,7 +148,10 @@ with presentment-currency contributor shares or infer a fee refund from a charge
 fee when no fee was returned, and exact zero after the full fee was returned,
 including across settlement currencies. A partial foreign-currency fee return
 has null remaining/returned presentment cents and requires review; do not infer
-an FX amount. Same-currency returns use the provider's actual minor units.
+an FX amount. When the application fee and charge share a currency, use the
+fee's canonical `amount_refunded`, even when individual FeeRefund records settle
+in another currency. Never sum those records across currencies; retain their
+actual settlement amounts independently.
 
 `createConnectedAccount` makes a Managed Risk account unless you pass `type` or
 `controller` (`MANAGED_RISK_CONTROLLER`: Stripe carries losses, full Stripe

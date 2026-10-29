@@ -70,4 +70,6 @@ Call after acquiring the application's payment lock. Persist immutable movement 
 
 Balance amounts, fees and net remain in their actual settlement currency with the provider exchange rate. Contributor allocations belong in their own presentment-currency ledger; a dispute status alone does not prove reinstatement, and a charge refund does not prove that the application fee was returned.
 
+`directChargeFeeAmounts(facts)` uses the application fee's canonical `amount_refunded` in its declared currency. Individual fee refunds can settle in another currency; their amounts are never added across currencies. When the fee and charge share a currency, partial and full returns are exact. When they differ, only a fully retained or fully returned fee establishes exact presentment cents; partial returns require review without an inferred exchange rate. See Stripe's [application fee object](https://docs.stripe.com/api/application_fees/object).
+
 References: [direct charges](https://docs.stripe.com/connect/direct-charges), [refund pagination](https://docs.stripe.com/api/refunds/list), [disputes](https://docs.stripe.com/api/disputes/list), [application fees](https://docs.stripe.com/api/application_fees/list).

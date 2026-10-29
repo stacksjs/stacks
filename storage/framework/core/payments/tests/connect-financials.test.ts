@@ -120,6 +120,45 @@ describe('direct-charge canonical financials', () => {
     }
   })
 
+  test('uses the canonical fee aggregate when individual refunds settle in another currency', async () => {
+    for (const example of [
+      { currency: 'eur', amount: 210, returned: 42, refunds: [47] },
+      { currency: 'eur', amount: 210, returned: 210, refunds: [47, 187] },
+      { currency: 'gbp', amount: 105, returned: 105, refunds: [38, 100] },
+    ]) {
+      const f = fixture()
+      Object.assign(f.charge, { currency: example.currency, application_fee_amount: example.amount })
+      Object.assign(f.fee, { currency: example.currency, amount: example.amount, amount_refunded: example.returned })
+      const refunds = example.refunds.map((amount, index) => {
+        const transactionId = `txn_fee_refund_${index}`
+        f.transactions[transactionId] = { ...f.transactions.txn_fee_refund, id: transactionId, amount: -amount, net: -amount, currency: 'usd' }
+        return { ...f.feeRefund, id: `fr_${index}`, balance_transaction: transactionId, amount, currency: 'usd' }
+      })
+      f.api.applicationFees.listRefunds = async () => ({ data: refunds, has_more: false })
+      const facts = await f.load()
+      expect(directChargeFeeAmounts(facts)).toEqual({ currency: example.currency.toUpperCase(), chargedCents: example.amount, returnedCents: example.returned, remainingCents: example.amount - example.returned, requiresReview: false })
+      expect(facts.applicationFeeRefunds.map(refund => refund.currency)).toEqual(example.refunds.map(() => 'usd'))
+      expect(facts.movements.filter(row => row.kind === 'application_fee_refund').map(row => ({ currency: row.transaction.currency, amount: row.transaction.amount }))).toEqual(example.refunds.map(amount => ({ currency: 'usd', amount: -amount })))
+    }
+  })
+
+  test('holds inconsistent or invalid mixed-currency fee refund facts', async () => {
+    for (const corrupt of [
+      (f: ReturnType<typeof fixture>) => { f.api.applicationFees.listRefunds = async () => ({ data: [], has_more: false }) },
+      (f: ReturnType<typeof fixture>) => { f.fee.amount_refunded = 0 },
+      (f: ReturnType<typeof fixture>) => { f.fee.amount_refunded = 1001 },
+      (f: ReturnType<typeof fixture>) => { f.feeRefund.currency = '' },
+      (f: ReturnType<typeof fixture>) => { f.fee.currency = 'eu' },
+      (f: ReturnType<typeof fixture>) => { f.feeRefund.amount = 0 },
+    ]) {
+      const f = fixture()
+      Object.assign(f.fee, { currency: 'eur', amount: 1000, amount_refunded: 500 })
+      Object.assign(f.feeRefund, { currency: 'usd', amount: 600 })
+      corrupt(f)
+      expect(directChargeFeeAmounts(await f.load()).requiresReview).toBe(true)
+    }
+  })
+
   test('preserves uncertainty for partial foreign-currency fee returns and inconsistent provider totals', async () => {
     const f = fixture()
     Object.assign(f.fee, { currency: 'usd', amount: 1234, amount_refunded: 500 })
