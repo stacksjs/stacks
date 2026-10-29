@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.347...v0.75.348)
+
+## 🐛 Bug Fixes
+
+- attribute audit trails to authenticated users ([0d35317](https://github.com/stacksjs/stacks/commit/0d35317)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh native orm test catalog ([323daad](https://github.com/stacksjs/stacks/commit/323daad)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.346...v0.75.347)
 
 ## 🐛 Bug Fixes
