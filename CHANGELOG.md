@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.353...v0.75.354)
+
+## ✨ Features
+
+- **payments**: prepare invoice fees after tax ([9f9a8a4](https://github.com/stacksjs/stacks/commit/9f9a8a4)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.352...v0.75.353)
 
 ## ✨ Features
