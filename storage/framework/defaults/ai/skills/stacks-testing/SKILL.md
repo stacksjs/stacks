@@ -169,7 +169,7 @@ expect(result.exitCode).toBe(0)
 
 Retained implementation evidence lives under `core/testing/tests/`:
 `http-client`, `acting-as`, `database-assertions`, `events`, `mail`, `time`,
-`console`, `isolated`, `disposable-database`, `browser` and `declarations` (what dtsx
+`console`, `isolated`, `disposable-database`, `schema`, `browser` and `declarations` (what dtsx
 publishes for `browser.ts` / `isolated.ts`: no `unknown` fields) test files. Fixture mechanics live in `core/testing/src/`;
 `package.json` declares the root and database/DynamoDB/browser export boundaries.
 
@@ -216,6 +216,13 @@ for (const dialect of ['sqlite', 'postgres'] as const) {
   `DB_USERNAME`/`DB_PASSWORD`); `database.directory` is removed with it.
 - `createDisposableDatabase` returns the same with `drop()` and `Symbol.asyncDispose`
   (`await using`), for setups that span hooks.
+- `applyTestSchema(statements)` applies trusted, transaction-compatible schema SQL
+  to the initialized SQLite or PostgreSQL test database atomically. PostgreSQL
+  sends one protocol batch; SQLite executes the statements inside one transaction.
+  A failure rolls back the complete batch, including created tables and seed rows.
+  Use it inside the isolated fixture after configuring its disposable database;
+  it does not order model dependencies, disable constraints, or replace production
+  migrations (for example, concurrent indexes require their own migration policy).
 
 ## Browser tests: `@stacksjs/testing/browser`
 

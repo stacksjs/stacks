@@ -31,6 +31,7 @@ export * from './time'
 // framework import, so both are safe at the root.
 export * from './isolated'
 export * from './disposable-database'
+export * from './schema'
 export * from 'bun:test'
 
 // The headless-Chrome kit is a subpath, '@stacksjs/testing/browser': most tests
