@@ -201,7 +201,7 @@ active status before its initial invoice is paid. The helper does not finalize
 invoices, collect payment, or implement the application's access policy.
 
 `collectDirectInvoice(invoiceId, account, { customer, subscription?, currency,
-platformFeePercent, approvedTotal, paymentMethod })` performs that collection
+platformFeePercent, approvedTotal, paymentMethod? })` performs that collection
 step. `approvedTotal` is the inclusive minor-unit amount the buyer approved;
 the saved method must belong to the original merchant customer. It holds the
 invoice, prepares its exact after-tax fee, finalizes, verifies the actual invoice
@@ -212,6 +212,8 @@ finalizes without a charge. Results distinguish `paid`, `processing` and
 available. Do not grant access for processing or customer action. Network errors
 propagate for durable retry. This helper does not create purchases, establish
 customer consent or reverse access after a later refund; those remain app policy.
+Without a saved method it returns the held invoice's payment page without a
+charge attempt. Paid recovery needs no card.
 
 After a successful direct-charge refund, `creditDirectInvoiceRefund(invoiceId,
 account, refundId, [{ invoiceLineItem, amount }])` links it to the original
@@ -251,6 +253,10 @@ of setup creation, when Stripe still guarantees the idempotency key; older
 missing bindings require review, never another purchase. Renewals still need
 the app's durable `invoice.created` hold/collection path. Apply access policy
 from both the collection result and current subscription/refund state.
+`DirectInvoicePurchaseExpiredError` is raised only when no bound purchase or
+unbound customer resource was found. Before retiring that attempt, also check
+the app's original invoice/subscription IDs. Unknown resources require review;
+a replacement purchase always needs fresh buyer consent.
 
 `directInvoiceTaxFinancials(invoiceId, paymentIntentId, account)` reads canonical
 collected/credited gross, net and tax plus `requiresReview`. Read it under the

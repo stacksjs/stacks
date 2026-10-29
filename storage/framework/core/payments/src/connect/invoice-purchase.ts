@@ -21,6 +21,10 @@ export interface DirectInvoicePurchaseOptions extends Pick<DirectInvoicePriceOpt
   metadata?: Record<string, string>
 }
 
+/** The quote expired without a bound purchase or an unbound provider resource
+ * that could be an interrupted purchase. Original local IDs still need review. */
+export class DirectInvoicePurchaseExpiredError extends Error {}
+
 /** Copy onto Setup Checkout's setup_intent_data.metadata. Completion verifies
  * this binding before creating any purchase. The app owns explicit consent and
  * durable locking of the reference; metadata is not a substitute for either. */
@@ -58,9 +62,12 @@ export async function completeDirectInvoicePurchase(setupIntentId: string, accou
   const paymentMethod = id(setup.payment_method)!
   const metadata = { ...quote, stacks_purchase_setup: setupIntentId }
   const key = (operation: string) => stacksIdempotencyKey(`connect.invoice.purchase.${operation}`, account, options.reference, quote.stacks_purchase_quote)
-  const canCreate = () => {
-    if (Date.now() / 1000 >= Math.min(options.expiresAt, setup.created + 24 * 60 * 60))
-      throw new Error('[payments/connect] Expired purchase can only recover its original provider invoice or schedule')
+  const canCreate = (rows: Array<{ metadata: Stripe.Metadata | null }>) => {
+    if (Date.now() / 1000 >= Math.min(options.expiresAt, setup.created + 24 * 60 * 60)) {
+      if (rows.some(row => !row.metadata?.stacks_purchase_reference || !row.metadata.stacks_purchase_quote || !row.metadata.stacks_purchase_setup || row.metadata.stacks_purchase_setup === setupIntentId))
+        throw new Error('[payments/connect] Expired purchase requires review of unbound original-customer resources')
+      throw new DirectInvoicePurchaseExpiredError('[payments/connect] Expired purchase can only recover its original provider invoice or schedule')
+    }
   }
   const existing = <T extends { metadata: Stripe.Metadata | null }>(rows: T[]) => {
     const own = rows.filter(row => row.metadata?.stacks_purchase_reference === options.reference)
@@ -81,9 +88,10 @@ export async function completeDirectInvoicePurchase(setupIntentId: string, accou
   let subscription: Stripe.Subscription | undefined
   let reloadSubscription: (() => Promise<Stripe.Subscription>) | undefined
   if (options.interval) {
-    let schedule = existing(await allPages<Stripe.SubscriptionSchedule>(after => client.subscriptionSchedules.list({ customer: options.customer, limit: 100, ...(after ? { starting_after: after } : {}) }, request)))
+    const schedules = await allPages<Stripe.SubscriptionSchedule>(after => client.subscriptionSchedules.list({ customer: options.customer, limit: 100, ...(after ? { starting_after: after } : {}) }, request))
+    let schedule = existing(schedules)
     if (!schedule) {
-      canCreate()
+      canCreate(schedules)
       await verifyPrice()
       const phase: Stripe.SubscriptionScheduleCreateParams.Phase = { items: [{ price: options.price, quantity: 1 }], automatic_tax: { enabled: true }, metadata }
       schedule = await client.subscriptionSchedules.create({ customer: options.customer, start_date: 'now', end_behavior: 'release', default_settings: { default_payment_method: paymentMethod }, phases: options.trialDays ? [{ ...phase, trial: true, duration: { interval: 'day', interval_count: options.trialDays } }, phase] : [phase], metadata }, { ...request, idempotencyKey: key('schedule') })
@@ -131,10 +139,11 @@ export async function completeDirectInvoicePurchase(setupIntentId: string, accou
     }
   }
   else {
-    const previous = existing(await allPages<Stripe.Invoice>(after => client.invoices.list({ customer: options.customer, limit: 100, ...(after ? { starting_after: after } : {}) }, request)))
+    const invoices = await allPages<Stripe.Invoice>(after => client.invoices.list({ customer: options.customer, limit: 100, ...(after ? { starting_after: after } : {}) }, request))
+    const previous = existing(invoices)
     if (previous) invoice = await client.invoices.retrieve(previous.id, {}, request)
     else {
-      canCreate()
+      canCreate(invoices)
       await verifyPrice()
       invoice = await client.invoices.create({ customer: options.customer, currency: options.currency.toLowerCase(), auto_advance: false, automatic_tax: { enabled: true }, default_payment_method: paymentMethod, pending_invoice_items_behavior: 'exclude', metadata }, { ...request, idempotencyKey: key('create') })
     }

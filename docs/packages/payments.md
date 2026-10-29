@@ -190,6 +190,8 @@ For a merchant's own direct invoices, `collectDirectInvoice` validates the
 buyer-approved inclusive amount and calculates the platform fee from Stripe's
 canonical amount excluding tax. It holds collection while preparing and
 finalizing the invoice, then verifies the invoice PaymentIntent before paying.
+Without a saved method, it returns the original hosted payment page without a
+charge attempt. Paid invoice recovery does not require a saved card.
 
 ```ts
 import { collectDirectInvoice } from '@stacksjs/payments'
@@ -244,6 +246,10 @@ normal subscriptions while preserving native trials. Replays recover the same
 invoice and subscription, including after the provider's idempotency retention.
 An expired quote or setup older than 24 hours can only recover an existing
 purchase; a missing original binding requires review instead of another charge.
+`DirectInvoicePurchaseExpiredError` identifies an expired attempt with no bound
+purchase or unbound customer resources. The app must also check its original
+local provider IDs before retiring that attempt. Uncertain resources still
+require review, and a replacement purchase requires fresh buyer consent.
 
 Only paid or approved trial results can establish access. Processing, customer
 action, later refunds and the current subscription state still require the

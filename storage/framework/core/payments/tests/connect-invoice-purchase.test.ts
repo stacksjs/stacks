@@ -1,5 +1,5 @@
 import { afterEach, expect, setSystemTime, test } from 'bun:test'
-import { completeDirectInvoicePurchase, directInvoicePurchaseMetadata } from '../src/connect/invoice-purchase'
+import { completeDirectInvoicePurchase, DirectInvoicePurchaseExpiredError, directInvoicePurchaseMetadata } from '../src/connect/invoice-purchase'
 import type { DirectInvoicePurchaseOptions } from '../src/connect/invoice-purchase'
 
 afterEach(() => setSystemTime())
@@ -114,9 +114,25 @@ test('refuses new purchases after quote expiry or provider idempotency retention
       f.options.expiresAt = Math.floor(Date.now() / 1000) - 1
       f.setup.metadata = directInvoicePurchaseMetadata('acct_merchant', f.options)
     }
-    await expect(f.complete()).rejects.toThrow(/Expired purchase/)
+    await expect(f.complete()).rejects.toThrow(DirectInvoicePurchaseExpiredError)
     expect(f.calls).toEqual([])
   }
+})
+
+test.each([false, true])('expired quotes with unbound customer resources need review (subscription=%s)', async recurring => {
+  const f = fixture(recurring)
+  f.setup.created -= 25 * 60 * 60
+  const resource = recurring ? f.client.subscriptionSchedules : f.client.invoices
+  resource.list = async () => ({ data: [{ id: recurring ? 'sub_sched_unbound' : 'in_unbound', metadata: {} }], has_more: false })
+  try {
+    await f.complete()
+    throw new Error('Expected review of an uncertain expired purchase')
+  }
+  catch (error) {
+    expect(error).not.toBeInstanceOf(DirectInvoicePurchaseExpiredError)
+    expect(String(error)).toContain('review of unbound original-customer resources')
+  }
+  expect(f.calls).toEqual([])
 })
 
 test('refuses foreign, incomplete and changed setup approvals before purchase writes', async () => {
