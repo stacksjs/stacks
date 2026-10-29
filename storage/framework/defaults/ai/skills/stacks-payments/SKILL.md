@@ -194,6 +194,19 @@ when the first invoice needs editing. Do not grant paid access from a schedule's
 active status before its initial invoice is paid. The helper does not finalize
 invoices, collect payment, or implement the application's access policy.
 
+`collectDirectInvoice(invoiceId, account, { customer, subscription?, currency,
+platformFeePercent, approvedTotal, paymentMethod })` performs that collection
+step. `approvedTotal` is the inclusive minor-unit amount the buyer approved;
+the saved method must belong to the original merchant customer. It holds the
+invoice, prepares its exact after-tax fee, finalizes, verifies the actual invoice
+PaymentIntent's identity/amount/fee, then pays. Open invoices recover without a
+new purchase; paid invoices replay without another payment. A zero trial invoice
+finalizes without a charge. Results distinguish `paid`, `processing` and
+`requires_payment`; the last includes the canonical hosted invoice URL when
+available. Do not grant access for processing or customer action. Network errors
+propagate for durable retry. This helper does not create purchases, establish
+customer consent or reverse access after a later refund; those remain app policy.
+
 After a successful direct-charge refund, `creditDirectInvoiceRefund(invoiceId,
 account, refundId, [{ invoiceLineItem, amount }])` links it to the original
 invoice lines without moving money again. `amount` uses the original price's

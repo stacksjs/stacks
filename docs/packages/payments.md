@@ -184,6 +184,41 @@ The Stripe-only half keeps Stripe's types and throws `PaymentUnsupportedError`, 
 
 Amounts are integers in the smallest currency unit. Use `Payment.toCents()`, `Payment.toDollars()`, and `Payment.formatAmount()` for conversion and display.
 
+## Stripe Connect: direct invoice fees after tax
+
+For a merchant's own direct invoices, `collectDirectInvoice` validates the
+buyer-approved inclusive amount and calculates the platform fee from Stripe's
+canonical amount excluding tax. It holds collection while preparing and
+finalizing the invoice, then verifies the invoice PaymentIntent before paying.
+
+```ts
+import { collectDirectInvoice } from '@stacksjs/payments'
+
+const result = await collectDirectInvoice(invoice.id, merchant.stripe_account_id, {
+  customer: originalCustomerId,
+  subscription: originalSubscriptionId, // omit for a one-time invoice
+  currency: 'EUR',
+  platformFeePercent: 10,
+  approvedTotal: 1999,
+  paymentMethod: savedPaymentMethodId,
+})
+```
+
+The original connected account, customer, subscription, currency, tax and
+approved amount must match. A changed or incomplete tax calculation is an error.
+An open invoice can be recovered; a paid invoice replays without charging again.
+Zero trial invoices require no PaymentIntent. `result.status` is `paid`,
+`processing` or `requires_payment`; use the latter's `paymentUrl` for customer
+action. Only a paid result is proof of this invoice's payment, and an application
+must still enforce its trial, refund and access rules. Network errors remain
+retryable. The caller owns durable invoice identity and customer consent.
+
+Ordinary Checkout subscription invoices are already finalized. Use an editable
+first invoice from a subscription schedule when the fee must exclude tax, and
+hold renewal collection on `invoice.created`. `prepareDirectInvoiceFee` exposes
+only the preparation step for applications that manage finalization themselves.
+Never choose tax jurisdictions or rates from a language or currency.
+
 ## Stripe Connect: destination charges
 
 A marketplace sale is charged on the platform and settled by Stripe to the
