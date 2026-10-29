@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.360...v0.75.361)
+
+## ✨ Features
+
+- recover invoice purchases from verified payment setup ([c696140](https://github.com/stacksjs/stacks/commit/c696140)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.359...v0.75.360)
 
 ## ✨ Features
