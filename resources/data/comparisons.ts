@@ -603,6 +603,18 @@ export const comparisons: Comparison[] = [
     icon: 'i-hugeicons-server-stack-02',
     group: 'backends',
     matrix: { auth: 'built-in', orm: 'built-in', jobs: 'partial', mail: 'built-in', admin: 'byo', realtime: 'partial', deploy: 'byo', updates: 'partial', mailbox: 'byo' },
+    checked: {
+      version: 'AdonisJS 7',
+      on: '2026-10-29',
+      sources: [
+        { label: 'AdonisJS 7: Lucid schema generation and typed Inertia', url: 'https://adonisjs.com/blog/v7' },
+        { label: 'Installation, and the Node.js 24 requirement', url: 'https://docs.adonisjs.com/guides/getting-started/installation' },
+        { label: 'Authentication guards and Bouncer', url: 'https://docs.adonisjs.com/guides/auth/introduction' },
+        { label: 'Queues, marked experimental', url: 'https://docs.adonisjs.com/guides/digging-deeper/queues' },
+        { label: 'Transmit, server-sent events', url: 'https://docs.adonisjs.com/guides/digging-deeper/transmit' },
+        { label: 'Drive, file storage', url: 'https://docs.adonisjs.com/guides/digging-deeper/drive' },
+      ],
+    },
     page: {
       headline: 'The nearest neighbour, and the most honest comparison here.',
       lede: 'Adonis has been doing batteries-included TypeScript on the server for years, with a real ORM, auth, validation, mail, and templating. If you want that today with a track record behind it, Adonis is a serious answer. Stacks differs in runtime, in how migrations are produced, and in how far past the application it reaches.',
@@ -632,7 +644,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Admin surface', stacks: 'Generated from models', other: 'Build it yourself' },
         { dimension: 'Infrastructure', stacks: 'Declared in config and deployed by the CLI', other: 'Your own' },
         mailServerRow('None; inboxes come from a hosted provider'),
-        updatesRow('upgrade-kit codemods for v5 to v6; otherwise by hand'),
+        updatesRow('An upgrade guide for each major, such as v6 to v7; otherwise by hand'),
       ],
       migration: [
         { title: 'The vocabulary matches', text: 'Controllers, middleware, validators, and models all have direct counterparts, so the port is mostly mechanical.' },

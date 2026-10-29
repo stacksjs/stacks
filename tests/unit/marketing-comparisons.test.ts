@@ -130,7 +130,7 @@ describe('what each page was checked against (#2932)', () => {
   // The pages whose claims about the other side have been checked against
   // that project's own current pages. It grows one page at a time until it
   // is every comparison, at which point `checked` stops being optional.
-  const checkedSlugs = ['laravel']
+  const checkedSlugs = ['laravel', 'adonisjs']
 
   test('the pages that have been checked say so', () => {
     for (const slug of checkedSlugs)
