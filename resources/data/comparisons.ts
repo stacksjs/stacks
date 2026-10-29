@@ -438,6 +438,16 @@ export const comparisons: Comparison[] = [
     icon: 'i-hugeicons-note-edit',
     group: 'fullstack',
     matrix: { auth: 'byo', orm: 'byo', jobs: 'byo', mail: 'byo', admin: 'byo', realtime: 'byo', deploy: 'partial', updates: 'partial', mailbox: 'byo' },
+    checked: {
+      version: 'Astro 7.4',
+      on: '2026-10-29',
+      sources: [
+        { label: 'Astro DB, removed in Astro 7.0', url: 'https://docs.astro.build/en/guides/astro-db/' },
+        { label: 'Sessions, built in since 5.7', url: 'https://docs.astro.build/en/guides/sessions/' },
+        { label: 'Cloudflare acquires Astro, January 2026', url: 'https://www.businesswire.com/news/home/20260116386991/en' },
+        { label: '@astrojs/upgrade', url: 'https://www.npmjs.com/package/@astrojs/upgrade' },
+      ],
+    },
     page: {
       headline: 'Astro is right about content sites. Stacks is for the day it stops being one.',
       lede: 'For a marketing site, a blog, or documentation, Astro is hard to beat: almost no client JavaScript, content collections with type-checked frontmatter, and islands only where you need interactivity. Stacks is not trying to win that comparison. It is the answer when the site grows accounts, a dashboard, and a queue.',
