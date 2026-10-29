@@ -73,6 +73,18 @@ describe('@stacksjs/payments - Connect destination subscriptions', () => {
       expect(item.price_data?.recurring).toEqual({ interval: 'month', interval_count: 3 })
     })
 
+    test('preserves explicit tax treatment and the merchant product classification', () => {
+      const item = lineItem({ amount: 1999, currency: 'EUR', interval: 'month', productName: 'Running', taxBehavior: 'inclusive', taxCode: 'txcd_10000000' })
+      expect(item.price_data?.tax_behavior).toBe('inclusive')
+      expect(item.price_data?.product_data?.tax_code).toBe('txcd_10000000')
+      expect(lineItem({ amount: 1999, currency: 'EUR', interval: 'month', productName: 'Running', taxBehavior: 'exclusive' }).price_data?.tax_behavior).toBe('exclusive')
+    })
+
+    test('refuses unsupported tax treatment and malformed classifications before checkout', () => {
+      expect(() => lineItem({ amount: 1999, currency: 'EUR', interval: 'month', productName: 'Running', taxBehavior: 'automatic' as never })).toThrow(/taxBehavior/)
+      expect(() => lineItem({ amount: 1999, currency: 'EUR', interval: 'month', productName: 'Running', taxCode: 'prod_not_a_tax_code' })).toThrow(/taxCode/)
+    })
+
     test('refuses a price that is not recurring-shaped', () => {
       expect(() => lineItem({ amount: 0, currency: 'usd', interval: 'month', productName: 'Free' })).toThrow(/positive amount/)
       expect(() => lineItem({ amount: 19.99, currency: 'usd', interval: 'month', productName: 'Float' })).toThrow(/positive amount/)

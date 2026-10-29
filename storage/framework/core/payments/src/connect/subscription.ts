@@ -36,6 +36,10 @@ export interface InlineRecurringPrice {
   /** What the buyer sees on Checkout, the invoice and their receipt. */
   productName: string
   productDescription?: string
+  /** Whether the advertised amount includes tax. Omit to use Stripe's default. */
+  taxBehavior?: 'inclusive' | 'exclusive'
+  /** The merchant's Stripe product tax classification (`txcd_...`). */
+  taxCode?: string
 }
 
 export interface DestinationSubscriptionCheckoutOptions {
@@ -154,16 +158,22 @@ export const manageDestinationSubscription: ManageDestinationSubscription = (() 
       throw new Error(`[payments/connect] intervalCount must be a positive whole number, got ${intervalCount}`)
     if (!price.productName?.trim())
       throw new Error('[payments/connect] a recurring price needs a productName')
+    if (price.taxBehavior != null && price.taxBehavior !== 'inclusive' && price.taxBehavior !== 'exclusive')
+      throw new Error('[payments/connect] taxBehavior must be inclusive or exclusive')
+    if (price.taxCode != null && !/^txcd_\d{8}$/.test(price.taxCode))
+      throw new Error('[payments/connect] taxCode must be a Stripe tax classification (txcd_ followed by eight digits)')
 
     return {
       quantity,
       price_data: {
         currency: price.currency.toLowerCase(),
         unit_amount: price.amount,
+        ...(price.taxBehavior ? { tax_behavior: price.taxBehavior } : {}),
         recurring: { interval: price.interval, ...(intervalCount !== 1 ? { interval_count: intervalCount } : {}) },
         product_data: {
           name: price.productName.slice(0, 250),
           ...(price.productDescription ? { description: price.productDescription.slice(0, 500) } : {}),
+          ...(price.taxCode ? { tax_code: price.taxCode } : {}),
         },
       },
     }
