@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.359...v0.75.360)
+
+## ✨ Features
+
+- collect direct invoices using approved after-tax fees ([49fc2de](https://github.com/stacksjs/stacks/commit/49fc2de)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- keep file isolation fixtures portable ([36d6dd7](https://github.com/stacksjs/stacks/commit/36d6dd7)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.357...v0.75.359)
 
 ## 🐛 Bug Fixes
