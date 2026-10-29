@@ -218,6 +218,34 @@ after the provider's idempotency window. Pending refunds and differing existing
 credits remain errors for durable retry/review. It sends no email; applications
 own receipt delivery.
 
+For the complete first-purchase flow, `ensureDirectInvoicePrice(account, {
+reference, name, amount, currency, taxCode, interval?, intervalCount? })` creates
+or finds a merchant catalog price using Stripe's durable unique lookup key.
+Prices are inclusive; changed offer terms get a new immutable price. Existing
+prices must still match and be active, including their product/classification.
+The merchant supplies `taxCode`; the helper does not invent classifications.
+
+Freeze a `DirectInvoicePurchaseOptions` record with a unique purchase reference,
+original customer/price/amount/currency/tax code, explicit platform percentage,
+Checkout `expiresAt`, optional recurrence/trial and application metadata. Copy
+`directInvoicePurchaseMetadata(account, purchase)` onto Setup Checkout's
+`setup_intent_data.metadata`. Use `directCheckout` in setup mode with a required
+billing address, `customer_update.address: 'auto'`, the same expiry and clear
+localized confirmation text for the approved price, recurrence and trial.
+Persist the quote and serialize its durable reference in the app.
+
+`completeDirectInvoicePurchase(setupIntentId, account, purchase)` requires the
+successful off-session setup's original customer and quote binding. It recovers
+one-time invoices or released subscription schedules through complete provider
+lists, holds the first subscription invoice before releasing its schedule, and
+uses `collectDirectInvoice` to collect. Native trial state survives release.
+Paid replays remain read-only even after expiry or product retirement. Missing
+original purchases may only be created before quote expiry and within 24 hours
+of setup creation, when Stripe still guarantees the idempotency key; older
+missing bindings require review, never another purchase. Renewals still need
+the app's durable `invoice.created` hold/collection path. Apply access policy
+from both the collection result and current subscription/refund state.
+
 `directInvoiceTaxFinancials(invoiceId, paymentIntentId, account)` reads canonical
 collected/credited gross, net and tax plus `requiresReview`. Read it under the
 application's payment lock alongside `directChargeFinancials`, and compare its

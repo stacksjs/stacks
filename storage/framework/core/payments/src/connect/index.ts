@@ -17,6 +17,8 @@ export * from './direct'
 export * from './financials'
 export * from './invoice-fee'
 export * from './invoice-collection'
+export * from './invoice-price'
+export * from './invoice-purchase'
 export * from './invoice-credit'
 export * from './tax'
 export * from './invoice-tax'
@@ -34,6 +36,8 @@ import { managePayout } from './payout'
 import { directChargeFinancials } from './financials'
 import { prepareDirectInvoiceFee } from './invoice-fee'
 import { collectDirectInvoice } from './invoice-collection'
+import { ensureDirectInvoicePrice } from './invoice-price'
+import { completeDirectInvoicePurchase, directInvoicePurchaseMetadata } from './invoice-purchase'
 import { creditDirectInvoiceRefund } from './invoice-credit'
 import { directInvoiceTaxFinancials } from './invoice-tax'
 import { connectRefund, connectRefundParams, isDestinationCharge } from './refund'
@@ -75,6 +79,9 @@ export const connect = {
   directChargeFinancials,
   prepareDirectInvoiceFee,
   collectDirectInvoice,
+  ensureDirectInvoicePrice,
+  directInvoicePurchaseMetadata,
+  completeDirectInvoicePurchase,
   creditDirectInvoiceRefund,
   directInvoiceTaxFinancials,
   directPaymentIntentParams,

@@ -219,6 +219,37 @@ hold renewal collection on `invoice.created`. `prepareDirectInvoiceFee` exposes
 only the preparation step for applications that manage finalization themselves.
 Never choose tax jurisdictions or rates from a language or currency.
 
+### First purchases and trials
+
+Use `ensureDirectInvoicePrice(account, { reference, name, amount, currency,
+taxCode, interval?, intervalCount? })` to create or recover an inclusive merchant
+price. Its native Stripe lookup key survives the idempotency window. Different
+offer terms receive a new immutable price; archived or modified existing prices
+are refused. The merchant supplies its tax classification.
+
+Persist a frozen `DirectInvoicePurchaseOptions` record before starting Checkout.
+It includes the unique purchase reference, original customer and price, amount,
+currency, tax code, platform percentage, `expiresAt` in Unix seconds and optional
+recurrence/trial. Copy `directInvoicePurchaseMetadata(account, purchase)` into
+Setup Checkout's `setup_intent_data.metadata`. Use a required billing address,
+automatic customer address updates and localized confirmation text explaining
+the approved price, recurrence and trial. The application owns consent and a
+database lock on that logical reference.
+
+After the setup succeeds, `completeDirectInvoicePurchase(setupIntentId, account,
+purchase)` verifies the original customer and quote. It creates or recovers the
+one-time invoice or first subscription invoice and uses `collectDirectInvoice`
+for the exact after-tax fee and payment. Subscription schedules release into
+normal subscriptions while preserving native trials. Replays recover the same
+invoice and subscription, including after the provider's idempotency retention.
+An expired quote or setup older than 24 hours can only recover an existing
+purchase; a missing original binding requires review instead of another charge.
+
+Only paid or approved trial results can establish access. Processing, customer
+action, later refunds and the current subscription state still require the
+application's access policy. Hold renewal invoices synchronously before
+acknowledging `invoice.created`, then complete collection through durable work.
+
 ## Stripe Connect: destination charges
 
 A marketplace sale is charged on the platform and settled by Stripe to the
