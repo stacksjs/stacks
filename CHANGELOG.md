@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.356...v0.75.357)
+
+## 🐛 Bug Fixes
+
+- reject ambiguous support-view request methods ([40816cf](https://github.com/stacksjs/stacks/commit/40816cf)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.355...v0.75.356)
 
 ## ✨ Features
