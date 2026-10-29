@@ -563,6 +563,15 @@ export const comparisons: Comparison[] = [
     icon: 'i-hugeicons-puzzle',
     group: 'fullstack',
     matrix: { auth: 'partial', orm: 'partial', jobs: 'byo', mail: 'byo', admin: 'byo', realtime: 'byo', deploy: 'partial', updates: 'byo', mailbox: 'byo' },
+    checked: {
+      version: 'create-t3-app 7.40 and tRPC 11',
+      on: '2026-10-29',
+      sources: [
+        { label: 'What create-t3-app scaffolds', url: 'https://create.t3.gg/en/introduction' },
+        { label: 'create-t3-app 7.40, with Better Auth templates', url: 'https://www.npmjs.com/package/create-t3-app' },
+        { label: 'tRPC 11: batching, subscriptions, TanStack Query', url: 'https://trpc.io/docs' },
+      ],
+    },
     page: {
       headline: 'A stack you assemble, or a framework that arrives assembled.',
       lede: 'T3 is Next.js, tRPC, Prisma or Drizzle, Tailwind, and NextAuth.js or Better Auth, chosen because each is the strongest in its category and typed end to end. It works. The cost is that you own the seams: five upgrade cadences, five sets of release notes, and every integration point is yours to keep working.',
