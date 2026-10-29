@@ -500,10 +500,21 @@ export const comparisons: Comparison[] = [
     icon: 'i-hugeicons-structure-01',
     group: 'fullstack',
     matrix: { auth: 'built-in', orm: 'built-in', jobs: 'built-in', mail: 'built-in', admin: 'partial', realtime: 'partial', deploy: 'partial', updates: 'partial', mailbox: 'byo' },
+    checked: {
+      version: 'Redwood GraphQL 8.9 and RedwoodSDK 1.7',
+      on: '2026-10-29',
+      sources: [
+        { label: 'From RedwoodJS to RedwoodSDK: the original stays supported', url: 'https://rwsdk.com/blog/redwoodjs-to-redwoodsdk' },
+        { label: 'The Redwood GraphQL repository', url: 'https://github.com/redwoodjs/graphql' },
+        { label: 'RedwoodSDK, a React framework for Cloudflare', url: 'https://docs.rwsdk.com/' },
+        { label: 'CedarJS and its upgrade path from Redwood', url: 'https://cedarjs.com/' },
+        { label: 'Uploads and storage, marked experimental', url: 'https://docs.redwoodjs.com/docs/uploads/' },
+      ],
+    },
     page: {
       headline: 'Same ambition, different bets.',
       lede: 'Redwood set out to be the full-stack framework JavaScript never had, and much of it landed: generators, cells, Prisma-backed services, auth providers, and background jobs. Stacks wants the same thing and made different choices about the runtime, the transport, and how much of the infrastructure belongs in the repository.',
-      summary: 'RedwoodJS paired a React front end with a GraphQL services layer, Prisma for data, several auth providers, a mailer, background jobs, and generators that scaffold both halves of a feature. In 2025 the core team renamed it Redwood GraphQL, kept it on security fixes, and moved its focus to RedwoodSDK, a separate React Server Components framework that runs only on Cloudflare. The community continues the GraphQL framework as CedarJS. Its opinionated, batteries-included stance is still the closest philosophical neighbour Stacks has in JavaScript.',
+      summary: 'RedwoodJS paired a React front end with a GraphQL services layer, Prisma for data, several auth providers, a mailer, background jobs, and generators that scaffold both halves of a feature. In 2025 the core team renamed it Redwood GraphQL and moved its focus to RedwoodSDK, a separate React Server Components framework built for Cloudflare, saying the original stays fully supported; its most recent release, 8.9, came in March 2026. The community continues the GraphQL framework as CedarJS. Its opinionated, batteries-included stance is still the closest philosophical neighbour Stacks has in JavaScript.',
       theirStrengths: [
         { title: 'React and GraphQL maturity', text: 'If you want React on the front and a schema-first API in the middle, Redwood has years of that path worn in.' },
         { title: 'Prisma', text: 'Prisma is a superb, widely known ORM with excellent tooling, and Redwood is built around it.' },
@@ -513,7 +524,7 @@ export const comparisons: Comparison[] = [
       ourStrengths: [
         { title: 'One runtime', text: 'Bun for the server, the tests, the CLI, and the build today, with more runtimes planned and no separate bundler configuration to reconcile.' },
         { title: 'More in the box', text: 'Notifications, SMS, push, search indexing, commerce, CMS, and an admin dashboard are first-party, and storage is a stable feature rather than an experimental one.' },
-        { title: 'Infrastructure included', text: 'DNS, TLS, CDN, and mail records are declared in config and applied by buddy deploy to servers you own, without a separate infrastructure tool. RedwoodSDK, by contrast, runs only on Cloudflare.' },
+        { title: 'Infrastructure included', text: 'DNS, TLS, CDN, and mail records are declared in config and applied by buddy deploy to servers you own, without a separate infrastructure tool. RedwoodSDK, by contrast, is built for Cloudflare.' },
         { title: 'Model-driven migrations', text: 'Schema comes from the model definitions and is diffed into SQL, rather than being maintained in a separate schema file.' },
         mailServerStrength,
         updatesStrength,
@@ -526,7 +537,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Background jobs', stacks: 'Queues, batches, schedules, workers', other: 'Background jobs with a database queue' },
         { dimension: 'Runtime', stacks: 'Bun today, more runtimes planned', other: 'Node.js, or Cloudflare Workers for RedwoodSDK' },
         { dimension: 'Admin surface', stacks: 'Dashboard generated from models', other: 'Scaffold generators produce CRUD pages' },
-        { dimension: 'Infrastructure', stacks: 'Declared in config/cloud.ts', other: 'Deploy targets and your own IaC, Cloudflare only for RedwoodSDK' },
+        { dimension: 'Infrastructure', stacks: 'Declared in config/cloud.ts', other: 'Deploy targets and your own IaC, Cloudflare for RedwoodSDK' },
         mailServerRow('None; inboxes come from a hosted provider'),
         updatesRow('rw upgrade and codemods; a dependency bot is yours to set up'),
       ],
