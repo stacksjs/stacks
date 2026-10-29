@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.362...v0.75.363)
+
+## 🐛 Bug Fixes
+
+- **testing**: apply disposable schemas atomically ([913c1f8](https://github.com/stacksjs/stacks/commit/913c1f8)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh testing schema evidence catalog ([60a4af1](https://github.com/stacksjs/stacks/commit/60a4af1)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.361...v0.75.362)
 
 ## ✨ Features
