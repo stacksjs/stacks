@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.368...v0.75.369)
+
+## 🐛 Bug Fixes
+
+- **testing**: emit the standalone schema entry in release archives ([d5b7d54](https://github.com/stacksjs/stacks/commit/d5b7d54)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.367...v0.75.368)
 
 ## 🐛 Bug Fixes
