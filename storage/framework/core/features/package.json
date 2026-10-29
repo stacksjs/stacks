@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/features",
   "type": "module",
-  "version": "0.75.361",
+  "version": "0.75.362",
   "description": "Which files and tables belong to which optional Stacks feature.",
   "author": "Chris Breuer",
   "contributors": [

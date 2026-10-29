@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.361...v0.75.362)
+
+## ✨ Features
+
+- add private local speech and refresh native technical diagrams ([51f148c](https://github.com/stacksjs/stacks/commit/51f148c)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.360...v0.75.361)
 
 ## ✨ Features
