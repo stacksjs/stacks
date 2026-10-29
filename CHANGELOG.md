@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.365...v0.75.366)
+
+## 🐛 Bug Fixes
+
+- **payments**: accept payer identities independently of ORM traits ([0858f50](https://github.com/stacksjs/stacks/commit/0858f50)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.364...v0.75.365)
 
 ## 🐛 Bug Fixes
