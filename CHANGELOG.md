@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.346...v0.75.347)
+
+## 🐛 Bug Fixes
+
+- **release**: build iOS releases in production mode ([5cd21a5](https://github.com/stacksjs/stacks/commit/5cd21a5)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.345...v0.75.346)
 
 ## 🐛 Bug Fixes
