@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.351...v0.75.352)
+
+## 🐛 Bug Fixes
+
+- require full administrator sessions for support viewing ([fb68964](https://github.com/stacksjs/stacks/commit/fb68964)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.350...v0.75.351)
 
 ## 🐛 Bug Fixes
