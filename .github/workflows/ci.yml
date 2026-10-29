@@ -109,7 +109,11 @@ jobs:
             echo "::endgroup::"
           done
       - name: Check the generated locks still describe the committed workspace
-        run: bun .github/scripts/check-lockfiles-current.ts
+        run: |
+          if ! git diff --exit-code -- bun.lock pantry.lock; then
+            echo "::error::Installing changed a committed lockfile. Run \`./pantry/.bin/bun install\` (the pinned Bun) and \`pantry install --ignore-scripts --quiet\`, then commit the result. Lockfile maintenance must not run project setup or database hooks."
+            exit 1
+          fi
 
   lint:
     runs-on: ubuntu-latest
@@ -424,43 +428,26 @@ jobs:
             pantry.lock
           if-no-files-found: error
 
-      # An install must not change the lockfile that describes it.
+      # An install must not change the lockfile that describes it, so this
+      # installs the way a lock refresh does and asks git whether either
+      # lockfile moved.
       #
-      # `bun install --frozen-lockfile` refuses to write, so it proves nothing
-      # about what an install would have produced, and check-lockfile-version.ts
-      # reads one line. This runs the install and asks git whether anything
-      # moved, which is the only check that covers every kind of drift.
+      # `pantry.lock` used to be compared structurally here. A Linux install
+      # rewrote a macOS-written lock until four fixes landed (pantry-pm/pantry#231,
+      # #232 and #233, and this repository's own lock in f21708e705), and after
+      # them it still added a GCC toolchain closure that macOS never resolves
+      # (stacksjs/stacks#2899). The committed lock now records that closure, and
+      # a Linux install and a macOS one both leave it byte-identical, so the
+      # comparison is strict again (stacksjs/stacks#2905).
       #
-      # Both lockfiles, and `pantry.lock` is the one that took four fixes to
-      # get here. A Linux install used to rewrite it with 144 additions and
-      # 1,278 deletions:
-      #
-      #   - foreign-platform pins did not survive regeneration, and their own
-      #     dependencies did not come with them (pantry-pm/pantry#231, 0.11.58)
-      #   - a frozen install rejected a lock it had just written
-      #     (pantry-pm/pantry#233, 0.11.58)
-      #   - this repository's own lock recorded 80 workspace members as npm
-      #     packages, written that way by pantry 0.11.48 and corrected in
-      #     f21708e705
-      #   - the companion merge step swept the foreign pins back out, because
-      #     it seeded its catalog closure from a lockfile that holds only those
-      #     pins - and a foreign pin is a leaf, so nothing in that set declares
-      #     the guard that makes it foreign (pantry-pm/pantry#232, 0.11.59)
-      #
-      # The last one is why `gnu.org/gettext` was the final holdout: it
-      # resolves to 1.0.0 on macOS and 0.21.1 on Linux, because `git-scm.org`
-      # declares `linux:gnu.org/gettext^0.21`, and `git-scm.org` is the only
-      # package that does. The lock keys by `name@version`, so both records fit
-      # - the earlier reading of this as "one version per package name" was
-      # wrong, and led to treating a bug as a property of the format. #2533.
-      # `bun.lock` strictly, `pantry.lock` structurally: its resolved closure is
-      # platform-specific, so a byte comparison can only pass on the platform
-      # that wrote the file, and this job ran red for days on a GCC toolchain
-      # that Linux needs and macOS does not (stacksjs/stacks#2899). The script
-      # tolerates a closure addition nothing declares and fails on everything
-      # else, including a declared dependency the lockfile never recorded.
+      # It does still go red when a declared range gains a release upstream,
+      # because pantry resolves past the pin the lock holds (pantry-pm/pantry#260).
       - name: Check the lockfiles still describe this workspace
-        run: bun .github/scripts/check-lockfiles-current.ts
+        run: |
+          if ! git diff --exit-code -- bun.lock pantry.lock; then
+            echo "::error::Installing changed a committed lockfile. Run \`./pantry/.bin/bun install\` (the pinned Bun) and \`pantry install --ignore-scripts --quiet\`, then commit the result. Lockfile maintenance must not run project setup or database hooks."
+            exit 1
+          fi
 
       # Standalone Buddy bundles every command and its package roots. Build the
       # same complete runtime package set as the published-root probes: a
