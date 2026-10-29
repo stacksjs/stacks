@@ -1258,6 +1258,15 @@ export const comparisons: Comparison[] = [
     icon: 'i-hugeicons-satellite-02',
     group: 'ecosystems',
     matrix: { auth: 'hosted', orm: 'hosted', jobs: 'partial', mail: 'partial', admin: 'hosted', realtime: 'hosted', deploy: 'hosted', updates: 'hosted', mailbox: 'byo' },
+    checked: {
+      version: 'Firebase, October 2026',
+      on: '2026-10-29',
+      sources: [
+        { label: 'Pricing: Firestore operations and SQL Connect', url: 'https://firebase.google.com/pricing' },
+        { label: 'From Data Connect to SQL Connect', url: 'https://firebase.blog/posts/2026/04/whats-new-sql-connect' },
+        { label: 'SQL Connect, on Cloud SQL for PostgreSQL', url: 'https://firebase.google.com/docs/sql-connect' },
+      ],
+    },
     page: {
       headline: 'Firebase syncs data to clients. Stacks runs the application in the middle.',
       lede: 'Firebase is built on the idea that the client is the application and the backend is a synchronised document store. That is a genuinely good fit for chat, presence, and offline-first mobile apps. Firestore is a poor fit for reporting, invoicing, or complex authorisation. Firebase now offers Postgres through SQL Connect, but it is still reached through Firebase, on Google Cloud, and billed per operation. Relational work on a server you own is where Stacks is aimed.',
