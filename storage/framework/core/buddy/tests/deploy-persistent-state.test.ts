@@ -190,6 +190,23 @@ describe('sibling sites cannot end up on different databases', () => {
 
     expect(dbEntry(out.api).target).toBe('/var/www/acme-shared/database/api.sqlite')
     expect(dbEntry(out.api).target).not.toBe(dbEntry(out.main).target)
+    expect(dbEntry(out.api).seed).toBe(true)
+  })
+
+  it('assigns an owner for every SQLite target when PostgreSQL migrates first', () => {
+    const out = applyPersistentStatePaths({
+      training: migratingSite({ DB_CONNECTION: 'postgres', DB_DATABASE: 'lsu_training' }),
+      api: appSite({ DB_CONNECTION: 'sqlite' }),
+      main: migratingSite({ DB_CONNECTION: 'sqlite' }),
+      reporting: appSite({ DB_CONNECTION: 'sqlite', DB_DATABASE_PATH: 'database/reporting.sqlite' }),
+      reportingWorker: appSite({ DB_CONNECTION: 'sqlite', DB_DATABASE_PATH: 'database/reporting.sqlite' }),
+    }, 'lsu')
+    expect(out.training.sharedPaths).toEqual(['storage/logs'])
+    expect(dbEntry(out.main).seed).toBe(true)
+    expect(dbEntry(out.api).seed).toBe(false)
+    expect(dbEntry(out.reporting).seed).toBe(true)
+    expect(dbEntry(out.reportingWorker).seed).toBe(false)
+    expect(dbEntry(out.reporting).target).not.toBe(dbEntry(out.main).target)
   })
 })
 

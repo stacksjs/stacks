@@ -1424,12 +1424,18 @@ function runsMigrations(site: any): boolean {
  */
 export function applyPersistentStatePaths(sites: Record<string, any>, slug: string): Record<string, any> {
   const isServerApp = (site: any): boolean => !!site && typeof site.start === 'string'
-  // The single database owner. `migrate` is the marker: it is the one command
-  // that must run against the real database. Falling back to the first
-  // server-app site keeps a project that migrates elsewhere (or not at all)
-  // from having no owner, in which case nothing would ever create the file.
+  // Each SQLite target needs its own owner. A PostgreSQL service that migrates
+  // first cannot create a sibling SQLite file, nor can the owner of one file
+  // seed another. Prefer a migrating consumer, then the first consumer.
   const appSites = Object.entries(sites).filter(([, site]) => isServerApp(site))
-  const owner = (appSites.find(([, site]) => runsMigrations(site)) ?? appSites[0])?.[0]
+  const owners = new Map<string, { name: string, migrates: boolean }>()
+  for (const [name, site] of appSites) {
+    const sqlite = siteSqlitePath(site.env || {})
+    if (!sqlite) continue
+    const migrates = runsMigrations(site)
+    const previous = owners.get(sqlite)
+    if (!previous || (!previous.migrates && migrates)) owners.set(sqlite, { name, migrates })
+  }
 
   const out: Record<string, any> = {}
   for (const [name, site] of Object.entries(sites)) {
@@ -1450,7 +1456,7 @@ export function applyPersistentStatePaths(sites: Record<string, any>, slug: stri
       framework.unshift({
         path: sqlite,
         target: projectDatabaseTarget(slug, sqlite),
-        seed: name === owner,
+        seed: name === owners.get(sqlite)?.name,
       })
     }
 
