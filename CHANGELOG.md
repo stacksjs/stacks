@@ -1,5 +1,51 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.370...v0.75.372)
+
+## ✨ Features
+
+- **marketing**: every comparison must say what it was checked against ([b9c7268](https://github.com/stacksjs/stacks/commit/b9c7268)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2932](https://github.com/stacksjs/stacks/issues/2932))
+- **marketing**: each comparison says what it was checked against ([41cd82f](https://github.com/stacksjs/stacks/commit/41cd82f)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2932](https://github.com/stacksjs/stacks/issues/2932))
+- **dashboard**: keep rendered pages across dev server restarts ([f598fd2](https://github.com/stacksjs/stacks/commit/f598fd2)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3035](https://github.com/stacksjs/stacks/issues/3035))
+- **erd**: draw a diagram that renders instead of an error box ([d18332f](https://github.com/stacksjs/stacks/commit/d18332f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **diagrams**: emit lint-compatible class attributes ([03c0e3a](https://github.com/stacksjs/stacks/commit/03c0e3a)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **marketing**: check the Firebase comparison against Firebase as of October 2026 ([9adbcb4](https://github.com/stacksjs/stacks/commit/9adbcb4)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2932](https://github.com/stacksjs/stacks/issues/2932))
+- **marketing**: check the Supabase comparison against Supabase as of October 2026 ([6eae014](https://github.com/stacksjs/stacks/commit/6eae014)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2932](https://github.com/stacksjs/stacks/issues/2932))
+- **marketing**: check the Encore.ts comparison against Encore.ts 1.58 ([e6a86a1](https://github.com/stacksjs/stacks/commit/e6a86a1)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2932](https://github.com/stacksjs/stacks/issues/2932))
+- **marketing**: check the Elysia comparison against Elysia 1.4 ([edf3db3](https://github.com/stacksjs/stacks/commit/edf3db3)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2932](https://github.com/stacksjs/stacks/issues/2932))
+- **marketing**: check the Hono comparison against Hono 4.13 ([67bfc9d](https://github.com/stacksjs/stacks/commit/67bfc9d)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2932](https://github.com/stacksjs/stacks/issues/2932))
+- **marketing**: check the Express and Fastify comparison against Express 5.3 and Fastify 5.12 ([f35bbb3](https://github.com/stacksjs/stacks/commit/f35bbb3)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2932](https://github.com/stacksjs/stacks/issues/2932))
+- **marketing**: check the NestJS comparison against NestJS 12.3 ([e6ab4e9](https://github.com/stacksjs/stacks/commit/e6ab4e9)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2932](https://github.com/stacksjs/stacks/issues/2932))
+- **marketing**: check the T3 Stack comparison against create-t3-app 7.40 ([edcb6e1](https://github.com/stacksjs/stacks/commit/edcb6e1)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2932](https://github.com/stacksjs/stacks/issues/2932))
+- **marketing**: check the RedwoodJS comparison against its own announcements ([7176536](https://github.com/stacksjs/stacks/commit/7176536)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2932](https://github.com/stacksjs/stacks/issues/2932))
+- **marketing**: check the Astro comparison against Astro 7.4 ([db4c007](https://github.com/stacksjs/stacks/commit/db4c007)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2932](https://github.com/stacksjs/stacks/issues/2932))
+- **marketing**: check the React Router comparison against React Router 8.5 ([9d5e0dd](https://github.com/stacksjs/stacks/commit/9d5e0dd)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2932](https://github.com/stacksjs/stacks/issues/2932))
+- **marketing**: check the SvelteKit comparison against SvelteKit 3.1 ([d55b6a1](https://github.com/stacksjs/stacks/commit/d55b6a1)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2932](https://github.com/stacksjs/stacks/issues/2932))
+- **marketing**: check the Nuxt comparison against Nuxt 4.6 ([93bd157](https://github.com/stacksjs/stacks/commit/93bd157)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2932](https://github.com/stacksjs/stacks/issues/2932))
+- **marketing**: check the Django comparison against Django 6.1 ([f75673d](https://github.com/stacksjs/stacks/commit/f75673d)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2932](https://github.com/stacksjs/stacks/issues/2932))
+- **marketing**: check the Rails comparison against Rails 8.1 ([fa553bb](https://github.com/stacksjs/stacks/commit/fa553bb)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2932](https://github.com/stacksjs/stacks/issues/2932))
+- **marketing**: escape the apostrophe that broke comparisons.ts ([8795b62](https://github.com/stacksjs/stacks/commit/8795b62)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2932](https://github.com/stacksjs/stacks/issues/2932))
+- **marketing**: check the Next.js comparison against Next.js 16.4 ([89d59fa](https://github.com/stacksjs/stacks/commit/89d59fa)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2932](https://github.com/stacksjs/stacks/issues/2932))
+- **marketing**: check the AdonisJS comparison against AdonisJS 7 ([45ff467](https://github.com/stacksjs/stacks/commit/45ff467)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2932](https://github.com/stacksjs/stacks/issues/2932))
+- **router**: show a person the error page when middleware refuses them ([c6ae95d](https://github.com/stacksjs/stacks/commit/c6ae95d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 📝 Documentation
+
+- **dashboard**: the render cache is kept across restarts, and never prewarmed ([066ea99](https://github.com/stacksjs/stacks/commit/066ea99)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3035](https://github.com/stacksjs/stacks/issues/3035), [#2964](https://github.com/stacksjs/stacks/issues/2964))
+
+## 🔧 Chores
+
+- release v0.75.371 ([9080fd9](https://github.com/stacksjs/stacks/commit/9080fd9)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **deps**: stx 0.2.744 ([47d1a61](https://github.com/stacksjs/stacks/commit/47d1a61)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3035](https://github.com/stacksjs/stacks/issues/3035), [stacksjs/stx#2133](https://github.com/stacksjs/stx/issues/2133))
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.370...v0.75.371)
 
 ## ✨ Features
