@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.373...v0.75.374)
+
+## 🐛 Bug Fixes
+
+- assign a database owner for each SQLite target ([edf8e10](https://github.com/stacksjs/stacks/commit/edf8e10)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.372...v0.75.373)
 
 ## ✨ Features
