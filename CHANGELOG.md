@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.348...v0.75.349)
+
+## ✨ Features
+
+- support fresh checks for privileged roles ([69af9c4](https://github.com/stacksjs/stacks/commit/69af9c4)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **commerce**: report competing order identities as conflicts ([574a4db](https://github.com/stacksjs/stacks/commit/574a4db)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh commerce test evidence in native catalog ([ae37a0c](https://github.com/stacksjs/stacks/commit/ae37a0c)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.347...v0.75.348)
 
 ## 🐛 Bug Fixes
