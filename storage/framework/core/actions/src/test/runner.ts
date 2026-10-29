@@ -127,7 +127,9 @@ export async function runTestSuites(suites: string[], timeout?: number, paths?: 
     return
   }
 
-  const args = ['bun', 'test']
+  // A subprocess separates tests from Buddy; Bun's file isolation separates
+  // each file's globals and module mocks from the next file in that process.
+  const args = ['bun', 'test', '--isolate']
   if (timeout)
     args.push('--timeout', String(timeout))
   args.push(...filters)
