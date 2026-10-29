@@ -229,7 +229,7 @@ async function releaseIos(options: IosReleaseOptions): Promise<string> {
   const devOverrides = ['MOBILE_URL', 'IOS_APP_VERSION', 'IOS_BUILD_NUMBER']
   for (const key of devOverrides)
     delete process.env[key]
-  const result = await runAction(Action.BuildIos, { env: withholdEnv(devOverrides) })
+  const result = await runAction(Action.BuildIos, { env: { ...withholdEnv(devOverrides), NODE_ENV: 'production' } })
   if (resultFailed(result))
     throw result.error ?? new Error('the iOS build failed')
 
