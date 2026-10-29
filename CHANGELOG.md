@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.369...v0.75.370)
+
+## 🐛 Bug Fixes
+
+- reconcile fee totals across refund settlement currencies ([82b233f](https://github.com/stacksjs/stacks/commit/82b233f)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.368...v0.75.369)
 
 ## 🐛 Bug Fixes
