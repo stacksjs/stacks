@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.354...v0.75.355)
+
+## ✨ Features
+
+- audit resolved support-view workspaces ([95e5dbe](https://github.com/stacksjs/stacks/commit/95e5dbe)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.353...v0.75.354)
 
 ## ✨ Features
