@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.387...v0.75.388)
+
+## ⚡ Performance Improvements
+
+- **mobile**: keep route stats up incrementally instead of re-reading every fix ([191fd12](https://github.com/stacksjs/stacks/commit/191fd12)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.386...v0.75.387)
 
 ## ✨ Features
