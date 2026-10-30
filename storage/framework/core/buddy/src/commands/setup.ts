@@ -13,6 +13,8 @@ import { ExitCode } from '@stacksjs/types'
 import { setupPrettyDevEnvironment } from './dev'
 import type { Reachability } from '../initial-migration'
 import { runInitialMigration } from '../initial-migration'
+import { syncDatabasePortToEnv } from '../pantry-service-ports'
+import { resolveCreatePolicy } from '../database-preflight'
 import { resultFailed } from '../result'
 
 interface SetupOptions extends CliOptions {
@@ -337,6 +339,14 @@ async function databaseIsReachable(): Promise<Reachability> {
     if (probe.ok)
       return { ok: true }
 
+    // Setup has just started this server through Pantry, so a database that is
+    // missing from it is one setup is expected to create. The migration does
+    // that when told to; `DB_CREATE_DATABASE=never` still wins.
+    if (probe.kind === 'missing-database' && resolveCreatePolicy() !== 'never') {
+      process.env.STACKS_CREATE_DATABASE = '1'
+      return { ok: true }
+    }
+
     return { ok: false, reason: `${describeTarget(target)} is not reachable yet (${probe.kind})` }
   }
   catch {
@@ -351,6 +361,16 @@ async function initializeProject(options: SetupOptions): Promise<void> {
   await ensurePantryDependencies(cwd)
 
   await ensureEnvIsSet(options)
+
+  // Pantry hands each project its own database port. Without this the app keeps
+  // the stock one and reaches whichever project's server started first.
+  const portSync = syncDatabasePortToEnv(cwd)
+
+  if (portSync.port !== undefined)
+    process.env.DB_PORT = String(portSync.port)
+
+  if (portSync.changed)
+    log.info(`Pointed DB_PORT at ${portSync.port}, the port Pantry assigned this project's ${portSync.service} service`)
 
   if (!options.skipKeygen) {
     await ensureAppKey(cwd)
