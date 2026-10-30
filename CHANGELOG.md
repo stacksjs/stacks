@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.375...v0.75.376)
+
+## 🐛 Bug Fixes
+
+- align framework installation with published Pantry ([aea3206](https://github.com/stacksjs/stacks/commit/aea3206)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.374...v0.75.375)
 
 ## 🐛 Bug Fixes
