@@ -14,6 +14,7 @@ import { appIdentity, applyAppAgentsTemplate, applyAppChangelogTemplate, applyAp
 import { applyAppSiteTemplate } from '../scaffold-site'
 import { adoptPackagedDefaults, applyAppPackageScripts, applyPackageAppTsconfig, pruneFrameworkOnlyFiles, rewriteCoreContentPaths, stripFrameworkManifestCredits } from '../scaffold-package-app'
 import { fetchPublishedVersions } from '../registry'
+import { ensureAuthRoutesEnv } from '../minimal-routes'
 
 interface NewOptions extends CreateOptions {
   native?: boolean
@@ -720,6 +721,11 @@ async function regenerateAutoImports(path: string, options: NewOptions) {
 async function stripFeatures(path: string) {
   log.info('Stripping optional feature bundles (--minimal)...')
   const results = await uninstallAllFeatures({ root: path })
+
+  // The dashboard carried the login routes; keep them without it.
+  const authEnv = ensureAuthRoutesEnv(path)
+  if (authEnv.length > 0)
+    log.info(`  - kept the auth routes mounted (STACKS_DEFAULT_ROUTES=auth in ${authEnv.join(', ')})`)
 
   let strippedAny = false
   for (const { feature, configOutcome, filesRemoved } of results) {

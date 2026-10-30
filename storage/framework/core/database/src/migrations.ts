@@ -48,7 +48,7 @@ import {
   probeTargetDatabase,
   resolveConnectionTarget,
 } from './ensure-database'
-import { declaredModelTables, resolveModelSources } from './model-sources'
+import { declaredModelTables, outOfScopeRelationMessage, resolveModelSources } from './model-sources'
 import type { DatabaseRenameResult, FrameworkRename, RenameSqlRunner } from './framework-renames'
 import { applicableFrameworkRenames, applyFrameworkRenamesToDatabase, applyFrameworkRenamesToPlan } from './framework-renames'
 import { findShadowedColumnDrops, shadowDropsAllowed, shadowedDropMessage } from './shadowed-models'
@@ -3261,6 +3261,10 @@ async function generateMigrationsForDialect(options: GenerateMigrationsOptions):
     }
 
     trackIgnoredGeneratedMigrations(migrationDirectory())
+
+    const outOfScope = resolveModelSources()?.outOfScopeRelations ?? []
+    if (outOfScope.length > 0)
+      log.warn(outOfScopeRelationMessage(outOfScope))
 
     // BQB is intentionally called in dry-run mode because Stacks owns file
     // naming/persistence. Advance its model snapshot only after that writer

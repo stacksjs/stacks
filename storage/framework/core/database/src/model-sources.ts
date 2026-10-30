@@ -94,6 +94,58 @@ export interface ResolvedModelSources {
   excluded: ModelSource[]
   /** Table names owned by {@link excluded}, lowercased. */
   excludedTables: string[]
+  /**
+   * Relations a userland model declares to a framework default that is out of
+   * scope. The foreign key points at a table nothing creates, and the failure
+   * shows up much later as a missing table (`users` for a `belongsTo: ['User']`).
+   */
+  outOfScopeRelations: OutOfScopeRelation[]
+}
+
+export interface OutOfScopeRelation {
+  model: string
+  related: string
+  file: string
+}
+
+const RELATION_ARRAY = /\b(?:belongsTo|hasMany|hasOne)\s*:\s*\[([^\]]*)\]/g
+
+/** Relations written as `belongsTo: ['User']` (or hasMany / hasOne) that name a model nobody supplies. */
+export function findOutOfScopeRelations(user: ModelSource[], excluded: ModelSource[]): OutOfScopeRelation[] {
+  const have = new Set(user.map(model => model.name))
+  const left = new Set(excluded.map(model => model.name))
+  const found: OutOfScopeRelation[] = []
+
+  for (const model of user) {
+    let text = ''
+    try {
+      text = readFileSync(model.file, 'utf8')
+    }
+    catch {
+      continue
+    }
+    for (const match of text.matchAll(RELATION_ARRAY)) {
+      for (const [, related] of (match[1] ?? '').matchAll(/['"]([A-Za-z]\w*)['"]/g)) {
+        if (related && !have.has(related) && left.has(related) && !found.some(f => f.model === model.name && f.related === related))
+          found.push({ model: model.name, related, file: model.file })
+      }
+    }
+  }
+
+  return found
+}
+
+/** The one-line fix for a relation to a framework default that app/Models left out of scope. */
+export function outOfScopeRelationMessage(relations: OutOfScopeRelation[]): string {
+  const names = [...new Set(relations.map(relation => relation.related))]
+  const lines = relations.map(relation => `  - ${relation.model} -> ${relation.related}`)
+
+  return [
+    `${relations.length} relation${relations.length === 1 ? '' : 's'} point at framework models that are out of scope, so their tables are never created:`,
+    ...lines,
+    'An app with its own app/Models does not get the framework models. Bring each one in with a re-export, e.g.:',
+    ...names.map(name => `  app/Models/${name}.ts:  export { default } from '@stacksjs/defaults/app/Models/${name}'`),
+  ].join('\n')
 }
 
 /** Collect model files recursively, skipping index barrels and dotfiles. */
@@ -397,11 +449,13 @@ export function resolveModelSources(options: {
   // so the common userland-only project keeps reading its own directory.
   const onlyUser = contributing.length === 0
   const allFlat = models.every(m => basename(join(m.file, '..')) === basename(onlyUser ? userRoot : frameworkRoot))
+  const outOfScopeRelations = findOutOfScopeRelations(user, excluded)
+
   if (!options.forceStage && roots.length === 1 && allFlat) {
-    return { dir: roots[0]!, models, roots, staged: false, shadowed, excluded, excludedTables }
+    return { dir: roots[0]!, models, roots, staged: false, shadowed, excluded, excludedTables, outOfScopeRelations }
   }
 
-  return { dir: stage(models), models, roots, staged: true, shadowed, excluded, excludedTables }
+  return { dir: stage(models), models, roots, staged: true, shadowed, excluded, excludedTables, outOfScopeRelations }
 }
 
 /** Remove the staging directory. Safe to call when it was never created. */

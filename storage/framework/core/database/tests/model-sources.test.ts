@@ -236,3 +236,31 @@ describe('resolveModelSources against the real framework defaults', () => {
     expect(stdout).toContain('default model discovery OK')
   })
 })
+
+describe('relations to framework models that are out of scope', () => {
+  it('names a belongsTo that points at a left-out framework default', () => {
+    const userRoot = join(TMP, 'rel-user')
+    const frameworkRoot = join(TMP, 'rel-framework')
+    mkdirSync(userRoot, { recursive: true })
+    makeModel(frameworkRoot, 'User')
+    makeModel(frameworkRoot, 'Team')
+    writeFileSync(join(userRoot, 'Todo.ts'), `export default { name: 'Todo', belongsTo: ['User', 'Project'], hasMany: ["Team"] }\n`)
+    makeModel(userRoot, 'Project')
+
+    const sources = resolveModelSources({ userRoot, frameworkRoot, packageRoots: [] })
+
+    expect(sources?.outOfScopeRelations.map(r => `${r.model}->${r.related}`).sort()).toEqual(['Todo->Team', 'Todo->User'])
+  })
+
+  it('is quiet once the app supplies the model', () => {
+    const userRoot = join(TMP, 'rel-ok-user')
+    const frameworkRoot = join(TMP, 'rel-ok-framework')
+    makeModel(frameworkRoot, 'User')
+    writeFileSync(join(userRoot.replace('rel-ok-user', ''), '.keep'), '')
+    mkdirSync(userRoot, { recursive: true })
+    writeFileSync(join(userRoot, 'Todo.ts'), `export default { name: 'Todo', belongsTo: ['User'] }\n`)
+    makeModel(userRoot, 'User')
+
+    expect(resolveModelSources({ userRoot, frameworkRoot, packageRoots: [] })?.outOfScopeRelations).toEqual([])
+  })
+})
