@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, test } from 'bun:test'
+import { tmpdir } from 'node:os'
 import process from 'node:process'
 import { exitWithParent } from '../src/dev/exit-with-parent'
 
@@ -79,10 +80,14 @@ describe('exitWithParent', () => {
     const grandchildScript = `
       import { exitWithParent } from '${guard}'
       exitWithParent({ intervalMs: 25 })
+      console.log('READY')
       setInterval(() => {}, 1000)
     `
+    // The orphan's stdout goes to a file, not 'ignore': the reason it printed
+    // on the way out is the other half of what this test is for (#3066).
+    const orphanOut = `${tmpdir()}/stacks-exit-with-parent-${Date.now()}.txt`
     const parentScript = `
-      const gc = Bun.spawn(['bun', '-e', ${JSON.stringify(grandchildScript)}], { stdout: 'ignore', stderr: 'ignore' })
+      const gc = Bun.spawn(['bun', '-e', ${JSON.stringify(grandchildScript)}], { stdout: Bun.file(${JSON.stringify(orphanOut)}), stderr: 'ignore' })
       console.log(gc.pid)
       setInterval(() => {}, 1000)
     `
@@ -110,6 +115,14 @@ describe('exitWithParent', () => {
 
     expect(alive()).toBe(true)
 
+    // Wait for the orphan-to-be to have captured its ppid. Without this the
+    // parent can die while it is still starting, so it comes up already
+    // orphaned and reports no parent pid - a weaker test than it looks.
+    const readyBy = Date.now() + 10_000
+    while (Date.now() < readyBy && !(await Bun.file(orphanOut).text().catch(() => '')).includes('READY'))
+      await Bun.sleep(25)
+    expect((await Bun.file(orphanOut).text().catch(() => ''))).toContain('READY')
+
     parent.kill('SIGKILL')
     await parent.exited
 
@@ -124,5 +137,40 @@ describe('exitWithParent', () => {
       try { process.kill(grandchildPid, 'SIGKILL') } catch { /* already gone */ }
 
     expect(survived).toBe(false)
+
+    // Exiting silently is what made an orphaned dev server look like a crash:
+    // identical logs, a dead port and status 0 either way (#3066). No signal
+    // is involved on this path, so the line has to name the parent instead.
+    const printed = (await Bun.file(orphanOut).text().catch(() => '')).trim()
+    expect(printed).toContain('go away')
+    expect(printed).toContain(`pid ${parent.pid}`)
+    expect(printed).toContain('stopping this dev process')
+  }, 15000)
+
+  test('a signalled process says which signal stopped it', async () => {
+    // The signal half of the same problem. Cheaper than the orphan test above
+    // because no third process is needed: send SIGHUP and read what it wrote.
+    const guard = `${import.meta.dir}/../src/dev/exit-with-parent.ts`
+    const out = `${tmpdir()}/stacks-exit-with-parent-sig-${Date.now()}.txt`
+    const script = `
+      import { exitWithParent } from '${guard}'
+      exitWithParent({ intervalMs: 5000 })
+      console.log('READY')
+      setInterval(() => {}, 1000)
+    `
+    const child = Bun.spawn(['bun', '-e', script], { stdout: Bun.file(out), stderr: 'ignore' })
+
+    const ready = Date.now() + 10_000
+    while (Date.now() < ready && !(await Bun.file(out).text().catch(() => '')).includes('READY'))
+      await Bun.sleep(25)
+
+    child.kill('SIGHUP')
+    await child.exited
+    // The write is synchronous, but the file handle still has to settle.
+    await Bun.sleep(150)
+
+    const printed = (await Bun.file(out).text().catch(() => '')).trim()
+    expect(printed).toContain('received SIGHUP')
+    expect(printed).toContain('stopping this dev process')
   }, 15000)
 })

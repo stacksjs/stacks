@@ -49,8 +49,20 @@ export function exitWithParent(options: ExitWithParentOptions = {}): () => void 
     for (const signal of SIGNALS) process.off(signal, handleSignal)
   }
 
-  const quit = (): void => {
+  const quit = (reason: string): void => {
     stop()
+    // Say why. Both ways out of this watchdog used to write nothing, so an
+    // orphaned dev process and a crashed one left identical logs: the last
+    // line was whatever startup happened to print, the port stopped
+    // answering, and the status was 0 either way (stacksjs/stacks#3066).
+    //
+    // `console.log` rather than the async logger, for the reason measured in
+    // stacksjs/stacks#3065: `log.info` reaches the console only after it
+    // awaits its logger, and the `process.exit` below outruns that
+    // continuation, so the line is lost. Keeping to `node:process` as this
+    // module's only import also keeps it cheap for the three dev entry
+    // scripts that load it, one of which pulls in no logger at all.
+    console.log(`  stacks ${reason} - stopping this dev process`)
     try {
       onExit?.()
     }
@@ -58,14 +70,26 @@ export function exitWithParent(options: ExitWithParentOptions = {}): () => void 
     process.exit(0)
   }
 
-  const handleSignal = (): void => quit()
+  const handleSignal = (signal: NodeJS.Signals): void => quit(`received ${signal}`)
 
   // ppid 1 is belt and braces: the comparison already catches reparenting
   // wherever it points, but the explicit check costs nothing and reads
   // plainly to whoever finds this next.
   const timer = setInterval(() => {
-    if (process.ppid !== parentPid || process.ppid === 1)
-      quit()
+    if (process.ppid === parentPid && process.ppid !== 1)
+      return
+
+    // Name the cause. No signal is involved on this path at all, so a reader
+    // who finds only "stopping" goes looking for one that was never sent;
+    // naming the parent says plainly that the cause was outside this process.
+    //
+    // A process that was already orphaned when it started never had a parent
+    // to lose, and telling that reader "pid 1 went away" points them at
+    // something that was never there. `( nohup buddy dev … & )` lands here,
+    // because the subshell is gone before the dev process even starts.
+    quit(parentPid === 1
+      ? 'started with no parent to watch (ppid 1)'
+      : `saw the parent process (pid ${parentPid}) go away`)
   }, intervalMs)
 
   // Never hold the event loop open. A dev server stays alive on its own
