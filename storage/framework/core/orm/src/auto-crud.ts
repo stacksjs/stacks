@@ -9,9 +9,9 @@
 
 // Lives in @stacksjs/error-handling, where the queue and other packages that
 // cannot depend on the ORM can use it too. Re-exported for existing callers.
-export { isUniqueViolation } from '@stacksjs/error-handling'
+export { isNotNullViolation, isUniqueViolation } from '@stacksjs/error-handling'
 import { isDateTimeColumnRule, parseSqlDateTime, sqlDateTime, sqlDateTimeInput } from '@stacksjs/database/runtime'
-import { isUniqueViolation } from '@stacksjs/error-handling'
+import { isNotNullViolation, isUniqueViolation } from '@stacksjs/error-handling'
 
 /**
  * Classify a write-path error into an HTTP status + JSON body for the
@@ -22,9 +22,16 @@ import { isUniqueViolation } from '@stacksjs/error-handling'
  *    than `instanceof HttpError` so this helper stays inline-copyable into the
  *    canonical generated routes file without importing @stacksjs/error-handling.
  *    Covers the 400/413/422 throws from getRequestBody / validation.
- * 2. Unique-constraint violation — 409 with a clean `${Model} already exists`
+ * 2. NOT NULL violation — 422: a required column the request left out is the
+ *    caller's mistake. The message names the model, not the column (no raw
+ *    driver text, for the same reason as the unique branch).
+ * 3. Unique-constraint violation — 409 with a clean `${Model} already exists`
  *    message (NO raw driver text, which would leak column names in prod).
- * 3. Anything else — the unchanged 500 contract, including `detail: String(err)`.
+ * 4. Anything else — the unchanged 500 contract, including `detail: String(err)`.
+ *
+ * The NOT NULL check comes before the unique one because the unique check also
+ * matches by message text, and a column named like `unique_id` would otherwise
+ * turn a missing value into a "duplicate".
  */
 export function mapWriteError(
   err: unknown,
@@ -43,6 +50,9 @@ export function mapWriteError(
     if (e.details !== undefined) body.details = e.details
     return { status: e.status, body }
   }
+
+  if (isNotNullViolation(err))
+    return { status: 422, body: { error: `${modelName} is missing a required value` } }
 
   if (isUniqueViolation(err))
     return { status: 409, body: { error: `${modelName} already exists` } }

@@ -26,7 +26,7 @@
 import { describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { snakeCase } from '@stacksjs/strings'
-import { API_ABILITIES, apiBasePath, applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dashboardRoleMiddleware, describeContradictoryRoleGates, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, findShadowingRoute, getWritableFields, indexRouteShapes, INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, isUniqueViolation, mapWriteError, normalizeValidationValue, POLICY_ABILITY, policyDecision, resolveAbilityMiddleware, resolveApiMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, routeShape, routeShapeKey, stampOwnership, stripHidden, teamOwnershipField, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
+import { API_ABILITIES, apiBasePath, applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dashboardRoleMiddleware, describeContradictoryRoleGates, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, findShadowingRoute, getWritableFields, indexRouteShapes, INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, isNotNullViolation, isUniqueViolation, mapWriteError, normalizeValidationValue, POLICY_ABILITY, policyDecision, resolveAbilityMiddleware, resolveApiMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, routeShape, routeShapeKey, stampOwnership, stripHidden, teamOwnershipField, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
 import { toPaginator } from '../src/paginator'
 
 describe('toSnakeCaseKeys (write-path column mapping)', () => {
@@ -543,6 +543,32 @@ describe('mapWriteError', () => {
     const { status, body } = mapWriteError({ errno: 1062 }, 'Car', 'update')
     expect(status).toBe(409)
     expect(body).toEqual({ error: 'Car already exists' })
+  })
+
+  it('maps a missing required value to 422 on every driver, without driver text', () => {
+    for (const driverError of [
+      { code: 'SQLITE_CONSTRAINT_NOTNULL', message: 'NOT NULL constraint failed: cars.email' },
+      { errno: 1048, message: "Column 'email' cannot be null" },
+      { errno: 1364, message: "Field 'email' doesn't have a default value" },
+      { code: '23502', message: 'null value in column "email" violates not-null constraint' },
+    ]) {
+      const { status, body } = mapWriteError(driverError, 'Car', 'create')
+      expect(status).toBe(422)
+      expect(body).toEqual({ error: 'Car is missing a required value' })
+      expect(JSON.stringify(body)).not.toContain('email')
+    }
+  })
+
+  it('does not mistake a missing value in a column called unique_id for a duplicate', () => {
+    const { status } = mapWriteError({ message: 'NOT NULL constraint failed: cars.unique_id' }, 'Car', 'create')
+    expect(status).toBe(422)
+  })
+
+  it('still maps duplicates to 409 and other failures to 500', () => {
+    expect(mapWriteError({ code: 'SQLITE_CONSTRAINT_UNIQUE', message: 'UNIQUE constraint failed: cars.email' }, 'Car', 'create').status).toBe(409)
+    expect(mapWriteError(new Error('database is locked'), 'Car', 'create').status).toBe(500)
+    expect(isNotNullViolation(new Error('database is locked'))).toBe(false)
+    expect(isNotNullViolation(undefined)).toBe(false)
   })
 
   it('passes an HttpError-like through with its status, message and details', () => {

@@ -113,3 +113,20 @@ test('enum rebuilds preserve data and roll back schema plus snapshot if a later 
   expect(upgraded.query('SELECT count(*) AS count FROM native_notes').get()).toEqual({ count: 3 })
   expect(upgraded.query('PRAGMA foreign_keys').get()).toEqual({ foreign_keys: 1 })
 })
+
+test('a required value the request leaves out is a 422 with no driver text, not a 500', async () => {
+  const Note = defineModel({
+    name: 'NativeNote', table: 'native_notes',
+    traits: { useApi: { uri: 'notes', middleware: [], routes: ['index', 'store', 'update'] } },
+    attributes: {
+      title: { fillable: true, required: true, validation: { rule: schema.string().max(80) } },
+      memo: { fillable: true, default: '' },
+    },
+  })
+  handles.push(openNativeDatabase({ path: fixture(), models: { Note } }))
+  const api = createNativeModelApi({ models: { Note }, authorize: () => true })
+  const missing = await api(request('', 'POST', { memo: 'no title' }))
+  expect(missing?.status).toBe(422)
+  expect(await missing!.json()).toEqual({ error: 'Note is missing a required value' })
+  expect((await api(request('', 'POST', { title: '' })))?.status).toBe(201)
+})
