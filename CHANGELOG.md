@@ -1,5 +1,32 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.379...v0.75.380)
+
+## ✨ Features
+
+- **error-handling**: fill {{ appName }} in custom error pages ([18c0c79](https://github.com/stacksjs/stacks/commit/18c0c79)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **scheduler**: a task runs on the app's timezone, not Los Angeles ([153c367](https://github.com/stacksjs/stacks/commit/153c367)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3080](https://github.com/stacksjs/stacks/issues/3080))
+- **cache**: resetConfiguredCache() forgets the namespace warning too ([445fdde](https://github.com/stacksjs/stacks/commit/445fdde)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3075](https://github.com/stacksjs/stacks/issues/3075))
+- **router**: after-response callbacks see a refused request ([dcafa00](https://github.com/stacksjs/stacks/commit/dcafa00)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3078](https://github.com/stacksjs/stacks/issues/3078))
+- **router**: headers a middleware asked for are on a refusal too ([6871f64](https://github.com/stacksjs/stacks/commit/6871f64)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2993](https://github.com/stacksjs/stacks/issues/2993))
+- **cache**: the cache gets a Redis namespace of its own ([b1ac220](https://github.com/stacksjs/stacks/commit/b1ac220)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3075](https://github.com/stacksjs/stacks/issues/3075))
+
+## 📝 Documentation
+
+- **cache**: say what the Redis driver, tags and namespaces now do ([8b25618](https://github.com/stacksjs/stacks/commit/8b25618)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#1169](https://github.com/stacksjs/stacks/issues/1169), [#3075](https://github.com/stacksjs/stacks/issues/3075), [#3073](https://github.com/stacksjs/stacks/issues/3073))
+
+## 🔧 Chores
+
+- **deps**: ts-cache 0.1.9 ([8d43a44](https://github.com/stacksjs/stacks/commit/8d43a44)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/ts-cache#3094](https://github.com/stacksjs/ts-cache/issues/3094))
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.378...v0.75.379)
 
 ## 🐛 Bug Fixes
