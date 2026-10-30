@@ -10,7 +10,8 @@ const error = state('')
 const challengeToken = state('')
 
 function safeRedirect(): string {
-  return safeAuthRedirect(route.query.redirect)
+  // The stx page gate sends visitors here with `?next=`; links written by hand use `?redirect=`.
+  return safeAuthRedirect(route.query.redirect ?? route.query.next)
 }
 
 async function handleLogin(credentials: AuthUser): Promise<void> {

@@ -1,6 +1,6 @@
 <script client>
 import type { RegisterCredentials } from '../../../../types/dashboard'
-import { describeAuthError, useAuth } from '../../../../functions/auth'
+import { describeAuthError, safeAuthRedirect, useAuth } from '../../../../functions/auth'
 
 const { register } = useAuth()
 const route = useRoute()
@@ -9,8 +9,8 @@ const isLoading = state(false)
 const error = state('')
 
 function safeRedirect(): string {
-  const redirect = String(route.query.redirect || '')
-  return redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/'
+  // Same destinations as sign-in: `?redirect=` from links, `?next=` from the page gate.
+  return safeAuthRedirect(route.query.redirect ?? route.query.next)
 }
 
 async function handleRegister(credentials: RegisterCredentials): Promise<void> {

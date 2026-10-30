@@ -40,6 +40,7 @@ function loginDashboardHarness(options: {
   login: (credentials: unknown) => Promise<unknown>
   verify: (challengeToken: string, code: string) => Promise<unknown>
   redirect?: string
+  next?: string
 }) {
   const source = componentSource('Auth/LoginDashboard.stx')
   const script = source.match(/<script client>([\s\S]*?)<\/script>/)?.[1]
@@ -65,7 +66,7 @@ function loginDashboardHarness(options: {
   const navigations: string[] = []
   const harness = createHarness(
     () => ({ login: options.login, verifyTwoFactorLogin: options.verify }),
-    () => ({ query: { redirect: options.redirect ?? '/dashboard' } }),
+    () => ({ query: options.next ? { next: options.next } : { redirect: options.redirect ?? '/dashboard' } }),
     testSignal,
     (target: string) => navigations.push(target),
     describeAuthError,
@@ -638,6 +639,29 @@ describe('dashboard native STX bindings', () => {
 
     await flow.handleLogin({ email: 'person@example.com', password: 'secret' })
     expect(flow.navigations).toEqual(['/'])
+  })
+
+  test('dashboard login returns to the page the stx gate sent the visitor from', async () => {
+    const flow = loginDashboardHarness({
+      login: async () => ({
+        access_token: 'access-1',
+        token: 'access-1',
+        token_type: 'Bearer',
+        expires_in: 3600,
+        user: { id: 1, email: 'person@example.com', name: 'Person' },
+      }),
+      verify: async () => ({ token: null, user: null }),
+      next: '/play',
+    })
+
+    await flow.handleLogin({ email: 'person@example.com', password: 'secret' })
+    expect(flow.navigations).toEqual(['/play'])
+  })
+
+  test('registration reads the same redirect parameters as sign-in', () => {
+    const source = componentSource('Auth/RegisterDashboard.stx')
+
+    expect(source).toContain('safeAuthRedirect(route.query.redirect ?? route.query.next)')
   })
 
   test('dashboard stores share the authenticated API client', () => {
