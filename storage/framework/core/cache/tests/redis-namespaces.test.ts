@@ -4,7 +4,7 @@ import process from 'node:process'
 import cacheConfig from '../../../../../config/cache'
 import queueConfig from '../../../../../config/queue'
 import realtimeConfig from '../../../../../config/realtime'
-import { cacheFromConfig, redisNamespacesInside } from '../src/drivers/index'
+import { cacheFromConfig, redisNamespacesInside, resetConfiguredCache } from '../src/drivers/index'
 
 // stacksjs/stacks#3075. The cache lists its keys as `<prefix>:*`, and the
 // shipped prefix was `stacks`, under which the queue (`stacks:queue`), failed
@@ -56,6 +56,10 @@ describe('flushing the cache on a Redis the queue and realtime share', () => {
 
 describe('an app whose own config/cache.ts still says `stacks`', () => {
   test('is warned once that its cache holds the other namespaces', async () => {
+    // The warning is given once per process, and an earlier test file in the
+    // same run may have used it up: CI runs a package's files in one process,
+    // in its own order.
+    resetConfiguredCache()
     const warn = spyOn(console, 'warn').mockImplementation(() => {})
     try {
       const first = cacheFromConfig({ driver: 'redis', prefix: 'stacks', drivers: { redis: { url } } }, shipped)

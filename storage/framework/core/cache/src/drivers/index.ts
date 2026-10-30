@@ -710,9 +710,14 @@ let configured: CacheDriver | null = null
 let configLoaded = false
 void Promise.resolve(overridesReady).then(() => { configLoaded = true }, () => { configLoaded = true })
 
-/** Forget the resolved driver (tests, or after changing the cache config). */
+/**
+ * Forget the resolved driver (tests, or after changing the cache config), and
+ * whether the namespace warning was given, so a changed config is warned about
+ * again.
+ */
 export function resetConfiguredCache(): void {
   configured = null
+  warnedAboutNamespaces = false
 }
 
 function configuredCache(): CacheDriver {
