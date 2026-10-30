@@ -257,7 +257,8 @@ export const tsCloud: TsCloudConfig = {
       resize: { whenUnavailable: 'keep-current', upgradeDisk: true },
       volumes: {
         deployments: {
-          size: 250,
+          // Leave room to stage releases alongside the retained release history.
+          size: 320,
           mountPath: '/var/lib/stacks-deployments',
           deleteProtection: true,
         },
