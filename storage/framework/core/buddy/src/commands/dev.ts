@@ -16,13 +16,39 @@ import { resultFailed } from '../result'
 /** Lines printed before the ready banner (`blank`, `stacks … starting…`, `blank`). */
 const DEV_BOOT_STARTING_LINE_COUNT = 3
 
-function eraseDevBootStartingLines(): void {
+function eraseDevBootStartingLines(progressLines = 0): void {
   if (!process.stdout.isTTY)
     return
-  for (let i = 0; i < DEV_BOOT_STARTING_LINE_COUNT; i++) {
+  for (let i = 0; i < DEV_BOOT_STARTING_LINE_COUNT + progressLines; i++) {
     readline.moveCursor(process.stdout, 0, -1)
     readline.clearLine(process.stdout, 0)
   }
+}
+
+/** Seconds between the lines a slow boot prints, and before the first one. */
+export const DEV_BOOT_PROGRESS_EVERY_SECONDS = 10
+
+/** From here on a progress line says how to see a server's own output. */
+const DEV_BOOT_VERBOSE_HINT_SECONDS = 30
+
+/**
+ * The line a boot prints while it waits, or null when it should say nothing.
+ *
+ * A warm boot is ready in a few seconds and prints nothing between the header
+ * and the banner, which is right. A slow one used to print nothing either, for
+ * as long as it took, so "still building" looked exactly like "dead" (#3077).
+ * Every ten seconds it now says how long and what it is waiting for. A server
+ * that crashed under `bun --watch` does not exit, so the count climbing is the
+ * only sign of it, and its own output is hidden unless `--verbose` is on.
+ */
+export function devBootProgressLine(elapsedSeconds: number, waitingOn: Array<{ name: string, port: number }>, verbose = false): string | null {
+  if (!waitingOn.length || elapsedSeconds < DEV_BOOT_PROGRESS_EVERY_SECONDS)
+    return null
+  const servers = waitingOn.map(server => `the ${server.name} on :${server.port}`).join(', ')
+  const line = `still starting, ${Math.floor(elapsedSeconds)}s so far, waiting for ${servers}`
+  return !verbose && elapsedSeconds >= DEV_BOOT_VERBOSE_HINT_SECONDS
+    ? `${line} (\`./buddy dev --verbose\` shows its output)`
+    : line
 }
 
 type DevelopmentRpx = typeof import('@stacksjs/rpx')
@@ -861,6 +887,10 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   const ports = [
     { name: 'API', port: apiPort },
   ]
+  // The native window still gives up: it has nothing to show without the
+  // frontend. The banner does not (#3077). It used to announce "ready" after
+  // 30s whether or not the API had bound, so a slow boot reported a time that
+  // was wrong and URLs that did not answer yet.
   const readinessTimeoutMs = 30000
   let readyAnnounced = false
   const nativeUrl = developmentUrl(`http://localhost:${frontendPort}`, entryPath)
@@ -875,16 +905,28 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
     })
     : Promise.resolve()
 
-  Promise.all(ports.map(p => waitForPort(p.port, readinessTimeoutMs)))
-    // `results` IS used (in `failed` below); pickier misparses the multi-line arrow.
-    // eslint-disable-next-line pickier/no-unused-vars
-    .then(async (results) => {
+  const waitingOn = new Set(ports)
+  const bootStartedMs = Date.now()
+  let progressLines = 0
+  let nextProgressAt = DEV_BOOT_PROGRESS_EVERY_SECONDS
+  const progress = setInterval(() => {
+    const elapsed = (Date.now() - bootStartedMs) / 1000
+    if (elapsed < nextProgressAt)
+      return
+    nextProgressAt += DEV_BOOT_PROGRESS_EVERY_SECONDS
+    const line = devBootProgressLine(elapsed, [...waitingOn], options.verbose)
+    if (!line)
+      return
+    console.log(`  ${dim(line)}`)
+    progressLines++
+  }, 1000)
+  progress.unref?.()
+
+  Promise.all(ports.map(p => waitForPort(p.port, Number.POSITIVE_INFINITY).then(() => waitingOn.delete(p))))
+    .then(async () => {
+      clearInterval(progress)
       if (readyAnnounced) return
       readyAnnounced = true
-
-      const failed = results
-        .map((ok, i) => ok ? null : ports[i]?.name ?? null)
-        .filter((x): x is string => x !== null)
 
       // Bring up the HTTPS reverse proxy (rpx + tlsx) for the pretty domain.
       // `proxyReachable` decides whether the banner advertises the pretty URLs
@@ -924,7 +966,7 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
         }
       }
 
-      eraseDevBootStartingLines()
+      eraseDevBootStartingLines(progressLines)
 
       printDevReadyBanner({
         options,
@@ -957,10 +999,7 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
 
       if (startedAt) {
         const elapsedMs = (Bun.nanoseconds() - startedAt) / 1_000_000
-        const summary = failed.length
-          ? `ready in ${(elapsedMs / 1000).toFixed(1)}s - ${failed.join(', ')} did not bind within ${readinessTimeoutMs / 1000}s`
-          : `ready in ${(elapsedMs / 1000).toFixed(1)}s`
-        console.log(`  ${dim(summary)}`)
+        console.log(`  ${dim(`ready in ${(elapsedMs / 1000).toFixed(1)}s`)}`)
         console.log()
         printDevEngineNotes()
         console.log()
