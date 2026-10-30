@@ -252,6 +252,8 @@ Limitations:
 Retained evidence:
 
 - [storage/framework/core/cache/tests/sqlite-cache.test.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cache/tests/sqlite-cache.test.ts)
+- [storage/framework/core/cache/tests/sqlite-concurrent-open.test.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cache/tests/sqlite-concurrent-open.test.ts)
+- [storage/framework/core/cache/tests/tag-index-processes.test.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cache/tests/tag-index-processes.test.ts)
 
 ## cache: redis
 
@@ -265,11 +267,13 @@ Prerequisites:
 
 Limitations:
 
-- The retained contract covers core cache and TTL operations; TLS/authenticated deployments require separate provider evidence.
+- The retained contract covers core cache and TTL operations, a connection built from host and port, and namespace isolation from the queue and realtime; TLS/authenticated deployments require separate provider evidence.
 
 Retained evidence:
 
 - [storage/framework/core/cache/tests/redis-contract.test.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cache/tests/redis-contract.test.ts)
+- [storage/framework/core/cache/tests/redis-config-connection.test.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cache/tests/redis-config-connection.test.ts)
+- [storage/framework/core/cache/tests/redis-namespaces.test.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cache/tests/redis-namespaces.test.ts)
 
 ## cache: singlestore
 

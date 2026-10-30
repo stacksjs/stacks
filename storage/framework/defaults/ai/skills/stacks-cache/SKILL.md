@@ -50,8 +50,9 @@ re-exported CacheLock contract and selected driver separately.
 
 `createMemoryCache(options?)` accepts stdTTL, checkPeriod, maxKeys, useClones
 and prefix. Clone-on-read/write is enabled by default.
-`createRedisCache(options?)` accepts URL or host/port/credentials/database/TLS
-plus TTL/prefix options. `createSingleStoreCache(options?)` exposes the
+`createRedisCache(options?)` accepts a URL, or host/port/username/password/
+database/TLS, plus TTL/prefix options. A URL wins; otherwise the parts build
+one, and `REDIS_URL` applies only when neither is given. `createSingleStoreCache(options?)` exposes the
 experimental SQL-backed cache. `createSqliteCache(options?)` keeps entries in
 a table of a SQLite file (`path`, `table`, `prefix`, `stdTTL`), so they outlive
 the process: use it for results that are expensive and safe to keep across
@@ -64,16 +65,31 @@ The `cache` export is the driver `config/cache.ts` selects (`driver`, with
 and once the app's config has loaded. With the default `driver: 'memory'` it
 answers from the `memory` instance itself. `cacheFromConfig(settings?)` builds
 the same choice explicitly; `resetConfiguredCache()` forgets it.
-The capability registry proves memory and a versioned Redis core/TTL contract;
-TLS/authenticated Redis deployments need separate provider evidence. SingleStore
+`config/cache.ts` reads `REDIS_URL`, `REDIS_HOST`, `REDIS_PORT`,
+`REDIS_USERNAME`, `REDIS_PASSWORD` and `REDIS_DB`, as `config/queue.ts` does.
+
+The Redis cache lists, flushes and counts every key under `<prefix>:`, so its
+prefix must not contain another subsystem's namespace: the queue keeps
+`stacks:queue`, failed jobs `stacks:failed`, batches `stacks:batches` and
+realtime `stacks:realtime:`. The shipped prefix is `stacks:cache`. An app still
+on `stacks` flushes its job queue with its cache on a shared Redis;
+`cacheFromConfig` warns once, and `redisNamespacesInside(prefix)` lists what a
+prefix holds.
+The capability registry proves memory, a versioned Redis core/TTL contract, a
+connection built from host and port, and namespace isolation from the queue
+and realtime; TLS/authenticated Redis deployments need separate provider
+evidence. SingleStore
 has no dedicated service conformance matrix. Source:
 `storage/framework/core/config/src/capabilities.ts`.
 
 ## Tag invalidation and advanced patterns
 
 `StacksCache.tags(['products', 'tenant-7'])` creates a TaggedCache supporting
-put/set/setForever, remember/rememberForever, get/has and flush. Its tag index
-uses the same backend; process persistence depends on that backend. Tags label
+put/set/setForever, remember/rememberForever, get/has and flush. Each tagged
+key gets an index entry of its own on the same backend, carrying the key's TTL,
+so a flush deletes what every process on a shared backend tagged, and the index
+does not outlive its keys. Flush lists the tag with `keys()`, which is a SCAN on
+Redis rather than a blocking KEYS. Process persistence depends on the backend. Tags label
 shared keys rather than granting tenant authorization. Construct an explicit
 tenant key/prefix as well when isolation matters.
 
@@ -89,7 +105,9 @@ are distinct from StacksCache and auth's RateLimiter.
 contract. `drivers/singlestore.ts` owns the experimental backend and
 `drivers/sqlite.ts` the durable file-backed one (`sqlite-cache.test.ts`).
 Retained tests: `ttl.test.ts`, `getorset-timeout.test.ts`,
-`tagged-flush-race.test.ts`, `redis-contract.test.ts` and
+`tagged-flush-race.test.ts`, `tag-index-processes.test.ts`,
+`sqlite-concurrent-open.test.ts`, `redis-contract.test.ts`,
+`redis-config-connection.test.ts`, `redis-namespaces.test.ts` and
 `cache-factory.test.ts` under `core/cache/tests/`.
 
 ## Representation-aware keys
