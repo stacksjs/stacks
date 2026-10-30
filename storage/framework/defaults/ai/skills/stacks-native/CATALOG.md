@@ -23,7 +23,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/browser-extension` | [`stacks-browser-extension`](../stacks-browser-extension/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/browser-extension/src/index.ts) | 7 |
 | `@stacksjs/buddy` | [`stacks-buddy`](../stacks-buddy/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/buddy/src/index.ts) | 171 |
 | `@stacksjs/build` | [`stacks-build`](../stacks-build/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/build/src/index.ts) | 4 |
-| `@stacksjs/cache` | [`stacks-cache`](../stacks-cache/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cache/src/index.ts) | 17 |
+| `@stacksjs/cache` | [`stacks-cache`](../stacks-cache/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cache/src/index.ts) | 18 |
 | `@stacksjs/calendar-api` | [`stacks-calendar`](../stacks-calendar/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/calendar-api/src/index.ts) | 2 |
 | `@stacksjs/charts` | [`stacks-charts`](../stacks-charts/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/charts/src/index.ts) | 3 |
 | `@stacksjs/chat` | [`stacks-chat`](../stacks-chat/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/src/index.ts) | 5 |
@@ -235,7 +235,7 @@ Read the entrypoint and package export map for re-exported or type-only surfaces
 
 Local source modules: [src/drivers/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cache/src/drivers/index.ts), [src/key.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cache/src/key.ts).
 
-Evidence directory: [17 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cache/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [18 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cache/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/calendar-api
 

@@ -646,16 +646,60 @@ export interface CacheSettings {
   }
 }
 
+/** The parts of the app's config that name the other Redis namespaces. */
+interface RedisNamespaceSettings {
+  queue?: { connections?: { redis?: { prefix?: string } }, failed?: { prefix?: string }, batching?: { prefix?: string } }
+  realtime?: { server?: { redis?: { prefix?: string } } }
+}
+
+/**
+ * The other Redis namespaces the framework writes - the queue, failed jobs,
+ * batches and realtime - that lie inside the cache's prefix.
+ *
+ * The Redis cache lists its keys as `<prefix>:*`, so `flush()` deletes, and
+ * `keys()` and `getStats()` report, everything below any of these when they
+ * share a server. The shipped `stacks` prefix held all four: clearing the
+ * cache emptied the job queue (stacksjs/stacks#3075). No prefix at all means
+ * the whole database.
+ */
+export function redisNamespacesInside(cachePrefix: string | undefined, settings: RedisNamespaceSettings = config as RedisNamespaceSettings): string[] {
+  const others = [
+    settings.queue?.connections?.redis?.prefix,
+    settings.queue?.failed?.prefix,
+    settings.queue?.batching?.prefix,
+    settings.realtime?.server?.redis?.prefix,
+  ].filter((prefix): prefix is string => typeof prefix === 'string' && prefix !== '')
+  if (!cachePrefix)
+    return others
+  return others.filter(prefix => prefix === cachePrefix || prefix.startsWith(`${cachePrefix}:`))
+}
+
+let warnedAboutNamespaces = false
+
 /**
  * The driver `config/cache.ts` selects, built from its options. Memory is
  * the `memory` instance itself, so an app on the default changes nothing;
  * the others get the configured `prefix` and `ttl` as their key prefix and
- * default TTL.
+ * default TTL. `namespaces` is where the other Redis prefixes are read from,
+ * the app's config unless given.
  */
-export function cacheFromConfig(settings: CacheSettings | undefined = (config as { cache?: CacheSettings }).cache): CacheDriver {
+export function cacheFromConfig(
+  settings: CacheSettings | undefined = (config as { cache?: CacheSettings }).cache,
+  namespaces: RedisNamespaceSettings = config as RedisNamespaceSettings,
+): CacheDriver {
   const shared = { prefix: settings?.prefix, stdTTL: settings?.ttl }
   switch (settings?.driver) {
-    case 'redis': return createRedisCache({ ...settings.drivers?.redis, ...shared })
+    case 'redis': {
+      // An app keeps its own config/cache.ts, so one made before the shipped
+      // prefix changed still has `stacks`: say so once rather than flush its
+      // queue in silence.
+      const inside = redisNamespacesInside(settings.prefix, namespaces)
+      if (inside.length > 0 && !warnedAboutNamespaces) {
+        warnedAboutNamespaces = true
+        console.warn(`[cache] The Redis cache prefix '${settings.prefix ?? ''}' contains ${inside.join(', ')}. On a shared Redis, cache.flush() deletes those keys too. Set a prefix of its own in config/cache.ts, such as 'stacks:cache'.`)
+      }
+      return createRedisCache({ ...settings.drivers?.redis, ...shared })
+    }
     case 'singlestore': return createSingleStoreCache({ ...settings.drivers?.singlestore, ...shared })
     case 'sqlite': return createSqliteCache({ ...settings.drivers?.sqlite, ...shared })
     default: return memory

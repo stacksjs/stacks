@@ -22,7 +22,7 @@ export interface CacheOptions {
    * The prefix used when storing items in the cache. Useful when
    * multiple applications share the same cache driver.
    *
-   * @default "stacks"
+   * @default "stacks:cache"
    */
   prefix: string
 

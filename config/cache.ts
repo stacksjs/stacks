@@ -19,7 +19,7 @@ export default {
   /**
    * Key prefix for cache namespacing
    */
-  prefix: 'stacks',
+  prefix: 'stacks:cache',
 
   /**
    * Default TTL in seconds (0 = no expiration)
