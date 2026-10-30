@@ -155,6 +155,29 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  "/ai/complete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   "/ai/summary": {
     get?: never
     put?: never

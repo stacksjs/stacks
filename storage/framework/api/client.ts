@@ -142,6 +142,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * POST /ai/complete
+   */
+  postAiComplete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/ai/complete", {}, [], false, options)
+  },
+
+  /**
    * POST /ai/summary
    */
   postAiSummary(input: { body: { "text": string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
