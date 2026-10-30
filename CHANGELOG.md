@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.380...v0.75.381)
+
+## 🔧 Chores
+
+- **deps**: stx 0.2.752 ([59310cf](https://github.com/stacksjs/stacks/commit/59310cf)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.379...v0.75.380)
 
 ## ✨ Features
