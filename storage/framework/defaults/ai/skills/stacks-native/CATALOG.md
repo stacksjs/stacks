@@ -34,7 +34,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/commerce` | [`stacks-commerce`](../stacks-commerce/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/commerce/src/index.ts) | 14 |
 | `@stacksjs/composables` | [`stacks-composables`](../stacks-composables/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/composables/src/index.ts) | 18 |
 | `@stacksjs/config` | [`stacks-config`](../stacks-config/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/config/src/index.ts) | 16 |
-| `@stacksjs/cron` | [`stacks-cron`](../stacks-cron/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cron/src/index.ts) | 5 |
+| `@stacksjs/cron` | [`stacks-cron`](../stacks-cron/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cron/src/index.ts) | 6 |
 | `@stacksjs/database` | [`stacks-database`](../stacks-database/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/database/src/index.ts) | 135 |
 | `@stacksjs/datetime` | [`stacks-datetime`](../stacks-datetime/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/index.ts) | 13 |
 | `@stacksjs/defaults` | [`stacks-build`](../stacks-build/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/defaults/package.json) | 2 |
@@ -343,7 +343,7 @@ Declared runtime exports: `parse`, `parseCron`, `register`, `remove`.
 
 Local source modules: [src/parser.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cron/src/parser.ts), [src/types.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cron/src/types.ts).
 
-Evidence directory: [5 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cron/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [6 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cron/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/database
 

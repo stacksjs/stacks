@@ -5,22 +5,20 @@ export { parseCron } from './parser'
 
 import { parseCron } from './parser'
 
-// Parse a cron expression and return the next matching Date.
-// Uses Bun's native cron parser when available, otherwise falls back
-// to our own 5-field parser with identical behavior.
+// Parse a cron expression and return the next matching Date, in UTC unless
+// `options.tz` names a zone.
 //
 // Examples:
 //   parse('0 0 * * *')          → next midnight UTC
 //   parse('@hourly')            → next hour
 //   parse('0,15,30,45 * * * *') → next 15-min mark
+//
+// Not `Bun.cron.parse`, though it exists. That one answers in the process's
+// local time, as crontab does, so handing it the call made "midnight" mean
+// midnight UTC on a UTC server and midnight wherever the server was otherwise.
+// The scheduler's UTC path calls this without a `tz`, so a UTC app on a New
+// York box ran its daily tasks at 05:00 UTC.
 export function parse(expression: string, relativeDate?: Date | number, options: import('./parser').ParseCronOptions = {}): Date | null {
-  // Bun's native parser when it exists - but it takes no timezone, so a
-  // `tz` goes to our own. Handing it over regardless dropped the option, and
-  // every `setTimeZone()` schedule ran on the server's clock instead.
-  if (!options.tz && typeof Bun !== 'undefined' && Bun.cron?.parse) {
-    return Bun.cron.parse(expression, relativeDate)
-  }
-
   return parseCron(expression, relativeDate, options)
 }
 

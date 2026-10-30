@@ -172,7 +172,7 @@ import { parse } from '@stacksjs/cron'
 parse(expression: string, relativeDate?: Date | number, options?: { tz?: string }): Date | null
 ```
 
-- Uses `Bun.cron.parse()` when available and no timezone is supplied. With tz, or without native support, it uses the built-in parseCron implementation.
+- Reads the expression in UTC, or in the given tz, using the built-in parseCron. It does not use `Bun.cron.parse()`, which reads in the server's local time.
 - Returns the next matching UTC `Date`, or `null` if no match within ~4 years.
 - Throws on invalid expressions (wrong field count, out-of-range values).
 

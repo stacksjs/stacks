@@ -34,8 +34,9 @@ function parse(expression: string, relativeDate?: Date | number, options?: { tz?
 ```
 
 Parses a cron expression and returns the next matching Date as a UTC instant.
-Without tz it uses Bun.cron.parse when available, otherwise the built-in parser.
-With tz it always uses the built-in parser so the IANA timezone is honored.
+Without tz the expression is read in UTC, with tz in that IANA zone, and never
+in the server's own timezone. It does not call `Bun.cron.parse`, which reads
+expressions in the process's local time the way crontab does.
 
 ```typescript
 parse('0 0 * * *')                   // Next midnight UTC

@@ -21,7 +21,8 @@ declare module 'bun' {
     (path: string, schedule: CronExpression, title: string): Promise<void>
 
     /**
-     * Parse a cron expression and return the next matching UTC Date.
+     * Parse a cron expression and return the next matching Date, read in the
+     * process's local time (as crontab reads it), not UTC.
      *
      * @param expression - A 5-field cron expression or nickname
      * @param relativeDate - Starting point for the search (defaults to Date.now())

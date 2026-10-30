@@ -41,8 +41,8 @@ function toWindowDate(value: string | Date, label: string): Date {
  * Schedule class for creating and managing scheduled tasks.
  *
  * Uses standard 5-field cron patterns (minute hour day month weekday)
- * powered by `@stacksjs/cron` — auto-upgrades to native `Bun.cron.parse()`
- * when available.
+ * powered by `@stacksjs/cron`, read in UTC or the task's timezone, never the
+ * server's.
  *
  * @example
  * ```ts
