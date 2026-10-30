@@ -10,6 +10,7 @@ import { assertPublicationAllowed } from '@stacksjs/actions/publication-prefligh
 import { runBeforeDeployHook } from '@stacksjs/actions/deploy/hooks'
 import { italic, onUnknownSubcommand, outro, prompts } from "@stacksjs/cli"
 import { app, dns as dnsConfig, email as emailConfig } from '@stacksjs/config'
+import { resolvePrivateTenants } from '../cloud-tenants'
 import { addDomain, hasUserDomainBeenAddedToCloud, syncDnsConfig } from '@stacksjs/dns'
 import { loadProjectDnsConfig } from '../config'
 import { env } from '@stacksjs/env'
@@ -856,7 +857,8 @@ async function waitForRemoteReady(where: string | SshTarget): Promise<void> {
 }
 
 /**
- * The projects attached to this box, from `cloud.tenants` in `config/cloud.ts`.
+ * The projects attached to this box, from the private sources documented in
+ * `cloud-tenants.ts` (environment, a gitignored file, or `cloud.tenants`).
  *
  * Each deploys from its own repository with its own env file, so none of their
  * values belong in this project's. This list is what makes a `TENANT_` prefix
@@ -866,13 +868,13 @@ async function waitForRemoteReady(where: string | SshTarget): Promise<void> {
 async function resolveDeclaredTenants(): Promise<string[]> {
   try {
     const { config } = await import('@stacksjs/config')
-    const tenants = (config as { cloud?: { tenants?: unknown } }).cloud?.tenants
-    return Array.isArray(tenants) ? tenants.filter((slug): slug is string => typeof slug === 'string') : []
+    return resolvePrivateTenants({ declared: (config as { cloud?: { tenants?: unknown } }).cloud?.tenants })
   }
   catch {
     // A cloud config that will not load is the deploy's problem to report, not
-    // this helper's — fall back to shipping everything, as before.
-    return []
+    // this helper's — fall back to the private list alone, then to shipping
+    // everything, as before.
+    return resolvePrivateTenants()
   }
 }
 

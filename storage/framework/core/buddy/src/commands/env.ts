@@ -3,6 +3,7 @@ import process from 'node:process'
 import { log, onUnknownSubcommand } from "@stacksjs/cli"
 import { decryptEnv, encryptEnv, envKeyNames, getEnv, getKeypair, isValidPublicKey, publicKeyMatchesPrivateKey, resolveEnvFile, resolveEnvPrivateKey, rotateKeypair, setEnv } from '@stacksjs/env'
 import { ExitCode } from '@stacksjs/types'
+import { resolvePrivateTenants } from '../cloud-tenants'
 
 interface EnvOptions {
   get: string
@@ -607,8 +608,9 @@ export function env(buddy: CLI): void {
 /**
  * Reads `project.slug` and `cloud.tenants` out of the project's cloud config.
  *
- * `cloud.tenants` lists the projects that attach to this box with their own
- * `cloud.attachTo`. It is the only thing that makes a `TENANT_` prefix
+ * The tenant list names the projects that attach to this box with their own
+ * `cloud.attachTo`. It is read from private sources (see `cloud-tenants.ts`),
+ * never required in tracked config. It is the only thing that makes a `TENANT_` prefix
  * meaningful - without it nothing is ever treated as foreign, because
  * `STRIPE_`, `AWS_` and friends look identical to a slug prefix.
  *
@@ -620,14 +622,10 @@ async function resolveDeclaredTenants(): Promise<{ self?: string, tenants: strin
     const { config } = await import('@stacksjs/config')
     const cloud = (config as { cloud?: { tenants?: unknown } }).cloud
     const app = (config as { app?: { name?: string } }).app
-    const tenants = Array.isArray(cloud?.tenants)
-      ? cloud.tenants.filter((slug): slug is string => typeof slug === 'string')
-      : []
-
-    return { self: app?.name, tenants }
+    return { self: app?.name, tenants: resolvePrivateTenants({ declared: cloud?.tenants }) }
   }
   catch {
-    return { tenants: [] }
+    return { tenants: resolvePrivateTenants() }
   }
 }
 
