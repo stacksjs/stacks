@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.377...v0.75.378)
+
+## 🐛 Bug Fixes
+
+- **server**: cancel upstream requests with their incoming client ([613412c](https://github.com/stacksjs/stacks/commit/613412c)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.376...v0.75.377)
 
 ## 🐛 Bug Fixes
