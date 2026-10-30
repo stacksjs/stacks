@@ -96,3 +96,21 @@ For casual chit-chat with others using this package:
 The MIT License (MIT). Please see [LICENSE](https://github.com/stacksjs/stacks/tree/main/LICENSE.md) for more information.
 
 Made with 💙
+
+## Verified local speech models
+
+Install the pinned multilingual Whisper base model before starting a private CPU speech server:
+
+```ts
+import { ensureLocalSpeechModel } from '@stacksjs/ai/local-speech-model'
+
+const modelPath = await ensureLocalSpeechModel({ directory: 'storage/speech/models' })
+```
+
+The installer checks the exact byte length and SHA-256, reuses a verified file,
+and publishes new bytes atomically. Interrupted downloads resume through a
+validated HTTP Range response. An origin that ignores Range starts a clean
+response instead. Four attempts, each with a three-minute transfer timeout, are
+the defaults; `attempts`, `timeoutMs` and an abort `signal` are configurable.
+A failed install preserves the previous target and removes only its own partial
+file. Custom trusted model metadata can be passed through `model`.

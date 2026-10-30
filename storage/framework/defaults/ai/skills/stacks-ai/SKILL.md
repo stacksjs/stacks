@@ -484,3 +484,14 @@ custom local transcriber must honor the supplied AbortSignal.
 Use these fields for a busy/retry message instead of treating service failures as
 invalid audio. A successful mocked test is not proof of real recognition; verify
 the installed native engine with an actual recording on the deployment host.
+
+## Local CPU speech model installation
+
+Use `ensureLocalSpeechModel` from `@stacksjs/ai/local-speech-model` for the pinned
+multilingual Whisper base model. Pass `{ directory }`; its returned path is the
+`modelPath` for `createLocalSpeechHandler`. It verifies the exact length and
+SHA-256 before atomic publication, resumes interrupted responses with validated
+HTTP ranges, safely restarts when Range is ignored, and honors caller aborts.
+It defaults to four attempts with a 180,000 ms timeout per transfer. Keep model
+download handling in this package rather than copying a shell downloader into
+an application. The Whisper executable remains a managed Pantry dependency.
