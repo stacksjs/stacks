@@ -28,3 +28,22 @@ export function isUniqueViolation(err: unknown): boolean {
     || e?.errno === 1062
     || /unique|duplicate/i.test(e?.message ?? '')
 }
+
+/**
+ * True when the error is a NOT NULL violation, across SQLite, MySQL and Postgres:
+ *
+ * - SQLite: `SQLITE_CONSTRAINT_NOTNULL`, or "NOT NULL constraint failed"
+ * - MySQL: `errno: 1048` (ER_BAD_NULL_ERROR) and `1364` (ER_NO_DEFAULT_FOR_FIELD)
+ * - Postgres: `code: '23502'` (not_null_violation)
+ *
+ * A required column that a request left out is the caller's mistake, not a
+ * server fault, so write paths answer it with a 422 instead of a 500.
+ */
+export function isNotNullViolation(err: unknown): boolean {
+  const e = err as UniqueViolation
+  return e?.code === 'SQLITE_CONSTRAINT_NOTNULL'
+    || e?.code === '23502'
+    || e?.errno === 1048
+    || e?.errno === 1364
+    || /not null constraint failed|cannot be null|null value in column|doesn't have a default value/i.test(e?.message ?? '')
+}

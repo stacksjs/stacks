@@ -287,3 +287,23 @@ describe('@stacksjs/error-handling', () => {
     })
   })
 })
+
+describe('isNotNullViolation', () => {
+  it('recognises the SQLite, MySQL and Postgres signals', async () => {
+    const { isNotNullViolation } = await import('../src')
+    expect(isNotNullViolation({ code: 'SQLITE_CONSTRAINT_NOTNULL' })).toBe(true)
+    expect(isNotNullViolation({ code: '23502' })).toBe(true)
+    expect(isNotNullViolation({ errno: 1048 })).toBe(true)
+    expect(isNotNullViolation({ errno: 1364 })).toBe(true)
+    expect(isNotNullViolation(new Error('NOT NULL constraint failed: notes.title'))).toBe(true)
+    expect(isNotNullViolation(new Error('null value in column "title" violates not-null constraint'))).toBe(true)
+  })
+
+  it('does not claim other failures', async () => {
+    const { isNotNullViolation } = await import('../src')
+    expect(isNotNullViolation(undefined)).toBe(false)
+    expect(isNotNullViolation(null)).toBe(false)
+    expect(isNotNullViolation(new Error('database is locked'))).toBe(false)
+    expect(isNotNullViolation({ code: 'SQLITE_CONSTRAINT_UNIQUE', message: 'UNIQUE constraint failed: notes.title' })).toBe(false)
+  })
+})
