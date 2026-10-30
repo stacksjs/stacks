@@ -58,6 +58,21 @@ export interface AiOptions {
   default: 'anthropic' | 'openai' | 'ollama' | 'bedrock' | AiModel
   models: AiModel[]
   deploy: boolean
+  /**
+   * Inline text completions: the ghost text `complete()` writes while a person
+   * types. Every field is optional; with none set it uses the default driver
+   * and that driver's fast, small model.
+   */
+  completion?: {
+    /** Turn the feature off for the app. `complete()` then answers `''`. */
+    enabled?: boolean
+    /** A driver for completions only, when the default one is too slow or costly. */
+    driver?: 'anthropic' | 'openai' | 'ollama' | 'bedrock'
+    /** The model completions use. Defaults to the fast tier: a Haiku on Anthropic and Bedrock. */
+    model?: string
+    /** Output tokens per suggestion. Defaults to 48. */
+    maxTokens?: number
+  }
   drivers?: {
     anthropic?: {
       apiKey?: string

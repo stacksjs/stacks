@@ -219,7 +219,7 @@ function completionRequest(messages: AIMessage[], options: ChatCompletionOptions
   return body
 }
 
-function postCompletion(body: Record<string, unknown>): Promise<Response> {
+function postCompletion(body: Record<string, unknown>, options: Pick<ChatCompletionOptions, 'signal' | 'maxRetries'> = {}): Promise<Response> {
   const config = getConfig()
   return fetchWithRetry(`${config.baseUrl || DEFAULT_BASE_URL}/chat/completions`, {
     method: 'POST',
@@ -228,7 +228,8 @@ function postCompletion(body: Record<string, unknown>): Promise<Response> {
       'Authorization': `Bearer ${config.apiKey}`,
     },
     body: JSON.stringify(body),
-  })
+    ...(options.signal ? { signal: options.signal } : {}),
+  }, options.maxRetries === undefined ? {} : { maxRetries: options.maxRetries })
 }
 
 /**
@@ -240,7 +241,7 @@ export async function chat(
 ): Promise<AIResult> {
   // Track wall-clock duration for usage reporters (#1878 A-6).
   const startedAt = Date.now()
-  const response = await postCompletion(completionRequest(messages, options))
+  const response = await postCompletion(completionRequest(messages, options), options)
 
   if (!response.ok) {
     const error = await response.text()
@@ -287,6 +288,7 @@ export async function chat(
     totalTokens: result.usage!.totalTokens,
     durationMs: Date.now() - startedAt,
     timestamp: Date.now(),
+    ...(options.usageMetadata ? { metadata: options.usageMetadata } : {}),
   })
 
   return result
@@ -322,7 +324,7 @@ export async function* streamChatEvents(
 ): AsyncGenerator<AIStreamEvent> {
   const startedAt = Date.now()
   const body = completionRequest(messages, options)
-  const response = await postCompletion({ ...body, stream: true, stream_options: { include_usage: true } })
+  const response = await postCompletion({ ...body, stream: true, stream_options: { include_usage: true } }, options)
 
   if (!response.ok) {
     const error = await response.text()
@@ -399,6 +401,7 @@ export async function* streamChatEvents(
       ...usage,
       durationMs: Date.now() - startedAt,
       timestamp: Date.now(),
+      ...(options.usageMetadata ? { metadata: options.usageMetadata } : {}),
     })
   }
 

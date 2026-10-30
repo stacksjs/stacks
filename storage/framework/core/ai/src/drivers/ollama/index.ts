@@ -8,6 +8,7 @@
 import type { AIDriver, AIDriverConfig, AIMessage, AIResult, AIStreamEvent, AIToolCall, ChatCompletionOptions, OllamaAPIResponse } from '../../types'
 import { ndjson, streamText } from '../../utils/stream'
 import { parseToolArguments, toOllamaMessages } from '../../utils/tools'
+import { recordUsage } from '../../utils/usage'
 
 export interface OllamaDriverConfig extends AIDriverConfig {
   host?: string
@@ -143,6 +144,7 @@ function chatRequest(messages: AIMessage[], options: ChatCompletionOptions, stre
     temperature,
     topP,
     stop,
+    maxTokens,
     responseFormat,
     tools,
     toolChoice,
@@ -176,6 +178,7 @@ function chatRequest(messages: AIMessage[], options: ChatCompletionOptions, stre
       temperature,
       top_p: topP,
       stop,
+      ...(maxTokens !== undefined ? { num_predict: maxTokens } : {}),
     },
   }
 }
@@ -214,10 +217,12 @@ export async function chat(
   options: ChatCompletionOptions = {},
 ): Promise<AIResult> {
   const config = getConfig()
+  const startedAt = Date.now()
   const response = await fetch(`${config.host}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(chatRequest(messages, options, false)),
+    ...(options.signal ? { signal: options.signal } : {}),
   })
 
   if (!response.ok) {
@@ -228,15 +233,26 @@ export async function chat(
   const data = (await response.json())
   const toolCalls = toToolCalls((data.message?.tool_calls ?? []) as OllamaToolCalls)
 
+  const usage = {
+    promptTokens: data.prompt_eval_count || 0,
+    completionTokens: data.eval_count || 0,
+    totalTokens: (data.prompt_eval_count || 0) + (data.eval_count || 0),
+  }
+  // Ollama was the one driver that never reported to onUsage().
+  recordUsage({
+    provider: 'ollama',
+    model: data.model,
+    ...usage,
+    durationMs: Date.now() - startedAt,
+    timestamp: Date.now(),
+    ...(options.usageMetadata ? { metadata: options.usageMetadata } : {}),
+  })
+
   return {
     content: data.message?.content ?? '',
     ...(toolCalls.length > 0 ? { toolCalls } : {}),
     model: data.model,
-    usage: {
-      promptTokens: data.prompt_eval_count || 0,
-      completionTokens: data.eval_count || 0,
-      totalTokens: (data.prompt_eval_count || 0) + (data.eval_count || 0),
-    },
+    usage,
     finishReason: data.done_reason || 'stop',
   }
 }
@@ -259,6 +275,7 @@ export async function* streamChatEvents(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
+    ...(options.signal ? { signal: options.signal } : {}),
   })
 
   if (!response.ok) {

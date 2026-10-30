@@ -15,3 +15,13 @@
  * one of these sites already honours.
  */
 export const DEFAULT_ANTHROPIC_MODEL = 'claude-sonnet-5-5'
+
+/**
+ * The fast, small model class for latency-bound features such as inline
+ * completions, where a suggestion is worth nothing if it lands after the next
+ * keystroke. Haiku on Anthropic, and on Bedrock the Haiku inference profile
+ * from `bedrockModels`. An app overrides either with `ai.completion.model` in
+ * config/ai.ts, or by listing a Haiku in `ai.models`, which wins over these.
+ */
+export const DEFAULT_ANTHROPIC_FAST_MODEL = 'claude-haiku-4-5'
+export const DEFAULT_BEDROCK_FAST_MODEL = 'global.anthropic.claude-haiku-4-5-20251001-v1:0'

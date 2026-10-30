@@ -12,6 +12,7 @@ import type { AIMessage, AIMessageContent, AIResult, AIStreamEvent, AIToolCall, 
 import { converse, converseStream } from '../../utils/client-bedrock-runtime'
 import { streamText } from '../../utils/stream'
 import { parseToolArguments } from '../../utils/tools'
+import { raceAbort } from '../../utils/abort'
 import { recordUsage } from '../../utils/usage'
 
 type ConverseMessage = ConverseCommandInput['messages'][number]
@@ -204,7 +205,7 @@ function converseRequest(messages: AIMessage[], options: ChatCompletionOptions &
   }
 }
 
-function report(model: string, usage: NonNullable<AIResult['usage']>, startedAt: number): void {
+function report(model: string, usage: NonNullable<AIResult['usage']>, startedAt: number, metadata?: Record<string, unknown>): void {
   recordUsage({
     provider: 'bedrock',
     model,
@@ -213,6 +214,7 @@ function report(model: string, usage: NonNullable<AIResult['usage']>, startedAt:
     totalTokens: usage.totalTokens,
     durationMs: Date.now() - startedAt,
     timestamp: Date.now(),
+    ...(metadata ? { metadata } : {}),
   })
 }
 
@@ -222,7 +224,7 @@ function report(model: string, usage: NonNullable<AIResult['usage']>, startedAt:
 export async function chat(messages: AIMessage[], options: ChatCompletionOptions & { system?: string } = {}): Promise<AIResult> {
   const startedAt = Date.now()
   const { input, outputTool, region } = converseRequest(messages, options)
-  const response = await converse(input, region)
+  const response = await raceAbort(converse(input, region), options.signal)
 
   const result: AIResult = {
     ...readOutput(response, outputTool),
@@ -235,7 +237,7 @@ export async function chat(messages: AIMessage[], options: ChatCompletionOptions
     finishReason: response.stopReason,
   }
 
-  report(input.modelId, result.usage!, startedAt)
+  report(input.modelId, result.usage!, startedAt, options.usageMetadata)
   return result
 }
 
@@ -304,7 +306,7 @@ export async function* streamChatEvents(messages: AIMessage[], options: ChatComp
   }
 
   if (usage)
-    report(input.modelId, usage, startedAt)
+    report(input.modelId, usage, startedAt, options.usageMetadata)
 
   yield {
     type: 'done',

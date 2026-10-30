@@ -82,11 +82,30 @@ export async function fetchWithRetry(
       // ignore
     }
 
-    await new Promise(resolve => setTimeout(resolve, delay))
+    await abortableDelay(delay, init?.signal ?? undefined)
   }
 
   // Loop always returns inside; this is unreachable.
   return lastResponse!
+}
+
+/** Sleep for `ms`, rejecting early with the abort reason if `signal` fires. */
+function abortableDelay(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(signal.reason ?? new DOMException('Aborted', 'AbortError'))
+      return
+    }
+    const timer = setTimeout(() => {
+      signal?.removeEventListener('abort', onAbort)
+      resolve()
+    }, ms)
+    const onAbort = (): void => {
+      clearTimeout(timer)
+      reject(signal?.reason ?? new DOMException('Aborted', 'AbortError'))
+    }
+    signal?.addEventListener('abort', onAbort, { once: true })
+  })
 }
 
 /**

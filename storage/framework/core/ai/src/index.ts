@@ -19,6 +19,9 @@ export * from './context'
 // Text utilities
 export * from './text'
 
+// Inline text completions: ghost text while typing
+export * from './complete'
+
 // Image generation & vision
 export * from './image'
 

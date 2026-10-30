@@ -215,7 +215,7 @@ function messagesRequest(
   return { body }
 }
 
-function postMessages(body: Record<string, unknown>): Promise<Response> {
+function postMessages(body: Record<string, unknown>, options: Pick<ChatCompletionOptions, 'signal' | 'maxRetries'> = {}): Promise<Response> {
   const config = getConfig()
   return fetchWithRetry(`${BASE_URL}/messages`, {
     method: 'POST',
@@ -225,7 +225,8 @@ function postMessages(body: Record<string, unknown>): Promise<Response> {
       'anthropic-version': anthropicApiVersion(config.anthropicVersion),
     },
     body: JSON.stringify(body),
-  })
+    ...(options.signal ? { signal: options.signal } : {}),
+  }, options.maxRetries === undefined ? {} : { maxRetries: options.maxRetries })
 }
 
 /**
@@ -239,7 +240,7 @@ export async function chat(
   // Track wall-clock duration for usage reporters (#1878 A-6).
   const startedAt = Date.now()
   const { body, outputTool } = messagesRequest(messages, options)
-  const response = await postMessages(body)
+  const response = await postMessages(body, options)
 
   if (!response.ok) {
     const error = await response.text()
@@ -287,6 +288,7 @@ export async function chat(
     totalTokens: result.usage!.totalTokens,
     durationMs: Date.now() - startedAt,
     timestamp: Date.now(),
+    ...(options.usageMetadata ? { metadata: options.usageMetadata } : {}),
   })
 
   return result
@@ -351,7 +353,7 @@ export async function* streamChatEvents(
 ): AsyncGenerator<AIStreamEvent> {
   const startedAt = Date.now()
   const { body, outputTool } = messagesRequest(messages, options)
-  const response = await postMessages({ ...body, stream: true })
+  const response = await postMessages({ ...body, stream: true }, options)
 
   if (!response.ok) {
     const error = await response.text()
@@ -432,6 +434,7 @@ export async function* streamChatEvents(
     totalTokens: promptTokens + completionTokens,
     durationMs: Date.now() - startedAt,
     timestamp: Date.now(),
+    ...(options.usageMetadata ? { metadata: options.usageMetadata } : {}),
   })
 
   yield { type: 'done', result }

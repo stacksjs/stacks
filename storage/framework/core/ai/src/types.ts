@@ -108,6 +108,16 @@ export type AIResponseFormat =
 export interface ChatCompletionOptions {
   model?: string
   maxTokens?: number
+  /**
+   * Cancels the request. The HTTP drivers (Anthropic, OpenAI, Ollama) abort
+   * the fetch; Bedrock's SDK client cannot be cancelled mid-flight, so there
+   * the call rejects with the abort reason and the response is discarded.
+   */
+  signal?: AbortSignal
+  /** Tag carried on the usage record the driver reports, e.g. `{ feature: 'completion' }`. */
+  usageMetadata?: Record<string, unknown>
+  /** Retries on 429 / 5xx for the HTTP drivers. Defaults to 3; latency-bound callers pass 0. */
+  maxRetries?: number
   temperature?: number
   topP?: number
   stop?: string | string[]
@@ -264,6 +274,12 @@ export interface MCPConfig {
 export interface AIConfig {
   default?: AIProvider | string
   models?: string[]
+  completion?: {
+    enabled?: boolean
+    driver?: AIProvider
+    model?: string
+    maxTokens?: number
+  }
   drivers?: {
     anthropic?: AIDriverConfig & { anthropicVersion?: string }
     openai?: AIDriverConfig & { embeddingModel?: string }
