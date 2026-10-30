@@ -1,8 +1,9 @@
 /**
  * Native 5-field cron expression parser.
  *
- * Implements the same API as Bun.cron.parse() — when Bun ships native
- * cron support, this can be swapped out with a one-line change.
+ * The same call shape as Bun.cron.parse(), but not a stand-in for it: that one
+ * reads an expression in the process's local time, this one in UTC or in the
+ * `tz` it is given, so the answer does not depend on where the server is.
  *
  * Supports:
  * - Standard 5-field format: minute hour dayOfMonth month dayOfWeek
@@ -35,22 +36,8 @@ const DAY_NAMES: Record<string, number> = {
   sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6,
 }
 
-/**
- * Track which 6-field expressions we've already warned about so a
- * scheduler tick doesn't spam the log every iteration
- * (stacksjs/stacks#1877 Cr-6, mirroring #1872 Q-12).
- */
-const sixFieldWarnedFor = new Set<string>()
-
-function warnSecondsIgnored(expression: string, secondsField: string): void {
-  if (sixFieldWarnedFor.has(expression)) return
-  sixFieldWarnedFor.add(expression)
-  // eslint-disable-next-line no-console
-  console.warn(
-    `[cron] 6-field cron expression '${expression}' has seconds='${secondsField}' - the parser is 5-field only. `
-    + `Seconds field IGNORED. For second-precision use the scheduler's '.everySecond()' instead.`,
-  )
-}
+/** One comma-separated part of a field once names are numbers: `*`, `5`, `1-5`, each with an optional `/step`. */
+const PART = /^(\*|\d+(?:-\d+)?)(?:\/(\d+))?$/
 
 function resolveNames(value: string, names: Record<string, number>): string {
   return value.replace(/[a-z]+/gi, match => {
@@ -65,35 +52,34 @@ function parseField(field: string, min: number, max: number, names?: Record<stri
   const values = new Set<number>()
 
   for (const part of resolved.split(',')) {
-    const stepMatch = part.match(/^(.+)\/(\d+)$/)
-    let range: string
-    let step = 1
-
-    if (stepMatch) {
-      range = stepMatch[1] ?? ''
-      step = Number.parseInt(stepMatch[2] ?? '', 10)
-      if (step <= 0) throw new Error(`Invalid step: ${step}`)
-    }
-    else {
-      range = part
-    }
+    // The whole part, not a prefix of it. parseInt reads `1W` and `1#2` as
+    // `1`, so Quartz syntax this parser does not have used to run on the
+    // wrong days instead of being refused.
+    const match = PART.exec(part)
+    if (!match)
+      throw new Error(`Invalid cron value: ${part}`)
+    const [, range = '', stepText] = match
+    const step = stepText === undefined ? 1 : Number(stepText)
+    if (step <= 0) throw new Error(`Invalid step: ${step}`)
 
     if (range === '*') {
       for (let i = min; i <= max; i += step) values.add(i)
     }
     else if (range.includes('-')) {
-      const [startStr, endStr] = range.split('-')
-      const start = Number.parseInt(startStr ?? '', 10)
-      const end = Number.parseInt(endStr ?? '', 10)
-      if (Number.isNaN(start) || Number.isNaN(end)) throw new Error(`Invalid range: ${range}`)
+      const [start, end] = range.split('-').map(Number) as [number, number]
       if (start < min || end > max) throw new Error(`Range out of bounds: ${range} (${min}-${max})`)
+      // A range that runs backwards selects nothing, and a schedule that
+      // matches nothing never runs: `0 22-2 * * *` returned null forever.
+      if (start > end) throw new Error(`Range must be ascending: ${range} (list both ends, e.g. '${start}-${max},${min}-${end}')`)
       for (let i = start; i <= end; i += step) values.add(i)
     }
     else {
-      const num = Number.parseInt(range, 10)
-      if (Number.isNaN(num)) throw new Error(`Invalid cron value: ${range}`)
+      const num = Number(range)
       if (num < min || num > max) throw new Error(`Value out of range: ${num} (${min}-${max})`)
-      values.add(num)
+      // `5/15` is "from 5, every 15", as Bun and cronie read it. It used to be
+      // the single value 5, with the step thrown away.
+      if (stepText === undefined) values.add(num)
+      else for (let i = num; i <= max; i += step) values.add(i)
     }
   }
 
@@ -135,16 +121,15 @@ export function parseCron(expression: string, relativeDate?: Date | number, opti
 
   let fields = normalized.split(/\s+/).filter(Boolean)
 
-  // 6-field cron (with leading seconds) is widely used by Quartz /
-  // Spring schedulers. This parser is 5-field, but rather than
-  // throw and break the user's app at boot, drop the seconds field
-  // with a once-per-expression warn (stacksjs/stacks#1877 Cr-6).
-  // If the seconds field is non-zero/non-wildcard, the user is
-  // expressing intent that's silently lost — the warn surfaces that.
+  // A leading seconds field (Quartz, Spring) is accepted only as `0`, which
+  // is the five-field expression after it. This parser has minute
+  // resolution, so any other seconds field would be dropped and the schedule
+  // would run at a different time than it says: `* * * * * *` is every
+  // second, and used to come out every minute. The scheduler's `.cron()`
+  // runs `*` and `*\/N` seconds itself and refuses the rest the same way.
   if (fields.length === 6) {
-    const secondsField = fields[0]!
-    if (secondsField !== '0' && secondsField !== '*')
-      warnSecondsIgnored(expression, secondsField)
+    if (fields[0] !== '0')
+      throw new Error(`Invalid cron expression: '${expression}' runs on seconds ('${fields[0]}'), and this parser has minute resolution. Use a seconds field of 0, or the scheduler's .everySecond() / .cron('*/N * * * * *')`)
     fields = fields.slice(1)
   }
 
