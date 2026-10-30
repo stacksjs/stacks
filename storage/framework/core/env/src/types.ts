@@ -247,6 +247,7 @@ export interface FrameworkEnv {
   REDIS_HOST: string | undefined
   REDIS_PORT: number | undefined
   REDIS_PASSWORD: string | undefined
+  REDIS_USERNAME: string | undefined
 
   // Pusher
   PUSHER_APP_ID: string | undefined

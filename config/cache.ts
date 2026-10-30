@@ -1,4 +1,5 @@
 import type { CacheConfig } from '@stacksjs/types'
+import { env } from '@stacksjs/env'
 
 /**
  * **Cache Configuration**
@@ -48,12 +49,16 @@ export default {
     /**
      * Redis driver configuration
      */
+    // The same variables as the Redis queue driver in config/queue.ts. A
+    // REDIS_URL wins; otherwise the parts build one, and an empty value
+    // counts as unset.
     redis: {
-      host: '127.0.0.1',
-      port: 6379,
-      username: '',
-      password: '',
-      database: 0,
+      url: String(env.REDIS_URL || ''),
+      host: String(env.REDIS_HOST || 'localhost'),
+      port: Number(env.REDIS_PORT || 6379),
+      username: String(env.REDIS_USERNAME || ''),
+      password: String(env.REDIS_PASSWORD || ''),
+      database: Number(env.REDIS_DB || 0),
       tls: false,
     },
 

@@ -566,6 +566,7 @@ export function createRedisCache(options: RedisOptions = {}): CacheDriver {
     url: options.url,
     host: options.host ?? 'localhost',
     port: options.port ?? 6379,
+    username: options.username,
     password: options.password,
     database: options.database ?? 0,
     tls: options.tls ?? false,
