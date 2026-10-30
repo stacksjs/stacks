@@ -1,5 +1,28 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.378...v0.75.379)
+
+## 🐛 Bug Fixes
+
+- **cache**: reach the Redis server config/cache.ts names ([d92818a](https://github.com/stacksjs/stacks/commit/d92818a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3071](https://github.com/stacksjs/stacks/issues/3071))
+- **actions**: say why the parent watchdog stopped a dev process (#3070) ([d7a8c4b](https://github.com/stacksjs/stacks/commit/d7a8c4b)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#3066](https://github.com/stacksjs/stacks/issues/3066), [#3070](https://github.com/stacksjs/stacks/issues/3070), [#3063](https://github.com/stacksjs/stacks/issues/3063), [#3065](https://github.com/stacksjs/stacks/issues/3065))
+- **cache**: a tag flush deletes what every process tagged ([2c7381e](https://github.com/stacksjs/stacks/commit/2c7381e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3073](https://github.com/stacksjs/stacks/issues/3073))
+- **cache**: workers that open a new SQLite cache file together all start ([5bfbe22](https://github.com/stacksjs/stacks/commit/5bfbe22)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3074](https://github.com/stacksjs/stacks/issues/3074))
+- **buddy**: say which signal stopped the dev server (#3065) ([0702987](https://github.com/stacksjs/stacks/commit/0702987)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#3063](https://github.com/stacksjs/stacks/issues/3063), [#3065](https://github.com/stacksjs/stacks/issues/3065))
+
+## 📝 Documentation
+
+- **native**: count the cache package's three new test files ([abd631d](https://github.com/stacksjs/stacks/commit/abd631d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: ts-cache 0.1.8 ([1d79c89](https://github.com/stacksjs/stacks/commit/1d79c89)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3071](https://github.com/stacksjs/stacks/issues/3071), [stacksjs/ts-cache#3093](https://github.com/stacksjs/ts-cache/issues/3093))
+
+## Contributors
+
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.377...v0.75.378)
 
 ## 🐛 Bug Fixes
