@@ -182,6 +182,8 @@ route.get('/robots.txt', 'Actions/RobotsAction')
 route.group({ prefix: '/ai', middleware: guarded('/ai') }, () => {
   route.post('/ask', 'Actions/AI/AskAction')
   route.post('/summary', 'Actions/AI/SummaryAction')
+  // Ghost-text completions for editors: `{ before, after?, kind?, context? }` -> `{ completion }`.
+  route.post('/complete', 'Actions/AI/CompleteAction')
 })
 
 // ============================================================================
