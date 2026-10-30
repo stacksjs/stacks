@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.386...v0.75.387)
+
+## ✨ Features
+
+- **mobile**: native chrome in the app's own fonts ([a4e9dca](https://github.com/stacksjs/stacks/commit/a4e9dca)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **cron**: parse() reads UTC, not the server's timezone ([ffaa04d](https://github.com/stacksjs/stacks/commit/ffaa04d)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3085](https://github.com/stacksjs/stacks/issues/3085))
+- **cron**: refuse expressions the parser would misread instead of running them wrong ([ca915e6](https://github.com/stacksjs/stacks/commit/ca915e6)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3085](https://github.com/stacksjs/stacks/issues/3085))
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 ## v0.75.386
 
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.384...v0.75.385)
