@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.374...v0.75.375)
+
+## 🐛 Bug Fixes
+
+- resume and verify local speech model downloads ([5700708](https://github.com/stacksjs/stacks/commit/5700708)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- register the speech model installer in native catalog ([7c1b255](https://github.com/stacksjs/stacks/commit/7c1b255)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.373...v0.75.374)
 
 ## 🐛 Bug Fixes
