@@ -1,5 +1,6 @@
 /**
- * Headers a middleware asked for are on a refusal too (stacksjs/stacks#2993).
+ * Headers a middleware asked for are on a refusal too (stacksjs/stacks#2993),
+ * and the callbacks it asked to run see the refusal (stacksjs/stacks#3078).
  *
  * `_responseHeaders` were applied after the action, so a later middleware that
  * refused the request returned through the early error path without them. A
@@ -15,7 +16,8 @@ import { clearMiddlewareCache, clearRouteMiddlewareRegistry, createStacksRouter 
 const id = crypto.randomUUID().replaceAll('-', '')
 const policyName = `PolicyFixture${id}`
 const refuseName = `RefuseFixture${id}`
-const files = [appPath(`Middleware/${policyName}.ts`), appPath(`Middleware/${refuseName}.ts`)]
+const metricsName = `MetricsFixture${id}`
+const files = [appPath(`Middleware/${policyName}.ts`), appPath(`Middleware/${refuseName}.ts`), appPath(`Middleware/${metricsName}.ts`)]
 let aliases: Record<string, string>
 
 beforeAll(async () => {
@@ -23,6 +25,7 @@ beforeAll(async () => {
   aliases = (await import(appPath('Middleware.ts'))).default
   aliases.__policy = policyName
   aliases.__refuse = refuseName
+  aliases.__metrics = metricsName
   writeFileSync(files[0]!, `
 export default {
   priority: 0,
@@ -42,6 +45,16 @@ export default {
   },
 }
 `)
+  writeFileSync(files[2]!, `
+export default {
+  priority: 0,
+  handle(request) {
+    (request._afterResponse ??= []).push(outcome => { globalThis.__refusalObserved.push(outcome) })
+    // A callback that throws must not change the answer.
+    request._afterResponse.push(() => { throw new Error('a broken observer') })
+  },
+}
+`)
   clearMiddlewareCache()
 })
 
@@ -52,6 +65,7 @@ beforeEach(() => {
 afterAll(() => {
   delete aliases.__policy
   delete aliases.__refuse
+  delete aliases.__metrics
   for (const file of files) unlinkSync(file)
   clearMiddlewareCache()
   clearRouteMiddlewareRegistry()
@@ -104,5 +118,26 @@ describe('a middleware refusal', () => {
 
     expect(response.status).toBe(200)
     expect(response.headers.get('cache-control')).toBe('private, no-store')
+  })
+})
+
+describe('after-response callbacks', () => {
+  test('see a refusal, by thrown error and by thrown Response, as well as an allowed request', async () => {
+    const observed: Array<{ status: number, durationMs: number }> = []
+    ;(globalThis as unknown as { __refusalObserved: typeof observed }).__refusalObserved = observed
+    const router = createStacksRouter()
+    router.get('/observed/{outcome}', () => new Response('handled')).middleware(['__metrics', '__refuse'])
+
+    const statuses: number[] = []
+    for (const outcome of ['allowed', 'error', 'response']) {
+      const request = new Request(`http://localhost/observed/${outcome}`)
+      Object.assign(request, { _startNs: process.hrtime.bigint() })
+      statuses.push((await router.handleRequest(request)).status)
+    }
+
+    expect(statuses).toEqual([200, 403, 409])
+    expect(observed.map(outcome => outcome.status)).toEqual([200, 403, 409])
+    for (const outcome of observed)
+      expect(outcome.durationMs).toBeGreaterThanOrEqual(0)
   })
 })

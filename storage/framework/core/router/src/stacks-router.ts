@@ -1990,6 +1990,32 @@ function applyRequestedResponseHeaders(req: EnhancedRequest, headers: Headers): 
   }
 }
 
+/**
+ * Run the callbacks a middleware asked to have once the answer is known, with
+ * its status and the time it took. A refusal from the middleware chain reaches
+ * this too, or a metrics middleware counted every 200 and no 401, 403 or 429
+ * (stacksjs/stacks#3078). A callback that throws is ignored: the observation is
+ * worth less than the request it observes.
+ */
+function runAfterResponse(req: EnhancedRequest, status: number, durationMs: number): void {
+  const after = req._afterResponse
+  if (!Array.isArray(after))
+    return
+  for (const callback of after) {
+    try {
+      if (typeof callback === 'function')
+        callback({ status, durationMs })
+    }
+    catch { /* an observation is worth less than the request it observes */ }
+  }
+}
+
+/** Milliseconds since the request stamped `_startNs`, or null when it did not. */
+function elapsedSinceStart(req: EnhancedRequest): number | null {
+  const startNs = req._startNs as bigint | undefined
+  return startNs != null ? Number(process.hrtime.bigint() - startNs) / 1_000_000 : null
+}
+
 function finishSynchronousResult(
   req: EnhancedRequest,
   response: Response,
@@ -2449,6 +2475,7 @@ function createMiddlewareHandler(router: Router, routeStates: Map<string, RouteR
                 if (reqId) error.headers.set('X-Request-ID', reqId)
               }
               catch { /* immutable headers — leave the response alone */ }
+              runAfterResponse(enhancedReq, error.status, elapsedSinceStart(enhancedReq) ?? 0)
               return await applyCorsIfConfigured(enhancedReq, error)
             }
             const err = error instanceof Error ? error : new Error(String(error))
@@ -2480,6 +2507,7 @@ function createMiddlewareHandler(router: Router, routeStates: Map<string, RouteR
               if (reqId) errorResponse.headers.set('X-Request-ID', reqId)
             }
             catch { /* immutable headers — leave the response alone */ }
+            runAfterResponse(enhancedReq, errorResponse.status, elapsedSinceStart(enhancedReq) ?? 0)
             return await applyCorsIfConfigured(enhancedReq, errorResponse)
           }
           }
@@ -2617,15 +2645,7 @@ function createMiddlewareHandler(router: Router, routeStates: Map<string, RouteR
            * must not turn a served request into a 500 - the observation is worth
            * less than the thing being observed.
            */
-          if (Array.isArray(after)) {
-            for (const callback of after) {
-              try {
-                if (typeof callback === 'function')
-                  callback({ status: response.status, durationMs: durMs ?? 0 })
-              }
-              catch { /* an observation is worth less than the request it observes */ }
-            }
-          }
+          runAfterResponse(enhancedReq, response.status, durMs ?? 0)
 
           applyRequestedResponseHeaders(enhancedReq, h)
 
