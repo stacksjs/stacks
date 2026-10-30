@@ -1971,6 +1971,25 @@ export async function assertRouteMiddlewareResolvable(): Promise<void> {
   throw new Error(`[Router] Unresolvable middleware alias(es): ${detail}. Check the alias map in app/Middleware.ts or add app/Middleware/<Class>.ts.`)
 }
 
+/**
+ * Put the headers a middleware asked for on a response, as the success path
+ * does after the action. Called first, so the router's own `X-Request-ID` and
+ * `Server-Timing` still win a collision.
+ *
+ * A refusal returns from the middleware chain before that step, so a policy
+ * set ahead of auth or CSRF - `Cache-Control: private, no-store` - was on the
+ * 200 and missing from the 403 (stacksjs/stacks#2993).
+ */
+function applyRequestedResponseHeaders(req: EnhancedRequest, headers: Headers): void {
+  const requested = req._responseHeaders
+  if (!requested || typeof requested !== 'object')
+    return
+  for (const [name, value] of Object.entries(requested as Record<string, unknown>)) {
+    if (typeof value === 'string')
+      headers.set(name, value)
+  }
+}
+
 function finishSynchronousResult(
   req: EnhancedRequest,
   response: Response,
@@ -2418,6 +2437,7 @@ function createMiddlewareHandler(router: Router, routeStates: Map<string, RouteR
             // status entirely.
             if (error instanceof Response) {
               try {
+                applyRequestedResponseHeaders(enhancedReq, error.headers)
                 const reqId = enhancedReq._requestId as string | undefined
                 const startNs = enhancedReq._startNs as bigint | undefined
                 const total = startNs != null ? Number(process.hrtime.bigint() - startNs) / 1_000_000 : null
@@ -2448,6 +2468,7 @@ function createMiddlewareHandler(router: Router, routeStates: Map<string, RouteR
             // shape as the success path, so dashboards don't have to
             // special-case errored requests.
             try {
+              applyRequestedResponseHeaders(enhancedReq, errorResponse.headers)
               const reqId = enhancedReq._requestId as string | undefined
               const startNs = enhancedReq._startNs as bigint | undefined
               const total = startNs != null ? Number(process.hrtime.bigint() - startNs) / 1_000_000 : null
@@ -2606,12 +2627,7 @@ function createMiddlewareHandler(router: Router, routeStates: Map<string, RouteR
             }
           }
 
-          if (requested && typeof requested === 'object') {
-            for (const [name, value] of Object.entries(requested as Record<string, unknown>)) {
-              if (typeof value === 'string')
-                h.set(name, value)
-            }
-          }
+          applyRequestedResponseHeaders(enhancedReq, h)
 
           if (reqId && !frameworkMetadataApplied) h.set('X-Request-ID', reqId)
           if (durMs != null) {
