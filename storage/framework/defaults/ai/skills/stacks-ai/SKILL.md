@@ -22,6 +22,7 @@ ai/src/
 │   ├── openai/index.ts    # GPT + image + transcription + TTS
 │   ├── ollama/index.ts    # Local LLM driver
 │   └── bedrock/          # Amazon Bedrock, through the Converse API
+├── complete.ts           # complete()/completeStream(): inline ghost-text completions
 ├── image.ts              # Image generation & vision
 ├── speech.ts             # Provider-neutral text-to-speech & speech-to-text
 ├── search.ts             # RAG, embeddings, vector index
@@ -341,6 +342,66 @@ const sessionId = driver.getLastSessionId()
 await driver.resumeSession(sessionId, 'Add validation')
 ```
 
+## Inline completions (ghost text)
+
+`complete()` is the continuation at the cursor, for editors that show grey text
+after the caret and accept it with Tab. It uses the app's configured default
+driver (any of the four) and that driver's fast model class, asks for ONLY the
+continuation, and cleans the answer: the echoed prefix, the model's markup,
+chatter and refusals (to `''`), everything past the first sentence or line, and
+anything that runs into the text after the cursor.
+
+```typescript
+import { complete, completeStream } from '@stacksjs/ai'
+
+const { completion } = await complete({
+  before: 'Remember to buy milk, eggs and ', // the last 2000 chars are sent
+  after: '',                                 // the first 500 chars are sent
+  kind: 'todo',                              // 'note' | 'prompt' | 'todo' | 'text'
+  context: 'Groceries',                      // note title, library description
+  maxTokens: 48,                             // default 48
+  signal: controller.signal,                 // abort: rejects with an AbortError
+  driver: 'bedrock',                         // default: ai.completion.driver, then ai.default
+})
+
+for await (const { completion } of completeStream({ before })) paint(completion) // the whole suggestion so far
+```
+
+- `{ completion: '' }` is "no suggestion", never an error: nothing to continue,
+  `ai.completion.enabled: false`, no driver configured, or the model declined. A
+  real driver failure throws.
+- The model is, in order: `input.model`, `ai.completion.model`, a Haiku (Anthropic,
+  Bedrock) or Nova Micro/Lite found in `ai.models`, then the fast defaults in
+  `models.ts` (`DEFAULT_ANTHROPIC_FAST_MODEL`, `DEFAULT_BEDROCK_FAST_MODEL`); on
+  OpenAI and Ollama it is the driver's configured model. Bedrock Claude needs the
+  account's Anthropic use-case form submitted, otherwise list a Nova model in
+  `ai.models` (or set `ai.completion.model`) and completions use that.
+- A small LRU keyed on the tail of `before` (plus kind, model and the head of
+  `after`) makes retyping free; `completionCache.clear()` empties it.
+- Requests carry `maxRetries: 0` and the abort `signal` reaches the HTTP drivers
+  (Bedrock rejects at once and drops the late response), and each reports
+  `recordUsage` with `metadata: { feature: 'completion', kind }`, so `onUsage`
+  can price them separately. `ChatCompletionOptions` gained `signal`,
+  `maxRetries` and `usageMetadata` for this; Ollama now honours `maxTokens`
+  (`num_predict`) and reports usage like the other drivers.
+- `completionStatus(config)` says whether a driver can answer, without a call;
+  `postProcessCompletion(raw, { before, after, kind })` is the cleanup, reusable
+  with your own model call.
+
+`POST /ai/complete` (default `Actions/AI/CompleteAction`, in the guarded `/ai`
+route group of the dashboard bundle) takes `{ before, after?, kind?, context? }`
+and answers `{ completion }`: 401 when signed out, 422 for a bad body, a 90 per
+minute per-user rate limit (429), `''` when no driver is configured, 502 when the
+provider fails. To mount it elsewhere, one line in `routes/api.ts`:
+
+```typescript
+route.post('/complete', 'Actions/AI/CompleteAction').middleware('auth') // POST /api/complete
+```
+
+The client half is `useCompletion()` and `<AiTextarea>` in stx
+(`stacks-stx`, `stacks-composables/BROWSER.md`): `<AiTextarea kind="note" fetcher="/api/complete" v-model:value="body" />`.
+Tests: `core/ai/tests/complete.test.ts`, `defaults/app/Actions/AI/complete-request.test.ts`.
+
 ## config/ai.ts
 
 ```typescript
@@ -352,6 +413,7 @@ await driver.resumeSession(sessionId, 'Add validation')
     anthropic: { model: 'claude-sonnet-5-5' },
     bedrock: { model: 'global.anthropic.claude-sonnet-5-5' },
   },
+  completion: { enabled: true, maxTokens: 48 }, // optional: driver, model for inline completions
 }
 ```
 

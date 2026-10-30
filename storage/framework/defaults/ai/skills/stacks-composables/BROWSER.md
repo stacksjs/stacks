@@ -23,6 +23,14 @@ implementation rather than a newer docs list. Demand legacy helpers commonly
 expose getters, `get()`, `subscribe()`, and `stop()`. Their getters are not
 automatically signal-tracked template values.
 
+STX 0.2.762 adds demand-delivered `useCompletion` for inline ghost text:
+`useCompletion({ fetch: (ctx, signal) => Promise<string>, debounceMs = 250, minChars = 12, enabled })`
+returns signals `ghost` and `pending` (plus `error`) and `update(before, after, caret, meta?)`,
+`accept()`, `acceptWord()`, `dismiss()`, `destroy()`. It debounces, aborts the previous request,
+discards stale answers, asks nothing during IME composition, a selection (`meta.selecting`), mid-word
+or below `minChars`, and typing the start of a suggestion consumes it. `<AiTextarea>` from
+`@stacksjs/components` is the textarea built on it (`kind`, `context`, `fetcher` URL or function).
+
 STX 0.2.628 adds demand-delivered `useAnimationFrame` for canvas and simulations.
 Imported TypeScript controllers use an explicit
 `import { useAnimationFrame } from '@stacksjs/stx/composables'` and declare

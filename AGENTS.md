@@ -274,8 +274,9 @@ delivery. Inspect the installed stx runtime, compiler and demand registry;
 <!-- runtime-globals:end -->
 
 - Current stx also provides compiler/runtime bindings such as `useMediaQuery`
-  and `usePreferredReducedMotion`, and demand-inline `useForm`,
-  `useIntersectionObserver`, `useScroll`, `useMouse`, and `useParallax`.
+  and `usePreferredReducedMotion`, and demand-inline `useForm`, `useCompletion`
+  (inline AI ghost text), `useIntersectionObserver`, `useScroll`, `useMouse`, and
+  `useParallax`.
   Demand delivery depends on the installed stx version and authored calls.
 - Bare stx `useForm(schema, initialValues)` differs from an explicitly imported
   Stacks `useForm({ initialValues, schema, onSubmit })`. Browser getter/subscription

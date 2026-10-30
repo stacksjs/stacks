@@ -12,7 +12,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 |---|---|---|---|
 | `@stacksjs/action-runner` | [`stacks-actions`](../stacks-actions/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/action-runner/src/index.ts) | 1 |
 | `@stacksjs/actions` | [`stacks-actions`](../stacks-actions/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/actions/src/index.ts) | 94 |
-| `@stacksjs/ai` | [`stacks-ai`](../stacks-ai/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/ai/src/index.ts) | 20 |
+| `@stacksjs/ai` | [`stacks-ai`](../stacks-ai/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/ai/src/index.ts) | 21 |
 | `@stacksjs/alias` | [`stacks-alias`](../stacks-alias/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/alias/src/index.ts) | 1 |
 | `@stacksjs/analytics` | [`stacks-analytics`](../stacks-analytics/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/analytics/src/index.ts) | 6 |
 | `@stacksjs/api` | [`stacks-api`](../stacks-api/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/api/src/index.ts) | 9 |

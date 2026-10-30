@@ -185,7 +185,8 @@ through STX's asynchronous render boundary. Pair tenant features with
 `stacks-sites`.
 
 The browser has both eagerly delivered and demand-bundled composables.
-Observers, motion helpers and STX `useForm` are usable client primitives in
+Observers, motion helpers, STX `useForm` and `useCompletion` (inline AI ghost
+text; `<AiTextarea>` is the ready-made textarea) are usable client primitives in
 current STX, even when they are not explicit `window.name` aliases. Read
 `stacks-composables/BROWSER.md` before choosing a signature or mixing the
 browser signal API with explicit module Refs.
