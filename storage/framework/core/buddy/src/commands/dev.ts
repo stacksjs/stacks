@@ -579,6 +579,21 @@ export function dev(buddy: CLI): void {
     .action(async (options: DevOptions) => {
       await checkFrameworkDefaults()
       const perf = await intro('buddy dev:desktop')
+      // A native macOS app (config/desktop.ts) is built and opened; the server it
+      // talks to is the app's `url`, which the project runs with `buddy dev:api`.
+      const { hasMacosDesktop } = await import('@stacksjs/desktop-build')
+      if (await hasMacosDesktop(projectPath())) {
+        process.env.STACKS_DESKTOP_LAUNCH = '1'
+        const { runAction } = await import('@stacksjs/actions')
+        const { Action } = await import('@stacksjs/enums')
+        const result = await runAction(Action.BuildDesktopMacos, options)
+        if (resultFailed(result)) {
+          await outro('While building the native macOS app, there was an issue', { startTime: perf, useSeconds: true }, result.error)
+          process.exit(ExitCode.FatalError)
+        }
+        await outro('Opened the native macOS app', { startTime: perf, useSeconds: true })
+        process.exit(ExitCode.Success)
+      }
       await startDevelopmentServer({ ...options, native: true }, perf)
     })
 

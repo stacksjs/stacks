@@ -477,3 +477,19 @@ describe('universal binary merge', () => {
     }
   })
 })
+
+describe('a native macOS app declared in config/desktop.ts', () => {
+  const native = {
+    appName: 'Library', bundleId: 'com.stacksjs.library', teamId: '3JJRNQW6B7', version: '1.4.0', buildNumber: '7', minimumSystemVersion: '14.0',
+    category: 'public.app-category.productivity', url: 'https://example.com', nativeScreens: ['Main'], nativeScreensDir: 'resources/native', initialScreen: 'Main', sandbox: true, executable: 'Library',
+  }
+
+  test('supplies everything that is not a secret, so the Apple variables are only the credentials', () => {
+    const config = resolveAppleDesktopConfig({}, native)
+    expect(config).toMatchObject({ appName: 'Library', bundleId: 'com.stacksjs.library', teamId: '3JJRNQW6B7', version: '1.4.0', buildNumber: '7', minimumMacos: '14.0' })
+  })
+
+  test('a flag still wins over the config', () => {
+    expect(resolveAppleDesktopConfig({ bundleId: 'com.example.other', appVersion: '2.0.0' }, native)).toMatchObject({ bundleId: 'com.example.other', version: '2.0.0', teamId: '3JJRNQW6B7' })
+  })
+})

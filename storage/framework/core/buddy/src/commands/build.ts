@@ -3,6 +3,7 @@ import process from 'node:process'
 import { intro, log, multiselect, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
 import { hasTTY, isCI } from '@stacksjs/env'
+import { projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { resultFailed } from '../result'
 
@@ -298,7 +299,10 @@ export function build(buddy: CLI): void {
       log.debug('Running `buddy build:desktop` ...', options)
 
       const perf = await intro('buddy build:desktop')
-      const result = await runAction(Action.BuildDesktop, options)
+      // A project that declares a native macOS app in config/desktop.ts builds
+      // that (AppKit, no web view); any other keeps the Craft web-view build.
+      const { hasMacosDesktop } = await import('@stacksjs/desktop-build')
+      const result = await runAction((await hasMacosDesktop(projectPath())) ? Action.BuildDesktopMacos : Action.BuildDesktop, options)
 
       if (resultFailed(result)) {
         await outro(

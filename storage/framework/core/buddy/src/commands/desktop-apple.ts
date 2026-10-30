@@ -13,6 +13,7 @@ import {
 import { basename, join, resolve } from 'node:path'
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
+import type { ResolvedMacosDesktop } from '@stacksjs/desktop-build'
 import { projectPath, storagePath } from '@stacksjs/path'
 import { resultFailed } from '../result'
 
@@ -95,6 +96,12 @@ function xml(value: string): string {
     .replaceAll("'", '&apos;')
 }
 
+/** The project's native macOS app, from config/desktop.ts, or null. */
+async function nativeAppleConfig(): Promise<ResolvedMacosDesktop | null> {
+  const { loadMacosDesktop } = await import('@stacksjs/desktop-build')
+  return loadMacosDesktop(projectPath(), packageMetadata().version)
+}
+
 function packageMetadata(): { name: string, version: string } {
   const packageJson = JSON.parse(readFileSync(projectPath('package.json'), 'utf8')) as { name?: string, version?: string }
   return {
@@ -103,7 +110,13 @@ function packageMetadata(): { name: string, version: string } {
   }
 }
 
-export function resolveAppleDesktopConfig(options: AppleDesktopOptions = {}): AppleDesktopConfig {
+/**
+ * Flags, then the environment, then `config/desktop.ts` (`macos`), then the
+ * framework's defaults. A project that declares its native app there never
+ * needs the Apple variables for what is not secret: the name, bundle id, team,
+ * version, category and icon.
+ */
+export function resolveAppleDesktopConfig(options: AppleDesktopOptions = {}, native?: ResolvedMacosDesktop | null): AppleDesktopConfig {
   const metadata = packageMetadata()
   const provisioningProfile = options.provisioningProfile || env('APPLE_PROVISIONING_PROFILE')
   const apiKeyPath = options.apiKeyPath || env('APP_STORE_CONNECT_API_KEY_PATH')
@@ -111,20 +124,20 @@ export function resolveAppleDesktopConfig(options: AppleDesktopOptions = {}): Ap
   const craftX64 = options.craftX64 || env('CRAFT_BIN_X64')
   const keychain = options.keychain || env('APPLE_KEYCHAIN')
   return {
-    appName: options.appName || env('APPLE_APP_NAME') || env('APP_NAME') || metadata.name,
-    bundleId: options.bundleId || env('APPLE_BUNDLE_ID'),
-    teamId: options.teamId || env('APPLE_TEAM_ID'),
-    version: options.appVersion || env('APPLE_APP_VERSION') || metadata.version,
-    buildNumber: options.buildNumber || env('APPLE_BUILD_NUMBER') || env('GITHUB_RUN_NUMBER') || String(Math.floor(Date.now() / 1000)),
-    minimumMacos: options.minimumMacos || env('APPLE_MINIMUM_MACOS') || '13.0',
-    category: options.category || env('APPLE_APP_CATEGORY') || 'public.app-category.productivity',
+    appName: options.appName || env('APPLE_APP_NAME') || native?.appName || env('APP_NAME') || metadata.name,
+    bundleId: options.bundleId || env('APPLE_BUNDLE_ID') || native?.bundleId || '',
+    teamId: options.teamId || env('APPLE_TEAM_ID') || native?.teamId || '',
+    version: options.appVersion || env('APPLE_APP_VERSION') || native?.version || metadata.version,
+    buildNumber: options.buildNumber || env('APPLE_BUILD_NUMBER') || (native ? native.buildNumber : '') || env('GITHUB_RUN_NUMBER') || String(Math.floor(Date.now() / 1000)),
+    minimumMacos: options.minimumMacos || env('APPLE_MINIMUM_MACOS') || native?.minimumSystemVersion || '13.0',
+    category: options.category || env('APPLE_APP_CATEGORY') || native?.category || 'public.app-category.productivity',
     appSigningIdentity: options.appSigningIdentity || env('APPLE_APP_SIGNING_IDENTITY'),
     installerSigningIdentity: options.installerSigningIdentity || env('APPLE_INSTALLER_SIGNING_IDENTITY'),
     provisioningProfile: provisioningProfile ? resolve(provisioningProfile) : '',
     apiKeyId: options.apiKeyId || env('APP_STORE_CONNECT_API_KEY_ID'),
     apiIssuerId: options.apiIssuerId || env('APP_STORE_CONNECT_API_ISSUER_ID'),
     apiKeyPath: apiKeyPath ? resolve(apiKeyPath) : '',
-    icon: options.icon || env('APPLE_APP_ICON') || undefined,
+    icon: options.icon || env('APPLE_APP_ICON') || (native?.icon ? resolve(projectPath(), native.icon) : undefined),
     universal: Boolean(options.universal) || env('APPLE_UNIVERSAL') === 'true',
     craftArm64: craftArm64 ? resolve(craftArm64) : undefined,
     craftX64: craftX64 ? resolve(craftX64) : undefined,
@@ -574,7 +587,7 @@ function sha256(path: string): string {
   return createHash('sha256').update(readFileSync(path)).digest('hex')
 }
 
-async function packageAppleDesktop(config: AppleDesktopConfig, skipBuild = false): Promise<string> {
+async function packageAppleDesktop(config: AppleDesktopConfig, skipBuild = false, native: ResolvedMacosDesktop | null = null): Promise<string> {
   const errors = validateAppleDesktopConfig(config, false)
   if (config.keychain && !existsSync(config.keychain))
     errors.push(`APPLE_KEYCHAIN does not exist: ${config.keychain}`)
@@ -585,8 +598,10 @@ async function packageAppleDesktop(config: AppleDesktopConfig, skipBuild = false
     errors.push(`Installer signing identity is not installed${where}: ${config.installerSigningIdentity}`)
   if (!provisioningProfileMatches(config))
     errors.push(`Provisioning profile does not match ${config.teamId}.${config.bundleId}`)
+  if (native && config.universal) errors.push('--universal is not supported for a native macOS app yet: the AppKit host is built for this machine\'s architecture')
   if (errors.length) throw new Error(errors.join('\n'))
 
+  if (native) return packageNativeApple(config, native)
   if (!skipBuild) await buildDesktop()
 
   const desktopDist = storagePath('framework/desktop-dist')
@@ -676,6 +691,57 @@ async function packageAppleDesktop(config: AppleDesktopConfig, skipBuild = false
     )
   }
 
+  return finishPackage(config, appPath, appleDir, {
+    architectures,
+    craft: {
+      sha256: sha256(join(macosDir, 'craft-runtime')),
+      // The thin inputs as well as the merged binary: the merged hash changes
+      // with lipo's layout, so only these compare against a Craft release.
+      ...(craftSlices && { slices: { arm64: sha256(craftSlices.arm64), x64: sha256(craftSlices.x64) } }),
+    },
+  })
+}
+
+/**
+ * The Mac App Store package of a native macOS app (`config/desktop.ts`): the
+ * same bundle `buddy build:desktop` makes, built for the Store: sandboxed, with
+ * the application identifier and Keychain group, the provisioning profile
+ * embedded, signed with the Mac App Distribution identity.
+ */
+async function packageNativeApple(config: AppleDesktopConfig, native: ResolvedMacosDesktop): Promise<string> {
+  const { prepareMacosNative } = await import('@stacksjs/actions')
+  const { assembleMacosApp } = await import('@stacksjs/desktop-build')
+  // The Apple settings (flags, environment) win over config/desktop.ts, as everywhere else.
+  const store: ResolvedMacosDesktop = {
+    ...native, appName: config.appName, executable: config.appName, bundleId: config.bundleId, teamId: config.teamId,
+    version: config.version, buildNumber: config.buildNumber, minimumSystemVersion: config.minimumMacos, category: config.category,
+    ...(config.icon ? { icon: config.icon } : {}), sandbox: true,
+  }
+  const prepared = await prepareMacosNative(store)
+  const appleDir = join(storagePath('framework/desktop/macos'), 'apple')
+  if (existsSync(appleDir)) rmSync(appleDir, { recursive: true })
+  mkdirSync(appleDir, { recursive: true })
+  const assembled = assembleMacosApp({
+    config: store, root: projectPath(), host: prepared.host, nativeBundle: prepared.nativeBundle, output: appleDir, distribution: 'app-store',
+    provisioningProfile: config.provisioningProfile, signingIdentity: config.appSigningIdentity, keychain: config.keychain,
+  })
+  for (const note of assembled.notes) log.warn(note)
+  command(['codesign', '-d', '--entitlements', '-', '--xml', assembled.appPath])
+  const findings = storeRejectionFindings(bundleFiles(assembled.appPath), store.executable)
+  if (findings.length > 0)
+    throw new Error(`The app bundle would be rejected by App Review:\n${findings.map(finding => `  - ${finding}`).join('\n')}`)
+  return finishPackage(config, assembled.appPath, appleDir, {
+    architectures: [process.arch === 'x64' ? 'x86_64' : process.arch],
+    craft: { kind: 'native-appkit', hostKey: prepared.hostKey, sha256: sha256(prepared.host) },
+  })
+}
+
+/**
+ * The installer: `productbuild` signs the package, then the checksum and the
+ * provenance record are written beside it. Shared by the web-view and native
+ * packages, which differ only in what is inside the `.app`.
+ */
+function finishPackage(config: AppleDesktopConfig, appPath: string, appleDir: string, provenance: { architectures: string[], craft: Record<string, unknown> }): string {
   const packagePath = join(appleDir, `${config.appName}-${config.version}-${config.buildNumber}.pkg`)
   command([
     'productbuild',
@@ -699,15 +765,10 @@ async function packageAppleDesktop(config: AppleDesktopConfig, skipBuild = false
     version: config.version,
     buildNumber: config.buildNumber,
     minimumMacos: config.minimumMacos,
-    architectures,
+    architectures: provenance.architectures,
     package: { name: basename(packagePath), sha256: packageHash },
     sourceRevision: Bun.spawnSync(['git', 'rev-parse', 'HEAD'], { cwd: projectPath() }).stdout.toString().trim(),
-    craft: {
-      sha256: sha256(join(macosDir, 'craft-runtime')),
-      // The thin inputs as well as the merged binary: the merged hash changes
-      // with lipo's layout, so only these compare against a Craft release.
-      ...(craftSlices && { slices: { arm64: sha256(craftSlices.arm64), x64: sha256(craftSlices.x64) } }),
-    },
+    craft: provenance.craft,
   }, null, 2)}\n`)
 
   return packagePath
@@ -799,7 +860,7 @@ export function desktopApple(buddy: CLI): void {
       try {
         if (options.plan && options.apply)
           throw new Error('Choose either --plan or --apply')
-        const config = resolveAppleDesktopConfig(options)
+        const config = resolveAppleDesktopConfig(options, await nativeAppleConfig())
         if (!config.bundleId)
           throw new Error('APPLE_BUNDLE_ID or --bundle-id is required')
         if (!config.apiKeyId || !config.apiIssuerId || !config.apiKeyPath || !existsSync(config.apiKeyPath))
@@ -903,9 +964,9 @@ export function desktopApple(buddy: CLI): void {
     .option('--api-issuer-id <id>', 'App Store Connect API issuer ID')
     .option('--api-key-path <path>', 'App Store Connect AuthKey .p8 file')
     .option('--keychain <path>', 'Look for the signing identities in this keychain file only (or APPLE_KEYCHAIN)')
-    .action((options: AppleDesktopOptions) => {
+    .action(async (options: AppleDesktopOptions) => {
       try {
-        const config = resolveAppleDesktopConfig(options)
+        const config = resolveAppleDesktopConfig(options, await nativeAppleConfig())
         const errors = validateAppleDesktopConfig(config, true)
         if (!signingIdentityExists(config.appSigningIdentity, config.keychain))
           errors.push(`App signing identity is not installed: ${config.appSigningIdentity}`)
@@ -959,7 +1020,8 @@ export function desktopApple(buddy: CLI): void {
   addSharedOptions(buddy.command('desktop:apple:package', 'Build, sandbox, sign, and package a Mac App Store desktop app'))
     .action(async (options: AppleDesktopOptions) => {
       try {
-        const packagePath = await packageAppleDesktop(resolveAppleDesktopConfig(options), Boolean(options.skipBuild))
+        const native = await nativeAppleConfig()
+        const packagePath = await packageAppleDesktop(resolveAppleDesktopConfig(options, native), Boolean(options.skipBuild), native)
         log.success(`Created signed Mac App Store package ${packagePath}`)
       }
       catch (error) {
@@ -975,8 +1037,9 @@ export function desktopApple(buddy: CLI): void {
     .option('--package-only', 'Create the signed package without contacting App Store Connect')
     .action(async (options: AppleDesktopOptions) => {
       try {
-        const config = resolveAppleDesktopConfig(options)
-        const packagePath = await packageAppleDesktop(config, Boolean(options.skipBuild))
+        const native = await nativeAppleConfig()
+        const config = resolveAppleDesktopConfig(options, native)
+        const packagePath = await packageAppleDesktop(config, Boolean(options.skipBuild), native)
         if (!options.packageOnly)
           validateOrUpload(packagePath, config, Boolean(options.validateOnly))
         log.success(options.packageOnly

@@ -7,6 +7,8 @@ import { craftBinaryNotFoundMessage, resolveCraftBinary as resolveCraftNativeBin
 export * from './invites'
 export * from './updater'
 export * from './support'
+export * from './macos-app'
+export * from './macos-bundle'
 
 export interface Desktop {
   app: unknown

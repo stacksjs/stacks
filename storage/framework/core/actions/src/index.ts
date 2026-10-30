@@ -52,6 +52,8 @@ export { assertPublicationAllowed, PUBLICATION_CHECK_SCRIPT, publicationChannels
 export type { PublicationChannel } from './publication-preflight'
 export { DEFAULT_IOS_DEPENDENCIES, IosToolchainError, loadIosDependencies, pantryExecutable, pantryInstallArgs, resolveXcodegen, XCODE_NOTE, xcodeDeveloperDir } from './build/ios-toolchain'
 export type { PantryTool } from './build/ios-toolchain'
+export { prepareMacosNative } from './build/macos-native'
+export type { PreparedMacosNative } from './build/macos-native'
 // stx conformance checks behind `buddy lint --stx`. Pure - returns a report
 // and never exits, so the command owns rendering and the exit code.
 export { DEFAULT_STX_LINT_CONFIG, loadStxLintConfig, runStxLint } from './lint/stx-gate'

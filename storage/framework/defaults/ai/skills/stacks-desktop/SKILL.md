@@ -252,6 +252,47 @@ Two things that bite, both silently:
 `buddy build:dmg` warns when a finished bundle contains more than one
 Bun-compiled executable, naming them and what the repetition costs.
 
+## Native macOS apps (`config/desktop.ts`)
+
+A project whose app is a client of an HTTP API (a hosted service, not a local server) declares it in
+`config/desktop.ts`, the way `config/mobile.ts` declares a phone app, and `buddy build:desktop` builds a
+native AppKit app from its stx screens: no web view, no launcher.
+
+```ts
+import type { DesktopConfig } from '@stacksjs/types'
+
+export default {
+  macos: {
+    appName: 'Library',
+    bundleId: 'com.example.library',
+    teamId: '3JJRNQW6B7',                 // not a secret
+    url: process.env.LIBRARY_API_URL || 'http://127.0.0.1:3408',
+    nativeScreens: ['Main', 'Settings'],   // resources/native/<name>.stx
+    shareStorage: { auth_token: 'auth.token' },
+    window: { width: 1180, height: 760, minWidth: 860, minHeight: 540 },
+    icon: 'resources/native/icon/AppIcon-1024.png',
+    privacy: { tracking: false, collectedDataTypes: [] },
+  },
+} satisfies DesktopConfig
+```
+
+- `buddy build:desktop` compiles the screens (`compileNativeBundle`), builds Craft's AppKit host
+  (`craft-native/macos`, cached per Craft revision), lays out `<App>.app` and signs it ad hoc. `buddy dev:desktop`
+  does the same and opens it. Output: `storage/framework/desktop/macos/`.
+- The toolchain is not the app's business: Craft resolves the pinned Zig through Pantry and fetches and builds the pinned
+  zig-js into `~/.cache/craft/toolchain` (`CRAFT_TOOLCHAIN_DIR` moves it, `CRAFT_ZIG` overrides the compiler).
+- The host reads `Contents/Resources/craft-app.json` (written by the build) when Finder launches it, so the app has no
+  arguments. The API origin is `url`, and `craft.secureStorage` is the Keychain (`craft.session` is the `auth.token` item).
+- `buddy desktop:apple:package` and `publish` build the same bundle for the Mac App Store (sandbox, network client,
+  application identifier, Keychain group, embedded profile). Name, bundle id, team, version, category and icon come
+  from `config/desktop.ts`; only the credentials (identities, profile, API key) are Apple variables. `--universal` is not
+  supported for native apps yet.
+- A `macos` section in `config/desktop.ts` switches `build:desktop` and `dev:desktop` to this path; without one they
+  build the Craft web-view app as before.
+- One set of views can be both: the web server resolves the native primitives (`View`, `Text`, `ScrollView`, ...) as
+  components of last resort (stx config `nativePrimitives`), so `resources/views` pages written with them are also native
+  screens. Menus, windows and the Keychain are the screen's `craft.desktop` and `craft.secureStorage`.
+
 ## CLI Commands
 
 ```bash
