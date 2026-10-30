@@ -122,7 +122,7 @@ interface ScheduledJob {
 
 ### Timezone Type
 
-The `Timezone` type is a string union of ~70 IANA timezone identifiers (e.g., `'America/New_York'`, `'Europe/Berlin'`, `'Asia/Tokyo'`, `'UTC'`). Default is `'America/Los_Angeles'`.
+The `Timezone` type is a string union of ~70 IANA timezone identifiers (e.g., `'America/New_York'`, `'Europe/Berlin'`, `'Asia/Tokyo'`, `'UTC'`). A task without `setTimeZone()` runs on `config.app.timezone`, or UTC when the app sets none, read when its next run is computed.
 
 ### Internal Scheduling Engine
 
@@ -359,7 +359,7 @@ export default {
 
 ## Gotchas
 - The Schedule constructor starts through a microtask after the synchronous chain; asynchronous configuration arrives too late
-- Default timezone is `'America/Los_Angeles'`, not UTC
+- A task's default timezone is the app's (`config.app.timezone`, which `config/app.ts` ships as `'America/Los_Angeles'`), not a fixed zone; UTC when the app sets none
 - `everySecond()` uses `setInterval`, not cron -- it sets `intervalMs = 1000` and bypasses the cron parser entirely
 - The `Queue` class in `schedule.ts` is just an empty subclass of `Schedule` (`export class Queue extends Schedule {}`) -- it adds no functionality
 - `withoutOverlapping()` provides local file locking. `onOneServer()` adds PostgreSQL/MySQL advisory coordination where available

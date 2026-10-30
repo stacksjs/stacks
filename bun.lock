@@ -1195,6 +1195,7 @@
       "dependencies": {
         "@stacksjs/action-runner": "workspace:*",
         "@stacksjs/cli": "workspace:*",
+        "@stacksjs/config": "workspace:*",
         "@stacksjs/cron": "workspace:*",
         "@stacksjs/database": "workspace:*",
         "@stacksjs/env": "workspace:*",

@@ -7,6 +7,7 @@ import { closeSync, mkdirSync, openSync, readFileSync, renameSync, writeFileSync
 import { join } from 'node:path'
 import { runNamedAction } from '@stacksjs/action-runner'
 import { log, runCommand } from '@stacksjs/cli'
+import { config } from '@stacksjs/config'
 import { parse } from '@stacksjs/cron'
 import { job as queuedJob, runJob } from '@stacksjs/queue'
 import type { SchedulerLockHandle } from './scheduler-lock'
@@ -100,7 +101,8 @@ export class Schedule implements UntimedSchedule {
   private static scheduledKeys = new Map<string, ScheduledJob>()
   private cronPattern = ''
   private intervalMs: number | null = null
-  private timezone: Timezone = 'America/Los_Angeles'
+  /** Set by setTimeZone(); otherwise the task follows the app's, see zone(). */
+  private timezone: Timezone | null = null
   private readonly task: (context?: any) => unknown
   private static lockDir = join(process.cwd(), 'storage', 'framework', 'locks')
   private static stateFile = join(process.cwd(), 'storage', 'framework', 'runtime', 'scheduler-state.json')
@@ -529,7 +531,8 @@ export class Schedule implements UntimedSchedule {
     // `since`. The right boundary is inclusive: a slot whose minute is "now"
     // counts as missed, the common case after a boot that lands just past a
     // slot. In the task's own zone, as its live schedule is.
-    const tz = this.timezone && this.timezone !== 'UTC' ? { tz: this.timezone } : {}
+    const zone = this.zone()
+    const tz = zone !== 'UTC' ? { tz: zone } : {}
     const slotsAfter = (from: number): Date[] => {
       const found: Date[] = []
       let cursor = from
@@ -864,8 +867,24 @@ export class Schedule implements UntimedSchedule {
     return next
   }
 
+  /**
+   * The zone this task runs in: its own from setTimeZone(), else the app's
+   * `config.app.timezone`, else UTC. Every task used to start in
+   * America/Los_Angeles whatever the app said, so a 09:00 task in a Berlin app
+   * ran at 17:00 (stacksjs/stacks#3080). Read when a run time is computed rather
+   * than when the task is declared: app/Scheduler.ts declares its tasks at
+   * import, which can come before the app's config overrides have loaded.
+   */
+  private zone(): Timezone {
+    if (this.timezone)
+      return this.timezone
+    const app = (config as { app?: { timezone?: string } }).app
+    return (app?.timezone || 'UTC') as Timezone
+  }
+
   private nextCronTime(base: number): Date | null {
-    if (!this.timezone || this.timezone === 'UTC') {
+    const zone = this.zone()
+    if (zone === 'UTC') {
       return parse(this.cronPattern, base)
     }
 
@@ -889,7 +908,7 @@ export class Schedule implements UntimedSchedule {
     // exist). Fall-back: the target local time happens twice, and
     // the scheduler fires twice on the transition day — apps that
     // care need idempotency keys or exclusive locks on the task body.
-    return parse(this.cronPattern, base, { tz: this.timezone })
+    return parse(this.cronPattern, base, { tz: zone })
   }
 
   private start(): ScheduledJob {
@@ -1015,7 +1034,7 @@ export class Schedule implements UntimedSchedule {
       run: executeTask,
       nextRun,
       pattern: this.intervalMs !== null ? `every ${this.intervalMs / 1000}s` : this.cronPattern,
-      timezone: this.timezone,
+      timezone: this.zone(),
       name: this.options.name,
       enabled: Schedule.isEnabled(taskName),
     }
@@ -1073,7 +1092,7 @@ export class Schedule implements UntimedSchedule {
       Schedule.scheduledKeys.set(dedupeKey, job)
     }
 
-    log.info(`Scheduled task with pattern: ${this.cronPattern} in timezone: ${this.timezone}`)
+    log.info(`Scheduled task with pattern: ${this.cronPattern} in timezone: ${this.zone()}`)
     return job
   }
 

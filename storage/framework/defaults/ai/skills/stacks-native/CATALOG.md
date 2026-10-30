@@ -76,7 +76,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/registry` | [`stacks-registry`](../stacks-registry/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/registry/src/index.ts) | 1 |
 | `@stacksjs/repl` | [`stacks-repl`](../stacks-repl/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/repl/src/index.ts) | 2 |
 | `@stacksjs/router` | [`stacks-router`](../stacks-router/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/router/src/index.ts) | 99 |
-| `@stacksjs/scheduler` | [`stacks-scheduler`](../stacks-scheduler/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/scheduler/src/index.ts) | 14 |
+| `@stacksjs/scheduler` | [`stacks-scheduler`](../stacks-scheduler/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/scheduler/src/index.ts) | 15 |
 | `@stacksjs/search-engine` | [`stacks-search-engine`](../stacks-search-engine/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/search-engine/src/index.ts) | 11 |
 | `@stacksjs/security` | [`stacks-security`](../stacks-security/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/security/src/index.ts) | 11 |
 | `@stacksjs/server` | [`stacks-server`](../stacks-server/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/server/src/index.ts) | 28 |
@@ -735,7 +735,7 @@ Read the entrypoint and package export map for re-exported or type-only surfaces
 
 Local source modules: [src/run.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/scheduler/src/run.ts), [src/schedule.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/scheduler/src/schedule.ts), [src/types.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/scheduler/src/types.ts).
 
-Evidence directory: [14 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/scheduler/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [15 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/scheduler/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/search-engine
 

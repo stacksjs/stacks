@@ -113,7 +113,7 @@ describe('@stacksjs/scheduler', () => {
   })
 
   describe('Timezone configuration', () => {
-    it('should default to America/Los_Angeles', () => {
+    it('should set the daily pattern without a timezone of its own', () => {
       const task = mock(() => {})
       const s = new Schedule(task)
       s.daily()

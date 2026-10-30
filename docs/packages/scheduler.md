@@ -493,25 +493,22 @@ SCHEDULE_LOG_LEVEL=info
 QUEUE_DRIVER=database
 ```
 
-### Scheduler Configuration
+### Timezone
+
+A task without `setTimeZone()` runs on the app's timezone, `timezone` in
+`config/app.ts`, and on UTC when the app sets none. It is read when the task's
+next run is computed, so it follows the app's config once that has loaded.
+There is no separate scheduler config file.
 
 ```typescript
-// config/scheduler.ts
+// config/app.ts
 export default {
-  // Default timezone
-  timezone: 'UTC',
-
-  // Log scheduled runs
-  logging: true,
-
-  // Catch up missed runs
-  catchUp: false,
-
-  // Default error handler
-  onError: (error, job) => {
-    console.error(`Job ${job} failed:`, error)
-  }
+  timezone: 'Europe/Berlin',
+  // ...
 }
+
+// app/Scheduler.ts: 09:00 in Berlin
+schedule.job('EmailDigest').daily().at('09:00')
 ```
 
 ## API Reference
