@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.383...v0.75.384)
+
+## 🐛 Bug Fixes
+
+- **dev**: say a slow boot is still starting, and only call it ready once it is ([0277334](https://github.com/stacksjs/stacks/commit/0277334)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3077](https://github.com/stacksjs/stacks/issues/3077))
+- **db**: gzip server dumps and let config set how many are kept ([e5bffb9](https://github.com/stacksjs/stacks/commit/e5bffb9)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3079](https://github.com/stacksjs/stacks/issues/3079))
+- **dashboard**: leave out a model whose feature is off instead of failing it ([32a76ea](https://github.com/stacksjs/stacks/commit/32a76ea)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3084](https://github.com/stacksjs/stacks/issues/3084), [#2928](https://github.com/stacksjs/stacks/issues/2928))
+
+## Contributors
+
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.382...v0.75.383)
 
 ## ✨ Features
