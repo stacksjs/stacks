@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.376...v0.75.377)
+
+## 🐛 Bug Fixes
+
+- restore managed deployment staging capacity ([720038a](https://github.com/stacksjs/stacks/commit/720038a)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.375...v0.75.376)
 
 ## 🐛 Bug Fixes
