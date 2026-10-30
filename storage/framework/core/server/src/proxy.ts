@@ -251,6 +251,8 @@ export async function proxyToBackend(req: Request, backendBase: string, stripPre
     headers: fwd,
     body,
     redirect: 'manual',
+    // Rewrites may replace req; cancellation belongs to the incoming socket.
+    signal: peerOf.signal,
   })
 
   // Re-emit the body without the upstream's content-length /

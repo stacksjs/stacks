@@ -175,6 +175,68 @@ describe('proxyToBackend', () => {
     expect(((await bare.json()) as any).path).toBe('/')
   })
 
+  test.each([false, true])('cancels an upstream stream when the incoming request is aborted (rewritten: %s)', async (rewritten) => {
+    const { proxyToBackend } = await import('../src/proxy')
+    let heartbeat: ReturnType<typeof setInterval> | undefined
+    let onCancelled!: () => void
+    const cancelled = new Promise<void>((resolve) => { onCancelled = resolve })
+    const backend = Bun.serve({
+      port: 0,
+      fetch() {
+        return new Response(new ReadableStream({
+          start(controller) {
+            controller.enqueue(new TextEncoder().encode('data: ready\n\n'))
+            heartbeat = setInterval(() => controller.enqueue(new TextEncoder().encode(': heartbeat\n\n')), 20)
+          },
+          cancel() { onCancelled(); clearInterval(heartbeat) },
+        }), { headers: { 'content-type': 'text/event-stream' } })
+      },
+    })
+    const abort = new AbortController()
+    let reader: ReadableStreamDefaultReader<Uint8Array> | undefined
+    try {
+      const incoming = new Request('http://frontend.test/events', { signal: abort.signal })
+      const request = rewritten ? new Request('http://frontend.test/rewritten/events') : incoming
+      const response = await proxyToBackend(request, `http://127.0.0.1:${backend.port}`, undefined, incoming)
+      reader = response.body!.getReader()
+      expect((await reader.read()).done).toBe(false)
+      abort.abort()
+      await expect(reader.read()).rejects.toThrow()
+      await cancelled
+    }
+    finally {
+      clearInterval(heartbeat)
+      await reader?.cancel().catch(() => {})
+      reader?.releaseLock()
+      backend.stop(true)
+    }
+  })
+
+  test('cancels an upstream request before its response headers arrive', async () => {
+    const { proxyToBackend } = await import('../src/proxy')
+    let started!: () => void
+    const ready = new Promise<void>((resolve) => { started = resolve })
+    let release!: () => void
+    const held = new Promise<void>((resolve) => { release = resolve })
+    const backend = Bun.serve({ port: 0, async fetch() { started(); await held; return new Response('late') } })
+    const abort = new AbortController()
+    const deadline = setTimeout(() => { release() }, 1000)
+    try {
+      const response = proxyToBackend(new Request('http://frontend.test/slow', { signal: abort.signal }), `http://127.0.0.1:${backend.port}`)
+      await ready
+      abort.abort()
+      await expect(response).rejects.toThrow()
+    }
+    finally { clearTimeout(deadline); release(); backend.stop(true) }
+  })
+
+  test('rejects a pre-aborted incoming request', async () => {
+    const { proxyToBackend } = await import('../src/proxy')
+    const abort = new AbortController()
+    abort.abort()
+    await expect(proxyToBackend(new Request('http://frontend.test/events', { signal: abort.signal }), base)).rejects.toThrow()
+  })
+
   test('rejects when the backend is unreachable (callers return 502)', async () => {
     const { proxyToBackend } = await import('../src/proxy')
     // Port 1 is never bound; connection is refused immediately.
