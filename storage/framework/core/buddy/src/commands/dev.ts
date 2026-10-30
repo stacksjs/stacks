@@ -783,9 +783,28 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   let isExiting = false
   let closeNativeApp: (() => void) | undefined
   const SHUTDOWN_GRACE_MS = 1500
-  const cleanup = () => {
+  const cleanup = (signal: NodeJS.Signals) => {
     if (isExiting) return
     isExiting = true
+    // Say why we are going away. Without this the shutdown path writes nothing
+    // at all, so a deliberate exit and a crash leave byte-identical logs: the
+    // last line is whatever the startup printed, the port simply stops
+    // answering, and the exit status is 0 either way (stacksjs/stacks#3063).
+    //
+    // Printed, not logged, for the same reason the queue worker's
+    // forced-shutdown notice is: `log.info` reaches the console only after it
+    // awaits its logger, and nothing here keeps the loop alive for that
+    // continuation - the group SIGTERM below closes the server handles and the
+    // process exits with the write still pending, printing nothing.
+    //
+    // SIGHUP gets the second line because it is the one that misleads: it means
+    // the launching shell went away, and the usual `nohup` reflex does not
+    // prevent it, because nohup works by setting SIGHUP's disposition to
+    // SIG_IGN and registering a handler replaces that disposition.
+    console.log()
+    console.log(`  ${bold(cyan('stacks'))} ${dim(`received ${signal} - shutting down the dev server`)}`)
+    if (signal === 'SIGHUP')
+      console.log(`  ${dim('    ')}${dim('The launching shell went away (a closed terminal, or a CI step that ended). nohup does not prevent this.')}`)
     closeNativeApp?.()
     // Teardown order matters: an unawaited deregistration loses the race
     // against the group SIGTERM, leaving this session's rpx registry entry
