@@ -60,6 +60,6 @@
   },
   "dependencies": {
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/ts-cache": "^0.1.7"
+    "@stacksjs/ts-cache": "^0.1.8"
   }
 }
