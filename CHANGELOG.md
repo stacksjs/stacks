@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.384...v0.75.385)
+
+## ✨ Features
+
+- **error-handling**: recognise NOT NULL violations on SQLite, MySQL and Postgres ([4f17069](https://github.com/stacksjs/stacks/commit/4f17069)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **auth**: honour the page gate's next parameter after sign-in and sign-up ([062b07d](https://github.com/stacksjs/stacks/commit/062b07d)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **orm**: answer a missing required value with 422, not 500 ([11a057a](https://github.com/stacksjs/stacks/commit/11a057a)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.383...v0.75.384)
 
 ## 🐛 Bug Fixes
