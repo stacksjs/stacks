@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.389...v0.75.390)
+
+## ✨ Features
+
+- **mobile**: a route recording's power mode, and cancelling one local notification ([c246a8d](https://github.com/stacksjs/stacks/commit/c246a8d)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.388...v0.75.389)
 
 ## 🐛 Bug Fixes
