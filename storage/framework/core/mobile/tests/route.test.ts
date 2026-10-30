@@ -1,7 +1,7 @@
 import type { LocationApi } from '../src/types'
 import type { RouteFix } from '../src/route'
 import { describe, expect, it } from 'bun:test'
-import { createRouteRecorder, fixDistance, paceLabel, routeStats, speedLabel, usableFixes } from '../src/route'
+import { createRouteRecorder, createRouteStats, fixDistance, paceLabel, ROUTE_FULL_READ_MAX_MS, routeReadInterval, routeStats, speedLabel, usableFixes } from '../src/route'
 
 /** A run due north at `mps` metres a second, one fix a second. */
 function run(seconds: number, mps: number, start = 1_000_000, accuracy = 5): RouteFix[] {
@@ -198,4 +198,90 @@ it('rejects impossible coordinates and missing accuracy, and clears stale pace w
   expect(routeStats([...good, ...still]).paceSPerKm).toBeNull()
   expect(paceLabel(-60)).toBe('–')
   expect(speedLabel(-3)).toBe('–')
+})
+
+describe('route stats kept up as fixes arrive', () => {
+  /** A long, mixed recording: running, standing, a pause, rough and repeated fixes. */
+  function mixed(): RouteFix[] {
+    const first = run(900, 3)
+    const last = first.at(-1)!
+    const still = standing(120, last.timestamp + 1000)
+    const after = run(900, 2.6, still.at(-1)!.timestamp + 90_000).map(fix => ({ ...fix, latitude: fix.latitude + (last.latitude - 52) + 200 / 111_195 }))
+    const all = [...first, ...still, ...after]
+    all.splice(400, 0, { latitude: 53, longitude: 14, accuracy: 300, timestamp: all[399]!.timestamp + 500 })
+    all.splice(800, 0, { ...all[799]! })
+    return all
+  }
+
+  it('gives the same numbers fed in pieces as all at once', () => {
+    const fixes = mixed()
+    const whole = routeStats(fixes)
+    for (const size of [1, 3, 7, 250]) {
+      const counted = createRouteStats()
+      let last = counted.stats
+      for (let i = 0; i < fixes.length; i += size) last = counted.add(fixes.slice(i, i + size))
+      expect(last).toEqual(whole)
+    }
+  })
+
+  it('counts nothing twice when a host hands back the whole recording each time', () => {
+    const fixes = mixed()
+    const counted = createRouteStats()
+    for (let end = 50; end < fixes.length; end += 500) counted.add(fixes.slice(0, end))
+    expect(counted.add(fixes)).toEqual(routeStats(fixes))
+    expect(counted.latestTimestamp).toBe(Math.max(...fixes.map(fix => fix.timestamp)))
+  })
+
+  it('keeps only the anchors the pace needs on a 20-hour route', () => {
+    const counted = createRouteStats()
+    const long = run(72_000, 2)
+    const started = performance.now()
+    for (let i = 0; i < long.length; i += 3) counted.add(long.slice(i, i + 3))
+    expect(performance.now() - started).toBeLessThan(2000)
+    expect(counted.stats.distanceM).toBeGreaterThan(143_000)
+    expect(paceLabel(counted.stats.paceSPerKm)).toBe('8:20')
+  })
+})
+
+describe('reading a long recording back', () => {
+  function host(fixes: RouteFix[], honoursSince: boolean) {
+    const reads: Array<number | undefined> = []
+    const api = {
+      supportsRecordingOwnership: () => true,
+      acknowledgeRecording: async () => true,
+      startRecording: async () => ({ id: 'r1', active: true, paused: false, startedAt: 1 }),
+      getRecordingState: async () => ({ id: 'r1', active: true, paused: false, startedAt: 1 }),
+      readRecording: async (options: { since?: number }) => {
+        reads.push(options?.since)
+        return honoursSince && options?.since !== undefined ? fixes.filter(fix => fix.timestamp > options.since!) : fixes
+      },
+      stopRecording: async () => ({ id: 'r1', active: false, paused: false, startedAt: 1, locations: fixes }),
+    } as unknown as LocationApi
+    return { api, reads }
+  }
+
+  it('asks only for what is new, and gets the same numbers from either kind of host', async () => {
+    const fixes = run(600, 3)
+    for (const honoursSince of [true, false]) {
+      const recorded: RouteFix[] = fixes.slice(0, 100)
+      const { api, reads } = host(recorded, honoursSince)
+      const recorder = createRouteRecorder({ location: api })
+      await recorder.attach({ expectedId: 'r1' })
+      for (let end = 200; end <= fixes.length; end += 100) {
+        recorded.push(...fixes.slice(recorded.length, end))
+        await recorder.refresh()
+      }
+      expect(reads[0]).toBeUndefined()
+      expect(reads.at(-1)).toBe(fixes[499]!.timestamp)
+      expect(recorder.stats).toEqual(routeStats(recorded))
+      recorder.dispose()
+    }
+  })
+
+  it('spaces out whole-recording reads on a long route, never the tail reads', () => {
+    expect(routeReadInterval(3000, 600, true)).toBe(3000)
+    expect(routeReadInterval(3000, 72_000, false)).toBe(3000)
+    expect(routeReadInterval(3000, 7200, true)).toBe(6000)
+    expect(routeReadInterval(3000, 72_000, true)).toBe(ROUTE_FULL_READ_MAX_MS)
+  })
 })

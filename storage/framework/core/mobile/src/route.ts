@@ -77,6 +77,8 @@ export interface RouteStatsOptions {
 
 const EARTH_RADIUS_M = 6371008.8
 
+const EMPTY_STATS: RouteStats = { distanceM: 0, movingS: 0, paceSPerKm: null, averagePaceSPerKm: null, speedMps: null, accuracyM: null, fixes: 0 }
+
 /** Fixes further apart than this, seconds, are a break in the route (a pause). */
 export const ROUTE_GAP_S = 30
 const GAP_S = ROUTE_GAP_S
@@ -105,6 +107,125 @@ export function usableFixes<T extends RouteFix>(fixes: readonly T[], maxAccuracy
     })
 }
 
+/** Whether a fix has a real position, time and accuracy no rougher than `maxAccuracyM`. */
+function usable(fix: RouteFix, maxAccuracyM: number): boolean {
+  return Number.isFinite(fix.latitude) && Number.isFinite(fix.longitude) && Number.isFinite(fix.timestamp)
+    && Math.abs(fix.latitude) <= 90 && Math.abs(fix.longitude) <= 180 && Number.isFinite(fix.accuracy) && fix.accuracy >= 0 && fix.accuracy <= maxAccuracyM
+}
+
+/**
+ * The live numbers for a recording, kept up as fixes arrive: `add` takes the
+ * next fixes (a batch read back from the native recording) and counts only
+ * those newer than any it has seen, so a reader can hand it a whole recording
+ * or just its tail and get the same answer. Each fix is looked at once, and
+ * only the anchors inside the pace window are kept, so a 20-hour route costs
+ * what its last few seconds do rather than every fix again on every read.
+ *
+ * `routeStats` is this over one batch.
+ */
+export interface RouteStatsAccumulator {
+  /** Counts the fixes newer than the last one counted; returns the numbers. */
+  add: (fixes: readonly RouteFix[]) => RouteStats
+  readonly stats: RouteStats
+  /** The newest fix time seen, usable or not (epoch ms), or null before any. */
+  readonly latestTimestamp: number | null
+}
+
+export function createRouteStats(options: RouteStatsOptions = {}): RouteStatsAccumulator {
+  const maxAccuracyM = options.maxAccuracyM ?? 25
+  const windowMs = (options.paceWindowS ?? 30) * 1000
+  // The anchors inside the pace window, oldest first; the last is the latest.
+  let anchors: Array<{ fix: RouteFix, cumM: number }> = []
+  let distanceM = 0
+  let movingS = 0
+  let previous: RouteFix | null = null
+  let count = 0
+  let latestRaw: number | null = null
+  let rawAccuracy: number | null = null
+  let stats: RouteStats = { ...EMPTY_STATS }
+
+  function take(fix: RouteFix): void {
+    const last = anchors[anchors.length - 1]
+    const gap = previous ? (fix.timestamp - previous.timestamp) / 1000 : 0
+    previous = fix
+    count++
+    if (!last) {
+      anchors.push({ fix, cumM: 0 })
+      return
+    }
+    // A gap between fixes: the recording was paused, or the signal lost.
+    // Wherever the person went meanwhile is not route; carry on from here.
+    if (gap > GAP_S) {
+      anchors.push({ fix, cumM: distanceM })
+      return
+    }
+    const seconds = (fix.timestamp - last.fix.timestamp) / 1000
+    const step = fixDistance(last.fix, fix)
+    const threshold = Math.min(10, Math.max(3, last.fix.accuracy, fix.accuracy))
+    if (step < threshold)
+      return
+    distanceM += step
+    // A stretch slower than a stroll is a pause with drift in it, not moving.
+    if (seconds > 0 && step / seconds >= 0.5)
+      movingS += seconds
+    anchors.push({ fix, cumM: distanceM })
+  }
+
+  function summarise(): RouteStats {
+    const latest = anchors[anchors.length - 1]
+    // Pace looks back from the latest anchor only, so older ones can go.
+    if (latest) {
+      const since = latest.fix.timestamp - windowMs
+      let first = 0
+      while (first < anchors.length - 1 && anchors[first]!.fix.timestamp < since) first++
+      if (first) anchors = anchors.slice(first)
+    }
+    let paceSPerKm: number | null = null
+    let speedMps: number | null = null
+    if (latest && previous!.timestamp - latest.fix.timestamp <= windowMs) {
+      const start = anchors[0]!
+      const metres = latest.cumM - start.cumM
+      const seconds = (latest.fix.timestamp - start.fix.timestamp) / 1000
+      if (metres >= 20 && seconds > 0) {
+        speedMps = metres / seconds
+        paceSPerKm = seconds / (metres / 1000)
+      }
+    }
+    return {
+      distanceM,
+      movingS,
+      paceSPerKm,
+      averagePaceSPerKm: distanceM >= 50 && movingS > 0 ? movingS / (distanceM / 1000) : null,
+      speedMps,
+      accuracyM: previous ? previous.accuracy : rawAccuracy,
+      fixes: count,
+    }
+  }
+
+  return {
+    get stats() { return stats },
+    get latestTimestamp() { return latestRaw },
+    add(fixes) {
+      if (fixes.length) {
+        const lastRaw = fixes[fixes.length - 1]!
+        if (!previous) rawAccuracy = lastRaw.accuracy ?? null
+        const newest = previous ? previous.timestamp : -Infinity
+        const fresh = fixes.filter(fix => usable(fix, maxAccuracyM) && fix.timestamp > newest).sort((a, b) => a.timestamp - b.timestamp)
+        for (const fix of fresh) {
+          // Repeats of one moment count once.
+          if (previous && fix.timestamp <= previous.timestamp) continue
+          take(fix)
+        }
+        for (const fix of fixes) {
+          if (Number.isFinite(fix.timestamp) && (latestRaw === null || fix.timestamp > latestRaw)) latestRaw = fix.timestamp
+        }
+      }
+      stats = summarise()
+      return stats
+    },
+  }
+}
+
 /**
  * The live numbers for a recording.
  *
@@ -116,61 +237,7 @@ export function usableFixes<T extends RouteFix>(fixes: readonly T[], maxAccuracy
  * (a pause) are a break: the ground between them is not counted.
  */
 export function routeStats(fixes: readonly RouteFix[], options: RouteStatsOptions = {}): RouteStats {
-  const usable = usableFixes(fixes, options.maxAccuracyM ?? 25)
-  const windowS = options.paceWindowS ?? 30
-  const anchors: Array<{ fix: RouteFix, cumM: number }> = []
-  let distanceM = 0
-  let movingS = 0
-  let previous: RouteFix | null = null
-  for (const fix of usable) {
-    const last = anchors[anchors.length - 1]
-    const gap = previous ? (fix.timestamp - previous.timestamp) / 1000 : 0
-    previous = fix
-    if (!last) {
-      anchors.push({ fix, cumM: 0 })
-      continue
-    }
-    // A gap between fixes: the recording was paused, or the signal lost.
-    // Wherever the person went meanwhile is not route; carry on from here.
-    if (gap > GAP_S) {
-      anchors.push({ fix, cumM: distanceM })
-      continue
-    }
-    const seconds = (fix.timestamp - last.fix.timestamp) / 1000
-    const step = fixDistance(last.fix, fix)
-    const threshold = Math.min(10, Math.max(3, last.fix.accuracy, fix.accuracy))
-    if (step < threshold)
-      continue
-    distanceM += step
-    // A stretch slower than a stroll is a pause with drift in it, not moving.
-    if (seconds > 0 && step / seconds >= 0.5)
-      movingS += seconds
-    anchors.push({ fix, cumM: distanceM })
-  }
-
-  const latest = anchors[anchors.length - 1]
-  let paceSPerKm: number | null = null
-  let speedMps: number | null = null
-  if (latest && usable.at(-1)!.timestamp - latest.fix.timestamp <= windowS * 1000) {
-    const since = latest.fix.timestamp - windowS * 1000
-    const start = anchors.find(anchor => anchor.fix.timestamp >= since) ?? latest
-    const metres = latest.cumM - start.cumM
-    const seconds = (latest.fix.timestamp - start.fix.timestamp) / 1000
-    if (metres >= 20 && seconds > 0) {
-      speedMps = metres / seconds
-      paceSPerKm = seconds / (metres / 1000)
-    }
-  }
-
-  return {
-    distanceM,
-    movingS,
-    paceSPerKm,
-    averagePaceSPerKm: distanceM >= 50 && movingS > 0 ? movingS / (distanceM / 1000) : null,
-    speedMps,
-    accuracyM: usable.length ? usable[usable.length - 1]!.accuracy : fixes.length ? fixes[fixes.length - 1]!.accuracy ?? null : null,
-    fixes: usable.length,
-  }
+  return createRouteStats(options).add(fixes)
 }
 
 /** "5:12" per kilometre, or "–" without a pace. */
@@ -187,7 +254,12 @@ export function speedLabel(metresPerSecond: number | null | undefined): string {
 }
 
 export interface RouteRecorderOptions extends RouteStatsOptions {
-  /** How often the recording is read back while shown, ms. Default 3000. */
+  /**
+   * How often the recording is read back while shown, ms. Default 3000. A
+   * host that cannot read just the new fixes (`since`) hands back the whole
+   * recording each time; then a long one is read less often (see
+   * `routeReadInterval`).
+   */
   intervalMs?: number
   /** Every time the numbers change. */
   onUpdate?: (stats: RouteStats) => void
@@ -229,7 +301,22 @@ export interface RouteRecorder {
   readonly heartRate: HeartRateSample[]
 }
 
-const EMPTY_STATS: RouteStats = { distanceM: 0, movingS: 0, paceSPerKm: null, averagePaceSPerKm: null, speedMps: null, accuracyM: null, fixes: 0 }
+/** Past this many fixes (an hour at one a second), a whole-recording read is spaced out. */
+export const ROUTE_FULL_READ_FIXES = 3600
+/** The longest a whole-recording read is spaced to, ms. */
+export const ROUTE_FULL_READ_MAX_MS = 30_000
+
+/**
+ * How long to wait before the next read, ms. A host that answers `since` with
+ * only the new fixes is read every `everyMs`, however long the route. One that
+ * hands back the whole recording costs more with every fix (a 20-hour route
+ * is ~72,000 of them through the bridge), so past ROUTE_FULL_READ_FIXES the
+ * wait grows with the recording, up to ROUTE_FULL_READ_MAX_MS.
+ */
+export function routeReadInterval(everyMs: number, fixes: number, wholeReads: boolean): number {
+  if (!wholeReads || fixes <= ROUTE_FULL_READ_FIXES) return everyMs
+  return Math.max(everyMs, Math.min(ROUTE_FULL_READ_MAX_MS, Math.round(everyMs * fixes / ROUTE_FULL_READ_FIXES)))
+}
 
 /**
  * A recording to follow: start, pause, resume and stop the native recording,
@@ -240,7 +327,12 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
   const location = options.location
   const every = options.intervalMs ?? 3000
   let stats: RouteStats = EMPTY_STATS
-  let timer: ReturnType<typeof setInterval> | null = null
+  // The numbers so far for the selected recording, fed only what is new.
+  let counted = createRouteStats(options)
+  // Whether the host answered a `since` read with fixes it had already sent.
+  let wholeReads = false
+  let timer: ReturnType<typeof setTimeout> | null = null
+  let polling = 0
   const strap = options.heartRate
   let strapRecording = false
   let heartRateRecordingId: string | null = null
@@ -283,14 +375,16 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
       requireOwnership()
       if (!expectedId)
         throw Object.assign(new Error('A saved recording ID is required'), { code: 'RECORDING_CONFLICT' })
-      const fixes = await location.readRecording({ expectedId }) as RouteFix[]
-      const nextStats = routeStats(fixes, options)
-      if (version === generation && !disposed) {
-        stats = nextStats
-        options.onUpdate?.(stats)
-      }
+      const accumulator = counted
+      const since = accumulator.latestTimestamp
+      const fixes = await location.readRecording(since === null ? { expectedId } : { expectedId, since }) as RouteFix[]
       // A held A request receives only A's snapshot, even if B is now selected.
-      return nextStats
+      if (version !== generation || disposed || accumulator !== counted)
+        return accumulator.add(fixes)
+      if (since !== null && fixes.length && fixes[0]!.timestamp <= since) wholeReads = true
+      stats = accumulator.add(fixes)
+      options.onUpdate?.(stats)
+      return stats
     })().finally(() => { if (read === pending) read = null })
     read = pending
     return pending
@@ -299,23 +393,34 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
   function poll(): void {
     stopPolling()
     if (disposed) return
-    timer = setInterval(() => {
-      if (!hidden())
-        void refresh().catch(() => {})
-    }, every)
+    const chain = polling
+    // One read at a time, each scheduled after the last has answered, so a
+    // slow whole-recording read never stacks up behind itself.
+    const next = () => {
+      timer = setTimeout(() => {
+        timer = null
+        if (disposed || chain !== polling) return
+        const read = hidden() ? Promise.resolve() : refresh().then(() => {}, () => {})
+        void read.then(() => { if (!disposed && chain === polling) next() })
+      }, routeReadInterval(every, stats.fixes, wholeReads))
+    }
+    next()
   }
 
   function stopPolling(): void {
+    polling++
     if (timer)
-      clearInterval(timer)
+      clearTimeout(timer)
     timer = null
   }
 
   /** Publish one fully validated selection; no prior recording can update it. */
-  function selectRecording(id: string, heartId: string | null, nextStats: RouteStats): void {
+  function selectRecording(id: string, heartId: string | null, nextStats: RouteStats, accumulator = createRouteStats(options)): void {
     stopPolling()
     generation++
     read = null
+    counted = accumulator
+    wholeReads = false
     recordingId = id
     heartRateRecordingId = heartId
     strapRecording = heartId !== null
@@ -399,7 +504,8 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
         // from the previous selection. A rejected read changes no public data.
         const fixes = await location.readRecording({ expectedId: ownership.expectedId }) as RouteFix[]
         requireOwnership()
-        selectRecording(ownership.expectedId, nextHeartId, routeStats(fixes, options))
+        const accumulator = createRouteStats(options)
+        selectRecording(ownership.expectedId, nextHeartId, accumulator.add(fixes), accumulator)
         if (state.active && !state.paused) poll()
         return state
       })

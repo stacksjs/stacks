@@ -308,6 +308,15 @@ export interface RecordingOwnershipOptions {
   expectedId: string
 }
 
+/**
+ * Reading a route recording back. `since` (epoch ms) asks only for the fixes
+ * recorded after it: a host that knows it answers with the tail, one that
+ * does not answers with every fix, and the caller skips what it has.
+ */
+export interface LocationRecordingReadOptions extends RecordingOwnershipOptions {
+  since?: number
+}
+
 export interface LocationApi {
   /** Whether this host checks recording IDs atomically before reads and mutations. */
   supportsRecordingOwnership: () => boolean
@@ -322,7 +331,7 @@ export interface LocationApi {
   resumeRecording: (options?: RecordingOwnershipOptions) => Promise<LocationRecordingState>
   stopRecording: (options?: RecordingOwnershipOptions) => Promise<LocationRecordingResult>
   getRecordingState: (options?: RecordingOwnershipOptions) => Promise<LocationRecordingState>
-  readRecording: (options?: RecordingOwnershipOptions) => Promise<Location[]>
+  readRecording: (options?: LocationRecordingReadOptions) => Promise<Location[]>
 }
 
 export interface ShareApi {

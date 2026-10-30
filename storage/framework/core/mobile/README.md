@@ -345,6 +345,14 @@ anchor so GPS drift while standing still adds nothing, fixes less accurate than
 covered, moving time, and pace over the last 30 seconds and the whole route.
 `paceLabel` and `speedLabel` format min/km and km/h.
 
+`createRouteStats()` keeps the same numbers up as fixes arrive: `add(fixes)`
+counts only fixes newer than any it has seen and keeps just the anchors the pace
+window needs, so a 20-hour route costs a read what its last few seconds do. The
+recorder reads with `readRecording({ expectedId, since })`; a host that answers
+with only the new fixes is read every `intervalMs`, and one that hands back the
+whole recording is read less often past an hour of fixes (`routeReadInterval`,
+at most every 30 s).
+
 ## Before the bridge arrives
 
 Craft installs `window.craft` once the page has finished loading, so

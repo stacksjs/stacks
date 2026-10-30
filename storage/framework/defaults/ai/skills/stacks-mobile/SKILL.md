@@ -471,6 +471,10 @@ For a run or ride, `createRouteRecorder({ location, onUpdate })` starts, pauses,
 resumes and stops the native recording, re-attaches to one that outlived the
 app (`attach({ expectedId })` with the ID saved in the account's draft), and reports live distance and pace from `routeStats(fixes)`,
 which ignores GPS drift, inaccurate fixes and the ground crossed during a pause.
+It keeps those numbers incrementally (`createRouteStats().add(fixes)` counts
+only fixes newer than the last) and reads with `since`, so a long recording is
+not re-summed on every read; a host that ignores `since` is read less often past
+an hour of fixes (`routeReadInterval`).
 Recorder operations serialize; repeated `stop()` returns the same recording.
 Call `dispose()` when the owning page is destroyed to stop polling without
 stopping the native recording. Refreshes coalesce and cannot overwrite a final
