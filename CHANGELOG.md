@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.388...v0.75.389)
+
+## 🐛 Bug Fixes
+
+- **deps**: require bun-query-builder 0.3.32 for MySQL reserved-word columns ([9d40611](https://github.com/stacksjs/stacks/commit/9d40611)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **setup**: point DB_PORT at the port Pantry assigned, and create the database it provisioned ([1ca7811](https://github.com/stacksjs/stacks/commit/1ca7811)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- refresh the native skills catalog for the new buddy test ([d1c40ba](https://github.com/stacksjs/stacks/commit/d1c40ba)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.387...v0.75.388)
 
 ## ⚡ Performance Improvements
