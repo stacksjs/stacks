@@ -161,6 +161,15 @@ export interface IosMobileConfig {
   backgroundColor?: string
   /** Default iOS native control and selected-tab tint, as #RRGGBB. */
   tintColor?: string
+  /**
+   * CSS font stacks for the app's native chrome (navigation titles, tab and
+   * bar button labels), which the screens' own text does not reach. The first
+   * family packaged in `nativeFonts` wins; a generic one first (`system-ui`)
+   * keeps the system face. Needs craft-native >= 0.0.398.
+   */
+  fontFamily?: string
+  /** Navigation titles; `fontFamily` when unset. */
+  headingFontFamily?: string
   /** The launch and webview background while the phone is in Dark Mode. */
   backgroundColorDark?: string
   /**
@@ -347,6 +356,15 @@ export interface AndroidMobileConfig {
   /** Light or dark with the device (`system`), or pinned. */
   appearance?: 'light' | 'dark' | 'system'
   /** The background behind screens in dark mode (`backgroundColor` is light's). */
+  /**
+   * CSS font stacks for the app's native chrome (navigation titles, tab and
+   * bar button labels), which the screens' own text does not reach. The first
+   * family packaged in `nativeFonts` wins; a generic one first (`system-ui`)
+   * keeps the system face. Needs craft-native >= 0.0.398.
+   */
+  fontFamily?: string
+  /** Navigation titles; `fontFamily` when unset. */
+  headingFontFamily?: string
   backgroundColorDark?: string
   /**
    * `native` draws every screen from the app's `.stx` screens with Android

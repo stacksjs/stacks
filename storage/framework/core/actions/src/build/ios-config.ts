@@ -16,6 +16,8 @@ export interface CraftIosConfig {
   backgroundColor?: string
   tintColor?: string
   backgroundColorDark?: string
+  fontFamily?: string
+  headingFontFamily?: string
   swipeNavigation?: boolean
   allowsLinkPreview?: boolean
   keyboardAccessory?: boolean
@@ -265,6 +267,8 @@ export function toCraftIosConfig(config: IosMobileConfig): CraftIosConfig {
     backgroundColor: config.backgroundColor,
     tintColor: config.tintColor,
     backgroundColorDark: config.backgroundColorDark,
+    fontFamily: config.fontFamily,
+    headingFontFamily: config.headingFontFamily,
     swipeNavigation: resolveSwipeNavigation(config),
     allowsLinkPreview: config.allowsLinkPreview,
     keyboardAccessory: config.keyboardAccessory,
@@ -435,6 +439,12 @@ export function resolveNativeFonts(fonts: IosMobileConfig['nativeFonts'], root: 
 }
 
 export const CRAFT_NATIVE_FONTS_FLOOR = '0.0.229'
+
+/** Older Craft ignores the chrome fonts and keeps the system face on titles and tabs. */
+export function assertCraftSupportsChromeFonts(config: Pick<IosMobileConfig, 'fontFamily' | 'headingFontFamily'>, version?: string): void {
+  if ((config.fontFamily === undefined && config.headingFontFamily === undefined) || (version && Bun.semver.satisfies(version, '>=0.0.398'))) return
+  throw new Error('fontFamily / headingFontFamily need craft-native >= 0.0.398; install a published version that draws native chrome in the app\'s fonts.')
+}
 
 export function assertCraftSupportsTint(color: IosMobileConfig['tintColor'], version?: string): void {
   if (color === undefined || (version && Bun.semver.satisfies(version, '>=0.0.380'))) return

@@ -7,7 +7,7 @@ import { projectPath, storagePath } from '@stacksjs/path'
 import { craftBuilderSpecifier, craftBuilderVersion } from './craft-entry'
 import { resolveCraftBuilderProvenance } from './craft-provenance'
 import { androidRelease, assertCraftSupportsAndroid, assertCraftSupportsAndroidMapProvider, toCraftAndroidConfig, uploadAndroidMapping, validateAndroidMobileConfig } from './android-config'
-import { resolveCrashReporting, resolveMobilePath, resolveNativeFonts, assertCraftSupportsNativeFonts } from './ios-config'
+import { assertCraftSupportsChromeFonts, resolveCrashReporting, resolveMobilePath, resolveNativeFonts, assertCraftSupportsNativeFonts } from './ios-config'
 import { compileNativeScreens } from './native-screens'
 import { writeAndroidIconTable } from './android-icons'
 import { reportMobileBuildTarget } from './mobile-target'
@@ -106,6 +106,7 @@ if (native && !iconsPath)
 // refresh and says nothing, so the build stops here instead.
 const craftVersion = craftBuilderVersion(craftAndroidEntry(), projectPath())
 assertCraftSupportsNativeFonts(config.nativeFonts, craftVersion?.version)
+assertCraftSupportsChromeFonts(config, craftVersion?.version)
 if (craftVersion)
   assertCraftSupportsAndroid(config, craftVersion.version, craftVersion.manifest, { appBundle })
 else

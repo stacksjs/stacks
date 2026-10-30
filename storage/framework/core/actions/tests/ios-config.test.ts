@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { compileNativeScreens, nativeScreenFiles, nativeScreenName } from '../src/build/native-screens'
 import { toCraftAndroidConfig } from '../src/build/android-config'
-import { assertCraftSupportsTint } from '../src/build/ios-config'
+import { assertCraftSupportsChromeFonts, assertCraftSupportsTint } from '../src/build/ios-config'
 import { assertCraftSupportsAppShortcuts, assertCraftSupportsNativeFonts, resolveNativeFonts, assertCraftSupportsCapabilities, normalizeMobileUrl, portablePaths, resolveMobilePath, resolveSwipeNavigation, toCraftIosConfig, unsupportedCraftCapabilities, validateIosMobileConfig, withActivityTypes, writeIosActivityTypes } from '../src/build/ios-config'
 
 describe('build-owned iOS shortcuts', () => {
@@ -13,6 +13,15 @@ describe('build-owned iOS shortcuts', () => {
     expect(() => assertCraftSupportsTint('#dd0f15', '0.0.377')).toThrow('>= 0.0.380')
     expect(() => assertCraftSupportsTint('#dd0f15', '0.0.380')).not.toThrow()
     expect(() => assertCraftSupportsTint(undefined, '0.0.377')).not.toThrow()
+  })
+  it('passes the chrome fonts to Craft and refuses a builder that would draw system titles', () => {
+    const config = toCraftIosConfig({ appName: 'Club', bundleId: 'org.example.club', url: 'https://club.example/m', fontFamily: 'Brand-Regular, system-ui', headingFontFamily: 'Brand-Bold, Brand-Regular' })
+    expect(config.fontFamily).toBe('Brand-Regular, system-ui')
+    expect(config.headingFontFamily).toBe('Brand-Bold, Brand-Regular')
+    expect('fontFamily' in toCraftIosConfig({ appName: 'HQ', bundleId: 'training.hq.app', url: 'https://hq.training/m' })).toBe(false)
+    expect(() => assertCraftSupportsChromeFonts({ fontFamily: 'Brand-Regular' }, '0.0.397')).toThrow('>= 0.0.398')
+    expect(() => assertCraftSupportsChromeFonts({ headingFontFamily: 'Brand-Bold' }, '0.0.398')).not.toThrow()
+    expect(() => assertCraftSupportsChromeFonts({}, '0.0.300')).not.toThrow()
   })
   it('forwards native App Intents and refuses a builder that would omit them', () => {
     const shortcuts = [{ id: 'saved', title: 'Saved', symbol: 'heart.fill', url: 'example://saved', phrases: ['Saved in {app}'] }]

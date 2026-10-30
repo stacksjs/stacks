@@ -16,6 +16,8 @@ export interface CraftAndroidConfig {
   appearance?: AndroidMobileConfig['appearance']
   backgroundColor?: string
   backgroundColorDark?: string
+  fontFamily?: string
+  headingFontFamily?: string
   devServerURL?: string
   trustedOrigins?: string[]
   urlSchemes?: string[]
@@ -145,6 +147,8 @@ export function toCraftAndroidConfig(config: AndroidMobileConfig): CraftAndroidC
     appearance: config.appearance,
     backgroundColor: config.backgroundColor,
     backgroundColorDark: config.backgroundColorDark,
+    fontFamily: config.fontFamily,
+    headingFontFamily: config.headingFontFamily,
     devServerURL,
     trustedOrigins: [...trustedOrigins],
     urlSchemes: config.urlSchemes,

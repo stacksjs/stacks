@@ -9,6 +9,12 @@ describe('Android mobile build configuration', () => {
     expect(() => assertCraftSupportsAndroid(config, '0.0.324', 'test')).not.toThrow()
   })
 
+  it('forwards the chrome fonts to Craft', () => {
+    const result = toCraftAndroidConfig({ appName: 'Club', packageName: 'org.example.club', fontFamily: 'Brand-Regular, system-ui', headingFontFamily: 'Brand-Bold' })
+    expect(result.fontFamily).toBe('Brand-Regular, system-ui')
+    expect(result.headingFontFamily).toBe('Brand-Bold')
+  })
+
   it('preserves the native key-free provider without inventing a Google map key', () => {
     const config = { appName: 'Wildloop', packageName: 'org.wildloop.app', renderer: 'native' as const, url: 'https://wildloop.org/feed', nativeScreens: { '/': 'Home' }, mapProvider: 'maplibre' as const }
     const result = toCraftAndroidConfig(config)
