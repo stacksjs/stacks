@@ -19,18 +19,23 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
   backupFileName,
+  DEFAULT_RETAIN,
   dumpCommand,
   dumpSqlite,
   isBackupFileName,
+  isCompressedBackup,
   prunableBackups,
+  readDump,
   resolveBackupTarget,
   backupObjectKey,
   parseBackupDestination,
   resolveBackupDestination,
+  resolveBackupRetain,
   restoreCommand,
   restoreSqlite,
   toolFailureDetail,
   withoutPassword,
+  writeDump,
 } from '../src/database-backup'
 
 let dir: string
@@ -103,7 +108,7 @@ describe('the dump command', () => {
   })!
 
   it('keeps the password out of argv, where every user on the box could read it', () => {
-    const command = dumpCommand(target, '/backups/x.sql')!
+    const command = dumpCommand(target)!
 
     expect(command.args.join(' ')).not.toContain('s3cret')
     expect(command.env.PGPASSWORD).toBe('s3cret')
@@ -113,7 +118,7 @@ describe('the dump command', () => {
     // ts-cloud encodes pantry's postgres trust/md5 asymmetry in an unexported
     // `pgAdminCommand()`. Dumping the one database the app owns, as the app,
     // needs none of it.
-    const command = dumpCommand(target, '/backups/x.sql')!
+    const command = dumpCommand(target)!
 
     expect(command.bin).toBe('pg_dump')
     expect(command.args).toContain('app')
@@ -121,7 +126,7 @@ describe('the dump command', () => {
   })
 
   it('drops ownership and ACLs, so the dump restores onto a fresh box', () => {
-    const command = dumpCommand(target, '/backups/x.sql')!
+    const command = dumpCommand(target)!
 
     expect(command.args).toContain('--no-owner')
     expect(command.args).toContain('--no-acl')
@@ -129,7 +134,7 @@ describe('the dump command', () => {
 
   it('dumps mysql in one transaction rather than table by table', () => {
     const mysql = resolveBackupTarget({ default: 'mysql', connections: { mysql: { name: 'app', password: 'pw' } } })!
-    const command = dumpCommand(mysql, '/backups/x.sql')!
+    const command = dumpCommand(mysql)!
 
     expect(command.bin).toBe('mysqldump')
     expect(command.args).toContain('--single-transaction')
@@ -138,14 +143,75 @@ describe('the dump command', () => {
   })
 
   it('has no external command for SQLite, which is copied in-process', () => {
-    expect(dumpCommand({ engine: 'sqlite', database: 'a.sqlite' }, '/b.sqlite')).toBeNull()
+    expect(dumpCommand({ engine: 'sqlite', database: 'a.sqlite' })).toBeNull()
   })
 
   it('stops a postgres restore at the first error instead of half-applying it', () => {
-    const command = restoreCommand(target, '/backups/x.sql')!
+    const command = restoreCommand(target)!
 
     expect(command.bin).toBe('psql')
     expect(command.args.join(' ')).toContain('ON_ERROR_STOP=1')
+  })
+
+  it('prints the dump rather than writing it, so it can be compressed on the way to disk', () => {
+    // A `--file` or `--result-file` here would write an uncompressed copy that
+    // writeDump never sees, which is what filled a box (#3079).
+    const mysql = resolveBackupTarget({ default: 'mysql', connections: { mysql: { name: 'app' } } })!
+    for (const command of [dumpCommand(target)!, dumpCommand(mysql)!, restoreCommand(target)!, restoreCommand(mysql)!]) {
+      expect(command.args.some(arg => arg === '--file' || arg.startsWith('--result-file') || arg.startsWith('--execute'))).toBe(false)
+    }
+  })
+})
+
+/** A stand-in for pg_dump or psql: a real process with real pipes and exit codes. */
+function tool(script: string): { bin: string, args: string[], env: Record<string, string> } {
+  return { bin: 'sh', args: ['-c', script], env: {} }
+}
+
+describe('a server dump, compressed and put back', () => {
+  const sql = 'INSERT INTO t VALUES (1, \'row\');\n'.repeat(2000)
+
+  it('gzips what the tool prints, and restores it byte for byte', async () => {
+    const destination = join(dir, backupFileName({ engine: 'postgres', database: 'app' }, new Date('2026-08-13T09:00:00.000Z')))
+    const source = join(dir, 'source.sql')
+    writeFileSync(source, sql)
+
+    await writeDump(tool(`cat '${source}'`), destination)
+
+    const written = await Bun.file(destination).bytes()
+    expect([written[0], written[1]]).toEqual([0x1F, 0x8B]) // the gzip magic number
+    expect(written.length).toBeLessThan(sql.length / 5)
+    expect(new TextDecoder().decode(Bun.gunzipSync(written))).toBe(sql)
+
+    const restored = join(dir, 'restored.sql')
+    await readDump(tool(`cat > '${restored}'`), destination)
+    expect(await Bun.file(restored).text()).toBe(sql)
+  })
+
+  it('still restores an uncompressed dump taken before dumps were compressed', async () => {
+    const old = join(dir, '2026-08-13T09-00-00-000.postgres.sql')
+    writeFileSync(old, sql)
+    const restored = join(dir, 'restored.sql')
+
+    await readDump(tool(`cat > '${restored}'`), old)
+    expect(await Bun.file(restored).text()).toBe(sql)
+  })
+
+  it('leaves nothing behind when the tool fails halfway, so a broken dump is never the newest', async () => {
+    const destination = join(dir, '2026-08-13T09-00-00-000.postgres.sql.gz')
+
+    await expect(writeDump(tool(`printf 'half a dump'; echo 'pg_dump: error: connection lost' >&2; exit 1`), destination))
+      .rejects.toThrow('connection lost')
+    expect(existsSync(destination)).toBe(false)
+    expect(existsSync(`${destination}.partial`)).toBe(false)
+  })
+
+  it('says why a restore failed', async () => {
+    const old = join(dir, '2026-08-13T09-00-00-000.postgres.sql')
+    writeFileSync(old, sql)
+
+    await expect(readDump(tool(`cat > /dev/null; echo 'psql: error: relation exists' >&2; exit 3`), old))
+      .rejects.toThrow('relation exists')
   })
 })
 
@@ -256,6 +322,26 @@ describe('naming and retention', () => {
     expect(prunableBackups(names, -1)).toEqual([])
   })
 
+  it('names a server dump as compressed SQL and a SQLite dump as a database', () => {
+    const at = new Date('2026-08-13T09:00:00.000Z')
+    expect(backupFileName({ engine: 'postgres', database: 'app' }, at)).toBe('2026-08-13T09-00-00-000.postgres.sql.gz')
+    expect(backupFileName({ engine: 'mysql', database: 'app' }, at)).toBe('2026-08-13T09-00-00-000.mysql.sql.gz')
+    expect(backupFileName(target, at)).toBe('2026-08-13T09-00-00-000.sqlite.sqlite')
+    expect(isCompressedBackup('2026-08-13T09-00-00-000.postgres.sql.gz')).toBe(true)
+    expect(isCompressedBackup('2026-08-13T09-00-00-000.postgres.sql')).toBe(false)
+  })
+
+  it('counts dumps taken before compression toward retention, oldest first', () => {
+    const old = '2026-08-13T09-00-00-000.postgres.sql'
+    const newer = '2026-08-13T10-00-00-000.postgres.sql.gz'
+
+    expect(isBackupFileName(old)).toBe(true)
+    expect(isBackupFileName(newer)).toBe(true)
+    // A half-written dump is not a backup, so it neither counts nor gets restored.
+    expect(isBackupFileName(`${newer}.partial`)).toBe(false)
+    expect(prunableBackups([newer, old], 1)).toEqual([old])
+  })
+
   it('ignores files it did not write when deciding what to delete', () => {
     const mine = backupFileName(target, new Date('2026-08-13T09:00:00.000Z'))
 
@@ -357,6 +443,32 @@ describe('backupObjectKey', () => {
 
   it('uses the bare file name when there is no prefix', () => {
     expect(backupObjectKey(parseBackupDestination('disk://backups'), 'x.sql')).toBe('x.sql')
+  })
+})
+
+describe('resolveBackupRetain', () => {
+  it('keeps seven when nothing says otherwise', () => {
+    expect(resolveBackupRetain({}, {})).toBe(DEFAULT_RETAIN)
+    expect(DEFAULT_RETAIN).toBe(7)
+    // What `env.DB_BACKUP_RETAIN || ''` would produce in a config file.
+    expect(resolveBackupRetain({ backups: { retain: '' } }, { DB_BACKUP_RETAIN: '' })).toBe(DEFAULT_RETAIN)
+  })
+
+  it('reads config/database.ts, which is what the deploy\'s flagless backup has to go on', () => {
+    expect(resolveBackupRetain({ backups: { retain: 2 } }, {})).toBe(2)
+  })
+
+  it('lets the env beat config and the flag beat both', () => {
+    expect(resolveBackupRetain({ backups: { retain: 2 } }, { DB_BACKUP_RETAIN: '3' })).toBe(3)
+    expect(resolveBackupRetain({ backups: { retain: 2 } }, { DB_BACKUP_RETAIN: '3' }, '30')).toBe(30)
+  })
+
+  it('throws on a count it cannot use, naming where it came from', () => {
+    // Falling back to seven would be the disk filling up again after someone
+    // set it lower; keeping none would delete every backup.
+    expect(() => resolveBackupRetain({}, { DB_BACKUP_RETAIN: 'three' })).toThrow('DB_BACKUP_RETAIN')
+    expect(() => resolveBackupRetain({ backups: { retain: 0 } }, {})).toThrow('backups.retain')
+    expect(() => resolveBackupRetain({}, {}, '2.5')).toThrow('--retain')
   })
 })
 

@@ -166,6 +166,12 @@ const envSchema = defineEnv({
     validation: schema.string(),
     default: '',
   },
+  // How many dumps `buddy db:backup` keeps, including the one the deploy takes
+  // before migrating. Empty means `backups.retain` in config/database.ts, or 7.
+  DB_BACKUP_RETAIN: {
+    validation: schema.string(),
+    default: '',
+  },
 
   DB_VITESS_SHARDED: {
     validation: schema.boolean(),

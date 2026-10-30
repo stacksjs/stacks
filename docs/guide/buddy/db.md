@@ -48,11 +48,25 @@ A first deploy has no database yet. `--before-migrations` makes that case succee
 | Option | What it does |
 | --- | --- |
 | `--out <dir>` | Where to write. Default `storage/backups/database`. |
-| `--retain <n>` | How many dumps to keep. Default 7, oldest pruned first. |
+| `--retain <n>` | How many dumps to keep, oldest pruned first. Without it, `DB_BACKUP_RETAIN`, then `backups.retain` in `config/database.ts`, then 7. |
 | `--before-migrations` | Deploy mode: succeed quietly when there is no database yet. |
 | `--verbose` | Print the dump command being run. |
 
-Dumps are named so that sorting them by name sorts them by time: `2026-08-13T09-00-00-000.postgres.sql`.
+Dumps are named so that sorting them by name sorts them by time: `2026-08-13T09-00-00-000.postgres.sql.gz`.
+
+Postgres and MySQL dumps are gzipped as they are written, which usually makes them five to ten times smaller. Retention keeps several of them beside the live database, so the difference is real disk. A dump is written under a `.partial` name and only takes its real name once the tool exits cleanly, so a dump that fails halfway is never mistaken for the newest one. Dumps taken before compression (`.sql`) still count toward retention and still restore.
+
+SQLite dumps are not compressed: they stay a database file you can open directly.
+
+The deploy's own pre-migration dump passes no `--retain`, so set `DB_BACKUP_RETAIN` or `backups.retain` to change how many it keeps:
+
+```ts
+// config/database.ts
+backups: {
+  destination: env.DB_BACKUP_DESTINATION || '',
+  retain: 3,
+},
+```
 
 ## Restoring
 

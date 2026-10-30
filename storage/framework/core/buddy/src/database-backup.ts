@@ -39,6 +39,7 @@
  */
 
 import type { Buffer } from 'node:buffer'
+import process from 'node:process'
 
 /** Engines a dump can be taken of. */
 export type BackupEngine = 'sqlite' | 'postgres' | 'mysql'
@@ -138,17 +139,33 @@ export function resolveBackupTarget(databaseConfig: unknown): BackupTarget | nul
  */
 export function backupFileName(target: BackupTarget, at: Date): string {
   const stamp = at.toISOString().replace(/[:.]/g, '-').replace('Z', '')
-  const extension = target.engine === 'sqlite' ? 'sqlite' : 'sql'
+  // A server dump is SQL text, which gzip shrinks five to ten times, and
+  // retention keeps several of them beside the live database: seven
+  // uncompressed dumps of a 15 GB database filled a box (#3079). A SQLite
+  // dump stays a database file, so it opens as one and restores by copying.
+  const extension = target.engine === 'sqlite' ? 'sqlite' : 'sql.gz'
   return `${stamp}.${target.engine}.${extension}`
 }
 
-/** Does this name look like something {@link backupFileName} produced? */
+/**
+ * Does this name look like something {@link backupFileName} produced?
+ *
+ * Uncompressed `.sql` is still recognised: dumps taken before #3079 have to
+ * keep counting toward retention and stay restorable.
+ */
 export function isBackupFileName(name: string): boolean {
-  return /^\d{4}-\d{2}-\d{2}T[\d-]+\.(?:sqlite|postgres|mysql)\.(?:sqlite|sql)$/.test(name)
+  return /^\d{4}-\d{2}-\d{2}T[\d-]+\.(?:sqlite|postgres|mysql)\.(?:sqlite|sql|sql\.gz)$/.test(name)
+}
+
+/** Is this dump gzipped, so it has to be inflated on its way back in? */
+export function isCompressedBackup(name: string): boolean {
+  return name.endsWith('.gz')
 }
 
 /**
- * The external command that writes a dump of `target` to `destination`.
+ * The external command that writes a dump of `target` to its stdout, for
+ * {@link writeDump} to compress on the way to disk. Neither tool can gzip
+ * a plain dump itself on every version we meet, and mysqldump not at all.
  *
  * `null` for SQLite, which is copied in-process with `VACUUM INTO` rather than
  * shelled out to a `sqlite3` binary that may not be installed.
@@ -158,7 +175,7 @@ export function isBackupFileName(name: string): boolean {
  * the production database password to the process table on every release would
  * be a worse bug than the one this file is fixing.
  */
-export function dumpCommand(target: BackupTarget, destination: string): DumpCommand | null {
+export function dumpCommand(target: BackupTarget): DumpCommand | null {
   if (target.engine === 'sqlite')
     return null
 
@@ -174,7 +191,6 @@ export function dumpCommand(target: BackupTarget, destination: string): DumpComm
         // case that matters.
         '--no-owner',
         '--no-acl',
-        '--file', destination,
         target.database,
       ],
       env: target.password ? { PGPASSWORD: target.password } : {},
@@ -190,7 +206,6 @@ export function dumpCommand(target: BackupTarget, destination: string): DumpComm
       // Without this a dump of an InnoDB database is taken table-by-table and
       // can capture a half-applied transaction.
       '--single-transaction',
-      `--result-file=${destination}`,
       target.database,
     ],
     env: target.password ? { MYSQL_PWD: target.password } : {},
@@ -198,12 +213,13 @@ export function dumpCommand(target: BackupTarget, destination: string): DumpComm
 }
 
 /**
- * The command that reads a dump back in.
+ * The command that reads a dump back in, from its stdin, which
+ * {@link readDump} feeds (inflating a gzipped dump on the way).
  *
  * Restoring SQLite is a file copy, so this returns `null` for it, exactly as
  * {@link dumpCommand} does.
  */
-export function restoreCommand(target: BackupTarget, source: string): DumpCommand | null {
+export function restoreCommand(target: BackupTarget): DumpCommand | null {
   if (target.engine === 'sqlite')
     return null
 
@@ -217,7 +233,6 @@ export function restoreCommand(target: BackupTarget, source: string): DumpComman
         // Stop at the first error rather than plough on and leave a database
         // that is neither the old one nor the new one.
         '--set', 'ON_ERROR_STOP=1',
-        '--file', source,
         target.database,
       ],
       env: target.password ? { PGPASSWORD: target.password } : {},
@@ -231,10 +246,61 @@ export function restoreCommand(target: BackupTarget, source: string): DumpComman
       `--port=${target.port}`,
       `--user=${target.username}`,
       `--database=${target.database}`,
-      `--execute=source ${source}`,
     ],
     env: target.password ? { MYSQL_PWD: target.password } : {},
   }
+}
+
+/**
+ * Run `command` and gzip what it prints into `destination`.
+ *
+ * Written beside the destination under a `.partial` name and renamed only once
+ * the tool has exited cleanly, so a dump that fails halfway never takes the
+ * place of the newest good one, which is the one a hurried restore picks.
+ * Streamed, because a dump is the whole database and the box is sized for the
+ * web process.
+ */
+export async function writeDump(command: DumpCommand, destination: string, password?: string): Promise<void> {
+  const { renameSync, rmSync } = await import('node:fs')
+
+  const partial = `${destination}.partial`
+  const proc = Bun.spawn([command.bin, ...command.args], {
+    env: { ...process.env, ...command.env },
+    stdout: 'pipe',
+    stderr: 'pipe',
+  })
+
+  try {
+    const [, code, stderr] = await Promise.all([
+      Bun.write(partial, new Response(proc.stdout.pipeThrough(new CompressionStream('gzip')))),
+      proc.exited,
+      new Response(proc.stderr).text(),
+    ])
+    if (code !== 0)
+      throw new Error(withoutPassword(`${command.bin}: ${toolFailureDetail(stderr, command.bin) || `exit code ${code}`}`, password))
+    renameSync(partial, destination)
+  }
+  finally {
+    rmSync(partial, { force: true })
+  }
+}
+
+/**
+ * Feed the dump at `source` to `command`'s stdin, inflating it first when it
+ * is gzipped, so dumps taken before #3079 restore exactly as they did.
+ */
+export async function readDump(command: DumpCommand, source: string, password?: string): Promise<void> {
+  const dump = Bun.file(source).stream()
+  const proc = Bun.spawn([command.bin, ...command.args], {
+    env: { ...process.env, ...command.env },
+    stdin: isCompressedBackup(source) ? dump.pipeThrough(new DecompressionStream('gzip')) : dump,
+    stdout: 'pipe',
+    stderr: 'pipe',
+  })
+
+  const [code, stderr] = await Promise.all([proc.exited, new Response(proc.stderr).text()])
+  if (code !== 0)
+    throw new Error(withoutPassword(`${command.bin}: ${toolFailureDetail(stderr, command.bin) || `exit code ${code}`}`, password))
 }
 
 /**
@@ -408,6 +474,43 @@ export function parseBackupDestination(uri: string): BackupDestination {
 /** The key a dump is stored under at its destination. */
 export function backupObjectKey(destination: BackupDestination, fileName: string): string {
   return destination.prefix ? `${destination.prefix}/${fileName}` : fileName
+}
+
+/** How many dumps are kept when nothing says otherwise. */
+export const DEFAULT_RETAIN = 7
+
+/**
+ * How many dumps to keep: the `--retain` flag, then `DB_BACKUP_RETAIN`, then
+ * `config/database.ts`'s `backups.retain`, then {@link DEFAULT_RETAIN}.
+ *
+ * The same precedence {@link resolveBackupDestination} uses, so the deploy's
+ * pre-migration backup, which passes no flag, can be tuned per app (#3079).
+ * A value that is not a whole number of at least one throws, as an unreadable
+ * destination does: a deploy that silently kept the default after being told
+ * otherwise would be the disk filling up again.
+ */
+export function resolveBackupRetain(
+  databaseConfig: unknown,
+  env: Record<string, string | undefined> = {},
+  flag?: string,
+): number {
+  const configured = (databaseConfig as { backups?: { retain?: unknown } } | null | undefined)?.backups?.retain
+  const sources: Array<[string, unknown]> = [
+    ['--retain', flag],
+    ['DB_BACKUP_RETAIN', env.DB_BACKUP_RETAIN],
+    ['backups.retain', configured],
+  ]
+
+  for (const [name, value] of sources) {
+    if (value === undefined || value === null || String(value).trim() === '')
+      continue
+    const count = Number(String(value).trim())
+    if (!Number.isInteger(count) || count < 1)
+      throw new Error(`${name} must be a whole number of dumps to keep, at least 1; got ${JSON.stringify(value)}.`)
+    return count
+  }
+
+  return DEFAULT_RETAIN
 }
 
 /**

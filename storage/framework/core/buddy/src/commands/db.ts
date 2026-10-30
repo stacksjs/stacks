@@ -1,5 +1,5 @@
 import type { CLI } from '@stacksjs/types'
-import type { BackupDestination, BackupTarget, DumpCommand } from '../database-backup'
+import type { BackupDestination, BackupTarget } from '../database-backup'
 import { existsSync, mkdirSync, readdirSync, rmSync, statSync } from 'node:fs'
 import { isAbsolute, join, resolve } from 'node:path'
 import process from 'node:process'
@@ -8,6 +8,7 @@ import { ExitCode } from '@stacksjs/types'
 import {
   backupFileName,
   backupObjectKey,
+  DEFAULT_RETAIN,
   describeCommand,
   dumpCommand,
   dumpSqlite,
@@ -16,15 +17,15 @@ import {
   resolveBackupDestination,
   resolveBackupTarget,
   parseBackupDestination,
+  readDump,
+  resolveBackupRetain,
   restoreCommand,
   restoreSqlite,
-  toolFailureDetail,
-  withoutPassword,
+  writeDump,
 } from '../database-backup'
 
 /** Where dumps go when nothing said otherwise. */
 const DEFAULT_BACKUP_DIR = 'storage/backups/database'
-const DEFAULT_RETAIN = 7
 
 /**
  * The database this app actually opens.
@@ -95,6 +96,17 @@ export async function backupDestination(override?: string): Promise<BackupDestin
 }
 
 /**
+ * How many dumps to keep, behind the same config barrier as
+ * {@link backupTarget}: read early, `backups.retain` in `config/database.ts`
+ * would look unset and the default would quietly win.
+ */
+export async function backupRetain(flag?: string): Promise<number> {
+  const { config, overridesReady } = await import('@stacksjs/config')
+  await overridesReady.catch(() => {})
+  return resolveBackupRetain((config)?.database, process.env, flag)
+}
+
+/**
  * Copy a dump to its destination.
  *
  * Streamed rather than read into memory: a dump is the whole database, and the
@@ -159,22 +171,6 @@ function sqliteFile(target: BackupTarget): string {
   return isAbsolute(target.database) ? target.database : resolve(process.cwd(), target.database)
 }
 
-/** Run an external dump/restore tool, surfacing what it said when it fails. */
-async function runTool(command: DumpCommand, password: string | undefined): Promise<void> {
-  const proc = Bun.spawn([command.bin, ...command.args], {
-    env: { ...process.env, ...command.env },
-    stdout: 'pipe',
-    stderr: 'pipe',
-  })
-
-  const [code, stderr] = await Promise.all([proc.exited, new Response(proc.stderr).text()])
-  if (code === 0)
-    return
-
-  const detail = toolFailureDetail(stderr, command.bin) || `exit code ${code}`
-  throw new Error(withoutPassword(`${command.bin}: ${detail}`, password))
-}
-
 /** Delete the oldest dumps until only `retain` remain. */
 function prune(dir: string, retain: number): string[] {
   const removed = prunableBackups(existingBackups(dir), retain)
@@ -187,7 +183,9 @@ export function db(buddy: CLI): void {
   buddy
     .command('db:backup', 'Dump the application database to a file')
     .option('--out [dir]', `Where to write the dump (default: ${DEFAULT_BACKUP_DIR})`)
-    .option('--retain [count]', `How many dumps to keep`, { default: String(DEFAULT_RETAIN) })
+    // No default here: a default would always be "set" and shadow
+    // DB_BACKUP_RETAIN and backups.retain, which the deploy relies on (#3079).
+    .option('--retain [count]', `How many dumps to keep (default: DB_BACKUP_RETAIN, backups.retain, or ${DEFAULT_RETAIN})`)
     .option('--before-migrations', 'Deploy mode: succeed quietly when there is no database yet', { default: false })
     .option('--destination [uri]', 'Copy the dump offsite: s3://bucket/prefix or disk://name/prefix')
     .option('--verbose', 'Enable verbose output', { default: false })
@@ -218,17 +216,21 @@ export function db(buddy: CLI): void {
           process.exit(ExitCode.Success)
         }
 
+        // Read before the dump, so a retention nobody can parse fails the
+        // backup before it costs a dump's worth of time and disk.
+        const retain = await backupRetain(options.retain)
+
         const dir = backupDir(options.out)
         mkdirSync(dir, { recursive: true })
 
         const name = backupFileName(target, new Date())
         const destination = join(dir, name)
 
-        const command = dumpCommand(target, destination)
+        const command = dumpCommand(target)
         if (command) {
           if (options.verbose)
             log.info(describeCommand(command))
-          await runTool(command, target.password)
+          await writeDump(command, destination, target.password)
         }
         else {
           await dumpSqlite(sqliteFile(target), destination)
@@ -237,7 +239,6 @@ export function db(buddy: CLI): void {
         const size = existsSync(destination) ? statSync(destination).size : 0
         log.success(`Wrote ${destination} (${(size / 1024).toFixed(1)} KB)`)
 
-        const retain = Number.parseInt(String(options.retain ?? DEFAULT_RETAIN), 10)
         const removed = prune(dir, retain)
         if (removed.length)
           log.info(`Pruned ${removed.length} older dump(s), keeping ${retain}.`)
@@ -354,11 +355,11 @@ export function db(buddy: CLI): void {
           }
         }
 
-        const command = restoreCommand(target, source)
+        const command = restoreCommand(target)
         if (command) {
           if (options.verbose)
             log.info(describeCommand(command))
-          await runTool(command, target.password)
+          await readDump(command, source, target.password)
         }
         else {
           const displaced = await restoreSqlite(source, sqliteFile(target), Date.now())

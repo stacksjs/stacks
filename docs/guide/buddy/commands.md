@@ -1111,7 +1111,7 @@ Dump the application database to a file
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--out` | Where to write the dump (default: storage/backups/database) | value, optional | - |
-| `--retain` | How many dumps to keep | value, optional | `"7"` |
+| `--retain` | How many dumps to keep (default: DB_BACKUP_RETAIN, backups.retain, or 7) | value, optional | - |
 | `--before-migrations` | Deploy mode: succeed quietly when there is no database yet | boolean, optional | `false` |
 | `--destination` | Copy the dump offsite: s3://bucket/prefix or disk://name/prefix | value, optional | - |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |

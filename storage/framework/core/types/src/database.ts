@@ -96,6 +96,15 @@ export interface DatabaseBackupOptions {
    * editing config.
    */
   destination?: string
+  /**
+   * How many dumps to keep on the instance, the newest first. Applies to the
+   * pre-migration dump a deploy takes too, which passes no `--retain`.
+   *
+   * `DB_BACKUP_RETAIN` overrides this, and the `--retain` flag overrides both.
+   *
+   * @default 7
+   */
+  retain?: number
 }
 
 export interface DatabaseOptions {
