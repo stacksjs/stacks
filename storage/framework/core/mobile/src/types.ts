@@ -210,7 +210,19 @@ export interface RecordingStartOptions {
   recordingId?: string
 }
 
-export interface LocationRecordingOptions extends LocationOptions, RecordingStartOptions {}
+/**
+ * How hard a route recording works the GPS (Craft 0.0.400+; older hosts
+ * ignore it). `'saver'` is for a long effort, an ultra: fixes come at least
+ * 5 m apart instead of every second, and iOS relaxes to ten-metre accuracy
+ * while the pace holds steady. 5 m keeps fixes under ROUTE_GAP_S apart at any
+ * speed that counts as moving, so distance and moving time come out as at
+ * full rate.
+ */
+export type LocationPowerMode = 'default' | 'saver'
+
+export interface LocationRecordingOptions extends LocationOptions, RecordingStartOptions {
+  powerMode?: LocationPowerMode
+}
 
 export interface LocationRecordingResult extends LocationRecordingState {
   locations: Location[]
@@ -226,6 +238,8 @@ export interface ShareOptions {
 export type AppState = 'active' | 'inactive' | 'background'
 
 export interface NotificationOptions {
+  /** Names a scheduled notification, to replace or `cancel` it later. */
+  id?: string
   title: string
   body?: string
   badge?: number
@@ -347,7 +361,10 @@ export interface LifecycleApi {
 
 export interface NotificationsApi {
   show: (options: NotificationOptions) => Promise<void>
+  /** A local notification, now or at `scheduleAt`; one with the `id` of a pending one replaces it. */
   schedule: (options: NotificationOptions) => Promise<void>
+  /** Withdraws the pending local notification scheduled with this `id`. */
+  cancel: (id: string) => Promise<void>
   cancelAll: () => Promise<void>
   setBadge: (count: number) => Promise<void>
 }

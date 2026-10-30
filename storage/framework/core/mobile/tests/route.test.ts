@@ -125,6 +125,27 @@ describe('createRouteRecorder', () => {
 })
 
 describe('recorder lifecycle', () => {
+  it('reads a function of locationOptions at each start, so a power mode chosen later applies', async () => {
+    const started: Record<string, unknown>[] = []
+    let id = 0
+    const api = {
+      supportsRecordingOwnership: () => true,
+      startRecording: async (options: Record<string, unknown>) => { started.push(options)
+        return { id: `r${++id}`, active: true, paused: false, startedAt: 1 } },
+      readRecording: async () => [],
+      stopRecording: async () => ({ id: `r${id}`, locations: [] }),
+    } as unknown as LocationApi
+    let saver = false
+    const recorder = createRouteRecorder({ location: api, intervalMs: 60_000, locationOptions: () => saver ? { powerMode: 'saver' } : undefined })
+    await recorder.start()
+    await recorder.stop()
+    saver = true
+    await recorder.start()
+    await recorder.stop()
+    recorder.dispose()
+    expect(started).toEqual([{ enableHighAccuracy: true }, { enableHighAccuracy: true, powerMode: 'saver' }])
+  })
+
   it('coalesces reads, ignores a late poll after stop, and detaches without stopping native GPS', async () => {
     let release!: (fixes: RouteFix[]) => void
     let reads = 0

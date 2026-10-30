@@ -9,7 +9,7 @@
  * the fixes at the end can do the careful arithmetic (smoothed climb, moving
  * time) once.
  */
-import type { HeartRateRecordingApi, HeartRateSample, Location, LocationApi, LocationOptions, LocationRecordingState } from './types'
+import type { HeartRateRecordingApi, HeartRateSample, Location, LocationApi, LocationRecordingOptions, LocationRecordingState } from './types'
 
 /** A fix as Craft records it. */
 export interface RouteFix extends Location {
@@ -265,7 +265,12 @@ export interface RouteRecorderOptions extends RouteStatsOptions {
   onUpdate?: (stats: RouteStats) => void
   /** The location service; `location` from @stacksjs/mobile by default. */
   location: LocationApi
-  locationOptions?: LocationOptions
+  /**
+   * What the native recording is started with: a fix's accuracy, and its
+   * `powerMode` (`'saver'` for an ultra). A function is read at each start,
+   * so a choice made after the recorder was created still applies.
+   */
+  locationOptions?: LocationRecordingOptions | (() => LocationRecordingOptions | undefined)
   /**
    * `heartRate` from @stacksjs/mobile, to record a strap's readings with the
    * route: started, paused, resumed and stopped with it (natively, so they
@@ -449,7 +454,8 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
           throw Object.assign(new Error('This host cannot start a registered route identity'), { code: 'RECORDING_INTENT_IDENTITY_UNSUPPORTED' })
         if (intent && (typeof intent.recordingId !== 'string' || !intent.recordingId.trim()))
           throw Object.assign(new Error('A registered recording ID is required'), { code: 'INVALID_ARGUMENT' })
-        const started = await location.startRecording({ enableHighAccuracy: true, ...options.locationOptions, ...(intent ? { recordingId: intent.recordingId } : {}) })
+        const chosen = typeof options.locationOptions === 'function' ? options.locationOptions() : options.locationOptions
+        const started = await location.startRecording({ enableHighAccuracy: true, ...chosen, ...(intent ? { recordingId: intent.recordingId } : {}) })
         if (!started?.active || typeof started.id !== 'string' || !started.id.trim())
           throw Object.assign(new Error('The native recording did not provide an ID'), { code: 'RECORDING_CONFLICT' })
         if (intent && started.id !== intent.recordingId)

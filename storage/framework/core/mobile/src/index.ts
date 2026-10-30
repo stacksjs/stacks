@@ -189,6 +189,7 @@ export const location: LocationApi = {
 export const notifications: NotificationsApi = {
   show: options => afterBridge(() => craftNotifications.show(options)),
   schedule: options => afterBridge(() => craftNotifications.schedule(options)),
+  cancel: id => afterBridge(() => craftNotifications.cancel(id)),
   cancelAll: () => afterBridge(() => craftNotifications.cancelAll()),
   setBadge: count => afterBridge(() => craftNotifications.setBadge(count)),
 }
