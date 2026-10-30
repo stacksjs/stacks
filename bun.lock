@@ -759,6 +759,7 @@
       "version": "0.75.381",
       "dependencies": {
         "@bughq/sdk": "^0.3.0",
+        "@stacksjs/config": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/stx": "0.2.752",
         "@stacksjs/types": "workspace:*",
@@ -767,7 +768,6 @@
       },
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
-        "@stacksjs/config": "workspace:*",
         "@stacksjs/validation": "workspace:*",
         "better-dx": "^0.2.24",
       },
