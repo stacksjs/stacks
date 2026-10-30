@@ -242,6 +242,7 @@ Three variables are substituted into the file, HTML-escaped:
 | `{{status}}` | `404` |
 | `{{title}}` | `Not Found` |
 | `{{message}}` | `The requested resource could not be found.` |
+| `{{appName}}` | `config.app.name` (else `APP_NAME`), e.g. `Acme` |
 
 ```html
 <!-- resources/views/errors/404.html -->
@@ -249,7 +250,7 @@ Three variables are substituted into the file, HTML-escaped:
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>{{status}} {{title}}</title>
+    <title>{{status}} {{title}} · {{appName}}</title>
     <style>
       body { margin: 0; font-family: system-ui, sans-serif; }
       .scene { height: 40vh; background: url("/svgs/404.svg") center / cover; }

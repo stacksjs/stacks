@@ -96,4 +96,18 @@ describe('renderProductionErrorPage userland override', () => {
     expect(html).toContain('403')
     expect(html).toContain('production-page')
   })
+
+  test('names the app in an override, so every installation keeps its own name', () => {
+    writeFileSync(errorFallback, '<!DOCTYPE html><title>{{ status }} · {{ appName }}</title><a href="/">Back to {{appName}}</a>')
+    try {
+      const html = renderProductionErrorPage(500)
+      expect(html).not.toContain('{{')
+      expect(html).toMatch(/<title>500 · [^<]+<\/title>/)
+      const name = /<title>500 · ([^<]+)<\/title>/.exec(html)![1]
+      expect(html).toContain(`Back to ${name}`)
+    }
+    finally {
+      rmSync(errorFallback)
+    }
+  })
 })

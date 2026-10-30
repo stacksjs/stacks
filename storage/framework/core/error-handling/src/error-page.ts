@@ -352,6 +352,8 @@ function parseStackTrace(stack: string | undefined, basePaths?: string[], option
  *   - `{{status}}`  e.g. 404
  *   - `{{title}}`   e.g. "Not Found"
  *   - `{{message}}` e.g. "The requested resource could not be found."
+ *   - `{{appName}}` the app's name (`config.app.name`, else `APP_NAME`), so
+ *     one page serves every installation of an app under its own name
  *
  * stacksjs/stacks#863.
  */
@@ -384,11 +386,26 @@ function loadCustomErrorPage(status: number, title: string, message: string): st
         .replace(/\{\{\s*status\s*\}\}/g, escapeHtml(String(status)))
         .replace(/\{\{\s*title\s*\}\}/g, escapeHtml(title))
         .replace(/\{\{\s*message\s*\}\}/g, escapeHtml(message))
+        .replace(/\{\{\s*appName\s*\}\}/g, () => escapeHtml(appName()))
     }
     catch { /* unreadable file — try the next candidate */ }
   }
 
   return null
+}
+
+/**
+ * The app's name for an error page. Read lazily and never thrown from: the
+ * page is served when something already went wrong, config loading included.
+ */
+function appName(): string {
+  try {
+    // eslint-disable-next-line ts/no-require-imports
+    const name = (require('@stacksjs/config') as { config?: { app?: { name?: unknown } } }).config?.app?.name
+    if (typeof name === 'string' && name.trim()) return name.trim()
+  }
+  catch { /* config unavailable — fall back to the environment */ }
+  return process.env.APP_NAME?.trim() || ''
 }
 
 /**
