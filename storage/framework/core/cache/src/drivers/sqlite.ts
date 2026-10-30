@@ -54,6 +54,30 @@ function quoteIdent(id: string): string {
   return `"${id.replace(/"/g, '""')}"`
 }
 
+/**
+ * Put the file in WAL mode, which lasts with the file, so only its first
+ * opener has to. Workers that boot together open a new file together, and
+ * SQLite answers every one but the winner of the switch with SQLITE_BUSY at
+ * once, without waiting out busy_timeout. By then the winner has switched it,
+ * so a loser looks again instead of failing to start.
+ */
+function useWriteAheadLog(db: Database, waitMs: number): void {
+  const deadline = Date.now() + waitMs
+  for (;;) {
+    try {
+      const { journal_mode: mode } = db.query('PRAGMA journal_mode').get() as { journal_mode: string }
+      if (mode !== 'wal')
+        db.run('PRAGMA journal_mode = WAL')
+      return
+    }
+    catch (error) {
+      if ((error as { code?: string }).code !== 'SQLITE_BUSY' || Date.now() >= deadline)
+        throw error
+      Bun.sleepSync(10)
+    }
+  }
+}
+
 export class SqliteCacheStore extends EventEmitter {
   private readonly db: Database
   private readonly qualified: string
@@ -71,7 +95,7 @@ export class SqliteCacheStore extends EventEmitter {
     // The app may share the file: wait for its writers rather than failing,
     // and let readers proceed beside a writer.
     this.db.run('PRAGMA busy_timeout = 5000')
-    if (path !== ':memory:') this.db.run('PRAGMA journal_mode = WAL')
+    if (path !== ':memory:') useWriteAheadLog(this.db, 5000)
     this.qualified = quoteIdent(options.table ?? 'stacks_cache')
     this.prefix = options.prefix ?? ''
     this.stdTTL = options.stdTTL ?? 0
