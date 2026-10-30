@@ -358,9 +358,13 @@ export class StacksCache implements CacheDriver {
  * the named tag(s) so `flush()` can invalidate cascade-style without the
  * caller having to track keys themselves.
  *
- * The tag index is stored as `string[]` on disk (so it survives the
- * Redis driver's serializer), but operated on in memory as a `Set` so
- * each write is `O(1)` instead of `O(N)` over the existing index.
+ * Each tagged key gets an index entry of its own, under the tag's scope
+ * (`__stacks_tag__:<digest>:<key>`), and `flush()` lists the scope. The index
+ * used to be one `string[]` per tag, updated by read, add, write: two
+ * processes writing to one tag both read it, and the second write dropped the
+ * first one's key, so a flush left it cached (stacksjs/stacks#3073). An entry
+ * per key has nothing to read first, so there is nothing for another process
+ * to lose, and it expires with its key instead of growing for ever.
  *
  * `flush()` uses a per-tag in-process mutex so concurrent flushes don't
  * race-and-lose keys: without it, two parallel flushes could both read
@@ -385,7 +389,17 @@ export class TaggedCache {
     }
   }
 
-  private tagKey(tag: string): string {
+  /**
+   * Where a tag's index entries live. A digest rather than the tag itself, so
+   * neither a `:` in a tag nor a glob character in it can make one tag's
+   * listing match another tag's entries.
+   */
+  private tagScope(tag: string): string {
+    return `${TaggedCache.TAG_PREFIX}${new Bun.CryptoHasher('sha256').update(tag).digest('hex').slice(0, 32)}:`
+  }
+
+  /** Where the whole index for a tag lived before entries were per key. */
+  private legacyTagKey(tag: string): string {
     return `${TaggedCache.TAG_PREFIX}${tag}`
   }
 
@@ -399,7 +413,7 @@ export class TaggedCache {
    * keeps a write ordered against a flush called after it.
    */
   private serialize<T>(work: () => Promise<T>): Promise<T> {
-    const tagKs = this.tags.map(tag => this.tagKey(tag))
+    const tagKs = this.tags.map(tag => this.tagScope(tag))
     const before = tagKs.map(tagK => TaggedCache.flushLocks.get(tagK)).filter(lock => lock !== undefined)
     const ours = Promise.all(before.map(lock => lock.catch(() => 0))).then(work)
     for (const tagK of tagKs) TaggedCache.flushLocks.set(tagK, ours)
@@ -410,24 +424,20 @@ export class TaggedCache {
     })
   }
 
-  private async indexKey(key: string): Promise<void> {
-    // Called through `serialize()`. Using a Set means the membership
-    // check + append is O(1) regardless of index size.
-    for (const tag of this.tags) {
-      const tagK = this.tagKey(tag)
-      const existing = (await this.cache.get<string[]>(tagK)) ?? []
-      const set = new Set(existing)
-      if (!set.has(key)) {
-        set.add(key)
-        await this.cache.setForever(tagK, [...set])
-      }
-    }
+  /**
+   * Called through `serialize()`, which orders it against flushes in this
+   * process. Written with the key's own TTL, so the entry goes when the key
+   * does; `undefined` takes the driver's default, as the key did.
+   */
+  private async indexKey(key: string, ttl?: number): Promise<void> {
+    for (const tag of this.tags)
+      await this.cache.set(`${this.tagScope(tag)}${key}`, key, ttl)
   }
 
   async put<T>(key: string, value: T, ttl?: number): Promise<boolean> {
     return this.serialize(async () => {
       const ok = await this.cache.set(key, value, ttl)
-      if (ok) await this.indexKey(key)
+      if (ok) await this.indexKey(key, ttl)
       return ok
     })
   }
@@ -439,7 +449,7 @@ export class TaggedCache {
   async setForever<T>(key: string, value: T): Promise<boolean> {
     return this.serialize(async () => {
       const ok = await this.cache.setForever(key, value)
-      if (ok) await this.indexKey(key)
+      if (ok) await this.indexKey(key, 0)
       return ok
     })
   }
@@ -448,13 +458,13 @@ export class TaggedCache {
   // flushes of its tags; only the index update waits its turn.
   async remember<T>(key: string, ttl: number, callback: () => T | Promise<T>): Promise<T> {
     const value = await this.cache.remember(key, ttl, callback)
-    await this.serialize(() => this.indexKey(key))
+    await this.serialize(() => this.indexKey(key, ttl))
     return value
   }
 
   async rememberForever<T>(key: string, callback: () => T | Promise<T>): Promise<T> {
     const value = await this.cache.rememberForever(key, callback)
-    await this.serialize(() => this.indexKey(key))
+    await this.serialize(() => this.indexKey(key, 0))
     return value
   }
 
@@ -483,7 +493,7 @@ export class TaggedCache {
   async flush(): Promise<number> {
     let deleted = 0
     for (const tag of this.tags) {
-      const tagK = this.tagKey(tag)
+      const tagK = this.tagScope(tag)
 
       // Atomic check-and-set on the lock map. We MUST NOT await
       // between `get` and `set` — JS is single-threaded between
@@ -492,8 +502,8 @@ export class TaggedCache {
       // awaits the existing flush (if any), then runs ours.
       const existing = TaggedCache.flushLocks.get(tagK)
       const ourFlush: Promise<number> = existing
-        ? existing.catch(() => 0).then(() => this.doFlushOne(tagK))
-        : this.doFlushOne(tagK)
+        ? existing.catch(() => 0).then(() => this.doFlushOne(tag))
+        : this.doFlushOne(tag)
       TaggedCache.flushLocks.set(tagK, ourFlush)
 
       try {
@@ -511,15 +521,22 @@ export class TaggedCache {
   }
 
   /**
-   * Internal: actual flush body for a single tag key. Lifted out so
+   * Internal: actual flush body for a single tag. Lifted out so
    * `flush()` can compose it into a chained Promise without splitting
    * an inline async IIFE across the lock-map get/set boundary.
+   *
+   * A key another process tags after the listing keeps its entry, so the
+   * next flush still finds it. The array an index used to be is read too,
+   * so keys tagged before entries were per key are still flushed.
    */
-  private async doFlushOne(tagK: string): Promise<number> {
-    const keys = (await this.cache.get<string[]>(tagK)) ?? []
+  private async doFlushOne(tag: string): Promise<number> {
+    const scope = this.tagScope(tag)
+    const entries = await this.cache.keys(`${scope}*`)
+    const legacy = (await this.cache.get<string[]>(this.legacyTagKey(tag))) ?? []
+    const keys = [...new Set([...entries.map(entry => entry.slice(scope.length)), ...legacy])]
     let n = 0
     if (keys.length > 0) n = await this.cache.del(keys)
-    await this.cache.del(tagK)
+    await this.cache.del([...entries, this.legacyTagKey(tag)])
     return n
   }
 }
