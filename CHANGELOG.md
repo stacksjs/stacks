@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.381...v0.75.382)
+
+## 🐛 Bug Fixes
+
+- **error-handling**: declare @stacksjs/config, which the error page reads at runtime ([5bb15c6](https://github.com/stacksjs/stacks/commit/5bb15c6)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3081](https://github.com/stacksjs/stacks/issues/3081))
+
+## Contributors
+
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.380...v0.75.381)
 
 ## 🔧 Chores
