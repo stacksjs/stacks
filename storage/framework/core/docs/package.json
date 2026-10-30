@@ -2,7 +2,7 @@
   "name": "@stacksjs/docs",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.382",
+  "version": "0.75.383",
   "description": "The Stacks way to document.",
   "author": "Chris Breuer",
   "contributors": [

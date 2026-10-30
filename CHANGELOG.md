@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.382...v0.75.383)
+
+## ✨ Features
+
+- **cloud**: read attached tenant projects from private sources ([4e42fff](https://github.com/stacksjs/stacks/commit/4e42fff)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- **native**: refresh the generated native package catalog ([9aba11d](https://github.com/stacksjs/stacks/commit/9aba11d)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.381...v0.75.382)
 
 ## 🐛 Bug Fixes
