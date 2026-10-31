@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.398...v0.75.399)
+
+## ✨ Features
+
+- **mobile**: set the recording power mode while it runs, with 'auto' and effectivePowerMode ([7311c21](https://github.com/stacksjs/stacks/commit/7311c21)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **security**: flag only jobs without permissions when no top-level block exists ([233370c](https://github.com/stacksjs/stacks/commit/233370c)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.397...v0.75.398)
 
 ## ✨ Features

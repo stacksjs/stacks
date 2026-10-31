@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/ui",
   "type": "module",
-  "version": "0.75.398",
+  "version": "0.75.399",
   "description": "The Stacks UI engine.",
   "author": "Chris Breuer",
   "contributors": [
