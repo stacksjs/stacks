@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.403...v0.75.404)
+
+## 🐛 Bug Fixes
+
+- **libs**: libs:publish and libs read the app's library config, not the framework sample ([3967424](https://github.com/stacksjs/stacks/commit/3967424)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: raise the stx family to 0.2.779 and craft-native to 0.0.416 ([d26de0d](https://github.com/stacksjs/stacks/commit/d26de0d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.402...v0.75.403)
 
 ## 🐛 Bug Fixes
