@@ -84,7 +84,8 @@ export async function prepareMacosNative(config: ResolvedMacosDesktop, options: 
   // 1. The screens: stx compiled to the script Craft's AppKit host runs.
   const screens = Object.fromEntries(Object.entries(macosScreens(config)).map(([name, file]) => [name, join(root, file)]))
   for (const [name, file] of Object.entries(screens)) if (!existsSync(file)) throw new Error(`macos.nativeScreens: screen "${name}" is ${file}, which does not exist`)
-  const { compileNativeBundle } = await import('@stacksjs/stx/native') as { compileNativeBundle: CompileNativeBundle }
+  // `STX_NATIVE_SRC` (an stx checkout's packages/stx/src/native/index.ts) is the development override, as `CRAFT_MACOS_SRC` is for Craft.
+  const { compileNativeBundle } = await import(process.env.STX_NATIVE_SRC ? pathToFileURL(process.env.STX_NATIVE_SRC).href : '@stacksjs/stx/native') as { compileNativeBundle: CompileNativeBundle }
   const app = config.nativeApp ? join(root, config.nativeApp) : undefined
   const compiled = await compileNativeBundle({
     screens,
