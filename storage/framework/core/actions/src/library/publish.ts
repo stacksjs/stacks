@@ -3,8 +3,7 @@ import { existsSync } from 'node:fs'
 import { relative, resolve } from 'node:path'
 import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
-import { library } from '@stacksjs/config'
-import { LibraryConfigError, resolveLibraryPackages } from './packages'
+import { configuredLibrary, LibraryConfigError, resolveLibraryPackages } from './packages'
 
 export interface LibraryPublishPlan {
   name: string
@@ -22,8 +21,8 @@ export interface LibraryPublishPlan {
  * because the publish step ran with `--ignore-scripts` and nothing checked
  * that a build had happened first. This is that check, ahead of time.
  */
-export async function planLibraryPublish(config: LibraryConfig | undefined = library): Promise<LibraryPublishPlan[]> {
-  const packages = await resolveLibraryPackages(config)
+export async function planLibraryPublish(config?: LibraryConfig): Promise<LibraryPublishPlan[]> {
+  const packages = await resolveLibraryPackages(config ?? await configuredLibrary())
   const publishable = packages.filter(pkg => !pkg.private)
 
   if (!publishable.length)
@@ -109,7 +108,7 @@ export function publishCommand(): string[] {
  * set half-published with no record of where it stopped.
  */
 export async function publishLibraryPackages(options: { dryRun?: boolean, config?: LibraryConfig } = {}): Promise<LibraryPublishPlan[]> {
-  const plans = await planLibraryPublish(options.config ?? library)
+  const plans = await planLibraryPublish(options.config)
   const command = publishCommand()
 
   for (const plan of plans) {

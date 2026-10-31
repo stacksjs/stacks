@@ -36,11 +36,10 @@ export function libs(buddy: CLI): void {
       // Imported here rather than at module scope: `buddy --help` renders the
       // whole command table, and resolving the library config for a command
       // nobody ran would load `config/library.ts` on every invocation.
-      const { resolveLibraryPackages, LibraryConfigError } = await import('@stacksjs/actions')
-      const { library } = await import('@stacksjs/config')
+      const { configuredLibrary, resolveLibraryPackages, LibraryConfigError } = await import('@stacksjs/actions')
 
       try {
-        const packages = await resolveLibraryPackages(library)
+        const packages = await resolveLibraryPackages(await configuredLibrary())
 
         if (options.json) {
           console.log(JSON.stringify(packages.map(pkg => ({

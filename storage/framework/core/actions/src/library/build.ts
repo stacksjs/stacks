@@ -4,14 +4,13 @@ import type { ResolvedLibraryPackage } from './packages'
 import { mkdir, rm } from 'node:fs/promises'
 import { dirname, relative, resolve } from 'node:path'
 import { transpilePackage, validateDeclarations, validateRuntimeExports } from '@stacksjs/build'
-import { awaitConfig, library } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
 import { buildComponentLibrary } from '@stacksjs/stx'
 import { functionEntryData } from './entries'
 import { ambientGlobalsUsed, stxAmbientGlobals } from './globals'
 import { libraryManifest, serializeManifest } from './manifest'
-import { LibraryConfigError, resolveLibraryPackages } from './packages'
+import { configuredLibrary, LibraryConfigError, resolveLibraryPackages } from './packages'
 
 export interface LibraryBuildReport {
   name: string
@@ -44,9 +43,7 @@ export interface LibraryPackageBuildOptions {
  * instead of exiting 0 in silence.
  */
 export async function buildLibraryPackages(options: LibraryPackageBuildOptions = {}): Promise<LibraryBuildReport[]> {
-  if (!options.config)
-    await awaitConfig()
-  const config = options.config ?? library
+  const config = options.config ?? await configuredLibrary()
   const kinds = options.kinds
   const compile = options.compile ?? true
   const all = await resolveLibraryPackages(config, { onUnmatched: options.allowEmpty ? 'skip' : 'error' })

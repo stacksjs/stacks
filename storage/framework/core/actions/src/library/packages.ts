@@ -2,7 +2,18 @@ import type { LibraryConfig, LibraryPackageKind, LibraryPackageOptions } from '@
 import { existsSync } from 'node:fs'
 import { relative, resolve } from 'node:path'
 import process from 'node:process'
+import { awaitConfig, library } from '@stacksjs/config'
 import { componentsPath, functionsPath, libraryPackagePath } from '@stacksjs/path'
+
+/**
+ * The app's `config/library.ts`, once it has loaded. Read `library` from
+ * `@stacksjs/config` straight away and it is still the framework's sample
+ * config, which is how `libs:publish` once refused an app's own package.
+ */
+export async function configuredLibrary(): Promise<LibraryConfig | undefined> {
+  await awaitConfig()
+  return library
+}
 
 /**
  * Raised for a `config/library.ts` that cannot produce a coherent set of
