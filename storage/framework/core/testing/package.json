@@ -89,7 +89,7 @@
     "@stacksjs/router": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/ts-cloud": "^0.16.89",
+    "@stacksjs/ts-cloud": "^0.16.91",
     "very-happy-dom": "^0.4.1"
   },
   "devDependencies": {
