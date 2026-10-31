@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.396...v0.75.397)
+
+## 🐛 Bug Fixes
+
+- **ci**: declare what desktop-build imports, and typecheck the scaffold against this commit's types in the publish window ([4c95a5f](https://github.com/stacksjs/stacks/commit/4c95a5f)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- refresh the auto-imports source fingerprint after the desktop-build manifest change ([3c674f7](https://github.com/stacksjs/stacks/commit/3c674f7)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.395...v0.75.396)
 
 ## ✨ Features
