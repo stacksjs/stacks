@@ -69,7 +69,7 @@ export type { UrlParams } from './stacks-router'
 // only a runtime `import()` can make sense of. `listRegisteredRoutes()` reports
 // it, which is how the OpenAPI generator reads such a route's schema without a
 // file path to import.
-export { isRouterAction, wrapAction } from './stacks-router'
+export { isRouterAction, provideActions, wrapAction } from './stacks-router'
 export { withRouteAdmission } from './stacks-router'
 export type { RouteAdmission, WithheldRoute } from './stacks-router'
 export type { ChainableRoute, RedirectRoute, RedirectStatus, RouterAction, StacksHandler, StacksRouterInstance } from './stacks-router'

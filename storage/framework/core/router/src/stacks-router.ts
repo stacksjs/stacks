@@ -3121,12 +3121,36 @@ function appActionModulePath(sourcePath: string): string {
   return statSync(emitted, { throwIfNoEntry: false })?.isFile() ? emitted : sourcePath
 }
 
+/**
+ * Action modules handed to the router already imported, by handler string.
+ *
+ * A compiled binary cannot import an action off disk: the file would resolve
+ * its own `@stacksjs/*` imports from disk too, which is not where the bundle
+ * keeps them. Something that compiles routes into a binary (the desktop agent
+ * launcher) imports the actions those routes name statically and registers
+ * them here, so `'Actions/SaveTab'` resolves inside the bundle.
+ */
+const providedActions = new Map<string, () => Promise<{ default?: unknown }>>()
+
+export function provideActions(loaders: Record<string, () => Promise<{ default?: unknown }>>): void {
+  for (const [name, load] of Object.entries(loaders))
+    providedActions.set(name.endsWith('.ts') ? name.slice(0, -3) : name, load)
+}
+
 async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteHandlerFn> {
   assertSafeHandlerPath(handlerPath)
   let modulePath = handlerPath
 
   // Remove trailing .ts if present
   modulePath = modulePath.endsWith('.ts') ? modulePath.slice(0, -3) : modulePath
+
+  const provided = providedActions.get(modulePath)
+  if (provided) {
+    const action = (await provided()).default as RouterAction | undefined
+    if (!action || typeof action.handle !== 'function')
+      throw new Error(`Action '${handlerPath}' has no default export with a handle() method`)
+    return wrapAction(action, handlerPath)
+  }
 
   // Handle controller-based routing (e.g., 'Controllers/MyController@method')
   if (modulePath.includes('Controller')) {
