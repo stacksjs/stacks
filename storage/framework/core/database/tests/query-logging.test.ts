@@ -65,6 +65,24 @@ describe('database query logging', () => {
     }
   })
 
+  it('expires rows past queryLogging.retention from the writer itself, in batches', async () => {
+    const child = Bun.spawn([process.execPath, '--no-env-file', join(import.meta.dir, 'fixtures/query-log-retention.ts')], {
+      cwd: join(import.meta.dir, '..'),
+      env: { ...process.env, APP_ENV: 'test', DB_CONNECTION: 'sqlite', DB_DATABASE_PATH: ':memory:', DB_QUERY_LOGGING_ENABLED: 'false' },
+      stdout: 'pipe', stderr: 'pipe',
+    })
+    const watchdog = setTimeout(() => child.kill(), 8000)
+    try {
+      const [exitCode, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
+      expect(exitCode, `${stdout}\n${stderr}`).toBe(0)
+      expect(stdout).toContain('query-log-retention-ok')
+    }
+    finally {
+      clearTimeout(watchdog)
+      child.kill()
+    }
+  })
+
   it('stops writing to a query_logs table that is not migrated yet, and resumes once it is', async () => {
     const child = Bun.spawn([process.execPath, '--no-env-file', join(import.meta.dir, 'fixtures/query-log-missing-table.ts')], {
       cwd: join(import.meta.dir, '..'),

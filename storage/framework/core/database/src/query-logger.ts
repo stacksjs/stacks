@@ -136,6 +136,8 @@ async function flushQueuedQueryLogs(): Promise<void> {
       }
       for (const item of batch)
         item.resolve()
+      if (!queryLogTableMissing)
+        maybePruneQueryLogs()
     }
   }
   finally {
@@ -662,6 +664,85 @@ async function queryLogTableExists(): Promise<boolean> {
   }
   catch {
     return false
+  }
+}
+
+/**
+ * Retention, enforced by the writer.
+ *
+ * `queryLogging.retention` used to be honoured only by `PruneQueryLogsJob`,
+ * which nothing ran: job discovery scans the application's own `app/Jobs`,
+ * the default scheduler does not list it, and the job skipped itself whenever
+ * logging was off. A production app that logged every query kept every row it
+ * ever wrote - ReviewOS reached 39 GB in 25 days (2026-10-31), filled its
+ * server's disk and took Postgres down with it.
+ *
+ * So the process that writes rows also expires them: once after it starts
+ * writing and then every `pruneFrequency` hours, in the background, in bounded
+ * batches so a long backlog never becomes one enormous DELETE. A retention of
+ * zero keeps everything, as documented.
+ */
+const QUERY_LOG_PRUNE_BATCH = 5000
+const QUERY_LOG_PRUNE_PAUSE_MS = 10
+let lastQueryLogPrune = 0
+let queryLogPruneInFlight: Promise<number> | null = null
+
+/** The `executed_at` before which rows have outlived `retentionDays`, or null to keep everything. */
+export function queryLogRetentionCutoff(retentionDays: unknown, now: number = Date.now()): string | null {
+  const days = Number(retentionDays ?? 7)
+  if (!Number.isFinite(days) || days <= 0)
+    return null
+  return sqlDateTime(new Date(now - days * 86_400_000))
+}
+
+function maybePruneQueryLogs(now: number = Date.now()): void {
+  const logging = config.database?.queryLogging
+  const cutoff = queryLogRetentionCutoff(logging?.retention, now)
+  if (!cutoff || queryLogPruneInFlight)
+    return
+  const hours = Number(logging?.pruneFrequency ?? 24)
+  const interval = (Number.isFinite(hours) && hours > 0 ? hours : 24) * 3_600_000
+  if (lastQueryLogPrune && now - lastQueryLogPrune < interval)
+    return
+  lastQueryLogPrune = now
+  queryLogPruneInFlight = queryLogContext.run(true, () => pruneExpiredQueryLogs(cutoff))
+    .catch((error) => {
+      log.error('Failed to prune expired query logs:', error)
+      return 0
+    })
+    .finally(() => {
+      queryLogPruneInFlight = null
+    })
+}
+
+/** The background prune in progress, so a caller (or a test) can wait for it. */
+export function queryLogPruneSettled(): Promise<number> {
+  return queryLogPruneInFlight ?? Promise.resolve(0)
+}
+
+/**
+ * Delete the rows written before `cutoff`, `batch` at a time, and return how
+ * many went. Ids are read first and deleted by id, which is the one shape every
+ * dialect accepts (MySQL refuses LIMIT inside an IN subquery, PostgreSQL has no
+ * DELETE ... LIMIT), and a short pause between batches leaves room for the
+ * application's own writes.
+ */
+export async function pruneExpiredQueryLogs(cutoff: string, batch: number = QUERY_LOG_PRUNE_BATCH): Promise<number> {
+  let pruned = 0
+  for (;;) {
+    const rows = await db
+      .selectFrom('query_logs')
+      .select(['id'])
+      .where('executed_at', '<', cutoff)
+      .limit(batch)
+      .execute() as Array<{ id: number | string }>
+    if (rows.length === 0)
+      return pruned
+    await db.deleteFrom('query_logs').where('id', 'in', rows.map(row => row.id)).execute()
+    pruned += rows.length
+    if (rows.length < batch)
+      return pruned
+    await new Promise(resolve => setTimeout(resolve, QUERY_LOG_PRUNE_PAUSE_MS))
   }
 }
 

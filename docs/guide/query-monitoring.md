@@ -352,7 +352,11 @@ Queries are stored in the `query_logs` table with the following structure:
 
 ## Automatic Maintenance
 
-The system includes a scheduled job (`PruneQueryLogsJob`) that automatically removes old query logs based on your retention settings. The pruning frequency can be configured to ensure your database doesn't grow too large.
+Every process that writes query logs also expires them. Once after it starts writing, and then every `pruneFrequency` hours, it deletes the rows older than `retention` days in the background, 5,000 at a time, so a long backlog never turns into one huge `DELETE`. A `retention` of `0` keeps every row.
+
+`PruneQueryLogsJob` does the same deletion as a scheduled job. Job discovery only reads your own `app/Jobs`, so it runs only if you schedule it, for example `schedule.job('PruneQueryLogsJob').daily()` with a copy in `app/Jobs`. It now also runs while logging is switched off, because rows written before the switch still have to expire.
+
+Logging is off by default in production (`APP_ENV=production`). Turn it on with `DB_QUERY_LOGGING_ENABLED=true`, and only for as long as you need it: a busy app writes one row per statement.
 
 ## Best Practices
 
