@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.402...v0.75.403)
+
+## 🐛 Bug Fixes
+
+- **types**: restore the canonical auto-import source fingerprint ([a4639fb](https://github.com/stacksjs/stacks/commit/a4639fb)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.401...v0.75.402)
 
 ## 🐛 Bug Fixes

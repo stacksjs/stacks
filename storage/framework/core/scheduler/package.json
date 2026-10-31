@@ -2,7 +2,7 @@
   "name": "@stacksjs/scheduler",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.402",
+  "version": "0.75.403",
   "description": "The Stacks scheduler.",
   "author": "Chris Breuer",
   "contributors": [
