@@ -1,6 +1,9 @@
 <script client>
 import type { RegisterCredentials } from '../../../../types/dashboard'
 import { describeAuthError, safeAuthRedirect, useAuth } from '../../../../functions/auth'
+// Branding passes through to the card: an Iconify class for the mark and a short line above the title (stacksjs/stacks#3086).
+const icon = useReactiveProp<string>('icon', 'i-hugeicons-cube')
+const eyebrow = useReactiveProp<string>('eyebrow', '')
 
 const { register } = useAuth()
 const route = useRoute()
@@ -38,6 +41,8 @@ async function handleRegister(credentials: RegisterCredentials): Promise<void> {
 
 <template>
   <Register
+    :icon="icon()"
+    :eyebrow="eyebrow()"
     @submit="handleRegister"
     :isLoading="isLoading()"
     :error="error()"

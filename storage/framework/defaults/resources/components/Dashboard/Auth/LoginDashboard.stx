@@ -1,6 +1,9 @@
 <script client>
 import type { AuthUser } from '../../../../types/dashboard'
 import { describeAuthError, isLoginResponse, isTwoFactorChallenge, safeAuthRedirect, useAuth } from '../../../../functions/auth'
+// Branding passes through to the card: an Iconify class for the mark and a short line above the title (stacksjs/stacks#3086).
+const icon = useReactiveProp<string>('icon', 'i-hugeicons-cube')
+const eyebrow = useReactiveProp<string>('eyebrow', '')
 
 const { login, verifyTwoFactorLogin } = useAuth()
 const route = useRoute()
@@ -71,6 +74,8 @@ function restartLogin(): void {
 
 <template>
   <Login
+    :icon="icon()"
+    :eyebrow="eyebrow()"
     :if="!challengeToken()"
     @submit="handleLogin"
     :isLoading="isLoading()"

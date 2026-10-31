@@ -1416,10 +1416,13 @@ describe('auth branding hooks (stacksjs/stacks#3086)', () => {
     expect(card).toMatch(/<slot name="brand">[\s\S]*:class="icon\(\)"[\s\S]*<\/slot>/)
   })
 
-  test.each(['Login', 'Register', 'ForgotPassword', 'ResetPassword'])('%s takes the branding and passes it on to the card', (name) => {
+  test.each(['Login', 'Register', 'ForgotPassword', 'ResetPassword'])('%s takes the branding, passes it on to the card, and its dashboard forwards it', (name) => {
     const page = componentSource(`Auth/${name}.stx`)
     expect(page).toContain("useReactiveProp<string>('icon', 'i-hugeicons-cube')")
     expect(page).toContain("useReactiveProp<string>('eyebrow', '')")
     expect(page).toMatch(/<AuthCard [^>]*:icon="icon\(\)" :eyebrow="eyebrow\(\)"/)
+    const dashboard = componentSource(`Auth/${name}Dashboard.stx`)
+    expect(dashboard).toContain("useReactiveProp<string>('icon', 'i-hugeicons-cube')")
+    expect(dashboard).toMatch(new RegExp(`<${name}\\s[^>]*:icon="icon\\(\\)"\\s+:eyebrow="eyebrow\\(\\)"`))
   })
 })
