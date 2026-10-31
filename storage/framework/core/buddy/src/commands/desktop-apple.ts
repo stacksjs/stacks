@@ -709,7 +709,7 @@ async function packageAppleDesktop(config: AppleDesktopConfig, skipBuild = false
  * embedded, signed with the Mac App Distribution identity.
  */
 async function packageNativeApple(config: AppleDesktopConfig, native: ResolvedMacosDesktop): Promise<string> {
-  const { prepareMacosNative } = await import('@stacksjs/actions')
+  const { prepareMacosAgent, prepareMacosNative } = await import('@stacksjs/actions')
   const { assembleMacosApp } = await import('@stacksjs/desktop-build')
   // The Apple settings (flags, environment) win over config/desktop.ts, as everywhere else.
   const store: ResolvedMacosDesktop = {
@@ -718,12 +718,13 @@ async function packageNativeApple(config: AppleDesktopConfig, native: ResolvedMa
     ...(config.icon ? { icon: config.icon } : {}), sandbox: true,
   }
   const prepared = await prepareMacosNative(store)
+  const agent = store.agent ? await prepareMacosAgent(store, prepared, 'app-store') : undefined
   const appleDir = join(storagePath('framework/desktop/macos'), 'apple')
   if (existsSync(appleDir)) rmSync(appleDir, { recursive: true })
   mkdirSync(appleDir, { recursive: true })
   const assembled = assembleMacosApp({
     config: store, root: projectPath(), host: prepared.host, nativeBundle: prepared.nativeBundle, output: appleDir, distribution: 'app-store',
-    provisioningProfile: config.provisioningProfile, signingIdentity: config.appSigningIdentity, keychain: config.keychain,
+    provisioningProfile: config.provisioningProfile, signingIdentity: config.appSigningIdentity, keychain: config.keychain, agent,
   })
   for (const note of assembled.notes) await log.warn(note)
   command(['codesign', '-d', '--entitlements', '-', '--xml', assembled.appPath])

@@ -1,11 +1,11 @@
-import type { ResolvedMacosDesktop } from '@stacksjs/desktop-build'
+import type { DesktopAgentManifest, MacosAgentBundle, MacosDistribution, ResolvedMacosDesktop } from '@stacksjs/desktop-build'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
 import { log } from '@stacksjs/cli'
-import { macosOutputDirectory, macosScreens, validateMacosDesktop } from '@stacksjs/desktop-build'
+import { AGENT_MANIFEST, agentHostArguments, desktopLauncherCompileArgs, macosOutputDirectory, macosScreens, renderAgentEntry, validateMacosDesktop } from '@stacksjs/desktop-build'
 import { projectPath, storagePath } from '@stacksjs/path'
 import { craftBuilderVersion } from './craft-entry'
 
@@ -21,7 +21,28 @@ import { craftBuilderVersion } from './craft-entry'
  */
 
 interface CraftMacosBuilder {
-  buildMacOSNative: (options: { outdir: string, nativeBundle: string }) => Promise<{ executable: string, bundle: string }>
+  buildMacOSNative: (options: { outdir: string, nativeBundle: string, webkit?: boolean }) => Promise<{ executable: string, bundle: string }>
+}
+
+/** The file an entry URL names: the Craft source in a checkout, or the published `dist` module. */
+function entryFile(entry: string, root: string): string | null {
+  try {
+    return entry.startsWith('file:') ? new URL(entry).pathname : Bun.resolveSync(entry, root)
+  }
+  catch {
+    return null
+  }
+}
+
+/**
+ * Whether this Craft's `buildMacOSNative` takes `webkit`. Read from its source
+ * rather than assumed from a version: the option lands in a checkout before it
+ * lands in a release, and a Craft that does not know it would build a host
+ * without WebKit and say nothing, leaving every `<WebView>` blank.
+ */
+export function craftSupportsWebkit(source: string): boolean {
+  // `options.webkit` (or `e.webkit` once minified), or `{ webkit }` destructured.
+  return /\.webkit\b|[{,]\s*webkit\s*[,}=]/.test(source)
 }
 
 type CompileNativeBundle = (options: {
@@ -47,8 +68,10 @@ function craftMacosEntry(root: string): string {
 }
 
 /** What the host binary depends on, so a rebuilt screen reuses it and a new Craft does not. */
-function hostKey(entry: string, root: string): string {
+function hostKey(entry: string, root: string, webkit = false): string {
   const hash = createHash('sha256')
+  // A host with WebKit linked is a different binary from one without.
+  if (webkit) hash.update('webkit')
   const path = entry.startsWith('file:') ? new URL(entry).pathname : entry
   const version = craftBuilderVersion(entry, root)?.version
   hash.update(version ?? 'unversioned')
@@ -104,14 +127,134 @@ export async function prepareMacosNative(config: ResolvedMacosDesktop, options: 
 
   // 2. The host: Craft's AppKit renderer, built once per Craft revision.
   const entry = craftMacosEntry(root)
-  const hostDirectory = storagePath(`framework/desktop/host/${hostKey(entry, root)}`)
+  const webkit = config.webkit === true
+  if (webkit) {
+    const file = entryFile(entry, root)
+    if (!file || !existsSync(file) || !craftSupportsWebkit(readFileSync(file, 'utf8')))
+      throw new Error(`macos.webkit needs a Craft whose buildMacOSNative links WebKit, and ${file ?? entry} does not. Upgrade craft-native, or point CRAFT_MACOS_SRC at a Craft checkout that has it.`)
+  }
+  const key = hostKey(entry, root, webkit)
+  const hostDirectory = storagePath(`framework/desktop/host/${key}`)
   const host = join(hostDirectory, 'craft-native-macos')
   if (!existsSync(host)) {
-    await log.info('Building the AppKit host (first build for this Craft; the toolchain installs through Pantry)')
+    await log.info(`Building the AppKit host${webkit ? ' with WebKit' : ''} (first build for this Craft; the toolchain installs through Pantry)`)
     const builder = await import(entry) as CraftMacosBuilder
     mkdirSync(hostDirectory, { recursive: true })
-    await builder.buildMacOSNative({ outdir: hostDirectory, nativeBundle })
+    await builder.buildMacOSNative({ outdir: hostDirectory, nativeBundle, ...(webkit ? { webkit: true } : {}) })
   }
 
-  return { root, output, nativeBundle, host, hostKey: hostKey(entry, root) }
+  return { root, output, nativeBundle, host, hostKey: key }
+}
+
+/** Where the agent's own routes are: `macos.agent.entry`, else `app/Desktop/Agent.ts` when the project has one. */
+export function macosAgentEntry(root: string, config: Pick<ResolvedMacosDesktop, 'agent'>): string | undefined {
+  if (!config.agent) return undefined
+  if (config.agent.entry) {
+    const entry = resolve(root, config.agent.entry)
+    if (!existsSync(entry)) throw new Error(`macos.agent.entry does not exist: ${entry}`)
+    return entry
+  }
+  const conventional = join(root, 'app/Desktop/Agent.ts')
+  return existsSync(conventional) ? conventional : undefined
+}
+
+/**
+ * The manifest the agent launcher reads, for a run from the project
+ * (`buddy dev:desktop`): absolute paths to the host and screens just built,
+ * and the project's route registry loaded unless the config says otherwise.
+ */
+export function macosAgentDevManifest(config: ResolvedMacosDesktop, prepared: Pick<PreparedMacosNative, 'host' | 'nativeBundle' | 'root'>): DesktopAgentManifest {
+  return {
+    appName: config.appName,
+    bundleId: config.bundleId,
+    version: config.version,
+    host: prepared.host,
+    nativeBundle: prepared.nativeBundle,
+    hostArguments: agentHostArguments(config),
+    ...(config.agent?.port ? { port: config.agent.port } : {}),
+    ...(config.agent?.staticDir ? { staticDir: resolve(prepared.root, config.agent.staticDir) } : {}),
+    projectRoot: prepared.root,
+    appRoutes: config.agent?.appRoutes !== false,
+  }
+}
+
+/**
+ * The project's route files, as `app/Routes.ts` names and mounts them (the
+ * same rules as the router's `loadRoutes`): the key is the prefix unless the
+ * entry sets one, `web` and `prefix: ''` mount at the root.
+ */
+export async function macosAgentRouteFiles(root: string): Promise<Array<{ file: string, prefix?: string, middleware?: string[] }>> {
+  const manifest = join(root, 'app/Routes.ts')
+  const loaded = existsSync(manifest) ? (await import(pathToFileURL(manifest).href) as { default?: Record<string, string | { path: string, prefix?: string, middleware?: string | string[] }> }).default : undefined
+  const registry = loaded && typeof loaded === 'object' && Object.keys(loaded).length ? loaded : { api: 'api' }
+  const files: Array<{ file: string, prefix?: string, middleware?: string[] }> = []
+  for (const [key, definition] of Object.entries(registry)) {
+    const config = typeof definition === 'string' ? { path: definition } : definition
+    const file = ['.ts', '.js'].map(extension => join(root, 'routes', `${config.path}${extension}`)).find(candidate => existsSync(candidate))
+    if (!file) continue
+    const prefix = config.prefix !== undefined ? (config.prefix ? (config.prefix.startsWith('/') ? config.prefix : `/${config.prefix}`) : undefined) : (key === 'web' ? undefined : `/${key}`)
+    const middleware = config.middleware === undefined ? [] : Array.isArray(config.middleware) ? config.middleware : [config.middleware]
+    files.push({ file, ...(prefix ? { prefix } : {}), ...(middleware.length ? { middleware } : {}) })
+  }
+  return files
+}
+
+/**
+ * The actions the given source files name by string (`'Actions/SaveTab'`),
+ * resolved the way the router resolves them: the app's `app/Actions` first,
+ * then the framework defaults. A name that resolves nowhere is left out; the
+ * router reports it on the request that uses it, as it would in development.
+ */
+export function macosAgentActionFiles(root: string, sources: string[]): Record<string, string> {
+  const actions: Record<string, string> = {}
+  for (const source of sources) {
+    if (!existsSync(source)) continue
+    for (const match of readFileSync(source, 'utf8').matchAll(/['"`](Actions\/[\w/-]+?)(?:\.ts)?['"`]/g)) {
+      const name = match[1]!
+      if (actions[name]) continue
+      const file = [join(root, 'app', `${name}.ts`), join(root, 'storage/framework/defaults/app', `${name}.ts`)].find(candidate => existsSync(candidate))
+      if (file) actions[name] = file
+    }
+  }
+  return actions
+}
+
+/**
+ * The agent launcher, written and compiled for the bundle. A compiled binary
+ * cannot read route files off disk (the router refuses: they could not
+ * resolve the framework packages from there), so the project's route files
+ * are imported statically and travel inside the launcher, the same in a
+ * development build and a Mac App Store one. So are the actions those files
+ * name by string, which the router would otherwise import off disk too.
+ */
+export async function prepareMacosAgent(config: ResolvedMacosDesktop, prepared: PreparedMacosNative, _distribution: MacosDistribution): Promise<MacosAgentBundle> {
+  if (!config.agent) throw new Error('config/desktop.ts has no macos.agent')
+  const work = join(prepared.output, '.build')
+  const entry = join(work, 'agent-entry.ts')
+  const routes = config.agent.appRoutes === false ? [] : await macosAgentRouteFiles(prepared.root)
+  const agentEntry = macosAgentEntry(prepared.root, config)
+  const actions = macosAgentActionFiles(prepared.root, [...routes.map(route => route.file), ...(agentEntry ? [agentEntry] : [])])
+  writeFileSync(entry, renderAgentEntry({ agentEntry, routes, actions }))
+  const launcher = join(work, `${config.executable}-agent`)
+  const compile = Bun.spawnSync(['bun', ...desktopLauncherCompileArgs({ entry, outfile: launcher })], { cwd: prepared.root, stdout: 'pipe', stderr: 'pipe' })
+  if (compile.exitCode !== 0)
+    throw new Error(`Compiling the agent launcher failed:\n${compile.stderr.toString().trim() || compile.stdout.toString().trim()}`)
+  return {
+    launcher,
+    manifest: {
+      appName: config.appName,
+      bundleId: config.bundleId,
+      version: config.version,
+      hostArguments: agentHostArguments(config),
+      ...(config.agent.port ? { port: config.agent.port } : {}),
+      ...(config.agent.staticDir ? { staticDir: resolve(prepared.root, config.agent.staticDir) } : {}),
+      appRoutes: false,
+    },
+  }
+}
+
+/** Where `buddy dev:desktop` writes the manifest it runs the launcher from source with. */
+export function macosAgentDevFiles(prepared: Pick<PreparedMacosNative, 'output'>): { entry: string, manifest: string } {
+  const work = join(prepared.output, '.build')
+  return { entry: join(work, 'agent-entry.ts'), manifest: join(work, AGENT_MANIFEST) }
 }
