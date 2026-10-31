@@ -397,9 +397,10 @@ jobs:
 `
 }
 
-function command(args: string[], cwd = projectPath()): void {
+function command(args: string[], cwd = projectPath(), extraEnv: Record<string, string> = {}): void {
   const result = Bun.spawnSync(args, {
     cwd,
+    env: { ...process.env, ...extraEnv },
     stdin: 'inherit',
     stdout: 'inherit',
     stderr: 'inherit',
@@ -684,6 +685,11 @@ async function packageAppleDesktop(config: AppleDesktopConfig, skipBuild = false
     copyFileSync(manifest, join(resourcesDir, 'desktop.json'))
   }
   copyFileSync(config.provisioningProfile, join(contents, 'embedded.provisionprofile'))
+  // copyFileSync keeps the source's mode, and a downloaded profile is kept
+  // private (0600) like any credential. A 0600 file inside the bundle is
+  // installed unreadable to everyone but root, which App Store Connect refuses
+  // with error 90255 because the code signature then cannot be verified.
+  chmodSync(join(contents, 'embedded.provisionprofile'), 0o644)
   chmodSync(join(macosDir, 'stacks-desktop'), 0o755)
   chmodSync(join(macosDir, 'craft-runtime'), 0o755)
 
@@ -816,9 +822,12 @@ function validateOrUpload(packagePath: string, config: AppleDesktopConfig, valid
     '--apiIssuer',
     config.apiIssuerId,
   ]
-  process.env.API_PRIVATE_KEYS_DIR = resolve(config.apiKeyPath, '..')
-  command(['xcrun', 'altool', '--validate-app', ...common])
-  if (!validateOnly) command(['xcrun', 'altool', '--upload-app', ...common])
+  // Passed to the child rather than set on process.env: altool never saw the
+  // variable that way and looked for AuthKey_<id>.p8 only in its default folders.
+  const keysDirectory = resolve(config.apiKeyPath, '..')
+  const env = { API_PRIVATE_KEYS_DIR: keysDirectory }
+  command(['xcrun', 'altool', '--validate-app', ...common], projectPath(), env)
+  if (!validateOnly) command(['xcrun', 'altool', '--upload-app', ...common], projectPath(), env)
 }
 
 /**
