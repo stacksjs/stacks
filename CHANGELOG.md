@@ -1,5 +1,30 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.391...v0.75.393)
+
+## ✨ Features
+
+- **security**: buddy security:scan checks a project for vulnerable dependencies, committed secrets, dangerous code, risky workflows and repo hygiene ([9ffcc35](https://github.com/stacksjs/stacks/commit/9ffcc35)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **desktop**: STX_NATIVE_SRC points a native desktop build at an stx checkout ([9c929bb](https://github.com/stacksjs/stacks/commit/9c929bb)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **desktop**: sign development builds with an Apple Development identity so the Keychain item stays trusted across rebuilds ([d8bc584](https://github.com/stacksjs/stacks/commit/d8bc584)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **desktop**: await the build's log calls so a failing native build reports why ([9cca896](https://github.com/stacksjs/stacks/commit/9cca896)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **router**: the guarded /ai group now also mounts /ai/complete ([5f2e8db](https://github.com/stacksjs/stacks/commit/5f2e8db)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: raise the ts-cloud floor to 0.16.91 for credential_process profiles ([7839894](https://github.com/stacksjs/stacks/commit/7839894)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- ignore the native macOS app's build output ([16132eb](https://github.com/stacksjs/stacks/commit/16132eb)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.390...v0.75.392)
 
 ## ✨ Features
