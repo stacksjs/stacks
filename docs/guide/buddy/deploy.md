@@ -192,13 +192,22 @@ In practice a tenant's secrets end up in the owner's env file under a `TENANT_`
 prefix - usually pasted in while debugging a deploy - and stay there. Left
 alone, deploy writes those secrets into an unrelated site's `.env` on disk.
 
-Declare the tenants attached to your box in `config/cloud.ts`:
+Declare the tenants attached to your box, from a place that never reaches a public repository. A
+tracked `config/cloud.ts` that lists them publishes the roster of a shared server to everyone who can
+read the repository, so `buddy deploy` and `buddy env:check` read it from these sources, merged:
 
-```typescript
-const config: CloudConfig = {
-  tenants: ['bughq', 'analyticshq'],
-}
+1. `STACKS_CLOUD_TENANTS`: slugs separated by commas or spaces. This is what CI supplies from a secret.
+2. `$STACKS_PRIVATE_DIR/tenants.json`, then `~/.config/stacks/tenants.json`, then the gitignored
+   `storage/cloud/tenants.json`: a JSON array of slugs, or `{ "tenants": [...] }`.
+3. `cloud.tenants` in config, still honoured so a private fork keeps working. A public repository
+   should not declare it.
+
+```bash
+STACKS_CLOUD_TENANTS="bughq analyticshq" buddy deploy
 ```
+
+A file that is missing or malformed contributes nothing, because a list that cannot be read must not
+stop a deploy.
 
 `buddy deploy` then drops any `BUGHQ_*` / `ANALYTICSHQ_*` key before shipping
 and logs what it dropped, and `buddy env:check` lists them per tenant:
@@ -216,7 +225,7 @@ buddy env:check --file .env.production
 Stripping them at deploy time closes the leak; deleting them from the env file
 is still worth doing, since nothing in your project reads them.
 
-Prefixes are never guessed. Without a `tenants` list nothing is treated as
+Prefixes are never guessed. Without a tenant list from one of the sources above nothing is treated as
 foreign - `STRIPE_`, `AWS_` and `MEILISEARCH_` look identical to a slug prefix.
 
 ## DNS Configuration

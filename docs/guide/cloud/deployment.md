@@ -97,6 +97,16 @@ Several projects can share one Hetzner box. The owning project deploys normally,
 project sets `cloud.attachTo` to the owner's `project.slug`. An attached project skips
 provisioning and deploys only its own sites.
 
+Keep the owner's slug out of the tracked file when the repository is public: name the server in the
+environment and read it in `config/cloud.ts`, the way the Settlers III remake does.
+
+```typescript
+// config/cloud.ts
+export default {
+  attachTo: process.env.CLOUD_ATTACH_TO, // set in the protected deploy environment, not in Git
+}
+```
+
 ## A host you own (`provider: 'ssh'`)
 
 Deploy to a Linux box that already exists: a Raspberry Pi on your desk, a rented dedicated server,
