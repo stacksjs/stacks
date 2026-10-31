@@ -186,7 +186,7 @@ describe('the registered dashboard groups', () => {
     const rows = await registered()
     const ai = rows.filter(row => row.route.startsWith('POST /ai/'))
 
-    expect(ai.map(row => row.route).sort()).toEqual(['POST /ai/ask', 'POST /ai/summary'])
+    expect(ai.map(row => row.route).sort()).toEqual(['POST /ai/ask', 'POST /ai/complete', 'POST /ai/summary'])
     for (const row of ai)
       expect(row.middleware, row.route).toContain('auth')
   }, 60_000)
