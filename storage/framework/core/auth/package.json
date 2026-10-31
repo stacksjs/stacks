@@ -73,7 +73,7 @@
     "@stacksjs/socials": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/ts-auth": "^0.4.7",
-    "ts-qr-codes": "^0.1.8"
+    "ts-qr-codes": "^0.1.9"
   },
   "devDependencies": {
     "better-dx": "^0.2.24"

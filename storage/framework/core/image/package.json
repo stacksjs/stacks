@@ -31,7 +31,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-svg": "^0.1.5",
+    "@stacksjs/ts-svg": "^0.1.7",
     "@stacksjs/types": "workspace:*",
     "ts-images": "^0.2.23"
   },

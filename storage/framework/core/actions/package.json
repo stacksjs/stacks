@@ -72,8 +72,8 @@
     "@stacksjs/api": "workspace:*",
     "@stacksjs/auth": "workspace:*",
     "@stacksjs/build": "workspace:*",
-    "@stacksjs/bumpx": "^0.2.26",
-    "@stacksjs/bunpress": "^0.2.15",
+    "@stacksjs/bumpx": "^0.2.30",
+    "@stacksjs/bunpress": "^0.2.31",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/cloud": "workspace:*",
     "@stacksjs/cms": "workspace:*",
@@ -90,7 +90,7 @@
     "@stacksjs/i18n": "workspace:*",
     "@stacksjs/image": "workspace:*",
     "@stacksjs/logging": "workspace:*",
-    "@stacksjs/logsmith": "^0.2.11",
+    "@stacksjs/logsmith": "^0.2.14",
     "@stacksjs/mobile": "workspace:*",
     "@stacksjs/orm": "workspace:*",
     "@stacksjs/path": "workspace:*",
@@ -98,7 +98,7 @@
     "@stacksjs/queue": "workspace:*",
     "@stacksjs/registry": "workspace:*",
     "@stacksjs/router": "workspace:*",
-    "@stacksjs/rpx": "^0.11.54",
+    "@stacksjs/rpx": "^0.11.60",
     "@stacksjs/scheduler": "workspace:*",
     "@stacksjs/search-engine": "workspace:*",
     "@stacksjs/security": "workspace:*",
@@ -118,7 +118,7 @@
   },
   "peerDependencies": {
     "craft-native": ">=0.0.411",
-    "pickier": "^0.1.75"
+    "pickier": "^0.1.81"
   },
   "peerDependenciesMeta": {
     "pickier": {

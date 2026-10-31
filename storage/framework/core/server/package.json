@@ -70,7 +70,7 @@
     "@stacksjs/router": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/stx": "0.2.776",
-    "bun-plugin-auto-imports": "^0.4.4"
+    "bun-plugin-auto-imports": "^0.4.5"
   },
   "devDependencies": {
     "@stacksjs/validation": "workspace:*",
