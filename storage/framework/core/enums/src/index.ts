@@ -77,6 +77,7 @@ export enum Action {
   BuildCore = 'build/core',
   /** [`build/desktop`](../../actions/src/build/desktop.ts) */
   BuildDesktop = 'build/desktop',
+  /** [`build/desktop-macos`](../../actions/src/build/desktop-macos.ts) */
   BuildDesktopMacos = 'build/desktop-macos',
   /** [`build/dmg`](../../actions/src/build/dmg.ts) */
   BuildDmg = 'build/dmg',
