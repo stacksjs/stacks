@@ -1,5 +1,25 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.401...v0.75.402)
+
+## 🐛 Bug Fixes
+
+- **database**: expire query logs from the writer, so retention is enforced ([6c303ef](https://github.com/stacksjs/stacks/commit/6c303ef)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **build**: library manifests point their types at .d.ts, and link the repository itself ([8e483d6](https://github.com/stacksjs/stacks/commit/8e483d6)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **skills**: refresh the native catalog for the build package's new export and test ([a4fc642](https://github.com/stacksjs/stacks/commit/a4fc642)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **types**: regenerate the auto-import source fingerprint ([3f9a461](https://github.com/stacksjs/stacks/commit/3f9a461)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.400...v0.75.401)
 
 ## 🐛 Bug Fixes
