@@ -391,6 +391,30 @@ function strictMode(options: { strict?: boolean }): boolean {
 }
 
 /**
+ * Add the enum labels the models declare and the database lacks.
+ *
+ * `migrate` decides what to run by file name, so a label added to a migration
+ * after it ran never reaches a database that already ran it, and the column
+ * drift probe compares types, not labels. ReviewOS lived with this for ten
+ * weeks: `workflows_state_type` had no 'removed', and listing a repository's
+ * workflows was a 500. Adding a label cannot lose data, so it is made here
+ * rather than reported; the rest of `migrate:align`'s plan stays opt-in.
+ */
+async function addMissingEnumLabels(): Promise<void> {
+  try {
+    const { alignSchema, ENUM_ALIGN_KINDS } = await import('@stacksjs/database')
+    const result = await alignSchema({ apply: true, only: ENUM_ALIGN_KINDS })
+    for (const action of result.plan.actions)
+      log.info(`  ${action.detail}`)
+    if (result.applied.length > 0)
+      log.success(`Added ${result.applied.length} enum label${result.applied.length === 1 ? '' : 's'} the models declare and the database was missing.`)
+  }
+  catch (err) {
+    log.warn(`Could not check enum labels against the models: ${err instanceof Error ? err.message : String(err)}`)
+  }
+}
+
+/**
  * Post-migrate FK integrity probe (stacksjs/stacks#1915 D-5).
  *
  * Catches the silent "you flipped DB_CONNECTION but the FKs didn't
@@ -1072,6 +1096,8 @@ export function migrate(buddy: CLI): void {
       catch (error) {
         log.error('Failed to ensure uuid columns post-migration:', error)
       }
+
+      await addMissingEnumLabels()
 
       // Post-migrate FK integrity check (stacksjs/stacks#1915 D-5).
       // Surfaces the "you flipped DB_CONNECTION and the FKs didn't

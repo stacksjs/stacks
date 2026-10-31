@@ -1,7 +1,7 @@
 import type { DesiredColumn, DesiredSchema, LiveAlignSchema, LiveColumn, LiveIndex } from '../src/schema-align'
 import { describe, expect, it } from 'bun:test'
 import { comparableIndexKey, postgresIndexStatement } from '../src/index-shape'
-import { columnDefinitionsOf, comparableDefault, desiredSchemaFrom, evaluateAlignChecks, planSchemaAlignment, postgresIdentifier } from '../src/schema-align'
+import { columnDefinitionsOf, comparableDefault, desiredSchemaFrom, ENUM_ALIGN_KINDS, evaluateAlignChecks, planSchemaAlignment, postgresIdentifier } from '../src/schema-align'
 
 /**
  * `buddy migrate:align`'s planner, without a database. The rules under test are
@@ -317,6 +317,29 @@ describe('enum alignment', () => {
 
     expect(plan.actions.map(a => a.sql)).toEqual(['ALTER TYPE "teams_status_type" ADD VALUE IF NOT EXISTS \'paused\''])
     expect(plan.reports.map(r => r.kind)).toEqual(['enum'])
+  })
+
+  /**
+   * What `migrate` applies on every run. ReviewOS's production database missed
+   * 'removed' because the label was added to a migration after it ran; the
+   * same plan also wanted a wider column, which stays `migrate:align`'s call.
+   */
+  it('lets migrate take the labels and nothing else', () => {
+    const [desired, live] = schemas(
+      {
+        enums: new Map([['workflows_state_type', ['active', 'disabled', 'removed']]]),
+        tables: new Map([['notifications', [column('data', { type: 'text' })]]]),
+      },
+      {
+        enums: new Map([['workflows_state_type', ['active', 'disabled']]]),
+        tables: new Map([['notifications', new Map([['data', liveColumn('data', 'character varying', { maxLength: 255 })]])]]),
+      },
+    )
+    const plan = planSchemaAlignment(desired, live)
+
+    expect(plan.actions.map(a => a.kind).sort()).toEqual(['add-enum-value', 'widen-column'])
+    expect(plan.actions.filter(a => ENUM_ALIGN_KINDS.includes(a.kind)).map(a => a.sql))
+      .toEqual(['ALTER TYPE "workflows_state_type" ADD VALUE IF NOT EXISTS \'removed\''])
   })
 
   /**

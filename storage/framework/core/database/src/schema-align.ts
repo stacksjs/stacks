@@ -124,6 +124,18 @@ export interface LiveAlignSchema {
 
 export type AlignActionKind = 'create-enum-type' | 'add-enum-value' | 'add-column' | 'widen-column' | 'rename-index' | 'create-index' | 'add-foreign-key' | 'relax-nullability' | 'drop-polymorphic-foreign-key' | 'drop-conflicting-foreign-key'
 
+/**
+ * The repairs `migrate` makes by itself: an enum label the model declares and
+ * the database lacks.
+ *
+ * Nothing else in the plan is this clear-cut. A label only adds a value the
+ * column may hold, so it cannot lose data, and without it every write of that
+ * value fails, and so does every query that compares against it. The commonest
+ * way to get here is a migration edited after it ran: `migrate` keys on file
+ * names, so the edit never reaches a database that already ran the file.
+ */
+export const ENUM_ALIGN_KINDS: readonly AlignActionKind[] = ['create-enum-type', 'add-enum-value']
+
 export interface AlignAction {
   kind: AlignActionKind
   table: string
@@ -937,6 +949,12 @@ export async function alignSchema(options: {
   widenIntegers?: boolean
   relaxConstraints?: boolean
   dialect?: string
+  /**
+   * Plan and apply only these kinds of repair; everything else stays a report.
+   * `migrate` uses it to add enum labels on every run (see
+   * `ENUM_ALIGN_KINDS`) without taking on the rest of the plan.
+   */
+  only?: readonly AlignActionKind[]
   /** Read from, and write to, a database other than the configured one. */
   run?: AlignSqlRunner
 } = {}): Promise<AlignResult> {
@@ -978,6 +996,8 @@ export async function alignSchema(options: {
   catch { /* type families are a report nicety; the repairs do not need them */ }
 
   const plan = planSchemaAlignment(desired, live, { widenIntegers: options.widenIntegers, relaxConstraints: options.relaxConstraints, typeSatisfies })
+  if (options.only)
+    plan.actions = plan.actions.filter(action => options.only!.includes(action.kind))
 
   const kept = await evaluateAlignChecks(plan, run)
   plan.actions = kept
