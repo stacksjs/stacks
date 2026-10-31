@@ -39,6 +39,11 @@ export interface DesktopAgentManifest {
 
 export const AGENT_MANIFEST = 'desktop-agent.json'
 export const AGENT_MANIFEST_ENV = 'STACKS_DESKTOP_AGENT_MANIFEST'
+/**
+ * Set for the agent's routes before they load: the app's folder in Application
+ * Support (`desktopAgentPaths().dataDir`), where a route keeps its own database.
+ */
+export const AGENT_DATA_DIR_ENV = 'STACKS_DESKTOP_DATA_DIR'
 
 export interface DesktopAgentPaths {
   /** `~/Library/Application Support/<App>`: survives updates, which replace the bundle wholesale. */
@@ -273,6 +278,7 @@ export async function runDesktopAgentApp(options: RunDesktopAgentAppOptions): Pr
   let agent: DesktopAgent
   try {
     if (manifest.projectRoot && manifest.appRoutes) process.chdir(manifest.projectRoot)
+    process.env[AGENT_DATA_DIR_ENV] = paths.dataDir
     agent = await startDesktopAgent({
       handler: await options.handler(),
       name: manifest.appName,

@@ -6,6 +6,7 @@ import { join } from 'node:path'
 import { hasSessionCookie, isAgentHost, rememberedPort, sessionCookie, startDesktopAgent } from '../src/agent'
 import {
   acquireInstanceLock,
+  AGENT_DATA_DIR_ENV,
   agentHostCommand,
   desktopAgentPaths,
   findAgentManifest,
@@ -265,9 +266,15 @@ describe('the launcher', () => {
     const paths = { dataDir: dir, portFile: join(dir, 'agent.port'), lockFile: join(dir, 'agent.pid'), logFile: join(dir, 'app.log') }
     let command: string[] = []
     let status = 0
+    let dataDirSeen: string | undefined
+    const previousDataDir = process.env[AGENT_DATA_DIR_ENV]
     const code = await runDesktopAgentApp({
       manifest: { appName: 'Browser', bundleId: 'a.b', version: '1.0.0', host: join(dir, 'host'), nativeBundle: join(dir, 'screens.js'), hostArguments: ['--title', 'Browser'], appRoutes: false },
-      handler: async () => () => new Response('ok'),
+      // Routes read the app's folder as they load, for their own databases.
+      handler: async () => {
+        dataDirSeen = process.env[AGENT_DATA_DIR_ENV]
+        return () => new Response('ok')
+      },
       paths,
       logWhenDetached: false,
       // The host's first act, as Craft's is: ask for the session, then call the API with it.
@@ -282,8 +289,11 @@ describe('the launcher', () => {
         return { exited, kill: () => {} }
       },
     })
+    if (previousDataDir === undefined) delete process.env[AGENT_DATA_DIR_ENV]
+    else process.env[AGENT_DATA_DIR_ENV] = previousDataDir
     expect(code).toBe(0)
     expect(status).toBe(200)
+    expect(dataDirSeen).toBe(dir)
     expect(command.slice(0, 2)).toEqual([join(dir, 'host'), '--api-url'])
     expect(command).toContain('--native-bundle')
     expect(existsSync(paths.lockFile)).toBe(false)
