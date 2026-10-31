@@ -132,6 +132,10 @@ function locationRecordingOwnership(): boolean {
   return getNativeMobileBridge()?.capabilities.locationRecordingOwnership === true && craftLocation.supportsRecordingOwnership?.() === true
 }
 
+function locationRecordingPowerMode(): boolean {
+  return locationRecordingOwnership() && getNativeMobileBridge()?.capabilities.locationRecordingPowerMode === true && craftLocation.supportsRecordingPowerMode?.() === true
+}
+
 function heartRateRecordingOwnership(): boolean {
   return getNativeMobileBridge()?.capabilities.heartRateRecordingOwnership === true && craftHeartRate.supportsRecordingOwnership?.() === true
 }
@@ -175,6 +179,12 @@ function recordingCall<T>(options: { expectedId?: string } | undefined, supporte
 export const location: LocationApi = {
   supportsRecordingOwnership: locationRecordingOwnership,
   supportsRecordingIntentIdentity: locationRecordingIntentIdentity,
+  supportsRecordingPowerMode: locationRecordingPowerMode,
+  setRecordingPowerMode: options => afterBridge(() => {
+    if (!locationRecordingPowerMode())
+      throw Object.assign(new Error('This host cannot change the recording power mode'), { code: 'RECORDING_POWER_MODE_UNSUPPORTED' })
+    return recordingCall(options, locationRecordingOwnership, () => craftLocation.setRecordingPowerMode(options))
+  }),
   acknowledgeRecording: options => recordingCall({ expectedId: options?.expectedId }, locationRecordingOwnership, () => craftLocation.acknowledgeRecording(options)),
   getCurrentPosition: options => afterBridge(() => craftLocation.getCurrentPosition(options)),
   watchPosition: (callback, options) => craftLocation.watchPosition(callback, options),

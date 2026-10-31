@@ -9,7 +9,7 @@
  * the fixes at the end can do the careful arithmetic (smoothed climb, moving
  * time) once.
  */
-import type { HeartRateRecordingApi, HeartRateSample, Location, LocationApi, LocationRecordingOptions, LocationRecordingState } from './types'
+import type { HeartRateRecordingApi, HeartRateSample, Location, LocationApi, LocationPowerMode, LocationRecordingOptions, LocationRecordingState } from './types'
 
 /** A fix as Craft records it. */
 export interface RouteFix extends Location {
@@ -292,6 +292,13 @@ export interface RouteRecorder {
   attach: (options: { expectedId: string, expectedHeartRateId?: string }) => Promise<LocationRecordingState | null>
   pause: () => Promise<void>
   resume: () => Promise<void>
+  /**
+   * Changes how hard the running recording works the GPS, for example to
+   * `'saver'` while the Big Timer is up. Resolves true once applied, false
+   * where it cannot be: nothing recording yet, a host without power modes, or
+   * the recording just ended. Calls run in order with pause, resume and stop.
+   */
+  setPowerMode: (powerMode: LocationPowerMode) => Promise<boolean>
   /** Ends the recording and hands back every fix it made, each with the heart rate near it when one was recorded. */
   stop: () => Promise<RouteFix[]>
   /** Reads the recording now. */
@@ -529,6 +536,20 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
         await location.resumeRecording({ expectedId: ownedId() })
         await strapDo((api, expectedId) => api.resumeRecording({ expectedId }))
         poll()
+      })
+    },
+    setPowerMode(powerMode) {
+      return serialize(async () => {
+        if (disposed || ending || !recordingId || location.supportsRecordingPowerMode?.() !== true) return false
+        try {
+          await location.setRecordingPowerMode({ expectedId: recordingId, powerMode })
+          return true
+        }
+        catch (error) {
+          const code = (error as { code?: string } | null)?.code
+          if (code === 'NO_ACTIVE_RECORDING' || code === 'RECORDING_POWER_MODE_UNSUPPORTED') return false
+          throw error
+        }
       })
     },
     stop() {

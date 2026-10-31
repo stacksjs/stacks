@@ -14,6 +14,7 @@ export interface CraftMobileCapabilities {
   backgroundLocation?: boolean
   locationRecordingOwnership?: boolean
   locationRecordingIntentIdentity?: boolean
+  locationRecordingPowerMode?: boolean
   heartRateRecordingIntentIdentity?: boolean
   heartRateRecordingOwnership?: boolean
   healthKit?: boolean
@@ -203,6 +204,10 @@ export interface LocationRecordingState {
   paused: boolean
   startedAt: number | null
   sampleCount?: number
+  /** The mode asked for (absent on a host that predates power modes). */
+  powerMode?: LocationPowerMode
+  /** The mode in use now; `'default'` once the recording has stopped. */
+  effectivePowerMode?: LocationEffectivePowerMode
 }
 
 /** An identity already registered durably by the caller before native start. */
@@ -216,9 +221,15 @@ export interface RecordingStartOptions {
  * 5 m apart instead of every second, and iOS relaxes to ten-metre accuracy
  * while the pace holds steady. 5 m keeps fixes under ROUTE_GAP_S apart at any
  * speed that counts as moving, so distance and moving time come out as at
- * full rate.
+ * full rate. `'auto'` (Craft 0.0.403+, check `supportsRecordingPowerMode()`)
+ * saves power only while the device wants it: Low Power Mode, Battery Saver, or
+ * under 20% and not charging; read what it resolved to from
+ * `effectivePowerMode` on the recording's state.
  */
-export type LocationPowerMode = 'default' | 'saver'
+export type LocationPowerMode = 'default' | 'saver' | 'auto'
+
+/** What a recording is using right now; `'auto'` resolves to one of these. */
+export type LocationEffectivePowerMode = 'default' | 'saver'
 
 export interface LocationRecordingOptions extends LocationOptions, RecordingStartOptions {
   powerMode?: LocationPowerMode
@@ -331,10 +342,24 @@ export interface LocationRecordingReadOptions extends RecordingOwnershipOptions 
   since?: number
 }
 
+/** Change the power mode of the recording that is running, fenced to its ID. */
+export interface LocationRecordingPowerModeOptions extends RecordingOwnershipOptions {
+  powerMode: LocationPowerMode
+}
+
 export interface LocationApi {
   /** Whether this host checks recording IDs atomically before reads and mutations. */
   supportsRecordingOwnership: () => boolean
   supportsRecordingIntentIdentity: () => boolean
+  /** `setRecordingPowerMode()` and `powerMode: 'auto'` work on this host (Craft 0.0.403+). */
+  supportsRecordingPowerMode: () => boolean
+  /**
+   * Change how hard the running recording works the GPS, for example to
+   * `'saver'` while the screen shows only a countdown and back afterwards.
+   * Rejects with `RECORDING_POWER_MODE_UNSUPPORTED` where
+   * `supportsRecordingPowerMode()` is false.
+   */
+  setRecordingPowerMode: (options: LocationRecordingPowerModeOptions) => Promise<LocationRecordingState>
   /** Release a completed owned native copy only after the caller's durable checkpoint. */
   acknowledgeRecording: (options: RecordingOwnershipOptions) => Promise<boolean>
   getCurrentPosition: (options?: LocationOptions) => Promise<Location>

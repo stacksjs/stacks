@@ -150,4 +150,35 @@ describe('registered identities through the installed SDK facade', () => {
     for (const api of [location, heartRate])
       await expect(api.startRecording({ recordingId: 'saved-A-id' })).rejects.toMatchObject({ code: 'RECORDING_CONFLICT' })
   })
+
+  it('forwards setRecordingPowerMode only where the host advertises it and fences it to the recording', async () => {
+    const calls: unknown[] = []
+    const install = (advertised: boolean) => Object.defineProperty(globalThis, 'window', {
+      configurable: true,
+      value: {
+        craft: {
+          platform: 'ios',
+          capabilities: { locationRecordingOwnership: true, locationRecordingPowerMode: advertised },
+          location: {
+            pauseRecording: async () => ({}),
+            resumeRecording: async () => ({}),
+            stopRecording: async () => ({}),
+            readRecording: async () => [],
+            getRecordingState: async () => ({}),
+            acknowledgeRecording: async () => true,
+            setRecordingPowerMode: async (options: unknown) => { calls.push(options)
+              return { id: 'athlete-a', active: true, paused: false, startedAt: 1, powerMode: 'saver', effectivePowerMode: 'saver' } },
+          },
+        },
+      },
+    })
+    install(false)
+    expect(location.supportsRecordingPowerMode()).toBe(false)
+    await expect(location.setRecordingPowerMode({ expectedId: 'athlete-a', powerMode: 'saver' })).rejects.toMatchObject({ code: 'RECORDING_POWER_MODE_UNSUPPORTED' })
+    install(true)
+    expect(location.supportsRecordingPowerMode()).toBe(true)
+    await expect(location.setRecordingPowerMode({ expectedId: ' ', powerMode: 'saver' })).rejects.toMatchObject({ code: 'RECORDING_CONFLICT' })
+    expect(await location.setRecordingPowerMode({ expectedId: 'athlete-a', powerMode: 'saver' })).toMatchObject({ effectivePowerMode: 'saver' })
+    expect(calls).toEqual([{ expectedId: 'athlete-a', powerMode: 'saver' }])
+  })
 })

@@ -146,6 +146,42 @@ describe('recorder lifecycle', () => {
     expect(started).toEqual([{ enableHighAccuracy: true }, { enableHighAccuracy: true, powerMode: 'saver' }])
   })
 
+  it('changes the power mode of the running recording, and says false where it cannot', async () => {
+    const set: Array<Record<string, unknown>> = []
+    let supported = true
+    let failWith: string | null = null
+    const api = {
+      supportsRecordingOwnership: () => true,
+      supportsRecordingPowerMode: () => supported,
+      startRecording: async () => ({ id: 'r1', active: true, paused: false, startedAt: 1 }),
+      setRecordingPowerMode: async (options: Record<string, unknown>) => {
+        if (failWith) throw Object.assign(new Error(failWith), { code: failWith })
+        set.push(options)
+        return { id: 'r1', active: true, paused: false, startedAt: 1, powerMode: options.powerMode, effectivePowerMode: 'saver' }
+      },
+      readRecording: async () => [],
+      stopRecording: async () => ({ id: 'r1', locations: [] }),
+    } as unknown as LocationApi
+    const recorder = createRouteRecorder({ location: api, intervalMs: 60_000 })
+    expect(await recorder.setPowerMode('saver')).toBe(false)
+    await recorder.start()
+    expect(await recorder.setPowerMode('saver')).toBe(true)
+    expect(await recorder.setPowerMode('auto')).toBe(true)
+    expect(set).toEqual([{ expectedId: 'r1', powerMode: 'saver' }, { expectedId: 'r1', powerMode: 'auto' }])
+    failWith = 'NO_ACTIVE_RECORDING'
+    expect(await recorder.setPowerMode('default')).toBe(false)
+    failWith = 'RECORDING_CONFLICT'
+    await expect(recorder.setPowerMode('default')).rejects.toMatchObject({ code: 'RECORDING_CONFLICT' })
+    failWith = null
+    supported = false
+    expect(await recorder.setPowerMode('default')).toBe(false)
+    expect(set).toHaveLength(2)
+    await recorder.stop()
+    supported = true
+    expect(await recorder.setPowerMode('default')).toBe(false)
+    recorder.dispose()
+  })
+
   it('coalesces reads, ignores a late poll after stop, and detaches without stopping native GPS', async () => {
     let release!: (fixes: RouteFix[]) => void
     let reads = 0
