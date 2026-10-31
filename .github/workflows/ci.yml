@@ -642,6 +642,9 @@ jobs:
       - name: Scaffold an app and typecheck it
         run: bun .github/scripts/scaffold-smoke.ts
 
+      - name: Scaffold a desktop app into a cloned repository and typecheck it
+        run: bun .github/scripts/scaffold-smoke.ts --desktop
+
   deployment-target:
     if: >-
       github.event_name == 'workflow_dispatch' ||

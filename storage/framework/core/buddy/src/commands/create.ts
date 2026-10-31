@@ -15,9 +15,11 @@ import { applyAppSiteTemplate } from '../scaffold-site'
 import { adoptPackagedDefaults, applyAppPackageScripts, applyPackageAppTsconfig, pruneFrameworkOnlyFiles, rewriteCoreContentPaths, stripFrameworkManifestCredits } from '../scaffold-package-app'
 import { fetchPublishedVersions } from '../registry'
 import { ensureAuthRoutesEnv } from '../minimal-routes'
+import { scaffoldDesktopApp } from '../scaffold-desktop'
 
 interface NewOptions extends CreateOptions {
   native?: boolean
+  desktop?: boolean
   adopt?: boolean
   withCore?: boolean
   vendorDefaults?: boolean
@@ -60,6 +62,7 @@ export function create(buddy: CLI): void {
     .option('-P, --project [project]', descriptions.project, { default: false })
     .option('-m, --minimal', descriptions.minimal, { default: false })
     .option('--native', 'Create a minimal offline Craft desktop app', { default: false })
+    .option('--desktop', 'Also make it a native Mac app: stx screens drawn by AppKit, with the API running inside the app (config/desktop.ts, macos.agent)', { default: false })
     .option('--adopt', 'Integrate an existing native app without replacing its source (requires --native)', { default: false })
     .option('--with-core', descriptions.withCore, { default: false })
     .option('--vendor-defaults', descriptions.vendorDefaults, { default: false })
@@ -75,6 +78,8 @@ export function create(buddy: CLI): void {
 
       if (options.adopt && !options.native)
         throw new Error('--adopt requires --native')
+      if (options.desktop && options.native)
+        throw new Error('--desktop makes a Stacks app with a native Mac app; --native makes a standalone Craft app. Choose one.')
       if (options.native) {
         const { scaffoldNativeProject } = await import('../native-project')
         const { version } = await import('../../package.json')
@@ -145,6 +150,13 @@ export function create(buddy: CLI): void {
   if (options.minimal || (!options.withCore && !options.vendorDefaults))
     await regenerateAutoImports(path, options)
 
+  // Last, so nothing above (the --minimal strip, the package rewrite of
+  // unvendoring) can take the desktop files or scripts back out.
+  if (options.desktop) {
+    const written = scaffoldDesktopApp(path, appIdentity(path))
+    log.success(`Added the Mac app (${written.join(', ')}). Run ${cyan('bun run dev:desktop')} to open it.`)
+  }
+
       if (startTime) {
         const time = performance.now() - startTime
         log.success(dim(`[${time.toFixed(2)}ms] Completed`))
@@ -171,13 +183,14 @@ export function create(buddy: CLI): void {
  * Anything else still hard-fails — overwriting a real project is never what
  * `buddy new` was asked to do.
  */
-function isFolderCheck(path: string) {
+export function scaffoldTargetOccupants(path: string): string[] {
   if (!isFolder(path))
-    return
+    return []
+  return readdirSync(path).filter(entry => entry !== '.git')
+}
 
-  const occupied = readdirSync(path).filter(entry => entry !== '.git')
-
-  if (occupied.length === 0)
+function isFolderCheck(path: string) {
+  if (scaffoldTargetOccupants(path).length === 0)
     return
 
   console.error(`Path ${path} already exists`)

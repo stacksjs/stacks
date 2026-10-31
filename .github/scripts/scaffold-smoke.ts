@@ -23,10 +23,15 @@
  * wraps it in a subprocess whose failure surfaces as a stack through the CLI's
  * error handler, and the point of this job is to print the type errors.
  *
- * Run: `bun .github/scripts/scaffold-smoke.ts [--keep]`
+ * `--desktop` scaffolds `buddy new <app> --desktop --minimal` instead, into a
+ * directory that already holds a `.git` (a repository cloned before
+ * scaffolding, the usual way to start), and also checks the Mac app's files
+ * are there: `config/desktop.ts`, its screen and its agent routes.
+ *
+ * Run: `bun .github/scripts/scaffold-smoke.ts [--keep] [--desktop]`
  */
 
-import { existsSync } from 'node:fs'
+import { existsSync, mkdirSync } from 'node:fs'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -35,12 +40,22 @@ import process from 'node:process'
 async function main(): Promise<void> {
   const repoRoot = process.cwd()
   const keep = process.argv.includes('--keep')
+  const desktop = process.argv.includes('--desktop')
   const workspace = await mkdtemp(join(tmpdir(), 'stacks-scaffold-smoke-'))
   const appDir = join(workspace, 'smoke-app')
 
-  console.log(`Scaffolding into ${appDir}`)
+  if (desktop) {
+    mkdirSync(appDir, { recursive: true })
+    const init = Bun.spawnSync(['git', 'init', '--quiet', appDir], { stdout: 'inherit', stderr: 'inherit' })
+    if (init.exitCode !== 0) {
+      console.error('git init failed, so the .git-only target could not be prepared.')
+      process.exit(1)
+    }
+  }
 
-  const scaffold = Bun.spawn(['./buddy', 'new', appDir, '--name', 'smoke-app'], {
+  console.log(`Scaffolding into ${appDir}${desktop ? ' (--desktop --minimal, into a directory holding only .git)' : ''}`)
+
+  const scaffold = Bun.spawn(['./buddy', 'new', appDir, '--name', 'smoke-app', ...(desktop ? ['--desktop', '--minimal'] : [])], {
     cwd: repoRoot,
     stdout: 'inherit',
     stderr: 'inherit',
@@ -71,6 +86,17 @@ async function main(): Promise<void> {
 
   if (scaffoldCode !== 0)
     console.log(`\nNote: \`buddy new\` exited ${scaffoldCode}, but wrote an app — typechecking it anyway.`)
+
+  if (desktop) {
+    const missing = ['config/desktop.ts', 'resources/native/Main.stx', 'app/Desktop/Agent.ts', '.git'].filter(entry => !existsSync(join(appDir, entry)))
+    const scripts = (await Bun.file(join(appDir, 'package.json')).json()).scripts ?? {}
+    if (!scripts['dev:desktop'] || !scripts['build:desktop']) missing.push('package.json dev:desktop/build:desktop scripts')
+    if (missing.length) {
+      console.error(`\n\`buddy new --desktop\` did not write: ${missing.join(', ')}`)
+      process.exit(1)
+    }
+    console.log('✓ the desktop files are there, and the .git that was already in the directory survived')
+  }
 
   const manifest = await Bun.file(join(appDir, 'package.json')).json()
   const pinned = manifest.dependencies?.stacks ?? manifest.devDependencies?.stacks ?? '(none)'
