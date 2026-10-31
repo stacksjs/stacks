@@ -29,4 +29,14 @@ export default {
    * for.
    */
   minify: false,
+
+  /*
+   * Classes that only exist at runtime, so no file names them: an icon chosen
+   * by a value in the database (`:class="library.icon"`), a colour built from a
+   * string. The scanner reads class attributes, string literals in code and an
+   * `i-...` icon named by any component prop (`<EmptyState icon="i-...">`), but
+   * it cannot read a value it never sees. List those here and they are always
+   * generated. Names only: patterns are not supported.
+   */
+  // safelist: ['i-hugeicons-note-01', 'i-hugeicons-folder-02'],
 } satisfies CssOptions
