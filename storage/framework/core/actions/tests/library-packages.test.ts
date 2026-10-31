@@ -266,6 +266,13 @@ describe('libraryManifest', () => {
     expect(manifest.exports['./style.css']).toBe('./dist/bundle.css')
   })
 
+  it('links the repository itself, since the package is built in a gitignored directory', () => {
+    const manifest = libraryManifest({ ...base, kind: 'functions' } as never, { repository: 'acme/acme' }, '1.0.0', [])
+
+    expect(manifest.homepage).toBe('https://github.com/acme/acme#readme')
+    expect(manifest.repository).toEqual({ type: 'git', url: 'git+https://github.com/acme/acme.git' })
+  })
+
   it('marks a private package private and gives it no publish config', () => {
     const manifest = libraryManifest({ ...base, kind: 'functions', private: true } as never, {}, '1.0.0', [])
 

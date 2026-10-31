@@ -243,11 +243,22 @@ export async function transpilePackage(options: {
     // that are later fed to `import()` (e.g. buddy's lazy-command map:
     // `{ path: './commands/deploy.ts' }` → `import(cmd.path)`), which is why
     // we match any `./`-or-`../`-rooted quoted string, not just import forms.
-    js = js.replace(/(['"])(\.\.?\/[^'"]+?)\.tsx?\1/g, '$1$2.js$1')
+    js = rewriteRelativeTsSpecifiers(js)
     const out = p.resolve(distDir, f.replace(/\.ts$/, '.js'))
     await mkdir(p.dirname(out), { recursive: true })
     await Bun.write(out, js)
   }
+}
+
+/**
+ * Relative `.ts`/`.tsx` paths in quotes become `.js`, the file the transpiled
+ * package actually holds. A declaration path (`./dist/index.d.ts`, as a
+ * library manifest writes it) names the `.d.ts` file itself and is left as is:
+ * rewritten, a published package's `exports` pointed its types at a file that
+ * does not exist.
+ */
+export function rewriteRelativeTsSpecifiers(js: string): string {
+  return js.replace(/(['"])(\.\.?\/[^'"]+?)(?<!\.d)\.tsx?\1/g, '$1$2.js$1')
 }
 
 export function frameworkExternal(extras: string[] = []): string[] {

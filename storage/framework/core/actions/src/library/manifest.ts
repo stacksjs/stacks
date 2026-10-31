@@ -11,7 +11,7 @@ export interface LibraryManifest {
   license?: string
   private?: true
   homepage?: string
-  repository?: { type: string, url: string, directory: string }
+  repository?: { type: string, url: string }
   bugs?: { url: string }
   keywords?: string[]
   exports: Record<string, unknown>
@@ -39,7 +39,6 @@ export function libraryManifest(
 ): LibraryManifest {
   const cfg = config ?? {}
   const repository = cfg.repository
-  const directory = `storage/framework/libs/packages/${pkg.slug}`
 
   const manifest: LibraryManifest = {
     name: pkg.name,
@@ -49,8 +48,9 @@ export function libraryManifest(
     author: cfg.author,
     contributors: cfg.contributors,
     license: pkg.license ?? cfg.license,
-    homepage: repository ? `https://github.com/${repository}/tree/main/${directory}#readme` : undefined,
-    repository: repository ? { type: 'git', url: `git+https://github.com/${repository}.git`, directory } : undefined,
+    // The package is generated into a gitignored directory, so its links name the repository itself.
+    homepage: repository ? `https://github.com/${repository}#readme` : undefined,
+    repository: repository ? { type: 'git', url: `git+https://github.com/${repository}.git` } : undefined,
     bugs: repository ? { url: `https://github.com/${repository}/issues` } : undefined,
     keywords: pkg.keywords.length ? pkg.keywords : undefined,
     // A `web-components` package publishes the single self-registering bundle:
