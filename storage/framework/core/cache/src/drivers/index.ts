@@ -639,7 +639,10 @@ export interface CacheSettings {
   driver?: 'memory' | 'redis' | 'singlestore' | 'sqlite'
   prefix?: string
   ttl?: number
+  maxKeys?: number
+  useClones?: boolean
   drivers?: {
+    memory?: MemoryOptions
     redis?: RedisOptions
     singlestore?: SingleStoreCacheOptions
     sqlite?: SqliteCacheOptions
@@ -677,10 +680,10 @@ export function redisNamespacesInside(cachePrefix: string | undefined, settings:
 let warnedAboutNamespaces = false
 
 /**
- * The driver `config/cache.ts` selects, built from its options. Memory is
- * the `memory` instance itself, so an app on the default changes nothing;
- * the others get the configured `prefix` and `ttl` as their key prefix and
- * default TTL. `namespaces` is where the other Redis prefixes are read from,
+ * The driver `config/cache.ts` selects, built from its options. Every driver
+ * gets the configured `prefix` and `ttl` as its key prefix and default TTL;
+ * memory also takes `maxKeys`, `useClones` and `drivers.memory`. Config that
+ * sets none of those for memory is the shared `memory` instance itself. `namespaces` is where the other Redis prefixes are read from,
  * the app's config unless given.
  */
 export function cacheFromConfig(
@@ -702,6 +705,21 @@ export function cacheFromConfig(
     }
     case 'singlestore': return createSingleStoreCache({ ...settings.drivers?.singlestore, ...shared })
     case 'sqlite': return createSqliteCache({ ...settings.drivers?.sqlite, ...shared })
+    case 'memory': {
+      // `ttl`, `prefix`, `maxKeys`, `useClones` and `drivers.memory` mean the same on every driver
+      // (stacksjs/stacks#3072). Config that sets none of them keeps the shared instance, so code that
+      // reads `memory` directly and an app on a bare `{ driver: 'memory' }` still see one store.
+      const own = settings.drivers?.memory
+      if (settings.ttl === undefined && settings.prefix === undefined && settings.maxKeys === undefined && settings.useClones === undefined && !own)
+        return memory
+      return createMemoryCache({
+        ...own,
+        stdTTL: settings.ttl ?? own?.stdTTL,
+        prefix: settings.prefix ?? own?.prefix,
+        maxKeys: settings.maxKeys ?? own?.maxKeys,
+        useClones: settings.useClones ?? own?.useClones,
+      })
+    }
     default: return memory
   }
 }

@@ -117,10 +117,13 @@ describe('Cache Factory - default instances', () => {
     expect(typeof memory.set).toBe('function')
   })
 
-  test('cache is the memory driver while config/cache.ts selects memory', async () => {
-    // The default config selects memory: the default instance answers for it.
+  test('cache is a memory driver built from config/cache.ts while it selects memory', async () => {
+    // The shipped config sets ttl, prefix and maxKeys, and memory honours them like every other driver
+    // (stacksjs/stacks#3072), so the default instance is its own store, not the shared `memory` one.
     await cache.set('shared-key', 'from-cache')
-    expect(await memory.get('shared-key')).toBe('from-cache')
+    expect(await cache.get('shared-key')).toBe('from-cache')
+    expect(await memory.get('shared-key')).toBeUndefined()
+    expect(await cache.getTtl('shared-key')).toBeGreaterThan(Date.now())
   })
 
   test('default memory instance works for set/get', async () => {
