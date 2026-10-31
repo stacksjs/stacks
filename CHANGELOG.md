@@ -1,5 +1,38 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.393...v0.75.394)
+
+## ✨ Features
+
+- **buddy**: buddy new --desktop scaffolds a Mac app with its API inside ([3df1031](https://github.com/stacksjs/stacks/commit/3df1031)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **build**: build:desktop and dev:desktop for macos.agent apps ([5725573](https://github.com/stacksjs/stacks/commit/5725573)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **desktop**: macos.agent, webkit, defaultBrowser, permissions and dockMenu ([97cf22f](https://github.com/stacksjs/stacks/commit/97cf22f)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **desktop**: a loopback agent and launcher for apps that run their own API ([3fb6c5d](https://github.com/stacksjs/stacks/commit/3fb6c5d)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **router**: provideActions hands the router action modules a compiled binary already carries ([84f9d9a](https://github.com/stacksjs/stacks/commit/84f9d9a)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dev**: --detach lets the dev servers outlive the shell that started them ([dcd2d08](https://github.com/stacksjs/stacks/commit/dcd2d08)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **auth**: let an app brand the auth card with an icon, an eyebrow or its own mark ([6d83ef7](https://github.com/stacksjs/stacks/commit/6d83ef7)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_ ([#3086](https://github.com/stacksjs/stacks/issues/3086))
+
+## 🐛 Bug Fixes
+
+- **enums**: link BuildDesktopMacos to its source like every other action ([ee37986](https://github.com/stacksjs/stacks/commit/ee37986)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **ai**: type the completion response's status, which broke the framework typecheck and so every release ([60dda7e](https://github.com/stacksjs/stacks/commit/60dda7e)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **cache**: apply ttl, prefix, maxKeys and useClones from config/cache.ts to the memory driver ([bcfe936](https://github.com/stacksjs/stacks/commit/bcfe936)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_ ([#3072](https://github.com/stacksjs/stacks/issues/3072))
+
+## 📝 Documentation
+
+- **native**: refresh the catalog for the desktop agent exports ([675fe88](https://github.com/stacksjs/stacks/commit/675fe88)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **desktop**: apps that run their own API, and the keys a browser needs ([f7f94cf](https://github.com/stacksjs/stacks/commit/f7f94cf)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **config**: say what css safelist and layoutsDir really do ([0a5287d](https://github.com/stacksjs/stacks/commit/0a5287d)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **cloud**: read tenants and the attached owner from private sources, as the deploy now does ([a465ad2](https://github.com/stacksjs/stacks/commit/a465ad2)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_ ([#3083](https://github.com/stacksjs/stacks/issues/3083))
+
+## 🔧 Chores
+
+- **deps**: raise the stx family to 0.2.769 and the ts-css floor to 0.3.20 ([ae28aff](https://github.com/stacksjs/stacks/commit/ae28aff)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.391...v0.75.393)
 
 ## ✨ Features
