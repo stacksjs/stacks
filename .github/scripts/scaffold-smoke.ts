@@ -15,9 +15,17 @@
  * `security.api` in `config/security.ts` (stacksjs/stacks#2375), which this
  * script caught within minutes of the field landing.
  *
- * A red run here is not a false alarm on main. It says `buddy new` produces a
- * broken app right now, which is true until the release publishes. The fix is
- * to publish, not to relax the check.
+ * A red run here is not a false alarm on main when the vendored version IS
+ * published: then it says `buddy new` produces a broken app right now.
+ *
+ * In the publish window (the vendored version is not on npm yet) the pinned
+ * framework is by definition the PREVIOUS release, so the app can never agree
+ * with a template that uses something this release adds, and the release that
+ * would publish it waits on this job being green: the check could only ever
+ * fail. Then the app is typechecked against THIS commit's `@stacksjs/types`
+ * (built and linked into the app's node_modules, the way the attached-site
+ * deploy links the framework it is about to publish), which still catches the
+ * template disagreeing with the framework it ships with.
  *
  * Deliberately runs `tsc` directly rather than `./buddy typecheck`: the action
  * wraps it in a subprocess whose failure surfaces as a stack through the CLI's
@@ -109,6 +117,21 @@ async function main(): Promise<void> {
 
   console.log(`\nScaffold pinned stacks@${pinned}; this checkout's framework is ${vendored}.`)
 
+  const packument = await fetch('https://registry.npmjs.org/stacks').then(r => r.ok ? r.json() : null).catch(() => null)
+  const publishWindow = Boolean(packument && vendored && !(vendored in (packument.versions ?? {})))
+
+  if (publishWindow) {
+    console.log(`stacks@${vendored} is not on npm yet: typechecking against this commit's @stacksjs/types instead of the previous release's.`)
+    const build = Bun.spawnSync(['bun', 'build.ts'], { cwd: join(repoRoot, 'storage/framework/core/types'), stdout: 'inherit', stderr: 'inherit' })
+    const link = build.exitCode === 0
+      ? Bun.spawnSync(['./buddy', 'link:core', 'types', '--path', repoRoot, '--cwd', appDir], { cwd: repoRoot, stdout: 'inherit', stderr: 'inherit' })
+      : build
+    if (link.exitCode !== 0) {
+      console.error('Could not build and link this commit\'s @stacksjs/types into the scaffolded app, so it was not typechecked.')
+      process.exit(1)
+    }
+  }
+
   if (!existsSync(join(appDir, 'tsconfig.json'))) {
     console.error('The scaffolded app has no tsconfig.json to check.')
     process.exit(1)
@@ -130,7 +153,9 @@ async function main(): Promise<void> {
     await rm(workspace, { recursive: true, force: true })
 
   if (code === 0) {
-    console.log('✓ the scaffolded app typechecks against the framework version it pinned')
+    console.log(publishWindow
+      ? '✓ the scaffolded app typechecks against this commit\'s @stacksjs/types (the release is not published yet)'
+      : '✓ the scaffolded app typechecks against the framework version it pinned')
     return
   }
 
@@ -170,12 +195,10 @@ async function main(): Promise<void> {
    * finishes, and this file argues above that relaxing it would be wrong. But
    * red should say which of the two failures it is.
    */
-  const packument = await fetch('https://registry.npmjs.org/stacks').then(r => r.ok ? r.json() : null).catch(() => null)
-  if (packument && vendored && !(vendored in (packument.versions ?? {}))) {
+  if (publishWindow) {
     console.error(
-      `\nstacks@${vendored} is not on npm yet, so nothing could install it. This is the window `
-      + `between the version bump landing and the release publishing; it closes on its own. `
-      + `Re-run once \`gh run list --workflow=release.yml\` shows the release succeeded.\n`,
+      `\nstacks@${vendored} is not on npm yet, so this app was typechecked against the types built from this commit, `
+      + `and the errors above are real disagreements between the template and the framework it ships with.\n`,
     )
   }
 
