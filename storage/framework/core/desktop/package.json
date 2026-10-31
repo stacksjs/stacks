@@ -75,6 +75,22 @@
   "dependencies": {
     "craft-native": ">=0.0.341"
   },
+  "peerDependencies": {
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/router": "workspace:*",
+    "@stacksjs/server": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@stacksjs/config": {
+      "optional": true
+    },
+    "@stacksjs/router": {
+      "optional": true
+    },
+    "@stacksjs/server": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@stacksjs/build": "workspace:*",
     "better-dx": "^0.2.24",

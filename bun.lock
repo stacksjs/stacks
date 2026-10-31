@@ -668,6 +668,16 @@
         "@stacksjs/server": "workspace:*",
         "better-dx": "^0.2.24",
       },
+      "peerDependencies": {
+        "@stacksjs/config": "workspace:*",
+        "@stacksjs/router": "workspace:*",
+        "@stacksjs/server": "workspace:*",
+      },
+      "optionalPeers": [
+        "@stacksjs/config",
+        "@stacksjs/router",
+        "@stacksjs/server",
+      ],
     },
     "storage/framework/core/development": {
       "name": "@stacksjs/development",
