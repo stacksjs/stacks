@@ -86,6 +86,19 @@ buddy dev:desktop
 buddy build:desktop
 ```
 
+### A native Mac app with its own API
+
+A local-first app (a browser, an inbox, a notes app) can run its API inside the app instead of on a server. Its screens are stx drawn by Craft's AppKit host, with no web view, and its routes run on 127.0.0.1 in the same app:
+
+```bash
+buddy new my-browser --desktop      # add --minimal for the bare skeleton
+cd my-browser
+bun run dev:desktop                 # build the screens, start the agent, open the window
+bun run build:desktop               # a signed .app in storage/framework/desktop/macos
+```
+
+That writes `config/desktop.ts` with `macos.agent: true`, one screen in `resources/native/Main.stx`, and the agent's own routes in `app/Desktop/Agent.ts`. The agent also serves everything in `routes/`, and only the app's own window can call it: it hands that window an HttpOnly session cookie at `/native/session`, new on every launch, and refuses any request without it or with a Host header that is not its own. `macos.webkit`, `macos.defaultBrowser`, `macos.permissions` and `macos.dockMenu` cover what a browser needs; see the `stacks-desktop` skill for each.
+
 ### Desktop Configuration
 
 ```typescript

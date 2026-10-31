@@ -293,9 +293,53 @@ export default {
   components of last resort (stx config `nativePrimitives`), so `resources/views` pages written with them are also native
   screens. Menus, windows and the Keychain are the screen's `craft.desktop` and `craft.secureStorage`.
 
+### An app that runs its own API (`macos.agent`)
+
+A local-first app (a browser, an inbox, anything whose data is this Mac) runs the project's routes inside the
+app instead of talking to a hosted server. `buddy new <name> --desktop` scaffolds one (combinable with
+`--minimal`, and happy to scaffold into a directory that holds only `.git`):
+
+```ts
+export default {
+  macos: {
+    appName: 'Browser',
+    bundleId: 'com.example.browser',
+    agent: true,                     // or { port, entry, appRoutes, staticDir }
+    nativeScreens: ['Main'],
+    webkit: true,                    // link WebKit into the host, for <WebView>
+    defaultBrowser: true,            // http/https URL types, HTML/XHTML/webarchive/PDF document types
+    permissions: { camera: true, microphone: 'For calls in web pages.', location: true, downloads: true, printing: true },
+    dockMenu: [{ title: 'New Window', action: 'new-window' }],
+  },
+} satisfies DesktopConfig
+```
+
+- The agent (`@stacksjs/desktop-build` `startDesktopAgent`, `src/agent.ts`) is `Bun.serve` on 127.0.0.1, on the
+  port remembered in `~/Library/Application Support/<App>/agent.port` (any free port when it is taken). The host fetches
+  `GET /native/session` and gets an HttpOnly, SameSite=Strict cookie holding a token minted for this launch; every other
+  request needs that cookie and a Host header of `127.0.0.1:<port>` or `localhost:<port>`, so a DNS-rebinding page
+  cannot call it. `url` is not needed.
+- It serves the app's routes in process: `routes/` as `app/Routes.ts` mounts them, plus the agent's own module
+  (`app/Desktop/Agent.ts` by convention, `agent.entry` otherwise). Routes the agent module adds are not prefixed. A
+  default-exported `(request) => Response` there replaces the router entirely.
+- `buddy dev:desktop` runs the launcher from source in the project (`bun`, no bundle), which boots the routes as
+  `buddy dev:api` does. `buddy build:desktop` compiles the launcher into `<App>.app/Contents/MacOS/<App>`, with the host
+  beside it as `craft-runtime` and `desktop-agent.json` in Resources. A compiled binary cannot import route files off
+  disk (the router refuses), so the build imports the registry's route files, the agent module and every
+  `'Actions/...'` they name statically (`provideActions`); what they import travels inside the app.
+- The launcher (`src/agent-launcher.ts`) holds a single-instance lock (`agent.pid`), logs to
+  `~/Library/Logs/<App>.log` when launched without a terminal, and quits with the window.
+- Entitlements: the Bun executable gets `allow-jit`, `allow-unsigned-executable-memory` and
+  `disable-library-validation`; in the sandbox the agent adds `network.server`, and the host is signed with only
+  `app-sandbox` and `inherit`. `permissions` adds each device entitlement and its `NS*UsageDescription` (an explicit
+  `usageDescriptions` entry wins).
+- `webkit` needs a craft-native whose `buildMacOSNative` takes `webkit`; the build checks Craft's source and fails by
+  name rather than building a host with blank web views. `dockMenu` reaches the host through `craft-app.json`.
+
 ## CLI Commands
 
 ```bash
+buddy new <name> --desktop     # a Stacks app that is also a native Mac app, API inside (macos.agent)
 buddy dev:desktop              # start the desktop development server
 buddy build:desktop            # build the launcher + Craft runtime payload
 buddy desktop:apple:init       # generate the reusable GitHub Actions caller
