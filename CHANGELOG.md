@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.399...v0.75.400)
+
+## ✨ Features
+
+- **desktop**: read the App Store Connect key from APP_STORE_CONNECT_API_KEY so it can live in an encrypted .env.production ([1311ecc](https://github.com/stacksjs/stacks/commit/1311ecc)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **desktop**: tell agent routes where the app keeps its data, and require the Craft that has webkit and trafficLights ([e3e3c97](https://github.com/stacksjs/stacks/commit/e3e3c97)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **database**: migrate adds enum labels the models declare and the database lacks ([d956299](https://github.com/stacksjs/stacks/commit/d956299)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.398...v0.75.399)
 
 ## ✨ Features
