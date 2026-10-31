@@ -54,7 +54,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-css": "^0.3.20",
+    "@stacksjs/ts-css": "^0.3.21",
     "@stacksjs/components": "0.2.776",
     "@stacksjs/config": "workspace:*"
   },
