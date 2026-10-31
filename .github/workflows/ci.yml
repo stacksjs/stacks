@@ -642,6 +642,31 @@ jobs:
       - name: Scaffold an app and typecheck it
         run: bun .github/scripts/scaffold-smoke.ts
 
+  # Its own job, and not one the Releaser waits for: the desktop template uses
+  # config types that reach an app only once a release publishes them, so a
+  # release that adds one would otherwise wait on a check only it can turn
+  # green. Red here between a bump and its publish says what scaffold-smoke
+  # says: `buddy new --desktop` is broken until the publish lands.
+  scaffold-smoke-desktop:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Setup Pantry
+        uses: pantry-pm/pantry/packages/action@7e715cc9aef13458a5113c09977f1f660d8ae182 # v0.11.146
+        with:
+          version: '0.11.146'
+          install: 'false'
+          packages: 'bun.com@${{ env.BUN_VERSION }} git-scm.org curl.se sqlite.org'
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
       - name: Scaffold a desktop app into a cloned repository and typecheck it
         run: bun .github/scripts/scaffold-smoke.ts --desktop
 

@@ -210,6 +210,7 @@ describe('subpath imports', () => {
     const exempt: Record<string, string> = {
       'lint': 'pickier reads files rather than resolving imports, and `bun buddy lint` loads no subpath',
       'scaffold-smoke': 'it typechecks a freshly scaffolded app against the PUBLISHED framework, not this checkout',
+      'scaffold-smoke-desktop': 'the same check as scaffold-smoke, for `buddy new --desktop`',
       'deployment-target': 'it installs nothing and imports no framework package',
       // Not because anything builds on the runner: the Hetzner deploy ships
       // source, and the box resolves each subpath through tsconfig `paths` -
