@@ -199,3 +199,20 @@ describe('assembleMacosApp', () => {
     finally { rmSync(dir, { recursive: true, force: true }) }
   })
 })
+
+describe('development signing identity', () => {
+  const { findDevelopmentIdentity, parseDevelopmentIdentity } = require('../src/index')
+  const output = `  1) 1111111111111111111111111111111111111111 "Apple Development: Someone (ABCDE12345)"
+  2) 2222222222222222222222222222222222222222 "Developer ID Application: Someone (ABCDE12345)"
+  3) 3333333333333333333333333333333333333333 "Apple Development: Other (ZZZZZ99999)"
+     3 valid identities found`
+
+  test('picks the first Apple Development identity by its hash', () => {
+    expect(parseDevelopmentIdentity(output)).toBe('1'.repeat(40))
+  })
+
+  test('there may be none, and a failing tool is not an error', () => {
+    expect(parseDevelopmentIdentity('     0 valid identities found')).toBeUndefined()
+    expect(findDevelopmentIdentity(() => { throw new Error('no security tool') })).toBeUndefined()
+  })
+})

@@ -106,3 +106,29 @@ export function assembleMacosApp(options: AssembleMacosAppOptions): AssembledMac
   run(['codesign', '--verify', '--deep', '--strict', appPath])
   return { appPath, entitlementsPath, ignoredPlistKeys: plist.ignored, notes }
 }
+
+/**
+ * The first "Apple Development" identity in `security find-identity -v -p codesigning`
+ * output, by its hash (a name can be shared by two certificates).
+ */
+export function parseDevelopmentIdentity(output: string): string | undefined {
+  for (const line of output.split('\n')) {
+    const match = /^\s*\d+\)\s+([0-9A-F]{40})\s+"Apple Development:/.exec(line)
+    if (match) return match[1]
+  }
+  return undefined
+}
+
+/**
+ * The identity a development build is signed with, when the machine has one.
+ *
+ * Ad hoc signing gives every rebuild a new code hash, and a Keychain item's
+ * access list trusts the code that wrote it: the next launch of a rebuilt app
+ * stops on a "wants to use your confidential information" prompt, with no
+ * window until someone answers it. A stable certificate keeps the app's
+ * designated requirement the same across rebuilds, so the item stays trusted.
+ */
+export function findDevelopmentIdentity(read: () => string = () => Bun.spawnSync(['security', 'find-identity', '-v', '-p', 'codesigning'], { stdout: 'pipe', stderr: 'ignore' }).stdout.toString()): string | undefined {
+  try { return parseDevelopmentIdentity(read()) }
+  catch { return undefined }
+}
