@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.400...v0.75.401)
+
+## 🐛 Bug Fixes
+
+- **desktop**: give altool the key folder and ship a readable embedded profile ([57a40c0](https://github.com/stacksjs/stacks/commit/57a40c0)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: raise the stx family to 0.2.776 and craft-native to 0.0.411 ([971bb30](https://github.com/stacksjs/stacks/commit/971bb30)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.399...v0.75.400)
 
 ## ✨ Features
