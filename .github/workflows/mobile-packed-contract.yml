@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Set up published Pantry and managed Bun
-        uses: pantry-pm/pantry/packages/action@e632b04fb1a8093e7c940c1dbd8ae4fb9b09bf5d # v0.11.130
+        uses: pantry-pm/pantry/packages/action@818fe6ccacd5f5812e71e3b8e3bea65de812f6a9 # v0.11.153
         with:
           version: 0.11.130
           install: 'false'
@@ -106,7 +106,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Set up published Pantry and managed Bun
-        uses: pantry-pm/pantry/packages/action@e632b04fb1a8093e7c940c1dbd8ae4fb9b09bf5d # v0.11.130
+        uses: pantry-pm/pantry/packages/action@818fe6ccacd5f5812e71e3b8e3bea65de812f6a9 # v0.11.153
         with:
           version: 0.11.130
           install: 'false'
@@ -132,7 +132,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Set up published Pantry and isolated native database services
-        uses: pantry-pm/pantry/packages/action@e632b04fb1a8093e7c940c1dbd8ae4fb9b09bf5d # v0.11.130
+        uses: pantry-pm/pantry/packages/action@818fe6ccacd5f5812e71e3b8e3bea65de812f6a9 # v0.11.153
         with:
           version: 0.11.130
           install: 'false'
