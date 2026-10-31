@@ -77,7 +77,7 @@
     "@stacksjs/composables": "workspace:*",
     "@stacksjs/datetime": "workspace:*",
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/stx": "0.2.769",
+    "@stacksjs/stx": "0.2.775",
     "bun-query-builder": "^0.3.32"
   },
   "peerDependencies": {
