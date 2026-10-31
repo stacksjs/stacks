@@ -1,7 +1,19 @@
+import type { DesktopAgentManifest } from './agent-launcher'
 import type { MacosDistribution, ResolvedMacosDesktop } from './macos-app'
-import { chmodSync, copyFileSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { chmodSync, copyFileSync, cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { ICONSET_SIZES, renderHostConfig, renderMacosEntitlements, renderMacosInfoPlist, renderPrivacyManifest } from './macos-app'
+import { AGENT_MANIFEST } from './agent-launcher'
+import { ICONSET_SIZES, renderHostConfig, renderMacosEntitlements, renderMacosHostEntitlements, renderMacosInfoPlist, renderPrivacyManifest } from './macos-app'
+
+/** The AppKit host's name inside `Contents/MacOS` when an agent launcher is the executable. */
+export const AGENT_HOST_EXECUTABLE = 'craft-runtime'
+
+export interface MacosAgentBundle {
+  /** The compiled agent launcher (a Bun executable), which becomes the app's executable. */
+  launcher: string
+  /** What the launcher reads at start; `host`, `nativeBundle` and `staticDir` are rewritten to the bundle's own copies. */
+  manifest: Omit<DesktopAgentManifest, 'host' | 'nativeBundle'>
+}
 
 export type BundleCommand = (args: string[]) => void
 
@@ -30,6 +42,8 @@ export interface AssembleMacosAppOptions {
   keychain?: string
   /** Sign without the sandbox, so a development run reads the login Keychain without a provisioning profile. */
   unsandboxed?: boolean
+  /** `macos.agent`: the launcher and its manifest. The host then sits beside the launcher as `craft-runtime`. */
+  agent?: MacosAgentBundle
   run?: BundleCommand
 }
 
@@ -70,7 +84,24 @@ export function assembleMacosApp(options: AssembleMacosAppOptions): AssembledMac
   mkdirSync(macos, { recursive: true })
   mkdirSync(resources, { recursive: true })
 
-  copyFileSync(options.host, join(macos, config.executable))
+  if (options.agent) {
+    if (!config.agent) throw new Error('An agent launcher was given for an app whose config has no macos.agent')
+    // The launcher is the executable, so the app's identity (its permissions,
+    // its Dock icon) is the bundle's; the host it spawns from inside the bundle
+    // reads craft-app.json from the same Resources.
+    copyFileSync(options.agent.launcher, join(macos, config.executable))
+    copyFileSync(options.host, join(macos, AGENT_HOST_EXECUTABLE))
+    chmodSync(join(macos, AGENT_HOST_EXECUTABLE), 0o755)
+    const manifest: DesktopAgentManifest = { ...options.agent.manifest, host: `../MacOS/${AGENT_HOST_EXECUTABLE}`, nativeBundle: 'native-screen.js' }
+    if (options.agent.manifest.staticDir) {
+      cpSync(options.agent.manifest.staticDir, join(resources, 'web'), { recursive: true })
+      manifest.staticDir = 'web'
+    }
+    writeFileSync(join(resources, AGENT_MANIFEST), `${JSON.stringify(manifest, null, 2)}\n`)
+  }
+  else {
+    copyFileSync(options.host, join(macos, config.executable))
+  }
   chmodSync(join(macos, config.executable), 0o755)
   copyFileSync(options.nativeBundle, join(resources, 'native-screen.js'))
   writeFileSync(join(resources, 'craft-app.json'), renderHostConfig(config))
@@ -93,12 +124,21 @@ export function assembleMacosApp(options: AssembleMacosAppOptions): AssembledMac
     if (!options.provisioningProfile) throw new Error('A Mac App Store build needs a provisioning profile')
     copyFileSync(options.provisioningProfile, join(contents, 'embedded.provisionprofile'))
   }
+  const signed = options.unsandboxed ? { ...config, sandbox: false } : config
   const entitlementsPath = join(options.output, `${config.appName}.entitlements`)
-  const entitlements = renderMacosEntitlements(options.unsandboxed ? { ...config, sandbox: false } : config, options.distribution)
-  writeFileSync(entitlementsPath, entitlements)
-  run(['plutil', '-lint', join(contents, 'Info.plist'), join(resources, 'PrivacyInfo.xcprivacy'), entitlementsPath])
+  writeFileSync(entitlementsPath, renderMacosEntitlements(signed, options.distribution))
+  const hostEntitlements = join(options.output, `${config.appName}.host.entitlements`)
+  if (options.agent) writeFileSync(hostEntitlements, renderMacosHostEntitlements(signed))
+  run(['plutil', '-lint', join(contents, 'Info.plist'), join(resources, 'PrivacyInfo.xcprivacy'), entitlementsPath, ...(options.agent ? [hostEntitlements] : [])])
 
   const identity = options.signingIdentity || '-'
+  if (options.agent) {
+    // Nested code is signed before the bundle that seals it.
+    run([
+      'codesign', '--force', '--options', 'runtime', ...(identity === '-' ? [] : ['--timestamp']),
+      '--entitlements', hostEntitlements, ...(options.keychain ? ['--keychain', options.keychain] : []), '--sign', identity, join(macos, AGENT_HOST_EXECUTABLE),
+    ])
+  }
   run([
     'codesign', '--force', '--options', 'runtime', ...(identity === '-' ? [] : ['--timestamp']),
     '--entitlements', entitlementsPath, ...(options.keychain ? ['--keychain', options.keychain] : []), '--sign', identity, appPath,
