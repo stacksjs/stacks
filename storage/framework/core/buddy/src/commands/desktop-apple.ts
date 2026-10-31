@@ -725,7 +725,7 @@ async function packageNativeApple(config: AppleDesktopConfig, native: ResolvedMa
     config: store, root: projectPath(), host: prepared.host, nativeBundle: prepared.nativeBundle, output: appleDir, distribution: 'app-store',
     provisioningProfile: config.provisioningProfile, signingIdentity: config.appSigningIdentity, keychain: config.keychain,
   })
-  for (const note of assembled.notes) log.warn(note)
+  for (const note of assembled.notes) await log.warn(note)
   command(['codesign', '-d', '--entitlements', '-', '--xml', assembled.appPath])
   const findings = storeRejectionFindings(bundleFiles(assembled.appPath), store.executable)
   if (findings.length > 0)

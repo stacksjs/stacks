@@ -97,7 +97,7 @@ export async function prepareMacosNative(config: ResolvedMacosDesktop, options: 
   })
   // A <script> in a native screen is run by the host, not drawn: stx notes it as dropped from the view tree.
   const problems = (compiled.diagnostics ?? []).filter(item => item.message !== 'dropped-subtree: script')
-  for (const item of problems) log.warn(`${item.file ? `${item.file}: ` : ''}${item.message}`)
+  for (const item of problems) await log.warn(`${item.file ? `${item.file}: ` : ''}${item.message}`)
   if (problems.some(item => item.level === 'error')) throw new Error('The native screens did not compile')
   const nativeBundle = compiled.outFile ?? join(work, 'native-screen.js')
 
@@ -106,7 +106,7 @@ export async function prepareMacosNative(config: ResolvedMacosDesktop, options: 
   const hostDirectory = storagePath(`framework/desktop/host/${hostKey(entry, root)}`)
   const host = join(hostDirectory, 'craft-native-macos')
   if (!existsSync(host)) {
-    log.info('Building the AppKit host (first build for this Craft; the toolchain installs through Pantry)')
+    await log.info('Building the AppKit host (first build for this Craft; the toolchain installs through Pantry)')
     const builder = await import(entry) as CraftMacosBuilder
     mkdirSync(hostDirectory, { recursive: true })
     await builder.buildMacOSNative({ outdir: hostDirectory, nativeBundle })

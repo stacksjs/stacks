@@ -26,17 +26,17 @@ const identity = process.env.DESKTOP_SIGNING_IDENTITY || process.env.APPLE_DEVEL
 const assembled = assembleMacosApp({
   config, root, host: prepared.host, nativeBundle: prepared.nativeBundle, output: prepared.output, distribution: 'development', signingIdentity: identity, unsandboxed: identity === '-',
 })
-for (const note of assembled.notes) log.warn(note)
-for (const key of assembled.ignoredPlistKeys) log.warn(`macos.infoPlist: ${key} is set by the build and was ignored`)
+for (const note of assembled.notes) await log.warn(note)
+for (const key of assembled.ignoredPlistKeys) await log.warn(`macos.infoPlist: ${key} is set by the build and was ignored`)
 writeFileSync(join(prepared.output, `${config.appName}.build.json`), `${JSON.stringify({
   appName: config.appName, bundleId: config.bundleId, version: config.version, buildNumber: config.buildNumber, url: config.url,
   host: { key: prepared.hostKey, sha256: createHash('sha256').update(readFileSync(prepared.host)).digest('hex') },
   signedWith: identity === '-' ? 'ad hoc' : identity,
 }, null, 2)}\n`)
 
-log.success(`Built ${assembled.appPath}`)
+await log.success(`Built ${assembled.appPath}`)
 if (process.env.STACKS_DESKTOP_LAUNCH === '1') {
-  log.info(`Opening ${config.appName} against ${config.url}`)
+  await log.info(`Opening ${config.appName} against ${config.url}`)
   Bun.spawn(['open', '-n', assembled.appPath], { stdout: 'inherit', stderr: 'inherit' })
 }
 process.exitCode = 0
