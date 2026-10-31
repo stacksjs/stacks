@@ -92,6 +92,9 @@ export function validateMacosDesktop(config: ResolvedMacosDesktop): string[] {
   else if (config.agent.port !== undefined && !(Number.isInteger(config.agent.port) && config.agent.port > 1024 && config.agent.port < 65536)) {
     errors.push('macos.agent.port must be a port above 1024')
   }
+  const lights = config.window?.trafficLights
+  if (lights !== undefined && !(Array.isArray(lights) && lights.length === 2 && lights.every(value => Number.isFinite(value) && value >= 0)))
+    errors.push('macos.window.trafficLights must be [x, y], two points from the window\'s top-left')
   for (const [index, item] of (config.dockMenu ?? []).entries()) {
     if (!item?.title?.trim()) errors.push(`macos.dockMenu[${index}] needs a title`)
     if (!item?.action?.trim()) errors.push(`macos.dockMenu[${index}] needs an action`)
@@ -125,6 +128,7 @@ export function renderHostConfig(config: ResolvedMacosDesktop): string {
     height: window.height,
     minWidth: window.minWidth,
     minHeight: window.minHeight,
+    ...(window.trafficLights ? { trafficLights: window.trafficLights } : {}),
     ...(config.webkit ? { webkit: true } : {}),
     ...(config.dockMenu?.length ? { dockMenu: config.dockMenu.map(item => ({ title: item.title, action: item.action })) } : {}),
   }, null, 2)}\n`
@@ -149,6 +153,7 @@ function windowArguments(config: ResolvedMacosDesktop): string[] {
   return [
     '--title', config.appName, '--route', config.initialScreen,
     '--titlebar-style', window.titlebarStyle ?? 'standard', '--width', String(window.width), '--height', String(window.height), '--min-width', String(window.minWidth), '--min-height', String(window.minHeight),
+    ...(window.trafficLights ? ['--traffic-lights', window.trafficLights.join(',')] : []),
   ]
 }
 

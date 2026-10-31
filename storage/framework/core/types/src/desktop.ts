@@ -37,6 +37,12 @@ export interface MacosWindowConfig {
   minHeight?: number
   /** `transparent` hides the title and lets content run under the title bar. */
   titlebarStyle?: 'standard' | 'transparent'
+  /**
+   * Where the close button's top-left corner sits, in points from the window's
+   * top-left (`[18, 15]`): a browser lines the buttons up with its own toolbar
+   * row. Unset keeps AppKit's place. Pairs with `titlebarStyle: 'transparent'`.
+   */
+  trafficLights?: [number, number]
 }
 
 export interface MacosDesktopConfig {

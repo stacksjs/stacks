@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import {
   agentHostArguments,
   defaultUsageDescriptions,
+  hostArguments,
   renderHostConfig,
   renderMacosEntitlements,
   renderMacosHostEntitlements,
@@ -178,6 +179,22 @@ describe('macos.permissions', () => {
   test('asks for nothing it was not given', () => {
     const { xml } = renderMacosInfoPlist(resolveMacosDesktop(browser, '1.0.0'))
     expect(xml).not.toContain('UsageDescription')
+  })
+})
+
+describe('macos.window.trafficLights', () => {
+  test('reach the host in craft-app.json and on the development command line', () => {
+    const resolved = resolveMacosDesktop({ ...browser, window: { titlebarStyle: 'transparent', trafficLights: [18, 15] } }, '1.0.0')
+    expect(JSON.parse(renderHostConfig(resolved)).trafficLights).toEqual([18, 15])
+    const args = hostArguments({ ...resolved, url: 'http://127.0.0.1:9' }, 'screen.js')
+    expect(args.slice(args.indexOf('--traffic-lights'), args.indexOf('--traffic-lights') + 2)).toEqual(['--traffic-lights', '18,15'])
+  })
+
+  test('are absent when unset, and refused when they are not two points', () => {
+    const resolved = resolveMacosDesktop(browser, '1.0.0')
+    expect(JSON.parse(renderHostConfig(resolved)).trafficLights).toBeUndefined()
+    expect(hostArguments({ ...resolved, url: 'http://127.0.0.1:9' }, 'screen.js')).not.toContain('--traffic-lights')
+    expect(validateMacosDesktop(resolveMacosDesktop({ ...browser, window: { trafficLights: [18] as unknown as [number, number] } }, '1.0.0')).join(' ')).toContain('trafficLights')
   })
 })
 
