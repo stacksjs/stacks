@@ -156,6 +156,8 @@ storage/framework/cache/
 # Postline-0.1.0.dmg from a local July build was committed and has been in
 # every clone since.
 /storage/framework/desktop-dmg
+# The native macOS app (config/desktop.ts): the .app, its AppKit host and build scratch.
+/storage/framework/desktop/
 /storage/framework/mobile
 
 # Per-package runtime logs created when building a core package in place
