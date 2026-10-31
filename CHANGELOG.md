@@ -1,5 +1,55 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.390...v0.75.392)
+
+## ✨ Features
+
+- **desktop**: a native macOS app is a build target: config/desktop.ts, build:desktop, dev:desktop and Mac App Store packaging for AppKit apps ([d470cec](https://github.com/stacksjs/stacks/commit/d470cec)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **actions**: add POST /ai/complete for editor ghost text ([a2269a3](https://github.com/stacksjs/stacks/commit/a2269a3)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **ai**: add complete() for inline ghost-text completions ([5aee60b](https://github.com/stacksjs/stacks/commit/5aee60b)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **new**: keep login routes in --minimal apps and warn when a relation points at a left-out framework model ([2331879](https://github.com/stacksjs/stacks/commit/2331879)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- refresh the default action count ([b245e5a](https://github.com/stacksjs/stacks/commit/b245e5a)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- document inline completions in the stacks-ai, stacks-stx and browser skills ([cd43184](https://github.com/stacksjs/stacks/commit/cd43184)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- regenerate the API artifacts, auto-imports and native skill catalog for POST /ai/complete ([13c2796](https://github.com/stacksjs/stacks/commit/13c2796)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.390...v0.75.391)
+
+## ✨ Features
+
+- **desktop**: a native macOS app is a build target: config/desktop.ts, build:desktop, dev:desktop and Mac App Store packaging for AppKit apps ([d470cec](https://github.com/stacksjs/stacks/commit/d470cec)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **actions**: add POST /ai/complete for editor ghost text ([a2269a3](https://github.com/stacksjs/stacks/commit/a2269a3)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **ai**: add complete() for inline ghost-text completions ([5aee60b](https://github.com/stacksjs/stacks/commit/5aee60b)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **new**: keep login routes in --minimal apps and warn when a relation points at a left-out framework model ([2331879](https://github.com/stacksjs/stacks/commit/2331879)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- refresh the default action count ([b245e5a](https://github.com/stacksjs/stacks/commit/b245e5a)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- document inline completions in the stacks-ai, stacks-stx and browser skills ([cd43184](https://github.com/stacksjs/stacks/commit/cd43184)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- regenerate the API artifacts, auto-imports and native skill catalog for POST /ai/complete ([13c2796](https://github.com/stacksjs/stacks/commit/13c2796)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.389...v0.75.390)
 
 ## ✨ Features
