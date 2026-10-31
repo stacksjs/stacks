@@ -4,6 +4,8 @@ import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { craftBinaryNotFoundMessage, resolveCraftBinary as resolveCraftNativeBinary } from 'craft-native'
 
+export * from './agent'
+export * from './agent-launcher'
 export * from './invites'
 export * from './updater'
 export * from './support'
