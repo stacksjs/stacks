@@ -5,6 +5,7 @@ import { complete, completionStatus } from '@stacksjs/ai'
 import { resolveAuthenticatedUser } from '@stacksjs/auth'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
+import type { ResponseStatus } from '@stacksjs/router'
 import { rateLimit, response } from '@stacksjs/router'
 import { COMPLETE_RATE_PER_MINUTE, handleCompleteRequest } from './complete-request'
 
@@ -44,6 +45,6 @@ export default new Action({
       log: (message, context) => void log.error(message, context),
     })
 
-    return response.json(result.body, result.status)
+    return response.json(result.body, result.status as ResponseStatus)
   },
 })
