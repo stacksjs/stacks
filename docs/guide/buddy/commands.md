@@ -1424,6 +1424,7 @@ Start development server
 | `--site` | Open the marketing site instead of the application | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+| `--detach` | Keep the dev servers running after this process or its shell exits (for `nohup ./buddy dev --detach &`) | boolean, optional | `false` |
 
 ### `dev:api`
 

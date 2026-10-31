@@ -395,6 +395,7 @@ export function dev(buddy: CLI): void {
     site: 'Open the marketing site instead of the application',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
+    detach: 'Keep the dev servers running after this process or its shell exits (for `nohup ./buddy dev --detach &`)',
   }
 
   buddy
@@ -413,7 +414,13 @@ export function dev(buddy: CLI): void {
     .option('--site', descriptions.site, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
+    .option('--detach', descriptions.detach, { default: false })
     .action(async (server: string | undefined, options: DevOptions) => {
+
+      // Read by every dev server's `exitWithParent` (inherited through the
+      // environment), so they stop watching for their parent to go away.
+      if (options.detach)
+        process.env.STACKS_DEV_DETACH = '1'
 
       const perf = Bun.nanoseconds()
       process.env.STACKS_DEV_ENTRY_PATH = resolveDevelopmentEntryPath({ site: options.site })

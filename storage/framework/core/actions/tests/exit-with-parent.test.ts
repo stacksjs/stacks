@@ -174,3 +174,45 @@ describe('exitWithParent', () => {
     expect(printed).toContain('stopping this dev process')
   }, 15000)
 })
+
+describe('exitWithParent when detached', () => {
+  test('does not poll, so a changed parent never ends it', async () => {
+    let exited = false
+    watch({ detach: true, intervalMs: 5, onExit: () => { exited = true } })
+
+    await Bun.sleep(40)
+    expect(exited).toBe(false)
+  })
+
+  test('reads STACKS_DEV_DETACH from the environment', async () => {
+    process.env.STACKS_DEV_DETACH = '1'
+    try {
+      const guard = `${import.meta.dir}/../src/dev/exit-with-parent.ts`
+      // A process whose parent has already exited, which the watchdog would stop.
+      const script = `
+        import { exitWithParent } from '${guard}'
+        exitWithParent({ intervalMs: 20 })
+        console.log('READY')
+        setTimeout(() => { console.log('STILL ALIVE'); process.exit(0) }, 250)
+      `
+      const out = `${tmpdir()}/stacks-detach-${Date.now()}.txt`
+      const parent = Bun.spawn(['bun', '-e', `
+        Bun.spawn(['bun', '-e', ${JSON.stringify(script)}], { stdout: Bun.file(${JSON.stringify(out)}), stderr: 'ignore', env: { ...process.env, STACKS_DEV_DETACH: '1' } })
+        setTimeout(() => process.exit(0), 80)
+      `], { stdout: 'ignore', stderr: 'ignore' })
+      await parent.exited
+      const deadline = Date.now() + 5000
+      let text = ''
+      while (Date.now() < deadline && !text.includes('STILL ALIVE')) {
+        await Bun.sleep(50)
+        text = await Bun.file(out).text().catch(() => '')
+      }
+      // The parent was gone long before this printed, and the process kept going.
+      expect(text).toContain('STILL ALIVE')
+      expect(text).not.toContain('stopping this dev process')
+    }
+    finally {
+      delete process.env.STACKS_DEV_DETACH
+    }
+  }, 15_000)
+})

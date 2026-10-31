@@ -30,6 +30,13 @@ const SIGNALS = ['SIGINT', 'SIGTERM', 'SIGHUP'] as const
 export interface ExitWithParentOptions {
   /** How often to check that the parent is still there. */
   intervalMs?: number
+  /**
+   * Keep running when the parent goes away. Defaults to `STACKS_DEV_DETACH=1`,
+   * which `buddy dev --detach` sets for itself and every server it starts, so
+   * `nohup ./buddy dev --frontend --detach &` stays up after its shell exits.
+   * The signal handlers stay: Ctrl-C and `kill` still stop it.
+   */
+  detach?: boolean
   /** Best-effort teardown, run before the process exits. */
   onExit?: () => void
 }
@@ -37,15 +44,18 @@ export interface ExitWithParentOptions {
 /** Returns a function that cancels the watch, for tests and for reuse. */
 export function exitWithParent(options: ExitWithParentOptions = {}): () => void {
   const { intervalMs = 2000, onExit } = options
+  const detach = options.detach ?? process.env.STACKS_DEV_DETACH === '1'
   const parentPid = process.ppid
 
   let stopped = false
+  let timer: ReturnType<typeof setInterval> | undefined
 
   const stop = (): void => {
     if (stopped)
       return
     stopped = true
-    clearInterval(timer)
+    if (timer)
+      clearInterval(timer)
     for (const signal of SIGNALS) process.off(signal, handleSignal)
   }
 
@@ -72,10 +82,16 @@ export function exitWithParent(options: ExitWithParentOptions = {}): () => void 
 
   const handleSignal = (signal: NodeJS.Signals): void => quit(`received ${signal}`)
 
+  // Detached: no polling, so nothing ends the process but its own signals.
+  if (detach) {
+    for (const signal of SIGNALS) process.on(signal, handleSignal)
+    return stop
+  }
+
   // ppid 1 is belt and braces: the comparison already catches reparenting
   // wherever it points, but the explicit check costs nothing and reads
   // plainly to whoever finds this next.
-  const timer = setInterval(() => {
+  timer = setInterval(() => {
     if (process.ppid === parentPid && process.ppid !== 1)
       return
 
@@ -88,7 +104,7 @@ export function exitWithParent(options: ExitWithParentOptions = {}): () => void 
     // something that was never there. `( nohup buddy dev … & )` lands here,
     // because the subshell is gone before the dev process even starts.
     quit(parentPid === 1
-      ? 'started with no parent to watch (ppid 1)'
+      ? 'started with no parent to watch (ppid 1; pass --detach to `buddy dev` to run it in the background)'
       : `saw the parent process (pid ${parentPid}) go away`)
   }, intervalMs)
 

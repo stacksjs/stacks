@@ -306,6 +306,8 @@ export type DevOption =
   | 'systemTray'
   /** `buddy dev dashboard`, which the handler dispatches on. */
   | 'dashboard'
+  /** `--detach`: let the dev servers outlive the process that started them. */
+  | 'detach'
   | 'interactive'
   | 'browser'
   | 'site'

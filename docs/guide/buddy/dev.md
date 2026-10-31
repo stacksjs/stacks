@@ -53,6 +53,7 @@ buddy dev [server] [options]
 | `--site` | Open the marketing site instead of the application |
 | `-p, --project [project]` | Target a specific project |
 | `--verbose` | Enable verbose output |
+| `--detach` | Keep the dev servers running after this process or its shell exits. Without it a server stops when its parent goes away, so `nohup ./buddy dev --frontend &` stops at once (`stacks started with no parent to watch`); use `nohup ./buddy dev --frontend --detach &` |
 
 ## Available Dev Servers
 
