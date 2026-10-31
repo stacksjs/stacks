@@ -50,7 +50,7 @@ function loginDashboardHarness(options: {
   const body = script.replace(/^import .*$/gm, '')
   const transpiler = new Bun.Transpiler({ loader: 'ts', target: 'bun' })
   const compiled = transpiler.transformSync(`
-    function createHarness(useAuth, useRoute, state, navigate, describeAuthError, isLoginResponse, isTwoFactorChallenge, safeAuthRedirect) {
+    function createHarness(useAuth, useRoute, state, navigate, describeAuthError, isLoginResponse, isTwoFactorChallenge, safeAuthRedirect, useReactiveProp) {
       ${body}
       return { challengeToken, error, handleLogin, handleTwoFactor, isLoading, restartLogin }
     }
@@ -73,6 +73,8 @@ function loginDashboardHarness(options: {
     isLoginResponse,
     isTwoFactorChallenge,
     safeAuthRedirect,
+    // A prop the page did not pass reads as its fallback.
+    (_name: string, fallback: unknown) => () => fallback,
   )
 
   return { ...harness, navigations }
@@ -1402,5 +1404,22 @@ describe('dashboard native STX bindings', () => {
     expect(usersAction).not.toContain('db.unsafe')
     expect(userRolesAction).toContain('if (!await User.find(userId))')
     expect(userRolesAction).toContain(".filter(role => role.guard_name === guardName)")
+  })
+})
+
+describe('auth branding hooks (stacksjs/stacks#3086)', () => {
+  const card = componentSource('Auth/AuthCard.stx')
+
+  test('the card takes an icon and an eyebrow, and its mark can be replaced through the brand slot, keeping the default cube', () => {
+    expect(card).toContain("useReactiveProp('icon', 'i-hugeicons-cube')")
+    expect(card).toContain("useReactiveProp('eyebrow', '')")
+    expect(card).toMatch(/<slot name="brand">[\s\S]*:class="icon\(\)"[\s\S]*<\/slot>/)
+  })
+
+  test.each(['Login', 'Register', 'ForgotPassword', 'ResetPassword'])('%s takes the branding and passes it on to the card', (name) => {
+    const page = componentSource(`Auth/${name}.stx`)
+    expect(page).toContain("useReactiveProp<string>('icon', 'i-hugeicons-cube')")
+    expect(page).toContain("useReactiveProp<string>('eyebrow', '')")
+    expect(page).toMatch(/<AuthCard [^>]*:icon="icon\(\)" :eyebrow="eyebrow\(\)"/)
   })
 })

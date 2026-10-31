@@ -12,14 +12,21 @@
  */
 const title = useReactiveProp('title', '')
 const subtitle = useReactiveProp('subtitle', '')
+// The mark above the heading. An app brands it with an Iconify class, a short line above the title, or its own
+// markup in the `brand` slot, without forking the four pages that sit in this card (stacksjs/stacks#3086).
+const icon = useReactiveProp('icon', 'i-hugeicons-cube')
+const eyebrow = useReactiveProp('eyebrow', '')
 </script>
 
 <div class="flex items-center justify-center px-4 py-12 min-h-screen">
   <div class="max-w-sm w-full">
     <div class="mb-8 text-center">
-      <div class="inline-flex items-center justify-center mb-4 h-12 w-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-blue-500/25 shadow-lg">
-        <span class="h-7 w-7 text-white i-hugeicons-cube"></span>
-      </div>
+      <slot name="brand">
+        <div class="inline-flex items-center justify-center mb-4 h-12 w-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-blue-500/25 shadow-lg">
+          <span class="h-7 w-7 text-white" :class="icon()"></span>
+        </div>
+      </slot>
+      <p :if="eyebrow()" class="mb-1 font-semibold text-blue-600 text-xs tracking-widest uppercase dark:text-blue-400">{{ eyebrow() }}</p>
       <h1 class="font-semibold text-2xl text-neutral-900 dark:text-white">{{ title() }}</h1>
       <p class="mt-2 text-neutral-500 text-sm dark:text-neutral-400">{{ subtitle() }}</p>
     </div>

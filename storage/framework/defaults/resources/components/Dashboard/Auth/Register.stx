@@ -4,6 +4,8 @@
 const emit = defineEmits(['submit'])
 const title = useReactiveProp<string>('title', 'Create an account')
 const subtitle = useReactiveProp<string>('subtitle', 'Get started with your free account')
+const icon = useReactiveProp<string>('icon', 'i-hugeicons-cube')
+const eyebrow = useReactiveProp<string>('eyebrow', '')
 const isLoading = useReactiveProp<boolean>('isLoading', false)
 const error = useReactiveProp<string>('error', '')
 const showLogin = useReactiveProp<boolean>('showLogin', true)
@@ -98,7 +100,7 @@ function handleSubmit(): void {
   })
 }
 </script>
-<AuthCard :title="title()" :subtitle="subtitle()">
+<AuthCard :title="title()" :subtitle="subtitle()" :icon="icon()" :eyebrow="eyebrow()">
 
   <!-- Register Form -->
   <div class="p-6 bg-white dark:bg-neutral-900 border border-neutral-200/60 rounded-2xl dark:border-neutral-800 shadow-black/5 shadow-xl dark:shadow-black/20">
