@@ -5,11 +5,13 @@ import {
   copyFileSync,
   existsSync,
   mkdirSync,
+  mkdtempSync,
   readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
 } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { basename, join, resolve } from 'node:path'
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
@@ -145,6 +147,31 @@ export function resolveAppleDesktopConfig(options: AppleDesktopOptions = {}, nat
   }
 }
 
+/**
+ * The App Store Connect key as a `.p8` file, from `APP_STORE_CONNECT_API_KEY`
+ * when no path was given.
+ *
+ * The key is a secret, so the place for it is an encrypted `.env.production`
+ * value, which is what the reusable workflow already does with its secret of the
+ * same name. `altool` and ts-pantry both want a file, and `altool` only finds one
+ * named `AuthKey_<id>.p8`, so the value is written once into a private temporary
+ * directory under that name and removed when the process ends. A value that went
+ * through a dotenv file keeps its line breaks as a literal `\n`; both spellings
+ * are accepted.
+ */
+export function withApiKeyFile(config: AppleDesktopConfig): AppleDesktopConfig {
+  const pem = env('APP_STORE_CONNECT_API_KEY').replaceAll('\\n', '\n')
+  if (config.apiKeyPath || !pem || !config.apiKeyId) return config
+  if (!pem.includes('-----BEGIN PRIVATE KEY-----'))
+    throw new Error('APP_STORE_CONNECT_API_KEY must hold the PEM text of the .p8 key')
+
+  const directory = mkdtempSync(join(tmpdir(), 'apple-api-key-'))
+  const apiKeyPath = join(directory, `AuthKey_${config.apiKeyId}.p8`)
+  writeFileSync(apiKeyPath, `${pem}\n`, { mode: 0o600 })
+  process.on('exit', () => rmSync(directory, { recursive: true, force: true }))
+  return { ...config, apiKeyPath }
+}
+
 export function validateAppleDesktopConfig(config: AppleDesktopConfig, includeApi = true): string[] {
   const errors: string[] = []
   if (process.platform !== 'darwin') errors.push('Mac App Store packaging must run on macOS')
@@ -165,7 +192,7 @@ export function validateAppleDesktopConfig(config: AppleDesktopConfig, includeAp
   if (includeApi) {
     if (!config.apiKeyId) errors.push('APP_STORE_CONNECT_API_KEY_ID is required')
     if (!config.apiIssuerId) errors.push('APP_STORE_CONNECT_API_ISSUER_ID is required')
-    if (!config.apiKeyPath || !existsSync(config.apiKeyPath)) errors.push('APP_STORE_CONNECT_API_KEY_PATH must point to an existing .p8 file')
+    if (!config.apiKeyPath || !existsSync(config.apiKeyPath)) errors.push('APP_STORE_CONNECT_API_KEY_PATH must point to an existing .p8 file, or APP_STORE_CONNECT_API_KEY hold its text')
   }
   if (config.universal) {
     // Named up front rather than discovered after the host build and two
@@ -861,7 +888,7 @@ export function desktopApple(buddy: CLI): void {
       try {
         if (options.plan && options.apply)
           throw new Error('Choose either --plan or --apply')
-        const config = resolveAppleDesktopConfig(options, await nativeAppleConfig())
+        const config = withApiKeyFile(resolveAppleDesktopConfig(options, await nativeAppleConfig()))
         if (!config.bundleId)
           throw new Error('APPLE_BUNDLE_ID or --bundle-id is required')
         if (!config.apiKeyId || !config.apiIssuerId || !config.apiKeyPath || !existsSync(config.apiKeyPath))
@@ -967,7 +994,7 @@ export function desktopApple(buddy: CLI): void {
     .option('--keychain <path>', 'Look for the signing identities in this keychain file only (or APPLE_KEYCHAIN)')
     .action(async (options: AppleDesktopOptions) => {
       try {
-        const config = resolveAppleDesktopConfig(options, await nativeAppleConfig())
+        const config = withApiKeyFile(resolveAppleDesktopConfig(options, await nativeAppleConfig()))
         const errors = validateAppleDesktopConfig(config, true)
         if (!signingIdentityExists(config.appSigningIdentity, config.keychain))
           errors.push(`App signing identity is not installed: ${config.appSigningIdentity}`)
@@ -1039,7 +1066,7 @@ export function desktopApple(buddy: CLI): void {
     .action(async (options: AppleDesktopOptions) => {
       try {
         const native = await nativeAppleConfig()
-        const config = resolveAppleDesktopConfig(options, native)
+        const config = withApiKeyFile(resolveAppleDesktopConfig(options, native))
         const packagePath = await packageAppleDesktop(config, Boolean(options.skipBuild), native)
         if (!options.packageOnly)
           validateOrUpload(packagePath, config, Boolean(options.validateOnly))

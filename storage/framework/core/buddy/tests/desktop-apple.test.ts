@@ -1,6 +1,6 @@
 import type { CommandRunner } from '../src/commands/desktop-apple'
 import { describe, expect, it, test } from 'bun:test'
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import process from 'node:process'
@@ -20,6 +20,7 @@ import {
   signingPlan,
   storeRejectionFindings,
   validateAppleDesktopConfig,
+  withApiKeyFile,
 } from '../src/commands/desktop-apple'
 
 const config = {
@@ -180,7 +181,56 @@ describe('Mac App Store desktop automation', () => {
     expect(errors).toContain('The marketing version must contain one to three numeric components')
     expect(errors).toContain('The build number must contain only letters, numbers, periods, and hyphens')
     expect(errors).toContain('APPLE_PROVISIONING_PROFILE must point to an existing .provisionprofile file')
-    expect(errors).toContain('APP_STORE_CONNECT_API_KEY_PATH must point to an existing .p8 file')
+    expect(errors).toContain('APP_STORE_CONNECT_API_KEY_PATH must point to an existing .p8 file, or APP_STORE_CONNECT_API_KEY hold its text')
+  })
+})
+
+describe('the App Store Connect key as an env value', () => {
+  const pem = '-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49\n-----END PRIVATE KEY-----'
+  const withKey = (value: string | undefined, run: () => void): void => {
+    const before = process.env.APP_STORE_CONNECT_API_KEY
+    if (value === undefined) delete process.env.APP_STORE_CONNECT_API_KEY
+    else process.env.APP_STORE_CONNECT_API_KEY = value
+    try { run() }
+    finally {
+      if (before === undefined) delete process.env.APP_STORE_CONNECT_API_KEY
+      else process.env.APP_STORE_CONNECT_API_KEY = before
+    }
+  }
+
+  test('is written as a private AuthKey_<id>.p8, which is the name altool looks for', () => {
+    withKey(pem, () => {
+      const resolved = withApiKeyFile({ ...config, apiKeyPath: '' })
+      expect(resolved.apiKeyPath.endsWith('/AuthKey_KEY123.p8')).toBe(true)
+      expect(readFileSync(resolved.apiKeyPath, 'utf8')).toBe(`${pem}\n`)
+      expect(statSync(resolved.apiKeyPath).mode & 0o777).toBe(0o600)
+      rmSync(join(resolved.apiKeyPath, '..'), { recursive: true, force: true })
+    })
+  })
+
+  test('accepts the literal \\n a dotenv file leaves in a one-line value', () => {
+    withKey(pem.replaceAll('\n', '\\n'), () => {
+      const resolved = withApiKeyFile({ ...config, apiKeyPath: '' })
+      expect(readFileSync(resolved.apiKeyPath, 'utf8')).toBe(`${pem}\n`)
+      rmSync(join(resolved.apiKeyPath, '..'), { recursive: true, force: true })
+    })
+  })
+
+  test('leaves an explicit path alone, and writes nothing without a value', () => {
+    withKey(pem, () => {
+      expect(withApiKeyFile(config).apiKeyPath).toBe(config.apiKeyPath)
+    })
+    withKey(undefined, () => {
+      const resolved = withApiKeyFile({ ...config, apiKeyPath: '' })
+      expect(resolved.apiKeyPath).toBe('')
+      expect(existsSync(resolved.apiKeyPath)).toBe(false)
+    })
+  })
+
+  test('refuses a value that is not PEM text', () => {
+    withKey('not a key', () => {
+      expect(() => withApiKeyFile({ ...config, apiKeyPath: '' })).toThrow('PEM text')
+    })
   })
 })
 
