@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.397...v0.75.398)
+
+## ✨ Features
+
+- **desktop**: macos.window.trafficLights places the window buttons ([bda8310](https://github.com/stacksjs/stacks/commit/bda8310)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: raise the stx family to 0.2.775, its first full release since 0.2.769 ([5f075cc](https://github.com/stacksjs/stacks/commit/5f075cc)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.396...v0.75.397)
 
 ## 🐛 Bug Fixes
