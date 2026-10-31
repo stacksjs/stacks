@@ -1,0 +1,14 @@
+{
+  "ignore": [
+    {
+      "rule": "code/*",
+      "path": "storage/framework/core/security/src/audit/",
+      "reason": "The scanner's own rule definitions contain the patterns and example text it looks for."
+    },
+    {
+      "rule": "secret/*",
+      "path": "storage/framework/core/security/src/audit/",
+      "reason": "The scanner's own rule definitions contain the credential prefixes it looks for."
+    }
+  ]
+}

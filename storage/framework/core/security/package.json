@@ -38,6 +38,12 @@
       "import": "./dist/key.js",
       "default": "./dist/key.js"
     },
+    "./scan": {
+      "types": "./dist/scan.d.ts",
+      "bun": "./dist/scan.js",
+      "import": "./dist/scan.js",
+      "default": "./dist/scan.js"
+    },
     "./*": {
       "types": "./dist/*.d.ts",
       "bun": "./dist/*.js",

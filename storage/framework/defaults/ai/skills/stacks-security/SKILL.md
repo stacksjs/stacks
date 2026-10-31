@@ -22,6 +22,32 @@ security/src/
 └── hash.ts     # password hashing (bcrypt/argon2)
 ```
 
+## Scanning a project: `buddy security:scan`
+
+`buddy security:scan` (alias `buddy audit`) checks a project for security problems and exits non-zero on findings at or above `--fail-on` (default `high`), so it drops into CI. Five checks, each runnable alone with `--only` or left out with `--skip`:
+
+| Check | Finds |
+|---|---|
+| `dependencies` | Known vulnerabilities in the lockfile (`bun audit`; needs the network, skipped with `--offline`) |
+| `secrets` | Committed credentials: private keys, AWS/Stripe/GitHub/Anthropic/OpenAI/Slack/Google/Twilio/SendGrid/npm tokens, database URLs with passwords, `secret = "high-entropy value"` |
+| `code` | `eval` / `new Function`, shell commands built from strings, SQL built with interpolation, disabled TLS verification, `alg: none`, `innerHTML`, `Math.random()` for tokens, MD5/SHA-1, CORS `*` with credentials |
+| `workflows` | GitHub Actions that paste untrusted text into `run:`, check out a pull request under `pull_request_target`, echo secrets, or follow a branch |
+| `hygiene` | Committed `.env` files with readable secrets (encrypted values are fine), key files, a `.gitignore` without `.env`, no lockfile |
+
+```bash
+buddy security:scan                          # everything, fail on high or worse
+buddy security:scan --only dependencies,secrets --fail-on medium
+buddy security:scan --json                   # the report, for tooling
+buddy security:scan --show-ignored           # what exceptions set aside
+```
+
+A finding that is fine is set aside with a reason, never silently:
+
+- On the line (or the line above): `// security-ignore: code/inner-html the HTML is sanitized by sanitize()`
+- In `.security-ignore.json`: `{ "ignore": [{ "rule": "code/sql-interpolation", "path": "database/seed.ts", "reason": "ids from rows it just selected", "expires": "2027-06-30" }] }`. `rule` takes `code/*`; `path` is a file or a directory ending in `/`; for an advisory use `"reference": "GHSA-…"` or the package name. An entry without a reason, or past its `expires`, is reported and no longer applies.
+
+A check that cannot run (offline, no `bun.lock`) is listed under "not checked", never reported as clean. Programmatic use: `import { runSecurityScan } from '@stacksjs/security/scan'`.
+
 ## App Key Generation
 
 ```typescript

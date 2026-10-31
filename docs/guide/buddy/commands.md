@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **369 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **370 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -64,6 +64,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `schedule` | 6 |
 | `search` | 2 |
 | `search-engine` | 2 |
+| `security` | 1 |
 | `seed` | 1 |
 | `serve` | 1 |
 | `server` | 5 |
@@ -5094,6 +5095,33 @@ Re-index a model (Scout-style alias for search-engine:update)
 | --- | --- | --- | --- |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `security:scan`
+
+Scan the project for security vulnerabilities: vulnerable dependencies, committed secrets, dangerous code, risky GitHub workflows and repository hygiene
+
+- Usage: `$ buddy security:scan`
+- Namespace: `security`
+- Aliases: `audit`
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--only` | Run only these checks, comma-separated: dependencies, secrets, code, workflows, hygiene | value, required | - |
+| `--skip` | Skip these checks, comma-separated | value, required | - |
+| `--json` | Print the report as JSON | boolean, optional | `false` |
+| `--fail-on` | Exit non-zero for findings at or above this severity: critical, high, medium, low or none | value, required | `"high"` |
+| `--offline` | Do not use the network (skips the dependency advisory check) | boolean, optional | `false` |
+| `--show-ignored` | List the findings that .security-ignore.json or a security-ignore comment set aside | boolean, optional | `false` |
+| `--path` | Scan this directory instead of the project | value, required | - |
+
+Examples:
+
+```bash
+buddy security:scan
+buddy security:scan --only dependencies,secrets
+buddy security:scan --fail-on medium --json
+```
 
 ### `seed`
 

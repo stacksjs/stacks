@@ -99,6 +99,9 @@ jobs:
     steps:
       - name: Determine which jobs to run
         id: determine
+        env:
+          ACTOR: ${{ github.actor }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
         run: |
           # Default to not running any jobs
           echo "run_check=false" >> $GITHUB_OUTPUT
@@ -108,8 +111,6 @@ jobs:
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             # PR body was edited — check if it's a buddy-bot PR with rebase checkbox
             # Only run the check job (lightweight: just scans for the checkbox and rebases)
-            ACTOR="${{ github.actor }}"
-            BRANCH="${{ github.event.pull_request.head.ref }}"
 
             # Skip if the edit was made by a bot (prevents cascade loops where
             # buddy-bot updates a PR body → fires edited event → re-triggers workflow)
