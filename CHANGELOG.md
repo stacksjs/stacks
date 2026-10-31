@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.395...v0.75.396)
+
+## ✨ Features
+
+- **auth**: forward the card branding through the Login, Register, ForgotPassword and ResetPassword dashboards ([10bdf60](https://github.com/stacksjs/stacks/commit/10bdf60)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_ ([#3086](https://github.com/stacksjs/stacks/issues/3086))
+
+## 🐛 Bug Fixes
+
+- **desktop**: declare the router, config and server the agent launcher imports ([d446670](https://github.com/stacksjs/stacks/commit/d446670)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 💚 Continuous Integration
+
+- run the desktop scaffold smoke as its own job, outside the release gate ([143c955](https://github.com/stacksjs/stacks/commit/143c955)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.394...v0.75.395)
 
 ## 🔧 Chores
