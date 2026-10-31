@@ -19,9 +19,29 @@ export function scanWorkflow(path: string, text: string): Finding[] {
     findings.push({ rule, check: 'workflows', severity, title, file: path, line: index + 1, detail: lines[index]!.trim().slice(0, 160), fix })
 
   const targetsPullRequestTarget = lines.some(line => /^\s*(?:on:\s*.*\bpull_request_target\b|pull_request_target\s*:)/.test(line))
-  const hasPermissions = lines.some(line => /^permissions\s*:/.test(line))
-  if (!hasPermissions && lines.some(line => /^jobs\s*:/.test(line)))
-    findings.push({ rule: 'workflow/default-permissions', check: 'workflows', severity: 'low', title: 'No top-level `permissions:`, so jobs get the repository\'s default token scope', file: path, line: 1, fix: 'Add `permissions: { contents: read }` and widen it per job.' })
+  // Without a top-level `permissions:`, every job that has none gets the repository's default token scope.
+  if (!lines.some(line => /^permissions\s*:/.test(line))) {
+    const jobsAt = lines.findIndex(line => /^jobs\s*:/.test(line))
+    if (jobsAt >= 0) {
+      const unscoped: string[] = []
+      let current: { name: string, scoped: boolean } | null = null
+      const close = () => { if (current && !current.scoped) unscoped.push(current.name) }
+      for (const line of lines.slice(jobsAt + 1)) {
+        if (/^\S/.test(line) && line.trim() && !line.startsWith('#')) break
+        const job = /^ {2}([\w-]+)\s*:/.exec(line)
+        if (job) {
+          close()
+          current = { name: job[1]!, scoped: false }
+        }
+        else if (current && /^ {4}permissions\s*:/.test(line)) {
+          current.scoped = true
+        }
+      }
+      close()
+      if (unscoped.length)
+        findings.push({ rule: 'workflow/default-permissions', check: 'workflows', severity: 'low', title: `No \`permissions:\` for ${unscoped.length === 1 ? `job ${unscoped[0]}` : `${unscoped.length} jobs`}, so they get the repository's default token scope`, file: path, line: jobsAt + 1, detail: unscoped.join(', '), fix: 'Add `permissions: { contents: read }` at the top of the workflow and widen it per job.' })
+    }
+  }
 
   let runIndent = -1
   for (let index = 0; index < lines.length; index++) {

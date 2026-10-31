@@ -162,6 +162,9 @@ describe('workflows', () => {
     expect(rules('permissions: read-all\njobs:\n  a:\n    steps:\n      - run: echo "${{ secrets.TOKEN }}" | gh auth login --with-token\n')).toEqual([])
     expect(rules('permissions: read-all\njobs:\n  a:\n    steps:\n      - uses: someone/deploy@main\n      - uses: actions/checkout@v4\n')).toEqual(['workflow/moving-action-ref'])
     expect(rules('jobs:\n  a:\n    steps:\n      - run: ls\n')).toEqual(['workflow/default-permissions'])
+    // Scoped per job is as good as at the top.
+    expect(rules('jobs:\n  a:\n    permissions:\n      contents: read\n    steps:\n      - run: ls\n')).toEqual([])
+    expect(scanWorkflow('w.yml', 'jobs:\n  a:\n    permissions: read-all\n    steps: []\n  b:\n    steps: []\n')[0]!.detail).toBe('b')
   })
 })
 
