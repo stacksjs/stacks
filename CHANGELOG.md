@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.405...v0.75.406)
+
+## 🐛 Bug Fixes
+
+- **libs**: every library package publishes a README ([1f89c44](https://github.com/stacksjs/stacks/commit/1f89c44)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.404...v0.75.405)
 
 ## 🐛 Bug Fixes
