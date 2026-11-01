@@ -4,7 +4,7 @@ import { basename, dirname, join } from 'node:path'
 import process from 'node:process'
 import { log, parseOptions, runCommand } from '@stacksjs/cli'
 import { appPath, projectPath, publicPath, resourcesPath, storagePath } from '@stacksjs/path'
-import { bundleDirectoryFor, codesignArgs, describeRuntimeDuplication, looksLikeBunExecutable, renderInfoPlist, resolveDmgPackaging } from '@stacksjs/desktop-build'
+import { bundleDirectoryFor, codesignArgs, describeRuntimeDuplication, looksLikeBunExecutable, notarytoolAuthArgs, renderInfoPlist, resolveDmgPackaging } from '@stacksjs/desktop-build'
 import { runBuildStep } from './run-build-step'
 
 /**
@@ -25,8 +25,10 @@ import { runBuildStep } from './run-build-step'
  * Gatekeeper will refuse it on first open (right-click → Open, once). Pass
  * `--signing-identity` to sign (a certificate name, or its SHA-1 when two share
  * a name), and `--notary-profile` - a `xcrun notarytool store-credentials`
- * keychain profile - to notarize and staple the DMG so it opens without a
- * warning on other Macs. `app/Desktop/Entitlements.plist`, if present, is
+ * keychain profile - or `--notarize` with an App Store Connect API key
+ * (`APP_STORE_CONNECT_API_KEY_ID`, `_ISSUER_ID`, and `_PATH` or the PEM in
+ * `APP_STORE_CONNECT_API_KEY`) to notarize and staple the DMG so it opens
+ * without a warning on other Macs. `app/Desktop/Entitlements.plist`, if present, is
  * applied to every executable.
  */
 
@@ -92,7 +94,7 @@ function declaredProjectVersion(): unknown {
 // Flags first, environment second: `--app-version 1.2.3` at a terminal,
 // `DESKTOP_APP_VERSION` in CI where it arrives as a secret. The chain itself
 // lives in @stacksjs/desktop-build so it can be asserted without a build.
-const { appName, bundleId, version, volumeName, signingIdentity, notaryProfile } = resolveDmgPackaging({
+const { appName, bundleId, version, volumeName, signingIdentity, notary } = resolveDmgPackaging({
   flags: parseOptions(),
   env: process.env,
   manifestTitle: manifest.title,
@@ -313,25 +315,37 @@ if (signingIdentity) {
  */
 async function notarize(target: string, what: string): Promise<void> {
   if (!signingIdentity)
-    throw new Error('A notary profile needs a signing identity (--signing-identity or DESKTOP_SIGNING_IDENTITY): Apple only notarizes signed code.')
+    throw new Error('Notarizing needs a signing identity (--signing-identity or DESKTOP_SIGNING_IDENTITY): Apple only notarizes signed code.')
   // notarytool takes a zip, dmg or pkg, not a bare .app.
   const upload = target.endsWith('.app') ? join(scratch, `${basename(target)}.zip`) : target
   if (upload !== target)
     await runBuildStep(['ditto', '-c', '-k', '--keepParent', target, upload], { cwd: scratch, describe: `Zipping ${basename(target)} for notarization` })
   log.info(`Notarizing ${what} (Apple usually answers within a few minutes)...`)
   // `--wait` exits 0 for "Invalid" too, so the status line is what decides.
-  const submitted = Bun.spawnSync(['xcrun', 'notarytool', 'submit', upload, '--keychain-profile', notaryProfile!, '--wait'], { stderr: 'pipe' })
+  const submitted = Bun.spawnSync(['xcrun', 'notarytool', 'submit', upload, ...notaryAuth!, '--wait'], { stderr: 'pipe' })
   const report = `${submitted.stdout.toString()}${submitted.stderr.toString()}`
   const status = report.match(/status: (\w[\w ]*)/g)?.pop()?.replace('status: ', '')
   if (submitted.exitCode !== 0 || status !== 'Accepted') {
     console.error(report.trim())
     const id = report.match(/id: ([0-9a-f-]{36})/)?.[1]
-    throw new Error(`Notarization of ${what} ${status ?? 'failed'}${id ? ` - see \`xcrun notarytool log ${id} --keychain-profile ${notaryProfile}\`` : ''}`)
+    throw new Error(`Notarization of ${what} ${status ?? 'failed'}${id ? ` - see \`xcrun notarytool log ${id} ${notaryAuth!.join(' ')}\`` : ''}`)
   }
   await runBuildStep(['xcrun', 'stapler', 'staple', target], { cwd: dirname(target), describe: `Stapling the notarization ticket to ${what}` })
 }
 
-if (notaryProfile)
+// A key held as PEM text (an encrypted `.env.production` value) goes to a
+// private file for this run: notarytool reads keys from disk only.
+const notaryAuth = notary && notarytoolAuthArgs('keyPem' in notary ? { ...notary, keyPath: privateKeyFile(notary.keyId, notary.keyPem) } : notary)
+
+function privateKeyFile(keyId: string, pem: string): string {
+  const directory = mkdtempSync(join(tmpdir(), 'stacks-notary-key-'))
+  const path = join(directory, `AuthKey_${keyId}.p8`)
+  writeFileSync(path, `${pem}\n`, { mode: 0o600 })
+  process.on('exit', () => rmSync(directory, { recursive: true, force: true }))
+  return path
+}
+
+if (notaryAuth)
   await notarize(appDir, basename(appDir))
 
 // The drag-to-install target every macOS DMG is expected to have.
@@ -370,15 +384,15 @@ if (signingIdentity) {
   })
 }
 
-if (notaryProfile) {
+if (notaryAuth) {
   await notarize(dmgPath, 'the DMG')
   log.success('Notarized and stapled')
 }
 
 log.success(`Built ${dmgPath}`)
 if (!signingIdentity) {
-  log.info('Unsigned build: Gatekeeper blocks the first launch. Right-click the app and choose Open, or pass --signing-identity and --notary-profile before distributing.')
+  log.info('Unsigned build: Gatekeeper blocks the first launch. Right-click the app and choose Open, or pass --signing-identity and --notarize before distributing.')
 }
-else if (!notaryProfile) {
-  log.info('Signed but not notarized: other Macs still warn on first open. Pass --notary-profile to notarize.')
+else if (!notaryAuth) {
+  log.info('Signed but not notarized: other Macs still warn on first open. Pass --notary-profile, or --notarize with an App Store Connect API key.')
 }

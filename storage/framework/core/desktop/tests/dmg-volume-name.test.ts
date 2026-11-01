@@ -152,7 +152,7 @@ describe('build:dmg', () => {
     // Every packaging input arrives from one chain, so a flag and a variable
     // cannot disagree about which one a given value honours. What that chain
     // resolves to is asserted directly in dmg-packaging.test.ts.
-    expect(dmg).toContain('const { appName, bundleId, version, volumeName, signingIdentity, notaryProfile } = resolveDmgPackaging({')
+    expect(dmg).toContain('const { appName, bundleId, version, volumeName, signingIdentity, notary } = resolveDmgPackaging({')
 
     // `process.env.` included deliberately: these names also appear in prose
     // above, and a needle that matches a comment pins nothing.

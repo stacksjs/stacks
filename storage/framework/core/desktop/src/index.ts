@@ -585,6 +585,10 @@ export interface DmgPackagingFlags {
   bundleId?: unknown
   signingIdentity?: unknown
   notaryProfile?: unknown
+  notarize?: unknown
+  apiKeyId?: unknown
+  apiIssuerId?: unknown
+  apiKeyPath?: unknown
   volumeName?: unknown
   [flag: string]: unknown
 }
@@ -607,6 +611,57 @@ export interface DmgPackaging {
   volumeName: string
   signingIdentity?: string
   notaryProfile?: string
+  /** How `notarytool` signs in, when the build is to be notarized. */
+  notary?: NotaryCredentials
+}
+
+/**
+ * How `notarytool` signs in: a keychain profile saved by `xcrun notarytool
+ * store-credentials`, or an App Store Connect API key, which needs no keychain
+ * and is what CI and the Mac App Store path (`desktop:apple`) already hold.
+ * The key is a `.p8` file or, from an encrypted `.env.production`, its PEM text.
+ */
+export type NotaryCredentials =
+  | { profile: string }
+  | { keyId: string, issuerId: string, keyPath: string }
+  | { keyId: string, issuerId: string, keyPem: string }
+
+/** The arguments that sign `notarytool` in. A key held as PEM text has to be written to `keyPath` first. */
+export function notarytoolAuthArgs(credentials: { profile: string } | { keyId: string, issuerId: string, keyPath: string }): string[] {
+  return 'profile' in credentials
+    ? ['--keychain-profile', credentials.profile]
+    : ['--key', credentials.keyPath, '--key-id', credentials.keyId, '--issuer', credentials.issuerId]
+}
+
+/**
+ * The notary credentials a build asked for. A keychain profile is a request
+ * in itself. An App Store Connect key is used only when notarizing was asked
+ * for (`--notarize` or `DESKTOP_NOTARIZE`): apps keep that key for the Mac App
+ * Store, and holding it should not turn every DMG build into a wait on Apple.
+ * Asking without complete credentials names what is missing.
+ */
+function resolveNotary(flags: DmgPackagingFlags, env: Record<string, string | undefined>): NotaryCredentials | undefined {
+  const profile = supplied(flags.notaryProfile) ?? supplied(env.DESKTOP_NOTARY_PROFILE)
+  if (profile) return { profile }
+  const requested = flags.notarize === true || ['1', 'true', 'yes'].includes(supplied(env.DESKTOP_NOTARIZE)?.toLowerCase() ?? '')
+  if (!requested) return undefined
+
+  const keyId = supplied(flags.apiKeyId) ?? supplied(env.APP_STORE_CONNECT_API_KEY_ID)
+  const issuerId = supplied(flags.apiIssuerId) ?? supplied(env.APP_STORE_CONNECT_API_ISSUER_ID)
+  const keyPath = supplied(flags.apiKeyPath) ?? supplied(env.APP_STORE_CONNECT_API_KEY_PATH)
+  // A value that went through a dotenv file keeps its line breaks as a literal `\n`.
+  const keyPem = supplied(env.APP_STORE_CONNECT_API_KEY)?.replaceAll('\\n', '\n')
+  const missing = [
+    !keyId && 'APP_STORE_CONNECT_API_KEY_ID (--api-key-id)',
+    !issuerId && 'APP_STORE_CONNECT_API_ISSUER_ID (--api-issuer-id)',
+    !keyPath && !keyPem && 'APP_STORE_CONNECT_API_KEY_PATH (--api-key-path) or APP_STORE_CONNECT_API_KEY',
+  ].filter(Boolean)
+  if (missing.length || !keyId || !issuerId)
+    throw new Error(`Notarizing needs a keychain profile (--notary-profile or DESKTOP_NOTARY_PROFILE) or an App Store Connect API key. Missing: ${missing.join(', ')}.`)
+  if (keyPath) return { keyId, issuerId, keyPath }
+  if (!keyPem!.includes('-----BEGIN PRIVATE KEY-----'))
+    throw new Error('APP_STORE_CONNECT_API_KEY must hold the PEM text of the .p8 key.')
+  return { keyId, issuerId, keyPem: keyPem! }
 }
 
 /**
@@ -676,6 +731,7 @@ export function resolveDmgPackaging(inputs: DmgPackagingInputs = {}): DmgPackagi
     }),
     signingIdentity: supplied(flags.signingIdentity) ?? supplied(env.DESKTOP_SIGNING_IDENTITY),
     notaryProfile: supplied(flags.notaryProfile) ?? supplied(env.DESKTOP_NOTARY_PROFILE),
+    notary: resolveNotary(flags, env),
   }
 }
 

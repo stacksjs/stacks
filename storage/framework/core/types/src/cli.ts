@@ -268,6 +268,10 @@ export type DmgOptions = {
   bundleId?: string
   signingIdentity?: string
   notaryProfile?: string
+  notarize?: boolean
+  apiKeyId?: string
+  apiIssuerId?: string
+  apiKeyPath?: string
   volumeName?: string
 } & BuildOptions
 

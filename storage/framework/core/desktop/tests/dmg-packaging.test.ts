@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { resolveDmgPackaging } from '../src'
+import { notarytoolAuthArgs, resolveDmgPackaging } from '../src'
 
 /**
  * How `build:dmg` decides what to call and how to sign a bundle.
@@ -120,6 +120,46 @@ describe('resolveDmgPackaging', () => {
     it('takes a notary profile from a flag or the environment', () => {
       expect(resolveDmgPackaging({ flags: { notaryProfile: 'flag-profile' }, env: { DESKTOP_NOTARY_PROFILE: 'env-profile' } }).notaryProfile).toBe('flag-profile')
       expect(resolveDmgPackaging({ env: { DESKTOP_NOTARY_PROFILE: 'env-profile' } }).notaryProfile).toBe('env-profile')
+      expect(resolveDmgPackaging({ env: { DESKTOP_NOTARY_PROFILE: 'env-profile' } }).notary).toEqual({ profile: 'env-profile' })
+    })
+  })
+
+  describe('notarizing with an App Store Connect key', () => {
+    const KEY = { APP_STORE_CONNECT_API_KEY_ID: 'C2PX86L7M9', APP_STORE_CONNECT_API_ISSUER_ID: 'issuer-uuid', APP_STORE_CONNECT_API_KEY_PATH: '/keys/AuthKey_C2PX86L7M9.p8' }
+    const PEM = '-----BEGIN PRIVATE KEY-----\\nMIGT\\n-----END PRIVATE KEY-----'
+
+    it('leaves a key unused unless notarizing was asked for', () => {
+      // Apps hold this key for the Mac App Store; a DMG build should not start waiting on Apple because of it.
+      expect(resolveDmgPackaging({ env: KEY }).notary).toBeUndefined()
+    })
+
+    it('uses the key when asked, by flag or environment', () => {
+      const wanted = { keyId: 'C2PX86L7M9', issuerId: 'issuer-uuid', keyPath: '/keys/AuthKey_C2PX86L7M9.p8' }
+      expect(resolveDmgPackaging({ flags: { notarize: true }, env: KEY }).notary).toEqual(wanted)
+      expect(resolveDmgPackaging({ env: { ...KEY, DESKTOP_NOTARIZE: 'true' } }).notary).toEqual(wanted)
+      expect(resolveDmgPackaging({ flags: { notarize: true, apiKeyId: 'FLAGKEY123', apiIssuerId: 'flag-issuer', apiKeyPath: '/flag.p8' }, env: KEY }).notary)
+        .toEqual({ keyId: 'FLAGKEY123', issuerId: 'flag-issuer', keyPath: '/flag.p8' })
+    })
+
+    it('reads the key itself from an encrypted env value, restoring its line breaks', () => {
+      const env = { APP_STORE_CONNECT_API_KEY_ID: 'C2PX86L7M9', APP_STORE_CONNECT_API_ISSUER_ID: 'issuer-uuid', APP_STORE_CONNECT_API_KEY: PEM }
+      expect(resolveDmgPackaging({ flags: { notarize: true }, env }).notary)
+        .toEqual({ keyId: 'C2PX86L7M9', issuerId: 'issuer-uuid', keyPem: '-----BEGIN PRIVATE KEY-----\nMIGT\n-----END PRIVATE KEY-----' })
+    })
+
+    it('prefers a keychain profile to a key', () => {
+      expect(resolveDmgPackaging({ flags: { notarize: true, notaryProfile: 'profile' }, env: KEY }).notary).toEqual({ profile: 'profile' })
+    })
+
+    it('names what is missing when asked without complete credentials', () => {
+      expect(() => resolveDmgPackaging({ flags: { notarize: true }, env: {} })).toThrow('APP_STORE_CONNECT_API_KEY_ID (--api-key-id), APP_STORE_CONNECT_API_ISSUER_ID (--api-issuer-id)')
+      expect(() => resolveDmgPackaging({ flags: { notarize: true }, env: { APP_STORE_CONNECT_API_KEY_ID: 'K', APP_STORE_CONNECT_API_ISSUER_ID: 'I' } })).toThrow('APP_STORE_CONNECT_API_KEY_PATH')
+      expect(() => resolveDmgPackaging({ flags: { notarize: true }, env: { APP_STORE_CONNECT_API_KEY_ID: 'K', APP_STORE_CONNECT_API_ISSUER_ID: 'I', APP_STORE_CONNECT_API_KEY: 'not a key' } })).toThrow('PEM text')
+    })
+
+    it('signs notarytool in with either kind of credential', () => {
+      expect(notarytoolAuthArgs({ profile: 'p' })).toEqual(['--keychain-profile', 'p'])
+      expect(notarytoolAuthArgs({ keyId: 'K', issuerId: 'I', keyPath: '/k.p8' })).toEqual(['--key', '/k.p8', '--key-id', 'K', '--issuer', 'I'])
     })
   })
 })
