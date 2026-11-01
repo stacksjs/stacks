@@ -9,7 +9,7 @@ import { projectPath } from '@stacksjs/path'
 import { buildComponentLibrary } from '@stacksjs/stx'
 import { functionEntryData } from './entries'
 import { ambientGlobalsUsed, stxAmbientGlobals } from './globals'
-import { libraryManifest, serializeManifest } from './manifest'
+import { generatedReadme, libraryManifest, serializeManifest } from './manifest'
 import { configuredLibrary, LibraryConfigError, resolveLibraryPackages } from './packages'
 
 export interface LibraryBuildReport {
@@ -228,6 +228,19 @@ async function writeManifest(pkg: ResolvedLibraryPackage, config: LibraryConfig 
   )
 
   await Bun.write(resolve(pkg.dir, 'package.json'), serializeManifest(withRuntime(manifest, pkg)))
+  await Bun.write(resolve(pkg.dir, 'README.md'), await readme(pkg, config))
+}
+
+async function readme(pkg: ResolvedLibraryPackage, config: LibraryConfig | undefined): Promise<string> {
+  if (!pkg.readme)
+    return generatedReadme(pkg, config)
+
+  const file = Bun.file(projectPath(pkg.readme))
+
+  if (!await file.exists())
+    throw new LibraryConfigError(`Package "${pkg.name}" names readme "${pkg.readme}", which does not exist.`)
+
+  return file.text()
 }
 
 function withRuntime(manifest: LibraryManifest, pkg: ResolvedLibraryPackage): LibraryManifest {

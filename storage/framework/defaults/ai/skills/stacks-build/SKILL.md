@@ -154,6 +154,8 @@ generated and gitignored.
 and refuses when pantry is not on PATH. A package that apps install with Bun or
 npm sets `registry: 'npm'`, which publishes with `pantry publish --npm`, or with
 `bun publish` / `npm publish` where pantry is not installed.
+Each package publishes its own `readme` (a project-relative Markdown file) as
+README.md, or a short one the build writes from its `description`.
 
 ### Things that will stop a build, on purpose
 

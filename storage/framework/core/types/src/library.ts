@@ -185,6 +185,12 @@ export interface LibraryPackageOptions {
   registry?: 'pantry' | 'npm'
 
   /**
+   * A Markdown file, relative to the project root, published as the package's
+   * README.md. Without one, the build writes a short README from `description`.
+   */
+  readme?: string
+
+  /**
    * Should this package generate a sourcemap?
    * @default false
    */

@@ -41,6 +41,8 @@ export interface LibraryPackageDefinition {
   private: boolean
   access: 'public' | 'restricted'
   registry: 'pantry' | 'npm'
+  /** Project-relative README to publish, when the package names one. */
+  readme?: string
   runtime: 'standalone' | 'stx'
   sourcemap: boolean
   include: string[]
@@ -160,6 +162,7 @@ function toDefinition(option: LibraryPackageOptions, fallback: { license?: strin
     private: option.private ?? false,
     access: option.access ?? 'public',
     registry: option.registry ?? 'pantry',
+    readme: option.readme,
     runtime: option.runtime ?? 'standalone',
     sourcemap: option.shouldGenerateSourcemap ?? false,
     include,

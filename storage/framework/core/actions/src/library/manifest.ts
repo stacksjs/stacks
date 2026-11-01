@@ -25,6 +25,24 @@ export interface LibraryManifest {
 }
 
 /**
+ * The README a package publishes when its config names none. The manifest
+ * always lists README.md in `files`, so without this every package went to
+ * the registry with an empty page.
+ */
+export function generatedReadme(pkg: ResolvedLibraryPackage, config: LibraryConfig | undefined): string {
+  const lines = [`# ${pkg.name}`, '', pkg.description, '', '## Install', '', '```sh', `bun add ${pkg.name}`, '```', '']
+  const license = pkg.license ?? config?.license
+
+  if (config?.repository)
+    lines.push(`Source: https://github.com/${config.repository}`, '')
+
+  if (license)
+    lines.push(`License: ${license}`, '')
+
+  return lines.join('\n')
+}
+
+/**
  * Build the package.json a library package publishes.
  *
  * `version` is threaded in rather than read here: every package follows the

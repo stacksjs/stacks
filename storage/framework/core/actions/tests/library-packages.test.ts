@@ -288,7 +288,7 @@ describe('buildLibraryPackages', () => {
       license: 'MIT',
       packages: [
         { name: 'test-fx-counter', kind: 'functions', include: ['counter.ts'], runtime: 'stx' },
-        { name: 'test-fx-dark', kind: 'functions', include: ['dark.ts'], runtime: 'stx' },
+        { name: 'test-fx-dark', kind: 'functions', include: ['dark.ts'], runtime: 'stx', readme: 'README.md' },
         // A named subset rather than the whole directory: this asserts that a
         // package claims only what it asked for, and keeps the compile small.
         { name: 'test-ui', kind: 'components', include: ['Taskbar.stx', 'Window.stx'], prefix: 'test' },
@@ -314,6 +314,15 @@ describe('buildLibraryPackages', () => {
       const manifest = await Bun.file(resolve(counter, 'package.json')).json()
       expect(manifest.name).toBe('test-fx-counter')
       expect(manifest.stacks.sources).toEqual(['resources/functions/counter.ts'])
+
+      // The manifest lists README.md in `files`, so one is always written: the
+      // package's own when it names one, otherwise one made from its description.
+      expect(manifest.files).toContain('README.md')
+      const readme = await Bun.file(resolve(counter, 'README.md')).text()
+      expect(readme).toStartWith('# test-fx-counter\n')
+      expect(readme).toContain('bun add test-fx-counter')
+      expect(readme).toContain('https://github.com/acme/acme')
+      expect(await Bun.file(resolve(dark, 'README.md')).text()).toBe(await Bun.file(projectPath('README.md')).text())
 
       // The component packages compile the same .stx files to custom elements.
       const ui = projectPath('storage/framework/libs/packages/test-ui')
