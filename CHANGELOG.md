@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.407...v0.75.408)
+
+## 🐛 Bug Fixes
+
+- **payments**: reuse a connected customer only when it is the buyer's in this install ([8221f8e](https://github.com/stacksjs/stacks/commit/8221f8e)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.406...v0.75.407)
 
 ## 🐛 Bug Fixes
