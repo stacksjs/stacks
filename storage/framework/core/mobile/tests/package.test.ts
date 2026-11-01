@@ -44,6 +44,16 @@ test('the built mobile package has usable declarations and bundles for browsers'
     await mkdir(installed, { recursive: true })
     await cp(join(pkg, 'package.json'), join(installed, 'package.json'))
     await cp(join(pkg, 'dist'), join(installed, 'dist'), { recursive: true })
+    // The package depends on @stacksjs/types, whose mobile entry the testing
+    // declarations import. An install brings it in; the sandbox does so with
+    // the entry's declarations alone (the source has no runtime code).
+    const installedTypes = join(directory, 'node_modules/@stacksjs/types')
+    await mkdir(installedTypes, { recursive: true })
+    await writeFile(join(installedTypes, 'package.json'), JSON.stringify({
+      name: '@stacksjs/types', version: '0.0.0', type: 'module',
+      exports: { './mobile': { types: './mobile.d.ts' } },
+    }))
+    await cp(join(source, '../types/src/mobile.ts'), join(installedTypes, 'mobile.d.ts'))
     await cp(join(import.meta.dir, 'fixtures/consumer.ts'), join(directory, 'consumer.ts'))
     const compiler = join(dirname(Bun.resolveSync('typescript', import.meta.dir)), '../bin/tsc')
     await run([process.execPath, compiler, '--project', join(directory, 'tsconfig.json'), '--pretty', 'false'], directory)
