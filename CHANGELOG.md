@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.406...v0.75.407)
+
+## 🐛 Bug Fixes
+
+- **desktop**: make the embedded provisioning profile world-readable in the Store bundle ([a6a386a](https://github.com/stacksjs/stacks/commit/a6a386a)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **mobile**: install the types package beside mobile in the package sandbox ([16d672e](https://github.com/stacksjs/stacks/commit/16d672e)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.405...v0.75.406)
 
 ## 🐛 Bug Fixes
