@@ -1176,9 +1176,60 @@ export async function resolveDeployEnvValues(
   }
   catch {
     // A partial or unreadable environment is never a valid empty environment.
-    // Parser/crypto errors can carry values, so only report the file here.
-    throw new Error(`Cannot load deployment environment from ${fileName}; restore its decryption key and readable file before deploying.`)
+    // Parser/crypto errors can carry values, so the cause is never forwarded;
+    // the key names and which private key was looked for are safe to say.
+    throw new Error(`Cannot load deployment environment from ${fileName}; restore its decryption key and readable file before deploying.${deployEnvFailureDetail(filePath, fileName)}`)
   }
+}
+
+/**
+ * What a deploy that could not read its environment file should say beyond
+ * "restore its decryption key".
+ *
+ * Names only: the encrypted keys in the file and the private-key variable the
+ * env layer looked for, plus whether it was set. A lost key on 2026-10-31
+ * stopped a deploy with the generic message, and finding out that five keys
+ * were encrypted to a public key whose private half was nowhere took far
+ * longer than reading this would have. Values, ciphertext and key material
+ * are never included.
+ */
+export function deployEnvFailureDetail(filePath: string, fileName: string): string {
+  let text: string
+  try {
+    text = readFileSync(filePath, 'utf8')
+  }
+  catch {
+    return ''
+  }
+
+  const encrypted: string[] = []
+  let publicKeyName = ''
+  for (const line of text.split(/\r?\n/)) {
+    const match = line.match(/^\s*(?:export\s+)?([A-Z0-9_]+)\s*=\s*['"]?(.*)$/i)
+    if (!match)
+      continue
+    const key = match[1] ?? ''
+    const value = match[2] ?? ''
+    if (/^DOTENV_PUBLIC_KEY/.test(key)) {
+      publicKeyName = key
+      continue
+    }
+    if (/^(?:encrypted|enc):/.test(value))
+      encrypted.push(key)
+  }
+
+  if (encrypted.length === 0)
+    return ''
+
+  const privateKeyName = publicKeyName ? publicKeyName.replace('DOTENV_PUBLIC_KEY', 'DOTENV_PRIVATE_KEY') : 'DOTENV_PRIVATE_KEY'
+  const keysFile = join(dirname(filePath), '.env.keys')
+  const source = process.env[privateKeyName]
+    ? `${privateKeyName} is set but does not decrypt them; it must be the private half of ${publicKeyName || 'the public key in the file'}`
+    : existsSync(keysFile)
+      ? `${privateKeyName} is not set in the environment, and .env.keys did not supply a matching one`
+      : `${privateKeyName} is not set in the environment and there is no .env.keys beside ${fileName}`
+
+  return ` Encrypted in ${fileName}: ${encrypted.join(', ')}. ${source}.`
 }
 
 /**
