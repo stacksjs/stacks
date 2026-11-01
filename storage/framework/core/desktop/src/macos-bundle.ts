@@ -122,7 +122,13 @@ export function assembleMacosApp(options: AssembleMacosAppOptions): AssembledMac
 
   if (options.distribution === 'app-store') {
     if (!options.provisioningProfile) throw new Error('A Mac App Store build needs a provisioning profile')
-    copyFileSync(options.provisioningProfile, join(contents, 'embedded.provisionprofile'))
+    const embedded = join(contents, 'embedded.provisionprofile')
+    copyFileSync(options.provisioningProfile, embedded)
+    // copyFileSync keeps the source's mode, and a downloaded profile is kept
+    // private (0600) like any credential. A 0600 file inside the bundle is
+    // installed unreadable to everyone but root, which App Store Connect refuses
+    // with error 90255 because the code signature then cannot be verified.
+    chmodSync(embedded, 0o644)
   }
   const signed = options.unsandboxed ? { ...config, sandbox: false } : config
   const entitlementsPath = join(options.output, `${config.appName}.entitlements`)

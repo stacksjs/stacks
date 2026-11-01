@@ -152,7 +152,7 @@ describe('icon and output', () => {
 })
 
 describe('assembleMacosApp', () => {
-  const { mkdtempSync, writeFileSync, readFileSync, existsSync, rmSync } = require('node:fs')
+  const { mkdtempSync, writeFileSync, readFileSync, existsSync, rmSync, chmodSync, statSync } = require('node:fs')
   const { tmpdir } = require('node:os')
   const { join } = require('node:path')
   const { assembleMacosApp } = require('../src/index')
@@ -195,6 +195,19 @@ describe('assembleMacosApp', () => {
       const result = assembleMacosApp({ ...options, provisioningProfile: join(dir, 'profile'), signingIdentity: '3rd Party Mac Developer Application: X' })
       expect(existsSync(join(result.appPath, 'Contents/embedded.provisionprofile'))).toBe(true)
       expect(result.notes.join()).toContain('icon')
+    }
+    finally { rmSync(dir, { recursive: true, force: true }) }
+  })
+
+  test('the embedded profile is readable by everyone even when the downloaded one is private', () => {
+    const dir = fixture()
+    try {
+      // A downloaded profile is kept 0600 like a credential; copying it keeps
+      // that mode, and App Store Connect rejects the package with 90255.
+      chmodSync(join(dir, 'profile'), 0o600)
+      const options = { config: resolveMacosDesktop(base, '1.0.0'), root: dir, host: join(dir, 'host'), nativeBundle: join(dir, 'screens.js'), output: join(dir, 'out'), distribution: 'app-store' as const, run: () => {} }
+      const result = assembleMacosApp({ ...options, provisioningProfile: join(dir, 'profile'), signingIdentity: '3rd Party Mac Developer Application: X' })
+      expect(statSync(join(result.appPath, 'Contents/embedded.provisionprofile')).mode & 0o777).toBe(0o644)
     }
     finally { rmSync(dir, { recursive: true, force: true }) }
   })
