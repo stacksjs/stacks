@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.404...v0.75.405)
+
+## 🐛 Bug Fixes
+
+- **libs**: a library package names its registry, and libs:publish sends it there ([7b93a1f](https://github.com/stacksjs/stacks/commit/7b93a1f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.403...v0.75.404)
 
 ## 🐛 Bug Fixes
