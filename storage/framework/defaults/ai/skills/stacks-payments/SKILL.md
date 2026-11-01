@@ -164,6 +164,12 @@ refund), so every call acts as the account with `asAccount(id)` (the
 `Stripe-Account` header). Stripe's fees are the merchant's; webhooks for it
 arrive on the **Connect** endpoint with `event.account` set.
 
+`connectedCustomer(user, account)` reuses a customer on the account only when
+its `stacks_user_id`, email and `stacks_install` mark (an HMAC of the app key,
+`connectInstallFingerprint()`) all match, since local ids repeat across
+databases that share an account. An unmarked older customer is adopted on a
+matching email and then marked; anything else gets a new customer.
+
 ```typescript
 import { asAccount, checkoutLineItemsTotal, connectedCustomer, connectRefund, directCheckout, directCheckoutPaymentData, directSubscriptionParams, manageDirectSubscription } from '@stacksjs/payments'
 

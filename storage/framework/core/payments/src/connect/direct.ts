@@ -2,6 +2,8 @@ import type { UserModel } from '@stacksjs/orm'
 import type Stripe from 'stripe'
 import type { DestinationOptions } from './destination'
 import type { InlineRecurringPrice } from './subscription'
+import { createHmac } from 'node:crypto'
+import { app } from '@stacksjs/config'
 import { stripe } from '../drivers/stripe'
 import { assertSameOriginUrl } from '../billable/checkout'
 import { freshIdempotencyKey, idempotencyFingerprint, stacksIdempotencyKey } from '../idempotency'
@@ -112,43 +114,107 @@ export type ConnectPayer = Pick<UserModel, 'id'> & { email?: string | null, name
 /**
  * The idempotency key for creating `user`'s customer on `accountId`: the same
  * for every attempt with the same details, so two requests racing to create
- * one make one, while a changed name or email is a new request rather than a
- * reused key Stripe would refuse.
+ * one make one, while a changed name, email or install is a new request
+ * rather than a reused key Stripe would refuse or answer with another
+ * install's customer.
  */
 export function connectedCustomerIdempotencyKey(accountId: string, userId: number | string, params: Stripe.CustomerCreateParams = {}): string {
   return stacksIdempotencyKey('connect.customer.create', userId, accountId, idempotencyFingerprint(params))
 }
 
 /**
+ * This install's mark on the customers it creates on connected accounts
+ * (`metadata.stacks_install`): an HMAC of a fixed label under the app key,
+ * so it is stable for the life of the install, differs between installs that
+ * share a Connect account, and does not reveal the key. Without an app key it
+ * falls back to the app URL, then to one shared mark, which leaves the email
+ * as the only proof of ownership.
+ */
+export function connectInstallFingerprint(appKey: string | null | undefined = app?.key, appUrl: string | null | undefined = app?.url): string {
+  const secret = String(appKey || '').trim() || String(appUrl || '').trim() || 'stacks'
+  return createHmac('sha256', secret).update('stacks.payments.connect.install').digest('hex').slice(0, 16)
+}
+
+/** Options for {@link connectedCustomer}. */
+export interface ConnectedCustomerOptions {
+  /** This install's mark; defaults to {@link connectInstallFingerprint}. */
+  install?: string
+}
+
+function normalizedEmail(email: string | null | undefined): string {
+  return String(email ?? '').trim().toLowerCase()
+}
+
+/**
  * The user's customer on a connected account, created on first use. A
  * customer belongs to one account, so the platform's own customer (the user's
  * `stripe_id`) cannot pay a direct charge; each merchant the user buys from
- * holds its own. Found again by the user's id in the customer's metadata,
- * looked up by email first (immediately consistent) and by metadata search
- * when the email has changed, and created with a deterministic idempotency
- * key, so nothing on the app's side has to remember it.
+ * holds its own.
+ *
+ * A customer is reused only when it provably belongs to this buyer in this
+ * install: its `stacks_user_id` is the user's id, its email is the user's
+ * (case aside; both empty for a user without one), and its `stacks_install`
+ * is this install's mark. Local ids repeat across databases that share an
+ * account (CI runs, previews, restored backups, two installs on one Connect
+ * account), so an id alone would hand one person another's customer. A
+ * customer from before the mark existed is adopted on a matching email and
+ * then marked as this install's. Anything else gets a new customer, created
+ * with an idempotency key over the full parameters, mark included.
  */
 export async function connectedCustomer(
   user: ConnectPayer,
   accountId: string,
   client: CustomerClient = stripe,
+  customerOptions: ConnectedCustomerOptions = {},
 ): Promise<Stripe.Customer> {
   requireAccountId(accountId, 'connectedCustomer')
   const userId = String(user.id)
+  const email = normalizedEmail(user.email)
+  const install = customerOptions.install ?? connectInstallFingerprint()
   const options = asAccount(accountId)
-  const own = (customer: Stripe.Customer | Stripe.DeletedCustomer): customer is Stripe.Customer =>
-    !('deleted' in customer && customer.deleted) && (customer as Stripe.Customer).metadata?.stacks_user_id === userId
+
+  // 2: this install's customer for this buyer; 1: an unmarked one with the buyer's email; 0: not theirs.
+  const claim = (customer: Stripe.Customer | Stripe.DeletedCustomer): number => {
+    if ('deleted' in customer && customer.deleted) return 0
+    const found = customer as Stripe.Customer
+    if (found.metadata?.stacks_user_id !== userId || normalizedEmail(found.email) !== email) return 0
+    const mark = found.metadata?.stacks_install
+    if (mark === install) return 2
+    return !mark && email ? 1 : 0
+  }
+  const best = (customers: Array<Stripe.Customer | Stripe.DeletedCustomer>): Stripe.Customer | undefined => {
+    let pick: Stripe.Customer | undefined
+    let rank = 0
+    for (const customer of customers) {
+      const score = claim(customer)
+      if (score > rank) {
+        pick = customer as Stripe.Customer
+        rank = score
+      }
+    }
+    return pick
+  }
+  const adopt = async (customer: Stripe.Customer): Promise<Stripe.Customer> => {
+    if (customer.metadata?.stacks_install === install) return customer
+    try {
+      return await client.customers.update(customer.id, { metadata: { stacks_install: install } }, options)
+    }
+    catch {
+      // Marking is a narrowing, not a requirement: the email already matched.
+      return customer
+    }
+  }
 
   if (user.email) {
     const byEmail = await client.customers.list({ email: user.email, limit: 100 }, options)
-    const found = byEmail.data.find(own)
-    if (found) return found
+    const found = best(byEmail.data)
+    if (found) return await adopt(found)
   }
 
   try {
-    const searched = await client.customers.search({ query: `metadata['stacks_user_id']:'${userId.replace(/'/g, '')}'`, limit: 1 }, options)
-    const found = searched.data.find(own)
-    if (found) return found
+    const searched = await client.customers.search({ query: `metadata['stacks_user_id']:'${userId.replace(/'/g, '')}'`, limit: 100 }, options)
+    const found = best(searched.data)
+    if (found) return await adopt(found)
   }
   catch {
     // Search is not offered everywhere; the create below is idempotent anyway.
@@ -157,7 +223,7 @@ export async function connectedCustomer(
   const params: Stripe.CustomerCreateParams = {
     ...(user.email ? { email: user.email } : {}),
     ...(user.name ? { name: user.name } : {}),
-    metadata: { stacks_user_id: userId },
+    metadata: { stacks_user_id: userId, stacks_install: install },
   }
   return await client.customers.create(params, asAccount(accountId, { idempotencyKey: connectedCustomerIdempotencyKey(accountId, userId, params) }))
 }
