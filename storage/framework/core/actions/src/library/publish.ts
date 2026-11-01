@@ -10,6 +10,7 @@ export interface LibraryPublishPlan {
   version: string
   dir: string
   access: 'public' | 'restricted'
+  registry: 'pantry' | 'npm'
   tarballFiles: number
 }
 
@@ -54,6 +55,7 @@ export async function planLibraryPublish(config?: LibraryConfig): Promise<Librar
       version: manifest.version ?? '0.0.0',
       dir: pkg.dir,
       access: pkg.access,
+      registry: pkg.registry,
       tarballFiles: built.length,
     })
   }
@@ -68,32 +70,34 @@ export async function planLibraryPublish(config?: LibraryConfig): Promise<Librar
 }
 
 /**
- * The publisher to shell out to.
+ * The publisher to shell out to for a package bound for `registry`.
  *
  * `pantry publish` first. Pantry is this project's package manager, it is what
  * the release workflows already install, and it is the only one of the three
- * that publishes to the Pantry registry — a release that went out through
- * `bun publish` reached npm and nothing else, which is not where these
- * packages are meant to live.
+ * that publishes to the Pantry registry. A Pantry-bound package therefore
+ * needs it: falling back to `bun publish` sent such a release to npm and
+ * nowhere else, so that is refused rather than done quietly.
  *
- * It also takes the same flags this function's callers pass: `--access` and
- * `--dry-run` mean what they mean everywhere else, so nothing downstream has
- * to know which publisher was chosen. `--npm` is pantry's own escape hatch for
- * an npm-bound package; it belongs on the package, not here.
+ * An npm-bound package (`registry: 'npm'`) goes through `pantry publish --npm`,
+ * or `bun publish` and then `npm publish` when pantry is not installed. Neither
+ * of those is guaranteed present either (npm was not on the machine this was
+ * written on, and hardcoding it turned `libs:publish` into an ENOENT), so the
+ * choice is made from what is actually on PATH.
  *
- * `bun` and then `npm` remain as fallbacks. Neither is guaranteed present —
- * npm was not on the machine this was written on, and hardcoding it turned
- * `libs:publish` into an ENOENT — so the choice is made from what is actually
- * on PATH rather than assumed.
+ * Every publisher takes the flags the caller adds: `--access` and `--dry-run`
+ * mean the same thing to all three.
  */
-export function publishCommand(): string[] {
-  if (Bun.which('pantry'))
-    return ['pantry', 'publish']
+export function publishCommand(registry: 'pantry' | 'npm' = 'pantry', which: (bin: string) => string | null = Bun.which): string[] {
+  if (which('pantry'))
+    return registry === 'npm' ? ['pantry', 'publish', '--npm'] : ['pantry', 'publish']
 
-  if (Bun.which('bun'))
+  if (registry === 'pantry')
+    throw new Error('This package publishes to the Pantry registry, which only `pantry publish` reaches, and `pantry` is not on PATH. Install pantry, or set `registry: \'npm\'` on the package in config/library.ts.')
+
+  if (which('bun'))
     return ['bun', 'publish']
 
-  if (Bun.which('npm'))
+  if (which('npm'))
     return ['npm', 'publish']
 
   throw new Error('None of `pantry`, `bun` or `npm` is on PATH, so there is nothing to publish with.')
@@ -109,10 +113,9 @@ export function publishCommand(): string[] {
  */
 export async function publishLibraryPackages(options: { dryRun?: boolean, config?: LibraryConfig } = {}): Promise<LibraryPublishPlan[]> {
   const plans = await planLibraryPublish(options.config)
-  const command = publishCommand()
 
   for (const plan of plans) {
-    const args = [...command, '--access', plan.access]
+    const args = [...publishCommand(plan.registry), '--access', plan.access]
 
     if (options.dryRun)
       args.push('--dry-run')

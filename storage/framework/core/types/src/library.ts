@@ -176,6 +176,15 @@ export interface LibraryPackageOptions {
   access?: 'public' | 'restricted'
 
   /**
+   * Where `buddy libs:publish` sends it. `'pantry'` is the Pantry registry and
+   * needs `pantry` on PATH. `'npm'` is the npm registry, for a package that
+   * apps install with Bun or npm, published by `pantry publish --npm`, or by
+   * `bun publish` / `npm publish` when pantry is not installed.
+   * @default 'pantry'
+   */
+  registry?: 'pantry' | 'npm'
+
+  /**
    * Should this package generate a sourcemap?
    * @default false
    */

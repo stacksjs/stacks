@@ -150,6 +150,11 @@ Packages build in `storage/framework/libs/packages/<dir>/`, where `<dir>` is
 the unscoped npm name unless the entry sets `dir`. The whole directory is
 generated and gitignored.
 
+`libs:publish` sends each package to the Pantry registry with `pantry publish`,
+and refuses when pantry is not on PATH. A package that apps install with Bun or
+npm sets `registry: 'npm'`, which publishes with `pantry publish --npm`, or with
+`bun publish` / `npm publish` where pantry is not installed.
+
 ### Things that will stop a build, on purpose
 
 - **A package that matches no files.** Nearly always a typo'd glob, and the

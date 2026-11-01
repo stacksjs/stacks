@@ -40,6 +40,7 @@ export interface LibraryPackageDefinition {
   version?: string
   private: boolean
   access: 'public' | 'restricted'
+  registry: 'pantry' | 'npm'
   runtime: 'standalone' | 'stx'
   sourcemap: boolean
   include: string[]
@@ -158,6 +159,7 @@ function toDefinition(option: LibraryPackageOptions, fallback: { license?: strin
     version: option.version,
     private: option.private ?? false,
     access: option.access ?? 'public',
+    registry: option.registry ?? 'pantry',
     runtime: option.runtime ?? 'standalone',
     sourcemap: option.shouldGenerateSourcemap ?? false,
     include,

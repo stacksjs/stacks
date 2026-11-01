@@ -406,48 +406,36 @@ describe('workspace globs vs generated packages (#2387)', () => {
 })
 
 describe('publishCommand', () => {
+  const on = (...bins: string[]) => (bin: string) => (bins.includes(bin) ? `/usr/local/bin/${bin}` : null)
+
   it('publishes through pantry when it is installed', () => {
     // Pantry is the package manager this project ships and the only one of
-    // the three that reaches the Pantry registry. A release that fell through
-    // to `bun publish` went to npm and nowhere else.
-    const which = Bun.which
-    Bun.which = ((name: string) => (name === 'pantry' ? '/usr/local/bin/pantry' : null)) as typeof Bun.which
-
-    try {
-      expect(publishCommand()).toEqual(['pantry', 'publish'])
-    }
-    finally {
-      Bun.which = which
-    }
+    // the three that reaches the Pantry registry.
+    expect(publishCommand('pantry', on('pantry', 'bun'))).toEqual(['pantry', 'publish'])
   })
 
-  it('falls back to bun, and then to npm', () => {
-    const which = Bun.which
+  it('refuses a Pantry-bound package without pantry rather than sending it to npm', () => {
+    // Falling through to `bun publish` sent such a release to npm and nowhere else.
+    expect(() => publishCommand('pantry', on('bun', 'npm'))).toThrow('`pantry` is not on PATH')
+  })
 
-    try {
-      Bun.which = ((name: string) => (name === 'bun' ? '/usr/local/bin/bun' : null)) as typeof Bun.which
-      expect(publishCommand()).toEqual(['bun', 'publish'])
-
-      Bun.which = ((name: string) => (name === 'npm' ? '/usr/local/bin/npm' : null)) as typeof Bun.which
-      expect(publishCommand()).toEqual(['npm', 'publish'])
-    }
-    finally {
-      Bun.which = which
-    }
+  it('sends an npm-bound package to npm, whichever publisher is installed', () => {
+    // Before packages could name a registry, one that apps install with Bun went
+    // to the Pantry registry whenever pantry was on PATH.
+    expect(publishCommand('npm', on('pantry', 'bun'))).toEqual(['pantry', 'publish', '--npm'])
+    expect(publishCommand('npm', on('bun', 'npm'))).toEqual(['bun', 'publish'])
+    expect(publishCommand('npm', on('npm'))).toEqual(['npm', 'publish'])
   })
 
   it('says so rather than spawning something that is not there', () => {
-    const which = Bun.which
-    Bun.which = (() => null) as typeof Bun.which
+    // Hardcoding a publisher that is absent turned this into an ENOENT
+    // from deep inside a spawn, which named neither the cause nor the fix.
+    expect(() => publishCommand('npm', on())).toThrow(/pantry/)
+  })
 
-    try {
-      // Hardcoding a publisher that is absent turned this into an ENOENT
-      // from deep inside a spawn, which named neither the cause nor the fix.
-      expect(() => publishCommand()).toThrow(/pantry/)
-    }
-    finally {
-      Bun.which = which
-    }
+  it('takes the registry from the package, and Pantry when it names none', () => {
+    const packages = normalizeLibraryPackages({ packages: [{ name: 'to-npm', registry: 'npm' }, { name: 'to-pantry' }] })
+    expect(packages.map(pkg => `${pkg.name}:${pkg.registry}`)).toEqual(['to-npm:npm', 'to-pantry:pantry'])
   })
 })
 
