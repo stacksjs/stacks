@@ -84,7 +84,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/sites` | [`stacks-sites`](../stacks-sites/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sites/src/index.ts) | 3 |
 | `@stacksjs/skills` | [`stacks-skills`](../stacks-skills/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/skills/src/index.ts) | 1 |
 | `@stacksjs/slug` | [`stacks-slug`](../stacks-slug/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/slug/src/index.ts) | 5 |
-| `@stacksjs/sms` | [`stacks-sms`](../stacks-sms/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/index.ts) | 5 |
+| `@stacksjs/sms` | [`stacks-sms`](../stacks-sms/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/index.ts) | 6 |
 | `@stacksjs/socials` | [`stacks-socials`](../stacks-socials/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/socials/src/index.ts) | 17 |
 | `@stacksjs/storage` | [`stacks-storage`](../stacks-storage/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/storage/src/index.ts) | 47 |
 | `@stacksjs/strings` | [`stacks-strings`](../stacks-strings/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/strings/src/index.ts) | 10 |
@@ -817,7 +817,7 @@ Declared runtime exports: `SMS`, `TwilioDriver`, `VonageDriver`, `createTwilioDr
 
 Local source modules: [src/compliance.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/compliance.ts), [src/drivers/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/drivers/index.ts), [src/drivers/twilio.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/drivers/twilio.ts), [src/drivers/vonage.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/drivers/vonage.ts), [src/inbound.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/inbound.ts), [src/keywords.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/keywords.ts), [src/opt-out.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/opt-out.ts), [src/sms.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/sms.ts).
 
-Evidence directory: [5 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [6 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/socials
 
