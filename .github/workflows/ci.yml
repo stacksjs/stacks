@@ -88,6 +88,7 @@ jobs:
           ./storage/framework/core/actions/tests/project-scripts.test.ts
           ./storage/framework/core/testing/tests/process-tree.test.ts
           ./storage/framework/core/testing/tests/owned-artifacts.test.ts
+          ./storage/framework/core/testing/tests/schema-package.test.ts
           ./storage/framework/core/testing/tests/isolated.test.ts
           ./storage/framework/core/testing/tests/service.test.ts
 

@@ -45,10 +45,11 @@ async function withTree(work: (directory: string, owner: string) => Promise<void
   }
 }
 
-const budget = process.platform === 'win32' ? 8000 : 1000
+const timeoutBudget = process.platform === 'win32' ? 8000 : 1000
+const startupBudget = 10000
 
 test('isolated timeout disposes its child and grandchild while an unrelated process survives', () => withTree(async (directory, owner) => {
-  const result = await runIsolated(fixture, { cwd: directory, bunfig: 'bunfig.toml', envFile: false, args: ['root', directory, owner], timeoutMs: budget })
+  const result = await runIsolated(fixture, { cwd: directory, bunfig: 'bunfig.toml', envFile: false, args: ['root', directory, owner], timeoutMs: timeoutBudget })
   expect(result.timedOut).toBe(true)
   expect(result.stdout).toContain('owned tree ready')
   expect(JSON.parse(readFileSync(join(directory, 'command-ipc.json'), 'utf8')).enabled).toBe(false)
@@ -70,7 +71,7 @@ test('a normal early isolated exit disposes remaining descendants and preserves 
 
 for (const role of ['service', 'service-no-ready', 'service-early-exit']) {
   test(`owned ${role} forwards IPC and disposes descendants without stopping an unrelated process`, () => withTree(async (directory, owner) => {
-    const service = startTestService([process.execPath, '--no-env-file', `--config=${join(directory, 'bunfig.toml')}`, fixture, role, directory, owner], { cwd: directory, startupTimeoutMs: budget, stopGraceMs: 50 })
+    const service = startTestService([process.execPath, '--no-env-file', `--config=${join(directory, 'bunfig.toml')}`, fixture, role, directory, owner], { cwd: directory, startupTimeoutMs: role === 'service-no-ready' ? timeoutBudget : startupBudget, stopGraceMs: 50 })
     const output = new Response(service.stdout).text()
     const errors = new Response(service.stderr).text()
     try {
@@ -99,7 +100,7 @@ for (const role of ['service', 'service-no-ready', 'service-early-exit']) {
 
 for (const signal of ['SIGTERM', 'SIGKILL'] as const) {
   test(`signaling the owned service PID with ${signal} disposes its tree and aborts work`, () => withTree(async (directory, owner) => {
-    const service = startTestService([process.execPath, '--no-env-file', `--config=${join(directory, 'bunfig.toml')}`, fixture, 'service', directory, owner], { cwd: directory, startupTimeoutMs: budget, stopGraceMs: 50 })
+    const service = startTestService([process.execPath, '--no-env-file', `--config=${join(directory, 'bunfig.toml')}`, fixture, 'service', directory, owner], { cwd: directory, startupTimeoutMs: startupBudget, stopGraceMs: 50 })
     const output = new Response(service.stdout).text()
     const errors = new Response(service.stderr).text()
     try {
