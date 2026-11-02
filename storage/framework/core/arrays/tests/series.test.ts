@@ -27,3 +27,14 @@ test('statistics sort dates, preserve decimal averages and ignore nonfinite valu
   expect(summarizeSeries([]).average).toBeNull()
   for (const value of [null, undefined, false, '', ' ', Infinity, 'abc']) expect(finiteNumeric(value)).toBeNull()
 })
+
+test('update precedence compares real instants across timezone offsets', () => {
+  const rows = [
+    { day: '2026-01-01', source: 'device', updatedAt: '2026-01-01T11:00:00+02:00', values: { n: 1 } },
+    { day: '2026-01-01', source: 'device', updatedAt: '2026-01-01T10:00:00Z', values: { n: 2 } },
+    { day: '2026-01-01', source: 'device', updatedAt: 'invalid', values: { n: 3 } },
+  ]
+  expect(mergeDailySeries(rows)[0]?.values.n).toBe(2)
+  expect(mergeDailySeries([...rows].reverse())[0]?.values.n).toBe(2)
+  expect(rows[0]?.values.n).toBe(1)
+})

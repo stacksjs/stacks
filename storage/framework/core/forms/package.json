@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/forms",
   "type": "module",
-  "version": "0.75.426",
+  "version": "0.75.427",
   "description": "The Stacks form-builder functionality.",
   "author": "Chris Breuer",
   "contributors": [
@@ -58,6 +58,7 @@
   "dependencies": {
     "@stacksjs/config": "workspace:*",
     "@stacksjs/database": "workspace:*",
+    "@stacksjs/datetime": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/notifications": "workspace:*"
   },

@@ -354,8 +354,8 @@ describe('loadFormByUuid', () => {
 
     expect(await loadFormByUuid(form.uuid, 1)).not.toBeNull()
     expect(await loadFormByUuid(form.uuid, 2)).toBeNull()
-    // Single-site apps pass null and match regardless.
-    expect(await loadFormByUuid(form.uuid, null)).not.toBeNull()
+    // A global context never reads a tenant-owned form.
+    expect(await loadFormByUuid(form.uuid, null)).toBeNull()
   })
 
   test('publicDefinition hides notify addresses', async () => {

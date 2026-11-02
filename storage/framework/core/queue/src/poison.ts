@@ -21,7 +21,7 @@
  */
 
 import { hash } from 'node:crypto'
-import { db, lockRow, parseSqlDateTime } from '@stacksjs/database/runtime'
+import { db, lockRow, sqliteWriteOptions, parseSqlDateTime } from '@stacksjs/database/runtime'
 import { seedStateRow } from './state-row'
 import { isMissingTableError } from './missing-table'
 
@@ -140,7 +140,7 @@ export async function recordFailureForPoison(
         quarantined_at: quarantined ? nowStr : null,
       }).where('id', '=', Number(row.id)).execute()
       return quarantined
-    }, { sqliteMode: 'immediate' })
+    }, sqliteWriteOptions())
   }
   catch (err) {
     if (isMissingTableError(err)) {
@@ -171,7 +171,7 @@ export async function isQuarantined(jobName: string, payload: unknown): Promise<
       .select(['id', 'payload_hash'])
       .executeTakeFirst()
     if (row?.payload_hash === keys.legacy) {
-      await db.transaction(tx => payloadState(tx, jobName, keys, new Date().toISOString(), 60 * 60_000), { sqliteMode: 'immediate' })
+      await db.transaction(tx => payloadState(tx, jobName, keys, new Date().toISOString(), 60 * 60_000), sqliteWriteOptions())
     }
     return Boolean(row)
   }
@@ -201,7 +201,7 @@ export async function quarantineJob(jobName: string, payload?: unknown): Promise
     await db.transaction(async (tx) => {
       const row = await payloadState(tx, jobName, keys, nowStr, 60 * 60_000)
       await tx.updateTable('job_quarantine').set({ quarantined_at: nowStr }).where('id', '=', Number(row.id)).execute()
-    }, { sqliteMode: 'immediate' })
+    }, sqliteWriteOptions())
   }
   catch (err) {
     if (isMissingTableError(err)) {

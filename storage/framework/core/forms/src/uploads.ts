@@ -27,6 +27,8 @@ export interface UploadLimits {
   maxBytes: number
   /** Allowed extensions, lowercase and without a dot. Empty means "any". */
   allowedTypes: string[]
+  /** Disjoint nonempty restrictions permit no uploads, even though the intersection is empty. */
+  denyAll?: boolean
 }
 
 const DEFAULT_MAX_SIZE_MB = 10
@@ -71,10 +73,10 @@ export function resolveUploadLimits(field: FormFieldDefinition): UploadLimits {
 
   const fieldTypes = field.options?.accept?.map(type => type.toLowerCase().replace(/^\./, ''))
   const allowedTypes = fieldTypes?.length
-    ? fieldTypes.filter(type => appTypes.includes(type))
+    ? appTypes.length ? fieldTypes.filter(type => appTypes.includes(type)) : fieldTypes
     : appTypes
 
-  return { disk: appConfig.disk, maxBytes: Math.round(maxMb * 1024 * 1024), allowedTypes }
+  return { disk: appConfig.disk, maxBytes: Math.round(maxMb * 1024 * 1024), allowedTypes, denyAll: Boolean(appTypes.length && fieldTypes?.length && !allowedTypes.length) }
 }
 
 /**
@@ -137,6 +139,9 @@ export function checkUpload(
     const mb = (limits.maxBytes / (1024 * 1024)).toFixed(limits.maxBytes % (1024 * 1024) === 0 ? 0 : 1)
     return { status: 413, message: `${field.label} must be ${mb} MB or smaller.` }
   }
+
+  if (limits.denyAll)
+    return { status: 422, message: `${field.label} has no permitted upload types.` }
 
   const extension = extensionOf(String(file.name ?? ''))
   if (limits.allowedTypes.length > 0 && !limits.allowedTypes.includes(extension)) {

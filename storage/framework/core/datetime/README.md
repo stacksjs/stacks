@@ -13,6 +13,8 @@ Easily work with dates. Zero external dependencies, Carbon-inspired API.
 
 Date-only ISO strings use local midnight consistently in `parse`, `format`, and `DateTime`. Explicit offsets continue to describe instants. Years `0000` through `0099` retain their literal year in parsing, construction, and period boundaries. Format punctuation is matched literally when parsing. An omitted `DateTime` input means now; empty strings and invalid dates throw.
 
+Formatted parsing validates calendar dates, clock components, and timezone offsets instead of normalizing impossible input. Pass the locale as the third argument to parse localized long or short month names, for example `parse('15 März 2024', 'D MMMM YYYY', 'de')`.
+
 ## Usage
 
 ```bash

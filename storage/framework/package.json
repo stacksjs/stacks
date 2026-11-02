@@ -1,7 +1,7 @@
 {
   "name": "stacks-framework",
   "type": "module",
-  "version": "0.75.426",
+  "version": "0.75.427",
   "private": true,
   "description": "The Stacks framework.",
   "author": "Chris Breuer",

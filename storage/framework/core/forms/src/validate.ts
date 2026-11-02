@@ -1,4 +1,6 @@
 import type { FieldOptions, FormDefinition, FormFieldDefinition, SubmissionErrors, ValidateSubmissionResult } from './types'
+import { isCalendarDate } from '@stacksjs/datetime'
+import { isReservedFieldName } from './field-name'
 import { visibleFields } from './conditions'
 import { isOwnedUploadPath } from './uploads'
 
@@ -9,6 +11,12 @@ const PHONE_RE = /^[\d\s()+.\-ext]{7,32}$/i
 
 function isBlank(value: unknown): boolean {
   return value === undefined || value === null || (typeof value === 'string' && value.trim() === '')
+}
+
+function currencyCents(value: unknown): number | null {
+  if (typeof value !== 'number' && (typeof value !== 'string' || !/^\d+$/.test(value))) return null
+  const cents = Number(value)
+  return Number.isSafeInteger(cents) && cents >= 0 ? cents : null
 }
 
 function checkField(field: FormFieldDefinition, value: unknown, form: Pick<FormDefinition, 'uuid'>): string | null {
@@ -54,7 +62,7 @@ function checkField(field: FormFieldDefinition, value: unknown, form: Pick<FormD
         : `${field.label} must be a yes or no`
 
     case 'date': {
-      if (typeof value !== 'string' || Number.isNaN(Date.parse(value)))
+      if (!isCalendarDate(value))
         return `${field.label} must be a valid date`
       return null
     }
@@ -74,8 +82,8 @@ function checkField(field: FormFieldDefinition, value: unknown, form: Pick<FormD
         : `${field.label} upload is invalid`
 
     case 'currency': {
-      const cents = Number(value)
-      if (!Number.isInteger(cents) || cents < 0)
+      const cents = currencyCents(value)
+      if (cents === null)
         return `${field.label} must be a whole amount`
       if (options.min !== undefined && cents < options.min)
         return `${field.label} must be at least ${options.min}`
@@ -129,26 +137,29 @@ export function computeAmountCents(form: FormDefinition, fields: FormFieldDefini
   if (!payment)
     return null
 
+  const amount = (value: unknown): number => {
+    const cents = currencyCents(value ?? 0)
+    if (cents === null) throw new RangeError('Payment amount must be nonnegative safe integer cents')
+    return cents
+  }
   switch (payment.mode) {
     case 'fixed':
-      return payment.amountCents ?? 0
+      return amount(payment.amountCents)
 
     case 'field_sum':
-      return fields
-        .filter(field => field.type === 'currency')
-        .reduce((sum, field) => sum + (Number(values[field.name]) || 0), 0)
+      return fields.filter(field => field.type === 'currency').reduce((sum, field) => amount(sum + amount(values[field.name])), 0)
 
     case 'user_amount': {
       const field = payment.amountField
-        ? fields.find(candidate => candidate.name === payment.amountField)
-        : fields.find(candidate => candidate.type === 'currency')
-      const cents = field ? Number(values[field.name]) || 0 : 0
-      const floor = payment.minAmountCents ?? 0
-      return Math.max(cents, floor)
+        ? form.fields.find(candidate => candidate.name === payment.amountField)
+        : form.fields.find(candidate => candidate.type === 'currency')
+      if (!field || field.type !== 'currency') throw new RangeError('Payment source must be a currency field')
+      const cents = fields.some(candidate => candidate.name === field.name) ? amount(values[field.name]) : 0
+      return Math.max(cents, amount(payment.minAmountCents))
     }
 
     default:
-      return null
+      throw new RangeError('Unknown payment mode')
   }
 }
 
@@ -161,15 +172,22 @@ export function computeAmountCents(form: FormDefinition, fields: FormFieldDefini
  * person could see.
  */
 export function validateSubmission(form: FormDefinition, payload: Record<string, unknown>): ValidateSubmissionResult {
-  const fields = visibleFields(form.fields, payload)
-  const errors: SubmissionErrors = {}
-  const values: Record<string, unknown> = {}
+  if (form.fields.some(field => isReservedFieldName(field.name)))
+    return { ok: false, errors: { _form: 'This form has an invalid field name.' } }
+  let fields: FormFieldDefinition[]
+  try { fields = visibleFields(form.fields, payload) }
+  catch (error) {
+    if (!(error instanceof RangeError)) throw error
+    return { ok: false, errors: { _form: 'This form has invalid field conditions.' } }
+  }
+  const errors: SubmissionErrors = Object.create(null)
+  const values: Record<string, unknown> = Object.create(null)
 
   for (const field of fields) {
     if (field.type === 'section_break')
       continue
 
-    const raw = payload[field.name]
+    const raw = Object.hasOwn(payload, field.name) ? payload[field.name] : undefined
     const problem = checkField(field, raw, form)
     if (problem) {
       errors[field.name] = problem
@@ -182,11 +200,17 @@ export function validateSubmission(form: FormDefinition, payload: Record<string,
   if (Object.keys(errors).length > 0)
     return { ok: false, errors }
 
+  let amountCents: number | null
+  try { amountCents = computeAmountCents(form, fields, values) }
+  catch (error) {
+    if (!(error instanceof RangeError)) throw error
+    return { ok: false, errors: { _form: 'This form has an invalid payment amount.' } }
+  }
   return {
     ok: true,
     values,
     email: pickEmail(form, fields, values),
     name: pickName(form, fields, values),
-    amountCents: computeAmountCents(form, fields, values),
+    amountCents,
   }
 }

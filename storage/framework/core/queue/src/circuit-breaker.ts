@@ -18,7 +18,7 @@
  * when the table is missing.
  */
 
-import { db, lockRow, parseSqlDateTime } from '@stacksjs/database/runtime'
+import { db, lockRow, sqliteWriteOptions, parseSqlDateTime } from '@stacksjs/database/runtime'
 import type { QueueStateConnection } from './state-row'
 import { seedStateRow } from './state-row'
 import { isMissingTableError } from './missing-table'
@@ -78,7 +78,7 @@ export async function isCircuitOpen(queue: string): Promise<boolean> {
         return false
       }
       return true
-    }, { sqliteMode: 'immediate' })
+    }, sqliteWriteOptions())
   }
   catch (error) {
     if (isMissingTableError(error)) { warnOnceAboutMissingTable(); return false }
@@ -111,7 +111,7 @@ async function recordObservation(queue: string, success: boolean, config: Circui
         } : {}),
       }).where('queue_name', '=', queue).execute()
       return trip
-    }, { sqliteMode: 'immediate' })
+    }, sqliteWriteOptions())
   }
   catch (error) {
     if (isMissingTableError(error)) { warnOnceAboutMissingTable(); return false }
@@ -139,7 +139,7 @@ export async function pauseQueue(queue: string, pauseSeconds = 300): Promise<voi
         paused_at: nowStr,
         resume_at: new Date(now.getTime() + pauseSeconds * 1000).toISOString().slice(0, 19).replace('T', ' '),
       }).where('queue_name', '=', queue).execute()
-    }, { sqliteMode: 'immediate' })
+    }, sqliteWriteOptions())
   }
   catch (error) {
     if (isMissingTableError(error)) { warnOnceAboutMissingTable(); return }
@@ -155,7 +155,7 @@ export async function resumeQueue(queue: string): Promise<void> {
         paused_at: null, resume_at: null, success_count: 0, failure_count: 0,
         window_start: new Date().toISOString().slice(0, 19).replace('T', ' '),
       }).where('queue_name', '=', queue).execute()
-    }, { sqliteMode: 'immediate' })
+    }, sqliteWriteOptions())
   }
   catch (error) {
     if (isMissingTableError(error)) { warnOnceAboutMissingTable(); return }

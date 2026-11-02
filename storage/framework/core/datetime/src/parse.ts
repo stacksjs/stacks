@@ -1,5 +1,11 @@
 import { dateFromParts } from './parts'
 
+function validateCalendar(year: number, month: number, day: number): void {
+  const date = dateFromParts(year, month, day, 0, 0, 0, 0, true)
+  if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month || date.getUTCDate() !== day)
+    throw new RangeError('Invalid calendar date')
+}
+
 /**
  * Parse a date string into a Date object.
  *
@@ -12,7 +18,7 @@ import { dateFromParts } from './parts'
  * When no format is given, falls back to native Date parsing (with a fix
  * for date-only ISO strings being treated as local time, not UTC).
  */
-export function parse(dateStr: string, formatStr?: string, _locale?: string): Date {
+export function parse(dateStr: string, formatStr?: string, locale = 'en'): Date {
   if (!formatStr) {
     // Date-only ISO strings (YYYY-MM-DD) are parsed as UTC by spec,
     // which causes unexpected day shifts in local time. Normalize to local.
@@ -21,6 +27,7 @@ export function parse(dateStr: string, formatStr?: string, _locale?: string): Da
       if (y === undefined || m === undefined || d === undefined) {
         throw new Error(`Unable to parse date: ${dateStr}`)
       }
+      validateCalendar(y, m - 1, d)
       return dateFromParts(y, m - 1, d)
     }
     const d = new Date(dateStr)
@@ -32,8 +39,8 @@ export function parse(dateStr: string, formatStr?: string, _locale?: string): Da
   const tokenDefs: Record<string, { regex: string, field: string }> = {
     YYYY: { regex: '(\\d{4})', field: 'year' },
     YY: { regex: '(\\d{2})', field: 'shortYear' },
-    MMMM: { regex: '(\\w+)', field: 'monthName' },
-    MMM: { regex: '(\\w+)', field: 'monthNameShort' },
+    MMMM: { regex: '(.+?)', field: 'monthName' },
+    MMM: { regex: '(.+?)', field: 'monthNameShort' },
     MM: { regex: '(\\d{2})', field: 'month' },
     M: { regex: '(\\d{1,2})', field: 'month' },
     DD: { regex: '(\\d{2})', field: 'day' },
@@ -90,12 +97,15 @@ export function parse(dateStr: string, formatStr?: string, _locale?: string): Da
     month = Number.parseInt(parts.month, 10) - 1
   }
   else if (parts.monthName || parts.monthNameShort) {
-    const name = (parts.monthName || parts.monthNameShort || '').toLowerCase()
-    const months = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']
-    const shortMonths = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
-    let idx = months.indexOf(name)
-    if (idx === -1) idx = shortMonths.indexOf(name)
-    if (idx === -1) throw new Error(`Unknown month: ${parts.monthName || parts.monthNameShort}`)
+    const normalize = (name: string) => name.normalize('NFC').toLocaleLowerCase(locale)
+    const name = normalize(parts.monthName || parts.monthNameShort || '')
+    const long = new Intl.DateTimeFormat(locale, { month: 'long', timeZone: 'UTC' })
+    const short = new Intl.DateTimeFormat(locale, { month: 'short', timeZone: 'UTC' })
+    const idx = Array.from({ length: 12 }, (_, index) => index).find((index) => {
+      const date = dateFromParts(2024, index, 15, 12, 0, 0, 0, true)
+      return normalize(long.format(date)) === name || normalize(short.format(date)) === name
+    })
+    if (idx === undefined) throw new Error(`Unknown month: ${parts.monthName || parts.monthNameShort}`)
     month = idx
   }
 
@@ -106,6 +116,8 @@ export function parse(dateStr: string, formatStr?: string, _locale?: string): Da
   }
 
   let hours = Number.parseInt(parts.hours || parts.hours12 || '0', 10)
+  if (hours < (parts.hours12 ? 1 : 0) || hours > (parts.hours12 ? 12 : 23))
+    throw new RangeError('Invalid clock hour')
   if (parts.ampm) {
     const isPM = parts.ampm.toLowerCase() === 'pm'
     if (isPM && hours < 12) hours += 12
@@ -116,11 +128,15 @@ export function parse(dateStr: string, formatStr?: string, _locale?: string): Da
   const minutes = Number.parseInt(parts.minutes || '0', 10)
   const seconds = Number.parseInt(parts.seconds || '0', 10)
 
+  validateCalendar(year, month, day)
+  if (minutes > 59 || seconds > 59) throw new RangeError('Invalid clock time')
+
   // If a timezone offset was parsed, construct as UTC then adjust
   if (parts.tz) {
     const sign = parts.tz[0] === '+' ? 1 : -1
     const tzHours = Number.parseInt(parts.tz.slice(1, 3), 10)
     const tzMinutes = Number.parseInt(parts.tz.slice(3, 5), 10)
+    if (tzHours > 23 || tzMinutes > 59) throw new RangeError('Invalid timezone offset')
     const offsetMs = sign * (tzHours * 60 + tzMinutes) * 60000
 
     // Build UTC time, then subtract the offset to get the actual instant
