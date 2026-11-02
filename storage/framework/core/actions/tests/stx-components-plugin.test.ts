@@ -9,8 +9,9 @@
  * framework.
  */
 import { describe, expect, test } from 'bun:test'
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
 
 const pluginFile = resolve(import.meta.dir, '../../../defaults/stx-components-plugin.ts')
 
@@ -72,4 +73,33 @@ describe('the stx components plugin', () => {
     expect(plugin.components.length).toBeGreaterThanOrEqual(2)
     expect(plugin.components).toContain('resources/components')
   })
+})
+
+
+test('the app keeps installed templates with the controllers it imports', () => {
+  const project = realpathSync(mkdtempSync(join(tmpdir(), 'stacks-component-cohort-')))
+  const packageRoot = join(project, 'node_modules/@stacksjs/components')
+  const installed = join(packageRoot, 'src/ui')
+  try {
+    mkdirSync(installed, { recursive: true })
+    writeFileSync(join(installed, 'PackageOnly.stx'), '<p>Installed component cohort</p>')
+    mkdirSync(join(packageRoot, 'dist'), { recursive: true })
+    writeFileSync(join(packageRoot, 'package.json'), JSON.stringify({ name: '@stacksjs/components', type: 'module', exports: { './chat': './dist/chat.js' } }))
+    writeFileSync(join(packageRoot, 'dist/chat.js'), "export const controllerVersion = 'Installed component cohort'")
+    const child = Bun.spawnSync([process.execPath, '--no-env-file', '--eval',
+      `import plugin from ${JSON.stringify(pluginFile)}; import { controllerVersion } from '@stacksjs/components/chat'; console.log(JSON.stringify({ library: plugin.components[1], controllerVersion }))`,
+    ], { cwd: project, env: { ...process.env, STX_COMPONENTS_DIR: undefined }, stdout: 'pipe', stderr: 'pipe' })
+    expect(child.exitCode).toBe(0)
+    const result = JSON.parse(child.stdout.toString().trim().split('\n').at(-1)!)
+    expect(result.library).toBe(installed)
+    expect(readFileSync(join(result.library, 'PackageOnly.stx'), 'utf8')).toBe(`<p>${result.controllerVersion}</p>`)
+    const explicit = join(project, 'explicit-ui')
+    mkdirSync(explicit)
+    const override = Bun.spawnSync([process.execPath, '--no-env-file', '--eval',
+      `import plugin from ${JSON.stringify(pluginFile)}; console.log(JSON.stringify({ library: plugin.components[1] }))`,
+    ], { cwd: project, env: { ...process.env, STX_COMPONENTS_DIR: explicit }, stdout: 'pipe', stderr: 'pipe' })
+    expect(override.exitCode).toBe(0)
+    expect(JSON.parse(override.stdout.toString().trim().split('\n').at(-1)!).library).toBe(explicit)
+  }
+  finally { rmSync(project, { recursive: true, force: true }) }
 })

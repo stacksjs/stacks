@@ -25,12 +25,13 @@ aesthetic skill. Native applications pair with `stacks-mobile` or
 - STX tags such as `<Button />` and `<Sidebar />` resolve through the plugin
   in `config/ui.ts`, `storage/framework/defaults/stx-components-plugin.ts`.
   Application `resources/components/` overrides are handled by STX. Plugin
-  roots contain the component library, framework defaults, then package roots.
+  roots contain framework defaults, the component library, then package roots.
   Installed packages contribute additive roots through `packageComponentRoots()`;
   inspect that resolver before changing precedence.
 - `STX_COMPONENTS_DIR` explicitly selects a library source directory. The
-  plugin otherwise tries a local STX development checkout and the installed
-  library. A missing component warning is a resolution problem, not proof
+  plugin otherwise uses the installed library, keeping templates with the
+  controllers the application imports. A local checkout's presence never
+  changes that selection. A missing component warning is a resolution problem, not proof
   that a tag is a globally registered Vue component.
 
 ```ts

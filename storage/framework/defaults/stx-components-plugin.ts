@@ -1,5 +1,4 @@
 import { existsSync } from 'node:fs'
-import { homedir } from 'node:os'
 import { join } from 'node:path'
 
 /**
@@ -8,14 +7,12 @@ import { join } from 'node:path'
  * dashboard uses it for the macOS-style web sidebar.
  *
  * The library ships its .stx sources in the package, so the installed
- * copy is used when present. A local stx checkout wins during framework
- * development (same convention as the Craft SDK resolution in
- * `core/actions/src/dev/dashboard.ts`), and `STX_COMPONENTS_DIR` can
- * point anywhere explicitly.
+ * copy must match the package whose controllers the app imports. Merely
+ * having a development checkout on this machine must never replace those
+ * templates. `STX_COMPONENTS_DIR` selects a source directory explicitly.
  */
 const candidates = [
   process.env.STX_COMPONENTS_DIR,
-  join(homedir(), 'Code/Tools/stx/packages/components/src/ui'),
   join(process.cwd(), 'node_modules/@stacksjs/components/src/ui'),
 ].filter((dir): dir is string => Boolean(dir))
 
