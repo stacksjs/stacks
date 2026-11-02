@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.420...v0.75.421)
+
+## ✨ Features
+
+- **desktop**: macos.agent.resources ships data files a compiled agent reads ([45ae022](https://github.com/stacksjs/stacks/commit/45ae022)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: raise the stx family to 0.2.783 ([d9c037c](https://github.com/stacksjs/stacks/commit/d9c037c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.419...v0.75.420)
 
 ## 🔧 Chores
