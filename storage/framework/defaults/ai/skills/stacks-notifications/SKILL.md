@@ -88,6 +88,11 @@ otherwise let it fail.
 Use `getNotificationPreferences`, `setNotificationPreference` and
 `bulkSetPreferences` with their exported types. Writes use a transaction and
 lock the user row; a bulk save is atomic across its whole preference matrix.
+When the preferences cannot be read, `notify()` fails every channel of a send
+that names a `category` (the thing people unsubscribe from) instead of sending
+it, and sends an uncategorized one anyway; `filterChannelsByPreferences` throws
+then, and `getNotificationPreferences` returns an empty map. Pass
+`ignorePreferences: true` for a categorized send that must go out regardless.
 SMS also consults persistent
 phone opt-outs unless `ignoreOptOut` is true. Ordinary direct SMS sends have
 their own contract; see `stacks-sms`.

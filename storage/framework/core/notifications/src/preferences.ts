@@ -84,19 +84,28 @@ export async function getNotificationPreferences(
   userId: number,
   category?: string,
 ): Promise<Map<PreferenceChannel, boolean>> {
-  const map = new Map<PreferenceChannel, boolean>()
   try {
-    // Table is now part of `DatabaseSchema` via
-    // `./database-schema.d.ts` (Notif-3, follow-up to #1937).
-    const q = wherePreferenceCategory(db.selectFrom(TABLE).select(['channel', 'enabled', 'category']).where('user_id', '=', userId), category ?? null)
-    const rows = await q.execute() as Array<Pick<NotificationPreferenceRow, 'channel' | 'enabled' | 'category'>>
-    for (const row of rows) {
-      // Every row belongs to the requested category (or the global scope).
-      map.set(row.channel, row.enabled === true || row.enabled === 1)
-    }
+    return await readNotificationPreferences(userId, category)
   }
   catch (err) {
     log.debug?.(`[notifications] preferences lookup failed (table missing?): ${(err as Error).message}`)
+    return new Map()
+  }
+}
+
+/** {@link getNotificationPreferences}, throwing when the rows cannot be read. */
+async function readNotificationPreferences(
+  userId: number,
+  category?: string,
+): Promise<Map<PreferenceChannel, boolean>> {
+  const map = new Map<PreferenceChannel, boolean>()
+  // Table is now part of `DatabaseSchema` via
+  // `./database-schema.d.ts` (Notif-3, follow-up to #1937).
+  const q = wherePreferenceCategory(db.selectFrom(TABLE).select(['channel', 'enabled', 'category']).where('user_id', '=', userId), category ?? null)
+  const rows = await q.execute() as Array<Pick<NotificationPreferenceRow, 'channel' | 'enabled' | 'category'>>
+  for (const row of rows) {
+    // Every row belongs to the requested category (or the global scope).
+    map.set(row.channel, row.enabled === true || row.enabled === 1)
   }
   return map
 }
@@ -203,6 +212,11 @@ export async function bulkSetPreferences(
  * the preferences feature doesn't suddenly break notifications for users
  * who never visited the preferences page.
  *
+ * Throws when the preferences cannot be read (a missing table, a lost
+ * connection). An unreadable opt-out is not the same as no opt-out, so the
+ * caller decides whether to send without knowing; `notify()` does not send
+ * a categorized notification in that case.
+ *
  * @example
  * ```ts
  * const allowed = await filterChannelsByPreferences(user.id, ['email', 'sms', 'push'])
@@ -214,13 +228,13 @@ export async function filterChannelsByPreferences<T extends PreferenceChannel>(
   channels: T[],
   category?: string,
 ): Promise<T[]> {
-  const prefs = await getNotificationPreferences(userId, category)
+  const prefs = await readNotificationPreferences(userId, category)
   // Also overlay any "global" (no-category) prefs underneath the
   // category-specific lookup — a user who turned off `email` globally
   // shouldn't suddenly get marketing email back just because they never
   // toggled the marketing-specific row.
   if (category !== undefined) {
-    const global = await getNotificationPreferences(userId, undefined)
+    const global = await readNotificationPreferences(userId, undefined)
     for (const [k, v] of global) {
       if (!v || !prefs.has(k)) prefs.set(k, v)
     }

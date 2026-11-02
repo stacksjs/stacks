@@ -46,8 +46,12 @@ Absent preferences allow a channel. A global opt-out wins over a category
 opt-in. `getNotificationPreferences`, `setNotificationPreference` and
 `bulkSetPreferences` provide persistent preferences; writes serialize on the
 user row, and bulk changes are atomic. `options.ignorePreferences: true`
-explicitly bypasses preferences only. Preference lookup failures currently log
-and allow sends, so this filter is not a fail-closed consent gate.
+explicitly bypasses preferences only. When the preferences cannot be read (a
+missing table, a lost connection), a send with `options.category` is not sent:
+each channel's result fails with the lookup error, so a marketing send never
+reaches someone whose opt-out could not be checked. An uncategorized send logs
+and goes out anyway. `filterChannelsByPreferences` throws in that case, while
+`getNotificationPreferences` still returns an empty map.
 
 A phone that replied STOP (`sms_opt_outs`) is never texted, `ignorePreferences`
 or not. Only `options.ignoreOptOut: true` sends past STOP, and only for messages
