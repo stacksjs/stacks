@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.414...v0.75.415)
+
+## 🐛 Bug Fixes
+
+- make pivot declarations independent of model discovery order ([40bf19e](https://github.com/stacksjs/stacks/commit/40bf19e)) _(by Chris Breuer <chris@stacksjs.com>)_
+- harden storage isolation and cache publication ([f5c34a7](https://github.com/stacksjs/stacks/commit/f5c34a7)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh capabilities after storage hardening ([050e84f](https://github.com/stacksjs/stacks/commit/050e84f)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.413...v0.75.414)
 
 ## 🐛 Bug Fixes
