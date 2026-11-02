@@ -69,7 +69,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/pagination` | [`stacks-pagination`](../stacks-pagination/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/pagination/src/index.ts) | 0 |
 | `@stacksjs/path` | [`stacks-path`](../stacks-path/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/path/src/index.ts) | 13 |
 | `@stacksjs/payments` | [`stacks-payments`](../stacks-payments/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/payments/src/index.ts) | 37 |
-| `@stacksjs/push` | [`stacks-push`](../stacks-push/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/push/src/index.ts) | 7 |
+| `@stacksjs/push` | [`stacks-push`](../stacks-push/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/push/src/index.ts) | 8 |
 | `@stacksjs/query-builder` | [`stacks-query-builder`](../stacks-query-builder/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/query-builder/src/index.ts) | 6 |
 | `@stacksjs/queue` | [`stacks-queue`](../stacks-queue/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/queue/src/index.ts) | 49 |
 | `@stacksjs/realtime` | [`stacks-realtime`](../stacks-realtime/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/src/index.ts) | 12 |
@@ -671,7 +671,7 @@ Declared runtime exports: `apns`, `buildVapidHeaders`, `configureAPNS`, `configu
 
 Local source modules: [src/drivers/apns.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/push/src/drivers/apns.ts), [src/drivers/expo.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/push/src/drivers/expo.ts), [src/drivers/fcm.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/push/src/drivers/fcm.ts), [src/drivers/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/push/src/drivers/index.ts), [src/drivers/web-push.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/push/src/drivers/web-push.ts).
 
-Evidence directory: [7 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/push/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [8 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/push/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/query-builder
 

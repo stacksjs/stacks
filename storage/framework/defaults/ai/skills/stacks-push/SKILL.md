@@ -42,8 +42,9 @@ Routes to the appropriate driver based on `options.driver` (default: `'expo'`).
 
 - For **Expo**: Passes the notification directly to `expo.send()` with all fields mapped.
 - For **FCM** with single token: Calls `fcm.send()` with notification mapped to `{ to, notification: { title, body }, data, priority }`.
-- For **FCM** with multiple tokens: Calls `fcm.sendMulticast()` and returns an aggregated result with success count.
-- FCM priority mapping: `'default'` is converted to `'normal'`; `'high'` and `'normal'` pass through.
+- For **FCM** with multiple tokens: Calls `fcm.sendMulticast()` and returns an aggregated result with success count, and `data: { results }`, one per token in order, so a dead token (404 `UNREGISTERED`) can be told from a transient failure.
+- FCM priority mapping: `'default'` is converted to `'normal'`; `'high'` and `'normal'` pass through. Unset means `high`, on Android and iOS alike.
+- `data` is the same for every driver. FCM takes only strings, so a non-string value is sent as its JSON text (`{ orderId: 42 }` arrives as `"42"`).
 
 ## PushNotification Interface (index.ts)
 
@@ -196,7 +197,7 @@ interface FCMMessage {
     clickAction?: string
     tag?: string
   }
-  data?: Record<string, string>         // NOTE: values must be strings for FCM
+  data?: Record<string, unknown>        // sent as strings: a non-string value as its JSON text
   priority?: 'high' | 'normal'
   ttl?: number
   collapseKey?: string
@@ -225,7 +226,7 @@ endpoint it used to fall back to is gone.
 1. Generates JWT with RS256 signing using the service account private key
 2. Exchanges JWT for OAuth2 access token at `https://oauth2.googleapis.com/token`
 3. Sends to `https://fcm.googleapis.com/v1/projects/{projectId}/messages:send`
-4. Includes Android priority settings and APNS headers (`apns-priority: 10` for high, `5` for normal)
+4. Includes Android priority settings and APNS headers (`apns-priority: 10` for high, `5` for normal); an unset priority is high on both
 5. Supports `to` (token), `topic`, or `condition` targeting
 
 **JWT generation details:**

@@ -18,7 +18,9 @@ export interface FCMMessage {
     clickAction?: string
     tag?: string
   }
-  data?: Record<string, string>
+  /** Sent as a map of strings, FCM's only form: a value that is not a string goes as its JSON text. */
+  data?: Record<string, unknown>
+  /** `high` unless set, on Android and on iOS alike. */
   priority?: 'high' | 'normal'
   ttl?: number
   collapseKey?: string
@@ -33,6 +35,20 @@ export interface FCMConfig {
 }
 
 let config: FCMConfig = {}
+
+/**
+ * `data` as FCM v1 takes it: a map of strings. It answers 400 INVALID_ARGUMENT
+ * for any other value, and `push.send()` takes the same `data` for every
+ * driver - Expo and APNs carry any JSON - so `{ orderId: 42 }` failed only
+ * here. A value that is not a string goes as its JSON text; an undefined one
+ * is left out, as JSON would leave it out.
+ */
+export function fcmData(data: Record<string, unknown> | undefined): Record<string, string> | undefined {
+  if (!data)
+    return undefined
+  const entries = Object.entries(data).filter(([, value]) => value !== undefined)
+  return Object.fromEntries(entries.map(([key, value]) => [key, typeof value === 'string' ? value : JSON.stringify(value)]))
+}
 
 /**
  * Configure FCM with a service account
@@ -260,18 +276,21 @@ export async function send(message: FCMMessage, credentialsOverride?: FCMConfig)
     const accessToken = await getAccessToken(credentials)
     const url = `${FCM_V1_URL}/${credentials.projectId}/messages:send`
 
+    // One default for both platforms. An unset priority was `high` on Android
+    // and APNs priority 5, Apple's power-saving delivery, on iOS.
+    const priority = message.priority ?? 'high'
     const fcmMessage: any = {
       message: {
         notification: message.notification,
-        data: message.data,
+        data: fcmData(message.data),
         android: {
-          priority: message.priority ?? 'high',
+          priority,
           ttl: message.ttl ? `${message.ttl}s` : undefined,
           collapseKey: message.collapseKey,
         },
         apns: {
           headers: {
-            'apns-priority': message.priority === 'high' ? '10' : '5',
+            'apns-priority': priority === 'high' ? '10' : '5',
           },
         },
       },

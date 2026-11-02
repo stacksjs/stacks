@@ -86,7 +86,7 @@ export async function send(
           title: notification.title ?? '',
           body: notification.body,
         },
-        data: notification.data as Record<string, string>,
+        data: notification.data,
         priority: notification.priority === 'default' ? 'normal' : notification.priority,
       }, options.fcm)
     }
@@ -95,15 +95,17 @@ export async function send(
         title: notification.title ?? '',
         body: notification.body,
       },
-      data: notification.data as Record<string, string>,
+      data: notification.data,
       priority: notification.priority === 'default' ? 'normal' : notification.priority,
     }, options.fcm)
-    // Return combined result
+    // One result per token, in order, as the APNs and Expo paths give them, so
+    // a caller can tell a dead token (404 UNREGISTERED) from a transient failure.
     const success = results.every(r => r.success)
     return {
       success,
       provider: 'fcm',
       message: `Sent to ${results.filter(r => r.success).length}/${results.length} devices`,
+      data: { results },
     }
   }
 
