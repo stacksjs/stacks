@@ -90,19 +90,18 @@ describe('the ORM routes entrypoint', () => {
     expect(router).toContain(`'@stacksjs/orm/routes'`)
   })
 
-  it('is mapped where the runtime looks, not only where tsc does', () => {
-    /*
-     * Bun applies tsconfig `paths` at runtime. `@stacksjs/*` binds the wildcard
-     * to the whole remainder, so `@stacksjs/orm/routes` looks for
-     * `./core/orm/routes/src`, misses, and falls through to the package's
-     * `exports` — a `dist/` that a clean checkout has not built. Without the
-     * explicit mapping the generator is unreachable in CI, and every model's
-     * endpoints quietly vanish from the generated OpenAPI spec.
-     */
-    for (const config of ['tsconfig.app.json', 'tsconfig.framework.json']) {
-      expect(readFileSync(join(framework, config), 'utf8')).toContain('"@stacksjs/orm/routes"')
+  it('resolves the source route entry through each runtime TypeScript configuration', () => {
+    // Public-export mappings may be explicit or use the package's own wildcard.
+    // A fresh Bun process proves the mapping wins over the built dist fallback.
+    for (const config of ['tsconfig.app.json', 'tsconfig.framework.json', 'core/tsconfig.json']) {
+      const probe = Bun.spawnSync({
+        cmd: [process.execPath, '--no-env-file', '--tsconfig-override', join(framework, config), '-e', "console.log(Bun.resolveSync('@stacksjs/orm/routes', process.cwd()))"],
+        cwd: join(framework, '../..'),
+        stdout: 'pipe',
+        stderr: 'pipe',
+      })
+      expect(probe.exitCode, probe.stderr.toString()).toBe(0)
+      expect(probe.stdout.toString().trim().split('\n')).toContain(join(orm, 'src/routes.ts'))
     }
-
-    expect(readFileSync(join(framework, 'core', 'tsconfig.json'), 'utf8')).toContain('"@stacksjs/orm/routes"')
   })
 })
