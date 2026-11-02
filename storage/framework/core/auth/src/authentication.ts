@@ -54,6 +54,12 @@ interface RequestAuthState {
   authUser?: UserModel
   currentToken?: PersonalAccessToken
   clientSecret?: string
+  /**
+   * The bearer this request already resolved with `getUserFromToken`, so the
+   * auth middleware and the action that asks again share one lookup (and one
+   * last-seen write) instead of each doing it.
+   */
+  resolvedToken?: { token: string, user: UserModel, accessToken: PersonalAccessToken }
 }
 
 const REQUEST_AUTH_STATE_KEY = Symbol.for('stacks.requestAuthState')
@@ -515,6 +521,7 @@ export class Auth {
     if (state) {
       state.authUser = undefined
       state.currentToken = undefined
+      state.resolvedToken = undefined
     }
     // Middleware and request macros keep their own cached user/token markers.
     // Clear them only after revocation succeeds, just like the Auth state.
@@ -803,6 +810,25 @@ export class Auth {
    * decryptTokenId was removed (stacksjs/stacks#1867 follow-up).
    */
   public static async getUserFromToken(token: string): Promise<UserModel | undefined> {
+    // One request, one lookup per bearer. A request-local answer must not
+    // outlive the credential's own expiry, the same rule `currentAccessToken`
+    // applies to its cached row.
+    const state = authStateOrNull()
+    const resolved = state?.resolvedToken
+    if (resolved && resolved.token === token && !resolved.accessToken.revoked
+      && (resolved.accessToken.expiresAt == null || resolved.accessToken.expiresAt.getTime() > Date.now()))
+      return resolved.user
+
+    const user = await this.resolveUserFromToken(token)
+    if (state) {
+      state.resolvedToken = user && state.currentToken
+        ? { token, user, accessToken: state.currentToken }
+        : undefined
+    }
+    return user
+  }
+
+  private static async resolveUserFromToken(token: string): Promise<UserModel | undefined> {
     const hashedPlainToken = hashToken(token)
     const accessToken = await db.primary.selectFrom('oauth_access_tokens')
       .where('token', '=', hashedPlainToken)
@@ -1252,6 +1278,7 @@ export class Auth {
       state.authUser = undefined
       state.currentToken = undefined
       state.clientSecret = undefined
+      state.resolvedToken = undefined
     }
   }
 }
