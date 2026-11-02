@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import { createHash } from 'node:crypto'
 import { acceptedPublications, publicationMatchesOriginal, verifyAcceptedPublications } from '../../../../../.github/scripts/npm-publication'
-import { priorPublicationReceipts } from '../../../../../.github/scripts/resume-npm-publication'
+import { priorPublicationJobIds, priorPublicationReceipts } from '../../../../../.github/scripts/resume-npm-publication'
 
 const archive = new TextEncoder().encode('original packed release bytes')
 const receipt = {
@@ -128,4 +128,16 @@ test('public metadata never permits resumption with changed or unreadable archiv
     })).rejects.toThrow('no publication resumed')
   }
   finally { await server.stop(true) }
+})
+
+test('only completed publication jobs from the exact source and attempt supply recovery logs', () => {
+  const sha = 'a'.repeat(40)
+  const job = { id: 3, name: 'npm', run_id: 2, run_attempt: 1, head_sha: sha, status: 'completed', conclusion: 'failure' }
+  const ids = (jobs: typeof job[]) => priorPublicationJobIds(jobs, 2, 1, sha)
+  expect(ids([job])).toEqual([3])
+  expect(ids([{ ...job, conclusion: 'skipped' }])).toEqual([])
+  expect(ids([{ ...job, name: 'release gate' }])).toEqual([])
+  expect(() => ids([job, job])).toThrow('Ambiguous')
+  for (const changed of [{ run_id: 4 }, { run_attempt: 2 }, { head_sha: 'b'.repeat(40) }, { status: 'in_progress' }])
+    expect(() => ids([{ ...job, ...changed }])).toThrow('does not match')
 })

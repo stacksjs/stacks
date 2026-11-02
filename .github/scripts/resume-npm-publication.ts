@@ -19,6 +19,19 @@ interface PriorJob {
   run_attempt: number
   head_sha: string
   status: string
+  conclusion: string | null
+}
+
+/** A skipped dependency job made no uploads and has no downloadable log. */
+export function priorPublicationJobIds(jobs: readonly PriorJob[], runId: number, attempt: number, sha: string): number[] {
+  const publications = jobs.filter(job => job.name === 'npm')
+  if (publications.length > 1) throw new Error('Ambiguous publication history; no publication resumed')
+  return publications.flatMap((job) => {
+    if (!Number.isSafeInteger(job.id) || job.id <= 0 || job.run_id !== runId
+      || job.run_attempt !== attempt || job.head_sha !== sha || job.status !== 'completed')
+      throw new Error('Original publication job does not match the immutable release')
+    return job.conclusion === 'skipped' ? [] : [job.id]
+  })
 }
 
 if (import.meta.main) {
@@ -44,14 +57,8 @@ if (import.meta.main) {
     const pages = JSON.parse(read(`repos/${repository}/actions/runs/${runId}/attempts/${previous}/jobs?per_page=100`, true)) as Array<{ jobs: PriorJob[] }>
     if (!Array.isArray(pages) || pages.some(page => !Array.isArray(page.jobs)))
       throw new Error('Invalid publication history; no publication resumed')
-    const jobs = pages.flatMap(page => page.jobs).filter(job => job.name === 'npm')
-    if (jobs.length > 1) throw new Error('Ambiguous publication history; no publication resumed')
-    for (const job of jobs) {
-      if (!Number.isSafeInteger(job.id) || job.id <= 0 || job.run_id !== runId
-        || job.run_attempt !== previous || job.head_sha !== sha || job.status !== 'completed')
-        throw new Error('Original publication job does not match the immutable release')
-      logs.push(read(`repos/${repository}/actions/jobs/${job.id}/logs`))
-    }
+    for (const jobId of priorPublicationJobIds(pages.flatMap(page => page.jobs), runId, previous, sha))
+      logs.push(read(`repos/${repository}/actions/jobs/${jobId}/logs`))
   }
   const root = new URL('../../', import.meta.url).pathname
   const names = new Set(['stacks', ...(await publishables(root)).map(pkg => pkg.name)])
