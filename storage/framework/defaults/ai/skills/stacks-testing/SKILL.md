@@ -182,7 +182,11 @@ module for the rest of that run, so a mock in one file leaks into the next. A
 framework booted against one database also stays booted. When a test needs a
 clean process, run it in a child (`src/isolated.ts`); when it needs real rows,
 give it a database nobody else uses (`src/disposable-database.ts`). Both are on
-the root, with no framework import.
+the root, with no framework import. For direct PostgreSQL queries, use
+`new SQL(database.sqlOptions!)`: Bun can let an inherited `PGDATABASE` override
+a URL's database name. The helper's explicit SQL options select its owned
+database. Pass `database.env` last to isolated children; it supplies matching
+`DB_*`, `PG_*`, `POSTGRES_URL` and `DATABASE_URL` values.
 
 ```ts
 import { assertIsolatedOk, disposablePostgresUrl, runIsolated, test, withDisposableDatabase } from '@stacksjs/testing'

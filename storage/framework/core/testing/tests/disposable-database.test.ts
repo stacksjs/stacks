@@ -91,8 +91,11 @@ describe.skipIf(!disposablePostgresUrl())('withDisposableDatabase (postgres)', (
       name = database.name
       expect(database.env.DB_DATABASE).toBe(name)
       expect(await exists(name)).toBe(true)
-      const sql = new SQL(database.url!)
+      expect(database.sqlOptions).toBeDefined()
+      if (!database.sqlOptions) throw new Error('Missing disposable PostgreSQL connection options')
+      const sql = new SQL(database.sqlOptions)
       try {
+        expect((await sql`SELECT current_database() AS name`)[0].name).toBe(name)
         await sql`CREATE TABLE t (id int)`
         await sql`INSERT INTO t VALUES (1)`
         // Left open on purpose: the drop must end it (WITH (FORCE)).
@@ -103,6 +106,24 @@ describe.skipIf(!disposablePostgresUrl())('withDisposableDatabase (postgres)', (
       }
     })
     expect(await exists(name)).toBe(false)
+  })
+
+  test('isolates a child SQL client from inherited PostgreSQL environment', async () => {
+    await withDisposableDatabase('postgres', async (database) => {
+      const child = Bun.spawn([process.execPath, '--no-env-file', '-e', `
+        import { SQL } from 'bun'
+        const sql = new SQL(process.env.POSTGRES_URL)
+        try { console.log((await sql\`SELECT current_database() AS name\`)[0].name) }
+        finally { await sql.close() }
+      `], {
+        env: { ...process.env, PGDATABASE: new URL(disposablePostgresUrl()!).pathname.slice(1), POSTGRES_URL: database.url, ...database.env },
+        stdout: 'pipe', stderr: 'pipe',
+      })
+      const [output, error, status] = await Promise.all([new Response(child.stdout).text(), new Response(child.stderr).text(), child.exited])
+      expect(error).toBe('')
+      expect(status).toBe(0)
+      expect(output.trim()).toBe(database.name)
+    })
   })
 
   test('drops it when the test throws', async () => {

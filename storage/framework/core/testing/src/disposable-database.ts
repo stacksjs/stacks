@@ -48,7 +48,9 @@ export interface DisposableDatabase {
   path?: string
   /** A connection URL for the new Postgres database. */
   url?: string
-  /** `DB_*` variables that point a Stacks app at this database, for `runIsolated({ env })`. */
+  /** Explicit Bun SQL options for the owned Postgres database, independent of inherited PGDATABASE. */
+  sqlOptions?: SQL.Options
+  /** Connection variables for Stacks and PostgreSQL clients, for `runIsolated({ env })`. */
   env: Record<string, string>
 }
 
@@ -120,7 +122,8 @@ export async function createDisposableDatabase(dialect: DisposableDialect, optio
     const server = disposablePostgresUrl(options)
     if (!server) throw new Error('A disposable Postgres database needs a server: pass options.url or set STACKS_TEST_POSTGRES_URL')
     const admin = assertLocalPostgres(server)
-    const sql = new SQL(admin.href)
+    const adminOptions: SQL.Options = { url: admin.href, database: decodeURIComponent(admin.pathname.slice(1)) || undefined }
+    const sql = new SQL(adminOptions)
     try {
       await sql.unsafe(`CREATE DATABASE "${name}"`)
     }
@@ -133,7 +136,7 @@ export async function createDisposableDatabase(dialect: DisposableDialect, optio
     const drop = async () => {
       if (dropped) return
       dropped = true
-      const cleanup = new SQL(admin.href)
+      const cleanup = new SQL(adminOptions)
       try {
         await cleanup.unsafe(`DROP DATABASE IF EXISTS "${name}" WITH (FORCE)`)
       }
@@ -147,6 +150,7 @@ export async function createDisposableDatabase(dialect: DisposableDialect, optio
       name,
       directory,
       url: target.href,
+      sqlOptions: { url: target.href, database: name },
       env: {
         DB_CONNECTION: 'postgres',
         DB_HOST: admin.hostname.replace(/^\[|\]$/g, ''),
@@ -154,6 +158,13 @@ export async function createDisposableDatabase(dialect: DisposableDialect, optio
         DB_DATABASE: name,
         DB_USERNAME: decodeURIComponent(admin.username),
         DB_PASSWORD: decodeURIComponent(admin.password),
+        PGHOST: admin.hostname.replace(/^\[|\]$/g, ''),
+        PGPORT: admin.port || '5432',
+        PGUSER: decodeURIComponent(admin.username),
+        PGPASSWORD: decodeURIComponent(admin.password),
+        PGDATABASE: name,
+        POSTGRES_URL: target.href,
+        DATABASE_URL: target.href,
       },
       drop,
       [Symbol.asyncDispose]: drop,
