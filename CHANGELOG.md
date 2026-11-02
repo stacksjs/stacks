@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.444...v0.75.445)
+
+## 🐛 Bug Fixes
+
+- preserve lazy validation in published consumers ([e5f65db](https://github.com/stacksjs/stacks/commit/e5f65db)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.443...v0.75.444)
 
 ## 🐛 Bug Fixes
