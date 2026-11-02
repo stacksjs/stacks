@@ -15,7 +15,7 @@
  * degrade when the table isn't migrated yet.
  */
 
-import { db, lockRow, mutationCount } from '@stacksjs/database/runtime'
+import { db, lockRow, sqliteWriteOptions, mutationCount } from '@stacksjs/database/runtime'
 import { isMissingTableError } from './missing-table'
 
 export type DeadLetterReason = 'repeat-failure' | 'poison-detected' | 'circuit-broken' | 'manual'
@@ -157,7 +157,7 @@ export async function retryDeadLetterJob(id: number): Promise<boolean> {
       }).execute()
       await tx.deleteFrom('dead_letter_jobs').where('id', '=', id).execute()
       return true
-    }, { sqliteMode: 'immediate' })
+    }, sqliteWriteOptions())
   }
   catch (err) {
     if (isMissingTableError(err)) {

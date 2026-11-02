@@ -241,8 +241,9 @@ export function at<T>(array: readonly T[] | [], index: number): T | undefined {
  */
 export function move<T>(array: T[], from: number, to: number): T[] {
   const len = array.length
-  if (!len)
-    return []
+  if (!Number.isSafeInteger(from) || !Number.isSafeInteger(to))
+    throw new RangeError('move indices must be safe integers')
+  if (!len) return array
 
   if (from < 0)
     from += len
@@ -250,6 +251,8 @@ export function move<T>(array: T[], from: number, to: number): T[] {
   if (to < 0)
     to += len
 
+  if (from < 0 || from >= len || to < 0 || to > len)
+    throw new RangeError('move index is out of bounds')
   const item = array.splice(from, 1)[0]
   array.splice(to, 0, item as T)
   return array

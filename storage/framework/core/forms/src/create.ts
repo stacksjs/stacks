@@ -1,5 +1,6 @@
 import type { FormDefinition, FormFieldDefinition, FormFieldType, FormSettings } from './types'
-import { db } from '@stacksjs/database/runtime'
+import { db, getDatabaseDialect, isInTransaction, lockRow, sqliteWriteOptions } from '@stacksjs/database/runtime'
+import { isReservedFieldName } from './field-name'
 import { loadFormByUuid } from './definition'
 
 /**
@@ -45,11 +46,6 @@ export interface CreatedForm {
   created: boolean
 }
 
-interface FormRow {
-  id: number
-  uuid: string
-}
-
 /**
  * Create or update a form and its fields for one site.
  *
@@ -58,73 +54,103 @@ interface FormRow {
  * a removed field behind on the next provision.
  */
 export async function createForm(siteId: number | null, input: CreateFormInput): Promise<CreatedForm> {
-  const existing = await db
-    .selectFrom('forms')
-    .select(['id', 'uuid'])
-    .where('handle', '=', input.handle)
-    .where('site_id', siteId === null ? 'is' : '=', siteId)
-    .executeTakeFirst() as FormRow | undefined
-
-  const settings = JSON.stringify(input.settings ?? {})
-  let formId: number
-  let uuid: string
-  let created = false
-
-  if (existing) {
-    formId = Number(existing.id)
-    uuid = String(existing.uuid)
-    await db
-      .updateTable('forms')
-      .set({ name: input.name, status: input.status ?? 'active', settings })
-      .where('id', '=', formId)
-      .execute()
+  if (input.fields.some(field => isReservedFieldName(field.name)))
+    throw new RangeError('Reserved form field name')
+  if (new Set(input.fields.map(field => field.name)).size !== input.fields.length)
+    throw new RangeError('Form field names must be unique')
+  // A savepoint cannot raise its parent's isolation level. Reject a weaker
+  // SQL parent before reading an identity that might not exist yet.
+  const dialect = getDatabaseDialect()
+  if (isInTransaction() && dialect === 'mysql')
+    throw new Error('createForm must run outside an enclosing MySQL transaction')
+  if (isInTransaction() && dialect === 'postgres') {
+    const rows = await db.unsafe('SHOW transaction_isolation').execute()
+    const isolation = rows[0]?.transaction_isolation
+    if (String(isolation).toLowerCase().replace(/[ _-]/g, '') !== 'serializable')
+      throw new Error('createForm requires serializable isolation in the outer transaction')
   }
-  else {
-    uuid = crypto.randomUUID()
-    await db
-      .insertInto('forms')
-      .values({
-        uuid,
-        site_id: siteId,
-        name: input.name,
-        handle: input.handle,
-        status: input.status ?? 'active',
-        settings,
-      })
-      .execute()
+  // Serializable predicate reads protect missing identities too, including
+  // NULL/global sites where a normal composite unique index permits duplicates.
+  return db.transaction(async (tx) => {
+    // MySQL cannot SET TRANSACTION isolation inside the driver's begin
+    // callback. A connection-owned site mutex protects missing identities;
+    // a locking current read then holds any existing row through commit.
+    const siteLock = `stacks_forms_site_${siteId ?? 'global'}`
+    if (dialect === 'mysql') {
+      const [lock] = await tx.unsafe('SELECT GET_LOCK(?, 10) AS acquired', [siteLock])
+      if (Number(lock?.acquired) !== 1) throw new Error('Could not acquire form provisioning lock')
+    }
+    try {
+      const existing = await lockRow(tx, 'forms', { site_id: siteId, handle: input.handle })
 
-    const row = await db
-      .selectFrom('forms')
-      .select(['id'])
-      .where('uuid', '=', uuid)
-      .executeTakeFirst() as { id: number } | undefined
+      const settings = JSON.stringify(input.settings ?? {})
+      let formId: number
+      let uuid: string
+      let created = false
 
-    formId = Number(row?.id)
-    created = true
-  }
+      if (existing) {
+        formId = Number(existing.id)
+        uuid = String(existing.uuid)
+        await tx
+          .updateTable('forms')
+          .set({ name: input.name, status: input.status ?? 'active', settings })
+          .where('id', '=', formId)
+          .execute()
+      }
+      else {
+        uuid = crypto.randomUUID()
+        await tx
+          .insertInto('forms')
+          .values({
+            uuid,
+            site_id: siteId,
+            name: input.name,
+            handle: input.handle,
+            status: input.status ?? 'active',
+            settings,
+          })
+          .execute()
 
-  await db.deleteFrom('form_fields').where('form_id', '=', formId).execute()
+        const [row] = await tx
+          .selectFrom('forms')
+          .where('uuid', '=', uuid)
+          .execute()
 
-  let position = 0
-  for (const field of input.fields) {
-    await db
-      .insertInto('form_fields')
-      .values({
-        // `form_fields` carries no uuid - only `forms` has the useUuid trait.
-        form_id: formId,
-        name: field.name,
-        label: field.label,
-        type: field.type,
-        required: field.required ?? false,
-        position: position++,
-        width: field.width ?? 'full',
-        options: JSON.stringify(field.options ?? {}),
-        conditions: field.conditions ? JSON.stringify(field.conditions) : null,
-      })
-      .execute()
-  }
+        if (!row) throw new Error('Created form could not be read')
+        formId = Number(row.id)
+        created = true
+      }
 
-  return { id: formId, uuid, handle: input.handle, created }
+      await tx.deleteFrom('form_fields').where('form_id', '=', formId).execute()
+
+      let position = 0
+      for (const field of input.fields) {
+        await tx
+          .insertInto('form_fields')
+          .values({
+            // `form_fields` carries no uuid - only `forms` has the useUuid trait.
+            form_id: formId,
+            name: field.name,
+            label: field.label,
+            type: field.type,
+            required: field.required ?? false,
+            position: position++,
+            width: field.width ?? 'full',
+            options: JSON.stringify(field.options ?? {}),
+            conditions: field.conditions ? JSON.stringify(field.conditions) : null,
+          })
+          .execute()
+      }
+
+      return { id: formId, uuid, handle: input.handle, created }
+    }
+    finally {
+      // The next owner uses SELECT FOR UPDATE and waits for our row's commit
+      // after this handoff. Nested MySQL calls are rejected above so a parent
+      // cannot retain a row lock while trying to acquire this site lock again.
+      if (dialect === 'mysql') await tx.unsafe('SELECT RELEASE_LOCK(?)', [siteLock])
+    }
+  }, { ...sqliteWriteOptions(dialect), isolation: dialect === 'mysql' ? undefined : 'serializable', retries: 5, sqlStates: ['23505'] })
 }
 
 /** Load a form by its site-scoped handle, the way app code refers to one. */

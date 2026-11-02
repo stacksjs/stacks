@@ -198,3 +198,13 @@ describe('validateSubmission on a file field', () => {
     expect(validateSubmission(form, { transcript: 'anything at all' }).ok).toBe(false)
   })
 })
+
+describe('disjoint upload allowlists', () => {
+  it('rejects every extension when the field and application restrictions do not overlap', () => {
+    const field = fileField({ accept: ['exe'] })
+    const limits = resolveUploadLimits(field)
+    expect(limits.allowedTypes).toEqual([])
+    for (const name of ['payload.exe', 'safe.pdf', 'image.png'])
+      expect(checkUpload(field, { name, size: 100 }, limits)?.status).toBe(422)
+  })
+})

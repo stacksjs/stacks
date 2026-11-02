@@ -831,6 +831,7 @@
       "dependencies": {
         "@stacksjs/config": "workspace:*",
         "@stacksjs/database": "workspace:*",
+        "@stacksjs/datetime": "workspace:*",
         "@stacksjs/logging": "workspace:*",
         "@stacksjs/notifications": "workspace:*",
       },

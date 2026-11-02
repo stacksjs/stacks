@@ -140,16 +140,9 @@ function isPlainObject(item: unknown): item is Record<string, unknown> {
  * @category Object
  */
 export function objectPick<O extends object, T extends keyof O>(obj: O, keys: T[], omitUndefined = false): Pick<O, T> {
-  return keys.reduce(
-    (n, k) => {
-      if (k in obj) {
-        if (!omitUndefined || obj[k] !== undefined)
-          n[k] = obj[k]
-      }
-      return n
-    },
-    {} as Pick<O, T>,
-  )
+  return Object.fromEntries(
+    keys.filter(key => key in obj && (!omitUndefined || obj[key] !== undefined)).map(key => [key, obj[key]]),
+  ) as Pick<O, T>
 }
 
 /**

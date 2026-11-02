@@ -111,11 +111,14 @@ export interface SubmissionListRow {
 }
 
 /** Admin list, newest first. `formId` scoping is the caller's job to have authorized. */
-export async function fetchSubmissions(formId: number, options: { limit?: number, offset?: number } = {}): Promise<SubmissionListRow[]> {
-  const rows = await db
+export async function fetchSubmissions(formId: number, options: { limit?: number, offset?: number, beforeId?: number } = {}): Promise<SubmissionListRow[]> {
+  let query = db
     .selectFrom('form_submissions')
     .where('form_id', '=', formId)
     .where('status', '!=', 'spam')
+  if (options.beforeId !== undefined)
+    query = query.where('id', '<', options.beforeId)
+  const rows = await query
     .select(['id', 'uuid', 'data', 'email', 'name', 'status', 'amount_cents', 'submitted_at'])
     .orderBy('id', 'desc')
     .limit(options.limit ?? 100)
@@ -187,20 +190,26 @@ function csvEscape(value: unknown): string {
 /** The full submission set as CSV: field columns in position order + the typed columns. */
 export async function exportSubmissionsCsv(form: FormDefinition): Promise<string> {
   const fields = form.fields.filter(field => field.type !== 'section_break').sort((a, b) => a.position - b.position)
-  const rows = await fetchSubmissions(form.id, { limit: 100000 })
 
   const header = [...fields.map(field => field.label), 'Email', 'Name', 'Status', 'Amount', 'Submitted at']
   const lines = [header.map(csvEscape).join(',')]
 
-  for (const row of rows) {
-    lines.push([
-      ...fields.map(field => csvEscape(row.values[field.name])),
-      csvEscape(row.email),
-      csvEscape(row.name),
-      csvEscape(row.status),
-      csvEscape(row.amountCents == null ? '' : (row.amountCents / 100).toFixed(2)),
-      csvEscape(row.submittedAt),
-    ].join(','))
+  let beforeId: number | undefined
+  const pageSize = 1000
+  while (true) {
+    const rows = await fetchSubmissions(form.id, { limit: pageSize, beforeId })
+    for (const row of rows) {
+      lines.push([
+        ...fields.map(field => csvEscape(row.values[field.name])),
+        csvEscape(row.email),
+        csvEscape(row.name),
+        csvEscape(row.status),
+        csvEscape(row.amountCents == null ? '' : (row.amountCents / 100).toFixed(2)),
+        csvEscape(row.submittedAt),
+      ].join(','))
+    }
+    if (rows.length < pageSize) break
+    beforeId = rows.at(-1)!.id
   }
 
   return lines.join('\n')

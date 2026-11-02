@@ -19,6 +19,11 @@ export function finiteNumeric(value: unknown): number | null {
   return Number.isFinite(number) ? number : null
 }
 
+function updateInstant(value: string | undefined): number {
+  const instant = value ? Date.parse(value) : NaN
+  return Number.isFinite(instant) ? instant : -Infinity
+}
+
 /** Prefer a direct source per field; a missing field can fall back to another source. */
 export function mergeDailySeries(rows: readonly DailyObservation[], priority: readonly string[] = []): DailySeriesPoint[] {
   const rank = (source: string) => {
@@ -26,7 +31,7 @@ export function mergeDailySeries(rows: readonly DailyObservation[], priority: re
     return at < 0 ? priority.length : at
   }
   const sorted = [...rows].sort((a, b) => rank(a.source) - rank(b.source)
-    || String(b.updatedAt || '').localeCompare(String(a.updatedAt || ''))
+    || updateInstant(b.updatedAt) - updateInstant(a.updatedAt)
     || a.source.localeCompare(b.source))
   const days = new Map<string, DailySeriesPoint>()
   for (const row of sorted) {

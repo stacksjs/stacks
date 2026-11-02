@@ -15,6 +15,7 @@
  * matching the opt-in / degrade-when-missing pattern the rest of the queue uses.
  */
 
+import { sqliteWriteOptions } from '@stacksjs/database/runtime'
 import type { UnsafeRowsResult } from '@stacksjs/database/runtime'
 import { log } from '@stacksjs/logging'
 import { buildScheduledJobRow, storeJob } from './utils'
@@ -81,7 +82,7 @@ export async function persistLastRun(jobName: string, when: Date): Promise<void>
     await db.transaction(async (tx) => {
       await seedStateRow(tx, 'scheduled_job_runs', ['job_name'], { job_name: jobName, last_run_at: when.toISOString() })
       await tx.updateTable('scheduled_job_runs').set({ last_run_at: when.toISOString() }).where('job_name', '=', jobName).execute()
-    }, { sqliteMode: 'immediate' })
+    }, sqliteWriteOptions())
   }
   catch {
     // Standalone marker writes retain their best-effort contract.
@@ -104,7 +105,7 @@ export async function storeScheduledRun(jobName: string, when: Date, options: Pa
     await tx.insertInto('jobs').values({ ...row }).execute()
     await tx.updateTable('scheduled_job_runs').set({ last_run_at: when.toISOString() }).where('job_name', '=', jobName).execute()
     return true
-  }, { sqliteMode: 'immediate' })
+  }, sqliteWriteOptions())
 }
 
 /**
