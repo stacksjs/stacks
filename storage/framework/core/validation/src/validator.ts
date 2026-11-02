@@ -5,7 +5,8 @@ import { HttpError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { snakeCase } from '@stacksjs/strings'
 import { getErrorMessage } from '@stacksjs/utils'
-import { MessageProvider, setCustomMessages } from '@stacksjs/ts-validation'
+import type { FieldMessages } from './messages'
+import { fieldErrorMessages } from './messages'
 // Import directly from sibling files instead of the package's own `./` (which
 // would self-circular through `index.ts`'s re-exports and leave `schema` as
 // an empty namespace placeholder for any consumer that arrives mid-eval).
@@ -105,7 +106,10 @@ export async function validateField(modelFile: string, params: RequestData): Pro
   const attributes = model.attributes
 
   const ruleObject: Record<string, Validator<any>> = {}
-  const messageObject: Record<string, string> = {}
+  // Applied to the errors afterwards (see `./messages`): registered with
+  // ts-validation's process-wide provider as `name.min` they were never found,
+  // and every call replaced whatever provider the app had set.
+  const messages: Record<string, FieldMessages> = {}
 
   for (const key in attributes) {
     if (Object.prototype.hasOwnProperty.call(attributes, key)) {
@@ -124,21 +128,15 @@ export async function validateField(modelFile: string, params: RequestData): Pro
       ruleObject[snakeCase(key)] = attributeKey.validation?.rule as Validator<any>
 
       const validatorMessages = attributeKey.validation?.message
-
-      if (validatorMessages) {
-        for (const validatorMessageKey in validatorMessages) {
-          const validatorMessageString = `${key}.${validatorMessageKey}`
-          messageObject[validatorMessageString] = validatorMessages[validatorMessageKey] || ''
-        }
-      }
+      if (validatorMessages)
+        messages[snakeCase(key)] = validatorMessages as FieldMessages
     }
   }
 
   try {
-    setCustomMessages(new MessageProvider(messageObject))
-
     const validator = schema.object(ruleObject)
     const result = await validator.validate(params)
+    applyMessages(result, ruleObject, messages, params)
 
     if (!result.valid) {
       reportError(toMessageObjects(result.errors, params))
@@ -251,7 +249,8 @@ export async function validateFieldAsync(
 
 export async function customValidate(attributes: CustomAttributes, params: RequestData): Promise<any> {
   const ruleObject: Record<string, Validator<any>> = {}
-  const messageObject: Record<string, string> = {}
+  // Built and then never handed to anything, so these were dropped too.
+  const messages: Record<string, FieldMessages> = {}
 
   for (const key in attributes) {
     if (Object.prototype.hasOwnProperty.call(attributes, key)) {
@@ -260,17 +259,15 @@ export async function customValidate(attributes: CustomAttributes, params: Reque
         ruleObject[key] = rule as Validator<any>
 
       const validatorMessages = attributes[key]?.message
-
-      for (const validatorMessageKey in validatorMessages) {
-        const validatorMessageString = `${key}.${validatorMessageKey}`
-        messageObject[validatorMessageString] = attributes[key]?.message[validatorMessageKey] || ''
-      }
+      if (validatorMessages)
+        messages[key] = validatorMessages
     }
   }
 
   try {
     const validator = schema.object().shape(ruleObject)
     const result = await validator.validate(params)
+    applyMessages(result, ruleObject, messages, params)
 
     if (!result.valid)
       throw new HttpError(422, 'Validation failed', { errors: result.errors })
@@ -284,6 +281,23 @@ export async function customValidate(attributes: CustomAttributes, params: Reque
     throw new HttpError(500, getErrorMessage(error) || 'An unexpected validation error occurred')
   }
 }
+/** Put each field's custom messages on its errors, in place. */
+function applyMessages(
+  result: { valid: boolean, errors?: unknown },
+  rules: Record<string, Validator<any>>,
+  messages: Record<string, FieldMessages>,
+  params: RequestData,
+): void {
+  if (result.valid || !result.errors || Array.isArray(result.errors))
+    return
+  const errors = result.errors as Record<string, { message: string }[]>
+  for (const [field, message] of Object.entries(messages)) {
+    const reported = errors[field]
+    if (reported)
+      errors[field] = fieldErrorMessages(rules[field], params[field], reported, message, field).map(text => ({ message: text }))
+  }
+}
+
 function isHttpErrorLike(error: unknown): error is Error & { status: number } {
   return error instanceof HttpError
     || (error instanceof Error

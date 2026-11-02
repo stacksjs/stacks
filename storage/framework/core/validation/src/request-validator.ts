@@ -1,6 +1,7 @@
 import type { Validator } from '@stacksjs/ts-validation'
-import { MessageProvider, setCustomMessages } from '@stacksjs/ts-validation'
+import type { FieldMessages } from './messages'
 import { HttpError } from '@stacksjs/error-handling/http-error'
+import { fieldErrorMessages } from './messages'
 import { objectWithContext } from './object-with-context'
 
 /**
@@ -56,20 +57,18 @@ export async function validate<T = Record<string, unknown>>(
 ): Promise<T> {
   const input = await gatherRequestInput(request)
   const ruleObject: Record<string, Validator<any>> = {}
-  let messageObject: Record<string, string> | undefined
+  // Applied to the errors afterwards (see `./messages`). They used to go to
+  // ts-validation's process-wide provider as `email.default` and `name.min`,
+  // keys it never looks up, so every custom message was silently dropped.
+  const messages: Record<string, FieldMessages> = {}
 
   for (const [field, definition] of Object.entries(rules)) {
     if (!definition) continue
     if (typeof (definition as { rule?: unknown }).rule === 'object' || typeof (definition as { rule?: unknown }).rule === 'function') {
       ruleObject[field] = (definition as { rule: Validator<any> }).rule
-      const message = (definition as { message?: string | Record<string, string> }).message
-      if (typeof message === 'string') {
-        ;(messageObject ??= {})[`${field}.default`] = message
-      }
-      else if (message && typeof message === 'object') {
-        messageObject ??= {}
-        for (const [key, value] of Object.entries(message)) messageObject[`${field}.${key}`] = value
-      }
+      const message = (definition as { message?: FieldMessages }).message
+      if (typeof message === 'string' || (message && typeof message === 'object'))
+        messages[field] = message
     }
     else {
       ruleObject[field] = definition as Validator<any>
@@ -77,12 +76,14 @@ export async function validate<T = Record<string, unknown>>(
   }
 
   try {
-    if (messageObject)
-      setCustomMessages(new MessageProvider(messageObject))
-
     const result = await requestObjectValidator.shape(ruleObject).validate(input)
     if (!result.valid) {
       const errors = normalizeValidationErrors(result.errors)
+      for (const [field, message] of Object.entries(messages)) {
+        const reported = errors[field]
+        if (reported)
+          errors[field] = fieldErrorMessages(ruleObject[field], input[field], reported.map(text => ({ message: text })), message, field)
+      }
       throw new HttpError(422, 'Validation failed', { errors })
     }
 

@@ -249,6 +249,17 @@ export default defineModel({
 })
 ```
 
+### Custom messages
+
+A rule's `message` is one string for any failure of the field, or an object keyed
+by rule name: `min`, `max`, `email`, `enum`, `required` and so on. `messageKeys(rule)`
+lists the keys a validator takes; `timestamp()` and `date()` take `timestamp` and
+`date`. A key named after the field covers failures no rule key matched, unless the
+validator has a rule of that name (`email: { email: ... }` is the email rule's).
+Action `validations`, `request.validate()`, `validateField()` and model writes all
+apply them through `fieldErrorMessages()` from `@stacksjs/validation/messages`, after
+validation; none of them sets ts-validation's process-wide message provider.
+
 ## Model Validation (`validator.ts`)
 
 ### `validateField(modelFile, params)`
