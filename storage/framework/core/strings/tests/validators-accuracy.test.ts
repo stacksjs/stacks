@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { isDataURI, isHSL, isISIN, isISO8601, isStrongPassword, isUUID } from '../src/validators'
+import { isDataURI, isHSL, isIPRange, isISIN, isISO8601, isLatitude, isLatLong, isLongitude, isStrongPassword, isUUID } from '../src/validators'
 
 describe('values the validators refused', () => {
   it('isHSL takes an hsl() colour, and not the colon its broken pattern wanted', () => {
@@ -51,5 +51,32 @@ describe('values the validators refused', () => {
     expect(isISO8601('2026-01-01T10:00:00.123456Z')).toBe(true)
     expect(isISO8601('2026-01-01T10:00:00.5+05:30')).toBe(true)
     expect(isISO8601('2026-01-01T10:00:00.Z')).toBe(false)
+  })
+})
+
+describe('junk the validators took', () => {
+  it('isLatLong, isLatitude and isLongitude want plain decimal numbers', () => {
+    expect(isLatLong('45abc, 90xyz')).toBe(false)
+    expect(isLatLong('12.3.4,5')).toBe(false)
+    expect(isLatitude('45 degrees')).toBe(false)
+    expect(isLatitude('0x10')).toBe(false)
+    expect(isLongitude('4.5e1')).toBe(false)
+    expect(isLatLong(' 40.7128 , -74.0060 ')).toBe(true)
+    expect(isLatLong('+90,-180')).toBe(true)
+    expect(isLatitude('-.5')).toBe(true)
+  })
+
+  it('isIPRange wants a whole-number prefix length', () => {
+    for (const range of ['10.0.0.0/24abc', '10.0.0.0/24.5', '10.0.0.0/-0', '10.0.0.0/ 8', '10.0.0.0/'])
+      expect(isIPRange(range)).toBe(false)
+    expect(isIPRange('10.0.0.0/0')).toBe(true)
+    expect(isIPRange('::1/128')).toBe(true)
+  })
+
+  it('isISO8601 refuses a day its month does not have', () => {
+    for (const date of ['2026-02-29', '2026-02-30', '2026-04-31T10:00:00Z', '1900-02-29', '2026-01-00'])
+      expect(isISO8601(date)).toBe(false)
+    expect(isISO8601('2024-02-29')).toBe(true)
+    expect(isISO8601('2000-02-29T23:59:59Z')).toBe(true)
   })
 })

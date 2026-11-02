@@ -265,7 +265,7 @@ isJWT('eyJhbGciOiJIUzI1NiJ9.e30.c2ln')   // true -- shape check only, not signat
 ### Network Validators
 ```typescript
 isIP('192.168.1.1')                       // true -- IPv4 and IPv6
-isIPRange('192.168.1.0/24')               // true -- CIDR notation (IPv4: 0-32, IPv6: 0-128)
+isIPRange('192.168.1.0/24')               // true -- CIDR notation, a whole-number prefix (IPv4: 0-32, IPv6: 0-128)
 isMACAddress('00:11:22:33:44:55')         // true -- colon or hyphen separated
 isFQDN('example.com')                     // true -- fully qualified domain name
 ```
@@ -282,7 +282,7 @@ isISSN('0378-5955')                        // true -- mod 11 check
 
 ### Geographic Validators
 ```typescript
-isLatLong('40.7128,-74.0060')             // true -- lat: -90..90, long: -180..180
+isLatLong('40.7128,-74.0060')             // true -- plain decimal numbers; lat: -90..90, long: -180..180
 isLatitude('40.7128')                     // true
 isLongitude('-74.0060')                   // true
 isPostalCode('12345')                     // true -- US, UK, Canada, generic formats
@@ -292,7 +292,7 @@ isPostalCode('12345')                     // true -- US, UK, Canada, generic for
 ```typescript
 isMobilePhone('+1234567890')              // true -- international format, min 7 digits
 isUUID('550e8400-e29b-41d4-a716-446655440000') // true -- versions 1-8 (RFC 9562), nil and max; full value required
-isISO8601('2024-01-01T00:00:00Z')         // true -- any number of fraction digits, with Date validity check
+isISO8601('2024-01-01T00:00:00Z')         // true -- the day must exist in its month; any number of fraction digits
 isIdentityCard('AB123456')                // true -- generic 5-20 alphanumeric
 isISRC('USRC17607839')                    // true
 isISO31661Alpha2('US')                    // true

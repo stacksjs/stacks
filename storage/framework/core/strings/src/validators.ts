@@ -227,7 +227,10 @@ export function isIPRange(ip: string): boolean {
 
   const [address, cidr] = parts
   if (address === undefined || cidr === undefined) return false
-  const cidrNum = parseInt(cidr, 10)
+  // Digits only: `parseInt` read the prefix of `24abc`, `24.5` and ` 8`, and
+  // took `-0` for 0.
+  if (!/^\d{1,3}$/.test(cidr)) return false
+  const cidrNum = Number(cidr)
 
   if (!isIP(address)) return false
 
@@ -248,16 +251,25 @@ export function isMACAddress(macAddress: string): boolean {
 }
 
 /**
+ * A coordinate: a plain decimal number, surrounding spaces aside, within
+ * `limit` of zero.
+ *
+ * `parseFloat` reads as far as it can and drops the rest, so `45abc`,
+ * `12.3.4`, `45 degrees` and `0x10` (as 0) all passed for numbers.
+ */
+function isCoordinate(value: string, limit: number): boolean {
+  const text = value.trim()
+  return /^[+-]?(?:\d+(?:\.\d+)?|\.\d+)$/.test(text) && Math.abs(Number(text)) <= limit
+}
+
+/**
  * Latitude/Longitude validation
  */
 export function isLatLong(latlong: string): boolean {
   const parts = latlong.split(',')
   if (parts.length !== 2) return false
 
-  const lat = parseFloat((parts[0] ?? '').trim())
-  const long = parseFloat((parts[1] ?? '').trim())
-
-  return !isNaN(lat) && !isNaN(long) && lat >= -90 && lat <= 90 && long >= -180 && long <= 180
+  return isCoordinate(parts[0] ?? '', 90) && isCoordinate(parts[1] ?? '', 180)
 }
 
 /**
@@ -477,6 +489,11 @@ export function isISO8601(iso8601: string): boolean {
   const iso8601Regex = /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?)?$/
   if (!iso8601Regex.test(iso8601)) return false
 
+  // `new Date()` rolls a day past the end of its month into the next one, so
+  // it took 2026-02-30 for 2 March: the day is checked against its month.
+  const [year, month, day] = iso8601.slice(0, 10).split('-').map(Number) as [number, number, number]
+  if (month < 1 || month > 12 || day < 1 || day > daysInMonth(year, month)) return false
+
   try {
     const date = new Date(iso8601)
     return !isNaN(date.getTime())
@@ -536,14 +553,19 @@ export function validateUsername(username: string): boolean {
  * Latitude validation
  */
 export function isLatitude(latitude: string): boolean {
-  const lat = parseFloat(latitude)
-  return !isNaN(lat) && lat >= -90 && lat <= 90
+  return isCoordinate(latitude, 90)
 }
 
 /**
  * Longitude validation
  */
 export function isLongitude(longitude: string): boolean {
-  const long = parseFloat(longitude)
-  return !isNaN(long) && long >= -180 && long <= 180
+  return isCoordinate(longitude, 180)
+}
+
+/** The days in a month of the proleptic Gregorian calendar. */
+function daysInMonth(year: number, month: number): number {
+  if (month === 2)
+    return year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0) ? 29 : 28
+  return [4, 6, 9, 11].includes(month) ? 30 : 31
 }
