@@ -242,3 +242,5 @@ export type {
   TransactWriteOperation,
   QueryResult,
 } from './drivers/dynamodb'
+
+export * from './row-lease'

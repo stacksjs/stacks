@@ -1,3 +1,6 @@
+export { retryAfterMilliseconds } from './retry-after'
+import { retryAfterMilliseconds } from './retry-after'
+
 export enum Response {
   // 1xx Informational
   HTTP_CONTINUE = 100,
@@ -122,12 +125,7 @@ export async function fetchWithBudget(
       if (!replayable || ![429, 503].includes(response.status) || attempt >= retry)
         return response
 
-      const header = response.headers.get('retry-after')?.trim()
-      const seconds = header && /^\d+(?:\.\d+)?$/.test(header) ? Number(header) : NaN
-      const date = header && /^[a-z]{3}(?:[a-z]*,| )/i.test(header) ? Date.parse(header) : NaN
-      const delay = Number.isFinite(seconds)
-        ? seconds * 1000
-        : Number.isFinite(date) ? Math.max(0, date - Date.now()) : Math.min(2 ** attempt * 1000, 30_000)
+      const delay = retryAfterMilliseconds(response.headers.get('retry-after')) ?? Math.min(2 ** attempt * 1000, 30_000)
 
       // Release the response before retrying. The same buffered request bytes
       // can be replayed; an unread response must not hold a connection open.

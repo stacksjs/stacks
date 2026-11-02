@@ -22,7 +22,7 @@ import { env } from '@stacksjs/env'
  */
 
 // Helper to extract the queue driver with correct union type
-const queueDriver = String(env.QUEUE_DRIVER || 'sync')
+const queueDriver = String(env.QUEUE_DRIVER || (env.APP_ENV === 'production' ? 'database' : 'sync'))
 const failedDriver = String(env.QUEUE_FAILED_DRIVER || 'database')
 
 export default {

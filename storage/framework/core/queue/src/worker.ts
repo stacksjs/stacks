@@ -1,3 +1,4 @@
+import { resolveQueueDriver } from './driver'
 /**
  * Queue Worker Functions
  *
@@ -49,7 +50,6 @@ function installWorkerCrashHandlers(): void {
 }
 
 // Environment variables
-import { env as envVars } from '@stacksjs/env'
 
 // Worker state
 let activeJobCount = 0
@@ -218,7 +218,7 @@ function isNonRetryableError(e: unknown): boolean {
  * Get the queue driver from environment
  */
 function getQueueDriver(): string {
-  return envVars.QUEUE_DRIVER || 'sync'
+  return resolveQueueDriver()
 }
 
 /**

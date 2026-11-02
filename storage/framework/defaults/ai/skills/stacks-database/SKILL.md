@@ -384,3 +384,13 @@ canonical numeric string value, so padded numeric inputs cannot reverse lock ord
 transaction handle and choose ownership filters; reads, writes and validation
 remain on that handle. This prevents opposite input order from creating a
 lock-order cycle during a transfer, merge or multi-item stock reservation.
+
+## Row leases for external operations
+
+`claimRowLease(table, ownerScope, { token, heartbeat }, ttlMs)` from
+`@stacksjs/database/runtime` claims model-owned nullable token and heartbeat
+columns atomically. It returns null when busy, or a lease with `renew()`,
+`release()`, `assertOwned()` and `commit(work)`. Renew periodically during I/O.
+Keep network work outside `commit`; commit locks and revalidates the token before
+writing one bounded batch. An expired worker cannot commit or release a successor.
+A lease's unique owner scope must include the resource binding where applicable.

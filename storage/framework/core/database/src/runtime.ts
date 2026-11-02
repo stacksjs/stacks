@@ -13,3 +13,5 @@ export * from './transaction-context'
 export * from './types'
 export * from './utils'
 export * from './row-lock'
+
+export * from './row-lease'
