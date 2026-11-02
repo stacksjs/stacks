@@ -2,6 +2,34 @@
 
 The Stacks aliases.
 
+## Workspace source resolution
+
+The five source TypeScript configs use generated mappings from actual package
+manifest names and public exports. A directory named `desktop` belongs to
+`@stacksjs/desktop-build`; the external `@stacksjs/desktop` package resolves
+normally through its installed exports. Namespace catchalls cannot preserve
+that boundary.
+
+`workspacePackages(core)` discovers unique manifest identities.
+`workspaceSourceAliases(core)` maps their declared runtime exports to source,
+and maps the umbrella's own exports to the corresponding child entrypoints.
+The defaults package's publish wrapper maps to the canonical scaffold tree.
+The helpers reject duplicate identities and missing source entries instead of
+consulting stale `dist` output. `workspaceSourcePaths(core, configDirectory)`
+returns the relative path form consumed by TypeScript and Bun.
+
+After changing a workspace manifest or its public exports, run from the root:
+
+```bash
+bun .github/scripts/generate-workspace-aliases.ts
+bun .github/scripts/generate-workspace-aliases.ts --check
+```
+
+The generator validates all five configs before writing any. The alias test
+suite runs its freshness check in CI. Application/resource aliases remain in
+each config. Package-based app templates keep their separate installed-package
+resolution config.
+
 ## ☘️ Features
 
 - 🤷🏼‍♂️ git Diff Interpreter

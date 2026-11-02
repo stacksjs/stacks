@@ -19,6 +19,7 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { workspacePackages as discoverWorkspacePackages } from '../../storage/framework/core/alias/src/workspace'
 
 const root = fileURLToPath(new URL('../../', import.meta.url))
 const coreDir = join(root, 'storage/framework/core')
@@ -37,22 +38,7 @@ const SCAN_ROOTS = [coreDir, join(root, 'storage/framework/defaults')]
 
 /** Workspace package names, by the directory that holds them. */
 function workspacePackages(): Map<string, string> {
-  const byName = new Map<string, string>()
-
-  for (const entry of readdirSync(coreDir, { withFileTypes: true })) {
-    if (!entry.isDirectory())
-      continue
-    try {
-      const manifest = JSON.parse(readFileSync(join(coreDir, entry.name, 'package.json'), 'utf8'))
-      if (manifest.name)
-        byName.set(manifest.name, entry.name)
-    }
-    catch {
-      // A directory without a readable manifest is not a workspace package.
-    }
-  }
-
-  return byName
+  return new Map([...discoverWorkspacePackages(coreDir)].map(([name, pkg]) => [name, pkg.directory.slice(coreDir.length + 1)]))
 }
 
 function sourceFiles(dir: string, found: string[] = []): string[] {

@@ -4,6 +4,9 @@
 
 import { path as p } from '@stacksjs/path'
 
+export { workspacePackages, workspaceSourceAliases, workspaceSourcePaths } from './workspace'
+export type { WorkspacePackage } from './workspace'
+
 export const alias: Record<string, string> = {
   'stacks': p.frameworkPath('core/index.ts'),
   '@stacksjs/ai': p.aiPath('src/index.ts'),

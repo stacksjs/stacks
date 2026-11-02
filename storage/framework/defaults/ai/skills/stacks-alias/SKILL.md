@@ -41,6 +41,14 @@ into another package's unpublished types is the problem. Avoid the former rule
 that all relative imports are forbidden, since framework code itself uses them
 to keep internal modules and cycle boundaries explicit.
 
+The five source tsconfigs use manifest-derived package names and public exports,
+not namespace-to-directory wildcards. Run
+`bun .github/scripts/generate-workspace-aliases.ts` after changing a workspace
+manifest and use `--check` to verify freshness. The owning helpers and source
+exceptions are documented in `core/alias/README.md`. External packages such as
+STX's `@stacksjs/desktop` keep normal package resolution; `core/desktop` owns
+`@stacksjs/desktop-build`.
+
 ## Verification
 
 Source: `core/alias/src/index.ts`, active tsconfig.json and the build/runtime
