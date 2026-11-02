@@ -9,6 +9,7 @@ import {
   captureCommand,
   launcherSliceCompileArgs,
   mergeUniversalBinary,
+  parseDistributionIdentities,
   parseLipoArchs,
   renderAppEntitlements,
   renderFailure,
@@ -21,6 +22,7 @@ import {
   storeRejectionFindings,
   validateAppleDesktopConfig,
   withApiKeyFile,
+  withKeychainIdentities,
 } from '../src/commands/desktop-apple'
 
 const config = {
@@ -541,5 +543,49 @@ describe('a native macOS app declared in config/desktop.ts', () => {
 
   test('a flag still wins over the config', () => {
     expect(resolveAppleDesktopConfig({ bundleId: 'com.example.other', appVersion: '2.0.0' }, native)).toMatchObject({ bundleId: 'com.example.other', version: '2.0.0', teamId: '3JJRNQW6B7' })
+  })
+})
+
+describe('signing identities from the keychain', () => {
+  const output = [
+    '  1) 1111111111111111111111111111111111111111 "Apple Development: Someone (DXBQ84FJL4)"',
+    '  2) 2222222222222222222222222222222222222222 "Apple Distribution: Other Team (ZZZZZZZZZZ)"',
+    '  3) 3333333333333333333333333333333333333333 "Developer ID Application: Stacks (ABCDEFGHIJ)"',
+    '  4) 4444444444444444444444444444444444444444 "Apple Distribution: Stacks (ABCDEFGHIJ)"',
+    '  5) 5555555555555555555555555555555555555555 "3rd Party Mac Developer Installer: Stacks (ABCDEFGHIJ)"',
+    '     5 valid identities found',
+  ].join('\n')
+
+  it('finds the team\'s Store app and installer identities, not Developer ID or another team\'s', () => {
+    expect(parseDistributionIdentities(output, 'ABCDEFGHIJ')).toEqual({
+      app: 'Apple Distribution: Stacks (ABCDEFGHIJ)',
+      installer: '3rd Party Mac Developer Installer: Stacks (ABCDEFGHIJ)',
+    })
+  })
+
+  it('accepts the older certificate names', () => {
+    expect(parseDistributionIdentities('1) AB "3rd Party Mac Developer Application: Stacks (ABCDEFGHIJ)"\n2) CD "Mac Installer Distribution: Stacks (ABCDEFGHIJ)"', 'ABCDEFGHIJ')).toEqual({
+      app: '3rd Party Mac Developer Application: Stacks (ABCDEFGHIJ)',
+      installer: 'Mac Installer Distribution: Stacks (ABCDEFGHIJ)',
+    })
+  })
+
+  it('fills only what was not named, and leaves named identities alone', () => {
+    const unnamed = { ...config, appSigningIdentity: '', installerSigningIdentity: 'Mine' }
+    const filled = withKeychainIdentities(unnamed, () => output)
+    expect(filled.appSigningIdentity).toBe('Apple Distribution: Stacks (ABCDEFGHIJ)')
+    expect(filled.installerSigningIdentity).toBe('Mine')
+    let read = false
+    withKeychainIdentities(config, () => { read = true; return output })
+    expect(read).toBe(false)
+  })
+
+  it('reports the identity as missing when the keychain has none for the team', () => {
+    const filled = withKeychainIdentities({ ...config, teamId: 'QQQQQQQQQQ', appSigningIdentity: '', installerSigningIdentity: '' }, () => output)
+    expect(validateAppleDesktopConfig(filled, false)).toContain('APPLE_APP_SIGNING_IDENTITY is required')
+  })
+
+  it('refuses the unresolved word next as a build number', () => {
+    expect(validateAppleDesktopConfig({ ...config, buildNumber: 'next' }, false).join('\n')).toContain('--build-number next is resolved by desktop:apple:publish')
   })
 })

@@ -1303,7 +1303,7 @@ Build, sandbox, sign, and package a Mac App Store desktop app
 | `--bundle-id` | Reverse-DNS bundle identifier | value, required | - |
 | `--team-id` | Apple Developer team ID | value, required | - |
 | `--app-version` | Marketing version | value, required | - |
-| `--build-number` | Unique App Store build number | value, required | - |
+| `--build-number` | Unique App Store build number, or "next" for one past the highest on App Store Connect (publish only) | value, required | - |
 | `--minimum-macos` | Minimum supported macOS version | value, required | - |
 | `--category` | LSApplicationCategoryType value | value, required | - |
 | `--app-signing-identity` | Mac App Distribution signing identity | value, required | - |
@@ -1355,7 +1355,7 @@ Build and validate or upload a signed Mac App Store package
 | `--bundle-id` | Reverse-DNS bundle identifier | value, required | - |
 | `--team-id` | Apple Developer team ID | value, required | - |
 | `--app-version` | Marketing version | value, required | - |
-| `--build-number` | Unique App Store build number | value, required | - |
+| `--build-number` | Unique App Store build number, or "next" for one past the highest on App Store Connect (publish only) | value, required | - |
 | `--minimum-macos` | Minimum supported macOS version | value, required | - |
 | `--category` | LSApplicationCategoryType value | value, required | - |
 | `--app-signing-identity` | Mac App Distribution signing identity | value, required | - |
@@ -1372,6 +1372,8 @@ Build and validate or upload a signed Mac App Store package
 | `--api-key-path` | App Store Connect AuthKey .p8 file | value, required | - |
 | `--validate-only` | Validate with App Store Connect without uploading | boolean, optional | - |
 | `--package-only` | Create the signed package without contacting App Store Connect | boolean, optional | - |
+| `--testflight` | After the upload, wait for processing and give the build to these comma-separated TestFlight groups | value, required | - |
+| `--whats-new` | TestFlight "What to Test" (default: the commit subjects since the last tag) | value, required | - |
 
 ### `desktop:probe`
 

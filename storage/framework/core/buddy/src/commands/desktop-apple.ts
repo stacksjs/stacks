@@ -49,6 +49,8 @@ interface AppleDesktopOptions {
   craftArm64?: string
   craftX64?: string
   keychain?: string
+  testflight?: string
+  whatsNew?: string
 }
 
 export interface AppleDesktopConfig {
@@ -180,6 +182,9 @@ export function validateAppleDesktopConfig(config: AppleDesktopConfig, includeAp
   if (!/^[A-Z0-9]{10}$/.test(config.teamId)) errors.push('APPLE_TEAM_ID must be the 10-character Apple Developer team ID')
   if (!/^\d+(?:\.\d+){0,2}$/.test(config.version)) errors.push('The marketing version must contain one to three numeric components')
   if (!/^[A-Za-z0-9.-]+$/.test(config.buildNumber)) errors.push('The build number must contain only letters, numbers, periods, and hyphens')
+  // Resolved against App Store Connect by `desktop:apple:publish`; anywhere
+  // else it would reach Info.plist as the literal word.
+  if (config.buildNumber === 'next') errors.push('--build-number next is resolved by desktop:apple:publish; give desktop:apple:package a number')
   if (!config.appSigningIdentity) errors.push('APPLE_APP_SIGNING_IDENTITY is required')
   if (!config.installerSigningIdentity) errors.push('APPLE_INSTALLER_SIGNING_IDENTITY is required')
   if (!config.provisioningProfile || !existsSync(config.provisioningProfile)) errors.push('APPLE_PROVISIONING_PROFILE must point to an existing .provisionprofile file')
@@ -582,6 +587,121 @@ export function buildUniversalPayload(input: UniversalPayloadInput, run: Command
  */
 export function launcherSliceCompileArgs(base: string[], architecture: DarwinArchitecture): string[] {
   return ['bun', ...base, `--target=bun-darwin-${architecture}`]
+}
+
+/**
+ * The team's Mac App Store signing identities in `security find-identity -v`
+ * output: the app certificate under either of the names Apple has issued it
+ * under, and the installer certificate likewise. Only the team's own: a Mac
+ * holding certificates for several teams must not sign with the wrong one.
+ */
+export function parseDistributionIdentities(output: string, teamId: string): { app?: string, installer?: string } {
+  const named = (kinds: string) => new RegExp(`"((?:${kinds}): [^"]+ \\(${teamId}\\))"`).exec(output)?.[1]
+  return {
+    app: named('Apple Distribution|3rd Party Mac Developer Application'),
+    installer: named('3rd Party Mac Developer Installer|Mac Installer Distribution'),
+  }
+}
+
+/**
+ * Fill the signing identities from the keychain when no flag or variable named
+ * them. They are certificate names, not secrets, and the keychain already says
+ * which ones this Mac can sign with, so a release from the developer's own Mac
+ * needs no Apple variables beyond the App Store Connect key.
+ */
+export function withKeychainIdentities(config: AppleDesktopConfig, read: (keychain?: string) => string = readIdentities): AppleDesktopConfig {
+  if ((config.appSigningIdentity && config.installerSigningIdentity) || !config.teamId) return config
+  const found = parseDistributionIdentities(read(config.keychain), config.teamId)
+  return {
+    ...config,
+    appSigningIdentity: config.appSigningIdentity || found.app || '',
+    installerSigningIdentity: config.installerSigningIdentity || found.installer || '',
+  }
+}
+
+function readIdentities(keychain?: string): string {
+  // Without `-p codesigning`: installer certificates are not code signing
+  // identities, and that policy hides them.
+  const result = Bun.spawnSync(['security', 'find-identity', '-v', ...(keychain ? [keychain] : [])], { stdout: 'pipe', stderr: 'pipe' })
+  return result.exitCode === 0 ? result.stdout.toString() : ''
+}
+
+async function appStoreClient(config: AppleDesktopConfig) {
+  if (!config.apiKeyId || !config.apiIssuerId || !config.apiKeyPath || !existsSync(config.apiKeyPath))
+    throw new Error('App Store Connect API key ID, issuer ID, and .p8 key (APP_STORE_CONNECT_API_KEY or APP_STORE_CONNECT_API_KEY_PATH) are required')
+  const { AppStoreConnectClient } = await import('ts-pantry')
+  return new AppStoreConnectClient({ keyId: config.apiKeyId, issuerId: config.apiIssuerId, keyPath: config.apiKeyPath })
+}
+
+async function appStoreAppId(client: Awaited<ReturnType<typeof appStoreClient>>, bundleId: string): Promise<string> {
+  const app = await client.findApp(bundleId)
+  if (!app) throw new Error(`App Store Connect has no app for ${bundleId}. Create it under Apps first.`)
+  return app.id
+}
+
+/**
+ * The Mac App Store profile for the bundle id, downloaded from App Store
+ * Connect when no `APPLE_PROVISIONING_PROFILE` names a file. The profile is
+ * embedded in every shipped app, so it is not a secret, but it expires and is
+ * reissued: asking Apple for the current one beats a stale copy in a folder.
+ */
+async function withDownloadedProfile(config: AppleDesktopConfig): Promise<AppleDesktopConfig> {
+  if (config.provisioningProfile || !config.bundleId) return config
+  const client = await appStoreClient(config)
+  const bundle = await client.findBundleId(config.bundleId)
+  if (!bundle) throw new Error(`No Apple bundle id ${config.bundleId}. Run buddy desktop:apple:provision --apply first.`)
+  const profile = (await client.listProfiles(bundle.id))
+    .filter(item => item.attributes.profileState === 'ACTIVE' && item.attributes.profileContent)
+    .sort((a, b) => String(b.attributes.expirationDate).localeCompare(String(a.attributes.expirationDate)))[0]
+  if (!profile) throw new Error(`No active Mac App Store profile for ${config.bundleId}. Run buddy desktop:apple:provision --apply first.`)
+  const directory = storagePath('framework/desktop-dist/apple')
+  mkdirSync(directory, { recursive: true })
+  const provisioningProfile = join(directory, `${config.bundleId}.provisionprofile`)
+  writeFileSync(provisioningProfile, Buffer.from(String(profile.attributes.profileContent), 'base64'), { mode: 0o644 })
+  log.info(`Using the Mac App Store profile "${profile.attributes.name}" from App Store Connect`)
+  return { ...config, provisioningProfile }
+}
+
+/**
+ * `--build-number next`: one past the highest build App Store Connect has for
+ * the app, so every upload is `<version> (<n + 1>)` without anyone keeping a
+ * counter in a file or a CI variable.
+ */
+async function withNextBuildNumber(config: AppleDesktopConfig): Promise<AppleDesktopConfig> {
+  if (config.buildNumber !== 'next') return config
+  const client = await appStoreClient(config)
+  const { nextBuildNumber } = await import('ts-pantry')
+  const buildNumber = await nextBuildNumber(client, await appStoreAppId(client, config.bundleId))
+  log.info(`Building ${config.version} (${buildNumber})`)
+  return { ...config, buildNumber }
+}
+
+/** Everything a release resolves before it builds: the key file, identities, profile and build number. */
+async function releaseConfig(options: AppleDesktopOptions, native: ResolvedMacosDesktop | null): Promise<AppleDesktopConfig> {
+  const config = withKeychainIdentities(withApiKeyFile(resolveAppleDesktopConfig(options, native)))
+  return await withNextBuildNumber(await withDownloadedProfile(config))
+}
+
+async function distributeToTestFlight(config: AppleDesktopConfig, groups: string[], whatsNew: string): Promise<void> {
+  const client = await appStoreClient(config)
+  const { distributeTestFlightBuild } = await import('ts-pantry')
+  log.info(`Waiting for App Store Connect to process ${config.version} (${config.buildNumber})...`)
+  const result = await distributeTestFlightBuild(client, {
+    appId: await appStoreAppId(client, config.bundleId),
+    version: config.version,
+    buildNumber: config.buildNumber,
+    groups,
+    whatsNew,
+  })
+  log.success(`${config.version} (${config.buildNumber}) is on TestFlight for ${result.groups.map(group => group.name).join(', ')}`)
+}
+
+/** The commit subjects since the last tag (at most 20), as TestFlight's "What to Test". */
+function commitsSinceLastTag(): string {
+  const run = (args: string[]) => Bun.spawnSync(args, { cwd: projectPath(), stdout: 'pipe', stderr: 'pipe' })
+  const tag = run(['git', 'describe', '--tags', '--abbrev=0'])
+  const range = tag.exitCode === 0 ? [`${tag.stdout.toString().trim()}..HEAD`] : []
+  return run(['git', 'log', '--no-merges', '--format=- %s', '-20', ...range]).stdout.toString().trim().slice(0, 4000)
 }
 
 function signingIdentityExists(identity: string, keychain?: string): boolean {
@@ -1041,7 +1161,7 @@ export function desktopApple(buddy: CLI): void {
     .option('--bundle-id <id>', 'Reverse-DNS bundle identifier')
     .option('--team-id <id>', 'Apple Developer team ID')
     .option('--app-version <version>', 'Marketing version')
-    .option('--build-number <number>', 'Unique App Store build number')
+    .option('--build-number <number>', 'Unique App Store build number, or "next" for one past the highest on App Store Connect (publish only)')
     .option('--minimum-macos <version>', 'Minimum supported macOS version')
     .option('--category <category>', 'LSApplicationCategoryType value')
     .option('--app-signing-identity <identity>', 'Mac App Distribution signing identity')
@@ -1058,7 +1178,7 @@ export function desktopApple(buddy: CLI): void {
     .action(async (options: AppleDesktopOptions) => {
       try {
         const native = await nativeAppleConfig()
-        const packagePath = await packageAppleDesktop(resolveAppleDesktopConfig(options, native), Boolean(options.skipBuild), native)
+        const packagePath = await packageAppleDesktop(withKeychainIdentities(resolveAppleDesktopConfig(options, native)), Boolean(options.skipBuild), native)
         log.success(`Created signed Mac App Store package ${packagePath}`)
       }
       catch (error) {
@@ -1072,10 +1192,15 @@ export function desktopApple(buddy: CLI): void {
     .option('--api-key-path <path>', 'App Store Connect AuthKey .p8 file')
     .option('--validate-only', 'Validate with App Store Connect without uploading')
     .option('--package-only', 'Create the signed package without contacting App Store Connect')
+    .option('--testflight <groups>', 'After the upload, wait for processing and give the build to these comma-separated TestFlight groups')
+    .option('--whats-new <text>', 'TestFlight "What to Test" (default: the commit subjects since the last tag)')
     .action(async (options: AppleDesktopOptions) => {
       try {
+        const groups = options.testflight?.split(',').map(name => name.trim()).filter(Boolean) ?? []
+        if (groups.length && (options.validateOnly || options.packageOnly))
+          throw new Error('--testflight needs an upload, so it cannot be combined with --validate-only or --package-only')
         const native = await nativeAppleConfig()
-        const config = withApiKeyFile(resolveAppleDesktopConfig(options, native))
+        const config = await releaseConfig(options, native)
         const packagePath = await packageAppleDesktop(config, Boolean(options.skipBuild), native)
         if (!options.packageOnly)
           validateOrUpload(packagePath, config, Boolean(options.validateOnly))
@@ -1084,6 +1209,8 @@ export function desktopApple(buddy: CLI): void {
           : options.validateOnly
             ? `Validated ${packagePath} with App Store Connect`
             : `Uploaded ${packagePath} to App Store Connect`)
+        if (groups.length)
+          await distributeToTestFlight(config, groups, options.whatsNew ?? commitsSinceLastTag())
       }
       catch (error) {
         fail(error)
