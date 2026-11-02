@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.441...v0.75.442)
+
+## 🐛 Bug Fixes
+
+- preserve framework package boundaries in release artifacts ([6266b38](https://github.com/stacksjs/stacks/commit/6266b38)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.440...v0.75.441)
 
 ## 🐛 Bug Fixes
