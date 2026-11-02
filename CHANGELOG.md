@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.412...v0.75.413)
+
+## 🐛 Bug Fixes
+
+- add atomic recovery and private image upload primitives ([9168f81](https://github.com/stacksjs/stacks/commit/9168f81)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh native capability exports for recovery and uploads ([008d6cb](https://github.com/stacksjs/stacks/commit/008d6cb)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.410...v0.75.412)
 
 ## ✨ Features
