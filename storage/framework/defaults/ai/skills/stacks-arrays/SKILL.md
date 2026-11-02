@@ -198,10 +198,12 @@ zScore([1, 2, 3, 4], 3)           // 0.447...
 percentile([1, 2, 3, 4, 5], 50)   // 3       -- interpolated percentile
 percentile([1, 2, 3, 4], 25)      // 1.75    -- linear interpolation
 // Note: takes percentile value (0-100), uses linear interpolation
+// Throws for an empty array (like median) and a RangeError outside 0-100
 
 interquartileRange([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 // Q3 median - Q1 median
-// Splits array at midpoint, computes median of each half
+// Sorts, splits at the midpoint, computes the median of each half
+// One number gives 0; an empty array throws
 
 covariance([1, 2, 3, 4], [1, 2, 3, 4])     // 1.25  -- positive correlation
 covariance([1, 2, 3, 4], [4, 3, 2, 1])     // -1.25 -- negative correlation

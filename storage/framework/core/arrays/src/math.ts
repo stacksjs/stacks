@@ -203,14 +203,15 @@ export function standardDeviation(array: number[]): number {
 }
 
 /**
- * Returns the z-score of a number in an array of numbers
+ * Returns the z-score of a number in an array of numbers: how many
+ * (population) standard deviations it lies from the array's mean.
  * @param array
  * @param num
  * @category Array
  * @example
  * ```ts
- * zScore([1, 2, 3, 4], 2) // 0
- * zScore([1, 2, 3, 4], 3) // 0.7071067811865475
+ * zScore([1, 2, 3, 4], 2) // -0.4472135954999579
+ * zScore([1, 2, 3, 4], 3) // 0.4472135954999579
  * ```
  * @see https://en.wikipedia.org/wiki/Standard_score
  */
@@ -219,18 +220,26 @@ export function zScore(array: number[], num: number): number {
 }
 
 /**
- * Returns the percentile of a number in an array of numbers
+ * Returns the value at the `num`-th percentile (0 to 100) of an array of
+ * numbers, interpolating linearly between the two nearest ranks (the method
+ * numpy uses by default). Throws for an empty array or a percentile outside
+ * 0 to 100, which used to come back as a made-up 0 or an extrapolation.
  * @param array
  * @param num
  * @category Array
  * @example
  * ```ts
- * percentile([1, 2, 3, 4], 2) // 0.25
- * percentile([1, 2, 3, 4], 3) // 0.75
+ * percentile([1, 2, 3, 4], 50) // 2.5
+ * percentile([1, 2, 3, 4], 75) // 3.25
  * ```
  * @see https://en.wikipedia.org/wiki/Percentile
  */
 export function percentile(array: number[], num: number): number {
+  if (array.length === 0)
+    throw new Error('Cannot compute a percentile of an empty array')
+  if (!Number.isFinite(num) || num < 0 || num > 100)
+    throw new RangeError(`A percentile is between 0 and 100, got ${num}`)
+
   const sorted = [...array].sort((a, b) => a - b)
   const index = (num / 100) * (sorted.length - 1)
   const lower = Math.floor(index)
@@ -243,19 +252,29 @@ export function percentile(array: number[], num: number): number {
 }
 
 /**
- * Returns the interquartile range of an array of numbers
+ * Returns the interquartile range of an array of numbers: the median of the
+ * upper half minus the median of the lower half, leaving out the middle value
+ * of an odd-length array. The array is sorted first; the halves used to be
+ * taken in the order given, so `[4, 1, 3, 2]` answered 0 and `[1, 2, 3, 4]` 2.
  * @param array
  * @category Array
  * @example
  * ```ts
- * interquartileRange([1, 2, 3, 4]) // 1.5
+ * interquartileRange([1, 2, 3, 4]) // 2
+ * interquartileRange([1, 2, 3, 4, 5, 6, 7, 8]) // 4
  * ```
  * @see https://en.wikipedia.org/wiki/Interquartile_range
- * @see https://stackoverflow.com/questions/48719873/how-to-calculate-interquartile-range-in-javascript
  */
 export function interquartileRange(array: number[]): number {
-  const q1 = median(array.slice(0, Math.floor(array.length / 2)))
-  const q3 = median(array.slice(Math.ceil(array.length / 2)))
+  if (array.length === 0)
+    throw new Error('Cannot compute the interquartile range of an empty array')
+  // One value has no spread, and no lower or upper half to take a median of.
+  if (array.length === 1)
+    return 0
+
+  const sorted = [...array].sort((a, b) => a - b)
+  const q1 = median(sorted.slice(0, Math.floor(sorted.length / 2)))
+  const q3 = median(sorted.slice(Math.ceil(sorted.length / 2)))
   return q3 - q1
 }
 
