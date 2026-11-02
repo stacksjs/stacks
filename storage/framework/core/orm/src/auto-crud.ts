@@ -12,7 +12,7 @@
 export { isNotNullViolation, isUniqueViolation } from '@stacksjs/error-handling'
 import { isDateTimeColumnRule, parseSqlDateTime, sqlDateTime, sqlDateTimeInput } from '@stacksjs/database/runtime'
 import { isNotNullViolation, isUniqueViolation } from '@stacksjs/error-handling'
-import { fieldErrorMessages } from '@stacksjs/validation/messages'
+import { fieldErrorMessages, validateRule } from '@stacksjs/validation/messages'
 
 /**
  * Classify a write-path error into an HTTP status + JSON body for the
@@ -668,7 +668,7 @@ export function validateWriteBody(
   const validators = resolveWriteValidators(attributes)
   if (validators.length === 0) return { valid: true }
 
-  const errors: Record<string, string[]> = {}
+  const errors: Record<string, string[]> = Object.create(null)
   let hasErrors = false
   for (const validator of validators) {
     const { definition, field, hasDefault, rule } = validator
@@ -702,21 +702,22 @@ export function validateWriteBody(
     // breaks its own rule is caught at the first write instead of silently
     // storing an invalid row.
     const value = normalizeValidationValue(rule, raw)
-    const result = rule.validate(value)
-    if (!result?.valid && Array.isArray(result?.errors) && result.errors.length > 0) {
+    const result = validateRule(rule, value)
+    if (!result.valid) {
       hasErrors = true
+      const reported = Array.isArray(result.errors) ? result.errors : Object.values(result.errors).flat()
       // The model's own messages, keyed by rule name. They were looked up by
       // an error `code` ts-validation does not set, so a write never showed one.
       errors[field] = fieldErrorMessages(
         rule,
         value,
-        result.errors.map((e: any) => ({ message: typeof e?.message === 'string' ? e.message : 'invalid' })),
+        reported.length ? reported : [{ message: 'is invalid' }],
         definition.validation?.message,
         field,
       )
     }
   }
-  return hasErrors ? { valid: false, errors } : { valid: true }
+  return hasErrors ? { valid: false, errors: Object.fromEntries(Object.entries(errors)) } : { valid: true }
 }
 
 /**

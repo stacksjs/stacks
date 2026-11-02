@@ -151,7 +151,7 @@ export function shouldApplyConditional(
   parent: Record<string, unknown> | null | undefined,
 ): boolean {
   if (parent === null || parent === undefined) return false
-  const siblingValue = parent[record.field]
+  const siblingValue = Object.hasOwn(parent, record.field) ? parent[record.field] : undefined
   if (typeof record.match === 'function') {
     return (record.match as (value: unknown) => boolean)(siblingValue)
   }

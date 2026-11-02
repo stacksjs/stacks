@@ -1,20 +1,21 @@
 import type { ValidationErrors, ValidationType, Validator } from '@stacksjs/ts-validation'
+import { basename, relative } from 'node:path'
 import { existsSync } from 'node:fs'
 import type { Model } from '@stacksjs/types'
-import { HttpError } from '@stacksjs/error-handling'
+import { HttpError } from '@stacksjs/error-handling/http-error'
 import { path } from '@stacksjs/path'
-import { snakeCase } from '@stacksjs/strings'
-import { getErrorMessage } from '@stacksjs/utils'
+import { snakeCase } from '@stacksjs/strings/case'
+import { getErrorMessage } from '@stacksjs/utils/errors'
 import type { FieldMessages } from './messages'
-import { fieldErrorMessages } from './messages'
+import { applyFieldMessages } from './messages'
 // Import directly from sibling files instead of the package's own `./` (which
 // would self-circular through `index.ts`'s re-exports and leave `schema` as
 // an empty namespace placeholder for any consumer that arrives mid-eval).
-import { reportError } from './reporter'
+import { beginValidation, reportError } from './reporter'
 import { schema } from './schema'
 
 export { validate } from './request-validator'
-export type { ValidationRules } from './request-validator'
+export type { ValidationRules, ValidateOptions } from './request-validator'
 
 // Inlined glob helper. Importing `globSync` from `@stacksjs/storage` would
 // pull in the storage facade, which statically imports `@stacksjs/config`.
@@ -96,20 +97,31 @@ function toMessageObjects(
 }
 
 export async function validateField(modelFile: string, params: RequestData): Promise<any> {
-  const modelFiles = globSync([path.userModelsPath('*.ts'), path.defaultsPath('app/Models/**/*.ts')], { absolute: true })
-  const modelPath = modelFiles.find(file => file.endsWith(`${modelFile}.ts`))
-
-  if (!modelPath)
-    throw new HttpError(404, `Model ${modelFile} not found`)
+  beginValidation()
+  const name = modelFile.replace(/\\/g, '/').replace(/\.ts$/, '')
+  if (!name || name.startsWith('/') || name.split('/').some(segment => !segment || segment === '.' || segment === '..')) throw new HttpError(404, 'Model not found')
+  const files = new Map<string, string>()
+  for (const root of [path.userModelsPath(), path.defaultsPath('app/Models')]) {
+    for (const file of globSync([`${root}/**/*.ts`], { absolute: true })) {
+      const key = relative(root, file).replace(/\\/g, '/')
+      if (!files.has(key)) files.set(key, file)
+    }
+  }
+  const exact = files.get(`${name}.ts`)
+  const matches = exact ? [exact] : name.includes('/') ? [] : [...files.values()].filter(file => basename(file) === `${name}.ts`)
+  if (matches.length > 1) throw new HttpError(500, `Model ${name} is ambiguous; use its qualified path`)
+  const modelPath = matches[0]
+  if (!modelPath) throw new HttpError(404, `Model ${name} not found`)
 
   const model = (await import(modelPath)).default as Model
   const attributes = model.attributes
+  const input: RequestData = Object.assign(Object.create(null), params)
 
-  const ruleObject: Record<string, Validator<any>> = {}
+  const ruleObject: Record<string, Validator<any>> = Object.create(null)
   // Applied to the errors afterwards (see `./messages`): registered with
   // ts-validation's process-wide provider as `name.min` they were never found,
   // and every call replaced whatever provider the app had set.
-  const messages: Record<string, FieldMessages> = {}
+  const messages: Record<string, FieldMessages> = Object.create(null)
 
   for (const key in attributes) {
     if (Object.prototype.hasOwnProperty.call(attributes, key)) {
@@ -121,8 +133,11 @@ export async function validateField(modelFile: string, params: RequestData): Pro
         ? (attributeKey.validation?.rule as Validator<any>).isRequired
         : false
 
-      // Skip validation if the attribute has a default value and is not required
-      if (attributeKey.default !== undefined && isRequired === false)
+      const field = snakeCase(key)
+      // Match the ORM write path when both spellings are supplied.
+      if (Object.hasOwn(params, key)) input[field] = params[key]
+      // Defaults only excuse absence, never a supplied invalid value.
+      if (attributeKey.default !== undefined && isRequired === false && !Object.hasOwn(input, field))
         continue
 
       ruleObject[snakeCase(key)] = attributeKey.validation?.rule as Validator<any>
@@ -135,11 +150,11 @@ export async function validateField(modelFile: string, params: RequestData): Pro
 
   try {
     const validator = schema.object(ruleObject)
-    const result = await validator.validate(params)
-    applyMessages(result, ruleObject, messages, params)
+    const result = await validator.validate(input)
+    applyMessages(result, ruleObject, messages, input)
 
     if (!result.valid) {
-      reportError(toMessageObjects(result.errors, params))
+      reportError(toMessageObjects(result.errors, input))
       throw new HttpError(422, 'Validation failed', { errors: result.errors })
     }
 
@@ -182,19 +197,11 @@ export function getCustomRule(name: string): AsyncValidator | undefined {
  */
 export function unique(table: string, column: string, exceptId?: number): AsyncValidator {
   return async (value: unknown): Promise<boolean | string> => {
-    try {
-      const { db } = await import('@stacksjs/database/runtime')
-      // The query builder uses template-literal types that narrow on every
-      // `.where()`, so chaining loses type compatibility — cast through `any`.
-      let query: any = db.selectFrom(table).where(column, '=', value)
-      if (exceptId) query = query.where('id', '!=', exceptId)
-      const existing = await query.selectAll().executeTakeFirst()
-      return existing ? `The ${column} has already been taken` : true
-    }
-    catch {
-      // If database is not available, skip async validation
-      return true
-    }
+    const { db } = await import('@stacksjs/database/runtime')
+    let query: any = db.selectFrom(table).where(column, '=', value)
+    if (exceptId !== undefined) query = query.where('id', '!=', exceptId)
+    const existing = await query.selectAll().executeTakeFirst()
+    return existing ? `The ${column} has already been taken` : true
   }
 }
 
@@ -203,14 +210,9 @@ export function unique(table: string, column: string, exceptId?: number): AsyncV
  */
 export function exists(table: string, column: string): AsyncValidator {
   return async (value: unknown): Promise<boolean | string> => {
-    try {
-      const { db } = await import('@stacksjs/database/runtime')
-      const existing = await (db.selectFrom(table).where(column, '=', value)).selectAll().executeTakeFirst()
-      return existing ? true : `The selected ${column} does not exist`
-    }
-    catch {
-      return true
-    }
+    const { db } = await import('@stacksjs/database/runtime')
+    const existing = await db.selectFrom(table).where(column, '=', value).selectAll().executeTakeFirst()
+    return existing ? true : `The selected ${column} does not exist`
   }
 }
 
@@ -228,7 +230,7 @@ export async function validateFieldAsync(
 
   // Then run async rules if provided
   if (asyncRules && Object.keys(asyncRules).length > 0) {
-    const asyncErrors: Record<string, string> = {}
+    const asyncErrors: Record<string, string> = Object.create(null)
 
     await Promise.all(
       Object.entries(asyncRules).map(async ([field, validator]) => {
@@ -240,6 +242,7 @@ export async function validateFieldAsync(
     )
 
     if (Object.keys(asyncErrors).length > 0) {
+      reportError(Object.entries(asyncErrors).map(([field, message]) => ({ field, message, value: String(params[field] ?? '') })))
       throw new HttpError(422, 'Validation failed', { errors: asyncErrors })
     }
   }
@@ -248,9 +251,10 @@ export async function validateFieldAsync(
 }
 
 export async function customValidate(attributes: CustomAttributes, params: RequestData): Promise<any> {
-  const ruleObject: Record<string, Validator<any>> = {}
+  beginValidation()
+  const ruleObject: Record<string, Validator<any>> = Object.create(null)
   // Built and then never handed to anything, so these were dropped too.
-  const messages: Record<string, FieldMessages> = {}
+  const messages: Record<string, FieldMessages> = Object.create(null)
 
   for (const key in attributes) {
     if (Object.prototype.hasOwnProperty.call(attributes, key)) {
@@ -290,12 +294,7 @@ function applyMessages(
 ): void {
   if (result.valid || !result.errors || Array.isArray(result.errors))
     return
-  const errors = result.errors as Record<string, { message: string }[]>
-  for (const [field, message] of Object.entries(messages)) {
-    const reported = errors[field]
-    if (reported)
-      errors[field] = fieldErrorMessages(rules[field], params[field], reported, message, field).map(text => ({ message: text }))
-  }
+  applyFieldMessages(result.errors as Record<string, { message: string }[]>, rules, messages, params)
 }
 
 function isHttpErrorLike(error: unknown): error is Error & { status: number } {

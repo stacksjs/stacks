@@ -1,3 +1,5 @@
+import { average } from './math'
+
 /**
  * Shaping an array: slicing it, grouping it, pairing it with another.
  *
@@ -389,7 +391,7 @@ export function sumBy<T>(array: readonly T[], value: (item: T, index: number) =>
  * ```
  */
 export function meanBy<T>(array: readonly T[], value: (item: T, index: number) => number): number | undefined {
-  return array.length === 0 ? undefined : sumBy(array, value) / array.length
+  return array.length === 0 ? undefined : average(Array.from(array, value))
 }
 
 /**

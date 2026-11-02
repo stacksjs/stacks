@@ -3470,50 +3470,16 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
  * validator contract are synchronous. The exported wrapper below stays
  * Promise-based for compatibility with callers that chain or await it.
  */
-type ActionRuleTest = (value: unknown) => boolean
-type ActionValidationEntry = [string, ActionValidations[string], ActionRuleTest[]?, ReturnType<typeof createValidationFieldLabel>?]
+type ActionValidationEntry = [string, ActionValidations[string], ReturnType<typeof createValidationFieldLabel>?]
 const EMPTY_VALIDATION_ERRORS = Object.freeze({}) as Record<string, string[]>
 const VALID_ACTION_VALIDATION_RESULT = Object.freeze({
   valid: true,
   errors: EMPTY_VALIDATION_ERRORS,
 }) as ValidationResult
 
-function propertyOwner(value: object, property: PropertyKey): object | undefined {
-  let current: object | null = value
-  while (current) {
-    if (Object.hasOwn(current, property))
-      return current
-    current = Object.getPrototypeOf(current) as object | null
-  }
-}
-
-/**
- * Compile the allocation-free success path exposed by ts-validation's base
- * validators. Rich failure details still come from `validate()` below.
- * Validators that override `validate()` (objects, arrays, files, or custom
- * implementations) remain entirely on their own code path.
- */
+/** Cache route entries; predicates run through validate exactly once, including failures. */
 function compileActionValidationEntries(validations: ActionValidations): ActionValidationEntry[] {
-  // Reserve the label slot so a first rejection does not resize the entry.
-  // The label and its formatter are still created only when needed.
-  return Object.entries(validations).map(([field, validation]) => {
-    const rule = validation.rule as {
-      getRules?: () => Array<{ test?: ActionRuleTest }>
-      validate: (value: unknown) => unknown
-    }
-    if (
-      typeof rule.getRules !== 'function'
-      || propertyOwner(rule, 'validate') !== propertyOwner(rule, 'getRules')
-    ) {
-      return [field, validation, undefined, undefined]
-    }
-
-    const rules = rule.getRules()
-    if (!Array.isArray(rules) || rules.some(entry => typeof entry?.test !== 'function'))
-      return [field, validation, undefined, undefined]
-
-    return [field, validation, rules.map(entry => entry.test as ActionRuleTest), undefined]
-  })
+  return Object.entries(validations).map(([field, validation]) => [field, validation, undefined])
 }
 
 function createValidationFieldLabel(field: string): { label: string, decorate: (message: string) => string } {
@@ -3548,7 +3514,7 @@ function validateActionInputSync(
   requestHasQuery = req.url.includes('?'),
 ): ValidationResult {
   let errors: Record<string, string[]> | undefined
-  const validated: Record<string, unknown> = {}
+  const validated: Record<string, unknown> = newInput()
   let valid = true
   const entries: ActionValidationEntry[] = compiledEntries ?? Object.entries(validations)
 
@@ -3563,28 +3529,14 @@ function validateActionInputSync(
     const entry = entries[entryIndex]!
     const field = entry[0]
     const validation = entry[1]
-    const ruleTests = entry[2]
     const value = input[field]
-    let result: { valid: boolean, errors?: Array<{ message: string }> } | undefined
+    let result: { valid: boolean, errors?: Array<{ message: string }> | Record<string, Array<{ message: string }>>, value?: unknown } | undefined
 
     try {
       const rule = validation.rule as typeof validation.rule & { isRequired?: boolean }
-      let passedCompiledRules = false
-      if (ruleTests) {
-        const empty = value === undefined || value === null || value === ''
-        passedCompiledRules = empty && rule.isRequired !== true
-        if (!empty) {
-          passedCompiledRules = true
-          for (let i = 0; i < ruleTests.length; i++) {
-            if (!ruleTests[i]!(value)) {
-              passedCompiledRules = false
-              break
-            }
-          }
-        }
-      }
-      if (!passedCompiledRules)
-        result = rule.validate(value)
+      result = validation.message && typeof validation.message === 'object'
+        ? validationMessages().validateRule(rule, value) as typeof result
+        : rule.validate(value)
     }
     catch {
       result = { valid: false, errors: [{ message: `${field} validation failed` }] }
@@ -3598,29 +3550,30 @@ function validateActionInputSync(
       // than the bare `"is invalid"` clients used to receive).
       // Compiled entries belong to the route. Cache only their fixed label
       // and formatter, lazily, so accepted fields need no extra metadata.
-      const { label, decorate } = entry[3] ??= createValidationFieldLabel(field)
+      const { label, decorate } = entry[2] ??= createValidationFieldLabel(field)
 
-      if (result.errors && result.errors.length > 0) {
+      const reported = Array.isArray(result.errors) ? result.errors : Object.values(result.errors ?? {}).flat()
+      if (reported.length > 0) {
         // A custom message if provided, otherwise the validator's own,
         // decorated with the field label. A message object is keyed by rule
         // name (`{ min: ... }`), as models and the actions guide write it,
         // with a key named after the field answering for the rest; it used to
         // be looked up by field name only, so a per-rule message never showed.
         if (validation.message && typeof validation.message === 'object')
-          fieldErrors.push(...validationMessages().fieldErrorMessages(validation.rule, value, result.errors, validation.message, field, decorate))
+          fieldErrors.push(...validationMessages().fieldErrorMessages(validation.rule, value, reported, validation.message, field, decorate))
         else if (validation.message)
           fieldErrors.push(validation.message)
         else
-          result.errors.forEach(err => fieldErrors.push(decorate(err.message)))
+          reported.forEach(err => fieldErrors.push(decorate(err.message)))
       }
       else {
         fieldErrors.push(validation.message ? (typeof validation.message === 'string' ? validation.message : `${label} is invalid`) : `${label} is invalid`)
       }
 
-      ;(errors ??= {})[field] = fieldErrors
+      ;(errors ??= Object.create(null))[field] = fieldErrors
     }
     else if (value !== undefined) {
-      validated[field] = value
+      validated[field] = result && Object.hasOwn(result, 'value') ? result.value : value
     }
   }
 

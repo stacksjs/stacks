@@ -1,3 +1,5 @@
+import { average } from './math'
+
 /** Numeric observations grouped by calendar day, with provenance per field. */
 export interface DailyObservation {
   day: string
@@ -62,14 +64,12 @@ export interface NumericSeriesSummary {
 /** Statistics over valid observations, including zero; latest is by date rather than input order. */
 export function summarizeSeries(points: readonly NumericSeriesPoint[]): NumericSeriesSummary {
   const valid = points.filter(point => Number.isFinite(point.value)).sort((a, b) => a.date.localeCompare(b.date))
-  let sum = 0
   let lowest = Infinity
   let highest = -Infinity
   for (const point of valid) {
-    sum += point.value
     lowest = Math.min(lowest, point.value)
     highest = Math.max(highest, point.value)
   }
-  return { count: valid.length, latest: valid.at(-1) ?? null, average: valid.length ? sum / valid.length : null,
+  return { count: valid.length, latest: valid.at(-1) ?? null, average: valid.length ? average(valid.map(point => point.value)) : null,
     lowest: valid.length ? lowest : null, highest: valid.length ? highest : null }
 }

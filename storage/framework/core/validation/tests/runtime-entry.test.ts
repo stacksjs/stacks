@@ -75,7 +75,7 @@ describe('@stacksjs/validation/runtime', () => {
     const narrow = [...await localGraph(`${SRC}/runtime.ts`)].map(f => f.slice(SRC.length + 1))
 
     // Exact membership, so anything added to the entry fails here by name.
-    expect(narrow.sort()).toEqual(['conditional.ts', 'file-validator.ts', 'object-with-context.ts', 'runtime.ts', 'schema.ts'])
+    expect(narrow.sort()).toEqual(['conditional.ts', 'file-validator.ts', 'messages.ts', 'object-with-context.ts', 'runtime.ts', 'schema.ts', 'validated-value.ts'])
     expect(narrow).not.toContain('validator.ts')
     expect(narrow).not.toContain('request-validator.ts')
   })

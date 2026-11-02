@@ -57,3 +57,15 @@ For casual chit-chat with others using this package:
 The MIT License (MIT). Please see [LICENSE](https://github.com/stacksjs/stacks/tree/main/LICENSE.md) for more information.
 
 Made with 💙
+
+
+## Boundary behavior
+
+`at()` and `last()` return `T | undefined` for arrays that may be empty or indexes that
+may be out of range. Handle the missing value before dereferencing it. `sample([], n)`
+returns an empty array; sample counts must be nonnegative safe integers.
+
+`average()` scales finite inputs when their intermediate sum overflows, and `median()`
+uses the same safe midpoint. `min()` and `max()` iterate rather than spreading arguments,
+so large browser data sets do not exceed the engine's function argument limit. Empty
+statistical inputs retain their existing errors.

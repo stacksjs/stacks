@@ -14,9 +14,8 @@
  * carried these messages found them: `validate()` and `validateField()`
  * registered `name.min` with that provider, the action layer looked the object
  * up by field name only, and the ORM's write check by an error `code` there is
- * none of. Its validators report a required failure alone, and otherwise one
- * error per failing rule in their order, so the rule behind each error can be
- * read off the validator, with no shared state.
+ * none of. Failure names are captured by structural validators or matched to
+ * the provider's rendered messages, without running predicates again.
  */
 
 /** A field's custom messages: one for any failure, or one per rule name. */
@@ -25,7 +24,8 @@ export type FieldMessages = string | Readonly<Record<string, string>>
 interface RuleLike {
   name?: string
   isRequired?: boolean
-  getRules?: () => ReadonlyArray<{ name?: string, test?: (value: unknown) => boolean }>
+  fieldName?: string
+  getRules?: () => ReadonlyArray<{ name?: string, message?: string, params?: Record<string, any> }>
 }
 
 /**
@@ -55,19 +55,69 @@ export function messageKeys(rule: unknown): Set<string> {
   return names
 }
 
-/** The rule behind each of a validator's errors, in order, or none when they cannot be told apart. */
-function failedRuleNames(rule: unknown, value: unknown, count: number): Array<string | undefined> {
-  const validator = rule as RuleLike | null | undefined
-  if (!validator || typeof validator.getRules !== 'function')
-    return []
+interface ReportedError { message: string }
+const failureKey = Symbol.for('stacks.validation.failureNames')
+const failureNames = ((globalThis as Record<symbol, unknown>)[failureKey] ??= new WeakMap<object, string | undefined>()) as WeakMap<object, string | undefined>
 
-  const names = value === undefined || value === null || value === ''
-    ? (validator.isRequired ? ['required'] : [])
-    : validator.getRules()
-        .map((entry, index) => ({ entry, key: keyFor(validator, entry?.name, index) }))
-        .filter(({ entry }) => typeof entry?.test === 'function' && !entry.test(value))
-        .map(({ key }) => key)
-  return names.length === count ? names : []
+/** Preserve a structural validator's known failure without inferring it from text. */
+export function validationFailure(message: string, name: string): ReportedError {
+  const error = { message }
+  failureNames.set(error, name)
+  return error
+}
+
+/** Identify failures from the provider's rendered messages, without invoking tests or mutating schemas. */
+function namesFromErrors(rule: RuleLike, value: unknown, errors: ReadonlyArray<ReportedError>): Array<string | undefined> {
+  // Resolve the provider only for failures that need a per-rule message.
+  const { getCustomMessages } = require('@stacksjs/ts-validation') as typeof import('@stacksjs/ts-validation')
+  const provider = getCustomMessages()
+  if (rule.isRequired && (value === undefined || value === null || value === '')) {
+    const message = provider.getMessage('required', undefined, rule.fieldName)
+    return errors.map(error => error.message === message ? 'required' : undefined)
+  }
+  const candidates = (rule.getRules?.() ?? []).map((entry, index) => ({
+    key: keyFor(rule, entry.name, index),
+    message: entry.name ? provider.getMessage(entry.name, entry.message, rule.fieldName, entry.params) : entry.message,
+  }))
+  return errors.map((error) => {
+    const names = new Set(candidates.filter(candidate => candidate.message === error.message).map(candidate => candidate.key))
+    // Ambiguous messages retain their original text rather than guessing a rule.
+    return names.size === 1 ? [...names][0] : undefined
+  })
+}
+
+/** Capture the effective conditional rule's failure names while its result is available. */
+export function validateRule(rule: unknown, value: unknown): { valid: boolean, errors: import('@stacksjs/ts-validation').ValidationErrors } {
+  const validator = rule as RuleLike & { validate: (value: unknown) => { valid: boolean, errors: import('@stacksjs/ts-validation').ValidationErrors } }
+  const result = validator.validate(value)
+  if (result.valid) return result
+  const errors = Array.isArray(result.errors) ? result.errors : Object.values(result.errors).flat()
+  // Nested object walkers already attached each child's own metadata.
+  if (Array.isArray(result.errors) || validator.isRequired && (value === undefined || value === null || value === '')) {
+    const names = namesFromErrors(validator, value, errors)
+    errors.forEach((error, index) => {
+      if (!failureNames.has(error)) failureNames.set(error, names[index])
+    })
+  }
+  return result
+}
+
+/** Apply field messages to exact or flattened descendant errors without losing failure metadata. */
+export function applyFieldMessages(
+  errors: Record<string, ReportedError[]>,
+  rules: Record<string, unknown>,
+  messages: Record<string, FieldMessages>,
+  input: Record<string, unknown>,
+): void {
+  for (const [field, message] of Object.entries(messages)) {
+    for (const key of Object.keys(errors)) {
+      if (key !== field && !key.startsWith(`${field}.`)) continue
+      // A field-wide string applies to all descendants. Per-rule maps target
+      // the field itself, not unrelated rules on its children.
+      if (key !== field && typeof message !== 'string') continue
+      errors[key] = fieldErrorMessages(rules[field], input[field], errors[key]!, message, field).map(text => ({ message: text }))
+    }
+  }
 }
 
 /**
@@ -90,7 +140,8 @@ export function fieldErrorMessages(
   if (!messages || typeof messages !== 'object')
     return errors.map(error => format(error.message))
 
-  const names = failedRuleNames(rule, value, errors.length)
+  const fallback = errors.some(error => !failureNames.has(error)) ? namesFromErrors((rule ?? {}) as RuleLike, value, errors) : []
+  const names = errors.map((error, index) => failureNames.has(error) ? failureNames.get(error) : fallback[index])
   const custom = (key: string | undefined): string | undefined => {
     if (key === undefined || !Object.hasOwn(messages, key))
       return undefined

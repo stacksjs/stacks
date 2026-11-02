@@ -34,10 +34,14 @@ describe('router split-instance handling (#1975/#1982)', () => {
   test('warnOnMultipleRouterInstances returns false (and never throws) for a single instance', () => {
     // Other tests deliberately load source and dist. A clean consumer process
     // establishes the single-instance precondition without resetting their registry.
+    const built = Bun.spawnSync({ cmd: [process.execPath, 'run', 'build'], cwd: join(import.meta.dir, '..'), stdout: 'pipe', stderr: 'pipe' })
+    expect(built.exitCode, built.stderr.toString()).toBe(0)
     const directory = mkdtempSync(join(tmpdir(), 'stacks-single-router-'))
     try {
       const entry = new URL('../dist/stacks-router.js', import.meta.url).pathname
-      const child = Bun.spawnSync({ cmd: [process.execPath, '-e', `
+      // Test this worktree's published module while resolving its framework
+      // dependencies locally, independent of shared node_modules links.
+      const child = Bun.spawnSync({ cmd: [process.execPath, `--tsconfig-override=${join(import.meta.dir, '../../tsconfig.build.json')}`, '-e', `
         const { warnOnMultipleRouterInstances } = await import(${JSON.stringify(entry)})
         const instances = globalThis[Symbol.for('@stacksjs/router:loaded-instances')]
         if (instances.size !== 1) throw new Error('Single-instance fixture loaded multiple routers')
