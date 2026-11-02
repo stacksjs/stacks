@@ -197,8 +197,12 @@ export class FeatureFlagManager {
     const resolved = typeof definition === 'function'
       ? await (definition as FeatureResolver)(scope, { name, scope, scopeKey })
       : definition
-    const value = normalizeFeatureValue(resolved)
-    await driver.set(name, scopeKey, value)
+    // Through add() when the driver has it: another process may have stored
+    // this scope's value since the read above, and the first one stored is
+    // the one every caller keeps.
+    let value = normalizeFeatureValue(resolved)
+    if (driver.add) value = normalizeFeatureValue(await driver.add(name, scopeKey, value))
+    else await driver.set(name, scopeKey, value)
     await this.notify({ name, scope, scopeKey, value, source: 'resolver' })
     return value
   }

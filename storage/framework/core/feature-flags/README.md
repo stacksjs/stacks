@@ -22,7 +22,7 @@ Scopes are type-aware. Stacks ORM instances use their model definition and ID au
 await Feature.for({ id: account.id, featureFlagType: 'Account' }).active('team-reports')
 ```
 
-Resolved values are sticky per scope. The first evaluation is stored by the configured driver and reused until it is changed or forgotten.
+Resolved values are sticky per scope. The first evaluation is stored by the configured driver and reused until it is changed or forgotten. When two processes resolve the same scope at once, the value stored first is the one both keep, through the driver's optional `add()`; a custom driver without it lets the later write win.
 
 ```ts
 await Feature.for(user).activate('new-checkout')

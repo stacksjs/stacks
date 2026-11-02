@@ -35,6 +35,13 @@ export interface FeatureEvaluation<Scope = FeatureScope> extends FeatureContext<
 export interface FeatureDriver {
   get: (name: string, scopeKey: string) => Promise<FeatureValue | undefined>
   set: (name: string, scopeKey: string, value: FeatureValue) => Promise<void>
+  /**
+   * Store `value` unless one is already stored, and return the stored value.
+   * A first resolution goes through it, so two processes resolving the same
+   * scope at once keep the same answer. Optional: without it the manager
+   * uses `set`, and the later of two racing resolutions wins.
+   */
+  add?: (name: string, scopeKey: string, value: FeatureValue) => Promise<FeatureValue>
   delete: (name: string, scopeKey: string) => Promise<void>
   deleteForAllScopes: (names?: readonly string[]) => Promise<void>
   clear: () => Promise<void>

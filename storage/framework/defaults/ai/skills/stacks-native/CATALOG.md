@@ -49,7 +49,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/error-handling` | [`stacks-error-handling`](../stacks-error-handling/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/error-handling/src/index.ts) | 10 |
 | `@stacksjs/events` | [`stacks-events`](../stacks-events/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/events/src/index.ts) | 13 |
 | `@stacksjs/faker` | [`stacks-faker`](../stacks-faker/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/faker/src/index.ts) | 1 |
-| `@stacksjs/feature-flags` | [`stacks-feature-flags`](../stacks-feature-flags/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/feature-flags/src/index.ts) | 7 |
+| `@stacksjs/feature-flags` | [`stacks-feature-flags`](../stacks-feature-flags/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/feature-flags/src/index.ts) | 8 |
 | `@stacksjs/features` | [`stacks-features`](../stacks-features/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/features/src/index.ts) | 1 |
 | `@stacksjs/forms` | [`stacks-forms`](../stacks-forms/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/forms/src/index.ts) | 7 |
 | `@stacksjs/git` | [`stacks-git`](../stacks-git/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/git/src/index.ts) | 2 |
@@ -487,7 +487,7 @@ Declared runtime exports: `Feature`, `featureFlags`.
 
 Local source modules: [src/drivers/database.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/feature-flags/src/drivers/database.ts), [src/drivers/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/feature-flags/src/drivers/index.ts), [src/drivers/memory.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/feature-flags/src/drivers/memory.ts), [src/errors.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/feature-flags/src/errors.ts), [src/manager.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/feature-flags/src/manager.ts), [src/schema.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/feature-flags/src/schema.ts), [src/scope.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/feature-flags/src/scope.ts), [src/strategies.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/feature-flags/src/strategies.ts), [src/types.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/feature-flags/src/types.ts), [src/value.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/feature-flags/src/value.ts).
 
-Evidence directory: [7 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/feature-flags/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [8 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/feature-flags/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/features
 

@@ -31,6 +31,13 @@ export class MemoryFeatureFlagDriver implements FeatureDriver {
     scoped.set(name, this.clone(value))
   }
 
+  async add(name: string, scopeKey: string, value: FeatureValue): Promise<FeatureValue> {
+    const stored = await this.get(name, scopeKey)
+    if (stored !== undefined) return stored
+    await this.set(name, scopeKey, value)
+    return this.clone(value)
+  }
+
   async delete(name: string, scopeKey: string): Promise<void> {
     const scoped = this.values.get(scopeKey)
     scoped?.delete(name)

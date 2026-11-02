@@ -85,6 +85,26 @@ export class DatabaseFeatureFlagDriver implements FeatureDriver {
     }
   }
 
+  async add(name: string, scopeKey: string, value: FeatureValue): Promise<FeatureValue> {
+    const stored = await this.get(name, scopeKey)
+    if (stored !== undefined) return stored
+    const now = new Date().toISOString()
+    try {
+      await this.database
+        .insertInto(this.table)
+        .values({ name, scope: scopeKey, value: serialize(value), created_at: now, updated_at: now })
+        .execute()
+      return normalizeFeatureValue(value)
+    }
+    catch (error) {
+      // Another process stored this scope's value first; that one stands.
+      if (!isUniqueViolation(error)) throw error
+      const winner = await this.get(name, scopeKey)
+      if (winner === undefined) throw error
+      return winner
+    }
+  }
+
   private async update(name: string, scopeKey: string, value: string, updatedAt: string): Promise<void> {
     await this.database
       .updateTable(this.table)

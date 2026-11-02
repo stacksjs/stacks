@@ -86,6 +86,14 @@ describe('DatabaseFeatureFlagDriver', () => {
     expect(await driver.get('after-clear', 'global')).toBe(true)
   })
 
+  it('add() stores a value only when none is stored, and returns the stored one', async () => {
+    expect(await driver.add('first-wins', 'user:9', 'compact')).toBe('compact')
+    expect(await driver.add('first-wins', 'user:9', 'visual')).toBe('compact')
+    const other = new DatabaseFeatureFlagDriver(database, { table: 'test_feature_flags', dialect: 'sqlite' })
+    expect(await other.add('first-wins', 'user:9', 'visual')).toBe('compact')
+    expect(await driver.get('first-wins', 'user:9')).toBe('compact')
+  })
+
   it('generates safe dialect-specific publishable SQL', () => {
     expect(featureFlagMigrationSql({ dialect: 'sqlite', table: 'flags' })).toHaveLength(2)
     expect(featureFlagMigrationSql({ dialect: 'postgres', table: 'flags' }).join(' ')).toContain('TIMESTAMPTZ')
