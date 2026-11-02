@@ -21,6 +21,8 @@ afterEach(() => roots.splice(0).forEach(root => rmSync(root, { recursive: true, 
 
 test('the public shell entrypoint hashes all four real files without executing platform binaries', async () => {
   const f = fixture()
+  writeFileSync(join(f.root, 'bunfig.toml'), 'preload = ["./application-preload.ts"]\n')
+  writeFileSync(join(f.root, 'application-preload.ts'), 'throw new Error("Application preloads must not run during formula publication")')
   const checksums = platforms.map((platform) => {
     const bytes = Buffer.from(`archive bytes for ${platform}\n`)
     writeFileSync(join(f.root, `.github/temp/buddy-${platform}.zip`), bytes)

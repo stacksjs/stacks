@@ -42,6 +42,6 @@ export async function updateHomebrewFormula(version: string, options: { root?: s
 if (import.meta.main) {
   const version = Bun.argv[2]
   if (!version) throw new Error('Pass a semantic release version')
-  await updateHomebrewFormula(version)
+  await updateHomebrewFormula(version, { root: Bun.argv[3] ?? process.cwd() })
   console.log(`Updated the Homebrew formula for ${version}`)
 }
