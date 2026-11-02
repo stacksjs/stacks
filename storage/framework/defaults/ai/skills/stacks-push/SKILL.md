@@ -128,12 +128,16 @@ async function send(message: ExpoPushMessage): Promise<PushResult>
 ```
 
 - Endpoint: `https://exp.host/--/api/v2/push/send`
-- Validates tokens with `isExpoPushToken()` before sending
-- Filters out invalid tokens and warns via `log.warn()`
+- Validates tokens with `isExpoPushToken()` before sending; an invalid token
+  is warned about via `log.warn()`, not sent, and counted as a failure
 - Returns early with failure if no valid tokens remain
 - Creates one payload entry per token (fans out `to` array into individual messages)
+- Sends them in requests of at most 100, one after another: Expo refuses a
+  larger request outright, so a send to 101 devices used to reach none. A
+  refused request fails its own messages and the rest still go
 - Default `sound: 'default'`, default `priority: 'high'`
-- Returns `PushResult` with `data: { tickets }` containing the full ticket array
+- Returns `PushResult` with `data: { tickets }`: one ticket per token in `to`,
+  in the same order, so each ticket can be matched to its token
 - `success` is `true` only if zero tickets have `status: 'error'`
 - `messageId` is the first ticket's `id` (if any)
 
@@ -147,13 +151,13 @@ Validates token format: matches `Expo(nent)?PushToken[...]` pattern OR alphanume
 ```typescript
 async function getReceipts(ticketIds: string[]): Promise<Record<string, ExpoPushReceipt>>
 ```
-Endpoint: `https://exp.host/--/api/v2/push/getReceipts`. Checks delivery status for previously sent notifications.
+Endpoint: `https://exp.host/--/api/v2/push/getReceipts`. Checks delivery status for previously sent notifications, asking 1000 IDs per request (Expo's limit) and merging the answers.
 
 #### sendBatch()
 ```typescript
 async function sendBatch(messages: ExpoPushMessage[], chunkSize?: number): Promise<PushResult[]>
 ```
-Sends multiple messages in chunks (default chunk size: 100, per Expo's recommendation). Processes chunks sequentially, messages within each chunk in parallel via `Promise.all`.
+Sends several messages, `chunkSize` (default 100) at a time: chunks sequentially, messages within a chunk in parallel via `Promise.all`. Each message's own tokens are split into requests of 100 by `send()`.
 
 ### Exports
 - `send`, `sendBatch`, `getReceipts`, `isExpoPushToken` functions

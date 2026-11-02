@@ -4,6 +4,15 @@ import { appServices, present } from '../app-config'
 
 const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send'
 
+/**
+ * Expo's per-request limits. Past them it refuses the whole request with a
+ * 400, so a send to 101 devices reached none of them:
+ *   messages  "\"$\": Must contain at most 100 element(s)."
+ *   receipts  PUSH_TOO_MANY_RECEIPTS "... maximum of 1000 receipts per request"
+ */
+const MAX_MESSAGES_PER_REQUEST = 100
+const MAX_RECEIPTS_PER_REQUEST = 1000
+
 export interface ExpoConfig {
   /**
    * An Expo access token, required once "enhanced push security" is turned on
@@ -100,7 +109,11 @@ export function isExpoPushToken(token: string): boolean {
 }
 
 /**
- * Send a push notification via Expo Push Service
+ * Send a push notification via Expo Push Service.
+ *
+ * In requests of at most 100 messages, one after another. `data.tickets` has
+ * one ticket per token in `to`, in the same order, an invalid token included
+ * as an error, so a caller can match each ticket to its token.
  */
 export async function send(message: ExpoPushMessage): Promise<PushResult> {
   const messages = Array.isArray(message.to) ? message.to : [message.to]
@@ -149,24 +162,32 @@ export async function send(message: ExpoPushMessage): Promise<PushResult> {
       }
     }
 
-    const response = await fetch(EXPO_PUSH_URL, {
-      method: 'POST',
-      headers: await requestHeaders({ 'Accept-Encoding': 'gzip, deflate' }),
-      body: JSON.stringify(payload),
-    })
+    const headers = await requestHeaders({ 'Accept-Encoding': 'gzip, deflate' })
+    const sent: ExpoPushTicket[] = []
+    let firstFailure: string | undefined
+    for (let start = 0; start < payload.length; start += MAX_MESSAGES_PER_REQUEST) {
+      const chunk = payload.slice(start, start + MAX_MESSAGES_PER_REQUEST)
+      const response = await fetch(EXPO_PUSH_URL, { method: 'POST', headers, body: JSON.stringify(chunk) })
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      log.error(`Expo push failed: ${errorText}`)
-      return {
-        success: false,
-        provider: 'expo',
-        message: `HTTP ${response.status}: ${errorText}`,
+      if (!response.ok) {
+        // This request's messages failed; the others still go. One refused
+        // chunk used to be the whole send.
+        const failure = `HTTP ${response.status}: ${await response.text()}`
+        log.error(`Expo push failed: ${failure}`)
+        firstFailure ??= failure
+        sent.push(...chunk.map((): ExpoPushTicket => ({ status: 'error', message: failure })))
+        continue
       }
+
+      const result = await response.json() as { data: ExpoPushTicket[] }
+      sent.push(...result.data)
     }
 
-    const result = await response.json() as { data: ExpoPushTicket[] }
-    const tickets = result.data
+    // One ticket per token in `to`, in order.
+    let next = 0
+    const tickets = messages.map((token): ExpoPushTicket => isExpoPushToken(token)
+      ? sent[next++] ?? { status: 'error', message: 'Expo returned no ticket for this token' }
+      : { status: 'error', message: `"${token}" is not an Expo push token` })
 
     // Check for errors in tickets
     const errors = tickets.filter(t => t.status === 'error')
@@ -181,7 +202,7 @@ export async function send(message: ExpoPushMessage): Promise<PushResult> {
     return {
       success: errors.length === 0,
       provider: 'expo',
-      message: `Sent ${successCount}/${tickets.length} notifications`,
+      message: successCount === 0 && firstFailure ? firstFailure : `Sent ${successCount}/${tickets.length} notifications`,
       messageId: tickets.find(t => t.id)?.id,
       data: { tickets },
     }
@@ -198,25 +219,33 @@ export async function send(message: ExpoPushMessage): Promise<PushResult> {
 }
 
 /**
- * Get push notification receipts from Expo
+ * Get push notification receipts from Expo, 1000 IDs per request.
  */
 export async function getReceipts(ticketIds: string[]): Promise<Record<string, ExpoPushReceipt>> {
-  const response = await fetch('https://exp.host/--/api/v2/push/getReceipts', {
-    method: 'POST',
-    headers: await requestHeaders(),
-    body: JSON.stringify({ ids: ticketIds }),
-  })
+  const headers = await requestHeaders()
+  const receipts: Record<string, ExpoPushReceipt> = {}
 
-  if (!response.ok) {
-    throw new Error(`Failed to get receipts: ${response.status}`)
+  for (let start = 0; start < ticketIds.length; start += MAX_RECEIPTS_PER_REQUEST) {
+    const response = await fetch('https://exp.host/--/api/v2/push/getReceipts', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ ids: ticketIds.slice(start, start + MAX_RECEIPTS_PER_REQUEST) }),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to get receipts: ${response.status}`)
+    }
+
+    const result = await response.json() as { data: Record<string, ExpoPushReceipt> }
+    Object.assign(receipts, result.data)
   }
 
-  const result = await response.json() as { data: Record<string, ExpoPushReceipt> }
-  return result.data
+  return receipts
 }
 
 /**
- * Send multiple push notifications in chunks (Expo recommends max 100 per request)
+ * Send several messages, `chunkSize` of them at a time. Each message's own
+ * tokens go out in requests of at most 100, which `send` does.
  */
 export async function sendBatch(messages: ExpoPushMessage[], chunkSize = 100): Promise<PushResult[]> {
   const results: PushResult[] = []
