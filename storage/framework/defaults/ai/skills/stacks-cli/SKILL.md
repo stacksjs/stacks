@@ -195,3 +195,21 @@ Source evidence: `storage/framework/core/cli/src/index.ts`,
 `commands.ts` and `terminal.ts`; command discovery is owned by buddy's
 runtime registry. `buddy list` and `buddy <command> --help` are the
 authoritative command/flag inventory, including package-contributed commands.
+
+## Native command ownership
+
+Import `spawnOwnedProcess` from `@stacksjs/cli/owned-process` for a command whose
+normally inherited descendants belong to the same lifetime. This subpath uses
+only native Bun/Node primitives, with no CLI or application bootstrap.
+
+A controlled owner establishes a POSIX process group or native Windows Job
+Object before admitting the command. `started` resolves its actual command PID;
+`pid` identifies the stable lifecycle owner. Consumer IPC is forwarded with the
+verified command PID. `exited` preserves command status and settles after tree
+disposal. `stop()` is idempotent, and signaling the owner also initiates cleanup.
+Compiled callers supply their installed Bun path as `ownerRuntime`.
+
+This is lifecycle ownership, not a sandbox: deliberate POSIX breakaway is outside
+the group contract. Native admission or disposal failures reject rather than
+falling back to direct-child cleanup. `runBoundedProcess` in `cli/process` retains
+its separate output-byte/deadline contract; it is not this ownership API.

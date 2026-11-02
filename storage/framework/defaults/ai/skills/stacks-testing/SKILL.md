@@ -209,7 +209,10 @@ for (const dialect of ['sqlite', 'postgres'] as const) {
 - `runIsolated(file, { env, timeoutMs = 60_000, args, cwd, mode, preload, bunfig, envFile, inheritEnv, stdin })`
   resolves `{ code, signal, stdout, stderr, timedOut, durationMs, command }`. `mode: 'auto'` runs
   `*.test.*` / `*.spec.*` with `bun test`, anything else as a script; `env` values of `undefined`
-  remove a variable. The watchdog sends SIGTERM at the timeout and SIGKILL 2 s later.
+  remove a variable. Native ownership disposes the command and normally inherited descendants
+  before returning, including after a normal early command exit. POSIX uses an anchored group
+  with SIGTERM then SIGKILL after 2 seconds; Windows uses a parent-held Job Object and confirms
+  zero active members. Deliberate POSIX breakaway is outside this lifecycle contract.
 - `bunfig: 'path/bunfig.toml'` runs the child with that config (`--config=`), resolved against
   `cwd`; it must exist. `preload` instead generates a config holding only those preloads. They are
   exclusive (a TypeError): list the preloads in your bunfig. Bun resolves a bunfig's relative

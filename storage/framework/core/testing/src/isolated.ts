@@ -8,11 +8,12 @@
  * by a preload stays set. When a test needs a clean process (its own env, its
  * own database, the real module), run it in a child.
  *
- * The child is killed when `timeoutMs` passes (SIGTERM, then SIGKILL after a
- * short grace), so a hung child fails the test with its output instead of
- * hanging the run. Nothing here depends on the framework, so it is safe to
- * import from any test.
+ * A native lifecycle owner disposes the command and its inherited descendants
+ * on completion or timeout. POSIX uses an anchored process group; Windows uses
+ * a Job Object. The CLI subpath imports only native Bun and Node primitives,
+ * so this entrypoint does not boot the framework or the test runner.
  */
+import { spawnOwnedProcess } from '@stacksjs/cli/owned-process'
 import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
@@ -78,8 +79,6 @@ export interface IsolatedResult {
   command: string[]
 }
 
-const GRACE_MS = 2_000
-
 /** The full Bun command line `runIsolated` would spawn for these options. */
 export function isolatedCommand(file: string, options: Pick<RunIsolatedOptions, 'mode' | 'args' | 'envFile'> & { config?: string } = {}): string[] {
   const mode = options.mode && options.mode !== 'auto'
@@ -142,28 +141,24 @@ export async function runIsolated(file: string, options: RunIsolatedOptions = {}
   const started = Date.now()
   let timedOut = false
   try {
-    const child = Bun.spawn(command, {
+    const child = spawnOwnedProcess(command, {
       cwd: options.cwd,
       env: childEnv(options),
       stdin: options.stdin != null ? new Blob([options.stdin]) : 'ignore',
-      stdout: 'pipe',
-      stderr: 'pipe',
     })
-    let killer: ReturnType<typeof setTimeout> | undefined
     const watchdog = setTimeout(() => {
       timedOut = true
-      child.kill('SIGTERM')
-      killer = setTimeout(() => child.kill('SIGKILL'), GRACE_MS)
+      void child.stop()
     }, timeoutMs)
     try {
-      const [code, stdout, stderr] = await Promise.all([
+      const [exit, stdout, stderr] = await Promise.all([
         child.exited,
         new Response(child.stdout).text(),
         new Response(child.stderr).text(),
       ])
       return {
-        code: child.signalCode ? null : code,
-        signal: child.signalCode == null ? null : String(child.signalCode),
+        code: timedOut || exit.signal ? null : exit.code,
+        signal: exit.signal,
         stdout,
         stderr,
         timedOut,
@@ -173,8 +168,7 @@ export async function runIsolated(file: string, options: RunIsolatedOptions = {}
     }
     finally {
       clearTimeout(watchdog)
-      clearTimeout(killer)
-      if (child.exitCode === null && !child.signalCode) child.kill('SIGKILL')
+      await child.stop()
     }
   }
   finally {

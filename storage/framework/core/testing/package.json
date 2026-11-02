@@ -87,6 +87,7 @@
   "dependencies": {
     "@stacksjs/auth": "workspace:*",
     "@stacksjs/cache": "workspace:*",
+    "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/database": "workspace:*",
     "@stacksjs/email": "workspace:*",

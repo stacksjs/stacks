@@ -15,9 +15,26 @@ The parent awaits `service.ready`, then combines `service.signal` with its
 command deadline using `AbortSignal.any`. Unexpected child exit aborts that
 signal and rejects readiness if still pending. `service.exited` reports its
 status. Always await `service.stop()` in finally: cleanup is idempotent and
-terminates only the owned child, escalating SIGTERM to SIGKILL after
-`stopGraceMs` (default 2 seconds). The service script owns its descendants.
+disposes the owned command and its inherited descendants. POSIX sends SIGTERM
+then SIGKILL after `stopGraceMs` (default 2 seconds); Windows uses an inherited
+Job Object with native termination and zero-member confirmation. `service.pid`
+identifies the stable lifecycle owner. Readiness is forwarded from the actual
+command over its own IPC channel.
 Readiness has a separate `startupTimeoutMs` (default 60 seconds).
+
+## Isolated fixture ownership
+
+`runIsolated` from `@stacksjs/testing/isolated` uses the same native ownership
+primitive. A normal early command exit also disposes its remaining descendants
+before returning the command status and captured output. The timeout remains a
+failed timeout even when the command handles termination and exits zero.
+
+Ownership is established before command startup. POSIX process groups retain a
+controlled owner until disposal; Windows Job Objects are assigned before that
+owner permits the command to run. Cleanup does not enumerate or guess process
+IDs and does not target unrelated processes. Deliberate POSIX `setsid` or
+breakaway children are outside this lifecycle contract, which is not a sandbox.
+Native ownership failures reject rather than fall back to direct-child cleanup.
 
 ## Browser readiness and speculative requests
 
