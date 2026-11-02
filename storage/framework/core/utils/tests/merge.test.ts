@@ -80,3 +80,16 @@ describe('defu (alias)', () => {
     expect(result).toEqual({ a: 1, b: 3 })
   })
 })
+
+describe('a "__proto__" key', () => {
+  it('never becomes the merged object\'s prototype', () => {
+    // What JSON.parse gives for a body with that key: an ordinary own key.
+    const body = () => JSON.parse('{"__proto__": {"isAdmin": true}, "name": "x"}')
+    const results = [merge({}, body()), mergeDefaults(body(), { role: 'user' }), defu(body(), {})] as Record<string, unknown>[]
+    for (const result of results) {
+      expect(result.isAdmin).toBeUndefined()
+      expect(Object.getPrototypeOf(result)).toBe(Object.prototype)
+      expect(result.name).toBe('x')
+    }
+  })
+})

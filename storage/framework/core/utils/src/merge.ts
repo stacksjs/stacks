@@ -20,6 +20,12 @@ export function merge<T extends Record<string, any>>(...objects: DeepPartial<T>[
     if (!obj || typeof obj !== 'object') continue
 
     for (const key in obj) {
+      // `JSON.parse` keeps a `"__proto__"` key as an ordinary own key, and
+      // assigning it ran the `__proto__` setter: `merge({}, body)` on
+      // `{"__proto__":{"isAdmin":true}}` came back with `isAdmin` true,
+      // inherited. defu, which this replaces, skips the key too.
+      if (key === '__proto__') continue
+
       const value = obj[key]
       const existing = result[key]
 

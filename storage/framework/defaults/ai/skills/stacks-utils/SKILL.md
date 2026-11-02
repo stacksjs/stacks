@@ -45,7 +45,7 @@ export { clamp, notNullish, retry, useOnline } from '@stacksjs/browser'
 
 ## Deep Merge (`merge.ts`)
 
-Replacement for `defu`. Arrays are concatenated, objects are recursively merged, special objects (Date, RegExp, Error, Promise, Map, Set, WeakMap, WeakSet, ArrayBuffer views) are NOT deeply merged.
+Replacement for `defu`. Arrays are concatenated, objects are recursively merged, special objects (Date, RegExp, Error, Promise, Map, Set, WeakMap, WeakSet, ArrayBuffer views) are NOT deeply merged. A `"__proto__"` key is skipped, as defu skips it, so a parsed request body cannot set the result's prototype.
 
 ```typescript
 import { merge, mergeDefaults, createMerger, defu } from '@stacksjs/utils'
