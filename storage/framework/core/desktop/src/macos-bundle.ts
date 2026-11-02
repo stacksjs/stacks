@@ -11,7 +11,7 @@ export const AGENT_HOST_EXECUTABLE = 'craft-runtime'
 export interface MacosAgentBundle {
   /** The compiled agent launcher (a Bun executable), which becomes the app's executable. */
   launcher: string
-  /** What the launcher reads at start; `host`, `nativeBundle` and `staticDir` are rewritten to the bundle's own copies. */
+  /** What the launcher reads at start; `host`, `nativeBundle`, `staticDir` and `resources` are rewritten to the bundle's own copies. */
   manifest: Omit<DesktopAgentManifest, 'host' | 'nativeBundle'>
 }
 
@@ -96,6 +96,13 @@ export function assembleMacosApp(options: AssembleMacosAppOptions): AssembledMac
     if (options.agent.manifest.staticDir) {
       cpSync(options.agent.manifest.staticDir, join(resources, 'web'), { recursive: true })
       manifest.staticDir = 'web'
+    }
+    if (options.agent.manifest.resources) {
+      for (const [name, source] of Object.entries(options.agent.manifest.resources)) {
+        if (!existsSync(source)) throw new Error(`macos.agent.resources.${name} does not exist: ${source}`)
+        cpSync(source, join(resources, name), { recursive: true, dereference: true })
+      }
+      manifest.resources = Object.fromEntries(Object.keys(options.agent.manifest.resources).map(name => [name, name]))
     }
     writeFileSync(join(resources, AGENT_MANIFEST), `${JSON.stringify(manifest, null, 2)}\n`)
   }

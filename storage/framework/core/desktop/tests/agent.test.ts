@@ -7,8 +7,10 @@ import { hasSessionCookie, isAgentHost, rememberedPort, sessionCookie, startDesk
 import {
   acquireInstanceLock,
   AGENT_DATA_DIR_ENV,
+  AGENT_RESOURCES_ENV,
   agentHostCommand,
   desktopAgentPaths,
+  desktopResource,
   findAgentManifest,
   readAgentManifest,
   releaseInstanceLock,
@@ -244,8 +246,19 @@ describe('the launcher', () => {
     const manifest = readAgentManifest(file!)
     expect(manifest.host).toBe(join(app, 'Contents/MacOS/craft-runtime'))
     expect(manifest.nativeBundle).toBe(join(app, 'Contents/Resources/native-screen.js'))
+    writeFileSync(join(app, 'Contents/Resources/desktop-agent.json'), JSON.stringify({ appName: 'B', bundleId: 'a.b', version: '1', host: '../MacOS/craft-runtime', nativeBundle: 'native-screen.js', hostArguments: [], appRoutes: false, resources: { lists: 'lists', abs: '/data/x' } }))
+    expect(readAgentManifest(file!).resources).toEqual({ lists: join(app, 'Contents/Resources/lists'), abs: '/data/x' })
     expect(findAgentManifest('/nowhere/bin', { STACKS_DESKTOP_AGENT_MANIFEST: '/tmp/m.json' })).toBe('/tmp/m.json')
     expect(findAgentManifest('/nowhere/bin', {})).toBeNull()
+  })
+
+  test('desktopResource reads the paths the launcher sets, and nothing else', () => {
+    const env = { [AGENT_RESOURCES_ENV]: JSON.stringify({ lists: '/app/Contents/Resources/lists' }) }
+    expect(desktopResource('lists', env)).toBe('/app/Contents/Resources/lists')
+    expect(desktopResource('other', env)).toBeUndefined()
+    expect(desktopResource('lists', {})).toBeUndefined()
+    expect(desktopResource('lists', { [AGENT_RESOURCES_ENV]: 'not json' })).toBeUndefined()
+    expect(desktopResource('toString', { [AGENT_RESOURCES_ENV]: '{}' })).toBeUndefined()
   })
 
   test('points the host at the agent and the screens before its window flags', () => {
@@ -267,12 +280,15 @@ describe('the launcher', () => {
     let command: string[] = []
     let status = 0
     let dataDirSeen: string | undefined
+    let listsSeen: string | undefined
     const previousDataDir = process.env[AGENT_DATA_DIR_ENV]
+    const previousResources = process.env[AGENT_RESOURCES_ENV]
     const code = await runDesktopAgentApp({
-      manifest: { appName: 'Browser', bundleId: 'a.b', version: '1.0.0', host: join(dir, 'host'), nativeBundle: join(dir, 'screens.js'), hostArguments: ['--title', 'Browser'], appRoutes: false },
-      // Routes read the app's folder as they load, for their own databases.
+      manifest: { appName: 'Browser', bundleId: 'a.b', version: '1.0.0', host: join(dir, 'host'), nativeBundle: join(dir, 'screens.js'), hostArguments: ['--title', 'Browser'], appRoutes: false, resources: { lists: join(dir, 'lists') } },
+      // Routes read the app's folder as they load, for their own databases, and their resources.
       handler: async () => {
         dataDirSeen = process.env[AGENT_DATA_DIR_ENV]
+        listsSeen = desktopResource('lists')
         return () => new Response('ok')
       },
       paths,
@@ -291,9 +307,12 @@ describe('the launcher', () => {
     })
     if (previousDataDir === undefined) delete process.env[AGENT_DATA_DIR_ENV]
     else process.env[AGENT_DATA_DIR_ENV] = previousDataDir
+    if (previousResources === undefined) delete process.env[AGENT_RESOURCES_ENV]
+    else process.env[AGENT_RESOURCES_ENV] = previousResources
     expect(code).toBe(0)
     expect(status).toBe(200)
     expect(dataDirSeen).toBe(dir)
+    expect(listsSeen).toBe(join(dir, 'lists'))
     expect(command.slice(0, 2)).toEqual([join(dir, 'host'), '--api-url'])
     expect(command).toContain('--native-bundle')
     expect(existsSync(paths.lockFile)).toBe(false)

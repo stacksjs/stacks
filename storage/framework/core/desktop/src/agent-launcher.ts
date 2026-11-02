@@ -31,6 +31,8 @@ export interface DesktopAgentManifest {
   hostArguments: string[]
   port?: number
   staticDir?: string
+  /** `macos.agent.resources`: name to file or directory. */
+  resources?: Record<string, string>
   /** The project the app was built from, when its routes are loaded from there rather than bundled. */
   projectRoot?: string
   /** Whether to load the project's route registry. */
@@ -44,6 +46,23 @@ export const AGENT_MANIFEST_ENV = 'STACKS_DESKTOP_AGENT_MANIFEST'
  * Support (`desktopAgentPaths().dataDir`), where a route keeps its own database.
  */
 export const AGENT_DATA_DIR_ENV = 'STACKS_DESKTOP_DATA_DIR'
+/** Set for the agent's routes before they load: `macos.agent.resources` as JSON, name to absolute path. */
+export const AGENT_RESOURCES_ENV = 'STACKS_DESKTOP_RESOURCES'
+
+/**
+ * Where a file or directory named in `macos.agent.resources` is: inside the
+ * built app's Resources, or in the project under `buddy dev:desktop`.
+ * Undefined outside a desktop agent, or for a name the config does not list.
+ */
+export function desktopResource(name: string, env: NodeJS.ProcessEnv = process.env): string | undefined {
+  try {
+    const resources = JSON.parse(env[AGENT_RESOURCES_ENV] ?? '{}') as Record<string, unknown>
+    return typeof resources[name] === 'string' ? resources[name] : undefined
+  }
+  catch {
+    return undefined
+  }
+}
 
 export interface DesktopAgentPaths {
   /** `~/Library/Application Support/<App>`: survives updates, which replace the bundle wholesale. */
@@ -126,6 +145,7 @@ export function readAgentManifest(file: string): DesktopAgentManifest {
     host: at(manifest.host),
     nativeBundle: at(manifest.nativeBundle),
     ...(manifest.staticDir ? { staticDir: at(manifest.staticDir) } : {}),
+    ...(manifest.resources ? { resources: Object.fromEntries(Object.entries(manifest.resources).map(([name, path]) => [name, at(path)])) } : {}),
   }
 }
 
@@ -279,6 +299,7 @@ export async function runDesktopAgentApp(options: RunDesktopAgentAppOptions): Pr
   try {
     if (manifest.projectRoot && manifest.appRoutes) process.chdir(manifest.projectRoot)
     process.env[AGENT_DATA_DIR_ENV] = paths.dataDir
+    process.env[AGENT_RESOURCES_ENV] = JSON.stringify(manifest.resources ?? {})
     agent = await startDesktopAgent({
       handler: await options.handler(),
       name: manifest.appName,

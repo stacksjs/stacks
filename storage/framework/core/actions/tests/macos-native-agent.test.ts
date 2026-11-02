@@ -71,6 +71,12 @@ describe('the development manifest', () => {
     expect(manifest.hostArguments).not.toContain('--api-url')
   })
 
+  test('names each runtime resource by its path in the project', () => {
+    const config = resolveMacosDesktop({ ...browser, agent: { resources: { lists: 'node_modules/lib/webkit', 'rules.json': '/abs/rules.json' } } }, '1.0.0')
+    expect(macosAgentDevManifest(config, { root: '/p', host: '/h', nativeBundle: '/s' }).resources).toEqual({ 'lists': '/p/node_modules/lib/webkit', 'rules.json': '/abs/rules.json' })
+    expect(macosAgentDevManifest(resolveMacosDesktop({ ...browser, agent: true }, '1.0.0'), { root: '/p', host: '/h', nativeBundle: '/s' }).resources).toBeUndefined()
+  })
+
   test('appRoutes: false serves only the agent entry', () => {
     expect(macosAgentDevManifest(resolveMacosDesktop({ ...browser, agent: { appRoutes: false } }, '1.0.0'), { root: '/p', host: '/h', nativeBundle: '/s' }).appRoutes).toBe(false)
   })

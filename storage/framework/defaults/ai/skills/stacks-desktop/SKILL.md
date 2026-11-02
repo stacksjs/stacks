@@ -304,7 +304,7 @@ export default {
   macos: {
     appName: 'Browser',
     bundleId: 'com.example.browser',
-    agent: true,                     // or { port, entry, appRoutes, staticDir }
+    agent: true,                     // or { port, entry, appRoutes, staticDir, resources }
     nativeScreens: ['Main'],
     webkit: true,                    // link WebKit into the host, for <WebView>
     defaultBrowser: true,            // http/https URL types, HTML/XHTML/webarchive/PDF document types
@@ -327,6 +327,11 @@ export default {
   beside it as `craft-runtime` and `desktop-agent.json` in Resources. A compiled binary cannot import route files off
   disk (the router refuses), so the build imports the registry's route files, the agent module and every
   `'Actions/...'` they name statically (`provideActions`); what they import travels inside the app.
+- A compiled agent has no `node_modules`, so a package that reads data files beside its own modules (rule lists, a
+  word list) finds nothing. Name them in `agent.resources`, `{ lists: 'node_modules/some-lib/data' }`: the build copies
+  each into `Contents/Resources/<name>`, and a route finds it with `desktopResource('lists')` from
+  `@stacksjs/desktop-build`, which under `buddy dev:desktop` is the path in the project. A route can pass that to the
+  package (`{ dir: desktopResource('lists') }`). Names are plain file names, not `web` or the files the build writes.
 - The launcher (`src/agent-launcher.ts`) holds a single-instance lock (`agent.pid`), logs to
   `~/Library/Logs/<App>.log` when launched without a terminal, and quits with the window.
 - Entitlements: the Bun executable gets `allow-jit`, `allow-unsigned-executable-memory` and

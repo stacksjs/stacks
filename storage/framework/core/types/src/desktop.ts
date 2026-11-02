@@ -161,6 +161,13 @@ export interface MacosAgentConfig {
   appRoutes?: boolean
   /** A directory of static files the agent serves (a web UI the host can open). Relative to the project root. */
   staticDir?: string
+  /**
+   * Files and directories the agent's routes read at runtime, by name: `{ lists: 'node_modules/some-lib/data' }`.
+   * Paths are relative to the project root. A built app carries each in `Contents/Resources/<name>`, because a
+   * compiled agent has no `node_modules` and a package that reads data beside its own modules finds nothing there.
+   * Routes find them with `desktopResource(name)`, which in `buddy dev:desktop` is the path in the project.
+   */
+  resources?: Record<string, string>
 }
 
 export interface MacosPermissions {

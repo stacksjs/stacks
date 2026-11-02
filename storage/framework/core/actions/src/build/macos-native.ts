@@ -158,6 +158,12 @@ export function macosAgentEntry(root: string, config: Pick<ResolvedMacosDesktop,
   return existsSync(conventional) ? conventional : undefined
 }
 
+/** `macos.agent.resources` as absolute paths in the project, for a manifest. */
+function agentResources(config: ResolvedMacosDesktop, root: string): Pick<DesktopAgentManifest, 'resources'> {
+  const resources = config.agent?.resources
+  return resources && Object.keys(resources).length ? { resources: Object.fromEntries(Object.entries(resources).map(([name, path]) => [name, resolve(root, path)])) } : {}
+}
+
 /**
  * The manifest the agent launcher reads, for a run from the project
  * (`buddy dev:desktop`): absolute paths to the host and screens just built,
@@ -173,6 +179,7 @@ export function macosAgentDevManifest(config: ResolvedMacosDesktop, prepared: Pi
     hostArguments: agentHostArguments(config),
     ...(config.agent?.port ? { port: config.agent.port } : {}),
     ...(config.agent?.staticDir ? { staticDir: resolve(prepared.root, config.agent.staticDir) } : {}),
+    ...agentResources(config, prepared.root),
     projectRoot: prepared.root,
     appRoutes: config.agent?.appRoutes !== false,
   }
@@ -248,6 +255,7 @@ export async function prepareMacosAgent(config: ResolvedMacosDesktop, prepared: 
       hostArguments: agentHostArguments(config),
       ...(config.agent.port ? { port: config.agent.port } : {}),
       ...(config.agent.staticDir ? { staticDir: resolve(prepared.root, config.agent.staticDir) } : {}),
+      ...agentResources(config, prepared.root),
       appRoutes: false,
     },
   }

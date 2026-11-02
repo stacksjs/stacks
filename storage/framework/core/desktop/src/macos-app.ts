@@ -20,6 +20,9 @@ export const MACOS_DEFAULTS = {
   window: { width: 1180, height: 760, minWidth: 820, minHeight: 520 },
 } as const
 
+/** What the build writes into `Contents/Resources` itself, so `macos.agent.resources` cannot use these names. */
+export const RESERVED_RESOURCES: ReadonlySet<string> = new Set(['web', 'native-screen.js', 'craft-app.json', 'desktop-agent.json', 'PrivacyInfo.xcprivacy', 'AppIcon.icns'])
+
 export interface ResolvedMacosDesktop extends Omit<MacosDesktopConfig, 'agent'> {
   /** `macos.agent`, with `true` spelled out; null when the app talks to a hosted API. */
   agent: MacosAgentConfig | null
@@ -89,8 +92,15 @@ export function validateMacosDesktop(config: ResolvedMacosDesktop): string[] {
     }
     catch { errors.push('macos.url must be the server origin the app talks to, e.g. https://example.com, or turn on macos.agent to run the API inside the app') }
   }
-  else if (config.agent.port !== undefined && !(Number.isInteger(config.agent.port) && config.agent.port > 1024 && config.agent.port < 65536)) {
-    errors.push('macos.agent.port must be a port above 1024')
+  else {
+    if (config.agent.port !== undefined && !(Number.isInteger(config.agent.port) && config.agent.port > 1024 && config.agent.port < 65536))
+      errors.push('macos.agent.port must be a port above 1024')
+    for (const [name, path] of Object.entries(config.agent.resources ?? {})) {
+      // Each becomes Contents/Resources/<name>, beside what the build itself writes there.
+      if (!/^[\w-][\w.-]*$/.test(name) || RESERVED_RESOURCES.has(name))
+        errors.push(`macos.agent.resources: "${name}" must be a plain file name (letters, digits, . _ -) other than ${[...RESERVED_RESOURCES].join(', ')}`)
+      if (typeof path !== 'string' || !path.trim()) errors.push(`macos.agent.resources.${name} must be a path in the project`)
+    }
   }
   const lights = config.window?.trafficLights
   if (lights !== undefined && !(Array.isArray(lights) && lights.length === 2 && lights.every(value => Number.isFinite(value) && value >= 0)))

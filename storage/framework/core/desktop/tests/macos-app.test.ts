@@ -52,6 +52,17 @@ describe('validateMacosDesktop', () => {
     expect(errors.join('\n')).toContain('version')
   })
 
+  test('a runtime resource is a plain name the build does not already write', () => {
+    const agent = (resources: Record<string, string>) => validateMacosDesktop(resolveMacosDesktop({ ...base, agent: { resources } }, '1.0.0')).join('\n')
+    expect(agent({ 'lists': 'data/lists', 'rules.json': 'data/rules.json' })).toBe('')
+    expect(agent({ '../up': 'x' })).toContain('"../up"')
+    expect(agent({ 'a/b': 'x' })).toContain('"a/b"')
+    expect(agent({ '.hidden': 'x' })).toContain('".hidden"')
+    expect(agent({ 'native-screen.js': 'x' })).toContain('"native-screen.js"')
+    expect(agent({ web: 'x' })).toContain('"web"')
+    expect(agent({ lists: ' ' })).toContain('macos.agent.resources.lists')
+  })
+
   test('an initial screen has to exist', () => {
     expect(validateMacosDesktop(resolveMacosDesktop({ ...base, initialScreen: 'Nope' }, '1.0.0')).join()).toContain('initialScreen')
   })
@@ -183,6 +194,27 @@ describe('assembleMacosApp', () => {
       expect(sign).toContain('--options')
       expect(sign.at(-1)).toBe(app)
       expect(commands.at(-1)).toEqual(['codesign', '--verify', '--deep', '--strict', app])
+    }
+    finally { rmSync(dir, { recursive: true, force: true }) }
+  })
+
+  test('an agent app carries its runtime resources in Resources, and its manifest names them there', () => {
+    const { mkdirSync } = require('node:fs')
+    const dir = fixture()
+    try {
+      writeFileSync(join(dir, 'launcher'), '#!bun')
+      mkdirSync(join(dir, 'lists/nested'), { recursive: true })
+      writeFileSync(join(dir, 'lists/nested/a.json'), '[1]')
+      writeFileSync(join(dir, 'rules.json'), '{}')
+      const config = resolveMacosDesktop({ ...base, agent: { resources: { lists: 'lists', 'rules.json': 'rules.json' } } }, '1.0.0')
+      const agent = { launcher: join(dir, 'launcher'), manifest: { appName: 'Library', bundleId: base.bundleId, version: '1.0.0', hostArguments: [], appRoutes: false, resources: { 'lists': join(dir, 'lists'), 'rules.json': join(dir, 'rules.json') } } }
+      const result = assembleMacosApp({ config, root: dir, host: join(dir, 'host'), nativeBundle: join(dir, 'screens.js'), output: join(dir, 'out'), distribution: 'development', agent, run: () => {} })
+      const resources = join(result.appPath, 'Contents/Resources')
+      expect(readFileSync(join(resources, 'lists/nested/a.json'), 'utf8')).toBe('[1]')
+      expect(readFileSync(join(resources, 'rules.json'), 'utf8')).toBe('{}')
+      expect(JSON.parse(readFileSync(join(resources, 'desktop-agent.json'), 'utf8')).resources).toEqual({ 'lists': 'lists', 'rules.json': 'rules.json' })
+      const missing = { ...agent, manifest: { ...agent.manifest, resources: { lists: join(dir, 'gone') } } }
+      expect(() => assembleMacosApp({ config, root: dir, host: join(dir, 'host'), nativeBundle: join(dir, 'screens.js'), output: join(dir, 'out'), distribution: 'development', agent: missing, run: () => {} })).toThrow(/macos\.agent\.resources\.lists does not exist/)
     }
     finally { rmSync(dir, { recursive: true, force: true }) }
   })
