@@ -66,7 +66,7 @@ test('quarantine reads existing hashes and keeps mutable payloads and failure co
     expect(await recordFailureForPoison('NewJob', payload, { maxFailures: 3 })).toBe(false)
     expect(await recordFailureForPoison('NewJob', payload, { maxFailures: 3 })).toBe(false)
     expect(await recordFailureForPoison('NewJob', payload, { maxFailures: 3 })).toBe(true)
-    expect(await listQuarantined()).toEqual([expect.objectContaining({ job_name: 'NewJob', payload_hash: persisted, failure_count: 3 })])
+    expect(await listQuarantined()).toEqual([expect.objectContaining({ job_name: 'NewJob', payload_hash: expect.stringMatching(/^v2:[a-f0-9]{32}$/), failure_count: 3 })])
     await quarantineJob('WildcardJob')
     expect(await isQuarantined('WildcardJob', { other: true })).toBe(true)
   }

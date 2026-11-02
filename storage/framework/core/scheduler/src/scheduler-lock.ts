@@ -30,7 +30,7 @@
  * monotonic value or fail safe (treat the lock as held).
  */
 
-import { createHash } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
@@ -42,6 +42,7 @@ export interface SchedulerLockHandle {
 }
 
 interface LockFileBody {
+  token: string
   acquiredAt: number
   monotonicStart: number
   holder: number
@@ -137,6 +138,7 @@ export async function acquireSchedulerLock(
   // caught cheaply. If we got the DB lock above but fail the file
   // lock here, we release the DB lock and return null.
   const fileBody: LockFileBody = {
+    token: randomUUID(),
     acquiredAt: Date.now(),
     monotonicStart: Math.round(performance.now()),
     holder: process.pid,
@@ -185,10 +187,14 @@ export async function acquireSchedulerLock(
     }
   }
 
+  let released = false
   return {
     release: async () => {
+      if (released) return
+      released = true
       try {
-        unlinkSync(lockFile)
+        const current = JSON.parse(readFileSync(lockFile, 'utf8')) as LockFileBody
+        if (current.token === fileBody.token) unlinkSync(lockFile)
       }
       catch {
         // Already gone — fine.
@@ -243,9 +249,7 @@ async function releaseDbLock(
 }
 
 function lockNameForMysql(taskName: string): string {
-  const candidate = `${KEY_PREFIX}_${taskName}`.replace(/[^A-Za-z0-9_]/g, '_')
-  // MySQL caps GET_LOCK name at 64 chars; hash the tail when too long.
-  if (candidate.length <= 64) return candidate
+  // Hash every original name: sanitization aliases 'send-email' and 'send_email'.
   const hashed = createHash('sha256').update(taskName).digest('hex').slice(0, 32)
   return `${KEY_PREFIX}_${hashed}`
 }

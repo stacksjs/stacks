@@ -17,6 +17,8 @@
 
 import type { UnsafeRowsResult } from '@stacksjs/database/runtime'
 import { log } from '@stacksjs/logging'
+import { buildScheduledJobRow, storeJob } from './utils'
+import { seedStateRow } from './state-row'
 
 let ensured = false
 
@@ -71,25 +73,38 @@ export async function loadPersistedLastRun(jobName: string): Promise<Date | null
   }
 }
 
-/**
- * Persist a job's `lastRun` (bounded to one row per job). Delete-then-insert is
- * a portable upsert that avoids the per-dialect UPDATE-affected-rows ambiguity
- * (MySQL reports 0 rows on an unchanged value); a single scheduler process owns
- * this table, so there is no concurrent-writer race. Best-effort.
- */
+/** Persist a marker without exposing a delete/insert gap to concurrent readers. */
 export async function persistLastRun(jobName: string, when: Date): Promise<void> {
-  if (!await ensureTable())
-    return
+  if (!await ensureTable()) return
   try {
     const { db } = await import('@stacksjs/database/runtime')
-    const iso = when.toISOString()
-    await db.deleteFrom('scheduled_job_runs').where('job_name', '=', jobName).execute()
-    await db.insertInto('scheduled_job_runs').values({ job_name: jobName, last_run_at: iso }).execute()
+    await db.transaction(async (tx) => {
+      await seedStateRow(tx, 'scheduled_job_runs', ['job_name'], { job_name: jobName, last_run_at: when.toISOString() })
+      await tx.updateTable('scheduled_job_runs').set({ last_run_at: when.toISOString() }).where('job_name', '=', jobName).execute()
+    }, { sqliteMode: 'immediate' })
   }
   catch {
-    // best-effort — a failed persist just means the in-memory guard is the only
-    // protection until the next successful write
+    // Standalone marker writes retain their best-effort contract.
   }
+}
+
+/** Commit the queue row and its once-per-minute marker together. */
+export async function storeScheduledRun(jobName: string, when: Date, options: Parameters<typeof storeJob>[1]): Promise<boolean> {
+  if (!await ensureTable()) {
+    await storeJob(jobName, options)
+    return true
+  }
+  const row = buildScheduledJobRow(jobName, options)
+  const { db, lockRow } = await import('@stacksjs/database/runtime')
+  return db.transaction(async (tx) => {
+    await seedStateRow(tx, 'scheduled_job_runs', ['job_name'], { job_name: jobName, last_run_at: '' })
+    const previous = await lockRow(tx, 'scheduled_job_runs', { job_name: jobName })
+    if (previous && Math.floor(new Date(String(previous.last_run_at)).getTime() / 60_000) === Math.floor(when.getTime() / 60_000))
+      return false
+    await tx.insertInto('jobs').values({ ...row }).execute()
+    await tx.updateTable('scheduled_job_runs').set({ last_run_at: when.toISOString() }).where('job_name', '=', jobName).execute()
+    return true
+  }, { sqliteMode: 'immediate' })
 }
 
 /**

@@ -41,7 +41,7 @@ export async function runScheduler(): Promise<Result<string, string>> {
       // `schedule.job()` is typed against; the declared one is checked too.
       const jobName = getJobName(jobFile)
 
-      if (!job.rate)
+      if (job.enabled === false || !job.rate)
         continue
 
       const scheduledAs = [jobName, job.name].find(name => typeof name === 'string' && schedule.isScheduled(name))

@@ -32,6 +32,7 @@ export interface JobConfig {
   description?: string
   queue?: string
   tries?: number
+  enabled?: boolean
   backoff?: number | number[]
   rate?: string // Cron expression
   timeout?: number
@@ -93,7 +94,7 @@ class JobRegistry {
    * Get scheduled jobs (those with cron expressions)
    */
   scheduled(): DiscoveredJob[] {
-    return this.all().filter(job => job.config.rate || job.config.schedule)
+    return this.all().filter(job => job.config.enabled !== false && (job.config.rate || job.config.schedule))
   }
 
   /**
@@ -190,16 +191,7 @@ async function loadJob(filePath: string): Promise<DiscoveredJob | null> {
         return {
           name: config.name || fileName,
           path: filePath,
-          config: {
-            name: config.name || fileName,
-            description: config.description,
-            queue: config.queue || 'default',
-            tries: config.retries || 3,
-            timeout: config.timeout,
-            withoutOverlapping: config.withoutOverlapping,
-            schedule: config.schedule,
-            retryAfter: config.retryAfter,
-          },
+          config: normalizeConfig(config, fileName),
           type: 'class',
           module: JobClass,
         }
@@ -215,16 +207,7 @@ async function loadJob(filePath: string): Promise<DiscoveredJob | null> {
         return {
           name: jobConfig.name || fileName,
           path: filePath,
-          config: {
-            name: jobConfig.name || fileName,
-            description: jobConfig.description,
-            queue: jobConfig.queue || 'default',
-            tries: jobConfig.tries || 3,
-            backoff: jobConfig.backoff,
-            rate: jobConfig.rate,
-            timeout: jobConfig.timeout || jobConfig.timeOut,
-            backoffConfig: jobConfig.backoffConfig,
-          },
+          config: normalizeConfig(jobConfig, fileName),
           type: 'function',
           module: jobConfig,
         }
@@ -236,6 +219,24 @@ async function loadJob(filePath: string): Promise<DiscoveredJob | null> {
   catch (error) {
     log.debug(`Could not load job from ${filePath}: ${(error as Error).message}`)
     return null
+  }
+}
+
+/** Both supported job forms use the same scheduling and retry contract. */
+function normalizeConfig(config: JobConfig & { timeOut?: number }, fileName: string): JobConfig {
+  return {
+    name: config.name || fileName,
+    description: config.description,
+    queue: config.queue || 'default',
+    enabled: config.enabled,
+    tries: config.tries ?? config.retries ?? 3,
+    backoff: config.backoff ?? config.retryAfter,
+    rate: config.rate,
+    schedule: config.schedule,
+    timeout: config.timeout ?? config.timeOut,
+    withoutOverlapping: config.withoutOverlapping,
+    retryAfter: config.retryAfter,
+    backoffConfig: config.backoffConfig,
   }
 }
 

@@ -12,7 +12,7 @@ import { parseCron } from '@stacksjs/cron'
 import { log } from '@stacksjs/logging'
 import { discoverJobs, getScheduledJobs, type DiscoveredJob } from './discovery'
 import { emitQueueEvent } from './events'
-import { hasUnfinishedRun, loadPersistedLastRun, persistLastRun } from './scheduler-persistence'
+import { hasUnfinishedRun, loadPersistedLastRun, storeScheduledRun } from './scheduler-persistence'
 import { storeJob } from './utils'
 
 /**
@@ -381,27 +381,19 @@ async function checkScheduledJobs(): Promise<void> {
       // Dispatch the job
       try {
         state.isRunning = true
-        state.lastRun = new Date()
+        const when = new Date()
+        const stored = await storeScheduledRun(name, when, scheduledDispatchOptions(state.job.config))
+        state.lastRun = stored ? when : await loadPersistedLastRun(name)
         state.nextRun = calculateNextRun(cronExpression, schedulerState.config.timezone)
+        state.isRunning = false
+        if (!stored) continue
 
-        // Persist the run marker so a restart this minute won't re-dispatch
-        // (stacksjs/stacks#1984). Best-effort; matches the in-memory guard's
-        // "marked at dispatch time" semantics.
-        await persistLastRun(name, state.lastRun)
-
-        log.info(`Dispatching scheduled job: ${name}`)
-
+        // Observers see only jobs that actually reached the durable queue.
         await emitQueueEvent('job:added', {
-          jobId: `scheduled-${name}-${Date.now()}`,
+          jobId: `scheduled-${name}-${when.getTime()}`,
           queueName: state.job.config.queue || 'default',
           jobName: name,
         })
-
-        // Store job in queue
-        await storeJob(name, scheduledDispatchOptions(state.job.config))
-
-        // Mark as not running after dispatch (the queue worker will handle execution)
-        state.isRunning = false
 
         log.info(`Scheduled job ${name} dispatched to queue`)
       }

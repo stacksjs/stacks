@@ -15,7 +15,7 @@
  * degrade when the table isn't migrated yet.
  */
 
-import { db, mutationCount } from '@stacksjs/database/runtime'
+import { db, lockRow, mutationCount } from '@stacksjs/database/runtime'
 import { isMissingTableError } from './missing-table'
 
 export type DeadLetterReason = 'repeat-failure' | 'poison-detected' | 'circuit-broken' | 'manual'
@@ -109,6 +109,8 @@ export interface ListDeadLetterFilter {
 }
 
 export async function listDeadLetterJobs(filter: ListDeadLetterFilter = {}): Promise<DeadLetterRecord[]> {
+  const limit = filter.limit ?? 100
+  if (!Number.isSafeInteger(limit) || limit <= 0) throw new RangeError('Dead-letter limit must be a positive integer')
   try {
     let q = db.selectFrom('dead_letter_jobs').selectAll()
     if (filter.queue) q = q.where('queue', '=', filter.queue)
@@ -117,7 +119,7 @@ export async function listDeadLetterJobs(filter: ListDeadLetterFilter = {}): Pro
       const cutoff = new Date(filter.sinceCutoffMs).toISOString().slice(0, 19).replace('T', ' ')
       q = q.where('dead_lettered_at', '>=', cutoff)
     }
-    if (filter.limit && filter.limit > 0) q = q.limit(filter.limit)
+    q = q.limit(limit)
     const rows = await q.execute() as unknown as DeadLetterRecord[]
     return rows ?? []
   }
@@ -141,28 +143,21 @@ export async function listDeadLetterJobs(filter: ListDeadLetterFilter = {}): Pro
  */
 export async function retryDeadLetterJob(id: number): Promise<boolean> {
   try {
-    const row = await db
-      .selectFrom('dead_letter_jobs')
-      .where('id', '=', id)
-      .selectAll()
-      .executeTakeFirst() as DeadLetterRecord | undefined
-    if (!row) return false
-
-    const nowSec = Math.floor(Date.now() / 1000)
-    await db
-      .insertInto('jobs')
-      .values({
+    return await db.transaction(async (tx) => {
+      const row = await lockRow(tx, 'dead_letter_jobs', { id }) as unknown as DeadLetterRecord | undefined
+      if (!row) return false
+      const nowSec = Math.floor(Date.now() / 1000)
+      await tx.insertInto('jobs').values({
         queue: row.queue,
         payload: row.payload,
         attempts: 0,
         reserved_at: null,
         available_at: nowSec,
         created_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
-      })
-      .execute()
-
-    await db.deleteFrom('dead_letter_jobs').where('id', '=', id).execute()
-    return true
+      }).execute()
+      await tx.deleteFrom('dead_letter_jobs').where('id', '=', id).execute()
+      return true
+    }, { sqliteMode: 'immediate' })
   }
   catch (err) {
     if (isMissingTableError(err)) {

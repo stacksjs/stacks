@@ -18,8 +18,9 @@
  * when the table is missing.
  */
 
-import { db } from '@stacksjs/database/runtime'
-import { isUniqueViolation } from '@stacksjs/error-handling'
+import { db, lockRow, parseSqlDateTime } from '@stacksjs/database/runtime'
+import type { QueueStateConnection } from './state-row'
+import { seedStateRow } from './state-row'
 import { isMissingTableError } from './missing-table'
 
 export interface CircuitBreakerConfig {
@@ -55,221 +56,110 @@ interface CircuitRow {
   resume_at: string | null
 }
 
-async function getOrCreateRow(queue: string, nowStr: string): Promise<CircuitRow | null> {
-  try {
-    const existing = await db
-      .selectFrom('queue_circuit_state')
-      .where('queue_name', '=', queue)
-      .selectAll()
-      .executeTakeFirst() as CircuitRow | undefined
-    if (existing) return existing
-    await db.insertInto('queue_circuit_state').values({
-      queue_name: queue,
-      success_count: 0,
-      failure_count: 0,
-      window_start: nowStr,
-      paused_at: null,
-      resume_at: null,
-    }).execute()
-    return {
-      queue_name: queue,
-      success_count: 0,
-      failure_count: 0,
-      window_start: nowStr,
-      paused_at: null,
-      resume_at: null,
-    }
-  }
-  catch (err) {
-    if (isMissingTableError(err)) {
-      warnOnceAboutMissingTable()
-      return null
-    }
-    // UNIQUE race (two workers seeded the same row) — re-fetch
-    if (isUniqueViolation(err)) {
-      return await db
-        .selectFrom('queue_circuit_state')
-        .where('queue_name', '=', queue)
-        .selectAll()
-        .executeTakeFirst() as unknown as CircuitRow | null
-    }
-    throw err
-  }
+async function seedCircuitRow(tx: QueueStateConnection, queue: string, now: string): Promise<void> {
+  await seedStateRow(tx, 'queue_circuit_state', ['queue_name'], {
+    queue_name: queue, success_count: 0, failure_count: 0,
+    window_start: now, paused_at: null, resume_at: null,
+  })
 }
 
-/**
- * Is the queue currently paused? Returns `true` when `paused_at`
- * is set and `resume_at` hasn't passed yet. Also auto-clears the
- * paused state when the cooldown elapses so the next call sees
- * the queue as available again.
- */
+/** Read and, when necessary, resume a queue while holding its state row. */
 export async function isCircuitOpen(queue: string): Promise<boolean> {
   try {
-    const row = await db
-      .selectFrom('queue_circuit_state')
-      .where('queue_name', '=', queue)
-      .select(['paused_at', 'resume_at'])
-      .executeTakeFirst() as { paused_at: string | null, resume_at: string | null } | undefined
-    if (!row || !row.paused_at) return false
-
-    if (row.resume_at) {
-      const resumeMs = Date.parse(row.resume_at.replace(' ', 'T') + 'Z')
-      if (Number.isFinite(resumeMs) && Date.now() >= resumeMs) {
-        // Cooldown elapsed — clear the pause state and treat as resumed.
-        await db.updateTable('queue_circuit_state')
-          .set({ paused_at: null, resume_at: null, success_count: 0, failure_count: 0 })
-          .where('queue_name', '=', queue)
-          .execute()
+    return await db.transaction(async (tx) => {
+      const row = await lockRow(tx, 'queue_circuit_state', { queue_name: queue })
+      if (!row?.paused_at) return false
+      const resume = parseSqlDateTime(row.resume_at)?.getTime()
+      if (resume !== undefined && Date.now() >= resume) {
+        await tx.updateTable('queue_circuit_state').set({
+          paused_at: null, resume_at: null, success_count: 0, failure_count: 0,
+          window_start: new Date().toISOString().slice(0, 19).replace('T', ' '),
+        }).where('queue_name', '=', queue).execute()
         return false
       }
-    }
-    return true
-  }
-  catch (err) {
-    if (isMissingTableError(err)) {
-      warnOnceAboutMissingTable()
-      return false
-    }
-    throw err
-  }
-}
-
-/**
- * Record a successful job. Maintained alongside failure_count so
- * the failure-rate calculation is meaningful. Window resets after
- * `windowSeconds` so an old failure burst doesn't permanently
- * skew the rate.
- */
-export async function recordCircuitSuccess(queue: string, config: CircuitBreakerConfig = {}): Promise<void> {
-  const windowSeconds = config.windowSeconds ?? 300
-  const nowStr = new Date().toISOString().slice(0, 19).replace('T', ' ')
-  const row = await getOrCreateRow(queue, nowStr)
-  if (!row) return
-
-  try {
-    if (shouldResetWindow(row.window_start, windowSeconds)) {
-      await db.updateTable('queue_circuit_state')
-        .set({ success_count: 1, failure_count: 0, window_start: nowStr })
-        .where('queue_name', '=', queue).execute()
-      return
-    }
-    await db.updateTable('queue_circuit_state')
-      .set({ success_count: row.success_count + 1 })
-      .where('queue_name', '=', queue).execute()
-  }
-  catch (err) {
-    if (isMissingTableError(err)) { warnOnceAboutMissingTable(); return }
-    throw err
-  }
-}
-
-/**
- * Record a failed job. After incrementing, evaluates whether the
- * failure rate has crossed the threshold and trips the breaker if
- * so. Returns `true` when this call triggered the trip.
- */
-export async function recordCircuitFailure(queue: string, config: CircuitBreakerConfig = {}): Promise<boolean> {
-  const threshold = config.failureRateThreshold ?? 0.5
-  const windowSeconds = config.windowSeconds ?? 300
-  const pauseSeconds = config.pauseSeconds ?? 300
-  const minObservations = config.minObservations ?? 10
-  const now = new Date()
-  const nowStr = now.toISOString().slice(0, 19).replace('T', ' ')
-
-  const row = await getOrCreateRow(queue, nowStr)
-  if (!row) return false
-  if (row.paused_at) return false // already tripped; just count
-
-  try {
-    let successCount = row.success_count
-    let failureCount = row.failure_count
-    if (shouldResetWindow(row.window_start, windowSeconds)) {
-      successCount = 0
-      failureCount = 0
-    }
-    failureCount += 1
-
-    const observed = successCount + failureCount
-    const rate = observed === 0 ? 0 : failureCount / observed
-    const trip = observed >= minObservations && rate >= threshold
-
-    if (trip) {
-      const resumeAt = new Date(now.getTime() + pauseSeconds * 1000)
-        .toISOString().slice(0, 19).replace('T', ' ')
-      await db.updateTable('queue_circuit_state')
-        .set({
-          success_count: successCount,
-          failure_count: failureCount,
-          window_start: nowStr,
-          paused_at: nowStr,
-          resume_at: resumeAt,
-        })
-        .where('queue_name', '=', queue)
-        .execute()
       return true
-    }
-
-    await db.updateTable('queue_circuit_state')
-      .set({
-        success_count: successCount,
-        failure_count: failureCount,
-        window_start: shouldResetWindow(row.window_start, windowSeconds) ? nowStr : row.window_start,
-      })
-      .where('queue_name', '=', queue)
-      .execute()
-    return false
+    }, { sqliteMode: 'immediate' })
   }
-  catch (err) {
-    if (isMissingTableError(err)) { warnOnceAboutMissingTable(); return false }
-    throw err
+  catch (error) {
+    if (isMissingTableError(error)) { warnOnceAboutMissingTable(); return false }
+    throw error
   }
 }
 
-function shouldResetWindow(windowStart: string | null, windowSeconds: number): boolean {
-  if (!windowStart) return true
-  const startMs = Date.parse(windowStart.replace(' ', 'T') + 'Z')
-  if (!Number.isFinite(startMs)) return true
-  return (Date.now() - startMs) > windowSeconds * 1000
-}
-
-/**
- * Manually pause a queue for the given cooldown (default matches
- * the configured `pauseSeconds`). Useful when an operator knows
- * downstream is broken and wants to skip jobs immediately rather
- * than wait for the auto-trip.
- */
-export async function pauseQueue(queue: string, pauseSeconds: number = 300): Promise<void> {
+/** Every observation and threshold decision owns the row through commit. */
+async function recordObservation(queue: string, success: boolean, config: CircuitBreakerConfig): Promise<boolean> {
   const now = new Date()
   const nowStr = now.toISOString().slice(0, 19).replace('T', ' ')
-  const resumeAt = new Date(now.getTime() + pauseSeconds * 1000)
-    .toISOString().slice(0, 19).replace('T', ' ')
-  await getOrCreateRow(queue, nowStr)
   try {
-    await db.updateTable('queue_circuit_state')
-      .set({ paused_at: nowStr, resume_at: resumeAt })
-      .where('queue_name', '=', queue)
-      .execute()
+    return await db.transaction(async (tx) => {
+      await seedCircuitRow(tx, queue, nowStr)
+      const row = await lockRow(tx, 'queue_circuit_state', { queue_name: queue }) as unknown as CircuitRow
+      const start = parseSqlDateTime(row.window_start)?.getTime()
+      const reset = start === undefined || now.getTime() - start >= (config.windowSeconds ?? 300) * 1000
+      const successes = (reset ? 0 : Number(row.success_count)) + (success ? 1 : 0)
+      const failures = (reset ? 0 : Number(row.failure_count)) + (success ? 0 : 1)
+      const observed = successes + failures
+      const trip = !success && !row.paused_at && observed >= (config.minObservations ?? 10)
+        && failures / observed >= (config.failureRateThreshold ?? 0.5)
+      await tx.updateTable('queue_circuit_state').set({
+        success_count: successes,
+        failure_count: failures,
+        window_start: reset ? nowStr : row.window_start,
+        ...(trip ? {
+          paused_at: nowStr,
+          resume_at: new Date(now.getTime() + (config.pauseSeconds ?? 300) * 1000).toISOString().slice(0, 19).replace('T', ' '),
+        } : {}),
+      }).where('queue_name', '=', queue).execute()
+      return trip
+    }, { sqliteMode: 'immediate' })
   }
-  catch (err) {
-    if (isMissingTableError(err)) { warnOnceAboutMissingTable(); return }
-    throw err
+  catch (error) {
+    if (isMissingTableError(error)) { warnOnceAboutMissingTable(); return false }
+    throw error
   }
 }
 
-/**
- * Lift the pause on a queue (manual resume). Workers resume
- * processing on the next poll cycle.
- */
+export async function recordCircuitSuccess(queue: string, config: CircuitBreakerConfig = {}): Promise<void> {
+  await recordObservation(queue, true, config)
+}
+
+export async function recordCircuitFailure(queue: string, config: CircuitBreakerConfig = {}): Promise<boolean> {
+  return recordObservation(queue, false, config)
+}
+
+/** Manually pause without racing counter updates or automatic resume. */
+export async function pauseQueue(queue: string, pauseSeconds = 300): Promise<void> {
+  const now = new Date()
+  const nowStr = now.toISOString().slice(0, 19).replace('T', ' ')
+  try {
+    await db.transaction(async (tx) => {
+      await seedCircuitRow(tx, queue, nowStr)
+      await lockRow(tx, 'queue_circuit_state', { queue_name: queue })
+      await tx.updateTable('queue_circuit_state').set({
+        paused_at: nowStr,
+        resume_at: new Date(now.getTime() + pauseSeconds * 1000).toISOString().slice(0, 19).replace('T', ' '),
+      }).where('queue_name', '=', queue).execute()
+    }, { sqliteMode: 'immediate' })
+  }
+  catch (error) {
+    if (isMissingTableError(error)) { warnOnceAboutMissingTable(); return }
+    throw error
+  }
+}
+
 export async function resumeQueue(queue: string): Promise<void> {
   try {
-    await db.updateTable('queue_circuit_state')
-      .set({ paused_at: null, resume_at: null, success_count: 0, failure_count: 0 })
-      .where('queue_name', '=', queue)
-      .execute()
+    await db.transaction(async (tx) => {
+      if (!await lockRow(tx, 'queue_circuit_state', { queue_name: queue })) return
+      await tx.updateTable('queue_circuit_state').set({
+        paused_at: null, resume_at: null, success_count: 0, failure_count: 0,
+        window_start: new Date().toISOString().slice(0, 19).replace('T', ' '),
+      }).where('queue_name', '=', queue).execute()
+    }, { sqliteMode: 'immediate' })
   }
-  catch (err) {
-    if (isMissingTableError(err)) { warnOnceAboutMissingTable(); return }
-    throw err
+  catch (error) {
+    if (isMissingTableError(error)) { warnOnceAboutMissingTable(); return }
+    throw error
   }
 }
 

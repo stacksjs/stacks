@@ -197,11 +197,16 @@ export class FileValidator {
     // the same name, so a JSON body of
     // `{"avatar":{"size":10,"mimetype":"image/png"}}` used to pass
     // `file().required().image()` while `req.file('avatar')` was null.
-    if (typeof value !== 'object' || isPlainObject(value) || typeof (value as FileLike).size !== 'number') {
+    if (typeof value !== 'object' || isPlainObject(value) || !Number.isSafeInteger((value as FileLike).size) || (value as FileLike).size < 0) {
       return { valid: false, errors: [{ message: 'must be an uploaded file' }] }
     }
 
     const file = value as FileLike
+    for (const field of ['mimetype', 'mimeType', 'originalName', 'name'] as const) {
+      const metadata = file[field]
+      if (metadata !== undefined && typeof metadata !== 'string')
+        return { valid: false, errors: [{ message: `has invalid ${field} metadata` }] }
+    }
     const errors: ValidationError[] = []
     for (const rule of this._rules) {
       const msg = rule(file)

@@ -110,7 +110,7 @@ function isValidTimestampInput(value: unknown): boolean {
     return !Number.isNaN(value.getTime())
 
   if (typeof value === 'number')
-    return Number.isFinite(value) && value >= 0
+    return Number.isFinite(value) && value >= 0 && !Number.isNaN(new Date(value).getTime())
 
   if (typeof value !== 'string')
     return false
@@ -121,7 +121,7 @@ function isValidTimestampInput(value: unknown): boolean {
 
   // Epoch as a string, seconds or milliseconds.
   if (/^\d+$/.test(trimmed))
-    return true
+    return isValidTimestampInput(Number(trimmed))
 
   if (SQL_DATETIME.test(trimmed))
     return !Number.isNaN(new Date(trimmed.replace(' ', 'T')).getTime())

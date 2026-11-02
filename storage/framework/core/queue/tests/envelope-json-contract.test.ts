@@ -613,14 +613,16 @@ describe('no dispatch path in @stacksjs/queue hand-stringifies an envelope (#228
     }
   })
 
-  it('the remaining writers of jobs.payload only re-queue a payload the guard already passed', () => {
+  it('every jobs.payload writer uses the envelope guard or requeues a stored payload', () => {
     const writers = files.filter(f => f.text.includes('insertInto(\'jobs\')')).map(f => f.name).sort()
 
     // `worker.ts` (operator retry of a failed job) and `dead-letter.ts` (DLQ
     // retry) re-enqueue a string read back OUT of the database — `JSON.parse`
     // produced it, so it can hold neither a BigInt nor a cycle, and there is
     // nothing for the guard to catch. Any other name appearing here is a new
-    // dispatch path that has not been through it.
-    expect(writers).toEqual(['action.ts', 'dead-letter.ts', 'job.ts', 'utils.ts', 'worker.ts'])
+    // dispatch path that must use it. The scheduler's transactional writer
+    // uses the same guarded builder as storeJob.
+    expect(writers).toEqual(['action.ts', 'dead-letter.ts', 'job.ts', 'scheduler-persistence.ts', 'utils.ts', 'worker.ts'])
+    expect(files.find(f => f.name === 'scheduler-persistence.ts')?.text).toContain('buildScheduledJobRow(jobName, options)')
   })
 })
