@@ -1,5 +1,5 @@
 import type { CatalogAdapter, CatalogCategory, CatalogFetchOptions, CatalogImage, CatalogPage, CatalogProduct, CatalogVariant, CatalogWarning, FetchLike, MappedProduct } from './types'
-import { slug } from '@stacksjs/strings'
+import { slugify } from '@stacksjs/slug'
 import { CatalogFetchError, fetchJson, normalizeStoreUrl } from './http'
 import { currencyExponent, numberToMinor, PriceFormatError } from './money'
 import { optionalString } from './text'
@@ -183,7 +183,7 @@ function categoriesOf(raw: ShopwareProductPayload): CatalogCategory[] {
   // The SEO category is the merchant's main one for this sales channel.
   for (const entry of [raw.seoCategory, ...(raw.categories ?? [])]) {
     const name = nameOf(entry)
-    const key = name ? slug(name) : ''
+    const key = name ? slugify(name) : ''
     if (!name || !key || seen.has(key))
       continue
     seen.add(key)
@@ -294,7 +294,7 @@ export function mapShopwareProduct(raw: ShopwareProductPayload, context: Shopwar
       source: 'shopware',
       externalId,
       name,
-      handle: slug(name),
+      handle: slugify(name),
       descriptionHtml: translated(raw, 'description'),
       vendor: nameOf(raw.manufacturer),
       categories: categoriesOf(raw),

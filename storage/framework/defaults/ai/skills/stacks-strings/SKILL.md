@@ -196,7 +196,10 @@ Extensive built-in character map covering:
 - Vietnamese diacritics
 - Currency symbols ($, EUR, GBP, YEN, etc.)
 - Special characters (trademark, copyright, etc.)
-- An en dash (U+2013) becomes a hyphen and so separates words; an em dash is still removed (#3112)
+- Any dash (hyphen, en dash, em dash, figure dash) separates words, as in ts-slug
+- `slug()` keeps ASCII only, which suits identifiers such as a cloud resource name. For a
+  content URL use `slugify` or `uniqueSlug` from `@stacksjs/slug` (ts-slug), which keeps
+  the letters of a script it cannot romanize: `日本茶` stays `日本茶` there and is `""` here
 
 ### Locale Support
 Locale-specific character mappings for: `bg`, `de`, `es`, `fr`, `pt`, `uk`, `vi`, `da`, `nb`, `it`, `nl`, `sv`.

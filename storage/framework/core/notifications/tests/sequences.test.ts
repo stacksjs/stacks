@@ -12,6 +12,18 @@ const steps = [
 ]
 
 describe('quiet hours', () => {
+  test('a repeated end time resolves to the next eligible instant, never the past', () => {
+    const quiet = { start: '00:00', end: '01:30', timeZone: 'America/New_York' }
+    const at = new Date('2026-11-01T06:15:00Z')
+    expect(isQuietTime(at, quiet)).toBe(true)
+    expect(nextSendableTime(at, quiet).toISOString()).toBe('2026-11-01T06:30:00.000Z')
+    expect(sequenceTimeline([{ type: 'email' }], at, { quietHours: quiet })[0]?.at.toISOString()).toBe('2026-11-01T06:30:00.000Z')
+  })
+
+  test('a skipped quiet-hours end releases at the first valid non-quiet minute', () => {
+    const quiet = { start: '21:00', end: '02:30', timeZone: 'America/New_York' }
+    expect(nextSendableTime(new Date('2026-03-08T05:15:00Z'), quiet).toISOString()).toBe('2026-03-08T07:00:00.000Z')
+  })
   test('an overnight window covers the evening and the early morning, in the zone given', () => {
     // 19:30 UTC is 21:30 in Berlin in summer (CEST, +2).
     expect(isQuietTime(new Date('2026-07-01T19:30:00Z'), berlin)).toBe(true)

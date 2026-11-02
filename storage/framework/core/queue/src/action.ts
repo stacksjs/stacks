@@ -1,5 +1,5 @@
+import { resolveQueueDriver } from './driver'
 import type { JobOptions } from '@stacksjs/types'
-import { env as envVars } from '@stacksjs/env'
 import { assertEnvelopeSerializable, createEnvelope, serializeEnvelope } from './envelope'
 import { runNamedAction } from './action-runner'
 
@@ -7,7 +7,7 @@ let testingModule: Promise<typeof import('./testing')> | undefined
 let databaseModule: Promise<typeof import('@stacksjs/database/runtime')> | undefined
 
 function getQueueDriver(): string {
-  return envVars.QUEUE_DRIVER || 'sync'
+  return resolveQueueDriver()
 }
 
 /**

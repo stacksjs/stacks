@@ -440,3 +440,6 @@ export function assertSafeOperator(op: unknown, context?: string): asserts op is
 // builder goes through this module, so no future entry point can reach a write
 // before the location is known.
 setConfig({ snapshotDir: 'storage/framework/database' })
+
+export { InvalidCursorError, keysetPage } from './keyset-pagination'
+export type { KeysetOrder, KeysetPage, KeysetValue } from './keyset-pagination'

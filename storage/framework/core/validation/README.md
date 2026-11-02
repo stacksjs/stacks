@@ -22,6 +22,8 @@ import { validate } from '@stacksjs/validation'
 
 To view the full documentation, please visit [<https://stacksjs.com/validatio>n](https://stacksjs.com/validation).
 
+File validators require an uploaded file object with a nonnegative safe integer byte size and string metadata when present. Plain JSON upload lookalikes and malformed metadata are rejected. Bounded enum and ID selections enforce their minimum after deduplication; their maximum also bounds the raw input. Numeric timestamps must be finite, nonnegative, and within JavaScript's valid date range, including numeric strings.
+
 ## 🧪 Testing
 
 ```bash

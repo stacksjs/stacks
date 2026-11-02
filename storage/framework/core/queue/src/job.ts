@@ -1,3 +1,4 @@
+import { resolveQueueDriver } from './driver'
 /**
  * Stacks Job Helper
  *
@@ -7,7 +8,6 @@
 
 import { basename } from 'node:path'
 import { appPath, frameworkPath } from '@stacksjs/path'
-import { env as envVars } from '@stacksjs/env'
 import { enqueueAfterCommit, isInTransaction } from '@stacksjs/database/runtime'
 import type { Job } from './action'
 import { moveToDeadLetter } from './dead-letter'
@@ -28,7 +28,7 @@ function loadTraceModule(): Promise<typeof import('@stacksjs/router')> {
 }
 
 function getQueueDriver(): string {
-  return envVars.QUEUE_DRIVER || 'sync'
+  return resolveQueueDriver()
 }
 
 /**

@@ -1,4 +1,4 @@
-import { localDateTime, zonedTimeToUtc } from '@stacksjs/datetime'
+import { localDateTime, zonedTimeToUtc, zoneOffsetMinutes } from '@stacksjs/datetime'
 
 /**
  * Sequences: a list of steps run one after another for one person, with
@@ -98,7 +98,23 @@ export function nextSendableTime(at: Date, quiet: QuietHours | null | undefined)
   // An overnight window that started this evening ends tomorrow morning;
   // otherwise it ends later the same local day.
   const endDay = start > clockMinutes(quiet.end, 'end') && now >= start ? addDays(clock.date, 1) : clock.date
-  return zonedTimeToUtc(`${endDay}T${quiet.end}`, clock.timeZone)
+  const candidate = zonedTimeToUtc(`${endDay}T${quiet.end}`, clock.timeZone)
+  if (candidate >= at && zoneOffsetMinutes(at, clock.timeZone) === zoneOffsetMinutes(candidate, clock.timeZone))
+    return candidate
+
+  // A fold can put the compatible end in the past; a gap can put it later
+  // than the first eligible minute. Walk actual minutes only on transitions.
+  const formatter = new Intl.DateTimeFormat('en-US', { timeZone: clock.timeZone, hourCycle: 'h23', hour: '2-digit', minute: '2-digit' })
+  const end = clockMinutes(quiet.end, 'end')
+  const limit = at.getTime() + 48 * 60 * 60_000
+  for (let time = Math.floor(at.getTime() / 60_000) * 60_000 + 60_000; time <= limit; time += 60_000) {
+    const parts = formatter.formatToParts(new Date(time))
+    const minutes = Number(parts.find(part => part.type === 'hour')?.value) * 60
+      + Number(parts.find(part => part.type === 'minute')?.value)
+    const quietNow = start < end ? minutes >= start && minutes < end : minutes >= start || minutes < end
+    if (!quietNow) return new Date(time)
+  }
+  throw new RangeError('Cannot resolve the next non-quiet minute')
 }
 
 function waitMinutes(step: SequenceStepLike): number {

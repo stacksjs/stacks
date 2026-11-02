@@ -15,6 +15,13 @@ const rule = schema.timestamp()
 const valid = async (value: unknown) => (await rule.validate(value)).valid
 
 describe('schema.timestamp', () => {
+  it('rejects numeric epochs outside the supported Date range', async () => {
+    for (const value of [1e100, '9'.repeat(400), 8_640_000_000_000_001, '8640000000000001', Number.POSITIVE_INFINITY, Number.NaN])
+      expect(await valid(value)).toBe(false)
+    expect(await valid(8_640_000_000_000_000)).toBe(true)
+    expect(await valid('8640000000000000')).toBe(true)
+    expect(await valid(0)).toBe(true)
+  })
   it('accepts what the ORM writes back from SQLite', async () => {
     expect(await valid('2026-08-14 19:12:33')).toBe(true)
     expect(await valid('2026-08-14 19:12:33.482')).toBe(true)

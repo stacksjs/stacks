@@ -36,11 +36,7 @@ describe('scheduler run-marker persistence (#1984)', () => {
       expect(mod).toContain('CREATE TABLE IF NOT EXISTS scheduled_job_runs')
       expect(mod).toContain('job_name VARCHAR(255) PRIMARY KEY')
     })
-    it('upserts via portable delete-then-insert (no dialect-specific UPSERT)', () => {
-      const fn = mod.slice(mod.indexOf('export async function persistLastRun'))
-      expect(fn).toContain('.deleteFrom(\'scheduled_job_runs\')')
-      expect(fn).toContain('.insertInto(\'scheduled_job_runs\')')
-    })
+
   })
 
   describe('scheduler wiring', () => {
@@ -49,8 +45,8 @@ describe('scheduler run-marker persistence (#1984)', () => {
       expect(sched).toContain('const lastRun = await loadPersistedLastRun(job.name)')
       expect(sched).toMatch(/schedulerState\.jobs\.set\(job\.name, \{[\s\S]*?lastRun,/)
     })
-    it('persists the run marker when a job is dispatched', () => {
-      expect(sched).toContain('await persistLastRun(name, state.lastRun)')
+    it('commits the run marker together with the queued job', () => {
+      expect(sched).toContain('await storeScheduledRun(name, when,')
     })
   })
 })

@@ -41,3 +41,18 @@ describe('uniqueSlug', () => {
     expect([...claimed]).toEqual(['trail-runner', 'trail-runner-2'])
   })
 })
+
+describe('uniqueSlug for titles ts-slug had no letters for', () => {
+  it('keeps a Japanese title instead of handing out "" and "-2"', async () => {
+    const options = { table: 'posts' as const, column: 'slug', connection: connection(new Set(['日本語のタイトル'])) }
+    expect(await uniqueSlug('日本語のタイトル', options)).toBe('日本語のタイトル-2')
+  })
+
+  it('gives a title with no letters or digits a random slug', async () => {
+    const first = await uniqueSlug('!!!', { table: 'posts', column: 'slug', connection: connection(new Set()) })
+    const second = await uniqueSlug('🎉', { table: 'posts', column: 'slug', connection: connection(new Set()) })
+    expect(first).toMatch(/^[a-z0-9]{6,8}$/)
+    expect(second).toMatch(/^[a-z0-9]{6,8}$/)
+    expect(first).not.toBe(second)
+  })
+})

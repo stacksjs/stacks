@@ -1,3 +1,5 @@
+import { dateFromParts } from './parts'
+
 /**
  * Parse a date string into a Date object.
  *
@@ -19,7 +21,7 @@ export function parse(dateStr: string, formatStr?: string, _locale?: string): Da
       if (y === undefined || m === undefined || d === undefined) {
         throw new Error(`Unable to parse date: ${dateStr}`)
       }
-      return new Date(y, m - 1, d)
+      return dateFromParts(y, m - 1, d)
     }
     const d = new Date(dateStr)
     if (Number.isNaN(d.getTime())) throw new Error(`Unable to parse date: ${dateStr}`)
@@ -55,14 +57,18 @@ export function parse(dateStr: string, formatStr?: string, _locale?: string): Da
 
   // Build a regex from the format string, capturing each token
   const fields: string[] = []
-  const regexStr = formatStr.replace(tokenRegex, (match) => {
-    const def = tokenDefs[match]
-    if (def) {
-      fields.push(def.field)
-      return def.regex
-    }
-    return match
-  })
+  const escape = (literal: string) => literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  let regexStr = ''
+  let cursor = 0
+  for (const match of formatStr.matchAll(tokenRegex)) {
+    regexStr += escape(formatStr.slice(cursor, match.index))
+    const token = match[0]
+    const def = tokenDefs[token]!
+    fields.push(def.field)
+    regexStr += def.regex
+    cursor = match.index + token.length
+  }
+  regexStr += escape(formatStr.slice(cursor))
 
   const finalRegex = new RegExp(`^${regexStr}$`)
   const result = finalRegex.exec(dateStr)
@@ -118,9 +124,9 @@ export function parse(dateStr: string, formatStr?: string, _locale?: string): Da
     const offsetMs = sign * (tzHours * 60 + tzMinutes) * 60000
 
     // Build UTC time, then subtract the offset to get the actual instant
-    const utcMs = Date.UTC(year, month, day, hours, minutes, seconds) - offsetMs
+    const utcMs = dateFromParts(year, month, day, hours, minutes, seconds, 0, true).getTime() - offsetMs
     return new Date(utcMs)
   }
 
-  return new Date(year, month, day, hours, minutes, seconds)
+  return dateFromParts(year, month, day, hours, minutes, seconds)
 }

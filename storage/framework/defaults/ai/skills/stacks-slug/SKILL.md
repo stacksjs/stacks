@@ -76,6 +76,8 @@ interface SlugifyOptions {
 
 ## Gotchas
 - Omitting either table or column returns the base slug with no query.
+- A title with no letters or digits at all (`!!!`, an emoji) gets a random
+  eight-character slug from `uniqueSlug()`, never `""`; `slugify()` still returns `""`.
 - The check and insert are separate: keep a UNIQUE index and handle/retry an
   insert conflict. A helper cannot reserve the returned slug against a race.
 - Collision attempts are bounded; after repeated conflicts the helper returns
@@ -84,7 +86,11 @@ interface SlugifyOptions {
 - `uniqueSlug()` is async - it queries the database
 - `slugify()` is sync - no database interaction
 - Collision detection appends `-2`, `-3`, etc. (not random suffixes)
-- Unicode characters are transliterated (u → u, e → e, etc.)
+- Unicode characters are transliterated (u → u, e → e, etc.) where ts-slug's charmap
+  romanizes the script (Latin, Greek, Cyrillic, Hebrew, Arabic, Devanagari, Georgian);
+  any other script, such as Japanese, Chinese, Korean or Thai, keeps its letters
+  (`日本語のタイトル` stays as it is; percent-encoded in a URL)
+- Any dash separates words: an em or en dash becomes a hyphen
 - For string-only slugification without DB, use `slug()` from `@stacksjs/strings` instead
 - Tags and Categories both use unique slugs by default
 - Slug columns should have a unique index in the database

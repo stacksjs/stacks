@@ -236,3 +236,5 @@ export async function getRedisQueue() {
   const { RedisQueue } = await import('./drivers/redis')
   return RedisQueue
 }
+
+export { resolveQueueDriver } from './driver'

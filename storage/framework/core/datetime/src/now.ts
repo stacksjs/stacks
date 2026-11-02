@@ -1,5 +1,6 @@
 import { format } from './format'
 import { parse } from './parse'
+import { dateFromParts } from './parts'
 
 type DateInput = Date | string
 
@@ -18,10 +19,11 @@ export class DateTime {
   private date: Date
 
   constructor(date?: DateInput, formatStr?: string) {
-    if (!date) {
+    if (date === undefined) {
       this.date = new Date()
     }
     else if (date instanceof Date) {
+      if (!Number.isFinite(date.getTime())) throw new RangeError('Invalid date')
       this.date = new Date(date.getTime())
     }
     else if (formatStr) {
@@ -39,7 +41,7 @@ export class DateTime {
   }
 
   static create(year: number, month = 1, day = 1, hour = 0, minute = 0, second = 0): DateTime {
-    return new DateTime(new Date(year, month - 1, day, hour, minute, second))
+    return new DateTime(dateFromParts(year, month - 1, day, hour, minute, second))
   }
 
   static fromDate(date: Date): DateTime {
@@ -191,16 +193,16 @@ export class DateTime {
   }
 
   endOfMonth(): DateTime {
-    const d = new Date(this.date.getFullYear(), this.date.getMonth() + 1, 0, 23, 59, 59, 999)
+    const d = dateFromParts(this.date.getFullYear(), this.date.getMonth() + 1, 0, 23, 59, 59, 999)
     return new DateTime(d)
   }
 
   startOfYear(): DateTime {
-    return new DateTime(new Date(this.date.getFullYear(), 0, 1, 0, 0, 0, 0))
+    return new DateTime(dateFromParts(this.date.getFullYear(), 0, 1))
   }
 
   endOfYear(): DateTime {
-    return new DateTime(new Date(this.date.getFullYear(), 11, 31, 23, 59, 59, 999))
+    return new DateTime(dateFromParts(this.date.getFullYear(), 11, 31, 23, 59, 59, 999))
   }
 
   // ── Comparison ───────────────────────────────────────

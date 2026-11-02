@@ -39,6 +39,11 @@ export interface NotifyOptions {
    * Optional preference category — passed to the preferences lookup so
    * users can opt out of, e.g., `marketing` while staying opted in to
    * `system`. Ignored when `ignorePreferences` is true.
+   *
+   * A categorized send is one a person can unsubscribe from, so when the
+   * preferences cannot be read it is not sent: each channel's result fails
+   * with the lookup error, and the send can be retried later. An
+   * uncategorized send goes out anyway.
    */
   category?: string
 }
@@ -293,6 +298,7 @@ export async function notify(
   // Filter channels by user preferences when we have a userId to look up.
   // Default-allow: channels with no preference row recorded pass through.
   let effectiveChannels = [...new Set(channels)]
+  let unreadablePreferences: Error | undefined
   if (recipient.userId && !options.ignorePreferences) {
     try {
       effectiveChannels = await filterChannelsByPreferences(
@@ -302,14 +308,21 @@ export async function notify(
       )
     }
     catch (err) {
-      // Don't let a preferences DB hiccup take down the notification
-      // pipeline — fall back to the unfiltered list and log.
-      log.warn(`[notify] preferences filter failed, sending all channels: ${(err as Error).message}`)
+      // A categorized send (marketing, a newsletter) is what people
+      // unsubscribe from, and sending one past an opt-out is the violation
+      // whatever the cause, so it waits for a lookup that works (#3102).
+      // Anything else must not be taken down by a preferences DB hiccup.
+      const reason = err instanceof Error ? err.message : String(err)
+      if (options.category !== undefined)
+        unreadablePreferences = new Error(`[notify] not sent: the '${options.category}' preferences could not be read (${reason})`)
+      else
+        log.warn(`[notify] preferences filter failed, sending all channels: ${reason}`)
     }
   }
 
   const results = await Promise.allSettled(
     effectiveChannels.map(async (channel) => {
+      if (unreadablePreferences) throw unreadablePreferences
       switch (channel) {
         case 'email': {
           // Fail loudly when the recipient is missing the channel-specific

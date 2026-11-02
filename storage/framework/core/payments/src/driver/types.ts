@@ -14,7 +14,11 @@
  * installed or a result that only looks like success.
  */
 
-/** An amount in the currency's minor unit (cents), never a float. */
+/**
+ * An amount in the currency's ISO 4217 minor unit (cents), never a float,
+ * which is what commerce stores. A driver converts it where its provider
+ * counts differently, as Stripe does for ISK, UGX and MGA.
+ */
 export interface Money {
   amount: number
   /** ISO 4217, lower case. */

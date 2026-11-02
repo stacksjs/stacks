@@ -1,3 +1,6 @@
+import { parse } from './parse'
+import { dateFromParts } from './parts'
+
 type DateInput = Date | string
 
 interface FormatOptions {
@@ -6,10 +9,13 @@ interface FormatOptions {
 }
 
 function toDate(input: DateInput): Date {
-  if (input instanceof Date) return input
-  const d = new Date(input)
-  if (Number.isNaN(d.getTime())) throw new Error(`Invalid date: ${input}`)
-  return d
+  if (input instanceof Date) {
+    if (Number.isNaN(input.getTime())) throw new Error('Invalid date')
+    return input
+  }
+  const date = new Date(input)
+  if (Number.isNaN(date.getTime())) throw new Error(`Invalid date: ${input}`)
+  return /^\d{4}-\d{2}-\d{2}$/.test(input) ? parse(input) : date
 }
 
 function pad(n: number, len = 2): string {
@@ -38,6 +44,7 @@ function getPartsInTz(date: Date, tz: string, locale: string): {
   const numFmt = new Intl.DateTimeFormat('en-US', {
     timeZone: tz,
     year: 'numeric',
+    era: 'short',
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
@@ -49,7 +56,8 @@ function getPartsInTz(date: Date, tz: string, locale: string): {
   const parts = numFmt.formatToParts(date)
   const get = (type: string) => parts.find(p => p.type === type)?.value ?? ''
 
-  const year = Number.parseInt(get('year'), 10)
+  const displayedYear = Number.parseInt(get('year'), 10)
+  const year = get('era') === 'BC' ? 1 - displayedYear : displayedYear
   const month = Number.parseInt(get('month'), 10)
   const day = Number.parseInt(get('day'), 10)
   let hour = Number.parseInt(get('hour'), 10)
@@ -67,32 +75,8 @@ function getPartsInTz(date: Date, tz: string, locale: string): {
 
   // Compute the offset for this timezone at this instant
   // We do this by comparing the UTC time to the timezone's wall-clock time
-  const utcFmt = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'UTC',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-  })
-  const utcParts = utcFmt.formatToParts(date)
-  const getUtc = (type: string) => utcParts.find(p => p.type === type)?.value ?? ''
-  const utcDate = new Date(
-    Date.UTC(
-      Number.parseInt(getUtc('year'), 10),
-      Number.parseInt(getUtc('month'), 10) - 1,
-      Number.parseInt(getUtc('day'), 10),
-      Number.parseInt(getUtc('hour'), 10) === 24 ? 0 : Number.parseInt(getUtc('hour'), 10),
-      Number.parseInt(getUtc('minute'), 10),
-      Number.parseInt(getUtc('second'), 10),
-    ),
-  )
-  const tzDate = new Date(
-    Date.UTC(year, month - 1, day, hour, minute, second),
-  )
-  const offsetMs = tzDate.getTime() - utcDate.getTime()
+  const wallClock = dateFromParts(year, month - 1, day, hour, minute, second, 0, true)
+  const offsetMs = wallClock.getTime() - Math.floor(date.getTime() / 1000) * 1000
   const offsetMin = Math.round(offsetMs / 60000)
   const sign = offsetMin >= 0 ? '+' : '-'
   const absMin = Math.abs(offsetMin)
@@ -104,8 +88,8 @@ function getPartsInTz(date: Date, tz: string, locale: string): {
 function buildTokens(p: ReturnType<typeof getPartsInTz>): Record<string, string> {
   const hours12 = p.hour % 12 || 12
   return {
-    YYYY: String(p.year),
-    YY: String(p.year).slice(-2),
+    YYYY: pad(p.year, 4),
+    YY: pad(p.year % 100),
     MMMM: p.monthLong,
     MMM: p.monthShort,
     MM: pad(p.month),
@@ -186,8 +170,8 @@ export function format(inputDate: DateInput, formatStr = 'YYYY-MM-DD', localeOrO
   const hours12 = hours24 % 12 || 12
 
   const tokens: Record<string, string> = {
-    YYYY: String(date.getFullYear()),
-    YY: String(date.getFullYear()).slice(-2),
+    YYYY: pad(date.getFullYear(), 4),
+    YY: pad(date.getFullYear() % 100),
     MMMM: new Intl.DateTimeFormat(locale, { month: 'long' }).format(date),
     MMM: new Intl.DateTimeFormat(locale, { month: 'short' }).format(date),
     MM: pad(date.getMonth() + 1),

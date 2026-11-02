@@ -21,7 +21,8 @@
  */
 
 import { hash } from 'node:crypto'
-import { db } from '@stacksjs/database/runtime'
+import { db, lockRow, parseSqlDateTime } from '@stacksjs/database/runtime'
+import { seedStateRow } from './state-row'
 import { isMissingTableError } from './missing-table'
 
 export interface PoisonConfig {
@@ -49,11 +50,61 @@ function warnOnceAboutMissingTable(): void {
  * sha256 truncated to 32 hex chars — short enough to fit in
  * indexed columns, wide enough to avoid collisions in practice.
  */
+function serializePayload(payload: unknown): string {
+  try { return typeof payload === 'string' ? payload : JSON.stringify(payload ?? null) }
+  catch { return String(payload) }
+}
+
+/** Legacy hash API: retained so persisted v1 rows and callers keep their vectors. */
 export function hashPayload(payload: unknown): string {
-  let serialized: string
-  try { serialized = typeof payload === 'string' ? payload : JSON.stringify(payload ?? null) }
-  catch { serialized = String(payload) }
-  return hash('sha256', serialized, 'hex').slice(0, 32)
+  return hash('sha256', serializePayload(payload), 'hex').slice(0, 32)
+}
+
+function canonicalJson(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonicalJson)
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>
+    return Object.fromEntries(Object.keys(record).sort().map(key => [key, canonicalJson(record[key])]))
+  }
+  return value
+}
+
+function payloadKeys(payload: unknown): { current: string, legacy: string } {
+  // Serialize once, including any toJSON/fallback behavior, then canonicalize
+  // plain JSON rather than invoking user serializers a second time.
+  const serialized = serializePayload(payload)
+  const legacy = hash('sha256', serialized, 'hex').slice(0, 32)
+  let value: unknown = serialized
+  if (typeof payload !== 'string') {
+    try { value = JSON.parse(serialized) }
+    catch { /* Legacy non-JSON fallback remains a distinct representation. */ }
+  }
+  return { current: `v2:${hash('sha256', JSON.stringify([typeof payload, canonicalJson(value)]), 'hex').slice(0, 32)}`, legacy }
+}
+
+type QueueTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0]
+
+/** Lock the v2 row first everywhere, then absorb a matching legacy row once. */
+async function payloadState(tx: QueueTransaction, jobName: string, keys: { current: string, legacy: string }, now: string, windowMs: number): Promise<Record<string, unknown>> {
+  await seedStateRow(tx, 'job_quarantine', ['job_name', 'payload_hash'], {
+    job_name: jobName, payload_hash: keys.current, failure_count: 0, window_start: now, quarantined_at: null,
+  })
+  const current = await lockRow(tx, 'job_quarantine', { job_name: jobName, payload_hash: keys.current })
+  if (!current) throw new Error('Poison state disappeared while locked')
+  if (keys.legacy === keys.current) return current
+  const legacy = await lockRow(tx, 'job_quarantine', { job_name: jobName, payload_hash: keys.legacy })
+  if (!legacy) return current
+  const cutoff = Date.now() - windowMs
+  const active = [current, legacy].filter(row => (parseSqlDateTime(row.window_start)?.getTime() ?? 0) >= cutoff)
+  const first = active.map(row => parseSqlDateTime(row.window_start)!.getTime())
+  const merged = {
+    failure_count: active.reduce((total, row) => total + Number(row.failure_count), 0),
+    window_start: first.length ? new Date(Math.min(...first)).toISOString() : now,
+    quarantined_at: current.quarantined_at ?? legacy.quarantined_at,
+  }
+  await tx.updateTable('job_quarantine').set(merged).where('id', '=', Number(current.id)).execute()
+  await tx.deleteFrom('job_quarantine').where('id', '=', Number(legacy.id)).execute()
+  return { ...current, ...merged }
 }
 
 /**
@@ -71,59 +122,25 @@ export async function recordFailureForPoison(
 ): Promise<boolean> {
   const maxFailures = config.maxFailures ?? 5
   const windowMinutes = config.windowMinutes ?? 60
-  const payloadHash = hashPayload(payload)
+  const keys = payloadKeys(payload)
   const now = new Date()
   const nowStr = now.toISOString().slice(0, 19).replace('T', ' ')
 
   try {
-    const existing = await db
-      .selectFrom('job_quarantine')
-      .where('job_name', '=', jobName)
-      .where('payload_hash', '=', payloadHash)
-      .selectAll()
-      .executeTakeFirst() as { id: number, failure_count: number, window_start: string, quarantined_at: string | null } | undefined
-
-    if (!existing) {
-      await db.insertInto('job_quarantine').values({
-        job_name: jobName,
-        payload_hash: payloadHash,
-        failure_count: 1,
-        window_start: nowStr,
-        quarantined_at: null,
-      }).execute()
-      return false
-    }
-
-    if (existing.quarantined_at) return true // already quarantined
-
-    // If the existing window is older than the configured window,
-    // reset rather than continue accumulating (the failure burst
-    // ended; this is a fresh occurrence).
-    const windowStartMs = Date.parse(existing.window_start.replace(' ', 'T') + 'Z')
-    const ageMs = now.getTime() - windowStartMs
-    const windowMs = windowMinutes * 60 * 1000
-    if (Number.isFinite(windowStartMs) && ageMs > windowMs) {
-      await db.updateTable('job_quarantine')
-        .set({ failure_count: 1, window_start: nowStr })
-        .where('id', '=', existing.id)
-        .execute()
-      return false
-    }
-
-    const newCount = existing.failure_count + 1
-    if (newCount >= maxFailures) {
-      await db.updateTable('job_quarantine')
-        .set({ failure_count: newCount, quarantined_at: nowStr })
-        .where('id', '=', existing.id)
-        .execute()
-      return true
-    }
-
-    await db.updateTable('job_quarantine')
-      .set({ failure_count: newCount })
-      .where('id', '=', existing.id)
-      .execute()
-    return false
+    return await db.transaction(async (tx) => {
+      const row = await payloadState(tx, jobName, keys, nowStr, windowMinutes * 60_000)
+      if (row.quarantined_at) return true
+      const start = parseSqlDateTime(row.window_start)?.getTime()
+      const reset = start === undefined || now.getTime() - start >= windowMinutes * 60_000
+      const count = (reset ? 0 : Number(row.failure_count)) + 1
+      const quarantined = count >= maxFailures
+      await tx.updateTable('job_quarantine').set({
+        failure_count: count,
+        window_start: reset ? nowStr : row.window_start,
+        quarantined_at: quarantined ? nowStr : null,
+      }).where('id', '=', Number(row.id)).execute()
+      return quarantined
+    }, { sqliteMode: 'immediate' })
   }
   catch (err) {
     if (isMissingTableError(err)) {
@@ -140,7 +157,7 @@ export async function recordFailureForPoison(
  * the DLQ".
  */
 export async function isQuarantined(jobName: string, payload: unknown): Promise<boolean> {
-  const payloadHash = hashPayload(payload)
+  const keys = payloadKeys(payload)
   try {
     // Match either this exact payload hash OR the class-wide wildcard `*`
     // that `quarantineJob(name)` writes when called without a payload —
@@ -149,10 +166,13 @@ export async function isQuarantined(jobName: string, payload: unknown): Promise<
     const row = await db
       .selectFrom('job_quarantine')
       .where('job_name', '=', jobName)
-      .where('payload_hash', 'in', [payloadHash, '*'])
+      .where('payload_hash', 'in', [keys.current, keys.legacy, '*'])
       .whereNotNull('quarantined_at')
-      .select(['id'])
+      .select(['id', 'payload_hash'])
       .executeTakeFirst()
+    if (row?.payload_hash === keys.legacy) {
+      await db.transaction(tx => payloadState(tx, jobName, keys, new Date().toISOString(), 60 * 60_000), { sqliteMode: 'immediate' })
+    }
     return Boolean(row)
   }
   catch (err) {
@@ -175,30 +195,13 @@ export async function isQuarantined(jobName: string, payload: unknown): Promise<
  * quarantine without per-payload granularity.
  */
 export async function quarantineJob(jobName: string, payload?: unknown): Promise<void> {
-  const payloadHash = payload === undefined ? '*' : hashPayload(payload)
+  const keys = payload === undefined ? { current: '*', legacy: '*' } : payloadKeys(payload)
   const nowStr = new Date().toISOString().slice(0, 19).replace('T', ' ')
   try {
-    const existing = await db
-      .selectFrom('job_quarantine')
-      .where('job_name', '=', jobName)
-      .where('payload_hash', '=', payloadHash)
-      .select(['id'])
-      .executeTakeFirst() as { id: number } | undefined
-    if (existing) {
-      await db.updateTable('job_quarantine')
-        .set({ quarantined_at: nowStr })
-        .where('id', '=', existing.id)
-        .execute()
-    }
-    else {
-      await db.insertInto('job_quarantine').values({
-        job_name: jobName,
-        payload_hash: payloadHash,
-        failure_count: 0,
-        window_start: nowStr,
-        quarantined_at: nowStr,
-      }).execute()
-    }
+    await db.transaction(async (tx) => {
+      const row = await payloadState(tx, jobName, keys, nowStr, 60 * 60_000)
+      await tx.updateTable('job_quarantine').set({ quarantined_at: nowStr }).where('id', '=', Number(row.id)).execute()
+    }, { sqliteMode: 'immediate' })
   }
   catch (err) {
     if (isMissingTableError(err)) {

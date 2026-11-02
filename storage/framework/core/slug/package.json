@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/slug",
   "type": "module",
-  "version": "0.75.424",
+  "version": "0.75.426",
   "description": "The Stacks slug functionality.",
   "author": "Chris Breuer",
   "contributors": [
@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "@stacksjs/database": "workspace:*",
-    "ts-slug": "^0.1.0"
+    "ts-slug": "^0.2.1"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",

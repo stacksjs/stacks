@@ -13,11 +13,6 @@ import { resolve } from 'node:path'
 const src = (rel: string) => readFileSync(resolve(__dirname, '..', 'src', rel), 'utf-8')
 
 describe('DLQ + quarantine wiring (#1984)', () => {
-  it('isQuarantined matches the class-wide "*" wildcard, not just the exact hash', () => {
-    const poison = src('poison.ts')
-    expect(poison).toContain(`.where('payload_hash', 'in', [payloadHash, '*'])`)
-  })
-
   describe('dispatch routes quarantined jobs to the DLQ', () => {
     const job = src('job.ts')
     const start = job.indexOf('private async runDispatchPipeline')

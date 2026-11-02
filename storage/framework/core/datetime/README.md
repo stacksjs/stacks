@@ -11,6 +11,8 @@ Easily work with dates. Zero external dependencies, Carbon-inspired API.
 - Modify dates with ease (immutable operations)
 - Zero external dependencies
 
+Date-only ISO strings use local midnight consistently in `parse`, `format`, and `DateTime`. Explicit offsets continue to describe instants. Years `0000` through `0099` retain their literal year in parsing, construction, and period boundaries. Format punctuation is matched literally when parsing. An omitted `DateTime` input means now; empty strings and invalid dates throw.
+
 ## Usage
 
 ```bash

@@ -1,5 +1,5 @@
 import type { CatalogAdapter, CatalogFetchOptions, CatalogImage, CatalogPage, CatalogProduct, CatalogVariant, CatalogWarning, MappedProduct } from './types'
-import { slug } from '@stacksjs/strings'
+import { slugify } from '@stacksjs/slug'
 import { CatalogFetchError, fetchJson, normalizeStoreUrl } from './http'
 import { currencyExponent, decimalToMinor, PriceFormatError } from './money'
 import { optionalString } from './text'
@@ -96,7 +96,7 @@ export function mapShopifyProduct(raw: ShopifyProductPayload, context: ShopifyMa
   if (!name)
     throw new TypeError(`Shopify product ${externalId} has no title`)
 
-  const handle = optionalString(raw.handle) ?? slug(name)
+  const handle = optionalString(raw.handle) ?? slugify(name)
   const exponent = currencyExponent(context.currency)
   const hasOptions = !isDefaultOptionSet(raw.options)
   const optionNames = hasOptions
@@ -139,7 +139,7 @@ export function mapShopifyProduct(raw: ShopifyProductPayload, context: ShopifyMa
       handle,
       descriptionHtml: optionalString(raw.body_html),
       vendor: optionalString(raw.vendor),
-      categories: productType ? [{ name: productType, slug: slug(productType) }] : [],
+      categories: productType ? [{ name: productType, slug: slugify(productType) }] : [],
       tags: tagsOf(raw.tags),
       currency: context.currency,
       images,
