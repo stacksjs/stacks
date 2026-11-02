@@ -35,11 +35,17 @@ export function parseNumberInput(value: unknown, field: string, min: number, max
   return number
 }
 
-/** Supports form booleans without treating arbitrary text or objects as consent. */
+/**
+ * Supports form booleans without treating arbitrary text or objects as consent.
+ *
+ * `on` is what a checked checkbox sends when it has no `value` attribute, and
+ * `off` what some form libraries send for an unchecked one. Refusing them
+ * made a plain `<input type="checkbox">` a 422, and callers patched it in.
+ */
 export function parseBooleanInput(value: unknown, field: string): boolean | undefined {
   if (value === undefined) return undefined
-  if (value === true || value === 'true' || value === 1 || value === '1') return true
-  if (value === false || value === 'false' || value === 0 || value === '0') return false
+  if (value === true || value === 'true' || value === 1 || value === '1' || value === 'on') return true
+  if (value === false || value === 'false' || value === 0 || value === '0' || value === 'off') return false
   throw new InputValidationError(`${field} must be a boolean`)
 }
 

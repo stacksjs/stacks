@@ -439,7 +439,8 @@ Failures throw `InputValidationError` with `status: 422`. JSON must be an object
 text never coerces objects or silently truncates; numeric input rejects booleans,
 non-finite values and unsafe whole numbers. Optional text/number input returns
 null, and absent boolean input returns undefined. Boolean input accepts JSON
-booleans and the explicit form values `true`, `false`, `1`, `0` and their strings.
+booleans and the explicit form values `true`, `false`, `1`, `0` and their strings,
+and a checkbox's `on` and `off`.
 
 `validateModelInput` checks only supplied fields using `getDefinition()` rules.
 The action still selects writable fields, requires creation fields and validates
@@ -451,7 +452,7 @@ Root and narrow input imports share the same error constructor.
 `parseTextInput(value, field, required?, maxLength?)` rejects overlong text
 rather than truncating it. `parseEnumInput(value, field, choices)` requires
 exact string membership; it never stringifies an object or boolean.
-`storedBoolean(value, fallback)` decodes SQL/form 0/1 and false/true; the
+`storedBoolean(value, fallback)` decodes SQL/form 0/1, false/true and on/off; the
 caller explicitly chooses the fallback for missing or corrupt stored data.
 Partial model validation accepts attribute names and their snake-case column
 spelling, including camel-case definitions.

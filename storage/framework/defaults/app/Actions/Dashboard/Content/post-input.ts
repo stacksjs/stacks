@@ -59,7 +59,7 @@ function optionalId(value: unknown): number | null {
 }
 
 function booleanValue(value: unknown): boolean {
-  return storedBoolean(value === 'on' ? true : value, false)
+  return storedBoolean(value, false)
 }
 
 export function invalidPostContent(payload: PostPayload): string | null {
