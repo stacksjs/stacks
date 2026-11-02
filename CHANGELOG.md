@@ -1,5 +1,30 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.428...v0.75.429)
+
+## 🐛 Bug Fixes
+
+- **feature-flags**: rollouts spread consecutive users instead of enabling them in runs ([c686620](https://github.com/stacksjs/stacks/commit/c686620)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3128](https://github.com/stacksjs/stacks/issues/3128))
+- **events**: a priority belongs to one registration, and a pattern cannot break emit() ([1bb701c](https://github.com/stacksjs/stacks/commit/1bb701c)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3127](https://github.com/stacksjs/stacks/issues/3127))
+
+## ⚡ Performance Improvements
+
+- **auth**: resolve a request's bearer token once ([8eb66e9](https://github.com/stacksjs/stacks/commit/8eb66e9)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **datetime**: build each zoned Intl formatter once ([b42a13e](https://github.com/stacksjs/stacks/commit/b42a13e)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **orm**: resolve public route mappings through the active runtime ([ddf6ba5](https://github.com/stacksjs/stacks/commit/ddf6ba5)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **docs**: refresh the native skill catalog's auth test count ([b53d8b6](https://github.com/stacksjs/stacks/commit/b53d8b6)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.427...v0.75.428)
 
 ## 🐛 Bug Fixes
