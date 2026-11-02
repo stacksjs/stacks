@@ -198,25 +198,31 @@ function isFolderCheck(path: string) {
 }
 
 async function onlineCheck() {
-  if (await isOnline())
+  const offline = await offlineReason()
+  if (!offline)
     return
 
-  log.info('It appears you are disconnected from the internet.')
+  log.info(`It appears you are disconnected from the internet (github.com: ${offline}).`)
   log.info('Creating a new project requires a brief internet connection to download the template and install dependencies.')
   await log.flush()
   process.exit(ExitCode.FatalError)
 }
 
-async function isOnline(): Promise<boolean> {
+/**
+ * Why github.com cannot be reached, or `null` when it can. Any HTTP answer
+ * proves the network is up, a 429 or a 503 included: this used to require a
+ * 2xx, so a rate-limited HEAD told a CI runner it was offline.
+ */
+export async function offlineReason(fetcher: typeof fetch = fetch): Promise<string | null> {
   try {
-    const response = await fetch('https://github.com', {
+    await fetcher('https://github.com', {
       method: 'HEAD',
       signal: AbortSignal.timeout(3000),
     })
-    return response.ok
+    return null
   }
-  catch {
-    return false
+  catch (error) {
+    return error instanceof Error ? error.message : String(error)
   }
 }
 
