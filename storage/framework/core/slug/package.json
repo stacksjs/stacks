@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "@stacksjs/database": "workspace:*",
-    "ts-slug": "^0.1.0"
+    "ts-slug": "^0.2.0"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",

@@ -84,7 +84,11 @@ interface SlugifyOptions {
 - `uniqueSlug()` is async - it queries the database
 - `slugify()` is sync - no database interaction
 - Collision detection appends `-2`, `-3`, etc. (not random suffixes)
-- Unicode characters are transliterated (u → u, e → e, etc.)
+- Unicode characters are transliterated (u → u, e → e, etc.) where ts-slug's charmap
+  romanizes the script (Latin, Greek, Cyrillic, Hebrew, Arabic, Devanagari, Georgian);
+  any other script, such as Japanese, Chinese, Korean or Thai, keeps its letters
+  (`日本語のタイトル` stays as it is; percent-encoded in a URL)
+- Any dash separates words: an em or en dash becomes a hyphen
 - For string-only slugification without DB, use `slug()` from `@stacksjs/strings` instead
 - Tags and Categories both use unique slugs by default
 - Slug columns should have a unique index in the database

@@ -41,3 +41,11 @@ describe('uniqueSlug', () => {
     expect([...claimed]).toEqual(['trail-runner', 'trail-runner-2'])
   })
 })
+
+describe('uniqueSlug for titles ts-slug had no letters for', () => {
+  it('keeps a Japanese title instead of handing out "" and "-2"', async () => {
+    const options = { table: 'posts' as const, column: 'slug', connection: connection(new Set(['日本語のタイトル'])) }
+    expect(await uniqueSlug('日本語のタイトル', options)).toBe('日本語のタイトル-2')
+  })
+
+})

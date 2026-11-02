@@ -526,7 +526,7 @@
         "@stacksjs/stx": "0.2.784",
         "@stacksjs/validation": "workspace:*",
         "ts-medium-editor": "^0.2.0",
-        "ts-slug": "^0.1.2",
+        "ts-slug": "^0.2.0",
         "ts-spreadsheets": "^0.2.5",
       },
       "devDependencies": {
@@ -1328,7 +1328,7 @@
       "version": "0.75.424",
       "dependencies": {
         "@stacksjs/database": "workspace:*",
-        "ts-slug": "^0.1.0",
+        "ts-slug": "^0.2.0",
       },
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
@@ -2141,7 +2141,7 @@
 
     "ts-security-crypto": ["ts-security-crypto@0.0.2", "", {}, "sha512-jL/9lM7FohuuDjCYpERAzvrj3FmrLD56PITJeqmER4AabW8HyMmDjWHup0XSLwjNgvN6rVHk3gLFGVmkbEKzcA=="],
 
-    "ts-slug": ["ts-slug@0.1.2", "", { "hasInstallScript": true }, "sha512-/0uzIGb8OkLQzv38kjB1LgAXgFSCxqjLl+YlaJzNlYnZyfH3/r/YLiRoyIME/YPXrt/iks/nGBABC6QDClGJkA=="],
+    "ts-slug": ["ts-slug@0.2.0", "", { "hasInstallScript": true }, "sha512-PxnpXhf66coorU47/HafdkY7R5by6DNVyNBSxpc5PnpbWLKoWwMRj4yaf2KztGJ83VCIVjToE41yndg6Qd7EdA=="],
 
     "ts-spreadsheets": ["ts-spreadsheets@0.2.5", "", { "hasInstallScript": true, "bin": { "spreadsheets": "./dist/bin/cli.js" } }, "sha512-/kJAo6KtTojLWMuTGLh8WMCws9Dh2LOuKfR0IHUFThvI3WlZNiLW0Exii/saJ3F1SjKb0ncQzcQ8JjTKv30Ruw=="],
 
