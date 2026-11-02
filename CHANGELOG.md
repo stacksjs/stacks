@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.418...v0.75.419)
+
+## 🐛 Bug Fixes
+
+- keep component templates with the installed package ([2c280aa](https://github.com/stacksjs/stacks/commit/2c280aa)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.417...v0.75.418)
 
 ## 🐛 Bug Fixes
