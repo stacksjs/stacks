@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.436...v0.75.437)
+
+## 🐛 Bug Fixes
+
+- **testing**: flush readiness before an immediate service exit ([28e241e](https://github.com/stacksjs/stacks/commit/28e241e)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.435...v0.75.436)
 
 ## 🐛 Bug Fixes
