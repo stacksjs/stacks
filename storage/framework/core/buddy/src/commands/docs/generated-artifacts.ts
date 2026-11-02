@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { assertFrameworkRepo } from './framework-repo'
 // Type-only: erased at compile time, so it costs nothing at runtime.
-import type { OpenApiDocument } from '@stacksjs/api'
+import type { OpenApiDocument, OpenApiOperation } from '@stacksjs/api'
 
 /**
  * The generators live in a sibling package, reached by a relative path that
@@ -40,12 +40,14 @@ export function validateOpenApi(document: OpenApiDocument): string[] {
   if (paths.length < 10) errors.push('OpenAPI document has fewer than 10 registered paths')
   const operationIds = new Set<string>()
   for (const [route, item] of paths) {
-    for (const [method, operation] of Object.entries(item)) {
+    for (const method of ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace']) {
+      const operation = item[method] as OpenApiOperation | undefined
+      if (!operation) continue
       if (!operation.operationId) errors.push(`${method.toUpperCase()} ${route}: operationId is missing`)
       else if (operationIds.has(operation.operationId)) errors.push(`${method.toUpperCase()} ${route}: duplicate operationId ${operation.operationId}`)
       else operationIds.add(operation.operationId)
-      for (const parameter of operation.parameters || []) {
-        if (parameter.in === 'path' && !parameter.required) errors.push(`${method.toUpperCase()} ${route}: path parameter ${parameter.name} must be required`)
+      for (const parameter of [...(item.parameters ?? []), ...(operation.parameters ?? [])]) {
+        if ('in' in parameter && parameter.in === 'path' && !parameter.required) errors.push(`${method.toUpperCase()} ${route}: path parameter ${parameter.name} must be required`)
       }
     }
   }

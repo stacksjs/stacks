@@ -1,5 +1,25 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.437...v0.75.438)
+
+## ✨ Features
+
+- **desktop**: TestFlight releases with an auto-incrementing build number ([d1506d8](https://github.com/stacksjs/stacks/commit/d1506d8)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **api**: enforce generated client and schema contracts ([328c2ca](https://github.com/stacksjs/stacks/commit/328c2ca)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **docs**: refresh the native skill catalog test counts ([b7fdc6b](https://github.com/stacksjs/stacks/commit/b7fdc6b)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **deps**: pin Pantry 0.11.161 to match the ts-pantry floor ([e41b63e](https://github.com/stacksjs/stacks/commit/e41b63e)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **deps**: require ts-pantry 0.11.161 for the TestFlight helpers ([a7fc128](https://github.com/stacksjs/stacks/commit/a7fc128)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.436...v0.75.437)
 
 ## 🐛 Bug Fixes

@@ -361,6 +361,22 @@ buddy desktop:apple:publish    # validate or upload the package to App Store Con
 buddy desktop:probe            # measure what a Craft window offers interactive/game content
 ```
 
+A TestFlight release from the developer's Mac needs only the App Store Connect
+key (`APP_STORE_CONNECT_API_KEY*`, encrypted in `.env.production`):
+
+```bash
+APP_ENV=production buddy desktop:apple:publish --build-number next --testflight 'My Team'
+```
+
+`--build-number next` asks App Store Connect for the app's highest build and
+uses one more, so every upload is `<version> (n + 1)` with no counter kept
+anywhere. `--testflight` waits for processing, gives the build to the named beta
+groups (they must already exist; an automatic-distribution internal group gets it
+without an explicit add), and sets "What to Test" from `--whats-new` or the
+commit subjects since the last tag. Signing identities not named by a variable
+are read from the keychain for the team, and a missing
+`APPLE_PROVISIONING_PROFILE` is downloaded from App Store Connect.
+
 `desktop:probe` opens a visible Craft window (not `--headless`, which stops
 requestAnimationFrame) and measures WebGL2/WebGPU, frame pacing under load,
 input and audio latency, the Gamepad API, fullscreen and pointer lock.
