@@ -1,5 +1,29 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.419...v0.75.422)
+
+## ✨ Features
+
+- **testing**: observe foreground browser readiness ([0d63c7b](https://github.com/stacksjs/stacks/commit/0d63c7b)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **desktop**: macos.agent.resources ships data files a compiled agent reads ([45ae022](https://github.com/stacksjs/stacks/commit/45ae022)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- regenerate testing evidence catalog ([585debe](https://github.com/stacksjs/stacks/commit/585debe)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **deps**: consume public STX prefetch declarations ([555e9d6](https://github.com/stacksjs/stacks/commit/555e9d6)) _(by Chris Breuer <chris@stacksjs.com>)_
+- release v0.75.421 ([e856b32](https://github.com/stacksjs/stacks/commit/e856b32)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: raise the stx family to 0.2.783 ([d9c037c](https://github.com/stacksjs/stacks/commit/d9c037c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- release v0.75.420 ([6447882](https://github.com/stacksjs/stacks/commit/6447882)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: raise the stx family to 0.2.782 ([456f10d](https://github.com/stacksjs/stacks/commit/456f10d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.420...v0.75.421)
 
 ## ✨ Features
