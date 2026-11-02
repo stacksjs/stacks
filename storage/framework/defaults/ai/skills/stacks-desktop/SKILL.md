@@ -133,6 +133,13 @@ Write `app/Desktop/launcher.ts` and `build:desktop` compiles that instead, the
 same way anything under `app/` overrides its framework default. `DESKTOP_URL`
 and `APP_URL` then become optional, because the launcher decides what to open.
 
+Every launcher, the framework's or yours, compiles through
+`desktopLauncherCompileArgs()` to bytecode as an ES module: parsing the bundle
+was most of a launcher's start (Browser's agent reached its window host in
+379 ms as source, 146 ms as bytecode), for an executable about a quarter
+larger. Pass `bytecode: false` only to compare. Compile any helper binary of
+your own with the same function rather than hand-written `bun build` flags.
+
 ```ts
 // app/Desktop/launcher.ts - compiled to Contents/MacOS/<AppName>
 import { dirname, join } from 'node:path'
