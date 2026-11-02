@@ -29,7 +29,7 @@ import { tokenDate, tokenTimestamps } from './token-dates'
 import { schedulePasswordRehash } from './password-rehash'
 import { IMPERSONATION_HEADER } from './impersonation'
 import type { ImpersonationGrant } from './impersonation'
-import { authenticatedImpersonationService, resolveRequestImpersonation } from './impersonation-auth'
+import { authenticatedImpersonationService, clearRequestImpersonation, resolveRequestImpersonation } from './impersonation-auth'
 
 interface VerifiedCredentials {
   user: UserModel
@@ -542,10 +542,16 @@ export class Auth {
    */
   public static async user(): Promise<UserModel | undefined> {
     const state = authStateOrNull()
-    if (state?.authUser)
+    const impersonating = getCurrentRequest()?.headers.has(IMPERSONATION_HEADER) ?? false
+    if (state?.authUser && !impersonating)
       return state.authUser
+    if (impersonating) {
+      if (state) state.authUser = undefined
+      clearRequestImpersonation()
+    }
 
     const bearerToken = this.getBearerToken()
+    if (impersonating && !bearerToken) return undefined
     // Public pages have no middleware to prime this state. Resolve the same
     // credentials as guarded pages, without falling back from an invalid
     // explicit token to a different user's session.
@@ -553,7 +559,7 @@ export class Auth {
     const user = bearerToken
       ? await this.getUserFromToken(bearerToken)
       : sessionId ? await sessionUser(sessionId) : undefined
-    if (user && state)
+    if (user && state && !impersonating)
       state.authUser = user
 
     return user
@@ -810,18 +816,23 @@ export class Auth {
    * decryptTokenId was removed (stacksjs/stacks#1867 follow-up).
    */
   public static async getUserFromToken(token: string): Promise<UserModel | undefined> {
+    const impersonating = getCurrentRequest()?.headers.has(IMPERSONATION_HEADER) ?? false
+    // A viewed subject is not the bearer's owner. Its independently revocable
+    // authority must be rechecked, and a denial must not retain trusted context.
+    clearRequestImpersonation()
     // One request, one lookup per bearer. A request-local answer must not
     // outlive the credential's own expiry, the same rule `currentAccessToken`
     // applies to its cached row.
     const state = authStateOrNull()
+    if (state && impersonating) state.authUser = undefined
     const resolved = state?.resolvedToken
-    if (resolved && resolved.token === token && !resolved.accessToken.revoked
+    if (!impersonating && resolved && resolved.token === token && !resolved.accessToken.revoked
       && (resolved.accessToken.expiresAt == null || resolved.accessToken.expiresAt.getTime() > Date.now()))
       return resolved.user
 
     const user = await this.resolveUserFromToken(token)
     if (state) {
-      state.resolvedToken = user && state.currentToken
+      state.resolvedToken = !impersonating && user && state.currentToken
         ? { token, user, accessToken: state.currentToken }
         : undefined
     }

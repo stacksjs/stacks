@@ -68,6 +68,51 @@ try {
   assert.equal(audit.length, 1, 'denied requests never acquire a subject identity')
   const detail = await db.selectFrom('auth_privileged_audits').select('details').where('event', '=', 'accessed').executeTakeFirst()
   assert.equal(JSON.parse(String(detail?.details)).workspaceId, 'workspace-55')
+  // Reuse the exact scoped request after authority changes: a bearer cache
+  // must never turn a short-lived viewed identity into the actor's identity.
+  await db.updateTable('oauth_access_tokens').set({ revoked: false }).where('id', '=', actor.accessToken.id).execute()
+  for (const change of ['ended', 'expired', 'role', 'eligibility', 'actor-revoked', 'disabled', 'header', 'missing-bearer'] as const) {
+    const grant = await runWithRequest(req(actor.plainTextToken), () => Auth.startImpersonation(2, `Investigate live ${change} authority`))
+    const request = req(actor.plainTextToken, 'GET', grant.credential)
+    await runWithRequest(request, async () => {
+      assert.equal(Number((await Auth.getUserFromToken(actor.plainTextToken))?.id), 2)
+      assert.equal(Number((await Auth.user())?.id), 2)
+      assert.equal(requestImpersonation()?.subjectId, 2)
+      if (change === 'ended')
+        await runWithRequest(req(actor.plainTextToken), () => Auth.endImpersonation(grant.credential))
+      else if (change === 'expired')
+        await db.updateTable('auth_impersonations').set({ expires_at: Date.now() - 1 }).where('id', '=', grant.session.id).execute()
+      else if (change === 'role')
+        await db.deleteFrom('user_roles').where('user_id', '=', 1).execute()
+      else if (change === 'eligibility')
+        config.auth.impersonation!.eligible = id => id !== 2
+      else if (change === 'actor-revoked')
+        await db.updateTable('oauth_access_tokens').set({ revoked: true }).where('id', '=', actor.accessToken.id).execute()
+      else if (change === 'disabled')
+        config.auth.impersonation!.enabled = false
+      else if (change === 'header')
+        request.headers.set('x-stacks-impersonation', `stacks_imp_${'0'.repeat(80)}`)
+      else
+        request.headers.delete('authorization')
+      const before = (await db.selectFrom('auth_privileged_audits').where('event', '=', 'accessed').execute()).length
+      assert.equal(await Auth.getUserFromToken(actor.plainTextToken), undefined, `live ${change} authority must be rechecked`)
+      assert.equal(await Auth.user(), undefined, `the user facade must recheck ${change} authority`)
+      assert.equal(requestImpersonation(), null, `denied ${change} authority must clear trusted context`)
+      assert.equal((await db.selectFrom('auth_privileged_audits').where('event', '=', 'accessed').execute()).length, before)
+    })
+    if (change === 'role') await db.insertInto('user_roles').values({ user_id: 1, role_id: 1 }).execute()
+    if (change === 'actor-revoked') await db.updateTable('oauth_access_tokens').set({ revoked: false }).where('id', '=', actor.accessToken.id).execute()
+    config.auth.impersonation!.eligible = eligible
+    config.auth.impersonation!.enabled = true
+  }
+  const exiting = await runWithRequest(req(actor.plainTextToken), () => Auth.startImpersonation(2, 'Inspect account identity transition'))
+  const exitRequest = req(actor.plainTextToken, 'GET', exiting.credential)
+  await runWithRequest(exitRequest, async () => {
+    assert.equal(Number((await Auth.user())?.id), 2)
+    exitRequest.headers.delete('x-stacks-impersonation')
+    assert.equal(Number((await Auth.user())?.id), 1, 'the ordinary bearer still belongs to its actor')
+    assert.equal(requestImpersonation(), null)
+  })
   console.log('impersonation authentication OK')
 }
 finally { await releaseOrm(); await resetDatabaseConnection() }

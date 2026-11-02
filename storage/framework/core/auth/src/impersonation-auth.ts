@@ -12,6 +12,12 @@ export function requestImpersonation(): ImpersonationSession | null {
   return request?.[CONTEXT] as ImpersonationSession | undefined ?? null
 }
 
+/** Forget a previously resolved support context before revalidating authority. */
+export function clearRequestImpersonation(): void {
+  const request = getCurrentRequest() as unknown as Record<symbol, unknown> | undefined
+  if (request) delete request[CONTEXT]
+}
+
 /** The actor and session here have already passed ordinary token validation. */
 export function authenticatedImpersonationService(actorId: number, actorSessionId: string) {
   return createImpersonationService(createDatabaseImpersonationStore(), {
@@ -38,6 +44,7 @@ export function authenticatedImpersonationService(actorId: number, actorSessionI
 export async function resolveRequestImpersonation(actorId: number, actorSessionId: string): Promise<ImpersonationSession | null> {
   const request = getCurrentRequest()
   if (!request) return null
+  clearRequestImpersonation()
   const credential = request.headers.get(IMPERSONATION_HEADER)
   if (!credential) return null
   const session = await authenticatedImpersonationService(actorId, actorSessionId).resolve(credential, {
