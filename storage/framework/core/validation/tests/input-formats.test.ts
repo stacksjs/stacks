@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { InputValidationError, parseBooleanInput, parseNumberInput, parsePositiveId, storedBoolean } from '../src/input'
+import { InputValidationError, parseBooleanInput, parseNumberInput, parsePositiveId, parseTextInput, storedBoolean } from '../src/input'
 
 test('a checkbox\'s on and off are booleans', () => {
   expect(parseBooleanInput('on', 'remember')).toBe(true)
@@ -24,4 +24,9 @@ test('numbers are decimal, and text that is not one says so', () => {
   for (const value of ['0x10', '0b11', '0o7', 'abc', '12abc', 'Infinity'])
     expect(() => parseNumberInput(value, 'price', 0, 1000)).toThrow('price must be a number')
   expect(() => parseNumberInput('2000', 'price', 0, 1000)).toThrow('price is out of range')
+})
+
+test('a text limit counts characters, not UTF-16 units', () => {
+  expect(parseTextInput('😀'.repeat(200), 'name', true, 255)).toBe('😀'.repeat(200))
+  expect(() => parseTextInput('😀'.repeat(256), 'name', true, 255)).toThrow('name is too long')
 })

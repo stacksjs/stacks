@@ -451,7 +451,8 @@ Root and narrow input imports share the same error constructor.
 ## Reusable boundary and stored-value rules
 
 `parseTextInput(value, field, required?, maxLength?)` rejects overlong text
-rather than truncating it. `parseEnumInput(value, field, choices)` requires
+rather than truncating it; `maxLength` counts characters, as a database column
+does, not UTF-16 units. `parseEnumInput(value, field, choices)` requires
 exact string membership; it never stringifies an object or boolean.
 `storedBoolean(value, fallback)` decodes SQL/form 0/1, false/true and on/off; the
 caller explicitly chooses the fallback for missing or corrupt stored data.

@@ -25,7 +25,9 @@ export function parseTextInput(value: unknown, field: string, required = false, 
   if (value == null && !required) return null
   if (typeof value !== 'string') throw new InputValidationError(`${field} must be text`)
   const text = value.trim()
-  if (maxLength !== undefined && text.length > maxLength) throw new InputValidationError(`${field} is too long`)
+  // Characters, as a database column counts them: `.length` counts UTF-16
+  // units, so 200 emoji were 400 and failed a 255-character limit.
+  if (maxLength !== undefined && [...text].length > maxLength) throw new InputValidationError(`${field} is too long`)
   if (!text && required) throw new InputValidationError(`${field} is required`)
   return text || null
 }
