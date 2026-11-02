@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.427...v0.75.428)
+
+## 🐛 Bug Fixes
+
+- **deps**: record the forms datetime workspace dependency ([5adbba3](https://github.com/stacksjs/stacks/commit/5adbba3)) _(by Chris <chris@stacksjs.com>)_ ([#2958](https://github.com/stacksjs/stacks/issues/2958))
+- **ci**: admit release source outside the main backlog ([0c17572](https://github.com/stacksjs/stacks/commit/0c17572)) _(by Chris <chris@stacksjs.com>)_ ([#3124](https://github.com/stacksjs/stacks/issues/3124))
+
+## 🎉 Miscellaneous
+
+- Merge remote-tracking branch 'origin/main' into codex/settlers-release-ci-admission ([7df360f](https://github.com/stacksjs/stacks/commit/7df360f)) _(by Chris <chris@stacksjs.com>)_
+- Merge remote-tracking branch 'origin/main' into codex/settlers-release-ci-admission ([7babfc3](https://github.com/stacksjs/stacks/commit/7babfc3)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.426...v0.75.427)
 
 ## 🐛 Bug Fixes
