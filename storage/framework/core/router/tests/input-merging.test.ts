@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+import { schema } from '@stacksjs/validation'
 import { file } from '@stacksjs/validation/file-validator'
 import { createStacksRouter, validateActionInput } from '../src/stacks-router'
 
@@ -121,5 +122,35 @@ describe('file fields', () => {
 
     expect(response.status).toBe(200)
     expect(uploaded).toEqual(['me.png'])
+  })
+})
+
+describe('validation messages', () => {
+  it('read as one sentence with the field\'s label', async () => {
+    const router = createStacksRouter()
+    router.post('/messages', {
+      skipCsrf: true,
+      validations: {
+        title: { rule: schema.string().required() },
+        contact_email: { rule: schema.string().email() },
+        age: { rule: schema.number().min(18) },
+        website: { rule: schema.string().url() },
+      },
+      handle() { return { ok: true } },
+    })
+
+    const response = await router.handleRequest(new Request('http://localhost/messages', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ contact_email: 'nope', age: 3, website: 'x' }),
+    }))
+
+    expect(response.status).toBe(422)
+    expect((await response.json() as { errors: unknown }).errors).toEqual({
+      title: ['Title is required'],
+      contact_email: ['Contact email must be a valid email address'],
+      age: ['Age must be at least 18'],
+      website: ['Website must be a valid URL'],
+    })
   })
 })

@@ -3524,9 +3524,18 @@ function createValidationFieldLabel(field: string): { label: string, decorate: (
   const lowerField = field.toLowerCase()
   return {
     label,
-    decorate: (message: string) => (message.toLowerCase().startsWith(lowerField) || message.includes(label))
-      ? message
-      : `${label} ${message}`,
+    decorate: (message: string) => {
+      if (message.toLowerCase().startsWith(lowerField) || message.includes(label))
+        return message
+      // ts-validation's messages are sentences of their own ("This field is
+      // required", "Must be at least 18"), so prefixing the label gave "Title
+      // This field is required" and "Age Must be at least 18". The label takes
+      // the place of "This field", and the word after it loses its capital
+      // unless it is an acronym ("URL").
+      if (message.startsWith('This field '))
+        return `${label} ${message.slice('This field '.length)}`
+      return `${label} ${/^[A-Z][a-z]/.test(message) ? message[0]!.toLowerCase() + message.slice(1) : message}`
+    },
   }
 }
 
