@@ -460,8 +460,13 @@ jobs:
 
   homebrew:
     needs: npm
-    runs-on: macos-latest
+    # Hashing release archives and updating a formula does not execute binaries.
+    runs-on: ubuntu-latest
     steps:
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.4'
+
       - name: Checkout Repository
         uses: actions/checkout@v6
         with:
