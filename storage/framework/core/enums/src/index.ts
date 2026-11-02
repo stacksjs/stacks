@@ -81,6 +81,8 @@ export enum Action {
   BuildDesktopMacos = 'build/desktop-macos',
   /** [`build/dmg`](../../actions/src/build/dmg.ts) */
   BuildDmg = 'build/dmg',
+  /** [`build/dmg-macos`](../../actions/src/build/dmg-macos.ts) */
+  BuildDmgMacos = 'build/dmg-macos',
   /** [`build/docs`](../../actions/src/build/docs.ts) */
   BuildDocs = 'build/docs',
   /** [`build/frontend-static`](../../actions/src/build/frontend-static.ts) */

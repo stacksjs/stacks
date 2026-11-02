@@ -1,10 +1,11 @@
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { basename, dirname, join } from 'node:path'
+import { basename, join } from 'node:path'
 import process from 'node:process'
 import { log, parseOptions, runCommand } from '@stacksjs/cli'
 import { appPath, projectPath, publicPath, resourcesPath, storagePath } from '@stacksjs/path'
-import { bundleDirectoryFor, codesignArgs, describeRuntimeDuplication, looksLikeBunExecutable, notarytoolAuthArgs, renderInfoPlist, resolveDmgPackaging } from '@stacksjs/desktop-build'
+import { bundleDirectoryFor, codesignArgs, describeRuntimeDuplication, looksLikeBunExecutable, renderInfoPlist, resolveDmgPackaging } from '@stacksjs/desktop-build'
+import { imageDmg, notarizeAndStaple, notaryArguments } from './notarize'
 import { runBuildStep } from './run-build-step'
 
 /**
@@ -307,49 +308,13 @@ if (signingIdentity) {
   }
 }
 
-/**
- * Submit to Apple's notary service, wait, and staple the ticket to `target`.
- * A stapled ticket lets Gatekeeper accept the file offline; the app is
- * notarized on its own as well as in the DMG, because once someone drags it
- * out of the image only the app's own ticket travels with it.
- */
-async function notarize(target: string, what: string): Promise<void> {
-  if (!signingIdentity)
-    throw new Error('Notarizing needs a signing identity (--signing-identity or DESKTOP_SIGNING_IDENTITY): Apple only notarizes signed code.')
-  // notarytool takes a zip, dmg or pkg, not a bare .app.
-  const upload = target.endsWith('.app') ? join(scratch, `${basename(target)}.zip`) : target
-  if (upload !== target)
-    await runBuildStep(['ditto', '-c', '-k', '--keepParent', target, upload], { cwd: scratch, describe: `Zipping ${basename(target)} for notarization` })
-  log.info(`Notarizing ${what} (Apple usually answers within a few minutes)...`)
-  // `--wait` exits 0 for "Invalid" too, so the status line is what decides.
-  const submitted = Bun.spawnSync(['xcrun', 'notarytool', 'submit', upload, ...notaryAuth!, '--wait'], { stderr: 'pipe' })
-  const report = `${submitted.stdout.toString()}${submitted.stderr.toString()}`
-  const status = report.match(/status: (\w[\w ]*)/g)?.pop()?.replace('status: ', '')
-  if (submitted.exitCode !== 0 || status !== 'Accepted') {
-    console.error(report.trim())
-    const id = report.match(/id: ([0-9a-f-]{36})/)?.[1]
-    throw new Error(`Notarization of ${what} ${status ?? 'failed'}${id ? ` - see \`xcrun notarytool log ${id} ${notaryAuth!.join(' ')}\`` : ''}`)
-  }
-  await runBuildStep(['xcrun', 'stapler', 'staple', target], { cwd: dirname(target), describe: `Stapling the notarization ticket to ${what}` })
-}
-
-// A key held as PEM text (an encrypted `.env.production` value) goes to a
-// private file for this run: notarytool reads keys from disk only.
-const notaryAuth = notary && notarytoolAuthArgs('keyPem' in notary ? { ...notary, keyPath: privateKeyFile(notary.keyId, notary.keyPem) } : notary)
-
-function privateKeyFile(keyId: string, pem: string): string {
-  const directory = mkdtempSync(join(tmpdir(), 'stacks-notary-key-'))
-  const path = join(directory, `AuthKey_${keyId}.p8`)
-  writeFileSync(path, `${pem}\n`, { mode: 0o600 })
-  process.on('exit', () => rmSync(directory, { recursive: true, force: true }))
-  return path
-}
+// A key held as PEM text goes to a private file for this run (notarize.ts).
+const notaryAuth = notary && notaryArguments(notary)
+if (notaryAuth && !signingIdentity)
+  throw new Error('Notarizing needs a signing identity (--signing-identity or DESKTOP_SIGNING_IDENTITY): Apple only notarizes signed code.')
 
 if (notaryAuth)
-  await notarize(appDir, basename(appDir))
-
-// The drag-to-install target every macOS DMG is expected to have.
-symlinkSync('/Applications', join(staging, 'Applications'))
+  await notarizeAndStaple(appDir, basename(appDir), notaryAuth, scratch)
 
 const dmgPath = join(outputDir, `${appName}-${version}.dmg`)
 
@@ -361,31 +326,13 @@ if (volumeName === appName) {
   log.warn(`The volume name is the app's own name, so the bundle stages at /Volumes/${appName}/${appName}.app. That path is refused on a Mac where ${appName} is already installed; drop --volume-name / DESKTOP_VOLUME_NAME to get "${appName} ${version}".`)
 }
 
-const created = await runCommand([
-  'hdiutil', 'create',
-  '-volname', volumeName,
-  '-srcfolder', staging,
-  '-ov', '-format', 'UDZO',
-  dmgPath,
-], { cwd: staging })
-
-if (created.isErr)
-  throw new Error(`hdiutil failed to create ${dmgPath}`)
-
+// The staging folder goes after imaging, ahead of notarization, which can
+// take minutes; the exit handler above removes it again harmlessly.
+await imageDmg({ staging, volumeName, dmgPath, signingIdentity })
 rmSync(staging, { recursive: true, force: true })
-rmSync(scratch, { recursive: true, force: true })
-
-if (signingIdentity) {
-  // The image is signed too: Gatekeeper checks the DMG a person opens before
-  // it ever looks at the app inside.
-  await runBuildStep(['codesign', '--force', '--timestamp', '--sign', signingIdentity, dmgPath], {
-    cwd: outputDir,
-    describe: 'Signing the DMG',
-  })
-}
 
 if (notaryAuth) {
-  await notarize(dmgPath, 'the DMG')
+  await notarizeAndStaple(dmgPath, 'the DMG', notaryAuth, scratch)
   log.success('Notarized and stapled')
 }
 

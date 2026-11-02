@@ -395,7 +395,9 @@ export function build(buddy: CLI): void {
       log.debug('Running `buddy build:dmg` ...', options)
 
       const perf = await intro('buddy build:dmg')
-      const result = await runAction(Action.BuildDmg, options)
+      // A `macos` app in config/desktop.ts is built natively, not as the Craft web-view app.
+      const { hasMacosDesktop } = await import('@stacksjs/desktop-build')
+      const result = await runAction((await hasMacosDesktop(projectPath())) ? Action.BuildDmgMacos : Action.BuildDmg, options)
 
       if (resultFailed(result)) {
         await outro(

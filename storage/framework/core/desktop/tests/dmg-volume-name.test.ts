@@ -97,6 +97,11 @@ describe('build:dmg', () => {
     join(import.meta.dir, '..', '..', 'actions', 'src', 'build', 'dmg.ts'),
     'utf8',
   )
+  // The imaging and notarizing steps, shared with the `macos` app's dmg-macos.ts.
+  const steps = readFileSync(
+    join(import.meta.dir, '..', '..', 'actions', 'src', 'build', 'notarize.ts'),
+    'utf8',
+  )
 
   /**
    * The index of `needle`, asserting it is there.
@@ -146,8 +151,9 @@ describe('build:dmg', () => {
   it('names the volume through the resolver, never after the app', () => {
     // `-volname appName` is the bug: it stages the bundle at
     // /Volumes/<App>/<App>.app, which macOS refuses when the app is installed.
-    expect(dmg).toContain(`'-volname', volumeName`)
-    expect(dmg).not.toContain(`'-volname', appName`)
+    expect(steps).toContain(`'-volname', options.volumeName`)
+    expect(dmg).toContain('await imageDmg({ staging, volumeName, dmgPath, signingIdentity })')
+    expect(`${dmg}${steps}`).not.toContain(`'-volname', appName`)
 
     // Every packaging input arrives from one chain, so a flag and a variable
     // cannot disagree about which one a given value honours. What that chain
@@ -162,7 +168,7 @@ describe('build:dmg', () => {
 
   it('resolves the name before invoking hdiutil', () => {
     expect(indexOfExisting('} = resolveDmgPackaging({'))
-      .toBeLessThan(indexOfExisting(`'hdiutil', 'create',`))
+      .toBeLessThan(indexOfExisting('await imageDmg({'))
   })
 
   it('removes both temp directories however the process ends', () => {
@@ -198,13 +204,12 @@ describe('build:dmg', () => {
   it('still frees the space early on the success path', () => {
     // Ahead of signing and notarization, which can take minutes. `rmSync` with
     // `force` is idempotent, so the exit handler running again is harmless.
-    const created = indexOfExisting('if (created.isErr)')
-    const earlyCleanup = indexOfExisting('rmSync(staging, { recursive: true, force: true })', created)
+    const imaged = indexOfExisting('await imageDmg({')
+    const earlyCleanup = indexOfExisting('rmSync(staging, { recursive: true, force: true })', imaged)
 
-    expect(earlyCleanup, 'the success path should not wait for exit').toBeGreaterThan(created)
-    // Searched FROM the cleanup: the signing block appears earlier too, for
-    // the app bundle rather than the image.
-    expect(earlyCleanup).toBeLessThan(indexOfExisting('if (signingIdentity) {', earlyCleanup))
+    expect(earlyCleanup, 'the success path should not wait for exit').toBeGreaterThan(imaged)
+    // Searched FROM the cleanup: the app is notarized earlier too.
+    expect(earlyCleanup).toBeLessThan(indexOfExisting(`await notarizeAndStaple(dmgPath, 'the DMG'`, earlyCleanup))
   })
 })
 
@@ -259,5 +264,47 @@ describe('desktopAppVersion', () => {
   it('reaches the volume name, so the mounted image says which version it is', () => {
     const version = desktopAppVersion({ declared: '0.70.52' })
     expect(dmgVolumeName({ appName: 'SystemCleaner', version })).toBe('SystemCleaner 0.70.52')
+  })
+})
+
+/**
+ * A `macos` app (config/desktop.ts) is built natively, so `build:dmg` packages
+ * that bundle rather than the Craft web-view app, whose `build:desktop`
+ * manifest such an app never writes. Asserted against the source for the same
+ * reason as above: importing either action would run a build.
+ */
+describe('build:dmg for a macos app', () => {
+  const read = (...path: string[]) => readFileSync(join(import.meta.dir, '..', '..', ...path), 'utf8')
+  const command = read('buddy', 'src', 'commands', 'build.ts')
+  const native = read('actions', 'src', 'build', 'dmg-macos.ts')
+
+  it('is chosen by the same test build:desktop uses', () => {
+    expect(command).toContain('(await hasMacosDesktop(projectPath())) ? Action.BuildDmgMacos : Action.BuildDmg')
+    expect(read('enums', 'src', 'index.ts')).toContain(`BuildDmgMacos = 'build/dmg-macos'`)
+  })
+
+  it('rebuilds the bundle signed with the identity it was given', () => {
+    const signs = native.indexOf('process.env.DESKTOP_SIGNING_IDENTITY = signingIdentity')
+    expect(signs).toBeGreaterThan(-1)
+    expect(native.indexOf(`await import('./desktop-macos')`)).toBeGreaterThan(signs)
+  })
+
+  it('refuses to upload what Apple would refuse, before the upload', () => {
+    const checked = native.indexOf('developerIdProblem(')
+    expect(checked).toBeGreaterThan(-1)
+    expect(checked).toBeLessThan(native.indexOf('await notarizeAndStaple('))
+  })
+
+  it('notarizes the app before imaging it, then the image', () => {
+    const app = native.indexOf('await notarizeAndStaple(app,')
+    const imaged = native.indexOf('await imageDmg({ staging, volumeName, dmgPath, signingIdentity })')
+    const image = native.indexOf(`await notarizeAndStaple(dmgPath, 'the DMG'`)
+    expect(app).toBeGreaterThan(-1)
+    expect(app).toBeLessThan(imaged)
+    expect(imaged).toBeLessThan(image)
+  })
+
+  it('stages with ditto, which keeps the signature and stapled ticket', () => {
+    expect(native).toContain(`['ditto', app, join(staging,`)
   })
 })

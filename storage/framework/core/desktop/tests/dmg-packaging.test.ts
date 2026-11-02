@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { notarytoolAuthArgs, resolveDmgPackaging } from '../src'
+import { developerIdProblem, notarizationOutcome, notarytoolAuthArgs, resolveDmgPackaging } from '../src'
 
 /**
  * How `build:dmg` decides what to call and how to sign a bundle.
@@ -161,5 +161,30 @@ describe('resolveDmgPackaging', () => {
       expect(notarytoolAuthArgs({ profile: 'p' })).toEqual(['--keychain-profile', 'p'])
       expect(notarytoolAuthArgs({ keyId: 'K', issuerId: 'I', keyPath: '/k.p8' })).toEqual(['--key', '/k.p8', '--key-id', 'K', '--issuer', 'I'])
     })
+  })
+})
+
+describe('what Apple would make of a build', () => {
+  // Real `codesign -dvv` output, trimmed to the lines that decide.
+  const signed = 'CodeDirectory v=20500 size=192992 flags=0x10000(runtime) hashes=6020+7 location=embedded\nAuthority=Developer ID Application: Example (ABCDE12345)\nAuthority=Developer ID Certification Authority\nAuthority=Apple Root CA\nTimestamp=Nov 1, 2026 at 5:56:39 PM\n'
+
+  it('accepts Developer ID code under the hardened runtime with a timestamp', () => {
+    expect(developerIdProblem(signed)).toBeUndefined()
+  })
+
+  it('names each thing the notary service would refuse', () => {
+    expect(developerIdProblem('Signature=adhoc\nflags=0x10002(adhoc,runtime)')).toContain('not signed with a certificate')
+    expect(developerIdProblem('x: code object is not signed at all')).toContain('not signed with a certificate')
+    expect(developerIdProblem(signed.replace('Developer ID Application: Example', 'Apple Development: Example'))).toContain('"Apple Development: Example (ABCDE12345)"')
+    expect(developerIdProblem(signed.replace('flags=0x10000(runtime)', 'flags=0x0(none)'))).toContain('hardened runtime')
+    expect(developerIdProblem(signed.replace(/Timestamp=.*\n/, ''))).toContain('timestamp')
+  })
+
+  it('reads notarytool\'s verdict from its last status line, not its exit code', () => {
+    const accepted = 'Conducting pre-submission checks...\n  id: 0f9e8d7c-1234-4abc-9def-001122334455\n  status: In Progress\nProcessing complete\n  status: Accepted\n'
+    expect(notarizationOutcome(accepted, 0)).toEqual({ accepted: true, status: 'Accepted', id: '0f9e8d7c-1234-4abc-9def-001122334455' })
+    expect(notarizationOutcome(accepted.replace('status: Accepted', 'status: Invalid'), 0)).toMatchObject({ accepted: false, status: 'Invalid' })
+    expect(notarizationOutcome(accepted, 1).accepted).toBe(false)
+    expect(notarizationOutcome('Error: HTTP status code: 401', 69)).toEqual({ accepted: false, status: undefined, id: undefined })
   })
 })

@@ -634,6 +634,36 @@ export function notarytoolAuthArgs(credentials: { profile: string } | { keyId: s
 }
 
 /**
+ * What `xcrun notarytool submit --wait` decided. It exits 0 for "Invalid" too,
+ * so the last `status:` line is what decides; the submission id is what
+ * `notarytool log` needs to say why.
+ */
+export function notarizationOutcome(report: string, exitCode: number | null): { accepted: boolean, status?: string, id?: string } {
+  const status = report.match(/status: (\w[\w ]*)/g)?.pop()?.replace('status: ', '').trim()
+  const id = report.match(/id: ([0-9a-f-]{36})/)?.[1]
+  return { accepted: exitCode === 0 && status === 'Accepted', status, id }
+}
+
+/**
+ * Why Apple's notary service would refuse a bundle, read from `codesign -dvv`
+ * (which writes to stderr), or undefined when it would not: notarization takes
+ * code signed with a Developer ID Application certificate, under the hardened
+ * runtime, with a secure timestamp, and says so only after the upload.
+ */
+export function developerIdProblem(codesignReport: string): string | undefined {
+  if (/code object is not signed/.test(codesignReport) || /Signature=adhoc/.test(codesignReport))
+    return 'it is not signed with a certificate. Pass a Developer ID Application identity with --signing-identity.'
+  const authority = /^Authority=(.+)$/m.exec(codesignReport)?.[1]
+  if (!authority?.startsWith('Developer ID Application:'))
+    return `it is signed by ${authority ? `"${authority}"` : 'an unknown identity'}, not a Developer ID Application certificate.`
+  if (!/flags=0x[0-9a-f]+\([^)]*runtime[^)]*\)/.test(codesignReport))
+    return 'it is not signed with the hardened runtime.'
+  if (!/^Timestamp=/m.test(codesignReport))
+    return 'its signature has no secure timestamp.'
+  return undefined
+}
+
+/**
  * The notary credentials a build asked for. A keychain profile is a request
  * in itself. An App Store Connect key is used only when notarizing was asked
  * for (`--notarize` or `DESKTOP_NOTARIZE`): apps keep that key for the Mac App
