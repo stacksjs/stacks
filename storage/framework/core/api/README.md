@@ -144,6 +144,50 @@ Pagination requires positive safe integer page numbers and sizes and a nonnegati
 integer total. Empty pages report null row bounds, and empty results have one page. Links
 replace an existing `page` parameter while retaining filters, duplicate parameters and fragments.
 
+### Generated API clients and types
+
+The OpenAPI generators emit standalone TypeScript clients with no runtime imports.
+Framework contributors regenerate the checked artifacts with `./buddy docs:artifacts`
+and verify them with `./buddy docs:artifacts:check`.
+
+Methods retain flat path/query arguments when names are unique. Duplicate names,
+or collisions with a body or typed-header container that exists, use location groups:
+
+```typescript
+await client.show({ path: { id: 'alice' }, query: { id: 7 } })
+await client.upload({ headers: { 'X-Tenant': 'tenant-a' }, body: file })
+```
+
+Required headers and bodies are typed and checked before transport. Request settings
+merge in this order: client headers, bearer token, per-call headers, typed header inputs.
+Header names are case-insensitive. Dot-only path segments are rejected before sending.
+Generated method names reserve client members and stay unique after normalization.
+Documentation is escaped before it is embedded in generated comments.
+
+Query serialization supports form arrays and objects, deepObject filters with scalar
+values, and space/pipe-delimited arrays. Path and header parameters support simple
+serialization. Unsupported locations or styles fail during generation. Cookie parameters
+are unsupported because browser fetch cannot set the Cookie header directly.
+
+Bodies support JSON (including `+json`), URL-encoded forms, multipart objects or FormData,
+and raw text/binary payloads. Select among declared formats with the second argument,
+`{ contentType: 'application/x-www-form-urlencoded' }`. Multipart boundaries are set by
+fetch. Custom per-part encodings and automatic XML serialization are not provided.
+Responses are decoded by media type; declared binary schemas return Blob values, text
+stays text, and empty/HEAD responses return null. All declared successful response
+schemas contribute to the result union. HTTP error statuses return `ok: false`.
+
+Schema generation supports local component references (including recursive models),
+nullable fields, literal JSON enums, unions and intersections. Unresolved, external and
+cyclic alias references fail during generation. Request schemas omit read-only fields;
+response schemas omit write-only fields. `components.requestSchemas` exposes request
+variants alongside response `components.schemas`.
+
+TypeScript index signatures apply to named fields too. For schemas combining named
+properties and typed additional properties, the generated index includes the named
+field types and optional undefined values to remain compilable. Runtime validation
+must enforce the narrower constraints on additional properties.
+
 ## 🧪 Testing
 
 ```bash

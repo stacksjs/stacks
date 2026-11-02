@@ -2,6 +2,12 @@ import { describe, expect, it } from 'bun:test'
 import { validateOpenApi } from '../src/commands/docs/generated-artifacts'
 
 describe('generated API artifact validation', () => {
+  it('ignores path metadata and validates inherited parameters', () => {
+    const errors = validateOpenApi({ paths: { '/items/{id}': { parameters: [{ name: 'id', in: 'path', required: false }], get: { operationId: 'getItems', responses: {} }, summary: 'Path metadata' } } })
+    expect(errors).toContain('GET /items/{id}: path parameter id must be required')
+    expect(errors.some(error => error.includes('PARAMETERS') || error.includes('SUMMARY'))).toBe(false)
+  })
+
   it('rejects empty, duplicate, and optional path evidence', () => {
     expect(validateOpenApi({ paths: {} })).toContain('OpenAPI document has fewer than 10 registered paths')
     const paths: Record<string, any> = {}

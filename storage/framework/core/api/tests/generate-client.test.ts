@@ -173,7 +173,7 @@ describe('the client, actually running', () => {
     const result = await client.getReposShow({ owner: 'acme' })
 
     expect(calls[0]?.url).toBe('https://example.test/api/repos/show?owner=acme')
-    expect(calls[0]?.init.headers.Authorization).toBe('Bearer tok_1')
+    expect(new Headers(calls[0]?.init.headers).get('authorization')).toBe('Bearer tok_1')
     expect(result.ok).toBe(true)
     expect(result.data).toEqual({ name: 'ok' })
   })
@@ -215,7 +215,7 @@ describe('the client, actually running', () => {
 
     expect(calls[0]?.init.method).toBe('POST')
     expect(calls[0]?.init.body).toBe('{"name":"new"}')
-    expect(calls[0]?.init.headers['Content-Type']).toBe('application/json')
+    expect(new Headers(calls[0]?.init.headers).get('content-type')).toBe('application/json')
   })
 
   it('does not throw on a refusal', async () => {
@@ -223,7 +223,7 @@ describe('the client, actually running', () => {
 
     const client = module.createClient({
       baseUrl: 'https://example.test',
-      fetch: async () => new Response(JSON.stringify({ error: 'nope' }), { status: 403 }),
+      fetch: async () => new Response(JSON.stringify({ error: 'nope' }), { status: 403, headers: { 'content-type': 'application/json' } }),
     })
 
     /*

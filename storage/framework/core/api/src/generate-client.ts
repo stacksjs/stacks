@@ -1,7 +1,8 @@
-import type { OpenApiDocument, SchemaObject } from './generate-types'
+import type { OpenApiDocument, OpenApiOperation, OpenApiParameter, OpenApiPathItem, OpenApiRequestBody, OpenApiResponse, SchemaObject } from './generate-types'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { schemaType } from './generate-types'
+import { clientRuntime } from './client-runtime'
+import { operationParameters, renderSchemaComponents, resolveOpenApiReference, schemaType } from './generate-types'
 
 /**
  * A TypeScript client, generated from the OpenAPI document.
@@ -18,23 +19,6 @@ import { schemaType } from './generate-types'
  * runtime package pins its consumer to this framework's release cadence, which
  * is precisely the coupling a client is supposed to remove.
  */
-
-interface OpenApiParameter {
-  name: string
-  in: string
-  required?: boolean
-  schema?: SchemaObject
-  description?: string
-}
-
-interface OpenApiOperation {
-  summary?: string
-  description?: string
-  operationId?: string
-  parameters?: OpenApiParameter[]
-  requestBody?: { required?: boolean, content?: Record<string, { schema?: SchemaObject }> }
-  responses?: Record<string, { description?: string, content?: Record<string, { schema?: SchemaObject }> }>
-}
 
 const METHODS = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch'] as const
 
@@ -73,189 +57,98 @@ export function methodName(operationId: string): string {
   return /^[a-z_$]/i.test(name) ? name : `call${name.charAt(0).toUpperCase()}${name.slice(1)}`
 }
 
-/** The 2xx response body type, or `unknown` when the document does not say. */
-function successType(operation: OpenApiOperation): string {
-  const responses = operation.responses ?? {}
-  const status = Object.keys(responses).find(code => code.startsWith('2'))
-  if (!status) return 'unknown'
-
-  const content = responses[status]?.content
-  const json = content?.['application/json'] ?? Object.values(content ?? {})[0]
-
-  return json?.schema ? schemaType(json.schema) : 'unknown'
-}
-
-function comment(lines: string[], indent = '  '): string {
-  const kept = lines.filter(Boolean)
-  if (!kept.length) return ''
-  return `${indent}/**\n${kept.map(line => `${indent} * ${line}`).join('\n')}\n${indent} */\n`
-}
-
-function renderOperation(route: string, method: string, operation: OpenApiOperation, name: string): string {
-  const parameters = operation.parameters ?? []
-  const pathParams = parameters.filter(parameter => parameter.in === 'path')
-  const queryParams = parameters.filter(parameter => parameter.in === 'query')
-
-  const bodySchema = operation.requestBody?.content?.['application/json']?.schema
-  const bodyRequired = Boolean(operation.requestBody?.required)
-
-  const fields: string[] = []
-  for (const parameter of [...pathParams, ...queryParams]) {
-    // A path parameter is always required: it is part of the URL, and a URL
-    // with `{id}` still in it is a 404 with a confusing message.
-    const required = parameter.in === 'path' || parameter.required
-    fields.push(`${JSON.stringify(parameter.name)}${required ? '' : '?'}: ${schemaType(parameter.schema)}`)
+function successType(operation: OpenApiOperation, document: OpenApiDocument, method: string): string {
+  if (method === 'head') return 'null'
+  const types: string[] = []
+  for (const [status, entry] of Object.entries(operation.responses ?? {})) {
+    if (!/^2(?:\d\d|XX)$/i.test(status)) continue
+    const response = resolveOpenApiReference<OpenApiResponse>(entry, document)
+    if (status === '204' || status === '205' || !Object.keys(response.content ?? {}).length) types.push('null')
+    else for (const media of Object.values(response.content ?? {})) types.push(schemaType(media.schema, { document, direction: 'response' }))
   }
-  if (bodySchema)
-    fields.push(`body${bodyRequired ? '' : '?'}: ${schemaType(bodySchema)}`)
+  return types.includes('unknown') ? 'unknown' : [...new Set(types)].join(' | ') || 'unknown'
+}
 
-  const everyFieldOptional = [...pathParams, ...queryParams].every(p => p.in !== 'path' && !p.required)
-    && (!bodySchema || !bodyRequired)
+/** Documentation is data, including embedded newlines and comment terminators. */
+function comment(lines: string[], indent = '  '): string {
+  const kept = lines.filter(Boolean).flatMap(line => line.replace(/\*\//g, '*\\/').split(/\r?\n/))
+  return kept.length ? `${indent}/**\n${kept.map(line => `${indent} * ${line}`).join('\n')}\n${indent} */\n` : ''
+}
 
-  const argument = fields.length
-    ? `input${everyFieldOptional ? '?' : ''}: { ${fields.join('; ')} }, `
-    : ''
-
-  const queryList = queryParams.length
-    ? `[${queryParams.map(parameter => JSON.stringify(parameter.name)).join(', ')}]`
-    : '[]'
-
-  const documentation = comment([
-    operation.summary && operation.summary !== route ? operation.summary : `${method.toUpperCase()} ${route}`,
-    operation.description ?? '',
-  ])
-
-  return `${documentation}  ${name}(${argument}options?: RequestOptions): Promise<ApiResult<${successType(operation)}>> {
-    return request(config, ${JSON.stringify(method.toUpperCase())}, ${JSON.stringify(route)}, ${fields.length ? 'input ?? {}' : '{}'}, ${queryList}, ${bodySchema ? 'true' : 'false'}, options)
+function renderOperation(route: string, method: string, operation: OpenApiOperation, item: OpenApiPathItem, name: string, document: OpenApiDocument): string {
+  const parameters = operationParameters(item, operation, document)
+  const body = operation.requestBody && resolveOpenApiReference<OpenApiRequestBody>(operation.requestBody, document)
+  const pathAndQuery = parameters.filter(parameter => parameter.in === 'path' || parameter.in === 'query')
+  const names = pathAndQuery.map(parameter => parameter.name)
+  const grouped = new Set(names).size !== names.length
+    || (Boolean(body) && names.includes('body'))
+    || (parameters.some(parameter => parameter.in === 'header') && names.includes('headers'))
+  const descriptors = parameters.map((parameter) => {
+    const styles = parameter.in === 'query' ? ['form', 'deepObject', 'spaceDelimited', 'pipeDelimited'] : ['simple']
+    if (!['path', 'query', 'header'].includes(parameter.in) || (parameter.style && !styles.includes(parameter.style)))
+      throw new TypeError(`Unsupported parameter serialization: ${parameter.in} ${parameter.style ?? ''}`)
+    return { name: parameter.name, in: parameter.in, required: parameter.in === 'path' || Boolean(parameter.required),
+      ...(parameter.in === 'header' ? { group: 'headers' } : grouped ? { group: parameter.in } : {}),
+      ...(parameter.style ? { style: parameter.style } : {}), ...(parameter.explode !== undefined ? { explode: parameter.explode } : {}) }
+  })
+  const fields: string[] = []
+  const required = (parameter: OpenApiParameter) => parameter.in === 'path' || parameter.required
+  const field = (parameter: OpenApiParameter) => `${JSON.stringify(parameter.name)}${required(parameter) ? '' : '?'}: ${schemaType(parameter.schema, { document, direction: 'request' })}`
+  if (!grouped) fields.push(...pathAndQuery.map(field))
+  for (const location of [...(grouped ? ['path', 'query'] : []), 'header']) {
+    const entries = parameters.filter(parameter => parameter.in === location)
+    if (entries.length) fields.push(`${location === 'header' ? 'headers' : location}${entries.some(required) ? '' : '?'}: { ${entries.map(field).join('; ')} }`)
+  }
+  const content = Object.keys(body?.content ?? {})
+  if (body && !content.length) throw new TypeError('Request body must declare a media type')
+  if (body) {
+    const bodyTypes = Object.entries(body.content ?? {}).map(([type, media]) => {
+      const shape = schemaType(media.schema, { document, direction: 'request' })
+      return type === 'multipart/form-data' ? `${shape} | FormData` : shape
+    })
+    fields.push(`body${body.required ? '' : '?'}: ${[...new Set(bodyTypes)].join(' | ')}`)
+  }
+  const everyFieldOptional = !parameters.some(required) && !body?.required
+  const argument = fields.length ? `input${everyFieldOptional ? '?' : ''}: { ${fields.join('; ')} }, ` : ''
+  const documentation = comment([operation.summary && operation.summary !== route ? operation.summary : `${method.toUpperCase()} ${route}`, operation.description ?? ''])
+  const accept = [...new Set(Object.values(operation.responses ?? {}).flatMap(entry => Object.keys(resolveOpenApiReference<OpenApiResponse>(entry, document).content ?? {})))].join(', ') || 'application/json'
+  const binary = [...new Set(Object.values(operation.responses ?? {}).flatMap(entry => Object.entries(resolveOpenApiReference<OpenApiResponse>(entry, document).content ?? {}).filter(([, media]) => {
+    const schema = resolveOpenApiReference<SchemaObject>(media.schema ?? {}, document)
+    return schema.type === 'string' && schema.format === 'binary'
+  }).map(([type]) => type.split(';')[0]!.trim().toLowerCase()))) ]
+  return `${documentation}  ${name}(${argument}options?: RequestOptions): Promise<ApiResult<${successType(operation, document, method)}>> {
+    return request(config, ${JSON.stringify(method.toUpperCase())}, ${JSON.stringify(route)}, ${fields.length ? 'input ?? {}' : '{}'}, ${JSON.stringify(descriptors)}, ${body ? JSON.stringify({ required: Boolean(body.required), content }) : 'null'}, ${JSON.stringify(accept)}, ${JSON.stringify(binary)}, options)
   },`
 }
 
-/**
- * Render the client for a document.
- *
- * Exported separately from the file writing so it can be tested on a document
- * built in memory, which is the only way to assert what it does with a shape
- * the current app happens not to have.
- */
 export function renderApiClient(document: OpenApiDocument, options: { name?: string } = {}): string {
-  const title = options.name ?? 'API'
-
-  const used = new Map<string, number>()
-  const methods: string[] = []
-
-  for (const [route, item] of Object.entries(document.paths ?? {})) {
-    for (const method of METHODS) {
-      const operation = (item as Record<string, OpenApiOperation | undefined>)[method]
-      if (!operation) continue
-
-      const preferred = methodName(operation.operationId ?? `${method}_${route}`)
-      const seen = used.get(preferred) ?? 0
-      used.set(preferred, seen + 1)
-
-      // A collision keeps both operations reachable. Dropping one would make
-      // the client quietly incapable of calling an endpoint that exists.
-      methods.push(renderOperation(route, method, operation, seen === 0 ? preferred : `${preferred}${seen + 1}`))
+  const operations = Object.entries(document.paths ?? {}).flatMap(([route, item]) => METHODS.flatMap((method) => {
+    const operation = item[method] as OpenApiOperation | undefined
+    return operation ? [{ route, item, method, operation, preferred: methodName(operation.operationId ?? `${method}_${route}`) }] : []
+  }))
+  const reserved = new Set(['config', 'then', 'constructor', 'prototype', '__proto__'])
+  const preferred = new Set(operations.map(operation => operation.preferred))
+  const used = new Set(reserved)
+  const methods = operations.map((entry) => {
+    let name = entry.preferred
+    let suffix = 2
+    if (used.has(name)) {
+      do { name = `${entry.preferred}${suffix++}` } while (used.has(name) || preferred.has(name))
     }
-  }
-
+    used.add(name)
+    return renderOperation(entry.route, entry.method, entry.operation, entry.item, name, document)
+  })
   return `/* eslint-disable */
-/**
- * ${title} client, generated from the OpenAPI document.
- *
- * Do not edit. Run \`buddy generate:openapi\` to rebuild it from the routes.
- *
- * No imports and no dependencies: copy this file anywhere that has \`fetch\`.
- */
-
-/** Every call answers with one of these. Nothing here throws for a 4xx. */
-export type ApiResult<T> =
-  | { ok: true, status: number, data: T, headers: Headers }
-  | { ok: false, status: number, error: unknown, headers: Headers }
-
-export interface ClientConfig {
-  /** Where the API lives, e.g. \`https://example.com\`. No trailing slash needed. */
-  baseUrl: string
-  /** Sent as \`Authorization: Bearer …\` when present. */
-  token?: string
-  /** Extra headers on every request. */
-  headers?: Record<string, string>
-  /** Swap in a different fetch - a test double, or one that retries. */
-  fetch?: typeof fetch
-}
-
-export interface RequestOptions {
-  /** Abort in flight. */
-  signal?: AbortSignal
-  /** Headers for this call only, merged over the client's. */
-  headers?: Record<string, string>
-}
-
-function buildUrl(config: ClientConfig, route: string, input: Record<string, unknown>, query: string[]): string {
-  // Path parameters are substituted, never appended: a \`{id}\` left in the URL
-  // is a 404 whose message is about the literal string "{id}".
-  const filled = route.replace(/\\{(\\w+)\\}/g, (_, key: string) => encodeURIComponent(String(input[key] ?? '')))
-  const url = new URL(filled.replace(/^\\/+/, '/'), config.baseUrl.endsWith('/') ? config.baseUrl : \`\${config.baseUrl}/\`)
-
-  for (const key of query) {
-    const value = input[key]
-    // Absent means absent. Sending \`?path=\` asks for the file called empty
-    // string, which is a different question from not filtering.
-    if (value === undefined || value === null) continue
-    url.searchParams.set(key, String(value))
-  }
-
-  return url.toString()
-}
-
-async function request<T>(
-  config: ClientConfig,
-  method: string,
-  route: string,
-  input: Record<string, unknown>,
-  query: string[],
-  hasBody: boolean,
-  options?: RequestOptions,
-): Promise<ApiResult<T>> {
-  const call = config.fetch ?? fetch
-  const url = buildUrl(config, route, input, query)
-
-  const headers: Record<string, string> = {
-    Accept: 'application/json',
-    ...(config.headers ?? {}),
-    ...(options?.headers ?? {}),
-  }
-  if (config.token) headers.Authorization = \`Bearer \${config.token}\`
-
-  const body = hasBody && input.body !== undefined ? JSON.stringify(input.body) : undefined
-  if (body !== undefined) headers['Content-Type'] = 'application/json'
-
-  const response = await call(url, { method, headers, body, signal: options?.signal })
-
-  const text = await response.text()
-  let parsed: unknown = text
-  if (text.length) {
-    // A non-JSON body is kept verbatim rather than replaced with a parse error.
-    // An endpoint that answered with HTML is worth seeing.
-    try { parsed = JSON.parse(text) } catch { parsed = text }
-  }
-  else {
-    parsed = null
-  }
-
-  return response.ok
-    ? { ok: true, status: response.status, data: parsed as T, headers: response.headers }
-    : { ok: false, status: response.status, error: parsed, headers: response.headers }
-}
+${comment([`${options.name ?? 'API'} client, generated from OpenAPI.`, 'Do not edit; run buddy generate:openapi.', 'No imports or dependencies.'], '')}
+${clientRuntime}
+${renderSchemaComponents(document)}
 
 export function createClient(config: ClientConfig) {
   return {
-    /** The configuration in use, so a caller can rebuild a variant of it. */
     config,
-
 ${methods.join('\n\n')}
   }
 }
-
 export type Client = ReturnType<typeof createClient>
 `
 }
