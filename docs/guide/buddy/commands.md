@@ -2145,7 +2145,7 @@ Build the browser extension (Chrome + Firefox + Safari) from config/extension.ts
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--target` | Build a single target (chrome \| firefox \| safari); omit to build all | value, required | - |
+| `--target` | Build a single target (chrome \| firefox \| safari \| webkit); omit to build all. webkit emits content-blocker lists and WKUserScripts for WKWebView apps | value, required | - |
 | `--version` | Override the extension version (defaults to package.json) | value, required | - |
 
 ### `extension:chrome:publish`
