@@ -121,3 +121,9 @@ For casual chit-chat with others using this package:
 The MIT License (MIT). Please see [LICENSE](https://github.com/stacksjs/stacks/tree/main/LICENSE.md) for more information.
 
 Made with 💙
+
+A short-lived service must flush readiness before exiting. The optional
+`notifyTestServiceReady(info, sent)` callback reports completion of the IPC write;
+wait for it before `process.exit()`. The boolean return still indicates whether
+an owning IPC channel exists. An enqueued notification alone does not establish
+that it reached the owner before immediate process termination.

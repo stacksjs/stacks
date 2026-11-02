@@ -26,10 +26,17 @@ export interface TestService {
 
 const READY = 'stacks:test-service:ready'
 
-/** Notify the owning test process after application-specific readiness checks. */
-export function notifyTestServiceReady(info?: unknown): boolean {
+/**
+ * Notify the owning test process after application-specific readiness checks.
+ * A service that will immediately exit must wait for `sent` to confirm the IPC
+ * write; enqueueing a message alone does not flush it before process.exit().
+ * Returns false without invoking `sent` when there is no owning IPC channel.
+ */
+export function notifyTestServiceReady(info?: unknown, sent?: (error: Error | null) => void): boolean {
   if (!process.send) return false
-  process.send({ type: READY, pid: process.pid, info })
+  const message = { type: READY, pid: process.pid, info }
+  if (sent) process.send(message, undefined, undefined, sent)
+  else process.send(message)
   return true
 }
 

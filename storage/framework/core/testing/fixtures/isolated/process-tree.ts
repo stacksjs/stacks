@@ -12,7 +12,10 @@ if (['root', 'early-exit', 'service', 'service-no-ready', 'service-early-exit'].
   process.stdout.write('owned tree ready\n')
   if (role.startsWith('service') && role !== 'service-no-ready') {
     const { notifyTestServiceReady } = await import(process.env.OWNED_SERVICE_MODULE || '../../src/service')
-    notifyTestServiceReady({ role, owner })
+    await new Promise<void>((resolve, reject) => {
+      if (!notifyTestServiceReady({ role, owner }, (error: Error | null) => error ? reject(error) : resolve()))
+        reject(new Error('Owned service fixture has no readiness channel'))
+    })
   }
   if (role === 'early-exit' || role === 'service-early-exit') process.exit(7)
   await Bun.sleep(60000)
