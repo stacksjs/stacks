@@ -16,7 +16,7 @@ import { withholdEnv } from '@stacksjs/env'
 import { ExitCode } from '@stacksjs/types'
 import type { ReleaseNotesConfig } from '@stacksjs/actions/release-notes'
 import { AppStoreConnect, appStoreConnectCredentials, buildsToExpire, waitForBuild } from '../app-store-connect'
-import { bumpedVersion, iosReleaseSummary, iosVersionIn, nextBuildTag, unreleasableSite, withIosVersion } from '../release-ios'
+import { bumpedVersion, iosReleaseSummary, iosVersionIn, nextBuildTag, pushIosReleaseTag, unreleasableSite, withIosVersion } from '../release-ios'
 import { appStoreLocales, commitsBetween, committedWhatToTest, fitNotes, NO_VISIBLE_CHANGES, PLAY_NOTES_LIMIT, previousMobileTag, resolveNotes, TESTFLIGHT_NOTES_LIMIT, testerNotes, writeWhatToTest, XCODE_CLOUD_NOTES_LIMIT } from '@stacksjs/actions/release-notes'
 import { resultFailed } from '../result'
 
@@ -183,7 +183,7 @@ async function releaseIos(options: IosReleaseOptions): Promise<string> {
   log.info(`Releasing ${tag}${version === current ? '' : ` (version ${current} → ${version})`}`)
   const keep = Math.max(0, Number(options.keepBuilds ?? 1) || 0)
   // With a key, the tag's number is the Xcode Cloud run, so TestFlight's.
-  const summary = iosReleaseSummary(tag, { numberedByXcodeCloud: store !== null })
+  const summary = iosReleaseSummary(tag, { numberedByXcodeCloud })
 
   // What testers are told: the commits since the previous build, unless a
   // person said it themselves (--notes, RELEASE_NOTES, config/mobile.ts).
@@ -250,8 +250,7 @@ async function releaseIos(options: IosReleaseOptions): Promise<string> {
   git('add', '--', ...paths)
   if (git('diff', '--cached', '--name-only'))
     git('commit', '--quiet', '-m', `chore(release): ${tag}`)
-  git('tag', '-a', tag, '-m', tag)
-  git('push', '--quiet', '--atomic', 'origin', 'main', tag)
+  pushIosReleaseTag(root, tag)
 
   // The tag's GitHub release: the changes since the previous one, and which
   // TestFlight build it becomes. A failure here is reported, not thrown: the

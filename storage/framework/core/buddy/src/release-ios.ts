@@ -7,12 +7,13 @@
  * `--bump patch|minor|major|x.y.z` moves that version deliberately.
  * A CI that builds tags (Xcode Cloud's start condition
  * "Tag Changes" with prefix `v`) turns each one into a build. The store's
- * build number is the CI's own counter; allocation considers existing tags
- * and every Xcode Cloud run, including failed or in-flight runs.
+ * build number is the CI's own counter, including failed or in-flight runs.
+ * Existing tags cannot advance that counter.
  */
 
 import { incrementVersion, nextBuildNumber, SemVer } from '@stacksjs/bumpx'
 import { isLocalSite } from '@stacksjs/actions/build/mobile-target'
+import { execFileSync } from 'node:child_process'
 
 function marketingVersion(version: string): string {
   const parsed = new SemVer(version)
@@ -60,16 +61,44 @@ export function bumpedVersion(current: string, bump: string): string {
 }
 
 /** The next build's tag for `version`, after the tags that already exist. */
-export function nextBuildTag(version: string, tags: string[], latestRun = 0): string {
+export function nextBuildTag(version: string, tags: string[], latestRun?: number): string {
   marketingVersion(version)
   const prefix = `v${version}-build.`
+  if (latestRun !== undefined) {
+    const tag = `${prefix}${nextBuildNumber(latestRun)}`
+    if (tags.includes(tag))
+      throw new Error(`${tag} already exists, but Xcode Cloud has not allocated that run. Reconcile the release tags with Xcode Cloud before releasing; a larger tag would misidentify the TestFlight build.`)
+    return tag
+  }
   const builds = tags
     .filter(tag => tag.startsWith(prefix))
     .map(tag => tag.slice(prefix.length))
     .filter(number => /^[1-9]\d*$/.test(number))
     .map(Number)
     .filter(Number.isSafeInteger)
-  return `${prefix}${nextBuildNumber(latestRun, builds)}`
+  return `${prefix}${nextBuildNumber(0, builds)}`
+}
+
+/** Atomically publish the candidate and its tag, retaining the commit on rejection. */
+export function pushIosReleaseTag(cwd: string, tag: string): void {
+  const git = (...args: string[]) => execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+  const candidate = git('rev-parse', 'HEAD')
+  // An existing tag is never ours to remove, including on a failed retry.
+  git('tag', '-a', tag, '-m', tag)
+  try {
+    git('push', '--quiet', '--atomic', 'origin', 'main', tag)
+  }
+  catch (error) {
+    try {
+      // A network error can follow an accepted push. Only a successful remote
+      // read proving absence permits removing this invocation's local tag.
+      const remote = git('ls-remote', '--tags', 'origin', `refs/tags/${tag}`)
+      if (!remote && git('rev-parse', `${tag}^{commit}`) === candidate)
+        git('tag', '-d', tag)
+    }
+    catch { /* Preserve the tag when the publication outcome is uncertain. */ }
+    throw error
+  }
 }
 
 /**

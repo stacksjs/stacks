@@ -53,8 +53,10 @@ describe('buddy release:ios', () => {
     expect(() => bumpedVersion('1.0.0', '9007199254740992.0.0')).toThrow()
   })
 
-  it('allocates after both tags and failed or in-flight Xcode Cloud runs', () => {
-    expect(nextBuildTag('1.0.0', ['v1.0.0-build.13'], 12)).toBe('v1.0.0-build.14')
+  it('uses the next Xcode Cloud run and refuses conflicting tags', () => {
+    expect(() => nextBuildTag('1.0.0', ['v1.0.0-build.13'], 12)).toThrow('already exists')
+    expect(nextBuildTag('1.0.0', ['v1.0.0-build.14'], 12)).toBe('v1.0.0-build.13')
+    expect(() => nextBuildTag('1.0.0', ['v1.0.0-build.1'], 0)).toThrow('already exists')
     expect(nextBuildTag('1.0.0', ['v1.0.0-build.12'], 16)).toBe('v1.0.0-build.17')
     expect(nextBuildTag('1.0.0', ['v1.0.0-build.9007199254740992', 'v1.0.0-build.1.5'], 12)).toBe('v1.0.0-build.13')
     expect(() => nextBuildTag('1.0.0', [], Number.MAX_SAFE_INTEGER)).toThrow()
