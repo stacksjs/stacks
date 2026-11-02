@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.442...v0.75.443)
+
+## 🐛 Bug Fixes
+
+- reject framework releases outside the main source gate ([0b51aff](https://github.com/stacksjs/stacks/commit/0b51aff)) _(by Chris Breuer <chris@stacksjs.com>)_
+- enforce validation boundaries and safe array operations ([d9a9484](https://github.com/stacksjs/stacks/commit/d9a9484)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh native skill references after release guidance ([79f72aa](https://github.com/stacksjs/stacks/commit/79f72aa)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- integrate validation boundaries before framework release ([95640ee](https://github.com/stacksjs/stacks/commit/95640ee)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.441...v0.75.442)
 
 ## 🐛 Bug Fixes
