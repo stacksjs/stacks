@@ -14,10 +14,10 @@ defineExtension({
   content: [/* ... */],                                          // each becomes a user script
   webkit: {
     maxRulesPerList: 50_000,                                     // WebKit's own cap is 150,000
-    dynamicRules: [{ id: 'dynamic', source: 'src/rules/webkit-dynamic.ts' }],
+    dynamicRules: [{ id: 'dynamic', source: 'src/rules/webkit.ts#dynamicRules' }],   // path#export
     cosmetic: [
-      { id: 'cosmetic', source: 'src/rules/webkit-cosmetic.ts' },
-      { id: 'cosmetic-consent', source: 'src/rules/webkit-consent.ts', enabled: false },
+      { id: 'cosmetic', source: 'src/rules/webkit.ts#cosmetic' },
+      { id: 'cosmetic-consent', source: 'src/rules/webkit.ts#consent', enabled: false },
     ],
     selectorsPerRule: 100,
     messageHandler: 'my-extension',                              // default: the name as a slug
@@ -26,8 +26,9 @@ defineExtension({
 })
 ```
 
-A `dynamicRules` module returns DNR rules (the defaults the extension would
-install with `updateDynamicRules`). A `cosmetic` module returns
+A source is a module path, or `path#name` for one of its exports (a function
+is called). A `dynamicRules` source returns DNR rules (the defaults the extension would
+install with `updateDynamicRules`). A `cosmetic` source returns
 `WebKitCosmeticRule[]`: `{ selector: string | string[], domains?, excludedDomains? }`.
 
 ## Output

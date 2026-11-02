@@ -29,7 +29,9 @@ describe('the webkit build target', () => {
   { id: 100, priority: 20, action: { type: 'block' }, condition: { requestDomains: ['blocked.example'], resourceTypes: ['main_frame', 'sub_frame'] } },
 ]
 `)
-    await Bun.write(join(cwd, 'src/rules/cosmetic.ts'), `export default [{ selector: ['.ad', '#sponsored'] }, { selector: '.yt-ad', domains: ['youtube.com'] }]\n`)
+    await Bun.write(join(cwd, 'src/rules/cosmetic.ts'), `export default [{ selector: ['.ad', '#sponsored'] }, { selector: '.yt-ad', domains: ['youtube.com'] }]
+export const consent = () => [{ selector: '#cookie-banner' }]
+`)
     await Bun.write(join(cwd, 'src/content/index.ts'), `void (async () => {
 const settings = await chrome.storage.local.get({ enabled: true, theme: 'dark' })
 const reply = await chrome.runtime.sendMessage({ type: 'hello', enabled: settings.enabled })
@@ -52,7 +54,7 @@ chrome.runtime.onMessage.addListener((message: any, _sender: any, sendResponse: 
       ],
       webkit: {
         dynamicRules: [{ id: 'dynamic_rules', source: 'src/rules/dynamic.ts' }],
-        cosmetic: [{ id: 'cosmetic', source: 'src/rules/cosmetic.ts' }],
+        cosmetic: [{ id: 'cosmetic', source: 'src/rules/cosmetic.ts' }, { id: 'consent', source: 'src/rules/cosmetic.ts#consent', enabled: false }],
       },
     }
     ;({ outdir } = await buildExtension(config, { cwd, target: 'webkit', version: '1.2.3', minify: false }))
@@ -70,7 +72,10 @@ chrome.runtime.onMessage.addListener((message: any, _sender: any, sendResponse: 
       ['static_rules', 'network', 'lists/static_rules.json'],
       ['dynamic_rules', 'network', 'lists/dynamic_rules.json'],
       ['cosmetic', 'cosmetic', 'lists/cosmetic.json'],
+      ['consent', 'cosmetic', 'lists/consent.json'],
     ])
+    // A named export feeds its own group, off by default like the extension's opt-in.
+    expect(manifest.lists.at(-1)).toMatchObject({ enabled: false, ruleCount: 1 })
   })
 
   it('writes each list as the JSON compileContentRuleList takes, versioned by content', async () => {
@@ -86,7 +91,7 @@ chrome.runtime.onMessage.addListener((message: any, _sender: any, sendResponse: 
 
   it('reports the rules it could not convert', () => {
     expect(manifest.report.unsupported).toEqual([{ reason: 'redirect actions (content blockers cannot redirect)', count: 1, examples: [2] }])
-    expect(manifest.report.input).toBe(6)
+    expect(manifest.report.input).toBe(7)
   })
 
   it('describes the scripts the way WKUserScript needs them', () => {

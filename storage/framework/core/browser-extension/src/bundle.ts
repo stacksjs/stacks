@@ -20,14 +20,19 @@ export async function bundleScript(entry: string, cwd: string, minify: boolean):
 }
 
 /**
- * Load what a rules module produces: its default export, `buildRules` or
- * `rules`, else its sole exported function or array. A function is called
- * (and awaited).
+ * Load what a rules module produces. `path#name` reads that export; a bare
+ * path reads its default export, `buildRules` or `rules`, else its sole
+ * exported function or array. A function is called (and awaited).
  */
 export async function loadModuleValue<T = unknown>(cwd: string, source: string): Promise<T> {
-  const mod = await import(resolve(cwd, source))
-  const build = mod.default ?? mod.buildRules ?? mod.rules
-    ?? Object.values(mod).find(v => typeof v === 'function')
-    ?? Object.values(mod).find(v => Array.isArray(v))
+  const [path, name] = source.split('#') as [string, string | undefined]
+  const mod = await import(resolve(cwd, path))
+  if (name !== undefined && !(name in mod))
+    throw new Error(`[browser-extension] ${path} has no export named "${name}"`)
+  const build = name !== undefined
+    ? mod[name]
+    : mod.default ?? mod.buildRules ?? mod.rules
+      ?? Object.values(mod).find(v => typeof v === 'function')
+      ?? Object.values(mod).find(v => Array.isArray(v))
   return (typeof build === 'function' ? await build() : build) as T
 }

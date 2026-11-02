@@ -88,7 +88,7 @@ export interface ManifestOverrides {
 export interface WebKitRuleSource {
   /** List id, and the group name in the WebKit manifest. */
   id: string
-  /** Module path, relative to the project root. */
+  /** Module path, relative to the project root; `path#name` reads that export. */
   source: string
   /** Whether the extension applies this source by default. @default true */
   enabled?: boolean
