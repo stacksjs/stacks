@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.432...v0.75.433)
+
+## 🐛 Bug Fixes
+
+- **release**: generate Homebrew formulas without a Mac runner ([0a1ebd4](https://github.com/stacksjs/stacks/commit/0a1ebd4)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.431...v0.75.432)
 
 ## 🐛 Bug Fixes
