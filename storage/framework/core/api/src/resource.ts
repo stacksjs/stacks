@@ -21,6 +21,8 @@
  * return new UserResource(user).toResponse()
  * return UserResource.collection(users).toResponse()
  */
+import { toPaginator } from '@stacksjs/pagination'
+import { withQuery } from './query'
 
 type Request = Record<string, unknown>
 
@@ -76,6 +78,46 @@ export interface PaginatedData<T> {
   links: PaginationLinks
 }
 
+interface ResolutionContext { depth: number, ancestors: WeakSet<object> }
+const mergePayloads = new WeakMap<object, Record<string, unknown>>()
+const MAX_RESOLVE_DEPTH = 20
+
+/** One resolver owns wrapper handling and the depth/cycle budget at every nesting level. */
+function resolveValue(value: unknown, request: Request | undefined, context: ResolutionContext): unknown {
+  if (value instanceof MissingValue || value === null || typeof value !== 'object' || value instanceof Date) return value
+  if (context.depth >= MAX_RESOLVE_DEPTH) throw new RangeError('Resource serialization exceeded the maximum depth')
+  if (context.ancestors.has(value)) throw new TypeError('Resource serialization contains a cycle')
+  context.ancestors.add(value)
+  const next = { depth: context.depth + 1, ancestors: context.ancestors }
+  try {
+    if (value instanceof ConditionalValue) return resolveValue(value.resolve(), request, next)
+    if (value instanceof MergeValue) return resolveValue(value.data, request, next)
+    const merge = mergePayloads.get(value)
+    if (merge) return resolveValue(merge, request, next)
+    if (value instanceof JsonResource || value instanceof ResourceCollection) return value.resolveAt(request, next)
+    if (Array.isArray(value)) {
+      const result: unknown[] = []
+      for (const item of value) {
+        const resolved = resolveValue(item, request, next)
+        if (!(resolved instanceof MissingValue)) result.push(resolved)
+      }
+      return result
+    }
+    if ('toJSON' in value && typeof value.toJSON === 'function') return resolveValue(value.toJSON(), request, next)
+    const entries: Array<[string, unknown]> = []
+    for (const [key, item] of Object.entries(value)) {
+      const resolved = resolveValue(item, request, next)
+      if (resolved instanceof MissingValue) continue
+      if (item instanceof MergeValue || (item !== null && typeof item === 'object' && mergePayloads.has(item))) {
+        entries.push(...Object.entries(resolved as Record<string, unknown>))
+      }
+      else entries.push([key, resolved])
+    }
+    return Object.fromEntries(entries)
+  }
+  finally { context.ancestors.delete(value) }
+}
+
 /**
  * Base JSON Resource class
  *
@@ -128,8 +170,13 @@ export abstract class JsonResource<T = unknown> {
    * Transform to a plain object (resolving all conditional values)
    */
   resolve(request?: Request): Record<string, any> {
-    const data = this.toArray(request || this.request)
-    return this.filterAndResolve(data)
+    return resolveValue(this, request, { depth: 0, ancestors: new WeakSet() }) as Record<string, any>
+  }
+
+  /** @internal Preserve the caller's depth/cycle budget and request in nested resources. */
+  resolveAt(request: Request | undefined, context: ResolutionContext): Record<string, any> {
+    const req = request ?? this.request
+    return resolveValue(this.toArray(req), req, context) as Record<string, any>
   }
 
   /**
@@ -261,14 +308,16 @@ export abstract class JsonResource<T = unknown> {
    *   }),
    * }
    */
-  protected merge(data: Record<string, any>): MergeValue {
-    return new MergeValue(data)
+  protected merge(data: Record<string, any>): Record<string, any> {
+    const spreadable = { ...data }
+    mergePayloads.set(spreadable, data)
+    return spreadable
   }
 
   /**
    * Conditionally merge attributes
    */
-  protected mergeWhen(condition: boolean | (() => boolean), data: Record<string, any> | (() => Record<string, any>)): MergeValue | MissingValue {
+  protected mergeWhen(condition: boolean | (() => boolean), data: Record<string, any> | (() => Record<string, any>)): Record<string, any> | MissingValue {
     const shouldInclude = typeof condition === 'function' ? condition() : condition
 
     if (!shouldInclude) {
@@ -276,66 +325,7 @@ export abstract class JsonResource<T = unknown> {
     }
 
     const resolvedData = typeof data === 'function' ? data() : data
-    return new MergeValue(resolvedData)
-  }
-
-  /**
-   * Filter out MissingValue and resolve conditional values
-   */
-  private static readonly MAX_RESOLVE_DEPTH = 20
-
-  private filterAndResolve(data: Record<string, any>, depth = 0): Record<string, any> {
-    if (depth >= JsonResource.MAX_RESOLVE_DEPTH) {
-      return data // stop recursing — return data as-is to avoid stack overflow
-    }
-
-    const result: Record<string, any> = {}
-
-    for (const [key, value] of Object.entries(data)) {
-      // Skip missing values
-      if (value instanceof MissingValue) {
-        continue
-      }
-
-      // Handle merge values
-      if (value instanceof MergeValue) {
-        Object.assign(result, this.filterAndResolve(value.data, depth + 1))
-        continue
-      }
-
-      // Handle conditional values
-      if (value instanceof ConditionalValue) {
-        const resolved = value.resolve()
-        if (!(resolved instanceof MissingValue)) {
-          result[key] = resolved
-        }
-        continue
-      }
-
-      // Handle nested objects
-      if (value !== null && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)) {
-        result[key] = this.filterAndResolve(value, depth + 1)
-        continue
-      }
-
-      // Handle arrays
-      if (Array.isArray(value)) {
-        result[key] = value
-          .filter(item => !(item instanceof MissingValue))
-          .map(item => {
-            if (item instanceof MergeValue) return item.data
-            if (item !== null && typeof item === 'object' && !(item instanceof Date)) {
-              return this.filterAndResolve(item, depth + 1)
-            }
-            return item
-          })
-        continue
-      }
-
-      result[key] = value
-    }
-
-    return result
+    return this.merge(resolvedData)
   }
 
   /**
@@ -392,12 +382,18 @@ export class ResourceCollection<T = unknown, R extends JsonResource<T> = JsonRes
    * Transform all resources
    */
   resolve(request?: Request): Record<string, any>[] {
-    const req = request || this.request
-    return this.resources.map(resource => {
+    return resolveValue(this, request, { depth: 0, ancestors: new WeakSet() }) as Record<string, any>[]
+  }
+
+  /** @internal Preserve the parent resource's request and serialization budget. */
+  resolveAt(request: Request | undefined, context: ResolutionContext): Record<string, any>[] {
+    const req = request ?? this.request
+    const resources = this.resources.map((resource) => {
       const instance = new this.ResourceClass(resource)
       if (req) instance.withRequest(req)
-      return instance.resolve(req)
+      return instance
     })
+    return resolveValue(resources, req, context) as Record<string, any>[]
   }
 
   /**
@@ -422,6 +418,11 @@ export class ResourceCollection<T = unknown, R extends JsonResource<T> = JsonRes
    */
   toJson(request?: Request): string {
     return JSON.stringify(this.toResponse(request))
+  }
+
+  /** Standard serialization must expose the transformed response, never source rows or request context. */
+  toJSON(): Record<string, unknown> {
+    return this.toResponse()
   }
 
   /**
@@ -478,26 +479,32 @@ export class PaginatedResourceCollection<T = unknown, R extends JsonResource<T> 
     },
   ): PaginatedResourceCollection<T, R> {
     const { currentPage, perPage, total, baseUrl = '' } = options
-    const lastPage = Math.ceil(total / perPage)
-    const from = total > 0 ? (currentPage - 1) * perPage + 1 : null
-    const to = total > 0 ? Math.min(currentPage * perPage, total) : null
+    for (const [name, value] of Object.entries({ currentPage, perPage, total })) {
+      if (!Number.isSafeInteger(value) || value < (name === 'total' ? 0 : 1))
+        throw new RangeError(`${name} must be a safe integer ${name === 'total' ? 'at least zero' : 'greater than zero'}`)
+    }
+    const offset = (currentPage - 1) * perPage
+    if (!Number.isSafeInteger(offset) || !Number.isSafeInteger(offset + data.length) || data.length > perPage || (data.length > 0 && offset + data.length > total))
+      throw new RangeError('Pagination rows do not fit the requested page and total')
+    const page = toPaginator({ data, meta: { page: currentPage, perPage, total, lastPage: Math.ceil(total / perPage) } })
+    const link = (number: number) => withQuery(baseUrl, { page: number }, true)
 
     return new PaginatedResourceCollection(
       {
         data,
         meta: {
           current_page: currentPage,
-          from,
-          last_page: lastPage,
+          from: page.from,
+          last_page: page.last_page,
           per_page: perPage,
-          to,
+          to: page.to,
           total,
         },
         links: {
-          first: `${baseUrl}?page=1`,
-          last: `${baseUrl}?page=${lastPage}`,
-          prev: currentPage > 1 ? `${baseUrl}?page=${currentPage - 1}` : null,
-          next: currentPage < lastPage ? `${baseUrl}?page=${currentPage + 1}` : null,
+          first: link(1),
+          last: link(page.last_page),
+          prev: currentPage > 1 ? link(currentPage - 1) : null,
+          next: page.has_more_pages ? link(currentPage + 1) : null,
         },
       },
       ResourceClass,

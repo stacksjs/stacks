@@ -1,4 +1,5 @@
 import type { BodyData, FetcherResponse, FileAttachment, QueryParams } from './types'
+import { withQuery } from './query'
 
 class FetcherResponseImpl<T> implements FetcherResponse<T> {
   constructor(
@@ -56,7 +57,8 @@ class Fetcher {
   }
 
   withHeaders(headers: Record<string, string>): this {
-    this.customHeaders = { ...this.customHeaders, ...headers }
+    for (const [name, value] of Object.entries(headers))
+      this.customHeaders[name.toLowerCase()] = value
     return this
   }
 
@@ -70,13 +72,13 @@ class Fetcher {
   }
 
   withToken(token: string): this {
-    this.customHeaders.Authorization = `Bearer ${token}`
+    this.customHeaders.authorization = `Bearer ${token}`
     return this
   }
 
   withBasicAuth(username: string, password: string): this {
     const credentials = btoa(`${username}:${password}`)
-    this.customHeaders.Authorization = `Basic ${credentials}`
+    this.customHeaders.authorization = `Basic ${credentials}`
     return this
   }
 
@@ -120,29 +122,15 @@ class Fetcher {
     return this
   }
 
-  private getHeaders(): Record<string, string> {
-    return {
-      ...this.defaultHeaders,
-      ...this.customHeaders,
-    }
+  private getHeaders(): Headers {
+    const headers = new Headers(this.defaultHeaders)
+    for (const [name, value] of Object.entries(this.customHeaders)) headers.set(name, value)
+    return headers
   }
 
   private addQueryParams(url: string): string {
-    if (!this.queryParams)
-      return url
-
-    const searchParams = new URLSearchParams()
-    Object.entries(this.queryParams).forEach(([key, value]) => {
-      if (value != null)
-        searchParams.append(key, String(value))
-    })
-
-    const queryString = searchParams.toString()
-    if (!queryString)
-      return url
-
-    const hasParams = url.includes('?')
-    return url + (hasParams ? '&' : '?') + queryString
+    if (!this.queryParams) return url
+    return withQuery(url, this.queryParams)
   }
 
   private async formatBody(body?: BodyData): Promise<string | FormData | undefined> {
@@ -196,97 +184,62 @@ class Fetcher {
     this.customHeaders = {}
     this.attachments = []
     this.digestAuth = undefined
-    this.defaultHeaders['Content-Type'] = 'application/json'
+    this.defaultHeaders = { Accept: 'application/json', 'Content-Type': 'application/json' }
   }
 
-  private async handleDigestAuth(
-    response: Response,
-    url: string,
-    method: string,
-    body?: BodyData,
-  ): Promise<Response> {
-    if (response.status !== 401 || !this.digestAuth)
-      return response
-
-    const authHeader = response.headers.get('WWW-Authenticate')
-    if (!authHeader?.startsWith('Digest '))
-      return response
-
-    // Parse the digest challenge
-    const challenge = authHeader.substring(7).split(',').reduce((acc, part) => {
-      const [key, value] = part.trim().split('=')
-      if (key) acc[key] = value?.replace(/["']/g, '') ?? '' // Remove quotes
-      return acc
-    }, {} as Record<string, string>)
-
-    // Generate digest response
-    const ha1 = await this.generateMD5(
-      `${this.digestAuth.username}:${challenge.realm}:${this.digestAuth.password}`,
-    )
-    const ha2 = await this.generateMD5(`${method}:${url}`)
-    const nonceCount = '00000001'
-    const cnonce = await this.generateMD5(Date.now().toString()).then(hash => hash.substring(0, 8))
-    const response_value = await this.generateMD5(
-      `${ha1}:${challenge.nonce}:${nonceCount}:${cnonce}:${challenge.qop}:${ha2}`,
-    )
-
-    const digestResponse = {
-      username: `"${this.digestAuth.username}"`,
-      realm: `"${challenge.realm}"`,
-      nonce: `"${challenge.nonce}"`,
-      uri: `"${url}"`,
-      algorithm: challenge.algorithm ? `"${challenge.algorithm}"` : undefined,
-      qop: `"${challenge.qop}"`,
-      nc: nonceCount,
-      cnonce: `"${cnonce}"`,
-      response: `"${response_value}"`,
-      opaque: challenge.opaque ? `"${challenge.opaque}"` : undefined,
-    }
-
-    // Build the Authorization header
-    const authValue = Object.entries(digestResponse)
-      .filter(([_, value]) => value !== undefined)
-      .map(([key, value]) => `${key}=${value}`)
-      .join(', ')
-
-    this.customHeaders.Authorization = `Digest ${authValue}`
-
-    // Retry the request with digest credentials
-    return fetch(url, {
-      method,
-      headers: this.getHeaders(),
-      // Awaited. `formatBody` is async - it may build a FormData from file
-      // attachments - and the cast made handing `fetch` the unresolved promise
-      // look deliberate, so this retry sent the string "[object Promise]" as
-      // its body every time digest auth was challenged.
-      body: body ? await this.formatBody(body) : undefined,
+  /** Claim configuration synchronously so overlapping requests cannot share it. */
+  private request<T = string>(url: string, method: string, body?: BodyData): Promise<FetcherResponse<T>> {
+    const owned = new Fetcher()
+    Object.assign(owned, this, {
+      defaultHeaders: { ...this.defaultHeaders },
+      customHeaders: { ...this.customHeaders },
+      attachments: [...this.attachments],
+      digestAuth: this.digestAuth ? { ...this.digestAuth } : undefined,
     })
+    this.resetState()
+    return owned.perform<T>(url, method, body)
   }
 
-  private async generateMD5(str: string): Promise<string> {
-    const encoder = new TextEncoder()
-    const data = encoder.encode(str)
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data)
-    const hashArray = Array.from(new Uint8Array(hashBuffer))
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
-  }
-
-  private async request<T = string>(url: string, method: string, body?: BodyData): Promise<FetcherResponse<T>> {
+  private async perform<T = string>(url: string, method: string, body?: BodyData): Promise<FetcherResponse<T>> {
     const urlWithParams = this.addQueryParams(url)
     const formattedBody = await this.formatBody(body)
-
-    let response = await fetch(urlWithParams, {
-      method,
-      headers: this.getHeaders(),
-      body: formattedBody,
-    })
-
-    // Handle digest authentication if needed
+    const headers = this.getHeaders()
+    if (this.isMultipart) headers.delete('content-type')
+    const prepared = new Request(urlWithParams, { method, headers, body: formattedBody })
+    let response: Response
     if (this.digestAuth) {
-      response = await this.handleDigestAuth(response, urlWithParams, method, body)
+      // Buffer exactly once: multipart boundaries and all body bytes must match
+      // the authenticated replay, including auth-int's entity-body digest.
+      const bytes = prepared.body ? new Uint8Array(await prepared.arrayBuffer()) : undefined
+      // Disable the browser's native HTTP-auth dialog; this client owns the challenge.
+      const send = (requestHeaders: Headers) => fetch(prepared.url, { method, headers: requestHeaders, body: bytes, credentials: 'omit' })
+      response = await send(prepared.headers)
+      const target = new URL(prepared.url)
+      target.hash = ''
+      const respondedAt = new URL(response.url)
+      respondedAt.hash = ''
+      if (response.status === 401 && respondedAt.href === target.href) {
+        const challenge = response.headers.get('www-authenticate')
+        if (challenge) {
+          const { digestAuthorization } = await import('./digest')
+          const authorization = await digestAuthorization(challenge, this.digestAuth, method, target.href, bytes ?? new Uint8Array())
+          if (authorization) {
+            await response.body?.cancel()
+            const authenticated = new Headers(prepared.headers)
+            authenticated.set('authorization', authorization)
+            response = await send(authenticated)
+          }
+        }
+      }
+    }
+    else {
+      response = await fetch(prepared)
     }
 
-    const data = await response.json() as T
+    const text = await response.text()
+    const contentType = response.headers.get('content-type')?.split(';')[0]?.trim().toLowerCase() ?? ''
+    const json = contentType === 'application/json' || contentType.endsWith('+json')
+    const data = (text === '' ? null : json ? JSON.parse(text) : text) as T
     this.resetState() // Reset after use
 
     return new FetcherResponseImpl(
