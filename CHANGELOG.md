@@ -1,5 +1,25 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.430...v0.75.431)
+
+## 🐛 Bug Fixes
+
+- encode database connection URL components ([70e5aed](https://github.com/stacksjs/stacks/commit/70e5aed)) _(by Chris Breuer <chris@stacksjs.com>)_
+- serialize form provisioning and row lease claims ([49a3b8f](https://github.com/stacksjs/stacks/commit/49a3b8f)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **datetime**: isolate cold formatter construction from shared cache ([7c65a03](https://github.com/stacksjs/stacks/commit/7c65a03)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **docs**: refresh database capability references ([6df8bc4](https://github.com/stacksjs/stacks/commit/6df8bc4)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **database**: install published connection and retry fixes ([39bb5a7](https://github.com/stacksjs/stacks/commit/39bb5a7)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.429...v0.75.430)
 
 ## 🐛 Bug Fixes
