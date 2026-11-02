@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.426...v0.75.427)
+
+## 🐛 Bug Fixes
+
+- **database**: reject nonunique row lease claims atomically ([0bad9f0](https://github.com/stacksjs/stacks/commit/0bad9f0)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **payments**: the Stripe driver converts ISK, UGX and MGA amounts to Stripe's units ([faba2ef](https://github.com/stacksjs/stacks/commit/faba2ef)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3106](https://github.com/stacksjs/stacks/issues/3106))
+- **buddy**: buddy new counts any answer from github.com as being online ([601cf22](https://github.com/stacksjs/stacks/commit/601cf22)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3125](https://github.com/stacksjs/stacks/issues/3125))
+- **notifications**: a categorized send waits when the opt-outs cannot be read ([c19f6d4](https://github.com/stacksjs/stacks/commit/c19f6d4)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3102](https://github.com/stacksjs/stacks/issues/3102))
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.425...v0.75.426)
 
 ## 🔧 Chores
