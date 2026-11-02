@@ -61,13 +61,19 @@ control, even when the feed declares a suggested interval.
 
 ## Recurrence
 
-parseRRule(value) returns RecurrenceRule or null for unsupported frequency.
-expandRecurrence(rule, dtstart, windowStart, windowEnd) returns matching UTC
-start instants, capped defensively. Supported fields include DAILY/WEEKLY/
-MONTHLY/YEARLY, INTERVAL, COUNT, UNTIL, BYDAY and BYMONTHDAY. This is a subset;
-unknown fields are not a proof of full RFC conformance. Callers own timezone
-interpretation and DST policy. Calendar clients can expand a feed's raw rrule
-independently from the server subset.
+parseRRule(value) returns a RecurrenceRule, or null for any rule it cannot
+follow exactly: an unsupported frequency or part (BYMONTH, BYSETPOS, BYWEEKNO,
+BYYEARDAY, BYHOUR...), a combination RFC 5545 rules out or this subset does
+not cover, or a value it cannot read. Null means "do not expand this here",
+never "expanded without the part". expandRecurrence(rule, dtstart, windowStart,
+windowEnd) returns matching UTC start instants, capped at 1000.
+
+The subset: DAILY/WEEKLY/MONTHLY/YEARLY, INTERVAL, COUNT or UNTIL, WKST, BYDAY
+(a filter for DAILY and WEEKLY; within a month, `MO` is every Monday and `2TU`
+or `-1FR` an ordinal) and BYMONTHDAY for DAILY or MONTHLY (`-1` is the last
+day). Weeks start on WKST, Monday by default, as clients expand them. YEARLY
+repeats dtstart's date, skipping years without it (Feb 29). Callers own
+timezone interpretation and DST policy.
 
 ## Sources and evidence
 
