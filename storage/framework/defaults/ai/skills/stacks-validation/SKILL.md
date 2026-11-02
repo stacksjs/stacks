@@ -402,6 +402,8 @@ they are. Inferred object shapes are native, not a hand-written request interfac
 schema.file().required().image().mimeTypes([...]).maxBytes(n).minBytes(n).
 extensions([...]).custom(fn) provides FileLike validation. Client MIME/extension
 checks do not prove the bytes; use stacks-storage's MIME verification where needed.
+An upload is a class instance (the router's `UploadedFile`); a plain object, which
+is what a JSON body gives for the same field name, is refused.
 
 registerRule/getCustomRule, unique(table,column,exceptId?), exists(table,column)
 and validateFieldAsync support application async validation. Current unique/exists

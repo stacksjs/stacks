@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+import { file } from '@stacksjs/validation/file-validator'
 import { createStacksRouter, validateActionInput } from '../src/stacks-router'
 
 /**
@@ -81,5 +82,44 @@ describe('input keys', () => {
     finally {
       server.stop()
     }
+  })
+})
+
+describe('file fields', () => {
+  function avatarRouter(uploaded: string[]) {
+    const router = createStacksRouter()
+    router.post('/avatar', {
+      skipCsrf: true,
+      validations: { avatar: { rule: file().required().image() } },
+      handle(req: any) {
+        uploaded.push(req.file('avatar')?.name ?? 'none')
+        return { ok: true }
+      },
+    })
+    return router
+  }
+
+  // A body field wins over a file of the same name, so a JSON body can put an
+  // object where an upload belongs.
+  it('a JSON body cannot pass for an upload', async () => {
+    const uploaded: string[] = []
+    const response = await avatarRouter(uploaded).handleRequest(new Request('http://localhost/avatar', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ avatar: { size: 10, mimetype: 'image/png', originalName: 'me.png' } }),
+    }))
+
+    expect(response.status).toBe(422)
+    expect(uploaded).toEqual([])
+  })
+
+  it('a multipart upload still passes', async () => {
+    const uploaded: string[] = []
+    const form = new FormData()
+    form.append('avatar', new File([new Uint8Array([137, 80, 78, 71])], 'me.png', { type: 'image/png' }))
+    const response = await avatarRouter(uploaded).handleRequest(new Request('http://localhost/avatar', { method: 'POST', body: form }))
+
+    expect(response.status).toBe(200)
+    expect(uploaded).toEqual(['me.png'])
   })
 })

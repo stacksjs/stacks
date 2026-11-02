@@ -4,20 +4,21 @@ import { file, FileValidator, schema } from '../src/schema'
 /**
  * `schema.file()` tests (stacksjs/stacks#1856 Phase A).
  *
- * The validator runs against the structural `FileLike` shape — both
- * the router's `UploadedFile` class instances and the older
- * `{ originalName, mimetype, buffer, size }` direct-multipart shape
- * satisfy it. Tests use the structural shape directly so they don't
- * depend on the router being present in the test environment.
+ * The validator runs against the `FileLike` shape on a class instance, as
+ * the router's `UploadedFile` is. Tests build one from a tiny class so they
+ * don't depend on the router being present in the test environment; a plain
+ * object is what a JSON body gives, and is refused.
  */
 
+class FakeUpload {}
+
 function fakeFile(overrides: Partial<{ size: number, mimetype?: string, mimeType?: string, originalName?: string, name?: string }> = {}) {
-  return {
+  return Object.assign(new FakeUpload(), {
     size: 1024,
     mimetype: 'image/jpeg',
     originalName: 'photo.jpg',
     ...overrides,
-  }
+  })
 }
 
 describe('schema.file()', () => {
@@ -64,6 +65,14 @@ describe('FileValidator - required', () => {
     expect(v.validate('not a file').valid).toBe(false)
     expect(v.validate(42).valid).toBe(false)
   })
+
+  test('refuses a plain object, which is what a JSON body gives', () => {
+    const v = file().required().image()
+    expect(v.validate({ size: 10, mimetype: 'image/png', originalName: 'me.png' }).valid).toBe(false)
+    expect(v.validate(JSON.parse('{"size":10,"mimetype":"image/png"}')).valid).toBe(false)
+    expect(v.validate(Object.assign(Object.create(null), { size: 10, mimetype: 'image/png' })).valid).toBe(false)
+    expect(v.validate(fakeFile({ mimetype: 'image/png' })).valid).toBe(true)
+  })
 })
 
 describe('FileValidator - image()', () => {
@@ -85,7 +94,7 @@ describe('FileValidator - image()', () => {
   })
 
   test('reads the class-style `mimeType` alias too', () => {
-    const fileWithClassShape = { size: 1024, mimeType: 'image/png', name: 'x.png' }
+    const fileWithClassShape = Object.assign(new FakeUpload(), { size: 1024, mimeType: 'image/png', name: 'x.png' })
     expect(file().image().validate(fileWithClassShape).valid).toBe(true)
   })
 })
@@ -167,7 +176,7 @@ describe('FileValidator - action contract', () => {
     // A new validator must satisfy that contract — this test guards against an
     // accidental rename.
     const v = file().required().image()
-    const r = v.validate({ size: 100, mimetype: 'application/pdf' })
+    const r = v.validate(fakeFile({ size: 100, mimetype: 'application/pdf' }))
     expect(r).toHaveProperty('valid')
     expect(r.valid).toBe(false)
     expect(Array.isArray(r.errors)).toBe(true)

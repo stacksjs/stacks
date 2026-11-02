@@ -25,11 +25,11 @@
  * })
  * ```
  *
- * The validator is intentionally narrow on the input it accepts: a
- * structural shape with `size: number` and either `mimetype` or
- * `mimeType`, optionally with `originalName` / `name`. Both the
- * router's wrapping `UploadedFile` class and the raw multipart-parse
- * shape satisfy it.
+ * The validator is intentionally narrow on the input it accepts: an
+ * object with `size: number` and either `mimetype` or `mimeType`,
+ * optionally with `originalName` / `name`, that is not a plain object.
+ * The router's wrapping `UploadedFile` class satisfies it; a plain
+ * object is what a JSON body gives, and is refused.
  */
 
 /** Shape this validator runs against. */
@@ -192,7 +192,12 @@ export class FileValidator {
       return { valid: true }
     }
 
-    if (typeof value !== 'object' || typeof (value as FileLike).size !== 'number') {
+    // An upload arrives as a class instance (the router's `UploadedFile`),
+    // never a plain object. The router validates a body field over a file of
+    // the same name, so a JSON body of
+    // `{"avatar":{"size":10,"mimetype":"image/png"}}` used to pass
+    // `file().required().image()` while `req.file('avatar')` was null.
+    if (typeof value !== 'object' || isPlainObject(value) || typeof (value as FileLike).size !== 'number') {
       return { valid: false, errors: [{ message: 'must be an uploaded file' }] }
     }
 
@@ -204,6 +209,12 @@ export class FileValidator {
     }
     return errors.length === 0 ? { valid: true } : { valid: false, errors }
   }
+}
+
+/** What `JSON.parse` builds: an object whose prototype is `Object.prototype` or none. */
+function isPlainObject(value: object): boolean {
+  const proto = Object.getPrototypeOf(value)
+  return proto === Object.prototype || proto === null
 }
 
 /** Factory matching ts-validation's `v.string()` / `v.number()` style. */
