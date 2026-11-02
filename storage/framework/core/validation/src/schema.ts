@@ -1,5 +1,6 @@
 import type { ValidationInstance, Validator } from '@stacksjs/ts-validation'
 import { v } from '@stacksjs/ts-validation'
+import { rememberValidatedValue, validatedValue } from './validated-value'
 import { file, FileValidator } from './file-validator'
 import { withConditionals } from './conditional'
 import { objectWithContext } from './object-with-context'
@@ -88,9 +89,6 @@ function dateInputFactory(): ReturnType<ValidationInstance['date']> {
   return withConditionals(validator) as unknown as ReturnType<ValidationInstance['date']>
 }
 
-/** `YYYY-MM-DD HH:MM:SS`, optionally with fractional seconds. What SQL hands back. */
-const SQL_DATETIME = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}(?:\.\d+)?$/
-
 /**
  * Anything the framework actually stores in a timestamp column.
  *
@@ -123,10 +121,18 @@ function isValidTimestampInput(value: unknown): boolean {
   if (/^\d+$/.test(trimmed))
     return isValidTimestampInput(Number(trimmed))
 
-  if (SQL_DATETIME.test(trimmed))
-    return !Number.isNaN(new Date(trimmed.replace(' ', 'T')).getTime())
-
-  return !Number.isNaN(new Date(trimmed).getTime())
+  // Validate the written calendar before parsing can normalize February 30.
+  // SQL timestamps, minute precision, offsets and expanded ISO years remain supported.
+  const parts = /^([+-]\d{6}|\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d+))?)?(?:Z|[+-]\d{2}:?\d{2})?)?$/i.exec(trimmed)
+  if (!parts) return false
+  const calendar = new Date(`${parts[1]}-${parts[2]}-${parts[3]}T00:00:00.000Z`)
+  if (!Number.isFinite(calendar.getTime()) || calendar.getUTCFullYear() !== Number(parts[1]) || calendar.getUTCMonth() + 1 !== Number(parts[2]) || calendar.getUTCDate() !== Number(parts[3])) return false
+  if (parts[4] !== undefined) {
+    const hour = Number(parts[4]), minute = Number(parts[5]), second = Number(parts[6] ?? 0)
+    if (hour > 24 || minute > 59 || second > 59) return false
+    if (hour === 24 && (minute !== 0 || second !== 0 || /[1-9]/.test(parts[7] ?? ''))) return false
+  }
+  return !Number.isNaN(new Date(trimmed.replace(' ', 'T')).getTime())
 }
 
 function timestampInputFactory(): ReturnType<ValidationInstance['timestamp']> {
@@ -138,6 +144,25 @@ function timestampInputFactory(): ReturnType<ValidationInstance['timestamp']> {
 // Property access is much hotter than the number of factory names. Keep one
 // forwarding function per name, then resolve the upstream factory when that
 // function runs so extensions to ts-validation remain visible.
+const elementRule = Symbol.for('stacks.validation.arrayElement')
+function projectArray(validator: Validator<any>): Validator<any> {
+  const array = validator as Validator<any> & { each: (rule: Validator<any>) => unknown, [elementRule]?: Validator<any> }
+  const each = array.each
+  const validate = array.validate
+  array.each = function (rule) { this[elementRule] = rule; return each.call(this, rule) }
+  array.validate = function (input) {
+    const result = validate.call(this, input)
+    const child = (this as typeof array)[elementRule]
+    if (result.valid && child && Array.isArray(input)) {
+      const value = input.map(item => validatedValue(child, item))
+      rememberValidatedValue(this, input, value)
+      return { ...result, value }
+    }
+    return result
+  }
+  return array
+}
+
 const wrappedFactories: Record<string, (...args: any[]) => Validator<any>> = Object.create(null)
 
 /**
@@ -159,7 +184,8 @@ export const schema: SchemaWithFile = new Proxy(v as unknown as SchemaWithFile, 
       if (!FACTORY_KEYS.has(prop)) return Reflect.get(target, prop, receiver)
       const wrapped = (...args: any[]) => {
         const factory = Reflect.get(target, prop, receiver)
-        return withConditionals(factory(...args))
+        const validator = factory(...args)
+        return withConditionals(prop === 'array' ? projectArray(validator) : validator)
       }
       wrappedFactories[prop] = wrapped
       return wrapped

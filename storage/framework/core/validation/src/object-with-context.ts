@@ -13,13 +13,14 @@
  * dispatch) and only adds the conditional refinement before each
  * child's `.validate()` call.
  *
- * For non-conditional schemas the wrapper is functionally identical to
- * the upstream validator — the conditional walk is a no-op when no
- * field has `__conditionals` set, so existing apps see no behavior
- * change.
+ * Successful results also expose the declared, supplied fields as `value`,
+ * allowing request boundaries to discard undeclared nested input without
+ * running any validator again.
  */
 
 import type { RequiredMarker, ValidationResult, Validator } from '@stacksjs/ts-validation'
+import { rememberValidatedValue } from './validated-value'
+import { validationFailure, validateRule } from './messages'
 import { applyConditionals, withConditionals } from './conditional'
 import type { ConditionalAPI } from './conditional'
 
@@ -140,10 +141,10 @@ export function objectWithContext<const TShape extends ValidatorShape = Record<s
         return { valid: true, errors: this.isPartOfShape ? {} : [] }
       }
       if (this.isRequired && isEmpty) {
-        const message = 'value is required'
+        const error = validationFailure('value is required', 'required')
         return this.isPartOfShape
-          ? { valid: false, errors: { object: [{ message }] } }
-          : { valid: false, errors: [{ message }] }
+          ? { valid: false, errors: { object: [error] } }
+          : { valid: false, errors: [error] }
       }
       if (typeof value !== 'object' || Array.isArray(value)) {
         const message = 'Must be an object'
@@ -153,7 +154,8 @@ export function objectWithContext<const TShape extends ValidatorShape = Record<s
       }
 
       const parent = value as Record<string, unknown>
-      const errors: Record<string, { message: string }[]> = {}
+      const errors: Record<string, { message: string }[]> = Object.create(null)
+      const cleaned: Array<[string, unknown]> = []
       let hasErrors = false
 
       for (const key of Object.keys(this.schema)) {
@@ -163,9 +165,12 @@ export function objectWithContext<const TShape extends ValidatorShape = Record<s
         // Apply conditional refinement against the parent context. If
         // no conditionals fire, the base validator is returned as-is.
         const child = applyConditionals(baseChild, parent)
-        const fieldValue = parent[key]
-        const result = child.validate(fieldValue)
-        if (result.valid) continue
+        const fieldValue = Object.hasOwn(parent, key) ? parent[key] : undefined
+        const result = validateRule(child, fieldValue)
+        if (result.valid) {
+          if (Object.hasOwn(parent, key)) cleaned.push([key, 'value' in result ? result.value : fieldValue])
+          continue
+        }
 
         hasErrors = true
         const isMap = !Array.isArray(result.errors)
@@ -183,7 +188,9 @@ export function objectWithContext<const TShape extends ValidatorShape = Record<s
       }
 
       if (hasErrors) return { valid: false, errors }
-      return { valid: true, errors: {} }
+      const projected = Object.fromEntries(cleaned)
+      rememberValidatedValue(this, parent, projected)
+      return { valid: true, errors: {}, value: projected } as ValidationResult
     },
   }
 

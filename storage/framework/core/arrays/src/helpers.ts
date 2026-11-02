@@ -165,7 +165,7 @@ export function uniqueBy<T>(array: readonly T[], equalFn: (a: T, b: T) => boolea
  * ```
  */
 export function last(array: readonly []): undefined
-export function last<T>(array: readonly T[]): T
+export function last<T>(array: readonly T[]): T | undefined
 export function last<T>(array: readonly T[]): T | undefined {
   return at(array, -1)
 }
@@ -211,7 +211,7 @@ export function remove<T>(array: T[], value: T): boolean {
  * ```
  */
 export function at(array: readonly [], index: number): undefined
-export function at<T>(array: readonly T[], index: number): T
+export function at<T>(array: readonly T[], index: number): T | undefined
 export function at<T>(array: readonly T[] | [], index: number): T | undefined {
   const len = array.length
   if (!len)
@@ -293,6 +293,8 @@ export function clampArrayRange(arr: readonly unknown[], n: number): number {
  * ```
  */
 export function sample<T>(arr: T[], count: number): T[] {
+  if (!Number.isSafeInteger(count) || count < 0) throw new RangeError('sample count must be a non-negative safe integer')
+  if (arr.length === 0) return []
   return Array.from({ length: count }, () => arr[Math.floor(Math.random() * arr.length)]!)
 }
 

@@ -1,16 +1,12 @@
 import type { Validator } from '@stacksjs/ts-validation'
 import type { FieldMessages } from './messages'
 import { HttpError } from '@stacksjs/error-handling/http-error'
-import { fieldErrorMessages } from './messages'
+import { applyFieldMessages } from './messages'
 import { objectWithContext } from './object-with-context'
+import { beginValidation } from './reporter'
 
-/**
- * Shape of a validation rule set understood by `validate()`. Each key maps to
- * either a raw validator or the model-attribute form with a custom message.
- */
-export type ValidationRules = Record<string, Validator<any> | { rule: Validator<any>, message?: string | Record<string, string> }>
-
-interface RequestLike {
+export type ValidationRules = Record<string, Validator<any> | { rule: Validator<any>, message?: FieldMessages }>
+export interface RequestLike {
   all?: () => Record<string, unknown> | Promise<Record<string, unknown>>
   jsonBody?: Record<string, unknown>
   formBody?: Record<string, unknown>
@@ -18,128 +14,64 @@ interface RequestLike {
   params?: Record<string, unknown>
   url?: string
 }
+export interface ValidateOptions {
+  /** Plain records are data. Select request mode for URL/query/params-only adapters. */
+  source?: 'data' | 'request'
+}
 
-const requestObjectValidator = objectWithContext<Record<string, Validator<any>>>()
-
-async function gatherRequestInput(source: RequestLike | Record<string, unknown>): Promise<Record<string, unknown>> {
-  if (!source || typeof source !== 'object') return {}
-  if (typeof (source as RequestLike).all === 'function') {
-    const all = (source as RequestLike).all!()
-    return all instanceof Promise ? await all : all
-  }
-
+async function gatherRequestInput(source: RequestLike | Record<string, unknown>, options: ValidateOptions): Promise<Record<string, unknown>> {
+  if (!source || typeof source !== 'object') throw new HttpError(422, 'Send an input object')
+  if (options.source !== 'data' && typeof (source as RequestLike).all === 'function') return await (source as Required<Pick<RequestLike, 'all'>>).all()
+  const native = options.source !== 'data' && source instanceof Request
+  const adapter = options.source === 'request' || (options.source !== 'data' && (Object.hasOwn(source, 'jsonBody') || Object.hasOwn(source, 'formBody')))
+  if (!native && !adapter) return source as Record<string, unknown>
   const request = source as RequestLike
-  const input: Record<string, unknown> = {}
+  const input: Record<string, unknown> = Object.create(null)
   if (request.url) {
-    try {
-      const parsed = new URL(request.url)
-      parsed.searchParams.forEach((value, key) => { input[key] = value })
-    }
-    catch { /* Ignore malformed URLs. */ }
+    try { new URL(request.url).searchParams.forEach((value, key) => { input[key] = value }) }
+    catch { throw new HttpError(422, 'Invalid request URL') }
   }
-  if (request.query && typeof request.query === 'object') Object.assign(input, request.query)
-  if (request.jsonBody && typeof request.jsonBody === 'object') Object.assign(input, request.jsonBody)
-  if (request.formBody && typeof request.formBody === 'object') Object.assign(input, request.formBody)
-  if (request.params && typeof request.params === 'object') Object.assign(input, request.params)
-  if (Object.keys(input).length === 0 && !('all' in source) && !('jsonBody' in source))
-    return source as Record<string, unknown>
+  if (native && !['GET', 'HEAD'].includes(source.method) && source.body !== null) {
+    const type = source.headers.get('content-type')?.split(';')[0]?.trim().toLowerCase()
+    try {
+      if (type === 'application/json' || type?.endsWith('+json')) {
+        const body: unknown = await source.json()
+        if (!body || typeof body !== 'object' || Array.isArray(body)) throw new Error('Not an object')
+        Object.assign(input, body)
+      }
+      else if (type === 'application/x-www-form-urlencoded' || type === 'multipart/form-data') {
+        for (const [key, value] of await source.formData()) input[key] = value
+      }
+      else throw new Error('Unsupported media type')
+    }
+    catch { throw new HttpError(422, 'Send a valid request body') }
+  }
+  for (const values of [request.query, request.jsonBody, request.formBody, request.params]) {
+    if (values && typeof values === 'object') Object.assign(input, values)
+  }
   return input
 }
 
-/**
- * Validate request input against schema rules and return the cleaned payload.
- *
- * Throws `HttpError(422, 'Validation failed', { errors })` when a rule fails.
- */
-export async function validate<T = Record<string, unknown>>(
-  request: RequestLike | Record<string, unknown>,
-  rules: ValidationRules,
-): Promise<T> {
-  const input = await gatherRequestInput(request)
-  const ruleObject: Record<string, Validator<any>> = {}
-  // Applied to the errors afterwards (see `./messages`). They used to go to
-  // ts-validation's process-wide provider as `email.default` and `name.min`,
-  // keys it never looks up, so every custom message was silently dropped.
-  const messages: Record<string, FieldMessages> = {}
-
+/** Validate once and return declared, supplied fields only, including nested object shapes. */
+export async function validate<T = Record<string, unknown>>(request: RequestLike | Record<string, unknown>, rules: ValidationRules, options: ValidateOptions = {}): Promise<T> {
+  beginValidation()
+  const input = await gatherRequestInput(request, options)
+  if (!input || typeof input !== 'object' || Array.isArray(input)) throw new HttpError(422, 'Send an input object')
+  const ruleObject: Record<string, Validator<any>> = Object.create(null)
+  const messages: Record<string, FieldMessages> = Object.create(null)
   for (const [field, definition] of Object.entries(rules)) {
     if (!definition) continue
-    if (typeof (definition as { rule?: unknown }).rule === 'object' || typeof (definition as { rule?: unknown }).rule === 'function') {
-      ruleObject[field] = (definition as { rule: Validator<any> }).rule
-      const message = (definition as { message?: FieldMessages }).message
-      if (typeof message === 'string' || (message && typeof message === 'object'))
-        messages[field] = message
+    if ('rule' in definition) {
+      ruleObject[field] = definition.rule
+      if (definition.message) messages[field] = definition.message
     }
-    else {
-      ruleObject[field] = definition as Validator<any>
-    }
+    else ruleObject[field] = definition
   }
-
-  try {
-    const result = await requestObjectValidator.shape(ruleObject).validate(input)
-    if (!result.valid) {
-      const errors = normalizeValidationErrors(result.errors)
-      for (const [field, message] of Object.entries(messages)) {
-        const reported = errors[field]
-        if (reported)
-          errors[field] = fieldErrorMessages(ruleObject[field], input[field], reported.map(text => ({ message: text })), message, field)
-      }
-      throw new HttpError(422, 'Validation failed', { errors })
-    }
-
-    const validated = (result as { value?: unknown }).value ?? input
-    return validated as T
+  const result = objectWithContext(ruleObject).validate(input) as ReturnType<ReturnType<typeof objectWithContext>['validate']> & { value?: unknown }
+  if (!result.valid) {
+    const errors = result.errors as Record<string, { message: string }[]>
+    applyFieldMessages(errors, ruleObject, messages, input)
+    throw new HttpError(422, 'Validation failed', { errors: Object.fromEntries(Object.entries(errors).map(([field, entries]) => [field, entries.map(error => error.message)])) })
   }
-  catch (error: unknown) {
-    if (isHttpErrorLike(error)) throw error
-    throw new HttpError(500, getErrorMessage(error) || 'An unexpected validation error occurred')
-  }
-}
-
-function isHttpErrorLike(error: unknown): error is Error & { status: number } {
-  return error instanceof HttpError
-    || (error instanceof Error
-      && typeof (error as Error & { status?: unknown }).status === 'number')
-}
-
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message
-  if (typeof error === 'string') return error
-  if (typeof error === 'number' || typeof error === 'boolean') return String(error)
-  if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string')
-    return error.message
-  if (error == null) return 'Unknown error'
-  try {
-    return String(error)
-  }
-  catch {
-    return 'Unknown error'
-  }
-}
-
-function normalizeValidationErrors(value: unknown): Record<string, string[]> {
-  const errors: Record<string, string[]> = {}
-  if (Array.isArray(value)) {
-    for (const entry of value) {
-      if (!entry || typeof entry !== 'object') continue
-      const field = typeof entry.field === 'string' ? entry.field : '_'
-      const message = typeof entry.message === 'string' ? entry.message : 'Validation failed'
-      ;(errors[field] ??= []).push(message)
-    }
-    return errors
-  }
-
-  if (!value || typeof value !== 'object') return errors
-  for (const [field, entries] of Object.entries(value)) {
-    const list = Array.isArray(entries) ? entries : [entries]
-    for (const entry of list) {
-      const message = typeof entry === 'string'
-        ? entry
-        : entry && typeof entry === 'object' && typeof entry.message === 'string'
-          ? entry.message
-          : 'Validation failed'
-      ;(errors[field] ??= []).push(message)
-    }
-  }
-  return errors
+  return result.value as T
 }

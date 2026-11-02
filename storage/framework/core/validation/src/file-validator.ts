@@ -128,6 +128,7 @@ export class FileValidator {
 
   /** Maximum size in bytes. */
   maxBytes(max: number): this {
+    if (!Number.isSafeInteger(max) || max < 0) throw new RangeError('maxBytes must be a non-negative safe integer')
     this._rules.push((file) => {
       if (typeof file.size !== 'number')
         return 'has no size - cannot enforce maxBytes'
@@ -140,6 +141,7 @@ export class FileValidator {
 
   /** Minimum size in bytes. Useful to reject empty uploads. */
   minBytes(min: number): this {
+    if (!Number.isSafeInteger(min) || min < 0) throw new RangeError('minBytes must be a non-negative safe integer')
     this._rules.push((file) => {
       if (typeof file.size !== 'number')
         return 'has no size - cannot enforce minBytes'

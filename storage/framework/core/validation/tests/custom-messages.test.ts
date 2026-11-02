@@ -15,6 +15,18 @@ async function errorsOf(run: () => Promise<unknown>): Promise<Record<string, unk
 }
 
 describe('custom messages reach the errors they name', () => {
+  it('keeps required object messages for absent, null and conditional fields', async () => {
+    for (const input of [{}, { profile: null }]) {
+      expect(await errorsOf(() => validate(input, {
+        profile: { rule: schema.object({ email: schema.string() }).required(), message: { required: 'Profile needed' } },
+      }))).toEqual({ profile: ['Profile needed'] })
+    }
+    expect(await errorsOf(() => validate({ active: true }, {
+      active: schema.boolean(),
+      profile: { rule: schema.object({}).optional().when('active', true, rule => rule.required()), message: { required: 'Active profile needed' } },
+    }))).toEqual({ profile: ['Active profile needed'] })
+  })
+
   it('validate() uses a field\'s string message for any failure', async () => {
     const errors = await errorsOf(() => validate({ jsonBody: { email: 'nope' } }, {
       email: { rule: schema.string().email(), message: 'Give us an email we can write to' },

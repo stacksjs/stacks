@@ -10,7 +10,11 @@
 export function average(arr: number[]): number {
   if (arr.length === 0)
     throw new Error('Cannot compute average of an empty array')
-  return sum(arr) / arr.length
+  const total = sum(arr)
+  if (Number.isFinite(total) || arr.some(value => !Number.isFinite(value))) return total / arr.length
+  // Scale finite inputs only when their intermediate sum overflows.
+  const scale = arr.reduce((largest, value) => Math.max(largest, Math.abs(value)), 0)
+  return (arr.reduce((acc, value) => acc + value / scale, 0) / arr.length) * scale
 }
 
 /**
@@ -47,7 +51,7 @@ export function median(arr: number[]): number {
 
   if (sorted.length % 2 !== 0)
     medianValue = sorted[mid] as number
-  else medianValue = ((sorted[mid] as number) + (sorted[mid - 1] as number)) / 2 // or (sorted[mid - 1] + sorted[mid]) / 2
+    else medianValue = average([sorted[mid] as number, sorted[mid - 1] as number])
 
   return medianValue
 }
@@ -138,7 +142,9 @@ export function product(array: readonly number[]): number {
 export function min(array: readonly number[]): number {
   if (array.length === 0)
     throw new Error('Cannot compute min of an empty array')
-  return Math.min(...array)
+  let result = Infinity
+  for (const value of array) result = Math.min(result, value)
+  return result
 }
 
 /**
@@ -154,7 +160,9 @@ export function min(array: readonly number[]): number {
 export function max(array: readonly number[]): number {
   if (array.length === 0)
     throw new Error('Cannot compute max of an empty array')
-  return Math.max(...array)
+  let result = -Infinity
+  for (const value of array) result = Math.max(result, value)
+  return result
 }
 
 /**

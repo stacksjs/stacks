@@ -88,3 +88,43 @@ spelling, including camel-case definitions.
 
 `positiveIdOrNull(value)` is the nullable adapter for optional identifiers and
 record serializers; it uses the same safe-integer and type rules as parsePositiveId.
+
+
+## Validation boundaries
+
+`validate(data, rules)` treats plain records as application data, including fields named
+`url`, `query` and `params`. Native Requests are parsed according to Content-Type and
+Stacks requests use their `all()` method. Adapters exposing `jsonBody` or `formBody`
+remain supported. URL/query/params-only adapters select `{ source: 'request' }` as the
+third argument. `{ source: 'data' }` forces plain-data interpretation for records with
+adapter-like field names.
+
+Returned values contain declared, supplied fields only. Nested object shapes and arrays
+validated with `each()` also omit undeclared fields. Inputs and reusable schemas are not
+mutated. Opaque custom validators retain their accepted values. Required fields and
+conditional siblings must be own properties; prototype properties never count as input.
+Special names such as `__proto__` are retained safely as data and error keys.
+
+`validateField()` discovers nested app models, honors app overrides, and matches exact
+model filenames or qualified paths. Ambiguous bare names require a qualified path.
+A model default excuses an omitted optional value, not a supplied invalid one. Attribute
+names and snake-case column names are accepted. When both spellings are supplied,
+the attribute name takes precedence, matching the ORM write path.
+
+Database-backed `exists()` and `unique()` propagate query failures instead of approving
+unchecked values. This intentionally changes the previous fail-open behavior. Use a
+separate operational error response for database failures; do not treat them as success.
+
+Custom messages use the effective rule's reported failures without executing predicates
+again. Field-wide strings also cover nested errors. Where opaque rules render identical
+messages for different failures, the original message is retained rather than guessing.
+
+Validation reports use async-local state. Each public validation operation starts an
+isolated report before its first await, and successful operations clear prior errors.
+`getErrors()` returns a snapshot. Standalone adapters or jobs that call `reportError()`
+directly can wrap their work with `withValidationContext(() => ...)` to define its scope.
+
+Timestamp strings validate their written calendar before parsing. SQL timestamps, ISO
+offsets, minute precision, expanded years and the exact 24:00 midnight notation remain
+supported. File byte limits require nonnegative safe integers; invalid configuration
+throws immediately.
