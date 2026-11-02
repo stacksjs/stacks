@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.440...v0.75.441)
+
+## 🐛 Bug Fixes
+
+- **types**: declare the public Stripe integration peer ([d853404](https://github.com/stacksjs/stacks/commit/d853404)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.439...v0.75.440)
 
 ## 🔧 Chores
