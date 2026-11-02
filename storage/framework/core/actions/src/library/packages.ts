@@ -43,6 +43,10 @@ export interface LibraryPackageDefinition {
   registry: 'pantry' | 'npm'
   /** Project-relative README to publish, when the package names one. */
   readme?: string
+  /** Files and directories copied into `dist/<dest>`, from project-relative `source`. */
+  assets: Array<{ dest: string, source: string }>
+  /** Shell command run in the project root before the build, to produce the assets. */
+  prebuild?: string
   runtime: 'standalone' | 'stx'
   sourcemap: boolean
   include: string[]
@@ -151,6 +155,17 @@ function toDefinition(option: LibraryPackageOptions, fallback: { license?: strin
         ? includeFromTags
         : defaultInclude
 
+  const assets = Object.entries(option.assets ?? {}).map(([dest, source]) => {
+    const clean = dest.replace(/^\.\//, '').replace(/\/+$/, '')
+    if (!clean || clean.startsWith('/') || clean.split('/').some(part => part === '..' || part === '.' || part === ''))
+      throw new LibraryConfigError(`Package "${name}" has an asset path "${dest}" that is not a plain path inside the package.`)
+    if (/^index(\.d)?\.[cm]?[jt]s$/.test(clean) || clean === 'bundle.js' || clean === 'bundle.css')
+      throw new LibraryConfigError(`Package "${name}" has an asset at "${dest}", which the build itself writes.`)
+    if (!source || typeof source !== 'string')
+      throw new LibraryConfigError(`Package "${name}" has an asset "${dest}" with no source path.`)
+    return { dest: clean, source }
+  })
+
   return {
     name,
     kind,
@@ -163,6 +178,8 @@ function toDefinition(option: LibraryPackageOptions, fallback: { license?: strin
     access: option.access ?? 'public',
     registry: option.registry ?? 'pantry',
     readme: option.readme,
+    assets,
+    prebuild: option.prebuild,
     runtime: option.runtime ?? 'standalone',
     sourcemap: option.shouldGenerateSourcemap ?? false,
     include,

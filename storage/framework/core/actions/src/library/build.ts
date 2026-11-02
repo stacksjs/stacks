@@ -1,7 +1,8 @@
 import type { LibraryConfig } from '@stacksjs/types'
 import type { LibraryManifest } from './manifest'
 import type { ResolvedLibraryPackage } from './packages'
-import { mkdir, rm } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
+import { cp, mkdir, rm } from 'node:fs/promises'
 import { dirname, relative, resolve } from 'node:path'
 import { transpilePackage, validateDeclarations, validateRuntimeExports } from '@stacksjs/build'
 import { log } from '@stacksjs/logging'
@@ -74,10 +75,16 @@ export async function buildLibraryPackages(options: LibraryPackageBuildOptions =
 
     await mkdir(pkg.dir, { recursive: true })
 
+    if (compile)
+      runPrebuild(pkg)
+
     if (pkg.kind === 'functions')
       await buildFunctionPackage(pkg, config, version, compile)
     else
       await buildComponentPackage(pkg, config, version, compile)
+
+    if (compile)
+      await copyAssets(pkg)
 
     reports.push({ name: pkg.name, kind: pkg.kind, dir: pkg.dir, sources: pkg.sources.length })
 
@@ -180,6 +187,47 @@ async function buildComponentPackage(pkg: ResolvedLibraryPackage, config: Librar
   await writeManifest(pkg, config, version)
   await validateDeclarations(pkg.dir)
   await validateRuntimeExports(pkg.dir)
+}
+
+/**
+ * Run the package's `prebuild` command in the project root. A failure stops
+ * the build: publishing the previous output of a step that just failed is
+ * how a stale package ships.
+ */
+function runPrebuild(pkg: ResolvedLibraryPackage): void {
+  if (!pkg.prebuild)
+    return
+
+  log.info(`${pkg.name}: ${pkg.prebuild}`)
+  const proc = Bun.spawnSync({ cmd: ['sh', '-c', pkg.prebuild], cwd: projectPath(), stdout: 'inherit', stderr: 'inherit' })
+
+  if (proc.exitCode !== 0)
+    throw new LibraryConfigError(`Package "${pkg.name}": prebuild \`${pkg.prebuild}\` exited with code ${proc.exitCode}.`)
+}
+
+/**
+ * Copy the package's `assets` into `dist/`. The transpile only emits what it
+ * compiles from TypeScript, so without this a package's JSON and scripts were
+ * silently missing from the tarball.
+ */
+async function copyAssets(pkg: ResolvedLibraryPackage): Promise<void> {
+  for (const asset of pkg.assets) {
+    const source = projectPath(asset.source)
+    const destination = resolve(pkg.dir, 'dist', asset.dest)
+
+    if (!existsSync(source)) {
+      throw new LibraryConfigError(
+        `Package "${pkg.name}" ships "${asset.source}" as ${asset.dest}, but it does not exist.`
+        + (pkg.prebuild ? ` The prebuild command did not produce it.` : ' Build it first, or set `prebuild` to the command that does.'),
+      )
+    }
+
+    if (existsSync(destination))
+      throw new LibraryConfigError(`Package "${pkg.name}": asset ${asset.dest} collides with a file the build wrote to dist/${asset.dest}.`)
+
+    await mkdir(dirname(destination), { recursive: true })
+    await cp(source, destination, { recursive: true })
+  }
 }
 
 /**

@@ -191,6 +191,30 @@ export interface LibraryPackageOptions {
   readme?: string
 
   /**
+   * Files and directories shipped beside the compiled code, as
+   * `{ 'path/in/package': 'project/relative/source' }`. Each lands in the
+   * package's `dist/` at that path. A path with a file extension is a file,
+   * exported as `<name>/<path>`; any other path is a directory, whose contents
+   * are exported as `<name>/<path>/*`. A function in
+   * `resources/functions` can read it at runtime with
+   * `new URL('./<path>/…', import.meta.url)`.
+   *
+   * A package build only compiles TypeScript, so JSON, scripts and other
+   * generated data reach the tarball through here or not at all.
+   *
+   * @example { webkit: 'dist-webkit' }
+   */
+  assets?: Record<string, string>
+
+  /**
+   * A shell command run in the project root before this package is built,
+   * to produce its `assets` (for example `buddy extension:build --target webkit`).
+   * Running it on every build keeps a published package from carrying a
+   * stale copy of what it was built from.
+   */
+  prebuild?: string
+
+  /**
    * Should this package generate a sourcemap?
    * @default false
    */

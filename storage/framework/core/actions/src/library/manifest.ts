@@ -21,7 +21,7 @@ export interface LibraryManifest {
   dependencies?: Record<string, string>
   peerDependencies?: Record<string, string>
   publishConfig?: { access: 'public' | 'restricted' }
-  stacks: { kind: string, sources: string[], runtime?: 'standalone' | 'stx' }
+  stacks: { kind: string, sources: string[], assets?: string[], runtime?: 'standalone' | 'stx' }
 }
 
 /**
@@ -107,6 +107,21 @@ export function libraryManifest(
     (manifest.exports as Record<string, unknown>)['./style.css'] = './dist/bundle.css'
     ;(manifest.exports as Record<string, unknown>)['./custom-elements.json'] = './dist/custom-elements.json'
   }
+
+  // Assets are data, not modules: `./*` would send `<name>/webkit/manifest.json`
+  // to `dist/webkit/manifest.json.js`. A file gets an exact export and a
+  // directory a pattern for its contents - never an exact one, which would
+  // shadow a module of the same name (`<name>/webkit` → `dist/webkit.js`).
+  const assets = pkg.assets ?? []
+  const exports = manifest.exports as Record<string, unknown>
+  for (const { dest } of assets) {
+    if (/\.[^/]+$/.test(dest))
+      exports[`./${dest}`] = `./dist/${dest}`
+    else
+      exports[`./${dest}/*`] = `./dist/${dest}/*`
+  }
+  if (assets.length)
+    manifest.stacks.assets = assets.map(asset => asset.dest)
 
   return manifest
 }

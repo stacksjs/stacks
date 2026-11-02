@@ -112,6 +112,19 @@ describe('normalizeLibraryPackages', () => {
     expect(normalizeLibraryPackages(undefined)).toEqual([])
     expect(normalizeLibraryPackages({})).toEqual([])
   })
+
+  it('reads assets as plain paths inside the package', () => {
+    const [pkg] = normalizeLibraryPackages({ packages: [{ name: 'fx', assets: { './webkit/': 'dist-webkit', 'data/hosts.json': 'build/hosts.json' }, prebuild: 'make data' }] })
+
+    expect(pkg?.assets).toEqual([{ dest: 'webkit', source: 'dist-webkit' }, { dest: 'data/hosts.json', source: 'build/hosts.json' }])
+    expect(pkg?.prebuild).toBe('make data')
+    expect(normalizeLibraryPackages({ packages: [{ name: 'fx' }] })[0]?.assets).toEqual([])
+  })
+
+  it('rejects an asset path that escapes the package or replaces the entry', () => {
+    for (const dest of ['../up', '/abs', 'a/../b', '', 'index.js', 'index.d.ts'])
+      expect(() => normalizeLibraryPackages({ packages: [{ name: 'fx', assets: { [dest]: 'x' } }] })).toThrow(LibraryConfigError)
+  })
 })
 
 describe('resolveLibraryPackages', () => {
@@ -279,6 +292,18 @@ describe('libraryManifest', () => {
     expect(manifest.private).toBe(true)
     expect(manifest.publishConfig).toBeUndefined()
   })
+
+  it('exports a file asset exactly and a directory asset by pattern, never shadowing a module', () => {
+    const manifest = libraryManifest({ ...base, kind: 'functions', assets: [{ dest: 'webkit', source: 'dist-webkit' }, { dest: 'data/hosts.json', source: 'hosts.json' }] } as never, {}, '1.0.0', [])
+
+    expect(manifest.exports['./webkit/*']).toBe('./dist/webkit/*')
+    // `<name>/webkit` still resolves through `./*` to the webkit.js module.
+    expect(manifest.exports['./webkit']).toBeUndefined()
+    expect(manifest.exports['./data/hosts.json']).toBe('./dist/data/hosts.json')
+    expect(manifest.files).toContain('dist')
+    expect(manifest.stacks.assets).toEqual(['webkit', 'data/hosts.json'])
+    expect(libraryManifest({ ...base, kind: 'functions' } as never, {}, '1.0.0', []).stacks.assets).toBeUndefined()
+  })
 })
 
 describe('buildLibraryPackages', () => {
@@ -363,6 +388,54 @@ describe('buildLibraryPackages', () => {
       config: { packages: [{ name: 'test-ui-only', kind: 'components', include: ['Taskbar.stx'] }] },
     })).rejects.toThrow(/No functions packages are configured/)
   })
+
+  it('runs prebuild, then ships its output beside the compiled functions', async () => {
+    const id = crypto.randomUUID()
+    const source = `storage/framework/runtime/asset-fixture-${id}`
+    const output = projectPath('storage/framework/libs/packages/test-fx-assets')
+    const reader = `asset-reader-${id}.ts`
+    await Bun.write(projectPath(`resources/functions/${reader}`), `import { readFileSync } from 'node:fs'\nexport function hosts(): string[] {\n  return JSON.parse(readFileSync(new URL('./data/hosts.json', import.meta.url), 'utf8'))\n}\n`)
+    try {
+      await buildLibraryPackages({
+        config: { packages: [{
+          name: 'test-fx-assets',
+          kind: 'functions',
+          include: [reader],
+          assets: { 'data': `${source}/data`, 'list.txt': `${source}/list.txt` },
+          prebuild: `mkdir -p ${source}/data && echo '["ads.example"]' > ${source}/data/hosts.json && echo one > ${source}/list.txt`,
+        }] },
+      })
+
+      expect(await Bun.file(resolve(output, 'dist/data/hosts.json')).json()).toEqual(['ads.example'])
+      expect(await Bun.file(resolve(output, 'dist/list.txt')).text()).toBe('one\n')
+      // The built module finds its data beside itself, as a consumer's install will.
+      const mod = await import(resolve(output, `dist/${reader.replace(/\.ts$/, '.js')}`))
+      expect(mod.hosts()).toEqual(['ads.example'])
+      const manifest = await Bun.file(resolve(output, 'package.json')).json()
+      expect(manifest.exports['./data/*']).toBe('./dist/data/*')
+      expect(manifest.exports['./list.txt']).toBe('./dist/list.txt')
+    }
+    finally {
+      await rm(projectPath(`resources/functions/${reader}`), { force: true })
+      await rm(projectPath(source), { recursive: true, force: true })
+      await rm(output, { recursive: true, force: true })
+    }
+  }, 60_000)
+
+  it('refuses to build when an asset is missing or its prebuild fails', async () => {
+    const output = projectPath('storage/framework/libs/packages/test-fx-missing-asset')
+    try {
+      await expect(buildLibraryPackages({
+        config: { packages: [{ name: 'test-fx-missing-asset', kind: 'functions', include: ['counter.ts'], runtime: 'stx', assets: { data: 'storage/framework/runtime/no-such-asset' } }] },
+      })).rejects.toThrow(/does not exist/)
+      await expect(buildLibraryPackages({
+        config: { packages: [{ name: 'test-fx-missing-asset', kind: 'functions', include: ['counter.ts'], runtime: 'stx', prebuild: 'exit 3' }] },
+      })).rejects.toThrow(/exited with code 3/)
+    }
+    finally {
+      await rm(output, { recursive: true, force: true })
+    }
+  }, 60_000)
 })
 
 /**
