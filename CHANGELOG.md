@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.433...v0.75.435)
+
+## 🐛 Bug Fixes
+
+- **cli**: admit consumer startup options through owned IPC ([d89535e](https://github.com/stacksjs/stacks/commit/d89535e)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **testing**: own descendant processes across fixture lifecycles ([9f7f863](https://github.com/stacksjs/stacks/commit/9f7f863)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **api**: isolate requests and safely serialize resources ([f35925e](https://github.com/stacksjs/stacks/commit/f35925e)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **release**: keep formula publication independent of app bootstrap ([6b1b6ba](https://github.com/stacksjs/stacks/commit/6b1b6ba)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- release v0.75.434 ([1895df8](https://github.com/stacksjs/stacks/commit/1895df8)) _(by Chris Breuer <chris@stacksjs.com>)_
+- sync process ownership dependencies and capability references ([6939ce5](https://github.com/stacksjs/stacks/commit/6939ce5)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.433...v0.75.434)
 
 ## 🐛 Bug Fixes
