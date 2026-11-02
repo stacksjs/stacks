@@ -14,7 +14,8 @@ export function generateWorkspaceAliases(root: string, check = false): void {
     const generated = workspaceSourcePaths(core, dirname(path))
     const preserved = Object.fromEntries(Object.entries(config.compilerOptions.paths).filter(([key]) => !key.startsWith('@stacksjs/') && !key.startsWith('stacks/') && key !== 'stacks'))
     const lines = Object.entries({ ...generated, ...preserved }).map(([key, value]) => `      ${JSON.stringify(key)}: ${JSON.stringify(value)}`)
-    const block = `    "paths": {\n      // Generated workspace identities and public exports. Run bun .github/scripts/generate-workspace-aliases.ts.\n${lines.join(',\n')}\n    }`
+    const newline = original.includes('\r\n') ? '\r\n' : '\n'
+    const block = ['    "paths": {', '      // Generated workspace identities and public exports. Run bun .github/scripts/generate-workspace-aliases.ts.', lines.join(`,${newline}`), '    }'].join(newline)
     const updated = original.replace(/    "paths": \{[\s\S]*?\n    \}/, block)
     if (!original.includes('    "paths": {') || updated === original && !original.includes('// Generated workspace identities')) throw new Error(`Cannot locate workspace paths: ${path}`)
     return { path, original, updated }

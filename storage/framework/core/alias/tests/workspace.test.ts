@@ -57,3 +57,28 @@ test('duplicate identities and missing source exports fail before any config is 
 test('maintained source configs are current with package manifests and public exports', () => {
   expect(() => generateWorkspaceAliases(checkout, true)).not.toThrow()
 })
+
+test('generated workspace configs remain current after a CRLF checkout', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'stacks-aliases-crlf-')), core = join(root, 'storage/framework/core')
+  try {
+    await mkdir(join(core, 'a/src'), { recursive: true })
+    await writeFile(join(core, 'package.json'), JSON.stringify({ name: 'stacks', exports: { './a': './dist/a.js' } }))
+    await writeFile(join(core, 'a/package.json'), JSON.stringify({ name: '@stacksjs/a', exports: { '.': './dist/index.js' } }))
+    await writeFile(join(core, 'a/src/index.ts'), 'export const a = true')
+    for (const name of workspaceConfigs) {
+      const path = join(root, 'storage/framework', name)
+      await mkdir(dirname(path), { recursive: true })
+      await writeFile(path, '{\n  "compilerOptions": {\n    "paths": {\n    }\n  }\n}\n')
+    }
+    generateWorkspaceAliases(root)
+    for (const name of workspaceConfigs) {
+      const path = join(root, 'storage/framework', name)
+      await writeFile(path, (await readFile(path, 'utf8')).replaceAll('\n', '\r\n'))
+    }
+    const checkedOut = await Promise.all(workspaceConfigs.map(name => readFile(join(root, 'storage/framework', name), 'utf8')))
+    expect(() => generateWorkspaceAliases(root, true)).not.toThrow()
+    generateWorkspaceAliases(root)
+    expect(await Promise.all(workspaceConfigs.map(name => readFile(join(root, 'storage/framework', name), 'utf8')))).toEqual(checkedOut)
+  }
+  finally { await rm(root, { recursive: true, force: true }) }
+})
