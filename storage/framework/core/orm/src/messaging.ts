@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto'
+import { raw } from 'bun-query-builder'
 import { db, enqueueAfterCommit, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { log } from '@stacksjs/logging'
 import { emit, getServer } from '@stacksjs/realtime'
@@ -188,14 +189,31 @@ export function createMessenger(options: MessagingOptions): Messenger {
     // Two indexed queries avoid an untyped OR predicate and preserve tenant scoping.
     const query = () => db.selectFrom('chat_conversations').selectAll().where('scope', '=', options.scope).where('participant_type', '=', participantType)
     const rows = [...await query().where('first_id', '=', actorId).execute(), ...await query().where('second_id', '=', actorId).execute()]
-    const results: DirectConversation[] = []
-    for (const row of rows) {
-      const recipientId = Number(row.first_id) === actorId ? Number(row.second_id) : Number(row.first_id)
-      if (!await options.authorize(actorId, recipientId)) continue
-      const latest = await db.selectFrom('chat_messages').selectAll().where('conversation_id', '=', row.id).orderBy('id', 'desc').limit(1).executeTakeFirst()
-      const unread = await db.selectFrom('chat_messages').select('id').where('conversation_id', '=', row.id).where('sender_id', '=', recipientId).whereNull('read_at').count()
-      results.push({ id: String(row.id), recipient_id: recipientId, last_message: latest ? message(latest) : null, unread: Number(unread) })
+    const threads = rows.map(row => ({ id: String(row.id), recipientId: Number(row.first_id) === actorId ? Number(row.second_id) : Number(row.first_id) }))
+    // The application's check is per person and often several queries; an
+    // inbox asks it for everyone at once rather than one thread after another.
+    const allowed = await Promise.all(threads.map(thread => options.authorize(actorId, thread.recipientId)))
+    const visible = threads.filter((_, index) => allowed[index])
+    if (!visible.length) return []
+
+    // The newest message and the unread count of every visible thread, in
+    // three queries for the whole inbox (it was two per thread).
+    const ids = visible.map(thread => thread.id)
+    const newest = await db.selectFrom('chat_messages').select(['conversation_id']).selectRaw(raw`MAX(id) AS id`).where('conversation_id', 'in', ids).groupBy('conversation_id').execute()
+    const latestIds = newest.map((row: any) => Number(row.id)).filter(id => Number.isSafeInteger(id) && id > 0)
+    const latest = latestIds.length ? await db.selectFrom('chat_messages').selectAll().where('id', 'in', latestIds).execute() : []
+    const latestByThread = new Map(latest.map((row: any) => [String(row.conversation_id), row]))
+    const recipientOf = new Map(visible.map(thread => [thread.id, thread.recipientId]))
+    const unreadRows = await db.selectFrom('chat_messages').select(['conversation_id', 'sender_id']).selectRaw(raw`COUNT(*) AS unread`).where('conversation_id', 'in', ids).whereNull('read_at').groupBy('conversation_id', 'sender_id').execute()
+    const unread = new Map<string, number>()
+    for (const row of unreadRows as any[]) {
+      const thread = String(row.conversation_id)
+      if (Number(row.sender_id) === recipientOf.get(thread)) unread.set(thread, Number(row.unread))
     }
+    const results: DirectConversation[] = visible.map((thread) => {
+      const row = latestByThread.get(thread.id)
+      return { id: thread.id, recipient_id: thread.recipientId, last_message: row ? message(row) : null, unread: unread.get(thread.id) ?? 0 }
+    })
     return results.sort((a, b) => (b.last_message?.id ?? 0) - (a.last_message?.id ?? 0))
   }
   async function messages(id: string, before?: number) {
