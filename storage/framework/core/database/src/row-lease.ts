@@ -28,9 +28,17 @@ export async function claimRowLease(table: string, scope: Record<string, string 
   }
   const quote = getDatabaseDialect() === 'mysql' ? '`' : '"'
   const column = (name: string) => `${quote}${name}${quote}`
-  const result = await scoped(db.updateTable(table).set({ [columns.token]: token, [columns.heartbeat]: new Date().toISOString() }))
-    .where(db.raw(`(${column(columns.token)} IS NULL OR ${column(columns.heartbeat)} IS NULL OR ${column(columns.heartbeat)} <= ?)`, [new Date(Date.now() - ttlMs).toISOString()])).execute()
-  if (!mutationCount(result)) return null
+  const claimed = await db.transaction(async (connection) => {
+    // Validate uniqueness before changing any row. The count check also fences
+    // a matching row inserted concurrently when the scope has no unique index.
+    if (!await lockRow(connection, table, scope)) return false
+    const result = await scoped(connection.updateTable(table).set({ [columns.token]: token, [columns.heartbeat]: new Date().toISOString() }))
+      .where(db.raw(`(${column(columns.token)} IS NULL OR ${column(columns.heartbeat)} IS NULL OR ${column(columns.heartbeat)} <= ?)`, [new Date(Date.now() - ttlMs).toISOString()])).execute()
+    const count = mutationCount(result)
+    if (count > 1) throw new Error('A row lease requires a unique scope')
+    return count === 1
+  })
+  if (!claimed) return null
   const owned = () => scoped(db.selectFrom(table).select(columns.token)).where(columns.token, '=', token)
   return {
     token,
@@ -45,7 +53,7 @@ export async function claimRowLease(table: string, scope: Record<string, string 
     },
     async renew() {
       const result = await scoped(db.updateTable(table).set({ [columns.heartbeat]: new Date().toISOString() })).where(columns.token, '=', token).execute()
-      return mutationCount(result) > 0
+      return mutationCount(result) > 0 || Boolean(await owned().executeTakeFirst())
     },
     async release() {
       await scoped(db.updateTable(table).set({ [columns.token]: null, [columns.heartbeat]: null })).where(columns.token, '=', token).execute()
