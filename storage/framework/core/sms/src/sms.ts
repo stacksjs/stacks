@@ -29,15 +29,11 @@ let _configPromise: Promise<void> | null = null
  * Load SMS configuration from the config system
  */
 async function loadConfig(): Promise<void> {
-  try {
-    // Dynamic import to avoid circular dependencies
-    const configModule = await import('../../../../../config/sms')
-    const config = configModule.default
-    smsConfig = { ...config as Partial<SmsOptions>, ...configuredOverrides }
-  }
-  catch {
-    // Config not available, use defaults
-  }
+  // The native loader owns application paths, defaults and async readiness.
+  // Keep this dynamic to avoid introducing an eager configuration cycle.
+  const { config, overridesReady } = await import('@stacksjs/config/runtime')
+  await overridesReady
+  smsConfig = { ...config.sms, ...configuredOverrides }
 }
 
 /**

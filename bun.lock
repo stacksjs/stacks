@@ -1342,12 +1342,13 @@
       "name": "@stacksjs/sms",
       "version": "0.75.422",
       "dependencies": {
+        "@stacksjs/config": "workspace:*",
         "@stacksjs/database": "workspace:*",
       },
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
-        "@stacksjs/config": "workspace:*",
         "@stacksjs/error-handling": "workspace:*",
+        "@stacksjs/testing": "workspace:*",
         "@stacksjs/types": "workspace:*",
         "better-dx": "^0.2.24",
       },
