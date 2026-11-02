@@ -13,7 +13,7 @@ import { response, route } from '@stacksjs/router'
  * allowlist - deliberately not shipped until something needs it.)
  */
 
-async function siteIdForRequest(request: any): Promise<number | null> {
+async function siteIdForRequest(request: any): Promise<number | null | undefined> {
   const options = sitesOptions()
   if (!options.enabled)
     return null
@@ -22,13 +22,16 @@ async function siteIdForRequest(request: any): Promise<number | null> {
     ? request.headers
     : new Headers(request.headers ?? {})
   const site = await resolveSiteByHost(requestHost(headers, options), undefined, options)
-  return site?.id ?? null
+  return site?.id
 }
 
 route.get('/api/forms/{uuid}', async (request: any) => {
   const { loadFormByUuid, publicDefinition } = await import('@stacksjs/forms')
 
-  const form = await loadFormByUuid(String(request.params?.uuid ?? request.param?.('uuid') ?? ''), await siteIdForRequest(request))
+  const siteId = await siteIdForRequest(request)
+  if (siteId === undefined)
+    return response.notFound('Form not found')
+  const form = await loadFormByUuid(String(request.params?.uuid ?? request.param?.('uuid') ?? ''), siteId)
   if (!form || form.status === 'draft')
     return response.notFound('Form not found')
 
@@ -50,7 +53,10 @@ route.get('/api/forms/{uuid}', async (request: any) => {
 route.post('/api/forms/{uuid}/uploads', async (request: any) => {
   const { checkUpload, fileFieldNamed, formUploadPrefix, loadFormByUuid, resolveUploadLimits } = await import('@stacksjs/forms')
 
-  const form = await loadFormByUuid(String(request.params?.uuid ?? request.param?.('uuid') ?? ''), await siteIdForRequest(request))
+  const siteId = await siteIdForRequest(request)
+  if (siteId === undefined)
+    return response.notFound('Form not found')
+  const form = await loadFormByUuid(String(request.params?.uuid ?? request.param?.('uuid') ?? ''), siteId)
   if (!form || form.status === 'draft')
     return response.notFound('Form not found')
 
@@ -84,7 +90,10 @@ route.post('/api/forms/{uuid}/uploads', async (request: any) => {
 route.post('/api/forms/{uuid}/submissions', async (request: any) => {
   const { dispatchSubmissionNotifications, loadFormByUuid, submissionIdentity, submitForm } = await import('@stacksjs/forms')
 
-  const form = await loadFormByUuid(String(request.params?.uuid ?? request.param?.('uuid') ?? ''), await siteIdForRequest(request))
+  const siteId = await siteIdForRequest(request)
+  if (siteId === undefined)
+    return response.notFound('Form not found')
+  const form = await loadFormByUuid(String(request.params?.uuid ?? request.param?.('uuid') ?? ''), siteId)
   if (!form)
     return response.notFound('Form not found')
 

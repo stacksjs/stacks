@@ -13,7 +13,7 @@ export function evaluateConditions(conditions: FieldConditions | null | undefine
     return true
 
   const results = conditions.rules.map((rule) => {
-    const actual = values[rule.field]
+    const actual = Object.hasOwn(values, rule.field) ? values[rule.field] : undefined
     switch (rule.op) {
       case 'eq': return String(actual ?? '') === String(rule.value ?? '')
       case 'neq': return String(actual ?? '') !== String(rule.value ?? '')
@@ -30,9 +30,25 @@ export function evaluateConditions(conditions: FieldConditions | null | undefine
   return conditions.action === 'show' ? matched : !matched
 }
 
-/** The fields visible for a given value set, in position order. */
-export function visibleFields(fields: FormFieldDefinition[], values: Record<string, unknown>): FormFieldDefinition[] {
-  return fields
-    .filter(field => evaluateConditions(field.conditions, values))
-    .sort((a, b) => a.position - b.position)
+/** Resolve controller visibility before using its value, independent of field order. */
+export function visibleFields<T extends Pick<FormFieldDefinition, 'name' | 'conditions'> & { position?: number }>(fields: T[], values: Record<string, unknown>): T[] {
+  const byName = new Map(fields.map(field => [field.name, field]))
+  const visibility = new Map<string, boolean>()
+  const resolving = new Set<string>()
+  const visible = (field: T): boolean => {
+    if (visibility.has(field.name)) return visibility.get(field.name)!
+    if (resolving.has(field.name)) throw new RangeError('Form conditions contain a cycle')
+    resolving.add(field.name)
+    const controllers: Record<string, unknown> = Object.create(null)
+    for (const rule of field.conditions?.rules ?? []) {
+      const controller = byName.get(rule.field)
+      if (controller && visible(controller) && Object.hasOwn(values, rule.field))
+        controllers[rule.field] = values[rule.field]
+    }
+    const result = evaluateConditions(field.conditions, controllers)
+    resolving.delete(field.name)
+    visibility.set(field.name, result)
+    return result
+  }
+  return fields.filter(visible).sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
 }

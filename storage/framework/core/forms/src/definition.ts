@@ -2,17 +2,37 @@ import type { FieldConditions, FieldOptions, FormDefinition, FormFieldDefinition
 import { db } from '@stacksjs/database/runtime'
 
 function parseJson<T>(raw: unknown, fallback: T): T {
-  if (raw && typeof raw === 'object')
-    return raw as T
-  if (typeof raw === 'string' && raw) {
-    try {
-      return JSON.parse(raw) as T
-    }
-    catch {
-      return fallback
-    }
+  let decoded = raw
+  if (typeof raw === 'string') {
+    try { decoded = JSON.parse(raw) }
+    catch { return fallback }
   }
-  return fallback
+  return decoded !== null && typeof decoded === 'object' && !Array.isArray(decoded)
+    ? Object.fromEntries(Object.entries(decoded).filter(([, value]) => value !== null)) as T
+    : fallback
+}
+
+/** Nested JSON must have the shapes the renderer and validator actually consume. */
+function validField(field: FormFieldDefinition): boolean {
+  const options = field.options
+  if (options.choices !== undefined && (!Array.isArray(options.choices) || !options.choices.every(choice => choice !== null && typeof choice === 'object' && typeof choice.label === 'string' && typeof choice.value === 'string'))) return false
+  if (options.accept !== undefined && (!Array.isArray(options.accept) || !options.accept.every(type => typeof type === 'string'))) return false
+  const conditions = field.conditions
+  if (!conditions) return true
+  return ['show', 'hide'].includes(conditions.action) && ['all', 'any'].includes(conditions.logic)
+    && Array.isArray(conditions.rules) && conditions.rules.every(rule => rule !== null && typeof rule === 'object' && typeof rule.field === 'string'
+      && ['eq', 'neq', 'contains', 'gt', 'lt', 'empty', 'not_empty'].includes(rule.op)
+      && (rule.value === undefined || typeof rule.value === 'string' || typeof rule.value === 'number'))
+}
+
+function validSettings(settings: FormSettings): boolean {
+  if (settings.submitLabel !== undefined && typeof settings.submitLabel !== 'string') return false
+  if (settings.notifyEmails !== undefined && (!Array.isArray(settings.notifyEmails) || !settings.notifyEmails.every(email => typeof email === 'string'))) return false
+  if (settings.confirmation !== undefined && (!settings.confirmation || typeof settings.confirmation !== 'object'
+    || !['message', 'redirect'].includes(settings.confirmation.type) || typeof settings.confirmation.value !== 'string')) return false
+  if (settings.payment !== undefined && (!settings.payment || typeof settings.payment !== 'object'
+    || !['fixed', 'user_amount', 'field_sum'].includes(settings.payment.mode))) return false
+  return true
 }
 
 interface FormRow {
@@ -59,13 +79,11 @@ export async function loadFormByUuid(uuid: string, siteId: number | null): Promi
   const form = await db
     .selectFrom('forms')
     .where('uuid', '=', uuid)
+    .where('site_id', siteId === null ? 'is' : '=', siteId)
     .select(['id', 'uuid', 'site_id', 'name', 'handle', 'status', 'settings'])
     .executeTakeFirst() as FormRow | undefined
 
   if (!form)
-    return null
-
-  if (siteId !== null && form.site_id !== null && Number(form.site_id) !== siteId)
     return null
 
   const fields = await db
@@ -75,6 +93,10 @@ export async function loadFormByUuid(uuid: string, siteId: number | null): Promi
     .orderBy('position', 'asc')
     .execute() as unknown as FieldRow[]
 
+  const resolvedFields = fields.map(rowToField)
+  const settings = parseJson<FormSettings>(form.settings, {})
+  if (!validSettings(settings) || !resolvedFields.every(validField)) return null
+
   return {
     id: Number(form.id),
     uuid: form.uuid,
@@ -82,8 +104,8 @@ export async function loadFormByUuid(uuid: string, siteId: number | null): Promi
     name: form.name,
     handle: form.handle,
     status: (['draft', 'active', 'closed'].includes(form.status) ? form.status : 'draft') as FormDefinition['status'],
-    settings: parseJson<FormSettings>(form.settings, {}),
-    fields: fields.map(rowToField),
+    settings,
+    fields: resolvedFields,
   }
 }
 

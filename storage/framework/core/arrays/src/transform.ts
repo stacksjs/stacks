@@ -225,6 +225,10 @@ export function dropLastWhile<T>(array: readonly T[], predicate: (value: T, inde
   return []
 }
 
+function defineValue(target: object, key: PropertyKey, value: unknown): void {
+  Object.defineProperty(target, key, { value, enumerable: true, configurable: true, writable: true })
+}
+
 /**
  * Group elements under the key each one produces.
  *
@@ -248,7 +252,8 @@ export function groupBy<T, K extends PropertyKey>(
     const group = key(value, index)
     if (group === undefined)
       continue
-    ;(groups[group] ??= []).push(value)
+    if (!Object.hasOwn(groups, group)) defineValue(groups, group, [])
+    groups[group]!.push(value)
   }
   return groups
 }
@@ -275,7 +280,7 @@ export function keyBy<T, K extends PropertyKey>(
   for (const [index, value] of array.entries()) {
     const at = key(value, index)
     if (at !== undefined)
-      indexed[at] = value
+      defineValue(indexed, at, value)
   }
   return indexed
 }
@@ -297,7 +302,7 @@ export function countBy<T, K extends PropertyKey>(
   for (const [index, value] of array.entries()) {
     const at = key(value, index)
     if (at !== undefined)
-      counts[at] = (counts[at] ?? 0) + 1
+      defineValue(counts, at, (Object.hasOwn(counts, at) ? counts[at]! : 0) + 1)
   }
   return counts
 }
