@@ -717,8 +717,10 @@ when the app declares no portal.
 
 ```typescript
 Payment.formatAmount(2999, 'usd')   // '$29.99' (uses Intl.NumberFormat)
-Payment.toCents(29.99)               // 2999
-Payment.toDollars(2999)              // 29.99
+Payment.formatAmount(1000, 'jpy')   // '¥1,000': JPY has no minor unit
+Payment.minorUnitExponent('jpy')    // 0 (Stripe's table on the Stripe driver; ISO 4217 otherwise)
+Payment.toCents(29.99)               // 2999, two-decimal currencies only
+Payment.toDollars(2999)              // 29.99, two-decimal currencies only
 ```
 
 ### Client-Side Billing (useBillable)
@@ -918,7 +920,7 @@ The instance methods are exactly the keys of `createBillableMethods` in
   its original raw payload before applying domain events.
 - Stripe API keys MUST be in `.env` as `STRIPE_SECRET_KEY` and `STRIPE_PUBLISHABLE_KEY` -- never hardcode them in config files
 - The Stripe client is created lazily, on first use: importing `@stacksjs/payments` without `STRIPE_SECRET_KEY` (or without the opt-in `stripe` package) is fine, and the first Stripe call throws naming what is missing
-- All amounts are in cents -- use `toCents()` and `toDollars()` for conversion
+- All amounts are in the currency's minor unit: cents for USD, whole yen for JPY (Stripe's zero-decimal list), hundredths for ISK and UGX (Stripe's special cases). `toCents()` and `toDollars()` are for two-decimal currencies; `minorUnitExponent(currency)` says how many decimals an amount has, and `formatAmount()` uses it
 - `Payment.charge()` (Stripe driver) creates AND confirms the PaymentIntent in one step
 - `subscribe()` resolves the price via `lookup_key`, not a direct Stripe price ID
 - `Payment.removePaymentMethod()` and the billable instance method `removePaymentMethod()` both take the provider's id (string); `managePaymentMethod.deletePaymentMethod()` takes the local row id (number)

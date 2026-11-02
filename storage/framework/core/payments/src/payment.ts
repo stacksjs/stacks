@@ -56,7 +56,7 @@ import {
   processWebhook,
 } from './billable/webhook'
 import { connect } from './connect'
-import { assertStripeDriver, paymentDriver } from './driver'
+import { assertStripeDriver, configuredPaymentDriver, paymentDriver } from './driver'
 
 // =============================================================================
 // Payments - provider-neutral
@@ -358,7 +358,38 @@ export async function validatePromoCode(code: string): Promise<Stripe.PromotionC
 // =============================================================================
 
 /**
+ * Stripe's zero-decimal currencies: an `amount` of 500 is 500 JPY
+ * (https://docs.stripe.com/currencies#zero-decimal). UGX is on that list but
+ * left out here: Stripe's special cases say it, like ISK, is written as a
+ * two-decimal amount ("to charge 5 UGX, provide an amount value of 500").
+ */
+const STRIPE_ZERO_DECIMAL = new Set(['bif', 'clp', 'djf', 'gnf', 'jpy', 'kmf', 'krw', 'mga', 'pyg', 'rwf', 'vnd', 'vuv', 'xaf', 'xof', 'xpf'])
+
+/**
+ * Decimal places in a provider `amount` for `currency`. With Stripe, the
+ * default driver, that is Stripe's own table: none for its zero-decimal
+ * currencies and two for everything else, ISK and UGX included, though ISO
+ * gives those no minor unit and MGA two. Another driver uses the ISO 4217
+ * exponent `Intl` carries.
+ */
+export function minorUnitExponent(currency: string, driver: string = configuredPaymentDriver()): number {
+  const code = currency.trim().toLowerCase()
+  if (driver === 'stripe')
+    return STRIPE_ZERO_DECIMAL.has(code) ? 0 : 2
+  try {
+    return new Intl.NumberFormat('en', { style: 'currency', currency: code.toUpperCase() }).resolvedOptions().maximumFractionDigits ?? 2
+  }
+  catch {
+    return 2
+  }
+}
+
+/**
  * Format amount for display.
+ *
+ * `amount` is in the currency's minor unit, as every provider amount is, and
+ * is scaled by {@link minorUnitExponent}. It used to be divided by 100 for
+ * every currency, so 1000 JPY showed as ¥10.
  *
  * Currency defaults to the project's configured payment currency
  * (`config.payment.currency` / `STRIPE_CURRENCY`), falling back to USD only
@@ -376,18 +407,19 @@ export function formatAmount(amount: number, currency?: string): string {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: ccy.toUpperCase(),
-  }).format(amount / 100)
+  }).format(amount / 10 ** minorUnitExponent(ccy))
 }
 
 /**
- * Convert dollars to cents
+ * Convert dollars to cents: for two-decimal currencies only. A JPY amount
+ * is already in its minor unit; see {@link minorUnitExponent}.
  */
 export function toCents(dollars: number): number {
   return Math.round(dollars * 100)
 }
 
 /**
- * Convert cents to dollars
+ * Convert cents to dollars: for two-decimal currencies only (see {@link toCents}).
  */
 export function toDollars(cents: number): number {
   return cents / 100
@@ -467,6 +499,7 @@ export const Payment = {
 
   // Utilities
   formatAmount,
+  minorUnitExponent,
   toCents,
   toDollars,
 
