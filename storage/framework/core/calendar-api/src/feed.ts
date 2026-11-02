@@ -84,21 +84,41 @@ export function dateStamp(date: Date): string {
   return date.toISOString().replace(/-/g, '').slice(0, 8)
 }
 
+/**
+ * A value that is not TEXT, so it cannot be escaped: a control character in it
+ * is refused. A line break would end the property and start whatever follows,
+ * in every subscriber's calendar.
+ */
+function structural(name: string, value: string, uid?: string): string {
+  // eslint-disable-next-line no-control-regex
+  if (/[\u0000-\u001F\u007F]/.test(value))
+    throw new Error(`Calendar feed${uid ? ` event "${uid}"` : ''}: ${name} has a control character (a line break would start new calendar lines): ${JSON.stringify(value)}`)
+  return value
+}
+
+/**
+ * A URL as URL parsing reads it: tab, CR and LF are removed (WHATWG URL does
+ * exactly that), so no URL changes meaning, and none can end the line.
+ */
+function uriValue(url: string): string {
+  return url.replace(/[\t\r\n]/g, '')
+}
+
 /** The complete VCALENDAR body. Serve with {@link calendarFeedHeaders}. */
 export function buildCalendarFeed(options: CalendarFeedOptions): string {
   const lines: string[] = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    `PRODID:${options.prodId ?? '-//Stacks//calendar-api//EN'}`,
+    `PRODID:${escapeIcsText(options.prodId ?? '-//Stacks//calendar-api//EN')}`,
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     `X-WR-CALNAME:${escapeIcsText(options.name)}`,
   ]
 
   if (options.timezone)
-    lines.push(`X-WR-TIMEZONE:${options.timezone}`)
+    lines.push(`X-WR-TIMEZONE:${escapeIcsText(options.timezone)}`)
 
-  lines.push(`REFRESH-INTERVAL;VALUE=DURATION:${options.refreshInterval ?? 'PT1H'}`)
+  lines.push(`REFRESH-INTERVAL;VALUE=DURATION:${structural('refreshInterval', options.refreshInterval ?? 'PT1H')}`)
 
   for (const event of options.events) {
     lines.push('BEGIN:VEVENT')
@@ -119,15 +139,18 @@ export function buildCalendarFeed(options: CalendarFeedOptions): string {
     }
 
     if (event.rrule)
-      lines.push(`RRULE:${event.rrule.replace(/^RRULE:/i, '')}`)
+      lines.push(`RRULE:${structural('rrule', event.rrule, event.uid).replace(/^RRULE:/i, '')}`)
     if (event.description)
       lines.push(`DESCRIPTION:${escapeIcsText(event.description)}`)
     if (event.location)
       lines.push(`LOCATION:${escapeIcsText(event.location)}`)
     if (event.url)
-      lines.push(`URL:${event.url}`)
-    if (event.sequence !== undefined)
+      lines.push(`URL:${uriValue(event.url)}`)
+    if (event.sequence !== undefined) {
+      if (!Number.isInteger(event.sequence) || event.sequence < 0)
+        throw new Error(`Calendar feed event "${event.uid}": sequence must be a whole number of at least 0, got ${JSON.stringify(event.sequence)}`)
       lines.push(`SEQUENCE:${event.sequence}`)
+    }
 
     lines.push('END:VEVENT')
   }

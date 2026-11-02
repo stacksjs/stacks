@@ -24,7 +24,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/buddy` | [`stacks-buddy`](../stacks-buddy/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/buddy/src/index.ts) | 177 |
 | `@stacksjs/build` | [`stacks-build`](../stacks-build/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/build/src/index.ts) | 5 |
 | `@stacksjs/cache` | [`stacks-cache`](../stacks-cache/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cache/src/index.ts) | 23 |
-| `@stacksjs/calendar-api` | [`stacks-calendar`](../stacks-calendar/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/calendar-api/src/index.ts) | 3 |
+| `@stacksjs/calendar-api` | [`stacks-calendar`](../stacks-calendar/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/calendar-api/src/index.ts) | 4 |
 | `@stacksjs/charts` | [`stacks-charts`](../stacks-charts/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/charts/src/index.ts) | 3 |
 | `@stacksjs/chat` | [`stacks-chat`](../stacks-chat/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/src/index.ts) | 5 |
 | `@stacksjs/cli` | [`stacks-cli`](../stacks-cli/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cli/src/index.ts) | 13 |
@@ -245,7 +245,7 @@ Declared runtime exports: `buildCalendarFeed`, `calendarFeedHeaders`, `escapeIcs
 
 Local source modules: [src/feed.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/calendar-api/src/feed.ts), [src/generators/google.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/calendar-api/src/generators/google.ts), [src/generators/ics.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/calendar-api/src/generators/ics.ts), [src/generators/weboutlook.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/calendar-api/src/generators/weboutlook.ts), [src/generators/yahoo.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/calendar-api/src/generators/yahoo.ts), [src/recurrence.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/calendar-api/src/recurrence.ts).
 
-Evidence directory: [3 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/calendar-api/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [4 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/calendar-api/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/charts
 
