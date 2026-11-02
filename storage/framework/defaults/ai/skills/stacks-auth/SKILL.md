@@ -112,6 +112,9 @@ is rejected because multiplexed application actions can handle it as a write.
 `requestImpersonation()` exposes trusted actor/subject metadata; ORM trails
 attribute writes to the original actor. `Auth.endImpersonation(credential)`
 requires the original actor request without the support header.
+Ordinary bearer lookups may be cached within a request. Viewed identities are
+never stored in that cache: each support-view resolution rechecks live authority
+and clears previously trusted support context before authenticating again.
 
 Store viewing state independently from the actor's login and cached profile,
 show a persistent disclosure and Exit control, disable offline persistence,
