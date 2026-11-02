@@ -154,3 +154,35 @@ describe('validation messages', () => {
     })
   })
 })
+
+describe('custom validation messages', () => {
+  it('use a per-rule message for the rule that failed, and a field-named one for the rest', async () => {
+    const router = createStacksRouter()
+    router.post('/author', {
+      skipCsrf: true,
+      validations: {
+        name: { rule: schema.string().min(3), message: { min: 'Name must have a minimum of 3 characters' } },
+        email: { rule: schema.string().required().email(), message: { email: 'Email must be a valid email address' } },
+        title: { rule: schema.string().required(), message: { title: 'Give the post a title' } },
+      },
+      handle() { return { ok: true } },
+    })
+
+    const send = async (body: Record<string, unknown>) => {
+      const response = await router.handleRequest(new Request('http://localhost/author', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body),
+      }))
+      return (await response.json() as { errors: Record<string, string[]> }).errors
+    }
+
+    expect(await send({ name: 'ab', email: 'nope' })).toEqual({
+      name: ['Name must have a minimum of 3 characters'],
+      email: ['Email must be a valid email address'],
+      title: ['Give the post a title'],
+    })
+    // A required failure is not the email rule's: it keeps its own message.
+    expect((await send({ name: 'abc', title: 'x' })).email).toEqual(['Email is required'])
+  })
+})

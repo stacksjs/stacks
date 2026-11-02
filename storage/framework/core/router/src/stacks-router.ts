@@ -3601,15 +3601,17 @@ function validateActionInputSync(
       const { label, decorate } = entry[3] ??= createValidationFieldLabel(field)
 
       if (result.errors && result.errors.length > 0) {
-        // Use custom message if provided, otherwise decorate the
-        // validator's bare message with the field label.
-        if (validation.message) {
-          const firstMessage = result.errors[0]?.message ?? ''
-          fieldErrors.push(typeof validation.message === 'string' ? validation.message : validation.message[field] || decorate(firstMessage))
-        }
-        else {
+        // A custom message if provided, otherwise the validator's own,
+        // decorated with the field label. A message object is keyed by rule
+        // name (`{ min: ... }`), as models and the actions guide write it,
+        // with a key named after the field answering for the rest; it used to
+        // be looked up by field name only, so a per-rule message never showed.
+        if (validation.message && typeof validation.message === 'object')
+          fieldErrors.push(...validationMessages().fieldErrorMessages(validation.rule, value, result.errors, validation.message, field, decorate))
+        else if (validation.message)
+          fieldErrors.push(validation.message)
+        else
           result.errors.forEach(err => fieldErrors.push(decorate(err.message)))
-        }
       }
       else {
         fieldErrors.push(validation.message ? (typeof validation.message === 'string' ? validation.message : `${label} is invalid`) : `${label} is invalid`)
@@ -4141,6 +4143,13 @@ const nativeRequestBlob = Request.prototype.blob
 const nativeRequestClone = Request.prototype.clone
 let requestBodyEncoder: TextEncoder | undefined
 let requestValidationModule: typeof import('@stacksjs/validation/request-validator') | undefined
+let validationMessagesModule: typeof import('@stacksjs/validation/messages') | undefined
+
+/** The custom-message helper, loaded the first time a field has a message object. */
+function validationMessages(): typeof import('@stacksjs/validation/messages') {
+  return validationMessagesModule ??= require('@stacksjs/validation/messages') as typeof import('@stacksjs/validation/messages')
+}
+
 let UploadedFileConstructor: typeof import('@stacksjs/storage/uploaded-file').UploadedFile | undefined
 // Keep the module, not authorization decisions: gate definitions remain live.
 let requestGateModule: typeof import('@stacksjs/auth/gate') | undefined

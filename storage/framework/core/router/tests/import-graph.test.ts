@@ -170,11 +170,20 @@ describe('router import graph', () => {
       && entry.original === '@stacksjs/error-handling/http-error',
     )).toBe(true)
 
+    // The request validator is imported on demand. The custom-message helper
+    // is required on demand, only when a failing field has a message object,
+    // and imports nothing itself, so neither puts the validation package's
+    // graph on the success path.
     const requestValidationImports = routerEntry?.[1].imports
       .filter(entry => entry.original?.startsWith('@stacksjs/validation')) ?? []
-    expect(requestValidationImports.map(entry => `${entry.kind}:${entry.original}`)).toEqual([
+    expect(requestValidationImports.map(entry => `${entry.kind}:${entry.original}`).sort()).toEqual([
       'dynamic-import:@stacksjs/validation/request-validator',
+      'require-call:@stacksjs/validation/messages',
     ])
+    const validationMessagesEntry = Object.entries(result.metafile?.inputs ?? {})
+      .find(([source]) => source.endsWith('validation/src/messages.ts'))
+    expect(validationMessagesEntry).toBeDefined()
+    expect(validationMessagesEntry?.[1].imports).toEqual([])
   })
 
   /**
