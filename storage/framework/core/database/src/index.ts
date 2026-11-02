@@ -244,4 +244,4 @@ export type {
 } from './drivers/dynamodb'
 
 export * from './row-lease'
-export { sqliteWriteOptions } from './transaction-options'
+export { readCommittedTransactionOptions, sqliteWriteOptions } from './transaction-options'

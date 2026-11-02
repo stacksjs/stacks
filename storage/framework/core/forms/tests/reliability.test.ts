@@ -26,7 +26,7 @@ for (const scenario of ['scope', 'atomic', 'concurrent', 'decoded-json', 'cross-
       created = true
       assertIsolatedOk(await runIsolated(`${import.meta.dir}/fixtures/reliability.ts`, {
         env: { APP_ENV: 'test', DB_CONNECTION: 'mysql', DB_DATABASE_PATH: ':memory:', DB_DATABASE: name,
-          DB_HOST: url.hostname, DB_PORT: url.port || '3306', DB_USERNAME: decodeURIComponent(url.username), DB_PASSWORD: decodeURIComponent(url.password),
+          DB_HOST: url.hostname, DB_PORT: url.port || '3306', DB_SSL: String(['true', '1'].includes(url.searchParams.get('ssl') ?? '')), DB_USERNAME: decodeURIComponent(url.username), DB_PASSWORD: decodeURIComponent(url.password),
           FORMS_RELIABILITY_SCENARIO: scenario }, envFile: false, preload: [], timeoutMs: 30_000,
       }), `${scenario} OK`)
     }

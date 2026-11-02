@@ -7,7 +7,7 @@ const { config, overridesReady } = await import('@stacksjs/config')
 await overridesReady
 const { db, ensureDatabaseConfigLoaded, initializeDbConfig, resetDatabaseConnection, sqlHelpers } = await import('@stacksjs/database')
 await ensureDatabaseConfigLoaded()
-const connection = dialect === 'sqlite' ? { database: process.env.DB_DATABASE_PATH } : { name: process.env.DB_DATABASE, host: process.env.DB_HOST, port: Number(process.env.DB_PORT), username: process.env.DB_USERNAME, password: process.env.DB_PASSWORD }
+const connection = dialect === 'sqlite' ? { database: process.env.DB_DATABASE_PATH } : { name: process.env.DB_DATABASE, host: process.env.DB_HOST, port: Number(process.env.DB_PORT), username: process.env.DB_USERNAME, password: process.env.DB_PASSWORD, ssl: process.env.DB_SSL === 'true' }
 initializeDbConfig({ app: { env: 'test' }, database: { default: dialect, connections: { [dialect]: connection }, queryLogging: { enabled: false } } })
 const { createForm, loadFormByHandle } = await import('../../src/create')
 const { loadFormByUuid, publicDefinition } = await import('../../src/definition')
@@ -110,10 +110,33 @@ try {
         await assert.rejects(db.transaction(run, { isolation: 'serializable', ...(dialect === 'sqlite' ? { sqliteMode: 'immediate' as const } : {}) }), /rollback nested provisioning/)
         assert.equal(await loadFormByHandle(null, 'nested'), null)
         if (dialect === 'postgres') {
-          const rejected = await Promise.all(Array.from({ length: 2 }, () => db.transaction(
-            () => createForm(null, { name: 'Unsafe', handle: 'unsafe', fields: [field('name')] }), { isolation: 'read committed' },
-          ).then(() => false, error => String(error).includes('requires serializable'))))
-          assert(rejected.every(Boolean), 'weaker outer transactions must reject before creating a global identity')
+          const provisioned = await Promise.all(Array.from({ length: 10 }, (_, index) => db.transaction(
+            () => createForm(null, { name: `Nested ${index}`, handle: 'nested-concurrent', fields: [field(`field_${index}`)] }), { isolation: 'read committed' },
+          )))
+          assert.equal(new Set(provisioned.map(item => item.id)).size, 1)
+          assert.equal(provisioned.filter(item => item.created).length, 1)
+          const stored = await loadFormByHandle(null, 'nested-concurrent')
+          assert(stored)
+          assert.deepEqual(stored.fields.map(item => item.name), [`field_${stored.name.split(' ')[1]}`])
+          let releaseSnapshots!: () => void
+          const snapshotsReady = new Promise<void>((resolve) => { releaseSnapshots = resolve })
+          const attempts = [0, 0]
+          let ready = 0
+          const serializable = await Promise.all(attempts.map((count, index) => db.transaction(async () => {
+            attempts[index] = (attempts[index] ?? count) + 1
+            await db.selectFrom('forms').where('handle', '=', 'serializable-parent').execute()
+            if (attempts[index] === 1) {
+              if (++ready === 2) releaseSnapshots()
+              await snapshotsReady
+            }
+            return createForm(null, { name: `Serializable ${index}`, handle: 'serializable-parent', fields: [field(`field_${index}`)] })
+          }, { isolation: 'serializable', retries: 2 })))
+          assert.equal(new Set(serializable.map(item => item.id)).size, 1)
+          assert.equal(serializable.filter(item => item.created).length, 1)
+          assert(attempts.reduce((sum, count) => sum + count, 0) > 2, 'the owner retries its stale serializable snapshot')
+          await assert.rejects(db.transaction(
+            () => createForm(null, { name: 'Unsafe', handle: 'unsafe', fields: [field('name')] }), { isolation: 'repeatable read' },
+          ), /requires read committed or serializable/)
           assert.equal(await loadFormByHandle(null, 'unsafe'), null)
         }
       }

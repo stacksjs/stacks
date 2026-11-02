@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { db, getDatabaseDialect } from './utils'
 import { assertSqlIdentifier, lockRow } from './row-lock'
 import { mutationCount } from './affected-rows'
+import { readCommittedTransactionOptions } from './transaction-options'
 
 export interface RowLeaseColumns { token: string, heartbeat: string }
 export interface RowLease {
@@ -37,7 +38,7 @@ export async function claimRowLease(table: string, scope: Record<string, string 
     const count = mutationCount(result)
     if (count > 1) throw new Error('A row lease requires a unique scope')
     return count === 1
-  })
+  }, readCommittedTransactionOptions())
   if (!claimed) return null
   const owned = () => scoped(db.selectFrom(table).select(columns.token)).where(columns.token, '=', token)
   return {

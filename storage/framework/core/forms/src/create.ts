@@ -1,5 +1,5 @@
 import type { FormDefinition, FormFieldDefinition, FormFieldType, FormSettings } from './types'
-import { db, getDatabaseDialect, isInTransaction, lockRow, sqliteWriteOptions } from '@stacksjs/database/runtime'
+import { db, getDatabaseDialect, isInTransaction, lockRow, readCommittedTransactionOptions } from '@stacksjs/database/runtime'
 import { isReservedFieldName } from './field-name'
 import { loadFormByUuid } from './definition'
 
@@ -58,24 +58,27 @@ export async function createForm(siteId: number | null, input: CreateFormInput):
     throw new RangeError('Reserved form field name')
   if (new Set(input.fields.map(field => field.name)).size !== input.fields.length)
     throw new RangeError('Form field names must be unique')
-  // A savepoint cannot raise its parent's isolation level. Reject a weaker
-  // SQL parent before reading an identity that might not exist yet.
+  // A savepoint inherits its parent's snapshot. READ COMMITTED sees the
+  // previous lock owner's commit; SERIALIZABLE parents must retry on conflicts.
   const dialect = getDatabaseDialect()
   if (isInTransaction() && dialect === 'mysql')
     throw new Error('createForm must run outside an enclosing MySQL transaction')
   if (isInTransaction() && dialect === 'postgres') {
     const rows = await db.unsafe('SHOW transaction_isolation').execute()
     const isolation = rows[0]?.transaction_isolation
-    if (String(isolation).toLowerCase().replace(/[ _-]/g, '') !== 'serializable')
-      throw new Error('createForm requires serializable isolation in the outer transaction')
+    if (!['readcommitted', 'serializable'].includes(String(isolation).toLowerCase().replace(/[ _-]/g, '')))
+      throw new Error('createForm requires read committed or serializable isolation in the outer transaction')
   }
-  // Serializable predicate reads protect missing identities too, including
-  // NULL/global sites where a normal composite unique index permits duplicates.
+  // A site mutex also protects missing NULL/global identities, which a normal
+  // composite unique index cannot. Owned PostgreSQL transactions use fresh
+  // statement snapshots so waiting writers read the preceding owner's commit.
   return db.transaction(async (tx) => {
     // MySQL cannot SET TRANSACTION isolation inside the driver's begin
     // callback. A connection-owned site mutex protects missing identities;
     // a locking current read then holds any existing row through commit.
     const siteLock = `stacks_forms_site_${siteId ?? 'global'}`
+    if (dialect === 'postgres')
+      await tx.unsafe('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))', [siteLock])
     if (dialect === 'mysql') {
       const [lock] = await tx.unsafe('SELECT GET_LOCK(?, 10) AS acquired', [siteLock])
       if (Number(lock?.acquired) !== 1) throw new Error('Could not acquire form provisioning lock')
@@ -150,7 +153,7 @@ export async function createForm(siteId: number | null, input: CreateFormInput):
       // cannot retain a row lock while trying to acquire this site lock again.
       if (dialect === 'mysql') await tx.unsafe('SELECT RELEASE_LOCK(?)', [siteLock])
     }
-  }, { ...sqliteWriteOptions(dialect), isolation: dialect === 'mysql' ? undefined : 'serializable', retries: 5, sqlStates: ['23505'] })
+  }, { ...readCommittedTransactionOptions(dialect), retries: 5, sqlStates: ['23505'] })
 }
 
 /** Load a form by its site-scoped handle, the way app code refers to one. */
