@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.443...v0.75.444)
+
+## 🐛 Bug Fixes
+
+- **validation**: import the ESM message provider in published consumers ([2323447](https://github.com/stacksjs/stacks/commit/2323447)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- install the published stx 0.2.789 framework cohort ([468fea0](https://github.com/stacksjs/stacks/commit/468fea0)) _(by Chris Breuer <chris@stacksjs.com>)_
+- require published Pantry 0.11.164 for framework tools ([ad8a28c](https://github.com/stacksjs/stacks/commit/ad8a28c)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.442...v0.75.443)
 
 ## 🐛 Bug Fixes
