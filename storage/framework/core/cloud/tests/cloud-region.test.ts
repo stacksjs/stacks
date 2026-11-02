@@ -210,7 +210,7 @@ describe('every path names the stack buddy deploy creates', () => {
   })
 
   it.each([
-    'actions/deploy.ts',
+    'actions/src/deploy/stack.ts',
     'actions/src/deploy/index.ts',
     'buddy/src/commands/cloud.ts',
     'buddy/src/commands/deploy.ts',

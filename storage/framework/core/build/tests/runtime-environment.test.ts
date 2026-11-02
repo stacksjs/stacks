@@ -14,6 +14,10 @@ test('transpiled packages read NODE_ENV from each consuming process', async () =
 export const mode: string | undefined = process.env.NODE_ENV
 export function isProduction(): boolean { return process.env.NODE_ENV === 'production' }
 `)
+  for (const directory of ['tests', '__tests__']) {
+    mkdirSync(join(fixture, 'src', directory), { recursive: true })
+    writeFileSync(join(fixture, 'src', directory, 'setup.ts'), 'export const fixtureOnly = true')
+  }
   const builder = join(root, 'build.ts')
   writeFileSync(builder, `import { transpilePackage } from ${JSON.stringify(helper)}
 await transpilePackage({ dir: ${JSON.stringify(fixture)}, external: [] })
@@ -32,6 +36,8 @@ await transpilePackage({ dir: ${JSON.stringify(fixture)}, external: [] })
       const [buildExit, , buildErrors] = await Promise.all([build.exited, new Response(build.stdout).text(), new Response(build.stderr).text()])
       expect({ exitCode: buildExit, stderr: buildExit === 0 ? '' : buildErrors }).toEqual({ exitCode: 0, stderr: '' })
       expect(existsSync(join(fixture, 'dist/index.d.ts'))).toBe(true)
+      for (const directory of ['tests', '__tests__'])
+        expect(existsSync(join(fixture, 'dist', directory))).toBe(false)
       for (const runtimeMode of ['production', 'development', undefined]) {
         const env = { ...process.env }
         if (runtimeMode === undefined) delete env.NODE_ENV

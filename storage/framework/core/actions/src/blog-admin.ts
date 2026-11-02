@@ -15,7 +15,7 @@
  * leaving the file in place. Posts with no `draft` key are published, so every
  * post written before this module existed keeps rendering.
  */
-import type { ResponseStatus } from '@stacksjs/bun-router'
+import type { ResponseStatus } from '@stacksjs/router'
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'

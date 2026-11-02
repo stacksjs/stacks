@@ -214,6 +214,9 @@ jobs:
       - name: Build framework packages
         run: bun .github/scripts/build-framework.ts
 
+      - name: Verify the shipped deployment module without application aliases
+        run: bun test ./.github/scripts/deployment-package.acceptance.ts
+
       # Belt-and-suspenders against a dist-less publish: every publishable
       # package, including the umbrella, must have a non-empty dist/ before we publish
       # with --ignore-scripts. A build that "succeeds" but emits nothing is

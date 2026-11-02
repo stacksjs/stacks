@@ -848,7 +848,7 @@ function describeAttachEdits(slug: string, owner: string, edit: AttachEditOutcom
 async function runCloudDiff(): Promise<string | undefined> {
   try {
     const { InfrastructureGenerator } = await import('@stacksjs/ts-cloud')
-    const { tsCloud: cloudConfig } = await import('~/config/cloud')
+    const { tsCloud: cloudConfig } = await import(p.projectPath('config/cloud'))
 
     const environment = cloudEnvironment() as 'production' | 'staging' | 'development'
     const template = new InfrastructureGenerator({ config: cloudConfig, environment }).generate().toJSON()
@@ -1209,7 +1209,7 @@ export function cloud(buddy: CLI): void {
 
       // Use the new undeployStack function with CDK-style status updates
       try {
-        const { undeployStack } = await import('../../../actions/deploy')
+        const { undeployStack } = await import('@stacksjs/actions/deploy/stack')
 
         // Where `buddy deploy` put it: AWS_REGION, else the configured region.
         const region = await stacksCloudRegion(undefined, environment)

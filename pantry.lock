@@ -715,7 +715,8 @@
       "name": "@stacksjs/env",
       "version": "0.75.441",
       "dependencies": {
-        "@stacksjs/path": "workspace:*"
+        "@stacksjs/path": "workspace:*",
+        "@stacksjs/ts-validation": "^0.5.6"
       },
       "devDependencies": {
         "@stacksjs/validation": "workspace:*",

@@ -211,6 +211,7 @@ export async function transpilePackage(options: {
   const srcFiles = (await Array.fromAsync(new Bun.Glob('**/*.ts').scan({ cwd: srcDir })))
     .filter(f => !f.endsWith('.d.ts'))
     .filter(f => !f.endsWith('.test.ts') && !f.endsWith('.spec.ts'))
+    .filter(f => !f.split(/[\\/]/).some(part => part === 'tests' || part === '__tests__'))
 
   // 1. Emit .d.ts (the accompanying .js output is overwritten in step 2).
   await Bun.build({

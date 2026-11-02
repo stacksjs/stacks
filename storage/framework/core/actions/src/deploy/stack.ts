@@ -4,15 +4,14 @@
  */
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
+import { path } from '@stacksjs/path'
 import { getErrorMessage } from '@stacksjs/utils'
-import type { CloudConfig } from '@ts-cloud/core'
+import type { CloudConfig } from '@stacksjs/ts-cloud'
 
 // Load cloud config lazily to avoid import issues
 async function getCloudConfig(): Promise<CloudConfig | null> {
   try {
-    // Path from storage/framework/core/actions/deploy.ts to config/cloud.ts
-    // 4 levels up: actions -> core -> framework -> storage -> (root)
-    const cloudConfig = await import('../../../../config/cloud')
+    const cloudConfig = await import(path.projectPath('config/cloud'))
     return cloudConfig.tsCloud || null
   }
   catch {

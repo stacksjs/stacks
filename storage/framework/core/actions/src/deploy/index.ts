@@ -494,7 +494,7 @@ if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
 
 // Use ts-cloud deployment instead of CDK
 try {
-  const { deployStack, deployFrontend: _deployFrontend } = await import('../../deploy')
+  const { deployStack, deployFrontend: _deployFrontend } = await import('./stack')
 
   const environment = process.env.APP_ENV || process.env.NODE_ENV || 'production'
   // AWS_REGION, else the region config/cloud.ts declares - the one ts-cloud
