@@ -1,5 +1,31 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.410...v0.75.411)
+
+## ✨ Features
+
+- supervise test service readiness and lifetime ([ef73209](https://github.com/stacksjs/stacks/commit/ef73209)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **browser-extension**: a rule source may name one export as path#name ([b1331f5](https://github.com/stacksjs/stacks/commit/b1331f5)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **libs**: library packages ship assets beside their code, built by a prebuild ([30c8af2](https://github.com/stacksjs/stacks/commit/30c8af2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **browser-extension**: a webkit build target for WKWebView apps ([d91aa5d](https://github.com/stacksjs/stacks/commit/d91aa5d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **browser-extension**: convert DNR rules to WebKit content-blocker lists ([d673cd2](https://github.com/stacksjs/stacks/commit/d673cd2)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- resolve desktop build sources in default typechecks ([a95c7b9](https://github.com/stacksjs/stacks/commit/a95c7b9)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh testing native capability exports ([e2b6f36](https://github.com/stacksjs/stacks/commit/e2b6f36)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **cloud**: keep shared host identity in private configuration ([769a1ba](https://github.com/stacksjs/stacks/commit/769a1ba)) _(by Chris <chris@stacksjs.com>)_ ([#3083](https://github.com/stacksjs/stacks/issues/3083))
+- **buddy**: regenerate the command reference for extension:build --target webkit ([086a912](https://github.com/stacksjs/stacks/commit/086a912)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **skills**: the webkit extension target, its bridge contract, and library assets ([7f24943](https://github.com/stacksjs/stacks/commit/7f24943)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.409...v0.75.410)
 
 ## ✨ Features
