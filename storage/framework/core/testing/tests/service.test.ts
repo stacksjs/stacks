@@ -77,3 +77,24 @@ test('a readiness deadline stops a stubborn child and leaves other servers alone
     unrelated.stop(true)
   }
 })
+
+
+test('a service can flush its readiness notification before immediately exiting', async () => {
+  const service = startTestService(command(`
+    import { notifyTestServiceReady } from ${JSON.stringify(join(import.meta.dir, '../src/service.ts'))}
+    notifyTestServiceReady({ flushed: true }, (error) => {
+      if (error) throw error
+      console.log('readiness notification flushed')
+      process.exit(7)
+    })
+    setTimeout(() => process.exit(9), 1000)
+  `), { cwd: fixture, startupTimeoutMs: 5000 })
+  const output = new Response(service.stdout).text()
+  try {
+    expect(await service.ready).toEqual({ flushed: true })
+    expect(await service.exited).toBe(7)
+    expect(await output).toBe('readiness notification flushed\n')
+    expect(service.signal.aborted).toBe(true)
+  }
+  finally { await service.stop() }
+})
