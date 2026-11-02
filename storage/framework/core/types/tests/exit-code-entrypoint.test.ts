@@ -25,6 +25,9 @@ test('built types subpaths resolve and the root shares the exit-code enum', asyn
       await cp(join(packageSource, 'src'), join(pkg, 'src'), { recursive: true })
       await cp(join(packageSource, 'package.json'), join(pkg, 'package.json'))
       await cp(join(packageSource, 'build.ts'), join(pkg, 'build.ts'))
+      // Preserve the real declaration resolver, including application catch-all paths.
+      if (name === 'types')
+        await writeFile(join(pkg, 'tsconfig.json'), JSON.stringify({ extends: join(packageSource, 'tsconfig.json') }))
       const build = Bun.spawn([process.execPath, 'run', 'build'], {
         cwd: pkg,
         env: { ...process.env, APP_ENV: 'test' },
