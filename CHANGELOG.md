@@ -1,5 +1,72 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.422...v0.75.424)
+
+## 🐛 Bug Fixes
+
+- **bootstrap**: verify the Pantry pin and propagate installer failures ([6a3f2af](https://github.com/stacksjs/stacks/commit/6a3f2af)) _(by Chris <chris@stacksjs.com>)_ ([#3104](https://github.com/stacksjs/stacks/issues/3104))
+- **sms**: load application settings through native config ([1e32c5d](https://github.com/stacksjs/stacks/commit/1e32c5d)) _(by Chris <chris@stacksjs.com>)_ ([#3099](https://github.com/stacksjs/stacks/issues/3099))
+- **alias**: preserve workspace config line endings ([f747c2b](https://github.com/stacksjs/stacks/commit/f747c2b)) _(by Chris <chris@stacksjs.com>)_ ([#3095](https://github.com/stacksjs/stacks/issues/3095))
+- **alias**: derive workspace paths from package identities ([4e7b895](https://github.com/stacksjs/stacks/commit/4e7b895)) _(by Chris <chris@stacksjs.com>)_ ([#3095](https://github.com/stacksjs/stacks/issues/3095))
+- **build**: order workspace builds by declared dependencies ([48bbbd1](https://github.com/stacksjs/stacks/commit/48bbbd1)) _(by Chris <chris@stacksjs.com>)_ ([#3094](https://github.com/stacksjs/stacks/issues/3094))
+- **defaults**: model messages keyed by rules their validators have ([6b4d476](https://github.com/stacksjs/stacks/commit/6b4d476)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3123](https://github.com/stacksjs/stacks/issues/3123))
+- **orm**: a model write reports the model's own validation messages ([991ba43](https://github.com/stacksjs/stacks/commit/991ba43)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3123](https://github.com/stacksjs/stacks/issues/3123))
+- **router**: an action's per-rule messages show for the rule that failed ([ca24366](https://github.com/stacksjs/stacks/commit/ca24366)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3123](https://github.com/stacksjs/stacks/issues/3123))
+- **validation**: custom messages reach the errors they name, with no shared state ([c2e5b97](https://github.com/stacksjs/stacks/commit/c2e5b97)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3123](https://github.com/stacksjs/stacks/issues/3123))
+- **validation**: validateField finds a default model when the app has no app/Models ([eb30038](https://github.com/stacksjs/stacks/commit/eb30038)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3123](https://github.com/stacksjs/stacks/issues/3123))
+- **router**: validation errors read "Title is required", not "Title This field is required" ([c994b80](https://github.com/stacksjs/stacks/commit/c994b80)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3122](https://github.com/stacksjs/stacks/issues/3122))
+- **validation**: a JSON object cannot pass for an uploaded file ([e24ffb1](https://github.com/stacksjs/stacks/commit/e24ffb1)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3121](https://github.com/stacksjs/stacks/issues/3121))
+- **validation**: a text limit counts characters, not UTF-16 units ([93248d8](https://github.com/stacksjs/stacks/commit/93248d8)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3120](https://github.com/stacksjs/stacks/issues/3120))
+- **validation**: identifiers and numbers from text are read as decimal ([ce078df](https://github.com/stacksjs/stacks/commit/ce078df)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3120](https://github.com/stacksjs/stacks/issues/3120))
+- **validation**: parseBooleanInput takes a checkbox's on and off ([4b9e910](https://github.com/stacksjs/stacks/commit/4b9e910)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3120](https://github.com/stacksjs/stacks/issues/3120))
+- **objects**: deepMerge keeps a Date, Map or Set, and lets a source object replace a string ([57b4679](https://github.com/stacksjs/stacks/commit/57b4679)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3118](https://github.com/stacksjs/stacks/issues/3118))
+- **utils**: merge skips a __proto__ key, as the defu it replaces does ([bb08ede](https://github.com/stacksjs/stacks/commit/bb08ede)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3117](https://github.com/stacksjs/stacks/issues/3117))
+- **objects**: a __proto__ key is data, never the prototype deepMerge or a copy writes to ([4e55154](https://github.com/stacksjs/stacks/commit/4e55154)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3117](https://github.com/stacksjs/stacks/issues/3117))
+- **strings**: titleCase and slug get back the dashes the em-dash sweep took ([35781a8](https://github.com/stacksjs/stacks/commit/35781a8)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3116](https://github.com/stacksjs/stacks/issues/3116), [#3112](https://github.com/stacksjs/stacks/issues/3112))
+- **strings**: truncate never gives back more than it was asked for, and nothing cuts a character in half ([d9b57cd](https://github.com/stacksjs/stacks/commit/d9b57cd)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3115](https://github.com/stacksjs/stacks/issues/3115))
+- **strings**: coordinate, CIDR and date validators that took junk ([85c845a](https://github.com/stacksjs/stacks/commit/85c845a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3114](https://github.com/stacksjs/stacks/issues/3114))
+- **strings**: validators that refused real colours, ISINs, data URIs, UUIDs and passwords ([26f478e](https://github.com/stacksjs/stacks/commit/26f478e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3114](https://github.com/stacksjs/stacks/issues/3114))
+- **arrays**: an interquartile range that does not depend on input order, and statistics docs that match ([ae20b26](https://github.com/stacksjs/stacks/commit/ae20b26)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3113](https://github.com/stacksjs/stacks/issues/3113))
+- **whois**: keep the colons in parsed values, and find no server where IANA lists none ([29585a5](https://github.com/stacksjs/stacks/commit/29585a5)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **i18n**: a count of 0 takes the string's zero form ([494e6ac](https://github.com/stacksjs/stacks/commit/494e6ac)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3110](https://github.com/stacksjs/stacks/issues/3110))
+- **i18n**: take plural rules from the runtime's CLDR data, not a hand-written table ([a9e6e93](https://github.com/stacksjs/stacks/commit/a9e6e93)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3110](https://github.com/stacksjs/stacks/issues/3110))
+- **payments**: formatAmount scales by the currency's minor unit, not by 100 ([501a274](https://github.com/stacksjs/stacks/commit/501a274)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3105](https://github.com/stacksjs/stacks/issues/3105), [#3106](https://github.com/stacksjs/stacks/issues/3106), [#2851](https://github.com/stacksjs/stacks/issues/2851))
+- **notifications**: the chat channel sends through a webhook and the configured driver ([4584aa8](https://github.com/stacksjs/stacks/commit/4584aa8)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3101](https://github.com/stacksjs/stacks/issues/3101))
+- **chat**: webhook sends need no recipient, and user text cannot ping everyone ([6f61b5d](https://github.com/stacksjs/stacks/commit/6f61b5d)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3101](https://github.com/stacksjs/stacks/issues/3101))
+- **push**: FCM takes the data, priority and multicast push.send() gives it ([7ea9c3b](https://github.com/stacksjs/stacks/commit/7ea9c3b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3098](https://github.com/stacksjs/stacks/issues/3098))
+- **push**: send to more than 100 Expo devices in requests Expo accepts ([0ed2c40](https://github.com/stacksjs/stacks/commit/0ed2c40)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3098](https://github.com/stacksjs/stacks/issues/3098))
+- **calendar**: expand recurrences on the dates calendar clients show ([9549ba8](https://github.com/stacksjs/stacks/commit/9549ba8)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3096](https://github.com/stacksjs/stacks/issues/3096))
+- **calendar**: a feed value cannot start calendar lines of its own ([c58c11e](https://github.com/stacksjs/stacks/commit/c58c11e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3096](https://github.com/stacksjs/stacks/issues/3096))
+- **calendar**: add-to-calendar exports put a timed event at its real time ([d82dd59](https://github.com/stacksjs/stacks/commit/d82dd59)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3096](https://github.com/stacksjs/stacks/issues/3096))
+
+## ⚡ Performance Improvements
+
+- **desktop**: compile launchers to bytecode ([c66a105](https://github.com/stacksjs/stacks/commit/c66a105)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- refresh SMS native skill evidence ([30925b2](https://github.com/stacksjs/stacks/commit/30925b2)) _(by Chris <chris@stacksjs.com>)_
+- use published desktop builder and SMS APIs ([7148f75](https://github.com/stacksjs/stacks/commit/7148f75)) _(by Chris <chris@stacksjs.com>)_
+- **cache**: the memory driver reads config/cache.ts now, and is not the memory singleton ([44bdb9b](https://github.com/stacksjs/stacks/commit/44bdb9b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3072](https://github.com/stacksjs/stacks/issues/3072))
+
+## ✅ Tests
+
+- **cron**: put the host timezone back after the parse() test ([d50fec7](https://github.com/stacksjs/stacks/commit/d50fec7)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3085](https://github.com/stacksjs/stacks/issues/3085))
+
+## 🔧 Chores
+
+- preserve the upstream framework release metadata ([fa7721a](https://github.com/stacksjs/stacks/commit/fa7721a)) _(by Chris <chris@stacksjs.com>)_
+- integrate the current desktop launcher source ([3ad11f4](https://github.com/stacksjs/stacks/commit/3ad11f4)) _(by Chris <chris@stacksjs.com>)_
+- release v0.75.423 ([99bc190](https://github.com/stacksjs/stacks/commit/99bc190)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: require Pantry 0.11.159 for native packaging ([30bc355](https://github.com/stacksjs/stacks/commit/30bc355)) _(by Chris <chris@stacksjs.com>)_
+- **deps**: refresh SMS workspace lock metadata ([c50fac8](https://github.com/stacksjs/stacks/commit/c50fac8)) _(by Chris <chris@stacksjs.com>)_
+- **deps**: require craft-native 0.0.424 ([6422ff5](https://github.com/stacksjs/stacks/commit/6422ff5)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.422...v0.75.423)
 
 ## 🐛 Bug Fixes
