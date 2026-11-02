@@ -33,7 +33,8 @@ export function slash(str: string): string {
  * @example
  * ```
  * ensurePrefix('https://', 'google.com') => 'https://google.com'
- * ensurePrefix('https://', 'http://google.com') => 'https://google.com'
+ * ensurePrefix('https://', 'https://google.com') => 'https://google.com'
+ * ```
  */
 export function ensurePrefix(prefix: string, str: string): string {
   if (!str.startsWith(prefix))
@@ -79,11 +80,29 @@ export function template(str: string, ...args: unknown[]): string {
   })
 }
 
+/**
+ * Shorten a string to at most `length` characters, `end` included.
+ *
+ * Characters are code points, so an emoji is never cut in half. When `length`
+ * is shorter than `end`, as much of `end` as fits: `slice` with a negative
+ * end used to count back from the far end, so `truncate('hello world', 2)`
+ * gave the 13 characters `hello worl...`.
+ *
+ * @category String
+ * @example
+ * ```
+ * truncate('hello world', 8) => 'hello...'
+ * truncate('hello world', 2) => '..'
+ * ```
+ */
 export function truncate(str: string, length: number, end = '...'): string {
-  if (str.length <= length)
+  const chars = Array.from(str)
+  const limit = Math.max(0, Math.floor(length))
+  if (chars.length <= limit)
     return str
 
-  return str.slice(0, length - end.length) + end
+  const marker = Array.from(end).slice(0, limit)
+  return chars.slice(0, limit - marker.length).join('') + marker.join('')
 }
 
 /**

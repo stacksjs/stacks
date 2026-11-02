@@ -87,7 +87,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/sms` | [`stacks-sms`](../stacks-sms/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/index.ts) | 5 |
 | `@stacksjs/socials` | [`stacks-socials`](../stacks-socials/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/socials/src/index.ts) | 17 |
 | `@stacksjs/storage` | [`stacks-storage`](../stacks-storage/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/storage/src/index.ts) | 47 |
-| `@stacksjs/strings` | [`stacks-strings`](../stacks-strings/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/strings/src/index.ts) | 8 |
+| `@stacksjs/strings` | [`stacks-strings`](../stacks-strings/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/strings/src/index.ts) | 9 |
 | `@stacksjs/testing` | [`stacks-testing`](../stacks-testing/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/testing/src/index.ts) | 22 |
 | `@stacksjs/tinker` | [`stacks-repl`](../stacks-repl/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/tinker/src/index.ts) | 1 |
 | `@stacksjs/tunnel` | [`stacks-tunnel`](../stacks-tunnel/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/tunnel/src/index.ts) | 1 |
@@ -843,7 +843,7 @@ Declared runtime exports: `string`.
 
 Local source modules: [src/string.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/strings/src/string.ts).
 
-Evidence directory: [8 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/strings/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [9 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/strings/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/testing
 

@@ -15,6 +15,10 @@ export function toString(v: unknown): string {
  * counts from the end of the string (`-4` = "start four characters from
  * the end"). An out-of-range `index` returns the original string.
  *
+ * Characters are code points, as Laravel's `mb_*` functions count them. This
+ * used to count UTF-16 units, so masking from 1 in `😀abc` left half the emoji
+ * behind, a lone surrogate no database or JSON encoder takes.
+ *
  * @example
  * ```ts
  * mask('1234567890123456', '*', 4, 8)   // → '1234********3456'
@@ -26,7 +30,8 @@ export function toString(v: unknown): string {
 export function mask(value: string, character: string, index: number, length?: number): string {
   if (character === '') return value
 
-  const len = value.length
+  const chars = Array.from(value)
+  const len = chars.length
   // Negative index counts from the end.
   const start = index < 0 ? Math.max(0, len + index) : index
   if (start >= len) return value
@@ -37,7 +42,7 @@ export function mask(value: string, character: string, index: number, length?: n
 
   const end = Math.min(len, start + maskLen)
   // Use only the first character of the mask string to keep length stable.
-  const fill = character.charAt(0).repeat(end - start)
+  const fill = (Array.from(character)[0] ?? '').repeat(end - start)
 
-  return value.slice(0, start) + fill + value.slice(end)
+  return chars.slice(0, start).join('') + fill + chars.slice(end).join('')
 }

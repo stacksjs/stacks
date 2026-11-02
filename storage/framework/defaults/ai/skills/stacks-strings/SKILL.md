@@ -404,7 +404,12 @@ interface PluralizeOptions { count?, inclusive? }
 ```
 
 ## Gotchas
-- Case conversion uses Unicode-aware word boundary detection (`\p{Ll}`, `\p{Lu}`) -- handles international characters
+- Case conversion uses Unicode-aware word boundary detection (`\p{Ll}`, `\p{Lu}`) -- handles international characters.
+  Combining marks stay with their letter and digits from any script are kept, so `kebabCase('नमस्ते दुनिया')`
+  is `'नमस्ते-दुनिया'`
+- `truncate(str, length, end)` never returns more than `length` characters, `end` included; with a `length`
+  shorter than `end` it returns as much of `end` as fits. It and `mask` count code points, so an emoji is one
+  character and is never cut in half
 - `slug()` calls `slugify()` under the hood but defaults to `{ lower: true, strict: true }`; `slugify()` defaults to `{ lower: false, strict: false }`
 - `pascalCase` and `camelCase` accept `PascalCaseOptions` with `mergeAmbiguousCharacters` to control number-prefixed word handling
 - All case functions support `prefixCharacters`/`suffixCharacters` to preserve leading/trailing non-word characters

@@ -26,8 +26,11 @@ const SPLIT_UPPER_UPPER_RE = /(\p{Lu})(\p{Lu}\p{Ll})/gu
 // Used to iterate over the initial split result and separate numbers.
 const SPLIT_SEPARATE_NUMBER_RE = /(\d)\p{Ll}|(\p{L})\d/u
 
-// Regexp involved with stripping non-word characters from the result.
-const DEFAULT_STRIP_REGEXP = /[^\p{L}\d]+/giu
+// Regexp involved with stripping non-word characters from the result. Marks
+// (`\p{M}`) belong to the letter before them: stripping them cut Hindi and Thai
+// words apart at every vowel sign, and dropped the accent of a decomposed `é`.
+// Numbers are any script's, not only 0 to 9.
+const DEFAULT_STRIP_REGEXP = /[^\p{L}\p{M}\p{N}]+/giu
 
 // The replacement value for splits.
 const SPLIT_REPLACE_VALUE = '$1\0$2'
