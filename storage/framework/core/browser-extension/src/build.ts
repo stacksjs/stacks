@@ -1,13 +1,15 @@
-import type { BuildOptions, ExtensionConfig, ExtensionPage, ExtensionPages, ExtensionTarget } from './types'
+import type { BuildOptions, BuildTarget, ExtensionConfig, ExtensionPage, ExtensionPages } from './types'
 import { Glob } from 'bun'
 import { cp, mkdir, rm } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { bundleScript, loadModuleValue } from './bundle'
 import { contentScriptOut, generateManifest } from './manifest'
 import { sanitizeExtensionHtml } from './sanitize'
+import { buildWebKit } from './webkit-build'
 
 /** Resolve the output directory for a target. */
-export function resolveOutdir(config: ExtensionConfig, target: ExtensionTarget, override?: string): string {
+export function resolveOutdir(config: ExtensionConfig, target: BuildTarget, override?: string): string {
   if (override)
     return override
   if (typeof config.outdir === 'string')
@@ -55,23 +57,8 @@ function pageEntries(pages?: ExtensionPages): Array<{ name: string, page: Extens
   return out
 }
 
-/** Bundle one entrypoint to a classic IIFE script (content scripts + page scripts). */
 async function buildScript(entry: string, out: string, outdir: string, cwd: string, minify: boolean): Promise<void> {
-  const result = await Bun.build({
-    entrypoints: [resolve(cwd, entry)],
-    target: 'browser',
-    // IIFE, never esm: these load as classic scripts; esm top-level vars become
-    // window globals and collide with the page's own (MAIN-world) minified names.
-    format: 'iife',
-    splitting: false,
-    minify,
-  })
-  if (!result.success)
-    throw new Error(`[browser-extension] failed to build ${entry}: ${result.logs.join('\n')}`)
-  const output = result.outputs[0]
-  if (!output)
-    throw new Error(`[browser-extension] build produced no output for ${entry}`)
-  await Bun.write(join(outdir, out), await output.text())
+  await Bun.write(join(outdir, out), await bundleScript(entry, cwd, minify))
 }
 
 /**
@@ -86,11 +73,18 @@ async function buildScript(entry: string, out: string, outdir: string, cwd: stri
  *
  * Replaces the hand-rolled `build-extension.ts` every extension used to carry.
  */
-export async function buildExtension(config: ExtensionConfig, options: BuildOptions): Promise<{ outdir: string, target: ExtensionTarget }> {
+export async function buildExtension(config: ExtensionConfig, options: BuildOptions): Promise<{ outdir: string, target: BuildTarget }> {
   const target = options.target ?? 'chrome'
   const cwd = options.cwd ?? process.cwd()
   const outdir = resolve(cwd, resolveOutdir(config, target, options.outdir))
   const minify = options.minify ?? true
+
+  // WebKit apps get rule lists and user scripts, not an extension package.
+  if (target === 'webkit') {
+    await buildWebKit(config, { outdir, cwd, version: options.version, minify })
+    await config.hooks?.postBuild?.({ config, target, outdir, version: options.version, cwd })
+    return { outdir, target }
+  }
 
   await rm(outdir, { recursive: true, force: true })
   await mkdir(join(outdir, 'rules'), { recursive: true })
@@ -168,12 +162,7 @@ export async function buildExtension(config: ExtensionConfig, options: BuildOpti
   for (const rule of config.rules ?? []) {
     if (!rule.source)
       continue
-    const mod = await import(resolve(cwd, rule.source))
-    // Prefer an explicit export; otherwise the sole exported function/array.
-    const build = mod.default ?? mod.buildRules ?? mod.rules
-      ?? Object.values(mod).find(v => typeof v === 'function')
-      ?? Object.values(mod).find(v => Array.isArray(v))
-    const data = typeof build === 'function' ? await build() : build
+    const data = await loadModuleValue(cwd, rule.source)
     await Bun.write(join(outdir, rule.path ?? `rules/${rule.id}.json`), `${JSON.stringify(data, null, 2)}\n`)
   }
 

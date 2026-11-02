@@ -1,11 +1,11 @@
-import type { ExtensionConfig, ExtensionTarget } from './types'
+import type { BuildTarget, ExtensionConfig } from './types'
 import { existsSync } from 'node:fs'
 import { mkdir } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { buildExtension, resolveOutdir } from './build'
 
 export interface PackageOptions {
-  target?: ExtensionTarget
+  target?: BuildTarget
   version: string
   cwd?: string
   /** Output .zip path. @default `<slug>-<version>[-<target>].zip` */

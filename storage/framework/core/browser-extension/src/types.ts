@@ -7,7 +7,14 @@
  * or per-project build script.
  */
 
+/** The browsers an extension ships to through a store. */
 export type ExtensionTarget = 'chrome' | 'firefox' | 'safari'
+/**
+ * Everything `buddy extension:build` can produce: the store targets, plus
+ * `webkit` - the extension's rules and content scripts as WebKit
+ * content-blocker lists and `WKUserScript`s, for apps that embed WKWebView.
+ */
+export type BuildTarget = ExtensionTarget | 'webkit'
 export type SafariPlatform = 'macos' | 'ios'
 
 /** A content script mapped into the manifest's `content_scripts`. */
@@ -77,10 +84,52 @@ export interface ManifestOverrides {
   extra?: Record<string, unknown>
 }
 
+/** A module whose default export (or sole exported function/value) produces rules. */
+export interface WebKitRuleSource {
+  /** List id, and the group name in the WebKit manifest. */
+  id: string
+  /** Module path, relative to the project root. */
+  source: string
+  /** Whether the extension applies this source by default. @default true */
+  enabled?: boolean
+}
+
+/** The `webkit` build target: `dist-webkit/` for apps that embed WKWebView. */
+export interface WebKitOptions {
+  /**
+   * Rules per compiled list. WebKit refuses lists over 150,000 rules; smaller
+   * lists compile faster.
+   * @default 50000
+   */
+  maxRulesPerList?: number
+  /**
+   * DNR rules the extension adds at runtime with `updateDynamicRules`, built
+   * here from their defaults (each module returns a DNR rule array). The
+   * static `rules` rulesets are always included.
+   */
+  dynamicRules?: WebKitRuleSource[]
+  /**
+   * Cosmetic hiding: each module returns `WebKitCosmeticRule[]`
+   * (`{ selector, domains?, excludedDomains? }`), emitted as
+   * `css-display-none` lists. DNR itself has no cosmetic rules.
+   */
+  cosmetic?: WebKitRuleSource[]
+  /** Selectors joined into one `css-display-none` rule. @default 100 */
+  selectorsPerRule?: number
+  /**
+   * The `window.webkit.messageHandlers` name isolated-world scripts message
+   * for `chrome.runtime` and `chrome.storage`.
+   * @default the extension name as a slug, e.g. `very-good-adblock`
+   */
+  messageHandler?: string
+  /** Content scripts to leave out, by output name without `.js` (e.g. `content`). */
+  excludeScripts?: string[]
+}
+
 /** Context passed to build hooks. */
 export interface BuildContext {
   config: ExtensionConfig
-  target: ExtensionTarget
+  target: BuildTarget
   /** Absolute output directory. */
   outdir: string
   version: string
@@ -236,7 +285,9 @@ export interface ExtensionConfig {
    */
   safariExclude?: string[]
   /** Targets to build. @default ['chrome', 'firefox'] */
-  targets?: ExtensionTarget[]
+  targets?: BuildTarget[]
+  /** The `webkit` target's options (`buddy extension:build --target webkit`). */
+  webkit?: WebKitOptions
 
   /** Background service worker / event page entry. */
   background?: string
@@ -257,8 +308,8 @@ export interface ExtensionConfig {
 
   manifest?: ManifestOverrides
 
-  /** Per-target output dir. @default chrome→`dist`, firefox→`dist-firefox`, safari→`dist-safari` */
-  outdir?: Partial<Record<ExtensionTarget, string>> | string
+  /** Per-target output dir. @default chrome→`dist`, firefox→`dist-firefox`, safari→`dist-safari`, webkit→`dist-webkit` */
+  outdir?: Partial<Record<BuildTarget, string>> | string
 
   /** Hooks for app-specific post-processing the generic build can't express. */
   hooks?: {
@@ -269,7 +320,7 @@ export interface ExtensionConfig {
 
 export interface BuildOptions {
   /** Which target to build. @default 'chrome' */
-  target?: ExtensionTarget
+  target?: BuildTarget
   /** Extension version (usually the app's package.json version). */
   version: string
   /** Override the config's outdir. */

@@ -3,7 +3,7 @@ import process from 'node:process'
 import { log } from '@stacksjs/cli'
 
 interface ExtensionOptions {
-  target?: 'chrome' | 'firefox' | 'safari'
+  target?: 'chrome' | 'firefox' | 'safari' | 'webkit'
   version?: string
 }
 
@@ -92,12 +92,16 @@ export function extension(buddy: CLI): void {
 
   buddy
     .command('extension:build', 'Build the browser extension (Chrome + Firefox + Safari) from config/extension.ts')
-    .option('--target <target>', 'Build a single target (chrome | firefox | safari); omit to build all')
+    .option('--target <target>', 'Build a single target (chrome | firefox | safari | webkit); omit to build all. webkit emits content-blocker lists and WKUserScripts for WKWebView apps')
     .option('--version <version>', 'Override the extension version (defaults to package.json)')
     .action(async (options: ExtensionOptions) => {
       const { buildExtension, buildAllTargets } = await import('@stacksjs/browser-extension')
       const { config, version } = await load()
       const v = options.version ?? version
+      if (options.target && !['chrome', 'firefox', 'safari', 'webkit'].includes(options.target)) {
+        await log.error(`Unknown target ${options.target}; use chrome, firefox, safari or webkit`)
+        process.exit(1)
+      }
       if (options.target) {
         const { outdir } = await buildExtension(config, { target: options.target, version: v })
         log.success(`Built ${config.name} ${v} (${options.target}) → ${outdir}`)
