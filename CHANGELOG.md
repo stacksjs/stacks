@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.416...v0.75.417)
+
+## 🐛 Bug Fixes
+
+- renew Apple API tokens throughout release waits ([49afe39](https://github.com/stacksjs/stacks/commit/49afe39)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.415...v0.75.416)
 
 ## 🐛 Bug Fixes
