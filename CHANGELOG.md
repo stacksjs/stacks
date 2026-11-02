@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.413...v0.75.414)
+
+## 🐛 Bug Fixes
+
+- **auth**: keep reset purpose in applications and index digest claims ([8b67377](https://github.com/stacksjs/stacks/commit/8b67377)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.412...v0.75.413)
 
 ## 🐛 Bug Fixes
