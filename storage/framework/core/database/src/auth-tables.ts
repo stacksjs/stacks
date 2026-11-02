@@ -621,6 +621,15 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
       if (!isDuplicateIndexError(error)) throw error
     }
 
+    // Digest credentials can be redeemed without an email address. Index the
+    // credential lookup too; bcrypt recovery still looks up the unique email.
+    try {
+      await db.unsafe(indexSqlForDialect('CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token)', dbDriver)).execute()
+    }
+    catch (error) {
+      if (!isDuplicateIndexError(error)) throw error
+    }
+
     /*
      * `email_verifications` — the other half of the pair above, and it was
      * missing while `password_resets` was here.

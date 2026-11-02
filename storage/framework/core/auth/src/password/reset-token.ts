@@ -15,8 +15,8 @@ export function mintPasswordResetToken(): { token: string, digest: string } {
 export interface PasswordResetClaim {
   userId: number
   email: string
-  /** Explicit lifetimes distinguish invitation/setup links from ordinary recovery links. */
-  setup: boolean
+  /** Whether issuance set its own deadline. Applications decide the link's purpose. */
+  hasExplicitExpiry: boolean
 }
 
 /**
@@ -53,7 +53,7 @@ export async function consumePasswordResetToken<T>(
       await db.deleteFrom('password_resets').where('email', '=', email).where('token', '=', digest).execute()
       return { consumed: false as const }
     }
-    const value = await apply({ userId: Number(owner.id), email, setup: reset.expires_at != null })
+    const value = await apply({ userId: Number(owner.id), email, hasExplicitExpiry: reset.expires_at != null })
     const deleted = await db.deleteFrom('password_resets').where('email', '=', email).where('token', '=', digest).execute()
     if (mutationCount(deleted) !== 1) throw new Error('Password reset token could not be consumed')
     return { consumed: true as const, value }

@@ -106,7 +106,7 @@ Made with 💙
 `digest` in `password_resets.token`. Token-only recovery endpoints use
 `consumePasswordResetToken(token, async claim => { ... })` to change the account and
 revoke its credentials in one transaction. `claim` contains `userId`, `email` and
-`setup` (an explicit lifetime). The result is `{ consumed: false }` or
+`hasExplicitExpiry`. The result is `{ consumed: false }` or
 `{ consumed: true, value }`, with the callback's value. Unknown, expired, replaced
 and already consumed tokens never invoke the callback. A failed callback rolls
 everything back, leaving recovery retryable. Notifications belong after commit.
