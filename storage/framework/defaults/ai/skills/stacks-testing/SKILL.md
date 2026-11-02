@@ -278,7 +278,11 @@ expect(pageAuditClean(report)).toBe(true) // no duplicate /api/ requests, failed
   pattern holds with no listener stays held (a hanging request on purpose).
   `matchesUrlPattern(pattern, url)` and `pausedRequestMatches(pattern, paused)` are Chrome's
   matching rules (`*`, `?`, `\` escape; stage and resource type).
-- `settle(cdp, { quietMs, timeoutMs })` resolves false (not throws) when a page never goes quiet.
+- `settle(cdp, { quietMs, timeoutMs, includeSpeculative? })` resolves false (not throws) when a page never goes quiet.
+  By default all finite requests count. `includeSpeculative: false` uses `cdp.foregroundInFlight`,
+  excluding only Chrome `Prefetch` requests and explicit `Purpose` / `Sec-Purpose: prefetch`
+  declarations. The raw `inFlight` map and all HTTP, duplicate API, console and runtime audit
+  failures remain observable. `navigate` and `auditPage` accept the same option.
 - `click(cdp, selector | { selector, text }, { timeoutMs? })` scrolls the unique target into view,
   waits for layout, enabled state and an unobscured hit test, then uses Chrome's real mouse input.
   Use it for journey controls instead of local coordinate-click helpers or DOM-dispatched clicks.

@@ -228,11 +228,16 @@ export class Cdp {
   private answered = new Map<string, boolean>()
   private frameLoaders = new Map<string, string>()
   private requestLoaders = new Map<string, { frameId: string, loaderId: string }>()
+  private speculativeRequests = new Set<string>()
 
   /** What went wrong on the page, in order. */
   errors: string[] = []
   /** Requests still loading: request id to `METHOD url`. */
   inFlight: Map<string, string> = new Map()
+  /** In-flight work excluding requests explicitly declared as speculative prefetches. */
+  get foregroundInFlight(): ReadonlyMap<string, string> {
+    return new Map([...this.inFlight].filter(([id]) => !this.speculativeRequests.has(id)))
+  }
   /** Chrome went away; every later command fails at once. */
   closed: boolean = false
 
@@ -370,6 +375,7 @@ export class Cdp {
   private finishRequest(requestId: string): void {
     this.inFlight.delete(requestId)
     this.requestLoaders.delete(requestId)
+    this.speculativeRequests.delete(requestId)
   }
 
   private retireFrameRequests(frameId: string, previousLoader?: string): void {
@@ -386,6 +392,11 @@ export class Cdp {
       // Chrome can omit terminal events for requests of a replaced document.
       // A started navigation is insufficient: retire only on a frame commit.
       this.requestLoaders.delete(requestId)
+      this.speculativeRequests.delete(requestId)
+      const speculative = params.type === 'Prefetch' || Object.entries(params.request?.headers ?? {}).some(([name, value]) =>
+        /^(?:sec-)?purpose$/i.test(name) && String(value).split(/[\s;,]+/).some(token => token.toLowerCase() === 'prefetch'),
+      )
+      if (speculative) this.speculativeRequests.add(requestId)
       if (frameId && loaderId) this.requestLoaders.set(requestId, { frameId, loaderId })
       this.inFlight.set(params.requestId, `${params.request?.method} ${params.request?.url}`)
     }
@@ -1155,6 +1166,8 @@ export async function launch(options: LaunchOptions = {}): Promise<LaunchedChrom
 // ---------------------------------------------------------------------------
 
 export interface SettleOptions {
+  /** Include declared speculative prefetches in network readiness. Default true. Errors are always retained. */
+  includeSpeculative?: boolean
   /** How long the page must stay quiet. Default 1000 ms. */
   quietMs?: number
   /** Give up after this long. Default 15 s. */
@@ -1174,7 +1187,8 @@ export async function settle(cdp: Cdp, options: SettleOptions = {}): Promise<boo
   let quietSince = 0
   while (Date.now() - started < timeoutMs) {
     if (cdp.closed) throw new Error('Chrome closed the connection')
-    const busy = cdp.inFlight.size > 0 || await cdp.evaluate<boolean>(`document.readyState !== 'complete'`).catch(() => true)
+    const requests = options.includeSpeculative === false ? cdp.foregroundInFlight : cdp.inFlight
+    const busy = requests.size > 0 || await cdp.evaluate<boolean>(`document.readyState !== 'complete'`).catch(() => true)
     if (busy) quietSince = 0
     else if (!quietSince) quietSince = Date.now()
     else if (Date.now() - quietSince >= quietMs) return true

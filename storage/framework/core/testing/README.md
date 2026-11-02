@@ -19,6 +19,19 @@ terminates only the owned child, escalating SIGTERM to SIGKILL after
 `stopGraceMs` (default 2 seconds). The service script owns its descendants.
 Readiness has a separate `startupTimeoutMs` (default 60 seconds).
 
+## Browser readiness and speculative requests
+
+`@stacksjs/testing/browser` retains every finite request in `cdp.inFlight`.
+`cdp.foregroundInFlight` excludes only Chrome's `Prefetch` requests or requests
+whose `Purpose` / `Sec-Purpose` header declares `prefetch`. Event streams leave
+both views when their response starts.
+
+`settle`, `navigate` and `auditPage` include speculative work by default. Pass
+`includeSpeculative: false` to wait for the current document's foreground work
+while background prefetches remain observable. This changes only readiness:
+HTTP failures, duplicate API calls, console errors and runtime failures still
+appear in audits and can fail `pageAuditClean`.
+
 ## ☘️ Features
 
 wip
