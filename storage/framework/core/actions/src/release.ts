@@ -7,6 +7,7 @@ import { projectPath } from '@stacksjs/path'
 import { assertPublicationAllowed } from './publication-preflight'
 import { runActions } from './helpers/utils'
 import { resolvePantryToolchain } from './pantry-toolchain'
+import { releasePushTarget } from './release-push-target'
 import { BYPASS_ENV, formatPreflightFailure, runPinnedChecks } from './release-preflight'
 
 // Forward any flags passed from `buddy release` (e.g. --bump patch, --dry-run)
@@ -45,8 +46,12 @@ for (const [k, v] of Object.entries(raw)) {
 // corrupting the working tree.
 const isDryRun = passthrough.dryRun === true || passthrough.dryRun === 'true'
 const actions: Action[] = isDryRun ? [Action.Bump] : [Action.GenerateLibraryEntries, Action.Bump]
-if (!isDryRun)
+if (!isDryRun) {
   await assertPublicationAllowed({ cwd: projectPath(), channel: 'github-release' })
+  const rootManifest = await Bun.file(projectPath('package.json')).json()
+  const framework = rootManifest.name === 'stacks' && await Bun.file(projectPath('storage/framework/core/package.json')).exists()
+  if (framework) releasePushTarget(projectPath(), 'main')
+}
 
 // Pre-flight BEFORE anything mutates the tree or creates a tag.
 //

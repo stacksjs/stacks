@@ -1,8 +1,8 @@
 import { execFileSync } from 'node:child_process'
 import process from 'node:process'
 
-/** Resolve the configured upstream before a release mutates manifests or creates a tag. */
-export function releasePushTarget(cwd = process.cwd()): { remote: string, ref: string } {
+/** Resolve the configured upstream and required source-CI branch before release writes. */
+export function releasePushTarget(cwd = process.cwd(), requiredBranch?: string): { remote: string, ref: string } {
   const git = (args: string[], optional = false): string => {
     try {
       return execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
@@ -24,5 +24,7 @@ export function releasePushTarget(cwd = process.cwd()): { remote: string, ref: s
   if (!target.ref.startsWith('refs/heads/') || target.ref.includes('\n'))
     throw new Error('The release upstream must be a single branch.')
   git(['check-ref-format', target.ref])
+  if (requiredBranch && target.ref !== `refs/heads/${requiredBranch}`)
+    throw new Error(`Release requires upstream branch refs/heads/${requiredBranch}; configure this branch to track ${target.remote}/${requiredBranch} before releasing.`)
   return target
 }

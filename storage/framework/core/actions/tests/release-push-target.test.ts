@@ -57,3 +57,15 @@ test('keeps the current branch for an untracked branch and refuses invalid relea
   git(['checkout', '--detach'])
   expect(() => releasePushTarget(checkout)).toThrow('on a branch')
 })
+
+test('a required source-CI branch rejects a worktree destination before any release writes', () => {
+  const { checkout, git } = fixture()
+  const head = git(['rev-parse', 'HEAD'])
+  expect(() => releasePushTarget(checkout, 'main')).toThrow('requires upstream branch refs/heads/main')
+  git(['push', '-u', 'origin', 'codex/fixture'])
+  expect(() => releasePushTarget(checkout, 'main')).toThrow('requires upstream branch refs/heads/main')
+  expect(git(['rev-parse', 'HEAD'])).toBe(head)
+  expect(git(['tag', '--list'])).toBe('')
+  git(['branch', '--set-upstream-to', 'origin/main'])
+  expect(releasePushTarget(checkout, 'main')).toEqual({ remote: 'origin', ref: 'refs/heads/main' })
+})

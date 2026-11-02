@@ -152,6 +152,15 @@ changed, and `lockfile-matches-manifests.test.ts` compares the ranges both
 lockfiles record against the manifests. Either failure means a lockfile was
 not regenerated with its manifest, not that the guard is wrong.
 
+## Framework release destination
+
+Framework tags require successful main-push CI for the exact release commit.
+Before releasing from a work branch, configure its upstream with
+`git branch --set-upstream-to=origin/main`, integrate current main, and use
+`bun run release:patch`. The release and standalone bump preflights reject a
+framework destination other than main before generating manifests or tags.
+Application releases continue to use their own configured upstream.
+
 ## Dependency Update System
 
 - **buddy-bot** (`@buddysh/buddy`, shipped by `better-dx`) handles dependency updates, NOT renovatebot

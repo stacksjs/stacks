@@ -92,7 +92,7 @@ async function git(args: string[], cwd = p.projectPath(), options: { throwOnErro
   })
 }
 
-const pushTarget = isDryRun ? undefined : releasePushTarget(p.projectPath())
+const pushTarget = isDryRun ? undefined : releasePushTarget(p.projectPath(), isFrameworkRelease ? 'main' : undefined)
 
 /**
  * Whether a .gitignore rule covers this path.

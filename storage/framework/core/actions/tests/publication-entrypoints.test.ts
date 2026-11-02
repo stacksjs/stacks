@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test'
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { publicationEnvironment } from './helpers/publication-environment'
@@ -48,4 +49,41 @@ await import(${JSON.stringify(join(checkout, 'storage/framework/core/actions/src
   finally {
     rmSync(root, { recursive: true, force: true })
   }
+}, 15_000)
+
+
+test.each(['release.ts', 'bump.ts'])('the framework %s rejects a non-main destination before changing the project', async (action) => {
+  const checkout = resolve(import.meta.dir, '../../../../..')
+  const root = mkdtempSync(join(tmpdir(), 'stacks-release-main-'))
+  const git = (args: string[]) => execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+  const manifest = JSON.stringify({ name: 'stacks', private: true, version: '1.0.0' })
+  try {
+    writeFileSync(join(root, 'package.json'), manifest)
+    mkdirSync(join(root, 'storage/framework/core'), { recursive: true })
+    writeFileSync(join(root, 'storage/framework/core/package.json'), manifest)
+    git(['init', '-b', 'codex/fixture'])
+    git(['config', 'user.name', 'Release fixture'])
+    git(['config', 'user.email', 'fixture@example.invalid'])
+    git(['remote', 'add', 'origin', join(root, 'origin.git')])
+    git(['add', '.'])
+    git(['commit', '-m', 'base'])
+    const head = git(['rev-parse', 'HEAD'])
+    const runner = join(root, 'runner.ts')
+    writeFileSync(runner, `import { projectPath } from ${JSON.stringify(join(checkout, 'storage/framework/core/path/src/index.ts'))}
+if (projectPath() !== process.cwd()) throw new Error('Fixture project root does not match')
+await import(${JSON.stringify(join(checkout, 'storage/framework/core/actions/src', action))})
+`)
+    const child = Bun.spawn([process.execPath, '--no-env-file', '--tsconfig-override', join(checkout, 'storage/framework/tsconfig.framework.json'), runner, '--bump', 'patch'], {
+      cwd: root, env: publicationEnvironment(), stdout: 'pipe', stderr: 'pipe', timeout: 5000,
+    })
+    const [code, out, error] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
+    expect(code).not.toBe(0)
+    expect(out + error).toContain('requires upstream branch refs/heads/main')
+    expect(readFileSync(join(root, 'package.json'), 'utf8')).toBe(manifest)
+    expect(readFileSync(join(root, 'storage/framework/core/package.json'), 'utf8')).toBe(manifest)
+    expect(git(['rev-parse', 'HEAD'])).toBe(head)
+    expect(git(['tag', '--list'])).toBe('')
+    expect(existsSync(join(root, 'storage/framework/libs'))).toBe(false)
+  }
+  finally { rmSync(root, { recursive: true, force: true }) }
 }, 15_000)
