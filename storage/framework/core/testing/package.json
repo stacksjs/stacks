@@ -54,6 +54,12 @@
       "import": "./dist/dynamodb.js",
       "default": "./dist/dynamodb.js"
     },
+    "./time": {
+      "types": "./dist/time.d.ts",
+      "bun": "./dist/time.js",
+      "import": "./dist/time.js",
+      "default": "./dist/time.js"
+    },
     "./*": {
       "types": "./dist/*.d.ts",
       "bun": "./dist/*.js",

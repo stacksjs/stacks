@@ -154,6 +154,8 @@ The lightweight root also exports:
   the real mail singleton through the capture driver and restore automatically.
 - `freezeTime`, `travelTo`, `useRealTime`. Explicitly register
   `afterEach(useRealTime)`; frozen time is not restored implicitly.
+  Standalone Bun fixtures import these from `@stacksjs/testing/time` and
+  restore the clock in `finally`; this subpath imports no lifecycle hooks.
 - `command(args)` returns an awaitable child-process builder with `withInput`,
   `withEnv`, `withCwd` and `withTimeout`. Assert exitCode/output/timedOut. Run
   file-writing commands in a disposable fixture project using `withCwd`.

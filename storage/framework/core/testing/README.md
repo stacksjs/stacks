@@ -51,6 +51,23 @@ Learn more in the docs.
 bun test
 ```
 
+## Clock control in standalone fixtures
+
+Bun scripts outside the test runner can import clock controls without loading
+lifecycle hooks:
+
+```ts
+import { freezeTime, travelTo, useRealTime } from '@stacksjs/testing/time'
+
+try {
+  freezeTime('2026-01-15T10:00:00Z')
+  travelTo('2026-01-16T10:00:00Z')
+}
+finally {
+  useRealTime()
+}
+```
+
 ## 📈 Changelog
 
 Please see our [releases](https://github.com/stacksjs/stacks/releases) page for more information on what has changed recently.
