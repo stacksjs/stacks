@@ -49,7 +49,7 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/ts-validation": "^0.5.6",
+    "@stacksjs/ts-validation": "^0.5.7",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/validation": "workspace:*"
   }

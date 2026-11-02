@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "@stacksjs/path": "workspace:*",
-    "@stacksjs/ts-validation": "^0.5.6"
+    "@stacksjs/ts-validation": "^0.5.7"
   },
   "devDependencies": {
     "better-dx": "^0.2.24",

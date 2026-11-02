@@ -18,8 +18,6 @@
  * the provider's rendered messages, without running predicates again.
  */
 
-import { getCustomMessages } from '@stacksjs/ts-validation'
-
 /** A field's custom messages: one for any failure, or one per rule name. */
 export type FieldMessages = string | Readonly<Record<string, string>>
 
@@ -70,6 +68,9 @@ export function validationFailure(message: string, name: string): ReportedError 
 
 /** Identify failures from the provider's rendered messages, without invoking tests or mutating schemas. */
 function namesFromErrors(rule: RuleLike, value: unknown, errors: ReadonlyArray<ReportedError>): Array<string | undefined> {
+  // Load only when a failure needs its rule name; the upstream Bun export
+  // supports synchronous loading without pulling validation onto success paths.
+  const { getCustomMessages } = require('@stacksjs/ts-validation') as typeof import('@stacksjs/ts-validation')
   const provider = getCustomMessages()
   if (rule.isRequired && (value === undefined || value === null || value === '')) {
     const message = provider.getMessage('required', undefined, rule.fieldName)
