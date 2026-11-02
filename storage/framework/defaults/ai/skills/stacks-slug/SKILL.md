@@ -76,6 +76,8 @@ interface SlugifyOptions {
 
 ## Gotchas
 - Omitting either table or column returns the base slug with no query.
+- A title with no letters or digits at all (`!!!`, an emoji) gets a random
+  eight-character slug from `uniqueSlug()`, never `""`; `slugify()` still returns `""`.
 - The check and insert are separate: keep a UNIQUE index and handle/retry an
   insert conflict. A helper cannot reserve the returned slug against a race.
 - Collision attempts are bounded; after repeated conflicts the helper returns

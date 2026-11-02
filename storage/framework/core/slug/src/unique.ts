@@ -31,7 +31,9 @@ interface SlugifyOptions {
  * "untitled" for unsaved drafts).
  */
 export async function uniqueSlug(value: string, options?: SlugifyOptions): Promise<string> {
-  const baseSlug = slugify(value)
+  // A title with no letters or digits at all ("!!!", an emoji) slugs to "",
+  // and "", "-2", "-3" are not addresses anyone can use: it gets a random slug.
+  const baseSlug = slugify(value) || randomSlugPart()
 
   if (!options?.table || !options?.column)
     return baseSlug
@@ -69,8 +71,12 @@ export async function uniqueSlug(value: string, options?: SlugifyOptions): Promi
   // probe for unsaved drafts or scraping-blocked pages by guessing the
   // suffix. The 6 raw bytes encode to 8 base36 chars of unguessable
   // entropy — same length as the previous Math.random suffix.
-  const suffix = randomBytes(6).toString('base64url').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 8)
-  return claim(`${baseSlug}-${suffix}`)
+  return claim(`${baseSlug}-${randomSlugPart()}`)
+}
+
+/** Eight unguessable lowercase letters and digits, as near as base64url allows. */
+function randomSlugPart(): string {
+  return randomBytes(6).toString('base64url').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 8)
 }
 
 // Re-export the original slugify for convenience
