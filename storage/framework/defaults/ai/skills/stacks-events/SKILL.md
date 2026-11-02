@@ -26,10 +26,14 @@ Use the native event bus for process-local application and model events. Use
   downstream work determines the response.
 
 Payloadless events are supported by the emitter. Exact handlers receive the
-payload; wildcard and glob handlers receive `(eventName, payload)`.
+payload; wildcard and glob handlers receive `(eventName, payload)`. In a glob,
+`*` is any run of characters and `.` any one character (`*.created` matches
+`user:created`); every other character is literal.
 
 `emitter.on(name, handler, { priority })` sorts higher priorities first
-within each handler bucket. Equal priority preserves registration order.
+within each handler bucket. A priority belongs to that one registration, so
+one handler can run first for one event and last for another. Equal priority
+preserves registration order.
 Exact handlers run before glob buckets, then `*` handlers. Snapshotting keeps
 subscription changes during a dispatch from corrupting iteration.
 

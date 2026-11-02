@@ -106,43 +106,46 @@ export interface Emitter<Events extends EventMap> {
 }
 
 const ASYNC_HANDLER_TAG = Symbol.for('stacks.events.handler.error')
-/**
- * Symbol attached to handlers registered with an explicit priority
- * (stacksjs/stacks#1878 E-2). Listeners with higher priorities run
- * before lower ones; default priority is 0. The tag-on-function
- * approach keeps the existing `off()` identity comparisons working
- * — `handler === otherHandler` still holds, the priority is just
- * an extra annotation.
- */
-const HANDLER_PRIORITY = Symbol.for('stacks.events.handler.priority')
 
 /**
- * Read a handler's priority. Defaults to 0 for handlers registered
- * without an explicit priority (the pre-fix behavior).
+ * Explicit priorities (stacksjs/stacks#1878 E-2), per event bucket and then
+ * per handler. They used to be written onto the handler function, so one
+ * handler registered for two events had one priority for both: the last
+ * `on()` set it everywhere, including on a registration that passed none.
+ * Keyed on the bucket array, so the handler lists keep holding the
+ * handlers themselves and `off()` keeps comparing identities.
  */
-function priorityOf(handler: unknown): number {
-  if (handler && typeof handler === 'object' || typeof handler === 'function') {
-    const p = (handler as Record<symbol, unknown>)[HANDLER_PRIORITY]
-    return typeof p === 'number' && Number.isFinite(p) ? p : 0
-  }
-  return 0
-}
+type Priorities = WeakMap<object, Map<unknown, number>>
 
 /**
- * Sort a handler array by priority descending (higher runs first).
- * Stable so handlers with the same priority preserve insertion order
- * — matters for the "audit log fires after the change but before
- * analytics" case where ordering within a priority bucket is
- * load-bearing.
+ * Sort a bucket's handlers by priority descending (higher runs first), 0
+ * when none was given. Stable so handlers with the same priority preserve
+ * insertion order — matters for the "audit log fires after the change but
+ * before analytics" case where ordering within a priority bucket is
+ * load-bearing. Returns a copy, so a handler that changes the bucket
+ * mid-dispatch does not change this dispatch.
  */
-function sortByPriority<T>(handlers: T[]): T[] {
-  if (handlers.length < 2) return handlers
+function sortByPriority<T>(priorities: Priorities, bucket: T[]): T[] {
+  const handlers = bucket.slice()
+  const given = priorities.get(bucket)
+  if (handlers.length < 2 || !given) return handlers
   // Decorate-sort-undecorate keeps the sort stable (Array.sort is
   // stable in modern engines but the decorate avoids relying on it).
   return handlers
-    .map((h, i) => ({ h, i, p: priorityOf(h) }))
+    .map((h, i) => ({ h, i, p: given.get(h) ?? 0 }))
     .sort((a, b) => b.p - a.p || a.i - b.i)
     .map(x => x.h)
+}
+
+/**
+ * A pattern key as a regular expression. `*` is any run of characters and,
+ * as in mitt, `.` is any one character: `*.created` matches `user:created`.
+ * Every other character is literal. It used to go into the expression
+ * unescaped, so `cart+promo:*` never matched `cart+promo:applied`, and a
+ * key like `report[*` made every `emit()` throw, whatever the event.
+ */
+function patternExpression(key: string): RegExp {
+  return new RegExp(`^${key.replace(/[\\^$+?()[\]{}|]/g, '\\$&').replace(/\*/g, '.*')}$`)
 }
 
 function logAsyncError(label: string, type: EventType, err: unknown) {
@@ -164,6 +167,7 @@ export function createEmitter<Events extends EventMap>(
   all?: EventHandlerMap<Events>,
 ): Emitter<Events> {
   const map = all ?? new Map<keyof Events | '*', any>()
+  const priorities: Priorities = new WeakMap()
 
   // Match a glob-pattern key (`user:*`, `*.created`) against a concrete event
   // type. Weak ownership lets unreferenced buckets and their compiled patterns
@@ -174,27 +178,23 @@ export function createEmitter<Events extends EventMap>(
     // Public map entries can share one bucket under different pattern keys.
     let re = cached?.key === key ? cached.re : undefined
     if (!re) {
-      // Preserve mitt's loose semantics: `*` is a glob (any chars) and
-      // every other char is treated as a literal regex char. We do NOT
-      // escape `.` because users in the wild rely on patterns like
-      // `*.created` matching `user:created` / `post-created` / etc.
-      // (treating `.` as "any char", not literal dot).
-      re = new RegExp(`^${key.replace(/\*/g, '.*')}$`)
+      re = patternExpression(key)
       patternCache.set(handlers, { key, re })
     }
     return re.test(type)
   }
 
   function on(type: any, handler: any, options?: { priority?: number }) {
-    // Stamp priority on the handler (stacksjs/stacks#1878 E-2). The
-    // sort happens at emit-time, not register-time, so two handlers
-    // registered with different priorities still keep their original
-    // identity for `off()` comparisons.
-    if (options?.priority !== undefined && Number.isFinite(options.priority))
-      (handler as Record<symbol, number>)[HANDLER_PRIORITY] = options.priority
-    const list = map.get(type)
+    // The sort happens at emit-time, not register-time, so the bucket keeps
+    // the handlers in the order they were registered.
+    let list = map.get(type)
     if (list) list.push(handler)
-    else map.set(type, [handler])
+    else map.set(type, list = [handler])
+    if (options?.priority !== undefined && Number.isFinite(options.priority)) {
+      let given = priorities.get(list)
+      if (!given) priorities.set(list, given = new Map())
+      given.set(handler, options.priority)
+    }
   }
 
   function once(type: any, handler: any) {
@@ -215,9 +215,13 @@ export function createEmitter<Events extends EventMap>(
       map.set(type, [])
       return
     }
+    const given = priorities.get(list)
     for (let i = list.length - 1; i >= 0; i--) {
       const h = list[i]
-      if (h === handler || h?.[ASYNC_HANDLER_TAG] === handler) list.splice(i, 1)
+      if (h === handler || h?.[ASYNC_HANDLER_TAG] === handler) {
+        list.splice(i, 1)
+        if (!list.includes(h)) given?.delete(h)
+      }
     }
   }
 
@@ -235,10 +239,10 @@ export function createEmitter<Events extends EventMap>(
     // map (e.g. via `once` removal) doesn't trip iteration. Sort by
     // priority (stacksjs/stacks#1878 E-2) — higher runs first; same
     // priority preserves insertion order via stable sort.
-    const exactRaw = (map.get(type) as Handler<any>[] | undefined)?.slice()
-    const wildcardRaw = (map.get('*') as WildcardHandler<any>[] | undefined)?.slice()
-    const exactHandlers = exactRaw ? sortByPriority(exactRaw) : undefined
-    const wildcardHandlers = wildcardRaw ? sortByPriority(wildcardRaw) : undefined
+    const exactRaw = map.get(type) as Handler<any>[] | undefined
+    const wildcardRaw = map.get('*') as WildcardHandler<any>[] | undefined
+    const exactHandlers = exactRaw ? sortByPriority(priorities, exactRaw) : undefined
+    const wildcardHandlers = wildcardRaw ? sortByPriority(priorities, wildcardRaw) : undefined
 
     if (exactHandlers) {
       for (const handler of exactHandlers) {
@@ -264,7 +268,7 @@ export function createEmitter<Events extends EventMap>(
       const keyStr = String(key)
       if (keyStr === typeStr || keyStr === '*' || !keyStr.includes('*')) return
       if (matchPattern(keyStr, typeStr, patternHandlers)) {
-        for (const handler of sortByPriority((patternHandlers as WildcardHandler<any>[]).slice())) {
+        for (const handler of sortByPriority(priorities, patternHandlers as WildcardHandler<any>[])) {
           try {
             const result = handler(type, evt)
             if (isPromiseLike(result))
@@ -296,7 +300,7 @@ export function createEmitter<Events extends EventMap>(
 
     const runAll = async (handlers: Handler<any>[] | WildcardHandler<any>[] | undefined, isWildcard: boolean) => {
       if (!handlers) return
-      for (const handler of sortByPriority(handlers.slice())) {
+      for (const handler of sortByPriority(priorities, handlers)) {
         try {
           const result = isWildcard ? (handler as WildcardHandler<any>)(type, evt) : (handler as Handler<any>)(evt)
           results.push(isPromiseLike(result) ? await result : result)
@@ -347,7 +351,7 @@ export function createEmitter<Events extends EventMap>(
 
     const runAll = async (handlers: Handler<any>[] | WildcardHandler<any>[] | undefined, isWildcard: boolean) => {
       if (!handlers) return
-      for (const handler of sortByPriority(handlers.slice())) {
+      for (const handler of sortByPriority(priorities, handlers)) {
         try {
           const result = isWildcard ? (handler as WildcardHandler<any>)(type, evt) : (handler as Handler<any>)(evt)
           const value = isPromiseLike(result) ? await result : result

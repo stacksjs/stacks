@@ -36,7 +36,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/config` | [`stacks-config`](../stacks-config/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/config/src/index.ts) | 16 |
 | `@stacksjs/cron` | [`stacks-cron`](../stacks-cron/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cron/src/index.ts) | 6 |
 | `@stacksjs/database` | [`stacks-database`](../stacks-database/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/database/src/index.ts) | 137 |
-| `@stacksjs/datetime` | [`stacks-datetime`](../stacks-datetime/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/index.ts) | 20 |
+| `@stacksjs/datetime` | [`stacks-datetime`](../stacks-datetime/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/index.ts) | 21 |
 | `@stacksjs/defaults` | [`stacks-build`](../stacks-build/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/defaults/package.json) | 2 |
 | `@stacksjs/deploy` | [`stacks-deploy`](../stacks-deploy/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/deploy/package.json) | 1 |
 | `@stacksjs/desktop-build` | [`stacks-desktop`](../stacks-desktop/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/desktop/src/index.ts) | 15 |
@@ -47,7 +47,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/enums` | [`stacks-enums`](../stacks-enums/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/enums/src/index.ts) | 3 |
 | `@stacksjs/env` | [`stacks-env`](../stacks-env/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/env/src/index.ts) | 31 |
 | `@stacksjs/error-handling` | [`stacks-error-handling`](../stacks-error-handling/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/error-handling/src/index.ts) | 10 |
-| `@stacksjs/events` | [`stacks-events`](../stacks-events/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/events/src/index.ts) | 12 |
+| `@stacksjs/events` | [`stacks-events`](../stacks-events/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/events/src/index.ts) | 13 |
 | `@stacksjs/faker` | [`stacks-faker`](../stacks-faker/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/faker/src/index.ts) | 1 |
 | `@stacksjs/feature-flags` | [`stacks-feature-flags`](../stacks-feature-flags/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/feature-flags/src/index.ts) | 7 |
 | `@stacksjs/features` | [`stacks-features`](../stacks-features/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/features/src/index.ts) | 1 |
@@ -367,7 +367,7 @@ Declared runtime exports: `DateTime`, `addCalendarMonths`, `addDays`, `dateForma
 
 Local source modules: [src/calendar.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/calendar.ts), [src/format.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/format.ts), [src/local.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/local.ts), [src/now.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/now.ts), [src/parse.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/parse.ts), [src/schedule.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/schedule.ts), [src/zone.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/zone.ts).
 
-Evidence directory: [20 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [21 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/defaults
 
@@ -469,7 +469,7 @@ Declared runtime exports: `all`, `appListenersBooted`, `bootAppListeners`, `crea
 
 Local source modules: [src/discover.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/events/src/discover.ts).
 
-Evidence directory: [12 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/events/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [13 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/events/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/faker
 
