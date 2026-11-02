@@ -320,3 +320,36 @@ describe('validateWriteBody with snake_case keys', () => {
     expect(validateWriteBody({ donor_name: 'x'.repeat(11) }, pledge, 'updating').valid).toBe(false)
   })
 })
+
+describe('validateWriteBody reports the model\'s own messages', () => {
+  const author = {
+    name: 'Author',
+    attributes: {
+      name: {
+        fillable: true,
+        validation: {
+          rule: schema.string().min(3).max(255),
+          message: { min: 'Name must have a minimum of 3 characters', max: 'Name must have a maximum of 255 characters' },
+        },
+      },
+      email: {
+        fillable: true,
+        validation: { rule: schema.string().email(), message: { email: 'Email must be a valid email address' } },
+      },
+      bio: { fillable: true, validation: { rule: schema.string().max(5) } },
+    },
+  }
+
+  it('uses a per-rule message for the rule that failed, and the validator\'s own otherwise', () => {
+    const result = validateWriteBody({ name: 'ab', email: 'nope', bio: 'far too long' }, author, 'creating')
+
+    expect(result.valid).toBe(false)
+    if (!result.valid) {
+      expect(result.errors).toEqual({
+        name: ['Name must have a minimum of 3 characters'],
+        email: ['Email must be a valid email address'],
+        bio: ['Must be at most 5 characters long'],
+      })
+    }
+  })
+})

@@ -12,6 +12,7 @@
 export { isNotNullViolation, isUniqueViolation } from '@stacksjs/error-handling'
 import { isDateTimeColumnRule, parseSqlDateTime, sqlDateTime, sqlDateTimeInput } from '@stacksjs/database/runtime'
 import { isNotNullViolation, isUniqueViolation } from '@stacksjs/error-handling'
+import { fieldErrorMessages } from '@stacksjs/validation/messages'
 
 /**
  * Classify a write-path error into an HTTP status + JSON body for the
@@ -704,8 +705,14 @@ export function validateWriteBody(
     const result = rule.validate(value)
     if (!result?.valid && Array.isArray(result?.errors) && result.errors.length > 0) {
       hasErrors = true
-      errors[field] = result.errors.map((e: any) =>
-        definition.validation?.message?.[e?.code] ?? e?.message ?? 'invalid',
+      // The model's own messages, keyed by rule name. They were looked up by
+      // an error `code` ts-validation does not set, so a write never showed one.
+      errors[field] = fieldErrorMessages(
+        rule,
+        value,
+        result.errors.map((e: any) => ({ message: typeof e?.message === 'string' ? e.message : 'invalid' })),
+        definition.validation?.message,
+        field,
       )
     }
   }
