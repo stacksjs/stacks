@@ -4,7 +4,7 @@ import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database/runtime'
 import { HttpError } from '@stacksjs/error-handling'
 import { isUniqueViolation } from '@stacksjs/orm'
-import { slug } from '@stacksjs/strings'
+import { slugify } from '@stacksjs/slug'
 import { fetchById } from './fetch'
 import type { CategoryWriteData } from './types'
 
@@ -77,7 +77,7 @@ export async function findOrCreateByName(data: Partial<CategorizableTable>): Pro
 
   const categoryData: CategoryWriteData = {
     name: data.name,
-    slug: slug(data.name),
+    slug: slugify(data.name),
     is_active: data.is_active ?? true,
     display_order: 0,
   }

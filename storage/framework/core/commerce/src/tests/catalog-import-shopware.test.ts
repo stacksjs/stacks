@@ -45,7 +45,7 @@ describe('mapShopwareProduct', () => {
       handle: 'leinenhemd-classic',
       descriptionHtml: '<p>Luftiges Hemd aus <strong>100% Leinen</strong>.</p>',
       vendor: 'Nordlicht Textil',
-      categories: [{ name: 'Hemden & Blusen', slug: 'hemden-and-blusen' }, { name: 'Sommer', slug: 'sommer' }],
+      categories: [{ name: 'Hemden & Blusen', slug: 'hemden-blusen' }, { name: 'Sommer', slug: 'sommer' }],
       tags: ['linen', 'summer'],
       currency: 'EUR',
       // Größe has group position 1, Farbe 2, whatever order the options arrived in.
@@ -53,6 +53,13 @@ describe('mapShopwareProduct', () => {
       hasOptions: true,
       url: `${SHOP}/detail/0190a1b2c3d47e8f9a0b1c2d3e4f5a61`,
     })
+  })
+
+  it('keeps a category whose name has no Latin letters', () => {
+    // It slugged to "" and was skipped as nameless, so a Japanese store
+    // imported without its categories.
+    const japanese = { ...shirt!, categories: [{ translated: { name: '日本茶' }, name: '日本茶', apiAlias: 'category' }] } as ShopwareProductPayload
+    expect(mapShopwareProduct(japanese, { ...context, children }).product.categories).toEqual([{ name: '日本茶', slug: '日本茶' }])
   })
 
   it('reads variant prices from decimal numbers into integer cents, with list price and stock', () => {

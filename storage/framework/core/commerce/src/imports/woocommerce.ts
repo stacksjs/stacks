@@ -1,5 +1,5 @@
 import type { CatalogAdapter, CatalogFetchOptions, CatalogPage, CatalogProduct, CatalogVariant, CatalogWarning, FetchLike, MappedProduct } from './types'
-import { slug } from '@stacksjs/strings'
+import { slugify } from '@stacksjs/slug'
 import { CatalogFetchError, fetchJson, normalizeStoreUrl } from './http'
 import { currencyExponent, PriceFormatError, rescaleMinor } from './money'
 import { cleanName, optionalString } from './text'
@@ -117,7 +117,7 @@ function terms(list: WooTermPayload[] | null | undefined): Array<{ name: string,
   return (list ?? [])
     .map((term) => {
       const name = cleanName(term?.name)
-      return { name, slug: optionalString(term?.slug) ?? slug(name) }
+      return { name, slug: optionalString(term?.slug) ?? slugify(name) }
     })
     .filter(term => term.name && term.slug)
 }
@@ -237,7 +237,7 @@ export function mapWooProduct(raw: WooProductPayload, context: WooMapContext = {
       source: 'woocommerce',
       externalId,
       name,
-      handle: wooSlug(raw.slug) ?? slug(name),
+      handle: wooSlug(raw.slug) ?? slugify(name),
       descriptionHtml: optionalString(raw.description) ?? optionalString(raw.short_description),
       vendor: brand ? brand.name : null,
       categories: terms(raw.categories),

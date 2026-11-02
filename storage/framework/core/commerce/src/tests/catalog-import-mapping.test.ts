@@ -95,7 +95,10 @@ describe('mapShopifyProduct', () => {
   })
 
   it('falls back to a slug of the title when the handle is missing, and rejects a nameless product', () => {
-    expect(mapShopifyProduct({ id: 5, title: 'Big & Tall Coat', variants: [] }, context).product.handle).toBe('big-and-tall-coat')
+    // The same slugifier as products made in the app and the CMS (ts-slug), so
+    // `&` drops out rather than becoming `and`, and a Japanese title keeps its letters.
+    expect(mapShopifyProduct({ id: 5, title: 'Big & Tall Coat', variants: [] }, context).product.handle).toBe('big-tall-coat')
+    expect(mapShopifyProduct({ id: 6, title: '日本茶セット', variants: [] }, context).product.handle).toBe('日本茶セット')
     expect(() => mapShopifyProduct({ id: 6, title: '  ' }, context)).toThrow('has no title')
     expect(() => mapShopifyProduct({ title: 'No id' } as ShopifyProductPayload, context)).toThrow('has no id')
   })
