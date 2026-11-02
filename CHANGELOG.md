@@ -1,5 +1,28 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.408...v0.75.409)
+
+## ✨ Features
+
+- **desktop**: build:dmg notarizes with an App Store Connect API key ([a31cb13](https://github.com/stacksjs/stacks/commit/a31cb13)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **deploy**: name the encrypted keys when the deploy env cannot be read ([f3215a6](https://github.com/stacksjs/stacks/commit/f3215a6)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- list build:dmg's notarize flags and notarytoolAuthArgs ([608ece8](https://github.com/stacksjs/stacks/commit/608ece8)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: raise the stx family to 0.2.780 and craft-native to 0.0.420 ([f204673](https://github.com/stacksjs/stacks/commit/f204673)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.407...v0.75.408)
 
 ## 🐛 Bug Fixes
