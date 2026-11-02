@@ -53,7 +53,7 @@ export default defineModel({
         // (stacksjs/stacks#2996).
         rule: schema.unix().required(),
         message: {
-          date: 'Timestamp must be a valid date',
+          unix: 'Timestamp must be a valid Unix timestamp',
         },
       },
       factory: faker => faker.date.recent().getTime(),

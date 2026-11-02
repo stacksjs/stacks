@@ -50,7 +50,7 @@ export default defineModel({
       validation: {
         rule: schema.string().required().max(50),
         message: {
-          number: 'brand must be a number',
+          string: 'brand must be a string',
           required: 'brand is required',
         },
       },
@@ -63,7 +63,7 @@ export default defineModel({
       validation: {
         rule: schema.number().required(),
         message: {
-          string: 'exp_month must be a number',
+          number: 'exp_month must be a number',
           required: 'exp_month is required',
         },
       },
@@ -76,7 +76,7 @@ export default defineModel({
       validation: {
         rule: schema.number().required(),
         message: {
-          string: 'exp_year must be a number',
+          number: 'exp_year must be a number',
           required: 'exp_year is required',
         },
       },

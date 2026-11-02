@@ -55,7 +55,7 @@ export default defineModel({
       validation: {
         rule: schema.number().required(),
         message: {
-          string: 'expires must be a string',
+          number: 'unit_price must be a number',
           required: 'expires is required',
         },
       },

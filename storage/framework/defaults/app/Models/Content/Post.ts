@@ -216,7 +216,7 @@ export default defineModel({
       validation: {
         rule: schema.enum(['published', 'draft', 'archived']),
         message: {
-          oneOf: 'Status must be either published, draft, or archived',
+          enum: 'Status must be either published, draft, or archived',
         },
       },
       factory: faker => faker.helpers.arrayElement(['published', 'draft', 'archived']),

@@ -70,7 +70,7 @@ export default defineModel({
       validation: {
         rule: schema.number().required(),
         message: {
-          string: 'unit_price must be a number',
+          number: 'unit_price must be a number',
           required: 'unit_price is required',
         },
       },

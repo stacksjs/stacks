@@ -79,7 +79,7 @@ export default defineModel({
       validation: {
         rule: schema.timestampTz().required(),
         message: {
-          invalid: 'Invalid date format',
+          timestampTz: 'Invalid date format',
         },
       },
       factory: faker => faker.date.recent().toISOString(),
