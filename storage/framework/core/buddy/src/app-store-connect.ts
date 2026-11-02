@@ -70,16 +70,45 @@ export interface TestFlightBuild {
 }
 
 export class AppStoreConnect {
-  constructor(private readonly token: string, private readonly fetchImpl: Fetch = fetch) {}
+  private tokenProvider?: () => Promise<{ token: string, renewAt: number }>
+  private renewAt = Number.POSITIVE_INFINITY
+  private renewing?: Promise<void>
+
+  constructor(private token: string, private readonly fetchImpl: Fetch = fetch) {}
 
   static async connect(credentials: AppStoreConnectCredentials, fetchImpl?: Fetch): Promise<AppStoreConnect> {
-    return new AppStoreConnect(await appStoreConnectToken(credentials), fetchImpl)
+    const { keyId, issuerId, privateKey } = credentials
+    const issue = async () => {
+      const now = Date.now()
+      return { token: await appStoreConnectToken({ keyId, issuerId, privateKey }, now), renewAt: now + 15 * 60_000 }
+    }
+    const issued = await issue()
+    const api = new AppStoreConnect(issued.token, fetchImpl)
+    api.tokenProvider = issue
+    api.renewAt = issued.renewAt
+    return api
+  }
+
+  private async authorization(): Promise<string> {
+    // Release waits can exceed Apple's 20-minute JWT lifetime. Renew with a
+    // margin before expiry; simultaneous readers share the same signing work.
+    // The explicit-token constructor remains caller-managed.
+    if (this.tokenProvider && Date.now() >= this.renewAt) {
+      if (!this.renewing) {
+        this.renewing = this.tokenProvider().then((issued) => {
+          this.token = issued.token
+          this.renewAt = issued.renewAt
+        }).finally(() => { this.renewing = undefined })
+      }
+      await this.renewing
+    }
+    return `Bearer ${this.token}`
   }
 
   private async request<T = any>(path: string, init: RequestInit = {}): Promise<T> {
     const response = await this.fetchImpl(`${API}${path}`, {
       ...init,
-      headers: { 'Authorization': `Bearer ${this.token}`, 'Content-Type': 'application/json', ...(init.headers as Record<string, string> | undefined) },
+      headers: { 'Authorization': await this.authorization(), 'Content-Type': 'application/json', ...(init.headers as Record<string, string> | undefined) },
     })
     if (!response.ok) {
       const body = await response.text().catch(() => '')

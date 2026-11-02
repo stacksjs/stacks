@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it, setSystemTime } from 'bun:test'
 import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -45,6 +45,39 @@ describe('App Store Connect for release:ios', () => {
 
   it('names the tag after the number Xcode Cloud gives the next run', () => {
     expect(tagForXcodeCloudRun('1.0.0', 9)).toBe('v1.0.0-build.10')
+  })
+
+  it('keeps a long release wait authenticated without extending Apple token lifetimes', async () => {
+    const { pem, publicKey } = await keyPair()
+    const start = Date.parse('2026-11-02T00:00:00Z')
+    const presented: string[] = []
+    const apple = async (url: string, init?: RequestInit) => {
+      expect(new URL(url).pathname).toBe('/v1/apps')
+      const token = new Headers(init?.headers).get('authorization')!.slice('Bearer '.length)
+      const [header, payload, signature] = token.split('.')
+      const claims = decode(payload!)
+      const valid = await crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, publicKey, Buffer.from(signature!, 'base64url'), Buffer.from(`${header}.${payload}`))
+      if (!valid || claims.exp <= Date.now() / 1000 || claims.exp - claims.iat > 1200)
+        return new Response('Invalid or expired Apple token', { status: 401 })
+      presented.push(token)
+      return Response.json({ data: [{ id: 'hq-app' }] })
+    }
+    try {
+      setSystemTime(start)
+      const api = await AppStoreConnect.connect({ keyId: 'test', issuerId: 'test', privateKey: pem }, apple)
+      expect(await api.appId('training.hq.test')).toBe('hq-app')
+      setSystemTime(start + 10 * 60_000)
+      expect(await api.appId('training.hq.test')).toBe('hq-app')
+      expect(presented[1]).toBe(presented[0])
+      setSystemTime(start + 21 * 60_000)
+      expect(await Promise.all([api.appId('training.hq.test'), api.appId('training.hq.test')])).toEqual(['hq-app', 'hq-app'])
+      expect(presented[2]).not.toBe(presented[0])
+      expect(presented[3]).toBe(presented[2])
+      setSystemTime(start + 42 * 60_000)
+      expect(await api.appId('training.hq.test')).toBe('hq-app')
+      expect(presented[4]).not.toBe(presented[2])
+    }
+    finally { setSystemTime() }
   })
 
   it('retires every finished build but the newest kept, and never one still processing', () => {

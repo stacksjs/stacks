@@ -37,6 +37,14 @@ it('retries the same build after a rejected atomic push without losing the candi
     expect(git(remote, 'rev-parse', 'v1.0.0-build.140^{commit}')).toBe(candidate)
     expect(() => pushIosReleaseTag(local, 'v1.0.0-build.140')).toThrow()
     expect(git(local, 'rev-parse', 'v1.0.0-build.140^{commit}')).toBe(candidate)
+
+    // A different actor can replace the local annotation during a rejected
+    // push, even while preserving its target commit. It is no longer ours.
+    const gitDirectory = `'${join(local, '.git').replaceAll("'", "'\\''")}'`
+    writeFileSync(hook, `#!/bin/sh\nunset GIT_QUARANTINE_PATH GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES\ngit --git-dir=${gitDirectory} tag -f -a v1.0.0-build.141 -m 'Concurrent replacement' HEAD || exit 2\nexit 1\n`)
+    chmodSync(hook, 0o755)
+    expect(() => pushIosReleaseTag(local, 'v1.0.0-build.141')).toThrow()
+    expect(git(local, 'for-each-ref', '--format=%(contents)', 'refs/tags/v1.0.0-build.141')).toBe('Concurrent replacement')
   }
   finally { rmSync(root, { recursive: true, force: true }) }
 })

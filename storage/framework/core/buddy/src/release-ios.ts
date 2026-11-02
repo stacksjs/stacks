@@ -82,9 +82,9 @@ export function nextBuildTag(version: string, tags: string[], latestRun?: number
 /** Atomically publish the candidate and its tag, retaining the commit on rejection. */
 export function pushIosReleaseTag(cwd: string, tag: string): void {
   const git = (...args: string[]) => execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
-  const candidate = git('rev-parse', 'HEAD')
   // An existing tag is never ours to remove, including on a failed retry.
   git('tag', '-a', tag, '-m', tag)
+  const createdTag = git('rev-parse', `refs/tags/${tag}`)
   try {
     git('push', '--quiet', '--atomic', 'origin', 'main', tag)
   }
@@ -93,8 +93,8 @@ export function pushIosReleaseTag(cwd: string, tag: string): void {
       // A network error can follow an accepted push. Only a successful remote
       // read proving absence permits removing this invocation's local tag.
       const remote = git('ls-remote', '--tags', 'origin', `refs/tags/${tag}`)
-      if (!remote && git('rev-parse', `${tag}^{commit}`) === candidate)
-        git('tag', '-d', tag)
+      if (!remote)
+        git('update-ref', '-d', `refs/tags/${tag}`, createdTag)
     }
     catch { /* Preserve the tag when the publication outcome is uncertain. */ }
     throw error
