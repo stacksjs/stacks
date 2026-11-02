@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.439...v0.75.440)
+
+## 🔧 Chores
+
+- **deps**: stx 0.2.787, whose components render natively with their text and props ([9611dbc](https://github.com/stacksjs/stacks/commit/9611dbc)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.438...v0.75.439)
 
 ## 🐛 Bug Fixes
