@@ -224,7 +224,7 @@ export class ScopedStorageAdapter implements StorageAdapter {
     // outside their bucket region.
     const scopedKey = typeof options.key === 'string'
       ? this.scopePath(options.key)
-      : { startsWith: this.scopePath(options.key.startsWith) }
+      : { startsWith: options.key.startsWith === '' ? this.scopeWithSlash : this.scopePath(options.key.startsWith) }
     const result = await this.inner.presignedUploadPolicy({ ...options, key: scopedKey })
     return { ...result, key: this.unscopePath(result.key) }
   }

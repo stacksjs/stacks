@@ -110,7 +110,10 @@ export class SingleStoreCacheStore extends EventEmitter {
         + ` expires_at BIGINT NULL,`
         + ` PRIMARY KEY (cache_key)`
         + ` )`,
-      ).then(() => undefined)
+      ).then(() => undefined).catch((error) => {
+        this.ready = null
+        throw error
+      })
     }
     await this.ready
   }

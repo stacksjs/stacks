@@ -166,7 +166,7 @@ export class UploadedFile {
     return mimeTypes.some(type => {
       if (type.endsWith('/*')) {
         const category = type.slice(0, -2)
-        return this._file.type.startsWith(category)
+        return this._file.type.startsWith(`${category}/`)
       }
       return this._file.type === type
     })

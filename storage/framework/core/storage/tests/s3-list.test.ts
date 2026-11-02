@@ -68,6 +68,16 @@ async function collect(listing: AsyncIterable<{ path: string, type: string }>): 
 }
 
 describe('S3StorageAdapter.list', () => {
+  it('accepts directory paths with a trailing slash for shallow and deep lists', async () => {
+    const { adapter } = bucket()
+    expect(await collect(adapter.list('photos/'))).toEqual([
+      'directory:photos/2024',
+      'directory:photos/2025',
+      'file:photos/cover.jpg',
+    ])
+    expect(await collect(adapter.list('photos/', { deep: true }))).toContain('file:photos/2024/deep/b.jpg')
+  })
+
   it('lists one directory: its files and its folders', async () => {
     const { adapter, requests } = bucket()
 

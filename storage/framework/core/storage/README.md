@@ -47,6 +47,20 @@ import {
 
 To view the full documentation, please visit [<https://stacksjs.com/storag>e](https://stacksjs.com/storage).
 
+## Disk containment and signed URL revocation
+
+Local and Bun adapters reject descendant symlinks, including final file
+symlinks, before filesystem operations. The configured root and its ancestors
+are trusted and may use aliases. Keep the tree under application control during
+I/O; these checks do not sandbox concurrent filesystem replacement.
+
+Signed URL revocation uses canonical signature bytes, so alternate base64
+encodings cannot bypass a revoke. Revocations remain process-local and are lost
+on restart. The 100,000-entry limit discards only entries whose authenticated
+expiry has passed. A bare signature has no known expiry. When capacity is full,
+revocation throws explicitly and preserves existing revocations; rotate
+`APP_KEY` or supply a durable application revocation store before retrying.
+
 ## Bounded local text reads
 
 Use the standalone entrypoint for local text supplied by a user or worker:

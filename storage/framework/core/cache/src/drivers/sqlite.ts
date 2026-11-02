@@ -28,7 +28,7 @@ import { Database } from 'bun:sqlite'
 import { EventEmitter } from 'node:events'
 import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
-import { escapeLike, likePattern } from '../sql-like'
+import { likePattern } from '../sql-like'
 
 export interface SqliteCacheOptions {
   /** The SQLite file holding the cache table. `:memory:` for tests. @default 'storage/framework/cache/cache.sqlite' */
@@ -178,19 +178,21 @@ export class SqliteCacheStore extends EventEmitter {
   }
 
   async flush(): Promise<void> {
-    // Scoped to the prefix when one is configured, so a shared table is not
-    // wiped for every namespace. The prefix is matched literally: run through
-    // likePattern, a `*` in it was a wildcard and `tenant*` flushed `tenant42`.
-    if (this.prefix)
-      this.db.query(`DELETE FROM ${this.qualified} WHERE cache_key LIKE ? ESCAPE '\\'`).run(`${escapeLike(this.prefix)}:%`)
-    else
+    // Equality is case-sensitive even when SQLite LIKE is not.
+    if (this.prefix) {
+      const prefix = `${this.prefix}:`
+      this.db.query(`DELETE FROM ${this.qualified} WHERE substr(cache_key, 1, length(?)) = ?`).run(prefix, prefix)
+    }
+    else {
       this.db.run(`DELETE FROM ${this.qualified}`)
+    }
   }
 
   async keys(pattern?: string): Promise<string[]> {
-    // The prefix is matched literally, the pattern as a `*` glob.
-    const like = `${this.prefix ? `${escapeLike(this.prefix)}:` : ''}${pattern ? likePattern(pattern) : '%'}`
-    const rows = this.db.query(`SELECT cache_key FROM ${this.qualified} WHERE cache_key LIKE ? ESCAPE '\\' AND (expires_at IS NULL OR expires_at > ?)`).all(like, Date.now()) as Array<{ cache_key: string }>
+    const prefix = this.prefix ? `${this.prefix}:` : ''
+    const like = pattern ? likePattern(pattern) : '%'
+    const rows = this.db.query(`SELECT cache_key FROM ${this.qualified} WHERE substr(cache_key, 1, length(?)) = ? AND substr(cache_key, length(?) + 1) LIKE ? ESCAPE '\\' AND (expires_at IS NULL OR expires_at > ?)`)
+      .all(prefix, prefix, prefix, like, Date.now()) as Array<{ cache_key: string }>
     const strip = this.prefix ? this.prefix.length + 1 : 0
     return rows.map(row => (strip ? row.cache_key.slice(strip) : row.cache_key))
   }
@@ -206,18 +208,25 @@ export class SqliteCacheStore extends EventEmitter {
   async ttl(key: string, ttl: number): Promise<boolean> {
     // SQLite counts rows matched, so an expiry the key already carries is
     // still a key that is there (the SingleStore driver has to ask again).
-    return this.db.query(`UPDATE ${this.qualified} SET expires_at = ? WHERE cache_key = ?`).run(this.expiryFor(ttl), this.k(key)).changes > 0
+    return this.db.query(`UPDATE ${this.qualified} SET expires_at = ? WHERE cache_key = ? AND (expires_at IS NULL OR expires_at > ?)`)
+      .run(this.expiryFor(ttl), this.k(key), Date.now()).changes > 0
   }
 
   async take<T>(key: string): Promise<T | undefined> {
-    const value = await this.get<T>(key)
-    if (value !== undefined)
-      await this.del(key)
-    return value
+    const row = this.db.query(`DELETE FROM ${this.qualified} WHERE cache_key = ? RETURNING value, expires_at`)
+      .get(this.k(key)) as { value: string, expires_at: number | null } | null
+    if (!row || (row.expires_at != null && row.expires_at <= Date.now())) {
+      this.misses++
+      return undefined
+    }
+    this.hits++
+    return JSON.parse(row.value) as T
   }
 
   async getStats(): Promise<CacheStatsShape> {
-    const row = this.db.query(`SELECT COUNT(*) AS n FROM ${this.qualified} WHERE expires_at IS NULL OR expires_at > ?`).get(Date.now()) as { n: number } | null
+    const prefix = this.prefix ? `${this.prefix}:` : ''
+    const row = this.db.query(`SELECT COUNT(*) AS n FROM ${this.qualified} WHERE substr(cache_key, 1, length(?)) = ? AND (expires_at IS NULL OR expires_at > ?)`)
+      .get(prefix, prefix, Date.now()) as { n: number } | null
     return { hits: this.hits, misses: this.misses, keys: Number(row?.n ?? 0), ksize: 0, vsize: 0 }
   }
 

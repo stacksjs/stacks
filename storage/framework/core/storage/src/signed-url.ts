@@ -116,21 +116,24 @@ export interface SignedTokenVerification {
  * back this with their own cache by listening for the `revoke()`
  * call and replicating.
  *
- * Bounded by entry-count to keep memory predictable; oldest revoked
- * tokens fall out first (insertion-order). Anything that fell out
- * has either already expired or is past its useful lifetime.
+ * Bounded by entry-count. Only authenticated, expired entries can be
+ * discarded; a bare signature has no trustworthy expiry. Capacity exhaustion
+ * throws instead of silently making an unexpired revoked URL valid again.
  */
 const REVOCATION_LIMIT = 100_000
-const revokedSignatures = new Set<string>()
+const revokedSignatures = new Map<string, number | undefined>()
 
-function rememberRevoked(sigPart: string): void {
+function rememberRevoked(sigPart: string, expiresAt?: number): void {
   if (revokedSignatures.has(sigPart)) return
   if (revokedSignatures.size >= REVOCATION_LIMIT) {
-    // Set preserves insertion order, so the first key is the oldest.
-    const oldest = revokedSignatures.values().next().value
-    if (oldest !== undefined) revokedSignatures.delete(oldest)
+    const now = Math.floor(Date.now() / 1000)
+    for (const [signature, expiry] of revokedSignatures) {
+      if (expiry !== undefined && expiry <= now) revokedSignatures.delete(signature)
+    }
   }
-  revokedSignatures.add(sigPart)
+  if (revokedSignatures.size >= REVOCATION_LIMIT)
+    throw new Error('[storage/signed-url] Revocation capacity reached. Rotate APP_KEY or use a durable revocation store.')
+  revokedSignatures.set(sigPart, expiresAt)
 }
 
 /**
@@ -156,7 +159,20 @@ export function revokeSignedStorageToken(token: string): void {
   const parts = token.split('.')
   // Accept both the full compact-form and a bare signature segment.
   const sig = parts.length === 3 ? parts[2]! : token
-  if (sig) rememberRevoked(sig)
+  if (!sig) return
+  let expiresAt: number | undefined
+  if (parts.length === 3) {
+    // Never trust an unsigned expiry to decide when a revocation can go.
+    try {
+      const payload = JSON.parse(base64UrlDecode(parts[1]!).toString('utf8'))
+      if (typeof payload?.path === 'string') {
+        const verified = verifySignedStorageToken(token, payload.path)
+        if (verified.valid && Number.isFinite(verified.claims?.exp)) expiresAt = verified.claims!.exp
+      }
+    }
+    catch { /* A bare signature or unverified payload has no known expiry. */ }
+  }
+  rememberRevoked(base64UrlEncode(base64UrlDecode(sig)), expiresAt)
 }
 
 /**
@@ -166,7 +182,7 @@ export function revokeSignedStorageToken(token: string): void {
  * to consult this automatically.
  */
 export function isSignedStorageTokenRevoked(sigPart: string): boolean {
-  return revokedSignatures.has(sigPart)
+  return revokedSignatures.has(base64UrlEncode(base64UrlDecode(sigPart)))
 }
 
 /**
@@ -217,7 +233,7 @@ export function verifySignedStorageToken(token: string, requestedPath: string): 
   // probing of revoked tokens still hits the bad_signature path
   // (no information leak about what's in the revocation set).
   // See stacksjs/stacks#1873 S-14.
-  if (revokedSignatures.has(sigPart)) {
+  if (revokedSignatures.has(base64UrlEncode(providedSig))) {
     return { valid: false, reason: 'revoked' }
   }
   let claims: SignedTokenClaims

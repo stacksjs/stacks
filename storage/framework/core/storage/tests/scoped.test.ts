@@ -1,6 +1,17 @@
 import { describe, expect, test } from 'bun:test'
 import { InMemoryStorageAdapter } from '../src/adapters/memory'
+import { S3StorageAdapter } from '../src/adapters/s3'
 import { ScopedStorageAdapter, scoped } from '../src/adapters/scoped'
+
+test('a root POST policy permits only this tenant directory', async () => {
+  const disk = scoped(new S3StorageAdapter(null, {
+    bucket: 'test-bucket',
+    credentials: { accessKeyId: 'fixture-key', secretAccessKey: 'fixture-secret' },
+  }), { scope: 'tenant-1' })
+  const policy = await disk.presignedUploadPolicy({ key: { startsWith: '' }, contentType: 'text/plain', expiresIn: 60 })
+  const decoded = JSON.parse(Buffer.from(policy.fields.policy!, 'base64').toString())
+  expect(decoded.conditions).toContainEqual(['starts-with', '$key', 'tenant-1/'])
+})
 
 // stacksjs/stacks#1887 S-11 — per-tenant prefix scoping wrapper.
 

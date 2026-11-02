@@ -183,52 +183,34 @@ export class StacksCache implements CacheDriver {
     const pending = this.inflight.get(key)
     if (pending) return await (pending as Promise<T>)
 
-    // The fetcher runs HERE rather than through `manager.fetch()`, which keeps
-    // an in-flight map of its own. Two independent single-flight maps was the
-    // bug: when a hung fetcher blew past our timeout we reclaimed our slot, but
-    // the manager still had the dead Promise registered, so the next caller
-    // went straight back onto it and timed out too — the cap released nothing.
-    // Owning the single flight here is what makes the timeout mean something.
-    // Mirrors `manager.fetch()`'s remaining semantics: compute, store, emit.
+    // Own the fetcher deadline here rather than manager.fetch(), which
+    // maintains another in-flight map and can retain a timed-out fetch.
+    const timeoutMs = this.inflightTimeoutMs
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const deadline = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => {
+        reject(new Error(`[cache] getOrSet('${key}') timed out after ${timeoutMs}ms`))
+      }, timeoutMs)
+    })
+
     const compute = async (): Promise<T> => {
-      const value = await fetcher()
+      let value: T
+      try {
+        // A late fetch is ignored after this race rejects: it cannot publish.
+        // The deferred call also turns a synchronous throw into a rejection.
+        value = await Promise.race([Promise.resolve().then(fetcher), deadline])
+      }
+      finally { clearTimeout(timer) }
+
+      // Publication cannot be cancelled through CacheBackend. Stop the fetcher
+      // deadline before starting it, and retain ownership until it finishes so
+      // a retry cannot race an older write. Backend I/O uses its own deadlines.
       await this.manager.set(key, value, ttl)
       this.manager.emit('fetch', key, value, ttl)
       return value
     }
-
-    // `compute()` is async, so a fetcher that throws synchronously still yields
-    // a rejected Promise rather than throwing before `computePromise` exists.
-    const computePromise = compute()
-
-    // Hard cap on how long a fetcher can hold an in-flight entry
-    // (stacksjs/stacks#1876 C-2). Without this, a fetcher that hangs
-    // (DB timeout, deadlock, infinite loop) keeps its entry in the
-    // inflight map forever — every future caller for the same key
-    // hangs on the same dead Promise. Race against a timeout so the
-    // entry is reclaimed and the next caller gets to try fresh.
-    //
-    // What goes in the map is the RACE, not the bare compute. Callers that
-    // joined while the fetcher was running used to await `computePromise`
-    // itself, so the cap released the slot and failed the first caller on
-    // time while everyone who had joined it waited on the hung fetcher for as
-    // long as it hung. They share the deadline now.
-    const timeoutMs = this.inflightTimeoutMs
-    let timer: ReturnType<typeof setTimeout> | undefined
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      timer = setTimeout(() => {
-        // The hung compute itself keeps running until it naturally settles —
-        // JS Promises can't be cancelled, only ignored.
-        reject(new Error(`[cache] getOrSet('${key}') timed out after ${timeoutMs}ms`))
-      }, timeoutMs)
-    })
-    const guarded = Promise.race([computePromise, timeoutPromise])
-
-    // Release the slot only while it is still OURS. A compute that settles
-    // after its own timeout must not evict the newer caller that replaced it —
-    // the previous unconditional `finally { delete }` did exactly that.
+    const guarded = compute()
     const settle = (): void => {
-      clearTimeout(timer)
       if (this.inflight.get(key) === guarded)
         this.inflight.delete(key)
     }
@@ -434,6 +416,17 @@ export class TaggedCache {
       await this.cache.set(`${this.tagScope(tag)}${key}`, key, ttl)
   }
 
+  /** A cache hit keeps its original expiry, regardless of this call's TTL. */
+  private async indexCachedKey(key: string): Promise<void> {
+    const expiresAt = await this.cache.getTtl(key)
+    if (expiresAt === undefined) return
+    // Redis reports whole seconds, so its expiry can be rounded down by
+    // almost a second. Keep the index slightly longer rather than losing
+    // invalidation while the value is still live.
+    const ttl = expiresAt === 0 ? 0 : Math.max(1, Math.ceil((expiresAt - Date.now()) / 1000) + 1)
+    await this.indexKey(key, ttl)
+  }
+
   async put<T>(key: string, value: T, ttl?: number): Promise<boolean> {
     return this.serialize(async () => {
       const ok = await this.cache.set(key, value, ttl)
@@ -458,13 +451,13 @@ export class TaggedCache {
   // flushes of its tags; only the index update waits its turn.
   async remember<T>(key: string, ttl: number, callback: () => T | Promise<T>): Promise<T> {
     const value = await this.cache.remember(key, ttl, callback)
-    await this.serialize(() => this.indexKey(key, ttl))
+    await this.serialize(() => this.indexCachedKey(key))
     return value
   }
 
   async rememberForever<T>(key: string, callback: () => T | Promise<T>): Promise<T> {
     const value = await this.cache.rememberForever(key, callback)
-    await this.serialize(() => this.indexKey(key, 0))
+    await this.serialize(() => this.indexCachedKey(key))
     return value
   }
 

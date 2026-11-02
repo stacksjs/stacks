@@ -30,15 +30,14 @@ export interface ServeFileOptions {
 }
 
 /**
- * In-process cache of `(path -> { mtime, etag })`. Keeps us from
- * re-hashing the same file on every request — invalidates automatically
- * when the file's mtime changes, which is what every build pipeline
- * (vite, bun build, esbuild) bumps when re-emitting an asset.
+ * In-process cache of `(path -> { version, etag })`. Keeps us from
+ * re-hashing the same file on every request. Device, inode, size and
+ * full-precision modification/change times identify each file version.
  *
  * Bounded loosely via a simple FIFO eviction at 5k entries — anything
  * larger than that suggests you should be serving from a CDN, not Bun.
  */
-const etagCache = new Map<string, { mtimeMs: number, etag: string }>()
+const etagCache = new Map<string, { version: string, etag: string }>()
 const ETAG_CACHE_MAX = 5_000
 
 /** Looks like a fingerprinted asset path: `.<8+ hex chars>.<ext>`. */
@@ -47,7 +46,7 @@ const FINGERPRINTED = /\.[a-f0-9]{8,}\./
 /**
  * Serve a static file with production-grade cache headers:
  *   - Strong ETag (sha256, first 16 hex chars) computed once per
- *     `(path, mtime)` and cached in-process.
+ *     `(path, file version)` and cached in-process.
  *   - `Last-Modified` from the file's mtime.
  *   - 304 Not Modified on GET/HEAD when `If-None-Match` names the ETag
  *     (or is `*`), or, only when no `If-None-Match` was sent, when
@@ -94,13 +93,14 @@ export async function serveFile(
   const lastModified = new Date(mtimeMs).toUTCString()
   const contentType = options.contentType || file.type || guessMime(filePath)
 
-  // ETag: cached per (path, mtime) so we re-hash only when the file
-  // genuinely changed. Build the cache key with the full path so two
-  // routes serving the same file don't collide (they wouldn't anyway,
-  // but explicit is better).
+  // Cache the digest by path and file version, including replacements
+  // that preserve modification time.
   let etag: string | undefined
   if (options.etag !== false) {
-    etag = await computeEtag(filePath, mtimeMs, file)
+    // A timestamp-preserving deploy can change content without changing
+    // mtime or size. Keep inode and full-precision ctime in the cache version.
+    const version = [stat.dev, stat.ino, stat.size, stat.mtimeMs, stat.ctimeMs].join(':')
+    etag = await computeEtag(filePath, version, file)
   }
 
   // 304 Not Modified, evaluated as RFC 9110 section 13.2.2 orders it, and
@@ -167,9 +167,9 @@ function pickCacheControl(filePath: string, options: ServeFileOptions): string {
   return `public, max-age=${maxAge}, must-revalidate`
 }
 
-async function computeEtag(filePath: string, mtimeMs: number, file: ReturnType<typeof Bun.file>): Promise<string> {
+async function computeEtag(filePath: string, version: string, file: ReturnType<typeof Bun.file>): Promise<string> {
   const cached = etagCache.get(filePath)
-  if (cached && cached.mtimeMs === mtimeMs) return cached.etag
+  if (cached && cached.version === version) return cached.etag
 
   const buf = await file.arrayBuffer()
   const etag = createHash('sha256').update(new Uint8Array(buf)).digest('hex').slice(0, 16)
@@ -181,7 +181,7 @@ async function computeEtag(filePath: string, mtimeMs: number, file: ReturnType<t
     const firstKey = etagCache.keys().next().value
     if (firstKey !== undefined) etagCache.delete(firstKey)
   }
-  etagCache.set(filePath, { mtimeMs, etag })
+  etagCache.set(filePath, { version, etag })
   return etag
 }
 

@@ -57,7 +57,7 @@ export class InMemoryStorageAdapter implements StorageAdapter {
       return new Uint8Array(contents)
     }
     else if (contents instanceof Uint8Array) {
-      return contents
+      return new Uint8Array(contents)
     }
     else {
       // Web-standard ReadableStream only — see s3.ts:contentsToBuffer
@@ -134,7 +134,7 @@ export class InMemoryStorageAdapter implements StorageAdapter {
       throw new Error(`File not found: ${path}`)
     }
 
-    return file.contents
+    return new Uint8Array(file.contents)
   }
 
   /**
@@ -149,7 +149,7 @@ export class InMemoryStorageAdapter implements StorageAdapter {
     const normalized = this.normalizePath(path)
     const file = this.files.get(normalized)
     if (!file) throw new Error(`File not found: ${path}`)
-    const bytes = file.contents
+    const bytes = new Uint8Array(file.contents)
     return new ReadableStream<Uint8Array>({
       start(controller) {
         controller.enqueue(bytes)

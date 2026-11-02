@@ -92,4 +92,19 @@ describe('serveFile conditional requests', () => {
   test('a missing file is a 404', async () => {
     expect((await serveFile(request(), join(root, 'missing.css'))).status).toBe(404)
   })
+
+  test('replacing content while preserving its mtime invalidates the ETag', async () => {
+    const replaced = join(root, 'replace.css')
+    writeFileSync(replaced, 'old')
+    utimesSync(replaced, mtime, mtime)
+    const original = await serveFile(request(), replaced)
+    const oldEtag = original.headers.get('etag')!
+    // Same length and mtime: size alone cannot identify this change.
+    writeFileSync(replaced, 'new')
+    utimesSync(replaced, mtime, mtime)
+    const updated = await serveFile(request({ 'If-None-Match': oldEtag }), replaced)
+    expect(updated.status).toBe(200)
+    expect(await updated.text()).toBe('new')
+    expect(updated.headers.get('etag')).not.toBe(oldEtag)
+  })
 })

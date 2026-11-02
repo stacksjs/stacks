@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test } from 'bun:test'
 import { CacheManager, MemoryDriver } from '@stacksjs/ts-cache'
 import { StacksCache } from '../src/drivers'
+import { SqliteCacheStore } from '../src/drivers/sqlite'
 
 // stacksjs/stacks#1876 C-2 — pins the contract that a fetcher hung
 // inside getOrSet doesn't strand every future caller for the same key.
@@ -16,6 +17,54 @@ describe('StacksCache.getOrSet - inflight timeout (#1876 C-2)', () => {
   afterEach(() => {
     for (const t of timers) clearTimeout(t)
     timers = []
+  })
+
+  test('publication keeps its slot until an already-started write finishes', async () => {
+    let release!: () => void
+    let started!: () => void
+    const writing = new Promise<void>(resolve => { started = resolve })
+    const gate = new Promise<void>(resolve => { release = resolve })
+    class DelayedStore extends SqliteCacheStore {
+      override async set<T>(key: string, value: T, ttl?: number): Promise<boolean> {
+        started()
+        await gate
+        return super.set(key, value, ttl)
+      }
+    }
+    const cache = new StacksCache(new DelayedStore({ path: ':memory:' }), { inflightTimeoutMs: 20 })
+    let calls = 0
+    try {
+      const first = cache.getOrSet('publishing', () => { calls++; return 'first' })
+      const firstOutcome = first.then(value => ({ value }), () => ({ error: true }))
+      await writing
+      await new Promise(resolve => setTimeout(resolve, 40))
+      const joined = cache.getOrSet('publishing', () => { calls++; return 'retry' })
+      release()
+      const [initial, subsequent] = await Promise.all([firstOutcome, joined])
+      expect(initial).toEqual({ value: 'first' })
+      expect(subsequent).toBe('first')
+      expect(await cache.get('publishing')).toBe('first')
+      expect(calls).toBe(1)
+    }
+    finally { release(); await cache.close() }
+  })
+
+  test('a timed-out fetch cannot overwrite the successful retry or emit a fetch event', async () => {
+    const manager = new CacheManager(new MemoryDriver({ stdTTL: 0, checkPeriod: 60 }))
+    const cache = new StacksCache(manager, { inflightTimeoutMs: 20 })
+    let release!: (value: string) => void
+    const heard: unknown[][] = []
+    manager.on('fetch', (...args: unknown[]) => heard.push(args))
+    try {
+      const first = cache.getOrSet('late', () => new Promise<string>(resolve => { release = resolve }))
+      await expect(first).rejects.toThrow(/timed out/)
+      expect(await cache.getOrSet('late', () => 'fresh')).toBe('fresh')
+      release('stale')
+      await new Promise(resolve => setTimeout(resolve, 0))
+      expect(await cache.get('late')).toBe('fresh')
+      expect(heard).toEqual([['late', 'fresh', undefined]])
+    }
+    finally { await cache.close() }
   })
 
   test('rejects the awaiting caller when the fetcher hangs past timeout', async () => {

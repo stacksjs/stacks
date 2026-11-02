@@ -22,7 +22,7 @@ import type {
 } from '../types'
 import { createDirectoryListing } from '../types'
 import { createSignedStorageToken } from '../signed-url'
-import { publicUrlFor, signedUrlBase, writeAtomically } from '../filesystem-common'
+import { publicUrlFor, resolveStoragePath, signedUrlBase, writeAtomically } from '../filesystem-common'
 
 export class BunStorageAdapter implements StorageAdapter {
   private root: string
@@ -36,15 +36,7 @@ export class BunStorageAdapter implements StorageAdapter {
   }
 
   private resolvePath(path: string): string {
-    const resolved = join(this.root, path)
-    // Prevent path traversal — same defense as the local adapter. Without
-    // this, a caller passing `../../etc/passwd` would resolve outside the
-    // configured storage root because `join` happily normalizes `..`.
-    const rel = relative(this.root, resolved)
-    if (rel.startsWith('..') || rel.startsWith('../') || rel.startsWith('..\\')) {
-      throw new Error(`Path traversal detected: '${path}' resolves outside storage root`)
-    }
-    return resolved
+    return resolveStoragePath(this.root, path)
   }
 
   async write(path: string, contents: FileContents): Promise<PutResult> {

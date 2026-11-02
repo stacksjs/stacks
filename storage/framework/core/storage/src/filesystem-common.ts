@@ -5,9 +5,38 @@
  */
 
 import { randomBytes } from 'node:crypto'
+import { lstatSync } from 'node:fs'
 import { chmod, mkdir, rename, rm, stat } from 'node:fs/promises'
-import { basename, dirname, join } from 'node:path'
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import process from 'node:process'
+
+/**
+ * Resolve beneath the configured root without following descendant symlinks.
+ * The root (including its ancestor aliases) is trusted configuration. Its
+ * descendants must remain under application control during filesystem I/O;
+ * this check is not a sandbox against concurrent filesystem replacement.
+ */
+export function resolveStoragePath(root: string, path: string): string {
+  const base = resolve(root)
+  const target = join(base, path)
+  const rel = relative(base, target)
+  if (rel === '..' || rel.startsWith(`..${sep}`) || isAbsolute(rel))
+    throw new Error(`Path traversal detected: '${path}' resolves outside storage root`)
+
+  let current = base
+  for (const segment of rel.split(sep).filter(Boolean)) {
+    current = join(current, segment)
+    try {
+      if (lstatSync(current).isSymbolicLink())
+        throw new Error(`Storage path '${path}' contains a symlink`)
+    }
+    catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') break
+      throw error
+    }
+  }
+  return target
+}
 
 /**
  * Write `fullPath` through a temporary file beside it, renamed into place

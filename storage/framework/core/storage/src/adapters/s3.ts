@@ -497,8 +497,8 @@ export class S3StorageAdapter implements StorageAdapter {
   }
 
   async deleteDirectory(path: string): Promise<void> {
-    const prefix = this.prefixPath(path)
-    const normalizedPrefix = prefix.endsWith('/') ? prefix : `${prefix}/`
+    const prefix = this.prefixPath(path).replace(/\/+$/, '')
+    const normalizedPrefix = prefix ? `${prefix}/` : undefined
 
     const objects = await (await this.getClient()).listAllObjects({ bucket: this.bucket, prefix: normalizedPrefix })
     const keys = (objects as Array<{ Key?: string }>).map(obj => obj.Key).filter((k): k is string => typeof k === 'string')
@@ -555,7 +555,7 @@ export class S3StorageAdapter implements StorageAdapter {
   }
 
   private async *createAsyncIterator(path: string, deep: boolean): DirectoryListing {
-    const prefix = this.prefixPath(path)
+    const prefix = this.prefixPath(path).replace(/\/+$/, '')
     const normalizedPrefix = prefix ? `${prefix}/` : undefined
 
     if (deep) {

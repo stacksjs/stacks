@@ -1,5 +1,15 @@
 # Stacks Cache
 
+`getOrSet` and `remember` share concurrent misses within one cache instance.
+The fetcher deadline rejects every joined caller and discards late results.
+Once a result starts being stored, callers remain joined until publication
+finishes; backend I/O relies on the selected driver's own connection deadlines.
+This prevents a timed-out attempt from overwriting a successful retry.
+
+Tagged `remember` hits retain the stored value's expiry in their tag index.
+Finite index entries include a short grace period for drivers that round TTLs
+to whole seconds, so the index cannot expire before the value is invalidated.
+
 wip
 
 ## ☘️ Features
