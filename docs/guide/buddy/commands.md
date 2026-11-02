@@ -349,6 +349,10 @@ Package the desktop build as a macOS .app inside a .dmg
 | `--bundle-id` | Reverse-DNS bundle identifier (or DESKTOP_BUNDLE_ID) | value, required | - |
 | `--signing-identity` | Developer ID identity to sign with (or DESKTOP_SIGNING_IDENTITY) | value, required | - |
 | `--notary-profile` | notarytool keychain profile to notarize and staple with (or DESKTOP_NOTARY_PROFILE) | value, required | - |
+| `--notarize` | Notarize and staple with an App Store Connect API key (or DESKTOP_NOTARIZE) | boolean, optional | - |
+| `--api-key-id` | App Store Connect API key ID (or APP_STORE_CONNECT_API_KEY_ID) | value, required | - |
+| `--api-issuer-id` | App Store Connect API issuer ID (or APP_STORE_CONNECT_API_ISSUER_ID) | value, required | - |
+| `--api-key-path` | The AuthKey_*.p8 file (or APP_STORE_CONNECT_API_KEY_PATH, or its PEM in APP_STORE_CONNECT_API_KEY) | value, required | - |
 | `--volume-name` | Name the mounted image shows (or DESKTOP_VOLUME_NAME) | value, required | - |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
