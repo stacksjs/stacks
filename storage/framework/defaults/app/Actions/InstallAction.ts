@@ -33,7 +33,7 @@ export default new Action({
       git clone https://github.com/stacksjs/stacks.git $1
       cd $1
       # Run the pantry-install script
-      "./storage/framework/scripts/pantry-install"
+      "./storage/framework/scripts/pantry-install" || exit $?
 
       echo "Project $1 has been created. Please open a new terminal, run 'bun run dev' to start the server."
 
@@ -58,10 +58,10 @@ fi
 cd $PROJECT_ROOT
 # Run the pantry-install script
 if [[ $* == *--verbose* ]]; then
-  "$SCRIPT_PATH"
+  "$SCRIPT_PATH" || exit $?
   # bun ./storage/framework/core/buddy/src/cli.ts setup --verbose
 else
-  "$SCRIPT_PATH" > /dev/null 2>&1
+  "$SCRIPT_PATH" > /dev/null || exit $?
   # bun ./storage/framework/core/buddy/src/cli.ts setup
 fi
 

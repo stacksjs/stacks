@@ -1,19 +1,52 @@
 #!/bin/sh
 set -eu
 
-if command -v pantry >/dev/null 2>&1; then
-  exit 0
-fi
-
 # Pinned, to the version CI runs. The installer's default is the latest
 # release, so a new pantry could change how every app's dependencies resolve
 # with no change in the app: one release turned a long-unresolvable `craft`
 # entry into a hard install failure and stopped an app deploying for three days
 # (stacksjs/stacks#2919). Set PANTRY_VERSION to choose another.
-curl -fsSL https://pantry.dev | PANTRY_VERSION="${PANTRY_VERSION:-0.11.146}" bash
+PANTRY_VERSION="${PANTRY_VERSION:-0.11.146}"
+
+verify_pantry() {
+  if ! actual=$(pantry --version 2>&1); then
+    printf 'Could not run pantry --version. Pantry %s is required. Install it and put it first on PATH, then retry.\n' "$PANTRY_VERSION" >&2
+    return 1
+  fi
+
+  case "$actual" in
+    "pantry $PANTRY_VERSION"|"pantry $PANTRY_VERSION "*) return 0 ;;
+    *)
+      printf 'Pantry %s is required, but pantry --version returned: %s\nInstall the required version and put it first on PATH, then retry.\n' "$PANTRY_VERSION" "$actual" >&2
+      return 1
+      ;;
+  esac
+}
+
+if command -v pantry >/dev/null 2>&1; then
+  verify_pantry
+  exit 0
+fi
+
+installer_file=$(mktemp "${TMPDIR:-/tmp}/stacks-pantry-install.XXXXXX")
+trap 'rm -f "$installer_file"' 0
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+curl -fsSL -o "$installer_file" https://pantry.dev || {
+  status=$?
+  printf 'Could not download the Pantry installer. No installation was started.\n' >&2
+  exit "$status"
+}
+PANTRY_VERSION="$PANTRY_VERSION" bash "$installer_file" || {
+  status=$?
+  printf 'The Pantry installer failed. Check its diagnostics before retrying.\n' >&2
+  exit "$status"
+}
 
 if ! command -v pantry >/dev/null 2>&1; then
   export PATH="${HOME}/.local/bin:${PATH}"
 fi
 
-pantry --version >/dev/null
+verify_pantry
