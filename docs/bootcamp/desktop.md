@@ -67,14 +67,14 @@ file digests, and matrix are recorded in
 
 ## Desktop API
 
-The `@stacksjs/desktop` package owns Craft launch configuration.
+The `@stacksjs/desktop-build` package owns Craft launch configuration.
 
 ```typescript
 import {
   createInviteLink,
   createUpdateManifestUrl,
   openDevWindow,
-} from '@stacksjs/desktop'
+} from '@stacksjs/desktop-build'
 
 await openDevWindow(3000, {
   url: 'https://app.example.test',

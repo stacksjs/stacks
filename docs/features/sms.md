@@ -1,219 +1,161 @@
 ---
 title: SMS Service
-description: Stacks provides SMS capabilities powered by AWS Pinpoint.
+description: Send SMS messages through the Stacks Twilio and Vonage drivers.
 ---
 # SMS Service
 
-Stacks provides SMS capabilities powered by AWS Pinpoint.
+`@stacksjs/sms` provides Twilio and Vonage drivers, a shared sending API,
+configured templates, bulk sending, and phone verification. Select a provider
+and configure its account before enabling delivery.
 
 ## Configuration
 
-Configure your SMS settings in `config/sms.ts`:
+Edit `config/sms.ts`. Keep credentials in environment variables:
 
 ```typescript
+import type { SmsConfig } from '@stacksjs/types'
+import { env } from '@stacksjs/env'
+
 export default {
-  enabled: true,
-
-  provider: 'pinpoint',
-
-  senderId: 'MyApp', // Sender ID (where supported)
-  originationNumber: '+1234567890', // Dedicated number
-
+  enabled: false,
+  provider: 'twilio',
+  from: String(env.SMS_FROM_NUMBER || ''),
   defaultCountryCode: '1',
-  messageType: 'TRANSACTIONAL', // or 'PROMOTIONAL'
-
-  maxSpendPerMonth: 100, // Budget limit in USD
-
-  optOut: {
-    enabled: true,
-    keywords: ['STOP', 'UNSUBSCRIBE', 'CANCEL', 'END', 'QUIT'],
+  drivers: {
+    twilio: {
+      accountSid: String(env.TWILIO_ACCOUNT_SID || ''),
+      authToken: String(env.TWILIO_AUTH_TOKEN || ''),
+      from: String(env.TWILIO_FROM_NUMBER || ''),
+      messagingServiceSid: String(env.TWILIO_MESSAGING_SERVICE_SID || ''),
+      verifyServiceSid: String(env.TWILIO_VERIFY_SERVICE_SID || ''),
+    },
+    vonage: {
+      apiKey: String(env.VONAGE_API_KEY || ''),
+      apiSecret: String(env.VONAGE_API_SECRET || ''),
+      from: String(env.VONAGE_FROM_NUMBER || ''),
+    },
   },
-
+  bulk: {
+    concurrency: 10,
+    delayMs: 100,
+  },
   templates: [
     {
-      name: 'verification',
-      body: 'Your verification code is {{code}}. Valid for 10 minutes.',
-      variables: ['code'],
+      name: 'order-confirmation',
+      body: 'Order {orderNumber} is confirmed.',
+      variables: ['orderNumber'],
     },
   ],
+} satisfies SmsConfig
+```
 
-  twoWay: {
-    enabled: false,
-    webhookUrl: 'https://your-app.com/api/sms/webhook',
-  },
+Set `enabled: true` when your application is ready to dispatch messages.
+For Vonage, select `provider: 'vonage'` and supply its API key, secret, and
+sender. Twilio phone verification also requires a Verify service SID.
+
+`pinpoint` remains a configuration type option, but the SMS facade has no
+Pinpoint driver. Selecting it throws an unsupported-provider error. Installing
+this package or deploying an application does not provision provider accounts
+or messaging infrastructure.
+
+## Sending SMS
+
+Load configuration before checking whether your application enables delivery:
+
+```typescript
+import { SMS } from '@stacksjs/sms'
+
+await SMS.init()
+
+if (SMS.isEnabled()) {
+  const result = await SMS.sendSms({
+    to: '+12025550123',
+    body: 'Your order is ready.',
+  })
+
+  if (!result.success)
+    throw new Error(result.error || 'SMS delivery request failed')
 }
 ```
 
-## Deployment
+`sendSms` is an alias for `send`. Both accept `to`, `body`, and optional
+`from`, `mediaUrls`, and `statusCallback` fields. Sending operations load
+configuration lazily; `init()` loads it before synchronous helpers such as
+`isEnabled()` or `getConfig()`. Explicit `configure()` overrides survive
+configuration loading.
 
-Deploy your SMS infrastructure with:
+Low-level send methods do not enforce `enabled`, quiet hours, monthly budgets,
+or recipient consent. Apply those policies at your application entrypoint.
+A successful result records provider acceptance of the request; delivery status
+may change afterward.
 
-```bash
-./buddy deploy
-```
+## Templates
 
-This creates:
-
-- Pinpoint application
-- SMS channel configuration
-- Lambda functions for sending/receiving
-- DynamoDB tables for message logs and opt-outs
-- SNS topics for delivery status
-
-## CLI Commands
-
-```bash
-# Check SMS service status
-./buddy sms:status
-
-# Send a test SMS
-./buddy sms:send +1234567890 "Hello from Stacks!"
-
-# Initialize SMS infrastructure
-./buddy sms:setup
-```
-
-## SDK Usage
-
-### Sending SMS
+Templates are selected by name from `config/sms.ts`. Their variables use single
+braces, such as `{orderNumber}`:
 
 ```typescript
-import { sendSms } from '@stacksjs/communication'
+import { SMS } from '@stacksjs/sms'
 
-await sendSms({
-  to: '+1234567890',
-  body: 'Hello from Stacks!',
-  messageType: 'TRANSACTIONAL',
-})
+await SMS.init()
+
+if (SMS.isEnabled()) {
+  const result = await SMS.sendTemplate('+12025550123', 'order-confirmation', {
+    orderNumber: '12345',
+  })
+
+  if (!result.success)
+    throw new Error(result.error || 'SMS template request failed')
+}
 ```
 
-### Templated SMS
+A missing template returns a failed result without contacting a provider.
+
+## Bulk SMS
 
 ```typescript
-import { SmsSDK } from '@stacksjs/communication'
+import { SMS } from '@stacksjs/sms'
 
-const sms = new SmsSDK()
+await SMS.init()
 
-await sms.sendTemplate({
-  to: '+1234567890',
-  template: 'Your code is {{code}}',
-  data: { code: '123456' },
-})
+if (SMS.isEnabled()) {
+  const results = await SMS.sendBulk([
+    { to: '+12025550123', body: 'Order 12345 is ready.' },
+    { to: '+12025550124', body: 'Order 12346 is ready.' },
+  ])
+
+  const failed = results.filter(result => !result.success)
+  console.log(`${failed.length} SMS requests failed`)
+}
 ```
 
-### Bulk SMS
+The facade splits messages into chunks using `bulk.concurrency` and waits
+`bulk.delayMs` between chunks. Provider driver methods send each chunk
+concurrently. These settings control dispatch concurrency, not a guaranteed
+messages-per-second quota. Configure them for your provider account and traffic.
 
-```typescript
-import { SmsSDK } from '@stacksjs/communication'
+## Incoming Messages and Opt-Outs
 
-const sms = new SmsSDK()
+The native Twilio inbound handler, `handleTwilioInbound`, validates webhook
+signatures and processes STOP, START, and HELP messages. The shared
+`handleInboundSms` workflow persists opt-out and opt-in state in the
+`sms_opt_outs` database table. Apply the associated model migration before using
+persistent opt-out handling.
 
-const results = await sms.sendBulk([
-  { to: '+1111111111', body: 'Message 1' },
-  { to: '+2222222222', body: 'Message 2' },
-  { to: '+3333333333', body: 'Message 3' },
-])
-```
-
-## Architecture
-
-```text
-Outbound SMS Flow:
-┌─────────┐    ┌──────────┐    ┌────────┐    ┌───────────┐
-│   App   │───▶│  Lambda  │───▶│Pinpoint│───▶│ Recipient │
-└─────────┘    └──────────┘    └────────┘    └───────────┘
-                    │
-                    ▼
-              ┌──────────┐
-              │ DynamoDB │
-              └──────────┘
-
-Inbound SMS Flow (Two-Way):
-┌───────────┐    ┌────────┐    ┌─────┐    ┌────────┐
-│  Sender   │───▶│Pinpoint│───▶│ SNS │───▶│ Lambda │
-└───────────┘    └────────┘    └─────┘    └────────┘
-                                               │
-                    ┌──────────────────────────┤
-                    ▼                          ▼
-              ┌──────────┐              ┌─────────────┐
-              │ DynamoDB │              │   Webhook   │
-              └──────────┘              └─────────────┘
-```
-
-## Opt-Out Handling
-
-Stacks automatically handles opt-out keywords:
-
-| Keyword | Action |
-|---------|--------|
-| STOP | Opt out |
-| UNSUBSCRIBE | Opt out |
-| CANCEL | Opt out |
-| END | Opt out |
-| QUIT | Opt out |
-| START | Opt in |
-| SUBSCRIBE | Opt in |
-
-Opted-out numbers are stored in DynamoDB and automatically excluded from sends.
-
-## Compliance
-
-### US Regulations (TCPA)
-
-- Always obtain consent before sending
-- Honor opt-out requests immediately
-- Include opt-out instructions
-- Respect quiet hours (8am-9pm local time)
-
-### 10DLC Registration
-
-For A2P messaging in the US:
-
-1. Register your brand with The Campaign Registry
-2. Register your campaign/use case
-3. Associate with your phone number
-
-### Sender ID
-
-Some countries require registered Sender IDs:
-
-- UK, Germany, France require registration
-- US does not support Sender ID for most carriers
+The generic notification SMS channel checks persisted opt-outs. Direct driver
+and facade sends require the caller to apply the relevant consent checks.
+Adding an inbound URL to configuration alone does not register a webhook with
+your provider.
 
 ## Troubleshooting
 
-### SMS Not Delivered
+- Check the selected provider and its credentials when initialization succeeds
+  but driver creation reports incomplete configuration.
+- Use an E.164 recipient number, such as `+12025550123`.
+- Inspect `SmsSendResult.success` and `error` for request failures. Use
+  `SMS.getStatus(messageId)` where the selected driver supports status lookup.
+- Check provider delivery events and account limits when an accepted request
+  does not reach the recipient.
 
-1. Check phone number format (E.164)
-2. Verify Pinpoint app is configured
-3. Check delivery status in logs
-4. Verify recipient hasn't opted out
-
-### Delivery Failures
-
-| Status | Cause | Solution |
-|--------|-------|----------|
-| OPTED_OUT | Recipient opted out | Remove from list |
-| INVALID | Invalid phone number | Validate format |
-| BLOCKED | Carrier blocked | Check content |
-| UNREACHABLE | Phone unreachable | Retry later |
-
-### Rate Limiting
-
-Default limits:
-
-- 20 messages/second (soft limit)
-- 200 messages/second (hard limit)
-
-Request limit increase via AWS Support.
-
-## Cost Considerations
-
-| Resource | Cost |
-|----------|------|
-| Outbound SMS (US) | $0.00645/message |
-| Outbound SMS (Intl) | $0.01-$0.10/message |
-| Inbound SMS | $0.0075/message |
-| Long Code | ~$1/month |
-| Toll-Free | ~$2/month |
-| Short Code | ~$1,000/month |
+See the [SMS API reference](/skills/messaging/sms) for fluent builders,
+verification methods, inbound handlers, and provider-specific capabilities.
