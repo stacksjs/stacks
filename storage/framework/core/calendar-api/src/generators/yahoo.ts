@@ -1,23 +1,17 @@
 import type { CalendarLink } from '../types'
-import { format } from '@stacksjs/datetime'
+import { dateStamp, utcStamp } from '../feed'
 
 export function generateYahoo(link: CalendarLink): string {
-  const dateFormat = 'YYYYMMDD'
-  const timeFormat = 'YYYYMMDDThhmmss'
   let url = 'https://calendar.yahoo.com/?v=60&view=d&type=20'
 
-  const utcStartDateTime = convertTZ(link.from, 'UTC') // set timezone to UTC
-  const utcEndDateTime = convertTZ(link.to, 'UTC') // set timezone to UTC
-  const dateTimeFormat = link.allDay ? dateFormat : timeFormat
-
   if (link.allDay) {
-    url = `${url}&ST=${format(link.from, dateTimeFormat)}`
+    url = `${url}&ST=${dateStamp(link.from)}`
     url = `${url}&DUR=allday`
-    url = `${url}&ET=${format(link.to, dateTimeFormat)}`
+    url = `${url}&ET=${dateStamp(link.to)}`
   }
   else {
-    url = `${url}&ST=${format(utcStartDateTime, dateTimeFormat)}Z`
-    url = `${url}&ET=${format(utcEndDateTime, dateTimeFormat)}Z`
+    url = `${url}&ST=${utcStamp(link.from)}`
+    url = `${url}&ET=${utcStamp(link.to)}`
   }
 
   url = `${url}&TITLE=${encodeURIComponent(link.title)}`
@@ -28,10 +22,6 @@ export function generateYahoo(link: CalendarLink): string {
     url = `${url}&in_loc=${encodeURIComponent(link.address)}`
 
   return url
-}
-
-function convertTZ(date: Date | string, tzString: string): Date {
-  return new Date((typeof date === 'string' ? new Date(date) : date).toLocaleString('en-US', { timeZone: tzString }))
 }
 
 export default generateYahoo

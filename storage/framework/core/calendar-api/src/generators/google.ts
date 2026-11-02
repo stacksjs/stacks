@@ -1,20 +1,18 @@
 import type { CalendarLink } from '../types'
-import { format } from '@stacksjs/datetime'
+import { dateStamp, utcStamp } from '../feed'
 
-const dateFormat = 'YYYYMMDD'
-const timeFormat = 'YYYYMMDDThhmmss'
-
+/**
+ * Times go in UTC with a `Z`, so Google reads them as the instants they are.
+ * `ctz` only picks the zone the compose screen displays them in. They used
+ * to be written on a 12-hour clock with no `Z`, which Google read as local
+ * time in `ctz`: an event at 17:00 UTC was offered at 5 AM New York.
+ */
 export function generateGoogle(link: CalendarLink): string {
-  // 20221020T170000Z/20221020T173000Z
   let url = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
 
-  const utcStartDateTime = convertTZ(link.from, 'UTC') // set timezone to UTC
-  const utcEndDateTime = convertTZ(link.to, 'UTC') // set timezone to UTC
-  const dateTimeFormat = link.allDay ? dateFormat : timeFormat
-
-  url = `${url}&dates=${format(utcStartDateTime, dateTimeFormat)}/${
-    format(utcEndDateTime, dateTimeFormat)
-  }`
+  url = link.allDay
+    ? `${url}&dates=${dateStamp(link.from)}/${dateStamp(link.to)}`
+    : `${url}&dates=${utcStamp(link.from)}/${utcStamp(link.to)}`
 
   if (link.timezone)
     url = `${url}&ctz=${link.timezone}`
@@ -27,27 +25,4 @@ export function generateGoogle(link: CalendarLink): string {
     url = `${url}&location=${encodeURIComponent(link.address)}`
 
   return url
-}
-
-/**
- * Re-anchor a Date in another timezone for calendar URL formatting.
- *
- * This is a known-fuzzy operation: we serialize the date through
- * `toLocaleString` in the target timezone, then re-parse that string as
- * if it were local time. The original code did exactly that and it
- * works for the common "I want my Google Calendar to show this in my
- * local TZ" case, but it goes wrong across DST transitions and on
- * servers running in UTC where the parsed string lands an hour off.
- *
- * For URL generation the imprecision is acceptable; for any downstream
- * use, prefer `Intl.DateTimeFormat(...).format(date)` directly. We
- * normalize the Locale to en-US explicitly so 24-hour locales (de-DE,
- * fr-FR) don't return strings that Date can't parse.
- */
-function convertTZ(date: Date | string, tzString: string): Date {
-  const d = typeof date === 'string' ? new Date(date) : date
-  if (!tzString) return d
-  const formatted = d.toLocaleString('en-US', { timeZone: tzString })
-  const parsed = new Date(formatted)
-  return Number.isNaN(parsed.getTime()) ? d : parsed
 }

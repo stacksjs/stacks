@@ -1,24 +1,14 @@
 import type { CalendarLink } from '../types'
-import { format } from '@stacksjs/datetime'
+
+/** `2026-10-12T17:00:00Z`, or `2026-10-12` for an all-day event: the instant in UTC. */
+function outlookTime(date: Date, allDay: boolean): string {
+  return allDay ? date.toISOString().slice(0, 10) : `${date.toISOString().slice(0, 19)}Z`
+}
 
 export function generateOutlook(link: CalendarLink): string {
-  const dateFormat = 'YYYY-MM-DD'
-  const timeFormat = 'YYYY-MM-DDThh:mm:ss'
   const BASE_URL = 'https://outlook.live.com/calendar/deeplink/compose?path=/calendar/action/compose&rru=addevent'
 
-  // 20221020T170000Z/20221020T173000Z
-  let url = BASE_URL
-
-  const utcStartDateTime = convertTZ(link.from, 'UTC') // set timezone to UTC
-  const utcEndDateTime = convertTZ(link.to, 'UTC') // set timezone to UTC
-  const dateTimeFormat = link.allDay ? dateFormat : timeFormat
-
-  url = link.allDay
-    ? `${url}&startdt=${format(utcStartDateTime, dateTimeFormat)}`
-    : `${url}&startdt=${format(utcStartDateTime, dateTimeFormat)}Z`
-  url = link.allDay
-    ? `${url}&enddt=${format(utcEndDateTime, dateTimeFormat)}`
-    : `${url}&enddt=${format(utcEndDateTime, dateTimeFormat)}Z`
+  let url = `${BASE_URL}&startdt=${outlookTime(link.from, link.allDay)}&enddt=${outlookTime(link.to, link.allDay)}`
 
   if (link.allDay)
     url = `${url}&allday=true`
@@ -31,8 +21,4 @@ export function generateOutlook(link: CalendarLink): string {
     url = `${url}&location=${encodeURIComponent(link.address)}`
 
   return url
-}
-
-function convertTZ(date: Date | string, tzString: string): Date {
-  return new Date((typeof date === 'string' ? new Date(date) : date).toLocaleString('en-US', { timeZone: tzString }))
 }

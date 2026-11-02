@@ -43,9 +43,16 @@ export function escapeIcsText(value: string): string {
     .replace(/\r?\n/g, '\\n')
 }
 
+const utf8 = new TextEncoder()
+
+/** Octets in `text` as UTF-8, which is what the 75-octet line limit counts. */
+function octets(text: string): number {
+  return utf8.encode(text).length
+}
+
 /** Fold lines longer than 75 octets with CRLF + space continuations. */
 export function foldIcsLine(line: string): string {
-  if (Buffer.byteLength(line, 'utf8') <= 75)
+  if (octets(line) <= 75)
     return line
 
   const pieces: string[] = []
@@ -53,7 +60,7 @@ export function foldIcsLine(line: string): string {
   for (const char of line) {
     // +1 leading space on continuation lines keeps every physical line <= 75.
     const limit = pieces.length === 0 ? 75 : 74
-    if (Buffer.byteLength(current + char, 'utf8') > limit) {
+    if (octets(current + char) > limit) {
       pieces.push(current)
       current = char
     }
@@ -67,11 +74,13 @@ export function foldIcsLine(line: string): string {
   return pieces.map((piece, index) => (index === 0 ? piece : ` ${piece}`)).join('\r\n')
 }
 
-function utcStamp(date: Date): string {
+/** `20261012T170000Z`: an RFC 5545 UTC date-time, read off the instant, never the host's clock. */
+export function utcStamp(date: Date): string {
   return `${date.toISOString().replace(/[-:]/g, '').slice(0, 15)}Z`
 }
 
-function dateStamp(date: Date): string {
+/** `20261012`: the instant's UTC calendar date. */
+export function dateStamp(date: Date): string {
   return date.toISOString().replace(/-/g, '').slice(0, 8)
 }
 
