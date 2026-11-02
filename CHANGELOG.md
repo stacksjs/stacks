@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.419...v0.75.420)
+
+## 🔧 Chores
+
+- **deps**: raise the stx family to 0.2.782 ([456f10d](https://github.com/stacksjs/stacks/commit/456f10d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.418...v0.75.419)
 
 ## 🐛 Bug Fixes
