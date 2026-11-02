@@ -1,5 +1,29 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.424...v0.75.425)
+
+## ✨ Features
+
+- **query-builder**: paginate stable composite cursor histories ([72259ce](https://github.com/stacksjs/stacks/commit/72259ce)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- share durable queue policy and fence leased database batches ([1fc30ec](https://github.com/stacksjs/stacks/commit/1fc30ec)) _(by Chris Breuer <chris@stacksjs.com>)_
+- make queue state atomic and harden date and input handling ([0b4e507](https://github.com/stacksjs/stacks/commit/0b4e507)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **strings**: every dash separates the words of a slug, as in ts-slug ([f402a57](https://github.com/stacksjs/stacks/commit/f402a57)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3112](https://github.com/stacksjs/stacks/issues/3112), [#3116](https://github.com/stacksjs/stacks/issues/3116))
+- **commerce**: category slugs and imported handles keep a Japanese name's letters ([d2383d9](https://github.com/stacksjs/stacks/commit/d2383d9)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3112](https://github.com/stacksjs/stacks/issues/3112))
+- **slug**: uniqueSlug gives a title with no letters or digits a random slug ([d52c21e](https://github.com/stacksjs/stacks/commit/d52c21e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3112](https://github.com/stacksjs/stacks/issues/3112))
+- **cms**: slug Japanese, Chinese and Korean titles with ts-slug 0.2.0 ([d65689f](https://github.com/stacksjs/stacks/commit/d65689f)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3112](https://github.com/stacksjs/stacks/issues/3112), [stacksjs/ts-slug#1839](https://github.com/stacksjs/ts-slug/issues/1839))
+
+## 📝 Documentation
+
+- refresh native database and queue capability references ([998e984](https://github.com/stacksjs/stacks/commit/998e984)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.422...v0.75.424)
 
 ## 🐛 Bug Fixes
