@@ -14,11 +14,11 @@ import { parse, parseCron } from '../src'
 const hostZone = process.env.TZ
 const base = new Date('2026-10-30T12:34:56Z')
 
+// Set back, not deleted: `bun test` starts with TZ unset and runs in UTC, and
+// deleting TZ leaves the process in the last zone set, for every file after
+// this one in the same run.
 afterEach(() => {
-  if (hostZone === undefined)
-    delete process.env.TZ
-  else
-    process.env.TZ = hostZone
+  process.env.TZ = hostZone ?? 'UTC'
 })
 
 describe('parse() on a host that is not on UTC', () => {
