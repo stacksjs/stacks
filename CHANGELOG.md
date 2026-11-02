@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.415...v0.75.416)
+
+## 🐛 Bug Fixes
+
+- retain Xcode Cloud build identity after rejected release pushes ([3b61e26](https://github.com/stacksjs/stacks/commit/3b61e26)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- regenerate native catalog after iOS release transaction fix ([1735037](https://github.com/stacksjs/stacks/commit/1735037)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.414...v0.75.415)
 
 ## 🐛 Bug Fixes
