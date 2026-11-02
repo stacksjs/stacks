@@ -301,7 +301,7 @@
       "version": "0.75.437",
       "dependencies": {
         "bun-plugin-stx": "0.2.784",
-        "ts-pantry": "^0.11.159"
+        "ts-pantry": "^0.11.161"
       },
       "devDependencies": {
         "better-dx": "^0.2.24"
@@ -377,7 +377,7 @@
         "ajv": "^8.20.0",
         "ajv-formats": "^3.0.1",
         "bun-plugin-stx": "0.2.784",
-        "ts-pantry": "^0.11.159"
+        "ts-pantry": "^0.11.161"
       },
       "devDependencies": {
         "better-dx": "^0.2.24"
@@ -557,7 +557,7 @@
         "@stacksjs/features": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/tunnel": "workspace:*",
-        "ts-pantry": "^0.11.159"
+        "ts-pantry": "^0.11.161"
       },
       "devDependencies": {
         "@stacksjs/alias": "workspace:*",
