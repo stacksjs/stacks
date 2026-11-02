@@ -17,15 +17,54 @@ export function getPluralCategory(n: number, locale: string): PluralCategory {
   return rule(n)
 }
 
+/** Rules given with {@link addPluralRule}, by base language. They win over the runtime's. */
+const customRules: Record<string, PluralRule> = {}
+
+/** `Intl.PluralRules` per locale, or null where the runtime has no plural data for it. */
+const runtimeRules = new Map<string, Intl.PluralRules | null>()
+
+function baseLanguage(locale: string): string {
+  return locale.split('-')[0]?.toLowerCase() ?? locale.toLowerCase()
+}
+
 /**
- * Get the plural rule function for a locale
+ * The runtime's CLDR rules for `locale`. Only for a locale it has plural data
+ * for: any other falls back to CLDR's root rules, which say `other` for
+ * everything, and that would hide an unknown language behind a working one.
+ */
+function runtimeRule(locale: string): Intl.PluralRules | null {
+  if (!runtimeRules.has(locale)) {
+    let rules: Intl.PluralRules | null = null
+    try {
+      if (Intl.PluralRules.supportedLocalesOf([locale]).length)
+        rules = new Intl.PluralRules(locale)
+    }
+    catch {
+      // Not a well-formed locale tag.
+    }
+    runtimeRules.set(locale, rules)
+  }
+  return runtimeRules.get(locale) ?? null
+}
+
+/**
+ * Get the plural rule function for a locale: one added with
+ * {@link addPluralRule}, else the runtime's CLDR rules (`Intl.PluralRules`)
+ * for the full locale (`pt` and `pt-PT` differ), else `other` for everything.
+ *
+ * The rules used to be a hand-written table of 33 languages. 19 others were
+ * missing from it and said `other` even for 1 (Catalan, Croatian, Serbian,
+ * Bulgarian, `nb` for Norwegian...), and several it had disagreed with CLDR
+ * (Hebrew's `two`, Latvian's `zero`, Portuguese 0, most fractions).
  */
 export function getPluralRule(locale: string): PluralRule {
-  // Get base language code
-  const lang = locale.split('-')[0]?.toLowerCase() ?? locale.toLowerCase()
+  const custom = customRules[baseLanguage(locale)]
+  if (custom)
+    return custom
 
-  const rule = pluralRules[lang]
-  if (rule) return rule
+  const rules = runtimeRule(locale) ?? runtimeRule(baseLanguage(locale))
+  if (rules)
+    return n => rules.select(n) as PluralCategory
 
   // Default to 'other' for unknown locales
   return () => 'other'
@@ -99,192 +138,27 @@ export function selectPluralForm(
 }
 
 /**
- * Plural rules for various languages
- * Based on CLDR plural rules
- */
-const pluralRules: Record<string, PluralRule> = {
-  // === One/Other languages ===
-
-  // English, German, Dutch, etc.
-  en: n => (n === 1 ? 'one' : 'other'),
-  de: n => (n === 1 ? 'one' : 'other'),
-  nl: n => (n === 1 ? 'one' : 'other'),
-  es: n => (n === 1 ? 'one' : 'other'),
-  it: n => (n === 1 ? 'one' : 'other'),
-  pt: n => (n === 1 ? 'one' : 'other'),
-  sv: n => (n === 1 ? 'one' : 'other'),
-  da: n => (n === 1 ? 'one' : 'other'),
-  no: n => (n === 1 ? 'one' : 'other'),
-  fi: n => (n === 1 ? 'one' : 'other'),
-  el: n => (n === 1 ? 'one' : 'other'),
-  he: n => (n === 1 ? 'one' : 'other'),
-  hu: n => (n === 1 ? 'one' : 'other'),
-  tr: n => (n === 1 ? 'one' : 'other'),
-
-  // === No plural (always other) ===
-
-  // Chinese, Japanese, Korean, Vietnamese, Thai
-  zh: () => 'other',
-  ja: () => 'other',
-  ko: () => 'other',
-  vi: () => 'other',
-  th: () => 'other',
-  id: () => 'other',
-  ms: () => 'other',
-
-  // === French (0-1 is one) ===
-
-  fr: n => (n === 0 || n === 1 ? 'one' : 'other'),
-
-  // === Russian, Ukrainian (complex) ===
-
-  ru: (n) => {
-    const mod10 = n % 10
-    const mod100 = n % 100
-
-    if (mod10 === 1 && mod100 !== 11) return 'one'
-    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'few'
-    if (mod10 === 0 || (mod10 >= 5 && mod10 <= 9) || (mod100 >= 11 && mod100 <= 14)) return 'many'
-    return 'other'
-  },
-
-  uk: (n) => {
-    const mod10 = n % 10
-    const mod100 = n % 100
-
-    if (mod10 === 1 && mod100 !== 11) return 'one'
-    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'few'
-    if (mod10 === 0 || (mod10 >= 5 && mod10 <= 9) || (mod100 >= 11 && mod100 <= 14)) return 'many'
-    return 'other'
-  },
-
-  // === Polish (complex) ===
-
-  pl: (n) => {
-    const mod10 = n % 10
-    const mod100 = n % 100
-
-    if (n === 1) return 'one'
-    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'few'
-    if (mod10 === 0 || mod10 === 1 || (mod10 >= 5 && mod10 <= 9) || (mod100 >= 12 && mod100 <= 14)) return 'many'
-    return 'other'
-  },
-
-  // === Czech, Slovak ===
-
-  cs: (n) => {
-    if (n === 1) return 'one'
-    if (n >= 2 && n <= 4) return 'few'
-    return 'other'
-  },
-
-  sk: (n) => {
-    if (n === 1) return 'one'
-    if (n >= 2 && n <= 4) return 'few'
-    return 'other'
-  },
-
-  // === Arabic (complex with dual) ===
-
-  ar: (n) => {
-    if (n === 0) return 'zero'
-    if (n === 1) return 'one'
-    if (n === 2) return 'two'
-
-    const mod100 = n % 100
-    if (mod100 >= 3 && mod100 <= 10) return 'few'
-    if (mod100 >= 11 && mod100 <= 99) return 'many'
-    return 'other'
-  },
-
-  // === Welsh (with zero, one, two, few, many) ===
-
-  cy: (n) => {
-    if (n === 0) return 'zero'
-    if (n === 1) return 'one'
-    if (n === 2) return 'two'
-    if (n === 3) return 'few'
-    if (n === 6) return 'many'
-    return 'other'
-  },
-
-  // === Slovenian (with dual) ===
-
-  sl: (n) => {
-    const mod100 = n % 100
-
-    if (mod100 === 1) return 'one'
-    if (mod100 === 2) return 'two'
-    if (mod100 === 3 || mod100 === 4) return 'few'
-    return 'other'
-  },
-
-  // === Irish ===
-
-  ga: (n) => {
-    if (n === 1) return 'one'
-    if (n === 2) return 'two'
-    if (n >= 3 && n <= 6) return 'few'
-    if (n >= 7 && n <= 10) return 'many'
-    return 'other'
-  },
-
-  // === Lithuanian ===
-
-  lt: (n) => {
-    const mod10 = n % 10
-    const mod100 = n % 100
-
-    if (mod10 === 1 && (mod100 < 11 || mod100 > 19)) return 'one'
-    if (mod10 >= 2 && mod10 <= 9 && (mod100 < 11 || mod100 > 19)) return 'few'
-    return 'other'
-  },
-
-  // === Latvian ===
-
-  lv: (n) => {
-    const mod10 = n % 10
-    const mod100 = n % 100
-
-    if (n === 0) return 'zero'
-    if (mod10 === 1 && mod100 !== 11) return 'one'
-    return 'other'
-  },
-
-  // === Romanian ===
-
-  ro: (n) => {
-    if (n === 1) return 'one'
-
-    const mod100 = n % 100
-    if (n === 0 || (mod100 >= 1 && mod100 <= 19)) return 'few'
-    return 'other'
-  },
-
-  // === Hindi ===
-
-  hi: n => (n === 0 || n === 1 ? 'one' : 'other'),
-}
-
-/**
- * Get all supported locales for pluralization
+ * Languages given their own rule with {@link addPluralRule}. Every language
+ * the runtime has CLDR plural data for is supported as well; ask
+ * {@link hasPluralRule} about one.
  */
 export function getSupportedPluralLocales(): string[] {
-  return Object.keys(pluralRules)
+  return Object.keys(customRules)
 }
 
 /**
- * Check if a locale has custom plural rules
+ * Whether `locale` has plural rules: its own from {@link addPluralRule}, or
+ * the runtime's CLDR data for its language.
  */
 export function hasPluralRule(locale: string): boolean {
-  const lang = locale.split('-')[0]?.toLowerCase() ?? locale.toLowerCase()
-  return lang in pluralRules
+  const lang = baseLanguage(locale)
+  return lang in customRules || runtimeRule(lang) !== null
 }
 
 /**
- * Add a custom plural rule for a locale
+ * Add a custom plural rule for a locale's language. It wins over the
+ * runtime's CLDR rules for every locale of that language.
  */
 export function addPluralRule(locale: string, rule: PluralRule): void {
-  const lang = locale.split('-')[0]?.toLowerCase() ?? locale.toLowerCase()
-  pluralRules[lang] = rule
+  customRules[baseLanguage(locale)] = rule
 }

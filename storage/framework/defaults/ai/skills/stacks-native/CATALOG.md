@@ -56,7 +56,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/github` | [`stacks-git`](../stacks-git/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/github/src/index.ts) | 8 |
 | `@stacksjs/health` | [`stacks-health`](../stacks-health/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/health/src/index.ts) | 2 |
 | `@stacksjs/http` | [`stacks-http`](../stacks-http/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/http/src/index.ts) | 2 |
-| `@stacksjs/i18n` | [`stacks-i18n`](../stacks-i18n/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/i18n/src/index.ts) | 4 |
+| `@stacksjs/i18n` | [`stacks-i18n`](../stacks-i18n/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/i18n/src/index.ts) | 5 |
 | `@stacksjs/image` | [`stacks-image`](../stacks-image/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/image/src/index.ts) | 3 |
 | `@stacksjs/lint` | [`stacks-lint`](../stacks-lint/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/lint/src/index.ts) | 3 |
 | `@stacksjs/logging` | [`stacks-logging`](../stacks-logging/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/logging/src/index.ts) | 14 |
@@ -551,7 +551,7 @@ Declared runtime exports: `I18n`, `addTranslations`, `applyRequestLocale`, `crea
 
 Local source modules: [src/bootstrap.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/i18n/src/bootstrap.ts), [src/formatter.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/i18n/src/formatter.ts), [src/loader.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/i18n/src/loader.ts), [src/locale-switch.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/i18n/src/locale-switch.ts), [src/pluralization.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/i18n/src/pluralization.ts), [src/translator.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/i18n/src/translator.ts), [src/types.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/i18n/src/types.ts).
 
-Evidence directory: [4 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/i18n/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [5 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/i18n/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/image
 

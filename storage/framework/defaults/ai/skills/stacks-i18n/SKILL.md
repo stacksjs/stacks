@@ -21,7 +21,7 @@ i18n/src/
 ├── translator.ts         # I18n class, global API (t, tc, te, tm)
 ├── formatter.ts          # Locale-aware formatting (dates, numbers, currency, lists)
 ├── loader.ts             # File-based translation loader (JSON, YAML, JS/TS)
-└── pluralization.ts      # CLDR plural rules for 25+ languages
+└── pluralization.ts      # CLDR plural rules, from the runtime's Intl.PluralRules
 ```
 
 ## Core Types
@@ -101,14 +101,13 @@ tc('items', 5)    // '5 items'
 
 ### Supported Languages
 
-| Rule | Languages |
-|------|-----------|
-| One/Other | en, de, nl, es, it, pt, sv, da, no, fi, el, he, hu, tr |
-| French (0-1=one) | fr |
-| No plural | zh, ja, ko, vi, th, id, ms |
-| One/Few/Many/Other | ru, uk, pl |
-| One/Few/Other | cs, sk |
-| Full (zero/one/two/few/many/other) | ar, cy |
+Every language the runtime's CLDR data covers, through `Intl.PluralRules`,
+for the full locale (`pt` counts 0 as `one`, `pt-PT` does not). A language it
+has no data for says `other` for every number; `hasPluralRule(locale)` tells
+you which. `addPluralRule(locale, rule)` overrides a language. The rules were
+a hand-written table of 33 languages until it turned out to leave out Catalan,
+Croatian, Serbian, Bulgarian and `nb` (they said `other` for 1) and to get
+Hebrew's `two` and Latvian's `zero` wrong.
 
 ```typescript
 import { getPluralCategory, addPluralRule, hasPluralRule } from '@stacksjs/i18n'
@@ -218,6 +217,6 @@ default:
 - **YAML parsed with Bun.YAML** - not a third-party parser
 - **Missing keys return the key itself** - not an error, not empty string
 - **Pluralization uses `|` separator** - not ICU MessageFormat
-- **CLDR rules are built-in** - no external data needed, 25+ languages hardcoded
+- **CLDR rules come from the runtime** - `Intl.PluralRules`, no data shipped and no table to fall out of date
 - **HTML escaping is opt-in** - `escapeValues: true` in config
 - **Formatting uses Intl APIs** - delegates to `Intl.DateTimeFormat`, `Intl.NumberFormat`, etc.
