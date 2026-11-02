@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from 'bun:test'
+import { assertIsolatedOk, runIsolated } from '@stacksjs/testing'
 import { isTimeZone, todayIn } from '../src/calendar'
 import { format } from '../src/format'
 import { localDateTime } from '../src/local'
@@ -49,11 +50,10 @@ describe('zoned formatters are built once per zone', () => {
     expect(built).toBe(0)
   })
 
-  it('a numeric format needs no month or weekday names', () => {
-    countConstructions()
-    format(instant, 'YYYY-MM-DD HH:mm:ss', { tz: 'Asia/Kathmandu' })
-    // One formatter for the clock fields of a zone not seen before.
-    expect(built).toBe(1)
+  it('a numeric format needs no month or weekday names', async () => {
+    // Other files may already have warmed every zone in the shared cache.
+    // A fresh process proves both cold construction and subsequent reuse.
+    assertIsolatedOk(await runIsolated(`${import.meta.dir}/fixtures/numeric-formatters.ts`, { preload: [], envFile: false }))
   })
 
   it('month names parse with a shared formatter', () => {
