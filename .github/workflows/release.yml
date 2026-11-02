@@ -127,9 +127,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@fd8ac2b803262a403fcfd37a9021d6dcd775cc5c # v0.11.161
+        uses: pantry-pm/pantry/packages/action@6709272091d861a2990939edbcbc732882381394 # v0.11.164
         with:
-          version: '0.11.161'
+          version: '0.11.164'
           install: 'false'
           packages: bun.com@1.4.4 git-scm.org
 
@@ -193,9 +193,9 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@fd8ac2b803262a403fcfd37a9021d6dcd775cc5c # v0.11.161
+        uses: pantry-pm/pantry/packages/action@6709272091d861a2990939edbcbc732882381394 # v0.11.164
         with:
-          version: '0.11.161'
+          version: '0.11.164'
           install: 'false'
           packages: bun.com@1.4.4 git-scm.org
 
@@ -449,9 +449,9 @@ jobs:
           bun run zip:all
 
       - name: Create GitHub Release
-        uses: pantry-pm/pantry/packages/action@fd8ac2b803262a403fcfd37a9021d6dcd775cc5c # v0.11.161
+        uses: pantry-pm/pantry/packages/action@6709272091d861a2990939edbcbc732882381394 # v0.11.164
         with:
-          version: '0.11.161'
+          version: '0.11.164'
           install: 'false'
           release: 'true'
           release-tag: ${{ steps.get_version.outputs.version }}
