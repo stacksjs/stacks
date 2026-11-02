@@ -100,9 +100,9 @@ interface TitleCaseOptions {
   locale?: string | string[]
   sentenceCase?: boolean                 // only capitalize first word + after terminators
   sentenceTerminators?: Set<string>      // default: '.', '!', '?'
-  titleTerminators?: Set<string>         // default: '.', '!', '?', ':', '"', "'", '"'
+  titleTerminators?: Set<string>         // default: '.', '!', '?', ':', '"', "'", and a closing curly quote (U+201D)
   smallWords?: Set<string>               // words not capitalized (see SMALL_WORDS)
-  wordSeparators?: Set<string>           // default: '---', '--', '-', '---', '/'
+  wordSeparators?: Set<string>           // default: em dash (U+2014), en dash (U+2013), '-', horizontal bar (U+2015), '/'
 }
 ```
 
@@ -196,6 +196,7 @@ Extensive built-in character map covering:
 - Vietnamese diacritics
 - Currency symbols ($, EUR, GBP, YEN, etc.)
 - Special characters (trademark, copyright, etc.)
+- An en dash (U+2013) becomes a hyphen and so separates words; an em dash is still removed (#3112)
 
 ### Locale Support
 Locale-specific character mappings for: `bg`, `de`, `es`, `fr`, `pt`, `uk`, `vi`, `da`, `nb`, `it`, `nl`, `sv`.

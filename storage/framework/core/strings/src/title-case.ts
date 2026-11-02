@@ -9,7 +9,10 @@ const IS_MANUAL_CASE = /\p{Ll}(?=\p{Lu})/u
 const ALPHANUMERIC_PATTERN = /[\p{L}\p{N}]+/gu
 const IS_ACRONYM = /^(\P{L})*(?:\p{L}\.){2,}(\P{L})*$/u
 
-export const WORD_SEPARATORS: Set<string> = new Set(['-', '-', '-', '―', '/'])
+// Em dash, en dash, hyphen, horizontal bar and slash. The dashes are escapes
+// because a sweep for em-dashes in user-facing copy (cbc6e2c2ac) turned the
+// first two into hyphens, and `well—known` stopped capitalizing `Known`.
+export const WORD_SEPARATORS: Set<string> = new Set(['\u2014', '\u2013', '-', '\u2015', '/'])
 
 export const SENTENCE_TERMINATORS: Set<string> = new Set(['.', '!', '?'])
 
