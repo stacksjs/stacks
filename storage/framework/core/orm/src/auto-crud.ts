@@ -13,6 +13,7 @@ export { isNotNullViolation, isUniqueViolation } from '@stacksjs/error-handling'
 import { isDateTimeColumnRule, parseSqlDateTime, sqlDateTime, sqlDateTimeInput } from '@stacksjs/database/runtime'
 import { isNotNullViolation, isUniqueViolation } from '@stacksjs/error-handling'
 import { fieldErrorMessages, validateRule } from '@stacksjs/validation/messages'
+import { applyConditionals } from '@stacksjs/validation/conditional'
 
 /**
  * Classify a write-path error into an HTTP status + JSON body for the
@@ -669,9 +670,16 @@ export function validateWriteBody(
   if (validators.length === 0) return { valid: true }
 
   const errors: Record<string, string[]> = Object.create(null)
+  const context: Record<string, unknown> = Object.assign(Object.create(null), data)
+  for (const [field, definition] of Object.entries(attributes) as Array<[string, Record<string, any>]>) {
+    const column = toSnakeCase(field)
+    const key = Object.hasOwn(data, field) ? field : column
+    if (Object.hasOwn(data, key) || hook === 'creating' && definition && Object.hasOwn(definition, 'default'))
+      context[field] = context[column] = Object.hasOwn(data, key) ? data[key] : definition.default
+  }
   let hasErrors = false
   for (const validator of validators) {
-    const { definition, field, hasDefault, rule } = validator
+    const { definition, field, hasDefault } = validator
     // The attribute's camelCase name or its column's snake_case: the
     // dashboard's model actions write `toSnakeCaseKeys(data)`, so a required
     // camelCase attribute read as missing on every create, and an update
@@ -680,6 +688,7 @@ export function validateWriteBody(
     const key = Object.prototype.hasOwnProperty.call(data, field) ? field : column
     const present = Object.prototype.hasOwnProperty.call(data, key)
     if (!present && hook === 'updating') continue
+    const rule = applyConditionals(validator.rule, context)
 
     // An absent field on create is worth `default`, not `undefined`.
     //

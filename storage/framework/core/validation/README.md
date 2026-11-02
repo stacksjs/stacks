@@ -128,3 +128,16 @@ Timestamp strings validate their written calendar before parsing. SQL timestamps
 offsets, minute precision, expanded years and the exact 24:00 midnight notation remain
 supported. File byte limits require nonnegative safe integers; invalid configuration
 throws immediately.
+
+## Conditional and input contracts
+
+Actions, model writes and partial model input validation apply conditional rules
+against supplied siblings before evaluating a field. Model contexts recognize both
+attribute and column aliases; creates also include declared defaults. Partial updates
+check supplied fields without fetching stored siblings. Conditions and custom messages
+use the effective rule while leaving the declared schema reusable.
+
+Numeric input rejects unsafe whole numbers even when fractions are allowed. Infinite
+range endpoints explicitly mean unbounded; NaN, inverted ranges and ranges containing
+no finite numbers are configuration errors. Text limits require nonnegative safe
+integers. Configuration errors throw RangeError even for absent optional values.

@@ -73,11 +73,14 @@ export function expandWeeklySchedule(spec: WeeklySchedule, from: string, to: str
 export function timeWindowsCover(windows: readonly TimeWindow[], start: string, end: string): boolean {
   const first = clockMinutes(start)
   const last = clockMinutes(end)
+  const spans = windows.map(window => {
+    const span = { start: clockMinutes(window.start_time), end: clockMinutes(window.end_time) }
+    if (span.end <= span.start) throw new ScheduleInputError('Availability must end after it starts')
+    return span
+  }).sort((a, b) => a.start - b.start)
   if (first >= last) return false
-  const spans = windows.map(window => ({ start: clockMinutes(window.start_time), end: clockMinutes(window.end_time) })).sort((a, b) => a.start - b.start)
   let covered = first
   for (const span of spans) {
-    if (span.end <= span.start) throw new ScheduleInputError('Availability must end after it starts')
     if (span.start > covered) break
     covered = Math.max(covered, span.end)
     if (covered >= last) return true

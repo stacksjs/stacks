@@ -1,3 +1,5 @@
+import { applyConditionals } from './conditional'
+
 /** Validation failures at a custom action boundary retain their HTTP status. */
 export class InputValidationError extends Error {
   readonly status = 422
@@ -22,6 +24,7 @@ export function parsePositiveId(value: unknown): number {
 }
 
 export function parseTextInput(value: unknown, field: string, required = false, maxLength?: number): string | null {
+  if (maxLength !== undefined && (!Number.isSafeInteger(maxLength) || maxLength < 0)) throw new RangeError('Text length must be a non-negative safe integer')
   if (value == null && !required) return null
   if (typeof value !== 'string') throw new InputValidationError(`${field} must be text`)
   const text = value.trim()
@@ -33,6 +36,8 @@ export function parseTextInput(value: unknown, field: string, required = false, 
 }
 
 export function parseNumberInput(value: unknown, field: string, min: number, max: number, integer = false): number | null {
+  // Infinite endpoints explicitly mean unbounded, but the interval must contain finite numbers.
+  if (typeof min !== 'number' || typeof max !== 'number' || Number.isNaN(min) || Number.isNaN(max) || min > max || min === Infinity || max === -Infinity) throw new RangeError('Invalid numeric bounds')
   if (value == null || value === '') return null
   // A decimal number. `Number` also reads `0x10`, `0b11` and `0o7`, which a
   // number typed into a form never means, and text that is no number at all
@@ -40,7 +45,7 @@ export function parseNumberInput(value: unknown, field: string, min: number, max
   if ((typeof value !== 'number' && typeof value !== 'string') || (typeof value === 'string' && !/^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(value.trim())))
     throw new InputValidationError(`${field} must be a number`)
   const number = Number(value)
-  if (!Number.isFinite(number) || number < min || number > max || (integer && !Number.isSafeInteger(number))) throw new InputValidationError(`${field} is out of range`)
+  if (!Number.isFinite(number) || number < min || number > max || (Number.isInteger(number) && !Number.isSafeInteger(number)) || (integer && !Number.isInteger(number))) throw new InputValidationError(`${field} is out of range`)
   return number
 }
 
@@ -65,10 +70,17 @@ export interface InputValidatableModel {
 /** Validate supplied fields only, so partial updates use the model's own rules. */
 export function validateModelInput(model: InputValidatableModel, values: Record<string, unknown>): void {
   const attributes = model.getDefinition().attributes ?? {}
+  const context: Record<string, unknown> = Object.assign(Object.create(null), values)
+  for (const field of Object.keys(attributes)) {
+    const column = field.replace(/([a-z\d])([A-Z])/g, '$1_$2').replace(/([A-Z])([A-Z][a-z])/g, '$1_$2').toLowerCase()
+    if (Object.hasOwn(values, field) || Object.hasOwn(values, column)) {
+      context[field] = context[column] = Object.hasOwn(values, field) ? values[field] : values[column]
+    }
+  }
   for (const [field, value] of Object.entries(values)) {
     const attribute = Object.prototype.hasOwnProperty.call(attributes, field) ? field : Object.keys(attributes).find(key => key === field || key.replace(/([a-z\d])([A-Z])/g, '$1_$2').replace(/([A-Z])([A-Z][a-z])/g, '$1_$2').toLowerCase() === field)
     const rule = attribute ? attributes[attribute]?.validation?.rule : undefined
-    if (rule && !rule.validate(value).valid) throw new InputValidationError(`Invalid ${field.replaceAll('_', ' ')}`)
+    if (rule && !applyConditionals(rule, context).validate(value).valid) throw new InputValidationError(`Invalid ${field.replaceAll('_', ' ')}`)
   }
 }
 

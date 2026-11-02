@@ -3,20 +3,22 @@ import { zonedTimeToUtc } from './zone'
 
 /** Add calendar months, clamping the day to the target month's last day. Input is not mutated. */
 export function addCalendarMonths(date: Date, months: number, options: { utc?: boolean } = {}): Date {
-  if (!Number.isFinite(date.getTime()) || !Number.isSafeInteger(months)) throw new Error('Calendar arithmetic requires a valid date and integer month count')
+  if (!Number.isFinite(date.getTime()) || !Number.isSafeInteger(months)) throw new RangeError('Calendar arithmetic requires a valid date and integer month count')
+  if (months === 0) return new Date(date)
+  const utc = options.utc === true
+  const year = utc ? date.getUTCFullYear() : date.getFullYear()
+  const month = utc ? date.getUTCMonth() : date.getMonth()
+  const total = year * 12 + month + months
+  if (!Number.isSafeInteger(total)) throw new RangeError('Calendar month result out of range')
+  const targetYear = Math.floor(total / 12)
+  const targetMonth = ((total % 12) + 12) % 12
+  const leap = targetYear % 4 === 0 && (targetYear % 100 !== 0 || targetYear % 400 === 0)
+  const days = targetMonth === 1 ? (leap ? 29 : 28) : [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][targetMonth]!
   const result = new Date(date)
-  if (options.utc) {
-    const day = result.getUTCDate()
-    result.setUTCDate(1)
-    result.setUTCMonth(result.getUTCMonth() + months)
-    result.setUTCDate(Math.min(day, new Date(Date.UTC(result.getUTCFullYear(), result.getUTCMonth() + 1, 0)).getUTCDate()))
-  }
-  else {
-    const day = result.getDate()
-    result.setDate(1)
-    result.setMonth(result.getMonth() + months)
-    result.setDate(Math.min(day, new Date(result.getFullYear(), result.getMonth() + 1, 0).getDate()))
-  }
+  const day = Math.min(utc ? date.getUTCDate() : date.getDate(), days)
+  if (utc) result.setUTCFullYear(targetYear, targetMonth, day)
+  else result.setFullYear(targetYear, targetMonth, day)
+  if (!Number.isFinite(result.getTime())) throw new RangeError('Calendar month result out of range')
   return result
 }
 
@@ -81,9 +83,11 @@ function fromDayNumber(day: number): string {
 export function todayIn(timeZone: string, now: Date = new Date()): string {
   if (!isTimeZone(timeZone)) throw new RangeError(`Unknown time zone "${String(timeZone)}"`)
   if (!Number.isFinite(now.getTime())) throw new RangeError('todayIn expects a valid instant')
-  const parts = zonedFormatter('en-US', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(now)
+  const parts = zonedFormatter('en-US', { timeZone, year: 'numeric', era: 'short', month: '2-digit', day: '2-digit' }).formatToParts(now)
   const get = (type: string) => parts.find(part => part.type === type)?.value ?? ''
-  return `${get('year').padStart(4, '0')}-${get('month')}-${get('day')}`
+  const year = get('era') === 'BC' ? 1 - Number(get('year')) : Number(get('year'))
+  if (year < 0 || year > 9999) throw new RangeError('Calendar date out of range')
+  return `${String(year).padStart(4, '0')}-${get('month')}-${get('day')}`
 }
 
 /** `ymd` moved by `days` calendar days (negative goes back). Month and year ends roll over. */

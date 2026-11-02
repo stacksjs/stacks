@@ -258,6 +258,11 @@ offset; the named IANA zone converts it into an instant. `isoInZone` retains
 that zone's offset in serialized output rather than merely displaying a date.
 `addCalendarMonths` clones and clamps the day; ordinary `DateTime.addMonths`
 preserves native Date overflow instead. Do not interchange those contracts.
+Calendar-month clamping keeps literal early years in local and UTC mode and throws
+RangeError for an out-of-range result. A zero-month shift preserves the exact instant.
+Named-zone conversion rejects impossible calendar and clock fields before applying
+DST disambiguation. Era-aware offsets support year zero and BCE instants; `isoInZone`
+retains seconds for expanded ISO years.
 
 `zonedTimeToUtc` resolves DST edges the same way in every zone (RFC 5545 and
 Temporal's `'compatible'` rule):
@@ -309,6 +314,7 @@ minutesUntil('2026-10-25', '09:00', 'Europe/Berlin', new Date('2026-10-24T22:00:
 - `minutesUntil` keeps the seconds of `now` as a fraction; round where you
   display or compare. Negative once the moment has passed.
 - `addDays` refuses a result past 9999-12-31.
+- `todayIn` returns canonical dates from 0000 through 9999 and rejects BCE or expanded-year dates.
 
 ### Reading `DATE` columns: `parseSqlDate` (`@stacksjs/database`)
 
@@ -363,6 +369,8 @@ clockMinutes, addClockMinutes and timeWindowsCover. Recurrence validation
 rejects invalid weekday entries; expansion refuses excessive ranges and
 midnight-crossing durations instead of silently truncating them. Adjacent
 windows can cover one continuous slot. ScheduleInputError carries status 422.
+Every supplied availability window is validated before checking coverage, even
+when an earlier valid window already covers the slot.
 
 localDateRange(from, to, ...zones) converts inclusive calendar days to an
 exclusive-end UTC instant range in a selected valid zone, including DST days.

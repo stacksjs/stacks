@@ -35,7 +35,7 @@ import type { Validator } from '@stacksjs/ts-validation'
  * `.when()` calls stack — they're evaluated in registration order and
  * each matching one further refines the base validator.
  */
-export interface ConditionalRecord<V extends Validator<any>> {
+export interface ConditionalRecord<V> {
   /** Name of the sibling field on the parent object to inspect. */
   field: string
   /**
@@ -146,8 +146,8 @@ export function withConditionals<V extends Validator<any>>(validator: V): V & Co
  * should be applied). Pure function — no side effects, safe to call
  * during introspection too.
  */
-export function shouldApplyConditional(
-  record: ConditionalRecord<Validator<any>>,
+export function shouldApplyConditional<V>(
+  record: ConditionalRecord<V>,
   parent: Record<string, unknown> | null | undefined,
 ): boolean {
   if (parent === null || parent === undefined) return false
@@ -171,18 +171,18 @@ export function shouldApplyConditional(
  * {@link cloneValidator} produces an isolated instance the refine
  * pipeline can safely mutate without polluting the schema definition.
  */
-export function applyConditionals<V extends Validator<any>>(
+export function applyConditionals<V extends object>(
   base: V,
   parent: Record<string, unknown> | null | undefined,
 ): V {
-  const records = (base as V & ValidatorWithConditionals<V>).__conditionals
+  const records = (base as V & { __conditionals?: ConditionalRecord<V>[] }).__conditionals
   if (!records || records.length === 0) return base
 
   // Materialize a working copy only when at least one conditional
   // actually fires — non-matching predicates pay zero clone cost.
   let working: V | null = null
   for (const record of records) {
-    if (!shouldApplyConditional(record as unknown as ConditionalRecord<Validator<any>>, parent)) continue
+    if (!shouldApplyConditional(record, parent)) continue
     if (working === null) working = cloneValidator(base)
     working = record.refine(working)
   }

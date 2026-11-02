@@ -59,8 +59,11 @@ export function isKeyOf<T extends object>(obj: T, k: keyof any): k is keyof T {
  *
  * @category Object
  */
-export function objectKeys<T extends object>(obj: T) {
-  return Object.keys(obj) as Array<`${keyof T & (string | number | boolean | null | undefined)}`>
+export type ObjectStringKey<T extends object> = `${Extract<keyof T, string | number>}`
+export type ObjectStringEntry<T extends object> = [ObjectStringKey<T>, T[Extract<keyof T, string | number>]]
+
+export function objectKeys<T extends object>(obj: T): Array<ObjectStringKey<T>> {
+  return Object.keys(obj) as Array<ObjectStringKey<T>>
 }
 
 /**
@@ -68,8 +71,8 @@ export function objectKeys<T extends object>(obj: T) {
  *
  * @category Object
  */
-export function objectEntries<T extends object>(obj: T) {
-  return Object.entries(obj) as Array<[keyof T, T[keyof T]]>
+export function objectEntries<T extends object>(obj: T): Array<ObjectStringEntry<T>> {
+  return Object.entries(obj) as Array<ObjectStringEntry<T>>
 }
 
 /**
@@ -108,7 +111,7 @@ export function deepMerge<T extends object = object, S extends object = T>(
         continue
 
       if (isPlainObject(from[key])) {
-        if (!Object.hasOwn(into, key) || !isMergeableObject(into[key]))
+        if (!Object.hasOwn(into, key) || !isPlainObject(into[key]))
           into[key] = {}
 
         deepMerge(into[key] as object, from[key] as object)

@@ -117,3 +117,16 @@ not jurisdiction-specific compensation or overtime decisions.
 localTimeSpan(date, start, end, ...zones) converts a clock interval, including
 next-day ends, to actual instants for cross-site/overnight overlap checks.
 Equal endpoints and non-positive DST-normalized intervals are rejected.
+
+## Calendar boundary contracts
+
+`zonedTimeToUtc` rejects impossible written dates and clocks before applying its
+documented DST gap/fold rule. Era-aware zone offsets support astronomical year zero
+and BCE instants. `todayIn` produces canonical dates from 0000 through 9999 and
+rejects results outside that range. `isoInZone` retains seconds for expanded and
+BCE ISO years.
+
+`addCalendarMonths` keeps literal early years and clamps leap days in local or UTC
+mode. It throws RangeError when the result exceeds Date's range. Availability checks
+validate every supplied window before checking coverage, including windows after a
+span that already covers the requested slot.

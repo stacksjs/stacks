@@ -86,13 +86,15 @@ export function omitBy<O extends object>(
  * mapValues({ a: 1, b: 2 }, value => value * 10) // { a: 10, b: 20 }
  * ```
  */
+export type MappedStringValues<O extends object, R> = { [K in keyof O as K extends string | number ? K : never]: R }
+
 export function mapValues<O extends object, R>(
   obj: O,
-  transform: (value: O[keyof O], key: keyof O & string) => R,
-): { [K in keyof O]: R } {
+  transform: (value: O[Extract<keyof O, string | number>], key: `${Extract<keyof O, string | number>}`) => R,
+): MappedStringValues<O, R> {
   return Object.fromEntries(
-    Object.entries(obj).map(([key, value]) => [key, transform(value as O[keyof O], key as keyof O & string)]),
-  ) as { [K in keyof O]: R }
+    Object.entries(obj).map(([key, value]) => [key, transform(value as O[Extract<keyof O, string | number>], key as `${Extract<keyof O, string | number>}`)]),
+  ) as MappedStringValues<O, R>
 }
 
 /**
@@ -180,8 +182,6 @@ export type PathStep = string | number
  * getPath({ a: {} }, ['a', 'b', 'c'], 'default')    // 'default'
  * ```
  */
-export function getPath<T>(source: unknown, path: readonly PathStep[], fallback: T): T
-export function getPath(source: unknown, path: readonly PathStep[]): unknown
 export function getPath(source: unknown, path: readonly PathStep[], fallback?: unknown): unknown {
   let current = source
 
@@ -235,5 +235,9 @@ export function setPath<O extends object>(source: O, path: readonly PathStep[], 
 
 /** `target[key] = value`, as an own property even when `key` is `"__proto__"`. */
 function defineKey(target: Record<PropertyKey, unknown>, key: PropertyKey, value: unknown): void {
+  if (Array.isArray(target) && key === 'length') {
+    Object.defineProperty(target, key, { value })
+    return
+  }
   Object.defineProperty(target, key, { value, writable: true, enumerable: true, configurable: true })
 }

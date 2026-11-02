@@ -274,14 +274,17 @@ const result = await validateField('User', { name: 'John', email: 'john@example.
 ```
 
 Behavior:
-1. Finds the model file by name in user models or framework defaults
+1. Finds exact model filenames or qualified paths recursively, preferring app overrides
 2. Extracts validation rules from model attributes
-3. Converts attribute names to snake_case for validation
-4. Sets custom error messages via `MessageProvider`
-5. Validates using `schema.object(ruleObject).validate(params)`
+3. Accepts attribute and snake-case column names, preferring the attribute spelling when both are supplied
+4. Applies custom messages to reported failures without executing predicates again or replacing the shared provider
+5. Validates through the context-aware object schema
 6. Throws `HttpError(422)` with error JSON on validation failure
 7. Throws `HttpError(404)` if model not found
-8. Skips validation for attributes with default values unless `isRequired` is true
+8. An optional default excuses absence, never a supplied invalid value
+
+Ambiguous bare model names require a qualified path. Declared fields and conditional
+siblings use own properties; inherited values never count as submitted input.
 
 ### `customValidate(attributes, params)`
 
@@ -314,13 +317,17 @@ isObjectNotEmpty(undefined)     // false
 
 ## Error Reporter (`reporter.ts`)
 
-Process-local latest-error reporter for validation:
+Validation operations start an async-local latest-error scope before their first await.
+Successful operations clear prior failures; `getErrors()` returns an independent snapshot.
+Standalone adapters that report directly create a scope with `withValidationContext()`:
 
 ```typescript
-import { reportError, getErrors } from '@stacksjs/validation'
+import { reportError, getErrors, withValidationContext } from '@stacksjs/validation'
 
-reportError([{ message: 'Invalid', value: '', field: 'email' }])
-const errors = getErrors()   // returns the latest MessageObject[]; reportError replaces it
+withValidationContext(() => {
+  reportError([{ message: 'Invalid', value: '', field: 'email' }])
+  const errors = getErrors() // this scope's latest MessageObject[]
+})
 ```
 
 Interface: `{ message: string, value: string, field: string }`
@@ -388,7 +395,7 @@ type ValidationString = ValidationRule
 - Numeric classification functions (`isEvenOrOdd`, etc.) return string defaults for non-numbers rather than throwing
 - Schema validators map to database column types -- `schema.integer()` creates an integer column, `schema.string()` creates a varchar, etc.
 - `validateField` converts attribute names to snake_case using `snakeCase()` from `@stacksjs/strings`
-- `validateField` skips attributes with default values unless `isRequired` is explicitly set
+- `validateField` validates supplied values even when their attributes declare defaults
 - Validation error messages are customizable per-rule in model definitions via the `message` object
 - The schema export is Stacks' proxy over the underlying validation instance, with typed object/array/enum inference, file validation and conditionals; it is not the same object as the upstream v export
 - Custom validators can be added with `schema.custom<T>(fn, message)` for types not covered by built-in validators
@@ -397,16 +404,23 @@ type ValidationString = ValidationRule
 
 ## Request, conditional and file validation
 
-The root validate(requestOrRecord, rules) is async, returns the validated payload
+The root validate(requestOrRecord, rules, options?) is async, returns the validated payload
 and throws HttpError(422) with normalized field errors on failure. Rules are
-validators or { rule, message? }; enhanced request.all supplies native input,
-otherwise query/body/route data are merged by request-validator.ts. Do not
-substitute a boolean check or ignore the returned validated data at a boundary.
+validators or { rule, message? }. Plain records are application data, including URL,
+query and params fields. Native Request bodies and enhanced request.all() are read
+directly; jsonBody/formBody adapters remain supported. URL/query/params-only adapters
+select { source: 'request' }; { source: 'data' } forces data interpretation.
+Returned values contain declared supplied fields, recursively through object shapes
+and array.each() elements. Opaque validators retain their accepted values. Use the
+returned cleaned payload at the boundary, including action getValidated()/safe().
 
 Schema declarations can use the narrow `@stacksjs/validation/runtime` entry.
 The schema proxy adds typed object/array/enum inference and conditional rules:
 when(sibling, literalOrPredicate, refine) applies cross-field refinements through
-objectWithContext; sometimes has the underlying optional/empty-value semantics.
+objectWithContext, action validations, model writes and validateModelInput.
+Model contexts recognize attribute/column aliases. Creates include declared defaults;
+partial updates validate supplied fields and siblings without loading stored values.
+Refinements preserve reusable schemas. sometimes has the underlying optional/empty-value semantics.
 Read object-with-context.ts before treating presence-only rules as stricter than
 they are. Inferred object shapes are native, not a hand-written request interface.
 
@@ -417,19 +431,17 @@ An upload is a class instance (the router's `UploadedFile`); a plain object, whi
 is what a JSON body gives for the same field name, is refused.
 
 registerRule/getCustomRule, unique(table,column,exceptId?), exists(table,column)
-and validateFieldAsync support application async validation. Current unique/exists
-helpers return allowed when the database cannot be queried, so they are advisory
-validation, not authorization or a replacement for database constraints. Validate
+and validateFieldAsync support application async validation. These helpers propagate query failures
+instead of approving unchecked values. Keep operational failures separate from invalid input. Validate
 uniqueness at the durable write boundary and handle a uniqueness violation there.
 
-The latest-error reporter is shared process state; do not use getErrors as
-request-local concurrent state. Read errors on the returned/raised validation
-result instead. Local is.ts helpers and legacy rules/type declarations are not
+Local is.ts helpers and legacy rules/type declarations are not
 automatically all public exports from the root.
 
 Source: `storage/framework/core/validation/src/index.ts`, runtime.ts,
 schema.ts, request-validator.ts, conditional.ts, file-validator.ts and validator.ts.
-Tests: conditional.test.ts, file-validator.test.ts, async-rules.test.ts,
+Tests: conditional.test.ts, conditional-boundaries.test.ts, input-contracts.test.ts,
+boundary-e2e.test.ts, file-validator.test.ts, async-rules.test.ts,
 runtime-entry.test.ts and type-inference.test-d.ts under core/validation/tests.
 
 ## Custom action input
@@ -455,6 +467,11 @@ is not 16), and an identifier is decimal digits only. Optional text/number input
 null, and absent boolean input returns undefined. Boolean input accepts JSON
 booleans and the explicit form values `true`, `false`, `1`, `0` and their strings,
 and a checkbox's `on` and `off`.
+
+Numeric bounds reject NaN and inverted intervals; -Infinity and Infinity explicitly
+mean an unbounded lower/upper endpoint. Text maxLength requires a nonnegative safe
+integer. Invalid configuration throws RangeError even for absent optional input.
+Unsafe whole numbers are rejected whether or not integer-only input was requested.
 
 `validateModelInput` checks only supplied fields using `getDefinition()` rules.
 The action still selects writable fields, requires creation fields and validates

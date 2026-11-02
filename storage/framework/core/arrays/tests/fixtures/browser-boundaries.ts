@@ -13,7 +13,10 @@ try {
   browser = await launch()
   await browser.cdp.send('Page.navigate', { url: `http://127.0.0.1:${server.port}/` })
   const result = JSON.parse(await waitFor(() => browser!.cdp.evaluate<string>('document.querySelector("pre")?.textContent || ""'), 15_000))
-  assert.deepEqual(result, { min: 0, max: 249999, samples: [], at: 'undefined', last: 'undefined', average: 1e308, median: 1e308 })
+  assert.deepEqual(result, { min: 0, max: 249999, samples: [], at: 'undefined', last: 'undefined', average: 1e308, median: 1e308,
+    contracts: { largeDeviation: 1e200, tinyDeviation: 1e-200, score: 3, covariance: 0, mixedCovariance: 1e16, cancelledCovariance: 0, selected: 'low',
+      tail: [3], calls: 4, shortened: [1], invalid: true, offset: 0, day: '0000-06-01',
+      leap: '0000-02-29T12:00:00.000Z', expanded: '+010000-01-01T00:00:37+00:00' } })
   assert.deepEqual(browser.cdp.errors, [])
   console.log('browser array boundaries OK')
 }

@@ -13,6 +13,7 @@
  */
 
 import { zonedFormatter } from './intl'
+import { dateFromParts } from './parts'
 
 const DAY_MS = 86_400_000
 const WALL_CLOCK = /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2}))?)?$/
@@ -23,6 +24,7 @@ export function zoneOffsetMinutes(instant: Date, timeZone: string): number {
     timeZone,
     hourCycle: 'h23',
     year: 'numeric',
+    era: 'short',
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
@@ -32,8 +34,8 @@ export function zoneOffsetMinutes(instant: Date, timeZone: string): number {
   const get = (type: string) => Number(parts.find(p => p.type === type)?.value ?? 0)
 
   // setUTCFullYear keeps years below 100 literal; Date.UTC would remap 0050 to 1950.
-  const reading = new Date(Date.UTC(2000, get('month') - 1, get('day'), get('hour'), get('minute'), get('second')))
-  reading.setUTCFullYear(get('year'))
+  const year = parts.find(part => part.type === 'era')?.value === 'BC' ? 1 - get('year') : get('year')
+  const reading = dateFromParts(year, get('month') - 1, get('day'), get('hour'), get('minute'), get('second'), 0, true)
   const asUtc = reading.getTime()
   // Drop sub-second precision so the difference is whole minutes.
   const whole = Math.floor(instant.getTime() / 1000) * 1000
@@ -70,8 +72,9 @@ export function zonedTimeToUtc(wallClock: string, timeZone: string): Date {
   const [, y, mo, d, h = '0', mi = '0', s = '0'] = match
   // The wall-clock reading as if it were UTC. setUTCFullYear keeps years below
   // 100 literal, where Date.UTC would remap 0050 to 1950.
-  const reading = new Date(Date.UTC(2000, Number(mo) - 1, Number(d), Number(h), Number(mi), Number(s)))
-  reading.setUTCFullYear(Number(y))
+  const reading = dateFromParts(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi), Number(s), 0, true)
+  if (!Number.isFinite(reading.getTime()) || reading.getUTCFullYear() !== Number(y) || reading.getUTCMonth() + 1 !== Number(mo) || reading.getUTCDate() !== Number(d) || Number(h) > 23 || Number(mi) > 59 || Number(s) > 59)
+    throw new RangeError('Invalid wall-clock calendar date or time')
   const local = reading.getTime()
 
   // A zone's offset changes at most once in any day, so the offsets a day
@@ -105,5 +108,5 @@ export function isoInZone(instant: Date, timeZone: string): string {
   const sign = offset < 0 ? '-' : '+'
   const abs = Math.abs(offset)
   const pad = (n: number) => String(n).padStart(2, '0')
-  return `${local.toISOString().slice(0, 19)}${sign}${pad(Math.floor(abs / 60))}:${pad(abs % 60)}`
+  return `${local.toISOString().slice(0, -5)}${sign}${pad(Math.floor(abs / 60))}:${pad(abs % 60)}`
 }

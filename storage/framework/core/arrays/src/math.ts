@@ -191,6 +191,8 @@ export function range(array: readonly number[]): number {
  * @see https://en.wikipedia.org/wiki/Variance
  */
 export function variance(array: number[]): number {
+  const centered = centeredValues(array)
+  if (centered) return scaledProduct(centered.variance, centered.scale, centered.scale)
   const mean = average(array)
   return average(array.map(num => (num - mean) ** 2))
 }
@@ -207,6 +209,8 @@ export function variance(array: number[]): number {
  * @see https://stackoverflow.com/questions/7343890/standard-deviation-javascript
  */
 export function standardDeviation(array: number[]): number {
+  const centered = centeredValues(array)
+  if (centered) return Math.sqrt(centered.variance) * centered.scale
   return Math.sqrt(variance(array))
 }
 
@@ -224,6 +228,8 @@ export function standardDeviation(array: number[]): number {
  * @see https://en.wikipedia.org/wiki/Standard_score
  */
 export function zScore(array: number[], num: number): number {
+  const centered = centeredValues(array)
+  if (centered) return (normalizedDifference(num, centered.anchor, centered.scale) - centered.mean) / Math.sqrt(centered.variance)
   return (num - average(array)) / standardDeviation(array)
 }
 
@@ -301,8 +307,86 @@ export function covariance(array1: number[], array2: number[]): number {
   if (array1.length !== array2.length)
     throw new Error('Arrays must have the same length')
 
+  const exact = finiteCovariance(array1, array2)
+  if (exact !== undefined) return exact
   const mean1 = average(array1)
   const mean2 = average(array2)
 
   return average(array1.map((num1, i) => (num1 - mean1) * ((array2[i] as number) - mean2)))
+}
+
+/**
+ * Accumulate exact binary products before centering. Scaling whole vectors
+ * loses small observations that can pair with a large observation in the other
+ * vector. Binary64 coefficients have at most 53 bits; multiply those first,
+ * then shift into a bounded accumulator (units of 2^-2148 for products).
+ */
+function finiteCovariance(first: readonly number[], second: readonly number[]): number | undefined {
+  if (first.length === 0) throw new Error('Cannot compute average of an empty array')
+  const view = new DataView(new ArrayBuffer(8))
+  let sumFirst = 0n, sumSecond = 0n, sumProducts = 0n
+  for (let index = 0; index < first.length; index++) {
+    const x = first[index]!, y = second[index]!
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return undefined
+    const [a, shiftA] = binaryCoefficient(x, view)
+    const [b, shiftB] = binaryCoefficient(y, view)
+    sumFirst += a << shiftA
+    sumSecond += b << shiftB
+    sumProducts += (a * b) << (shiftA + shiftB)
+  }
+  const count = BigInt(first.length)
+  const numerator = count * sumProducts - sumFirst * sumSecond
+  return binaryRatio(numerator, count * count)
+}
+
+/** Signed coefficient and shift, in units of the smallest binary64 value (2^-1074). */
+function binaryCoefficient(value: number, view: DataView): [bigint, bigint] {
+  view.setFloat64(0, value)
+  const bits = view.getBigUint64(0)
+  const exponent = (bits >> 52n) & 0x7ffn
+  let coefficient = bits & 0xfffffffffffffn
+  if (exponent !== 0n) coefficient |= 1n << 52n
+  if (bits >> 63n) coefficient = -coefficient
+  return [coefficient, exponent === 0n ? 0n : exponent - 1n]
+}
+
+/** Round a rational in units of 2^-2148 once, including subnormals and ties to even. */
+function binaryRatio(numerator: bigint, denominator: bigint): number {
+  const negative = numerator < 0n
+  const magnitude = negative ? -numerator : numerator
+  const integer = magnitude / denominator
+  const shift = Math.max(1074, integer.toString(2).length - 53)
+  const divisor = denominator << BigInt(shift)
+  let coefficient = magnitude / divisor
+  const remainder = magnitude % divisor
+  if (remainder * 2n > divisor || remainder * 2n === divisor && (coefficient & 1n) !== 0n) coefficient++
+  const result = Number(coefficient) * 2 ** (shift - 2148)
+  return negative ? -result : result
+}
+
+/** Center relative to one observation before scaling, retaining nearby large values' differences. */
+function centeredValues(array: readonly number[]): { scale: number, anchor: number, mean: number, variance: number } | undefined {
+  if (array.length === 0) throw new Error('Cannot compute average of an empty array')
+  let scale = 0
+  for (const value of array) {
+    if (!Number.isFinite(value)) return undefined
+    scale = Math.max(scale, Math.abs(value))
+  }
+  if (scale === 0) scale = 1
+  const anchor = array[0]!
+  const differences = array.map(value => normalizedDifference(value, anchor, scale))
+  const mean = average(differences)
+  const deviations = differences.map(value => value - mean)
+  return { scale, anchor, mean, variance: average(deviations.map(value => value * value)) }
+}
+
+function normalizedDifference(value: number, anchor: number, scale: number): number {
+  const difference = value - anchor
+  return Number.isFinite(difference) ? difference / scale : value / scale - anchor / scale
+}
+
+/** Pair the smallest and largest magnitudes first to avoid avoidable intermediate overflow/underflow. */
+function scaledProduct(value: number, first: number, second: number): number {
+  const factors = [value, first, second].sort((a, b) => Math.abs(a) - Math.abs(b))
+  return (factors[0]! * factors[2]!) * factors[1]!
 }

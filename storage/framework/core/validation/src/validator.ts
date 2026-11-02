@@ -136,6 +136,7 @@ export async function validateField(modelFile: string, params: RequestData): Pro
       const field = snakeCase(key)
       // Match the ORM write path when both spellings are supplied.
       if (Object.hasOwn(params, key)) input[field] = params[key]
+      if (Object.hasOwn(input, field)) input[key] = input[field]
       // Defaults only excuse absence, never a supplied invalid value.
       if (attributeKey.default !== undefined && isRequired === false && !Object.hasOwn(input, field))
         continue

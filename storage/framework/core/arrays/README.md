@@ -69,3 +69,15 @@ returns an empty array; sample counts must be nonnegative safe integers.
 uses the same safe midpoint. `min()` and `max()` iterate rather than spreading arguments,
 so large browser data sets do not exceed the engine's function argument limit. Empty
 statistical inputs retain their existing errors.
+
+## Numeric and selection contracts
+
+Population variance, standard deviation, covariance and z-scores use centered,
+scaled arithmetic for finite observations. Standard deviation can remain finite
+when variance exceeds the number range. Unrepresentable final results and nonfinite
+inputs keep their IEEE number behavior; these helpers do not round for display.
+
+`minBy`/`maxBy` accept infinite endpoints, ignore NaN candidates, and retain the
+first tied element. `take`, `takeLast`, `drop` and `dropLast` truncate fractional
+counts toward zero and clamp negatives/NaN to zero; Infinity means the whole input.
+`sortBy` evaluates every selector once per element and preserves stable ties.

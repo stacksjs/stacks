@@ -69,3 +69,17 @@ Many thanks to the following core technologies & people who have contributed to 
 The MIT License (MIT). Please see [LICENSE](https://github.com/stacksjs/stacks/tree/main/LICENSE.md) for more information.
 
 Made with 💙
+
+## Object boundary contracts
+
+`objectKeys` and `objectEntries` report string keys, including numeric property names,
+and omit symbols. `mapValues` visits own enumerable string entries; its return type
+excludes symbols and preserves optional properties. `getPath` returns `unknown`,
+including when a fallback is supplied: narrow the result before using it as a number
+or string. A fallback does not determine the type of a present property.
+
+`setPath(array, ['length'], n)` applies native array-length rules to a copy. Invalid
+lengths throw without changing the original. A plain source record replaces a nested
+Date, Map, Set or class target during `deepMerge`; those targets are not containers
+for JSON fields. The package ships both its root and the narrow `objects/transform`
+entry as JavaScript and declarations.

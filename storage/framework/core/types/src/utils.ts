@@ -31,15 +31,20 @@ export type UnionToIntersection<U> = (U extends unknown ? (k: U) => void : never
 
 export type MergeInsertions<T> = T extends object ? { [K in keyof T]: MergeInsertions<T[K]> } : T
 
-export type DeepMerge<F, S> = MergeInsertions<{
-  [K in keyof F | keyof S]: K extends keyof S & keyof F
-    ? DeepMerge<F[K], S[K]>
-    : K extends keyof S
-      ? S[K]
-      : K extends keyof F
-        ? F[K]
-        : never
-}>
+type MergeLeaf = Date | RegExp | Error | ReadonlyMap<unknown, unknown> | ReadonlySet<unknown>
+  | WeakMap<object, unknown> | WeakSet<object> | PromiseLike<unknown> | ArrayBuffer | ArrayBufferView
+  | URL | URLSearchParams | Blob | Headers | Request | Response | FormData | ((...args: any[]) => unknown)
+
+/** Plain records merge recursively; arrays, primitives and built-in instances are values. */
+export type DeepMerge<F, S> = S extends MergeLeaf | readonly unknown[] ? S
+  : S extends object
+    ? F extends MergeLeaf | readonly unknown[] ? S
+      : F extends object ? {
+        [K in keyof F | keyof S]: K extends keyof S & keyof F
+          ? {} extends Pick<S, K> ? F[K] | DeepMerge<F[K], S[K]> : DeepMerge<F[K], S[K]>
+          : K extends keyof S ? S[K] : K extends keyof F ? F[K] : never
+      } : S
+    : S
 
 export type DeepPartial<T> = {
   [P in keyof T]?: DeepPartial<T[P]>

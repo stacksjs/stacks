@@ -108,7 +108,7 @@ export function tail<T>(array: readonly T[]): T[] {
  * ```
  */
 export function take<T>(array: readonly T[], count: number): T[] {
-  return count <= 0 ? [] : array.slice(0, count)
+  return array.slice(0, normalizedCount(count))
 }
 
 /**
@@ -122,6 +122,7 @@ export function take<T>(array: readonly T[], count: number): T[] {
  * ```
  */
 export function takeLast<T>(array: readonly T[], count: number): T[] {
+  count = normalizedCount(count)
   return count <= 0 ? [] : array.slice(Math.max(0, array.length - count))
 }
 
@@ -177,7 +178,7 @@ export function takeLastWhile<T>(array: readonly T[], predicate: (value: T, inde
  * ```
  */
 export function drop<T>(array: readonly T[], count: number): T[] {
-  return count <= 0 ? array.slice() : array.slice(count)
+  return array.slice(normalizedCount(count))
 }
 
 /**
@@ -190,7 +191,13 @@ export function drop<T>(array: readonly T[], count: number): T[] {
  * ```
  */
 export function dropLast<T>(array: readonly T[], count: number): T[] {
+  count = normalizedCount(count)
   return count <= 0 ? array.slice() : array.slice(0, Math.max(0, array.length - count))
+}
+
+/** Match slice's integer conversion, with negative counts taking/dropping nothing. */
+function normalizedCount(count: number): number {
+  return Math.max(0, Math.trunc(count) || 0)
 }
 
 /**
@@ -347,14 +354,16 @@ export function sortBy<T>(array: readonly T[], ...selectors: SortSelector<T>[]):
     typeof selector === 'function' ? { by: selector, order: 'asc' as const } : { order: 'asc' as const, ...selector },
   )
 
-  return array.slice().sort((left, right) => {
-    for (const { by, order } of normalized) {
-      const comparison = compareSelected(by(left), by(right))
+  if (normalized.length === 0) return array.slice()
+  return array.map(value => ({ value, keys: normalized.map(({ by }) => by(value)) })).sort((left, right) => {
+    for (let index = 0; index < normalized.length; index++) {
+      const { order } = normalized[index]!
+      const comparison = compareSelected(left.keys[index], right.keys[index])
       if (comparison !== 0)
         return order === 'desc' ? -comparison : comparison
     }
     return 0
-  })
+  }).map(entry => entry.value)
 }
 
 /**
@@ -408,11 +417,13 @@ export function meanBy<T>(array: readonly T[], value: (item: T, index: number) =
  * ```
  */
 export function maxBy<T>(array: readonly T[], value: (item: T, index: number) => number): T | undefined {
+  let found = false
   let best: T | undefined
   let bestValue = Number.NEGATIVE_INFINITY
   for (const [index, item] of array.entries()) {
     const candidate = value(item, index)
-    if (candidate > bestValue) {
+    if (!Number.isNaN(candidate) && (!found || candidate > bestValue)) {
+      found = true
       bestValue = candidate
       best = item
     }
@@ -430,11 +441,13 @@ export function maxBy<T>(array: readonly T[], value: (item: T, index: number) =>
  * ```
  */
 export function minBy<T>(array: readonly T[], value: (item: T, index: number) => number): T | undefined {
+  let found = false
   let best: T | undefined
   let bestValue = Number.POSITIVE_INFINITY
   for (const [index, item] of array.entries()) {
     const candidate = value(item, index)
-    if (candidate < bestValue) {
+    if (!Number.isNaN(candidate) && (!found || candidate < bestValue)) {
+      found = true
       bestValue = candidate
       best = item
     }

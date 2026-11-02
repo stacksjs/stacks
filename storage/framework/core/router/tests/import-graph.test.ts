@@ -178,6 +178,7 @@ describe('router import graph', () => {
       .filter(entry => entry.original?.startsWith('@stacksjs/validation')) ?? []
     expect(requestValidationImports.map(entry => `${entry.kind}:${entry.original}`).sort()).toEqual([
       'dynamic-import:@stacksjs/validation/request-validator',
+      'require-call:@stacksjs/validation/conditional',
       'require-call:@stacksjs/validation/messages',
     ])
     const validationMessagesEntry = Object.entries(result.metafile?.inputs ?? {})

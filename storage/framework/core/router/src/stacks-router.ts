@@ -3530,10 +3530,12 @@ function validateActionInputSync(
     const field = entry[0]
     const validation = entry[1]
     const value = input[field]
+    let rule = validation.rule
     let result: { valid: boolean, errors?: Array<{ message: string }> | Record<string, Array<{ message: string }>>, value?: unknown } | undefined
 
     try {
-      const rule = validation.rule as typeof validation.rule & { isRequired?: boolean }
+      if ((rule as { __conditionals?: unknown[] }).__conditionals?.length)
+        rule = (require('@stacksjs/validation/conditional') as typeof import('@stacksjs/validation/conditional')).applyConditionals(rule, input)
       result = validation.message && typeof validation.message === 'object'
         ? validationMessages().validateRule(rule, value) as typeof result
         : rule.validate(value)
@@ -3560,7 +3562,7 @@ function validateActionInputSync(
         // with a key named after the field answering for the rest; it used to
         // be looked up by field name only, so a per-rule message never showed.
         if (validation.message && typeof validation.message === 'object')
-          fieldErrors.push(...validationMessages().fieldErrorMessages(validation.rule, value, reported, validation.message, field, decorate))
+          fieldErrors.push(...validationMessages().fieldErrorMessages(rule, value, reported, validation.message, field, decorate))
         else if (validation.message)
           fieldErrors.push(validation.message)
         else
