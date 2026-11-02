@@ -20,7 +20,7 @@ that renders through it.
 | [Mobile](/skills/frontend/mobile) | Native iOS and Android apps: the Craft bridge, mobile builds and the mobile component set. |
 | [stx](/skills/frontend/stx) | stx is the only templating system in Stacks. Single-file components with `<script>`, `<template>` and `<style>`, Blade-style directives, signals and filters, plus SSR, streaming and hydration. |
 | [UI](/skills/frontend/ui) | The UI layer as a whole: components, composables, reactivity, Craft native components, ts-css styling and accessibility, spanning `@stacksjs/ui` and `@stacksjs/stx`. |
-| [Browser Extension](/skills/frontend/browser-extension) | scaffolding, building, packaging or preparing store submission for a native Stacks MV3 browser extension.. |
+| [Browser Extension](/skills/frontend/browser-extension) | scaffolding, building, packaging or preparing store submission for a native Stacks MV3 browser extension, or shipping its rules and content scripts to a WKWebView app.. |
 | [Charts](/skills/frontend/charts) | rendering native dashboard charts, configuring scales or tooltips, or managing canvas chart lifecycle.. |
 
 Every page here describes one `SKILL.md` under

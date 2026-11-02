@@ -1,12 +1,12 @@
 ---
 title: "Browser Extension skill"
-description: "Use when scaffolding, building, packaging or preparing store submission for a native Stacks MV3 browser extension. Covers @stacksjs/browser-extension and Chrome/Firefox/Safari target boundaries."
+description: "Use when scaffolding, building, packaging or preparing store submission for a native Stacks MV3 browser extension, or shipping its rules and content scripts to a WKWebView app. Covers @stacksjs/browser-extension and Chrome/Firefox/Safari/WebKit target boundaries."
 ---
 # Browser Extension
 
 `stacks-browser-extension` · Native Stacks · model-invoked
 
-Use when scaffolding, building, packaging or preparing store submission for a native Stacks MV3 browser extension. Covers @stacksjs/browser-extension and Chrome/Firefox/Safari target boundaries.
+Use when scaffolding, building, packaging or preparing store submission for a native Stacks MV3 browser extension, or shipping its rules and content scripts to a WKWebView app. Covers @stacksjs/browser-extension and Chrome/Firefox/Safari/WebKit target boundaries.
 
 Read the skill for the implementation workflow and its current signatures. The
 [Native capabilities](/skills/platform/native) catalog maps the package to
@@ -15,6 +15,7 @@ source and retained evidence; driver limits are explicit.
 ## Inside the skill
 
 - Build workflow
+- WebKit target
 - Store preparation and publication
 
 ## Using it
