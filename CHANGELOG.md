@@ -1,5 +1,33 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.438...v0.75.439)
+
+## 🐛 Bug Fixes
+
+- **ci**: use the Pantry symlink installation fix ([797def0](https://github.com/stacksjs/stacks/commit/797def0)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **socials**: send the PKCE token exchange as form data ([2c43d44](https://github.com/stacksjs/stacks/commit/2c43d44)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **cli**: drain service IPC before reporting command exit ([624e10e](https://github.com/stacksjs/stacks/commit/624e10e)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **cli**: admit consumer startup options through owned IPC ([374f4e0](https://github.com/stacksjs/stacks/commit/374f4e0)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **testing**: own descendant processes across fixture lifecycles ([98898c5](https://github.com/stacksjs/stacks/commit/98898c5)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **testing**: verify packed service dependencies and readiness ([7a707d5](https://github.com/stacksjs/stacks/commit/7a707d5)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- merge current framework release before verification ([87fa15b](https://github.com/stacksjs/stacks/commit/87fa15b)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🎉 Miscellaneous
+
+- Merge remote-tracking branch 'origin/main' into codex/isolated-process-lifecycle ([e2b22de](https://github.com/stacksjs/stacks/commit/e2b22de)) _(by Chris Breuer <chris@stacksjs.com>)_
+- Merge remote-tracking branch 'origin/main' into codex/isolated-process-lifecycle ([a3275ac](https://github.com/stacksjs/stacks/commit/a3275ac)) _(by Chris Breuer <chris@stacksjs.com>)_
+- Merge remote-tracking branch 'origin/main' into codex/isolated-process-lifecycle ([d30d55e](https://github.com/stacksjs/stacks/commit/d30d55e)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.437...v0.75.438)
 
 ## ✨ Features
