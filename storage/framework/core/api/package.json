@@ -62,7 +62,9 @@
   },
   "dependencies": {
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/path": "workspace:*"
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/pagination": "workspace:*",
+    "hash-wasm": "^4.12.0"
   },
   "devDependencies": {
     "@stacksjs/utils": "workspace:*",

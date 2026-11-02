@@ -236,7 +236,9 @@
       "version": "0.75.433",
       "dependencies": {
         "@stacksjs/config": "workspace:*",
+        "@stacksjs/pagination": "workspace:*",
         "@stacksjs/path": "workspace:*",
+        "hash-wasm": "^4.12.0",
       },
       "devDependencies": {
         "@stacksjs/utils": "workspace:*",
