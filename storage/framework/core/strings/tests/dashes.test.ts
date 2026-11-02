@@ -21,3 +21,11 @@ describe('the dashes the em-dash sweep turned into hyphens', () => {
     expect(slugify(`a ${EN_DASH} b`)).toBe('a-b')
   })
 })
+
+describe('every dash separates the words of a slug', () => {
+  it('takes an em dash, a figure dash or a horizontal bar as well as an en dash', () => {
+    expect(slug(`Rock${EM_DASH}Paper${EM_DASH}Scissors`)).toBe('rock-paper-scissors')
+    expect(slugify(`a \u2012 b \u2015 c`)).toBe('a-b-c')
+    expect(slugify(`Rock${EM_DASH}Paper`, { replacement: '_' })).toBe('Rock_Paper')
+  })
+})
