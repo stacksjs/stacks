@@ -19,9 +19,12 @@ test('the packed schema entry imports in a standalone fixture without test-runne
     expect(unpack.exitCode, Buffer.from(unpack.stderr).toString()).toBe(0)
     writeFileSync(join(directory, 'package.json'), '{"type":"module"}')
     const consumer = join(directory, 'consumer.ts')
-    writeFileSync(consumer, "import { applyTestSchema } from '@stacksjs/testing/schema'\nawait applyTestSchema([])\nconsole.log('packed standalone schema OK')\n")
+    writeFileSync(consumer, "import { applyTestSchema } from '@stacksjs/testing/schema'\nimport { startTestService, notifyTestServiceReady } from '@stacksjs/testing/service'\nif (typeof startTestService !== 'function' || notifyTestServiceReady() !== false) throw Error('standalone service export failed')\nawait applyTestSchema([])\nconsole.log('packed standalone schema OK')\n")
     assertIsolatedOk(await runIsolated(consumer, { cwd: directory, preload: [], envFile: false, timeoutMs: 10_000 }), 'packed standalone schema OK')
     expect(await Bun.file(join(installed, 'dist/schema.d.ts')).text()).toContain('applyTestSchema(statements: readonly string[]): Promise<void>')
+    const service = await Bun.file(join(installed, 'dist/service.d.ts')).text()
+    expect(service).toContain('startTestService(command: string[], options?: TestServiceOptions): TestService')
+    expect(service).toContain('readonly signal: AbortSignal')
   }
   finally { rmSync(directory, { recursive: true, force: true }) }
 }, 120_000)

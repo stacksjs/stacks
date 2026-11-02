@@ -2,6 +2,23 @@
 
 wip
 
+## Owned test services
+
+
+Import `startTestService` and `notifyTestServiceReady` from
+`@stacksjs/testing/service` in CLI scripts, without loading the test runner or
+database. The child calls `notifyTestServiceReady(info)` only after its own
+application checks succeed. Listening on a port is insufficient. The function
+returns false when the script was started manually without IPC.
+
+The parent awaits `service.ready`, then combines `service.signal` with its
+command deadline using `AbortSignal.any`. Unexpected child exit aborts that
+signal and rejects readiness if still pending. `service.exited` reports its
+status. Always await `service.stop()` in finally: cleanup is idempotent and
+terminates only the owned child, escalating SIGTERM to SIGKILL after
+`stopGraceMs` (default 2 seconds). The service script owns its descendants.
+Readiness has a separate `startupTimeoutMs` (default 60 seconds).
+
 ## ☘️ Features
 
 wip

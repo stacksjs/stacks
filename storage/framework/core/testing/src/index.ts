@@ -30,6 +30,7 @@ export * from './time'
 // Child-process isolation and throwaway databases. Bun and node only, no
 // framework import, so both are safe at the root.
 export * from './isolated'
+export * from './service'
 export * from './disposable-database'
 export * from './schema'
 export * from 'bun:test'
