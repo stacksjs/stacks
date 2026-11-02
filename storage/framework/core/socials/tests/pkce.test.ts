@@ -2,6 +2,7 @@ import { Buffer } from 'node:buffer'
 import { afterEach, describe, expect, test } from 'bun:test'
 import { GitHubProvider } from '../src/drivers/github'
 import { GoogleProvider } from '../src/drivers/google'
+import { TwitterProvider } from '../src/drivers/twitter'
 
 /**
  * stacksjs/stacks#2908 — `enablePKCE()` used to produce
@@ -95,25 +96,68 @@ describe('PKCE across the round trip', () => {
     // The callback is a different request, so a different instance.
     const exchanging = github().withCodeVerifier(stashed)
 
-    let sent: any = null
-    globalThis.fetch = (async (_input: any, init: any) => {
-      sent = init?.body ? JSON.parse(String(init.body)) : null
+    const sent: Record<string, unknown>[] = []
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      sent.push(await new Request(input, init).json())
       return Response.json({ access_token: 'gho_token' })
     }) as unknown as typeof fetch
 
     expect(await exchanging.getAccessToken('the-code')).toBe('gho_token')
-    expect(sent.code_verifier).toBe(stashed)
+    expect(sent).toHaveLength(1)
+    expect(sent[0]?.code_verifier).toBe(stashed)
   })
 
   test('an exchange without PKCE sends no code_verifier', async () => {
-    let sent: any = null
-    globalThis.fetch = (async (_input: any, init: any) => {
-      sent = init?.body ? JSON.parse(String(init.body)) : null
+    const sent: Record<string, unknown>[] = []
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      sent.push(await new Request(input, init).json())
       return Response.json({ access_token: 'gho_token' })
     }) as unknown as typeof fetch
 
     await github().getAccessToken('the-code')
-    expect('code_verifier' in sent).toBe(false)
+    expect(sent).toHaveLength(1)
+    expect(sent[0]).not.toHaveProperty('code_verifier')
+  })
+
+  test('JSON and form token exchanges carry the restored verifier over HTTP', async () => {
+    const received: Array<{ path: string, method: string, type: string, fields: Record<string, unknown> }> = []
+    const server = Bun.serve({ port: 0, hostname: '127.0.0.1', async fetch(request) {
+      const type = request.headers.get('Content-Type') || ''
+      const fields = type.includes('application/json')
+        ? await request.json()
+        : Object.fromEntries(new URLSearchParams(await request.text()))
+      received.push({ path: new URL(request.url).pathname, method: request.method, type, fields })
+      return Response.json({ access_token: 'wire-token', token_type: 'bearer', expires_in: 60, scope: '' })
+    } })
+    // Redirect only the external provider transport. The client constructs
+    // real requests, and the server decodes the bytes actually sent over HTTP.
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const request = new Request(input, init)
+      const original = new URL(request.url)
+      const destination = new URL(original.pathname + original.search, server.url)
+      return realFetch(new Request(destination, request))
+    }) as typeof fetch
+    try {
+      const start = github().enablePKCE()
+      await start.getAuthUrl()
+      const verifier = start.getPkceVerifier()!
+      expect(await github().withCodeVerifier(verifier).getAccessToken('github-code')).toBe('wire-token')
+      expect(await github().getAccessToken('without-pkce')).toBe('wire-token')
+      const settings = { clientId: 'client', clientSecret: 'secret', redirectUrl: 'https://app.test/callback' }
+      const twitter = new TwitterProvider(settings)
+      await twitter.getAuthUrl()
+      const twitterVerifier = twitter.getPkceVerifier()!
+      expect(await new TwitterProvider(settings).withCodeVerifier(twitterVerifier).getAccessToken('twitter-code')).toBe('wire-token')
+      expect(received).toHaveLength(3)
+      expect(received.map(request => request.method)).toEqual(['POST', 'POST', 'POST'])
+      expect(received.map(request => request.path)).toEqual(['/login/oauth/access_token', '/login/oauth/access_token', '/2/oauth2/token'])
+      expect(received[0]?.type).toContain('application/json')
+      expect(received[0]?.fields.code_verifier).toBe(verifier)
+      expect(received[1]?.fields).not.toHaveProperty('code_verifier')
+      expect(received[2]?.type).toContain('application/x-www-form-urlencoded')
+      expect(received[2]?.fields.code_verifier).toBe(twitterVerifier)
+    }
+    finally { await server.stop(true) }
   })
 
   test('PKCE enabled with no verifier refuses the exchange rather than dropping it', async () => {

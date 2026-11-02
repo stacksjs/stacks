@@ -69,9 +69,9 @@ export class TwitterProvider extends AbstractProvider implements ProviderInterfa
     const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
 
     const response = await fetcher
+      .asForm()
       .withHeaders({
         'Authorization': `Basic ${basicAuth}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
       })
       .post<TwitterTokenResponse>(`${this.apiUrl}/2/oauth2/token`, {
         code,

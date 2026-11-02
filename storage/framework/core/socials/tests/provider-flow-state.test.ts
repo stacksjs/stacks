@@ -61,8 +61,8 @@ describe('X keeps PKCE across the redirect', () => {
     const verifier = start.getPkceVerifier()!
 
     let body = ''
-    globalThis.fetch = (async (_input: unknown, init?: RequestInit) => {
-      body = String(init?.body ?? '')
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      body = await new Request(input, init).text()
       return new Response(JSON.stringify({ access_token: 'at', token_type: 'bearer', expires_in: 1, scope: '' }), { headers: { 'Content-Type': 'application/json' } })
     }) as typeof fetch
 
