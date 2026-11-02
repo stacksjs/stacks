@@ -1,5 +1,5 @@
 import { log } from '@stacksjs/cli'
-import { notification as _notification } from '@stacksjs/config'
+import { config as appConfig, notification as _notification } from '@stacksjs/config'
 import type { ChatMessage, ChatResult, EmailMessage, EmailResult, NotificationOptions, SmsMessage, SmsSendResult } from '@stacksjs/types'
 import { mail } from '@stacksjs/email'
 import { chat, email, push, sms } from './drivers'
@@ -90,8 +90,16 @@ export interface NotificationPayload extends NotificationFrameLocale {
 export interface NotificationRecipient {
   email?: string
   phone?: string
-  /** Channel/user identifier accepted by the configured chat transport. */
+  /**
+   * The channel or user a bot-token chat send posts to. Leave it out for a
+   * webhook, whose URL already says where the message goes.
+   */
   chatRecipient?: string | string[]
+  /**
+   * Which chat transport carries the `chat` channel. Defaults to
+   * `config.notification.chat.default`, then Slack.
+   */
+  chatDriver?: 'slack' | 'discord' | 'teams'
   userId?: number
   /**
    * Device token(s) for the push channel — Expo tokens
@@ -141,6 +149,18 @@ function ensureSuccessfulProviderResult(result: { success: boolean, message?: st
 
 export interface ChatTransport {
   send: (message: ChatMessage) => Promise<ChatResult>
+}
+
+/**
+ * The chat transport `config/notification.ts` names (`chat.default`), read
+ * when a notification is sent; `msTeams` is the Teams driver. Declared and
+ * typed but read by nothing before, so `notify()` used Slack whatever an app
+ * configured, and an app on Discord or Teams could not get a chat
+ * notification at all.
+ */
+export function configuredChatDriver(): string | undefined {
+  const configured = (appConfig as { notification?: NotificationOptions }).notification?.chat?.default
+  return configured === 'msTeams' ? 'teams' : configured || undefined
 }
 
 export function useChat(driver?: string): ChatTransport {
@@ -332,11 +352,16 @@ export async function notify(
           break
         }
         case 'chat': {
-          if (!recipient.chatRecipient || (Array.isArray(recipient.chatRecipient) && !recipient.chatRecipient.length)) {
-            throw new Error('[notify] chat channel requires recipient.chatRecipient')
-          }
-          const driver = useChat()
-          ensureSuccessfulProviderResult(await driver.send({ to: recipient.chatRecipient, content: payload.body, subject: payload.subject, data: payload.data }))
+          // No recipient check here: a webhook needs none, and requiring one
+          // meant the framework's own `notify({}, ..., ['chat'])` alerts (CI
+          // failures, runner pressure, feedback) never sent. A bot-token send
+          // still refuses to go without a channel; the error says which field.
+          const driver = useChat(recipient.chatDriver ?? configuredChatDriver())
+          const to = Array.isArray(recipient.chatRecipient) && !recipient.chatRecipient.length ? undefined : recipient.chatRecipient
+          const result = await driver.send({ to, content: payload.body, subject: payload.subject, data: payload.data })
+          if (!result.success && !to)
+            throw new Error(`${result.message || 'Chat delivery failed'} (notify() sends recipient.chatRecipient as the channel)`)
+          ensureSuccessfulProviderResult(result)
           break
         }
         case 'database': {

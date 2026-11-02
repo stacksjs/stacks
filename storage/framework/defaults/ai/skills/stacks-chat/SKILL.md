@@ -470,10 +470,10 @@ All three drivers implement `sendWithRetry()`:
 
 Direct send returns ChatResult, with success false for a handled provider failure;
 inspect it before persisting sent state. Awaiting a send only proves the promise
-settled. Webhook configuration does not replace ChatMessage's to/content or
-template fields. The generic notify chat channel supplies a body-only shape and
-does not normalize every structured transport failure, so use this package's
-direct API when application behavior depends on valid chat delivery.
+settled. A webhook send needs no `to`; a bot-token send needs the channel in
+`to`. notify()'s chat channel sends the body as `content` and `chatRecipient`
+as `to`, through `recipient.chatDriver` or `config.notification.chat.default`,
+and a failed send is a failed NotifyResult.
 
 Settings resolve per send after app config readiness, with explicit configure
 overrides taking precedence. Retained request/config coverage lives under

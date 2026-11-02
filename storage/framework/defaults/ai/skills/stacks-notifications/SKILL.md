@@ -36,7 +36,7 @@ optional `error`. A resolved call does not imply every channel succeeded.
 |---|---|---|
 | email | email | `@stacksjs/email` |
 | sms | phone | `@stacksjs/sms` |
-| chat | chatRecipient, a channel/user id or array | `@stacksjs/chat` |
+| chat | chatRecipient for a bot token's channel; none for a webhook | `@stacksjs/chat` |
 | database | userId | database notification inbox |
 | push | pushTokens, a string or string array | `@stacksjs/push`, default Expo |
 | broadcast | broadcastChannel or userId | `@stacksjs/realtime` |
@@ -48,7 +48,11 @@ type for an action link. The broadcast fallback is `private-user.{userId}` or
 public `notifications` when no user/channel is supplied. Its delivery is
 best-effort; a missing realtime server is not a durable notification queue.
 Read `stacks-chat` to configure transport credentials. Notify maps body to
-ChatMessage.content and chatRecipient to ChatMessage.to. Email, SMS, chat and
+ChatMessage.content and chatRecipient to ChatMessage.to, through
+`recipient.chatDriver`, else `config.notification.chat.default` (`msTeams` is
+Teams), else Slack. A webhook needs no chatRecipient, so `notify({}, payload,
+['chat'])` posts to the configured webhook; a bot-token send without one fails
+naming the field. Email, SMS, chat and
 push structured failures and broadcast delivered:false produce failed
 NotifyResult entries. Provider acceptance is not a final delivery receipt.
 `ensureSuccessfulNotificationResults(results)` throws for an empty result list
