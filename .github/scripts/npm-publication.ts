@@ -13,7 +13,9 @@ export function acceptedPublications(log: string): AcceptedPublication[] {
   const accepted = new Map<string, AcceptedPublication>()
   let current: Partial<AcceptedPublication> | undefined
   for (const raw of log.split('\n')) {
-    const line = stripVTControlCharacters(raw).trim()
+    // Job-log downloads prefix each line with GitHub's UTC timestamp. Preserve
+    // the original archive identity across attempts as well as within one job.
+    const line = stripVTControlCharacters(raw).trim().replace(/^\d{4}-\d{2}-\d{2}T[\d:.]+Z\s+/, '')
     const provenanceUpload = /^(?:✓\s+)?(?:Uploaded|Published) (.+)@([^ ]+) with provenance$/.exec(line)
     if (line.startsWith('Publishing ')) {
       const match = /^Publishing (.+)@([^ ]+)\.\.\.$/.exec(line)
@@ -76,22 +78,39 @@ export async function publicationMatchesOriginal(
   }
 }
 
-if (import.meta.main) {
-  const [file, seconds = '1200'] = process.argv.slice(2)
-  const budget = Number(seconds) * 1000
-  if (!file || !Number.isSafeInteger(budget) || budget <= 0) throw new Error('Expected a publish log and a positive wait budget')
-  const receipts = acceptedPublications(await Bun.file(file).text())
-  if (!receipts.length) throw new Error('Publish failed without an accepted original archive; refusing to resume')
-  // One absolute budget covers every package, request and response body.
-  const deadline = performance.now() + budget
+interface PublicationVerificationOptions {
+  budgetMs?: number
+  pollMs?: number
+  read?: ReadPublic
+}
+
+/** Complete original-archive readback before any attempt can repack or upload. */
+export async function verifyAcceptedPublications(
+  receipts: readonly AcceptedPublication[],
+  options: PublicationVerificationOptions = {},
+): Promise<void> {
+  const budgetMs = options.budgetMs ?? 20 * 60_000
+  const pollMs = options.pollMs ?? 15_000
+  if (!Number.isSafeInteger(budgetMs) || budgetMs <= 0 || !Number.isSafeInteger(pollMs) || pollMs <= 0)
+    throw new Error('Expected positive publication verification deadlines')
+  const deadline = performance.now() + budgetMs
   for (const receipt of receipts) {
     while (true) {
       const remaining = Math.floor(deadline - performance.now())
       if (remaining <= 0) throw new Error(`Original ${receipt.name}@${receipt.version} is still pending; no publication resumed`)
-      if (await publicationMatchesOriginal(receipt, fetch, Math.min(30_000, remaining))) break
-      const pause = Math.min(15_000, Math.max(0, deadline - performance.now()))
+      if (await publicationMatchesOriginal(receipt, options.read ?? fetch, Math.min(30_000, remaining))) break
+      const pause = Math.min(pollMs, Math.max(0, deadline - performance.now()))
       await Bun.sleep(pause)
     }
     console.log(`Verified original ${receipt.name}@${receipt.version}: metadata, SHA-512 and SHA-1`)
   }
+}
+
+if (import.meta.main) {
+  const [file, seconds = '1200'] = process.argv.slice(2)
+  const budgetMs = Number(seconds) * 1000
+  if (!file) throw new Error('Expected a publish log and a positive wait budget')
+  const receipts = acceptedPublications(await Bun.file(file).text())
+  if (!receipts.length) throw new Error('Publish failed without an accepted original archive; refusing to resume')
+  await verifyAcceptedPublications(receipts, { budgetMs })
 }

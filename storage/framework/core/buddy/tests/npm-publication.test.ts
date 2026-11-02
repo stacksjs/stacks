@@ -1,6 +1,7 @@
 import { expect, test } from 'bun:test'
 import { createHash } from 'node:crypto'
-import { acceptedPublications, publicationMatchesOriginal } from '../../../../../.github/scripts/npm-publication'
+import { acceptedPublications, publicationMatchesOriginal, verifyAcceptedPublications } from '../../../../../.github/scripts/npm-publication'
+import { priorPublicationReceipts } from '../../../../../.github/scripts/resume-npm-publication'
 
 const archive = new TextEncoder().encode('original packed release bytes')
 const receipt = {
@@ -76,4 +77,55 @@ test('an ambiguous outcome still needs matching metadata and complete original b
   expect(await publicationMatchesOriginal(original, async () => Response.json({
     ...metadata, dist: { ...metadata.dist, integrity: 'sha512-different' },
   }))).toBe(false)
+})
+
+
+test('a restarted publisher reads timestamped original receipts and waits for their actual archives', async () => {
+  const original = provenanceUpload().split('\n').map(line => `2026-11-02T06:12:11.704Z ${line}`).join('\n')
+  expect(acceptedPublications(original)).toEqual([receipt])
+  let reads = 0
+  const server = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch(request) {
+    expect(request.method).toBe('GET')
+    expect(request.headers.has('authorization')).toBe(false)
+    if (new URL(request.url).pathname.endsWith('.tgz')) return new Response(archive)
+    if (++reads === 1) return new Response(null, { status: 404 })
+    return Response.json({ name: receipt.name, version: receipt.version,
+      dist: { integrity: receipt.integrity, shasum: receipt.shasum,
+        tarball: 'https://registry.npmjs.org/@stacksjs/enums/-/enums-0.75.260.tgz' } })
+  } })
+  try {
+    await verifyAcceptedPublications(acceptedPublications(original), {
+      budgetMs: 1000, pollMs: 5,
+      read: (url, init) => fetch(new URL(new URL(url).pathname, server.url), init),
+    })
+    expect(reads).toBe(2)
+  }
+  finally { await server.stop(true) }
+})
+
+
+test('recovery refuses another cohort and conflicting original archives across attempts', () => {
+  const names = new Set([receipt.name])
+  const original = provenanceUpload()
+  expect(priorPublicationReceipts([original, 'Error: network unavailable'], receipt.version, names)).toEqual([receipt])
+  expect(() => priorPublicationReceipts([original], '0.75.261', names)).toThrow('does not belong')
+  expect(() => priorPublicationReceipts([original], receipt.version, new Set(['stacks']))).toThrow('does not belong')
+  const different = `sha512-${createHash('sha512').update('repacked release').digest('base64')}`
+  expect(() => priorPublicationReceipts([original, provenanceUpload(different)], receipt.version, names)).toThrow('Conflicting original archive receipts')
+})
+
+test('public metadata never permits resumption with changed or unreadable archive bytes', async () => {
+  const server = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch(request) {
+    if (new URL(request.url).pathname.endsWith('.tgz')) return new Response('repacked release')
+    return Response.json({ name: receipt.name, version: receipt.version,
+      dist: { integrity: receipt.integrity, shasum: receipt.shasum,
+        tarball: 'https://registry.npmjs.org/@stacksjs/enums/-/enums-0.75.260.tgz' } })
+  } })
+  try {
+    await expect(verifyAcceptedPublications([receipt], {
+      budgetMs: 60, pollMs: 5,
+      read: (url, init) => fetch(new URL(new URL(url).pathname, server.url), init),
+    })).rejects.toThrow('no publication resumed')
+  }
+  finally { await server.stop(true) }
 })

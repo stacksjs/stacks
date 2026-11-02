@@ -282,6 +282,13 @@ jobs:
       # Without NPM_TOKEN there is no way to run `npm dist-tag`, and a release
       # stuck on the holding tag would be worse than the tearing. So that case
       # publishes straight to `latest`, exactly as before.
+      # A failed sibling does not undo npm's accepted uploads. A job rerun must
+      # verify their original bytes before pantry can repack and try any upload.
+      - name: Verify original publications before resuming
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bun .github/scripts/resume-npm-publication.ts
+
       - name: Publish Framework
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
