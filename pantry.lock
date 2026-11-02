@@ -495,7 +495,7 @@
         "@stacksjs/stx": "0.2.784",
         "@stacksjs/validation": "workspace:*",
         "ts-medium-editor": "^0.2.0",
-        "ts-slug": "^0.2.0",
+        "ts-slug": "^0.2.1",
         "ts-spreadsheets": "^0.2.5"
       },
       "devDependencies": {
@@ -1227,7 +1227,7 @@
       "version": "0.75.425",
       "dependencies": {
         "@stacksjs/database": "workspace:*",
-        "ts-slug": "^0.2.0"
+        "ts-slug": "^0.2.1"
       },
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
