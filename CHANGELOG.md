@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.409...v0.75.410)
+
+## ✨ Features
+
+- **desktop**: build:dmg packages and notarizes a native macos app ([7914087](https://github.com/stacksjs/stacks/commit/7914087)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- list the new build:dmg sources in the native skills catalog ([d367342](https://github.com/stacksjs/stacks/commit/d367342)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.408...v0.75.409)
 
 ## ✨ Features
