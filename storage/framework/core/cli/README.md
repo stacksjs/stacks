@@ -399,7 +399,9 @@ process group or a Windows Job Object, then admits the requested command.
 The owner clears `BUN_OPTIONS` and `NODE_OPTIONS`; the original command
 environment is restored over the private IPC admission channel, never embedded
 in owner argv. `started` resolves to the command PID. `exited` preserves its code and signal
-and settles after descendant disposal. `stop()` is idempotent. Standard I/O and
+and settles after descendant disposal. Consumer IPC is enabled only when an
+`ipc` callback is requested; the native channel drains before exit is reported.
+`stop()` is idempotent. Standard I/O and
 consumer IPC are forwarded without executing a shell.
 
 A caller inside a compiled CLI passes the installed Bun path as `ownerRuntime`.

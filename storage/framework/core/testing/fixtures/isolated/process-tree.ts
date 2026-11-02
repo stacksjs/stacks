@@ -9,6 +9,7 @@ if (['root', 'early-exit', 'service', 'service-no-ready', 'service-early-exit'].
     if (performance.now() > deadline) throw new Error('Descendants did not become ready')
     await Bun.sleep(5)
   }
+  writeFileSync(join(directory, 'command-ipc.json'), JSON.stringify({ enabled: typeof process.send === 'function' }))
   process.stdout.write('owned tree ready\n')
   if (role.startsWith('service') && role !== 'service-no-ready') {
     const { notifyTestServiceReady } = await import(process.env.OWNED_SERVICE_MODULE || '../../src/service')

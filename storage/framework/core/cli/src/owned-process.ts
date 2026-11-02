@@ -133,13 +133,33 @@ process.on('message', message => {
   if (message?.start !== true || launched) return
   launched = true
   try {
+    let closeIPC
+    const ipcClosed = new Promise(resolve => { closeIPC = resolve })
+    let announced = false
+    const earlyMessages = []
+    const forward = (message, pid) => process.send({ type: 'message', pid, message })
+    const relay = message.ipc ? {
+      ipc(message, source) {
+        if (announced) forward(message, source.pid)
+        else earlyMessages.push({ message, pid: source.pid })
+      },
+      onDisconnect() { closeIPC() },
+    } : {}
     const child = Bun.spawn(${JSON.stringify(command)}, {
       env: message.environment,
       stdin: 'inherit', stdout: 'inherit', stderr: 'inherit',
-      ipc(message, source) { process.send({ type: 'message', pid: source.pid, message }) },
+      ...relay,
     })
+    // Publish identity before any ready message, including native callbacks
+    // delivered before spawn returns. Exit alone does not establish IPC drain.
     process.send({ type: 'started', pid: child.pid })
-    child.exited.then(code => process.send({ type: 'exit', code, signal: child.signalCode }))
+    announced = true
+    for (const item of earlyMessages) forward(item.message, item.pid)
+    earlyMessages.length = 0
+    child.exited.then(async code => {
+      if (message.ipc) await ipcClosed
+      process.send({ type: 'exit', code, signal: child.signalCode })
+    })
   } catch (error) { process.send({ type: 'failure', message: String(error) }) }
 })
 process.send({ type: 'ready' })
@@ -156,7 +176,7 @@ process.send({ type: 'ready' })
           if (!message || typeof message !== 'object') return
           if (message.type === 'ready') {
             ownerReady = true
-            if (admitted && !stopping) child.send({ start: true, environment })
+            if (admitted && !stopping) child.send({ start: true, environment, ipc: Boolean(options.ipc) })
           }
           else if (!admitted) return
           else if (message.type === 'stop-request') {
@@ -185,7 +205,7 @@ process.send({ type: 'ready' })
     }
     windows?.assign(child.pid)
     admitted = true
-    if (ownerReady) child.send({ start: true, environment })
+    if (ownerReady) child.send({ start: true, environment, ipc: Boolean(options.ipc) })
   }
   catch (error) {
     // Admission fails closed: the controlled host has not received start.

@@ -9,6 +9,7 @@ test.each([0, 7])('a completed check disposes its unreferenced normal descendant
   const root = mkdtempSync(join(tmpdir(), 'stacks-project-ownership-'))
   writeFileSync(join(root, 'package.json'), JSON.stringify({ scripts: { check: 'bun check.ts' } }))
   writeFileSync(join(root, 'check.ts'), `
+if (typeof process.send === 'function') throw new Error('Project scripts must not receive an unrequested IPC channel')
 const child = Bun.spawn([process.execPath, '-e', 'process.on("SIGTERM", () => {}); await Bun.write("child.ready", "ready"); setInterval(() => {}, 1000)'], { stdin: 'ignore', stdout: 'ignore', stderr: 'ignore' })
 await Bun.write('child.pid', String(child.pid))
 while (!await Bun.file('child.ready').exists()) await Bun.sleep(10)

@@ -91,6 +91,9 @@ jobs:
           ./storage/framework/core/testing/tests/isolated.test.ts
           ./storage/framework/core/testing/tests/service.test.ts
 
+      - name: Verify immediate readiness and exit ordering repeatedly
+        run: bun test ./storage/framework/core/testing/tests/process-tree.test.ts --test-name-pattern service-early-exit --rerun-each=20
+
   dependency-locks:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
