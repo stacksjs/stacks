@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.435...v0.75.436)
+
+## 🐛 Bug Fixes
+
+- **auth**: revalidate live authority for support identities ([cdeee17](https://github.com/stacksjs/stacks/commit/cdeee17)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.433...v0.75.435)
 
 ## 🐛 Bug Fixes
