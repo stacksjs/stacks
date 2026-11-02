@@ -81,6 +81,11 @@ export function objectEntries<T extends object>(obj: T) {
  * made `isAdmin` true on every object in the process. Only the target's own
  * properties are merged into, so an inherited one is never followed either.
  *
+ * Only plain objects are merged key by key. A Date, Map, Set or class instance
+ * in a source is a value and is assigned; it used to be merged into a fresh
+ * `{}` and arrive empty. A string, array or number in the target gives way to
+ * a source's object; one that was truthy used to stay.
+ *
  * @category Object
  */
 export function deepMerge<T extends object = object, S extends object = T>(
@@ -102,8 +107,8 @@ export function deepMerge<T extends object = object, S extends object = T>(
       if (key === '__proto__')
         continue
 
-      if (isMergeableObject(from[key])) {
-        if (!Object.hasOwn(into, key) || !into[key])
+      if (isPlainObject(from[key])) {
+        if (!Object.hasOwn(into, key) || !isMergeableObject(into[key]))
           into[key] = {}
 
         deepMerge(into[key] as object, from[key] as object)
@@ -119,6 +124,14 @@ export function deepMerge<T extends object = object, S extends object = T>(
 
 function isMergeableObject(item: any): item is object {
   return isObject(item) && !Array.isArray(item)
+}
+
+/** An object literal, a null-prototype object or parsed JSON: an object made of its keys. */
+function isPlainObject(item: unknown): item is Record<string, unknown> {
+  if (typeof item !== 'object' || item === null)
+    return false
+  const proto = Object.getPrototypeOf(item)
+  return proto === null || proto === Object.prototype || Object.getPrototypeOf(proto) === null
 }
 
 /**

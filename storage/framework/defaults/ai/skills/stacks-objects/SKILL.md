@@ -210,6 +210,8 @@ Retained evidence: `core/objects/tests/transform.test.ts`.
 - `objectPick` creates a NEW object -- original is not affected.
 - `objectMap` creates a NEW object via `Object.fromEntries`.
 - `deepMerge` does NOT deeply merge arrays -- arrays from source replace arrays in target entirely.
+- `deepMerge` merges only plain objects key by key: a Date, Map, Set or class instance from a source is assigned as
+  is, and a string, array or number in the target is replaced by a source's object.
 - `deepMerge` uses `isObject()` from `@stacksjs/validation` combined with `!Array.isArray()` to determine mergeability.
 - A `"__proto__"` key is data, never a prototype. `JSON.parse` and the router's request input keep one as an own key:
   `deepMerge` skips it and merges only into the target's own properties, and the transform helpers keep it as an own

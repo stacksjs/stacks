@@ -116,13 +116,16 @@ describe('deepMerge', () => {
     expect(result).toEqual({ a: 1 })
   })
 
-  it('should keep target primitive when source has nested object for same key', () => {
+  it('should let a source object replace a primitive in the target', () => {
     const result = deepMerge(
       { a: { b: 1 } },
       { a: { b: { c: 2 } } },
     )
-    // deepMerge only merges when both sides are objects; primitive target is kept
-    expect(result).toEqual({ a: { b: 1 } })
+    // The source wins, as it does for every other value and as it does in
+    // antfu/utils, where this function came from. The primitive used to be
+    // kept when truthy and replaced when falsy, so `b: 0` gave way and `b: 1`
+    // did not.
+    expect(result).toEqual({ a: { b: { c: 2 } } })
   })
 })
 
@@ -194,5 +197,28 @@ describe('hasOwnProperty', () => {
   it('should not return true for inherited properties', () => {
     const obj = Object.create({ inherited: true })
     expect(hasOwnProperty(obj, 'inherited')).toBe(false)
+  })
+})
+
+describe('deepMerge values that are not plain objects', () => {
+  it('assigns a Date, Map, Set or RegExp instead of merging it into {}', () => {
+    const when = new Date(0)
+    const map = new Map([['k', 1]])
+    const merged = deepMerge({} as Record<string, unknown>, { when, map, set: new Set([1]), re: /x/g, nested: { at: new Date(5) } })
+    expect(merged.when).toBe(when)
+    expect(merged.map).toBe(map)
+    expect(merged.set).toBeInstanceOf(Set)
+    expect(merged.re).toBeInstanceOf(RegExp)
+    expect((merged.nested as Record<string, unknown>).at).toBeInstanceOf(Date)
+  })
+
+  it('replaces a string, array or number in the target with the source object', () => {
+    expect(deepMerge({ a: 'x' } as Record<string, unknown>, { a: { b: 1 } })).toEqual({ a: { b: 1 } })
+    expect(deepMerge({ a: [1] } as Record<string, unknown>, { a: { b: 1 } })).toEqual({ a: { b: 1 } })
+    expect(deepMerge({ a: 5 } as Record<string, unknown>, { a: { b: 1 } })).toEqual({ a: { b: 1 } })
+  })
+
+  it('still merges into an object the target already has', () => {
+    expect(deepMerge({ a: { x: 1 } } as Record<string, unknown>, { a: { y: 2 } })).toEqual({ a: { x: 1, y: 2 } })
   })
 })
