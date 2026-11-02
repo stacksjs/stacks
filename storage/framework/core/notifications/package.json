@@ -2,7 +2,7 @@
   "name": "@stacksjs/notifications",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.425",
+  "version": "0.75.426",
   "description": "The Stacks notifications integration.",
   "author": "Chris Breuer",
   "contributors": [

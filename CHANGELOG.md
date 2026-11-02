@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.425...v0.75.426)
+
+## 🔧 Chores
+
+- **deps**: ts-slug 0.2.1, which no longer runs a postinstall in apps ([683d1d8](https://github.com/stacksjs/stacks/commit/683d1d8)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🎉 Miscellaneous
+
+- Merge remote-tracking branch 'origin/main' into codex/hq-review-publish ([332d78d](https://github.com/stacksjs/stacks/commit/332d78d)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.424...v0.75.425)
 
 ## ✨ Features
