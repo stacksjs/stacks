@@ -393,9 +393,10 @@ function derivePivotTables(modelName: string, model: Model, dialect: Dialect): A
 
     const columns: Record<string, string> = {
       id: 'number',
-      [fkA]: 'number',
-      [fkB]: 'number',
     }
+    // Either model can discover this shared table first. Its foreign-key
+    // order must follow the table, rather than the filesystem's model order.
+    for (const foreignKey of [fkA, fkB].sort()) columns[foreignKey] = 'number'
 
     for (const [column, attribute] of Object.entries(pivotColumns))
       columns[column] = pivotColumnToTsType(attribute, dialect)

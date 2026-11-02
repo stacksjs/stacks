@@ -53,6 +53,24 @@ afterAll(() => {
   rmSync(models, { recursive: true, force: true })
 })
 
+test('the same model declarations produce identical types regardless of file discovery order', async () => {
+  const first = join(models, 'user-first')
+  const second = join(models, 'role-first')
+  const user = `import { defineModel } from '@stacksjs/orm'; export default defineModel({ name: 'User', table: 'users', belongsToMany: ['Role'], attributes: {} })`
+  const role = `import { defineModel } from '@stacksjs/orm'; export default defineModel({ name: 'Role', table: 'roles', belongsToMany: ['User'], attributes: {} })`
+  for (const directory of [first, second]) mkdirSync(directory, { recursive: true })
+  writeFileSync(join(first, 'AUser.ts'), user)
+  writeFileSync(join(first, 'ZRole.ts'), role)
+  writeFileSync(join(second, 'ARole.ts'), role)
+  writeFileSync(join(second, 'ZUser.ts'), user)
+  const generate = (modelsDir: string) => buildDatabaseSchema({ modelsDir, defaultsDir: join(models, 'none'), migrationsDir: false, dryRun: true })
+  const [a, b] = await Promise.all([generate(first), generate(second)])
+  expect(a.errors).toEqual([])
+  expect(b.errors).toEqual([])
+  expect(a.tables.map(table => table.table)).toEqual(['role_user', 'roles', 'users'])
+  expect(a.content).toBe(b.content)
+})
+
 describe('a column\'s type', () => {
   test('comes from the validation rule when the attribute declares no `type`', async () => {
     const result = await buildDatabaseSchema({ modelsDir: models, defaultsDir: join(models, 'none'), dryRun: true })
