@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.417...v0.75.418)
+
+## 🐛 Bug Fixes
+
+- **testing**: publish standalone clock controls at their exported path ([39b196c](https://github.com/stacksjs/stacks/commit/39b196c)) _(by Chris Breuer <chris@stacksjs.com>)_
+- distinguish skipped jobs in publication recovery ([c3cd5d6](https://github.com/stacksjs/stacks/commit/c3cd5d6)) _(by Chris Breuer <chris@stacksjs.com>)_
+- verify original publications before retrying a release ([b8fa2fa](https://github.com/stacksjs/stacks/commit/b8fa2fa)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.416...v0.75.417)
 
 ## 🐛 Bug Fixes
