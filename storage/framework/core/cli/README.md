@@ -390,3 +390,17 @@ Many thanks to the following core technologies & people who have contributed to 
 The MIT License (MIT). Please see [LICENSE](https://github.com/stacksjs/stacks/tree/main/LICENSE.md) for more information.
 
 Made with 💙
+
+## Native owned processes
+
+`spawnOwnedProcess` from `@stacksjs/cli/owned-process` is a lightweight subpath
+with no CLI bootstrap. It starts a controlled Bun owner, establishes a POSIX
+process group or a Windows Job Object, then admits the requested command.
+`started` resolves to the command PID. `exited` preserves its code and signal
+and settles after descendant disposal. `stop()` is idempotent. Standard I/O and
+consumer IPC are forwarded without executing a shell.
+
+A caller inside a compiled CLI passes the installed Bun path as `ownerRuntime`.
+POSIX children that deliberately leave their group are outside the contract;
+this is lifecycle ownership rather than a sandbox. A native capability failure
+rejects instead of weakening cleanup to the direct child.

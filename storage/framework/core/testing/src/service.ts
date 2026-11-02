@@ -1,4 +1,5 @@
 import process from 'node:process'
+import { spawnOwnedProcess } from '@stacksjs/cli/owned-process'
 
 export interface TestServiceOptions {
   label?: string
@@ -8,11 +9,12 @@ export interface TestServiceOptions {
   stderr?: 'pipe' | 'inherit' | 'ignore' | number
   /** Deadline for the child's explicit readiness notification. Default 60 seconds. */
   startupTimeoutMs?: number
-  /** SIGTERM grace period before SIGKILL. Default 2 seconds. */
+  /** POSIX SIGTERM grace before SIGKILL; Windows terminates the native job. Default 2 seconds. */
   stopGraceMs?: number
 }
 
 export interface TestService {
+  /** PID of the native lifecycle owner; readiness payloads may identify the command. */
   readonly pid: number
   readonly ready: Promise<unknown>
   readonly signal: AbortSignal
@@ -49,16 +51,17 @@ export function startTestService(command: string[], options: TestServiceOptions 
   })
   // Callers can begin collecting output before awaiting readiness.
   void ready.catch(() => {})
-  const child = Bun.spawn(command, {
+  const child = spawnOwnedProcess(command, {
     cwd: options.cwd,
     env: options.env,
     stdin: 'ignore',
+    stopGraceMs,
     stdout: options.stdout ?? 'pipe',
     stderr: options.stderr ?? 'pipe',
-    ipc(message, source) {
-      if (message?.type !== READY || message.pid !== source.pid) return
+    ipc(message, pid) {
+      if (!message || typeof message !== 'object' || !('type' in message) || !('pid' in message) || message.type !== READY || message.pid !== pid) return
       clearTimeout(timer)
-      resolveReady(message.info)
+      resolveReady('info' in message ? message.info : undefined)
     },
   })
   let stopping: Promise<void> | undefined
@@ -66,30 +69,30 @@ export function startTestService(command: string[], options: TestServiceOptions 
     if (stopping) return stopping
     clearTimeout(timer)
     rejectReady(new Error(`${label} stopped before readiness`))
-    stopping = (async () => {
-      if (child.exitCode !== null || child.signalCode !== null) return
-      child.kill('SIGTERM')
-      const kill = setTimeout(() => child.kill('SIGKILL'), stopGraceMs)
-      try { await child.exited }
-      finally { clearTimeout(kill) }
-    })()
+    stopping = child.stop()
     return stopping
   }
   timer = setTimeout(() => {
     const error = new Error(`${label} readiness timed out after ${startupTimeoutMs}ms`)
     rejectReady(error)
     controller.abort(error)
-    void stop()
+    void stop().catch(() => {})
   }, startupTimeoutMs)
-  const exited = child.exited.then((code) => {
+  const exited = child.exited.then(({ code, signal }) => {
     clearTimeout(timer)
     if (!stopping) {
-      const error = new Error(`${label} exited ${code}${child.signalCode ? ` (${child.signalCode})` : ''}`)
+      const error = new Error(`${label} exited ${code}${signal ? ` (${signal})` : ''}`)
       rejectReady(error)
       controller.abort(error)
     }
     return code
+  }, (error) => {
+    clearTimeout(timer)
+    rejectReady(error)
+    controller.abort(error)
+    throw error
   })
+  void exited.catch(() => {})
   return {
     pid: child.pid,
     ready,
