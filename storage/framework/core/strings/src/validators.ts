@@ -16,14 +16,18 @@ export function isEmail(email: string): boolean {
 /**
  * Strong password validation
  * Must contain: min 8 chars, uppercase, lowercase, number, symbol
+ *
+ * A symbol is any character that is not a letter or a number. The list this
+ * used to be left out `~`, a backtick, a space and `£`, so `Password1~` was
+ * weak; and only A to Z counted as letters, so `É` was not an uppercase one.
  */
 export function isStrongPassword(password: string): boolean {
   if (password.length < 8) return false
 
-  const hasUpperCase = /[A-Z]/.test(password)
-  const hasLowerCase = /[a-z]/.test(password)
-  const hasNumber = /\d/.test(password)
-  const hasSymbol = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)
+  const hasUpperCase = /\p{Lu}/u.test(password)
+  const hasLowerCase = /\p{Ll}/u.test(password)
+  const hasNumber = /\p{N}/u.test(password)
+  const hasSymbol = /[^\p{L}\p{N}]/u.test(password)
 
   return hasUpperCase && hasLowerCase && hasNumber && hasSymbol
 }
@@ -115,10 +119,13 @@ export function isBase64(base64: string): boolean {
 }
 
 /**
- * UUID validation (v1-v5)
+ * UUID validation: versions 1 to 8 (RFC 9562), and the nil and max UUIDs.
+ *
+ * Versions 6 to 8 used to fail, and v7 is what `Bun.randomUUIDv7()` gives the
+ * commerce stores' rows.
  */
 export function isUUID(uuid: string): boolean {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+  const uuidRegex = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|0{8}-0{4}-0{4}-0{4}-0{12}|f{8}-f{4}-f{4}-f{4}-f{12})$/i
   return uuidRegex.test(uuid)
 }
 
@@ -262,11 +269,30 @@ export function isCurrency(currency: string): boolean {
 }
 
 /**
- * Data URI validation
+ * Data URI validation (RFC 2397): `data:[<mediatype>][;base64],<data>`.
+ *
+ * Both the media type and `;base64` are optional. Only base64 URIs and a bare
+ * `data:,` used to pass, so `data:text/plain,hello` failed; and nothing was
+ * checked past the first base64 character. The characters allowed in the data
+ * are validator.js's, which this replaced.
  */
 export function isDataURI(dataURI: string): boolean {
-  const dataURIRegex = /^data:(?:[a-z]+\/[a-z0-9-+.]+(?:;[a-z-]+=[a-z0-9-]+)*)?;base64,(?:[a-z0-9+/]+=*)/i
-  return dataURIRegex.test(dataURI) || /^data:,/.test(dataURI)
+  const match = /^data:([^,]*),(.*)$/is.exec(dataURI)
+  if (!match) return false
+
+  const params = (match[1] ?? '').split(';')
+  const base64 = params.length > 1 && params[params.length - 1]!.toLowerCase() === 'base64'
+  if (base64) params.pop()
+
+  const token = '[a-z0-9!#$&^_.+-]+'
+  const [mediaType = '', ...attributes] = params
+  if (mediaType !== '' && !new RegExp(`^${token}/${token}$`, 'i').test(mediaType)) return false
+  if (!attributes.every(attribute => new RegExp(`^${token}=[^;,]*$`, 'i').test(attribute))) return false
+
+  const data = match[2] ?? ''
+  return base64
+    ? /^[a-z0-9+/]*={0,2}$/i.test(data)
+    : /^[\w!$&'()*+,;=\-.~:@/?%\s]*$/.test(data)
 }
 
 /**
@@ -363,10 +389,14 @@ export function isHash(hash: string, algorithm: HashAlgorithm): boolean {
 }
 
 /**
- * HSL color validation
+ * HSL color validation: `hsl(120, 100%, 50%)`.
+ *
+ * A lint autofix once turned `hsl\(\s*(\d+)` into `hsl\(?:\s*(?:\d+)`, reading
+ * the escaped paren as a group: the paren became optional and a colon became
+ * required, so every real colour failed and `hsl:120, 100%, 50%)` passed.
  */
 export function isHSL(hsl: string): boolean {
-  const hslRegex = /^hsl\(?:\s*(?:\d+)\s*,\s*(?:\d+(?:\.\d+)?%)\s*,\s*(?:\d+(?:\.\d+)?%)\s*\)$/
+  const hslRegex = /^hsl\(\s*\d+\s*,\s*\d+(?:\.\d+)?%\s*,\s*\d+(?:\.\d+)?%\s*\)$/
   return hslRegex.test(hsl)
 }
 
@@ -417,9 +447,11 @@ export function isISIN(isin: string): boolean {
     return code >= 65 && code <= 90 ? (code - 55).toString() : char
   }).join('')
 
-  // Luhn algorithm
+  // Luhn algorithm. The check digit is not doubled, the one before it is: this
+  // started at `true`, which rejected every real ISIN (Apple's US0378331005)
+  // and took US0378331004.
   let sum = 0
-  let isEven = true
+  let isEven = false
 
   for (let i = digits.length - 1; i >= 0; i--) {
     let digit = parseInt(digits.charAt(i), 10)
@@ -440,7 +472,9 @@ export function isISIN(isin: string): boolean {
  * ISO 8601 date validation
  */
 export function isISO8601(iso8601: string): boolean {
-  const iso8601Regex = /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d{3})?(?:Z|[+-]\d{2}:\d{2})?)?$/
+  // Any number of fraction digits: ISO 8601 sets no limit, and Postgres and
+  // Python give microseconds (`.123456`), which used to fail.
+  const iso8601Regex = /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?)?$/
   if (!iso8601Regex.test(iso8601)) return false
 
   try {

@@ -241,7 +241,7 @@ Native TypeScript implementations (no external validator dependency). All accept
 ### Core Validators
 ```typescript
 isEmail('user@example.com')               // true -- regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-isStrongPassword('Abc123!@#')             // true -- min 8 chars, upper, lower, digit, symbol
+isStrongPassword('Abc123!@#')             // true -- min 8 chars, upper, lower, digit, symbol (any non-letter, non-number)
 isAlphanumeric('abc123')                  // true -- /^[a-zA-Z0-9]+$/
 isAlpha('abcdef')                         // true -- /^[a-zA-Z]+$/
 isNumeric('123')                          // true -- /^[0-9]+$/ (whole numbers only)
@@ -256,9 +256,9 @@ isBase64('SGVsbG8=')                      // true -- btoa(atob(x)) === x
 isBase32('MFZWI===')                      // true -- /^[A-Z2-7]+=*$/
 isAscii('hello')                          // true -- /^[\x00-\x7F]*$/
 isJSON('{"key":"value"}')                 // true -- JSON.parse succeeds
-isHSL('hsl(0, 100%, 50%)')               // true
+isHSL('hsl(0, 100%, 50%)')               // true -- comma syntax: hsl(hue, saturation%, lightness%)
 isMimeType('text/html')                   // true -- /^[a-z]+\/[a-z0-9\-+.]+$/i
-isDataURI('data:text/plain;base64,...')   // true
+isDataURI('data:text/plain;base64,...')   // true -- RFC 2397: the media type and ;base64 are both optional
 isJWT('eyJhbGciOiJIUzI1NiJ9.e30.c2ln')   // true -- shape check only, not signature verification
 ```
 
@@ -291,8 +291,8 @@ isPostalCode('12345')                     // true -- US, UK, Canada, generic for
 ### Phone, Identity, Date Validators
 ```typescript
 isMobilePhone('+1234567890')              // true -- international format, min 7 digits
-isUUID('550e8400-e29b-41d4-a716-446655440000') // true -- full value required
-isISO8601('2024-01-01T00:00:00Z')         // true -- with Date validity check
+isUUID('550e8400-e29b-41d4-a716-446655440000') // true -- versions 1-8 (RFC 9562), nil and max; full value required
+isISO8601('2024-01-01T00:00:00Z')         // true -- any number of fraction digits, with Date validity check
 isIdentityCard('AB123456')                // true -- generic 5-20 alphanumeric
 isISRC('USRC17607839')                    // true
 isISO31661Alpha2('US')                    // true
