@@ -23,11 +23,13 @@ export abstract class BaseChatDriver implements ChatDriver {
   /**
    * Validates chat message fields
    */
+  /**
+   * A recipient is not required here: a webhook's URL already names where the
+   * message goes, and requiring one anyway meant `notify({}, ..., ['chat'])`
+   * could never send through one. A bot-token send, which posts to a channel,
+   * checks for its own.
+   */
   protected validateMessage(message: ChatMessage): boolean {
-    if (!message.to) {
-      throw new Error('Message recipient is required')
-    }
-
     if (!message.content && !message.template) {
       throw new Error('Either message content or template is required')
     }

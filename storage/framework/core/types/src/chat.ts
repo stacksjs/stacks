@@ -27,10 +27,10 @@ export interface ChatDriverConfig {
  */
 export interface ChatMessage {
   /**
-   * Recipient(s) of the message
-   * This could be channel ID, user ID, or other identifier
+   * Where the message goes: a channel or user ID for a bot token. Leave it
+   * out for a webhook, whose URL already decides where it is posted.
    */
-  to: string | string[]
+  to?: string | string[]
 
   /**
    * Optional sender information

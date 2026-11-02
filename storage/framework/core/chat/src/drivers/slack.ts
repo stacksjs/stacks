@@ -3,6 +3,18 @@ import { log } from '@stacksjs/logging'
 import { appServices, count, present } from '../app-config'
 import { BaseChatDriver } from './base'
 
+/**
+ * `ChatMessage.content` is plain text, and Slack reads `&`, `<` and `>` as
+ * markup, so they are escaped as Slack's docs ask for literal text. Unescaped,
+ * a body carrying `<!channel>` pinged the whole channel and
+ * `<https://evil.test|your invoice>` showed as "your invoice". Plain URLs
+ * still turn into links. `sendWebhook(url, text)` stays raw, for markup
+ * written on purpose.
+ */
+export function escapeSlackText(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
 export interface SlackConfig {
   webhookUrl?: string
   botToken?: string
@@ -194,7 +206,7 @@ export class SlackDriver extends BaseChatDriver {
     // the truncation explicitly via the `… [truncated]` suffix instead
     // of mysterious clipped messages.
     const SLACK_TEXT_LIMIT = 40000
-    const rawText = message.content || message.subject || ''
+    const rawText = escapeSlackText(message.content || message.subject || '')
     const text = rawText.length > SLACK_TEXT_LIMIT
       ? `${rawText.slice(0, SLACK_TEXT_LIMIT - 14)}… [truncated]`
       : rawText
@@ -228,9 +240,12 @@ export class SlackDriver extends BaseChatDriver {
   }
 
   private async sendViaBotToken(message: ChatMessage): Promise<{ ts?: string }> {
+    if (!message.to)
+      throw new Error('Slack bot-token sends need message.to: the channel to post in')
+
     const payload: any = {
       channel: message.to,
-      text: message.content || message.subject,
+      text: escapeSlackText(message.content || message.subject || ''),
       mrkdwn: true,
     }
 
@@ -281,7 +296,7 @@ export class SlackDriver extends BaseChatDriver {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: message.content,
+          text: escapeSlackText(message.content),
         },
       })
     }

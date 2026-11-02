@@ -95,7 +95,7 @@ abstract class BaseChatDriver implements ChatDriver {
 
 ```typescript
 interface ChatMessage {
-  to: string | string[]                // recipient (channel ID, user ID, etc.)
+  to?: string | string[]               // a bot token's channel or user ID; omit for a webhook
   from?: { id?: string, name?: string, avatar?: string }
   subject?: string                      // title for rich messages
   content?: string                      // plain text content
@@ -181,8 +181,14 @@ interface SlackAttachment {
 
 ### Slack Sending Modes
 
-1. **Webhook mode**: If `config.webhookUrl` is set, sends via `POST` to webhook URL. Payload includes `text`, `username`, `mrkdwn: true`. If `message.template` exists, builds Block Kit blocks.
-2. **Bot token mode**: If `config.botToken` is set, sends via Slack API `https://slack.com/api/chat.postMessage` with `Authorization: Bearer <token>`. Returns `ts` (timestamp) as message ID.
+1. **Webhook mode**: If `config.webhookUrl` is set, sends via `POST` to webhook URL. Payload includes `text`, `username`, `mrkdwn: true`. If `message.template` exists, builds Block Kit blocks. Needs no `message.to`.
+2. **Bot token mode**: If `config.botToken` is set, sends via Slack API `https://slack.com/api/chat.postMessage` with `Authorization: Bearer <token>`, to the channel in `message.to` (required). Returns `ts` (timestamp) as message ID.
+
+`send()` treats `content` as the plain text `ChatMessage` says it is: `&`, `<`
+and `>` are escaped (`escapeSlackText`), so `<!channel>` or a disguised
+`<url|label>` in user text arrives as literal text instead of pinging the
+channel or hiding a link. Plain URLs still link. `sendWebhook(url, text)` is
+raw, for Slack markup written on purpose.
 3. Throws `Error('Slack not configured: provide webhookUrl or botToken')` if neither is set.
 
 ### Direct Webhook Function
@@ -247,8 +253,15 @@ interface DiscordMessage {
 
 ### Discord Sending Modes
 
-1. **Webhook mode**: POST to `config.webhookUrl`. Handles `204` (empty success) responses. Returns `id` from response.
-2. **Bot token mode**: POST to `https://discord.com/api/v10/channels/{channelId}/messages` with `Authorization: Bot <token>`. Uses `message.to` as the channel ID.
+1. **Webhook mode**: POST to `config.webhookUrl`. Handles `204` (empty success) responses. Returns `id` from response. Needs no `message.to`.
+2. **Bot token mode**: POST to `https://discord.com/api/v10/channels/{channelId}/messages` with `Authorization: Bot <token>`. Uses `message.to` as the channel ID (required).
+
+Every payload carries `allowed_mentions`, by default `{ parse: ['users', 'roles'] }`
+(`DEFAULT_ALLOWED_MENTIONS`): people and roles named by ID ping, `@everyone`
+and `@here` in content never do. `sendWebhook()`'s `allowedMentions` replaces
+the default, and its camelCase options are sent under Discord's names
+(`avatar_url`, `allowed_mentions`) by `discordPayload()`. With a subject or
+template the body goes in the embed only, not also as `content`.
 
 ### Embed Building
 When `message.subject` or `message.template` is set, `buildEmbed()` creates an embed with:

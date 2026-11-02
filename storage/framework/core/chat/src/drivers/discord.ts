@@ -54,6 +54,31 @@ export interface DiscordMessage {
 let config: DiscordConfig = {}
 
 /**
+ * Mentions a message may ping unless it says otherwise: people and roles named
+ * by ID, never `@everyone` or `@here`. Without `allowed_mentions` Discord
+ * parses every mention in the content, so a notification carrying a comment
+ * that said `@everyone` pinged the whole server.
+ */
+export const DEFAULT_ALLOWED_MENTIONS: NonNullable<DiscordMessage['allowedMentions']> = { parse: ['users', 'roles'] }
+
+/**
+ * A message in Discord's own field names. `avatarUrl` and `allowedMentions`
+ * used to be sent as they are spelled here, which Discord ignores, so an
+ * explicit `allowedMentions: { parse: [] }` protected nothing and the avatar
+ * never showed.
+ */
+export function discordPayload(message: DiscordMessage): Record<string, unknown> {
+  return {
+    ...(message.content !== undefined ? { content: message.content } : {}),
+    ...(message.username ? { username: message.username } : {}),
+    ...(message.avatarUrl ? { avatar_url: message.avatarUrl } : {}),
+    ...(message.tts !== undefined ? { tts: message.tts } : {}),
+    ...(message.embeds?.length ? { embeds: message.embeds } : {}),
+    allowed_mentions: message.allowedMentions ?? DEFAULT_ALLOWED_MENTIONS,
+  }
+}
+
+/**
  * Configure Discord with webhook URL or bot token.
  *
  * Validates that the webhook URL (when provided) is HTTPS pointing at
@@ -181,24 +206,26 @@ export class DiscordDriver extends BaseChatDriver {
     throw new Error('Discord not configured: provide webhookUrl or botToken')
   }
 
-  private async sendViaWebhook(message: ChatMessage): Promise<{ id?: string }> {
-    const payload: DiscordMessage = {
-      content: message.content,
+  /**
+   * The body goes once: in the embed when there is one (a subject or
+   * template), else as the content. It used to be both, so it showed twice.
+   */
+  private messageFor(message: ChatMessage): DiscordMessage {
+    const embedded = Boolean(message.subject || message.template)
+    return {
+      ...(embedded ? { embeds: [this.buildEmbed(message)] } : { content: message.content }),
       // `from` is an object - `{ id?, name?, avatar? }` - and `username` is a
       // string, so the whole object was being handed over and arrived as
       // "[object Object]". The sender's name is what this field is for.
       username: message.from?.name,
     }
+  }
 
-    // Add embeds if template or subject provided
-    if (message.subject || message.template) {
-      payload.embeds = [this.buildEmbed(message)]
-    }
-
+  private async sendViaWebhook(message: ChatMessage): Promise<{ id?: string }> {
     const response = await fetch(this.settings.webhookUrl!, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(discordPayload(this.messageFor(message))),
     })
 
     if (!response.ok) {
@@ -216,15 +243,12 @@ export class DiscordDriver extends BaseChatDriver {
   }
 
   private async sendViaBotToken(message: ChatMessage): Promise<{ id?: string }> {
-    const channelId = message.to
+    const channelId = Array.isArray(message.to) ? message.to[0] : message.to
+    if (!channelId)
+      throw new Error('Discord bot-token sends need message.to: the channel ID to post in')
 
-    const payload: any = {
-      content: message.content,
-    }
-
-    if (message.subject || message.template) {
-      payload.embeds = [this.buildEmbed(message)]
-    }
+    // A bot posts as itself, so no username.
+    const { username: _username, ...payload } = this.messageFor(message)
 
     const response = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages`, {
       method: 'POST',
@@ -232,7 +256,7 @@ export class DiscordDriver extends BaseChatDriver {
         'Authorization': `Bot ${this.settings.botToken}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(discordPayload(payload)),
     })
 
     if (!response.ok) {
@@ -281,15 +305,10 @@ export async function sendWebhook(
   options?: Partial<DiscordMessage>,
 ): Promise<ChatResult> {
   try {
-    const payload: DiscordMessage = {
-      content,
-      ...options,
-    }
-
     const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(discordPayload({ content, ...options })),
     })
 
     if (!response.ok) {

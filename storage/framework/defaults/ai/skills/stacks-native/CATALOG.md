@@ -26,7 +26,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/cache` | [`stacks-cache`](../stacks-cache/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cache/src/index.ts) | 23 |
 | `@stacksjs/calendar-api` | [`stacks-calendar`](../stacks-calendar/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/calendar-api/src/index.ts) | 5 |
 | `@stacksjs/charts` | [`stacks-charts`](../stacks-charts/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/charts/src/index.ts) | 3 |
-| `@stacksjs/chat` | [`stacks-chat`](../stacks-chat/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/src/index.ts) | 5 |
+| `@stacksjs/chat` | [`stacks-chat`](../stacks-chat/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/src/index.ts) | 6 |
 | `@stacksjs/cli` | [`stacks-cli`](../stacks-cli/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cli/src/index.ts) | 13 |
 | `@stacksjs/cloud` | [`stacks-cloud`](../stacks-cloud/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cloud/src/index.ts) | 10 |
 | `@stacksjs/cms` | [`stacks-cms`](../stacks-cms/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cms/src/index.ts) | 5 |
@@ -265,7 +265,7 @@ Declared runtime exports: `MessagingError`, `configureDiscord`, `configureSlack`
 
 Local source modules: [src/drivers/discord.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/src/drivers/discord.ts), [src/drivers/slack.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/src/drivers/slack.ts), [src/drivers/teams.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/src/drivers/teams.ts), [src/inbox/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/src/inbox/index.ts).
 
-Evidence directory: [5 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [6 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/cli
 
