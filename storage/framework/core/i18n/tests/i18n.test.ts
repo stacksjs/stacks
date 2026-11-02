@@ -161,8 +161,19 @@ describe('Pluralization', () => {
 
   it('should handle zero form when three forms provided', () => {
     addTranslations('en', { apples: 'no apples | {count} apple | {count} apples' })
-    // English plural rule: 0 -> 'other', so it picks the third form
-    expect(tc('apples', 0)).toBe('0 apples')
+    // A three-part string's first form is for 0, whatever the CLDR category
+    // (English has no `zero` one). It used to read "0 apples" (#3110).
+    expect(tc('apples', 0)).toBe('no apples')
+    expect(tc('apples', 1)).toBe('1 apple')
+    expect(tc('apples', 2)).toBe('2 apples')
+  })
+
+  it('should keep CLDR categories for languages that have a zero category', () => {
+    // Latvian's CLDR `zero` is a grammatical form for 0, 10-20, 30... so the
+    // first form is used for those too, as CLDR says.
+    addTranslations('lv', { files: '{count} failu | {count} fails | {count} faili' })
+    expect(['0', '1', '2', '10', '21'].map(n => tc('files', Number(n), {}, 'lv')))
+      .toEqual(['0 failu', '1 fails', '2 faili', '10 failu', '21 fails'])
   })
 
   it('should return correct plural category for English', () => {

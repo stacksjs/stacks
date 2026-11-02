@@ -113,13 +113,23 @@ export function parsePluralForms(
 }
 
 /**
- * Select the appropriate plural form for a count
+ * Select the appropriate plural form for a count.
+ *
+ * A count of 0 takes the string's zero form when it has one: the first of
+ * `"no items | one item | {count} items"`, which is what a three-part string
+ * is for. It used to go by CLDR category alone, and English has no `zero`
+ * category, so 0 read "0 items" and the zero form was never shown. In a
+ * language whose CLDR rules have a `zero` category (Latvian, Arabic, Welsh)
+ * 0 is in it anyway, so nothing changes there.
  */
 export function selectPluralForm(
   forms: Map<PluralCategory, string>,
   count: number,
   locale: string,
 ): string {
+  if (count === 0 && forms.has('zero'))
+    return forms.get('zero')!
+
   const category = getPluralCategory(count, locale)
 
   // Try exact category first
