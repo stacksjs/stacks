@@ -12,12 +12,14 @@
  * with nothing but `Intl`, so DST rules come from the runtime's tz database.
  */
 
+import { zonedFormatter } from './intl'
+
 const DAY_MS = 86_400_000
 const WALL_CLOCK = /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2}))?)?$/
 
 /** Offset of `timeZone` from UTC at `instant`, in minutes (New York in July: -240). */
 export function zoneOffsetMinutes(instant: Date, timeZone: string): number {
-  const parts = new Intl.DateTimeFormat('en-US', {
+  const parts = zonedFormatter('en-US', {
     timeZone,
     hourCycle: 'h23',
     year: 'numeric',

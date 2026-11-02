@@ -1,5 +1,6 @@
 import { parse } from './parse'
 import { dateFromParts } from './parts'
+import { zonedFormatter } from './intl'
 
 type DateInput = Date | string
 
@@ -22,26 +23,18 @@ function pad(n: number, len = 2): string {
   return String(n).padStart(len, '0')
 }
 
-/**
- * Extract individual date/time parts for a given timezone using Intl.DateTimeFormat.
- * Returns numeric values for year, month, day, hour, minute, second, and weekday.
- */
-function getPartsInTz(date: Date, tz: string, locale: string): {
+interface ClockParts {
   year: number
   month: number
   day: number
   hour: number
   minute: number
   second: number
-  weekday: string
-  weekdayShort: string
-  weekdayNarrow: string
-  monthLong: string
-  monthShort: string
-  tzOffset: string
-} {
-  // Extract numeric parts
-  const numFmt = new Intl.DateTimeFormat('en-US', {
+}
+
+/** The wall-clock fields of `date` in `tz`, from one shared formatter. */
+function getPartsInTz(date: Date, tz: string): ClockParts {
+  const parts = zonedFormatter('en-US', {
     timeZone: tz,
     year: 'numeric',
     era: 'short',
@@ -51,9 +44,7 @@ function getPartsInTz(date: Date, tz: string, locale: string): {
     minute: '2-digit',
     second: '2-digit',
     hour12: false,
-  })
-
-  const parts = numFmt.formatToParts(date)
+  }).formatToParts(date)
   const get = (type: string) => parts.find(p => p.type === type)?.value ?? ''
 
   const displayedYear = Number.parseInt(get('year'), 10)
@@ -65,51 +56,56 @@ function getPartsInTz(date: Date, tz: string, locale: string): {
   if (hour === 24) hour = 0
   const minute = Number.parseInt(get('minute'), 10)
   const second = Number.parseInt(get('second'), 10)
-
-  // Named parts need the actual target locale
-  const weekday = new Intl.DateTimeFormat(locale, { timeZone: tz, weekday: 'long' }).format(date)
-  const weekdayShort = new Intl.DateTimeFormat(locale, { timeZone: tz, weekday: 'short' }).format(date)
-  const weekdayNarrow = new Intl.DateTimeFormat(locale, { timeZone: tz, weekday: 'narrow' }).format(date)
-  const monthLong = new Intl.DateTimeFormat(locale, { timeZone: tz, month: 'long' }).format(date)
-  const monthShort = new Intl.DateTimeFormat(locale, { timeZone: tz, month: 'short' }).format(date)
-
-  // Compute the offset for this timezone at this instant
-  // We do this by comparing the UTC time to the timezone's wall-clock time
-  const wallClock = dateFromParts(year, month - 1, day, hour, minute, second, 0, true)
-  const offsetMs = wallClock.getTime() - Math.floor(date.getTime() / 1000) * 1000
-  const offsetMin = Math.round(offsetMs / 60000)
-  const sign = offsetMin >= 0 ? '+' : '-'
-  const absMin = Math.abs(offsetMin)
-  const tzOffset = `${sign}${pad(Math.floor(absMin / 60))}${pad(absMin % 60)}`
-
-  return { year, month, day, hour, minute, second, weekday, weekdayShort, weekdayNarrow, monthLong, monthShort, tzOffset }
+  return { year, month, day, hour, minute, second }
 }
 
-function buildTokens(p: ReturnType<typeof getPartsInTz>): Record<string, string> {
+/** `+HHMM` / `-HHMM` for the zone whose wall clock at `date` reads `p`. */
+function offsetFromParts(date: Date, p: ClockParts): string {
+  // Compare the UTC time to the timezone's wall-clock time
+  const wallClock = dateFromParts(p.year, p.month - 1, p.day, p.hour, p.minute, p.second, 0, true)
+  const offsetMs = wallClock.getTime() - Math.floor(date.getTime() / 1000) * 1000
+  return offsetString(Math.round(offsetMs / 60000))
+}
+
+function offsetString(offsetMin: number): string {
+  const sign = offsetMin >= 0 ? '+' : '-'
+  const absMin = Math.abs(offsetMin)
+  return `${sign}${pad(Math.floor(absMin / 60))}${pad(absMin % 60)}`
+}
+
+type NameOptions = Pick<Intl.DateTimeFormatOptions, 'month' | 'weekday'>
+
+/**
+ * The value of one format token. Month and weekday names are only looked up
+ * when the format string asks for them: a numeric `YYYY-MM-DD HH:mm` needs no
+ * locale data at all.
+ */
+function tokenValue(token: string, p: ClockParts, name: (options: NameOptions) => string, offset: () => string): string {
   const hours12 = p.hour % 12 || 12
-  return {
-    YYYY: pad(p.year, 4),
-    YY: pad(p.year % 100),
-    MMMM: p.monthLong,
-    MMM: p.monthShort,
-    MM: pad(p.month),
-    M: String(p.month),
-    DD: pad(p.day),
-    D: String(p.day),
-    dddd: p.weekday,
-    ddd: p.weekdayShort,
-    d: p.weekdayNarrow,
-    HH: pad(p.hour),
-    H: String(p.hour),
-    hh: pad(hours12),
-    h: String(hours12),
-    mm: pad(p.minute),
-    m: String(p.minute),
-    ss: pad(p.second),
-    s: String(p.second),
-    A: p.hour < 12 ? 'AM' : 'PM',
-    a: p.hour < 12 ? 'am' : 'pm',
-    Z: p.tzOffset,
+  switch (token) {
+    case 'YYYY': return pad(p.year, 4)
+    case 'YY': return pad(p.year % 100)
+    case 'MMMM': return name({ month: 'long' })
+    case 'MMM': return name({ month: 'short' })
+    case 'MM': return pad(p.month)
+    case 'M': return String(p.month)
+    case 'DD': return pad(p.day)
+    case 'D': return String(p.day)
+    case 'dddd': return name({ weekday: 'long' })
+    case 'ddd': return name({ weekday: 'short' })
+    case 'd': return name({ weekday: 'narrow' })
+    case 'HH': return pad(p.hour)
+    case 'H': return String(p.hour)
+    case 'hh': return pad(hours12)
+    case 'h': return String(hours12)
+    case 'mm': return pad(p.minute)
+    case 'm': return String(p.minute)
+    case 'ss': return pad(p.second)
+    case 's': return String(p.second)
+    case 'A': return p.hour < 12 ? 'AM' : 'PM'
+    case 'a': return p.hour < 12 ? 'am' : 'pm'
+    case 'Z': return offset()
+    default: return token
   }
 }
 
@@ -160,44 +156,21 @@ export function format(inputDate: DateInput, formatStr = 'YYYY-MM-DD', localeOrO
   const tz = opts.tz
 
   if (tz) {
-    const parts = getPartsInTz(date, tz, locale)
-    const tokens = buildTokens(parts)
-    return formatStr.replace(TOKEN_PATTERN, match => tokens[match] ?? match)
+    const parts = getPartsInTz(date, tz)
+    const name = (options: NameOptions) => zonedFormatter(locale, { timeZone: tz, ...options }).format(date)
+    return formatStr.replace(TOKEN_PATTERN, match => tokenValue(match, parts, name, () => offsetFromParts(date, parts)))
   }
 
-  // Local-time fast path (no Intl overhead for numeric parts)
-  const hours24 = date.getHours()
-  const hours12 = hours24 % 12 || 12
-
-  const tokens: Record<string, string> = {
-    YYYY: pad(date.getFullYear(), 4),
-    YY: pad(date.getFullYear() % 100),
-    MMMM: new Intl.DateTimeFormat(locale, { month: 'long' }).format(date),
-    MMM: new Intl.DateTimeFormat(locale, { month: 'short' }).format(date),
-    MM: pad(date.getMonth() + 1),
-    M: String(date.getMonth() + 1),
-    DD: pad(date.getDate()),
-    D: String(date.getDate()),
-    dddd: new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(date),
-    ddd: new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(date),
-    d: new Intl.DateTimeFormat(locale, { weekday: 'narrow' }).format(date),
-    HH: pad(hours24),
-    H: String(hours24),
-    hh: pad(hours12),
-    h: String(hours12),
-    mm: pad(date.getMinutes()),
-    m: String(date.getMinutes()),
-    ss: pad(date.getSeconds()),
-    s: String(date.getSeconds()),
-    A: hours24 < 12 ? 'AM' : 'PM',
-    a: hours24 < 12 ? 'am' : 'pm',
-    Z: (() => {
-      const offset = -date.getTimezoneOffset()
-      const sign = offset >= 0 ? '+' : '-'
-      const abs = Math.abs(offset)
-      return `${sign}${pad(Math.floor(abs / 60))}${pad(abs % 60)}`
-    })(),
+  // Local-time fast path (no Intl overhead for numeric parts). Names use a
+  // fresh formatter: one without a zone reads the process zone when built.
+  const parts: ClockParts = {
+    year: date.getFullYear(),
+    month: date.getMonth() + 1,
+    day: date.getDate(),
+    hour: date.getHours(),
+    minute: date.getMinutes(),
+    second: date.getSeconds(),
   }
-
-  return formatStr.replace(TOKEN_PATTERN, match => tokens[match] ?? match)
+  const name = (options: NameOptions) => new Intl.DateTimeFormat(locale, options).format(date)
+  return formatStr.replace(TOKEN_PATTERN, match => tokenValue(match, parts, name, () => offsetString(-date.getTimezoneOffset())))
 }

@@ -1,3 +1,4 @@
+import { zonedFormatter } from './intl'
 import { zonedTimeToUtc } from './zone'
 
 /** Add calendar months, clamping the day to the target month's last day. Input is not mutated. */
@@ -46,8 +47,7 @@ export function isCalendarDate(value: unknown): value is string {
 export function isTimeZone(value: unknown): value is string {
   if (typeof value !== 'string' || !value.trim() || value.length > 64) return false
   try {
-    // eslint-disable-next-line no-new
-    new Intl.DateTimeFormat('en-US', { timeZone: value })
+    zonedFormatter('en-US', { timeZone: value })
     return true
   }
   catch {
@@ -81,7 +81,7 @@ function fromDayNumber(day: number): string {
 export function todayIn(timeZone: string, now: Date = new Date()): string {
   if (!isTimeZone(timeZone)) throw new RangeError(`Unknown time zone "${String(timeZone)}"`)
   if (!Number.isFinite(now.getTime())) throw new RangeError('todayIn expects a valid instant')
-  const parts = new Intl.DateTimeFormat('en-US', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(now)
+  const parts = zonedFormatter('en-US', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(now)
   const get = (type: string) => parts.find(part => part.type === type)?.value ?? ''
   return `${get('year').padStart(4, '0')}-${get('month')}-${get('day')}`
 }

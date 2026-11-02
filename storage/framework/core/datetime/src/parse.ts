@@ -1,3 +1,4 @@
+import { zonedFormatter } from './intl'
 import { dateFromParts } from './parts'
 
 function validateCalendar(year: number, month: number, day: number): void {
@@ -99,8 +100,8 @@ export function parse(dateStr: string, formatStr?: string, locale = 'en'): Date 
   else if (parts.monthName || parts.monthNameShort) {
     const normalize = (name: string) => name.normalize('NFC').toLocaleLowerCase(locale)
     const name = normalize(parts.monthName || parts.monthNameShort || '')
-    const long = new Intl.DateTimeFormat(locale, { month: 'long', timeZone: 'UTC' })
-    const short = new Intl.DateTimeFormat(locale, { month: 'short', timeZone: 'UTC' })
+    const long = zonedFormatter(locale, { month: 'long', timeZone: 'UTC' })
+    const short = zonedFormatter(locale, { month: 'short', timeZone: 'UTC' })
     const idx = Array.from({ length: 12 }, (_, index) => index).find((index) => {
       const date = dateFromParts(2024, index, 15, 12, 0, 0, 0, true)
       return normalize(long.format(date)) === name || normalize(short.format(date)) === name
