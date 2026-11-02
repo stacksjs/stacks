@@ -137,7 +137,9 @@ hostname. LAN HTTPS comes from a certificate authority on the box itself (rpx `l
 Let's Encrypt. To publish: routable address, ports 80 and 443 forwarded, a site with a domain, and
 `ssh.publicIp` set. `TS_CLOUD_SSH_PUBLISH_DNS=1` forces publishing on, `0` forces it off.
 
-**Shared boxes.** Both targets support `cloud.attachTo: '<owner slug>'`. An attached project skips
+**Shared boxes.** Set `tsCloud.cloud.attachTo` to
+`process.env.CLOUD_ATTACH_TO || undefined` in the named `tsCloud` export and
+supply the owner's slug through the protected deploy environment. An attached project skips
 provisioning and deploys only its own sites. Each project owns `/etc/rpx/sites.d/<slug>.json` and
 replaces it wholesale, so `project.slug` must be unique on the box, and the config must declare
 every domain that fragment currently serves or the deploy stops.
@@ -257,9 +259,12 @@ export const tsCloud: TsCloudConfig = {
   mode: 'server',
 }
 
-const config: CloudConfig = { tenants: ['attached-project'] }
+const config: CloudConfig = {}
 export default config
 ~~~
+
+Keep the tenant roster in `STACKS_CLOUD_TENANTS` or the private sources described
+in `stacks-env`. A declared `tenants` array remains available for private forks.
 
 Extend the named tsCloud object using its typed sites, environments and
 infrastructure options. The default Stacks wrapper holds surrounding settings

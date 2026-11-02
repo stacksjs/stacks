@@ -227,8 +227,9 @@ buddy cloud:cleanup           # clean retained resources
 - On Hetzner and SSH, a project's `/etc/rpx/sites.d/<slug>.json` is replaced wholesale, so
   `project.slug` must be unique on a shared box and the config must declare every domain that
   fragment serves
-- `.env.<environment>` is decrypted at deploy time and shipped as every site's `.env`, so declare
-  `tenants` in `config/cloud.ts` on a shared box to strip other tenants' keys
+- `.env.<environment>` is decrypted at deploy time and shipped as every site's `.env`. Supply the
+  shared-box roster through `STACKS_CLOUD_TENANTS` or private tenant files so other tenants' keys
+  are stripped. See `stacks-env` for the private-source precedence.
 - A failover replica bucket (`infrastructure.storage.<name>.failover`) lives outside the stack, so
   `buddy cloud:remove` leaves it, and its data, behind on purpose
 - For infrastructure details, see the `stacks-cloud` skill

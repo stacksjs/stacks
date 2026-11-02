@@ -390,9 +390,13 @@ box. The owning project deploys normally. Each other project sets:
 ```ts
 cloud: {
   provider: 'ssh',
-  attachTo: 'my-app', // the owning project's slug
+  attachTo: process.env.CLOUD_ATTACH_TO || undefined,
 },
 ```
+
+Set `CLOUD_ATTACH_TO` to the owning project's slug in the protected deploy environment. This
+`cloud` block belongs inside the named `tsCloud` export in `config/cloud.ts`; keep host identity
+out of the tracked file.
 
 An attached project skips provisioning, resolves the existing box from `ssh.hosts` (there is no
 provider API to ask), and deploys only its own sites. It must not run `buddy server:setup`:

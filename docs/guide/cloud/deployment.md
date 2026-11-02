@@ -102,10 +102,30 @@ environment and read it in `config/cloud.ts`, the way the Settlers III remake do
 
 ```typescript
 // config/cloud.ts
-export default {
-  attachTo: process.env.CLOUD_ATTACH_TO, // set in the protected deploy environment, not in Git
+import type { CloudConfig } from '@stacksjs/ts-cloud'
+import process from 'node:process'
+
+// Keep your project's own identity, environments, sites and infrastructure.
+export const tsCloud: CloudConfig = {
+  project: { name: 'My app', slug: 'my-app', region: 'us-east-1' },
+  environments: { production: { type: 'production' } },
+  cloud: {
+    provider: 'hetzner',
+    attachTo: process.env.CLOUD_ATTACH_TO || undefined,
+  },
 }
 ```
+
+Set `CLOUD_ATTACH_TO` in the protected deploy environment. The named `tsCloud` export owns this
+setting; a flat `attachTo` in the default Stacks wrapper does not configure attachment.
+
+The owning project also keeps its tenant roster private. `buddy deploy` and `buddy env:check`
+merge `STACKS_CLOUD_TENANTS` (comma or whitespace separated slugs),
+`$STACKS_PRIVATE_DIR/tenants.json`, `~/.config/stacks/tenants.json`, and
+`storage/cloud/tenants.json`. Files accept a JSON array or `{ "tenants": [...] }`; the project-local
+path is gitignored. A declared `cloud.tenants` in the default wrapper remains available for
+private forks. CI that runs these commands supplies `STACKS_CLOUD_TENANTS` from a protected secret,
+without printing its value or adding the roster to the workflow.
 
 ## A host you own (`provider: 'ssh'`)
 
