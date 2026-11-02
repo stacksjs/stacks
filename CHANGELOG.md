@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.431...v0.75.432)
+
+## 🐛 Bug Fixes
+
+- require query builder credential and SQLSTATE corrections ([f11e956](https://github.com/stacksjs/stacks/commit/f11e956)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- **forms**: describe transaction-owned provisioning locks ([dc10ec1](https://github.com/stacksjs/stacks/commit/dc10ec1)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.430...v0.75.431)
 
 ## 🐛 Bug Fixes
