@@ -1,5 +1,25 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.429...v0.75.430)
+
+## 🐛 Bug Fixes
+
+- **testing**: keep PostgreSQL fixtures on their owned databases ([dc81d08](https://github.com/stacksjs/stacks/commit/dc81d08)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **feature-flags**: the first value stored for a scope is the one every process keeps ([deab9c1](https://github.com/stacksjs/stacks/commit/deab9c1)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3130](https://github.com/stacksjs/stacks/issues/3130))
+
+## ⚡ Performance Improvements
+
+- **orm**: read a messaging inbox in a fixed number of queries ([e9a7235](https://github.com/stacksjs/stacks/commit/e9a7235)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **docs**: refresh generated native skill references ([3c3c138](https://github.com/stacksjs/stacks/commit/3c3c138)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.428...v0.75.429)
 
 ## 🐛 Bug Fixes
