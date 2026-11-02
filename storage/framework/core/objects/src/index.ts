@@ -75,6 +75,12 @@ export function objectEntries<T extends object>(obj: T) {
 /**
  * Deep merge :P
  *
+ * A `"__proto__"` key in a source is skipped. `JSON.parse`, and the router's
+ * request input, keep one as an ordinary own key, and following it walked into
+ * `Object.prototype`: `deepMerge({}, JSON.parse('{"__proto__":{"isAdmin":true}}'))`
+ * made `isAdmin` true on every object in the process. Only the target's own
+ * properties are merged into, so an inherited one is never followed either.
+ *
  * @category Object
  */
 export function deepMerge<T extends object = object, S extends object = T>(
@@ -89,28 +95,23 @@ export function deepMerge<T extends object = object, S extends object = T>(
     return target as DeepMerge<T, S>
 
   if (isMergeableObject(target) && isMergeableObject(source)) {
-    objectKeys(source).forEach((key) => {
-      // `key` is `keyof S`. After the `objectKeys(source)` cast it has a
-      // narrower type than `keyof T & keyof S`, so indexing `source[key]`
-      // and assigning to `target[key]` both fail strict checks. The
-      // runtime invariant — both target & source have the same shape at
-      // each merged key — is enforced by `isMergeableObject`, but TS
-      // can't see that, so each indexed read/write needs the suppression.
-      // @ts-expect-error indexing T with keyof S — see comment above
-      if (isMergeableObject(source[key])) {
-        // @ts-expect-error see deep-merge keyof note above
-        if (!target[key])
-          // @ts-expect-error see deep-merge keyof note above
-          target[key] = {}
+    const into = target as Record<string, unknown>
+    const from = source as Record<string, unknown>
 
-        // @ts-expect-error see deep-merge keyof note above
-        deepMerge(target[key], source[key])
+    for (const key of Object.keys(from)) {
+      if (key === '__proto__')
+        continue
+
+      if (isMergeableObject(from[key])) {
+        if (!Object.hasOwn(into, key) || !into[key])
+          into[key] = {}
+
+        deepMerge(into[key] as object, from[key] as object)
       }
       else {
-        // @ts-expect-error see deep-merge keyof note above
-        target[key] = source[key]
+        into[key] = from[key]
       }
-    })
+    }
   }
 
   return deepMerge(target, ...remaining)

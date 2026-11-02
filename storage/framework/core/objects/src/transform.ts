@@ -11,6 +11,12 @@
  * otherwise. Only an object's own enumerable string keys are visited -
  * inherited and symbol keys are left alone, which matches `Object.entries` and
  * is what stops a plain-object helper from wandering into a prototype.
+ *
+ * Results are built with `Object.fromEntries`, and `setPath` defines its key,
+ * because an assignment runs the `__proto__` setter. `JSON.parse` and the
+ * router's request input keep a `"__proto__"` key as an ordinary own key, so
+ * `omit(body, ['password'])` on `{"__proto__":{"isAdmin":true}}` used to come
+ * back with `isAdmin` true, inherited from a prototype the client chose.
  */
 
 /**
@@ -27,14 +33,7 @@
  */
 export function omit<O extends object, K extends keyof O>(obj: O, keys: readonly K[]): Omit<O, K> {
   const excluded = new Set<PropertyKey>(keys)
-  const result = {} as Omit<O, K>
-
-  for (const [key, value] of Object.entries(obj)) {
-    if (!excluded.has(key))
-      (result as Record<string, unknown>)[key] = value
-  }
-
-  return result
+  return Object.fromEntries(Object.entries(obj).filter(([key]) => !excluded.has(key))) as Omit<O, K>
 }
 
 /**
@@ -50,14 +49,9 @@ export function pickBy<O extends object>(
   obj: O,
   predicate: (value: O[keyof O], key: keyof O & string) => boolean,
 ): Partial<O> {
-  const result: Partial<O> = {}
-
-  for (const [key, value] of Object.entries(obj)) {
-    if (predicate(value as O[keyof O], key as keyof O & string))
-      (result as Record<string, unknown>)[key] = value
-  }
-
-  return result
+  return Object.fromEntries(
+    Object.entries(obj).filter(([key, value]) => predicate(value as O[keyof O], key as keyof O & string)),
+  ) as Partial<O>
 }
 
 /**
@@ -96,12 +90,9 @@ export function mapValues<O extends object, R>(
   obj: O,
   transform: (value: O[keyof O], key: keyof O & string) => R,
 ): { [K in keyof O]: R } {
-  const result = {} as { [K in keyof O]: R }
-
-  for (const [key, value] of Object.entries(obj))
-    (result as Record<string, unknown>)[key] = transform(value as O[keyof O], key as keyof O & string)
-
-  return result
+  return Object.fromEntries(
+    Object.entries(obj).map(([key, value]) => [key, transform(value as O[keyof O], key as keyof O & string)]),
+  ) as { [K in keyof O]: R }
 }
 
 /**
@@ -120,12 +111,9 @@ export function mapKeys<O extends object, K extends PropertyKey>(
   obj: O,
   transform: (key: keyof O & string, value: O[keyof O]) => K,
 ): Record<K, O[keyof O]> {
-  const result = {} as Record<K, O[keyof O]>
-
-  for (const [key, value] of Object.entries(obj))
-    result[transform(key as keyof O & string, value as O[keyof O])] = value as O[keyof O]
-
-  return result
+  return Object.fromEntries(
+    Object.entries(obj).map(([key, value]) => [transform(key as keyof O & string, value as O[keyof O]), value]),
+  ) as Record<K, O[keyof O]>
 }
 
 /**
@@ -143,12 +131,9 @@ export function mapKeys<O extends object, K extends PropertyKey>(
  * ```
  */
 export function invert<O extends Record<string, PropertyKey>>(obj: O): Record<string, keyof O & string> {
-  const result: Record<string, keyof O & string> = {}
-
-  for (const [key, value] of Object.entries(obj))
-    result[String(value)] = key as keyof O & string
-
-  return result
+  return Object.fromEntries(
+    Object.entries(obj).map(([key, value]) => [String(value), key]),
+  ) as Record<string, keyof O & string>
 }
 
 /**
@@ -235,15 +220,20 @@ export function setPath<O extends object>(source: O, path: readonly PathStep[], 
     : { ...(source as object) } as Record<PropertyKey, unknown>
 
   if (rest.length === 0) {
-    container[step] = value
+    defineKey(container, step, value)
     return container as O
   }
 
-  const existing = container[step]
+  const existing = Object.hasOwn(container, step) ? container[step] : undefined
   const child = (existing === null || typeof existing !== 'object')
     ? (typeof rest[0] === 'number' ? [] : {})
     : existing
 
-  container[step] = setPath(child as object, rest, value)
+  defineKey(container, step, setPath(child as object, rest, value))
   return container as O
+}
+
+/** `target[key] = value`, as an own property even when `key` is `"__proto__"`. */
+function defineKey(target: Record<PropertyKey, unknown>, key: PropertyKey, value: unknown): void {
+  Object.defineProperty(target, key, { value, writable: true, enumerable: true, configurable: true })
 }

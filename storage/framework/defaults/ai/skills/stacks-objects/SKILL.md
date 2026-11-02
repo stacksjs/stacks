@@ -211,9 +211,12 @@ Retained evidence: `core/objects/tests/transform.test.ts`.
 - `objectMap` creates a NEW object via `Object.fromEntries`.
 - `deepMerge` does NOT deeply merge arrays -- arrays from source replace arrays in target entirely.
 - `deepMerge` uses `isObject()` from `@stacksjs/validation` combined with `!Array.isArray()` to determine mergeability.
+- A `"__proto__"` key is data, never a prototype. `JSON.parse` and the router's request input keep one as an own key:
+  `deepMerge` skips it and merges only into the target's own properties, and the transform helpers keep it as an own
+  key (`Object.fromEntries`), so input that carries one cannot set a prototype.
 - `objectMap` can filter entries by returning `undefined` from the callback -- filtered via `notNullish` from `@stacksjs/utils`.
 - `objectKeys` return type uses a template literal type to handle non-string keys.
 - `clearUndefined` only removes `undefined` -- `null` values are preserved.
 - `hasOwnProperty` accepts `null`/`undefined` objects without throwing.
 - `objectPick` with `omitUndefined=false` (default) includes keys even if their values are `undefined`, as long as the key exists in the object.
-- These utilities are also re-exported through `@stacksjs/utils`.
+- `@stacksjs/utils` does not re-export these. Its `merge` / `defu` is a separate merge that builds a new object.

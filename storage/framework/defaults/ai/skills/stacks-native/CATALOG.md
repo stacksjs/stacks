@@ -64,7 +64,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/model-meta` | [`stacks-models`](../stacks-models/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/model-meta/src/index.ts) | 1 |
 | `@stacksjs/newsletter` | [`stacks-newsletter`](../stacks-newsletter/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/newsletter/src/index.ts) | 7 |
 | `@stacksjs/notifications` | [`stacks-notifications`](../stacks-notifications/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/notifications/src/index.ts) | 17 |
-| `@stacksjs/objects` | [`stacks-objects`](../stacks-objects/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/objects/src/index.ts) | 4 |
+| `@stacksjs/objects` | [`stacks-objects`](../stacks-objects/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/objects/src/index.ts) | 5 |
 | `@stacksjs/orm` | [`stacks-orm`](../stacks-orm/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/orm/src/index.ts) | 75 |
 | `@stacksjs/pagination` | [`stacks-pagination`](../stacks-pagination/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/pagination/src/index.ts) | 0 |
 | `@stacksjs/path` | [`stacks-path`](../stacks-path/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/path/src/index.ts) | 13 |
@@ -625,7 +625,7 @@ Declared runtime exports: `clearUndefined`, `deepMerge`, `hasOwnProperty`, `isKe
 
 Local source modules: [src/transform.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/objects/src/transform.ts).
 
-Evidence directory: [4 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/objects/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [5 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/objects/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/orm
 
