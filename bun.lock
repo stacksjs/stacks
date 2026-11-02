@@ -300,7 +300,7 @@
         "@stacksjs/datetime": "workspace:*",
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/stx": "0.2.784",
-        "bun-query-builder": "^0.3.32",
+        "bun-query-builder": "^0.3.34",
       },
       "devDependencies": {
         "@stacksjs/utils": "workspace:*",
@@ -1027,7 +1027,7 @@
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/ts-validation": "^0.5.6",
         "@stacksjs/validation": "workspace:*",
-        "bun-query-builder": "^0.3.32",
+        "bun-query-builder": "^0.3.34",
       },
       "devDependencies": {
         "@stacksjs/types": "workspace:*",
@@ -1448,7 +1448,7 @@
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/stx": "0.2.784",
         "@stacksjs/ts-validation": "^0.5.6",
-        "bun-query-builder": "^0.3.32",
+        "bun-query-builder": "^0.3.34",
       },
       "devDependencies": {
         "@stacksjs/validation": "workspace:*",
