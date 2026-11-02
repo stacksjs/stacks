@@ -22,10 +22,11 @@ const products = await cache.mget<{ name: string }>(['product:42', 'product:43']
 // mget returns a record keyed by cache key, not an array.
 ~~~
 
-- TTL is in seconds. Zero means forever; omitted TTL uses the factory's
-  stdTTL, which defaults to zero. The exported cache/memory singleton is a
-  memory instance with no default expiry. Config's ttl value does not silently
-  turn that singleton into a configured Redis instance.
+- TTL is in seconds. Zero means forever; an omitted TTL uses the store's
+  default. For the `cache` export that is `ttl` from config/cache.ts (3600 as
+  shipped) on every driver, memory included, so a value set with no TTL
+  expires after an hour. The `memory` export is a separate in-process
+  instance with no default expiry.
 - `setForever` stores without expiry; `getTtl` reads remaining TTL and
   `ttl(key, seconds)` updates it. Missing values are undefined.
 - `mset([{ key, value, ttl? }])` writes entries. `del(keyOrKeys)` and
@@ -60,11 +61,14 @@ deploys, pointing `path` at a file the deploy preserves (the app's own SQLite
 database works; the table is the driver's alone). `createCache(driver,
 options?)` selects one of memory, redis, singlestore or sqlite.
 
-The `cache` export is the driver `config/cache.ts` selects (`driver`, with
-`prefix` and `ttl` applied to the non-memory drivers), resolved on first use
-and once the app's config has loaded. With the default `driver: 'memory'` it
-answers from the `memory` instance itself. `cacheFromConfig(settings?)` builds
-the same choice explicitly; `resetConfiguredCache()` forgets it.
+The `cache` export is the driver `config/cache.ts` selects, with its `prefix`
+and `ttl` applied on every driver (memory also takes `maxKeys`, `useClones`
+and `drivers.memory`), resolved on first use and once the app's config has
+loaded. It is the shared `memory` instance only when the config sets none of
+those. The shipped config sets them, so there `cache` and `memory` are two
+stores: a value written through one is not visible through the other.
+`cacheFromConfig(settings?)` builds the same choice explicitly;
+`resetConfiguredCache()` forgets it.
 `config/cache.ts` reads `REDIS_URL`, `REDIS_HOST`, `REDIS_PORT`,
 `REDIS_USERNAME`, `REDIS_PASSWORD` and `REDIS_DB`, as `config/queue.ts` does.
 
