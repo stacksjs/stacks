@@ -84,6 +84,10 @@ export function spawnOwnedProcess(command: string[], options: OwnedProcessOption
   if (!command.length || command.some(part => typeof part !== 'string' || part.includes('\0'))) throw new TypeError('Owned process needs a valid command')
   const grace = options.stopGraceMs ?? 2000
   if (!Number.isFinite(grace) || grace < 0) throw new RangeError('Process stop grace must be finite and nonnegative')
+  const environment = { ...(options.env ?? process.env) }
+  const ownerEnvironment = { ...environment }
+  delete ownerEnvironment.BUN_OPTIONS
+  delete ownerEnvironment.NODE_OPTIONS
   let windows: ReturnType<typeof windowsOwnership> | null = null
   const directory = mkdtempSync(join(tmpdir(), 'stacks-process-owner-'))
   const config = join(directory, 'bunfig.toml')
@@ -130,6 +134,7 @@ process.on('message', message => {
   launched = true
   try {
     const child = Bun.spawn(${JSON.stringify(command)}, {
+      env: message.environment,
       stdin: 'inherit', stdout: 'inherit', stderr: 'inherit',
       ipc(message, source) { process.send({ type: 'message', pid: source.pid, message }) },
     })
@@ -143,7 +148,7 @@ process.send({ type: 'ready' })
   let disposeUnstarted: (() => void) | undefined
   try {
     child = Bun.spawn([options.ownerRuntime ?? process.execPath, '--no-env-file', `--config=${config}`, '--eval', host], {
-      cwd: options.cwd, env: options.env ?? process.env,
+      cwd: options.cwd, env: ownerEnvironment,
       stdin: options.stdin ?? 'ignore', stdout: options.stdout ?? 'pipe', stderr: options.stderr ?? 'pipe',
       detached: !windows,
       ipc(message) {
@@ -151,7 +156,7 @@ process.send({ type: 'ready' })
           if (!message || typeof message !== 'object') return
           if (message.type === 'ready') {
             ownerReady = true
-            if (admitted && !stopping) child.send({ start: true })
+            if (admitted && !stopping) child.send({ start: true, environment })
           }
           else if (!admitted) return
           else if (message.type === 'stop-request') {
@@ -180,7 +185,7 @@ process.send({ type: 'ready' })
     }
     windows?.assign(child.pid)
     admitted = true
-    if (ownerReady) child.send({ start: true })
+    if (ownerReady) child.send({ start: true, environment })
   }
   catch (error) {
     // Admission fails closed: the controlled host has not received start.

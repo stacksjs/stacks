@@ -114,3 +114,48 @@ for (const signal of ['SIGTERM', 'SIGKILL'] as const) {
     finally { await service.stop() }
   }), 30000)
 }
+
+test('isolated application preload options execute only in the admitted command', async () => {
+  const directory = mkdtempSync(join(tmpdir(), 'stacks owned preload-'))
+  const log = join(directory, 'preload-pids.txt')
+  const preload = join(directory, 'preload.ts')
+  const script = join(directory, 'command.ts')
+  writeFileSync(join(directory, 'bunfig.toml'), 'preload = []\n')
+  writeFileSync(preload, 'import { appendFileSync } from "node:fs"; appendFileSync(process.env.OWNED_PRELOAD_LOG!, String(process.pid) + "\\n")\n')
+  writeFileSync(script, 'process.stdout.write(JSON.stringify({ pid: process.pid, options: process.env.BUN_OPTIONS, nodeOptions: process.env.NODE_OPTIONS, value: process.env.OWNED_PRELOAD_VALUE }))\n')
+  const bunOptions = '--preload=./preload.ts'
+  try {
+    const result = await runIsolated(script, { cwd: directory, bunfig: 'bunfig.toml', envFile: false, timeoutMs: 10000, env: { BUN_OPTIONS: bunOptions, NODE_OPTIONS: '--trace-warnings', OWNED_PRELOAD_LOG: log, OWNED_PRELOAD_VALUE: 'consumer environment' } })
+    expect(result.code, result.stderr).toBe(0)
+    const output = JSON.parse(result.stdout)
+    expect(output).toEqual({ pid: output.pid, options: bunOptions, nodeOptions: '--trace-warnings', value: 'consumer environment' })
+    expect(readFileSync(log, 'utf8').trim().split('\n').map(Number)).toEqual([output.pid])
+  }
+  finally { rmSync(directory, { recursive: true, force: true }) }
+}, 20000)
+
+test('service application preloads run after native admission and retain their original environment', async () => {
+  const directory = mkdtempSync(join(tmpdir(), 'stacks owned service preload-'))
+  const log = join(directory, 'preload-pids.txt')
+  const preload = join(directory, 'preload.ts')
+  const script = join(directory, 'command.ts')
+  writeFileSync(join(directory, 'bunfig.toml'), 'preload = []\n')
+  writeFileSync(preload, 'import { appendFileSync } from "node:fs"; appendFileSync(process.env.OWNED_PRELOAD_LOG!, String(process.pid) + "\\n")\n')
+  writeFileSync(script, `import { notifyTestServiceReady } from ${JSON.stringify(join(import.meta.dir, '../src/service.ts'))}; notifyTestServiceReady({ pid: process.pid, options: process.env.BUN_OPTIONS, nodeOptions: process.env.NODE_OPTIONS, value: process.env.OWNED_PRELOAD_VALUE }); await Bun.sleep(60000)`)
+  const bunOptions = '--preload=./preload.ts'
+  const service = startTestService([process.execPath, '--no-env-file', `--config=${join(directory, 'bunfig.toml')}`, script], { cwd: directory, startupTimeoutMs: 10000, stopGraceMs: 50, env: { ...process.env, BUN_OPTIONS: bunOptions, NODE_OPTIONS: '--trace-warnings', OWNED_PRELOAD_LOG: log, OWNED_PRELOAD_VALUE: 'consumer environment' } })
+  const output = new Response(service.stdout).text()
+  const errors = new Response(service.stderr).text()
+  try {
+    const ready = await service.ready
+    const pids = readFileSync(log, 'utf8').trim().split('\n').map(Number)
+    expect(pids).toHaveLength(1)
+    expect(pids).not.toContain(service.pid)
+    expect(ready).toEqual({ pid: pids[0], options: bunOptions, nodeOptions: '--trace-warnings', value: 'consumer environment' })
+  }
+  finally {
+    await service.stop()
+    await Promise.all([output, errors])
+    rmSync(directory, { recursive: true, force: true })
+  }
+}, 20000)
