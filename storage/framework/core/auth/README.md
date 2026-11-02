@@ -99,3 +99,16 @@ For casual chit-chat with others using this package:
 The MIT License (MIT). Please see [LICENSE](https://github.com/stacksjs/stacks/tree/main/LICENSE.md) for more information.
 
 Made with 💙
+
+### Indexed recovery credentials
+
+`mintPasswordResetToken()` returns a random credential and its SHA-256 digest. Store only
+`digest` in `password_resets.token`. Token-only recovery endpoints use
+`consumePasswordResetToken(token, async claim => { ... })` to change the account and
+revoke its credentials in one transaction. `claim` contains `userId`, `email` and
+`setup` (an explicit lifetime). The result is `{ consumed: false }` or
+`{ consumed: true, value }`, with the callback's value. Unknown, expired, replaced
+and already consumed tokens never invoke the callback. A failed callback rolls
+everything back, leaving recovery retryable. Notifications belong after commit.
+This API is for high-entropy digest tokens; `passwordResets(email)` continues to
+serve existing email-based bcrypt recovery credentials.

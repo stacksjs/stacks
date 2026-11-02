@@ -76,3 +76,13 @@ if (!verifyImageTransform(requestPath, expires, signature, secret))
 Use `decorative` instead of empty alt text for decorative images. The component renders responsive, layout-stable HTML without requiring client JavaScript.
 
 The library accepts `srcset` / `srcSet`, `fit` / `objectFit`, `position` / `objectPosition`, and `class` / `className`. `loading` sets the native loading hint; `priority` takes precedence and loads eagerly. `placeholder` supports `blur`, `thumbhash`, `color`, `empty`, `none`, or a CSS background; `placeholderColor` supplies the fallback color.
+
+### Private image uploads
+
+`sanitizeImageUpload(bytes, { maxBytes?, maxPixels? })` accepts JPEG, PNG and WebP,
+checks encoded bytes and decoded dimensions before decoding, applies EXIF camera
+orientation and encodes only pixels. The returned `{ bytes, format, width, height }`
+contains no source EXIF, XMP or comments. Defaults are 12 MiB and 40 million pixels;
+the encoded result must fit the byte budget too. Store the returned bytes and use
+its dimensions, since orientation can swap width and height. Authorization and
+retention remain the application's responsibility.

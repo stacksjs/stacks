@@ -15,6 +15,7 @@ export * from './fonts'
 export * from './generate'
 export * from './social'
 export * from './theme'
+export * from './upload'
 
 export type ImageFormat = 'avif' | 'webp' | 'jpeg' | 'png'
 export interface ImageVariant { width: number, height: number, bytes: number, format: ImageFormat, mimeType: string, path: string, url: string, cacheKey: string }

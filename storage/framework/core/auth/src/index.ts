@@ -34,6 +34,7 @@ export * from './passkey'
 export * from './passkeys'
 
 export * from './password/reset'
+export * from './password/reset-token'
 
 export * from './register'
 

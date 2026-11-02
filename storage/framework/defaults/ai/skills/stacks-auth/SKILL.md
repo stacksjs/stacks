@@ -733,3 +733,14 @@ not authenticate them. OAuth resource endpoints must explicitly use
 `authorizeOAuthDelegatedToken` with the exact resource, audience, workspace and
 required scopes. Ordinary refresh also refuses delegated refresh credentials;
 use the OAuth token endpoint and the registered client's protocol authentication.
+
+## Token-only recovery endpoints
+
+For high-entropy reset credentials, `mintPasswordResetToken()` returns `{ token, digest }`.
+Store the digest in `password_resets.token`, never the plaintext.
+`consumePasswordResetToken(token, async claim => { ... })` locks the owner and token,
+checks the stored expiry and consumes it in the same transaction as callback writes.
+`claim` is `{ userId, email, setup }`; result is `{ consumed: false }` or
+`{ consumed: true, value }`. Failures roll back the credential and account changes.
+Use database work only in the callback, and send notifications after commit.
+The existing `passwordResets(email)` flow supports email-addressed bcrypt tokens.

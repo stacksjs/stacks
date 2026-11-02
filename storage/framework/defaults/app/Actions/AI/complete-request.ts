@@ -78,7 +78,7 @@ export interface CompleteRequestDeps {
 }
 
 export interface CompleteRequestResult {
-  status: number
+  status: 200 | 401 | 422 | 502 | 503
   body: { completion: string } | { message: string }
 }
 

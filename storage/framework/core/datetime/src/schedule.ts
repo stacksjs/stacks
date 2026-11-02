@@ -119,3 +119,12 @@ export function localTimeSpan(date: string, start: string, end: string, ...zones
   if (interval.end <= interval.start) throw new ScheduleInputError('The local interval has no positive duration in this timezone')
   return interval
 }
+
+/** Half-open instant intervals overlap only when they share positive elapsed time. */
+export function timeSpansOverlap(first: { start: Date, end: Date }, second: { start: Date, end: Date }): boolean {
+  for (const span of [first, second]) {
+    if (!Number.isFinite(span.start.getTime()) || !Number.isFinite(span.end.getTime()) || span.end <= span.start)
+      throw new ScheduleInputError('An interval must contain a positive elapsed duration')
+  }
+  return first.start < second.end && first.end > second.start
+}

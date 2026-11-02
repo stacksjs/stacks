@@ -35,3 +35,11 @@ STX uses img and the asset pipeline, not a framework-specific React image wrappe
 Test no-upscale behavior, requested formats, source authorization, negotiated
 responses, signed access and storage publication. Source: core/image/src/index.ts
 and its generation modules. Evidence: image.test.ts and generate.test.ts.
+
+## Private uploads
+
+Use `sanitizeImageUpload(bytes, { maxBytes?, maxPixels? })` before storing a private
+JPEG, PNG or WebP. It bounds bytes and pixels, applies camera orientation, strips
+source metadata by encoding only pixels, and returns canonical bytes/dimensions.
+The default caps are 12 MiB and 40 million pixels. Authorization, referencing and
+object retention remain application policy.

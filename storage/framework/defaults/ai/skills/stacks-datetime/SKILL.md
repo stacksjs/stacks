@@ -375,3 +375,11 @@ not jurisdiction-specific compensation or overtime decisions.
 localTimeSpan(date, start, end, ...zones) converts a clock interval, including
 next-day ends, to actual instants for cross-site/overnight overlap checks.
 Equal endpoints and non-positive DST-normalized intervals are rejected.
+
+## Conflicts across location clocks
+
+Convert each appointment using `localTimeSpan(date, start, end, ...zones)` and compare
+with `timeSpansOverlap(first, second)`. Intervals are half-open, so adjacent sessions
+do not conflict. Query neighboring local dates before comparing: simultaneous
+appointments can belong to different calendar dates in different zones. Never
+compare local clock strings from separate locations directly.
