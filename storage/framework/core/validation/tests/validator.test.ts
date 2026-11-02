@@ -229,3 +229,19 @@ describe('@stacksjs/validation - Validator Utilities', () => {
     })
   })
 })
+
+describe('validateField without an app/Models directory', () => {
+  test('validates against a default model instead of throwing ENOENT', async () => {
+    // This checkout has no app/Models, as an app that only uses the defaults
+    // has none; scanning it threw before any rule ran.
+    const { validateField } = await import('../src/validator')
+    let caught: unknown
+    try {
+      await validateField('Author', { name: 'ab', email: 'nope' })
+    }
+    catch (error) {
+      caught = error
+    }
+    expect((caught as { status?: number } | undefined)?.status).toBe(422)
+  })
+})

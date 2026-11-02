@@ -1,4 +1,5 @@
 import type { ValidationErrors, ValidationType, Validator } from '@stacksjs/ts-validation'
+import { existsSync } from 'node:fs'
 import type { Model } from '@stacksjs/types'
 import { HttpError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
@@ -34,6 +35,11 @@ function globSync(patterns: string[], options: { absolute?: boolean } = {}): str
     const splitAt = wildcardAt === -1 ? slash : pattern.lastIndexOf('/', wildcardAt)
     const cwd = splitAt > 0 ? pattern.slice(0, splitAt) : '.'
     const rel = splitAt > 0 ? pattern.slice(splitAt + 1) : pattern
+    // A directory that does not exist holds no matches. `scanSync` throws
+    // ENOENT for one, so an app with no `app/Models` of its own could not
+    // validate against a default model at all.
+    if (!existsSync(cwd))
+      continue
     const glob = new Bun.Glob(rel)
     for (const match of glob.scanSync({ cwd, onlyFiles: true })) {
       results.push(options.absolute ? `${cwd}/${match}` : match)
