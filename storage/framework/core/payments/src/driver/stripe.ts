@@ -81,6 +81,36 @@ export function stripePaymentStatus(intent: Pick<Stripe.PaymentIntent, 'status' 
  * so a second partial refund would otherwise be counted as the first plus
  * itself; the event's `previous_attributes` holds the total before it.
  */
+/**
+ * Decimal places Stripe's `amount` has beyond (or short of) the ISO 4217
+ * minor unit a {@link Money} is in, for the currencies where the two disagree
+ * (https://docs.stripe.com/currencies): ISK and UGX are written as two-decimal
+ * amounts though ISO gives them none (5 ISK is 500), and MGA is zero-decimal
+ * though ISO gives it two. Every other currency's amounts are the same.
+ */
+const STRIPE_DECIMAL_SHIFT: Readonly<Record<string, number>> = { isk: 2, ugx: 2, mga: -2 }
+
+/**
+ * A {@link Money} as Stripe's `amount`. Throws for an amount Stripe cannot
+ * express, such as a fraction of an ariary, rather than charging a rounded one.
+ */
+export function toStripeAmount(money: Money): number {
+  const shift = STRIPE_DECIMAL_SHIFT[money.currency.toLowerCase()] ?? 0
+  if (shift >= 0)
+    return money.amount * 10 ** shift
+  const divisor = 10 ** -shift
+  if (money.amount % divisor !== 0)
+    throw new TypeError(`Stripe charges whole ${money.currency.toUpperCase()} only, and ${money.amount} minor units is ${money.amount / divisor} ${money.currency.toUpperCase()}.`)
+  return money.amount / divisor
+}
+
+/** Stripe's `amount` in `currency` as ISO 4217 minor units, the reverse of {@link toStripeAmount}. */
+export function fromStripeAmount(amount: number, currency: string): Money {
+  const shift = STRIPE_DECIMAL_SHIFT[currency.toLowerCase()] ?? 0
+  // Stripe keeps the extra ISK and UGX decimals at 00, so this is exact.
+  return { amount: shift >= 0 ? Math.round(amount / 10 ** shift) : amount * 10 ** -shift, currency }
+}
+
 export function refundedThisTime(charge: Record<string, any>, previous?: Record<string, any> | null): number | undefined {
   if (typeof charge.amount_refunded !== 'number')
     return undefined
@@ -135,7 +165,7 @@ export function summarizeSubscription(subscription: Stripe.Subscription): Subscr
       ? {
           id: price.id,
           name: price.nickname ?? price.lookup_key ?? null,
-          amount: typeof price.unit_amount === 'number' ? { amount: price.unit_amount, currency: price.currency } : null,
+          amount: typeof price.unit_amount === 'number' ? fromStripeAmount(price.unit_amount, price.currency) : null,
           interval: INTERVALS.has(price.recurring?.interval ?? '') ? price.recurring!.interval as SubscriptionPrice['interval'] : null,
         }
       : null,
@@ -179,7 +209,7 @@ function toPayment(intent: Stripe.PaymentIntent): PaymentResult {
   return {
     id: intent.id,
     status,
-    amount: { amount: intent.amount, currency: intent.currency },
+    amount: fromStripeAmount(intent.amount, intent.currency),
     ...(intent.client_secret && (status === 'requires_payment_method' || status === 'requires_action')
       ? { clientConfirmation: { provider: 'stripe' as const, clientSecret: intent.client_secret } }
       : {}),
@@ -219,7 +249,7 @@ export class StripeDriver implements PaymentDriver {
     assertMoney(amount)
     const customer = await this.ops.customer(payer)
     const intent = await this.ops.createIntent(payer, {
-      amount: amount.amount,
+      amount: toStripeAmount(amount),
       currency: amount.currency.toLowerCase(),
       customer: customer.id,
       payment_method: paymentMethod,
@@ -237,7 +267,7 @@ export class StripeDriver implements PaymentDriver {
     assertMoney(amount)
     const customer = await this.ops.customer(payer)
     const intent = await this.ops.createIntent(payer, {
-      amount: amount.amount,
+      amount: toStripeAmount(amount),
       currency: amount.currency.toLowerCase(),
       customer: customer.id,
       automatic_payment_methods: { enabled: true },
@@ -251,7 +281,7 @@ export class StripeDriver implements PaymentDriver {
     if (options.amount)
       assertMoney(options.amount, 'refund amount')
     const refund = await this.ops.refund(paymentId, {
-      ...(options.amount ? { amount: options.amount.amount } : {}),
+      ...(options.amount ? { amount: toStripeAmount(options.amount) } : {}),
       ...(options.reason ? { reason: options.reason } : {}),
       ...(options.idempotencyKey ? { idempotencyKey: options.idempotencyKey } : {}),
     })
@@ -259,7 +289,7 @@ export class StripeDriver implements PaymentDriver {
       id: refund.id,
       paymentId,
       status: refundStatus(refund.status),
-      amount: { amount: refund.amount, currency: refund.currency },
+      amount: fromStripeAmount(refund.amount, refund.currency),
       raw: refund,
     }
   }
@@ -277,7 +307,7 @@ export class StripeDriver implements PaymentDriver {
         throw new TypeError('A checkout line priced with unitAmount needs the checkout\'s currency.')
       return {
         quantity: line.quantity,
-        price_data: { currency: request.currency.toLowerCase(), unit_amount: line.unitAmount, product_data: { name: line.name } },
+        price_data: { currency: request.currency.toLowerCase(), unit_amount: toStripeAmount({ amount: line.unitAmount, currency: request.currency }), product_data: { name: line.name } },
       }
     })
 
@@ -356,7 +386,7 @@ export class StripeDriver implements PaymentDriver {
     const isRefund = event.type === 'charge.refunded' || event.type === 'refund.failed'
     const reference = isRefund ? object.payment_intent ?? object.id : object.id
     const minor = event.type === 'charge.refunded' ? refundedThisTime(object, event.data.previous_attributes) : object.amount ?? object.amount_total
-    const amount = typeof minor === 'number' && object.currency ? { amount: minor, currency: String(object.currency) } : null
+    const amount = typeof minor === 'number' && object.currency ? fromStripeAmount(minor, String(object.currency)) : null
     const reason = object.last_payment_error?.message ?? object.failure_reason ?? null
     return [{
       provider: this.name,
