@@ -11,6 +11,8 @@ test('only the latest completed exact main source with every required job can pu
   expect(evaluateReleaseCi(sha, [{ ...run, id: 43, status: 'in_progress', conclusion: null }, run], jobs()).kind).toBe('pending')
   expect(evaluateReleaseCi(sha, [{ ...run, head_sha: 'a'.repeat(40) }], jobs()).kind).toBe('pending')
   expect(evaluateReleaseCi(sha, [{ ...run, event: 'pull_request' }], jobs()).kind).toBe('pending')
+  expect(evaluateReleaseCi(sha, [{ ...run, event: 'workflow_dispatch' }], jobs()).kind).toBe('pending')
+  expect(evaluateReleaseCi(sha, [{ ...run, head_branch: 'v0.75.425' }], jobs()).kind).toBe('pending')
   expect(evaluateReleaseCi(sha, [{ ...run, head_branch: 'feature' }], jobs()).kind).toBe('pending')
   expect(evaluateReleaseCi(sha, [{ ...run, path: '.github/workflows/other.yml' }], jobs()).kind).toBe('pending')
 })

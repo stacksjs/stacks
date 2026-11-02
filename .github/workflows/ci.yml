@@ -12,9 +12,14 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ci-${{ github.event.pull_request.number || github.ref }}
+  # A release still runs this complete normal main-push workflow. Its immutable
+  # source must not wait behind every ordinary main commit before acceptance.
+  group: >-
+    ci-${{ github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+    startsWith(github.event.head_commit.message, 'chore: release v') &&
+    github.sha || github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
-  # Release source commits must survive bursts of pushes to main.
+  # Keep all ordinary main pushes; only newer changes to the same PR replace it.
   queue: ${{ github.event_name == 'pull_request' && 'single' || 'max' }}
 
 permissions:

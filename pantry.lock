@@ -9,6 +9,7 @@
         "stacks": "workspace:*"
       },
       "devDependencies": {
+        "@actions/expressions": "0.3.61",
         "@stacksjs/components": "0.2.784",
         "better-dx": "^0.2.37",
         "bun-plugin-stx": "0.2.784"
