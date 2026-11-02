@@ -284,6 +284,16 @@ export const driverDefaults: Record<StacksDialect, Partial<SqliteConfig | MysqlC
   browser: {},
 }
 
+/** Keep credentials and database names separate from the URL's structure. */
+function networkConnectionString(scheme: 'postgres' | 'mysql', host: string, port: number, username: string, password: string, database: string): string {
+  const authority = host.includes(':') && !host.startsWith('[') ? `[${host}]` : host
+  const url = new URL(`${scheme}://${authority}:${port}`)
+  url.username = encodeURIComponent(username)
+  url.password = encodeURIComponent(password)
+  url.pathname = `/${encodeURIComponent(database)}`
+  return url.href
+}
+
 /**
  * Get the connection string for a given driver and configuration
  */
@@ -300,14 +310,14 @@ export function getConnectionString(driver: StacksDialect, config: DatabaseConne
     case 'mysql': {
       const mysqlConfig = config as MysqlConfig
       const { name, host = '127.0.0.1', port = 3306, username = 'root', password = '' } = mysqlConfig
-      return `mysql://${username}:${password}@${host}:${port}/${name}`
+      return networkConnectionString('mysql', host, port, username, password, name)
     }
 
     // SingleStore is MySQL wire-compatible, so it dials over `mysql://`.
     case 'singlestore': {
       const ssConfig = config as SinglestoreConfig
       const { name, host = '127.0.0.1', port = 3306, username = 'root', password = '' } = ssConfig
-      return `mysql://${username}:${password}@${host}:${port}/${name}`
+      return networkConnectionString('mysql', host, port, username, password, name)
     }
 
     // Vitess is reached through vtgate, which speaks the MySQL wire
@@ -318,13 +328,13 @@ export function getConnectionString(driver: StacksDialect, config: DatabaseConne
       const vtConfig = config as VitessConfig
       const { name, host = '127.0.0.1', port = 15306, username = 'root', password = '', tabletType } = vtConfig
       const keyspace = tabletType ? `${name}@${tabletType}` : name
-      return `mysql://${username}:${password}@${host}:${port}/${keyspace}`
+      return networkConnectionString('mysql', host, port, username, password, keyspace)
     }
 
     case 'postgres': {
       const pgConfig = config as PostgresConfig
       const { name, host = '127.0.0.1', port = 5432, username = 'postgres', password = '' } = pgConfig
-      return `postgres://${username}:${password}@${host}:${port}/${name}`
+      return networkConnectionString('postgres', host, port, username, password, name)
     }
 
     // The URL alone: the token travels as a bearer header, never in a URL
