@@ -96,7 +96,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/utils` | [`stacks-utils`](../stacks-utils/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/utils/src/index.ts) | 15 |
 | `@stacksjs/validation` | [`stacks-validation`](../stacks-validation/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/src/index.ts) | 17 |
 | `@stacksjs/video` | [`stacks-video`](../stacks-video/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/video/src/index.ts) | 3 |
-| `@stacksjs/whois` | [`stacks-whois`](../stacks-whois/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/whois/src/index.ts) | 4 |
+| `@stacksjs/whois` | [`stacks-whois`](../stacks-whois/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/whois/src/index.ts) | 5 |
 
 ## Source surfaces
 
@@ -931,4 +931,4 @@ Declared runtime exports: `SocksClient`, `WhoIsParser`, `batchWhois`, `findWhoIs
 
 Local source modules: [src/constants.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/whois/src/constants.ts), [src/socks.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/whois/src/socks.ts), [src/types.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/whois/src/types.ts), [src/utils.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/whois/src/utils.ts).
 
-Evidence directory: [4 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/whois/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [5 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/whois/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.

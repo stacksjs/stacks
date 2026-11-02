@@ -48,7 +48,10 @@ export async function findWhoIsServer(tld: string): Promise<string> {
  * ```
  */
 export function parseIanaWhoisServer(body: string): string {
-  return body.match(/^whois:\s+(\S+)/m)?.[1] ?? ''
+  // Spaces and tabs only between the field and its value. A TLD with no whois
+  // server (RDAP only, like .dev) has an empty `whois:` line, and `\s+` ran
+  // over the line break into the next field, so it answered "status:".
+  return body.match(/^whois:[ \t]+(\S+)/m)?.[1] ?? ''
 }
 
 /**
@@ -102,35 +105,48 @@ export class WhoIsParser {
    * @returns Filled {@link outputData}
    */
   private static iterParse(rawData: string, outputData: any) {
-    let lastStr = ''
-    let lastField: string | null = null
-    let lastLetter = ''
+    const assign = (field: string, value: string): void => {
+      const current = outputData[field]
+      if (Array.isArray(current))
+        current.push(value)
+      else
+        outputData[field] = value
+    }
 
-    for (let i = 0; i < rawData.length; i++) {
-      const letter = rawData[i]
-      if (letter === '\n' || (lastLetter === ':' && letter === ' ')) {
-        if (lastStr.trim() in outputData) {
-          lastField = lastStr.trim()
-        }
-        else if (lastField !== null) {
-          const x = lastStr.trim()
-          if (x !== '') {
-            const obj = outputData[lastField]
-            if (Array.isArray(obj))
-              obj.push(x)
-            else outputData[lastField] = x
+    // A key whose value is on the following line (`Registrar:` with the name
+    // under it), as some registries print it.
+    let pending: string | null = null
 
-            lastField = null
-          }
-        }
-        lastStr = ''
-      }
-      else if (letter !== ':') {
-        lastStr = lastStr + letter
-      }
-      lastLetter = letter as string
-      if (lastStr === 'Record maintained by' || lastStr === '>>>')
+    // A line at a time, the field being everything before its first colon and
+    // the value everything after. It used to read a character at a time and
+    // drop every colon it met, so `2024-08-14T07:01:34Z` came back as
+    // `2024-08-14T070134Z`, which no date parser reads, and a status's
+    // `https://icann.org/...` as `https//icann.org/...`.
+    for (const rawLine of rawData.split(/\r?\n/)) {
+      const line = rawLine.trim()
+      if (line.startsWith('>>>') || line.startsWith('Record maintained by'))
         break
+      if (!line)
+        continue
+
+      const colon = line.indexOf(':')
+      const field = colon === -1 ? null : line.slice(0, colon).trim()
+      if (field !== null && field in outputData) {
+        const value = line.slice(colon + 1).trim()
+        if (value) {
+          assign(field, value)
+          pending = null
+        }
+        else {
+          pending = field
+        }
+        continue
+      }
+
+      if (pending !== null) {
+        assign(pending, line)
+        pending = null
+      }
     }
 
     return outputData

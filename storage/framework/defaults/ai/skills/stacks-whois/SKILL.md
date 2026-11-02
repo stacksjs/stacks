@@ -133,11 +133,12 @@ When `outputData` is `null`, `parseData()` uses this default template:
 }
 ```
 
-The parser iterates character by character through raw WHOIS text:
-- Keys are identified when a line matches a key in `outputData`
-- Values follow after `": "` separator
+The parser reads raw WHOIS text a line at a time:
+- A line's field is everything before its first colon; it counts when it is a key in `outputData`
+- The value is everything after that colon, as written, so `2024-08-14T07:01:34Z` and `https://...` keep their colons
+- A field with nothing after its colon takes the next non-empty line as its value (registries that print `Registrar:` with the name below)
 - Array-typed fields (like `Domain Status`) accumulate multiple values
-- Parsing stops at `"Record maintained by"` or `">>>"` markers
+- Parsing stops at a line starting with `"Record maintained by"` or `">>>"`
 
 Custom parse templates: pass an object with the field names you want extracted. Use empty string `''` for single values, use `[]` for fields with multiple values.
 
