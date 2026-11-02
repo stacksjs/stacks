@@ -437,7 +437,8 @@ validateModelInput(MyModel, { title })
 
 Failures throw `InputValidationError` with `status: 422`. JSON must be an object;
 text never coerces objects or silently truncates; numeric input rejects booleans,
-non-finite values and unsafe whole numbers. Optional text/number input returns
+non-finite values, unsafe whole numbers and anything but decimal notation (`0x10`
+is not 16), and an identifier is decimal digits only. Optional text/number input returns
 null, and absent boolean input returns undefined. Boolean input accepts JSON
 booleans and the explicit form values `true`, `false`, `1`, `0` and their strings,
 and a checkbox's `on` and `off`.

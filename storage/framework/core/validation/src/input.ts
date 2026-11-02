@@ -13,6 +13,9 @@ export async function readJsonObject(request: { json: () => Promise<unknown> }):
 
 export function parsePositiveId(value: unknown): number {
   if (typeof value !== 'string' && typeof value !== 'number') throw new InputValidationError('Invalid identifier')
+  // Decimal digits only. `Number` also reads `0x10`, `1e3`, `0b11` and `+3`,
+  // so `/posts/0x10` loaded post 16.
+  if (typeof value === 'string' && !/^\d+$/.test(value.trim())) throw new InputValidationError('Invalid identifier')
   const id = Number(value)
   if (!Number.isSafeInteger(id) || id <= 0) throw new InputValidationError('Invalid identifier')
   return id
@@ -29,7 +32,11 @@ export function parseTextInput(value: unknown, field: string, required = false, 
 
 export function parseNumberInput(value: unknown, field: string, min: number, max: number, integer = false): number | null {
   if (value == null || value === '') return null
-  if ((typeof value !== 'number' && typeof value !== 'string') || (typeof value === 'string' && !value.trim())) throw new InputValidationError(`${field} must be a number`)
+  // A decimal number. `Number` also reads `0x10`, `0b11` and `0o7`, which a
+  // number typed into a form never means, and text that is no number at all
+  // was reported as out of range.
+  if ((typeof value !== 'number' && typeof value !== 'string') || (typeof value === 'string' && !/^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(value.trim())))
+    throw new InputValidationError(`${field} must be a number`)
   const number = Number(value)
   if (!Number.isFinite(number) || number < min || number > max || (integer && !Number.isSafeInteger(number))) throw new InputValidationError(`${field} is out of range`)
   return number
