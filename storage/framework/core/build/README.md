@@ -1,6 +1,23 @@
 # Stacks Build
 
-This package contains the web development build tooling. In simple terms, here lives the Vite & Nitro engine code.
+Shared Bun package build tooling, declaration validation and runtime export checks.
+
+## Workspace builds
+
+`buildWorkspacePackages(directories)` reads package names and runtime dependencies
+from the selected manifests and builds providers before their consumers. Each
+package runs once through its normal build script and keeps its declaration and
+runtime export checks. Failed dependencies block their consumers; independent
+packages still build and report failures. Cycles and duplicate package names fail
+before any build starts.
+
+`dependencyLayers(packages)` supplies the same stable ordering to framework
+publication. Dependencies outside the selected set are resolved normally. Peer
+dependencies do not order builds because optional integrations can form cycles.
+
+`buddy build:core` preserves the application's feature selection. The release
+workflow uses `.github/scripts/build-framework.ts` to select every buildable
+public framework package, including the umbrella, regardless of app features.
 
 ## ☘️ Features
 

@@ -86,6 +86,9 @@ buddy build --server --verbose --project [name]
 
 ## Standard Build Pattern
 
+For workspace dependency ordering, failure propagation and umbrella builds, read
+[the build package's workspace contract](../../../../core/build/README.md#workspace-builds).
+
 For a library barrel or a package with public subpaths, preserve the module
 graph with the shared transpiler. Identifier-minifying bundles have produced
 invalid re-export bindings on supported Bun versions. Separate bundles also

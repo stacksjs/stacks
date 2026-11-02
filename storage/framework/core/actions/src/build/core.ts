@@ -1,8 +1,8 @@
-import { $ } from 'bun'
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { basename } from 'node:path'
 import process from 'node:process'
 import { dim, italic, log } from '@stacksjs/cli'
+import { buildWorkspacePackages } from '@stacksjs/build'
 import { feature, type StacksFeature } from '@stacksjs/config'
 import { corePath } from '@stacksjs/path'
 import { glob } from '@stacksjs/storage'
@@ -65,27 +65,8 @@ if (dirs.length === 0) {
   process.exit(ExitCode.FatalError)
 }
 
-const failed: string[] = []
-
-for (const folder of dirs) {
-  log.info(`🏗️  Building ${italic(dim(folder))}`)
-
-  try {
-    $.cwd(folder)
-    await $`bun run build`
-    log.success(`${italic(dim(folder))} built`)
-  }
-  catch (error) {
-    // Carry on through the remaining packages rather than stopping at the
-    // first break: one run should report every package that is broken, not
-    // make you rediscover them one build at a time. The exit code below is
-    // what makes this a deferred failure rather than a tolerated one.
-    log.warn(`Failed to build ${italic(dim(folder))}, continuing with the rest...`)
-    failed.push(folder)
-  }
-
-  console.log(``)
-}
+const results = await buildWorkspacePackages(dirs)
+const failed = results.filter(result => result.exitCode !== 0).map(result => result.dir)
 
 // Exiting 0 here made every caller believe the framework had been built.
 // `buddy build:core` checks this action's Result and `buddy build --stacks`

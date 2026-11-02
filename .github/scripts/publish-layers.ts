@@ -34,6 +34,7 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
+import { dependencyLayers } from '../../storage/framework/core/build/src/dependency-layers'
 import { publishables } from './promote-latest'
 
 export interface LayeredPackage {
@@ -47,26 +48,7 @@ export interface LayeredPackage {
  * each later layer only on earlier ones. Throws on a cycle, which a registry
  * could never satisfy in any order.
  */
-export function publishLayers(packages: readonly LayeredPackage[]): LayeredPackage[][] {
-  const byName = new Map(packages.map(pkg => [pkg.name, pkg]))
-  const depth = new Map<string, number>()
-  const visiting = new Set<string>()
-  const depthOf = (name: string, trail: string[]): number => {
-    const known = depth.get(name)
-    if (known !== undefined) return known
-    if (visiting.has(name)) throw new Error(`dependency cycle: ${[...trail, name].join(' -> ')}`)
-    visiting.add(name)
-    const internal = byName.get(name)!.dependencies.filter(dep => dep !== name && byName.has(dep))
-    const value = internal.length ? 1 + Math.max(...internal.map(dep => depthOf(dep, [...trail, name]))) : 0
-    visiting.delete(name)
-    depth.set(name, value)
-    return value
-  }
-  const layers: LayeredPackage[][] = []
-  for (const pkg of [...packages].sort((a, b) => a.name.localeCompare(b.name)))
-    (layers[depthOf(pkg.name, [])] ||= []).push(pkg)
-  return layers.filter(Boolean)
-}
+export const publishLayers = dependencyLayers
 
 /** Run `task` over `items`, at most `limit` at a time, in their order. */
 export async function inBatches<T, R>(items: readonly T[], limit: number, task: (item: T) => Promise<R>): Promise<R[]> {

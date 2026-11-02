@@ -212,26 +212,7 @@ jobs:
       # We publish with `pantry --ignore-scripts` (skips prepublishOnly `tsc`
       # steps that fail in-workspace), so dist must already exist here.
       - name: Build framework packages
-        run: |
-          failed=""
-          for dir in storage/framework/core/*/ storage/framework/core; do
-            pkg="${dir%/}/package.json"
-            [ -f "$pkg" ] || continue
-            grep -q '"private": *true' "$pkg" && continue
-            grep -q '"build"' "$pkg" || continue
-            echo "Building ${dir%/}"
-            if (cd "${dir%/}" && bun run build); then :; else
-              echo "::error::build failed for ${dir%/}"
-              failed="${failed} ${dir%/}"
-            fi
-          done
-          # Fail the release on ANY build failure — a swallowed failure here is
-          # exactly how 0.70.88 shipped dist-less (publish runs --ignore-scripts,
-          # so a missing dist is never rebuilt).
-          if [ -n "$failed" ]; then
-            echo "::error::One or more package builds failed:${failed}"
-            exit 1
-          fi
+        run: bun .github/scripts/build-framework.ts
 
       # Belt-and-suspenders against a dist-less publish: every publishable
       # package, including the umbrella, must have a non-empty dist/ before we publish

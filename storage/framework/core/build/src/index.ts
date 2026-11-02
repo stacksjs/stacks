@@ -3,6 +3,11 @@ import { bold, dim, green, italic, log } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 import { glob } from '@stacksjs/storage'
 
+export { dependencyLayers } from './dependency-layers'
+export type { DependencyPackage } from './dependency-layers'
+export { buildWorkspacePackages, workspaceBuildTargets } from './workspace'
+export type { WorkspaceBuildResult } from './workspace'
+
 /**
  * Parse every generated declaration before a package can report a successful
  * build. The invalid emission shapes this used to repair (`method<T>: (…) => …`
