@@ -1,5 +1,5 @@
 import type { SubscribeOptions, SubscribeResult, UnsubscribeResult } from './types'
-import { db } from '@stacksjs/database/runtime'
+import { db, sqlDateTime } from '@stacksjs/database/runtime'
 import { lists } from './lists'
 
 /**
@@ -135,7 +135,7 @@ export async function unsubscribe(token: string): Promise<UnsubscribeResult> {
 
   await db
     .updateTable('email_list_subscribers')
-    .set({ status: 'unsubscribed', unsubscribed_at: new Date().toISOString() })
+    .set({ status: 'unsubscribed', unsubscribed_at: sqlDateTime() })
     .where('id', '=', Number(pivot.id))
     .execute()
 
@@ -167,7 +167,7 @@ export async function unsubscribeAll(email: string): Promise<number> {
   for (const pivot of pivots) {
     await db
       .updateTable('email_list_subscribers')
-      .set({ status: 'unsubscribed', unsubscribed_at: new Date().toISOString() })
+      .set({ status: 'unsubscribed', unsubscribed_at: sqlDateTime() })
       .where('id', '=', Number(pivot.id))
       .execute()
   }
