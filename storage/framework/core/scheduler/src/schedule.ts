@@ -30,6 +30,9 @@ function notificationTaskName(...parts: unknown[]): string {
   return `notification-${createHash('sha256').update(canonical).digest('hex').slice(0, 12)}`
 }
 
+/** What a guarded task resolves to when its lock is held elsewhere and it did not run. */
+const SKIPPED_BY_LOCK = Symbol('skipped-by-lock')
+
 function toWindowDate(value: string | Date, label: string): Date {
   const date = value instanceof Date ? new Date(value.getTime()) : new Date(value)
   if (Number.isNaN(date.getTime()))
@@ -494,7 +497,9 @@ export class Schedule implements UntimedSchedule {
    * server that was down for 5 minutes loses 5 ticks of a
    * `* * * * *` task. This helper walks the cron expression
    * forward from `since` and invokes the task for each matching
-   * slot up to `Date.now()`.
+   * slot up to `Date.now()`, in this process and awaited, through the
+   * guards a live tick has: nothing for a paused task, only slots inside
+   * `between()`, and none while the task holds its overlap lock.
    *
    * Persistence is the caller's responsibility: store the task's
    * lastRunAt timestamp somewhere (DB, file, etc.) on every run,
@@ -522,6 +527,18 @@ export class Schedule implements UntimedSchedule {
     const now = Date.now()
     if (since >= now) return 0
 
+    // A missed slot is a run like a live tick's, through the same guards. It
+    // used to call the task directly: a paused task caught up on every boot,
+    // a between() window was ignored, and a slot ran while the task held its
+    // withoutOverlapping() or onOneServer() lock.
+    const taskName = this.options.name || 'unnamed-task'
+    if (!Schedule.isEnabled(taskName)) {
+      log.info(`[scheduler] runMissed: ${taskName} is paused, so its missed slots are not run`)
+      return 0
+    }
+    const { startAt, stopAt } = this.options
+    const inWindow = (slot: Date): boolean => (!startAt || slot >= startAt) && (!stopAt || slot <= stopAt)
+
     // The newest `max` slots since `since`. The loop used to stop after max+1
     // and drop one, so it kept the OLDEST slots - after ten minutes down with
     // `max: 3` it fired 09:51-09:53 and called it "4 missed" - while the docs
@@ -539,7 +556,7 @@ export class Schedule implements UntimedSchedule {
       while (true) {
         const next = parse(this.cronPattern, cursor, tz)
         if (!next || next.getTime() > now) return found
-        found.push(next)
+        if (inWindow(next)) found.push(next)
         cursor = next.getTime()
       }
     }
@@ -559,12 +576,19 @@ export class Schedule implements UntimedSchedule {
       slots = slots.slice(-max)
     }
 
+    // In this process, awaited, with the overlap and one-server locks.
+    const context = this.options.context
+    const run = this.wrapTask(context === undefined ? this.task : () => this.task(context), true)
     let fired = 0
     for (const slot of slots) {
       try {
-        const result = this.task(this.options.context)
+        let result = run()
         if (result && typeof (result as Promise<unknown>).then === 'function')
-          await (result as Promise<unknown>)
+          result = await (result as Promise<unknown>)
+        if (result === SKIPPED_BY_LOCK) {
+          log.info(`[scheduler] runMissed slot ${slot.toISOString()} skipped: ${taskName} is already running`)
+          continue
+        }
         fired++
       }
       catch (err) {
@@ -759,7 +783,7 @@ export class Schedule implements UntimedSchedule {
         const acquired = await self.acquireLock(taskName)
         if (!acquired) {
           log.info(`Skipping overlapping task: ${taskName}`)
-          return
+          return SKIPPED_BY_LOCK
         }
         try {
           const result: unknown = innerTask()

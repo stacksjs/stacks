@@ -383,8 +383,12 @@ six-field forms: all-wildcard intervals in seconds dividing 60, or leading zero
 seconds with a five-field schedule. Unsupported specific-second forms throw.
 `dailyAt(time)`, `weekdays()` and `onQueue(name)` are native methods.
 `sendOutputTo(path)` and `appendOutputTo(path)` capture supported command
-output. `runMissed({ since, max? })` performs bounded catch-up; read its
-window/overlap behavior before using it for non-idempotent tasks.
+output. `runMissed({ since, max? })` performs bounded catch-up: each missed
+slot runs in this process, awaited, through the live guards. A paused task
+runs none, only slots inside `between()` run, and a slot is skipped while the
+task holds its `withoutOverlapping()` or `onOneServer()` lock. Those locks stop
+two runs at once, not one slot running twice on two servers, so keep a
+catch-up task idempotent.
 
 `schedule.notification(recipient, payload, channels?, options?)` schedules
 native notify fan-out and fails the task if any channel result failed.
