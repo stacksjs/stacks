@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'bun:test'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { applyBumps, applyRuntimePins, baseVersion, frameworkPackageUpdateCommand, hasStacksDependency, installedStacksVersion, lockstepPackages, needsFrameworkInstall, publishedRuntimePins, resolvePublishedRuntimePins, standalonePackageUpdateCommand } from '../src/upgrade/packages'
+import { applyBumps, applyCraftFloor, applyRuntimePins, craftFloor, declaredCraftPackages, keepsNewerRelease, lockfileOnlyAddCommands, lockfileVersion, resolveCraftPins, baseVersion, frameworkPackageUpdateCommand, hasStacksDependency, installedStacksVersion, lockstepPackages, needsFrameworkInstall, publishedRuntimePins, resolvePublishedRuntimePins, standalonePackageUpdateCommand } from '../src/upgrade/packages'
 
 const temporaryProjects: string[] = []
 
@@ -333,5 +333,86 @@ describe('framework version bump scoping (stacksjs/stacks#2078)', () => {
     const pkg = { dependencies: { stacks: TARGET }, overrides: { '@stacksjs/server': spec } }
     expect(applyBumps(pkg, TARGET, lockstepPackages(META_DEPS, TARGET))).toEqual([])
     expect(pkg.overrides['@stacksjs/server']).toBe(spec)
+  })
+})
+
+describe('newer STX patches the app already runs', () => {
+  it('keeps a compatible newer patch and replaces an older or incompatible one', () => {
+    expect(keepsNewerRelease('0.2.799', '0.2.798')).toBe(true)
+    expect(keepsNewerRelease('^0.2.798', '0.2.798')).toBe(true)
+    expect(keepsNewerRelease('0.2.797', '0.2.798')).toBe(false)
+    expect(keepsNewerRelease('0.3.0', '0.2.798')).toBe(false)
+    expect(keepsNewerRelease('workspace:*', '0.2.798')).toBe(false)
+    const pkg = { dependencies: { '@stacksjs/stx': '0.2.799', '@stacksjs/components': '0.2.795' }, overrides: { '@stacksjs/stx': '0.2.799' } }
+    const pins = { '@stacksjs/stx': '0.2.798', '@stacksjs/components': '0.2.798' }
+    expect(applyRuntimePins(pkg, pins)).toEqual([{ name: '@stacksjs/components', from: '0.2.795', to: '0.2.798' }])
+    expect(pkg.dependencies['@stacksjs/stx']).toBe('0.2.799')
+    expect(applyRuntimePins(pkg, pins, { exact: true })).toHaveLength(2)
+    expect(pkg.overrides['@stacksjs/stx']).toBe('0.2.798')
+  })
+})
+
+describe('Craft pins follow the framework floor', () => {
+  it('reads only a plain >= floor from the published actions manifest', () => {
+    expect(craftFloor({ peerDependencies: { 'craft-native': '>=0.0.443' } })).toBe('0.0.443')
+    expect(craftFloor({ dependencies: { 'craft-native': '>= 0.0.443' } })).toBe('0.0.443')
+    expect(craftFloor({ peerDependencies: { 'craft-native': '^0.0.443' } })).toBeUndefined()
+    expect(craftFloor({})).toBeUndefined()
+  })
+
+  it('raises old declarations and overrides with their operators, never lowers or adds', () => {
+    const pkg = {
+      dependencies: { 'craft-native': '0.0.435', '@craft-native/android': '>=0.0.424' },
+      devDependencies: { '@craft-native/ios': '~0.0.435' },
+      overrides: { 'craft-native': '0.0.435', '@craft-native/ios': '0.0.450' },
+      resolutions: { '**/craft-native': '0.0.400' },
+    }
+    expect(declaredCraftPackages(pkg)).toEqual(['@craft-native/android', '@craft-native/ios', 'craft-native'])
+    const pins = { 'craft-native': '0.0.443', '@craft-native/ios': '0.0.443', '@craft-native/android': '0.0.443', '@craft-native/macos': '0.0.443' }
+    expect(applyCraftFloor(pkg, pins)).toEqual([
+      { name: 'craft-native', from: '0.0.435', to: '0.0.443' },
+      { name: '@craft-native/android', from: '>=0.0.424', to: '>=0.0.443' },
+      { name: '@craft-native/ios', from: '~0.0.435', to: '~0.0.443' },
+      { name: 'craft-native', from: '0.0.435', to: '0.0.443', field: 'overrides' },
+    ])
+    expect(pkg.overrides['@craft-native/ios']).toBe('0.0.450')
+    expect(pkg.resolutions).toEqual({ '**/craft-native': '0.0.400' })
+    expect(applyCraftFloor(pkg, pins)).toEqual([])
+  })
+
+  it('pins only Craft packages the app declares that publish the floor', async () => {
+    const requested: string[] = []
+    const pins = await resolveCraftPins({ dependencies: { 'craft-native': '0.0.435', '@craft-native/ios': '0.0.435', '@craft-native/vision': '0.0.1' } }, '0.0.443', (async (url) => {
+      requested.push(String(url))
+      const [, name] = /registry\.npmjs\.org\/(.+)\/0\.0\.443$/.exec(String(url)) ?? []
+      return name === '@craft-native%2fvision' ? new Response('', { status: 404 }) : Response.json({ name: name!.replace('%2f', '/'), version: '0.0.443' })
+    }) as typeof fetch)
+    expect(pins).toEqual({ '@craft-native/ios': '0.0.443', 'craft-native': '0.0.443' })
+    expect(requested).toHaveLength(3)
+    expect(await resolveCraftPins({ dependencies: { 'craft-native': '0.0.435' } }, undefined)).toEqual({})
+  })
+})
+
+describe('raised pins keep the app\'s bun.lock format', () => {
+  it('re-resolves exact pins with lockfile-only adds, dev dependencies as dev', () => {
+    const pkg = {
+      dependencies: { '@stacksjs/stx': '0.2.798', 'craft-native': '0.0.443', 'stacks': '0.75.460' },
+      devDependencies: { '@craft-native/ios': '0.0.443', 'bun-plugin-stx': '^0.2.798' },
+    }
+    expect(lockfileOnlyAddCommands(pkg, ['@stacksjs/stx', 'craft-native', '@craft-native/ios', 'bun-plugin-stx'])).toEqual([
+      'bun add --exact --lockfile-only @stacksjs/stx@0.2.798 craft-native@0.0.443',
+      'bun add --exact --lockfile-only --dev @craft-native/ios@0.0.443',
+    ])
+    expect(lockfileOnlyAddCommands(pkg, [])).toEqual([])
+  })
+
+  it('reads the lockfile version an install has to preserve', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'stacks-upgrade-lockfile-'))
+    try {
+      expect(lockfileVersion(dir)).toBeNull()
+      writeFileSync(join(dir, 'bun.lock'), '{\n  "lockfileVersion": 1,\n  "configVersion": 1,\n}\n')
+      expect(lockfileVersion(dir)).toBe(1)
+    }
+    finally { rmSync(dir, { recursive: true, force: true }) }
   })
 })

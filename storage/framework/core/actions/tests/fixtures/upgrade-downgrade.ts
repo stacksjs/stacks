@@ -12,7 +12,9 @@ const documents: Record<string, unknown> = {
     'dist-tags': { latest: target },
     'versions': { [target]: { dependencies: { '@stacksjs/actions': target } } },
   },
-  [`https://registry.npmjs.org/@stacksjs%2factions/${target}`]: { version: target, dependencies: { '@stacksjs/stx': stx, '@stacksjs/components': stx } },
+  [`https://registry.npmjs.org/@stacksjs%2factions/${target}`]: { version: target, dependencies: { '@stacksjs/stx': stx, '@stacksjs/components': stx }, peerDependencies: { 'craft-native': '>=0.0.443' } },
+  'https://registry.npmjs.org/craft-native/0.0.443': { name: 'craft-native', version: '0.0.443' },
+  'https://registry.npmjs.org/@craft-native%2fios/0.0.443': { name: '@craft-native/ios', version: '0.0.443' },
   [`https://registry.npmjs.org/@stacksjs%2fstx/${stx}`]: { name: '@stacksjs/stx', version: stx, dependencies: {} },
 }
 globalThis.fetch = (async (input: string | URL | Request) => {

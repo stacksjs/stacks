@@ -152,8 +152,19 @@ async function updateStandalonePackage(projectRoot: string, options: PackageUpgr
   process.exit(0)
 }
 
+/** The plain versions the manifest declares for `names` (direct declarations only). */
+export function declaredPins(pkg: PkgJson, names: string[]): Record<string, string> {
+  const declared = { ...pkg.devDependencies, ...pkg.dependencies }
+  const pins: Record<string, string> = {}
+  for (const name of names) {
+    const spec = declared[name]
+    if (typeof spec === 'string' && /^[\^~]?\d+\.\d+\.\d+(?:-[\w.-]+)?$/.test(spec)) pins[name] = baseVersion(spec)
+  }
+  return pins
+}
+
 /** Resolve the target version + the `stacks` meta's declared dependency ranges. */
-async function resolveTarget(options: PackageUpgradeOptions): Promise<{ version: string, metaDeps: Record<string, string>, runtimePins: Record<string, string> }> {
+async function resolveTarget(options: PackageUpgradeOptions): Promise<{ version: string, metaDeps: Record<string, string>, runtimePins: Record<string, string>, craftFloor?: string }> {
   const res = await fetch('https://registry.npmjs.org/stacks').catch(() => null)
   if (!res || !res.ok)
     throw new Error('Could not reach the npm registry to resolve the target `stacks` version.')
@@ -193,10 +204,10 @@ async function resolveTarget(options: PackageUpgradeOptions): Promise<{ version:
   const actions = await fetch(`https://registry.npmjs.org/@stacksjs%2factions/${version}`)
   if (!actions.ok)
     throw new Error(`Could not resolve the frontend dependencies shipped by @stacksjs/actions@${version}.`)
-  const manifest = await actions.json() as { version?: string, dependencies?: Record<string, string> }
+  const manifest = await actions.json() as { version?: string, dependencies?: Record<string, string>, peerDependencies?: Record<string, string> }
   if (manifest.version !== version)
     throw new Error('The published actions manifest does not match the requested framework release.')
-  return { version, metaDeps, runtimePins: await resolvePublishedRuntimePins(manifest.dependencies ?? {}) }
+  return { version, metaDeps, runtimePins: await resolvePublishedRuntimePins(manifest.dependencies ?? {}), craftFloor: craftFloor(manifest) }
 }
 
 /** Independently versioned frontend packages paired with a published framework. */
@@ -230,8 +241,25 @@ export async function resolvePublishedRuntimePins(dependencies: Record<string, s
   return pins
 }
 
-/** Align existing direct declarations and flat installer rules; never add dependencies. */
-export function applyRuntimePins(pkg: PkgJson, pins: Record<string, string>): Array<{ name: string, from: string, to: string, field?: 'overrides' | 'resolutions' }> {
+/**
+ * Whether the app already declares a compatible release at or past `target`:
+ * the same minor line for a 0.x package (`^target` in semver terms). STX ships
+ * patches ahead of the framework, and an app that took one keeps it rather than
+ * being pulled back to the release the framework last pinned.
+ */
+export function keepsNewerRelease(spec: string, target: string): boolean {
+  const declared = baseVersion(spec)
+  const plain = /^\d+\.\d+\.\d+(?:-[\w.-]+)?$/
+  return plain.test(declared) && plain.test(target)
+    && Bun.semver.order(declared, target) >= 0 && Bun.semver.satisfies(declared, `^${target}`)
+}
+
+/**
+ * Align existing direct declarations and flat installer rules; never add
+ * dependencies. A newer compatible patch the app already declares is kept
+ * unless `exact` asks for the framework's own pins (`--allow-downgrade`).
+ */
+export function applyRuntimePins(pkg: PkgJson, pins: Record<string, string>, options: { exact?: boolean } = {}): Array<{ name: string, from: string, to: string, field?: 'overrides' | 'resolutions' }> {
   const changes: Array<{ name: string, from: string, to: string, field?: 'overrides' | 'resolutions' }> = []
   for (const field of ['dependencies', 'devDependencies', 'overrides', 'resolutions'] as const) {
     const declarations = pkg[field]
@@ -241,6 +269,8 @@ export function applyRuntimePins(pkg: PkgJson, pins: Record<string, string>): Ar
       const spec = declarations[name]
       if (typeof spec !== 'string' || !/^[\^~]?\d+\.\d+\.\d+(?:-[\w.-]+)?$/.test(spec))
         continue
+      if (!options.exact && keepsNewerRelease(spec, target))
+        continue
       const next = `${/^[\^~]/.test(spec) ? spec[0] : ''}${target}`
       if (next === spec)
         continue
@@ -249,6 +279,104 @@ export function applyRuntimePins(pkg: PkgJson, pins: Record<string, string>): Ar
     }
   }
   return changes
+}
+
+/** Craft's packages: the SDK and its per-platform builders, released together. */
+export function isCraftPackage(name: string): boolean {
+  return name === 'craft-native' || /^@craft-native\/[a-z0-9][\w.-]*$/.test(name)
+}
+
+/**
+ * The Craft release the framework needs, from its published actions manifest:
+ * `craft-native: ">=0.0.443"` gives `0.0.443`. Only a plain `>=` floor counts.
+ */
+export function craftFloor(manifest: { peerDependencies?: Record<string, string>, dependencies?: Record<string, string> }): string | undefined {
+  const range = manifest.peerDependencies?.['craft-native'] ?? manifest.dependencies?.['craft-native']
+  return range?.match(/^>=\s*(\d+\.\d+\.\d+)$/)?.[1]
+}
+
+/** Every Craft package the app declares directly or in a flat installer rule. */
+export function declaredCraftPackages(pkg: PkgJson): string[] {
+  const names = new Set<string>()
+  for (const field of ['dependencies', 'devDependencies', 'overrides', 'resolutions'] as const) {
+    const declarations = pkg[field]
+    if (declarations && typeof declarations === 'object' && !Array.isArray(declarations))
+      Object.keys(declarations).filter(isCraftPackage).forEach(name => names.add(name))
+  }
+  return [...names].sort()
+}
+
+/**
+ * The Craft pins to raise an app to: the framework's floor for each Craft
+ * package the app declares, when that package publishes the floor version.
+ * The platform builders share Craft's version, but one that never published
+ * it is left alone rather than pinned to a version that cannot install.
+ */
+export async function resolveCraftPins(pkg: PkgJson, floor: string | undefined, read: typeof fetch = fetch): Promise<Record<string, string>> {
+  const pins: Record<string, string> = {}
+  if (!floor) return pins
+  for (const name of declaredCraftPackages(pkg)) {
+    const response: Response | null = await read(`https://registry.npmjs.org/${name.replace('/', '%2f')}/${floor}`).catch(() => null)
+    const manifest: { name?: string, version?: string } | null = response?.ok ? await response.json().catch(() => null) : null
+    if (manifest?.name === name && manifest.version === floor) pins[name] = floor
+    else console.warn(`  ${name}@${floor} is not published; leaving ${name} as declared.`)
+  }
+  return pins
+}
+
+/**
+ * Raise Craft declarations below the framework's floor, keeping each spec's
+ * operator (`0.0.435` → `0.0.443`, `^0.0.435` → `^0.0.443`, `>=0.0.424` →
+ * `>=0.0.443`), in dependencies and in flat overrides/resolutions alike: an
+ * override left at the old Craft would win over the raised dependency. Never
+ * lowers a declaration and never adds one.
+ */
+export function applyCraftFloor(pkg: PkgJson, pins: Record<string, string>): Array<{ name: string, from: string, to: string, field?: 'overrides' | 'resolutions' }> {
+  const changes: Array<{ name: string, from: string, to: string, field?: 'overrides' | 'resolutions' }> = []
+  for (const field of ['dependencies', 'devDependencies', 'overrides', 'resolutions'] as const) {
+    const declarations = pkg[field]
+    if (!declarations || typeof declarations !== 'object' || Array.isArray(declarations))
+      continue
+    for (const [name, floor] of Object.entries(pins)) {
+      const spec = declarations[name]
+      const match = typeof spec === 'string' ? /^(\^|~|>=\s*)?(\d+\.\d+\.\d+(?:-[\w.-]+)?)$/.exec(spec) : null
+      if (!match || Bun.semver.order(match[2]!, floor) >= 0)
+        continue
+      const next = `${(match[1] ?? '').replace(/\s+/, '')}${floor}`
+      changes.push({ name, from: spec as string, to: next, ...(field === 'overrides' || field === 'resolutions' ? { field } : {}) })
+      declarations[name] = next
+    }
+  }
+  return changes
+}
+
+/** The `lockfileVersion` of the app's bun.lock, or null without one. */
+export function lockfileVersion(projectRoot: string): number | null {
+  const path = join(projectRoot, 'bun.lock')
+  if (!existsSync(path)) return null
+  const match = /"lockfileVersion"\s*:\s*(\d+)/.exec(readFileSync(path, 'utf8'))
+  return match ? Number(match[1]) : null
+}
+
+/**
+ * Re-resolve exact pins the upgrade raised without rebuilding bun.lock.
+ *
+ * Deleting lock entries and installing makes Bun 1.4 write the whole lockfile
+ * again in its newer format (lockfileVersion 2), which an app still on v1 and
+ * its CI's Bun may not want; HQ hand-edited entries back after that. `bun add
+ * --exact --lockfile-only` resolves just the named packages and keeps the
+ * existing format. Ranged declarations are left to the framework install.
+ */
+export function lockfileOnlyAddCommands(pkg: PkgJson, names: Iterable<string>): string[] {
+  const wanted = new Set(names)
+  const commands: string[] = []
+  for (const [field, flag] of [['dependencies', ''], ['devDependencies', ' --dev']] as const) {
+    const specs = Object.entries(pkg[field] ?? {})
+      .filter(([name, spec]) => wanted.has(name) && /^\d+\.\d+\.\d+(?:-[\w.-]+)?$/.test(spec) && /^(?:@[a-z0-9][\w.-]*\/)?[a-z0-9][\w.-]*$/.test(name))
+      .map(([name, spec]) => `${name}@${spec}`)
+    if (specs.length) commands.push(`bun add --exact --lockfile-only${flag} ${specs.join(' ')}`)
+  }
+  return commands
 }
 
 /** Strip a range operator (`^`, `~`, `>=`, …) so a declared range compares to a bare version. */
@@ -355,17 +483,26 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
   if (!hasStacksDependency(pkg))
     return updateStandalonePackage(projectRoot, options)
 
-  const { version: target, metaDeps, runtimePins } = await resolveTarget(options).catch((err: Error) => {
+  const { version: target, metaDeps, runtimePins, craftFloor: floor } = await resolveTarget(options).catch((err: Error) => {
     console.error(`✗ ${err.message}`)
     process.exit(1)
   })
+  const craftPins = await resolveCraftPins(pkg, floor)
 
   console.log(`\n  Upgrading the Stacks framework${options.canary ? ' (canary)' : ''} → ${target}`)
   if (current)
     console.log(`  current \`stacks\` constraint: ${current}\n`)
 
   const lockstep = lockstepPackages(metaDeps, target)
-  const changes = [...applyBumps(pkg, target, lockstep), ...applyRuntimePins(pkg, runtimePins)]
+  const changes = [
+    ...applyBumps(pkg, target, lockstep),
+    ...applyRuntimePins(pkg, runtimePins, { exact: options.allowDowngrade }),
+    ...applyCraftFloor(pkg, craftPins),
+  ]
+  // What the install must leave in node_modules: each runtime and Craft
+  // package at the version the manifest now declares (a newer patch the app
+  // kept, or the release's own pin).
+  const installedPins = declaredPins(pkg, [...Object.keys(runtimePins), ...Object.keys(craftPins)])
   const projectManifestChanges = migratePackageProjectManifest(pkg)
 
   // The root manifest is not the whole story. An app that keeps parts of the
@@ -480,11 +617,24 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
   // package.json at the new version while bun.lock + node_modules stayed old.
   // Check the lockfile and installed core/frontend cohort as well as the meta
   // version, so the same command repairs even a partially completed install.
-  const dependenciesNeedInstall = needsFrameworkInstall(projectRoot, target, runtimePins)
+  const dependenciesNeedInstall = needsFrameworkInstall(projectRoot, target, installedPins)
 
   if (changes.length > 0 || manifestChanges.length > 0 || projectManifestChanges.length > 0 || dependenciesNeedInstall || options.force) {
     console.log('  Installing…\n')
+    const lockBefore = lockfileVersion(projectRoot)
+    if (lockBefore !== null) {
+      for (const command of lockfileOnlyAddCommands(pkg, changes.filter(change => !change.field && !lockstep.has(change.name)).map(change => change.name))) {
+        const added = await runCommand(command, { cwd: projectRoot })
+        if (added.isErr) {
+          console.error(`\n✗ \`${command}\` failed. Your package.json was updated - resolve the error and re-run \`buddy upgrade --version ${target}\`.\n`)
+          process.exit(1)
+        }
+      }
+    }
     const result = await runCommand(frameworkPackageUpdateCommand(target, options.force), { cwd: projectRoot })
+    const lockAfter = lockfileVersion(projectRoot)
+    if (lockBefore !== null && lockAfter !== null && lockAfter !== lockBefore)
+      console.warn(`  bun.lock moved from lockfileVersion ${lockBefore} to ${lockAfter}. If CI or the server runs an older Bun, restore it (\`git checkout bun.lock\`) and re-resolve only the changed packages with \`bun add --exact --lockfile-only <package>@<version>\`.`)
 
     if (result.isErr) {
       console.error(`\n✗ The install step failed. Your package.json was updated - resolve the error and re-run \`buddy upgrade --version ${target}\`.\n`)

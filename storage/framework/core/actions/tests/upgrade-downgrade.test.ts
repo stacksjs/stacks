@@ -63,35 +63,59 @@ describe('buddy upgrade and a release that declares older versions (#3011)', () 
   })
   afterEach(() => rmSync(app, { recursive: true, force: true }))
 
-  it('refuses by default, names the release that wanted it, and writes nothing', async () => {
-    writeFileSync(join(app, 'package.json'), manifest('0.2.706'))
-    // A vendored manifest ahead of the release too: it used to be rewritten
+  function vendoredAhead(): { path: string, text: string } {
+    // A vendored manifest ahead of the release: it used to be rewritten
     // before anything was reported, so a refusal has to happen before that.
-    const vendored = join(app, 'storage/framework/defaults/build/package.json')
-    const ahead = `${JSON.stringify({ dependencies: { '@stacksjs/actions': '^0.75.330' } }, null, 2)}\n`
-    mkdirSync(join(vendored, '..'), { recursive: true })
-    writeFileSync(vendored, ahead)
+    const path = join(app, 'storage/framework/defaults/build/package.json')
+    const text = `${JSON.stringify({ dependencies: { '@stacksjs/actions': '^0.75.330' } }, null, 2)}\n`
+    mkdirSync(join(path, '..'), { recursive: true })
+    writeFileSync(path, text)
+    return { path, text }
+  }
+
+  it('keeps a newer STX patch the app already runs instead of pulling it back', async () => {
+    writeFileSync(join(app, 'package.json'), manifest('0.2.706'))
+    const { code, out } = await upgrade()
+    expect(code).toBe(0)
+    expect(out).not.toContain('downgrade')
+    expect(pins()).toEqual(expected('0.2.706'))
+  })
+
+  it('refuses by default, names the release that wanted it, and writes nothing', async () => {
+    // A newer STX minor line is not a compatible patch, so it still counts.
+    writeFileSync(join(app, 'package.json'), manifest('0.3.0'))
+    const vendored = vendoredAhead()
     const { code, out } = await upgrade()
     expect(code).toBe(1)
     expect(out).toContain('because stacks@0.75.318 declares older versions than this app does')
-    expect(out).toMatch(/@stacksjs\/stx\s+0\.2\.706 {2}→ {2}0\.2\.691 {3}\(downgrade\)/)
-    expect(out).toMatch(/@stacksjs\/stx \(overrides\)\s+0\.2\.706 {2}→ {2}0\.2\.691 {3}\(downgrade\)/)
+    expect(out).toMatch(/@stacksjs\/stx\s+0\.3\.0 {2}→ {2}0\.2\.691 {3}\(downgrade\)/)
+    expect(out).toMatch(/@stacksjs\/stx \(overrides\)\s+0\.3\.0 {2}→ {2}0\.2\.691 {3}\(downgrade\)/)
     expect(out).toMatch(/@stacksjs\/actions\s+\^0\.75\.330 {2}→ {2}\^0\.75\.318 {3}\(downgrade\) {3}storage\/framework\/defaults\/build\/package\.json/)
     expect(out).toContain('Refusing to downgrade 4 dependencies. Nothing was written or installed.')
     expect(out).toContain('--allow-downgrade')
     // Not listed as an update as well.
     expect(out).not.toContain('will be updated')
+    expect(readFileSync(join(app, 'package.json'), 'utf8')).toBe(manifest('0.3.0'))
+    expect(readFileSync(vendored.path, 'utf8')).toBe(vendored.text)
+  })
+
+  it('still refuses a framework downgrade beside a kept STX patch', async () => {
+    writeFileSync(join(app, 'package.json'), manifest('0.2.706'))
+    vendoredAhead()
+    const { code, out } = await upgrade()
+    expect(code).toBe(1)
+    expect(out).not.toMatch(/@stacksjs\/stx.*\(downgrade\)/)
+    expect(out).toContain('Refusing to downgrade 1 dependency.')
     expect(readFileSync(join(app, 'package.json'), 'utf8')).toBe(manifest('0.2.706'))
-    expect(readFileSync(vendored, 'utf8')).toBe(ahead)
   })
 
   it('shows the downgrade in a preview and says a real run would refuse it', async () => {
-    writeFileSync(join(app, 'package.json'), manifest('0.2.706'))
+    writeFileSync(join(app, 'package.json'), manifest('0.3.0'))
     const { code, out } = await upgrade('--dry-run')
     expect(code).toBe(0)
     expect(out).toContain('would be downgraded')
     expect(out).toContain('A real run refuses this upgrade unless --allow-downgrade is passed.')
-    expect(readFileSync(join(app, 'package.json'), 'utf8')).toBe(manifest('0.2.706'))
+    expect(readFileSync(join(app, 'package.json'), 'utf8')).toBe(manifest('0.3.0'))
   })
 
   it('applies it when --allow-downgrade asks for it, still marked as one', async () => {
@@ -109,5 +133,20 @@ describe('buddy upgrade and a release that declares older versions (#3011)', () 
     expect(out).toContain('will be updated')
     expect(out).not.toContain('downgrade')
     expect(pins()).toEqual(expected('0.2.691'))
+  })
+
+  it('raises Craft pins and their overrides to the floor the release declares', async () => {
+    const app_ = { name: 'app', dependencies: { 'stacks': '0.75.318', 'craft-native': '0.0.435', '@craft-native/android': '0.0.435' }, devDependencies: { '@craft-native/ios': '^0.0.435' }, overrides: { 'craft-native': '0.0.435', '@craft-native/ios': '0.0.435' } }
+    writeFileSync(join(app, 'package.json'), `${JSON.stringify(app_, null, 2)}\n`)
+    const { code, out } = await upgrade()
+    expect(code).toBe(0)
+    const written = JSON.parse(readFileSync(join(app, 'package.json'), 'utf8'))
+    expect(written.dependencies['craft-native']).toBe('0.0.443')
+    expect(written.devDependencies['@craft-native/ios']).toBe('^0.0.443')
+    expect(written.overrides).toEqual({ 'craft-native': '0.0.443', '@craft-native/ios': '0.0.443' })
+    // Not published at the floor in this registry: left as declared, and said so.
+    expect(written.dependencies['@craft-native/android']).toBe('0.0.435')
+    expect(out).toContain('@craft-native/android@0.0.443 is not published')
+    expect(out).toMatch(/craft-native \(overrides\)\s+0\.0\.435 {2}→ {2}0\.0\.443/)
   })
 })

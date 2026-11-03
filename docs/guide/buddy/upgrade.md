@@ -59,24 +59,38 @@ application-defined values.
 ### When the release is behind your app
 
 A framework release pins the STX, components and runtime versions it was built
-with. If your app already declares a newer one, upgrading to that release would
-move it **backwards**. `buddy upgrade` lists those separately, marked
-`(downgrade)`, and refuses by default with nothing written:
+with. STX ships patches between framework releases, so an app that already
+declares a newer patch on the same line (`0.2.799` against a release built
+with `0.2.798`) keeps it: those declarations are left as they are.
+
+Anything else that would move **backwards**, such as a newer STX minor line or
+a vendored framework manifest ahead of the release, is listed separately,
+marked `(downgrade)`, and refused by default with nothing written:
 
 ```text
   The following dependencies would be downgraded, because stacks@0.75.318 declares older versions than this app does:
-    @stacksjs/stx              0.2.706  →  0.2.691   (downgrade)
-    @stacksjs/stx (overrides)  0.2.706  →  0.2.691   (downgrade)
+    @stacksjs/stx              0.3.0  →  0.2.691   (downgrade)
+    @stacksjs/stx (overrides)  0.3.0  →  0.2.691   (downgrade)
 
 ✗ Refusing to downgrade 2 dependencies. Nothing was written or installed.
 ```
 
 Wait for a release that declares those versions or newer
 (`buddy upgrade --version <version> --dry-run` checks one), or pass
-`--allow-downgrade` to accept them. `--dry-run` shows the same section and says
+`--allow-downgrade` to accept them (it also replaces a kept newer STX patch
+with the release's own pins). `--dry-run` shows the same section and says
 whether a real run would refuse. A downgrade is a separate decision from an
 upgrade because its symptoms appear at runtime, far from the command that
 caused them.
+
+### Craft and the lockfile
+
+The release also declares the Craft it needs (`craft-native >=0.0.443`). An app
+that pins `craft-native` or an `@craft-native/*` builder below that floor, in
+its dependencies or its `overrides`, is raised to it; a newer Craft is left
+alone. Raised exact pins are re-resolved with `bun add --exact --lockfile-only`,
+which keeps an existing `bun.lock` in its current format. If Bun rewrites the
+lockfile to a newer `lockfileVersion` anyway, the upgrade says so.
 
 ### Why `bun install` is not the whole upgrade
 
