@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.447...v0.75.448)
+
+## 🐛 Bug Fixes
+
+- **auth**: bind recovery issuance and retire pending reset credentials ([6c75005](https://github.com/stacksjs/stacks/commit/6c75005)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.446...v0.75.447)
 
 ## 🐛 Bug Fixes
