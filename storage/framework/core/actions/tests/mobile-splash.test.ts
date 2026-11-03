@@ -61,3 +61,16 @@ describe('resolveMobileSplash', () => {
     expect(lines).toEqual([])
   })
 })
+
+describe('the declared Craft floor', () => {
+  // A peer range does not stop an app from installing an older Craft, so the
+  // build keeps its check. What it must not do is warn on the Craft every
+  // framework package already asks for.
+  it('covers the generated splash in every package that builds or hosts native apps', () => {
+    for (const pkg of ['actions', 'mobile', 'desktop']) {
+      const manifest = JSON.parse(readFileSync(join(import.meta.dir, '../..', pkg, 'package.json'), 'utf8'))
+      const range = manifest.peerDependencies?.['craft-native'] ?? manifest.dependencies?.['craft-native']
+      expect(range, pkg).toBe(`>=${CRAFT_GENERATED_SPLASH_FLOOR}`)
+    }
+  })
+})

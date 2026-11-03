@@ -31,7 +31,7 @@ export async function resolveMobileSplash(
   const handMade = platform === 'ios' && Boolean(splash?.image)
   if (!handMade && !splash?.logo && !input.appIcon) return null
   if (!handMade && craftVersion && !Bun.semver.satisfies(craftVersion, `>=${CRAFT_GENERATED_SPLASH_FLOOR}`)) {
-    log.warn(`The generated launch splash needs craft-native >= ${CRAFT_GENERATED_SPLASH_FLOOR} (installed: ${craftVersion}); the launch screen shows only the background colour. Install a newer Craft, or give ${platform}.splash.image.`)
+    log.warn(`The generated launch splash needs craft-native >= ${CRAFT_GENERATED_SPLASH_FLOOR} (installed: ${craftVersion}); the launch screen shows only the background colour. Run \`buddy upgrade\` to raise it to the framework's floor, or give ${platform}.splash.image.`)
     return null
   }
   // Imported lazily: `@stacksjs/image` pulls in the whole ts-images codec.
