@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.452...v0.75.453)
+
+## 🐛 Bug Fixes
+
+- **queue**: keep terminal batch handlers outside member cancellation ([6740f60](https://github.com/stacksjs/stacks/commit/6740f60)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- refresh native queue test references ([44032e0](https://github.com/stacksjs/stacks/commit/44032e0)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.451...v0.75.452)
 
 ## 🐛 Bug Fixes
