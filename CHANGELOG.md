@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.453...v0.75.454)
+
+## 🐛 Bug Fixes
+
+- make setup logger cancellation interruptible ([6f6efbf](https://github.com/stacksjs/stacks/commit/6f6efbf)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.452...v0.75.453)
 
 ## 🐛 Bug Fixes
