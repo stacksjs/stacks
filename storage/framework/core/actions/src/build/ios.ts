@@ -1,3 +1,4 @@
+import { assertCraftSupportsNativeSensors } from './native-sensors'
 import type { MobileConfig } from '@stacksjs/types'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
@@ -19,6 +20,7 @@ import { assertCraftSupportsChromeFonts, assertCraftSupportsTint } from './ios-c
 process.exitCode = 1
 
 interface CraftIosBuilder {
+  nativeSensorCapabilities?: readonly string[]
   init(options: {
     name: string
     bundleId: string
@@ -95,6 +97,7 @@ craftConfig.splashImagePath = resolveMobilePath(projectPath(), config.splash?.im
 craftConfig.splashImagePathDark = resolveMobilePath(projectPath(), config.splash?.imageDark)
 
 const builder = await loadCraftIosBuilder()
+assertCraftSupportsNativeSensors('ios', config.capabilities, builder.nativeSensorCapabilities)
 
 // Screens drawn natively, compiled by stx before Craft copies them in: one
 // file per route when this Craft runs each screen from its own.

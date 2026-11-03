@@ -1,3 +1,4 @@
+import { assertCraftSupportsNativeSensors } from './native-sensors'
 import type { AndroidMobileConfig, MobileConfig } from '@stacksjs/types'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
@@ -15,6 +16,7 @@ import { reportMobileBuildTarget } from './mobile-target'
 process.exitCode = 1
 
 interface CraftAndroidBuilder {
+  nativeSensorCapabilities?: readonly string[]
   nativeMapProviders?: readonly string[]
   /** The builder installs a directory of route bundles (Craft 0.0.242 and later). */
   nativeRouteBundles?: boolean
@@ -87,6 +89,7 @@ const release = appBundle || process.env.NODE_ENV === 'production'
 // the same screens and app script as the iOS app.
 const native = config.renderer === 'native'
 const builder = await loadCraftAndroidBuilder()
+assertCraftSupportsNativeSensors('android', config.capabilities, builder.nativeSensorCapabilities)
 // One bundle per route when this Craft runs each screen from its own file.
 const nativeBundle = native ? await compileNativeScreens(config, projectPath(), output, undefined, 'android', { routes: builder.nativeRouteBundles === true, runtime: builder.nativeRouteRuntime === true, messages: builder.nativeMessages === true }) : null
 if (nativeBundle) {
