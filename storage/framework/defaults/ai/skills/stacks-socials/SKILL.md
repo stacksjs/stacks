@@ -34,6 +34,20 @@ instance redirect. X always uses PKCE; its verifier lives in the base class
 (getPkceVerifier/withCodeVerifier), so a callback on a fresh instance can
 restore it. Registry descriptors say `pkce` (X) and `nonce` (Apple).
 
+## Signing in with another Stacks application
+
+`StacksIssuerProvider({ issuer, clientId, clientSecret, redirectUrl, scopes,
+resource, userInfoUrl })` signs people in with another Stacks app that runs
+`oauthProvider`: Authorization Code with S256 PKCE (always on, so carry
+`getPkceVerifier()` in the flow and restore it with `withCodeVerifier()`) and
+client_secret_basic. Send `resource` whenever the issuer binds scopes to one.
+`getTokens(code)` keeps the refresh token that `getAccessToken` drops;
+`refreshTokens(rt)` rotates it, `revokeToken(rt)` unlinks (RFC 7009) and
+`getClaims(token)` / `getUserByToken(token)` read the issuer's
+`oauthUserInfoResponse` endpoint, keyed by its pairwise `sub`. Only a boolean
+`email_verified` counts as verified. It is constructed directly, not through the
+registry.
+
 ## Flow state (login CSRF)
 
 A callback that exchanges any `code` signs the victim into the attacker's

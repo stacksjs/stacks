@@ -737,6 +737,18 @@ not authenticate them. OAuth resource endpoints must explicitly use
 required scopes. Ordinary refresh also refuses delegated refresh credentials;
 use the OAuth token endpoint and the registered client's protocol authentication.
 
+### Userinfo and pairwise subjects
+
+The provider has no id_token. A relying party that signs people in with this
+provider reads `oauthUserInfoResponse(request, { scopes, resource, audience,
+workspaceId, isSubjectEligible, pairwiseSecret, claims })`: the same delegated
+token checks as any protected resource, then `{ ...claims, sub }`. `sub` comes
+from `pairwiseOAuthSubject(secret, clientId, subject)`, an HMAC that differs per
+client so two relying parties cannot join records on it; keep its secret apart
+from rotating app keys. `claims({ sub, subject, clientId, scopes })` releases
+only what the granted scopes cover, and null answers 401. The socials
+`StacksIssuerProvider` is the matching client.
+
 ## Token-only recovery endpoints
 
 For high-entropy reset credentials, `mintPasswordResetToken()` returns `{ token, digest }`.

@@ -94,5 +94,6 @@ export * from './referrals'
 
 export * from './oauth-dynamic-registration'
 export * from './oauth-protected-resource'
+export * from './oauth-userinfo'
 
 export * from './oauth-server'
