@@ -54,7 +54,13 @@ jobs:
   release-evidence:
     name: Release evidence (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 10
+    # macOS runners are scarce. On 2026-11-03 the macOS job was cancelled five
+    # times without ever starting, each 15 minutes after it was queued under a
+    # 10-minute timeout, and each failed the release. It runs in about a
+    # minute once it starts, so a longer allowance costs nothing while it runs
+    # and may keep a queued job alive. The Releaser also reruns a job that
+    # never started (await-release-ci.ts).
+    timeout-minutes: ${{ matrix.os == 'macos-latest' && 30 || 10 }}
     strategy:
       fail-fast: false
       matrix:

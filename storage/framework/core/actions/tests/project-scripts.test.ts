@@ -47,6 +47,13 @@ function windowsProcessState(pid: number) {
   catch (error) { return { pid, diagnosticError: String(error) } }
 }
 
+/** The PID a fixture recorded, once the file holds a whole positive one. */
+function startedPid(path: string): number | undefined {
+  if (!existsSync(path)) return undefined
+  const pid = Number(readFileSync(path, 'utf8').trim())
+  return Number.isSafeInteger(pid) && pid > 0 ? pid : undefined
+}
+
 test.each([0, 7])('a completed check disposes its unreferenced normal descendant before settling (exit %s)', async (exitCode) => {
   const root = mkdtempSync(join(tmpdir(), 'stacks-project-ownership-'))
   writeFileSync(join(root, 'package.json'), JSON.stringify({ scripts: { check: 'bun check.ts' } }))
@@ -120,16 +127,20 @@ test('owned cleanup retains all completed command output in the receipt hash', a
 test('cancellation disposes an already started owned check before rejecting', async () => {
   const root = mkdtempSync(join(tmpdir(), 'stacks-project-cancellation-'))
   writeFileSync(join(root, 'package.json'), JSON.stringify({ scripts: { check: 'bun check.ts' } }))
-  writeFileSync(join(root, 'check.ts'), 'await Bun.write("check.pid", String(process.pid)); await Bun.sleep(60_000)')
+  // Renamed into place: the file appears with its whole PID. Created and then
+  // written, it could be seen empty, and Number('') is 0. Windows CI read that
+  // as the check's PID (OpenProcess error 87), and `process.kill(0, 0)` signals
+  // the test's own process group, so a disposed check looked alive.
+  writeFileSync(join(root, 'check.ts'), 'import { renameSync, writeFileSync } from "node:fs"; writeFileSync("check.pid.partial", String(process.pid)); renameSync("check.pid.partial", "check.pid"); await Bun.sleep(60_000)')
   const controller = new AbortController()
   const budget = process.platform === 'win32' ? 15_000 : 3000
   const execution = runProjectScripts({ cwd: root, scripts: ['check'], timeoutMs: budget, signal: controller.signal })
   void execution.catch(() => {})
   try {
     const until = performance.now() + budget
-    while (!existsSync(join(root, 'check.pid')) && performance.now() < until) await Bun.sleep(10)
-    expect(existsSync(join(root, 'check.pid')), 'the check must start before cancellation is tested').toBe(true)
-    const pid = Number(readFileSync(join(root, 'check.pid'), 'utf8'))
+    while (!startedPid(join(root, 'check.pid')) && performance.now() < until) await Bun.sleep(10)
+    const pid = startedPid(join(root, 'check.pid')) ?? 0
+    expect(pid, 'the check must start before cancellation is tested').toBeGreaterThan(0)
     const beforeCancellation = windowsProcessState(pid)
     const cancelledAt = performance.now()
     controller.abort()
@@ -143,8 +154,8 @@ test('cancellation disposes an already started owned check before rejecting', as
   finally {
     controller.abort()
     await execution.catch(() => {})
-    if (existsSync(join(root, 'check.pid'))) {
-      const pid = Number(readFileSync(join(root, 'check.pid'), 'utf8'))
+    const pid = startedPid(join(root, 'check.pid'))
+    if (pid) {
       try {
         if (process.platform === 'win32') Bun.spawnSync(['taskkill', '/PID', String(pid), '/T', '/F'], { stdout: 'ignore', stderr: 'ignore', timeout: 2000 })
         else process.kill(pid, 'SIGKILL')

@@ -221,12 +221,15 @@ describe.skipIf(process.platform === 'win32')('browser startup failure evidence'
   }, 8_000)
 
   test('a second launch keeps its own deadline while another caller starts Chrome', async () => {
-    const path = executable(`${protocolProcess(true, false)}\nawait Bun.write(import.meta.dir + '/ready', String(process.pid))`)
+    // Renamed into place so the file never appears without its whole PID.
+    const path = executable(`${protocolProcess(true, false)}\nawait Bun.write(import.meta.dir + '/ready.partial', String(process.pid)); require('node:fs').renameSync(import.meta.dir + '/ready.partial', import.meta.dir + '/ready')`)
     const first = launch({ chromePath: path, startTimeoutMs: 2_000 }).catch(error => error)
     try {
       const ready = join(dirname(path), 'ready')
       await waitFor(() => existsSync(ready), 1_000)
       const pid = Number(readFileSync(ready, 'utf8'))
+      // PID 0 would make the liveness check below signal this process group.
+      expect(pid).toBeGreaterThan(0)
       const started = Date.now()
       const error = await launch({ chromePath: path, startTimeoutMs: 100 }).catch(error => error)
       expect(error).toBeInstanceOf(Error)

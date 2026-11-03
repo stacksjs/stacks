@@ -46,3 +46,28 @@ test('native browser device-scale evidence is required before publication', () =
   expect(evaluateReleaseCi(sha, [run], [...withoutBrowser, { name: 'browser-device-scale', status: 'completed', conclusion: 'skipped' }]).kind).toBe('rejected')
   expect(evaluateReleaseCi(sha, [run], [...withoutBrowser, { name: 'browser-device-scale', status: 'completed', conclusion: 'success' }])).toEqual({ kind: 'accepted', runId: 42 })
 })
+
+test('a source job no runner ever started is rerun, never accepted or treated as a failed check', () => {
+  // The observed 2026-11-03 jobs: cancelled 15 minutes after queueing, runner_id 0, no steps.
+  const starved = { status: 'completed', conclusion: 'cancelled', runner_id: 0, steps: [] }
+  const observed = jobs().map(job => job.name === 'Release evidence (macos-latest)' ? { ...job, ...starved } : job)
+  const failed = { ...run, conclusion: 'failure', run_attempt: 2 }
+  expect(evaluateReleaseCi(sha, [failed], observed)).toEqual({ kind: 'starved', runId: 42, attempt: 2, jobs: ['Release evidence (macos-latest)'] })
+  // A run's own success is still required: a starved job can never be accepted.
+  expect(evaluateReleaseCi(sha, [run], observed).kind).toBe('rejected')
+  // Any job that started and did not succeed is a real failure.
+  const alsoFailed = observed.map(job => job.name === 'Release evidence (windows-latest)' ? { ...job, conclusion: 'failure', runner_id: 7, steps: [{}] } : job)
+  expect(evaluateReleaseCi(sha, [failed], alsoFailed).kind).toBe('rejected')
+  const cancelledMidRun = jobs().map(job => job.name === 'Release evidence (macos-latest)' ? { ...job, ...starved, runner_id: 7, steps: [{}] } : job)
+  expect(evaluateReleaseCi(sha, [failed], cancelledMidRun).kind).toBe('rejected')
+  expect(evaluateReleaseCi(sha, [{ ...failed, conclusion: 'timed_out' }], observed).kind).toBe('rejected')
+  expect(evaluateReleaseCi(sha, [failed], jobs()).kind).toBe('rejected')
+})
+
+test('only source acceptance may rerun CI jobs, and the macOS queue allowance is longer', () => {
+  const release = Bun.YAML.parse(readFileSync(new URL('../workflows/release.yml', import.meta.url), 'utf8')) as any
+  expect(release.jobs['source-ci'].permissions).toEqual({ contents: 'read', actions: 'write' })
+  expect(release.permissions.actions).toBe('read')
+  const ci = Bun.YAML.parse(readFileSync(new URL('../workflows/ci.yml', import.meta.url), 'utf8')) as any
+  expect(ci.jobs['release-evidence']['timeout-minutes']).toContain('macos-latest')
+})

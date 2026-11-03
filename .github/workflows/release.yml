@@ -101,13 +101,19 @@ jobs:
     needs: serialize
     runs-on: ubuntu-latest
     timeout-minutes: 100
+    # actions: write only to rerun source jobs GitHub cancelled before any
+    # runner took them (no runner, no step ran). A job that ran and failed
+    # still rejects the release; see await-release-ci.ts.
+    permissions:
+      contents: read
+      actions: write
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: '1.4.4'
       # The committed graph supplies the repository's normal preload.
-      # Source acceptance itself makes read-only GitHub API requests.
+      # Source acceptance reads the CI run, and only reruns never-started jobs.
       - name: Install the committed dependency graph
         run: bun install --frozen-lockfile
       - name: Require complete CI for this exact release commit
