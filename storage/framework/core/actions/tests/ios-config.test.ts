@@ -117,6 +117,15 @@ describe('iOS mobile build configuration', () => {
     expect('enableHeartRate' in toCraftIosConfig({ appName: 'HQ.training', bundleId: 'training.hq.app', url: 'https://hq.training/m' })).toBe(false)
   })
 
+  // stacksjs/stacks#3146: Craft shipped the host, and no app could switch it on.
+  it('turns the shake gesture on, and floors it at the first craft-native that has it', () => {
+    const base = { appName: 'HQ.training', bundleId: 'training.hq.app', url: 'https://hq.training/m' }
+    expect(toCraftIosConfig({ ...base, capabilities: { shakeGesture: true } }).enableShakeGesture).toBe(true)
+    expect('enableShakeGesture' in toCraftIosConfig(base)).toBe(false)
+    expect(unsupportedCraftCapabilities({ shakeGesture: true }, '0.0.424')).toEqual([{ capability: 'shakeGesture', needs: '0.0.435' }])
+    expect(unsupportedCraftCapabilities({ shakeGesture: true }, '0.0.435')).toEqual([])
+  })
+
   it('keeps sound playing with the screen locked only when the app asks', () => {
     const base = { appName: 'HQ.training', bundleId: 'training.hq.app', url: 'https://hq.training/m' }
     expect(toCraftIosConfig({ ...base, capabilities: { backgroundAudio: true } }).enableBackgroundAudio).toBe(true)

@@ -28,6 +28,11 @@ export interface MobileCapabilities {
   audioRecording?: boolean
   videoRecording?: boolean
   motionSensors?: boolean
+  /**
+   * Shaking the phone raises a `shake` event, on iOS and Android. Craft arms
+   * the accelerometer only while the app is in front.
+   */
+  shakeGesture?: boolean
   localDatabase?: boolean
   bluetooth?: boolean
   nfc?: boolean

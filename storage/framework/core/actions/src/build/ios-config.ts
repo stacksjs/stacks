@@ -81,6 +81,7 @@ const CAPABILITY_KEYS = {
   audioRecording: 'enableAudioRecording',
   videoRecording: 'enableVideoRecording',
   motionSensors: 'enableMotionSensors',
+  shakeGesture: 'enableShakeGesture',
   localDatabase: 'enableLocalDatabase',
   bluetooth: 'enableBluetooth',
   nfc: 'enableNFC',
@@ -115,6 +116,8 @@ export const CRAFT_CAPABILITY_FLOORS = {
   heartRate: '0.0.152',
   backgroundAudio: '0.0.162',
   scheduledWorkouts: '0.0.163',
+  // Tagged in Craft at 0.0.427; 0.0.435 is the first release published with it.
+  shakeGesture: '0.0.435',
 } as const satisfies Partial<Record<keyof typeof CAPABILITY_KEYS, string>>
 
 export interface UnsupportedCraftCapability {

@@ -29,6 +29,7 @@ export interface CraftAndroidConfig {
   mapsApiKey?: string
   enableBluetooth?: boolean
   enableHeartRate?: boolean
+  enableShakeGesture?: boolean
   enableHealthConnect?: boolean
   renderer?: AndroidMobileConfig['renderer']
   nativeScreens?: Record<string, string>
@@ -59,6 +60,7 @@ const CAPABILITY_KEYS = {
   localNetwork: 'enableLocalNetwork',
   localDatabase: 'enableLocalDatabase',
   localNotifications: 'enableLocalNotifications',
+  shakeGesture: 'enableShakeGesture',
 } as const
 
 /**
@@ -88,6 +90,8 @@ export const CRAFT_ANDROID_FLOORS = {
   crashReporting: '0.0.179',
   /** A white notification glyph and tint for push, local and recording notifications. */
   notificationIcon: '0.0.241',
+  /** The accelerometer's `shake` event. Tagged at 0.0.427, first published in 0.0.435. */
+  shakeGesture: '0.0.435',
 } as const
 
 export type AndroidCraftFeature = keyof typeof CRAFT_ANDROID_FLOORS
@@ -107,6 +111,7 @@ export function androidCraftFeatures(config: AndroidMobileConfig, options: { app
   if (config.capabilities?.bluetooth) features.push('bluetooth')
   if (config.capabilities?.heartRate) features.push('heartRate')
   if (config.capabilities?.audioRecording) features.push('audioRecording')
+  if (config.capabilities?.shakeGesture) features.push('shakeGesture')
   if (config.capabilities?.healthConnect && config.renderer === 'native') features.push('healthConnect')
   if (config.backgroundRefresh?.enabled) features.push('backgroundRefresh')
   if (options.appBundle) features.push('appBundle')

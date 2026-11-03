@@ -154,6 +154,12 @@ For the web renderer, choose a primary content source:
 Only enable capabilities the product uses. Craft turns enabled capabilities
 into native bridge availability and required iOS privacy descriptions.
 
+`capabilities.shakeGesture` arms the accelerometer while the app is in front,
+on iOS and Android, and sends the page Craft's `shake` event (with its `force`
+in g) once per deliberate shake. It needs craft-native 0.0.435 or later, and
+the build refuses an older one rather than shipping a gesture that does
+nothing.
+
 The shell's behaviour around the page defaults to a native app's; set only
 what should differ: `swipeBack` (`'router'`, the stx router's interactive
 swipe, or `'webview'` for WebKit's history swipe), `keyboardAccessory` (off),

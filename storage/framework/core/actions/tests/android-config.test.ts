@@ -9,6 +9,15 @@ describe('Android mobile build configuration', () => {
     expect(() => assertCraftSupportsAndroid(config, '0.0.324', 'test')).not.toThrow()
   })
 
+  // stacksjs/stacks#3146: the Android host reads enableShakeGesture as well.
+  it('turns the shake gesture on, and floors it at the first craft-native that has it', () => {
+    const config = { appName: 'Club', packageName: 'org.example.club', capabilities: { shakeGesture: true } }
+    expect(toCraftAndroidConfig(config).enableShakeGesture).toBe(true)
+    expect(androidCraftFeatures(config)).toContain('shakeGesture')
+    expect(() => assertCraftSupportsAndroid(config, '0.0.424', 'test')).toThrow('shakeGesture (needs >= 0.0.435)')
+    expect(() => assertCraftSupportsAndroid(config, '0.0.435', 'test')).not.toThrow()
+  })
+
   it('forwards the chrome fonts to Craft', () => {
     const result = toCraftAndroidConfig({ appName: 'Club', packageName: 'org.example.club', fontFamily: 'Brand-Regular, system-ui', headingFontFamily: 'Brand-Bold' })
     expect(result.fontFamily).toBe('Brand-Regular, system-ui')
