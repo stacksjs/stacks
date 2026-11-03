@@ -3,12 +3,13 @@ interface AvatarProps {
   src?: string
   alt?: string
   name?: string
+  initials?: string
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl'
   rounded?: 'sm' | 'md' | 'lg' | 'full'
   status?: 'online' | 'offline' | 'away' | 'busy'
 }
 
-const { src = '', alt = '', name = '', size = 'md', rounded = 'full', status = '' } = defineProps<AvatarProps>()
+const { src = '', alt = '', name = '', initials: suppliedInitials = '', size = 'md', rounded = 'full', status = '' } = defineProps<AvatarProps>()
 
 const sizeClasses = {
   xs: 'h-5 w-5 text-[10px]',
@@ -50,7 +51,7 @@ function getInitials(fullName: string) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
-const initials = getInitials(name)
+const initials = suppliedInitials || getInitials(name)
 
 // Background colors for initials (consistent based on name)
 const bgColors = [
@@ -66,33 +67,41 @@ const bgColors = [
   'bg-pink-500/15 text-pink-600 dark:bg-pink-400/20 dark:text-pink-400'
 ]
 
-function getBgColorIndex(fullName: string) {
-  if (!fullName) return 0
+</script>
+<script client>
+const avatarSrc = useReactiveProp('src', {{ src }})
+const avatarAlt = useReactiveProp('alt', {{ alt }})
+const avatarName = useReactiveProp('name', {{ name }})
+const avatarInitials = useReactiveProp('initials', {{ suppliedInitials }})
+const avatarDescription = derived(() => avatarAlt() || avatarName() || 'Avatar')
+const avatarFallback = derived(() => {
+  if (avatarInitials()) return avatarInitials()
+  const parts = String(avatarName() || '').trim().split(/\s+/).filter(Boolean)
+  if (!parts.length) return ''
+  return (parts.length === 1 ? parts[0].slice(0, 2) : parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+})
+const avatarColor = derived(() => {
+  const name = String(avatarName() || '')
+  if (!name) return 'bg-black/[0.06] text-neutral-500 dark:bg-white/10 dark:text-neutral-400'
   let hash = 0
-  for (let i = 0; i < fullName.length; i++) {
-    hash = fullName.charCodeAt(i) + ((hash << 5) - hash)
-  }
-  return Math.abs(hash) % bgColors.length
-}
-
-const bgColor = name ? bgColors[getBgColorIndex(name)] : 'bg-black/[0.06] text-neutral-500 dark:bg-white/10 dark:text-neutral-400'
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  const colors = {{ bgColors }}
+  return colors[Math.abs(hash) % colors.length]
+})
 </script>
 <div class="inline-flex relative flex-shrink-0">
-    @if(src)
       <img
+        :if="avatarSrc"
         src="{{ src }}"
+        :src="avatarSrc"
         alt="{{ alt || name || 'Avatar' }}"
+        :alt="avatarDescription"
         class="object-cover {{ sizeClasses[size] }} {{ radiusClasses[rounded] }}"
       >
-    @else
-      <div class="inline-flex items-center justify-center font-medium {{ sizeClasses[size] }} {{ radiusClasses[rounded] }} {{ bgColor }}">
-        @if(initials)
-          <span>{{ initials }}</span>
-        @else
-          <span aria-hidden="true" class="h-1/2 w-1/2 text-neutral-400 i-hugeicons-user"></span>
-        @endif
+      <div :if="!avatarSrc" :class="avatarColor" class="inline-flex items-center justify-center font-medium {{ sizeClasses[size] }} {{ radiusClasses[rounded] }}">
+          <span :if="avatarFallback" :text="avatarFallback">{{ initials }}</span>
+          <span :if="!avatarFallback" aria-hidden="true" class="h-1/2 w-1/2 text-neutral-400 i-hugeicons-user"></span>
       </div>
-    @endif
 
     @if(status)
       <span class="absolute bottom-0 right-0 rounded-full ring-2 ring-white dark:ring-neutral-900 {{ statusColors[status] }} {{ statusSizes[size] }}"></span>
