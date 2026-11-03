@@ -39,6 +39,21 @@ export interface MobileCapabilities {
   healthKit?: boolean
   healthConnect?: boolean
   /**
+   * Android: live exercise tracking through Health Services, so a native
+   * screen's `craft.health.startWorkout()` (and `pause`, `resume`, `end`)
+   * runs there. Requires `android.minSdk` 30, which Craft sets when the app
+   * leaves it unset.
+   */
+  healthServices?: boolean
+  /**
+   * Native screens add passes through stx's `craft.wallet`: Apple Wallet on
+   * iOS (a base64 `.pkpass` or an https URL), Google Wallet on Android (an
+   * https save URL). On iOS `craft.wallet.has()` cannot find a pass yet,
+   * because Craft adds no pass-type entitlement and iOS shows an app only the
+   * passes its entitlement covers.
+   */
+  wallet?: boolean
+  /**
    * iOS: show and steer what the Music app is playing (`music` from
    * @stacksjs/mobile). Apple Music only; iOS asks for media library access
    * the first time the page calls `music.requestAuthorization()`.

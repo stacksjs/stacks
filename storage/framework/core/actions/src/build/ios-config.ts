@@ -91,6 +91,7 @@ const CAPABILITY_KEYS = {
   videoRecording: 'enableVideoRecording',
   motionSensors: 'enableMotionSensors',
   shakeGesture: 'enableShakeGesture',
+  wallet: 'enableWallet',
   localDatabase: 'enableLocalDatabase',
   bluetooth: 'enableBluetooth',
   nfc: 'enableNFC',
@@ -112,8 +113,9 @@ export { CAPABILITY_KEYS as IOS_CAPABILITY_KEYS }
 
 /** Craft iOS flags no `ios.capabilities` name sets, each with why. */
 export const IOS_UNMAPPED_CRAFT_FLAGS: Readonly<Record<`enable${string}`, string>> = {
-  enablePasskeys: 'not offered to apps yet (#3148)',
-  enableWallet: 'not offered to apps yet (#3148)',
+  // Craft's host has it, and a native screen has nothing to call it with until
+  // stx's native runtime exposes it; mapped then, with a webcredentials: domain.
+  enablePasskeys: 'no native-screen API calls it yet (stacksjs/stx#2151)',
 }
 
 /**

@@ -160,6 +160,18 @@ in g) once per deliberate shake. It needs craft-native 0.0.435 or later, and
 the build refuses an older one rather than shipping a gesture that does
 nothing.
 
+`capabilities.wallet` lets a native screen add a pass through stx's
+`craft.wallet`: `add({ data })` with a base64 `.pkpass` or `add({ url })` with
+an https URL on iOS, an https Google Wallet save URL on Android. On iOS
+`craft.wallet.has(serialNumber)` cannot find a pass yet: Craft adds no
+pass-type entitlement, and iOS shows an app only the passes its entitlement
+covers. `android.capabilities.healthServices` runs a native screen's
+`craft.health.startWorkout()`, `pauseWorkout()`, `resumeWorkout()` and
+`endWorkout()` through Health Services; it needs `android.minSdk` 30, which
+Craft sets when the app leaves it unset. Native passkeys are not offered yet:
+Craft's iOS host has them, and a native screen has nothing to call them with
+until stx's native runtime does (stacksjs/stx#2151).
+
 The shell's behaviour around the page defaults to a native app's; set only
 what should differ: `swipeBack` (`'router'`, the stx router's interactive
 swipe, or `'webview'` for WebKit's history swipe), `keyboardAccessory` (off),

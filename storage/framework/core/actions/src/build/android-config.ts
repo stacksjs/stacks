@@ -30,6 +30,8 @@ export interface CraftAndroidConfig {
   enableBluetooth?: boolean
   enableHeartRate?: boolean
   enableShakeGesture?: boolean
+  enableHealthServices?: boolean
+  enableWallet?: boolean
   enableHealthConnect?: boolean
   renderer?: AndroidMobileConfig['renderer']
   nativeScreens?: Record<string, string>
@@ -66,6 +68,8 @@ const CAPABILITY_KEYS = {
   localDatabase: 'enableLocalDatabase',
   localNotifications: 'enableLocalNotifications',
   shakeGesture: 'enableShakeGesture',
+  healthServices: 'enableHealthServices',
+  wallet: 'enableWallet',
 } as const satisfies Partial<Record<keyof MobileCapabilities, `enable${string}`>>
 
 export { CAPABILITY_KEYS as ANDROID_CAPABILITY_KEYS }
@@ -74,8 +78,6 @@ export { CAPABILITY_KEYS as ANDROID_CAPABILITY_KEYS }
 export const ANDROID_UNMAPPED_CRAFT_FLAGS: Readonly<Record<`enable${string}`, string>> = {
   enableHealthConnectBackground: 'Craft sets it from healthConnect.background, which toCraftAndroidConfig forwards',
   enableHealthConnectHistory: 'Craft sets it from healthConnect.history, which toCraftAndroidConfig forwards',
-  enableHealthServices: 'not offered to apps yet (#3148)',
-  enableWallet: 'not offered to apps yet (#3148)',
 }
 
 /**
@@ -243,6 +245,9 @@ export function validateAndroidMobileConfig(config: AndroidMobileConfig): void {
   if (config.capabilities?.healthConnect && (config.minSdk ?? 26) < 26) {
     throw new Error('Android Health Connect requires android.minSdk 26 or newer')
   }
+  // Craft raises minSdk to 30 itself when the app sets none, and refuses one below it.
+  if (config.capabilities?.healthServices && config.minSdk !== undefined && config.minSdk < 30)
+    throw new Error('Android Health Services requires android.minSdk 30 or newer (Android 11), or leave minSdk unset')
   if (config.healthConnect && !config.capabilities?.healthConnect)
     throw new Error('android.healthConnect lists Health Connect data, but android.capabilities.healthConnect is off')
   const minutes = config.backgroundRefresh?.minimumIntervalMinutes

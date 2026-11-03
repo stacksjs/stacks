@@ -18,6 +18,21 @@ describe('Android mobile build configuration', () => {
     expect(() => assertCraftSupportsAndroid(config, '0.0.435', 'test')).not.toThrow()
   })
 
+  // stacksjs/stacks#3148.
+  it('turns Google Wallet on for native screens', () => {
+    const config = { appName: 'Club', packageName: 'org.example.club', capabilities: { wallet: true } }
+    expect(toCraftAndroidConfig(config).enableWallet).toBe(true)
+    expect('enableWallet' in toCraftAndroidConfig({ appName: 'Club', packageName: 'org.example.club' })).toBe(false)
+  })
+
+  it('turns Health Services workouts on, and refuses a minSdk below Android 11', () => {
+    const config = { appName: 'HQ', packageName: 'training.hq.app', url: 'https://hq.training/m', capabilities: { healthServices: true } }
+    expect(toCraftAndroidConfig(config).enableHealthServices).toBe(true)
+    expect(() => validateAndroidMobileConfig(config)).not.toThrow()
+    expect(() => validateAndroidMobileConfig({ ...config, minSdk: 30 })).not.toThrow()
+    expect(() => validateAndroidMobileConfig({ ...config, minSdk: 29 })).toThrow('Health Services requires android.minSdk 30')
+  })
+
   it('forwards the chrome fonts to Craft', () => {
     const result = toCraftAndroidConfig({ appName: 'Club', packageName: 'org.example.club', fontFamily: 'Brand-Regular, system-ui', headingFontFamily: 'Brand-Bold' })
     expect(result.fontFamily).toBe('Brand-Regular, system-ui')

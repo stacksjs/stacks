@@ -126,6 +126,13 @@ describe('iOS mobile build configuration', () => {
     expect(unsupportedCraftCapabilities({ shakeGesture: true }, '0.0.435')).toEqual([])
   })
 
+  // stacksjs/stacks#3148: native screens add passes through stx's craft.wallet.
+  it('turns Apple Wallet on for native screens', () => {
+    const base = { appName: 'Club', bundleId: 'org.example.club', url: 'https://club.example/m' }
+    expect(toCraftIosConfig({ ...base, capabilities: { wallet: true } }).enableWallet).toBe(true)
+    expect('enableWallet' in toCraftIosConfig(base)).toBe(false)
+  })
+
   it('keeps sound playing with the screen locked only when the app asks', () => {
     const base = { appName: 'HQ.training', bundleId: 'training.hq.app', url: 'https://hq.training/m' }
     expect(toCraftIosConfig({ ...base, capabilities: { backgroundAudio: true } }).enableBackgroundAudio).toBe(true)
