@@ -71,8 +71,10 @@ fi
 PIPE_DIR="$(mktemp -d "\${TMPDIR:-/tmp}/stacks-install.XXXXXX")" || exit 1
 PIPE="$PIPE_DIR/setup.pipe"
 SETUP_PID=""
+LOGGER_PID=""
 cleanup() {
-  if [ -n "$SETUP_PID" ]; then kill -TERM -- "-$SETUP_PID" 2>/dev/null; fi
+  if [ -n "$SETUP_PID" ]; then kill -TERM -- "-$SETUP_PID" 2>/dev/null; wait "$SETUP_PID" 2>/dev/null; fi
+  if [ -n "$LOGGER_PID" ]; then kill -TERM -- "-$LOGGER_PID" 2>/dev/null; wait "$LOGGER_PID" 2>/dev/null; fi
   rm -rf "$PIPE_DIR"
 }
 trap cleanup EXIT
@@ -85,17 +87,22 @@ mkfifo "$PIPE" || exit 1
 # process group (job control) so an interrupted run can stop all of it, and
 # pipefail keeps the setup's own exit status rather than tee's.
 set -m
+# Keep the reader in its own group too. Bash defers a trap while waiting for a
+# foreground timestamp command; waiting for background jobs is interruptible.
+( while IFS= read -r line; do echo "$(date '+[%Y-%m-%d %H:%M:%S]') $line"; done < "$PIPE" >> "$LOG_PATH" ) &
+LOGGER_PID=$!
 ( set -o pipefail; bun "$CLI_PATH" setup | tee "$PIPE" ) &
 SETUP_PID=$!
 set +m
-
-# Read from the pipe, add timestamps, and append to the file
-while IFS= read -r line; do echo "$(date '+[%Y-%m-%d %H:%M:%S]') $line"; done < "$PIPE" >> "$LOG_PATH"
 
 # Report the setup's exit status, not the cleanup's
 wait "$SETUP_PID"
 STATUS=$?
 SETUP_PID=""
+wait "$LOGGER_PID"
+LOGGER_STATUS=$?
+LOGGER_PID=""
+if [ "$STATUS" -eq 0 ]; then STATUS=$LOGGER_STATUS; fi
 exit "$STATUS"
 `
 

@@ -163,3 +163,35 @@ test('an interrupted run stops its setup, fails, and removes its FIFO', async ()
     expect(await readdir(env.TMPDIR)).toEqual([])
   })
 })
+
+
+test('interruption also stops a logger blocked in its timestamp command', async () => {
+  await withScratch(async (scratch) => {
+    const { root, script, env } = await project(scratch, 'timestamp-interrupted', 'echo running; exec sleep 31.8')
+    await rm(join(root, 'bin/date'))
+    await executable(join(root, 'bin/date'), 'echo timestamping >&2; exec sleep 31.9')
+    const child = start(script, root, env)
+    const output = new Response(child.stdout).text()
+    const reader = child.stderr.getReader()
+    let stderr = ''
+    try {
+      while (!stderr.includes('timestamping')) {
+        const { value, done } = await reader.read()
+        if (done) break
+        stderr += new TextDecoder().decode(value)
+      }
+      expect(stderr).toContain('timestamping')
+      child.kill('SIGTERM')
+      expect(await child.exited).not.toBe(0)
+      await output
+      const lingering = Bun.spawnSync(['/bin/ps', '-axo', 'command='], { stdout: 'pipe' }).stdout.toString()
+      expect(lingering).not.toContain('sleep 31.8')
+      expect(lingering).not.toContain('sleep 31.9')
+      expect(await readdir(env.TMPDIR)).toEqual([])
+    }
+    finally {
+      reader.releaseLock()
+      child.kill('SIGTERM')
+    }
+  })
+})
