@@ -121,6 +121,50 @@ describe.skipIf(process.platform === 'win32')('browser startup failure evidence'
     console.error('protocol fixture ready')
   `
 
+  test('closing a browser disposes its inherited utility processes before retiring the profile', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'stacks-browser-descendant-'))
+    fixtures.push(root)
+    const profile = join(root, 'profile')
+    mkdirSync(profile)
+    const marker = join(root, 'utility.json')
+    const token = crypto.randomUUID()
+    const utility = `
+      process.on('SIGTERM', () => {})
+      const server = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch(request) {
+        if (request.headers.get('x-owner') !== ${JSON.stringify(token)}) return new Response('', { status: 403 })
+        if (new URL(request.url).pathname === '/stop') setTimeout(() => process.exit(0), 10)
+        return Response.json({ owner: ${JSON.stringify(token)} })
+      } })
+      await Bun.write(${JSON.stringify(marker)}, JSON.stringify({ origin: 'http://127.0.0.1:' + server.port }))
+    `
+    const path = executable(`
+      Bun.spawn([process.execPath, '--no-env-file', '--eval', ${JSON.stringify(utility)}], { stdout: 'ignore', stderr: 'ignore' })
+      while (!await Bun.file(${JSON.stringify(marker)}).exists()) await Bun.sleep(5)
+      ${protocolProcess(true)}
+    `)
+    const unrelated = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch() { return new Response('unrelated') } })
+    let browser: Awaited<ReturnType<typeof launch>> | undefined
+    let origin: string | undefined
+    const alive = async () => {
+      try { return (await fetch(origin!, { headers: { 'x-owner': token }, signal: AbortSignal.timeout(500) }).then(response => response.json())).owner === token }
+      catch { return false }
+    }
+    try {
+      browser = await launch({ chromePath: path, profile, startTimeoutMs: 2000 })
+      origin = JSON.parse(readFileSync(marker, 'utf8')).origin
+      expect(await alive()).toBe(true)
+      await browser.close()
+      expect(await alive()).toBe(false)
+      expect(await fetch(`http://127.0.0.1:${unrelated.port}`).then(response => response.text())).toBe('unrelated')
+      expect(existsSync(profile)).toBe(true)
+    }
+    finally {
+      await browser?.close()
+      if (origin && await alive()) await fetch(origin + '/stop', { headers: { 'x-owner': token } })
+      unrelated.stop(true)
+    }
+  }, 15000)
+
   test('bounds a DevTools WebSocket which never completes its handshake', async () => {
     const error = await failure(executable(protocolProcess(true, false)), 2_000)
     expect(error.message).toContain('Timed out connecting to Chrome')

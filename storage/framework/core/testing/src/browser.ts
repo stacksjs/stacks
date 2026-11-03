@@ -49,6 +49,7 @@ import { closeSync, existsSync, mkdtempSync, openSync, readSync, rmSync } from '
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
+import { spawnOwnedProcess } from '@stacksjs/cli/owned-process'
 import { chromeHasUpdater as hasChromeUpdater, findChrome as discoverChrome, prepareMacChrome as prepareChrome } from '../../../defaults/ai/skills/stacks-browse/scripts/chrome'
 
 // ---------------------------------------------------------------------------
@@ -782,35 +783,43 @@ async function startChrome(options: LaunchOptions, chromePath: string, started: 
   // A kept profile still names the last launch's port.
   rmSync(join(profile, 'DevToolsActivePort'), { force: true })
   const portFile = join(profile, 'DevToolsActivePort')
-  const chrome = (() => {
+  let owner: ReturnType<typeof spawnOwnedProcess> | undefined
+  let pid: number | null = null
+  let commandExit: { code: number, signal: string | null } | undefined
+  let ownerFailure: unknown
+  try {
+    owner = spawnOwnedProcess([
+      chromePath,
+      ...(options.headless === false ? [] : ['--headless=new']),
+      '--remote-debugging-port=0',
+      `--user-data-dir=${profile}`,
+      '--no-first-run',
+      '--no-default-browser-check',
+      '--disable-background-networking',
+      '--disable-component-update',
+      '--disable-extensions',
+      '--hide-scrollbars',
+      // A re-signed clone (prepareMacChrome) is a new app to the Keychain, so
+      // its first cookie read asks the user for "Chrome Safe Storage" and every
+      // http page hangs behind that invisible prompt. A test profile needs no
+      // real Keychain.
+      '--use-mock-keychain',
+      ...(options.args ?? []),
+      'about:blank',
+    ], { stdin: 'ignore', stdout: 'ignore', stderr: 'pipe', stopGraceMs: 2000 })
+    void owner.exited.then(exit => { commandExit = exit }, error => { ownerFailure = error })
+    pid = await within(owner.started, Math.max(1, timeoutMs - (Date.now() - started)), 'starting Chrome owner')
+  }
+  catch (error) {
+    let cleanupError: string | null = null
     try {
-      return Bun.spawn([
-        chromePath,
-        ...(options.headless === false ? [] : ['--headless=new']),
-        '--remote-debugging-port=0',
-        `--user-data-dir=${profile}`,
-        '--no-first-run',
-        '--no-default-browser-check',
-        '--disable-background-networking',
-        '--disable-component-update',
-        '--disable-extensions',
-        '--hide-scrollbars',
-        // A re-signed clone (prepareMacChrome) is a new app to the Keychain, so
-        // its first cookie read asks the user for "Chrome Safe Storage" and every
-        // http page hangs behind that invisible prompt. A test profile needs no
-        // real Keychain.
-        '--use-mock-keychain',
-        ...(options.args ?? []),
-        'about:blank',
-      ], { stdin: 'ignore', stdout: 'ignore', stderr: 'pipe' })
+      await owner?.stop()
+      if (!options.profile) rmSync(profile, { recursive: true, force: true })
     }
-    catch (error) {
-      let cleanupError: string | null = null
-      try { if (!options.profile) rmSync(profile, { recursive: true, force: true }) }
-      catch (failure) { cleanupError = String(failure) }
-      throw new ChromeLaunchError(error, { pid: null, chromePath, profile, temporaryProfile: !options.profile, elapsedMs: Date.now() - started, phase: progress.phase, phaseStartedMs: { ...progress.phaseStartedMs }, exitCodeBeforeCleanup: null, signalCodeBeforeCleanup: null, exitCode: null, signalCode: null, portFileExisted: false, portFileContents: null, stderrTail: '', stderrTruncated: false, cleanupError })
-    }
-  })()
+    catch (failure) { cleanupError = String(failure) }
+    throw new ChromeLaunchError(error, { pid, chromePath, profile, temporaryProfile: !options.profile, elapsedMs: Date.now() - started, phase: progress.phase, phaseStartedMs: { ...progress.phaseStartedMs }, exitCodeBeforeCleanup: null, signalCodeBeforeCleanup: null, exitCode: null, signalCode: null, portFileExisted: false, portFileContents: null, stderrTail: '', stderrTruncated: false, cleanupError })
+  }
+  const chrome = owner
 
   let stderrTail = ''
   let stderrTruncated = false
@@ -822,20 +831,13 @@ async function startChrome(options: LaunchOptions, chromePath: string, started: 
     let processOff = false
     const failures: string[] = []
     try {
-      if (chrome.exitCode === null && chrome.signalCode === null) {
-        try { chrome.kill('SIGTERM') }
-        catch {} // Exit may race this signal; still require the exit proof below.
-      }
-      if (!await finishesWithin(chrome.exited, 2_000)) {
-        try { chrome.kill('SIGKILL') }
-        catch {} // The following wait also covers a process which just exited.
-        if (!await finishesWithin(chrome.exited, 2_000)) throw new Error(`Chrome process ${chrome.pid} did not exit after SIGKILL`)
-      }
+      await chrome.stop()
       processOff = true
     }
     catch (error) {
       failures.push(String(error))
-      processOff = chrome.exitCode !== null || chrome.signalCode !== null
+      // A failed native ownership proof must preserve the profile.
+      processOff = false
     }
     finally {
       try {
@@ -855,7 +857,7 @@ async function startChrome(options: LaunchOptions, chromePath: string, started: 
     }
     if (failures.length) throw new Error(`Chrome cleanup failed: ${failures.join('; ')}`)
   })()
-  const exited = () => chrome.exitCode !== null || chrome.signalCode !== null
+  const exited = () => commandExit !== undefined || ownerFailure !== undefined
   const remaining = () => {
     const value = timeoutMs - (Date.now() - started)
     if (value <= 0) throw new Error(`Timed out after ${timeoutMs}ms starting Chrome`)
@@ -865,8 +867,8 @@ async function startChrome(options: LaunchOptions, chromePath: string, started: 
   const failure = async (error: unknown, cleanup: boolean, observation = progress): Promise<ChromeLaunchError> => {
     const elapsedMs = Date.now() - observation.started
     const phase = observation.phase, phaseStartedMs = { ...observation.phaseStartedMs }
-    const exitCodeBeforeCleanup = chrome.exitCode
-    const signalCodeBeforeCleanup = chrome.signalCode
+    const exitCodeBeforeCleanup = commandExit?.code ?? null
+    const signalCodeBeforeCleanup = commandExit?.signal ?? null
     const portFileExisted = existsSync(portFile)
     const portFileContents = portEvidence(portFile)
     let cleanupError: string | null = null
@@ -874,11 +876,11 @@ async function startChrome(options: LaunchOptions, chromePath: string, started: 
       try { await close() }
       catch (failed) { cleanupError = failed instanceof Error ? failed.message : String(failed) }
     }
-    return new ChromeLaunchError(error, { pid: chrome.pid, chromePath, profile, temporaryProfile: !options.profile, elapsedMs, phase, phaseStartedMs, exitCodeBeforeCleanup, signalCodeBeforeCleanup, exitCode: chrome.exitCode, signalCode: chrome.signalCode, portFileExisted, portFileContents, stderrTail, stderrTruncated, cleanupError })
+    return new ChromeLaunchError(error, { pid, chromePath, profile, temporaryProfile: !options.profile, elapsedMs, phase, phaseStartedMs, exitCodeBeforeCleanup, signalCodeBeforeCleanup, exitCode: commandExit?.code ?? null, signalCode: commandExit?.signal ?? null, portFileExisted, portFileContents, stderrTail, stderrTruncated, cleanupError })
   }
 
   try {
-    reader = chrome.stderr.getReader()
+    reader = chrome.stderr!.getReader()
     const stderrReader = reader
     stderrDone = (async () => {
       const decoder = new TextDecoder()
@@ -896,7 +898,7 @@ async function startChrome(options: LaunchOptions, chromePath: string, started: 
     const [portLine, browserPath = ''] = (portEvidence(portFile) ?? '').split('\n')
     const port = Number(portLine)
     if (!Number.isInteger(port) || port < 1 || port > 65_535) throw new Error('Chrome wrote an invalid DevToolsActivePort')
-    return { pid: chrome.pid, chromePath, profile, port, browserPath: browserPath.trim(), remaining, close, failure, exited }
+    return { pid, chromePath, profile, port, browserPath: browserPath.trim(), remaining, close, failure, exited }
   }
   catch (error) {
     throw await failure(error, true)
@@ -957,25 +959,8 @@ interface SharedChrome {
 const sharedChromes = new Map<string, Promise<SharedChrome>>()
 /** Shared Chromes still running, by pid, with the temporary profile to remove. */
 const sharedProcesses = new Map<number, { profile: string, chromePath: string, exited: () => boolean }>()
-let exitHookInstalled = false
-
-/**
- * A process that exits while sharing a Chrome takes it along. Synchronous,
- * because nothing asynchronous runs once a process has started to exit (a
- * script ending in `process.exit()` included).
- */
-function installExitHook(): void {
-  if (exitHookInstalled) return
-  exitHookInstalled = true
-  process.once('exit', () => {
-    for (const [pid, { profile }] of sharedProcesses) {
-      try { process.kill(pid, 'SIGKILL') }
-      catch {}
-      try { if (profile) rmSync(profile, { recursive: true, force: true }) }
-      catch {}
-    }
-  })
-}
+// Native ownership also disposes inherited descendants when the caller exits.
+// Do not remove profiles in an exit hook before that disposal is confirmed.
 
 /** Stop every shared Chrome now, instead of after it lingers. */
 export async function closeSharedBrowsers(): Promise<void> {
@@ -1020,7 +1005,6 @@ async function acquireShared(key: string, options: LaunchOptions, chromePath: st
     }
   })()
   sharedChromes.set(key, starting)
-  installExitHook()
   try {
     const shared = await starting
     shared.sessions++
