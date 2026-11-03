@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.446...v0.75.447)
+
+## 🐛 Bug Fixes
+
+- **ui**: declare the avatar palette as typed client payload ([a9517f3](https://github.com/stacksjs/stacks/commit/a9517f3)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.445...v0.75.446)
 
 ## 🐛 Bug Fixes
