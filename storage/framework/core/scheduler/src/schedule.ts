@@ -10,7 +10,8 @@ import { log, runCommand } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
 import { parse } from '@stacksjs/cron'
 import { job as queuedJob, runJob } from '@stacksjs/queue'
-import type { SchedulerLockHandle } from './scheduler-lock'
+import type { Dialect, SchedulerLockHandle } from './scheduler-lock'
+import { claimSchedulerSlot } from './scheduler-claims'
 import { acquireSchedulerLock } from './scheduler-lock'
 
 /**
@@ -582,6 +583,12 @@ export class Schedule implements UntimedSchedule {
     let fired = 0
     for (const slot of slots) {
       try {
+        // Two servers booting together replay the same slots: each one runs
+        // where its claim went in (stacksjs/stacks#3152).
+        if (!(await this.claimSlot(taskName, slot.getTime()))) {
+          log.info(`[scheduler] runMissed slot ${slot.toISOString()} skipped: another server claimed it`)
+          continue
+        }
         let result = run()
         if (result && typeof (result as Promise<unknown>).then === 'function')
           result = await (result as Promise<unknown>)
@@ -709,40 +716,58 @@ export class Schedule implements UntimedSchedule {
 
     const expiryMs = this.overlapExpiresAfterMinutes * 60 * 1000
 
-    // Resolve the SQL dialect + connection lazily so the scheduler
-    // doesn't import @stacksjs/database at module-load time (tests
-    // and CLI scripts that don't touch the DB shouldn't pay for it).
     // `onOneServer()` REQUIRES the DB; `withoutOverlapping()` works
     // with either path.
-    let dialect: 'sqlite' | 'mysql' | 'postgres' | null = null
-    let adminDb: { unsafe: (sql: string) => Promise<unknown> } | null = null
-
-    if (this.shouldRunOnOneServer) {
-      try {
-        const { db } = await import('@stacksjs/database/runtime')
-        // The Stacks db proxy exposes a Bun.SQL-compatible `unsafe`
-        // method — same shape `migration-lock.ts` uses.
-        adminDb = db as unknown as { unsafe: (sql: string) => Promise<unknown> }
-        // Inspect env to determine dialect (no driver-detect API on
-        // the db proxy itself).
-        const driver = (await import('@stacksjs/env')).env.DB_CONNECTION || 'sqlite'
-        if (driver === 'postgres' || driver === 'mysql' || driver === 'sqlite') {
-          dialect = driver
-        }
-      }
-      catch (err) {
-        // No DB connection available — onOneServer() degrades to
-        // file-lock-only with a warning. Better than silently
-        // running on every instance.
-        log.warn(`[scheduler] onOneServer() couldn't reach DB; falling back to file-only lock (which only serializes within this process): ${err instanceof Error ? err.message : String(err)}`)
-      }
-    }
+    const { dialect, adminDb } = this.shouldRunOnOneServer
+      ? await this.oneServerDb(true)
+      : { dialect: null, adminDb: null }
 
     const handle = await acquireSchedulerLock(name, expiryMs, dialect, adminDb, Schedule.lockDir)
     if (!handle) return false
 
     Schedule.activeLocks.set(name, handle)
     return true
+  }
+
+  /**
+   * The SQL dialect + connection `onOneServer()` coordinates through, resolved
+   * lazily so the scheduler doesn't import @stacksjs/database at module-load
+   * time (tests and CLI scripts that don't touch the DB shouldn't pay for it).
+   * Both are null when no connection is available; `warn` logs that once per
+   * run, from the lock, rather than again from the slot claim.
+   */
+  private async oneServerDb(warn: boolean): Promise<{ dialect: Dialect | null, adminDb: { unsafe: (sql: string) => Promise<unknown> } | null }> {
+    try {
+      const { db } = await import('@stacksjs/database/runtime')
+      // The Stacks db proxy exposes a Bun.SQL-compatible `unsafe`
+      // method — same shape `migration-lock.ts` uses.
+      const adminDb = db as unknown as { unsafe: (sql: string) => Promise<unknown> }
+      // Inspect env to determine dialect (no driver-detect API on
+      // the db proxy itself).
+      const driver = (await import('@stacksjs/env')).env.DB_CONNECTION || 'sqlite'
+      const dialect = driver === 'postgres' || driver === 'mysql' || driver === 'sqlite' ? driver : null
+      return { dialect, adminDb }
+    }
+    catch (err) {
+      // No DB connection available — onOneServer() degrades to
+      // file-lock-only with a warning. Better than silently
+      // running on every instance.
+      if (warn)
+        log.warn(`[scheduler] onOneServer() couldn't reach DB; falling back to file-only lock (which only serializes within this process): ${err instanceof Error ? err.message : String(err)}`)
+      return { dialect: null, adminDb: null }
+    }
+  }
+
+  /**
+   * Whether this server runs `slot` (epoch ms) of an `onOneServer()` task.
+   * The advisory lock is released when a run ends, so on its own it lets a
+   * server whose tick lands after the first one finished run the same slot
+   * again (stacksjs/stacks#3152). A task without `onOneServer()` always runs.
+   */
+  private async claimSlot(name: string, slot: number): Promise<boolean> {
+    if (!this.shouldRunOnOneServer) return true
+    const { dialect, adminDb } = await this.oneServerDb(false)
+    return claimSchedulerSlot(name, slot, dialect, adminDb)
   }
 
   private async releaseLock(name: string): Promise<void> {
@@ -988,7 +1013,10 @@ export class Schedule implements UntimedSchedule {
     }
 
     const taskName = this.options.name || 'unnamed-task'
-    const runTask = async (body: () => unknown): Promise<void> => {
+    // `slot` is the time a tick woke for. runNow() and the background
+    // process's run have none: they always run, as `buddy schedule:run-one`
+    // promises, and a background run's slot was claimed before it spawned.
+    const runTask = async (body: () => unknown, slot?: number): Promise<void> => {
       if (!Schedule.isEnabled(taskName)) {
         log.debug(`[scheduler] task ${taskName} is paused`)
         return
@@ -1017,6 +1045,20 @@ export class Schedule implements UntimedSchedule {
         log.debug(`[scheduler] task ${taskName} ran less than ${interval}s ago; skipping this tick (withInterval)`)
         return
       }
+      if (slot !== undefined) {
+        let claimed: boolean
+        try {
+          claimed = await this.claimSlot(taskName, slot)
+        }
+        catch (error) {
+          reportFailure(error)
+          throw error
+        }
+        if (!claimed) {
+          log.info(`[scheduler] task ${taskName} slot ${new Date(slot).toISOString()} skipped: another server claimed it (onOneServer)`)
+          return
+        }
+      }
       runCount++
       running = true
       lastStartedAt = now
@@ -1039,23 +1081,26 @@ export class Schedule implements UntimedSchedule {
           await (result as Promise<unknown>)
       }
       catch (error) {
-        if (this.options.catch) {
-          this.options.catch(error as Error)
-        }
-        else {
-          log.error(`[scheduler] task ${taskName} failed (no withErrorHandler() installed): ${error instanceof Error ? error.message : String(error)}`)
-        }
+        reportFailure(error)
         throw error
       }
       finally {
         running = false
       }
     }
-    const executeTask = (): Promise<void> => runTask(task)
+    const reportFailure = (error: unknown): void => {
+      if (this.options.catch) {
+        this.options.catch(error as Error)
+      }
+      else {
+        log.error(`[scheduler] task ${taskName} failed (no withErrorHandler() installed): ${error instanceof Error ? error.message : String(error)}`)
+      }
+    }
+    const executeTask = (slot: number): Promise<void> => runTask(task, slot)
 
     const job: ScheduledJob = {
       stop,
-      run: executeTask,
+      run: () => runTask(task),
       nextRun,
       pattern: this.intervalMs !== null ? `every ${this.intervalMs / 1000}s` : this.cronPattern,
       timezone: this.zone(),
@@ -1069,10 +1114,14 @@ export class Schedule implements UntimedSchedule {
       // every other work item finishes — without this, a CLI script
       // that registers a `.everySecond()` schedule blocks the process
       // from exiting cleanly.
+      // Its slot is the wall-clock interval the tick fell in. Interval timers
+      // are not aligned across servers, so two whose ticks straddle a boundary
+      // claim different slots and both run.
+      const intervalMs = this.intervalMs
       timer = setInterval(() => {
         if (stopped) return
-        void executeTask().catch(() => {})
-      }, this.intervalMs)
+        void executeTask(Math.floor(Date.now() / intervalMs) * intervalMs).catch(() => {})
+      }, intervalMs)
       ;(timer as ReturnType<typeof setInterval> & { unref?: () => void }).unref?.()
     }
     else if (this.cronPattern) {
@@ -1100,7 +1149,7 @@ export class Schedule implements UntimedSchedule {
         else {
           timer = setTimeout(() => {
             if (stopped) return
-            void executeTask().catch(() => {})
+            void executeTask(nextTime.getTime()).catch(() => {})
             scheduleNext()
           }, delay)
         }

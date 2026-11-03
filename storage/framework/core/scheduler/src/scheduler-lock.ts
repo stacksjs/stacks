@@ -270,7 +270,7 @@ function extractFirstInt(result: unknown, column: string): number | null {
   return null
 }
 
-function pluckFirstRow(result: unknown): unknown {
+export function pluckFirstRow(result: unknown): unknown {
   if (!result) return null
   if (Array.isArray(result)) return result[0]
   if (typeof result === 'object' && 'rows' in result && Array.isArray((result as { rows: unknown[] }).rows))

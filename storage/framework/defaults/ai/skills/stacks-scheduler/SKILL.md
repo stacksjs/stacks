@@ -143,6 +143,17 @@ lock, and a DB-unavailable fallback warns rather than promising cluster
 coordination. Use the same task name on all participating hosts. Names are
 sanitized and hashed for lock paths.
 
+The advisory lock is released when a run ends, so on its own it only stops
+two runs at once. `onOneServer()` therefore also claims the slot: each tick
+inserts `(task, slot)` into a `scheduler_claims` table with a unique key, and
+only the server whose row went in first runs it (`scheduler-claims.ts`,
+stacksjs/stacks#3152). The slot is the cron time the tick woke for; for
+`everySecond()` it is the wall-clock second, and interval timers are not
+aligned across servers, so ticks that straddle a boundary both run. The table
+is created on first use with CREATE TABLE IF NOT EXISTS, and claims older than
+a day are pruned. `Schedule.runNow()` and `buddy schedule:run-one` have no
+slot and always run. SQLite and the DB-unavailable fallback claim nothing.
+
 ### Background Execution
 
 When `runInBackground()` is called, each run starts `buddy schedule:run-one <name> --in-process` as a detached child in the project directory. That process registers the app's schedule the way `schedule:run` does and runs the one task there, taking any `withoutOverlapping()` / `onOneServer()` lock itself. The child is `unref()`'d so it does not keep the parent alive, and a non-zero exit is logged under the task's name. The task needs a name (`schedule.job/action/command` have one; a callback needs `.withName()`), or registration fails.
@@ -362,7 +373,7 @@ export default {
 - A task's default timezone is the app's (`config.app.timezone`, which `config/app.ts` ships as `'America/Los_Angeles'`), not a fixed zone; UTC when the app sets none
 - `everySecond()` uses `setInterval`, not cron -- it sets `intervalMs = 1000` and bypasses the cron parser entirely
 - The `Queue` class in `schedule.ts` is just an empty subclass of `Schedule` (`export class Queue extends Schedule {}`) -- it adds no functionality
-- `withoutOverlapping()` provides local file locking. `onOneServer()` adds PostgreSQL/MySQL advisory coordination where available
+- `withoutOverlapping()` provides local file locking. `onOneServer()` adds a PostgreSQL/MySQL advisory lock and a per-slot claim in `scheduler_claims`, created on first use
 - SQLite/Turso and DB-unavailable fallback cannot provide cluster-wide scheduler coordination; read scheduler-lock.ts and its warning
 - `runInBackground()` runs the task by name in a `buddy schedule:run-one <name> --in-process` child, so the task must be registered under that name by the app's scheduler file, and an unnamed callback is refused
 - There are TWO scheduler systems: `@stacksjs/scheduler` (fluent API in `schedule.ts`) and the queue-level scheduler in `@stacksjs/queue` (`queue/src/scheduler.ts`). The former runs tasks in-process; the latter dispatches to the queue
@@ -386,9 +397,10 @@ seconds with a five-field schedule. Unsupported specific-second forms throw.
 output. `runMissed({ since, max? })` performs bounded catch-up: each missed
 slot runs in this process, awaited, through the live guards. A paused task
 runs none, only slots inside `between()` run, and a slot is skipped while the
-task holds its `withoutOverlapping()` or `onOneServer()` lock. Those locks stop
-two runs at once, not one slot running twice on two servers, so keep a
-catch-up task idempotent.
+task holds its `withoutOverlapping()` or `onOneServer()` lock. An
+`onOneServer()` task also claims each slot it replays, so two servers that
+boot together run each missed slot once.
+
 
 `schedule.notification(recipient, payload, channels?, options?)` schedules
 native notify fan-out and fails the task if any channel result failed.
