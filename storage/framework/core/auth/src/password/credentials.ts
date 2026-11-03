@@ -1,15 +1,15 @@
 import { config } from '@stacksjs/config'
-import { db, enqueueAfterCommit, getDatabaseDialect, isInTransaction, mutationCount, parseSqlDateTime, sqlDateTime, sqlHelpers } from '@stacksjs/database/runtime'
+import { db, enqueueAfterCommit, getDatabaseDialect, isInTransaction, mutationCount, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { mail, template } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
 import { makeHash, verifyHash } from '@stacksjs/security'
 import { withVerifiedPassword } from '../credential-version'
-import { normalizeAuthEmail } from '../credential-user'
 import { revokeMagicLinks } from '../magic-link-revocation'
 import { revokeOAuthSubjectAuthorizationState } from '../oauth-grants'
 import { sessionDestroyAll } from '../session-auth'
 import { revokeTokenPairs } from '../token-revocation'
 import { DEFAULT_TOKENABLE_TYPE } from '../tokens'
+import { deletePasswordResetCredentials } from './reset-store'
 import { revokeTwoFactorChallenges } from '../two-factor'
 
 /**
@@ -82,15 +82,9 @@ async function mysqlPasswordStampMatches(userId: number, stamp: string): Promise
 /** Old installations may not offer password recovery; other storage errors fail the sweep. */
 async function revokePendingPasswordResets(email: unknown): Promise<void> {
   if (typeof email !== 'string' || !email) return
-  const address = normalizeAuthEmail(email)
   try {
     await db.transaction(async () => {
-      // The consumer accepts legacy mixed-case addresses too. Retire every
-      // case variant, not only the canonical rows written by current issuers.
-      const sql = sqlHelpers(getDatabaseDialect())
-      await db.unsafe(`DELETE FROM password_resets WHERE LOWER(email) = ${sql.param(1)}`, [address])
-      const remaining = await db.primary.unsafe(`SELECT email FROM password_resets WHERE LOWER(email) = ${sql.param(1)} LIMIT 1`, [address]) as Array<{ email: unknown }>
-      if (remaining.length) throw new Error('[auth] Password-reset credentials could not be revoked.')
+      await deletePasswordResetCredentials(email)
     })
   }
   catch (error) {

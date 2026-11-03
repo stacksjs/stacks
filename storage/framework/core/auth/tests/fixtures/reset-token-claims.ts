@@ -24,6 +24,31 @@ try {
   assert.equal((await db.selectFrom('password_resets').select('email').execute()).length, 0)
   await assert.rejects(issuePasswordResetToken('claim@example.invalid', { throttleMs: Number.NaN }), RangeError)
   await assert.rejects(issuePasswordResetToken('claim@example.invalid', { expiresAt: new Date(Date.now() - 1) }), RangeError)
+  const legacy = mintPasswordResetToken()
+  await db.insertInto('password_resets').values({ email: 'Claim@Example.invalid', token: legacy.digest, created_at: new Date(Date.now() - 120_000).toISOString() }).execute()
+  await assert.rejects(() => consumePasswordResetToken(legacy.token, async () => { throw new Error('legacy credential valid before replacement') }), /legacy credential valid before replacement/)
+  const replacement = await issuePasswordResetToken('claim@example.invalid', { throttleMs: 60_000 })
+  assert(replacement.issued)
+  assert.deepEqual(await consumePasswordResetToken(legacy.token, async () => 'stale legacy credential'), { consumed: false }, 'replacement retires every case variant')
+  assert.equal((await consumePasswordResetToken(replacement.token, async claim => claim.userId)).consumed, true)
+
+  const recentLegacy = mintPasswordResetToken()
+  const olderCanonical = mintPasswordResetToken()
+  await db.insertInto('password_resets').values([
+    { email: 'Claim@Example.invalid', token: recentLegacy.digest, created_at: new Date().toISOString() },
+    { email: 'claim@example.invalid', token: olderCanonical.digest, created_at: new Date(Date.now() - 120_000).toISOString() },
+  ]).execute()
+  assert.deepEqual(await issuePasswordResetToken('CLAIM@example.invalid', { throttleMs: 60_000 }), { issued: false }, 'the newest case variant governs throttling')
+  assert.equal((await consumePasswordResetToken(recentLegacy.token, async claim => claim.userId)).consumed, true, 'throttling preserves the existing credential')
+  await db.deleteFrom('password_resets').execute()
+
+  const futureStamped = mintPasswordResetToken()
+  await db.insertInto('password_resets').values({ email: 'claim@example.invalid', token: futureStamped.digest, created_at: new Date(Date.now() + 60_000).toISOString() }).execute()
+  const unthrottled = await issuePasswordResetToken('claim@example.invalid', { throttleMs: 0 })
+  assert(unthrottled.issued, 'zero throttle disables throttling even for a future saved timestamp')
+  assert.deepEqual(await consumePasswordResetToken(futureStamped.token, async () => 'old future credential'), { consumed: false })
+  assert.equal((await consumePasswordResetToken(unthrottled.token, async claim => claim.userId)).consumed, true)
+
   const transferred = await issuePasswordResetToken('claim@example.invalid')
   assert(transferred.issued)
   await db.updateTable('users').set({ email: 'moved@example.invalid' }).where('id', '=', 1).execute()

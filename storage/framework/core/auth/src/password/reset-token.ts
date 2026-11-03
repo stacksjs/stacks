@@ -2,6 +2,7 @@ import { createHash, randomBytes } from 'node:crypto'
 import { config } from '@stacksjs/config'
 import { db, lockRow, mutationCount, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { findAuthUserRowByEmail, normalizeAuthEmail } from '../credential-user'
+import { deletePasswordResetCredentials, pendingPasswordResetCredentials } from './reset-store'
 
 /** High-entropy reset credentials support indexed lookup without storing a usable token. */
 export function passwordResetTokenDigest(token: string): string {
@@ -45,16 +46,16 @@ export async function issuePasswordResetToken(
     const user = await lockRow(tx, 'users', { id: Number(observed.id) })
     if (!user || normalizeAuthEmail(String(user.email)) !== email || (options.eligible && options.eligible(user) !== true)) return { issued: false as const }
     const now = Date.now()
-    const pending = await lockRow(tx, 'password_resets', { email })
-    const createdAt = parseSqlDateTime(pending?.created_at)?.getTime()
-    if (createdAt !== undefined && now < createdAt + throttleMs) return { issued: false as const }
+    const pending = await pendingPasswordResetCredentials(email)
+    const createdAt = pending.reduce((latest, credential) => Math.max(latest, parseSqlDateTime(credential.created_at)?.getTime() ?? Number.NEGATIVE_INFINITY), Number.NEGATIVE_INFINITY)
+    if (throttleMs > 0 && now < createdAt + throttleMs) return { issued: false as const }
     if (options.expiresAt !== undefined && !(options.expiresAt.getTime() > now))
       throw new RangeError('Reset expiry must be a future date')
     // Keep the account binding in the opaque credential: an address may be
     // reassigned before redemption, but its old recovery must never reset the
     // successor account. The stored value remains a digest only.
     const token = `${Number(observed.id)}.${mintPasswordResetToken().token}`
-    await db.deleteFrom('password_resets').where('email', '=', email).execute()
+    await deletePasswordResetCredentials(email)
     const saved = await db.insertInto('password_resets').values({ email, token: passwordResetTokenDigest(token), created_at: sqlDateTime(new Date(now)), expires_at: options.expiresAt ? sqlDateTime(options.expiresAt) : null }).execute()
     if (mutationCount(saved) !== 1) throw new Error('Password reset token could not be issued')
     return { issued: true as const, token, userId: Number(observed.id), email }

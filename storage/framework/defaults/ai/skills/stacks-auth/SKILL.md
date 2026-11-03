@@ -756,6 +756,8 @@ Store the digest in `password_resets.token`, never the plaintext.
 Prefer `issuePasswordResetToken(email, { throttleMs?, expiresAt?, eligible? })` when
 issuing for an existing account. It locks that account before checking its current
 email, the synchronous application eligibility predicate and the saved throttle.
+It considers all supported legacy email-case variants when throttling, and retires
+them together when replacing the credential. `throttleMs: 0` disables throttling.
 It atomically replaces the digest and returns `{ issued: true, token, userId, email }`
 or `{ issued: false }`. The latter deliberately combines unknown, ineligible and
 throttled accounts; recovery endpoints must keep their public response generic.
