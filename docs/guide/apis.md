@@ -404,10 +404,19 @@ async index(request: Request): Promise<Response> {
 ### Cursor Pagination
 
 ```typescript
-const posts = await Post.query()
-  .orderBy('created_at', 'desc')
-  .cursorPaginate(request.query.cursor, 15)
+// Newest first. End the order with the id so posts created in the same
+// second keep a stable place. A cursor owns the ordering, so there is no
+// orderBy(): pass the columns and the direction instead.
+const page = await Post.where('published', true)
+  .cursorPaginate(15, null, ['created_at', 'id'], 'desc')
+
+// page.next_cursor and page.prev_cursor are opaque strings, or null when
+// there is no such page. Inside a request, `?cursor=` is read for you, so the
+// call above already continues from the cursor the client sent back.
 ```
+
+`Post.simplePaginate(15)` skips the `COUNT(*)` that `paginate()` runs and only
+reports whether another page follows.
 
 ## Rate Limiting
 

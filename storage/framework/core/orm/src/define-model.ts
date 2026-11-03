@@ -7,7 +7,7 @@ import { log } from '@stacksjs/logging/runtime'
 import { parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { snakeCase } from '@stacksjs/strings'
 import { AsyncLocalStorage } from 'node:async_hooks'
-import { type Paginator, toCursorPaginator, toPaginator, toSimplePaginator } from '@stacksjs/pagination'
+import { type CursorPaginator, type Paginator, type SimplePaginator, toCursorPaginator, toPaginator, toSimplePaginator } from '@stacksjs/pagination'
 import { enrichPaginatorUrls, resolveCursorArgs, resolvePageArgs } from './paginator-request'
 import { dateTimeWriteKeys, hasWriteValidators, normalizeTimestampWrites, validateWriteBody } from './auto-crud'
 import type { BelongsToForeignKeys } from './model-types'
@@ -994,10 +994,11 @@ function wrapReadsWithProxy(baseModel: Record<string, unknown>, casts?: Record<s
 
   // Static pagination enters the same wrapper as chained model reads, so it
   // shares argument order, request defaults, casts and the canonical envelope.
-  if (typeof baseModel.paginate === 'function') {
-    baseModel.paginate = (...args: unknown[]) => {
+  for (const method of ['paginate', 'simplePaginate', 'cursorPaginate']) {
+    if (typeof baseModel[method] !== 'function') continue
+    baseModel[method] = (...args: unknown[]) => {
       const query = (baseModel.query as () => Record<string, unknown>)()
-      return (query.paginate as (...values: unknown[]) => unknown)(...args)
+      return (query[method] as (...values: unknown[]) => unknown)(...args)
     }
   }
 }
@@ -1996,7 +1997,7 @@ function wrapReadsWithEncryption(baseModel: Record<string, unknown>, encryptedKe
   //
   // Wrap the entry points that return a builder and decorate that builder's
   // terminal methods, so every path out of a query decrypts exactly once.
-  const terminals = ['first', 'firstOrFail', 'get', 'all', 'find', 'findOrFail', 'last', 'paginate', 'simplePaginate']
+  const terminals = ['first', 'firstOrFail', 'get', 'all', 'find', 'findOrFail', 'last', 'paginate', 'simplePaginate', 'cursorPaginate']
   const decorateBuilder = (builder: unknown): unknown => {
     if (!builder || typeof builder !== 'object') return builder
     const target = builder as Record<string, unknown>
@@ -2512,9 +2513,16 @@ export type ModelSoftDeleteStatics<TDef> = TDef extends
   ? Pick<ReturnType<typeof createSoftDeleteMethods>, 'softDelete' | 'restore' | 'forceDelete'>
   : {}
 
-export type StacksModelStatic<TDef extends ModelDefinition> = Omit<QueryModel<TDef>, 'update' | 'delete' | 'paginate' | keyof ModelSoftDeleteStatics<TDef>> & TDef & TraitMethods & ModelSearchStatics<TDef> & ModelSoftDeleteStatics<TDef> & {
+export type StacksModelStatic<TDef extends ModelDefinition> = Omit<QueryModel<TDef>, 'update' | 'delete' | 'paginate' | 'simplePaginate' | 'cursorPaginate' | keyof ModelSoftDeleteStatics<TDef>> & TDef & TraitMethods & ModelSearchStatics<TDef> & ModelSoftDeleteStatics<TDef> & {
   readonly [MODEL_DEFINITION]: TDef
   paginate: (perPage?: number, page?: number) => Promise<Paginator<Awaited<ReturnType<QueryModel<TDef>['paginate']>>['data'][number]>>
+  /** One page without the COUNT query; only knows whether another page follows. */
+  simplePaginate: (perPage?: number, page?: number) => Promise<SimplePaginator<Awaited<ReturnType<QueryModel<TDef>['paginate']>>['data'][number]>>
+  /**
+   * Keyset pagination. `next_cursor` and `prev_cursor` are opaque strings to hand back as `cursor`;
+   * `null` means there is no such page. Pass several columns to break ties (`['created_at', 'id']`).
+   */
+  cursorPaginate: (perPage?: number, cursor?: string | number | unknown[] | null, column?: string | string[], direction?: 'asc' | 'desc') => Promise<CursorPaginator<Awaited<ReturnType<QueryModel<TDef>['paginate']>>['data'][number]>>
   update: (id: number | string, data: ModelWriteData<TDef>) => ReturnType<QueryModel<TDef>['find']>
   forceUpdate: (id: number | string, data: ModelForceWriteData<TDef>) => ReturnType<QueryModel<TDef>['find']>
   forceCreate: (data: ModelForceWriteData<TDef>) => ReturnType<QueryModel<TDef>['create']>
