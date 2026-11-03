@@ -16,7 +16,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/alias` | [`stacks-alias`](../stacks-alias/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/alias/src/index.ts) | 3 |
 | `@stacksjs/analytics` | [`stacks-analytics`](../stacks-analytics/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/analytics/src/index.ts) | 6 |
 | `@stacksjs/api` | [`stacks-api`](../stacks-api/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/api/src/index.ts) | 12 |
-| `@stacksjs/arrays` | [`stacks-arrays`](../stacks-arrays/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/arrays/src/index.ts) | 10 |
+| `@stacksjs/arrays` | [`stacks-arrays`](../stacks-arrays/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/arrays/src/index.ts) | 12 |
 | `@stacksjs/audio` | [`stacks-audio`](../stacks-audio/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/audio/src/index.ts) | 3 |
 | `@stacksjs/auth` | [`stacks-auth`](../stacks-auth/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/auth/src/index.ts) | 126 |
 | `@stacksjs/browser` | [`stacks-browser`](../stacks-browser/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/browser/src/index.ts) | 8 |
@@ -36,7 +36,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/config` | [`stacks-config`](../stacks-config/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/config/src/index.ts) | 16 |
 | `@stacksjs/cron` | [`stacks-cron`](../stacks-cron/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cron/src/index.ts) | 6 |
 | `@stacksjs/database` | [`stacks-database`](../stacks-database/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/database/src/index.ts) | 138 |
-| `@stacksjs/datetime` | [`stacks-datetime`](../stacks-datetime/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/index.ts) | 21 |
+| `@stacksjs/datetime` | [`stacks-datetime`](../stacks-datetime/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/index.ts) | 22 |
 | `@stacksjs/defaults` | [`stacks-build`](../stacks-build/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/defaults/package.json) | 2 |
 | `@stacksjs/deploy` | [`stacks-deploy`](../stacks-deploy/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/deploy/package.json) | 1 |
 | `@stacksjs/desktop-build` | [`stacks-desktop`](../stacks-desktop/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/desktop/src/index.ts) | 15 |
@@ -64,7 +64,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/model-meta` | [`stacks-models`](../stacks-models/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/model-meta/src/index.ts) | 1 |
 | `@stacksjs/newsletter` | [`stacks-newsletter`](../stacks-newsletter/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/newsletter/src/index.ts) | 7 |
 | `@stacksjs/notifications` | [`stacks-notifications`](../stacks-notifications/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/notifications/src/index.ts) | 18 |
-| `@stacksjs/objects` | [`stacks-objects`](../stacks-objects/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/objects/src/index.ts) | 6 |
+| `@stacksjs/objects` | [`stacks-objects`](../stacks-objects/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/objects/src/index.ts) | 8 |
 | `@stacksjs/orm` | [`stacks-orm`](../stacks-orm/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/orm/src/index.ts) | 76 |
 | `@stacksjs/pagination` | [`stacks-pagination`](../stacks-pagination/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/pagination/src/index.ts) | 0 |
 | `@stacksjs/path` | [`stacks-path`](../stacks-path/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/path/src/index.ts) | 13 |
@@ -94,7 +94,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/types` | [`stacks-types`](../stacks-types/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/types/src/index.ts) | 2 |
 | `@stacksjs/ui` | [`stacks-ui`](../stacks-ui/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/ui/src/index.ts) | 6 |
 | `@stacksjs/utils` | [`stacks-utils`](../stacks-utils/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/utils/src/index.ts) | 15 |
-| `@stacksjs/validation` | [`stacks-validation`](../stacks-validation/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/src/index.ts) | 22 |
+| `@stacksjs/validation` | [`stacks-validation`](../stacks-validation/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/src/index.ts) | 25 |
 | `@stacksjs/video` | [`stacks-video`](../stacks-video/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/video/src/index.ts) | 3 |
 | `@stacksjs/whois` | [`stacks-whois`](../stacks-whois/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/whois/src/index.ts) | 5 |
 
@@ -169,7 +169,7 @@ Declared runtime exports: `arr`.
 
 Local source modules: [src/arr.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/arrays/src/arr.ts), [src/macro.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/arrays/src/macro.ts).
 
-Evidence directory: [10 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/arrays/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [12 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/arrays/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/audio
 
@@ -367,7 +367,7 @@ Declared runtime exports: `DateTime`, `addCalendarMonths`, `addDays`, `dateForma
 
 Local source modules: [src/calendar.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/calendar.ts), [src/format.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/format.ts), [src/local.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/local.ts), [src/now.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/now.ts), [src/parse.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/parse.ts), [src/schedule.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/schedule.ts), [src/zone.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/zone.ts).
 
-Evidence directory: [21 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [22 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/defaults
 
@@ -631,7 +631,7 @@ Declared runtime exports: `clearUndefined`, `deepMerge`, `hasOwnProperty`, `isKe
 
 Local source modules: [src/transform.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/objects/src/transform.ts).
 
-Evidence directory: [6 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/objects/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [8 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/objects/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/orm
 
@@ -919,7 +919,7 @@ Declared runtime exports: `applyConditionals`, `isArray`, `isBoolean`, `isFuncti
 
 Local source modules: [src/input.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/src/input.ts), [src/messages.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/src/messages.ts), [src/reporter.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/src/reporter.ts), [src/schema.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/src/schema.ts), [src/validator.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/src/validator.ts).
 
-Evidence directory: [22 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [25 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/video
 
