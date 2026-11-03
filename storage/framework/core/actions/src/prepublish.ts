@@ -1,21 +1,14 @@
-import process from 'node:process'
-import { NpmScript } from '@stacksjs/enums'
 import { log } from '@stacksjs/logging'
-import { runtimePath } from '@stacksjs/path'
-import { ExitCode } from '@stacksjs/types'
-import { runNpmScript } from '@stacksjs/utils'
 
 log.info('Running prepublish command...')
 
-// right before we publish, we need to build Stacks
-const result = await runNpmScript(NpmScript.BuildStacks, {
-  verbose: true,
-  cwd: runtimePath(),
-})
-
-if (result.isErr) {
-  await log.error(new Error('There was an error while prepublishing your stack'), result.error)
-  process.exit(ExitCode.FatalError)
-}
+// Right before we publish, we need to build Stacks: the build/stacks action,
+// the one `buddy build:stacks` runs, which builds the CLI and then the core
+// packages and exits non-zero if either fails. This used to run a
+// `build:stacks` npm script that the framework's package.json does not have,
+// so it failed every time without building anything (stacksjs/stacks#3159).
+// An action module is a script: runAction runs it as one.
+// eslint-disable-next-line ts/no-top-level-await
+await import('./build/stacks')
 
 log.success('Prepublishing completed')
