@@ -64,10 +64,8 @@ test('a source job no runner ever started is rerun, never accepted or treated as
   expect(evaluateReleaseCi(sha, [failed], jobs()).kind).toBe('rejected')
 })
 
-test('only source acceptance may rerun CI jobs, and the macOS queue allowance is longer', () => {
+test('only source acceptance may rerun CI jobs', () => {
   const release = Bun.YAML.parse(readFileSync(new URL('../workflows/release.yml', import.meta.url), 'utf8')) as any
   expect(release.jobs['source-ci'].permissions).toEqual({ contents: 'read', actions: 'write' })
   expect(release.permissions.actions).toBe('read')
-  const ci = Bun.YAML.parse(readFileSync(new URL('../workflows/ci.yml', import.meta.url), 'utf8')) as any
-  expect(ci.jobs['release-evidence']['timeout-minutes']).toContain('macos-latest')
 })
