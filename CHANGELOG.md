@@ -1,5 +1,18 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.455...v0.75.456)
+
+## 🐛 Bug Fixes
+
+- **mobile**: generate sensor flags from builder capabilities ([0a8a511](https://github.com/stacksjs/stacks/commit/0a8a511)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **queue**: inherit declared queues for named job dispatches ([5c34a7f](https://github.com/stacksjs/stacks/commit/5c34a7f)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **queue**: drain runnable jobs before entering idle polling ([476021f](https://github.com/stacksjs/stacks/commit/476021f)) _(by Chris Breuer <chris@stacksjs.com>)_
+- bind realtime acceptance to its actual ephemeral port ([9b82d86](https://github.com/stacksjs/stacks/commit/9b82d86)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.454...v0.75.455)
 
 ## ✨ Features
