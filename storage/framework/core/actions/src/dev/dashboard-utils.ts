@@ -129,6 +129,27 @@ export interface DiscoveredModel {
   dashboard?: DashboardModelOptions
 }
 
+/**
+ * The discovered models whose feature is on.
+ *
+ * A framework model whose feature is off is never loaded by the ORM, so its
+ * `/models/<id>` page could only answer 404. Sections already collapse when
+ * their feature is off (stacksjs/stacks#2928), but a model listed under Data,
+ * such as the forms models, still appeared with forms off. An app's own model
+ * is always listed: it is loaded whatever the framework features say.
+ */
+export function modelsWithEnabledFeatures(
+  models: DiscoveredModel[],
+  featureOf: (name: string) => string | undefined,
+  enabled: (feature: string) => boolean,
+): DiscoveredModel[] {
+  return models.filter((model) => {
+    if (model.category === 'userland') return true
+    const gate = featureOf(model.name)
+    return gate === undefined || enabled(gate)
+  })
+}
+
 /** Convert PascalCase model name to kebab-case ID */
 export function modelNameToId(name: string): string {
   return name.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, '')

@@ -290,6 +290,16 @@ function featureGateFor(name: string): string | undefined {
   return FRAMEWORK_MODEL_MANIFEST.find(([model]) => model === name)?.[2]
 }
 
+/**
+ * The feature a framework model belongs to, or undefined for a name the
+ * framework does not ship. A model whose feature is off is never loaded, so a
+ * surface that lists models (the dashboard sidebar) leaves it out rather than
+ * linking a page that can only answer "No ORM model named ...".
+ */
+export function frameworkModelFeature(name: string): StacksFeature | undefined {
+  return FRAMEWORK_MODEL_MANIFEST.find(([model]) => model === name)?.[2]
+}
+
 /** The error a call on an unavailable model raises, instead of `undefined`. */
 function unavailableModel(name: string): Error {
   const gate = featureGateFor(name)

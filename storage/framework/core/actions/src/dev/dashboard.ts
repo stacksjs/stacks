@@ -8,7 +8,7 @@ import { resolveComponentsLibraryRoot } from './defaults-resources'
 import { shouldDelegateDashboardRequest } from './dashboard-request-routing'
 import { resolveDashboardCraftExecutable, type CraftBinaryResolver } from './dashboard-native'
 import { resolveDashboardDomain, resolveDashboardProxyStrategy } from './dashboard-proxy'
-import { buildManifest, discoverModels, findAvailablePort, waitForServer, writeFileIfChanged } from './dashboard-utils'
+import { buildManifest, discoverModels, findAvailablePort, modelsWithEnabledFeatures, waitForServer, writeFileIfChanged } from './dashboard-utils'
 import { runDashboardSupervisor } from './dashboard-supervisor'
 import { ensureDiscoveredPackages } from '../discover-packages'
 import { resolveStxSource } from '../stx-source'
@@ -592,7 +592,7 @@ async function startReverseProxy(): Promise<boolean> {
 
 // Phase 1: Start STX server and discover models in parallel
 // eslint-disable-next-line ts/no-top-level-await
-const [, discoveredModels] = await Promise.all([
+const [, allDiscoveredModels] = await Promise.all([
   startStxServer(),
   discoverModels(projectPath('app/Models'), defaultsPath('app/Models')),
 ])
@@ -621,6 +621,9 @@ const { loadDashboardConfig } = await import(
 const { feature: featureEnabled } = await import('@stacksjs/config')
 // eslint-disable-next-line ts/no-top-level-await
 const { toggles: dashboardToggles, nav: dashboardNav } = await loadDashboardConfig(projectPath('config/dashboard.ts'), featureEnabled)
+// eslint-disable-next-line ts/no-top-level-await
+const { frameworkModelFeature } = await import('@stacksjs/orm')
+const discoveredModels = modelsWithEnabledFeatures(allDiscoveredModels, frameworkModelFeature, name => featureEnabled(name as Parameters<typeof featureEnabled>[0]))
 
 // Write manifest. The envelope format includes the section toggles and any
 // app-declared nav sections so the web sidebar (which runs in STX
