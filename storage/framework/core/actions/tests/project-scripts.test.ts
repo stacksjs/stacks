@@ -1,9 +1,51 @@
+import { dlopen, FFIType, ptr } from 'bun:ffi'
 import { expect, test } from 'bun:test'
 import { createHash } from 'node:crypto'
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { runProjectScripts } from '../src/project-scripts'
+
+// Observe the same fixture PID before cancellation and at a failed assertion.
+// A creation-time change identifies reuse; the native wait state distinguishes
+// an unfinished process from a runtime's liveness report. Never wait or retry.
+function windowsProcessState(pid: number) {
+  if (process.platform !== 'win32') return undefined
+  try {
+    const library = dlopen('kernel32.dll', {
+      GetLastError: { args: [], returns: FFIType.u32 },
+      OpenProcess: { args: [FFIType.u32, FFIType.i32, FFIType.u32], returns: FFIType.u64 },
+      GetProcessTimes: { args: [FFIType.u64, FFIType.ptr, FFIType.ptr, FFIType.ptr, FFIType.ptr], returns: FFIType.i32 },
+      GetExitCodeProcess: { args: [FFIType.u64, FFIType.ptr], returns: FFIType.i32 },
+      WaitForSingleObject: { args: [FFIType.u64, FFIType.u32], returns: FFIType.u32 },
+      CloseHandle: { args: [FFIType.u64], returns: FFIType.i32 },
+    })
+    const api = library.symbols
+    let handle = 0n
+    try {
+      handle = api.OpenProcess(0x101000, 0, pid) // SYNCHRONIZE | PROCESS_QUERY_LIMITED_INFORMATION.
+      if (!handle) return { pid, operation: 'OpenProcess', error: api.GetLastError() }
+      const created = new Uint8Array(8)
+      const exited = new Uint8Array(8)
+      const kernel = new Uint8Array(8)
+      const user = new Uint8Array(8)
+      if (!api.GetProcessTimes(handle, ptr(created), ptr(exited), ptr(kernel), ptr(user)))
+        return { pid, operation: 'GetProcessTimes', error: api.GetLastError() }
+      const code = new Uint32Array(1)
+      if (!api.GetExitCodeProcess(handle, ptr(code)))
+        return { pid, operation: 'GetExitCodeProcess', error: api.GetLastError() }
+      const wait = api.WaitForSingleObject(handle, 0)
+      return { pid, created: new DataView(created.buffer).getBigUint64(0, true).toString(), exitCode: code[0], wait, waitError: wait === 0xFFFFFFFF ? api.GetLastError() : undefined }
+    }
+    finally {
+      try {
+        if (handle && !api.CloseHandle(handle)) throw new Error(`Process diagnostic handle disposal failed (${api.GetLastError()})`)
+      }
+      finally { library.close() }
+    }
+  }
+  catch (error) { return { pid, diagnosticError: String(error) } }
+}
 
 test.each([0, 7])('a completed check disposes its unreferenced normal descendant before settling (exit %s)', async (exitCode) => {
   const root = mkdtempSync(join(tmpdir(), 'stacks-project-ownership-'))
@@ -87,13 +129,16 @@ test('cancellation disposes an already started owned check before rejecting', as
     const until = performance.now() + budget
     while (!existsSync(join(root, 'check.pid')) && performance.now() < until) await Bun.sleep(10)
     expect(existsSync(join(root, 'check.pid')), 'the check must start before cancellation is tested').toBe(true)
+    const pid = Number(readFileSync(join(root, 'check.pid'), 'utf8'))
+    const beforeCancellation = windowsProcessState(pid)
+    const cancelledAt = performance.now()
     controller.abort()
     await expect(execution).rejects.toThrow('was interrupted or exceeded its execution budget')
-    const pid = Number(readFileSync(join(root, 'check.pid'), 'utf8'))
     let alive = true
     try { process.kill(pid, 0) }
     catch { alive = false }
-    expect(alive).toBe(false)
+    const diagnostics = alive ? { beforeCancellation, afterDisposal: windowsProcessState(pid), elapsedMs: performance.now() - cancelledAt } : undefined
+    expect(alive, diagnostics ? JSON.stringify(diagnostics) : undefined).toBe(false)
   }
   finally {
     controller.abort()
