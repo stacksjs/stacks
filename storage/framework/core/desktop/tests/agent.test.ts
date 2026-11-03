@@ -320,6 +320,64 @@ describe('the launcher', () => {
     await expect(fetch(`http://127.0.0.1:${port}/native/session`)).rejects.toThrow()
   })
 
+  test('starts the host while the routes load, and holds its API calls until they have', async () => {
+    const dir = tempDir()
+    for (const file of ['host', 'screens.js']) writeFileSync(join(dir, file), '')
+    const paths = { dataDir: dir, portFile: join(dir, 'agent.port'), lockFile: join(dir, 'agent.pid'), logFile: join(dir, 'app.log') }
+    let loaded: (handler: () => Response) => void = () => {}
+    const routes = new Promise<() => Response>((resolve) => { loaded = resolve })
+    let spawnedBeforeRoutes = false
+    let routesLoaded = false
+    let body = ''
+    const code = await runDesktopAgentApp({
+      manifest: { appName: 'Browser', bundleId: 'a.b', version: '1', host: join(dir, 'host'), nativeBundle: join(dir, 'screens.js'), hostArguments: [], appRoutes: false },
+      handler: () => routes,
+      paths,
+      logWhenDetached: false,
+      spawn: (args) => {
+        spawnedBeforeRoutes = !routesLoaded
+        const url = args[args.indexOf('--api-url') + 1]!
+        const exited = (async () => {
+          // The session needs no routes; the API call waits for them.
+          const session = await fetch(`${url}/native/session`)
+          const answer = fetch(`${url}/api/ping`, { headers: { cookie: cookieFrom(session) } })
+          routesLoaded = true
+          loaded(() => new Response('routed'))
+          body = await (await answer).text()
+          return 0
+        })()
+        return { exited, kill: () => {} }
+      },
+    })
+    expect(code).toBe(0)
+    expect(spawnedBeforeRoutes).toBe(true)
+    expect(body).toBe('routed')
+  })
+
+  test('stops the host and lets go of the lock when the routes fail to load', async () => {
+    const dir = tempDir()
+    for (const file of ['host', 'screens.js']) writeFileSync(join(dir, file), '')
+    const paths = { dataDir: dir, portFile: join(dir, 'agent.port'), lockFile: join(dir, 'agent.pid'), logFile: join(dir, 'app.log') }
+    let killed = false
+    const errors: string[] = []
+    const error = console.error
+    console.error = (...args: unknown[]) => { errors.push(args.join(' ')) }
+    try {
+      const code = await runDesktopAgentApp({
+        manifest: { appName: 'Browser', bundleId: 'a.b', version: '1', host: join(dir, 'host'), nativeBundle: join(dir, 'screens.js'), hostArguments: [], appRoutes: false },
+        handler: async () => { throw new Error('route file broken') },
+        paths,
+        logWhenDetached: false,
+        spawn: () => ({ exited: new Promise<number>(() => {}), kill: () => { killed = true } }),
+      })
+      expect(code).toBe(1)
+    }
+    finally { console.error = error }
+    expect(killed).toBe(true)
+    expect(errors.join('\n')).toContain('route file broken')
+    expect(existsSync(paths.lockFile)).toBe(false)
+  })
+
   test('a second launch exits at once and leaves the first one alone', async () => {
     const dir = tempDir()
     const paths = { dataDir: dir, portFile: join(dir, 'agent.port'), lockFile: join(dir, 'agent.pid'), logFile: join(dir, 'app.log') }

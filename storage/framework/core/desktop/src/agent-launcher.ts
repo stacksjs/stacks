@@ -296,12 +296,19 @@ export async function runDesktopAgentApp(options: RunDesktopAgentAppOptions): Pr
   }
 
   let agent: DesktopAgent
+  // The window's process starts while the app's routes load: AppKit's own
+  // start-up needs none of them, and requests that arrive early wait for them.
+  let handlerReady: Promise<AgentHandler> | undefined
   try {
     if (manifest.projectRoot && manifest.appRoutes) process.chdir(manifest.projectRoot)
     process.env[AGENT_DATA_DIR_ENV] = paths.dataDir
     process.env[AGENT_RESOURCES_ENV] = JSON.stringify(manifest.resources ?? {})
+    const ready = options.handler()
+    handlerReady = ready
+    // Settled here so a failure is reported once, below, not as an unhandled rejection.
+    ready.catch(() => {})
     agent = await startDesktopAgent({
-      handler: await options.handler(),
+      handler: async request => (await ready)(request),
       name: manifest.appName,
       version: manifest.version,
       port: manifest.port,
@@ -341,6 +348,16 @@ export async function runDesktopAgentApp(options: RunDesktopAgentAppOptions): Pr
     process.exit(0)
   }
   for (const signal of ['SIGTERM', 'SIGINT', 'SIGHUP'] as const) process.on(signal, onSignal)
+
+  try {
+    await handlerReady
+  }
+  catch (error) {
+    console.error(`${tag} could not start: ${error instanceof Error ? error.stack ?? error.message : String(error)}`)
+    for (const signal of ['SIGTERM', 'SIGINT', 'SIGHUP'] as const) process.off(signal, onSignal)
+    stop()
+    return 1
+  }
 
   const code = await host.exited
   console.log(`${tag} window closed (${code})`)
