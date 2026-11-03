@@ -56,12 +56,11 @@ for (const dialect of ['postgres', 'mysql'] as const) {
       }
       const slot = (Math.floor(Date.now() / 60_000) + 10) * 60_000
 
-      // The live tick: B's lands 300 ms after A's, long after A's task ended
-      // and released the lock. Before the claim, both ran it.
-      const a = server('A', 'tick', 'nightly-billing', slot)
-      await Bun.sleep(300)
-      const b = server('B', 'tick', 'nightly-billing', slot)
-      await Promise.all([a, b])
+      // The live tick for the same slot, B's landing after A's task ended and
+      // released the lock, as a server a few hundred ms behind does. Before
+      // the claim, both ran it.
+      await server('A', 'tick', 'nightly-billing', slot)
+      await server('B', 'tick', 'nightly-billing', slot)
       expect(await runs()).toEqual(['A'])
 
       // A catch-up on two servers that booted one after the other: the second

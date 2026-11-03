@@ -20,10 +20,6 @@ assert(mode === 'tick' || mode === 'missed')
 assert(/^[AB]$/.test(server) && /^[\w-]+$/.test(task) && slot % 60_000 === 0)
 assert(['127.0.0.1', 'localhost', '[::1]'].includes(process.env.DB_HOST!))
 
-const realNow = Date.now.bind(Date)
-const shift = (mode === 'tick' ? slot - 150 : slot + 30_000) - realNow()
-Date.now = () => realNow() + shift
-
 const dialect = process.env.DB_CONNECTION as 'postgres' | 'mysql'
 const { db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database/runtime')
 await ensureDatabaseConfigLoaded()
@@ -36,12 +32,19 @@ initializeDbConfig({ app: { env: 'test' }, database: {
 const { Schedule } = await import('../../src/schedule')
 ;(Schedule as unknown as { lockDir: string }).lockDir = mkdtempSync(join(tmpdir(), 'one-server-locks-'))
 
+// Shifted after the imports, which take longer than the 150 ms lead on a
+// loaded CI runner: shifted first, the slot had passed by the time the
+// schedule started, and the next tick was a minute away.
+const realNow = Date.now.bind(Date)
+const shift = (mode === 'tick' ? slot - 150 : slot + 30_000) - realNow()
+Date.now = () => realNow() + shift
+
 const schedule = new Schedule(async () => {
   await db.unsafe(`INSERT INTO runs (server) VALUES ('${server}')`).execute()
 }).withName(task).everyMinute().onOneServer()
 
 if (mode === 'tick') {
-  await Bun.sleep(1000)
+  await Bun.sleep(3000)
 }
 else {
   await Promise.resolve()
