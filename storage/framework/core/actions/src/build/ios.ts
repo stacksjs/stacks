@@ -1,4 +1,3 @@
-import { assertCraftSupportsNativeSensors } from './native-sensors'
 import type { MobileConfig } from '@stacksjs/types'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
@@ -90,14 +89,13 @@ const fallbackWebAssets = resolveMobilePath(projectPath(), config.fallbackWebAss
 // The shared `crashReporting` under iOS's own, so the shell and the dSYM
 // upload below see one answer.
 const crashReporting = resolveCrashReporting(mobile.crashReporting, config.crashReporting)
-const craftConfig = toCraftIosConfig({ ...config, crashReporting })
+const builder = await loadCraftIosBuilder()
+const craftConfig = toCraftIosConfig({ ...config, crashReporting }, builder.nativeSensorCapabilities)
 craftConfig.nativeFonts = resolveNativeFonts(config.nativeFonts, projectPath())
 craftConfig.appIconPath = resolveMobilePath(projectPath(), config.appIcon)
 craftConfig.splashImagePath = resolveMobilePath(projectPath(), config.splash?.image)
 craftConfig.splashImagePathDark = resolveMobilePath(projectPath(), config.splash?.imageDark)
 
-const builder = await loadCraftIosBuilder()
-assertCraftSupportsNativeSensors('ios', config.capabilities, builder.nativeSensorCapabilities)
 
 // Screens drawn natively, compiled by stx before Craft copies them in: one
 // file per route when this Craft runs each screen from its own.

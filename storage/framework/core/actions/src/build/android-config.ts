@@ -1,3 +1,4 @@
+import { assertCraftSupportsNativeSensors, nativeSensorCapabilityKeys } from './native-sensors'
 import type { AndroidMobileConfig, MobileCapabilities } from '@stacksjs/types'
 import { NATIVE_APP_ROUTE, normalizeMobileUrl, toCraftCrashReporting } from './ios-config'
 import { nativeScreenRoutes } from './native-screens'
@@ -68,14 +69,16 @@ const CAPABILITY_KEYS = {
   localDatabase: 'enableLocalDatabase',
   localNotifications: 'enableLocalNotifications',
   shakeGesture: 'enableShakeGesture',
-  motionSensors: 'enableMotionSensors',
-  barometer: 'enableBarometer',
-  pedometer: 'enablePedometer',
   healthServices: 'enableHealthServices',
   wallet: 'enableWallet',
 } as const satisfies Partial<Record<keyof MobileCapabilities, `enable${string}`>>
 
 export { CAPABILITY_KEYS as ANDROID_CAPABILITY_KEYS }
+
+/** The exact flag map generated for the selected published builder. */
+export function androidCapabilityKeys(nativeSensorCapabilities?: readonly string[]): Partial<Record<keyof MobileCapabilities, `enable${string}`>> {
+  return { ...CAPABILITY_KEYS, ...nativeSensorCapabilityKeys('android', nativeSensorCapabilities) }
+}
 
 /** Craft Android flags no `android.capabilities` name sets, each with why. */
 export const ANDROID_UNMAPPED_CRAFT_FLAGS: Readonly<Record<`enable${string}`, string>> = {
@@ -154,7 +157,8 @@ export function assertCraftSupportsAndroid(config: AndroidMobileConfig, version:
   )
 }
 
-export function toCraftAndroidConfig(config: AndroidMobileConfig): CraftAndroidConfig {
+export function toCraftAndroidConfig(config: AndroidMobileConfig, nativeSensorCapabilities?: readonly string[]): CraftAndroidConfig {
+  assertCraftSupportsNativeSensors('android', config.capabilities, nativeSensorCapabilities)
   const devServerURL = normalizeMobileUrl(config.url)
   const trustedOrigins = new Set(config.trustedOrigins ?? [])
   if (devServerURL) trustedOrigins.add(new URL(devServerURL).origin)
@@ -191,8 +195,8 @@ export function toCraftAndroidConfig(config: AndroidMobileConfig): CraftAndroidC
     privacyPolicyURL: config.privacyPolicyUrl,
     crashReporting: toCraftCrashReporting(config.crashReporting),
   }
-  for (const [key, nativeKey] of Object.entries(CAPABILITY_KEYS)) {
-    const enabled = config.capabilities?.[key as keyof typeof CAPABILITY_KEYS]
+  for (const [key, nativeKey] of Object.entries(androidCapabilityKeys(nativeSensorCapabilities))) {
+    const enabled = config.capabilities?.[key as keyof MobileCapabilities]
     if (enabled !== undefined) craft[nativeKey] = enabled
   }
   if (config.capabilities?.backgroundLocation) craft.enableGeolocation = true

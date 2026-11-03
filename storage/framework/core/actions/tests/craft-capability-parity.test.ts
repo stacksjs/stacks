@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'bun:test'
 import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import { ANDROID_CAPABILITY_KEYS, ANDROID_UNMAPPED_CRAFT_FLAGS } from '../src/build/android-config'
-import { IOS_CAPABILITY_KEYS, IOS_UNMAPPED_CRAFT_FLAGS } from '../src/build/ios-config'
+import { androidCapabilityKeys, ANDROID_UNMAPPED_CRAFT_FLAGS } from '../src/build/android-config'
+import { iosCapabilityKeys, IOS_UNMAPPED_CRAFT_FLAGS } from '../src/build/ios-config'
 
 /*
  * stacksjs/stacks#3147. The capability maps are closed, so a flag Craft ships
@@ -40,10 +40,12 @@ function hostReads(directory: string, pattern: RegExp): Set<string> {
   return flags
 }
 
+const iosBuilder = await import('craft-native/ios') as { nativeSensorCapabilities?: readonly string[] }
+const androidBuilder = await import('craft-native/android') as { nativeSensorCapabilities?: readonly string[] }
 const platforms = [
   {
     platform: 'iOS',
-    map: IOS_CAPABILITY_KEYS as Record<string, string>,
+    map: iosCapabilityKeys(iosBuilder.nativeSensorCapabilities) as Record<string, string>,
     unmapped: IOS_UNMAPPED_CRAFT_FLAGS,
     declared: declaredFlags('dist/ios/src/index.d.ts', 'CraftConfig'),
     read: hostReads('dist/ios/templates', /\bconfig\.(enable[A-Za-z0-9]+)\b/g),
@@ -51,7 +53,7 @@ const platforms = [
   },
   {
     platform: 'Android',
-    map: ANDROID_CAPABILITY_KEYS as Record<string, string>,
+    map: androidCapabilityKeys(androidBuilder.nativeSensorCapabilities) as Record<string, string>,
     unmapped: ANDROID_UNMAPPED_CRAFT_FLAGS,
     declared: declaredFlags('dist/android/src/index.d.ts', 'CraftAndroidConfig'),
     read: hostReads('dist/android/templates', /config\.optBoolean\("(enable[A-Za-z0-9]+)"/g),

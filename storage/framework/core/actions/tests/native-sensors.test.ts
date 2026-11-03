@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'bun:test'
+import { toCraftIosConfig } from '../src/build/ios-config'
+import { toCraftAndroidConfig } from '../src/build/android-config'
 import { assertCraftSupportsNativeSensors } from '../src/build/native-sensors'
 
 describe('native sensor builder capability contract', () => {
@@ -18,3 +20,25 @@ describe('native sensor builder capability contract', () => {
     expect(() => assertCraftSupportsNativeSensors('ios', { healthKitBackground: true }, ['healthKitBackground'])).not.toThrow()
   })
 })
+
+// Config generation itself must honor the selected builder's advertised surface.
+// Otherwise callers can serialize unsupported flags even when build commands guard them.
+for (const [platform, convert, sensors] of [
+  ['ios', toCraftIosConfig, ['barometer', 'pedometer', 'healthKitBackground']],
+  ['android', toCraftAndroidConfig, ['motionSensors', 'barometer', 'pedometer']],
+] as const) {
+  describe(`${platform} config generation with native sensor support`, () => {
+    for (const sensor of sensors) {
+      const config = { appName: 'Sensors', bundleId: 'org.stacks.sensors', packageName: 'org.stacks.sensors', capabilities: { [sensor]: true } }
+      const flag = `enable${sensor[0]!.toUpperCase()}${sensor.slice(1)}`
+      it(`rejects unsupported ${sensor} before generating inert config`, () => {
+        expect(() => convert(config)).toThrow(sensor)
+      })
+      it(`emits ${sensor} only when the selected builder supports it`, () => {
+        expect(convert(config, [sensor])[flag]).toBe(true)
+        expect(convert({ ...config, capabilities: { [sensor]: false } })[flag]).toBeUndefined()
+        expect(convert({ ...config, capabilities: { [sensor]: false } }, [sensor])[flag]).toBe(false)
+      })
+    }
+  })
+}

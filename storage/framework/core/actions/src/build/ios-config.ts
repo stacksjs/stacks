@@ -1,3 +1,4 @@
+import { assertCraftSupportsNativeSensors, nativeSensorCapabilityKeys } from './native-sensors'
 import type { IosMobileConfig, MobileCapabilities, MobileConfig, MobileCrashReportingConfig } from '@stacksjs/types'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join, relative, resolve } from 'node:path'
@@ -90,9 +91,6 @@ const CAPABILITY_KEYS = {
   audioRecording: 'enableAudioRecording',
   videoRecording: 'enableVideoRecording',
   motionSensors: 'enableMotionSensors',
-  barometer: 'enableBarometer',
-  pedometer: 'enablePedometer',
-  healthKitBackground: 'enableHealthKitBackground',
   shakeGesture: 'enableShakeGesture',
   wallet: 'enableWallet',
   localDatabase: 'enableLocalDatabase',
@@ -113,6 +111,11 @@ const CAPABILITY_KEYS = {
 } as const satisfies Partial<Record<keyof MobileCapabilities, `enable${string}`>>
 
 export { CAPABILITY_KEYS as IOS_CAPABILITY_KEYS }
+
+/** The exact flag map generated for the selected published builder. */
+export function iosCapabilityKeys(nativeSensorCapabilities?: readonly string[]): Partial<Record<keyof MobileCapabilities, `enable${string}`>> {
+  return { ...CAPABILITY_KEYS, ...nativeSensorCapabilityKeys('ios', nativeSensorCapabilities) }
+}
 
 /** Craft iOS flags no `ios.capabilities` name sets, each with why. */
 export const IOS_UNMAPPED_CRAFT_FLAGS: Readonly<Record<`enable${string}`, string>> = {
@@ -264,7 +267,8 @@ export function resolveSwipeNavigation(config: Pick<IosMobileConfig, 'swipeBack'
   return config.swipeBack === 'webview'
 }
 
-export function toCraftIosConfig(config: IosMobileConfig): CraftIosConfig {
+export function toCraftIosConfig(config: IosMobileConfig, nativeSensorCapabilities?: readonly string[]): CraftIosConfig {
+  assertCraftSupportsNativeSensors('ios', config.capabilities, nativeSensorCapabilities)
   const devServerURL = normalizeMobileUrl(config.url)
   const trustedOrigins = new Set(config.trustedOrigins ?? [])
   if (devServerURL) trustedOrigins.add(new URL(devServerURL).origin)
@@ -328,8 +332,8 @@ export function toCraftIosConfig(config: IosMobileConfig): CraftIosConfig {
     crashReporting: toCraftCrashReporting(config.crashReporting),
   }
 
-  for (const [key, nativeKey] of Object.entries(CAPABILITY_KEYS)) {
-    const enabled = config.capabilities?.[key as keyof typeof CAPABILITY_KEYS]
+  for (const [key, nativeKey] of Object.entries(iosCapabilityKeys(nativeSensorCapabilities))) {
+    const enabled = config.capabilities?.[key as keyof MobileCapabilities]
     if (enabled !== undefined) craft[nativeKey] = enabled
   }
   if (config.capabilities?.backgroundLocation) craft.enableGeolocation = true

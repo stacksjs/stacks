@@ -4,12 +4,12 @@ import { assertCraftSupportsAndroid, assertCraftSupportsAndroidMapProvider, CRAF
 describe('Android mobile build configuration', () => {
   it('maps Android raw motion, barometer and pedometer flags without implicitly requesting access', () => {
     const base = { appName: 'Sensors', packageName: 'org.example.sensors' }
-    expect(toCraftAndroidConfig({ ...base, capabilities: { motionSensors: true, barometer: true, pedometer: true } }))
+    expect(toCraftAndroidConfig({ ...base, capabilities: { motionSensors: true, barometer: true, pedometer: true } }, ['motionSensors', 'barometer', 'pedometer']))
       .toMatchObject({ enableMotionSensors: true, enableBarometer: true, enablePedometer: true })
     expect(toCraftAndroidConfig(base).enableMotionSensors).toBeUndefined()
     expect(toCraftAndroidConfig(base).enableBarometer).toBeUndefined()
     expect(toCraftAndroidConfig(base).enablePedometer).toBeUndefined()
-    expect(toCraftAndroidConfig({ ...base, capabilities: { pedometer: false } }).enablePedometer).toBe(false)
+    expect(toCraftAndroidConfig({ ...base, capabilities: { pedometer: false } }, ['pedometer']).enablePedometer).toBe(false)
   })
 
   it('requires and forwards the native microphone implementation', () => {

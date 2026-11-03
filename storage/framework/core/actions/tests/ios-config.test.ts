@@ -12,13 +12,13 @@ describe('build-owned iOS shortcuts', () => {
   it('forwards opt-in sensors and declared background HealthKit types without enabling them by default', () => {
     const base = { appName: 'Sensors', bundleId: 'org.example.sensors' }
     const config = toCraftIosConfig({ ...base, capabilities: { barometer: true, pedometer: true, healthKit: true, healthKitBackground: true },
-      healthKitBackgroundTypes: ['steps', 'sleep'], healthKitBackgroundFrequency: 'hourly' })
+      healthKitBackgroundTypes: ['steps', 'sleep'], healthKitBackgroundFrequency: 'hourly' }, ['barometer', 'pedometer', 'healthKitBackground'])
     expect(config).toMatchObject({ enableBarometer: true, enablePedometer: true, enableHealthKitBackground: true, healthKitBackgroundTypes: ['steps', 'sleep'], healthKitBackgroundFrequency: 'hourly' })
     const plain = toCraftIosConfig(base)
     expect(plain.enableBarometer).toBeUndefined()
     expect(plain.enablePedometer).toBeUndefined()
     expect(plain.enableHealthKitBackground).toBeUndefined()
-    expect(toCraftIosConfig({ ...base, capabilities: { barometer: false } }).enableBarometer).toBe(false)
+    expect(toCraftIosConfig({ ...base, capabilities: { barometer: false } }, ['barometer']).enableBarometer).toBe(false)
   })
 
   it('rejects a builder that cannot retain the configured native tint', () => {

@@ -1,4 +1,3 @@
-import { assertCraftSupportsNativeSensors } from './native-sensors'
 import type { AndroidMobileConfig, MobileConfig } from '@stacksjs/types'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
@@ -71,7 +70,8 @@ validateAndroidMobileConfig(config)
 const output = resolveMobilePath(projectPath(), config.output) ?? storagePath('framework/mobile/android')
 const webAssets = resolveMobilePath(projectPath(), config.webAssets)
 const fallbackWebAssets = resolveMobilePath(projectPath(), config.fallbackWebAssets)
-const craftConfig = toCraftAndroidConfig(config)
+const builder = await loadCraftAndroidBuilder()
+const craftConfig = toCraftAndroidConfig(config, builder.nativeSensorCapabilities)
 craftConfig.nativeFonts = resolveNativeFonts(config.nativeFonts, projectPath())
 craftConfig.appIconPath = resolveMobilePath(projectPath(), config.appIcon)
 craftConfig.notificationIconPath = resolveMobilePath(projectPath(), config.notificationIcon)
@@ -88,8 +88,7 @@ const release = appBundle || process.env.NODE_ENV === 'production'
 // Screens drawn natively, compiled by stx into the bundle Craft copies in:
 // the same screens and app script as the iOS app.
 const native = config.renderer === 'native'
-const builder = await loadCraftAndroidBuilder()
-assertCraftSupportsNativeSensors('android', config.capabilities, builder.nativeSensorCapabilities)
+
 // One bundle per route when this Craft runs each screen from its own file.
 const nativeBundle = native ? await compileNativeScreens(config, projectPath(), output, undefined, 'android', { routes: builder.nativeRouteBundles === true, runtime: builder.nativeRouteRuntime === true, messages: builder.nativeMessages === true }) : null
 if (nativeBundle) {
