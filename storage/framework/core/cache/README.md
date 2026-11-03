@@ -10,6 +10,14 @@ Tagged `remember` hits retain the stored value's expiry in their tag index.
 Finite index entries include a short grace period for drivers that round TTLs
 to whole seconds, so the index cannot expire before the value is invalidated.
 
+SQLite validates finite non-negative TTL seconds (including `stdTTL`). Zero
+means forever; omitted TTL uses the default. Invalid TTLs throw RangeError and
+invalid `mset` batches roll back. `getTtl` returns an absolute epoch-ms expiry,
+zero for forever, or undefined for a missing/expired key. `mget` preserves all
+own keys, including `__proto__`. SQLite key globs are case-sensitive: only `*`
+is a wildcard; omitted patterns list all live keys, empty patterns match only
+the empty key.
+
 wip
 
 ## ☘️ Features

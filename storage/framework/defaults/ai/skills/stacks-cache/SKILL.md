@@ -27,8 +27,9 @@ const products = await cache.mget<{ name: string }>(['product:42', 'product:43']
   shipped) on every driver, memory included, so a value set with no TTL
   expires after an hour. The `memory` export is a separate in-process
   instance with no default expiry.
-- `setForever` stores without expiry; `getTtl` reads remaining TTL and
-  `ttl(key, seconds)` updates it. Missing values are undefined.
+- `setForever` stores without expiry; `getTtl` reads the absolute expiry in epoch
+  milliseconds (zero for forever); `ttl(key, seconds)` updates it.
+  Missing or expired values are undefined.
 - `mset([{ key, value, ttl? }])` writes entries. `del(keyOrKeys)` and
   `deleteMany(keys)` return counts; `remove(key)` returns void.
 - `has/missing/take`, `keys(pattern?)`, `getStats`,
@@ -60,6 +61,15 @@ the process: use it for results that are expensive and safe to keep across
 deploys, pointing `path` at a file the deploy preserves (the app's own SQLite
 database works; the table is the driver's alone). `createCache(driver,
 options?)` selects one of memory, redis, singlestore or sqlite.
+
+SQLite TTLs, including `stdTTL`, must be finite non-negative seconds with
+representable expiry timestamps. Zero alone means forever; fractions work.
+Invalid TTLs throw RangeError before publication; invalid `mset` entries roll
+back the batch. `getTtl` evicts expired entries instead of reporting stale
+metadata. `mget` preserves special keys such as `__proto__` as own properties.
+SQLite key globs are case-sensitive, with only `*` a wildcard; `?`, brackets,
+percent, underscore and backslash are literal. An empty pattern matches an
+empty key, while an omitted pattern lists all live keys in the prefix.
 
 The `cache` export is the driver `config/cache.ts` selects, with its `prefix`
 and `ttl` applied on every driver (memory also takes `maxKeys`, `useClones`

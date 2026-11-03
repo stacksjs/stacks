@@ -68,17 +68,19 @@ export function safeJsonParseResult<T = unknown>(
  * with database IDs that overflow Number). This wrapper substitutes
  * `[Circular]` for cycles and converts bigints to strings — same shape
  * downstream consumers expect from a "best-effort serialize this for
- * logs" call.
+ * logs" call. Shared non-cyclic values serialize fully. Unsupported roots
+ * return undefined, as JSON.stringify does. User getters/toJSON can still throw.
  */
-export function safeJsonStringify(value: unknown, space?: number): string {
-  const seen = new WeakSet<object>()
+export function safeJsonStringify(value: unknown, space?: number): string | undefined {
+  const ancestors: object[] = []
   return JSON.stringify(
     value,
-    (_key, v) => {
+    function (_key, v) {
       if (typeof v === 'bigint') return v.toString()
       if (v && typeof v === 'object') {
-        if (seen.has(v as object)) return '[Circular]'
-        seen.add(v as object)
+        while (ancestors.length && ancestors.at(-1) !== this) ancestors.pop()
+        if (ancestors.includes(v)) return '[Circular]'
+        ancestors.push(v)
       }
       return v
     },

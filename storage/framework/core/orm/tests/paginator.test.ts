@@ -153,7 +153,8 @@ describe('toCursorPaginator', () => {
 
 describe('duck-typed guards', () => {
   test('isPaginator narrows on shape', () => {
-    expect(isPaginator({ data: [], current_page: 1, per_page: 10, total: 0, last_page: 1 })).toBe(true)
+    expect(isPaginator({ data: [], current_page: 1, per_page: 10, total: 0, last_page: 1, from: null, to: null, has_more_pages: false })).toBe(true)
+    expect(isPaginator({ data: [], current_page: 1, per_page: 10, total: 0, last_page: 1 })).toBe(false)
     expect(isPaginator({ data: [], current_page: 1, per_page: 10 })).toBe(false) // missing total/last_page
     expect(isPaginator(null)).toBe(false)
     expect(isPaginator([])).toBe(false)

@@ -17,7 +17,7 @@ shapes the underlying drivers return.
 ```ts
 import { isPaginator, toPaginator } from '@stacksjs/pagination'
 
-const page = toPaginator(rows, { page: 2, perPage: 25, total: 413 })
+const page = toPaginator({ data: rows, meta: { page: 2, perPage: 25, total: 413, lastPage: 17 } })
 
 if (isPaginator(value))
   return Response.json(value)
@@ -25,9 +25,16 @@ if (isPaginator(value))
 
 ## Shapes
 
-- `Paginator` — knows `total`, so it can offer "jump to page N". Costs a `COUNT(*)`.
-- `SimplePaginator` — knows only whether another page exists.
-- `CursorPaginator` — opaque cursors, for tables too large to offset into.
+- `Paginator` - knows `total`, so it can offer "jump to page N". Costs a `COUNT(*)`.
+- `SimplePaginator` - knows only whether another page exists.
+- `CursorPaginator` - opaque cursors, for tables too large to offset into.
 
 All three are snake_case, matching Laravel's serialized paginator and the REST
 convention across the Stacks API.
+
+Guards validate all required metadata and the types of optional links, including
+positive safe page integers and nullable offsets. They do not validate rows.
+
+BigInt cursors use exact decimal strings, also inside composite JSON arrays.
+The ORM request parser restores composite arrays and preserves decimal strings
+for SQL binding. Clients pass tokens unchanged in the next request URL.

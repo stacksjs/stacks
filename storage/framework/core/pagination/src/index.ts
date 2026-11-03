@@ -103,41 +103,47 @@ export interface CursorPaginator<T> {
   path?: string
 }
 
-/** Duck-typed shape check — used by the response serializer (P4) to
- *  detect a paginator-shaped return value from an action. */
+/** Canonical numeric metadata uses finite, safe integers. */
+function positiveInteger(value: unknown): boolean {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value > 0
+}
+
+function nullableOffset(value: unknown): boolean {
+  return value === null || positiveInteger(value)
+}
+
+function pageLinks(value: Record<string, unknown>): boolean {
+  return [value.prev_page_url, value.next_page_url].every(link => link === undefined || link === null || typeof link === 'string')
+    && (value.path === undefined || typeof value.path === 'string')
+}
+
+/** Validate all required full-paginator metadata before narrowing. */
 export function isPaginator<T = unknown>(value: unknown): value is Paginator<T> {
   if (value === null || typeof value !== 'object') return false
   const v = value as Record<string, unknown>
-  return (
-    Array.isArray(v.data)
-    && typeof v.current_page === 'number'
-    && typeof v.per_page === 'number'
-    && typeof v.total === 'number'
-    && typeof v.last_page === 'number'
-  )
+  return Array.isArray(v.data)
+    && positiveInteger(v.current_page) && positiveInteger(v.per_page) && positiveInteger(v.last_page)
+    && typeof v.total === 'number' && Number.isSafeInteger(v.total) && v.total >= 0
+    && nullableOffset(v.from) && nullableOffset(v.to) && typeof v.has_more_pages === 'boolean'
+    && pageLinks(v)
+    && [v.first_page_url, v.last_page_url].every(link => link === undefined || typeof link === 'string')
 }
 
-/** Duck-typed shape check for the simple paginator. */
+/** Validate the simple paginator without claiming knowledge of a total. */
 export function isSimplePaginator<T = unknown>(value: unknown): value is SimplePaginator<T> {
   if (value === null || typeof value !== 'object') return false
   const v = value as Record<string, unknown>
-  return (
-    Array.isArray(v.data)
-    && typeof v.current_page === 'number'
-    && typeof v.per_page === 'number'
-    && typeof v.has_more_pages === 'boolean'
-    && !('total' in v)
-  )
+  return Array.isArray(v.data) && positiveInteger(v.current_page) && positiveInteger(v.per_page)
+    && typeof v.has_more_pages === 'boolean' && !('total' in v) && pageLinks(v)
 }
 
-/** Duck-typed shape check for the cursor paginator. */
+/** Validate both cursor directions and the page-size metadata. */
 export function isCursorPaginator<T = unknown>(value: unknown): value is CursorPaginator<T> {
   if (value === null || typeof value !== 'object') return false
   const v = value as Record<string, unknown>
-  return (
-    Array.isArray(v.data)
-    && (typeof v.next_cursor === 'string' || v.next_cursor === null)
-  )
+  return Array.isArray(v.data) && positiveInteger(v.per_page) && typeof v.has_more_pages === 'boolean'
+    && [v.next_cursor, v.prev_cursor].every(cursor => cursor === null || typeof cursor === 'string')
+    && pageLinks(v)
 }
 
 /**
@@ -203,8 +209,18 @@ export function toCursorPaginator<T>(
 function serializeCursor(cursor: unknown): string | null {
   if (cursor === null || cursor === undefined) return null
   if (typeof cursor === 'string') return cursor
+  if (typeof cursor === 'bigint') return cursor.toString()
   // Composite cursor (array of column values) or numeric — JSON-stringify
   // so the wire format is stable across drivers and the value survives a
   // round-trip through `?cursor=...` without any consumer-side parsing.
-  return JSON.stringify(cursor)
+  // SQL BIGINT identifiers must retain all digits through JSON and URL parsing.
+  // Decimal strings are accepted by SQL bindings, for scalar and tuple cursors.
+  const encoded = JSON.stringify(cursor, (_key, value) => {
+    if (typeof value === 'number' && !Number.isFinite(value))
+      throw new TypeError('Cursor numbers must be finite')
+    return typeof value === 'bigint' ? value.toString() : value
+  })
+  if (encoded === undefined)
+    throw new TypeError('Cursor must be JSON serializable')
+  return encoded
 }

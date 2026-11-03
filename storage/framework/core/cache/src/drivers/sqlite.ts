@@ -28,7 +28,7 @@ import { Database } from 'bun:sqlite'
 import { EventEmitter } from 'node:events'
 import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
-import { likePattern } from '../sql-like'
+import { sqliteGlobPattern } from '../sql-like'
 
 export interface SqliteCacheOptions {
   /** The SQLite file holding the cache table. `:memory:` for tests. @default 'storage/framework/cache/cache.sqlite' */
@@ -52,6 +52,17 @@ interface CacheStatsShape {
 /** Double-quoted identifier for safe interpolation of the configured table name. */
 function quoteIdent(id: string): string {
   return `"${id.replace(/"/g, '""')}"`
+}
+
+/** Reject invalid durations before writing, including overflowed epoch values. */
+function expiryForSeconds(seconds: number): number | null {
+  if (typeof seconds !== 'number' || !Number.isFinite(seconds) || seconds < 0)
+    throw new RangeError('Cache TTL must be a finite non-negative number of seconds')
+  if (seconds === 0) return null
+  const expiry = Date.now() + seconds * 1000
+  if (!Number.isFinite(expiry) || expiry > Number.MAX_SAFE_INTEGER)
+    throw new RangeError('Cache TTL exceeds the supported expiry range')
+  return expiry
 }
 
 /**
@@ -88,6 +99,8 @@ export class SqliteCacheStore extends EventEmitter {
 
   constructor(options: SqliteCacheOptions = {}) {
     super()
+    this.stdTTL = options.stdTTL === undefined ? 0 : options.stdTTL
+    expiryForSeconds(this.stdTTL)
     const path = options.path ?? 'storage/framework/cache/cache.sqlite'
     if (path !== ':memory:' && !path.startsWith('file:'))
       mkdirSync(dirname(path), { recursive: true })
@@ -98,7 +111,6 @@ export class SqliteCacheStore extends EventEmitter {
     if (path !== ':memory:') useWriteAheadLog(this.db, 5000)
     this.qualified = quoteIdent(options.table ?? 'stacks_cache')
     this.prefix = options.prefix ?? ''
-    this.stdTTL = options.stdTTL ?? 0
     this.db.run(`CREATE TABLE IF NOT EXISTS ${this.qualified} (cache_key TEXT PRIMARY KEY, value TEXT NOT NULL, expires_at INTEGER NULL)`)
   }
 
@@ -108,10 +120,7 @@ export class SqliteCacheStore extends EventEmitter {
 
   /** Convert a seconds TTL into an absolute epoch-ms expiry (or null). */
   private expiryFor(ttl?: number): number | null {
-    const seconds = ttl ?? this.stdTTL
-    if (!seconds || seconds <= 0)
-      return null
-    return Date.now() + seconds * 1000
+    return expiryForSeconds(ttl === undefined ? this.stdTTL : ttl)
   }
 
   async get<T>(key: string): Promise<T | undefined> {
@@ -120,9 +129,10 @@ export class SqliteCacheStore extends EventEmitter {
       this.misses++
       return undefined
     }
-    if (row.expires_at != null && row.expires_at <= Date.now()) {
+    const now = Date.now()
+    if (row.expires_at != null && row.expires_at <= now) {
       // Lazily evict expired entries on read.
-      this.db.query(`DELETE FROM ${this.qualified} WHERE cache_key = ?`).run(this.k(key))
+      this.db.query(`DELETE FROM ${this.qualified} WHERE cache_key = ? AND expires_at <= ?`).run(this.k(key), now)
       this.misses++
       return undefined
     }
@@ -135,7 +145,7 @@ export class SqliteCacheStore extends EventEmitter {
     for (const key of keys) {
       const value = await this.get<T>(key)
       if (value !== undefined)
-        out[key] = value
+        Object.defineProperty(out, key, { value, enumerable: true, writable: true, configurable: true })
     }
     return out
   }
@@ -190,9 +200,9 @@ export class SqliteCacheStore extends EventEmitter {
 
   async keys(pattern?: string): Promise<string[]> {
     const prefix = this.prefix ? `${this.prefix}:` : ''
-    const like = pattern ? likePattern(pattern) : '%'
-    const rows = this.db.query(`SELECT cache_key FROM ${this.qualified} WHERE substr(cache_key, 1, length(?)) = ? AND substr(cache_key, length(?) + 1) LIKE ? ESCAPE '\\' AND (expires_at IS NULL OR expires_at > ?)`)
-      .all(prefix, prefix, prefix, like, Date.now()) as Array<{ cache_key: string }>
+    const glob = pattern === undefined ? '*' : sqliteGlobPattern(pattern)
+    const rows = this.db.query(`SELECT cache_key FROM ${this.qualified} WHERE substr(cache_key, 1, length(?)) = ? AND substr(cache_key, length(?) + 1) GLOB ? AND (expires_at IS NULL OR expires_at > ?)`)
+      .all(prefix, prefix, prefix, glob, Date.now()) as Array<{ cache_key: string }>
     const strip = this.prefix ? this.prefix.length + 1 : 0
     return rows.map(row => (strip ? row.cache_key.slice(strip) : row.cache_key))
   }
@@ -201,6 +211,11 @@ export class SqliteCacheStore extends EventEmitter {
     const row = this.db.query(`SELECT expires_at FROM ${this.qualified} WHERE cache_key = ?`).get(this.k(key)) as { expires_at: number | null } | null
     if (!row)
       return undefined
+    const now = Date.now()
+    if (row.expires_at != null && row.expires_at <= now) {
+      this.db.query(`DELETE FROM ${this.qualified} WHERE cache_key = ? AND expires_at <= ?`).run(this.k(key), now)
+      return undefined
+    }
     // Contract mirrors ts-cache: 0 = no expiration, else the expiry in epoch ms.
     return row.expires_at == null ? 0 : row.expires_at
   }

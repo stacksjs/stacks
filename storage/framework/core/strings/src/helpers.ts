@@ -28,6 +28,8 @@ export function toString(v: unknown): string {
  * ```
  */
 export function mask(value: string, character: string, index: number, length?: number): string {
+  if (!Number.isSafeInteger(index) || length !== undefined && !Number.isSafeInteger(length))
+    throw new RangeError('Mask coordinates must be safe integers')
   if (character === '') return value
 
   const chars = Array.from(value)

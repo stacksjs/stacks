@@ -110,7 +110,7 @@ export function formatBytes(bytes: number, options: BytesOptions = {}): string {
  * ```
  */
 export function parseBytes(input: string): number {
-  const match = input.match(/^(-?[\d.]+)\s*([A-Za-z]+)?$/)
+  const match = input.trim().match(/^(-?(?:\d+(?:\.\d*)?|\.\d+))\s*([A-Za-z]+)?$/)
 
   if (!match) {
     throw new Error(`Invalid byte string: ${input}`)
@@ -120,7 +120,7 @@ export function parseBytes(input: string): number {
   if (numberStr === undefined) {
     throw new Error(`Invalid byte string: ${input}`)
   }
-  const number = Number.parseFloat(numberStr)
+  const number = Number(numberStr)
 
   if (!Number.isFinite(number)) {
     throw new Error(`Invalid number in byte string: ${numberStr}`)
@@ -130,17 +130,12 @@ export function parseBytes(input: string): number {
   const isBinary = normalizedUnit.endsWith('IB')
   const base = isBinary ? 1024 : 1000
 
-  let exponent = 0
   const units = isBinary ? BINARY_UNITS : DECIMAL_UNITS
-
-  for (let i = 0; i < units.length; i++) {
-    if (units[i]?.toUpperCase() === normalizedUnit) {
-      exponent = i
-      break
-    }
-  }
-
-  return number * base ** exponent
+  const exponent = units.findIndex(value => value.toUpperCase() === normalizedUnit)
+  if (exponent < 0) throw new Error(`Unknown byte unit: ${unit}`)
+  const bytes = number * base ** exponent
+  if (!Number.isFinite(bytes)) throw new RangeError('Byte value out of range')
+  return bytes
 }
 
 /**

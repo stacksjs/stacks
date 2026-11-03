@@ -1,5 +1,7 @@
 import { getTypeName } from '@stacksjs/types'
 
+type ActivePairs = WeakMap<object, WeakSet<object>>
+
 /**
  * Every item in `a` pairs with a distinct item in `b`.
  *
@@ -37,7 +39,7 @@ function unorderedMatch<T>(a: readonly T[], b: readonly T[], matches: (_x: T, _y
 }
 
 /** Two Maps hold the same entries, whatever order they were built in. */
-function mapsEqual(a: Map<unknown, unknown>, b: Map<unknown, unknown>, seen: WeakMap<object, object>): boolean {
+function mapsEqual(a: Map<unknown, unknown>, b: Map<unknown, unknown>, seen: ActivePairs): boolean {
   if (a.size !== b.size)
     return false
 
@@ -53,7 +55,7 @@ function mapsEqual(a: Map<unknown, unknown>, b: Map<unknown, unknown>, seen: Wea
 
   if (sameKeys) {
     for (const [key, value] of a) {
-      if (!isDeepEqual(value, b.get(key), seen))
+      if (!equalValues(value, b.get(key), seen))
         return false
     }
 
@@ -64,7 +66,7 @@ function mapsEqual(a: Map<unknown, unknown>, b: Map<unknown, unknown>, seen: Wea
   return unorderedMatch(
     [...a.entries()],
     [...b.entries()],
-    (x, y) => isDeepEqual(x[0], y[0], seen) && isDeepEqual(x[1], y[1], seen),
+    (x, y) => equalValues(x[0], y[0], seen) && equalValues(x[1], y[1], seen),
   )
 }
 
@@ -76,9 +78,10 @@ function mapsEqual(a: Map<unknown, unknown>, b: Map<unknown, unknown>, seen: Wea
  *   `[NaN, NaN]` pair compared element-by-element worked, but compound
  *   structures relied on the tail. The new shape preserves that.
  * - Circular references used to send isDeepEqual into infinite recursion
- *   (`a.self = a; isDeepEqual(a, a)` blew the stack). A WeakSet of
- *   already-visited objects breaks the cycle and treats two structurally
- *   identical cycles as equal.
+ *   (`a.self = a; isDeepEqual(a, a)` blew the stack). Active object pairs
+ *   break cycles without requiring identical sharing/topology. A self-cycle
+ *   and a longer cycle with the same fields are structurally equal. Pairs
+ *   leave the active path after each branch, including failed candidates.
  * - Dates, regular expressions, Maps and Sets are compared by what they
  *   HOLD. Only arrays and plain objects had branches, so everything else
  *   fell through to the `Object.is` tail — which for an object means
@@ -96,7 +99,15 @@ function mapsEqual(a: Map<unknown, unknown>, b: Map<unknown, unknown>, seen: Wea
  *   fact - and there is no end to the list. Guessing an answer silently is
  *   what made the cases above wrong.
  */
-export function isDeepEqual(value1: unknown, value2: unknown, seen: WeakMap<object, object> = new WeakMap()): boolean {
+export function isDeepEqual(value1: unknown, value2: unknown, seen?: WeakMap<object, object>): boolean {
+  // Keep the optional caller cache compatible; traversal state stays local to this comparison.
+  if (seen && value1 && typeof value1 === 'object' && seen.get(value1) === value2) return true
+  const equal = equalValues(value1, value2, new WeakMap())
+  if (equal && value1 && typeof value1 === 'object' && value2 && typeof value2 === 'object') seen?.set(value1, value2)
+  return equal
+}
+
+function equalValues(value1: unknown, value2: unknown, seen: ActivePairs): boolean {
   if (value1 === value2) return true
   if (typeof value1 === 'number' && typeof value2 === 'number' && Number.isNaN(value1) && Number.isNaN(value2)) return true
 
@@ -104,14 +115,18 @@ export function isDeepEqual(value1: unknown, value2: unknown, seen: WeakMap<obje
   const type2 = getTypeName(value2)
   if (type1 !== type2) return false
 
-  // Cycle detection: if we've seen value1 before paired with value2,
-  // assume they're equal (otherwise we'd recurse forever).
-  if (value1 && typeof value1 === 'object') {
-    const prior = seen.get(value1 as object)
-    if (prior === value2) return true
-    seen.set(value1 as object, value2 as object)
+  if (value1 && typeof value1 === 'object' && value2 && typeof value2 === 'object') {
+    let pairs = seen.get(value1)
+    if (pairs?.has(value2)) return true
+    if (!pairs) seen.set(value1, pairs = new WeakSet())
+    pairs.add(value2)
+    try { return compareValues(value1, value2, type1, seen) }
+    finally { pairs.delete(value2) }
   }
+  return Object.is(value1, value2)
+}
 
+function compareValues(value1: unknown, value2: unknown, type1: string, seen: ActivePairs): boolean {
   /*
    * Dispatched on `getTypeName` rather than `instanceof`, and cast after.
    *
@@ -132,7 +147,7 @@ export function isDeepEqual(value1: unknown, value2: unknown, seen: WeakMap<obje
      * inconsistency, so they agree.
      *
      * This is a deliberate divergence from `assert.deepStrictEqual`, which
-     * calls two Invalid Dates unequal. Every other case here agrees with it.
+     * calls two Invalid Dates unequal. Cycle topology is also deliberately structural.
      */
     return Object.is((value1 as Date).getTime(), (value2 as Date).getTime())
   }
@@ -151,7 +166,7 @@ export function isDeepEqual(value1: unknown, value2: unknown, seen: WeakMap<obje
     return unorderedMatch(
       [...(value1 as Set<unknown>)],
       [...(value2 as Set<unknown>)],
-      (x, y) => isDeepEqual(x, y, seen),
+      (x, y) => equalValues(x, y, seen),
     )
   }
 
@@ -185,7 +200,12 @@ export function isDeepEqual(value1: unknown, value2: unknown, seen: WeakMap<obje
   // types are already known to match by this point.
   if (Array.isArray(value1) && Array.isArray(value2)) {
     if (value1.length !== value2.length) return false
-    return value1.every((item, i) => isDeepEqual(item, value2[i], seen))
+    for (let index = 0; index < value1.length; index++) {
+      const own = Object.hasOwn(value1, index)
+      if (own !== Object.hasOwn(value2, index)) return false
+      if (own && !equalValues(value1[index], value2[index], seen)) return false
+    }
+    return true
   }
 
   if (type1 === 'object') {
@@ -194,7 +214,7 @@ export function isDeepEqual(value1: unknown, value2: unknown, seen: WeakMap<obje
     const object2 = value2 as Record<string, unknown>
     const keyArr = Object.keys(object1)
     if (keyArr.length !== Object.keys(object2).length) return false
-    return keyArr.every((key: string) => isDeepEqual(object1[key], object2[key], seen))
+    return keyArr.every(key => Object.prototype.propertyIsEnumerable.call(object2, key) && equalValues(object1[key], object2[key], seen))
   }
 
   return Object.is(value1, value2)

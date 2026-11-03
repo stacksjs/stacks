@@ -45,7 +45,7 @@ export { clamp, notNullish, retry, useOnline } from '@stacksjs/browser'
 
 ## Deep Merge (`merge.ts`)
 
-Replacement for `defu`. Arrays are concatenated, objects are recursively merged, special objects (Date, RegExp, Error, Promise, Map, Set, WeakMap, WeakSet, ArrayBuffer views) are NOT deeply merged. A `"__proto__"` key is skipped, as defu skips it, so a parsed request body cannot set the result's prototype.
+Replacement for `defu`. Only own enumerable string keys are read. Arrays concatenate; plain records recursively merge. Non-plain nested values (including URL, ArrayBuffer, Blob and class instances) retain identity. A plain record replaces a non-plain target rather than copying its indices or prototype fields. A `"__proto__"` key is skipped, as defu skips it, so a parsed request body cannot set the result's prototype.
 
 ```typescript
 import { merge, mergeDefaults, createMerger, defu } from '@stacksjs/utils'
@@ -78,6 +78,13 @@ throttledFn.cancel()     // cancel pending invocation
 
 await delay(1000)        // sleep for 1 second (returns Promise<void>)
 ```
+
+Calls and debounce `flush()` return `ReturnType<T> | undefined`: before any
+invocation there is no result; suppressed calls return the last result,
+including a Promise for async callbacks. Both preserve the callback receiver.
+Pending arguments are consumed before invoking, so reentrant calls survive.
+`cancel()` clears pending work; throttle cancellation also resets its interval.
+Manual debounce `flush()` invokes pending work even with `trailing: false`.
 
 Note: unlike some implementations, this debounce does NOT support `maxWait`. The throttle uses `Date.now()` for timing, not setTimeout stacking.
 
@@ -155,6 +162,10 @@ readableSize(1024)                         // alias for formatBytes
 ```
 
 Units: B, KB, MB, GB, TB, PB, EB, ZB, YB (decimal) or B, KiB, MiB, GiB, TiB, PiB, EiB, ZiB, YiB (binary).
+
+`parseBytes` accepts a complete decimal with an optional known decimal or
+binary unit (case-insensitive). It rejects partial numbers, unknown units,
+trailing text and non-finite output. Fractions and negative values are allowed.
 
 ## Export Size Calculation (`size.ts`)
 
@@ -433,11 +444,16 @@ Glob belongs to `@stacksjs/storage`; it is not re-exported from the utils root.
 
 ## Safe serialization and typed composition
 
-`safeJsonParse(text, fallback?)`, `safeJsonParseResult`, and
-`safeJsonStringify(value, space?)` make parse failure behavior explicit. Their
-generic result type is a caller annotation, not validation of untrusted JSON.
+`safeJsonParse(text, fallback?)` and `safeJsonParseResult` make parse failure
+behavior explicit. A parse generic result type is a caller annotation, not
+validation of untrusted JSON.
 Validate decoded objects at the request boundary before treating them as a
 model, config, or provider payload.
+
+`safeJsonStringify` returns `string | undefined`, matching JSON for unsupported
+roots (undefined, functions and symbols). Shared non-cyclic objects serialize
+at every occurrence; only ancestor cycles become `[Circular]`. BigInts become
+decimal strings. User getters and `toJSON` methods can still throw.
 
 `pipe(value, ...steps)` applies ordinary typed unary functions left to right.
 `piped(...steps)` returns the composed function and `tap(effect)` returns a
@@ -445,7 +461,10 @@ pass-through step. These differ from middleware-style `Pipeline`, whose pipes
 receive a next function. Choose the simple function seam for data transforms.
 
 `isDeepEqual` now compares Date, RegExp, Map, Set, typed arrays and ArrayBuffers
-by value and tracks circular pairs. Host objects and Errors remain identity
+by value and tracks active circular pairs. Cycle topology/sharing need not
+match when fields are structurally equal. Objects require matching own
+enumerable string keys. Arrays distinguish a hole from an own undefined slot;
+two corresponding holes compare equal. Host objects and Errors remain identity
 comparisons. Read retained equal tests for a non-plain object rather than
 assuming every object with similar printable fields is equal.
 

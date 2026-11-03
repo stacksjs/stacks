@@ -429,6 +429,8 @@ interface PluralizeOptions { count?, inclusive? }
 - `helpers.ts` exports `toString()` (Object.prototype.toString, not ordinary
   string coercion) and `mask(value, character, index, length?)`. Mask supports
   a negative starting index and uses the first character of its mask string.
+  Index and explicit length must be safe integers, otherwise it throws RangeError.
+  Negative integer lengths mask nothing. Coordinates count Unicode code points.
 
 ## CSV exports
 

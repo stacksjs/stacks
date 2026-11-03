@@ -25,7 +25,14 @@ native parser. Do not treat a cursor as a trusted SQL fragment.
 
 toPaginator, toSimplePaginator and toCursorPaginator adapt source results.
 isPaginator/isSimplePaginator/isCursorPaginator identify the canonical shapes;
-they do not authenticate a source or validate every row.
+they require every mandatory metadata field, safe positive page integers,
+non-negative integer totals and correctly typed optional links. They do not
+authenticate a source or validate rows. Empty out-of-range pages remain valid.
+
+BigInt cursors serialize as exact decimal strings. Composite cursors encode
+BigInts as decimal string entries inside a JSON array. Keep those tokens intact
+through query parameters; the ORM parser restores tuples and SQL bindings
+accept decimal strings without a lossy Number conversion.
 
 ## HTTP and UI
 

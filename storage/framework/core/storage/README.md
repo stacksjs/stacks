@@ -249,3 +249,8 @@ For casual chit-chat with others using this package:
 The MIT License (MIT). Please see [LICENSE](https://github.com/stacksjs/stacks/tree/main/LICENSE.md) for more information.
 
 Made with 💙
+
+Memory storage preserves content and metadata when moving a file to its own
+normalized path. A missing source still throws. Aborted stream uploads cancel
+pending reads without publishing or replacing existing contents. All consumed
+stream readers release their locks on success, error and abort.

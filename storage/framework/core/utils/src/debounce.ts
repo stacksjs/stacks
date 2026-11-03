@@ -16,6 +16,11 @@ export interface DebounceOptions {
   trailing?: boolean
 }
 
+type Callback = (...args: any[]) => any
+type ControlledCall<T extends Callback> = (this: ThisParameterType<T>, ...args: Parameters<T>) => ReturnType<T> | undefined
+export type DebouncedFunction<T extends Callback> = ControlledCall<T> & { cancel: () => void, flush: () => ReturnType<T> | undefined }
+export type ThrottledFunction<T extends Callback> = ControlledCall<T> & { cancel: () => void }
+
 /**
  * Creates a debounced function that delays invoking func until after wait milliseconds
  * have elapsed since the last time the debounced function was invoked.
@@ -25,23 +30,24 @@ export interface DebounceOptions {
  * @param options - Options object
  * @returns The debounced function
  */
-export function debounce<T extends (..._args: any[]) => any>(
+export function debounce<T extends Callback>(
   fn: T,
   wait: number = 0,
   options: DebounceOptions = {},
-): T & { cancel: () => void; flush: () => void } {
+): DebouncedFunction<T> {
   const { leading = false, trailing = true } = options
 
   let timeout: ReturnType<typeof setTimeout> | null = null
   let lastArgs: any[] | null = null
   let lastThis: any = null
-  let result: any
+  let result: ReturnType<T> | undefined
 
   const invokeFunc = () => {
     if (lastArgs) {
-      result = fn.apply(lastThis, lastArgs)
+      const args = lastArgs, receiver = lastThis
       lastArgs = null
       lastThis = null
+      result = fn.apply(receiver, args)
     }
     return result
   }
@@ -64,7 +70,7 @@ export function debounce<T extends (..._args: any[]) => any>(
     return result
   }
 
-  const debounced = function (this: any, ...args: any[]) {
+  const debounced = function (this: ThisParameterType<T>, ...args: Parameters<T>) {
     lastArgs = args
     lastThis = this
 
@@ -79,6 +85,7 @@ export function debounce<T extends (..._args: any[]) => any>(
       if (trailing && lastArgs) {
         invokeFunc()
       }
+      else { lastArgs = null; lastThis = null }
     }, wait)
 
     if (shouldCallNow) {
@@ -87,7 +94,7 @@ export function debounce<T extends (..._args: any[]) => any>(
 
     // Returns the result from the previous invocation (standard debounce behavior)
     return result
-  } as T & { cancel: () => void; flush: () => void }
+  } as DebouncedFunction<T>
 
   debounced.cancel = cancel
   debounced.flush = flush
@@ -102,22 +109,25 @@ export function debounce<T extends (..._args: any[]) => any>(
  * @param wait - The number of milliseconds to throttle
  * @returns The throttled function
  */
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends Callback>(
   fn: T,
   wait: number = 0,
-): T & { cancel: () => void } {
+): ThrottledFunction<T> {
   let timeout: ReturnType<typeof setTimeout> | null = null
-  let lastRun = 0
+  let lastRun: number | undefined
   let lastArgs: any[] | null = null
   let lastThis: any = null
+  let result: ReturnType<T> | undefined
 
   const invokeFunc = () => {
     if (lastArgs) {
-      fn.apply(lastThis, lastArgs)
+      const args = lastArgs, receiver = lastThis
       lastArgs = null
       lastThis = null
       lastRun = Date.now()
+      result = fn.apply(receiver, args)
     }
+    return result
   }
 
   const cancel = () => {
@@ -127,17 +137,19 @@ export function throttle<T extends (...args: any[]) => any>(
     }
     lastArgs = null
     lastThis = null
+    lastRun = undefined
   }
 
-  const throttled = function (this: any, ...args: any[]) {
+  const throttled = function (this: ThisParameterType<T>, ...args: Parameters<T>) {
     lastArgs = args
     lastThis = this
 
     const now = Date.now()
-    const timeSinceLastRun = now - lastRun
+    const timeSinceLastRun = lastRun === undefined ? Infinity : now - lastRun
 
-    if (timeSinceLastRun >= wait) {
-      invokeFunc()
+    if (timeSinceLastRun >= wait || timeSinceLastRun < 0) {
+      if (timeout) { clearTimeout(timeout); timeout = null }
+      return invokeFunc()
     }
     else if (!timeout) {
       timeout = setTimeout(() => {
@@ -145,7 +157,8 @@ export function throttle<T extends (...args: any[]) => any>(
         invokeFunc()
       }, wait - timeSinceLastRun)
     }
-  } as T & { cancel: () => void }
+    return result
+  } as ThrottledFunction<T>
 
   throttled.cancel = cancel
 

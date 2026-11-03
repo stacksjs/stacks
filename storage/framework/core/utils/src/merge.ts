@@ -19,7 +19,7 @@ export function merge<T extends Record<string, any>>(...objects: DeepPartial<T>[
   for (const obj of objects) {
     if (!obj || typeof obj !== 'object') continue
 
-    for (const key in obj) {
+    for (const key of Object.keys(obj)) {
       // `JSON.parse` keeps a `"__proto__"` key as an ordinary own key, and
       // assigning it ran the `__proto__` setter: `merge({}, body)` on
       // `{"__proto__":{"isAdmin":true}}` came back with `isAdmin` true,
@@ -27,15 +27,15 @@ export function merge<T extends Record<string, any>>(...objects: DeepPartial<T>[
       if (key === '__proto__') continue
 
       const value = obj[key]
-      const existing = result[key]
+      const existing = Object.hasOwn(result, key) ? result[key] : undefined
 
       if (value === undefined) continue
 
       if (Array.isArray(value)) {
         result[key] = Array.isArray(existing) ? [...existing, ...value] : [...value]
       }
-      else if (value && typeof value === 'object' && !isSpecialObject(value)) {
-        result[key] = merge(existing || {}, value)
+      else if (isPlainObject(value)) {
+        result[key] = merge(isPlainObject(existing) ? existing : {}, value)
       }
       else {
         result[key] = value
@@ -66,19 +66,18 @@ export function mergeDefaults<T extends Record<string, any>>(
 }
 
 /**
- * Check if object is a special type that shouldn't be merged
+ * Only plain records participate in recursive merging
  */
-function isSpecialObject(obj: any): boolean {
-  if (obj instanceof Date) return true
-  if (obj instanceof RegExp) return true
-  if (obj instanceof Error) return true
-  if (obj instanceof Promise) return true
-  if (obj instanceof Map) return true
-  if (obj instanceof Set) return true
-  if (obj instanceof WeakMap) return true
-  if (obj instanceof WeakSet) return true
-  if (ArrayBuffer.isView(obj)) return true
-  return false
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  if (!value || typeof value !== 'object') return false
+  const prototype = Object.getPrototypeOf(value)
+  if (prototype === null || prototype === Object.prototype) return true
+  // A foreign realm has its own Object.prototype. A null-derived class also
+  // ends at null, so check the prototype's own constructor without invoking getters.
+  if (Object.getPrototypeOf(prototype) !== null) return false
+  const constructor = Object.getOwnPropertyDescriptor(prototype, 'constructor')?.value
+  return typeof constructor === 'function'
+    && Function.prototype.toString.call(constructor) === Function.prototype.toString.call(Object)
 }
 
 // Aliases for defu compatibility

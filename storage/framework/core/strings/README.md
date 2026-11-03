@@ -135,3 +135,7 @@ Many thanks to the following core technologies & people who have contributed to 
 The MIT License (MIT). Please see [LICENSE](https://github.com/stacksjs/stacks/tree/main/LICENSE.md) for more information.
 
 Made with 💙
+
+`mask(value, character, index, length?)` counts Unicode code points. Index and
+explicit length must be safe integers, otherwise it throws RangeError. Negative
+indices count from the end; negative integer lengths mask nothing.

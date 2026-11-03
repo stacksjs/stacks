@@ -49,7 +49,8 @@ export class InMemoryStorageAdapter implements StorageAdapter {
     return parts.join('/')
   }
 
-  private async contentsToUint8Array(contents: FileContents): Promise<Uint8Array> {
+  private async contentsToUint8Array(contents: FileContents, signal?: AbortSignal): Promise<Uint8Array> {
+    signal?.throwIfAborted()
     if (typeof contents === 'string') {
       return new TextEncoder().encode(contents)
     }
@@ -73,13 +74,21 @@ export class InMemoryStorageAdapter implements StorageAdapter {
 
       const reader = (contents as ReadableStream<Uint8Array>).getReader()
       const chunks: Uint8Array[] = []
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done)
-          break
-        if (value)
-          chunks.push(value)
+      const abort = () => { void reader.cancel(signal?.reason).catch(() => {}) }
+      signal?.addEventListener('abort', abort, { once: true })
+      try {
+        if (signal?.aborted) abort()
+        while (true) {
+          signal?.throwIfAborted()
+          const { done, value } = await reader.read()
+          signal?.throwIfAborted()
+          if (done) break
+          if (value) chunks.push(new Uint8Array(value))
+        }
+      }
+      finally {
+        signal?.removeEventListener('abort', abort)
+        reader.releaseLock()
       }
 
       const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0)
@@ -170,25 +179,8 @@ export class InMemoryStorageAdapter implements StorageAdapter {
     const dirPath = this.getDirectoryPath(normalized)
     if (dirPath) await this.createDirectory(dirPath)
 
-    const chunks: Uint8Array[] = []
-    const reader = stream.getReader()
-    const abort = options?.signal
-    try {
-      while (true) {
-        if (abort?.aborted) throw new Error('aborted')
-        const { done, value } = await reader.read()
-        if (done) break
-        if (value) chunks.push(value)
-      }
-    }
-    finally {
-      try { reader.releaseLock() }
-      catch { /* release best-effort */ }
-    }
-    const totalLength = chunks.reduce((sum, c) => sum + c.length, 0)
-    const data = new Uint8Array(totalLength)
-    let offset = 0
-    for (const c of chunks) { data.set(c, offset); offset += c.length }
+    const data = await this.contentsToUint8Array(stream, options?.signal)
+    options?.signal?.throwIfAborted()
 
     const lastModified = Date.now()
     const mimeType = options?.contentType ?? this.detectMimeType(normalized)
@@ -267,6 +259,7 @@ export class InMemoryStorageAdapter implements StorageAdapter {
     if (!file) {
       throw new Error(`File not found: ${from}`)
     }
+    if (normalizedFrom === normalizedTo) return
 
     // Ensure destination directory exists
     const toDir = this.getDirectoryPath(normalizedTo)
