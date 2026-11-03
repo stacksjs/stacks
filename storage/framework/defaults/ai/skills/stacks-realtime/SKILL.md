@@ -234,7 +234,7 @@ import { replaySince, setReplayBuffer } from '@stacksjs/realtime'
 setReplayBuffer({ channels: ['orders.*'], maxPerChannel: 100, ttlMs: 5 * 60_000 })
 ```
 
-Every broadcast on a matching channel, from any API, is recorded and reaches clients as `{ event, channel, data, seq }`. Patterns match with or without the `private-`/`presence-` prefix (`orders.*` covers `private-orders.1`); `replaySince()` takes the full name. The client keeps the last `seq` per channel and sends it back after reconnecting (through a route of the app's), which answers with `replaySince('private-orders.1', seq)`. The buffer and its numbering are per process.
+Every broadcast on a matching channel, from any API, is recorded and reaches clients as `{ event, channel, data, seq }`. Patterns match with or without the `private-`/`presence-` prefix (`orders.*` covers `private-orders.1`); `replaySince()` takes the full name. The client keeps the last `seq` per channel and sends it back after reconnecting (through a route of the app's), which answers with `replaySince('private-orders.1', seq)`. The buffer and its numbering are per process. A channel's `seq` rises by one per message and keeps rising across a restart (each channel starts from the clock, never below a number already issued), so messages sent after a restart are still newer than the `seq` a reconnecting client holds. Do not assume it starts at 1. When the first replayed `seq` is not the client's `seq + 1`, messages were lost: evicted, expired, or sent before a restart.
 
 ---
 

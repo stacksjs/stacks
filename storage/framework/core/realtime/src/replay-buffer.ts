@@ -19,6 +19,15 @@
  * behind Redis each numbers its own copy, so route replay through a
  * shared store (Redis Streams, Postgres LISTEN/NOTIFY, etc.) there.
  *
+ * A channel's numbers rise by one per message and keep rising across a
+ * restart: each channel starts from the clock (milliseconds times 1000),
+ * never below a number this process already issued. They used to start
+ * at 1, so after a restart every new message was "older" than the seq a
+ * reconnecting client held: `replaySince` skipped them, and a client
+ * ignoring repeats dropped them live. When the first replayed seq is not
+ * the client's seq plus one, messages were lost: evicted, expired, or
+ * sent before a restart.
+ *
  * Memory shape: `Map<channel, RingBuffer<BufferedMessage>>`. Bounded by
  * `maxPerChannel` (default 100) so a chatty channel can't OOM the
  * server. Entries past `ttlMs` are evicted lazily on read — apps that
@@ -49,7 +58,7 @@ export interface ReplayBufferConfig {
 }
 
 export interface BufferedMessage {
-  /** Monotonic per-channel sequence id. Starts at 1. */
+  /** Per-channel sequence id, one higher than the last, and rising across restarts. */
   seq: number
   /** Wall-clock timestamp when the message was recorded. */
   ts: number
@@ -74,6 +83,13 @@ interface BufferRegistry {
 }
 
 let registry: BufferRegistry | null = null
+
+/** The highest seq this process has issued, so a replaced buffer never reissues one. */
+let lastIssued = 0
+
+function firstSeq(): number {
+  return Math.max(Date.now() * 1000, lastIssued + 1)
+}
 
 /**
  * Install (or replace) the replay-buffer config. Pass `null` to disable
@@ -128,7 +144,7 @@ export function recordBroadcast(channel: string, event: string, data: unknown): 
 
   let state = registry.state.get(channel)
   if (!state) {
-    state = { messages: [], nextSeq: 1 }
+    state = { messages: [], nextSeq: firstSeq() }
     registry.state.set(channel, state)
   }
 
@@ -138,6 +154,7 @@ export function recordBroadcast(channel: string, event: string, data: unknown): 
     event,
     data,
   }
+  lastIssued = Math.max(lastIssued, msg.seq)
   state.messages.push(msg)
 
   // FIFO eviction past the size cap. Splicing from the front is O(n)
