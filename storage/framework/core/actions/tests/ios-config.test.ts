@@ -9,6 +9,18 @@ import { assertCraftSupportsChromeFonts, assertCraftSupportsTint } from '../src/
 import { assertCraftSupportsAppShortcuts, assertCraftSupportsNativeFonts, resolveNativeFonts, assertCraftSupportsCapabilities, normalizeMobileUrl, portablePaths, resolveMobilePath, resolveSwipeNavigation, toCraftIosConfig, unsupportedCraftCapabilities, validateIosMobileConfig, withActivityTypes, writeIosActivityTypes } from '../src/build/ios-config'
 
 describe('build-owned iOS shortcuts', () => {
+  it('forwards opt-in sensors and declared background HealthKit types without enabling them by default', () => {
+    const base = { appName: 'Sensors', bundleId: 'org.example.sensors' }
+    const config = toCraftIosConfig({ ...base, capabilities: { barometer: true, pedometer: true, healthKit: true, healthKitBackground: true },
+      healthKitBackgroundTypes: ['steps', 'sleep'], healthKitBackgroundFrequency: 'hourly' })
+    expect(config).toMatchObject({ enableBarometer: true, enablePedometer: true, enableHealthKitBackground: true, healthKitBackgroundTypes: ['steps', 'sleep'], healthKitBackgroundFrequency: 'hourly' })
+    const plain = toCraftIosConfig(base)
+    expect(plain.enableBarometer).toBeUndefined()
+    expect(plain.enablePedometer).toBeUndefined()
+    expect(plain.enableHealthKitBackground).toBeUndefined()
+    expect(toCraftIosConfig({ ...base, capabilities: { barometer: false } }).enableBarometer).toBe(false)
+  })
+
   it('rejects a builder that cannot retain the configured native tint', () => {
     expect(() => assertCraftSupportsTint('#dd0f15', '0.0.377')).toThrow('>= 0.0.380')
     expect(() => assertCraftSupportsTint('#dd0f15', '0.0.380')).not.toThrow()

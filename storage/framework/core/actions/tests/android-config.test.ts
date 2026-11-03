@@ -2,6 +2,16 @@ import { describe, expect, it } from 'bun:test'
 import { assertCraftSupportsAndroid, assertCraftSupportsAndroidMapProvider, CRAFT_ANDROID_FLOORS, androidCraftFeatures, toCraftAndroidConfig, validateAndroidMobileConfig } from '../src/build/android-config'
 
 describe('Android mobile build configuration', () => {
+  it('maps Android raw motion, barometer and pedometer flags without implicitly requesting access', () => {
+    const base = { appName: 'Sensors', packageName: 'org.example.sensors' }
+    expect(toCraftAndroidConfig({ ...base, capabilities: { motionSensors: true, barometer: true, pedometer: true } }))
+      .toMatchObject({ enableMotionSensors: true, enableBarometer: true, enablePedometer: true })
+    expect(toCraftAndroidConfig(base).enableMotionSensors).toBeUndefined()
+    expect(toCraftAndroidConfig(base).enableBarometer).toBeUndefined()
+    expect(toCraftAndroidConfig(base).enablePedometer).toBeUndefined()
+    expect(toCraftAndroidConfig({ ...base, capabilities: { pedometer: false } }).enablePedometer).toBe(false)
+  })
+
   it('requires and forwards the native microphone implementation', () => {
     const config = { appName: 'Voice', packageName: 'training.hq.voice', capabilities: { audioRecording: true } }
     expect(toCraftAndroidConfig(config).enableAudioRecording).toBe(true)

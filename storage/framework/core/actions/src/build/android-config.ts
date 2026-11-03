@@ -68,6 +68,9 @@ const CAPABILITY_KEYS = {
   localDatabase: 'enableLocalDatabase',
   localNotifications: 'enableLocalNotifications',
   shakeGesture: 'enableShakeGesture',
+  motionSensors: 'enableMotionSensors',
+  barometer: 'enableBarometer',
+  pedometer: 'enablePedometer',
   healthServices: 'enableHealthServices',
   wallet: 'enableWallet',
 } as const satisfies Partial<Record<keyof MobileCapabilities, `enable${string}`>>

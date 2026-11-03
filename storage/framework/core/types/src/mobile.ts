@@ -28,6 +28,10 @@ export interface MobileCapabilities {
   audioRecording?: boolean
   videoRecording?: boolean
   motionSensors?: boolean
+  barometer?: boolean
+  pedometer?: boolean
+  /** iOS observers and persisted incremental HealthKit delivery. Requires healthKit. */
+  healthKitBackground?: boolean
   /**
    * Shaking the phone raises a `shake` event, on iOS and Android. Craft arms
    * the accelerometer only while the app is in front.
@@ -334,6 +338,9 @@ export interface IosMobileConfig {
   usageDescriptions?: Record<string, string>
   orientations?: MobileOrientation[]
   deviceFamilies?: IosDeviceFamily[]
+  healthKitBackgroundTypes?: Array<'steps' | 'heartRate' | 'restingHeartRate' | 'heartRateVariability' | 'activeEnergy' | 'distance' | 'bodyMass' | 'sleep' | 'workouts'>
+  /** A scheduling hint; HealthKit may coalesce deliveries. */
+  healthKitBackgroundFrequency?: 'immediate' | 'hourly' | 'daily' | 'weekly'
   capabilities?: MobileCapabilities
   /** Crash reporting for iOS, over `MobileConfig.crashReporting`. */
   crashReporting?: MobileCrashReportingConfig
