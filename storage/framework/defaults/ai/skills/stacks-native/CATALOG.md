@@ -41,7 +41,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/deploy` | [`stacks-deploy`](../stacks-deploy/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/deploy/package.json) | 1 |
 | `@stacksjs/desktop-build` | [`stacks-desktop`](../stacks-desktop/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/desktop/src/index.ts) | 15 |
 | `@stacksjs/development` | [`stacks-development`](../stacks-development/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/development/package.json) | 1 |
-| `@stacksjs/dns` | [`stacks-dns`](../stacks-dns/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/dns/src/index.ts) | 3 |
+| `@stacksjs/dns` | [`stacks-dns`](../stacks-dns/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/dns/src/index.ts) | 4 |
 | `@stacksjs/docs` | [`stacks-docs`](../stacks-docs/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/docs/src/index.ts) | 2 |
 | `@stacksjs/email` | [`stacks-email`](../stacks-email/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/email/src/index.ts) | 23 |
 | `@stacksjs/enums` | [`stacks-enums`](../stacks-enums/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/enums/src/index.ts) | 3 |
@@ -411,7 +411,7 @@ Read the entrypoint and package export map for re-exported or type-only surfaces
 
 Local source modules: [src/drivers/aws.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/dns/src/drivers/aws.ts), [src/sync.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/dns/src/sync.ts).
 
-Evidence directory: [3 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/dns/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [4 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/dns/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/docs
 

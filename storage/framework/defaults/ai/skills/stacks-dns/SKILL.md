@@ -25,14 +25,15 @@ console.log(preview.plan.create, preview.plan.keep, preview.plan.skip)
 
 desiredDnsRecords(domain, config) converts native config to provider records.
 planDnsSync(desired, current, { zone? }) returns create/keep/skip with reasons.
-syncDnsConfig(domain, config, { dryRun?, provider? }) reports created/kept/failed,
+syncDnsConfig(domain, config, { dryRun?, provider?, resolver? }) reports created/kept/failed,
 failures/skipped/applied/provider. It only creates missing declared records;
 it never deletes or overwrites an existing value. Single-value A/AAAA/CNAME
 records are kept when present; TXT/MX can add distinct values. Editing config
 does not imply changing an already-present provider value.
 
 dryRun reads public DNS without provider credentials; that is not a complete
-zone export. Actual apply selects a ts-cloud DNS provider by domain/nameservers
+zone export. It looks up the apex, `www` and every declared in-zone name, so a
+live `_dmarc` or DKIM record reads as kept. Actual apply selects a ts-cloud DNS provider by domain/nameservers
 and credentials. A missing provider yields an unapplied plan, not fake success.
 The native sync interface supports Route53/Porkbun/GoDaddy/Cloudflare through
 the provider factory; retained request/planner tests are not live provider parity.
@@ -51,7 +52,11 @@ Private/loopback/placeholder addresses and out-of-zone records are skipped;
 TTL normalization applies the planner's current minimum. Resolve conflicts
 deliberately rather than interpreting keep as identical desired content.
 
-resolveLiveRecords(domain) reads public DNS. renderDnsConfig(domain, records)
+resolveLiveRecords(domain, names?, resolver?) reads public DNS for the apex,
+`www` and the in-zone `names`. A non-apex name with a CNAME is reported as
+that CNAME alone, never as the addresses it resolves to, so `dns:pull` keeps
+an alias an alias. The optional resolver replaces `node:dns` in tests.
+renderDnsConfig(domain, records)
 renders source for review; dnsProviderForDomain(domain) resolves the mutable
 provider. Use buddy dns:* --help for pull/sync command flags and output paths.
 

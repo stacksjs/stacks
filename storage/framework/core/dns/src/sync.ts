@@ -196,29 +196,55 @@ export function planDnsSync(desired: DnsRecord[], current: DnsRecord[], options:
   }
 }
 
+/** The `node:dns` lookups `resolveLiveRecords()` makes. A test passes its own. */
+export interface DnsResolver {
+  resolve4: (name: string) => Promise<string[]>
+  resolve6: (name: string) => Promise<string[]>
+  resolveCname: (name: string) => Promise<string[]>
+  resolveTxt: (name: string) => Promise<string[][]>
+  resolveMx: (name: string) => Promise<{ priority: number, exchange: string }[]>
+  resolveNs: (name: string) => Promise<string[]>
+}
+
 /**
  * Read a zone's live records over public DNS (no registrar credentials). Used by
  * `pull`, and by `sync`/`diff` as a fallback when no provider is configured.
+ *
+ * The apex and `www` are always read, and so is every name in `names`. Only
+ * those two used to be, so a declared `_dmarc` TXT, a DKIM key or a `www` CNAME
+ * was never looked up and `dns:diff` listed it as missing however long it had
+ * been live (stacksjs/stacks#3153).
  */
-export async function resolveLiveRecords(domain: string): Promise<DnsRecord[]> {
-  const settle = async <T>(p: Promise<T>): Promise<T | []> => p.catch(() => [] as unknown as T)
-  const [apex, www, aaaa, txt, mx, ns] = await Promise.all([
-    settle(resolver.resolve4(domain)),
-    settle(resolver.resolve4(`www.${domain}`)),
-    settle(resolver.resolve6(domain)),
-    settle(resolver.resolveTxt(domain)),
-    settle(resolver.resolveMx(domain)),
-    settle(resolver.resolveNs(domain)),
-  ])
+export async function resolveLiveRecords(domain: string, names: Iterable<string> = [], lookup: DnsResolver = resolver): Promise<DnsRecord[]> {
+  const settle = <T>(p: Promise<T[]>): Promise<T[]> => p.catch(() => [])
+  const zone = normalizeName(domain)
+  const inZone = [...names].map(normalizeName).filter(name => name === zone || name.endsWith(`.${zone}`))
+  const lookups = [...new Set([zone, `www.${zone}`, ...inZone])]
 
-  const out: DnsRecord[] = []
-  for (const ip of apex as string[]) out.push({ name: domain, type: 'A', content: ip, ttl: 600 })
-  for (const ip of www as string[]) out.push({ name: `www.${domain}`, type: 'A', content: ip, ttl: 600 })
-  for (const ip of aaaa as string[]) out.push({ name: domain, type: 'AAAA', content: ip, ttl: 600 })
-  for (const chunks of txt as string[][]) out.push({ name: domain, type: 'TXT', content: chunks.join(''), ttl: 600 })
-  for (const record of mx as { priority: number, exchange: string }[]) out.push({ name: domain, type: 'MX', content: record.exchange, ttl: 600, priority: record.priority })
-  for (const server of ns as string[]) out.push({ name: domain, type: 'NS', content: server, ttl: 600 })
-  return out
+  const perName = await Promise.all(lookups.map(async (name): Promise<DnsRecord[]> => {
+    // A name with a CNAME holds nothing else, and an address lookup follows
+    // it: `www` aliased to a CDN read as A records for the CDN's current
+    // addresses, which `pull` then wrote into config/dns.ts.
+    const cnames = name === zone ? [] : await settle(lookup.resolveCname(name))
+    if (cnames.length)
+      return cnames.map(target => ({ name, type: 'CNAME' as const, content: normalizeName(target), ttl: 600 }))
+
+    const [v4, v6, txt, mx] = await Promise.all([
+      settle(lookup.resolve4(name)),
+      settle(lookup.resolve6(name)),
+      settle(lookup.resolveTxt(name)),
+      settle(lookup.resolveMx(name)),
+    ])
+    return [
+      ...v4.map(ip => ({ name, type: 'A' as const, content: ip, ttl: 600 })),
+      ...v6.map(ip => ({ name, type: 'AAAA' as const, content: ip, ttl: 600 })),
+      ...txt.map(chunks => ({ name, type: 'TXT' as const, content: chunks.join(''), ttl: 600 })),
+      ...mx.map(record => ({ name, type: 'MX' as const, content: record.exchange, ttl: 600, priority: record.priority })),
+    ]
+  }))
+
+  const ns = await settle(lookup.resolveNs(zone))
+  return [...perName.flat(), ...ns.map(server => ({ name: zone, type: 'NS' as const, content: server, ttl: 600 }))]
 }
 
 /**
@@ -320,13 +346,15 @@ export interface DnsSyncResult {
 export async function syncDnsConfig(
   domain: string,
   cfg: DnsConfig,
-  options: { dryRun?: boolean, provider?: DnsProvider | null } = {},
+  options: { dryRun?: boolean, provider?: DnsProvider | null, resolver?: DnsResolver } = {},
 ): Promise<DnsSyncResult> {
   const desired = desiredDnsRecords(domain, cfg)
   // Only reach for a registrar provider (credentials) when actually applying;
   // dry runs read current state from public DNS, so they need no credentials.
   const provider = options.dryRun ? null : (options.provider ?? (await dnsProviderForDomain(domain)))
-  const current = provider ? (await provider.listRecords(domain)).records ?? [] : await resolveLiveRecords(domain)
+  const current = provider
+    ? (await provider.listRecords(domain)).records ?? []
+    : await resolveLiveRecords(domain, desired.map(record => record.name), options.resolver)
   const plan = planDnsSync(desired, current, { zone: domain })
 
   if (options.dryRun || !provider) {
