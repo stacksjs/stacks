@@ -126,6 +126,11 @@ try {
     else if (scenario === 'scheduled-dispatch') {
       const { jobRegistry } = await import('../../src/discovery')
       const { startScheduler, stopScheduler } = await import('../../src/scheduler')
+      // Another due job must not change which fixture envelope is inspected.
+      // This exercises the top-of-hour collision without freezing wall time.
+      jobRegistry.register({
+        name: 'OtherDueJob', path: '', config: { rate: '* * * * *', queue: 'default' }, type: 'function', module: { handle() {} },
+      })
       const register = (queue: string) => jobRegistry.register({
         name: 'AuditScheduled', path: '', config: { rate: '* * * * *', queue }, type: 'function', module: { handle() {} },
       })
@@ -137,8 +142,10 @@ try {
         register('default')
         await startScheduler({ checkInterval: 60_000, preventOverlapping: false })
         const jobs = await db.selectFrom('jobs').selectAll().execute()
-        assert.equal(jobs.filter(row => JSON.parse(String(row.payload)).jobName === 'AuditScheduled').length, 1, 'retry in the same minute is allowed')
-        const envelope = JSON.parse(String(jobs[0]?.payload))
+        const scheduled = jobs.filter(row => JSON.parse(String(row.payload)).jobName === 'AuditScheduled')
+        assert.equal(scheduled.length, 1, 'retry in the same minute is allowed')
+        assert.equal(jobs.filter(row => JSON.parse(String(row.payload)).jobName === 'OtherDueJob').length, 1, 'another due job is independently queued')
+        const envelope = JSON.parse(String(scheduled[0]?.payload))
         assert.equal(envelope.envelopeVersion, 1)
         assert.equal(envelope.jobName, 'AuditScheduled')
         assert(Number.isFinite(Date.parse(envelope.dispatchedAt)), 'transactional dispatch uses the canonical envelope')
@@ -147,6 +154,7 @@ try {
         register('default')
         await startScheduler({ checkInterval: 60_000, preventOverlapping: false })
         assert.equal((await db.selectFrom('jobs').selectAll().execute()).filter(row => JSON.parse(String(row.payload)).jobName === 'AuditScheduled').length, 1, 'successful dispatch remains deduplicated across restart')
+        assert.equal((await db.selectFrom('jobs').selectAll().execute()).filter(row => JSON.parse(String(row.payload)).jobName === 'OtherDueJob').length, 1, 'the other due job also stays deduplicated across restart')
       }
       finally { await stopScheduler() }
     }
