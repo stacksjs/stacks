@@ -1,5 +1,25 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.450...v0.75.451)
+
+## 🐛 Bug Fixes
+
+- **install**: give every setup run its own FIFO (#3109) ([0e13289](https://github.com/stacksjs/stacks/commit/0e13289)) _(by Chris Breuer <chris@stacksjs.com>)_ ([#3109](https://github.com/stacksjs/stacks/issues/3109))
+- **orm**: model simplePaginate and cursorPaginate reach the canonical paginators (#3119) ([0021d7b](https://github.com/stacksjs/stacks/commit/0021d7b)) _(by Chris Breuer <chris@stacksjs.com>)_ ([#3119](https://github.com/stacksjs/stacks/issues/3119))
+
+## 📝 Documentation
+
+- **skills**: count the new buddy and orm tests in the native catalog ([00986e7](https://github.com/stacksjs/stacks/commit/00986e7)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: stx 0.2.794, whose native screens mount with far less work ([f122159](https://github.com/stacksjs/stacks/commit/f122159)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.449...v0.75.450)
 
 ## 🐛 Bug Fixes

@@ -2,7 +2,7 @@
   "name": "@stacksjs/config",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.450",
+  "version": "0.75.451",
   "description": "The Stacks config helper methods.",
   "author": "Chris Breuer",
   "contributors": [
