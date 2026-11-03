@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { emit } from '../src/emit'
-import { createServer, stopServer } from '../src/server-instance'
+import { createServer, getServer, stopServer } from '../src/server-instance'
 import { freePort, settle, subscriber } from './fixtures/realtime'
 
 /**
@@ -45,5 +45,21 @@ describe('emit() exclude', () => {
 
     for (const sub of [a, b])
       sub.socket.close()
+  })
+})
+
+// The option decides the channel type, as channel(name).private() does: a
+// name that already carries the other prefix used to keep it, so this sent
+// on private-presence-room, a channel nobody subscribes to.
+describe('emit() channel type', () => {
+  test('replaces a prefix of the other type instead of stacking them', () => {
+    const sent: string[] = []
+    const remove = getServer()!.addBroadcastHook(({ channel }) => { sent.push(channel) })
+    emit('presence-room', 'x', {}, { private: true })
+    emit('private-room', 'x', {}, { presence: true })
+    emit('private-room', 'x', {}, { private: true })
+    emit('room', 'x', {}, { presence: true })
+    remove()
+    expect(sent).toEqual(['private-room', 'presence-room', 'private-room', 'presence-room'])
   })
 })

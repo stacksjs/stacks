@@ -1,3 +1,4 @@
+import { stripPrefix } from './channel'
 import { getServer } from './server-instance'
 
 export interface EmitOptions {
@@ -43,19 +44,14 @@ export function emit<T = unknown>(
     return
   }
 
-  // Determine channel type and prefix
+  // The option decides the channel type, as in channel(name).private(): a
+  // prefix the name already has is replaced rather than kept, which sent
+  // emit('presence-room', ..., { private: true }) to private-presence-room.
   let channelName = channel
-
-  if (options?.presence) {
-    if (!channel.startsWith('presence-')) {
-      channelName = `presence-${channel}`
-    }
-  }
-  else if (options?.private) {
-    if (!channel.startsWith('private-')) {
-      channelName = `private-${channel}`
-    }
-  }
+  if (options?.presence)
+    channelName = `presence-${stripPrefix(channel)}`
+  else if (options?.private)
+    channelName = `private-${stripPrefix(channel)}`
 
   // Broadcast the event, leaving out every excluded socket. This used to
   // pass only the first ID of an array on.

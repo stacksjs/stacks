@@ -13,7 +13,7 @@ import { getServer } from './server-instance'
  */
 const KNOWN_CHANNEL_PREFIXES = ['private-', 'presence-'] as const
 
-function stripPrefix(name: string): string {
+export function stripPrefix(name: string): string {
   for (const p of KNOWN_CHANNEL_PREFIXES) {
     if (name.startsWith(p)) return name.slice(p.length)
   }
