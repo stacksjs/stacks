@@ -1,5 +1,31 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.448...v0.75.449)
+
+## ✨ Features
+
+- **auth,socials**: sign in with another Stacks app ([4531794](https://github.com/stacksjs/stacks/commit/4531794)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- harden utility, storage, cache and pagination contracts ([58fe563](https://github.com/stacksjs/stacks/commit/58fe563)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **queue**: scope scheduled dispatch checks to their job identity ([6345280](https://github.com/stacksjs/stacks/commit/6345280)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **cli**: retain native Windows cancellation diagnostics ([0a44887](https://github.com/stacksjs/stacks/commit/0a44887)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- refresh generated artifacts ([45743de](https://github.com/stacksjs/stacks/commit/45743de)) _(by Chris Breuer <chris@stacksjs.com>)_
+- integrate current framework main ([61c6cc2](https://github.com/stacksjs/stacks/commit/61c6cc2)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **deps**: stx 0.2.792, whose native screens start and react much faster ([707e62d](https://github.com/stacksjs/stacks/commit/707e62d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.447...v0.75.448)
 
 ## 🐛 Bug Fixes
