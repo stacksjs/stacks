@@ -33,7 +33,7 @@
   "dependencies": {
     "@stacksjs/ts-svg": "^0.1.5",
     "@stacksjs/types": "workspace:*",
-    "ts-images": "^0.2.23"
+    "ts-images": "^0.2.33"
   },
   "devDependencies": {
     "better-dx": "^0.2.24"

@@ -14,6 +14,7 @@ export * from './app-store'
 export * from './fonts'
 export * from './generate'
 export * from './social'
+export * from './splash'
 export * from './theme'
 export * from './upload'
 

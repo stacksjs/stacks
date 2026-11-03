@@ -12,6 +12,7 @@ import { generateXcodeProject, resolveXcodegen } from './ios-toolchain'
 import { compileNativeScreens } from './native-screens'
 import { writeIosShellSupport } from './ios-shell'
 import { reportMobileBuildTarget } from './mobile-target'
+import { resolveMobileSplash } from './mobile-splash'
 import { assertCraftSupportsChromeFonts, assertCraftSupportsTint } from './ios-config'
 
 // Action runners install a global exception reporter. Start pessimistically so
@@ -93,9 +94,6 @@ const builder = await loadCraftIosBuilder()
 const craftConfig = toCraftIosConfig({ ...config, crashReporting }, builder.nativeSensorCapabilities)
 craftConfig.nativeFonts = resolveNativeFonts(config.nativeFonts, projectPath())
 craftConfig.appIconPath = resolveMobilePath(projectPath(), config.appIcon)
-craftConfig.splashImagePath = resolveMobilePath(projectPath(), config.splash?.image)
-craftConfig.splashImagePathDark = resolveMobilePath(projectPath(), config.splash?.imageDark)
-
 
 // Screens drawn natively, compiled by stx before Craft copies them in: one
 // file per route when this Craft runs each screen from its own.
@@ -120,6 +118,20 @@ if (craftVersion) {
 }
 else
   log.warn(`Could not read the craft-native version behind ${craftIosEntry()}, so the build cannot check that it supports every capability config/mobile.ts turns on.`)
+
+// The launch screen: the hand-made image when there is one, otherwise the
+// splash preset drawn from the logo (default the app icon) on the app's own
+// background colours, at 1x/2x/3x so it is sharp on every iPhone.
+const splash = await resolveMobileSplash({
+  platform: 'ios',
+  splash: config.splash,
+  appIcon: config.appIcon,
+  backgroundColor: config.backgroundColor,
+  backgroundColorDark: config.backgroundColorDark,
+  tintColor: config.tintColor,
+}, storagePath('framework/mobile/splash'), projectPath(), craftVersion?.version, log)
+craftConfig.splashImagePath = splash?.image
+craftConfig.splashImagePathDark = splash?.imageDark
 
 await builder.init({
   name: config.appName,

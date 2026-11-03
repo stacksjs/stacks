@@ -24,6 +24,8 @@ export interface CraftAndroidConfig {
   urlSchemes?: string[]
   appLinks?: AndroidMobileConfig['appLinks']
   appIconPath?: string
+  /** A res-shaped directory of `splash_icon.png` / `splash_logo.png` (Craft 0.0.443 and later). */
+  splashResources?: string
   notificationIconPath?: string
   notificationColor?: string
   googleServicesFile?: string

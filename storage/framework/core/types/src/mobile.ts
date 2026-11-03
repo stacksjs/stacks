@@ -140,6 +140,40 @@ export interface IosBackgroundRefreshConfig {
 /** Custom native text fonts; the key is the font's PostScript name on both phones. */
 export type NativeFontsConfig = Record<string, { src: string, license?: string }>
 
+/**
+ * A native app's launch screen. Every Stacks mobile app gets one by default:
+ * `buddy build:ios` / `build:android` render the app icon (or `logo`) with
+ * ts-images' splash preset at every scale the platform needs (iOS @1x/@2x/@3x,
+ * Android 12's splash icon and the legacy window logo per density), light and
+ * dark, on the app's own background colours, so nothing is cropped or blurred
+ * and nothing flashes between the launch screen and the first frame.
+ */
+export interface MobileSplashConfig {
+  /**
+   * A hand-made launch image, used as it is instead of the generated one.
+   * PNG, PDF or SVG, drawn at its own size in points (iOS only; a PNG may
+   * have `@2x`/`@3x` files beside it).
+   */
+  image?: string
+  /** The hand-made launch image in Dark Mode. */
+  imageDark?: string
+  /** The logo to generate from: SVG or PNG. Default `appIcon`, masked to an app icon's rounded corners. */
+  logo?: string
+  /** The logo in Dark Mode, when it differs. */
+  logoDark?: string
+  /** A line under the logo, such as the app's name, set in `font` (a `.ttf`). */
+  text?: string
+  font?: string
+  /** Capitals with open tracking, for a label. Default false. */
+  uppercase?: boolean
+  /** The soft glow's colour behind the logo. Default `ios.tintColor` (on Android too); `false` for none. */
+  accent?: string | false
+  /** The logo's optical size in points (the side of a square of equal area). Default 96. */
+  size?: number
+  /** Mask the logo: default `rounded` for the app icon, `none` for a `logo`. */
+  shape?: 'none' | 'rounded' | 'circle'
+}
+
 export interface IosMobileConfig {
   /** Build-owned App Intents and home-screen actions, routed into the app. */
   appShortcuts?: Array<{ id: string, title: string, subtitle?: string, symbol: string, url: string, phrases: string[] }>
@@ -319,16 +353,14 @@ export interface IosMobileConfig {
   appGroups?: string[]
   appIcon?: string
   /**
-   * The logo on the launch screen, on `backgroundColor`. Craft holds it on
-   * screen until the first page has painted (NativeAppShell says when), so
-   * the app goes from launch to content without a blank web view between.
-   * PNG, PDF or SVG, drawn at its own size in points.
+   * The launch screen: a logo on `backgroundColor` (`backgroundColorDark` in
+   * Dark Mode). Craft holds it on screen until the first page has painted
+   * (NativeAppShell says when), so the app goes from launch to content
+   * without a blank web view between. Without a hand-made `image`, the build
+   * generates one from `logo` (default `appIcon`) with ts-images' splash
+   * preset; `false` turns the logo off and leaves the colour alone.
    */
-  splash?: {
-    image?: string
-    /** The logo in Dark Mode, on `backgroundColorDark`. */
-    imageDark?: string
-  }
+  splash?: MobileSplashConfig | false
   privacy?: MobilePrivacyManifest
   /**
    * Purpose strings in the app's own words, by Info.plist key, e.g.
@@ -368,6 +400,13 @@ export interface AndroidMobileConfig {
   /** Custom URI schemes handled by the app, for example `wildloop`. */
   urlSchemes?: string[]
   appIcon?: string
+  /**
+   * The launch splash, generated from `logo` (default `appIcon`): Android
+   * 12's splash icon and the logo older versions centre on the window
+   * background, light and dark, on `backgroundColor` / `backgroundColorDark`.
+   * `image` is iOS-only; `false` leaves only the background colour.
+   */
+  splash?: MobileSplashConfig | false
   /**
    * The small icon in the status bar and on every notification: an Android
    * vector drawable (`.xml`) or a `.png`, white on transparent, since

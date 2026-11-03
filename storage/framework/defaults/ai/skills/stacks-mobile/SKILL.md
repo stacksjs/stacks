@@ -135,6 +135,39 @@ export default {
 } satisfies MobileConfig
 ```
 
+### Launch screen
+
+Every app gets a launch splash without configuring one. `buddy build:ios` and
+`build:android` render the app icon with ts-images' splash preset
+(`generateMobileSplash` in `@stacksjs/image`) on `backgroundColor`, plus a
+Dark Mode set on `backgroundColorDark` when the app gives one. iOS gets
+`LaunchLogo.png` at @1x/@2x/@3x; Android gets Android 12's splash icon and
+the logo older versions centre on the window, per density. The mark is drawn
+at its size in points, never as a full-screen picture, so no screen shape
+crops it, and Craft holds it until the first frame on the same colour. Files
+land in `storage/framework/mobile/splash/<platform>`, rebuilt each build.
+
+`ios.splash` and `android.splash` take the same options:
+
+```ts
+splash: {
+  logo: 'public/logo.svg', // default appIcon, masked to rounded corners
+  logoDark: 'public/logo-dark.svg',
+  text: 'My App', font: 'resources/fonts/Barlow-Regular.ttf', uppercase: true,
+  accent: '#dd0f15', // the glow; default ios.tintColor, false for none
+  size: 96, // optical size in points
+  shape: 'none', // 'rounded' | 'circle' to mask a full-bleed square
+},
+```
+
+`ios.splash.image` / `imageDark` is a hand-made launch image, used as it is
+(PNG, PDF or SVG at its own size in points; a PNG may have `@2x`/`@3x`
+beside it). It is iOS-only. `splash: false` leaves only the colour. The
+generated splash needs craft-native 0.0.443 or later; with an older Craft the
+build warns and the launch screen shows only the colour (a hand-made image
+still works). A white logo on a white background is repainted dark so it
+stays visible; give `backgroundColor` to set the colour instead.
+
 For the native renderer, every app-owned route must map to an STX screen in
 `nativeScreens` on both platforms. The example maps `/m/` to
 `resources/components/Home.stx`; browser routes should render that same shared

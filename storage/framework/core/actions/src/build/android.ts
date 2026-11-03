@@ -11,6 +11,7 @@ import { assertCraftSupportsChromeFonts, resolveCrashReporting, resolveMobilePat
 import { compileNativeScreens } from './native-screens'
 import { writeAndroidIconTable } from './android-icons'
 import { reportMobileBuildTarget } from './mobile-target'
+import { resolveMobileSplash } from './mobile-splash'
 
 process.exitCode = 1
 
@@ -113,6 +114,19 @@ if (craftVersion)
   assertCraftSupportsAndroid(config, craftVersion.version, craftVersion.manifest, { appBundle })
 else
   log.warn(`Could not read the craft-native version behind ${craftAndroidEntry()}, so the build cannot check that it supports what config/mobile.ts asks for.`)
+
+// Android 12's splash icon and the window logo before it, per density, light
+// and dark, from the logo (default the app icon) on the app's own colours.
+// The brand's tint is iOS's `tintColor`, so both phones launch alike.
+const splash = await resolveMobileSplash({
+  platform: 'android',
+  splash: config.splash,
+  appIcon: config.appIcon,
+  backgroundColor: config.backgroundColor,
+  backgroundColorDark: config.backgroundColorDark,
+  tintColor: configModule.default.ios?.tintColor,
+}, storagePath('framework/mobile/splash'), projectPath(), craftVersion?.version, log)
+if (splash?.resources) craftConfig.splashResources = splash.resources
 
 assertCraftSupportsAndroidMapProvider(config, builder.nativeMapProviders)
 await builder.init({ name: config.appName, packageName: config.packageName, output, config: craftConfig })
