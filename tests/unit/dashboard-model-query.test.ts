@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import ModelShowAction, { parseFilters } from '../../storage/framework/defaults/app/Actions/Dashboard/Models/ModelShowAction'
+import ModelShowAction, { parseFilters, searchColumnsFor } from '../../storage/framework/defaults/app/Actions/Dashboard/Models/ModelShowAction'
 import { isValidModelSlug, slugToPascal } from '../../storage/framework/defaults/app/Actions/Dashboard/Models/model-write'
 
 describe('dashboard model query input', () => {
@@ -32,6 +32,12 @@ describe('dashboard model query input', () => {
       count: '2',
       enabled: 'true',
     })
+  })
+
+  it('searches only text columns, though PostgreSQL answers a BIGINT as a string', () => {
+    // A teams row as Bun's PostgreSQL driver returns it.
+    const row = { id: '5', name: 'PrimeSoft Solutions', owner_id: '3', status: 'inactive', created_at: '2026-08-07T21:12:13.522Z', is_public: true, member_count: 0 }
+    expect(searchColumnsFor(Object.keys(row), row)).toEqual(['name', 'status'])
   })
 
   it('reports malformed or ambiguous filters', () => {

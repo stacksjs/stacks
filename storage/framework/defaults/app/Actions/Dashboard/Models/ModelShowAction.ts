@@ -118,6 +118,22 @@ function typeForColumn(column: string, values: unknown[]): ColumnMeta['type'] {
   return inferType(values)
 }
 
+/**
+ * The columns a global search matches with LIKE: the ones the page is told
+ * are text, by the same rule.
+ *
+ * It used to take every column whose sampled value was a string. PostgreSQL
+ * answers BIGINT as a string, so `id` and every `*_id` qualified, and the
+ * search failed with `operator does not exist: bigint ~~ unknown` on any
+ * table with a row in it: `/models/team?q=PrimeSoft` answered 503.
+ */
+export function searchColumnsFor(columns: Iterable<string>, sample: unknown): string[] {
+  return [...columns].filter((column) => {
+    const value = safeGet(sample, column, null)
+    return typeof value === 'string' && typeForColumn(column, [value]) === 'text'
+  })
+}
+
 function queryValue(request: RequestInstance, key: string, fallback = ''): string {
   const value = request.get<unknown>(key, fallback)
   if (Array.isArray(value))
@@ -244,7 +260,7 @@ export default new Action({
         ? requestedSort
         : (allowed.has('id') ? 'id' : (response.columns[0] ?? ''))
       response.sort = sort
-      const searchColumns = [...allowed].filter(c => typeof safeGet(first, c, null) === 'string')
+      const searchColumns = searchColumnsFor(allowed, first)
 
       const build = () => {
         let chain = Model.query() as any
