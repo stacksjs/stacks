@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.445...v0.75.446)
+
+## 🐛 Bug Fixes
+
+- **ui**: keep dashboard avatar identity reactive ([3eb38d7](https://github.com/stacksjs/stacks/commit/3eb38d7)) _(by Chris Breuer <chris@stacksjs.com>)_
+- align framework validation and utility contracts ([e2a58c5](https://github.com/stacksjs/stacks/commit/e2a58c5)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh native skill references for utility contracts ([ffe6237](https://github.com/stacksjs/stacks/commit/ffe6237)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.444...v0.75.445)
 
 ## 🐛 Bug Fixes
