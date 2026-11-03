@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.459...v0.75.460)
+
+## 🐛 Bug Fixes
+
+- **upgrade**: raise Craft pins, keep newer STX patches and the lock format ([38eaf52](https://github.com/stacksjs/stacks/commit/38eaf52)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **ci**: rerun runnerless source jobs and stop reading half-written PIDs ([25a202e](https://github.com/stacksjs/stacks/commit/25a202e)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **release**: read earlier attempt logs through the REST API on rerun ([4eefdaa](https://github.com/stacksjs/stacks/commit/4eefdaa)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **deps**: pin stx 0.2.798 and require craft-native 0.0.443 ([cfa690b](https://github.com/stacksjs/stacks/commit/cfa690b)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.458...v0.75.459)
 
 ## ✅ Tests
