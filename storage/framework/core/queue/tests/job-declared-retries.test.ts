@@ -61,7 +61,7 @@ describe('declared retry settings', () => {
   })
 
   it('reads what a job file declares, for a dispatch that said nothing', async () => {
-    expect(await jobDefaults('SendEmailJob')).toEqual({ tries: 3, backoff: [10, 30, 60], timeout: undefined })
+    expect(await jobDefaults('SendEmailJob')).toEqual({ queue: 'emails', tries: 3, backoff: [10, 30, 60], timeout: undefined })
   })
 
   it('says nothing about a job that does not exist', async () => {

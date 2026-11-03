@@ -251,6 +251,11 @@ class JobBuilder {
    * (stacksjs/stacks#1882).
    */
   private async runDispatchPipeline(): Promise<void> {
+    // Resolve a by-name job's declared route before deduplication, quarantine
+    // or driver selection. An explicit onQueue(), including "default", wins.
+    if (this.options.queue === undefined)
+      this.options.queue = (await jobDefaults(this.name)).queue
+
     // Idempotency-key claim (stacksjs/stacks#1872 Q-8, hardened in #1984). We
     // INSERT the dedup row UP FRONT and let the UNIQUE constraint be the gate,
     // instead of the old check-then-act (SELECT → dispatch → INSERT), under
@@ -792,6 +797,7 @@ export function clearJobNameIndex(): void {
  * What a job's own definition says about retrying it, for a dispatch that
  * did not.
  *
+ * A job dispatched by name inherits its declared queue unless explicitly routed.
  * A job dispatched by name - `mail.queue()` sending `SendEmailJob`, a
  * `Queue.dispatch('X')` - carried none of the `tries`, `backoff` or
  * `timeout` the job declares, and the worker defaulted to one attempt. A
@@ -799,12 +805,12 @@ export function clearJobNameIndex(): void {
  * job asks for three tries with 10/30/60s backoff. The worker reads these
  * when the envelope is silent; anything set on the dispatch still wins.
  */
-export async function jobDefaults(name: string): Promise<{ tries?: number, backoff?: number | number[], timeout?: number }> {
+export async function jobDefaults(name: string): Promise<{ queue?: string, tries?: number, backoff?: number | number[], timeout?: number }> {
   try {
     const jobPath = await resolveJobFile(name)
     if (!jobPath)
       return {}
-    const definition = (await import(jobPath)).default as { tries?: unknown, backoff?: unknown, timeout?: unknown } | undefined
+    const definition = (await import(jobPath)).default as { queue?: unknown, tries?: unknown, backoff?: unknown, timeout?: unknown } | undefined
     if (!definition || typeof definition !== 'object')
       return {}
 
@@ -812,6 +818,7 @@ export async function jobDefaults(name: string): Promise<{ tries?: number, backo
     const timeout = Number(definition.timeout)
     const backoff = definition.backoff
     return {
+      queue: typeof definition.queue === 'string' && definition.queue.trim() ? definition.queue : undefined,
       tries: Number.isInteger(tries) && tries > 0 ? tries : undefined,
       timeout: Number.isFinite(timeout) && timeout > 0 ? timeout : undefined,
       backoff: typeof backoff === 'number' || (Array.isArray(backoff) && backoff.every(delay => typeof delay === 'number'))
