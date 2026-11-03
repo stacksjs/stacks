@@ -332,6 +332,7 @@ async function processJobsFromDatabase(initialQueues: string[], concurrency: num
 
   while (workerRunning) {
     try {
+      let processedJobs = false
       // Periodically refresh the list of queues to pick up new ones - only for
       // a worker that was not told which queues to take. A worker started with
       // `--queue=emails` used to adopt every queue in the table on its first
@@ -360,6 +361,7 @@ async function processJobsFromDatabase(initialQueues: string[], concurrency: num
       }
 
       for (const queueName of queues) {
+        if (!workerRunning) break
         // Circuit-breaker gate (stacksjs/stacks#1885). When a queue
         // is paused (auto-trip or manual `queue:pause`), skip its
         // job claim entirely until the cooldown expires. The breaker
@@ -394,6 +396,8 @@ async function processJobsFromDatabase(initialQueues: string[], concurrency: num
           continue
         }
 
+        processedJobs ||= jobs.length > 0
+
         // Process the reserved batch CONCURRENTLY (stacksjs/stacks#1984).
         // Previously this awaited each job in a for-loop, so `--concurrency=N`
         // reserved N jobs but ran them one at a time — the flag delivered no
@@ -413,8 +417,9 @@ async function processJobsFromDatabase(initialQueues: string[], concurrency: num
         }))
       }
 
-      // Sleep between polling cycles
-      await sleep(1000)
+      // Poll only when no queue had runnable work. A nonempty bounded batch
+      // yields to the other named queues, then immediately refills its slots.
+      if (workerRunning && !processedJobs) await sleep(1000)
     }
     catch {
       // Should never reach here, but keep the loop running
