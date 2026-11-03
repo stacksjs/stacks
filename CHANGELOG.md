@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.456...v0.75.457)
+
+## 🐛 Bug Fixes
+
+- **testing**: own browser descendants through complete disposal ([2e5ce39](https://github.com/stacksjs/stacks/commit/2e5ce39)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.455...v0.75.456)
 
 ## 🐛 Bug Fixes
