@@ -88,6 +88,12 @@ export async function recordPageview(req: Request): Promise<void> {
     const agent = req.headers.get('user-agent') ?? ''
     const { device, browser } = classifyAgent(agent)
     const now = sqlDateTime(new Date())
+    // The site's own host. Behind rpx the URL carries the upstream address
+    // rpx connects to and the site's host arrives on X-Forwarded-Host, so the
+    // self-referral check has to use this too: against the upstream address,
+    // every click between two of the site's pages was stored as a referral
+    // from the site itself (stacksjs/stacks#3154).
+    const host = req.headers.get('x-forwarded-host')?.split(',')[0]?.trim() || url.host
 
     await db
       .insertInto('analytics_events')
@@ -96,8 +102,8 @@ export async function recordPageview(req: Request): Promise<void> {
         category: 'web',
         path: url.pathname,
         properties: JSON.stringify({
-          host: req.headers.get('x-forwarded-host')?.split(',')[0]?.trim() || url.host,
-          referrer: referrerHost(req.headers.get('referer'), url.host),
+          host,
+          referrer: referrerHost(req.headers.get('referer'), host),
           device,
           browser,
         }),

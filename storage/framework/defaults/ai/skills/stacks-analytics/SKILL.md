@@ -190,8 +190,11 @@ Do not assume every caller gets that allowlist when constructing config itself.
 First-party capturePageviews is separate from script injection and the remote
 driver gate. recordPageview(req) writes qualifying GET page requests to
 analytics_events; isPageviewRequest filters assets/API/internal paths and obvious
-bots/monitors. classifyAgent/referrerHost are coarse helpers, not unique visitor
-identification. Capture failures are swallowed so a statistic cannot break a
+bots/monitors. The site's host is the first `X-Forwarded-Host` hop, else the
+URL's host, and a referrer from that host is stored as null: behind rpx the URL
+carries the upstream address, so comparing against it recorded every internal
+click as a referral from the site itself. classifyAgent/referrerHost are coarse
+helpers, not unique visitor identification. Capture failures are swallowed so a statistic cannot break a
 page. Apply the table/model migration before relying on the dashboard data.
 
 Source: `storage/framework/core/analytics/src/registry.ts`, capture.ts and
