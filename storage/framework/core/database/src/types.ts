@@ -299,7 +299,16 @@ function inlineSqlLiteral(value: unknown): string {
     return value ? '1' : '0'
   if (typeof value === 'bigint')
     return value.toString()
-  return `'${String(value).replace(/'/g, "''")}'`
+  const text = String(value)
+  // A backslash cannot be inlined portably. MySQL's default mode reads it as
+  // an escape, so `\'` closed the literal and the rest of the string ran as
+  // SQL; PostgreSQL and SQLite read it as itself, so doubling it would change
+  // the value there. This does not know the dialect it will run on, so a
+  // string carrying one is refused and goes to a bound parameter instead
+  // (stacksjs/stacks#3157).
+  if (text.includes('\\'))
+    throw new TypeError('[database] refusing to inline a string containing a backslash into SQL: MySQL reads it as an escape. Bind it instead: db.unsafe(sql, params) with sqlHelpers().param(n)')
+  return `'${text.replace(/'/g, "''")}'`
 }
 
 function createAggregateExpression(text: string): AggregateExpression {
