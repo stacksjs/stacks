@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.451...v0.75.452)
+
+## 🐛 Bug Fixes
+
+- harden core helper boundaries and lifecycle contracts ([86af169](https://github.com/stacksjs/stacks/commit/86af169)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## ⚡ Performance Improvements
+
+- **desktop**: start the window's process while the agent's routes load ([ba5a3be](https://github.com/stacksjs/stacks/commit/ba5a3be)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.450...v0.75.451)
 
 ## 🐛 Bug Fixes
