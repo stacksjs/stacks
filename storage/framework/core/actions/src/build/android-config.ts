@@ -1,4 +1,4 @@
-import type { AndroidMobileConfig } from '@stacksjs/types'
+import type { AndroidMobileConfig, MobileCapabilities } from '@stacksjs/types'
 import { NATIVE_APP_ROUTE, normalizeMobileUrl, toCraftCrashReporting } from './ios-config'
 import { nativeScreenRoutes } from './native-screens'
 
@@ -41,6 +41,11 @@ export interface CraftAndroidConfig {
   privacyPolicyURL?: string
 }
 
+/**
+ * An app's `android.capabilities` names, and the Craft `enable…` flag each
+ * sets. Closed, like ios-config.ts's map, and checked against the installed
+ * Craft by tests/craft-capability-parity.test.ts.
+ */
 const CAPABILITY_KEYS = {
   speechRecognition: 'enableSpeechRecognition',
   audioRecording: 'enableAudioRecording',
@@ -61,7 +66,17 @@ const CAPABILITY_KEYS = {
   localDatabase: 'enableLocalDatabase',
   localNotifications: 'enableLocalNotifications',
   shakeGesture: 'enableShakeGesture',
-} as const
+} as const satisfies Partial<Record<keyof MobileCapabilities, `enable${string}`>>
+
+export { CAPABILITY_KEYS as ANDROID_CAPABILITY_KEYS }
+
+/** Craft Android flags no `android.capabilities` name sets, each with why. */
+export const ANDROID_UNMAPPED_CRAFT_FLAGS: Readonly<Record<`enable${string}`, string>> = {
+  enableHealthConnectBackground: 'Craft sets it from healthConnect.background, which toCraftAndroidConfig forwards',
+  enableHealthConnectHistory: 'Craft sets it from healthConnect.history, which toCraftAndroidConfig forwards',
+  enableHealthServices: 'not offered to apps yet (#3148)',
+  enableWallet: 'not offered to apps yet (#3148)',
+}
 
 /**
  * The first craft-native release whose Android template honours a feature

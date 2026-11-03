@@ -1,4 +1,4 @@
-import type { IosMobileConfig, MobileConfig, MobileCrashReportingConfig } from '@stacksjs/types'
+import type { IosMobileConfig, MobileCapabilities, MobileConfig, MobileCrashReportingConfig } from '@stacksjs/types'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join, relative, resolve } from 'node:path'
 import { spotlightActivityTypes } from '@stacksjs/mobile'
@@ -55,6 +55,15 @@ export interface CraftIosConfig {
 /** The route stx's bundle runs the app script under (`compileNativeBundle`'s `app`). */
 export const NATIVE_APP_ROUTE = '__app'
 
+/**
+ * An app's `ios.capabilities` names, and the Craft `enable…` flag each sets.
+ *
+ * Closed on purpose: the translation iterates this map, so a capability an
+ * app misspells is a type error rather than a flag set to nothing. The cost
+ * is that a flag Craft ships is unreachable until it is added here, so
+ * tests/craft-capability-parity.test.ts fails on any flag the installed Craft
+ * declares that is neither here nor in {@link IOS_UNMAPPED_CRAFT_FLAGS}.
+ */
 const CAPABILITY_KEYS = {
   speechRecognition: 'enableSpeechRecognition',
   haptics: 'enableHaptics',
@@ -97,7 +106,15 @@ const CAPABILITY_KEYS = {
   pdfViewer: 'enablePDFViewer',
   augmentedReality: 'enableAR',
   machineLearning: 'enableMLKit',
-} as const
+} as const satisfies Partial<Record<keyof MobileCapabilities, `enable${string}`>>
+
+export { CAPABILITY_KEYS as IOS_CAPABILITY_KEYS }
+
+/** Craft iOS flags no `ios.capabilities` name sets, each with why. */
+export const IOS_UNMAPPED_CRAFT_FLAGS: Readonly<Record<`enable${string}`, string>> = {
+  enablePasskeys: 'not offered to apps yet (#3148)',
+  enableWallet: 'not offered to apps yet (#3148)',
+}
 
 /**
  * The first craft-native release whose iOS template honours a capability.
