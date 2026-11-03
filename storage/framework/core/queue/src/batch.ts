@@ -1,3 +1,4 @@
+import { batchMemberPayload, batchTerminalPayload } from './batch-payload'
 /**
  * Job Batch System
  *
@@ -306,11 +307,7 @@ export class PendingBatch {
       const entry = this.jobs[i]
       if (!entry) continue
       const { job, payload } = entry
-      const jobPayload = {
-        ...payload,
-        _batchId: batchId,
-        _batchIndex: i,
-      }
+      const jobPayload = batchMemberPayload(payload, batchId, i)
 
       // Override queue if set on batch
       if (this.options.queue && !job.queue) {
@@ -512,11 +509,7 @@ export class DispatchedBatch {
       const entry = batchableJobs[i]
       if (!entry) continue
       const { job, payload } = entry
-      const jobPayload = {
-        ...payload,
-        _batchId: this.id,
-        _batchIndex: record.total_jobs + i,
-      }
+      const jobPayload = batchMemberPayload(payload, this.id, record.total_jobs + i)
 
       if (options.queue && !job.queue) {
         job.queue = options.queue
@@ -1175,7 +1168,7 @@ async function firePersistentHandler(
       // `handler.name` came out of the batch row, so it is a string the
       // compiler cannot check against the jobs on disk. Unresolvable names are
       // reported by the worker, which is the only place that can know.
-      await Jobs.dispatch(handler.name as JobName, { ...(handler.payload as object | undefined ?? {}), _batchId: batchId })
+      await Jobs.dispatch(handler.name as JobName, batchTerminalPayload(handler.payload, batchId))
       return
     }
 

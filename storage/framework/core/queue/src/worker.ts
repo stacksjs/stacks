@@ -1,3 +1,4 @@
+import { batchMembershipId } from './batch-payload'
 import { resolveQueueDriver } from './driver'
 /**
  * Queue Worker Functions
@@ -495,7 +496,7 @@ async function processJob(job: any): Promise<void> {
   // Check if this job belongs to a cancelled batch
   try {
     const parsedForBatch = JSON.parse(job.payload || '{}')
-    const batchId = parsedForBatch.payload?._batchId
+    const batchId = batchMembershipId(parsedForBatch.payload)
     if (batchId) {
       const { isBatchCancelled } = await import('./batch')
       if (await isBatchCancelled(batchId)) {
@@ -562,7 +563,7 @@ async function processJob(job: any): Promise<void> {
       // Track batch completion if this job belongs to a batch
       try {
         const payload = JSON.parse(job.payload || '{}')
-        const batchId = payload.payload?._batchId
+        const batchId = batchMembershipId(payload.payload)
         if (batchId) {
           const { recordBatchJobCompletion } = await import('./batch')
           await recordBatchJobCompletion(batchId)
@@ -676,7 +677,7 @@ async function processJob(job: any): Promise<void> {
 
       // Track batch failure if this job belongs to a batch
       try {
-        const batchId = parsedPayload.payload?._batchId
+        const batchId = batchMembershipId(parsedPayload.payload)
         if (batchId) {
           const { recordBatchJobFailure } = await import('./batch')
           await recordBatchJobFailure(batchId, String(jobId), jobError)
@@ -940,7 +941,7 @@ async function processJobsFromRedis(queueName: string, concurrency: number): Pro
 
     // Check if this job belongs to a cancelled batch. `_batchId` is
     // carried on the inner payload by the batch dispatcher.
-    const batchId = (data.payload as { _batchId?: string } | undefined)?._batchId
+    const batchId = batchMembershipId(data.payload)
     if (batchId) {
       try {
         const { isBatchCancelled } = await import('./batch')

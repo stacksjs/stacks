@@ -264,7 +264,7 @@ describe('DispatchedBatch.add - atomic counter growth (#2282)', () => {
     // The dispatch loop still reads `options` (queue override) and the batch
     // metadata off the pre-increment record.
     expect(job.queue).toBe('podcasts')
-    expect(job.dispatch.mock.calls[0][0]).toEqual({ _batchId: BATCH_ID, _batchIndex: 3 })
+    expect(job.dispatch.mock.calls[0][0]).toEqual({ _batchId: BATCH_ID, _batchIndex: 3, _batchTerminalHandler: false })
   })
 
   test('adding nothing is a no-op, not a spurious "cancelled" error', async () => {
