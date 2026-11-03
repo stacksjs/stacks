@@ -254,3 +254,8 @@ Memory storage preserves content and metadata when moving a file to its own
 normalized path. A missing source still throws. Aborted stream uploads cancel
 pending reads without publishing or replacing existing contents. All consumed
 stream readers release their locks on success, error and abort.
+
+Recursive file deletion unlinks symlinks without following targets. File listings
+skip root and descendant links. Symlink ancestors below cwd/temp anchors reject
+before traversal; platform aliases above those anchors are accepted.
+Config updates copy own enumerable fields and preserve special keys as data.

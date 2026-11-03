@@ -610,6 +610,13 @@ const files = getFiles('dir/', ['node_modules'])  // with exclusions
 deleteFiles('dir/', ['keep.txt'])  // delete all except exclusions
 ```
 
+Recursive deletion unlinks symlinks, including an explicit symlink root, without
+traversing their targets. Listing skips root and descendant symlink entries and cycles. Symlink ancestors
+below the longest cwd/temp anchor reject; platform aliases above it are accepted.
+Exclusions protect paths.
+Config updates copy own enumerable entries and preserve `__proto__` as data;
+inherited fields/getters are not read.
+
 ### Config File Helper
 
 ```typescript

@@ -166,7 +166,7 @@ export async function setEnvValue(key: string, value: string): Promise<void> {
   const keyPattern = new RegExp(`^${escapedKey}=.*$`, 'm')
   const nextValue = `${key}=${value}`
   const data = keyPattern.test(file.data)
-    ? file.data.replace(keyPattern, nextValue)
+    ? file.data.replace(keyPattern, () => nextValue)
     : `${file.data}${file.data.endsWith('\n') ? '' : '\n'}${nextValue}\n`
 
   await writeTextFile({

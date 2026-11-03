@@ -26,7 +26,7 @@ additional transforms re-exported from transform.ts.
 function objectMap<K extends string, V, NK extends PropertyKey = K, NV = V>(
   obj: Record<K, V>,
   fn: (key: K, value: V) => [NK, NV] | undefined,
-): Record<NK, NV>
+): Partial<Record<NK, NV>>
 ```
 
 The callback receives `(key, value)` and must return either:
@@ -61,7 +61,7 @@ function deepMerge<T extends object = object, S extends object = T>(
 ): DeepMerge<T, S>
 ```
 
-Recursively merges source objects into target. Handles multiple sources via recursive spread.
+Recursively merges source objects into target, overlaying sources from left to right.
 
 Key behaviors:
 - Only merges "mergeable objects" (objects that are not arrays, checked via `isObject()` and `!Array.isArray()`)
@@ -85,6 +85,11 @@ The `DeepMerge<T, S>` type from `@stacksjs/types` preserves primitive, array and
 built-in instance values while merging record keys recursively. A replaced Date
 target no longer exposes Date methods. The authoritative type is in
 `core/types/src/utils.ts`; verify consumers against built declarations.
+
+Plain-record graph merges track source nodes per overlay. Self/mutual cycles
+and shared nodes terminate and reuse the first destination for that source node.
+Arrays and non-plain values remain atomic; later source overlays use fresh graph
+tracking while updating the same target.
 
 ### objectPick -- Pick Properties by Key
 ```typescript
@@ -198,6 +203,10 @@ parser. `getPath(source, path, fallback?)` reads a nested value;
 `mapValues` preserves optional properties and omits symbol keys in its result type,
 matching its enumerable string-key traversal. The pure `@stacksjs/objects/transform`
 entry ships both JavaScript and declarations.
+`omit` normalizes numeric exclusions to string property keys, as JavaScript does.
+`objectMap` returns a partial record: a callback may omit entries, so narrow a
+result value before assuming it exists.
+
 `setPath(source, path, value)` performs a persistent update by copying containers
 along the path and sharing unaffected siblings. Treat paths as application-owned
 inputs; this helper is not a path authorization boundary. Array `length` updates
@@ -225,3 +234,9 @@ Retained evidence: `core/objects/tests/transform.test.ts`.
 - `hasOwnProperty` accepts `null`/`undefined` objects without throwing.
 - `objectPick` with `omitUndefined=false` (default) includes keys even if their values are `undefined`, as long as the key exists in the object.
 - `@stacksjs/utils` does not re-export these. Its `merge` / `defu` is a separate merge that builds a new object.
+
+Path inference normalizes numeric/string aliases and distributes finite union
+steps. Broad string/number/template steps and open index-signature object sources
+return `unknown`; narrow before using them. Length changes drop fixed tuple index
+guarantees, and generic array results include possible holes. Numeric-looking
+named siblings such as `-1` and `1.5` retain their own value types.

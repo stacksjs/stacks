@@ -83,3 +83,18 @@ lengths throw without changing the original. A plain source record replaces a ne
 Date, Map, Set or class target during `deepMerge`; those targets are not containers
 for JSON fields. The package ships both its root and the narrow `objects/transform`
 entry as JavaScript and declarations.
+
+`omit` normalizes numeric exclusions. `objectMap` returns a partial record because
+callbacks may remove entries. `setPath` preserves sparse slots and own enumerable
+array siblings; its `SetPathResult` type follows known paths, with `unknown` for
+dynamic paths and the replacement type for an empty path.
+
+`deepMerge` tracks plain-record graphs per source overlay, preserving cycles and
+sharing each source node's first destination. It updates the same target; arrays
+and non-plain values remain atomic. Later sources use fresh graph tracking.
+
+Path inference normalizes numeric/string aliases and distributes finite union
+steps. Broad string/number/template steps and open index-signature object sources
+return `unknown`; narrow before using them. Length changes drop fixed tuple index
+guarantees, and generic array results include possible holes. Numeric-looking
+named siblings such as `-1` and `1.5` retain their own value types.

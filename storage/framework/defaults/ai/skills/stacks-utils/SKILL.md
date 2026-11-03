@@ -221,6 +221,8 @@ Pipeline.send('hello')
 ```
 
 Internally uses `reduceRight` so pipes execute in order (first pipe wraps outermost).
+`through()` snapshots its readonly input array. Builder-local `pipe()` calls and
+later edits to the caller array do not change other pipelines.
 
 ## Markdown Tables (`markdown.ts`)
 
@@ -231,6 +233,7 @@ interface MarkdownTableOptions {
   delimiter?: string          // default: '|'
   delimiterStart?: boolean    // default: true
   delimiterEnd?: boolean      // default: true
+  escapeCells?: boolean       // default: true; false accepts preformatted cells
   alignDelimiter?: string     // default: '-'
 }
 
@@ -265,6 +268,11 @@ loadYaml(content)         // alias for parseYaml
 dumpYaml(object)          // Bun.YAML.stringify(content), falls back to JSON.stringify
 ```
 
+Tables normalize headers and data rows to the same column count. Text cells
+escape literal backslashes and pipes and replace CR/LF with `<br>`, keeping one
+cell from creating columns or rows. `escapeCells: false` preserves caller-owned
+Markdown escaping. This is table structure handling, not an HTML sanitizer.
+
 ## Macroable (`macroable.ts`)
 
 Laravel-inspired dynamic method registration on classes.
@@ -298,6 +306,13 @@ Enhanced.macro('newMethod', fn)
 
 Static methods: `macro(name, fn, replace?)`, `mixin(obj, replace?)`, `hasMacro(name)`, `flushMacros()`, `getMacros()`.
 
+Registrations belong to the receiving constructor in all three APIs. Descendants
+see effective inherited macros; sibling mutations are isolated. Flush removes
+only own registrations, restoring original descriptors and revealing inherited
+methods again. Existing native methods need explicit `replace: true` (the third
+argument); `constructor` is reserved. Failed installation publishes no registry
+entry. `getMacros` includes effective inherited macro names.
+
 ## ResizeObserver (`observer.ts`)
 
 ```typescript
@@ -314,7 +329,12 @@ const stop = observeElementSize(element, (entry) => {
 stop()                                     // stop observing
 ```
 
-The polyfill uses `requestAnimationFrame` (or `setTimeout` fallback) to poll element sizes via `getBoundingClientRect()`.
+The polyfill polls bounding-box width/height with `requestAnimationFrame` (or a
+16-ms timeout). It delivers initial measurements and size changes, not position
+changes or every frame. Callback errors still reach host error reporting while
+monitoring continues. Unobserve/disconnect discard measurements and pending work;
+reobserving starts with a new initial delivery. This simple fallback does not
+implement native content/border/device-pixel box measurement distinctions.
 
 ## Deep Equality (`equal.ts`)
 
@@ -468,6 +488,16 @@ two corresponding holes compare equal. Host objects and Errors remain identity
 comparisons. Read retained equal tests for a non-plain object rather than
 assuming every object with similar printable fields is equal.
 
+`retry` (re-exported from the browser package) validates a finite non-negative
+safe-integer retry count before work starts. It runs once plus that retry budget.
+Delay and factor must be finite non-negative numbers. `calculateDelay` saturates
+exponential/jitter output at 2147483647 ms, preventing platform timeout overflow
+from turning long backoffs into rapid retries.
+
+`setEnvValue` preserves literal dollar replacement sequences for existing and
+appended keys. Unknown-error helpers guard accessors/proxies and return safe
+fallbacks instead of replacing the original error during extraction.
+
 ## Gotchas
 - `merge()` concatenates arrays instead of replacing them -- this differs from spread/Object.assign behavior
 - `mergeDefaults()`/`defu()` gives precedence to the FIRST argument (the object), not the defaults
@@ -480,4 +510,7 @@ assuming every object with similar printable fields is equal.
 - `detectIndent` in utils (`detect.ts`) is a different, simpler implementation than the one in strings (`detect-indent.ts`)
 - `isDeepEqual` uses `getTypeName` from `@stacksjs/types` for type checking
 - Version comparison uses `Bun.semver.order()` which returns -1, 0, or 1
-- `cleanProject()` uses `Bun.$` shell -- destructive operation that removes lock files, node_modules, and dist
+- `cleanProject()` removes lock files and generated artifacts using native filesystem
+  operations, including nested framework `dist` and `node_modules` directories.
+  Symlink entries may be unlinked as artifacts, but aliased parents and external
+  targets are never traversed.

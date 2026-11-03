@@ -1,8 +1,4 @@
-/**
- * Native Macroable implementation
- * Inspired by Laravel's Macroable trait - allows adding methods dynamically to classes
- */
-
+/** Dynamic methods with constructor-local registration and reversible overrides. */
 export interface MacroableConstructor {
   new (...args: any[]): any
   macro(name: string, fn: Function, replace?: boolean): void
@@ -12,205 +8,94 @@ export interface MacroableConstructor {
   getMacros(): string[]
 }
 
-export class Macroable {
-  private static macros: Map<string, Function> = new Map()
+// eslint-disable-next-line pickier/no-unused-vars
+type Constructor = new (...args: any[]) => any
 
-  /**
-   * Register a custom macro
-   */
-  static macro(name: string, fn: Function, replace = false): void {
-    if (this.macros.has(name) && !replace) {
-      throw new Error(`Macro "${name}" is already registered`)
-    }
-    this.macros.set(name, fn)
+interface MacroTarget { prototype: object }
+interface Registration { fn: Function, original?: PropertyDescriptor }
+const registries = new WeakMap<MacroTarget, Map<string, Registration>>()
 
-    // Add the macro as a method to the class prototype
-    Object.defineProperty(this.prototype, name, {
-      value: fn,
-      writable: true,
-      configurable: true,
-      enumerable: false,
-    })
-  }
+function parentOf(target: MacroTarget): MacroTarget | undefined {
+  const parent = Object.getPrototypeOf(target)
+  return typeof parent === 'function' && parent.prototype ? parent : undefined
+}
 
-  /**
-   * Mix in methods from an object
-   */
-  static mixin(obj: Record<string, any>, replace = true): void {
-    const methods = Object.getOwnPropertyNames(obj)
-
-    for (const method of methods) {
-      if (method === 'constructor') continue
-
-      if (this.macros.has(method) && !replace) {
-        continue
-      }
-
-      const descriptor = Object.getOwnPropertyDescriptor(obj, method)
-      if (descriptor && typeof descriptor.value === 'function') {
-        this.macro(method, descriptor.value, replace)
-      }
-    }
-  }
-
-  /**
-   * Check if a macro is registered
-   */
-  static hasMacro(name: string): boolean {
-    return this.macros.has(name)
-  }
-
-  /**
-   * Remove all macros
-   */
-  static flushMacros(): void {
-    // Remove all macro methods from prototype
-    for (const name of this.macros.keys()) {
-      delete (this.prototype as unknown as Record<string, unknown>)[name]
-    }
-    this.macros.clear()
-  }
-
-  /**
-   * Get all registered macros
-   */
-  static getMacros(): string[] {
-    return Array.from(this.macros.keys())
-  }
-
-  /**
-   * Call a macro if it exists
-   */
-  protected callMacro(name: string, ...args: any[]): any {
-    const macro = (this.constructor as typeof Macroable).macros.get(name)
-    if (!macro) {
-      throw new Error(`Macro "${name}" is not registered`)
-    }
-    return macro.apply(this, args)
+/** Resolve effective inherited macros, stopping at a native method that shadows one. */
+function registration(target: MacroTarget, name: string): Registration | undefined {
+  for (let current: MacroTarget | undefined = target; current; current = parentOf(current)) {
+    const own = registries.get(current)?.get(name)
+    if (own) return own
+    if (Object.hasOwn(current.prototype, name)) return undefined
   }
 }
 
-/**
- * Create a macroable class
- */
-export function createMacroable<T extends new (..._args: any[]) => any>(
+export class Macroable {
+  static macro(this: MacroTarget, name: string, fn: Function, replace = false): void {
+    if (name === 'constructor') throw new Error('The constructor cannot be a macro')
+    if (typeof fn !== 'function') throw new TypeError('A macro must be a function')
+    if (!replace && name in this.prototype) {
+      if (registration(this, name)) throw new Error(`Macro "${name}" is already registered`)
+      throw new Error(`Method "${name}" already exists; pass replace to override it`)
+    }
+    const records = registries.get(this) ?? new Map<string, Registration>()
+    const previous = records.get(name)
+    const original = previous ? previous.original : Object.getOwnPropertyDescriptor(this.prototype, name)
+    // Installation may throw for a sealed prototype or permanent property. Publish only after it succeeds.
+    Object.defineProperty(this.prototype, name, { value: fn, writable: true, configurable: true, enumerable: false })
+    records.set(name, { fn, original })
+    registries.set(this, records)
+  }
+
+  static mixin(this: MacroTarget & Pick<MacroableConstructor, 'macro'>, obj: Record<string, any>, replace = true): void {
+    for (const name of Object.getOwnPropertyNames(obj)) {
+      if (name === 'constructor' || (!replace && name in this.prototype)) continue
+      const descriptor = Object.getOwnPropertyDescriptor(obj, name)
+      if (descriptor && typeof descriptor.value === 'function') this.macro(name, descriptor.value, replace)
+    }
+  }
+
+  static hasMacro(this: MacroTarget, name: string): boolean {
+    return registration(this, name) !== undefined
+  }
+
+  /** Flush only this constructor's registrations, revealing inherited methods again. */
+  static flushMacros(this: MacroTarget): void {
+    const records = registries.get(this)
+    if (!records) return
+    for (const [name, record] of records) {
+      if (record.original) Object.defineProperty(this.prototype, name, record.original)
+      else if (!Reflect.deleteProperty(this.prototype, name)) throw new TypeError(`Cannot remove macro "${name}"`)
+      records.delete(name)
+    }
+    registries.delete(this)
+  }
+
+  static getMacros(this: MacroTarget): string[] {
+    const names = new Set<string>()
+    for (let current: MacroTarget | undefined = this; current; current = parentOf(current)) {
+      for (const name of registries.get(current)?.keys() ?? []) names.add(name)
+    }
+    return [...names].filter(name => registration(this, name) !== undefined)
+  }
+
+  protected callMacro(name: string, ...args: any[]): any {
+    const found = registration(this.constructor, name)
+    if (!found) throw new Error(`Macro "${name}" is not registered`)
+    return found.fn.apply(this, args)
+  }
+}
+
+export function createMacroable<T extends Constructor>(
   BaseClass: T = class {} as unknown as T,
 ): T & MacroableConstructor {
-  return class extends BaseClass {
-    private static macros: Map<string, Function> = new Map()
-
-    static macro(name: string, fn: Function, replace = false): void {
-      if (this.macros.has(name) && !replace) {
-        throw new Error(`Macro "${name}" is already registered`)
-      }
-      this.macros.set(name, fn)
-
-      Object.defineProperty(this.prototype, name, {
-        value: fn,
-        writable: true,
-        configurable: true,
-        enumerable: false,
-      })
-    }
-
-    static mixin(obj: Record<string, any>, replace = true): void {
-      const methods = Object.getOwnPropertyNames(obj)
-
-      for (const method of methods) {
-        if (method === 'constructor') continue
-
-        if (this.macros.has(method) && !replace) {
-          continue
-        }
-
-        const descriptor = Object.getOwnPropertyDescriptor(obj, method)
-        if (descriptor && typeof descriptor.value === 'function') {
-          this.macro(method, descriptor.value, replace)
-        }
-      }
-    }
-
-    static hasMacro(name: string): boolean {
-      return this.macros.has(name)
-    }
-
-    static flushMacros(): void {
-      for (const name of this.macros.keys()) {
-        delete (this.prototype)[name]
-      }
-      this.macros.clear()
-    }
-
-    static getMacros(): string[] {
-      return Array.from(this.macros.keys())
-    }
-  } as T & MacroableConstructor
+  return macroable(class extends BaseClass {}) as T & MacroableConstructor
 }
 
-/**
- * Mixin for adding macroable functionality to existing classes
- */
-export function macroable<T extends new (..._args: any[]) => any>(
-  target: T,
-): T & MacroableConstructor {
-  const macros = new Map<string, Function>()
-
-  /*
-   * Bound once as the type being built.
-   *
-   * These five assignments are what MAKE `target` a MacroableConstructor, and
-   * each used to be cast independently - so a misspelt method name, or one
-   * whose signature drifted from the interface, was written onto the class
-   * and never checked against it. Naming the result here checks all five.
-   */
+/** Static methods use their receiver, so decorated subclasses own their mutations. */
+export function macroable<T extends Constructor>(target: T): T & MacroableConstructor {
   const decorated = target as T & MacroableConstructor
-
-  // Add static methods
-  decorated.macro = function (name: string, fn: Function, replace = false): void {
-    if (macros.has(name) && !replace) {
-      throw new Error(`Macro "${name}" is already registered`)
-    }
-    macros.set(name, fn)
-
-    Object.defineProperty(target.prototype, name, {
-      value: fn,
-      writable: true,
-      configurable: true,
-      enumerable: false,
-    })
+  for (const name of ['macro', 'mixin', 'hasMacro', 'flushMacros', 'getMacros'] as const) {
+    Object.defineProperty(decorated, name, { value: Macroable[name], writable: true, configurable: true })
   }
-
-  decorated.mixin = function (obj: Record<string, any>, replace = true): void {
-    const methods = Object.getOwnPropertyNames(obj)
-
-    for (const method of methods) {
-      if (method === 'constructor') continue
-
-      if (macros.has(method) && !replace) {
-        continue
-      }
-
-      const descriptor = Object.getOwnPropertyDescriptor(obj, method)
-      if (descriptor && typeof descriptor.value === 'function') {
-        decorated.macro(method, descriptor.value, replace)
-      }
-    }
-  }
-
-  decorated.hasMacro = function (name: string): boolean {
-    return macros.has(name)
-  }
-
-  decorated.flushMacros = function (): void {
-    for (const name of macros.keys()) {
-      delete (target.prototype)[name]
-    }
-    macros.clear()
-  }
-
-  decorated.getMacros = function (): string[] {
-    return Array.from(macros.keys())
-  }
-
-  return target as T & MacroableConstructor
+  return decorated
 }

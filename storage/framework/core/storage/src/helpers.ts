@@ -15,7 +15,8 @@ export function updateConfigFile(filePath: string, newConfig: Record<string, unk
       return
     }
 
-    for (const key in newConfig) config[key] = newConfig[key]
+    for (const [key, value] of Object.entries(newConfig))
+      Object.defineProperty(config, key, { value, enumerable: true, writable: true, configurable: true })
 
     try {
       fs.writeFileSync(filePath, JSON.stringify(config, null, 2))

@@ -27,7 +27,7 @@ export type ResizeObserverCallback = (
  * Check if ResizeObserver is supported natively
  */
 export function isResizeObserverSupported(): boolean {
-  return typeof window !== 'undefined' && 'ResizeObserver' in window
+  return typeof window !== 'undefined' && typeof window.ResizeObserver === 'function'
 }
 
 /**
@@ -51,101 +51,78 @@ export function getResizeObserver(): new (_callback: ResizeObserverCallback) => 
 
   // Simple polyfill for older browsers
   return class ResizeObserverPolyfill implements ResizeObserver {
-    private callback: ResizeObserverCallback
-    private observedElements: Set<Element> = new Set()
-    private rafId: number | null = null
-    /** True while inside `raf(...)`, so a synchronous callback cannot recurse. */
+    private observedElements = new Map<Element, { width: number, height: number } | undefined>()
+    private pending: { cancel?: () => void } | null = null
+    /** Guards non-standard synchronous rAF implementations from recursive scheduling. */
     private scheduling = false
 
-
-    constructor(callback: ResizeObserverCallback) {
-      this.callback = callback
-    }
+    constructor(private callback: ResizeObserverCallback) {}
 
     observe(target: Element): void {
-      if (!this.observedElements.has(target)) {
-        this.observedElements.add(target)
-        this.scheduleCheck()
-      }
+      if (this.observedElements.has(target)) return
+      this.observedElements.set(target, undefined)
+      this.scheduleCheck()
     }
 
     unobserve(target: Element): void {
       this.observedElements.delete(target)
-
-      if (this.observedElements.size === 0 && this.rafId !== null) {
-        const cancel = typeof cancelAnimationFrame !== 'undefined' ? cancelAnimationFrame : clearTimeout
-        cancel(this.rafId)
-        this.rafId = null
-      }
+      if (this.observedElements.size === 0) this.cancelCheck()
     }
 
     disconnect(): void {
       this.observedElements.clear()
+      this.cancelCheck()
+    }
 
-      if (this.rafId !== null) {
-        const cancel = typeof cancelAnimationFrame !== 'undefined' ? cancelAnimationFrame : clearTimeout
-        cancel(this.rafId)
-        this.rafId = null
-      }
+    private cancelCheck(): void {
+      const pending = this.pending
+      this.pending = null
+      pending?.cancel?.()
     }
 
     private scheduleCheck(): void {
-      /*
-       * `scheduling` guards the window `rafId` cannot.
-       *
-       * `rafId` is only assigned AFTER `raf(...)` returns, so a
-       * `requestAnimationFrame` that invokes its callback synchronously - a
-       * polyfill, a test double, any non-browser host - runs the reschedule
-       * while `rafId` is still null. The guard below never trips, and
-       * `scheduleCheck` recurses into itself until the stack overflows, taking
-       * the whole process down rather than failing one test
-       * (stacksjs/stacks#2413).
-       *
-       * With a real, asynchronous rAF this flag is already false by the time
-       * the callback runs, so polling continues exactly as before.
-       */
-      if (this.rafId !== null || this.scheduling) return
-
-      // Use setTimeout as fallback if requestAnimationFrame is not available
-      const raf = typeof requestAnimationFrame !== 'undefined' ? requestAnimationFrame : setTimeout
-
+      if (this.pending || this.scheduling || this.observedElements.size === 0) return
+      const pending: { cancel?: () => void } = {}
+      this.pending = pending
       this.scheduling = true
-
+      const run = () => {
+        if (this.pending !== pending) return
+        this.pending = null
+        try { this.check() }
+        finally { this.scheduleCheck() }
+      }
       try {
-        this.rafId = raf(() => {
-          this.check()
-          this.rafId = null
-
-          if (this.observedElements.size > 0) {
-            this.scheduleCheck()
-          }
-        }) as number
+        if (typeof requestAnimationFrame === 'function') {
+          const id = requestAnimationFrame(run)
+          pending.cancel = () => cancelAnimationFrame(id)
+        }
+        else {
+          const id = setTimeout(run, 16)
+          pending.cancel = () => clearTimeout(id)
+        }
       }
-      finally {
-        this.scheduling = false
+      catch (error) {
+        if (this.pending === pending) this.pending = null
+        throw error
       }
+      finally { this.scheduling = false }
     }
 
     private check(): void {
       const entries: ResizeObserverEntry[] = []
-
-      for (const element of this.observedElements) {
+      for (const [element, previous] of this.observedElements) {
         const rect = element.getBoundingClientRect()
-
-        const entry: ResizeObserverEntry = {
+        if (previous && previous.width === rect.width && previous.height === rect.height) continue
+        this.observedElements.set(element, { width: rect.width, height: rect.height })
+        entries.push({
           target: element,
           contentRect: rect,
           borderBoxSize: [{ inlineSize: rect.width, blockSize: rect.height }],
           contentBoxSize: [{ inlineSize: rect.width, blockSize: rect.height }],
           devicePixelContentBoxSize: [{ inlineSize: rect.width, blockSize: rect.height }],
-        }
-
-        entries.push(entry)
+        })
       }
-
-      if (entries.length > 0) {
-        this.callback(entries, this)
-      }
+      if (entries.length > 0) this.callback(entries, this)
     }
   }
 }

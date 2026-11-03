@@ -34,12 +34,12 @@ export * from './transform'
 export function objectMap<K extends string, V, NK extends PropertyKey = K, NV = V>(
   obj: Record<K, V>,
   fn: (key: K, value: V) => [NK, NV] | undefined,
-): Record<NK, NV> {
+): Partial<Record<NK, NV>> {
   return Object.fromEntries(
     Object.entries(obj)
       .map(([k, v]) => fn(k as K, v as V))
       .filter(notNullish),
-  ) as Record<NK, NV>
+  ) as Partial<Record<NK, NV>>
 }
 
 /**
@@ -95,34 +95,33 @@ export function deepMerge<T extends object = object, S extends object = T>(
   target: T,
   ...sources: S[]
 ): DeepMerge<T, S> {
-  if (!sources.length)
-    return target as DeepMerge<T, S>
+  for (const source of sources) {
+    if (isMergeableObject(target) && isMergeableObject(source))
+      mergeGraph(target as Record<string, unknown>, source as Record<string, unknown>, new WeakMap())
+  }
+  return target as DeepMerge<T, S>
+}
 
-  const [source, ...remaining] = sources
-  if (source === undefined)
-    return target as DeepMerge<T, S>
-
-  if (isMergeableObject(target) && isMergeableObject(source)) {
-    const into = target as Record<string, unknown>
-    const from = source as Record<string, unknown>
-
-    for (const key of Object.keys(from)) {
-      if (key === '__proto__')
-        continue
-
-      if (isPlainObject(from[key])) {
-        if (!Object.hasOwn(into, key) || !isPlainObject(into[key]))
-          into[key] = {}
-
-        deepMerge(into[key] as object, from[key] as object)
-      }
+/** A source node maps to its first destination within each source overlay. */
+function mergeGraph(into: Record<string, unknown>, from: Record<string, unknown>, seen: WeakMap<object, object>): void {
+  seen.set(from, into)
+  for (const key of Object.keys(from)) {
+    if (key === '__proto__') continue
+    const value = from[key]
+    let merged = value
+    if (isPlainObject(value)) {
+      const mapped = seen.get(value)
+      if (mapped) merged = mapped
       else {
-        into[key] = from[key]
+        const existing = Object.hasOwn(into, key) ? into[key] : undefined
+        const child = isPlainObject(existing) ? existing : {}
+        mergeGraph(child, value, seen)
+        merged = child
       }
     }
+    if (Object.hasOwn(into, key)) into[key] = merged
+    else Object.defineProperty(into, key, { value: merged, writable: true, enumerable: true, configurable: true })
   }
-
-  return deepMerge(target, ...remaining)
 }
 
 function isMergeableObject(item: any): item is object {
@@ -134,7 +133,11 @@ function isPlainObject(item: unknown): item is Record<string, unknown> {
   if (typeof item !== 'object' || item === null)
     return false
   const proto = Object.getPrototypeOf(item)
-  return proto === null || proto === Object.prototype || Object.getPrototypeOf(proto) === null
+  if (proto === null || proto === Object.prototype) return true
+  if (Object.getPrototypeOf(proto) !== null) return false
+  const constructor = Object.getOwnPropertyDescriptor(proto, 'constructor')?.value
+  return typeof constructor === 'function'
+    && Function.prototype.toString.call(constructor) === Function.prototype.toString.call(Object)
 }
 
 /**

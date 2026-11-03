@@ -32,7 +32,7 @@
  * ```
  */
 export function omit<O extends object, K extends keyof O>(obj: O, keys: readonly K[]): Omit<O, K> {
-  const excluded = new Set<PropertyKey>(keys)
+  const excluded = new Set<PropertyKey>(keys.map(key => typeof key === 'number' ? String(key) : key))
   return Object.fromEntries(Object.entries(obj).filter(([key]) => !excluded.has(key))) as Omit<O, K>
 }
 
@@ -210,27 +210,70 @@ export function getPath(source: unknown, path: readonly PathStep[], fallback?: u
  * setPath({}, ['a', 'b'], 1)               // { a: { b: 1 } }
  * ```
  */
-export function setPath<O extends object>(source: O, path: readonly PathStep[], value: unknown): O {
-  if (path.length === 0)
-    return value as O
+type KeyName<K> = K extends number ? `${K}` : K
+type MatchingKeys<S, K> = { [P in keyof S]-?: KeyName<P> extends KeyName<K> ? P : never }[keyof S]
+type PathChild<S, K extends PropertyKey> = [MatchingKeys<S, K>] extends [never] ? undefined : S[MatchingKeys<S, K>]
+type ArraySiblings<S extends readonly unknown[]> = Omit<S, keyof [...S]>
 
+type UpdatedArray<S extends readonly unknown[], K extends PathStep, Rest extends readonly PathStep[], V> =
+  Array<S[number] | SetPathResult<PathChild<S, K>, Rest, V> | undefined>
+  & Omit<ArraySiblings<S>, MatchingKeys<ArraySiblings<S>, K>>
+  & { [P in K]: SetPathResult<PathChild<S, P>, Rest, V> }
+
+type ArrayPathResult<S extends readonly unknown[], K extends PathStep, Rest extends readonly PathStep[], V> =
+  K extends 'length' ? Array<S[number] | undefined> & Partial<ArraySiblings<S>>
+    : K extends number | `${number}`
+      ? number extends S['length'] ? UpdatedArray<S, K, Rest, V>
+        : `${K}` extends keyof S
+          ? { [I in keyof S]: I extends `${K}` ? SetPathResult<S[I], Rest, V> : S[I] }
+          : UpdatedArray<S, K, Rest, V>
+      : Omit<S, MatchingKeys<S, K>> & { [P in K]: SetPathResult<PathChild<S, P>, Rest, V> }
+
+/** Known paths describe their updated shape; arbitrary or patterned steps return unknown. */
+export type SetPathResult<S, Path extends readonly PathStep[], V> =
+  number extends Path['length'] ? unknown
+    : Path extends readonly [] ? V
+      : Path extends readonly [infer K extends PathStep, ...infer Rest extends readonly PathStep[]]
+        ? K extends unknown
+          // An empty object satisfies open index signatures, but not a required literal key.
+          ? {} extends Record<K, never> ? unknown
+            : S extends readonly unknown[] ? ArrayPathResult<S, K, Rest, V>
+              : S extends object ? string extends keyof S ? unknown
+                : number extends keyof S ? unknown
+                  : Omit<S, MatchingKeys<S, K>> & { [P in K]: SetPathResult<PathChild<S, P>, Rest, V> }
+                : K extends number ? ArrayPathResult<never[], K, Rest, V>
+                  : { [P in K]: SetPathResult<undefined, Rest, V> }
+          : never
+        : unknown
+
+export function setPath<O extends object, const Path extends readonly PathStep[], V>(source: O, path: Path, value: V): SetPathResult<O, Path, V>
+export function setPath(source: object, path: readonly PathStep[], value: unknown): unknown {
+  if (path.length === 0) return value
   const [step, ...rest] = path as [PathStep, ...PathStep[]]
   const container: Record<PropertyKey, unknown> = Array.isArray(source)
-    ? [...source] as unknown as Record<PropertyKey, unknown>
-    : { ...(source as object) } as Record<PropertyKey, unknown>
+    ? copyArray(source) as unknown as Record<PropertyKey, unknown>
+    : { ...source } as Record<PropertyKey, unknown>
 
   if (rest.length === 0) {
     defineKey(container, step, value)
-    return container as O
+    return container
   }
-
   const existing = Object.hasOwn(container, step) ? container[step] : undefined
   const child = (existing === null || typeof existing !== 'object')
     ? (typeof rest[0] === 'number' ? [] : {})
     : existing
-
   defineKey(container, step, setPath(child as object, rest, value))
-  return container as O
+  return container
+}
+
+/** Copy enumerable siblings as data properties, preserving sparse slots and length. */
+function copyArray(source: unknown[]): unknown[] {
+  const copy: unknown[] = new Array(source.length)
+  for (const key of Reflect.ownKeys(source)) {
+    if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue
+    defineKey(copy as unknown as Record<PropertyKey, unknown>, key, (source as unknown as Record<PropertyKey, unknown>)[key])
+  }
+  return copy
 }
 
 /** `target[key] = value`, as an own property even when `key` is `"__proto__"`. */

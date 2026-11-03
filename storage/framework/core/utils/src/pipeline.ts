@@ -17,8 +17,8 @@ export class Pipeline<T> {
     return pipeline
   }
 
-  through(pipes: Pipe<T>[]): this {
-    this.pipes = pipes
+  through(pipes: readonly Pipe<T>[]): this {
+    this.pipes = [...pipes]
     return this
   }
 

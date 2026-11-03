@@ -1,7 +1,10 @@
 import type { JsonFile, PackageJson, TextFile } from '@stacksjs/types'
 import { contains } from '@stacksjs/arrays'
 import { log } from '@stacksjs/logging'
-import { dirname, join, path as p } from '@stacksjs/path'
+import { path as p } from '@stacksjs/path'
+import { dirname, join, resolve, relative, isAbsolute, parse, sep } from 'node:path'
+import { tmpdir } from 'node:os'
+import process from 'node:process'
 import { detectIndent, detectNewline } from '@stacksjs/strings'
 import { createFolder, isFolder } from './folders'
 import { existsSync, fs } from './fs'
@@ -130,36 +133,72 @@ export function hasFunctions(): boolean {
   return hasFiles(p.functionsPath())
 }
 
-export function deleteFiles(dir: string, exclude: string[] = []): void {
-  if (fs.existsSync(dir)) {
-    fs.readdirSync(dir).forEach((file) => {
-      const p = join(dir, file)
-      if (fs.statSync(p).isDirectory()) {
-        if (fs.readdirSync(p).length === 0)
-          fs.rmSync(p, { recursive: true, force: true })
-        else deleteFiles(p, exclude)
-      }
-      else if (!contains(p, exclude)) {
-        fs.rmSync(p)
-      }
-    })
+/** Accept platform aliases above cwd/temp anchors, never symlinks below them. */
+function traversalRoot(directory: string): string {
+  const root = resolve(directory)
+  const anchors = [process.cwd(), tmpdir(), ...(process.platform === 'win32' ? [] : ['/tmp'])]
+  const candidates = anchors.flatMap(anchor => {
+    try { return [resolve(anchor), fs.realpathSync(anchor)] }
+    catch { return [resolve(anchor)] }
+  })
+  const contained = (anchor: string) => {
+    const part = relative(anchor, root)
+    return part === '' || (!isAbsolute(part) && part !== '..' && !part.startsWith(`..${sep}`))
   }
+  const anchor = candidates.filter(contained).sort((a, b) => b.length - a.length)[0] ?? parse(root).root
+  let current = anchor
+  for (const part of (root === anchor ? [] : relative(anchor, dirname(root)).split(sep).filter(Boolean))) {
+    current = join(current, part)
+    if (fs.lstatSync(current).isSymbolicLink()) throw new Error(`Cannot traverse a symlink ancestor: ${current}`)
+  }
+  return root
 }
 
+/** Delete files and link entries, never the contents of a symlink target. */
+export function deleteFiles(dir: string, exclude: string[] = []): void {
+  if (contains(dir, exclude)) return
+  let root: string
+  try { root = traversalRoot(dir) }
+  catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return
+    throw error
+  }
+  const walk = (path: string, display: string): void => {
+    if (contains(display, exclude)) return
+    let stat: ReturnType<typeof fs.lstatSync>
+    try { stat = fs.lstatSync(path) }
+    catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return
+      throw error
+    }
+    if (!stat.isDirectory()) { fs.unlinkSync(path); return }
+    for (const name of fs.readdirSync(path)) {
+      const entry = join(path, name), shown = join(display, name)
+      if (contains(shown, exclude)) continue
+      const child = fs.lstatSync(entry)
+      if (child.isDirectory() && fs.readdirSync(entry).length === 0) fs.rmdirSync(entry)
+      else walk(entry, shown)
+    }
+  }
+  walk(root, dir)
+}
+
+/** List ordinary files without following root or descendant symlink entries. */
 export function getFiles(dir: string, exclude: string[] = []): string[] {
-  let results: string[] = []
-  const list = fs.readdirSync(dir)
-
-  list.forEach((file) => {
-    file = join(dir, file)
-    const stat = fs.statSync(file)
-
-    if (stat.isDirectory())
-      results = results.concat(getFiles(file, exclude))
-    else if (!contains(file, exclude))
-      results.push(file)
-  })
-
+  const root = traversalRoot(dir)
+  if (fs.lstatSync(root).isSymbolicLink() || contains(dir, exclude)) return []
+  const results: string[] = []
+  const walk = (path: string, display: string): void => {
+    for (const name of fs.readdirSync(path)) {
+      const file = join(path, name), shown = join(display, name)
+      if (contains(shown, exclude)) continue
+      const stat = fs.lstatSync(file)
+      if (stat.isSymbolicLink()) continue
+      if (stat.isDirectory()) walk(file, shown)
+      else if (stat.isFile()) results.push(shown)
+    }
+  }
+  walk(root, dir)
   return results
 }
 

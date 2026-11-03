@@ -1,4 +1,3 @@
-// Define a more specific RetryOptions interface
 export interface RetryOptions {
   retries?: number
   initialDelay?: number
@@ -6,46 +5,40 @@ export interface RetryOptions {
   jitter?: boolean
 }
 
-// Replace the generic Function type with a more specific function type
-export function retry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
-  const { retries = 3, initialDelay = 1000, backoffFactor = 2, jitter = true } = options
+const MAX_TIMER_DELAY = 2147483647
 
-  return new Promise<T>((resolve, reject) => {
-    let attemptCount = 0
-
-    const attempt = async () => {
-      try {
-        resolve(await fn())
-      }
-      catch (err) {
-        if (attemptCount >= retries) {
-          reject(err)
-        }
-        else {
-          const delay = calculateDelay(attemptCount, initialDelay, backoffFactor, jitter)
-          setTimeout(() => attempt(), delay)
-          attemptCount++
-        }
-      }
-    }
-
-    attempt()
-  })
+function validateTiming(initialDelay: number, backoffFactor: number): void {
+  if (!Number.isFinite(initialDelay) || initialDelay < 0 || !Number.isFinite(backoffFactor) || backoffFactor < 0)
+    throw new RangeError('Retry delays and backoff factors must be finite non-negative numbers')
 }
 
-export function calculateDelay(
-  attemptCount: number,
-  initialDelay: number,
-  backoffFactor: number,
-  jitter?: boolean,
-): number {
-  let delay = initialDelay * backoffFactor ** attemptCount
-
-  if (jitter) {
-    const random = Math.random() // Generates a number between 0 and 1
-    const jitterValue = delay * 0.3 // Jitter will be up to 30% of the delay
-    delay = delay + jitterValue * (random - 0.5) * 2 // Adjust delay randomly within ±30%
+/** Run once, then at most `retries` more times. Invalid options reject before work starts. */
+export async function retry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
+  const { retries = 3, initialDelay = 1000, backoffFactor = 2, jitter = true } = options
+  if (!Number.isSafeInteger(retries) || retries < 0)
+    throw new RangeError('Retries must be a non-negative safe integer')
+  validateTiming(initialDelay, backoffFactor)
+  for (let attempt = 0; ; attempt++) {
+    try { return await fn() }
+    catch (error) {
+      if (attempt >= retries) throw error
+      await new Promise<void>(resolve => setTimeout(resolve, calculateDelay(attempt, initialDelay, backoffFactor, jitter)))
+    }
   }
+}
 
-  return delay
+/** Saturate at the platform timer limit instead of overflowing to a one-ms timeout. */
+export function calculateDelay(attemptCount: number, initialDelay: number, backoffFactor: number, jitter?: boolean): number {
+  if (!Number.isSafeInteger(attemptCount) || attemptCount < 0)
+    throw new RangeError('Retry attempts must be non-negative safe integers')
+  validateTiming(initialDelay, backoffFactor)
+  let delay = initialDelay === 0 ? 0 : initialDelay * backoffFactor ** attemptCount
+  if (!Number.isFinite(delay) || (delay === 0 && initialDelay > 0 && backoffFactor > 0)) {
+    // The power alone may overflow/underflow even when the combined product is representable.
+    delay = Math.exp(Math.log(initialDelay) + attemptCount * Math.log(backoffFactor))
+  }
+  // Multiplying by a bounded positive factor also handles exponential Infinity;
+  // the previous Infinity + (-Infinity) jitter path produced NaN.
+  const adjusted = delay * (jitter ? 0.7 + Math.random() * 0.6 : 1)
+  return Math.min(MAX_TIMER_DELAY, adjusted)
 }

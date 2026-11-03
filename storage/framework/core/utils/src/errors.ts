@@ -33,20 +33,18 @@
  * ```
  */
 export function getErrorMessage(e: unknown): string {
-  if (e instanceof Error) return e.message
-  if (typeof e === 'string') return e
-  if (typeof e === 'number' || typeof e === 'boolean') return String(e)
-  if (e && typeof e === 'object' && 'message' in e && typeof (e as { message: unknown }).message === 'string')
-    return (e as { message: string }).message
+  const message = errorProperty(e, 'message')
+  if (typeof message === 'string') return message
   if (e == null) return 'Unknown error'
-  // Fall back to String() for everything else (Symbols, etc.). Catches
-  // weirder cases without choking on values that don't stringify cleanly.
-  try {
-    return String(e)
-  }
-  catch {
-    return 'Unknown error'
-  }
+  try { return String(e) }
+  catch { return 'Unknown error' }
+}
+
+/** An unknown thrown value may be a proxy or carry accessors that throw. */
+function errorProperty(value: unknown, key: PropertyKey): unknown {
+  if (!value || (typeof value !== 'object' && typeof value !== 'function')) return undefined
+  try { return Reflect.get(value, key) }
+  catch { return undefined }
 }
 
 /**
@@ -55,10 +53,8 @@ export function getErrorMessage(e: unknown): string {
  * without forcing the caller to narrow `e` first.
  */
 export function getErrorStack(e: unknown): string | undefined {
-  if (e instanceof Error) return e.stack
-  if (e && typeof e === 'object' && 'stack' in e && typeof (e as { stack: unknown }).stack === 'string')
-    return (e as { stack: string }).stack
-  return undefined
+  const stack = errorProperty(e, 'stack')
+  return typeof stack === 'string' ? stack : undefined
 }
 
 /**
@@ -69,9 +65,8 @@ export function getErrorStack(e: unknown): string | undefined {
  * string code, so callers can default-handle.
  */
 export function getErrorCode(e: unknown): string | undefined {
-  if (e && typeof e === 'object' && 'code' in e && typeof (e as { code: unknown }).code === 'string')
-    return (e as { code: string }).code
-  return undefined
+  const code = errorProperty(e, 'code')
+  return typeof code === 'string' ? code : undefined
 }
 
 /**
@@ -81,10 +76,10 @@ export function getErrorCode(e: unknown): string | undefined {
  * finite number — same default-handling pattern as `getErrorCode`.
  */
 export function getErrorStatusCode(e: unknown): number | undefined {
-  if (!e || typeof e !== 'object') return undefined
-  const obj = e as { statusCode?: unknown, status?: unknown }
-  if (typeof obj.statusCode === 'number' && Number.isFinite(obj.statusCode)) return obj.statusCode
-  if (typeof obj.status === 'number' && Number.isFinite(obj.status)) return obj.status
+  for (const key of ['statusCode', 'status']) {
+    const status = errorProperty(e, key)
+    if (typeof status === 'number' && Number.isFinite(status)) return status
+  }
   return undefined
 }
 
@@ -98,6 +93,7 @@ export function getErrorStatusCode(e: unknown): number | undefined {
  * tracing SDKs that want `captureException(Error)`).
  */
 export function toError(e: unknown): Error {
-  if (e instanceof Error) return e
+  try { if (e instanceof Error) return e }
+  catch { /* Revoked proxies can throw even during instanceof. */ }
   return new Error(getErrorMessage(e), { cause: e })
 }

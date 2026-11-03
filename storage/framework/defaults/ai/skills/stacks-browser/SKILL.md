@@ -113,3 +113,13 @@ composables/useAuth.ts/useApi.ts/csrf.ts/request-error.ts and utils/fetch.ts.
 Tests: client-bundle-safety.test.ts, use-auth-refresh.test.ts (refresh, session
 resilience, burst expiry, authGuard, handoff code), auth.test.ts, csrf.test.ts,
 request-error.test.ts and api-url.test.ts under core/browser/tests.
+
+
+## Retry timing
+
+`retry` and `calculateDelay` are available through the utilities entry. Retry
+budgets must be finite non-negative safe integers; delays and backoff factors
+must be finite non-negative numbers. Invalid options reject before invoking
+work. Retry runs once plus the allowed retries, preserving the final error.
+Backoff/jitter delays saturate at the platform timer maximum (2147483647 ms),
+including numeric overflow. Large delays never fall through to one-ms timers.

@@ -40,6 +40,9 @@ export interface MarkdownTableOptions {
    * @default '-'
    */
   alignDelimiter?: string
+
+  /** Escape literal backslashes/pipes and convert cell newlines to <br>. @default true */
+  escapeCells?: boolean
 }
 
 type CellValue = string | number | boolean | null | undefined
@@ -70,6 +73,7 @@ export function markdownTable(table: Table, options: MarkdownTableOptions = {}):
     delimiterStart = true,
     delimiterEnd = true,
     alignDelimiter = '-',
+    escapeCells = true,
   } = options
 
   if (!table || table.length === 0) {
@@ -80,12 +84,13 @@ export function markdownTable(table: Table, options: MarkdownTableOptions = {}):
   const normalized = table.map(row =>
     row.map(cell => {
       if (cell === null || cell === undefined) return ''
-      return String(cell)
+      const text = String(cell)
+      return escapeCells ? text.replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(/\r\n|\r|\n/g, '<br>') : text
     }),
   )
 
   // Calculate column widths
-  const columnCount = Math.max(...normalized.map(row => row.length))
+  const columnCount = normalized.reduce((max, row) => Math.max(max, row.length), 0)
   const columnWidths: number[] = Array.from({ length: columnCount }).fill(0) as number[]
 
   for (const row of normalized) {
@@ -130,8 +135,8 @@ function buildRow(
   delimiterStart: boolean,
   delimiterEnd: boolean,
 ): string {
-  const paddedCells = cells.map((cell, index) => {
-    const width = columnWidths[index] ?? 0
+  const paddedCells = columnWidths.map((width, index) => {
+    const cell = cells[index] ?? ''
     return cell.padEnd(width, ' ')
   })
 

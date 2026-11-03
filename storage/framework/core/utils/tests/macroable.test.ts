@@ -72,7 +72,7 @@ describe('Native Macroable', () => {
     test('macro has access to instance context', () => {
       TestClass.macro('getValue', function (this: TestClass) {
         return this.value
-      })
+      }, true)
 
       const instance = new TestClass('test')
       expect((instance as any).getValue()).toBe('test')
