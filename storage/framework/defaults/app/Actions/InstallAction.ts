@@ -65,17 +65,38 @@ else
   # bun ./storage/framework/core/buddy/src/cli.ts setup
 fi
 
-# Create a named pipe
-mkfifo /tmp/mypipe
+# Each run owns a private directory for its named pipe, so two runs never read
+# or delete each other's stream, and nothing outlives this one. The directory is
+# removed on success, on failure and when the run is interrupted.
+PIPE_DIR="$(mktemp -d "\${TMPDIR:-/tmp}/stacks-install.XXXXXX")" || exit 1
+PIPE="$PIPE_DIR/setup.pipe"
+SETUP_PID=""
+cleanup() {
+  if [ -n "$SETUP_PID" ]; then kill -TERM -- "-$SETUP_PID" 2>/dev/null; fi
+  rm -rf "$PIPE_DIR"
+}
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM HUP
 
-# Run the command, send output to both the console and the pipe
-bun $CLI_PATH setup | tee /tmp/mypipe &
+mkfifo "$PIPE" || exit 1
+
+# Run the command, send output to both the console and the pipe. It gets its own
+# process group (job control) so an interrupted run can stop all of it, and
+# pipefail keeps the setup's own exit status rather than tee's.
+set -m
+( set -o pipefail; bun "$CLI_PATH" setup | tee "$PIPE" ) &
+SETUP_PID=$!
+set +m
 
 # Read from the pipe, add timestamps, and append to the file
-while IFS= read -r line; do echo "$(date '+[%Y-%m-%d %H:%M:%S]') $line"; done < /tmp/mypipe >> $LOG_PATH
+while IFS= read -r line; do echo "$(date '+[%Y-%m-%d %H:%M:%S]') $line"; done < "$PIPE" >> "$LOG_PATH"
 
-# Remove the named pipe
-rm /tmp/mypipe
+# Report the setup's exit status, not the cleanup's
+wait "$SETUP_PID"
+STATUS=$?
+SETUP_PID=""
+exit "$STATUS"
 `
 
     return setupScriptContents
