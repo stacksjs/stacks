@@ -2,7 +2,7 @@
   "name": "@stacksjs/build",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.454",
+  "version": "0.75.455",
   "description": "The Stacks framework build tools and configurations.",
   "author": "Chris Breuer",
   "contributors": [

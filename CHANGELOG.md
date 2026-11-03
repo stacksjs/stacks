@@ -1,5 +1,42 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.454...v0.75.455)
+
+## ✨ Features
+
+- **mobile**: map native activity sensors and HealthKit background options ([d0ed026](https://github.com/stacksjs/stacks/commit/d0ed026)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **mobile**: apps can turn on Craft's Wallet and Android Health Services ([3c33abe](https://github.com/stacksjs/stacks/commit/3c33abe)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3148](https://github.com/stacksjs/stacks/issues/3148), [stacksjs/stx#2151](https://github.com/stacksjs/stx/issues/2151))
+- **mobile**: apps can turn on Craft's shake gesture, on iOS and Android ([50acea2](https://github.com/stacksjs/stacks/commit/50acea2)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3146](https://github.com/stacksjs/stacks/issues/3146))
+
+## 🐛 Bug Fixes
+
+- **dashboard**: leave models of a disabled feature out of the sidebar ([f3284bf](https://github.com/stacksjs/stacks/commit/f3284bf)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3162](https://github.com/stacksjs/stacks/issues/3162), [#2928](https://github.com/stacksjs/stacks/issues/2928))
+- **dashboard**: model search LIKEs only text columns, so it works on PostgreSQL ([d4b1164](https://github.com/stacksjs/stacks/commit/d4b1164)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3161](https://github.com/stacksjs/stacks/issues/3161))
+- **dashboard**: /api/dashboard/stats stops 500ing when commerce is off ([46a0fd3](https://github.com/stacksjs/stacks/commit/46a0fd3)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3160](https://github.com/stacksjs/stacks/issues/3160), [#2488](https://github.com/stacksjs/stacks/issues/2488))
+- **actions**: buddy prepublish builds Stacks with the build/stacks action ([85c7e37](https://github.com/stacksjs/stacks/commit/85c7e37)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3159](https://github.com/stacksjs/stacks/issues/3159))
+- **buddy**: exit non-zero when a build or prepublish action fails ([b502db2](https://github.com/stacksjs/stacks/commit/b502db2)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3158](https://github.com/stacksjs/stacks/issues/3158))
+- **database**: refuse to inline a string with a backslash in sql.literal() ([0d9664c](https://github.com/stacksjs/stacks/commit/0d9664c)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3157](https://github.com/stacksjs/stacks/issues/3157))
+- **newsletter**: treat an address as one person whatever its case ([6df9dd0](https://github.com/stacksjs/stacks/commit/6df9dd0)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3155](https://github.com/stacksjs/stacks/issues/3155))
+- **newsletter**: write unsubscribed_at with sqlDateTime(), so unsubscribing works on MySQL ([a55b71a](https://github.com/stacksjs/stacks/commit/a55b71a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3156](https://github.com/stacksjs/stacks/issues/3156))
+- **analytics**: judge self-referrals against the site's host, not rpx's upstream ([faa6635](https://github.com/stacksjs/stacks/commit/faa6635)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3154](https://github.com/stacksjs/stacks/issues/3154))
+- **dns**: read every declared name from public DNS, and keep a www alias an alias ([2570f75](https://github.com/stacksjs/stacks/commit/2570f75)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3153](https://github.com/stacksjs/stacks/issues/3153))
+- **scheduler**: onOneServer() claims the slot, so a quick task runs once per slot ([a6e7734](https://github.com/stacksjs/stacks/commit/a6e7734)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3152](https://github.com/stacksjs/stacks/issues/3152))
+- **scheduler**: runMissed() runs each missed slot through the live guards ([8bbcd4c](https://github.com/stacksjs/stacks/commit/8bbcd4c)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3151](https://github.com/stacksjs/stacks/issues/3151))
+- **realtime**: emit() replaces a channel's prefix instead of stacking two ([73d136d](https://github.com/stacksjs/stacks/commit/73d136d)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3150](https://github.com/stacksjs/stacks/issues/3150))
+- **realtime**: replay sequence numbers keep rising across a restart ([2d25937](https://github.com/stacksjs/stacks/commit/2d25937)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3149](https://github.com/stacksjs/stacks/issues/3149))
+- **mobile**: reject builders that lack requested sensor support ([98add71](https://github.com/stacksjs/stacks/commit/98add71)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ✅ Tests
+
+- **scheduler**: record one-server runs through the fixture's own connection ([04fe379](https://github.com/stacksjs/stacks/commit/04fe379)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3152](https://github.com/stacksjs/stacks/issues/3152))
+- **scheduler**: report each server's output when the one-server run count is wrong ([3e57982](https://github.com/stacksjs/stacks/commit/3e57982)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3152](https://github.com/stacksjs/stacks/issues/3152))
+- **scheduler**: shift the one-server fixture's clock after its imports ([d0e9311](https://github.com/stacksjs/stacks/commit/d0e9311)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3152](https://github.com/stacksjs/stacks/issues/3152))
+- **mobile**: the capability maps must cover every enable flag Craft declares ([f3b9489](https://github.com/stacksjs/stacks/commit/f3b9489)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3147](https://github.com/stacksjs/stacks/issues/3147), [#3146](https://github.com/stacksjs/stacks/issues/3146), [#3148](https://github.com/stacksjs/stacks/issues/3148))
+
+## Contributors
+
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.453...v0.75.454)
 
 ## 🐛 Bug Fixes
