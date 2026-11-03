@@ -45,10 +45,14 @@ for (const dialect of ['postgres', 'mysql'] as const) {
           const [code, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
           expect(code, `${stdout}\n${stderr}`).toBe(0)
           expect(stdout).toContain(`server ${serverName} done`)
+          output.push(`--- server ${serverName} (${mode})\n${stdout}${stderr}`)
           return stdout
         }
         finally { clearTimeout(watchdog) }
       }
+      // Each server's own output, for an assertion that fails without either
+      // process exiting non-zero.
+      const output: string[] = []
       const runs = async (): Promise<string[]> => {
         const rows = await database!.unsafe('SELECT server FROM runs') as Array<{ server: string }>
         await database!.unsafe('DELETE FROM runs')
@@ -61,13 +65,13 @@ for (const dialect of ['postgres', 'mysql'] as const) {
       // the claim, both ran it.
       await server('A', 'tick', 'nightly-billing', slot)
       await server('B', 'tick', 'nightly-billing', slot)
-      expect(await runs()).toEqual(['A'])
+      expect(await runs(), output.join('\n')).toEqual(['A'])
 
       // A catch-up on two servers that booted one after the other: the second
       // replays nothing the first already ran.
       expect(await server('A', 'missed', 'digest', slot)).toContain('fired 3')
       expect(await server('B', 'missed', 'digest', slot)).toContain('fired 0')
-      expect(await runs()).toEqual(['A', 'A', 'A'])
+      expect(await runs(), output.join('\n')).toEqual(['A', 'A', 'A'])
 
       const claims = await database.unsafe('SELECT COUNT(*) AS n FROM scheduler_claims') as Array<{ n: number | string | bigint }>
       expect(Number(claims[0]!.n)).toBe(4)

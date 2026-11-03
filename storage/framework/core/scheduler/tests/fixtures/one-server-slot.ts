@@ -41,9 +41,15 @@ Date.now = () => realNow() + shift
 
 const schedule = new Schedule(async () => {
   await db.unsafe(`INSERT INTO runs (server) VALUES ('${server}')`).execute()
-}).withName(task).everyMinute().onOneServer()
+  console.log(`server ${server} ran ${task}`)
+}).withName(task).everyMinute().onOneServer().withErrorHandler((error) => {
+  console.log(`server ${server} failed: ${error.stack ?? error.message}`)
+})
 
 if (mode === 'tick') {
+  await Promise.resolve()
+  const next = Schedule.listJobs().find(job => job.name === task)?.nextRun
+  console.log(`server ${server} next run ${next?.toISOString() ?? 'none'} for slot ${new Date(slot).toISOString()}`)
   await Bun.sleep(3000)
 }
 else {
