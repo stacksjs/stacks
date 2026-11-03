@@ -1,5 +1,25 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.449...v0.75.450)
+
+## 🐛 Bug Fixes
+
+- **auth**: replace and throttle all recovery credential case variants ([2b4550f](https://github.com/stacksjs/stacks/commit/2b4550f)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **ui**: declare UTF-8 for the avatar browser fixture ([ea41b52](https://github.com/stacksjs/stacks/commit/ea41b52)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- preserve the upstream browser fixture correction ([d092fc9](https://github.com/stacksjs/stacks/commit/d092fc9)) _(by Chris Breuer <chris@stacksjs.com>)_
+- refresh the recovery storage source fingerprint ([f97ac24](https://github.com/stacksjs/stacks/commit/f97ac24)) _(by Chris Breuer <chris@stacksjs.com>)_
+- integrate the concurrent framework release ([3e676a1](https://github.com/stacksjs/stacks/commit/3e676a1)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.448...v0.75.449)
 
 ## ✨ Features
