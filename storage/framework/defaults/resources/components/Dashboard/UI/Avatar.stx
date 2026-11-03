@@ -54,7 +54,7 @@ function getInitials(fullName: string) {
 const initials = suppliedInitials || getInitials(name)
 
 // Background colors for initials (consistent based on name)
-const bgColors = [
+export const bgColors = [
   'bg-red-500/15 text-red-600 dark:bg-red-400/20 dark:text-red-400',
   'bg-orange-500/15 text-orange-600 dark:bg-orange-400/20 dark:text-orange-400',
   'bg-yellow-500/15 text-yellow-600 dark:bg-yellow-400/20 dark:text-yellow-400',
@@ -67,6 +67,7 @@ const bgColors = [
   'bg-pink-500/15 text-pink-600 dark:bg-pink-400/20 dark:text-pink-400'
 ]
 
+defineClientPayload({ bgColors })
 </script>
 <script client>
 const avatarSrc = useReactiveProp('src', {{ src }})
@@ -85,7 +86,7 @@ const avatarColor = derived(() => {
   if (!name) return 'bg-black/[0.06] text-neutral-500 dark:bg-white/10 dark:text-neutral-400'
   let hash = 0
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
-  const colors = {{ bgColors }}
+  const colors = bgColors
   return colors[Math.abs(hash) % colors.length]
 })
 </script>
