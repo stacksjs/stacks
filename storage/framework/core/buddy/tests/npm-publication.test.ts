@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import { createHash } from 'node:crypto'
 import { acceptedPublications, publicationMatchesOriginal, verifyAcceptedPublications } from '../../../../../.github/scripts/npm-publication'
-import { priorPublicationJobIds, priorPublicationReceipts } from '../../../../../.github/scripts/resume-npm-publication'
+import { attemptJobs, priorPublicationJobIds, priorPublicationReceipts, readGitHub } from '../../../../../.github/scripts/resume-npm-publication'
 
 const archive = new TextEncoder().encode('original packed release bytes')
 const receipt = {
@@ -140,4 +140,47 @@ test('only completed publication jobs from the exact source and attempt supply r
   expect(() => ids([job, job])).toThrow('Ambiguous')
   for (const changed of [{ run_id: 4 }, { run_attempt: 2 }, { head_sha: 'b'.repeat(40) }, { status: 'in_progress' }])
     expect(() => ids([{ ...job, ...changed }])).toThrow('does not match')
+})
+
+test('a rerun reads the earlier job log through its blob redirect, escape sequences and all', async () => {
+  // gh 2.103 refused exactly this body ("the response contains terminal escape
+  // sequences"), which blocked the v0.75.458 rerun before any verification.
+  const log = '2026-11-03T18:10:41.3474562Z \u001B[32m✓ Published @stacksjs/defaults@0.75.458 with provenance\u001B[0m\n'
+  const calls: Array<{ url: string, auth: string | null, redirect?: RequestRedirect }> = []
+  const read = async (url: string, init: RequestInit) => {
+    calls.push({ url, auth: new Headers(init.headers).get('authorization'), redirect: init.redirect })
+    return url.startsWith('https://api.github.com/')
+      ? new Response(null, { status: 302, headers: { location: 'https://results.blob.core.windows.net/logs/job.txt?sig=x' } })
+      : new Response(log)
+  }
+  expect(await readGitHub('repos/stacksjs/stacks/actions/jobs/7/logs', 'token-1', read)).toBe(log)
+  expect(calls).toEqual([
+    { url: 'https://api.github.com/repos/stacksjs/stacks/actions/jobs/7/logs', auth: 'Bearer token-1', redirect: 'manual' },
+    { url: 'https://results.blob.core.windows.net/logs/job.txt?sig=x', auth: null, redirect: 'follow' },
+  ])
+})
+
+test('an unreadable history names the request and GitHub\'s reason instead of hiding it', async () => {
+  const denied = async () => new Response(JSON.stringify({ message: 'Resource not accessible by integration' }), { status: 403 })
+  await expect(readGitHub('repos/a/b/actions/jobs/7/logs', 't', denied))
+    .rejects.toThrow('GET repos/a/b/actions/jobs/7/logs: HTTP 403 Resource not accessible by integration); no publication resumed')
+  const insecure = async () => new Response(null, { status: 302, headers: { location: 'http://example.com/log' } })
+  await expect(readGitHub('repos/a/b/actions/jobs/7/logs', 't', insecure)).rejects.toThrow('without an https download location')
+  const offline = async () => { throw new Error('connect ECONNREFUSED') }
+  await expect(readGitHub('repos/a/b/actions/jobs/7/logs', 't', offline)).rejects.toThrow('ECONNREFUSED')
+  await expect(readGitHub('https://evil.example/x', 't', denied)).rejects.toThrow('not a GitHub API path')
+})
+
+test('every page of an attempt\'s jobs is read', async () => {
+  const job = (id: number) => ({ id, name: `job ${id}`, run_id: 2, run_attempt: 1, head_sha: 'a'.repeat(40), status: 'completed', conclusion: 'success' })
+  const all = Array.from({ length: 130 }, (_, index) => job(index + 1))
+  const requested: string[] = []
+  const jobs = await attemptJobs('a/b', 2, 1, async (endpoint) => {
+    requested.push(endpoint)
+    const page = Number(new URL(endpoint, 'https://api.github.com/').searchParams.get('page'))
+    return JSON.stringify({ total_count: all.length, jobs: all.slice((page - 1) * 100, page * 100) })
+  })
+  expect(jobs.map(entry => entry.id)).toEqual(all.map(entry => entry.id))
+  expect(requested).toEqual(['repos/a/b/actions/runs/2/attempts/1/jobs?per_page=100&page=1', 'repos/a/b/actions/runs/2/attempts/1/jobs?per_page=100&page=2'])
+  await expect(attemptJobs('a/b', 2, 1, async () => '{"message":"x"}')).rejects.toThrow('Invalid publication history')
 })
