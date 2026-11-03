@@ -17,17 +17,12 @@ for (const dialect of ['postgres', 'mysql'] as const) {
     const name = `stacks_one_server_${crypto.randomUUID().replaceAll('-', '')}`
     const quoted = dialect === 'mysql' ? `\`${name}\`` : `"${name}"`
     const admin = new SQL(url.href)
-    const own = new URL(url.href)
-    own.pathname = `/${name}`
     let created = false
-    let database: SQL | undefined
     try {
       const config = join(directory, 'bunfig.toml')
       await writeFile(config, 'preload = []\n')
       await admin.unsafe(`CREATE DATABASE ${quoted}`)
       created = true
-      database = new SQL(own.href)
-      await database.unsafe('CREATE TABLE runs (server VARCHAR(8) NOT NULL)')
 
       const server = async (serverName: 'A' | 'B', mode: 'tick' | 'missed', task: string, slot: number): Promise<string> => {
         const child = Bun.spawn([process.execPath, `--config=${config}`, '--no-env-file', join(import.meta.dir, 'fixtures/one-server-slot.ts')], {
@@ -53,32 +48,28 @@ for (const dialect of ['postgres', 'mysql'] as const) {
       // Each server's own output, for an assertion that fails without either
       // process exiting non-zero.
       const output: string[] = []
-      const runs = async (): Promise<string[]> => {
-        const rows = await database!.unsafe('SELECT server FROM runs') as Array<{ server: string }>
-        await database!.unsafe('DELETE FROM runs')
-        return rows.map(row => row.server).sort()
-      }
+      // What the last server read back: every run of `task`, by any server.
+      const reported = (stdout: string, label: string): string =>
+        new RegExp(`^${label}: (.*)$`, 'm').exec(stdout)?.[1] ?? '(not reported)'
       const slot = (Math.floor(Date.now() / 60_000) + 10) * 60_000
 
       // The live tick for the same slot, B's landing after A's task ended and
       // released the lock, as a server a few hundred ms behind does. Before
       // the claim, both ran it.
       await server('A', 'tick', 'nightly-billing', slot)
-      await server('B', 'tick', 'nightly-billing', slot)
-      expect(await runs(), output.join('\n')).toEqual(['A'])
+      const tick = await server('B', 'tick', 'nightly-billing', slot)
+      expect(reported(tick, 'runs nightly-billing'), output.join('\n')).toBe('A')
 
       // A catch-up on two servers that booted one after the other: the second
       // replays nothing the first already ran.
       expect(await server('A', 'missed', 'digest', slot)).toContain('fired 3')
-      expect(await server('B', 'missed', 'digest', slot)).toContain('fired 0')
-      expect(await runs(), output.join('\n')).toEqual(['A', 'A', 'A'])
-
-      const claims = await database.unsafe('SELECT COUNT(*) AS n FROM scheduler_claims') as Array<{ n: number | string | bigint }>
-      expect(Number(claims[0]!.n)).toBe(4)
+      const missed = await server('B', 'missed', 'digest', slot)
+      expect(missed, output.join('\n')).toContain('fired 0')
+      expect(reported(missed, 'runs digest'), output.join('\n')).toBe('A,A,A')
+      expect(reported(missed, 'claims'), output.join('\n')).toBe('4')
     }
     finally {
       try {
-        await database?.close()
         if (created) await admin.unsafe(`DROP DATABASE ${quoted}${dialect === 'postgres' ? ' WITH (FORCE)' : ''}`)
       }
       finally {

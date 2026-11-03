@@ -29,6 +29,11 @@ initializeDbConfig({ app: { env: 'test' }, database: {
   queryLogging: { enabled: false },
 } })
 
+// The runs are recorded through this process's own connection, the one the
+// claims use. The test used to create the table through a URL of its own,
+// and on CI that URL named another database, so every insert failed.
+await db.unsafe('CREATE TABLE IF NOT EXISTS runs (server VARCHAR(8) NOT NULL, task VARCHAR(32) NOT NULL)').execute()
+
 const { Schedule } = await import('../../src/schedule')
 ;(Schedule as unknown as { lockDir: string }).lockDir = mkdtempSync(join(tmpdir(), 'one-server-locks-'))
 
@@ -40,7 +45,7 @@ const shift = (mode === 'tick' ? slot - 150 : slot + 30_000) - realNow()
 Date.now = () => realNow() + shift
 
 const schedule = new Schedule(async () => {
-  await db.unsafe(`INSERT INTO runs (server) VALUES ('${server}')`).execute()
+  await db.unsafe(`INSERT INTO runs (server, task) VALUES ('${server}', '${task}')`).execute()
   console.log(`server ${server} ran ${task}`)
 }).withName(task).everyMinute().onOneServer().withErrorHandler((error) => {
   console.log(`server ${server} failed: ${error.stack ?? error.message}`)
@@ -56,5 +61,12 @@ else {
   await Promise.resolve()
   console.log(`fired ${await schedule.runMissed({ since: slot - 3 * 60_000 })}`)
 }
+// Everything recorded so far, by every server, for the test to check.
+const runs = await db.unsafe(`SELECT server FROM runs WHERE task = '${task}'`).execute() as Array<{ server: string }>
+console.log(`runs ${task}: ${runs.map(row => row.server).sort().join(',')}`)
+// A scheduler that claims nothing has no table to count.
+const claims = await db.unsafe('SELECT COUNT(*) AS n FROM scheduler_claims').execute()
+  .then(rows => String(Number((rows as Array<{ n: number | string | bigint }>)[0]!.n)), () => 'no table')
+console.log(`claims: ${claims}`)
 console.log(`server ${server} done`)
 process.exit(0)
