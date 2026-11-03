@@ -1,5 +1,5 @@
 import type { SubscribeOptions, SubscribeResult, UnsubscribeResult } from './types'
-import { db, sqlDateTime } from '@stacksjs/database/runtime'
+import { db, getDatabaseDialect, sqlDateTime, sqlHelpers } from '@stacksjs/database/runtime'
 import { lists } from './lists'
 
 /**
@@ -12,6 +12,60 @@ import { lists } from './lists'
  * unsubscribing from "Weekly Digest" doesn't accidentally drop "Order
  * Confirmations".
  */
+
+/** An address as one person: trimmed and lowercased, the way it is stored. */
+export function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase()
+}
+
+/**
+ * Every subscriber row for an address, oldest first, whatever case each was
+ * stored in.
+ *
+ * Addresses used to be stored as typed while the sync looked them up
+ * lowercased, so `Alice@Example.com` and `alice@example.com` were two people:
+ * a sync re-subscribed someone who had opted out under the other spelling,
+ * and a bounce for one spelling left the other on the list
+ * (stacksjs/stacks#3155). New rows are stored normalized; rows already stored
+ * with capitals are matched here, so they still count as the same person.
+ * The address is bound, never inlined.
+ */
+export async function subscriberIdsForEmail(email: string): Promise<number[]> {
+  const param = sqlHelpers(getDatabaseDialect()).param(1)
+  const rows = await db.unsafe(
+    `SELECT id FROM subscribers WHERE lower(email) = ${param} ORDER BY id`,
+    [normalizeEmail(email)],
+  ) as unknown as Array<{ id: number | string }>
+  return rows.map(row => Number(row.id))
+}
+
+/** The list rows for any of `subscriberIds` on `listId`. */
+async function listMemberships(subscriberIds: number[], listId: number): Promise<Array<{ id: number, uuid: string, status: string }>> {
+  const found: Array<{ id: number, uuid: string, status: string }> = []
+  for (const subscriberId of subscriberIds) {
+    const row = await db
+      .selectFrom('email_list_subscribers')
+      .selectAll()
+      .where('subscriber_id', '=', subscriberId)
+      .where('email_list_id', '=', listId)
+      .executeTakeFirst() as { id: number, uuid: string, status: string } | undefined
+    if (row)
+      found.push(row)
+  }
+  return found
+}
+
+/**
+ * Where an address stands on a list: unsubscribed when any of its rows there
+ * is, subscribed when one is, otherwise null. An opt-out under one spelling
+ * stands for the person.
+ */
+export async function listStatusForEmail(email: string, listId: number): Promise<string | null> {
+  const memberships = await listMemberships(await subscriberIdsForEmail(email), listId)
+  if (memberships.some(row => row.status === 'unsubscribed'))
+    return 'unsubscribed'
+  return memberships.find(row => row.status === 'subscribed')?.status ?? memberships[0]?.status ?? null
+}
 
 async function resolveListId(listRef: string | number | undefined): Promise<number> {
   if (listRef == null) {
@@ -32,37 +86,26 @@ export async function subscribe(email: string, options: SubscribeOptions = {}): 
   if (!email || !email.includes('@'))
     throw new Error('[newsletter] subscribe() requires a valid email address')
 
+  email = normalizeEmail(email)
   const listId = await resolveListId(options.list)
   const source = options.source ?? 'api'
 
   // Upsert the Subscriber row — `subscribers.email` is unique, so the
   // same address shared across multiple lists points at one row.
-  let subscriber = await db
-    .selectFrom('subscribers')
-    .selectAll()
-    .where('email', '=', email)
-    .executeTakeFirst() as { id: number } | undefined
+  let subscriberIds = await subscriberIdsForEmail(email)
 
-  if (!subscriber) {
+  if (!subscriberIds.length) {
     await db
       .insertInto('subscribers')
       .values({ uuid: crypto.randomUUID(), email, status: 'subscribed', source })
       .execute()
 
-    subscriber = await db
-      .selectFrom('subscribers')
-      .selectAll()
-      .where('email', '=', email)
-      .executeTakeFirst() as { id: number }
+    subscriberIds = await subscriberIdsForEmail(email)
   }
+  const subscriberId = subscriberIds[0]!
 
   // Pivot row: one per (subscriber, list)
-  const existing = await db
-    .selectFrom('email_list_subscribers')
-    .selectAll()
-    .where('subscriber_id', '=', Number(subscriber.id))
-    .where('email_list_id', '=', listId)
-    .executeTakeFirst() as { id: number, uuid: string, status: string } | undefined
+  const existing = (await listMemberships(subscriberIds, listId))[0]
 
   if (existing) {
     if (existing.status === 'unsubscribed') {
@@ -87,7 +130,7 @@ export async function subscribe(email: string, options: SubscribeOptions = {}): 
     .insertInto('email_list_subscribers')
     .values({
       uuid,
-      subscriber_id: Number(subscriber.id),
+      subscriber_id: subscriberId,
       email_list_id: listId,
       status: 'subscribed',
       source,
@@ -148,21 +191,15 @@ export async function unsubscribe(token: string): Promise<UnsubscribeResult> {
 
 /** Bulk unsubscribe by email — used by bounce/complaint handlers. */
 export async function unsubscribeAll(email: string): Promise<number> {
-  const sub = await db
-    .selectFrom('subscribers')
-    .select(['id'])
-    .where('email', '=', email)
-    .executeTakeFirst() as { id: number } | undefined
-
-  if (!sub)
-    return 0
-
-  const pivots = await db
-    .selectFrom('email_list_subscribers')
-    .select(['id'])
-    .where('subscriber_id', '=', Number(sub.id))
-    .where('status', '=', 'subscribed')
-    .execute() as Array<{ id: number }>
+  const pivots: Array<{ id: number }> = []
+  for (const subscriberId of await subscriberIdsForEmail(email)) {
+    pivots.push(...await db
+      .selectFrom('email_list_subscribers')
+      .select(['id'])
+      .where('subscriber_id', '=', subscriberId)
+      .where('status', '=', 'subscribed')
+      .execute() as Array<{ id: number }>)
+  }
 
   for (const pivot of pivots) {
     await db

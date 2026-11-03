@@ -1,5 +1,5 @@
 import { db } from '@stacksjs/database/runtime'
-import { subscribe } from './subscriptions'
+import { listStatusForEmail, normalizeEmail, subscribe } from './subscriptions'
 
 /**
  * Putting an audience you already have onto a list.
@@ -101,27 +101,14 @@ export async function syncListSubscribers(
 
   for (const contact of contacts) {
     const raw = String(contact.email ?? '')
-    const email = raw.trim().toLowerCase()
+    const email = normalizeEmail(raw)
 
-    let listStatus: string | null = null
-    if (looksLikeEmail(email) && !seen.has(email)) {
-      const subscriber = await db
-        .selectFrom('subscribers')
-        .select(['id'])
-        .where('email', '=', email)
-        .executeTakeFirst() as { id: number } | undefined
-
-      if (subscriber) {
-        const pivot = await db
-          .selectFrom('email_list_subscribers')
-          .select(['status'])
-          .where('subscriber_id', '=', Number(subscriber.id))
-          .where('email_list_id', '=', await resolveId(list))
-          .executeTakeFirst() as { status: string } | undefined
-
-        listStatus = pivot?.status ?? null
-      }
-    }
+    // Matched whatever case the address was stored in: a signup typed with
+    // capitals that later unsubscribed used to be invisible to this lookup,
+    // and the sync subscribed it again (stacksjs/stacks#3155).
+    const listStatus = looksLikeEmail(email) && !seen.has(email)
+      ? await listStatusForEmail(email, await resolveId(list))
+      : null
 
     const decision = syncDecision(email, {
       duplicate: seen.has(email),

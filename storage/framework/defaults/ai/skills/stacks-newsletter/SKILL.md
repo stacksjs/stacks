@@ -19,6 +19,13 @@ subscriber updates. Preserve one-click unsubscribe headers and suppression.
 List/campaign helpers own their schema and state transitions; direct column
 writes can bypass transition guards or schedule/idempotency behavior.
 
+An address is one person whatever its case: subscribe() stores it trimmed and
+lowercased (normalizeEmail), and subscribe(), unsubscribeAll() and
+syncListSubscribers() find rows case-insensitively, so rows stored with capitals
+before that still match. A sync skips an address whose row on the list is
+unsubscribed under any spelling. subscriberIdsForEmail(email) and
+listStatusForEmail(email, listId) are the lookups they share.
+
 Campaign delivery snapshots, dispatch keys and state conflict errors protect
 retries and concurrent queue requests. Scheduled work uses the package's actual
 transition and readiness checks. DeliveryVariant allocation and
