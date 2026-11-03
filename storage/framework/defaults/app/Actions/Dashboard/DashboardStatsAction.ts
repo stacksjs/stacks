@@ -7,6 +7,29 @@ interface DashboardStatDefinition {
   icon: string
   iconBg: string
   count: () => Promise<number>
+  /** False when the model's feature is off, so the card is left out. */
+  available?: () => boolean
+}
+
+/** A model whose feature is off answers `getDefinition` with nothing. */
+function loaded(model: unknown): boolean {
+  return Boolean((model as { getDefinition?: () => unknown } | undefined)?.getDefinition?.())
+}
+
+/**
+ * Settle every available card's count, each on its own.
+ *
+ * A count runs inside a promise, so one that throws before it returns one -
+ * a query on a model whose feature is off throws the moment it is touched -
+ * becomes that card's failure, not the request's. It used to be called
+ * straight from a map, so with commerce off (the default since #2488) the
+ * first Order card threw out of the action and the whole endpoint answered
+ * 500.
+ */
+export async function collectDashboardStats(definitions: DashboardStatDefinition[]) {
+  const shown = definitions.filter(definition => definition.available?.() ?? true)
+  const results = await Promise.allSettled(shown.map(definition => Promise.resolve().then(definition.count)))
+  return { shown, results }
 }
 
 export function formatDashboardStat(
@@ -39,24 +62,27 @@ export default new Action({
         icon: 'i-hugeicons-shopping-cart-02',
         iconBg: 'success',
         count: () => Order.where('status', '!=', 'cancelled').count(),
+        available: () => loaded(Order),
       },
       {
         title: 'Blog Posts',
         icon: 'i-hugeicons-document-validation',
         iconBg: 'info',
         count: () => Post.count(),
+        available: () => loaded(Post),
       },
       {
         title: 'Customers',
         icon: 'i-hugeicons-user-multiple',
         iconBg: 'warning',
         count: () => Customer.count(),
+        available: () => loaded(Customer),
       },
     ]
 
-    const results = await Promise.allSettled(definitions.map(definition => definition.count()))
-    const stats = definitions.map((definition, index) => {
-      const { count: _count, ...metadata } = definition
+    const { shown, results } = await collectDashboardStats(definitions)
+    const stats = shown.map((definition, index) => {
+      const { count: _count, available: _available, ...metadata } = definition
       // allSettled returns one result per input, but indexed access is typed
       // as possibly missing; a rejected placeholder keeps the shape honest.
       const result = results[index] ?? { status: 'rejected' as const, reason: new Error('missing result') }
@@ -64,11 +90,11 @@ export default new Action({
     })
     const issues = results.flatMap((result, index) => result.status === 'rejected'
       ? [{
-          source: definitions[index]?.title ?? 'Unknown',
+          source: shown[index]?.title ?? 'Unknown',
           message: dashboardOperationalIssue(
             result.reason,
-            `${definitions[index]?.title ?? 'Dashboard'} data could not be loaded.`,
-            `DashboardStatsAction.${(definitions[index]?.title ?? 'unknown').toLowerCase().replaceAll(' ', '-')}`,
+            `${shown[index]?.title ?? 'Dashboard'} data could not be loaded.`,
+            `DashboardStatsAction.${(shown[index]?.title ?? 'unknown').toLowerCase().replaceAll(' ', '-')}`,
           ),
         }]
       : [])
