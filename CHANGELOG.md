@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.457...v0.75.458)
+
+## ✨ Features
+
+- **mobile**: generate the launch splash from the app's logo and colours ([f9acdd1](https://github.com/stacksjs/stacks/commit/f9acdd1)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.456...v0.75.457)
 
 ## 🐛 Bug Fixes
