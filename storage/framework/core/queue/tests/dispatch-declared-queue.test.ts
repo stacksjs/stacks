@@ -16,3 +16,16 @@ for (const dialect of ['sqlite', 'postgres'] as const) {
     })
   }, 25000)
 }
+
+test.skipIf(!process.env.REDIS_URL)('redis: by-name jobs inherit their declared queue unless explicitly overridden', async () => {
+  await withDisposableDatabase('sqlite', async database => {
+    await mkdir(join(database.directory, 'config'), { recursive: true })
+    await writeFile(join(database.directory, 'config/queue.ts'), `export default { default: 'redis', connections: { redis: { driver: 'redis', prefix: 'declared-queue-${process.pid}', redis: { url: process.env.REDIS_URL } } } }`)
+    await mkdir(join(database.directory, 'app/Jobs'), { recursive: true })
+    await writeFile(join(database.directory, 'app/Jobs/RoutedJob.ts'), `export default { name: 'Routed', queue: 'notifications', handle() { throw Error('dispatch must not execute a queued handler') } }`)
+    await writeFile(join(database.directory, 'app/Jobs/PlainJob.ts'), `export default { name: 'Plain', handle() { throw Error('dispatch must not execute a queued handler') } }`)
+    assertIsolatedOk(await runIsolated(`${import.meta.dir}/fixtures/dispatch-declared-redis-queue.ts`, {
+      cwd: database.directory, env: { ...database.env, APP_ENV: 'test', QUEUE_DRIVER: 'redis', REDIS_URL: process.env.REDIS_URL }, envFile: false, preload: [], timeoutMs: 15000,
+    }), 'declared redis queue dispatch OK')
+  })
+}, 25000)
