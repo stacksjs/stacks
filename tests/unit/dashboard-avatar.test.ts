@@ -89,7 +89,7 @@ test.skipIf(!findChrome())('updates the same Avatar in a real browser', async ()
     const html = await processDirectives(source, {}, join(root, 'Page.stx'), { ...defaultConfig, root, componentsDir: componentDirectory, cache: false }, new Set())
     const image = Bun.file(resolve(import.meta.dir, '../../public/assets/images/coming-soon-dawn.svg'))
     server = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch(request) {
-      return new URL(request.url).pathname === '/' ? new Response(html, { headers: { 'content-type': 'text/html' } }) : new Response(image, { headers: { 'content-type': 'image/svg+xml' } })
+      return new URL(request.url).pathname === '/' ? new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } }) : new Response(image, { headers: { 'content-type': 'image/svg+xml' } })
     } })
     browser = await launch()
     const { cdp } = browser
