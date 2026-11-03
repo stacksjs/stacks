@@ -12,11 +12,14 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { Broadcast, broadcast, createServer, getServer, stopServer } from '../src'
 
-// ts-broadcasting reads `port || 6001`, so 0 cannot ask for a free port.
-const port = 46_000 + Math.floor(Math.random() * 10_000)
+// The listener reserves its own ephemeral port atomically; no random selection
+// or probe can race another test or service.
+let port: number
 
 beforeAll(async () => {
-  await createServer({ host: '127.0.0.1', port } as never)
+  const server = await createServer({ host: '127.0.0.1', port: 0 })
+  if (server.port === undefined) throw new Error('The broadcast listener did not bind')
+  port = server.port
 })
 
 afterAll(async () => {
