@@ -175,7 +175,11 @@ export function build(buddy: CLI): void {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       log.debug('Running `buddy build:cli` ...', options)
-      await runAction(Action.BuildCli, options)
+      // Each of these used to await runAction() and drop the Result, so a
+      // failed build exited 0, as build:functions did before it
+      // (stacksjs/stacks#3158).
+      if (!await runBuildAction(Action.BuildCli, 'Buddy CLI', options))
+        process.exit(ExitCode.FatalError)
     })
 
   buddy
@@ -186,7 +190,8 @@ export function build(buddy: CLI): void {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       log.debug('Running `buddy build:server` ...', options)
-      await runAction(Action.BuildServer, options)
+      if (!await runBuildAction(Action.BuildServer, 'server', options))
+        process.exit(ExitCode.FatalError)
     })
 
   buddy
@@ -242,7 +247,8 @@ export function build(buddy: CLI): void {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       log.debug('Running `buddy build:frontend` ...', options)
-      await runAction(Action.BuildViews, options)
+      if (!await runBuildAction(Action.BuildViews, 'frontend', options))
+        process.exit(ExitCode.FatalError)
     })
 
   buddy
@@ -255,7 +261,8 @@ export function build(buddy: CLI): void {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       log.debug('Running `buddy build:docs` ...', options)
-      await runAction(Action.BuildDocs, options)
+      if (!await runBuildAction(Action.BuildDocs, 'documentation', options))
+        process.exit(ExitCode.FatalError)
     })
 
   buddy
@@ -266,7 +273,8 @@ export function build(buddy: CLI): void {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       log.debug('Running `buddy build:frontend-static` ...', options)
-      await runAction(Action.BuildFrontendStatic, options)
+      if (!await runBuildAction(Action.BuildFrontendStatic, 'static frontend', options))
+        process.exit(ExitCode.FatalError)
     })
 
   buddy
