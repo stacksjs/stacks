@@ -741,9 +741,21 @@ use the OAuth token endpoint and the registered client's protocol authentication
 
 For high-entropy reset credentials, `mintPasswordResetToken()` returns `{ token, digest }`.
 Store the digest in `password_resets.token`, never the plaintext.
+Prefer `issuePasswordResetToken(email, { throttleMs?, expiresAt?, eligible? })` when
+issuing for an existing account. It locks that account before checking its current
+email, the synchronous application eligibility predicate and the saved throttle.
+It atomically replaces the digest and returns `{ issued: true, token, userId, email }`
+or `{ issued: false }`. The latter deliberately combines unknown, ineligible and
+throttled accounts; recovery endpoints must keep their public response generic.
+Only send the returned credential after issuance commits.
+Treat its value as opaque. It is bound to the issuing account, so reassigning an
+email address cannot let an old recovery reset the address's new account.
 `consumePasswordResetToken(token, async claim => { ... })` locks the owner and token,
 checks the stored expiry and consumes it in the same transaction as callback writes.
 `claim` is `{ userId, email, hasExplicitExpiry }`; result is `{ consumed: false }` or
 `{ consumed: true, value }`. Failures roll back the credential and account changes.
 Use database work only in the callback, and send notifications after commit.
+The credential is consumed before the callback, so it composes with
+`revokeAccountCredentials(claim.userId)`. That sweep also removes any pending
+password-reset links; changing a password must retire recovery credentials too.
 The existing `passwordResets(email)` flow supports email-addressed bcrypt tokens.

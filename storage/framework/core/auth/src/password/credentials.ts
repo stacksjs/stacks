@@ -1,9 +1,10 @@
 import { config } from '@stacksjs/config'
-import { db, enqueueAfterCommit, getDatabaseDialect, isInTransaction, mutationCount, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
+import { db, enqueueAfterCommit, getDatabaseDialect, isInTransaction, mutationCount, parseSqlDateTime, sqlDateTime, sqlHelpers } from '@stacksjs/database/runtime'
 import { mail, template } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
 import { makeHash, verifyHash } from '@stacksjs/security'
 import { withVerifiedPassword } from '../credential-version'
+import { normalizeAuthEmail } from '../credential-user'
 import { revokeMagicLinks } from '../magic-link-revocation'
 import { revokeOAuthSubjectAuthorizationState } from '../oauth-grants'
 import { sessionDestroyAll } from '../session-auth'
@@ -24,7 +25,7 @@ import { revokeTwoFactorChallenges } from '../two-factor'
  * - stamps `users.password_changed_at`, which the token paths read to refuse
  *   any token issued before it, so even a token this sweep could not see is
  *   dead;
- * - revokes pending two-factor login challenges, magic links, OAuth grants
+ * - revokes pending password resets, two-factor login challenges, magic links, OAuth grants
  *   and authorization codes, access and refresh tokens, and sessions;
  * - all in one transaction: a failure anywhere rolls the whole sweep back
  *   rather than reporting a half-revoked account.
@@ -78,6 +79,28 @@ async function mysqlPasswordStampMatches(userId: number, stamp: string): Promise
   return rows.length === 1 && (rows[0]?.stamp_matches === true || rows[0]?.stamp_matches === 1)
 }
 
+/** Old installations may not offer password recovery; other storage errors fail the sweep. */
+async function revokePendingPasswordResets(email: unknown): Promise<void> {
+  if (typeof email !== 'string' || !email) return
+  const address = normalizeAuthEmail(email)
+  try {
+    await db.transaction(async () => {
+      // The consumer accepts legacy mixed-case addresses too. Retire every
+      // case variant, not only the canonical rows written by current issuers.
+      const sql = sqlHelpers(getDatabaseDialect())
+      await db.unsafe(`DELETE FROM password_resets WHERE LOWER(email) = ${sql.param(1)}`, [address])
+      const remaining = await db.primary.unsafe(`SELECT email FROM password_resets WHERE LOWER(email) = ${sql.param(1)} LIMIT 1`, [address]) as Array<{ email: unknown }>
+      if (remaining.length) throw new Error('[auth] Password-reset credentials could not be revoked.')
+    })
+  }
+  catch (error) {
+    const message = error && typeof error === 'object' && 'message' in error && typeof error.message === 'string'
+      ? error.message : String(error)
+    if (/^(?:no such table: (?:main\.)?password_resets|relation "password_resets" does not exist|Table '(?:[^'.]+\.)?password_resets' doesn't exist)$/i.test(message)) return
+    throw error
+  }
+}
+
 
 export async function revokeAccountCredentials(userId: number, options: RevokeAccountCredentialsOptions = {}): Promise<RevokeAccountCredentialsResult> {
   if (!Number.isSafeInteger(userId) || userId <= 0)
@@ -117,6 +140,7 @@ export async function revokeAccountCredentials(userId: number, options: RevokeAc
     }
 
     // These helpers follow the active connection and nest using savepoints.
+    await revokePendingPasswordResets(owner.email)
     await revokeTwoFactorChallenges(userId)
     await revokeMagicLinks(userId)
     await revokeOAuthSubjectAuthorizationState('users', userId)
@@ -180,7 +204,7 @@ export async function changePassword(userId: number, currentPassword: string, ne
     return { success: false, reason: 'invalid-new-password' }
 
   const user = await db.primary.selectFrom('users').where('id', '=', userId)
-    .select(['id', 'email', 'name', 'password']).executeTakeFirst() as { id: number, email?: string, name?: string, password?: string } | undefined
+    .selectAll().executeTakeFirst() as { id: number, email?: string, name?: string, password?: string, updated_at?: unknown } | undefined
   if (!user)
     return { success: false, reason: 'user-not-found' }
 
@@ -192,7 +216,7 @@ export async function changePassword(userId: number, currentPassword: string, ne
   const hashed = await makeHash(newPassword, { algorithm: 'bcrypt' })
 
   const swept = await withVerifiedPassword(userId, storedHash, async () => {
-    const updated = await db.updateTable('users').set({ password: hashed } as never).where('id', '=', userId).execute()
+    const updated = await db.updateTable('users').set({ password: hashed, ...(Object.hasOwn(user, 'updated_at') ? { updated_at: sqlDateTime() } : {}) } as never).where('id', '=', userId).execute()
     if (mutationCount(updated) !== 1)
       throw new Error('[auth] changePassword could not update the password.')
     return revokeAccountCredentials(userId, {

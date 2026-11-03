@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { overridesReady } from '@stacksjs/config'
 import { db, ensureDatabaseConfigLoaded, initializeDbConfig, closeDatabaseConnection } from '@stacksjs/database/runtime'
-import { consumePasswordResetToken, mintPasswordResetToken } from '../../src/password/reset-token'
+import { consumePasswordResetToken, issuePasswordResetToken, mintPasswordResetToken } from '../../src/password/reset-token'
 
 await overridesReady
 await ensureDatabaseConfigLoaded()
@@ -14,7 +14,23 @@ initializeDbConfig({ app: { env: 'test' }, database: { default: dialect, connect
 try {
   await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY, email TEXT, password TEXT)').execute()
   await db.unsafe('CREATE TABLE password_resets (email TEXT UNIQUE, token TEXT, created_at TEXT, expires_at TEXT)').execute()
-  await db.insertInto('users').values({ id: 1, email: 'claim@example.invalid', password: 'before' }).execute()
+  await db.insertInto('users').values({ id: 1, email: 'Claim@Example.invalid', password: 'before' }).execute()
+  const issued = await Promise.all(Array.from({ length: 4 }, () => issuePasswordResetToken(' CLAIM@example.invalid ', { throttleMs: 60000 })))
+  const winner = issued.find(result => result.issued)
+  assert.equal(issued.filter(result => result.issued).length, 1)
+  assert(winner?.issued)
+  assert.equal((await consumePasswordResetToken(winner.token, async claim => claim.userId)).consumed, true)
+  assert.deepEqual(await issuePasswordResetToken('claim@example.invalid', { eligible: () => false }), { issued: false })
+  assert.equal((await db.selectFrom('password_resets').select('email').execute()).length, 0)
+  await assert.rejects(issuePasswordResetToken('claim@example.invalid', { throttleMs: Number.NaN }), RangeError)
+  await assert.rejects(issuePasswordResetToken('claim@example.invalid', { expiresAt: new Date(Date.now() - 1) }), RangeError)
+  const transferred = await issuePasswordResetToken('claim@example.invalid')
+  assert(transferred.issued)
+  await db.updateTable('users').set({ email: 'moved@example.invalid' }).where('id', '=', 1).execute()
+  await db.insertInto('users').values({ id: 2, email: 'claim@example.invalid', password: 'successor' }).execute()
+  assert.deepEqual(await consumePasswordResetToken(transferred.token, async () => assert.fail('the old address holder cannot reset its successor')), { consumed: false })
+  await db.deleteFrom('users').where('id', '=', 2).execute()
+  await db.updateTable('users').set({ email: 'claim@example.invalid' }).where('id', '=', 1).execute()
   const mint = async (expiresAt: string | null = null) => {
     const credential = mintPasswordResetToken()
     await db.deleteFrom('password_resets').execute()

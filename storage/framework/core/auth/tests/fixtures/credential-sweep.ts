@@ -11,7 +11,7 @@ assert(database)
 
 const { overridesReady } = await import('@stacksjs/config')
 await overridesReady.catch(() => undefined)
-const { closeDatabaseConnection, db, ensureDatabaseConfigLoaded, initializeDbConfig, sqlDateTime } = await import('@stacksjs/database/runtime')
+const { closeDatabaseConnection, db, ensureDatabaseConfigLoaded, initializeDbConfig, parseSqlDateTime, sqlDateTime } = await import('@stacksjs/database/runtime')
 await ensureDatabaseConfigLoaded()
 initializeDbConfig({ app: { env: 'test' }, database: { default: 'sqlite', connections: { sqlite: { database } }, queryLogging: { enabled: false } } })
 const { configureOrm, releaseOrm } = await import('bun-query-builder')
@@ -22,6 +22,7 @@ const { makeHash, verifyHash } = await import('@stacksjs/security')
 const { createToken, findToken, validateRefreshToken, revokeOtherTokens } = await import('../../src/tokens')
 const { Auth } = await import('../../src/authentication')
 const { changePassword, passwordResets, revokeAccountCredentials } = await import('../../src/password/reset')
+const { consumePasswordResetToken, mintPasswordResetToken } = await import('../../src/password/reset-token')
 const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
 
 const failures: string[] = []
@@ -82,6 +83,7 @@ try {
 
   await check('changePassword keeps the caller signed in and sweeps everything else', async () => {
     await resetUser('old-password')
+    await db.updateTable('users').set({ updated_at: sqlDateTime(new Date('2020-01-01T00:00:00Z')) } as never).where('id', '=', 42).execute()
     const current = await oldPair('this-browser')
     const other = await oldPair('attacker')
     const notified: unknown[] = []
@@ -95,6 +97,7 @@ try {
 
     const user = await db.selectFrom('users').selectAll().where('id', '=', 42).executeTakeFirstOrThrow()
     assert.ok(user.password_changed_at, 'password_changed_at is stamped')
+    assert.ok((parseSqlDateTime(user.updated_at)?.getTime() ?? 0) > Date.parse('2020-01-01T00:00:00Z'), 'changePassword updates the existing account timestamp')
     assert.ok(await verifyHash('new-password', String(user.password)))
     // The kept pair is re-bound to the stamp, so it outlives it; the other is dead.
     assert.equal(await live(current), true)
@@ -153,6 +156,58 @@ try {
     assert.deepEqual(await Auth.revokeOtherTokens(42, { exceptTokenId: keep.accessToken.id }), { keptTokenId: keep.accessToken.id })
     assert.equal(await live(keep), true)
     assert.equal(await live(drop), false)
+  })
+
+  await check('a password change retires an already issued recovery link', async () => {
+    await resetUser('old-password')
+    let recovery = ''
+    await passwordResets('ada@example.com').sendEmail({ deliver: delivery => { recovery = delivery.token } })
+    assert.ok(recovery)
+    assert.equal(await passwordResets('ada@example.com').verifyToken(recovery), true)
+    assert.deepEqual(await changePassword(42, 'old-password', 'chosen-password', { notify: false }), { success: true, keptTokenId: null })
+    assert.equal(await passwordResets('ada@example.com').verifyToken(recovery), false)
+    assert.equal((await passwordResets('ada@example.com').resetPassword(recovery, 'attacker-password')).success, false)
+    const user = await db.selectFrom('users').select('password').where('id', '=', 42).executeTakeFirstOrThrow()
+    assert.ok(await verifyHash('chosen-password', String(user.password)))
+  })
+
+  await check('a legacy mixed-case address loses its recovery link in the credential sweep', async () => {
+    await resetUser('old-password')
+    await db.updateTable('users').set({ email: 'Ada@Example.com' }).where('id', '=', 42).execute()
+    try {
+      let recovery = ''
+      await passwordResets('ada@example.com').sendEmail({ deliver: delivery => { recovery = delivery.token } })
+      assert(recovery)
+      assert.equal((await changePassword(42, 'old-password', 'chosen-password', { notify: false })).success, true)
+      assert.equal(await passwordResets('ada@example.com').verifyToken(recovery), false)
+    }
+    finally { await db.updateTable('users').set({ email: 'ada@example.com' }).where('id', '=', 42).execute() }
+  })
+
+  await check('the sweep retires a legacy indexed recovery stored under mixed-case email', async () => {
+    await resetUser('old-password')
+    const credential = mintPasswordResetToken()
+    await db.deleteFrom('password_resets').execute()
+    await db.insertInto('password_resets').values({ email: 'Ada@Example.com', token: credential.digest, created_at: sqlDateTime() } as never).execute()
+    await assert.rejects(() => consumePasswordResetToken(credential.token, async () => { throw new Error('valid before change') }), /valid before change/)
+    assert.equal((await changePassword(42, 'old-password', 'chosen-password', { notify: false })).success, true)
+    assert.deepEqual(await consumePasswordResetToken(credential.token, async () => 'old recovery still accepted'), { consumed: false })
+  })
+
+  await check('indexed recovery composes with the full sweep and restores its credential on rollback', async () => {
+    await resetUser('old-password')
+    const credential = mintPasswordResetToken()
+    await db.insertInto('password_resets').values({ email: 'ada@example.com', token: credential.digest, created_at: sqlDateTime() } as never).execute()
+    await assert.rejects(() => consumePasswordResetToken(credential.token, async claim => {
+      await revokeAccountCredentials(claim.userId)
+      throw new Error('outer recovery failed')
+    }), /outer recovery failed/)
+    const result = await consumePasswordResetToken(credential.token, async claim => {
+      await revokeAccountCredentials(claim.userId)
+      return claim.userId
+    })
+    assert.deepEqual(result, { consumed: true, value: 42 })
+    assert.deepEqual(await consumePasswordResetToken(credential.token, async () => assert.fail('spent recovery')), { consumed: false })
   })
 
   await check('password reset: deliver hook, explicit expiry and the setup purpose', async () => {
