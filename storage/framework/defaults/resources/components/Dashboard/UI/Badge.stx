@@ -1,4 +1,6 @@
 <script server>
+import { badgeClasses, badgeDotClasses } from '../../../../functions/dashboard-badge'
+
 interface BadgeProps {
   variant?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'
   size?: 'xs' | 'sm' | 'md' | 'lg'
@@ -14,53 +16,28 @@ const { variant = 'default', size = 'sm', rounded = 'full', outline = false, dot
 // `{{ text }}` rendered the validator function source into every Badge.
 // Use the slot for the badge label instead.
 
-const sizeClasses = {
-  xs: 'text-[10px] px-1.5 py-0.5',
-  sm: 'text-[11px] px-2 py-0.5',
-  md: 'text-[12px] px-2.5 py-0.5',
-  lg: 'text-[13px] px-3 py-1'
-}
-
-const solidVariants = {
-  default: 'bg-black/[0.06] text-neutral-600 dark:bg-white/10 dark:text-neutral-300',
-  primary: 'bg-blue-500/15 text-blue-600 dark:bg-blue-400/20 dark:text-blue-400',
-  success: 'bg-green-500/15 text-green-600 dark:bg-green-400/20 dark:text-green-400',
-  warning: 'bg-orange-500/15 text-orange-600 dark:bg-orange-400/20 dark:text-orange-400',
-  danger: 'bg-red-500/15 text-red-600 dark:bg-red-400/20 dark:text-red-400',
-  info: 'bg-cyan-500/15 text-cyan-600 dark:bg-cyan-400/20 dark:text-cyan-400'
-}
-
-const outlineVariants = {
-  default: 'border border-black/15 text-neutral-600 dark:border-white/20 dark:text-neutral-300',
-  primary: 'border border-blue-500/40 text-blue-600 dark:border-blue-400/50 dark:text-blue-400',
-  success: 'border border-green-500/40 text-green-600 dark:border-green-400/50 dark:text-green-400',
-  warning: 'border border-orange-500/40 text-orange-600 dark:border-orange-400/50 dark:text-orange-400',
-  danger: 'border border-red-500/40 text-red-600 dark:border-red-400/50 dark:text-red-400',
-  info: 'border border-cyan-500/40 text-cyan-600 dark:border-cyan-400/50 dark:text-cyan-400'
-}
-
-const dotColors = {
-  default: 'bg-neutral-400 dark:bg-neutral-500',
-  primary: 'bg-blue-500 dark:bg-blue-400',
-  success: 'bg-green-500 dark:bg-green-400',
-  warning: 'bg-orange-500 dark:bg-orange-400',
-  danger: 'bg-red-500 dark:bg-red-400',
-  info: 'bg-cyan-500 dark:bg-cyan-400'
-}
-
-const badgeClass = [
-  'inline-flex items-center font-medium tracking-tight',
-  'transition-all duration-150',
-  sizeClasses[size],
-  rounded === 'full' ? 'rounded-full' : 'rounded-md',
-  outline ? outlineVariants[variant] : solidVariants[variant]
-].join(' ')
-
-const dotClass = 'w-1.5 h-1.5 rounded-full mr-1.5 ' + dotColors[variant]
+// The first paint. The client script keeps both in step afterwards.
+const badgeClass = badgeClasses(variant, size, rounded, outline)
+const dotClass = badgeDotClasses(variant)
 </script>
-<span class="{{ badgeClass }}">
+<script client>
+import { badgeClasses, badgeDotClasses, badgeShowsDot } from '../../../../functions/dashboard-badge'
+
+// Read live as well: callers bind `:variant` to data that arrives after
+// hydration, and the value the server render saw never changed
+// (stacksjs/stacks#3179).
+const liveVariant = useReactiveProp('variant', 'default')
+const liveSize = useReactiveProp('size', 'sm')
+const liveRounded = useReactiveProp('rounded', 'full')
+const liveOutline = useReactiveProp('outline', false)
+const liveDot = useReactiveProp('dot', false)
+const liveBadgeClass = derived(() => badgeClasses(liveVariant(), liveSize(), liveRounded(), liveOutline()))
+const liveDotClass = derived(() => badgeDotClasses(liveVariant()))
+const showDot = derived(() => badgeShowsDot(liveDot()))
+</script>
+<span class="{{ badgeClass }}" :class="liveBadgeClass()">
     @if(dot)
-      <span class="{{ dotClass }}"></span>
+      <span class="{{ dotClass }}" :class="liveDotClass()" :if="showDot()"></span>
     @endif
     <slot />
   </span>
