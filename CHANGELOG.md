@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.469...v0.75.470)
+
+## 🐛 Bug Fixes
+
+- **testing**: retain Chrome readiness and host resource evidence ([107f4f1](https://github.com/stacksjs/stacks/commit/107f4f1)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **dashboard**: a bound Button :variant and Card :subtitle reach the page ([d3c02be](https://github.com/stacksjs/stacks/commit/d3c02be)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3180](https://github.com/stacksjs/stacks/issues/3180), [#3179](https://github.com/stacksjs/stacks/issues/3179))
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.468...v0.75.469)
 
 ## ✨ Features
