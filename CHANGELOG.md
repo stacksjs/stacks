@@ -1,5 +1,22 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.461...v0.75.462)
+
+## 🐛 Bug Fixes
+
+- **testing**: boot the server auto-imports in the test runner ([d6435ea](https://github.com/stacksjs/stacks/commit/d6435ea)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **skills**: correct API claims that disagreed with source ([b118db5](https://github.com/stacksjs/stacks/commit/b118db5)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- **skills**: tests boot auto-imports through bootTestEnvironment ([ff83428](https://github.com/stacksjs/stacks/commit/ff83428)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **skills**: use auto-imported names bare in stacks-native ([1db2fb1](https://github.com/stacksjs/stacks/commit/1db2fb1)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **skills**: turn stacks-native into a verified feature cheat sheet ([418138f](https://github.com/stacksjs/stacks/commit/418138f)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.460...v0.75.461)
 
 ## 🐛 Bug Fixes
