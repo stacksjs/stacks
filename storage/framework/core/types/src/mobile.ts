@@ -5,7 +5,8 @@ export type IosDeviceFamily = 'iphone' | 'ipad'
 export interface NativeParameterConstraint {
   pattern?: string
   exclude?: readonly string[]
-  ignoreCase?: boolean
+  /** Normalize decoded values and exclusions before case-sensitive grammar validation. */
+  normalize?: 'lowercase'
 }
 
 export type NativeRouteConstraints = Record<string, Record<string, NativeParameterConstraint>>

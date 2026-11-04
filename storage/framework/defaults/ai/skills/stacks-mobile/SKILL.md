@@ -177,8 +177,10 @@ browser with an explicit return path.
 
 A named route parameter may need to exclude website paths. Configure
 `nativeScreenConstraints` on both platforms using the exact route key, for
-example `{ '/:username': { username: { pattern: '[a-z]+', exclude: ['terms'], ignoreCase: true } } }`.
-Patterns match the complete decoded parameter; use syntax shared by JavaScript,
+example `{ '/:username': { username: { pattern: '[a-z]+', exclude: ['terms'], normalize: 'lowercase' } } }`.
+Normalization lowercases decoded parameters and excluded values independently
+of device locale; the match returns the normalized parameter. Patterns then
+match the complete value case-sensitively; use syntax shared by JavaScript,
 Foundation and Kotlin. Constraints apply before query items and preserve static
 route priority. The build requires Craft's `nativeRouteConstraints` capability
 and stops if an installed host would ignore the configuration. For application

@@ -10,7 +10,7 @@ import { assertCraftSupportsAppShortcuts, assertCraftSupportsNativeFonts, resolv
 
 describe('build-owned iOS shortcuts', () => {
   it('forwards parameter constraints and rejects hosts that would ignore them', () => {
-    const nativeScreenConstraints = { '/:username': { username: { pattern: '[a-z]+', exclude: ['terms'], ignoreCase: true } } }
+    const nativeScreenConstraints = { '/:username': { username: { pattern: '[a-z]+', exclude: ['terms'], normalize: 'lowercase' as const } } }
     const nativeScreens = { '/:username': 'resources/views/profile.stx' }
     expect(toCraftIosConfig({ appName: 'HQ', bundleId: 'training.hq.app', nativeScreens, nativeScreenConstraints }).nativeScreenConstraints).toEqual(nativeScreenConstraints)
     expect(toCraftAndroidConfig({ appName: 'HQ', packageName: 'training.hq.app', renderer: 'native', nativeScreens, nativeScreenConstraints }).nativeScreenConstraints).toEqual(nativeScreenConstraints)
