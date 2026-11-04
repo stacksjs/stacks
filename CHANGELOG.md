@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.476...v0.75.477)
+
+## 🐛 Bug Fixes
+
+- **defaults**: guarantee the primary button fallback type ([75fd4e4](https://github.com/stacksjs/stacks/commit/75fd4e4)) _(by Chris Breuer <chris@stacksjs.com>)_ ([#3189](https://github.com/stacksjs/stacks/issues/3189))
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.475...v0.75.476)
 
 ## 🐛 Bug Fixes
