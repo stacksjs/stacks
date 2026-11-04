@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.471...v0.75.472)
+
+## ✨ Features
+
+- **storage**: add bounded durable inventory pages ([1019714](https://github.com/stacksjs/stacks/commit/1019714)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- **native**: refresh generated skill references ([f2ebd31](https://github.com/stacksjs/stacks/commit/f2ebd31)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.470...v0.75.471)
 
 ## ✨ Features
