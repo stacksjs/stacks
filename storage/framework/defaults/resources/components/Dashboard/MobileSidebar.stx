@@ -57,9 +57,12 @@ function handlePanelClick(event: MouseEvent): void {
     closeSidebar()
 }
 
+// Widening past the breakpoint closes the drawer the same way a tap does, so
+// the scroll lock is released and the layout gets its `close` to take its
+// sidebar back. Setting the state alone did neither.
 effect(() => {
   if (isDesktop() && isOpen())
-    isOpen.set(false)
+    closeSidebar()
 })
 
 useEventListener('keydown', handleKeydown)

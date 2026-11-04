@@ -129,6 +129,20 @@ body {
   left: var(--stx-sidebar-width, 250px);
   transition: left 0.3s ease-out;
 }
+/*
+ * The window's sidebar pane while it is in the mobile drawer: it fills the
+ * drawer instead of sitting fixed at its window width, and gives up the
+ * window's z-index so the drawer's close button stays on top of it.
+ */
+[data-dashboard-mobile-sidebar] > [data-stx-component-wrapper] {
+  height: 100%;
+}
+[data-dashboard-mobile-sidebar] [data-stx-sidebar] {
+  position: relative;
+  z-index: auto;
+  width: 100% !important;
+  height: 100%;
+}
 @media (max-width: 1023px) {
   [data-stx-content] {
     margin-left: 0;
@@ -589,9 +603,32 @@ function handleSidebarItemClick(payload: { item?: { href?: string }, event?: { p
   navigate(href)
 }
 
-function syncMobileSidebar() {
+// Where the Sidebar sat in the window while it is lent to the drawer.
+let lentSidebar: { element: HTMLElement, parent: Node, next: Node | null } | null = null
+
+// The Sidebar's component wrapper moves, not just its pane: the wrapper is
+// where the layout's `@itemClick` listens, so a pane moved without it kept
+// selecting rows but never navigated.
+function showSidebarInDrawer() {
+  const pane = sidebarHost.current?.querySelector<HTMLElement>('[data-stx-sidebar]')
+  const element = pane?.closest<HTMLElement>('[data-stx-component-wrapper]') ?? pane
+  const drawer = mobileSidebarHost.current
+  if (element?.parentNode && drawer && !lentSidebar) {
+    lentSidebar = { element, parent: element.parentNode, next: element.nextSibling }
+    drawer.appendChild(element)
+  }
   applyRoleFilter()
   syncActiveSidebarRow()
+}
+
+// Back where it came from, before anything else looks for it. The drawer's
+// markup is already gone by now, so the Sidebar is put back from the
+// reference kept above rather than looked up.
+function returnSidebarFromDrawer() {
+  if (!lentSidebar) return
+  const { element, parent, next } = lentSidebar
+  lentSidebar = null
+  parent.insertBefore(element, next && next.parentNode === parent ? next : null)
 }
 
 function handleCraftSidebarSelection(event: CraftSidebarSelectEvent | undefined): void {
@@ -658,23 +695,11 @@ onDestroy(() => {
   </Sidebar>
 </div>
 
-<MobileSidebar @open="syncMobileSidebar()">
-  <div ref="dashboardMobileSidebarHost" class="h-full">
-    <Sidebar
-      :sections="sidebarSections"
-      theme="macos"
-      width="320"
-      placement="static"
-      className="h-full max-w-full"
-      @itemClick="handleSidebarItemClick($event)"
-    >
-      <template #header>
-        <!-- A drawer, not the window edge: no window buttons land on it, so
-            there is nothing to draw and nothing to reserve. -->
-        <SidebarHeader windowControls="none" />
-      </template>
-    </Sidebar>
-  </div>
+<!-- The drawer holds the same Sidebar as the window, moved in while it is open
+    (`showSidebarInDrawer`). A second Sidebar here rendered all its rows again
+    on every page and doubled each page's first render (stacksjs/stacks#3177). -->
+<MobileSidebar @open="showSidebarInDrawer()" @close="returnSidebarFromDrawer()">
+  <div ref="dashboardMobileSidebarHost" data-dashboard-mobile-sidebar class="h-full"></div>
 </MobileSidebar>
 
 <main data-stx-content>

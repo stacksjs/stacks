@@ -32,9 +32,18 @@ describe('dashboard layout client architecture', () => {
     // host says they need — which is nothing in a browser, and nothing in a
     // window that keeps them in a titlebar of their own.
     expect(layoutSource).toContain('<SidebarHeader windowControls="native" />')
-    // The mobile drawer is not the window edge; no buttons land on it.
-    expect(layoutSource).toContain('<SidebarHeader windowControls="none" />')
     expect(layoutSource).not.toContain('showWindowControls')
+  })
+
+  test('renders the sidebar once and lends it to the mobile drawer', () => {
+    // A second Sidebar for the drawer rendered all its rows again on every
+    // page and doubled each page's first render (stacksjs/stacks#3177).
+    expect(layoutSource.match(/<Sidebar\s/g)?.length).toBe(1)
+    expect(layoutSource.match(/<SidebarHeader\s/g)?.length).toBe(1)
+    expect(layoutSource).toContain('<MobileSidebar @open="showSidebarInDrawer()" @close="returnSidebarFromDrawer()">')
+    // The component wrapper moves, not just the pane: the layout's itemClick
+    // listener is on the wrapper, so a bare pane never navigated.
+    expect(layoutSource).toContain("pane?.closest<HTMLElement>('[data-stx-component-wrapper]')")
   })
 
   test('returns missing dashboard routes to the canonical home route', () => {
