@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.477...v0.75.478)
+
+## 🐛 Bug Fixes
+
+- **auth**: preserve ambient Postgres transactions for legacy owners ([82b0a9b](https://github.com/stacksjs/stacks/commit/82b0a9b)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.476...v0.75.477)
 
 ## 🐛 Bug Fixes
