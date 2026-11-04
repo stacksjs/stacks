@@ -80,6 +80,20 @@ describe('inlineCss', () => {
     expect(out).toMatch(/<style>[\s\S]*@media[\s\S]*<\/style>/)
   })
 
+  for (const [name, css] of [
+    ['responsive media', '@media (max-width: 600px) { .btn { width: 100%; } }'],
+    ['nested conditions', '@media (prefers-color-scheme: dark) { @supports (display: grid) { .btn { display: grid; } } }'],
+    ['keyframes', '@keyframes fade { from { opacity: 0; } to { opacity: 1; } }'],
+    ['nested selectors', '.wrapper { & > .btn { color: blue; } }'],
+  ] as const) {
+    test(`preserves ${name} as CSS rules instead of inline declarations`, () => {
+      const out = inlineCss(`<style>.btn { color: red; } ${css}</style><div class="wrapper"><a class="btn">X</a></div>`)
+      expect(out).toContain(css)
+      expect(out).toContain('<div class="wrapper">')
+      expect(out).toContain('<a class="btn" style="color:red !important;">')
+    })
+  }
+
   test('inline:false passes through unchanged', () => {
     const html = `<style>.btn { color: red; }</style><a class="btn">X</a>`
     const out = inlineCss(html, { inline: false })

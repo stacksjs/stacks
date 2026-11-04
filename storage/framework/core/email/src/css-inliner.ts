@@ -89,13 +89,13 @@ export function inlineCss(html: string, options: InlineCssOptions = {}): string 
   const leftover: string[] = []
   for (const body of styleBlocks) {
     for (const rule of splitRules(body)) {
-      const { selector, declarations } = rule
-      if (!selector || !declarations) continue
-      if (isInlinable(selector)) {
+      const { selector, declarations, body: ruleBody } = rule
+      if (!selector) continue
+      if (declarations !== null && isInlinable(selector)) {
         inlinableRules.push({ selector, decls: declarations })
       }
       else {
-        leftover.push(`${selector} { ${declarations.map(d => `${d.prop}: ${d.value};`).join(' ')} }`)
+        leftover.push(`${selector} { ${ruleBody} }`)
       }
     }
   }
@@ -137,16 +137,14 @@ function restorePassthroughs(html: string, blocks: string[]): string {
 }
 
 /**
- * Split a CSS block body into `{ selector, declarations }` pairs.
- * Strips `/* comments * /` and ignores empty blocks. Brace counting
- * lets `@media` and other at-rules with nested blocks survive intact
- * as one "rule" with the inner braces preserved in `declarations`
- * (which `isInlinable` then rejects).
+ * Split a CSS block into selectors, original bodies and flat declarations.
+ * Strip `/* comments * /` and retain nested rules as opaque stylesheet bodies;
+ * they cannot be represented by inline property declarations.
  */
-function splitRules(body: string): Array<{ selector: string, declarations: Array<{ prop: string, value: string }> | null }> {
+function splitRules(body: string): Array<{ selector: string, body: string, declarations: Array<{ prop: string, value: string }> | null }> {
   // Strip CSS comments to simplify selector parsing.
   const cleaned = body.replace(/\/\*[\s\S]*?\*\//g, '')
-  const rules: Array<{ selector: string, declarations: Array<{ prop: string, value: string }> | null }> = []
+  const rules: Array<{ selector: string, body: string, declarations: Array<{ prop: string, value: string }> | null }> = []
 
   let i = 0
   while (i < cleaned.length) {
@@ -164,17 +162,17 @@ function splitRules(body: string): Array<{ selector: string, declarations: Array
       j++
     }
     const inner = cleaned.slice(open + 1, j - 1)
-    // If the selector is an at-rule with nested blocks, mark as
-    // un-inlinable (declarations = null is the sentinel — but we
-    // still emit the rule body so leftover can preserve it).
+    // Nested blocks are CSS rules, not property declarations. Preserve their
+    // body for the stylesheet instead of emitting them into an inline style.
     if (selector.startsWith('@') || inner.includes('{')) {
       rules.push({
         selector: selector || '@unknown',
-        declarations: parseDeclarationsLoose(inner),
+        body: inner.trim(),
+        declarations: null,
       })
     }
     else {
-      rules.push({ selector, declarations: parseDeclarations(inner) })
+      rules.push({ selector, body: inner.trim(), declarations: parseDeclarations(inner) })
     }
     i = j
   }
@@ -197,15 +195,6 @@ function parseDeclarations(body: string): Array<{ prop: string, value: string }>
       }
     })
     .filter((d): d is { prop: string, value: string } => d !== null)
-}
-
-/**
- * Loose declaration parsing for at-rule bodies — preserves the body
- * as one declaration with `prop` empty so `leftover` can re-emit it.
- * We intentionally don't recurse into the nested rules.
- */
-function parseDeclarationsLoose(body: string): Array<{ prop: string, value: string }> {
-  return [{ prop: '', value: body.trim() }]
 }
 
 /**
