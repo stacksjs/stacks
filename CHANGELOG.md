@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.465...v0.75.466)
+
+## ✨ Features
+
+- **mobile**: forward constrained native routes to capable hosts ([254943b](https://github.com/stacksjs/stacks/commit/254943b)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.464...v0.75.465)
 
 ## ✨ Features
