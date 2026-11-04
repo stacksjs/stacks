@@ -36,7 +36,7 @@ export const requiredSourceJobs = [
   'lint', 'typecheck', 'compile', 'artifact-freshness', 'scaffold-smoke', 'browser-device-scale',
   'test (auth-1)', 'test (auth-2)', 'test (auth-3)', 'test (auth-4)',
   'test (buddy)', 'test (core-1)', 'test (core-2)',
-  'Release evidence (ubuntu-latest)', 'Release evidence (macos-latest)', 'Release evidence (windows-latest)',
+  'Release evidence (ubuntu-latest)', 'Release evidence (macos-arm64)', 'Release evidence (windows-latest)',
   'deployment-target', 'deploy',
 ]
 

@@ -1,0 +1,30 @@
+name: Source release evidence
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: source-release-evidence-${{ github.sha }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  macos:
+    name: Release evidence (macos-arm64)
+    runs-on: [self-hosted, macos-arm64, stacks-release]
+    timeout-minutes: 15
+    steps:
+      - name: Verify native platform
+        run: bun -e 'if (process.platform !== "darwin" || process.arch !== "arm64" || Bun.version !== "1.4.4") throw new Error("Expected native macOS arm64 and Bun 1.4.4")'
+      - name: Install committed dependencies
+        run: bun install --frozen-lockfile
+      - name: Build source packages
+        run: bun .github/scripts/source-release-evidence.ts build
+      - name: Verify release evidence
+        run: bun .github/scripts/source-release-evidence.ts test
+      - name: Stress immediate exit ordering
+        run: bun .github/scripts/source-release-evidence.ts stress

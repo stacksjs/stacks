@@ -95,6 +95,26 @@ rights, prove native execution, or guarantee original-game fidelity. Include
 the actual native and product acceptance scripts in the consumer checks and
 retain their platform execution evidence separately.
 
+## ReviewOS execution gates
+
+`@stacksjs/actions/reviewos-evidence` exposes `inspectReviewOsEvidence(plan)`
+for public ReviewOS workflow metadata. A plan names the forge, repository,
+exact source commit, workflow path and SHA-256 of its committed bytes, plus
+the required job, runner labels and executed steps. The latest exact-source
+main run must be trusted and successful. Cancelled, runnerless, resumed,
+reused, missing and unsuccessful required steps block acceptance. An older
+green run cannot hide a newer failed run. Reads refuse redirects and bound
+request time, response bytes and pagination. No runner or administrator
+credential is sent to the forge.
+
+Stacks runs its release evidence on native macOS arm64 through ReviewOS and
+on Linux and Windows through GitHub. Every platform calls the same committed
+`source-release-evidence.ts` build, test and stress commands. The GitHub source
+gate waits for the Mac's actual execution before publication; an Ubuntu job
+waiting on metadata is not itself proof of Mac execution. A missing runner
+keeps publication blocked. Fork pull requests retain their hosted Mac job and
+are never offered to the trusted self-hosted source runner.
+
 ## Retained adoption evidence
 
 The [stx 0.2.663 plan](./receipts/stx-0.2.663-plan.json) and
