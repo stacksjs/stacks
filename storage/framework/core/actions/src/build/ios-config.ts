@@ -120,11 +120,7 @@ export function iosCapabilityKeys(nativeSensorCapabilities?: readonly string[]):
 }
 
 /** Craft iOS flags no `ios.capabilities` name sets, each with why. */
-export const IOS_UNMAPPED_CRAFT_FLAGS: Readonly<Record<`enable${string}`, string>> = {
-  // Craft's host has it, and a native screen has nothing to call it with until
-  // stx's native runtime exposes it; mapped then, with a webcredentials: domain.
-  enablePasskeys: 'no native-screen API calls it yet (stacksjs/stx#2151)',
-}
+export const IOS_UNMAPPED_CRAFT_FLAGS: Readonly<Record<`enable${string}`, string>> = {}
 
 /**
  * The first craft-native release whose iOS template honours a capability.
