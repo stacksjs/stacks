@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.472...v0.75.473)
+
+## ✅ Tests
+
+- **ci**: exercise shared source preparation on every runner ([44cc82b](https://github.com/stacksjs/stacks/commit/44cc82b)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.471...v0.75.472)
 
 ## ✨ Features
