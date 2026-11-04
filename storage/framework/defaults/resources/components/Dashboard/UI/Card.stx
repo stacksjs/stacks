@@ -56,6 +56,12 @@ const cardClass = [
   clickableClass,
 ].join(' ')
 </script>
+<script client>
+// A bound `:subtitle` is empty when the card renders on the server, so the
+// line above never rendered at all; this one follows the value once it
+// arrives (stacksjs/stacks#3180). A static subtitle still paints first.
+const liveSubtitle = useReactiveProp('subtitle', '')
+</script>
 
 <article class="{{ cardClass }}" @if(clickable) role="button" tabindex="0" @endif>
   @if($slots.header)
@@ -70,6 +76,8 @@ const cardClass = [
         @endif
         @if(subtitle)
           <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">{{ subtitle }}</p>
+        @else
+          <p :if="liveSubtitle()" class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">{{ liveSubtitle() }}</p>
         @endif
       </div>
       @if($slots.actions)

@@ -50,6 +50,7 @@ export { dashboardApi, dashboardStream, dashboardDownload, DashboardApiError } f
 export type { ApiRequestOptions } from '../defaults/functions/dashboard-api'
 export { badgeClasses, badgeDotClasses, badgeShowsDot, badgeClassToggles, badgeDotClassToggles } from '../defaults/functions/dashboard-badge'
 export type { BadgeVariant, BadgeSize } from '../defaults/functions/dashboard-badge'
+export { buttonVariantToggles, buttonVariantClasses } from '../defaults/functions/dashboard-button'
 export { parseDashboardDate } from '../defaults/functions/dashboard-dates'
 export { formErrorMessages, slugify } from '../defaults/functions/dashboard-form'
 export { pageControls, useRecordsDashboard } from '../defaults/functions/dashboard-list'

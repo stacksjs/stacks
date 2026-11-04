@@ -35,7 +35,11 @@ describe('dashboard button contract', () => {
 
     expect(existsSync(resolve('storage/framework/defaults/resources/components/Button.stx'))).toBe(false)
     expect(existsSync(resolve('storage/framework/defaults/resources/components/Buttons/BaseButton.stx'))).toBe(false)
-    expect(button).toContain('bg-gradient-to-b from-blue-500 to-blue-600')
+    // The variant colours live in functions/dashboard-button.ts, shared by
+    // the server render and the live `:variant` toggles (stacksjs/stacks#3180).
+    const variants = readFileSync(resolve('storage/framework/defaults/functions/dashboard-button.ts'), 'utf8')
+    expect(variants).toContain('bg-gradient-to-b from-blue-500 to-blue-600')
+    expect(button).toContain("import { buttonVariantClasses } from '../../../../functions/dashboard-button'")
     expect(button).toContain("variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning'")
     expect(button).toContain("tag?: 'button' | 'a'")
     expect(button).toContain('class?: string')

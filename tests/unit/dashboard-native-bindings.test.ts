@@ -696,7 +696,8 @@ describe('dashboard native STX bindings', () => {
 
   test('shared buttons and modals use native icons and dialog semantics', () => {
     const button = componentSource('UI/Button.stx')
-    expect(button).toContain('from-blue-500 to-blue-600')
+    expect(button).toContain('buttonVariantClasses[variant]')
+    expect(button).toContain(':class="variantToggles()"')
     expect(button).toContain("useReactiveProp('href', '')")
     expect(button).toContain(':aria-busy=')
     expect(button).toContain(':aria-disabled=')

@@ -1,4 +1,6 @@
 <script server>
+import { buttonVariantClasses } from '../../../../functions/dashboard-button'
+
 interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning' | 'bare'
   size?: 'xs' | 'sm' | 'md' | 'lg'
@@ -32,29 +34,6 @@ const {
   href = '',
 } = defineProps<ButtonProps>()
 
-// Variant classes
-const variantClasses = {
-  primary: 'bg-gradient-to-b from-blue-500 to-blue-600 text-white shadow-sm shadow-blue-600/25 hover:from-blue-400 hover:to-blue-500 active:from-blue-600 active:to-blue-700 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-500 dark:hover:to-blue-600',
-  secondary: 'bg-white/80 dark:bg-white/10 text-neutral-800 dark:text-neutral-100 border border-black/10 dark:border-white/10 shadow-sm hover:bg-white dark:hover:bg-white/15 active:bg-neutral-100 dark:active:bg-white/5',
-  outline: 'bg-transparent text-neutral-700 dark:text-neutral-200 border border-black/15 dark:border-white/15 hover:bg-black/5 dark:hover:bg-white/8 active:bg-black/10 dark:active:bg-white/10',
-  ghost: 'bg-transparent text-neutral-600 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/8 active:bg-black/10 dark:active:bg-white/12',
-  danger: 'bg-gradient-to-b from-red-500 to-red-600 text-white shadow-sm shadow-red-600/25 hover:from-red-400 hover:to-red-500 active:from-red-600 active:to-red-700',
-  success: 'bg-gradient-to-b from-green-500 to-green-600 text-white shadow-sm shadow-green-600/25 hover:from-green-400 hover:to-green-500 active:from-green-600 active:to-green-700',
-  warning: 'bg-gradient-to-b from-orange-500 to-orange-600 text-white shadow-sm shadow-orange-600/25 hover:from-orange-400 hover:to-orange-500 active:from-orange-600 active:to-orange-700',
-  /**
-   * No chrome at all: the caller supplies every visual through `class`.
-   *
-   * For an affordance that has to sit inside someone else's layout and carry
-   * no box of its own - a sortable table header fills its `<th>`, and the
-   * padding and fixed height the sizes impose would change the header row.
-   * What it still gets, and the reason to come through this component rather
-   * than write a raw `<button>`, is the shared focus-visible ring, the
-   * disabled and aria-disabled handling, and the press feedback.
-   * See stacksjs/stacks#2926.
-   */
-  bare: ''
-}
-
 // Size classes
 const sizeClasses = {
   xs: 'text-[11px] px-2 py-1 rounded-md gap-1 h-6',
@@ -85,10 +64,17 @@ const buttonClass = [
   fullWidth ? 'w-full' : '',
   // `bare` takes neither: its whole point is to impose no box.
   variant === 'bare' ? '' : (iconOnly ? iconOnlySizes[size] : sizeClasses[size]),
-  variantClasses[variant]
+  buttonVariantClasses[variant]
 ].filter(Boolean).join(' ')
 </script>
 <script client>
+import { buttonVariantToggles } from '../../../../functions/dashboard-button'
+
+// A bound `:variant` changes after the server render; the toggles move the
+// colour with it (stacksjs/stacks#3180).
+const liveVariant = useReactiveProp('variant', 'primary')
+const liveCallerClass = useReactiveProp('class', '')
+const variantToggles = derived(() => buttonVariantToggles(liveVariant(), liveCallerClass()))
 const liveDisabled = useReactiveProp('disabled', false)
 const liveLoading = useReactiveProp('loading', false)
 const livePressed = useReactiveProp('pressed', false)
@@ -117,6 +103,7 @@ const liveAriaExpanded = useReactiveProp('ariaExpanded', '')
       :download="liveDownload() || undefined"
       :aria-label="liveAriaLabel() || undefined"
       class="{{ buttonClass }}"
+        :class="variantToggles()"
       :target="liveTarget() || undefined"
       :rel="liveRel() || undefined"
       :aria-busy="liveLoading() ? 'true' : 'false'"
@@ -134,6 +121,7 @@ const liveAriaExpanded = useReactiveProp('ariaExpanded', '')
         :type="liveType()"
         :form="liveForm() || undefined"
         class="{{ buttonClass }}"
+        :class="variantToggles()"
         :aria-label="liveAriaLabel() || undefined"
         :aria-busy="liveLoading() ? 'true' : 'false'"
         :aria-pressed="String(livePressed())"
@@ -149,6 +137,7 @@ const liveAriaExpanded = useReactiveProp('ariaExpanded', '')
         :type="liveType()"
         :form="liveForm() || undefined"
         class="{{ buttonClass }}"
+        :class="variantToggles()"
         :aria-label="liveAriaLabel() || undefined"
         :aria-haspopup="liveAriaHasPopup() || undefined"
         :aria-expanded="liveAriaExpanded() || undefined"
