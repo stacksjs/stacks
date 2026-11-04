@@ -22,7 +22,7 @@
  * needed listing.
  */
 import { describe, expect, it } from 'bun:test'
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -150,22 +150,24 @@ describe('subpath imports', () => {
     expect(bash).toBeTruthy()
     let exercised = 0
     try {
-      for (const name of ['ci', 'mobile-packed-contract']) {
-        const workflow = Bun.YAML.parse(readFileSync(join(root, `.github/workflows/${name}.yml`), 'utf8')) as {
+      mkdirSync(join(directory, '.github/scripts'), { recursive: true })
+      copyFileSync(join(root, '.github/scripts/source-release-evidence.ts'), join(directory, '.github/scripts/source-release-evidence.ts'))
+      for (const name of ['.github/workflows/ci.yml', '.github/workflows/mobile-packed-contract.yml', '.reviewos/workflows/release-evidence.yml']) {
+        const workflow = Bun.YAML.parse(readFileSync(join(root, name), 'utf8')) as {
           jobs: Record<string, { steps: Array<{ name?: string, run?: string }> }>
         }
         for (const [job, value] of Object.entries(workflow.jobs)) {
-          for (const step of value.steps.filter(step => step.run?.includes('bun .github/scripts/subpath-packages.ts'))) {
+          for (const step of value.steps.filter(step => step.run?.includes('bun .github/scripts/subpath-packages.ts') || step.run === 'bun .github/scripts/source-release-evidence.ts build')) {
             const result = Bun.spawnSync([bash!, '-e', '-o', 'pipefail', '-c', step.run!], {
               cwd: directory, stdout: 'pipe', stderr: 'pipe', timeout: 5000,
             })
             expect(result.exitCode, `${name}/${job}/${step.name}: ${result.stderr}`).not.toBe(0)
-            expect(result.stderr.toString()).toContain('.github/scripts/subpath-packages.ts')
+            expect(result.stderr.toString()).toContain('subpath-packages')
             exercised++
           }
         }
       }
-      expect(exercised).toBe(9)
+      expect(exercised).toBe(11)
     }
     finally { rmSync(directory, { recursive: true, force: true }) }
   })
@@ -207,11 +209,14 @@ describe('subpath imports', () => {
     const workflow = Bun.YAML.parse(readFileSync(join(root, '.github/workflows/ci.yml'), 'utf-8')) as {
       jobs: Record<string, { steps: Array<{ name?: string, run?: string }> }>
     }
+    const nativeWorkflow = Bun.YAML.parse(readFileSync(join(root, '.reviewos/workflows/release-evidence.yml'), 'utf8')) as typeof workflow
+    const jobs = { ...workflow.jobs, ...Object.fromEntries(Object.entries(nativeWorkflow.jobs).map(([name, job]) => [`reviewos:${name}`, job])) }
     const exempt: Record<string, string> = {
       'lint': 'pickier reads files rather than resolving imports, and `bun buddy lint` loads no subpath',
       'scaffold-smoke': 'it typechecks a freshly scaffolded app against the PUBLISHED framework, not this checkout',
       'scaffold-smoke-desktop': 'the same check as scaffold-smoke, for `buddy new --desktop`',
       'deployment-target': 'it installs nothing and imports no framework package',
+      'release-evidence-macos': 'it observes public HTTPS metadata through a standalone module with no package subpath imports; the Mac job builds before its checks',
       // Not because anything builds on the runner: the Hetzner deploy ships
       // source, and the box resolves each subpath through tsconfig `paths` -
       // core/tsconfig.build.json for what `bun build` bundles, the root
@@ -222,15 +227,16 @@ describe('subpath imports', () => {
     }
 
     const builds = (step: { run?: string }): boolean => String(step.run ?? '').includes('bun .github/scripts/subpath-packages.ts')
+      || step.run === 'bun .github/scripts/source-release-evidence.ts build'
     // A step that runs framework code: anything but installing, provisioning,
     // or the repo's own standalone checks.
     const loadsFramework = (step: { run?: string }): boolean => {
       const run = String(step.run ?? '')
-      return /\bbun (run|test)\b|\bbuddy\b/.test(run) && !builds(step)
+      return (/\bbun (run|test)\b|\bbuddy\b/.test(run) || /source-release-evidence\.ts (test|stress)$/.test(run)) && !builds(step)
     }
 
     const problems: string[] = []
-    for (const [name, job] of Object.entries(workflow.jobs)) {
+    for (const [name, job] of Object.entries(jobs)) {
       if (name in exempt)
         continue
       const built = job.steps.findIndex(builds)
