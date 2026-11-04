@@ -234,15 +234,15 @@ export interface ColumnRef {
  * Fluent aggregate-function builder accessible via
  * `eb.fn.count(...)`, `eb.fn.sum(...)`, etc. The chained `.as(name)`
  * names the resulting column in the projection; `.filterWhere(...)`
- * scopes the aggregate to a sub-population (`COUNT(*) FILTER (WHERE
- * status = 'success')` style).
+ * scopes the aggregate to a sub-population, rendered as
+ * `COUNT(CASE WHEN status = 'success' THEN id END)`.
  *
  * The `sql` text is part of the contract: bun-query-builder's select
  * pipeline renders fragments from their `.sql` property, so every
  * chain step returns a fresh expression with the fully rendered text.
  */
 export interface AggregateExpression {
-  /** The rendered SQL text, e.g. `COUNT(id) FILTER (WHERE status = 1) AS count`. */
+  /** The rendered SQL text, e.g. `COUNT(CASE WHEN status = 1 THEN id END) AS count`. */
   readonly sql: string
   as: (alias: string) => AggregateExpression
   filterWhere: (column: string, op: ExpressionOperator | string, value: unknown) => AggregateExpression
@@ -311,18 +311,28 @@ function inlineSqlLiteral(value: unknown): string {
   return `'${text.replace(/'/g, "''")}'`
 }
 
-function createAggregateExpression(text: string): AggregateExpression {
+/**
+ * A filtered aggregate is a CASE inside the aggregate, not `FILTER (WHERE …)`.
+ * MySQL has no FILTER clause, so every filtered count was a syntax error
+ * there (stacksjs/stacks#3182). Both forms answer the same everywhere: an
+ * aggregate skips NULL, and the CASE is NULL exactly on the rows FILTER
+ * would have left out. Conditions from repeated `filterWhere` calls are ANDed.
+ */
+function createAggregateExpression(name: string, column: string | undefined, conditions: readonly string[], alias?: string): AggregateExpression {
+  const argument = conditions.length === 0
+    ? column ?? '*'
+    : `CASE WHEN ${conditions.join(' AND ')} THEN ${column ?? 1} END`
   return {
-    sql: text,
-    as(alias: string): AggregateExpression {
-      assertSqlTextIdentifier(alias, 'alias')
-      return createAggregateExpression(`${text} AS ${alias}`)
+    sql: `${name}(${argument})${alias === undefined ? '' : ` AS ${alias}`}`,
+    as(next: string): AggregateExpression {
+      assertSqlTextIdentifier(next, 'alias')
+      return createAggregateExpression(name, column, conditions, next)
     },
-    filterWhere(column: string, op: ExpressionOperator | string, value: unknown): AggregateExpression {
-      assertSqlTextIdentifier(column, 'column')
+    filterWhere(filterColumn: string, op: ExpressionOperator | string, value: unknown): AggregateExpression {
+      assertSqlTextIdentifier(filterColumn, 'column')
       if (!SAFE_FILTER_OPERATORS.has(op.toLowerCase()))
         throw new TypeError(`[database] refusing unsafe aggregate filter operator ${JSON.stringify(op)} - allowed: ${[...SAFE_FILTER_OPERATORS].join(', ')}`)
-      return createAggregateExpression(`${text} FILTER (WHERE ${column} ${op} ${inlineSqlLiteral(value)})`)
+      return createAggregateExpression(name, column, [...conditions, `${filterColumn} ${op} ${inlineSqlLiteral(value)}`], alias)
     },
   }
 }
@@ -330,7 +340,7 @@ function createAggregateExpression(text: string): AggregateExpression {
 function aggregate(name: string, column?: string): AggregateExpression {
   if (column !== undefined)
     assertSqlTextIdentifier(column, 'column')
-  return createAggregateExpression(column === undefined ? `${name}(*)` : `${name}(${column})`)
+  return createAggregateExpression(name, column, [])
 }
 
 /**
