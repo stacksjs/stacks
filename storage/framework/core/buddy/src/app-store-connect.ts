@@ -162,7 +162,7 @@ export class AppStoreConnect {
       throw new Error('Only a processed, unexpired build can be distributed to TestFlight')
     const groups = await this.internalTestFlightGroups(appId, names)
     if (!groups.length) return groups
-    const assigned = new Set((await this.pages(`/v1/builds/${encodeURIComponent(build.id)}/betaGroups?limit=200&fields[betaGroups]=name,isInternalGroup`)).map(group => group.id))
+    const assigned = new Set((await this.buildTestFlightGroups(build.id)).map(group => group.id))
     for (const group of groups) {
       if (assigned.has(group.id)) continue
       await this.request(`/v1/betaGroups/${encodeURIComponent(group.id)}/relationships/builds`, {
@@ -173,10 +173,16 @@ export class AppStoreConnect {
     return groups
   }
 
+  private async buildTestFlightGroups(buildId: string): Promise<any[]> {
+    // Apple exposes membership through the filtered collection. A build's
+    // betaGroups relationship supports writes, but rejects GET_RELATED.
+    return this.pages(`/v1/betaGroups?filter[builds]=${encodeURIComponent(buildId)}&limit=200&fields[betaGroups]=name,isInternalGroup`)
+  }
+
   async testFlightStatus(buildId: string): Promise<{ internalBuildState: string, groupIds: string[] }> {
     const [detail, groups] = await Promise.all([
       this.request(`/v1/builds/${encodeURIComponent(buildId)}/buildBetaDetail`),
-      this.pages(`/v1/builds/${encodeURIComponent(buildId)}/betaGroups?limit=200&fields[betaGroups]=name,isInternalGroup`),
+      this.buildTestFlightGroups(buildId),
     ])
     return { internalBuildState: String(detail?.data?.attributes?.internalBuildState ?? ''), groupIds: groups.map(group => String(group.id)) }
   }
