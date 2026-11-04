@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.466...v0.75.467)
+
+## 🐛 Bug Fixes
+
+- **release**: recover tagged publication without moving immutable refs ([2448d9f](https://github.com/stacksjs/stacks/commit/2448d9f)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.465...v0.75.466)
 
 ## ✨ Features
