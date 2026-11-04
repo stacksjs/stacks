@@ -1,5 +1,33 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.470...v0.75.471)
+
+## ✨ Features
+
+- **actions**: verify exact-source ReviewOS release evidence ([6ecd7be](https://github.com/stacksjs/stacks/commit/6ecd7be)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **messaging**: let a sender edit and unsend their own messages ([6f48589](https://github.com/stacksjs/stacks/commit/6f48589)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **cloud**: consume host-owned artifact extraction ([b2c2a34](https://github.com/stacksjs/stacks/commit/b2c2a34)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **dashboard**: Marketing's Reviews link follows the commerce section ([5ee32ac](https://github.com/stacksjs/stacks/commit/5ee32ac)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3186](https://github.com/stacksjs/stacks/issues/3186))
+- **dashboard**: a page whose feature is off says so instead of a 503 ([1d8445a](https://github.com/stacksjs/stacks/commit/1d8445a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3184](https://github.com/stacksjs/stacks/issues/3184))
+- **dashboard**: commerce analytics follow the commerce section ([e038cc9](https://github.com/stacksjs/stacks/commit/e038cc9)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3183](https://github.com/stacksjs/stacks/issues/3183))
+- **database**: render a filtered aggregate as a CASE, which MySQL runs ([88d41fd](https://github.com/stacksjs/stacks/commit/88d41fd)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3182](https://github.com/stacksjs/stacks/issues/3182))
+
+## ⚡ Performance Improvements
+
+- **dashboard**: the Errors page counts in the database instead of loading every error ([99d374a](https://github.com/stacksjs/stacks/commit/99d374a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3181](https://github.com/stacksjs/stacks/issues/3181))
+
+## 🔧 Chores
+
+- **docs**: refresh native actions capability catalog ([139851d](https://github.com/stacksjs/stacks/commit/139851d)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.469...v0.75.470)
 
 ## 🐛 Bug Fixes
