@@ -398,6 +398,8 @@ export interface AuthOptions {
    * Session-auth hardening options (stacksjs/stacks#1985).
    */
   session?: {
+    /** Absolute database-backed browser session lifetime in milliseconds. Does not change API bearer expiry. @default 86400000 */
+    lifetime?: number
     /**
      * Reject a session request whose IP / User-Agent no longer matches the
      * fingerprint captured at login (basic hijack detection). Off by default

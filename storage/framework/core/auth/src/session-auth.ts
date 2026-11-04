@@ -11,6 +11,11 @@ import { findAuthUserByEmail, normalizeAuthEmail } from './credential-user'
 import { RateLimiter } from './rate-limiter'
 import { withVerifiedPassword } from './credential-version'
 import { schedulePasswordRehash } from './password-rehash'
+import { sessionCredentialIdentifier } from './session-credential'
+
+function sessionTable(identifier: string): 'sessions' | 'auth_browser_sessions' {
+  return identifier.startsWith('bs1:') ? 'auth_browser_sessions' : 'sessions'
+}
 
 function generateSessionId(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(32))
@@ -194,13 +199,22 @@ export async function sessionLogin(
  * Destroy the session for the given session ID.
  */
 export async function sessionLogout(sessionId: string): Promise<void> {
+  const identifier = sessionCredentialIdentifier(sessionId)
+  if (!identifier) return
+  sessionId = identifier
   // A failed delete must reach the caller: otherwise a copied cookie remains
   // valid while the user is told they signed out (stacksjs/stacks#2599).
   await db.transaction(async () => {
-    await db.deleteFrom('sessions').where('id', '=', sessionId).execute()
+    let observed = db.primary.selectFrom(sessionTable(sessionId)).where('id', '=', sessionId).select('id')
+    if (getDatabaseDialect() !== 'sqlite') observed = observed.lockForUpdate()
+    const current = await observed.executeTakeFirst()
+    // Opaque credentials are byte-sensitive even with a case/accent-insensitive
+    // database collation. A metadata identifier's Unicode alias is not a cookie.
+    if (!current || String(current.id) !== sessionId) return
+    await db.deleteFrom(sessionTable(sessionId)).where('id', '=', sessionId).execute()
     // A trigger can suppress a DELETE without throwing. Check the committed
     // outcome we promise, not merely whether the statement returned normally.
-    const remaining = await db.primary.selectFrom('sessions')
+    const remaining = await db.primary.selectFrom(sessionTable(sessionId))
       .where('id', '=', sessionId).select('id').executeTakeFirst()
     if (remaining)
       throw new HttpError(500, 'Session could not be destroyed.')
@@ -217,43 +231,43 @@ export async function sessionLogout(sessionId: string): Promise<void> {
  *
  * Like `sessionLogout`, real failures propagate (fail loud): a reset
  * that reports success while the attacker's session lives would be a
- * lie. A missing `sessions` table alone is a benign no-op — no
- * framework migration creates it (only userland adopting session-auth
- * does), and without the table `sessionCheck` can never validate a
- * session, so there is no credential left to revoke.
+ * lie. An absent legacy `sessions` table or an unapplied browser-session
+ * migration has no credential to revoke. A missing trigger dependency is
+ * still a real failure and rolls back both credential families.
  */
 export async function sessionDestroyAll(userId: number, options: { exceptId?: string } = {}): Promise<void> {
-  const { exceptId } = options
-  try {
-    // A transaction also rolls back partial deletes when one row is retained.
-    // Its nested savepoint isolates the optional-schema failure on Postgres.
-    await db.transaction(async () => {
-      let removal = db.deleteFrom('sessions').where('user_id', '=', userId)
-      if (exceptId !== undefined) removal = removal.where('id', '!=', exceptId)
-      await removal.execute()
-      let check = db.primary.selectFrom('sessions').where('user_id', '=', userId)
-      if (exceptId !== undefined) check = check.where('id', '!=', exceptId)
-      const remaining = await check.select('id').executeTakeFirst()
-      if (remaining)
-        throw new HttpError(500, 'Sessions could not be destroyed.')
-    })
-  }
-  catch (err) {
-    const message = err && typeof err === 'object' && 'message' in err ? String(err.message) : String(err)
-    // sqlite: `no such table: sessions` / postgres: `relation "sessions"
-    // does not exist` / mysql: `Table '….sessions' doesn't exist`
-    // Match the actual optional table, not a trigger dependency such as
-    // audit_sessions: swallowing that error would report a revocation that
-    // left the session rows intact.
-    if (/^(?:no such table: (?:main\.)?sessions|relation "sessions" does not exist|Table '(?:[^'.]+\.)?sessions' doesn't exist)$/i.test(message))
-      return
-    throw err
-  }
+  const exceptId = options.exceptId?.startsWith('bs1_')
+    ? sessionCredentialIdentifier(options.exceptId)
+    : options.exceptId
+  if (options.exceptId?.startsWith('bs1_') && !exceptId)
+    throw new TypeError('[auth] Invalid browser session credential to preserve.')
+  await db.transaction(async () => {
+    for (const table of ['sessions', 'auth_browser_sessions'] as const) {
+      try {
+        // A savepoint permits an absent legacy table without poisoning the
+        // PostgreSQL transaction or skipping the other credential family.
+        await db.transaction(async () => {
+          let removal = db.deleteFrom(table).where('user_id', '=', userId)
+          if (exceptId !== undefined) removal = removal.where('id', '!=', exceptId)
+          await removal.execute()
+          let check = db.primary.selectFrom(table).where('user_id', '=', userId)
+          if (exceptId !== undefined) check = check.where('id', '!=', exceptId)
+          if (await check.select('id').executeTakeFirst())
+            throw new HttpError(500, 'Sessions could not be destroyed.')
+        })
+      }
+      catch (error) {
+        const message = error && typeof error === 'object' && 'message' in error ? String(error.message) : String(error)
+        const missing = /^(?:no such table: (?:main\.)?(sessions|auth_browser_sessions)|relation "(sessions|auth_browser_sessions)" does not exist|Table '(?:[^'.]+\.)?(sessions|auth_browser_sessions)' doesn't exist)$/i.exec(message)
+        if (!missing?.slice(1).some(name => name?.toLowerCase() === table)) throw error
+      }
+    }
+  })
 }
 
 /** Delete the observed expired version without removing a concurrent renewal. */
 async function deleteObservedExpiredSession(sessionId: string, expiresAt: unknown): Promise<void> {
-  const cleanup = db.deleteFrom('sessions').where('id', '=', sessionId)
+  const cleanup = db.deleteFrom(sessionTable(sessionId)).where('id', '=', sessionId)
   await (expiresAt == null
     ? cleanup.whereNull('expires_at')
     : cleanup.where('expires_at', '=', expiresAt)).execute()
@@ -265,7 +279,7 @@ async function deleteObservedOrphanedSession(
   userId: number,
   expiresAt: unknown,
 ): Promise<void> {
-  let cleanup = db.deleteFrom('sessions')
+  let cleanup = db.deleteFrom(sessionTable(sessionId))
     .where('id', '=', sessionId)
     .where('user_id', '=', userId)
   cleanup = expiresAt == null
@@ -295,7 +309,7 @@ function sessionIdleTimeoutExceeded(lastActivity: unknown): boolean {
 }
 
 async function deleteObservedIdleSession(sessionId: string, userId: number, expiresAt: unknown, lastActivity: unknown): Promise<void> {
-  let cleanup = db.deleteFrom('sessions')
+  let cleanup = db.deleteFrom(sessionTable(sessionId))
     .where('id', '=', sessionId)
     .where('user_id', '=', userId)
   cleanup = expiresAt == null
@@ -308,10 +322,10 @@ async function deleteObservedIdleSession(sessionId: string, userId: number, expi
 }
 
 async function touchSessionActivity(sessionId: string, expiresAt: unknown, lastActivity: unknown): Promise<void> {
-  if ((config.auth?.idleTimeout ?? 0) <= 0)
+  if ((config.auth?.idleTimeout ?? 0) <= 0 && !sessionId.startsWith('bs1:'))
     return
 
-  let touch = db.updateTable('sessions')
+  let touch = db.updateTable(sessionTable(sessionId))
     .set({ last_activity: Math.floor(Date.now() / 1000) })
     .where('id', '=', sessionId)
   touch = expiresAt == null ? touch.whereNull('expires_at') : touch.where('expires_at', '=', expiresAt)
@@ -321,13 +335,16 @@ async function touchSessionActivity(sessionId: string, expiresAt: unknown, lastA
 
 /** Get the authenticated user from a session ID. */
 export async function sessionUser(sessionId: string): Promise<UserModel | undefined> {
+  const identifier = sessionCredentialIdentifier(sessionId)
+  if (!identifier) return undefined
+  sessionId = identifier
   try {
-    const query = db.primary.selectFrom('sessions').where('id', '=', sessionId)
+    const query = db.primary.selectFrom(sessionTable(sessionId)).where('id', '=', sessionId)
     const session = config.auth?.session?.enforceFingerprint
-      ? await query.select(['user_id', 'expires_at', 'last_activity', 'ip_address', 'user_agent']).executeTakeFirst()
-      : await query.select(['user_id', 'expires_at', 'last_activity']).executeTakeFirst()
+      ? await query.select(['id', 'user_id', 'expires_at', 'last_activity', 'ip_address', 'user_agent']).executeTakeFirst()
+      : await query.select(['id', 'user_id', 'expires_at', 'last_activity']).executeTakeFirst()
 
-    if (!session)
+    if (!session || String(session.id) !== sessionId)
       return undefined
 
     const expiresAt = parseSqlDateTime(session.expires_at)?.getTime() ?? 0
@@ -366,13 +383,16 @@ export async function sessionUser(sessionId: string): Promise<UserModel | undefi
  * Check if a session is authenticated.
  */
 export async function sessionCheck(sessionId: string): Promise<boolean> {
+  const identifier = sessionCredentialIdentifier(sessionId)
+  if (!identifier) return false
+  sessionId = identifier
   try {
-    const query = db.primary.selectFrom('sessions').where('id', '=', sessionId)
+    const query = db.primary.selectFrom(sessionTable(sessionId)).where('id', '=', sessionId)
     const session = config.auth?.session?.enforceFingerprint
-      ? await query.select(['user_id', 'expires_at', 'last_activity', 'ip_address', 'user_agent']).executeTakeFirst()
-      : await query.select(['user_id', 'expires_at', 'last_activity']).executeTakeFirst()
+      ? await query.select(['id', 'user_id', 'expires_at', 'last_activity', 'ip_address', 'user_agent']).executeTakeFirst()
+      : await query.select(['id', 'user_id', 'expires_at', 'last_activity']).executeTakeFirst()
 
-    if (!session)
+    if (!session || String(session.id) !== sessionId)
       return false
 
     const expiresAt = parseSqlDateTime(session.expires_at)?.getTime() ?? 0
@@ -409,16 +429,19 @@ export async function sessionCheck(sessionId: string): Promise<boolean> {
  * Non-positive or non-finite TTLs are rejected without changing the session.
  */
 export async function sessionRefresh(sessionId: string, ttlMs = 24 * 60 * 60 * 1000): Promise<boolean> {
+  const identifier = sessionCredentialIdentifier(sessionId)
+  if (!identifier) return false
+  sessionId = identifier
   if (!Number.isFinite(ttlMs) || ttlMs <= 0)
     return false
 
   try {
-    const query = db.primary.selectFrom('sessions').where('id', '=', sessionId)
+    const query = db.primary.selectFrom(sessionTable(sessionId)).where('id', '=', sessionId)
     const session = config.auth?.session?.enforceFingerprint
-      ? await query.select(['user_id', 'expires_at', 'last_activity', 'ip_address', 'user_agent']).executeTakeFirst()
-      : await query.select(['user_id', 'expires_at', 'last_activity']).executeTakeFirst()
+      ? await query.select(['id', 'user_id', 'expires_at', 'last_activity', 'ip_address', 'user_agent']).executeTakeFirst()
+      : await query.select(['id', 'user_id', 'expires_at', 'last_activity']).executeTakeFirst()
 
-    if (!session)
+    if (!session || String(session.id) !== sessionId)
       return false
 
     const expiresAt = parseSqlDateTime(session.expires_at)?.getTime() ?? 0
@@ -441,10 +464,10 @@ export async function sessionRefresh(sessionId: string, ttlMs = 24 * 60 * 60 * 1
         // MySQL emulates RETURNING with reads. Lock the observed version first
         // so a repeatable-read snapshot cannot report a concurrently deleted
         // or replaced session as an updated row.
-        const current = await db.primary.selectFrom('sessions')
+        const current = await db.primary.selectFrom(sessionTable(sessionId))
           .where('id', '=', sessionId).where('expires_at', '=', session.expires_at)
           .select('id').lockForUpdate().executeTakeFirst()
-        if (!current) return false
+        if (!current || String(current.id) !== sessionId) return false
       }
       const userId = session.user_id as number
       if (!await sessionOwnerExists(userId, true)) {
@@ -459,7 +482,7 @@ export async function sessionRefresh(sessionId: string, ttlMs = 24 * 60 * 60 * 1
       if (!Number.isFinite(newExpiry.getTime()) || newExpiry.getTime() <= Date.now())
         return false
       const lastActivity = Math.floor(Date.now() / 1000)
-      const result = await db.updateTable('sessions')
+      const result = await db.updateTable(sessionTable(sessionId))
         .set({
           expires_at: sqlDateTime(newExpiry),
           last_activity: lastActivity,
@@ -482,11 +505,11 @@ export async function sessionRefresh(sessionId: string, ttlMs = 24 * 60 * 60 * 1
 
       // RETURNING may be emulated, and a trigger may alter or suppress the
       // update. Verify the actual stored credential before committing it.
-      let storedQuery = db.primary.selectFrom('sessions').where('id', '=', sessionId)
-        .select(['user_id', 'expires_at', 'last_activity'])
+      let storedQuery = db.primary.selectFrom(sessionTable(sessionId)).where('id', '=', sessionId)
+        .select(['id', 'user_id', 'expires_at', 'last_activity'])
       if (mysql) storedQuery = storedQuery.lockForUpdate()
       const stored = await storedQuery.executeTakeFirst()
-      if (!stored || String(stored.user_id) !== String(session.user_id)
+      if (!stored || String(stored.id) !== sessionId || String(stored.user_id) !== String(session.user_id)
         || parseSqlDateTime(stored.expires_at)?.getTime() !== newExpiry.getTime()
         || Number(stored.last_activity) !== lastActivity
         || Date.now() >= Math.min(expiresAt, newExpiry.getTime()))

@@ -2,6 +2,7 @@
  * Auth Tables Migration
  *
  * Creates the authentication-related tables:
+ * - auth_browser_sessions (database-backed browser credentials)
  * - oauth_clients
  * - oauth_grants
  * - oauth_auth_codes
@@ -45,6 +46,7 @@ type SqlHelpers = ReturnType<typeof sqlHelpers>
  * `tests/auth-owned-tables.test.ts`.
  */
 export const AUTH_TABLES: readonly string[] = [
+  'auth_browser_sessions',
   'oauth_clients',
   'oauth_grants',
   'oauth_auth_codes',
@@ -306,6 +308,25 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
   }
 
   try {
+    if (options.verbose) log.info('Creating auth_browser_sessions table...')
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS auth_browser_sessions (
+        id VARCHAR(255) PRIMARY KEY,
+        user_id ${sql.bigInteger} NOT NULL,
+        ip_address TEXT,
+        user_agent TEXT,
+        payload TEXT NOT NULL,
+        last_activity BIGINT NOT NULL,
+        expires_at ${datetime} NOT NULL
+      )
+    `).execute()
+    for (const statement of [
+      'CREATE INDEX IF NOT EXISTS idx_auth_browser_sessions_user_id ON auth_browser_sessions(user_id)',
+      'CREATE INDEX IF NOT EXISTS idx_auth_browser_sessions_expires_at ON auth_browser_sessions(expires_at)',
+    ]) {
+      try { await db.unsafe(indexSqlForDialect(statement, dbDriver)).execute() }
+      catch (error) { if (!isDuplicateIndexError(error)) throw error }
+    }
     if (options.verbose) log.info('Creating oauth_clients table...')
     await db.unsafe(`
       CREATE TABLE IF NOT EXISTS oauth_clients (

@@ -66,6 +66,7 @@ export * from './session-auth'
 // Cookie-carried access tokens, for server-rendered pages.
 export * from './cookie-auth'
 export * from './browser-session'
+export * from './browser-session-store'
 export * from './request-token'
 
 // The stx page gate (`middleware: ['auth' | 'guest']`), token-validating.

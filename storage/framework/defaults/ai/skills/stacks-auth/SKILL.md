@@ -369,6 +369,63 @@ adminRole: { name: 'admin', guard: 'web' }, // default; false = accounts only
 
 Internal: database-backed `sessions` rows with expiry, optional IP/User-Agent fingerprint checks, transactional logout and refresh, and timing-safe password comparison with a dummy bcrypt hash. Sessions survive process restarts and are shared by workers through the configured database.
 
+## Durable database browser sessions
+
+Keep browser authority separate from short-lived API bearer credentials. After
+completed password/MFA, registration or verified SSO/social sign-in, a server
+adapter can exchange its freshly issued, ordinary full-scope sign-in token:
+
+```typescript
+const session = await startBrowserSession(issued.token, {
+  previousSession: request.cookie('session_id'),
+})
+if (!session) throw new Error('Sign-in is no longer valid')
+headers.append('Set-Cookie', browserSessionCookie(session))
+```
+
+This helper belongs inside the completed server sign-in path. Do not expose a
+public bearer-to-browser-session exchange endpoint. Limited/delegated tokens
+cannot acquire full browser authority. The exchange locks the credential owner,
+revalidates the token, saves the browser session, revokes the consumed access and
+refresh pair and retires an offered previous browser credential atomically.
+Keep an API client's ordinary JSON token/refresh response unchanged instead.
+
+Configure `auth.session.lifetime` in milliseconds (default 24 hours), independently
+of `auth.tokenExpiry`. For example, a database browser session lasting 30 days does not
+extend a one-hour API bearer. The auth migrator creates `auth_browser_sessions`; apply the normal
+`buddy migrate --auth` path before adopting this transport, not local table DDL.
+
+The HttpOnly, SameSite cookie is `session_id`; Secure follows the canonical app
+URL policy. Only a hash-backed identifier is stored in SQL. `Auth.user`, auth
+middleware and `SessionAuth` read this credential, preserving primary reads,
+absolute/idle expiry and configured fingerprint checks. Normal reads neither
+rotate cookies nor extend absolute expiry, so concurrent tabs cannot overwrite
+one another's renewed credentials. There is no browser-readable refresh secret
+or public cookie-renewal endpoint. Keep normal CSRF protection on sign-in,
+logout and session-management mutations.
+
+- `browserSessions(userId, currentCredential?)` returns owner-scoped metadata
+  and safe identifiers, never credentials. It includes existing ordinary full-scope sign-ins during migration; delegated and limited API tokens keep their own management contract. A listed identifier cannot be
+  replayed as a cookie or bearer.
+- `revokeBrowserSession(userId, identifier)` revokes only that owner's session.
+- `SessionAuth.logout(credential)` and `clearedBrowserSessionCookie()` end the
+  active browser session. Clear the old access-token cookie when changing
+  transports so it cannot mask the new identity.
+- `revokeAccountCredentials` includes database sessions. Its `exceptSessionId`
+  can preserve the current cookie credential or its server-side identifier.
+  Account deprovisioning must use the shared revocation primitive and also
+  revoke any application-owned credentials.
+
+Retain application provisioning, audit and new-device hooks. Password/MFA,
+registration and SSO/social adapters must all use the same transport. A JSON
+sign-in which issues an access-cookie for another account must retire/clear an
+old database browser cookie, so it cannot later restore the earlier identity.
+
+Real HTTP/database evidence: `auth/tests/browser-session-store.test.ts`, including
+service restart, real short bearer expiry, safe metadata identifiers, concurrent
+one-use exchange, owner isolation, failed-revocation rollback, account replacement,
+CSRF, logout races, current-session preservation, idle and absolute expiry.
+
 ## Email Verification (email-verification.ts)
 
 - `EmailVerification.isVerified(user): boolean`
