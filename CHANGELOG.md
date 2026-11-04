@@ -1,5 +1,33 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.468...v0.75.469)
+
+## ✨ Features
+
+- **mobile**: deliver releases to internal TestFlight groups ([762520d](https://github.com/stacksjs/stacks/commit/762520d)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **dashboard**: a bound Badge drops its first-paint grey instead of stacking on it ([adc3b0f](https://github.com/stacksjs/stacks/commit/adc3b0f)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3179](https://github.com/stacksjs/stacks/issues/3179))
+- **dashboard**: a Badge follows a bound :variant instead of staying grey ([00c9785](https://github.com/stacksjs/stacks/commit/00c9785)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3179](https://github.com/stacksjs/stacks/issues/3179))
+- **email**: a safe() value reaches a .stx template as its HTML, not the wrapper ([f33ea1f](https://github.com/stacksjs/stacks/commit/f33ea1f)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3176](https://github.com/stacksjs/stacks/issues/3176))
+- **dashboard**: center the search icon in data, models and inbox search fields ([8336e66](https://github.com/stacksjs/stacks/commit/8336e66)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3175](https://github.com/stacksjs/stacks/issues/3175))
+
+## ⚡ Performance Improvements
+
+- **dashboard**: render the sidebar once and lend it to the mobile drawer ([862de60](https://github.com/stacksjs/stacks/commit/862de60)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3177](https://github.com/stacksjs/stacks/issues/3177))
+
+## 🔧 Chores
+
+- **deps**: raise the stx family to 0.2.800 ([b52c859](https://github.com/stacksjs/stacks/commit/b52c859)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stx#2157](https://github.com/stacksjs/stx/issues/2157), [stacksjs/stx#2153](https://github.com/stacksjs/stx/issues/2153))
+- **deps**: raise ts-css to 0.3.24 ([fd7bac2](https://github.com/stacksjs/stacks/commit/fd7bac2)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **deps**: raise ts-css to 0.3.23 for the named-group selector fix ([9c3c335](https://github.com/stacksjs/stacks/commit/9c3c335)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/ts-css#41](https://github.com/stacksjs/ts-css/issues/41))
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.467...v0.75.468)
 
 ## 🐛 Bug Fixes

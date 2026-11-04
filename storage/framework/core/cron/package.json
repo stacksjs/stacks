@@ -2,7 +2,7 @@
   "name": "@stacksjs/cron",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.468",
+  "version": "0.75.469",
   "description": "The Stacks cron.",
   "author": "Chris Breuer",
   "contributors": [
