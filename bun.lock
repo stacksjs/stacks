@@ -1416,6 +1416,7 @@
         "@stacksjs/events": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/router": "workspace:*",
+        "@stacksjs/server": "workspace:*",
         "@stacksjs/storage": "workspace:*",
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/ts-cloud": "^0.16.91",

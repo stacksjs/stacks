@@ -11,14 +11,17 @@ if (!Bun.env.STRIPE_SECRET_KEY)
   Bun.env.STRIPE_SECRET_KEY = 'sk_test_fake_key_for_testing'
 
 import { applyRuntimeDirectoryEnv } from '@stacksjs/path'
-import { setupTestEnvironment } from '@stacksjs/testing'
-
-setupTestEnvironment()
+import { bootTestEnvironment } from '@stacksjs/testing'
 
 // The suite does not go through the preloader, so point stx and ts-cloud at
 // `storage/` here too. Without it a test that renders a template or touches a
 // cloud helper would write to `.stx` / `.ts-cloud` in the project root.
 applyRuntimeDirectoryEnv()
+
+// Test env plus the server's auto-imports, so app code written without
+// imports (`new Action(...)`, `route.get(...)`, `User.find(...)`) loads here
+// exactly as it does in the running app.
+await bootTestEnvironment()
 
 // `@stacksjs/stx`'s reactivity flushes effects through requestAnimationFrame,
 // which Bun's non-DOM test runtime does not provide. It schedules through a

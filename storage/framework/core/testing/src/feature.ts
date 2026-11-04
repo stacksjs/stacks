@@ -6,6 +6,23 @@ export function setupTestEnvironment(): void {
 }
 
 /**
+ * Prepare a test process the way the server prepares itself: test env, then
+ * the server auto-imports (models, jobs, `Action`, `route`, `response`, ...),
+ * app listeners and gates.
+ *
+ * `bun test` never runs the framework preloader - its preload is the app's
+ * `tests/setup.ts` - so without this every auto-imported name is undefined in
+ * a test, and loading an action written the idiomatic way (no imports) throws
+ * "Action is not defined". Await it from `tests/setup.ts`.
+ */
+export async function bootTestEnvironment(): Promise<void> {
+  setupTestEnvironment()
+
+  const { injectGlobalAutoImports } = await import('@stacksjs/server')
+  await injectGlobalAutoImports()
+}
+
+/**
  * Lightweight feature-test helper. Returns a fluent client that wraps
  * the request flow (`actingAs`, `json`, `assertStatus`, etc.) so test
  * files don't have to re-implement boilerplate around `serverResponse`.
