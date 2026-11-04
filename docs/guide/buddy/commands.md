@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **370 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **371 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -65,7 +65,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `search` | 2 |
 | `search-engine` | 2 |
 | `security` | 1 |
-| `seed` | 1 |
+| `seed` | 2 |
 | `serve` | 1 |
 | `server` | 5 |
 | `setup` | 4 |
@@ -5155,6 +5155,15 @@ Seed your database
 | `--fresh` | Truncate tables before seeding | boolean, optional | `false` |
 | `--append` | Add rows to tables that already have some, instead of skipping them | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `seed:admins`
+
+Make every address in config.auth.admins an administrator
+
+- Usage: `$ buddy seed:admins`
+- Namespace: `seed`
+- Aliases: `admins:seed`
+- Arguments: none
 
 ### `seed:roles`
 
