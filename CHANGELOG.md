@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.460...v0.75.461)
+
+## 🐛 Bug Fixes
+
+- **email**: preserve nested CSS rule bodies when inlining ([0e155cc](https://github.com/stacksjs/stacks/commit/0e155cc)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **ci**: drop the macOS timeout that never held a queued job ([d91893c](https://github.com/stacksjs/stacks/commit/d91893c)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.459...v0.75.460)
 
 ## 🐛 Bug Fixes
