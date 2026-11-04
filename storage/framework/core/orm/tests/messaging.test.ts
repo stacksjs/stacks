@@ -153,3 +153,83 @@ describe('persistent direct messaging', () => {
     expect(Number(row?.first_id)).toBe(1)
   })
 })
+
+/**
+ * Taking a message back, and rewriting one.
+ *
+ * Both are the sender's alone, and both have to leave the thread coherent:
+ * an unsent message keeps its row so ordering, read receipts and the retry
+ * key still refer to something, while the words it carried stop existing.
+ */
+describe('changing a message after it is sent', () => {
+  it('rewrites your own message and says it was edited', async () => {
+    const thread = await coach.direct(2)
+    const sent = await coach.send(thread.id, 'Six oclock', 'edit-typo')
+    expect(sent.edited_at).toBeNull()
+
+    const fixed = await coach.edit(thread.id, sent.id, "Six o'clock")
+    expect(fixed.body).toBe("Six o'clock")
+    expect(fixed.edited_at).not.toBeNull()
+    expect(fixed.id).toBe(sent.id)
+
+    // The other side reads the new words, not the delivered ones.
+    const seen = await athlete.messages(thread.id)
+    expect(seen.messages.find(m => m.id === sent.id)?.body).toBe("Six o'clock")
+  })
+
+  it('refuses to edit a message into nothing', async () => {
+    const thread = await coach.direct(2)
+    const sent = await coach.send(thread.id, 'Still here', 'edit-empty')
+    // Removing every word is unsending it, which is a different thing to ask.
+    await expect(coach.edit(thread.id, sent.id, '   ')).rejects.toThrow(MessagingError)
+    expect((await athlete.messages(thread.id)).messages.find(m => m.id === sent.id)?.body).toBe('Still here')
+  })
+
+  it('loses the words of an unsent message but keeps its place', async () => {
+    const thread = await coach.direct(2)
+    const sent = await coach.send(thread.id, 'Sent to the wrong person', 'unsend-mistake')
+    const gone = await coach.unsend(thread.id, sent.id)
+    expect(gone.deleted_at).not.toBeNull()
+    expect(gone.body).toBe('')
+    expect(gone.attachments).toEqual([])
+
+    // The row is still the row: the reader sees a message that was taken back,
+    // in the place it occupied, rather than the thread silently reshuffling.
+    const seen = await athlete.messages(thread.id)
+    const row = seen.messages.find(m => m.id === sent.id)
+    expect(row?.deleted_at).not.toBeNull()
+    expect(row?.body).toBe('')
+
+    // And it is gone from the database, not merely hidden by the reader.
+    const stored = await db.selectFrom('chat_messages').select(['body']).where('id', '=', sent.id).executeTakeFirst()
+    expect(String(stored?.body ?? '')).toBe('')
+  })
+
+  it('will not change someone else’s message, or say whether it exists', async () => {
+    const thread = await coach.direct(2)
+    const theirs = await athlete.send(thread.id, 'Mine, not yours', 'unsend-theirs')
+    // Not found rather than forbidden: which of your peer's messages exist is
+    // not something an error should disclose.
+    await expect(coach.unsend(thread.id, theirs.id)).rejects.toThrow('Message not found')
+    await expect(coach.edit(thread.id, theirs.id, 'Rewritten')).rejects.toThrow('Message not found')
+    expect((await athlete.messages(thread.id)).messages.find(m => m.id === theirs.id)?.body).toBe('Mine, not yours')
+  })
+
+  it('will not unsend the same message twice, or edit one already taken back', async () => {
+    const thread = await coach.direct(2)
+    const sent = await coach.send(thread.id, 'Going away', 'unsend-once')
+    await coach.unsend(thread.id, sent.id)
+    await expect(coach.unsend(thread.id, sent.id)).rejects.toThrow('This message was unsent')
+    await expect(coach.edit(thread.id, sent.id, 'Back again')).rejects.toThrow('This message was unsent')
+  })
+
+  it('stops accepting changes once the application’s window has passed', async () => {
+    const brief = createMessenger({ ...options, actorId: 1, changeWindowMs: -1 })
+    const thread = await brief.direct(2)
+    const sent = await brief.send(thread.id, 'Too late already', 'window-closed')
+    await expect(brief.edit(thread.id, sent.id, 'Changed')).rejects.toThrow('no longer be changed')
+    await expect(brief.unsend(thread.id, sent.id)).rejects.toThrow('no longer be changed')
+    // Without a window configured the same message is still the sender's.
+    expect((await coach.edit(thread.id, sent.id, 'Changed')).body).toBe('Changed')
+  })
+})

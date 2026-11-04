@@ -548,6 +548,8 @@ describe('drifted catalogue tables', () => {
       .toEqual([
         'categorizables.categorizable_id',
         'chat_messages.attachments',
+        'chat_messages.deleted_at',
+        'chat_messages.edited_at',
         'commentables.author_email',
         'commentables.author_name',
         'taggables.taggable_id',

@@ -22,6 +22,12 @@ export interface MessagingOptions {
   onMessageSent?: (event: { message: DirectMessage, actorId: number, recipientId: number, scope: string, participantType: string }) => void | Promise<void>
   /** Required, and checked again on reads, sends and read receipts. */
   authorize: (actorId: number, recipientId: number) => boolean | Promise<boolean>
+  /**
+   * How long after sending a message may still be edited or unsent, in
+   * milliseconds. Omitted means no limit: whether a conversation is allowed to
+   * be rewritten a year later is the application's policy, not the trait's.
+   */
+  changeWindowMs?: number
 }
 
 /** Private per-person inbox, isolated from other model participant types. */
@@ -70,6 +76,14 @@ export interface DirectMessage {
   client_key: string
   created_at: string
   read_at: string | null
+  /** When the sender last rewrote it, or null if these are the original words. */
+  edited_at: string | null
+  /**
+   * When the sender took it back. A message with this set carries no body and
+   * no attachments: the row survives so the thread's order and read state do,
+   * and what it said does not survive anywhere.
+   */
+  deleted_at: string | null
 }
 
 /** Attachments on one message, and how long their stored form may be. */
@@ -137,7 +151,7 @@ function storedAttachments(value: unknown): DirectMessageAttachment[] {
   catch { return [] }
 }
 function message(row: Record<string, unknown>): DirectMessage {
-  return { id: Number(row.id), conversation_id: String(row.conversation_id), sender_id: Number(row.sender_id), body: String(row.body), attachments: storedAttachments(row.attachments), client_key: String(row.client_key), created_at: parseSqlDateTime(row.created_at)!.toISOString(), read_at: parseSqlDateTime(row.read_at)?.toISOString() ?? null }
+  return { id: Number(row.id), conversation_id: String(row.conversation_id), sender_id: Number(row.sender_id), body: String(row.body), attachments: storedAttachments(row.attachments), client_key: String(row.client_key), created_at: parseSqlDateTime(row.created_at)!.toISOString(), read_at: parseSqlDateTime(row.read_at)?.toISOString() ?? null, edited_at: parseSqlDateTime(row.edited_at)?.toISOString() ?? null, deleted_at: parseSqlDateTime(row.deleted_at)?.toISOString() ?? null }
 }
 
 export interface Messenger {
@@ -145,6 +159,10 @@ export interface Messenger {
   list: () => Promise<DirectConversation[]>
   messages: (id: string, before?: number) => Promise<{ messages: DirectMessage[], has_more: boolean }>
   send: (id: string, body: string, clientKey: string, attachments?: DirectMessageAttachment[]) => Promise<DirectMessage>
+  /** Rewrite one of your own messages. Returns it as it now reads. */
+  edit: (id: string, messageId: number, body: string) => Promise<DirectMessage>
+  /** Take one of your own messages back, leaving the row and losing the words. */
+  unsend: (id: string, messageId: number) => Promise<DirectMessage>
   markRead: (id: string, throughId: number) => Promise<void>
 }
 
@@ -154,6 +172,7 @@ export function createMessenger(options: MessagingOptions): Messenger {
   const participantType = options.participantType ?? 'users'
   const maxLength = options.maxLength ?? 4000
   const pageSize = options.pageSize ?? 50
+  const changeWindowMs = options.changeWindowMs
   if (!options.scope || options.scope.length > 255 || !participantType || participantType.length > 255 || typeof options.authorize !== 'function' || !Number.isSafeInteger(maxLength) || maxLength < 1 || maxLength > 100000 || !Number.isSafeInteger(pageSize) || pageSize < 1 || pageSize > 100)
     throw new MessagingError('Invalid messaging configuration', 422)
 
@@ -261,6 +280,49 @@ export function createMessenger(options: MessagingOptions): Messenger {
     }
     return saved
   }
+  /**
+   * One of your own messages, if it is still yours to change.
+   *
+   * Yours is the whole of it: the conversation is authorized the same way a
+   * read is, and the row must carry this actor as its sender. A message
+   * someone else sent is not found rather than forbidden, because which of
+   * your peer's messages exist is not something an error should disclose.
+   */
+  async function ownMessage(id: string, messageId: number) {
+    const recipientId = await conversation(id)
+    positive(messageId)
+    const row = await db.selectFrom('chat_messages').selectAll().where('conversation_id', '=', id).where('id', '=', messageId).executeTakeFirst()
+    if (!row || Number(row.sender_id) !== actorId) throw new MessagingError('Message not found', 404)
+    if (row.deleted_at) throw new MessagingError('This message was unsent', 409)
+    if (changeWindowMs !== undefined) {
+      const sent = parseSqlDateTime(row.created_at)?.getTime()
+      if (sent === undefined || Date.now() - sent > changeWindowMs) throw new MessagingError('This message can no longer be changed', 409)
+    }
+    return { row, recipientId }
+  }
+  async function edit(id: string, messageId: number, body: string): Promise<DirectMessage> {
+    const { row, recipientId } = await ownMessage(id, messageId)
+    const text = typeof body === 'string' ? body.trim() : ''
+    // The same bar sending clears, with one difference: an edit cannot empty a
+    // message. Removing every word is unsending it, and says so.
+    if (typeof body !== 'string' || !text || text.length > maxLength) throw new MessagingError(`Write a message of 1 to ${maxLength} characters`, 422)
+    if (text === String(row.body)) return message(row)
+    await db.updateTable('chat_messages').set({ body: text, edited_at: sqlDateTime() }).where('id', '=', Number(row.id)).execute()
+    const saved = await db.selectFrom('chat_messages').selectAll().where('id', '=', Number(row.id)).executeTakeFirst()
+    notify(recipientId, id, 'messaging.changed')
+    return message(saved ?? row)
+  }
+  async function unsend(id: string, messageId: number): Promise<DirectMessage> {
+    const { row, recipientId } = await ownMessage(id, messageId)
+    // The words go, not the row: `client_key` stays unique, the thread keeps
+    // its order, and a read receipt that already counted this message still
+    // refers to something. What it said is gone from the database, which is
+    // what taking a message back has to mean.
+    await db.updateTable('chat_messages').set({ body: '', attachments: null, deleted_at: sqlDateTime() }).where('id', '=', Number(row.id)).execute()
+    const saved = await db.selectFrom('chat_messages').selectAll().where('id', '=', Number(row.id)).executeTakeFirst()
+    notify(recipientId, id, 'messaging.changed')
+    return message(saved ?? row)
+  }
   async function markRead(id: string, throughId: number) {
     const recipientId = await conversation(id)
     positive(throughId)
@@ -275,7 +337,7 @@ export function createMessenger(options: MessagingOptions): Messenger {
     // No message text or identity data goes on the wire. Consumers re-read through their current policy.
     for (const userId of [actorId, recipientId]) emit(messagingChannel(participantType, userId), event, { conversation_id: id })
   }
-  return { direct, list, messages, send, markRead }
+  return { direct, list, messages, send, edit, unsend, markRead }
 }
 
 /** Opt-in model trait, binding the hydrated record's id and model table. */

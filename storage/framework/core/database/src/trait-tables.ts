@@ -295,6 +295,19 @@ export function traitTableColumnGuarantees(sql: SqlHelpers): { table: string, co
       definition: 'TEXT',
     },
     {
+      // Messaging predates editing and unsending in the same way, and for the
+      // same reason these are nullable: every row already in the table was
+      // neither.
+      table: 'chat_messages',
+      column: 'edited_at',
+      definition: sql.nullableTimestamp,
+    },
+    {
+      table: 'chat_messages',
+      column: 'deleted_at',
+      definition: sql.nullableTimestamp,
+    },
+    {
       table: 'taggables',
       column: 'taggable_id',
       definition: `INTEGER NOT NULL DEFAULT ${UNSCOPED_OWNER_ID}`,
@@ -411,6 +424,13 @@ export function messagingTableSql(sql: SqlHelpers): string[] {
       client_key VARCHAR(100) NOT NULL,
       created_at ${sql.datetime} NOT NULL,
       read_at ${sql.nullableTimestamp},
+      -- When the sender last rewrote it, so a reader can be told the words
+      -- changed after they were delivered rather than silently shown new ones.
+      edited_at ${sql.nullableTimestamp},
+      -- An unsent message keeps its row: the conversation's order, its read
+      -- state and the retry key all hang off that id. The words go (see
+      -- orm/src/messaging.ts unsend), the row stays.
+      deleted_at ${sql.nullableTimestamp},
       UNIQUE (conversation_id, sender_id, client_key)
     )`,
   ]
