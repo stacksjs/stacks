@@ -1,3 +1,5 @@
+import { localDirectoryPage } from '../directory-page'
+import type { DirectoryPage, DirectoryPageOptions } from '../types'
 import { Buffer } from 'node:buffer'
 import { file, write as bunWrite } from 'bun'
 import { chmod, copyFile, lstat, mkdir, rename, rm, unlink } from 'node:fs/promises'
@@ -213,6 +215,10 @@ export class BunStorageAdapter implements StorageAdapter {
       lastModified: stats.mtime?.getTime() || Date.now(),
       mimeType: isDir ? undefined : bunFile.type,
     }
+  }
+
+  listPage(path: string, options: DirectoryPageOptions = {}): Promise<DirectoryPage> {
+    return localDirectoryPage(this.resolvePath(path), path, options)
   }
 
   list(path: string, options: ListOptions = {}): DirectoryListing {

@@ -25,7 +25,7 @@ const keys = [
 function bucket(pageSize = 1000) {
   const requests: Array<Record<string, unknown>> = []
   const client = {
-    async listObjects(options: { prefix?: string, delimiter?: string, continuationToken?: string }) {
+    async listObjects(options: { prefix?: string, delimiter?: string, continuationToken?: string, maxKeys?: number }) {
       requests.push(options)
       const prefix = options.prefix ?? ''
       const entries: Array<{ object?: string, folder?: string }> = []
@@ -46,11 +46,12 @@ function bucket(pageSize = 1000) {
         }
       }
       const start = Number(options.continuationToken ?? 0)
-      const page = entries.slice(start, start + pageSize)
+      const take = options.maxKeys ?? pageSize
+      const page = entries.slice(start, start + take)
       return {
         objects: page.filter(entry => entry.object).map(entry => ({ Key: entry.object!, LastModified: '', Size: 1 })),
         commonPrefixes: page.filter(entry => entry.folder).map(entry => entry.folder!),
-        nextContinuationToken: start + pageSize < entries.length ? String(start + pageSize) : undefined,
+        nextContinuationToken: start + take < entries.length ? String(start + take) : undefined,
       }
     },
     async listAllObjects(options: { prefix?: string }) {
@@ -109,3 +110,18 @@ describe('S3StorageAdapter.list', () => {
     expect(await collect(adapter.list('photos', { deep: true }))).toContain('file:photos/2024/deep/b.jpg')
   })
 })
+
+ it('durable S3 pages preserve the opaque provider cursor and bound provider work', async () => {
+  const { adapter, requests } = bucket()
+  const found: string[] = []
+  let cursor: string | null = null
+  do {
+    const page = await adapter.listPage('photos', { cursor, limit: 1 })
+    expect(page.entries.length).toBeLessThanOrEqual(1)
+    found.push(...page.entries.map(entry => entry.path))
+    cursor = page.nextCursor
+  } while (cursor)
+  expect(found.sort()).toEqual(['photos/2024', 'photos/2025', 'photos/cover.jpg'])
+  expect(requests.every(request => request.maxKeys === 1 && request.delimiter === '/')).toBe(true)
+  expect(requests[1]?.continuationToken).toBe('1')
+ })

@@ -73,3 +73,5 @@ export type {
   PutResult,
   PutStreamOptions,
 } from './types'
+
+export { DirectoryListingChangedError } from './directory-page'

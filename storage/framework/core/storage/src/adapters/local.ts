@@ -1,3 +1,5 @@
+import { localDirectoryPage } from '../directory-page'
+import type { DirectoryPage, DirectoryPageOptions } from '../types'
 import { Buffer } from 'node:buffer'
 import { createReadStream, createWriteStream } from 'node:fs'
 import { access, chmod, constants, copyFile, lstat, mkdir, readdir, readFile, rename, rm, stat, unlink, writeFile } from 'node:fs/promises'
@@ -195,6 +197,10 @@ export class LocalStorageAdapter implements StorageAdapter {
       lastModified: stats.mtimeMs,
       mimeType: stats.isFile() ? await this.detectMimeType(fullPath) : undefined,
     }
+  }
+
+  listPage(path: string, options: DirectoryPageOptions = {}): Promise<DirectoryPage> {
+    return localDirectoryPage(this.resolvePath(path), path, options)
   }
 
   list(path: string, options: ListOptions = {}): DirectoryListing {

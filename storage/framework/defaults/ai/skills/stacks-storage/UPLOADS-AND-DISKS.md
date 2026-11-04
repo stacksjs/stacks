@@ -131,3 +131,22 @@ tenant. Underlying optional methods still need driver support.
 
 Source: `signed-url.ts`, `static-serve.ts`, `adapters/scoped.ts`; evidence:
 `tests/scoped.test.ts`, `static-serve.test.ts`, `path-sanitize.test.ts`.
+
+## Resumable inventories
+
+Use a disk's optional `listPage(path, { limit, cursor })` for a durable shallow
+inventory. Each page contains at most 1,000 entries (100 by default) and an
+opaque `nextCursor`. Persist the cursor only in the transaction that enrolls the
+whole page; retrying a page must be idempotent. A null cursor completes the pass.
+Do not emulate this API by materializing `list()` when an adapter lacks it.
+
+S3 forwards the provider's continuation token and MaxKeys. Local/Bun disks on
+Darwin or glibc Linux use a bounded 32 KiB native directory block plus its record
+position, preserving that cursor across process restarts without rescanning the
+preceding directory. Local cursors bind to directory identity and modification
+times. `DirectoryListingChangedError` means restart that directory from null;
+previously enrolled records remain valid. Concurrent additions are therefore
+visited during the restarted pass. Symlinks and special files are excluded.
+Permission/provider failures throw and must leave the durable cursor unchanged.
+Windows and unsupported libc hosts fail explicitly rather than claiming a
+bounded inventory through an unbounded fallback.

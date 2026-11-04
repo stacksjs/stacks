@@ -1,3 +1,5 @@
+import { directoryPageSize } from '../directory-page'
+import type { DirectoryPage, DirectoryPageOptions } from '../types'
 import { Buffer } from 'node:buffer'
 import type { S3Client } from '@stacksjs/ts-cloud'
 import type {
@@ -547,6 +549,21 @@ export class S3StorageAdapter implements StorageAdapter {
       size: result.ContentLength || 0,
       lastModified: result.LastModified ? new Date(result.LastModified).getTime() : Date.now(),
       mimeType: result.ContentType,
+    }
+  }
+
+  async listPage(path: string, options: DirectoryPageOptions = {}): Promise<DirectoryPage> {
+    const prefix = this.prefixPath(path).replace(/\/+$/, '')
+    const result = await (await this.getClient()).listObjects({
+      bucket: this.bucket, prefix: prefix ? `${prefix}/` : undefined, delimiter: '/',
+      maxKeys: directoryPageSize(options), continuationToken: options.cursor || undefined,
+    })
+    return {
+      entries: [
+        ...(result.objects || []).filter(obj => obj.Key !== `${prefix}/`).map(obj => ({ path: this.stripPrefix(obj.Key), type: 'file' as const })),
+        ...(result.commonPrefixes || []).map(folder => ({ path: this.stripPrefix(folder.replace(/\/$/, '')), type: 'directory' as const })),
+      ],
+      nextCursor: result.nextContinuationToken || null,
     }
   }
 

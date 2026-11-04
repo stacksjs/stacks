@@ -134,6 +134,10 @@ export interface DirectoryListing extends AsyncIterable<DirectoryEntry> {
 /**
  * Options for listing directories
  */
+/** A bounded shallow page. Persist the opaque cursor only after processing the whole page. */
+export interface DirectoryPageOptions { cursor?: string | null, limit?: number }
+export interface DirectoryPage { entries: DirectoryEntry[], nextCursor: string | null }
+
 export interface ListOptions {
   /** Whether to list recursively */
   deep?: boolean
@@ -427,6 +431,9 @@ export interface StorageAdapter {
 
   /** List directory contents */
   list(path: string, options?: ListOptions): DirectoryListing
+
+  /** Bounded restartable inventory; unsupported drivers must not emulate this through list(). */
+  listPage?(path: string, options?: DirectoryPageOptions): Promise<DirectoryPage>
 
   /** Change file visibility */
   changeVisibility(path: string, visibility: Visibility): Promise<void>
