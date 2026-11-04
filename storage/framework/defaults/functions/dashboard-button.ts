@@ -8,7 +8,7 @@
  * painted with (stacksjs/stacks#3180).
  */
 
-export const buttonVariantClasses: Record<string, string> = {
+export const buttonVariantClasses: Record<string, string> & { primary: string } = {
   primary: 'bg-gradient-to-b from-blue-500 to-blue-600 text-white shadow-sm shadow-blue-600/25 hover:from-blue-400 hover:to-blue-500 active:from-blue-600 active:to-blue-700 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-500 dark:hover:to-blue-600',
   secondary: 'bg-white/80 dark:bg-white/10 text-neutral-800 dark:text-neutral-100 border border-black/10 dark:border-white/10 shadow-sm hover:bg-white dark:hover:bg-white/15 active:bg-neutral-100 dark:active:bg-white/5',
   outline: 'bg-transparent text-neutral-700 dark:text-neutral-200 border border-black/15 dark:border-white/15 hover:bg-black/5 dark:hover:bg-white/8 active:bg-black/10 dark:active:bg-white/10',
