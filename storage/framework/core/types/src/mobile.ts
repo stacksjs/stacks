@@ -201,6 +201,8 @@ export interface IosMobileConfig {
   deploymentTarget?: string
   watchDeploymentTarget?: string
   teamId?: string
+  /** Existing internal TestFlight group names that receive processed releases. */
+  testFlightGroups?: string[]
   url?: string
   webAssets?: string
   fallbackWebAssets?: string

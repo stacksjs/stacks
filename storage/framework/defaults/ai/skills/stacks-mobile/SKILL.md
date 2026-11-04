@@ -294,6 +294,17 @@ appears; `buddy release:notes <tag> --testflight` does it later, and
 `buddy release:notes <tag> --play` prints the 500-character Google Play text.
 The code is `@stacksjs/actions/release-notes`.
 
+Set `ios.testFlightGroups` to the names of existing internal groups (for example,
+`['Internal testers']`) to distribute processed builds to those groups.
+`release:ios --wait` confirms `IN_BETA_TESTING` and the configured memberships
+before retiring older builds; upload or `VALID` processing alone is insufficient.
+Without a wait, older builds stay available. Resume a tagged release with
+`buddy release:testflight <tag> --wait [minutes]`, preserving its existing
+localized notes; `--dry-run` validates the
+existing internal groups without assigning or expiring builds. This creates no
+testers, public links or external beta review submissions. `--keep-builds` retains
+that many older processed builds in addition to the newly available release.
+
 ## Device search index
 
 `spotlight` says what of the application's own content a device may index, so

@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **371 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **372 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -58,7 +58,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `publish` | 8 |
 | `queue` | 21 |
 | `realtime` | 2 |
-| `release` | 4 |
+| `release` | 5 |
 | `route` | 1 |
 | `scaffold` | 1 |
 | `schedule` | 6 |
@@ -4900,11 +4900,11 @@ Ship the iOS app: regenerate its project for production, commit, tag and push
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--bump` | build \| patch \| minor \| major \| x.y.z (default: a new build of the current marketing version) | value, required | - |
-| `--keep-builds` | TestFlight builds to keep besides the new one; older ones are expired (needs an App Store Connect API key) | value, required | `1` |
+| `--keep-builds` | Older TestFlight builds to retain after the replacement is available to testers (needs an App Store Connect API key) | value, required | `1` |
 | `--skip-github-release` | Push the tag without creating its GitHub release | boolean, optional | `false` |
 | `--notes` | What to Test for this build, instead of the notes generated from the commits since the previous build | value, required | - |
 | `--notes-file` | Read What to Test from a file (also RELEASE_NOTES / RELEASE_NOTES_FILE, or release.notes in config/mobile.ts) | value, required | - |
-| `--wait` | Wait for the build to reach App Store Connect, then set its What to Test there too (default 60 minutes; needs an App Store Connect API key) | value, optional | - |
+| `--wait` | Wait for processing, notes and configured internal TestFlight group delivery (default 60 minutes; needs an App Store Connect API key) | value, optional | - |
 | `--dry-run` | Run the release without actually releasing | boolean, optional | `false` |
 
 ### `release:notes`
@@ -4925,6 +4925,21 @@ Print the tester notes of a mobile release tag (default: the newest v*-build.* t
 | `--wait` | With --testflight: wait this long for the build to appear (default 60) | value, optional | - |
 | `--notes` | Use this text instead | value, required | - |
 | `--notes-file` | Read the text from a file instead | value, required | - |
+
+### `release:testflight`
+
+Complete internal tester delivery for an existing iOS release tag
+
+- Usage: `$ buddy release:testflight [tag]`
+- Namespace: `release`
+- Aliases: none
+- Arguments: `[tag]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--wait` | Wait for processing and tester availability (default 60 minutes) | value, optional | - |
+| `--keep-builds` | Older builds to retain after tester delivery succeeds | value, required | `1` |
+| `--dry-run` | Run the release without actually releasing | boolean, optional | `false` |
 
 ### `release:verify`
 

@@ -20,6 +20,113 @@ function build(number: number, state = 'VALID', expired = false): TestFlightBuil
 }
 
 describe('App Store Connect for release:ios', () => {
+  it('assigns a processed build to the configured internal group found on a later app page', async () => {
+    const writes: Array<{ path: string, body: unknown }> = []
+    const api = new AppStoreConnect('token', async (input, init) => {
+      const url = new URL(input)
+      if (init?.method === 'POST') {
+        writes.push({ path: url.pathname, body: JSON.parse(String(init.body)) })
+        return new Response(null, { status: 204 })
+      }
+      if (url.pathname === '/v1/apps/app/betaGroups') {
+        return url.searchParams.has('cursor')
+          ? Response.json({ data: [{ id: 'team', attributes: { name: 'Team', isInternalGroup: true } }] })
+          : Response.json({ data: [{ id: 'public', attributes: { name: 'Public', isInternalGroup: false } }], links: { next: 'https://api.appstoreconnect.apple.com/v1/apps/app/betaGroups?cursor=2' } })
+      }
+      if (url.pathname === '/v1/builds/b158/betaGroups') return Response.json({ data: [] })
+      return new Response('Unexpected Apple request', { status: 404 })
+    })
+    expect(await api.assignBuildToInternalGroups('app', build(158), ['Team'])).toEqual([{ id: 'team', name: 'Team', isInternalGroup: true }])
+    expect(writes).toEqual([{ path: '/v1/betaGroups/team/relationships/builds', body: { data: [{ type: 'builds', id: 'b158' }] } }])
+  })
+
+  it('rejects missing, external or ambiguous groups before distributing any build', async () => {
+    for (const groups of [[], [{ id: 'public', attributes: { name: 'Team', isInternalGroup: false } }],
+      [{ id: 'one', attributes: { name: 'Team', isInternalGroup: true } }, { id: 'two', attributes: { name: 'Team', isInternalGroup: true } }]]) {
+      let writes = 0
+      const api = new AppStoreConnect('token', async (_url, init) => {
+        if (init?.method === 'POST') writes++
+        return Response.json({ data: groups })
+      })
+      await expect(api.assignBuildToInternalGroups('app', build(158), ['Team'])).rejects.toThrow('existing internal group')
+      expect(writes).toBe(0)
+    }
+  })
+
+  it('waits for actual internal group delivery before retiring an older build', async () => {
+    let clock = 0
+    let assigned = false
+    const operations: string[] = []
+    const api = new AppStoreConnect('token', async (input, init) => {
+      const url = new URL(input)
+      const path = url.pathname
+      if (init?.method === 'POST') { assigned = true; operations.push('assign'); return new Response(null, { status: 204 }) }
+      if (init?.method === 'PATCH') { operations.push(`expire:${path}`); return Response.json({ data: {} }) }
+      if (path === '/v1/apps/app/betaGroups') return Response.json({ data: [{ id: 'team', attributes: { name: 'Team', isInternalGroup: true } }] })
+      if (path === '/v1/builds/b158/betaGroups') return Response.json({ data: assigned && clock >= 60_000 ? [{ id: 'team', attributes: { name: 'Team', isInternalGroup: true } }] : [] })
+      if (path === '/v1/builds/b158/buildBetaDetail') return Response.json({ data: { attributes: { internalBuildState: clock >= 60_000 ? 'IN_BETA_TESTING' : 'READY_FOR_BETA_TESTING' } } })
+      if (path === '/v1/builds') {
+        if (url.searchParams.has('filter[version]')) return Response.json({ data: [{ id: 'b158', attributes: { version: '158', processingState: clock ? 'VALID' : 'PROCESSING', expired: false } }] })
+        return Response.json({ data: [155, 156, 157, 158, 159].map(number => ({ id: `b${number}`, attributes: { version: String(number), processingState: 'VALID', expired: false } })) })
+      }
+      return new Response('Unexpected Apple request', { status: 404 })
+    })
+    const result = await api.deliverBuild('app', '1.0.0', 158, {
+      groups: ['Team'], keepBuilds: 1, timeoutMs: 90_000, intervalMs: 30_000, now: () => clock,
+      sleep: async ms => { expect(operations.filter(operation => operation.startsWith('expire:'))).toEqual([]); clock += ms },
+    })
+    expect(result?.number).toBe(158)
+    expect(clock).toBe(60_000)
+    expect(operations).toEqual(['assign', 'expire:/v1/builds/b156', 'expire:/v1/builds/b155'])
+  })
+
+  it('leaves older builds available when internal testing never becomes ready', async () => {
+    let clock = 0
+    let assignments = 0
+    let expirations = 0
+    const api = new AppStoreConnect('token', async (input, init) => {
+      const path = new URL(input).pathname
+      if (init?.method === 'POST') { assignments++; return new Response(null, { status: 204 }) }
+      if (init?.method === 'PATCH') { expirations++; return Response.json({ data: {} }) }
+      if (path === '/v1/apps/app/betaGroups') return Response.json({ data: [{ id: 'team', attributes: { name: 'Team', isInternalGroup: true } }] })
+      if (path === '/v1/builds/b158/betaGroups') return Response.json({ data: [] })
+      if (path === '/v1/builds/b158/buildBetaDetail') return Response.json({ data: { attributes: { internalBuildState: 'READY_FOR_BETA_TESTING' } } })
+      if (path === '/v1/builds') return Response.json({ data: [{ id: 'b158', attributes: { version: '158', processingState: 'VALID', expired: false } }] })
+      return new Response('Unexpected Apple request', { status: 404 })
+    })
+    expect(await api.deliverBuild('app', '1.0.0', 158, { groups: ['Team'], timeoutMs: 60_000, now: () => clock, sleep: async ms => { clock += ms } })).toBeNull()
+    expect(clock).toBe(60_000)
+    expect(assignments).toBe(1)
+    expect(expirations).toBe(0)
+  })
+
+  it('resumes existing membership without assigning twice and rejects unready or expired builds', async () => {
+    let assigned = false
+    let writes = 0
+    const api = new AppStoreConnect('token', async (input, init) => {
+      if (init?.method === 'POST') { assigned = true; writes++; return new Response(null, { status: 204 }) }
+      return Response.json({ data: new URL(input).pathname.startsWith('/v1/apps/') || assigned
+        ? [{ id: 'team', attributes: { name: 'Team', isInternalGroup: true } }] : [] })
+    })
+    await api.assignBuildToInternalGroups('app', build(158), ['Team', 'Team'])
+    await api.assignBuildToInternalGroups('app', build(158), ['Team'])
+    expect(writes).toBe(1)
+    for (const candidate of [build(158, 'PROCESSING'), build(158, 'FAILED'), build(158, 'VALID', true)])
+      await expect(api.assignBuildToInternalGroups('app', candidate, ['Team'])).rejects.toThrow('processed, unexpired')
+    expect(writes).toBe(1)
+  })
+
+  it('does not follow a group pagination link to another service', async () => {
+    const calls: string[] = []
+    const api = new AppStoreConnect('token', async input => {
+      calls.push(input)
+      return Response.json({ data: [], links: { next: 'https://other.example/v1/groups' } })
+    })
+    await expect(api.internalTestFlightGroups('app', ['Team'])).rejects.toThrow('unsafe pagination')
+    expect(calls).toHaveLength(1)
+    expect(new URL(calls[0]!).origin).toBe('https://api.appstoreconnect.apple.com')
+  })
+
   it('reads the key from the environment, inline or from its file, and nothing without all three parts', async () => {
     const { pem } = await keyPair()
     expect(appStoreConnectCredentials({})).toBeNull()

@@ -46,7 +46,7 @@ const IOS_PROJECT_DIR = 'storage/framework/mobile/ios'
 const DEFAULT_WAIT_MINUTES = 60
 
 interface MobileReleaseSettings {
-  ios?: { bundleId?: string, nativeMessages?: { languages?: string[] } }
+  ios?: { bundleId?: string, nativeMessages?: { languages?: string[] }, testFlightGroups?: string[] }
   release?: ReleaseNotesConfig
 }
 
@@ -64,6 +64,16 @@ export function waitMinutes(value: IosReleaseOptions['wait']): number | null {
   if (!Number.isFinite(minutes) || minutes < 0)
     throw new Error(`--wait takes minutes, not ${String(value)}`)
   return minutes
+}
+
+export function retainedBuildCount(value: number | string | undefined): number {
+  if (value !== undefined && typeof value !== 'number' && typeof value !== 'string'
+    || typeof value === 'string' && !/^(0|[1-9]\d*)$/.test(value.trim()))
+    throw new Error('--keep-builds needs a nonnegative integer')
+  const count = Number(value ?? 1)
+  if (!Number.isSafeInteger(count) || count < 0)
+    throw new Error('--keep-builds needs a nonnegative integer')
+  return count
 }
 
 /** The TestFlight build number an iOS build tag names. */
@@ -105,6 +115,26 @@ async function applyWhatToTest(store: { api: AppStoreConnect, appId: string }, t
     log.warn(`Could not set What to Test: ${error instanceof Error ? error.message : String(error)}. Retry with \`buddy release:notes ${tag} --testflight\`.`)
     return false
   }
+}
+
+async function deliverTestFlight(store: { api: AppStoreConnect, appId: string }, tag: string, notes: string | undefined, locales: string[], minutes: number, groups: string[], keep: number): Promise<boolean> {
+  const { version, number } = buildNumberOf(tag)
+  try {
+    const build = await store.api.deliverBuild(store.appId, version, number, {
+      timeoutMs: minutes * 60_000, groups, keepBuilds: keep,
+      notes: notes === undefined ? undefined : Object.fromEntries(locales.map(locale => [locale, fitNotes(notes, TESTFLIGHT_NOTES_LIMIT)])),
+      onWait: elapsed => log.debug(`TestFlight build ${number} is not ready for its testers (${Math.round(elapsed / 1000)}s)`),
+    })
+    if (build) {
+      log.info(`TestFlight build ${number} is IN_BETA_TESTING${groups.length ? ` for ${groups.join(', ')}` : ''}; older build retention is complete`)
+      return true
+    }
+    log.warn(`TestFlight build ${number} is not available to its testers yet. Older builds remain available. Resume with \`buddy release:testflight ${tag} --wait\`.`)
+  }
+  catch (error) {
+    log.warn(`TestFlight delivery is incomplete: ${error instanceof Error ? error.message : String(error)}. Resume with \`buddy release:testflight ${tag} --wait\`.`)
+  }
+  return false
 }
 
 /** The GitHub release's opening: which build, then what to test in it. */
@@ -181,7 +211,11 @@ async function releaseIos(options: IosReleaseOptions): Promise<string> {
   }
 
   log.info(`Releasing ${tag}${version === current ? '' : ` (version ${current} → ${version})`}`)
-  const keep = Math.max(0, Number(options.keepBuilds ?? 1) || 0)
+  const keep = retainedBuildCount(options.keepBuilds)
+  const groups = mobile.ios?.testFlightGroups ?? []
+  if (!Array.isArray(groups)) throw new Error('ios.testFlightGroups must be an array of existing internal group names')
+  if (groups.length && !store) throw new Error('ios.testFlightGroups requires an App Store Connect API key')
+  if (store) await store.api.internalTestFlightGroups(store.appId, groups)
   // With a key, the tag's number is the Xcode Cloud run, so TestFlight's.
   const summary = iosReleaseSummary(tag, { numberedByXcodeCloud })
 
@@ -202,7 +236,7 @@ async function releaseIos(options: IosReleaseOptions): Promise<string> {
     log.info(`What to Test (${origin}; ${locales.map(locale => `TestFlight/WhatToTest.${locale}.txt`).join(', ')}):\n\n${fitNotes(notes.text, XCODE_CLOUD_NOTES_LIMIT)}`)
     if (store) {
       const retiring = buildsToExpire(await store.api.builds(store.appId), keep)
-      log.info(retiring.length ? `Would expire TestFlight builds ${retiring.map(b => b.number).join(', ')}` : 'No TestFlight builds to expire')
+      log.info(retiring.length ? `After the new build is available to its testers, would expire TestFlight builds ${retiring.map(b => b.number).join(', ')}` : 'No TestFlight builds to expire')
     }
     if (!options.skipGithubRelease) {
       const preview = await publishGitHubRelease({ cwd: root, tag, ref: 'HEAD', name: summary.name, summary: githubSummary(summary.body, githubNotes), dryRun: true })
@@ -263,24 +297,13 @@ async function releaseIos(options: IosReleaseOptions): Promise<string> {
       log.info(describeGitHubRelease(tag, published))
   }
 
-  // The builds this one supersedes leave TestFlight, so its list is the
-  // newest kept and this one once it has processed.
+  // Upload/processing alone does not make a build installable. Keep existing
+  // builds until the replacement is actually available to its testers.
   if (store) {
-    try {
-      const retiring = buildsToExpire(await store.api.builds(store.appId), keep)
-      for (const build of retiring)
-        await store.api.expire(build.id)
-      if (retiring.length)
-        log.info(`Expired TestFlight builds ${retiring.map(b => b.number).join(', ')}`)
+    if (wait !== null && numberedByXcodeCloud) {
+      if (!await deliverTestFlight(store, tag, notes.text, locales, wait, groups, keep)) process.exitCode = ExitCode.FatalError
     }
-    catch (error) {
-      // The release is out; tidying TestFlight is not worth failing it.
-      log.warn(`Could not expire older TestFlight builds: ${error instanceof Error ? error.message : String(error)}`)
-    }
-    // The file covers Xcode Cloud; this sets the full notes (up to 4000
-    // characters) once the build is there, for a release that waits for it.
-    if (wait !== null && numberedByXcodeCloud)
-      await applyWhatToTest(store, tag, notes.text, locales, wait)
+    else log.info(`Older TestFlight builds are retained. Complete tester delivery with \`buddy release:testflight ${tag} --wait\`.`)
   }
   return tag
 }
@@ -348,6 +371,30 @@ async function releaseNotesCommand(tagArgument: string | undefined, options: Rel
   await printAsync(Number.isFinite(limit) ? fitNotes(notes.text, limit) : notes.text)
 }
 
+async function releaseTestFlightCommand(tagArgument: string | undefined, options: IosReleaseOptions): Promise<void> {
+  const root = process.cwd()
+  if (!options.dryRun) await assertPublicationAllowed({ cwd: root, channel: 'ios' })
+  const mobile = await loadMobileConfig(join(root, 'config/mobile.ts'))
+  const tag = tagArgument || previousMobileTag(root, 'HEAD')
+  if (!tag || !git('tag', '--list', tag)) throw new Error('Select an existing mobile release tag')
+  buildNumberOf(tag)
+  const credentials = appStoreConnectCredentials()
+  if (!credentials || !mobile.ios?.bundleId) throw new Error('TestFlight delivery needs an App Store Connect API key and ios.bundleId')
+  const api = await AppStoreConnect.connect(credentials)
+  const store = { api, appId: await api.appId(mobile.ios.bundleId) }
+  const groups = mobile.ios.testFlightGroups ?? []
+  await api.internalTestFlightGroups(store.appId, groups)
+  const keep = retainedBuildCount(options.keepBuilds)
+  if (options.dryRun) {
+    log.info(`Would deliver ${tag}${groups.length ? ` to ${groups.join(', ')}` : ' using its existing internal tester access'}, confirm IN_BETA_TESTING, then retain ${keep} older builds. Nothing was distributed or expired.`)
+    return
+  }
+  // Delivery resumes preserve the build's already approved localized notes.
+  // `release:notes --testflight` remains the explicit notes-editing command.
+  if (!await deliverTestFlight(store, tag, undefined, notesLocales(mobile), waitMinutes(options.wait) ?? DEFAULT_WAIT_MINUTES, groups, keep))
+    process.exitCode = ExitCode.FatalError
+}
+
 export function release(buddy: CLI): void {
   buddy
     .command('release', descriptions.release)
@@ -389,22 +436,35 @@ export function release(buddy: CLI): void {
   buddy
     .command('release:ios', 'Ship the iOS app: regenerate its project for production, commit, tag and push')
     .option('--bump <type>', 'build | patch | minor | major | x.y.z (default: a new build of the current marketing version)')
-    .option('--keep-builds <n>', 'TestFlight builds to keep besides the new one; older ones are expired (needs an App Store Connect API key)', { default: 1 })
+    .option('--keep-builds <n>', 'Older TestFlight builds to retain after the replacement is available to testers (needs an App Store Connect API key)', { default: 1 })
     .option('--skip-github-release', descriptions.skipGithubRelease, { default: false })
     .option('--notes <text>', 'What to Test for this build, instead of the notes generated from the commits since the previous build')
     .option('--notes-file <path>', 'Read What to Test from a file (also RELEASE_NOTES / RELEASE_NOTES_FILE, or release.notes in config/mobile.ts)')
-    .option('--wait [minutes]', 'Wait for the build to reach App Store Connect, then set its What to Test there too (default 60 minutes; needs an App Store Connect API key)')
+    .option('--wait [minutes]', 'Wait for processing, notes and configured internal TestFlight group delivery (default 60 minutes; needs an App Store Connect API key)')
     .option('--dry-run', descriptions.dryRun, { default: false })
     .action(async (options: IosReleaseOptions) => {
       const startTime = await intro('buddy release:ios')
       try {
         const tag = await releaseIos(options)
-        await outro(options.dryRun ? `Dry run complete: would release ${tag}` : `Released ${tag}`, { startTime, useSeconds: true })
+        await outro(options.dryRun ? `Dry run complete: would release ${tag}` : process.exitCode ? `Published ${tag}; TestFlight delivery is incomplete` : `Released ${tag}`, { startTime, useSeconds: true })
         if (!options.dryRun)
           log.info('A CI that builds tags (Xcode Cloud: Tag Changes, prefix "v") turns it into a TestFlight build now.')
       }
       catch (error) {
         await log.error('Failed to release the iOS app', error)
+        process.exit(ExitCode.FatalError)
+      }
+    })
+
+  buddy
+    .command('release:testflight [tag]', 'Complete internal tester delivery for an existing iOS release tag')
+    .option('--wait [minutes]', 'Wait for processing and tester availability (default 60 minutes)')
+    .option('--keep-builds <n>', 'Older builds to retain after tester delivery succeeds', { default: 1 })
+    .option('--dry-run', descriptions.dryRun, { default: false })
+    .action(async (tag: string | undefined, options: IosReleaseOptions) => {
+      try { await releaseTestFlightCommand(tag, options) }
+      catch (error) {
+        await log.error('Failed to deliver the TestFlight build', error)
         process.exit(ExitCode.FatalError)
       }
     })

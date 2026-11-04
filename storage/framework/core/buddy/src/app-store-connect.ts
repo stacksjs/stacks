@@ -69,6 +69,12 @@ export interface TestFlightBuild {
   expired: boolean
 }
 
+export interface TestFlightGroup {
+  id: string
+  name: string
+  isInternalGroup: boolean
+}
+
 export class AppStoreConnect {
   private tokenProvider?: () => Promise<{ token: string, renewAt: number }>
   private renewAt = Number.POSITIVE_INFINITY
@@ -108,6 +114,7 @@ export class AppStoreConnect {
   private async request<T = any>(path: string, init: RequestInit = {}): Promise<T> {
     const response = await this.fetchImpl(`${API}${path}`, {
       ...init,
+      signal: init.signal ?? AbortSignal.timeout(30_000),
       headers: { 'Authorization': await this.authorization(), 'Content-Type': 'application/json', ...(init.headers as Record<string, string> | undefined) },
     })
     if (!response.ok) {
@@ -115,6 +122,100 @@ export class AppStoreConnect {
       throw new Error(`App Store Connect ${init.method ?? 'GET'} ${path} answered ${response.status}${body ? `: ${body.slice(0, 300)}` : ''}`)
     }
     return (response.status === 204 ? null : await response.json()) as T
+  }
+
+  private async pages(path: string): Promise<any[]> {
+    const rows: any[] = []
+    const visited = new Set<string>()
+    while (path) {
+      if (visited.has(path)) throw new Error('App Store Connect repeated a pagination link')
+      visited.add(path)
+      const page = await this.request(path)
+      rows.push(...(page?.data ?? []))
+      if (!page?.links?.next) break
+      const next = new URL(page.links.next, API)
+      if (next.origin !== API || !next.pathname.startsWith('/v1/') || next.username || next.password)
+        throw new Error('App Store Connect returned an unsafe pagination link')
+      path = next.pathname + next.search
+    }
+    return rows
+  }
+
+  /** Resolve every configured group before any build is distributed. */
+  async internalTestFlightGroups(appId: string, names: readonly string[]): Promise<TestFlightGroup[]> {
+    if (!Array.isArray(names) || names.some(name => typeof name !== 'string' || !name.trim()))
+      throw new Error('ios.testFlightGroups must contain nonempty internal group names')
+    if (!names.length) return []
+    const groups: TestFlightGroup[] = (await this.pages(`/v1/apps/${encodeURIComponent(appId)}/betaGroups?limit=200&fields[betaGroups]=name,isInternalGroup`))
+      .map(row => ({ id: String(row.id), name: String(row.attributes?.name ?? ''), isInternalGroup: row.attributes?.isInternalGroup === true }))
+    return [...new Set(names.map(name => name.trim()))].map(name => {
+      const matching = groups.filter(group => group.name === name)
+      if (matching.length !== 1 || !matching[0]!.isInternalGroup)
+        throw new Error(`TestFlight group ${JSON.stringify(name)} must name one existing internal group for this app`)
+      return matching[0]!
+    })
+  }
+
+  /** Add only this build to existing internal groups; never create testers or public links. */
+  async assignBuildToInternalGroups(appId: string, build: TestFlightBuild, names: readonly string[]): Promise<TestFlightGroup[]> {
+    if (build.processingState !== 'VALID' || build.expired)
+      throw new Error('Only a processed, unexpired build can be distributed to TestFlight')
+    const groups = await this.internalTestFlightGroups(appId, names)
+    if (!groups.length) return groups
+    const assigned = new Set((await this.pages(`/v1/builds/${encodeURIComponent(build.id)}/betaGroups?limit=200&fields[betaGroups]=name,isInternalGroup`)).map(group => group.id))
+    for (const group of groups) {
+      if (assigned.has(group.id)) continue
+      await this.request(`/v1/betaGroups/${encodeURIComponent(group.id)}/relationships/builds`, {
+        method: 'POST',
+        body: JSON.stringify({ data: [{ type: 'builds', id: build.id }] }),
+      })
+    }
+    return groups
+  }
+
+  async testFlightStatus(buildId: string): Promise<{ internalBuildState: string, groupIds: string[] }> {
+    const [detail, groups] = await Promise.all([
+      this.request(`/v1/builds/${encodeURIComponent(buildId)}/buildBetaDetail`),
+      this.pages(`/v1/builds/${encodeURIComponent(buildId)}/betaGroups?limit=200&fields[betaGroups]=name,isInternalGroup`),
+    ])
+    return { internalBuildState: String(detail?.data?.attributes?.internalBuildState ?? ''), groupIds: groups.map(group => String(group.id)) }
+  }
+
+  /** Confirm real tester availability before retiring any older release. */
+  async deliverBuild(appId: string, version: string, number: number, options: TestFlightDeliveryOptions): Promise<TestFlightBuild | null> {
+    const interval = options.intervalMs ?? 30_000
+    const keep = options.keepBuilds ?? 1
+    if (!Number.isFinite(options.timeoutMs) || options.timeoutMs < 0 || !Number.isFinite(interval) || interval <= 0 || !Number.isSafeInteger(keep) || keep < 0)
+      throw new Error('TestFlight delivery needs a nonnegative wait/retention count and a positive polling interval')
+    const now = options.now ?? Date.now
+    const sleep = options.sleep ?? (ms => new Promise(resolve => setTimeout(resolve, ms)))
+    const start = now()
+    const groups = await this.internalTestFlightGroups(appId, options.groups ?? [])
+    let appliedBuild: string | undefined
+    for (;;) {
+      const build = await this.build(appId, version, number)
+      if (build?.expired || build && ['FAILED', 'INVALID'].includes(build.processingState))
+        throw new Error(`TestFlight build ${number} is ${build.expired ? 'expired' : build.processingState}`)
+      if (build?.processingState === 'VALID') {
+        if (appliedBuild !== build.id) {
+          if (options.notes && Object.keys(options.notes).length) await this.setWhatToTest(build.id, options.notes)
+          await this.assignBuildToInternalGroups(appId, build, options.groups ?? [])
+          appliedBuild = build.id
+        }
+        const status = await this.testFlightStatus(build.id)
+        if (status.internalBuildState === 'IN_BETA_TESTING' && groups.every(group => status.groupIds.includes(group.id))) {
+          if (options.timeoutMs > 0 && now() - start > options.timeoutMs) return null
+          // A concurrently released newer build is never this release's to expire.
+          const older = (await this.builds(appId)).filter(candidate => candidate.number < number)
+          for (const retiring of buildsToExpire(older, keep)) await this.expire(retiring.id)
+          return build
+        }
+      }
+      const elapsed = now() - start
+      if (elapsed + interval > options.timeoutMs) return null
+      options.onWait?.(elapsed)
+      await sleep(interval)
+    }
   }
 
   /** The app's App Store Connect id, from its bundle id. */
@@ -142,8 +243,8 @@ export class AppStoreConnect {
 
   /** The app's TestFlight builds, newest first. */
   async builds(appId: string): Promise<TestFlightBuild[]> {
-    const body = await this.request(`/v1/builds?filter[app]=${appId}&sort=-uploadedDate&limit=50&fields[builds]=version,uploadedDate,processingState,expired`)
-    return (body?.data ?? []).map((build: any) => ({
+    const rows = await this.pages(`/v1/builds?filter[app]=${encodeURIComponent(appId)}&sort=-uploadedDate&limit=200&fields[builds]=version,uploadedDate,processingState,expired`)
+    return rows.map((build: any) => ({
       id: build.id,
       number: Number(build.attributes?.version),
       uploadedDate: String(build.attributes?.uploadedDate ?? ''),
@@ -225,6 +326,13 @@ export interface WaitForBuildOptions {
   now?: () => number
   /** Told about each look, e.g. to log progress. */
   onWait?: (elapsedMs: number) => void
+}
+
+export interface TestFlightDeliveryOptions extends WaitForBuildOptions {
+  groups?: readonly string[]
+  notes?: Record<string, string>
+  /** Older processed builds retained besides the newly available build. */
+  keepBuilds?: number
 }
 
 /**
