@@ -1,3 +1,12 @@
+<script server>
+import { loadDiscoveredManifest } from '@stacksjs/defaults/resources/functions/dashboard/sidebar'
+
+// The Commerce card follows the sidebar's commerce section: with the feature
+// off its models are never loaded, so the page it opens could only answer
+// 503 (stacksjs/stacks#3183).
+export const commerceAnalytics = loadDiscoveredManifest().sections.commerce
+</script>
+
 <script client>
 import type { AnalyticsOverview } from '../../../../functions/analytics'
 import { fetchWebAnalytics } from '../../../../functions/analytics'
@@ -17,7 +26,7 @@ const analyticsCards = [
   { name: 'Countries', description: 'Geographic data when provided', icon: 'i-hugeicons-globe-02', to: '/analytics/countries' },
   { name: 'Devices', description: 'Device classes from user agents', icon: 'i-hugeicons-smart-phone-01', to: '/analytics/devices' },
   { name: 'Browsers', description: 'Browser families from user agents', icon: 'i-hugeicons-browser', to: '/analytics/browsers' },
-]
+].filter(card => commerceAnalytics || !card.to.startsWith('/analytics/commerce/'))
 
 function formatNumber(value: number | undefined): string {
   return new Intl.NumberFormat().format(value || 0)

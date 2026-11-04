@@ -491,8 +491,15 @@ export function buildNavSections(
       { to: '/analytics/browsers', icon: 'globe', text: 'Browsers' },
       { to: '/analytics/events', icon: 'bolt', text: 'Events' },
       { to: '/analytics/blog', icon: 'document', text: 'Blog' },
-      { to: '/analytics/commerce/web', icon: 'cart', text: 'Commerce' },
-      { to: '/analytics/commerce/sales', icon: 'sale-tag', text: 'Sales' },
+      // Commerce's analytics follow the commerce section. With the feature
+      // off its models are never loaded, so Sales could only answer 503
+      // (stacksjs/stacks#3183).
+      ...(toggles.commerce
+        ? [
+            { to: '/analytics/commerce/web', icon: 'cart', text: 'Commerce' },
+            { to: '/analytics/commerce/sales', icon: 'sale-tag', text: 'Sales' },
+          ]
+        : []),
       { to: '/analytics/marketing', icon: 'megaphone', text: 'Marketing' },
     ]])
   }

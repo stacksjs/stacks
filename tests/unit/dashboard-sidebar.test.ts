@@ -47,6 +47,19 @@ describe('dashboard sidebar data', () => {
     expect(serialized).not.toContain('sidebar-link')
   })
 
+  // stacksjs/stacks#3183: the Commerce section was hidden when commerce is off,
+  // but Analytics still linked to its sales page, which could only 503.
+  it('offers commerce analytics only with the commerce section', () => {
+    const analyticsLinks = (commerce: boolean) => (buildNavSections([], { ...DEFAULT_TOGGLES, commerce })
+      .find(([id]) => id === 'analytics')?.[2] ?? []).map(item => item.to)
+
+    expect(analyticsLinks(true)).toContain('/analytics/commerce/sales')
+    expect(analyticsLinks(true)).toContain('/analytics/commerce/web')
+    expect(analyticsLinks(false)).not.toContain('/analytics/commerce/sales')
+    expect(analyticsLinks(false)).not.toContain('/analytics/commerce/web')
+    expect(analyticsLinks(false)).toContain('/analytics/marketing')
+  })
+
   // Settings used to be listed twice: once in Utilities beside Appearance and
   // Mail Settings, and again in a trailing unlabelled section that pinned it
   // to the bottom the way macOS does. Two rows, two clicks apart, same page.
