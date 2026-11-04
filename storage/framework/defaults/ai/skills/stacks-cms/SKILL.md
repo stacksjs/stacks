@@ -102,7 +102,7 @@ cms.posts.fetchById(id: number): Promise<PostJsonResponse | undefined>
 cms.posts.fetchAll(): Promise<PostJsonResponse[]>
 cms.posts.fetchByStatus(status: 'published' | 'draft' | 'archived'): Promise<PostJsonResponse[]>
 cms.posts.fetchByCategory(category: string): Promise<PostJsonResponse[]>
-cms.posts.fetchByAuthor(author: string): Promise<PostJsonResponse[]>
+cms.posts.fetchByAuthor(authorId: number): Promise<PostJsonResponse[]>
 cms.posts.fetchByMinViews(minViews: number): Promise<PostJsonResponse[]>
 cms.posts.fetchPublishedAfter(timestamp: number): Promise<PostJsonResponse[]>
 
@@ -128,8 +128,10 @@ cms.authors.findByName(name: string): Promise<AuthorJsonResponse | undefined>
 cms.authors.findByUserId(userId: number): Promise<AuthorJsonResponse | undefined>
 cms.authors.fetchAll(): Promise<AuthorJsonResponse[]>
 cms.authors.fetchById(id: number): Promise<AuthorJsonResponse | undefined>
-cms.authors.update(id, data): Promise<AuthorJsonResponse>
-cms.authors.destroy(id): Promise<boolean>
+cms.authors.findByUuid(uuid: string): Promise<AuthorJsonResponse | undefined>
+cms.authors.update(id, data): Promise<AuthorJsonResponse | undefined>
+cms.authors.destroy(id): Promise<AuthorJsonResponse>
+cms.authors.destroyMany(ids: number[]): Promise<number>
 ```
 
 ## Tags API

@@ -44,7 +44,10 @@ await search.addDocuments('products', [
 ])
 
 // Search
-const results = await search.search('products', 'widget')
+const results = await search.search('products', { q: 'widget', limit: 20, filter: { status: 'active' } })
+
+// From a model with the useSearch trait (the usual call)
+const hits = await Product.search('widget').where({ status: 'active' }).get()
 
 // List indexes
 const indexes = await search.listAllIndexes()

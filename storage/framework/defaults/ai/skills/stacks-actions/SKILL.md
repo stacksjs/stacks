@@ -20,7 +20,7 @@ Server actions are reusable business logic units invoked from routes, events, or
 
 ```typescript
 // app/Actions/CreateWidget.ts
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { toSnakeCaseKeys } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 
@@ -57,7 +57,7 @@ the rules used by an explicit `request.validate()` call; do not assume attaching
 a model means every custom handler has already validated all its input.
 
 ```ts
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { schema } from '@stacksjs/validation'
 
 export default new Action({

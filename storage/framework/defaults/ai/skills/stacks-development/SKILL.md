@@ -92,7 +92,7 @@ buddy/src/commands/
 - `buddy dev:system-tray` (alias: `dev:tray`) -- System tray dev server
 
 ### Build Commands
-- `buddy build` -- Build stacks framework (default when no option specified)
+- `buddy build` -- Interactive target picker in a terminal; with no TTY (CI) or no pick it builds the frontend views. The framework builds only with `--stacks` / `build:stacks`
 - `buddy build components` -- Build component libraries
 - `buddy build docs` -- Build documentation site
 - `buddy build server` (alias: `build:docker`) -- Build Docker server image

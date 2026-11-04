@@ -44,7 +44,7 @@ await db.insertInto('users')
   .execute()
 
 // Update
-await db.update('users')
+await db.updateTable('users')
   .set({ active: false })
   .where('id', '=', 1)
   .execute()

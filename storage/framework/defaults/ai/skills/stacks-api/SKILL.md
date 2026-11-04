@@ -222,17 +222,20 @@ response.json({ message: 'OK' })
 response.json(data, { status: 200, headers: { 'X-Custom': 'value' }, pretty: true })
 
 // Status shortcuts
-response.created({ id: 1 })              // 201
+response.success(data, 'Saved')          // 200, { success: true, data, message }
+response.created({ id: 1 })              // 201, { success: true, data }
 response.noContent()                      // 204
-response.badRequest({ error: 'Bad' })     // 400
-response.unauthorized()                   // 401 (default: { error: 'Unauthorized' })
-response.forbidden()                      // 403 (default: { error: 'Forbidden' })
-response.notFound()                       // 404 (default: { error: 'Not Found' })
-response.error()                          // 500 (default: { error: 'Internal Server Error' })
+response.badRequest('Bad', errors?)       // 400
+response.unauthorized()                   // 401
+response.forbidden()                      // 403
+response.notFound()                       // 404
+response.validationError(errors)          // 422
+response.error('Conflict', 409)           // (message, status = 400, errors?)
+response.serverError()                    // 500
 
 // Other content types
-response.text('Hello', { status: 200 })
-response.html('<h1>Hello</h1>')
+response.text('Hello', 200)
+response.view('<h1>Hello</h1>')           // HTML; there is no response.html()
 response.redirect('/new-url', 302)        // 301 | 302 | 303 | 307 | 308
 ```
 

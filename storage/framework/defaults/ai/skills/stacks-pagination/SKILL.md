@@ -34,6 +34,16 @@ BigInts as decimal string entries inside a JSON array. Keep those tokens intact
 through query parameters; the ORM parser restores tuples and SQL bindings
 accept decimal strings without a lossy Number conversion.
 
+## Call order
+
+Stacks model pagination takes `(perPage, page)`, the reverse of upstream
+bun-query-builder: `Post.where('status', 'published').paginate(20, 2)`. With
+no arguments it reads `?page` and `?per_page` from the request, defaults to 15
+per page, and caps a query-string `per_page` at 100 (an explicit perPage is not
+capped). `simplePaginate(perPage, page)` and
+`cursorPaginate(perPage, cursor, columns, direction)` follow the same order.
+The ORM paginator does not read the query builder's `pagination.defaultPerPage`.
+
 ## HTTP and UI
 
 ORM request-aware pagination can derive page/limit and attach URLs from the

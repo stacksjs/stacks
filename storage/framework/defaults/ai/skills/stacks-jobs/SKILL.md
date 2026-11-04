@@ -132,7 +132,7 @@ buddy queue                  # queue management
 - Prefer `default new Job({...})` for dispatch methods. Discovery also supports default objects with handle and class exports with a handle method
 - The `handle()` method receives the payload passed to `dispatch()`
 - `dispatchNow()` runs immediately in the current process - no queue involved
-- Default queue driver is `sync` - jobs run immediately unless changed to `database` or `redis`
+- Default queue driver is `sync` locally and `database` when `APP_ENV=production` (`QUEUE_DRIVER` overrides both). On `sync`, `dispatchAfter` blocks the caller for the delay
 - Jobs with `rate` are auto-discovered by the scheduler
 - Backoff array `[10, 30, 60]` means: retry after 10s, then 30s, then 60s
 - Jobs should be idempotent - safe to retry on failure
@@ -148,6 +148,9 @@ driver. `.withIdempotencyKey(key)` claims a persistent dispatch key.
 Inside `db.transaction()` dispatch defers until commit by default;
 `.afterCommit()` states that intent, and `.withoutCommit()` explicitly opts
 out. Outside a transaction, afterCommit warns and dispatches immediately.
+Only the fluent builder is transaction-aware: `SomeJob.dispatch()` on a
+`new Job(...)` instance sends at once, even inside a transaction, so use
+`job(name, payload)` there.
 See `stacks-queue` for the complete envelope and batch lifecycle.
 
 Scheduling a named job through `schedule.job()` runs it in the scheduler by

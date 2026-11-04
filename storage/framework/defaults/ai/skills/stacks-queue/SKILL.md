@@ -555,7 +555,7 @@ await SendWelcomeEmail.dispatchNow({ email, name })        // bypass queue
 ## config/queue.ts
 ```typescript
 {
-  default: 'sync',  // implemented dispatch drivers: sync | database | redis
+  default: env.QUEUE_DRIVER || (env.APP_ENV === 'production' ? 'database' : 'sync'),  // sync | database | redis
   connections: {
     sync: { driver: 'sync' },
     database: { driver: 'database', table: 'jobs', queue: 'default', retryAfter: 90 },

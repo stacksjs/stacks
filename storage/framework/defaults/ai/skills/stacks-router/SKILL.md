@@ -312,16 +312,19 @@ await req.tokenCant('delete-users')
 import { response } from '@stacksjs/router'
 
 response.json(data, { status: 200 })
-response.created(data)         // 201
-response.noContent()           // 204
-response.badRequest(data)      // 400
-response.unauthorized()        // 401
-response.forbidden()           // 403
-response.notFound()            // 404
-response.error()               // 500
+response.success(data, 'Saved')       // 200, { success: true, data, message }
+response.created(data, location?)     // 201, { success: true, data }
+response.noContent()                  // 204
+response.badRequest(message?, errors?) // 400
+response.unauthorized(message?)       // 401
+response.forbidden(message?)          // 403
+response.notFound(message?)           // 404
+response.validationError(errors)      // 422
+response.error(message, status?)      // defaults to 400, not 500
+response.serverError(message?)        // 500
 response.redirect(url, 302)
-response.text('hello')
-response.html('<h1>Hi</h1>')
+response.text('hello', 200)
+response.view('<h1>Hi</h1>')          // HTML; there is no response.html()
 ```
 
 ## Error Responses
@@ -367,7 +370,7 @@ route.use(logger)
 ```
 
 ### Available Middleware Aliases (from app/Middleware.ts)
-maintenance, auth, guest, api, team, logger, abilities, can, throttle, local, development, staging, production, env.local, env.development, env.staging, env.production, role, permission, verified
+maintenance, cors, auth, guest, api, team, site, logger, abilities, can, throttle, signed, env, env:local, env:development, env:dev, env:staging, env:production, env:prod, role, permission, verified, csrf, compress
 
 ## Query Tracking
 
