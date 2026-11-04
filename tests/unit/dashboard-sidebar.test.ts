@@ -60,6 +60,16 @@ describe('dashboard sidebar data', () => {
     expect(analyticsLinks(false)).toContain('/analytics/marketing')
   })
 
+  // stacksjs/stacks#3186: Marketing's Reviews page reads commerce product reviews.
+  it('offers marketing reviews only with the commerce section', () => {
+    const marketingLinks = (commerce: boolean) => (buildNavSections([], { ...DEFAULT_TOGGLES, commerce })
+      .find(([id]) => id === 'marketing')?.[2] ?? []).map(item => item.to)
+
+    expect(marketingLinks(true)).toContain('/marketing/reviews')
+    expect(marketingLinks(false)).not.toContain('/marketing/reviews')
+    expect(marketingLinks(false)).toContain('/marketing/abandoned-carts')
+  })
+
   // Settings used to be listed twice: once in Utilities beside Appearance and
   // Mail Settings, and again in a trailing unlabelled section that pinned it
   // to the bottom the way macOS does. Two rows, two clicks apart, same page.

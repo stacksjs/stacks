@@ -471,7 +471,9 @@ export function buildNavSections(
       { to: '/marketing/social-posts', icon: 'clock', text: 'Social Posts' },
       { to: '/marketing/campaigns', icon: 'rocket', text: 'Campaigns' },
       { to: '/marketing/abandoned-carts', icon: 'cart', text: 'Abandoned Carts' },
-      { to: '/marketing/reviews', icon: 'star', text: 'Reviews' },
+      // Product reviews are commerce records, so with commerce off this page
+      // could only say so (stacksjs/stacks#3186).
+      ...(toggles.commerce ? [{ to: '/marketing/reviews', icon: 'star', text: 'Reviews' }] : []),
       ...categoryNavItems(discoveredModels, 'marketing', new Set(['campaign'])),
     ]])
   }
