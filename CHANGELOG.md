@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.467...v0.75.468)
+
+## 🐛 Bug Fixes
+
+- **mobile**: type explicit native parameter normalization ([ab3b975](https://github.com/stacksjs/stacks/commit/ab3b975)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **dashboard**: file actions answer a database failure 503 instead of leaking it ([422c2f4](https://github.com/stacksjs/stacks/commit/422c2f4)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3174](https://github.com/stacksjs/stacks/issues/3174))
+
+## 📝 Documentation
+
+- refresh generated default action counts ([56d42ee](https://github.com/stacksjs/stacks/commit/56d42ee)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.466...v0.75.467)
 
 ## 🐛 Bug Fixes
