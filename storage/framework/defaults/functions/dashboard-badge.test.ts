@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { badgeClasses, badgeDotClasses, badgeShowsDot } from './dashboard-badge'
+import { badgeClasses, badgeClassToggles, badgeDotClasses, badgeDotClassToggles, badgeShowsDot } from './dashboard-badge'
 
 describe('dashboard badge classes', () => {
   test('a variant picks its colour', () => {
@@ -23,5 +23,20 @@ describe('dashboard badge classes', () => {
     expect(badgeShowsDot('')).toBe(true)
     expect(badgeShowsDot('false')).toBe(false)
     expect(badgeShowsDot(undefined)).toBe(false)
+  })
+
+  test('the live toggles turn a grey first paint into exactly the bound variant', () => {
+    // What the browser does with an object `:class`: add the true keys, remove
+    // the false ones, leave every other class alone.
+    const apply = (start: string, toggles: Record<string, boolean>) => {
+      const list = new Set(start.split(' '))
+      for (const [token, on] of Object.entries(toggles)) on ? list.add(token) : list.delete(token)
+      return [...list].sort()
+    }
+    const sorted = (classes: string) => classes.split(' ').sort()
+
+    expect(apply(badgeClasses('default'), badgeClassToggles('info'))).toEqual(sorted(badgeClasses('info')))
+    expect(apply(badgeClasses('success', 'xs'), badgeClassToggles('danger', 'lg', 'default', 'true'))).toEqual(sorted(badgeClasses('danger', 'lg', 'default', true)))
+    expect(apply(badgeDotClasses('default'), badgeDotClassToggles('warning'))).toEqual(sorted(badgeDotClasses('warning')))
   })
 })

@@ -21,7 +21,7 @@ const badgeClass = badgeClasses(variant, size, rounded, outline)
 const dotClass = badgeDotClasses(variant)
 </script>
 <script client>
-import { badgeClasses, badgeDotClasses, badgeShowsDot } from '../../../../functions/dashboard-badge'
+import { badgeClassToggles, badgeDotClassToggles, badgeShowsDot } from '../../../../functions/dashboard-badge'
 
 // Read live as well: callers bind `:variant` to data that arrives after
 // hydration, and the value the server render saw never changed
@@ -31,8 +31,8 @@ const liveSize = useReactiveProp('size', 'sm')
 const liveRounded = useReactiveProp('rounded', 'full')
 const liveOutline = useReactiveProp('outline', false)
 const liveDot = useReactiveProp('dot', false)
-const liveBadgeClass = derived(() => badgeClasses(liveVariant(), liveSize(), liveRounded(), liveOutline()))
-const liveDotClass = derived(() => badgeDotClasses(liveVariant()))
+const liveBadgeClass = derived(() => badgeClassToggles(liveVariant(), liveSize(), liveRounded(), liveOutline()))
+const liveDotClass = derived(() => badgeDotClassToggles(liveVariant()))
 const showDot = derived(() => badgeShowsDot(liveDot()))
 </script>
 <span class="{{ badgeClass }}" :class="liveBadgeClass()">

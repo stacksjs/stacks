@@ -71,3 +71,34 @@ export function badgeDotClasses(variant: unknown = 'default'): string {
 export function badgeShowsDot(dot: unknown): boolean {
   return flag(dot)
 }
+
+function tokens(...classLists: string[]): string[] {
+  return [...new Set(classLists.flatMap(list => list.split(/\s+/)).filter(Boolean))]
+}
+
+const switchedTokens = tokens(
+  ...Object.values(sizeClasses),
+  ...Object.values(solidVariants),
+  ...Object.values(outlineVariants),
+  'rounded-full rounded-md',
+)
+const dotTokens = tokens(...Object.values(dotColors))
+
+/**
+ * The badge's classes as a `:class` object: every class any size, shape or
+ * variant can set, each on or off.
+ *
+ * Not a string. A string `:class` is appended to the classes the element was
+ * rendered with, so a badge first painted grey kept the grey classes next to
+ * its live ones, and which colour showed depended on stylesheet order. The
+ * object form removes what the current props do not want.
+ */
+export function badgeClassToggles(variant?: unknown, size?: unknown, rounded?: unknown, outline?: unknown): Record<string, boolean> {
+  const wanted = new Set(badgeClasses(variant, size, rounded, outline).split(/\s+/))
+  return Object.fromEntries(switchedTokens.map(token => [token, wanted.has(token)]))
+}
+
+export function badgeDotClassToggles(variant?: unknown): Record<string, boolean> {
+  const wanted = new Set(badgeDotClasses(variant).split(/\s+/))
+  return Object.fromEntries(dotTokens.map(token => [token, wanted.has(token)]))
+}

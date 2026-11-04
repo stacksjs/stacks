@@ -48,7 +48,7 @@ export { isCraftNative, ensureCraftNativeSidebarMarker, useCraft, useCraftSideba
 export type { CraftSidebarSelectEvent } from '../defaults/functions/craft'
 export { dashboardApi, dashboardStream, dashboardDownload, DashboardApiError } from '../defaults/functions/dashboard-api'
 export type { ApiRequestOptions } from '../defaults/functions/dashboard-api'
-export { badgeClasses, badgeDotClasses, badgeShowsDot } from '../defaults/functions/dashboard-badge'
+export { badgeClasses, badgeDotClasses, badgeShowsDot, badgeClassToggles, badgeDotClassToggles } from '../defaults/functions/dashboard-badge'
 export type { BadgeVariant, BadgeSize } from '../defaults/functions/dashboard-badge'
 export { parseDashboardDate } from '../defaults/functions/dashboard-dates'
 export { formErrorMessages, slugify } from '../defaults/functions/dashboard-form'
