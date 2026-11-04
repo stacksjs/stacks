@@ -2,7 +2,7 @@
   "name": "@stacksjs/payments",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.464",
+  "version": "0.75.465",
   "description": "The Stacks payments package. Currently supporting Stripe.",
   "author": "Chris Breuer",
   "contributors": [

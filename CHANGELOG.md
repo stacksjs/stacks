@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.464...v0.75.465)
+
+## ✨ Features
+
+- **auth**: separate durable browser sessions from API tokens ([5ae3ee5](https://github.com/stacksjs/stacks/commit/5ae3ee5)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- index durable browser session APIs and evidence ([ae263e4](https://github.com/stacksjs/stacks/commit/ae263e4)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.463...v0.75.464)
 
 ## ✨ Features
