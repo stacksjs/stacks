@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.474...v0.75.475)
+
+## 🐛 Bug Fixes
+
+- **mobile**: reconcile native passkey capability coverage ([b3710fe](https://github.com/stacksjs/stacks/commit/b3710fe)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.473...v0.75.474)
 
 ## ✨ Features
