@@ -181,6 +181,23 @@ function renderTemplateValue(value: TemplateVariableValue): string {
 }
 
 /**
+ * The variables as `.stx` props: every `SafeHtml` replaced by its HTML.
+ *
+ * A `.stx` template decides raw or escaped itself, with `{!! x !!}` or
+ * `{{ x }}`, so it needs the string. Handed the wrapper, `{!! itemRows !!}`
+ * printed `[object Object]` where an order confirmation's line items belong
+ * (stacksjs/stacks#3176). Lists and plain records are walked, since a `.stx`
+ * template loops over them.
+ */
+function stxProps(value: TemplateVariableValue): unknown {
+  if (value instanceof SafeHtml) return value.value
+  if (Array.isArray(value)) return value.map(stxProps)
+  if (value !== null && typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype)
+    return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, stxProps(entry)]))
+  return value
+}
+
+/**
  * Email template lookup roots, in resolution order: userland
  * `resources/emails/` first, then the framework-shipped defaults in
  * `storage/framework/defaults/resources/emails/`. Ordering is
@@ -496,7 +513,7 @@ export async function templateByName(
       // The app's own `resources/components/Email` first, so a copy made with
       // `buddy publish:component` replaces the bundled one by name, then the
       // bundled set (stacksjs/stacks#3032).
-      const result = await renderEmail(resolved.path, allVariables, {
+      const result = await renderEmail(resolved.path, stxProps(allVariables) as Record<string, unknown>, {
         componentsDir: resourcesPath('components/Email'),
         additionalComponentsDirs: [defaultsResourcesPath('components/Email')],
       })
