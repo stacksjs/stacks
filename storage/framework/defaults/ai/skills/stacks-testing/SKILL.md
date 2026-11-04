@@ -24,11 +24,21 @@ before deciding what to test, and this one for how.
 ## Test Setup
 
 ```typescript
-import { setupTestEnvironment } from '@stacksjs/testing'
-import { refreshDatabase, setupDatabase, truncateMysql, truncateSqlite } from '@stacksjs/testing/database'
+// tests/setup.ts, the bunfig [test] preload
+import { bootTestEnvironment } from '@stacksjs/testing'
 
-// Set NODE_ENV and APP_ENV to 'test'
-setupTestEnvironment()
+// NODE_ENV/APP_ENV = 'test', then the server auto-imports (models, jobs,
+// Action, route, response, ...), app listeners and gates
+await bootTestEnvironment()
+```
+
+`bun test` never runs the framework preloader, so this is what makes the
+auto-imported names exist in a test. Without it, loading an action written
+without imports throws "Action is not defined". `setupTestEnvironment()` still
+exists and only sets the env.
+
+```typescript
+import { refreshDatabase, setupDatabase, truncateMysql, truncateSqlite } from '@stacksjs/testing/database'
 
 // MySQL database setup; this helper does not initialize SQLite
 await setupDatabase()

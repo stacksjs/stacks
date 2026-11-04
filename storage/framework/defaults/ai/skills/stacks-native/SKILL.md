@@ -75,10 +75,12 @@ follow it, so **a missing import is deliberate.**
 - **Files that load without globals, so they import everything:**
   - Model files, because `generate:migrations`, `migrate` and `seed` read
     them without booting.
-  - Tests, which never run the preloader. That also means a test that loads
-    a bare-style action directly gets "Action is not defined".
   - Standalone scripts and framework packages.
   - `.ts` modules imported by a client script.
+- **Tests get the globals too:** `tests/setup.ts` runs
+  `await bootTestEnvironment()`, so bare-style actions and routes load under
+  `bun test`. An older app whose setup still calls `setupTestEnvironment()`
+  gets "Action is not defined" until it switches.
 
 ## Data
 
