@@ -1,7 +1,8 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
 import { response } from '@stacksjs/router'
-import { DashboardFileError, setDashboardFileVisibility } from './file-manager'
+import { setDashboardFileVisibility } from './file-manager'
+import { dashboardFileFailure } from './file-response'
 
 export default new Action({
   name: 'FileVisibilityAction',
@@ -17,9 +18,7 @@ export default new Action({
       return response.json(updated)
     }
     catch (error) {
-      if (error instanceof DashboardFileError)
-        return response.json({ message: error.message, fields: error.fields }, error.status)
-      throw error
+      return dashboardFileFailure(error, 'The visibility could not be changed.', 'FileVisibilityAction')
     }
   },
 })

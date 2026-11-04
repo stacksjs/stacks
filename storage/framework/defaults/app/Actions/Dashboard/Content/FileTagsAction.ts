@@ -1,7 +1,8 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
 import { response } from '@stacksjs/router'
-import { DashboardFileError, setDashboardFileTags } from './file-manager'
+import { setDashboardFileTags } from './file-manager'
+import { dashboardFileFailure } from './file-response'
 
 export default new Action({
   name: 'FileTagsAction',
@@ -19,9 +20,7 @@ export default new Action({
       return response.json(result)
     }
     catch (error) {
-      if (error instanceof DashboardFileError)
-        return response.json({ message: error.message, fields: error.fields }, error.status)
-      throw error
+      return dashboardFileFailure(error, 'The tags could not be saved.', 'FileTagsAction')
     }
   },
 })

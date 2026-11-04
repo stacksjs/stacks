@@ -385,6 +385,7 @@ export const actions = {
   'Actions/Dashboard/Content/file-metadata-store': '../defaults/app/Actions/Dashboard/Content/file-metadata-store.ts',
   'Actions/Dashboard/Content/file-metadata': '../defaults/app/Actions/Dashboard/Content/file-metadata.ts',
   'Actions/Dashboard/Content/file-preview': '../defaults/app/Actions/Dashboard/Content/file-preview.ts',
+  'Actions/Dashboard/Content/file-response': '../defaults/app/Actions/Dashboard/Content/file-response.ts',
   'Actions/Dashboard/Content/page-input': '../defaults/app/Actions/Dashboard/Content/page-input.ts',
   'Actions/Dashboard/Content/post-input': '../defaults/app/Actions/Dashboard/Content/post-input.ts',
   'Actions/Dashboard/DashboardActivityAction': '../defaults/app/Actions/Dashboard/DashboardActivityAction.ts',

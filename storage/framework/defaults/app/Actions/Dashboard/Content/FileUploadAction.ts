@@ -2,7 +2,8 @@ import type { RequestInstance } from '@stacksjs/types'
 import type { UploadedFileLike } from '@stacksjs/storage'
 import { Action } from '@stacksjs/actions/runtime'
 import { response } from '@stacksjs/router'
-import { DashboardFileError, uploadDashboardFiles } from './file-manager'
+import { uploadDashboardFiles } from './file-manager'
+import { dashboardFileFailure } from './file-response'
 
 const MAX_FILES = 20
 const MAX_FILE_BYTES = 10 * 1024 * 1024
@@ -34,9 +35,7 @@ export default new Action({
       return response.json({ uploaded }, 201)
     }
     catch (error) {
-      if (error instanceof DashboardFileError)
-        return response.json({ message: error.message, fields: error.fields }, error.status)
-      throw error
+      return dashboardFileFailure(error, 'The upload could not be completed.', 'FileUploadAction')
     }
   },
 })

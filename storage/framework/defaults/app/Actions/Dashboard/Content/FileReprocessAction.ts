@@ -1,7 +1,8 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
 import { response } from '@stacksjs/router'
-import { DashboardFileError, reprocessDashboardFile } from './file-manager'
+import { reprocessDashboardFile } from './file-manager'
+import { dashboardFileFailure } from './file-response'
 
 export default new Action({
   name: 'FileReprocessAction',
@@ -23,9 +24,7 @@ export default new Action({
       return response.json(result)
     }
     catch (error) {
-      if (error instanceof DashboardFileError)
-        return response.json({ message: error.message, fields: error.fields }, error.status)
-      throw error
+      return dashboardFileFailure(error, 'The file could not be reprocessed.', 'FileReprocessAction')
     }
   },
 })

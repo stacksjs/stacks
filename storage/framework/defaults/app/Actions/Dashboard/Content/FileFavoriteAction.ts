@@ -1,7 +1,8 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
 import { response } from '@stacksjs/router'
-import { DashboardFileError, setDashboardFileFavorite } from './file-manager'
+import { setDashboardFileFavorite } from './file-manager'
+import { dashboardFileFailure } from './file-response'
 
 export default new Action({
   name: 'FileFavoriteAction',
@@ -17,9 +18,7 @@ export default new Action({
       return response.json(result)
     }
     catch (error) {
-      if (error instanceof DashboardFileError)
-        return response.json({ message: error.message, fields: error.fields }, error.status)
-      throw error
+      return dashboardFileFailure(error, 'The favorite could not be saved.', 'FileFavoriteAction')
     }
   },
 })

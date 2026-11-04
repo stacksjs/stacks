@@ -1,7 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
-import { response } from '@stacksjs/router'
-import { DashboardFileError, getDashboardFileSnapshot, normalizeDashboardFileLimit } from './file-manager'
+import { getDashboardFileSnapshot, normalizeDashboardFileLimit } from './file-manager'
+import { dashboardFileFailure } from './file-response'
 
 export default new Action({
   name: 'FileIndexAction',
@@ -16,9 +16,7 @@ export default new Action({
       })
     }
     catch (error) {
-      if (error instanceof DashboardFileError)
-        return response.json({ message: error.message, fields: error.fields }, error.status)
-      throw error
+      return dashboardFileFailure(error, 'Files could not be loaded.', 'FileIndexAction')
     }
   },
 })
