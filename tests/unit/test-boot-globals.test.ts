@@ -25,6 +25,16 @@ describe('test boot', () => {
     expect(typeof g.User?.find).toBe('function')
   })
 
+  test('leaves framework package suites without app globals', async () => {
+    // CI runs `bun test ./storage/framework/core/<pkg>/tests` from this root,
+    // so this preload reaches them too, and they must keep a bare process.
+    const { isFrameworkSuite } = await import('@stacksjs/testing')
+    expect(isFrameworkSuite('/app/storage/framework/core/defaults/tests/preloader.test.ts', '/app')).toBe(true)
+    expect(isFrameworkSuite('/app/storage/framework/defaults/app/Actions/x.test.ts', '/app')).toBe(true)
+    expect(isFrameworkSuite('/app/tests/unit/test-boot-globals.test.ts', '/app')).toBe(false)
+    expect(isFrameworkSuite('/app/tests/feature/storage/framework.test.ts', '/app')).toBe(false)
+  })
+
   test('loads an action written without imports', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'stacks-bare-action-'))
     try {

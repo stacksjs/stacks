@@ -1,3 +1,4 @@
+import { relative } from 'node:path'
 import process from 'node:process'
 
 export function setupTestEnvironment(): void {
@@ -14,12 +15,31 @@ export function setupTestEnvironment(): void {
  * `tests/setup.ts` - so without this every auto-imported name is undefined in
  * a test, and loading an action written the idiomatic way (no imports) throws
  * "Action is not defined". Await it from `tests/setup.ts`.
+ *
+ * A framework package's own suite is left without app globals: those packages
+ * import everything explicitly, and several of their tests assert exactly what
+ * a bare process holds (the preloader's host-globals snapshot, a model whose
+ * feature is off). CI runs them from the repository root, where the app's
+ * `tests/setup.ts` is the preload, so the boot has to tell them apart itself.
  */
 export async function bootTestEnvironment(): Promise<void> {
   setupTestEnvironment()
 
+  if (isFrameworkSuite())
+    return
+
   const { injectGlobalAutoImports } = await import('@stacksjs/server')
   await injectGlobalAutoImports()
+}
+
+/**
+ * Whether this `bun test` run is a framework package suite. Inside a preload,
+ * `process.argv[1]` is the first test file the run executes, so a run whose
+ * first file lives under `storage/framework/` is the framework's, and an app's
+ * `tests/` run is not. A run mixing both is decided by its first file.
+ */
+export function isFrameworkSuite(firstFile: string = process.argv[1] ?? '', cwd: string = process.cwd()): boolean {
+  return relative(cwd, firstFile).replaceAll('\\', '/').startsWith('storage/framework/')
 }
 
 /**
