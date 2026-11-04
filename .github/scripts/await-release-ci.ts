@@ -40,10 +40,11 @@ export const requiredSourceJobs = [
   'deployment-target', 'deploy',
 ]
 
+/** A manual run executes the same protected main workflow and every required job. */
 function latestExactRun(sha: string, runs: SourceRun[]): SourceRun | undefined {
   if (!/^[a-f0-9]{40}$/.test(sha)) throw new Error('Expected the exact release commit')
   return runs.filter(run => Number.isSafeInteger(run.id) && run.id > 0 && run.head_sha === sha
-    && run.head_branch === 'main' && run.event === 'push' && run.path === '.github/workflows/ci.yml')
+    && run.head_branch === 'main' && (run.event === 'push' || run.event === 'workflow_dispatch') && run.path === '.github/workflows/ci.yml')
     .sort((a, b) => b.id - a.id)[0]
 }
 
@@ -88,7 +89,7 @@ if (import.meta.main) {
   let reruns = 0
   let rerunAttempt = 0
   while (true) {
-    const runs = read(`repos/${repository}/actions/workflows/ci.yml/runs?head_sha=${sha}&event=push&per_page=100`)
+    const runs = read(`repos/${repository}/actions/workflows/ci.yml/runs?head_sha=${sha}&per_page=100`)
       .flatMap(page => (page as { workflow_runs: SourceRun[] }).workflow_runs)
     const latest = latestExactRun(sha, runs)
     // The attempt this release asked for has not replaced the starved one yet.

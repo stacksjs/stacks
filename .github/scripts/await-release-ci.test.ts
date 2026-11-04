@@ -11,7 +11,6 @@ test('only the latest completed exact main source with every required job can pu
   expect(evaluateReleaseCi(sha, [{ ...run, id: 43, status: 'in_progress', conclusion: null }, run], jobs()).kind).toBe('pending')
   expect(evaluateReleaseCi(sha, [{ ...run, head_sha: 'a'.repeat(40) }], jobs()).kind).toBe('pending')
   expect(evaluateReleaseCi(sha, [{ ...run, event: 'pull_request' }], jobs()).kind).toBe('pending')
-  expect(evaluateReleaseCi(sha, [{ ...run, event: 'workflow_dispatch' }], jobs()).kind).toBe('pending')
   expect(evaluateReleaseCi(sha, [{ ...run, head_branch: 'v0.75.425' }], jobs()).kind).toBe('pending')
   expect(evaluateReleaseCi(sha, [{ ...run, head_branch: 'feature' }], jobs()).kind).toBe('pending')
   expect(evaluateReleaseCi(sha, [{ ...run, path: '.github/workflows/other.yml' }], jobs()).kind).toBe('pending')
@@ -68,4 +67,22 @@ test('only source acceptance may rerun CI jobs', () => {
   const release = Bun.YAML.parse(readFileSync(new URL('../workflows/release.yml', import.meta.url), 'utf8')) as any
   expect(release.jobs['source-ci'].permissions).toEqual({ contents: 'read', actions: 'write' })
   expect(release.permissions.actions).toBe('read')
+})
+
+
+test('manual recovery accepts only complete exact-main CI and an immutable release tag', () => {
+  const manual = { ...run, event: 'workflow_dispatch' }
+  expect(evaluateReleaseCi(sha, [manual], jobs())).toEqual({ kind: 'accepted', runId: 42 })
+  for (const head_branch of ['feature', 'v0.75.466'])
+    expect(evaluateReleaseCi(sha, [{ ...manual, head_branch }], jobs()).kind).toBe('pending')
+  expect(evaluateReleaseCi(sha, [{ ...manual, head_sha: 'a'.repeat(40) }], jobs()).kind).toBe('pending')
+  expect(evaluateReleaseCi(sha, [manual], jobs().slice(1)).kind).toBe('rejected')
+  expect(evaluateReleaseCi(sha, [{ ...manual, conclusion: 'failure' }], jobs()).kind).toBe('rejected')
+  expect(evaluateReleaseCi(sha, [run, { ...manual, id: 43, status: 'in_progress', conclusion: null }], jobs()).kind).toBe('pending')
+  const workflow = Bun.YAML.parse(readFileSync(new URL('../workflows/release.yml', import.meta.url), 'utf8')) as any
+  expect(workflow.on).toHaveProperty('workflow_dispatch')
+  expect(workflow.jobs.serialize.if).toBe("startsWith(github.ref, 'refs/tags/v')")
+  expect(workflow.jobs['source-ci'].needs).toBe('serialize')
+  expect(workflow.jobs['release-gate'].needs).toEqual(['serialize', 'source-ci'])
+  expect(workflow.jobs.npm.needs).toBe('release-gate')
 })
