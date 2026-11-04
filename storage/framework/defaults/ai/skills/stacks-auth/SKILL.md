@@ -348,6 +348,17 @@ interface PermissionRecord { id, name, guard_name, description?, created_at?, up
 interface RbacStore { findRoleByName, createRole, deleteRole, getAllRoles, findPermissionByName, createPermission, ... }
 ```
 
+### Configured administrators (admins.ts)
+List operator emails in `config/auth.ts` and run `./buddy seed:admins` (alias `admins:seed`; safe in a deploy's preStart):
+```typescript
+admins: ['ops@example.com', 'founder@example.com'],
+adminRole: { name: 'admin', guard: 'web' }, // default; false = accounts only
+```
+- A missing account is created with a verified email and a random password nobody knows; first sign-in is a password reset or a social sign-in linking the verified address.
+- Grants only: removing an address never revokes. A malformed or repeated address throws.
+- `provisionAdmins({ emails?, role?, accounts?: { findUserId, createUser }, afterEach? })` for app-specific authority (an organization membership): `afterEach({ userId, email, created })` returns `true` when it changed something. Results: `{ email, userId, outcome: 'created' | 'granted' | 'unchanged' }`.
+- `adminEmails(list)` normalizes/validates; `nameFromEmail('ada.lovelace@x')` → `Ada Lovelace`.
+
 ## Session Auth (session-auth.ts)
 
 - `SessionAuth.login(email, password): Promise<{ user, sessionId }>`

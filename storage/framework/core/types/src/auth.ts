@@ -451,6 +451,30 @@ export interface AuthOptions {
      */
     matching?: 'link' | 'create' | 'refuse'
   }
+
+  /**
+   * The people who administer this application, by email address.
+   *
+   * `./buddy seed:admins` (safe on every deploy) makes each one hold
+   * `adminRole`, creating the account when there is none: a verified address
+   * and a password nobody knows, so its first sign-in is a password reset or
+   * a social sign-in that links a verified address (`socials.matching`).
+   * Grants only: an address taken off the list keeps its role until it is
+   * removed with `removeRole`. A malformed or repeated address fails the
+   * command, so a typo never silently grants nothing.
+   *
+   * @example admins: ['ops@example.com', 'founder@example.com']
+   * @default []
+   */
+  admins?: string[]
+
+  /**
+   * The role `admins` hold. `false` provisions the accounts without a role,
+   * for an application that grants its own authority after `provisionAdmins`.
+   *
+   * @default { name: 'admin', guard: 'web' }
+   */
+  adminRole?: { name: string, guard?: string } | false
 }
 
 export type AuthConfig = Partial<AuthOptions>

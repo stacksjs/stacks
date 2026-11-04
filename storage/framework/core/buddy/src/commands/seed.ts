@@ -132,5 +132,33 @@ export function seed(buddy: CLI): void {
       }
     })
 
+  // `./buddy seed:admins` — make every address in config.auth.admins an
+  // administrator (auth/src/admins.ts). Safe on every deploy: missing
+  // accounts are created verified with an unknown password, existing ones
+  // only gain the role, and nothing is ever revoked.
+  buddy
+    .command('seed:admins', 'Make every address in config.auth.admins an administrator')
+    .alias('admins:seed')
+    .action(async () => {
+      const perf = await intro('buddy seed:admins')
+      try {
+        const { provisionAdmins } = await import('@stacksjs/auth')
+        const result = await provisionAdmins()
+        for (const admin of result)
+          log.info(`${admin.outcome.padEnd(9)} ${admin.email} (user #${admin.userId})`)
+        await outro(
+          result.length === 0
+            ? 'config.auth.admins is empty - nothing to do.'
+            : `${result.filter(admin => admin.outcome !== 'unchanged').length} of ${result.length} administrator(s) changed.`,
+          { startTime: perf, useSeconds: true },
+        )
+        process.exit(ExitCode.Success)
+      }
+      catch (err) {
+        await outro('Failed to provision administrators.', { startTime: perf, useSeconds: true }, err as Error)
+        process.exit(ExitCode.FatalError)
+      }
+    })
+
   onUnknownSubcommand(buddy, "seed")
 }

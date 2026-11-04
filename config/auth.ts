@@ -189,4 +189,13 @@ export default {
      */
     redirectDefault: '/',
   },
+
+  /**
+   * The people who administer this application, by email. `./buddy
+   * seed:admins` creates any missing account (verified, unknown password)
+   * and grants each one `adminRole`. Grants only; safe on every deploy.
+   *
+   * @default []
+   */
+  admins: [],
 } satisfies AuthConfig

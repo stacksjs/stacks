@@ -53,6 +53,8 @@ export * from './permissions'
 export * from './rbac'
 export { createBqbRbacStore } from './rbac-store-bqb'
 export { DEFAULT_ROLE_PACKS, seedDefaultRoles } from './rbac-seed'
+export { adminEmails, databaseAdminAccounts, nameFromEmail, provisionAdmins } from './admins'
+export type { AdminAccountStore, AdminRole, ProvisionAdminsOptions, ProvisionedAdmin } from './admins'
 export type { SeedDefaultRolesResult } from './rbac-seed'
 
 // Email Verification
