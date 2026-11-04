@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.473...v0.75.474)
+
+## ✨ Features
+
+- **auth**: add recoverable two-factor setup and native passkeys ([85d10e4](https://github.com/stacksjs/stacks/commit/85d10e4)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **auth**: verify factor proof before credential changes ([573be9c](https://github.com/stacksjs/stacks/commit/573be9c)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- refresh account security release artifacts ([8f03e4b](https://github.com/stacksjs/stacks/commit/8f03e4b)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.472...v0.75.473)
 
 ## ✅ Tests
