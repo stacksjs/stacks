@@ -45,8 +45,8 @@
  * the updater's keys. `Cdp.closed` is still set if Chrome goes away for
  * another reason, and every pending command fails at once.
  */
-import { closeSync, existsSync, mkdtempSync, openSync, readSync, rmSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { closeSync, existsSync, mkdtempSync, openSync, readSync, rmSync, statSync } from 'node:fs'
+import { availableParallelism, freemem, loadavg, tmpdir, totalmem } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
 import { spawnOwnedProcess } from '@stacksjs/cli/owned-process'
@@ -646,6 +646,25 @@ function startupPhase(progress: StartupProgress, phase: ChromeStartupPhase): voi
   progress.phaseStartedMs[phase] = Date.now() - progress.started
 }
 
+export interface ChromeHostResources {
+  cpuCount: number
+  loadAverage: number[]
+  freeMemory: number
+  totalMemory: number
+  /** Bounded kernel counters; unavailable off Linux or without permission. */
+  linux?: Record<string, string | null>
+}
+
+function chromeHostResources(): ChromeHostResources {
+  return {
+    cpuCount: availableParallelism(), loadAverage: loadavg(), freeMemory: freemem(), totalMemory: totalmem(),
+    ...(process.platform === 'linux' ? { linux: Object.fromEntries(Object.entries({
+      cpuPressure: '/proc/pressure/cpu', memoryPressure: '/proc/pressure/memory', ioPressure: '/proc/pressure/io',
+      cpuQuota: '/sys/fs/cgroup/cpu.max', cpuStat: '/sys/fs/cgroup/cpu.stat', memoryEvents: '/sys/fs/cgroup/memory.events',
+    }).map(([name, path]) => [name, portEvidence(path)])) } : {}),
+  }
+}
+
 export interface ChromeLaunchDiagnostics {
   pid: number | null
   chromePath: string
@@ -656,6 +675,14 @@ export interface ChromeLaunchDiagnostics {
   phase?: ChromeStartupPhase
   /** Milliseconds from this launch's start when each reached phase began. */
   phaseStartedMs?: Partial<Record<ChromeStartupPhase, number>>
+  /** File modification time relative to startup, independent of the observer's event loop. */
+  portFileModifiedAfterStartMs?: number | null
+  /** When the observer first read a complete DevTools endpoint. */
+  portFileObservedMs?: number | null
+  /** Largest observed gap between port polls (normally 100ms). */
+  maxPortPollGapMs?: number
+  resourcesAtStart?: ChromeHostResources
+  resourcesAtFailure?: ChromeHostResources
   exitCodeBeforeCleanup: number | null
   signalCodeBeforeCleanup: string | number | null
   exitCode: number | null
@@ -778,6 +805,7 @@ interface StartedChrome {
 /** Spawn Chrome and wait for its DevTools port. Throws a `ChromeLaunchError` with the startup evidence. */
 async function startChrome(options: LaunchOptions, chromePath: string, started: number, timeoutMs: number, progress: StartupProgress): Promise<StartedChrome> {
   startupPhase(progress, 'process-start')
+  const resourcesAtStart = chromeHostResources()
   if (!existsSync(chromePath)) throw new Error(`Chrome was not found at ${chromePath}`)
   const profile = options.profile || mkdtempSync(join(tmpdir(), 'stacks-browser-'))
   // A kept profile still names the last launch's port.
@@ -857,6 +885,8 @@ async function startChrome(options: LaunchOptions, chromePath: string, started: 
     }
     if (failures.length) throw new Error(`Chrome cleanup failed: ${failures.join('; ')}`)
   })()
+  let portFileObservedMs: number | null = null
+  let maxPortPollGapMs = 0
   const exited = () => commandExit !== undefined || ownerFailure !== undefined
   const remaining = () => {
     const value = timeoutMs - (Date.now() - started)
@@ -871,12 +901,16 @@ async function startChrome(options: LaunchOptions, chromePath: string, started: 
     const signalCodeBeforeCleanup = commandExit?.signal ?? null
     const portFileExisted = existsSync(portFile)
     const portFileContents = portEvidence(portFile)
+    let portFileModifiedAfterStartMs: number | null = null
+    try { portFileModifiedAfterStartMs = statSync(portFile).mtimeMs - observation.started }
+    catch { /* No readable port file is itself retained evidence. */ }
+    const resourcesAtFailure = chromeHostResources()
     let cleanupError: string | null = null
     if (cleanup) {
       try { await close() }
       catch (failed) { cleanupError = failed instanceof Error ? failed.message : String(failed) }
     }
-    return new ChromeLaunchError(error, { pid, chromePath, profile, temporaryProfile: !options.profile, elapsedMs, phase, phaseStartedMs, exitCodeBeforeCleanup, signalCodeBeforeCleanup, exitCode: commandExit?.code ?? null, signalCode: commandExit?.signal ?? null, portFileExisted, portFileContents, stderrTail, stderrTruncated, cleanupError })
+    return new ChromeLaunchError(error, { pid, chromePath, profile, temporaryProfile: !options.profile, elapsedMs, phase, phaseStartedMs, exitCodeBeforeCleanup, signalCodeBeforeCleanup, exitCode: commandExit?.code ?? null, signalCode: commandExit?.signal ?? null, portFileExisted, portFileContents, portFileModifiedAfterStartMs, portFileObservedMs, maxPortPollGapMs, resourcesAtStart, resourcesAtFailure, stderrTail, stderrTruncated, cleanupError })
   }
 
   try {
@@ -894,7 +928,16 @@ async function startChrome(options: LaunchOptions, chromePath: string, started: 
     })().catch((error) => { stderrTail = `${stderrTail}\n[stderr read failed: ${String(error)}]`.slice(-16_384) })
     // A loaded machine can take a while to bring Chrome up; 10 s was too tight.
     startupPhase(progress, 'devtools-port')
-    await waitFor(() => { remaining(); return portEvidence(portFile)?.includes('\n') }, remaining(), { label: 'Chrome to start' })
+    let lastPortPoll = Date.now()
+    await waitFor(() => {
+      const now = Date.now()
+      maxPortPollGapMs = Math.max(maxPortPollGapMs, now - lastPortPoll)
+      lastPortPoll = now
+      remaining()
+      const complete = portEvidence(portFile)?.includes('\n')
+      if (complete && portFileObservedMs === null) portFileObservedMs = now - progress.started
+      return complete
+    }, remaining(), { label: 'Chrome to start' })
     const [portLine, browserPath = ''] = (portEvidence(portFile) ?? '').split('\n')
     const port = Number(portLine)
     if (!Number.isInteger(port) || port < 1 || port > 65_535) throw new Error('Chrome wrote an invalid DevToolsActivePort')

@@ -168,8 +168,27 @@ describe.skipIf(process.platform === 'win32')('browser startup failure evidence'
   test('bounds a DevTools WebSocket which never completes its handshake', async () => {
     const error = await failure(executable(protocolProcess(true, false)), 2_000)
     expect(error.message).toContain('Timed out connecting to Chrome')
+    expect(error.diagnostics.portFileModifiedAfterStartMs).toBeGreaterThanOrEqual(0)
+    expect(error.diagnostics.portFileObservedMs).toBeGreaterThanOrEqual(error.diagnostics.portFileModifiedAfterStartMs! - 10)
+    expect(error.diagnostics.maxPortPollGapMs).toBeGreaterThanOrEqual(0)
+    expect(error.diagnostics.resourcesAtStart?.cpuCount).toBeGreaterThan(0)
+    expect(error.diagnostics.resourcesAtFailure?.totalMemory).toBeGreaterThan(0)
     expect(error.diagnostics.elapsedMs).toBeLessThan(3_000)
     expect(error.diagnostics.portFileExisted).toBe(true)
+    expect(error.diagnostics.cleanupError).toBeNull()
+    expect(() => process.kill(error.diagnostics.pid!, 0)).toThrow()
+  }, 8_000)
+
+  test('distinguishes a delayed port from an observer event-loop stall', async () => {
+    const pending = failure(executable(`await Bun.sleep(800); ${protocolProcess(true, false)}`), 2_000)
+    await Bun.sleep(150)
+    // Stall this observer, not the independently running browser process.
+    Bun.sleepSync(250)
+    const error = await pending
+    expect(error.diagnostics.maxPortPollGapMs).toBeGreaterThanOrEqual(200)
+    expect(error.diagnostics.portFileModifiedAfterStartMs).toBeGreaterThanOrEqual(750)
+    expect(error.diagnostics.portFileObservedMs).toBeGreaterThanOrEqual(error.diagnostics.portFileModifiedAfterStartMs! - 10)
+    expect(error.diagnostics.elapsedMs).toBeLessThan(3_000)
     expect(error.diagnostics.cleanupError).toBeNull()
     expect(() => process.kill(error.diagnostics.pid!, 0)).toThrow()
   }, 8_000)
