@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.463...v0.75.464)
+
+## ✨ Features
+
+- **auth**: provision administrators named in config.auth.admins ([c520d15](https://github.com/stacksjs/stacks/commit/c520d15)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- list seed:admins in the Buddy reference and native catalog ([5c0f588](https://github.com/stacksjs/stacks/commit/5c0f588)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.462...v0.75.463)
 
 ## 🐛 Bug Fixes
