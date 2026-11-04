@@ -300,14 +300,25 @@ export function frameworkModelFeature(name: string): StacksFeature | undefined {
   return FRAMEWORK_MODEL_MANIFEST.find(([model]) => model === name)?.[2]
 }
 
-/** The error a call on an unavailable model raises, instead of `undefined`. */
-function unavailableModel(name: string): Error {
-  const gate = featureGateFor(name)
-  const because = gate
-    ? `The '${gate}' feature is off, so this model was never loaded - set \`enabled: true\` in config/${gate}.ts to use it.`
-    : `No model file for it was found under app/Models or the framework defaults.`
+/**
+ * The error a call on an unavailable model raises, instead of `undefined`.
+ *
+ * Its own class, so a caller can tell "this feature is off" from a database
+ * that failed: the dashboard answered both with the same 503 (stacksjs/stacks#3184).
+ * `name` is the check across module instances, where `instanceof` can miss.
+ */
+export class ModelUnavailableError extends Error {
+  override readonly name = 'ModelUnavailableError'
 
-  return new Error(`Model "${name}" is not available in this process. ${because}`)
+  constructor(readonly model: string, readonly feature: string | undefined) {
+    super(`Model "${model}" is not available in this process. ${feature
+      ? `The '${feature}' feature is off, so this model was never loaded - set \`enabled: true\` in config/${feature}.ts to use it.`
+      : `No model file for it was found under app/Models or the framework defaults.`}`)
+  }
+}
+
+function unavailableModel(name: string): ModelUnavailableError {
+  return new ModelUnavailableError(name, featureGateFor(name))
 }
 
 let _readyResolve: () => void = () => {}

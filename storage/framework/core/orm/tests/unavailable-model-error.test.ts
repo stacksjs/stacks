@@ -45,6 +45,16 @@ describe('an unavailable model explains itself', () => {
       expect(() => (orm as any)[model].orderByDesc('id')).toThrow(`config/${flag}.ts`)
     }
 
+    // A type, not only a message, so the dashboard can answer "this feature is
+    // off" instead of a database failure (stacksjs/stacks#3184).
+    for (const [model, flag] of off) {
+      let thrown: unknown
+      try { (orm as any)[model].orderByDesc('id') }
+      catch (error) { thrown = error }
+      expect(thrown).toBeInstanceOf(orm.ModelUnavailableError)
+      expect(thrown).toMatchObject({ name: 'ModelUnavailableError', model, feature: flag })
+    }
+
     for (const [model] of on)
       expect(typeof (orm as any)[model].orderByDesc).toBe('function')
 
