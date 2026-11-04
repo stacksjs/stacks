@@ -17,6 +17,8 @@ export interface MobileCapabilities {
   share?: boolean
   camera?: boolean
   biometric?: boolean
+  /** iOS passkeys through AuthenticationServices; requires a webcredentials associated domain. */
+  passkeys?: boolean
   pushNotifications?: boolean
   secureStorage?: boolean
   geolocation?: boolean

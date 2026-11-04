@@ -60,6 +60,7 @@ export const AUTH_TABLES: readonly string[] = [
   'passkey_ceremonies',
   'two_factor_challenges',
   'two_factor_pending_secrets',
+  'two_factor_recovery_codes',
   'oauth_flows',
 ]
 
@@ -796,6 +797,16 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
         secret VARCHAR(255) NOT NULL,
         expires_at ${datetime} NOT NULL,
         created_at ${datetime} DEFAULT ${utcNow}
+      )
+    `).execute()
+
+    // Recovery codes are one-use hashes, bound to the enabled factor version.
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS two_factor_recovery_codes (
+        user_id BIGINT NOT NULL,
+        code_hash VARCHAR(64) NOT NULL,
+        secret_digest VARCHAR(64) NOT NULL,
+        PRIMARY KEY (user_id, code_hash)
       )
     `).execute()
 

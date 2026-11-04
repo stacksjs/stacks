@@ -759,3 +759,14 @@ nativeFonts: {
 Craft >= 0.0.229 packages the files and licenses into both apps. iOS registers
 `UIAppFonts`; Android loads asset typefaces. The build rejects older builders,
 missing font files and invalid names. Fonts work without a network request.
+
+## Native passkeys
+
+Enable `ios.capabilities.passkeys` and a `webcredentials:<relying-party-host>`
+associated domain. Craft >= 0.0.451 supplies the system AuthenticationServices
+sheet. Import `passkeys` from `@stacksjs/mobile`, check
+`await passkeys.isAvailable()`, then pass server-issued JSON WebAuthn options to
+`create(options)` or `get(options)`. Send the JSON credential back to the server
+for verification. The native capability never replaces the server challenge,
+origin and user-verification checks. On unsupported hosts retain another sign-in
+method and offer the installation's secure browser settings.

@@ -716,3 +716,11 @@ describe('native font packaging configuration', () => {
     expect(() => assertCraftSupportsNativeFonts({}, '0.0.1')).not.toThrow()
   })
 })
+
+it('enables native passkeys only on builders with the system-sheet capability', () => {
+  const config = toCraftIosConfig({ appName: 'Example', bundleId: 'org.example.app', url: 'https://example.com', associatedDomains: ['webcredentials:example.com'], capabilities: { passkeys: true } })
+  expect(config.enablePasskeys).toBe(true)
+  expect(config.associatedDomains).toEqual(['webcredentials:example.com'])
+  expect(() => assertCraftSupportsCapabilities({ passkeys: true }, '0.0.450', 'fixture')).toThrow('ios.capabilities.passkeys')
+  expect(() => assertCraftSupportsCapabilities({ passkeys: true }, '0.0.451', 'fixture')).not.toThrow()
+})

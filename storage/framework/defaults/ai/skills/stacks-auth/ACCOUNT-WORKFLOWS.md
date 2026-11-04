@@ -44,6 +44,23 @@ Source: `src/two-factor.ts` and default auth actions. Evidence:
 `two-factor-disable-reauth.test.ts`, `two-factor-challenge-atomicity.test.ts` and
 `two-factor-state-atomicity.test.ts`.
 
+### Recovery codes and retryable setup
+
+`confirmTwoFactorSetup(userId, code)` verifies the pending server-owned setup
+without discarding it on a mistyped code. It commits factor activation and ten
+recovery codes together. The response returns plaintext codes once; only hashes
+bound to that factor version persist in the auth-owned
+`two_factor_recovery_codes` table. Run `buddy migrate --auth` when upgrading.
+
+`verifyTwoFactorCredential(userId, code)` accepts a six-digit authenticator code
+or a one-use recovery code and shares the account's second-factor lockout.
+Call it inside `withTwoFactorChallenge` before issuing the completed session.
+`generateTwoFactorRecoveryCodes(userId)` replaces all backup codes; applications
+must require fresh factor proof before calling it from a management endpoint.
+`remainingTwoFactorRecoveryCodes(userId)` returns only the available count.
+Never log codes, include them in URLs, cache their response or persist plaintext
+in browser or native storage.
+
 ## Cookie tokens and database sessions
 
 Bearer/token-cookie auth and `SessionAuth` database sessions use different

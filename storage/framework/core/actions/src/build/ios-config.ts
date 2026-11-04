@@ -72,6 +72,7 @@ const CAPABILITY_KEYS = {
   share: 'enableShare',
   camera: 'enableCamera',
   biometric: 'enableBiometric',
+  passkeys: 'enablePasskeys',
   pushNotifications: 'enablePushNotifications',
   secureStorage: 'enableSecureStorage',
   geolocation: 'enableGeolocation',
@@ -137,6 +138,7 @@ export const IOS_UNMAPPED_CRAFT_FLAGS: Readonly<Record<`enable${string}`, string
  * accepted are not listed.
  */
 export const CRAFT_CAPABILITY_FLOORS = {
+  passkeys: '0.0.451',
   audioRecording: '0.0.324',
   appleMusic: '0.0.144',
   heartRate: '0.0.152',

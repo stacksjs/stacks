@@ -88,6 +88,7 @@ export {
 
 // TOTP setup/enable/disable + login-challenge persistence
 export * from './two-factor'
+export * from './two-factor-recovery-codes'
 
 // Team resolution from auth credentials (dashboard-form scoping)
 export * from './team'

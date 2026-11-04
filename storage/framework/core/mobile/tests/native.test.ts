@@ -18,6 +18,7 @@ import {
   onBackgroundRefresh,
   onResume,
   onSilentPush,
+  passkeys,
   refresh,
   secureStorage,
   shortcuts,
@@ -41,6 +42,27 @@ function install(options: { craft?: Record<string, unknown>, phone?: boolean } =
 }
 
 const tick = (ms = 0): Promise<void> => new Promise(resolve => setTimeout(resolve, ms))
+
+describe('native passkeys', () => {
+  it('keeps an unsupported host unavailable and never returns an unverified credential', async () => {
+    install()
+    expect(await passkeys.isAvailable()).toBe(false)
+    await expect(passkeys.create({ challenge: 'test' })).rejects.toMatchObject({ code: 'CAPABILITY_DISABLED' })
+  })
+
+  it('passes JSON server options to the system sheet and returns its JSON credential', async () => {
+    const credential = { id: 'key', rawId: 'key', type: 'public-key', response: { clientDataJSON: 'client-data' } }
+    const create = mock(async () => credential)
+    const get = mock(async () => credential)
+    install({ craft: { passkeys: { isAvailable: async () => true, create, get } } })
+    const options = { challenge: 'challenge', rpId: 'example.com' }
+    expect(await passkeys.isAvailable()).toBe(true)
+    expect(await passkeys.create(options)).toEqual(credential)
+    expect(await passkeys.get(options)).toEqual(credential)
+    expect(create).toHaveBeenCalledWith(options)
+    expect(get).toHaveBeenCalledWith(options)
+  })
+})
 
 const originalDocument = Object.getOwnPropertyDescriptor(globalThis, 'document')
 

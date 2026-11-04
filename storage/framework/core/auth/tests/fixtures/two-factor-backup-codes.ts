@@ -1,0 +1,56 @@
+import assert from 'node:assert/strict'
+
+assert(process.env.DB_CONNECTION === 'sqlite' || process.env.DB_DATABASE?.startsWith('stacks_factor_backup_'))
+const { overridesReady } = await import('@stacksjs/config')
+await overridesReady
+const { db, initializeDbConfig, ensureDatabaseConfigLoaded, closeDatabaseConnection } = await import('@stacksjs/database/runtime')
+await ensureDatabaseConfigLoaded()
+const dialect = process.env.DB_CONNECTION!
+initializeDbConfig({ app: { env: 'test' }, database: { default: dialect, queryLogging: { enabled: false }, connections: dialect === 'sqlite'
+  ? { sqlite: { database: process.env.DB_DATABASE_PATH } }
+  : { postgres: { name: process.env.DB_DATABASE, host: process.env.DB_HOST, port: Number(process.env.DB_PORT), username: process.env.DB_USERNAME, password: process.env.DB_PASSWORD } } } })
+const { migrateAuthTables } = await import('../../../database/src/auth-tables')
+const { generateTwoFactorSecret, generateTwoFactorToken } = await import('../../src/authenticator')
+const { stashPendingTwoFactorSecret, enableTwoFactor, disableTwoFactor, getTwoFactorState } = await import('../../src/two-factor')
+const { confirmTwoFactorSetup, generateTwoFactorRecoveryCodes, verifyTwoFactorRecoveryCode, remainingTwoFactorRecoveryCodes } = await import('../../src/two-factor-recovery-codes')
+try {
+  await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY, email VARCHAR(255), two_factor_secret VARCHAR(255), two_factor_enabled BOOLEAN NOT NULL DEFAULT FALSE, two_factor_last_used_step BIGINT)').execute()
+  const migration = await migrateAuthTables()
+  assert.equal(migration.success, true, migration.error)
+  await db.insertInto('users').values([1, 2, 3].map(id => ({ id, email: `factor-${id}@example.invalid` }))).execute()
+  const secret = generateTwoFactorSecret()
+  await stashPendingTwoFactorSecret(1, secret)
+  assert.deepEqual(await confirmTwoFactorSetup(1, 'not-a-code'), { enabled: false, reason: 'invalid' })
+  assert.equal((await getTwoFactorState(1)).enabled, false)
+  const confirmed = await confirmTwoFactorSetup(1, await generateTwoFactorToken(secret))
+  assert.equal(confirmed.enabled, true)
+  if (!confirmed.enabled) throw new Error('Setup did not complete')
+  assert.equal(confirmed.recoveryCodes.length, 10)
+  assert.equal(new Set(confirmed.recoveryCodes).size, 10)
+  assert.equal(await remainingTwoFactorRecoveryCodes(1), 10)
+  const stored = await db.selectFrom('two_factor_recovery_codes').selectAll().execute()
+  assert(stored.every(row => /^[a-f0-9]{64}$/.test(String(row.code_hash))))
+  assert(stored.every(row => !confirmed.recoveryCodes.some(code => String(row.code_hash).includes(code.replaceAll('-', '')))))
+  assert.equal(await verifyTwoFactorRecoveryCode(2, confirmed.recoveryCodes[0]!), false)
+  const attempts = await Promise.all([verifyTwoFactorRecoveryCode(1, confirmed.recoveryCodes[0]!), verifyTwoFactorRecoveryCode(1, confirmed.recoveryCodes[0]!)])
+  assert.deepEqual(attempts.sort(), [false, true])
+  assert.equal(await remainingTwoFactorRecoveryCodes(1), 9)
+  const replacement = await generateTwoFactorRecoveryCodes(1)
+  assert.equal(await verifyTwoFactorRecoveryCode(1, confirmed.recoveryCodes[1]!), false)
+  assert.equal(await verifyTwoFactorRecoveryCode(1, replacement[0]!.toUpperCase()), true)
+  await disableTwoFactor(1)
+  assert.equal(await verifyTwoFactorRecoveryCode(1, replacement[1]!), false)
+  const newSecret = generateTwoFactorSecret()
+  assert.equal(await enableTwoFactor(1, newSecret, await generateTwoFactorToken(newSecret)), true)
+  assert.equal(await verifyTwoFactorRecoveryCode(1, replacement[1]!), false, 'old factor versions never recover a new factor')
+  await stashPendingTwoFactorSecret(3, secret)
+  await assert.rejects(db.transaction(async () => {
+    assert.equal((await confirmTwoFactorSetup(3, await generateTwoFactorToken(secret))).enabled, true)
+    throw new Error('synthetic rollback')
+  }), /synthetic rollback/)
+  assert.equal((await getTwoFactorState(3)).enabled, false)
+  assert.equal((await db.selectFrom('two_factor_pending_secrets').select('user_id').where('user_id', '=', 3).execute()).length, 1)
+  assert.equal((await db.selectFrom('two_factor_recovery_codes').select('user_id').where('user_id', '=', 3).execute()).length, 0)
+  process.stdout.write('two-factor backup codes OK\n')
+}
+finally { await closeDatabaseConnection() }

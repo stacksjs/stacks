@@ -88,6 +88,7 @@ export interface MobileApi {
   music: MusicApi
   heartRate: HeartRateApi
   scheduledWorkouts: import('./scheduled-workouts').ScheduledWorkoutsApi
+  passkeys: import('./passkeys').PasskeysApi
   speech: SpeechApi
   network: NetworkApi
   pushNotifications: PushNotificationsApi

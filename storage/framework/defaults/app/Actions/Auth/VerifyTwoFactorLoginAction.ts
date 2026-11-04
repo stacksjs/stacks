@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions/runtime'
-import { Auth, authCookieForBrowserSession, resolveBrowserSessionPolicy, verifyTwoFactorLoginCode, withTwoFactorChallenge } from '@stacksjs/auth'
+import { Auth, authCookieForBrowserSession, resolveBrowserSessionPolicy, verifyTwoFactorCredential, withTwoFactorChallenge } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation/runtime'
 
@@ -14,8 +14,8 @@ export default new Action({
       message: 'A challenge token is required.',
     },
     code: {
-      rule: schema.string().min(6).max(6).required(),
-      message: 'Code must be a 6-digit TOTP code.',
+      rule: schema.string().min(6).max(64).required(),
+      message: 'Enter an authenticator code or a recovery code.',
     },
   },
 
@@ -28,7 +28,7 @@ export default new Action({
     // LoginAction, not retry — mirrors the WebAuthn challenge
     // delete-on-read semantics in passkey.ts (stacksjs/stacks#1866).
     const result = await withTwoFactorChallenge(challengeToken, async (userId, challenge) => {
-      if (!await verifyTwoFactorLoginCode(userId, code)) return null
+      if (!await verifyTwoFactorCredential(userId, code)) return null
       const policy = resolveBrowserSessionPolicy(challenge.remembered)
       return Auth.loginUsingId(userId, {
         expiresInMinutes: policy.expiresInMinutes,

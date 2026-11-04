@@ -29,7 +29,7 @@ describe('TOTP login-challenge wiring', () => {
   test('VerifyTwoFactorLoginAction consumes the challenge once and verifies the code before minting tokens', () => {
     const source = readFileSync(resolve(DEFAULTS_ROOT, 'app/Actions/Auth/VerifyTwoFactorLoginAction.ts'), 'utf-8')
     expect(source).toMatch(/withTwoFactorChallenge\(challengeToken, async \(userId, challenge\)/)
-    expect(source).toMatch(/verifyTwoFactorLoginCode\(userId, code\)/)
+    expect(source).toMatch(/verifyTwoFactorCredential\(userId, code\)/)
     expect(source).toMatch(/Auth\.loginUsingId\(userId, /)
   })
 
@@ -38,7 +38,7 @@ describe('TOTP login-challenge wiring', () => {
     const enableSource = readFileSync(resolve(DEFAULTS_ROOT, 'app/Actions/Auth/EnableTwoFactorAction.ts'), 'utf-8')
 
     expect(generateSource).toMatch(/stashPendingTwoFactorSecret\(user\.id as number, secret\)/)
-    expect(enableSource).toMatch(/consumePendingTwoFactorSecret\(user\.id as number\)/)
+    expect(enableSource).toMatch(/confirmTwoFactorSetup\(user\.id as number, code\)/)
     expect(enableSource).not.toMatch(/request\.get\('secret'\)/)
   })
 

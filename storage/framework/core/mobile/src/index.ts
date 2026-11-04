@@ -48,6 +48,7 @@ import { afterBridge, callNative, craftHost, hasNativeMobileHost, nativeFunction
 import { storage } from './storage'
 import { crypto } from './crypto'
 import { scheduledWorkouts } from './scheduled-workouts'
+import { passkeys } from './passkeys'
 import type {
   AppReviewApi,
   BiometricsApi,
@@ -90,6 +91,7 @@ export * from './gestures'
 export * from './navigation'
 export * from './route'
 export * from './scheduled-workouts'
+export * from './passkeys'
 export * from './session-clock'
 export * from './indoor'
 export * from './native'
@@ -552,6 +554,7 @@ export const mobile: MobileApi = {
   music,
   heartRate,
   scheduledWorkouts,
+  passkeys,
   speech,
   network,
   pushNotifications,

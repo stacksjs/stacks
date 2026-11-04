@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions/runtime'
-import { consumePendingTwoFactorSecret, enableTwoFactor } from '@stacksjs/auth'
+import { confirmTwoFactorSetup } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation/runtime'
 
@@ -22,16 +22,12 @@ export default new Action({
 
     const code = request.get('code')
 
-    // The secret is never taken from the client — see
-    // GenerateTwoFactorSecretAction / two-factor.ts's doc comment.
-    const pendingSecret = await consumePendingTwoFactorSecret(user.id as number)
-    if (!pendingSecret)
-      return response.unauthorized('No pending setup found — please generate a new QR code and try again.')
+    // Confirm the server-owned setup atomically. A mistyped code keeps the QR
+    // usable, and recovery codes are returned once after the factor is saved.
+    const result = await confirmTwoFactorSetup(user.id as number, code)
+    if (!result.enabled)
+      return response.json({ error: result.reason === 'missing' ? 'Setup expired. Start setup again.' : result.reason === 'already_enabled' ? 'Two-factor authentication is already enabled.' : 'Invalid code. Check your authenticator app and try again.' }, { status: 422, headers: { 'Cache-Control': 'private, no-store' } })
 
-    const enabled = await enableTwoFactor(user.id as number, pendingSecret, code)
-    if (!enabled)
-      return response.unauthorized('Invalid code — please check your authenticator app and try again.')
-
-    return response.json({ enabled: true })
+    return response.json(result, { headers: { 'Cache-Control': 'private, no-store' } })
   },
 })

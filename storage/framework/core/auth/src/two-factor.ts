@@ -206,7 +206,27 @@ export async function enableTwoFactor(userId: number, secret: string, code: stri
 }
 
 export async function disableTwoFactor(userId: number): Promise<void> {
-  await persistTwoFactorState(userId, null, false, null)
+  await db.transaction(async () => {
+    await persistTwoFactorState(userId, null, false, null)
+    await revokeTwoFactorRecoveryCodes(userId)
+    await revokeTwoFactorChallenges(userId)
+  })
+}
+
+/** Invalidate backup credentials, including on installations predating their schema. */
+export async function revokeTwoFactorRecoveryCodes(userId: number): Promise<void> {
+  try {
+    await db.transaction(async () => {
+      await db.deleteFrom('two_factor_recovery_codes').where('user_id', '=', userId).execute()
+      if (await db.primary.selectFrom('two_factor_recovery_codes').select('user_id').where('user_id', '=', userId).executeTakeFirst())
+        throw new Error('[auth] Two-factor recovery codes could not be revoked.')
+    })
+  }
+  catch (error) {
+    const message = error && typeof error === 'object' && 'message' in error && typeof error.message === 'string' ? error.message : String(error)
+    if (/^(?:no such table: (?:main\.)?two_factor_recovery_codes|relation "two_factor_recovery_codes" does not exist|Table '(?:[^'.]+\.)?two_factor_recovery_codes' doesn't exist)$/i.test(message)) return
+    throw error
+  }
 }
 
 async function persistTwoFactorState(userId: number, secret: string | null, enabled: boolean, lastUsedStep: number | null): Promise<boolean> {
