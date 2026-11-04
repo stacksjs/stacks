@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.462...v0.75.463)
+
+## 🐛 Bug Fixes
+
+- **testing**: keep framework package suites free of app globals ([85ef995](https://github.com/stacksjs/stacks/commit/85ef995)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.461...v0.75.462)
 
 ## 🐛 Bug Fixes
