@@ -175,6 +175,16 @@ component rather than duplicate it. Compile and test the actual screen bundle
 for both targets. External authorization or checkout routes may use the system
 browser with an explicit return path.
 
+A named route parameter may need to exclude website paths. Configure
+`nativeScreenConstraints` on both platforms using the exact route key, for
+example `{ '/:username': { username: { pattern: '[a-z]+', exclude: ['terms'], ignoreCase: true } } }`.
+Patterns match the complete decoded parameter; use syntax shared by JavaScript,
+Foundation and Kotlin. Constraints apply before query items and preserve static
+route priority. The build requires Craft's `nativeRouteConstraints` capability
+and stops if an installed host would ignore the configuration. For application
+resolution, use the published browser-safe `craft-native/mobile`
+`matchNativePath(screens, path, constraints)` rather than copying the matcher.
+
 For the web renderer, choose a primary content source:
 
 - `url`: load the deployed Stacks application and keep server-rendered routes.

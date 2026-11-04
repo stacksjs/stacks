@@ -38,6 +38,7 @@ export interface CraftAndroidConfig {
   enableHealthConnect?: boolean
   renderer?: AndroidMobileConfig['renderer']
   nativeScreens?: Record<string, string>
+  nativeScreenConstraints?: AndroidMobileConfig['nativeScreenConstraints']
   /** The bundle route the app script runs under (stx's `__app`). */
   nativeApp?: string
   tabs?: AndroidMobileConfig['tabs']
@@ -190,6 +191,7 @@ export function toCraftAndroidConfig(config: AndroidMobileConfig, nativeSensorCa
     mapsApiKey: config.mapsApiKey,
     renderer: config.renderer,
     nativeScreens: native ? nativeScreenRoutes(config) : undefined,
+    nativeScreenConstraints: native ? config.nativeScreenConstraints : undefined,
     nativeApp: native && config.nativeApp ? NATIVE_APP_ROUTE : undefined,
     tabs: native ? config.tabs : undefined,
     backgroundRefresh: native ? config.backgroundRefresh : undefined,

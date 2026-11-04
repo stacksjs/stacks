@@ -3,12 +3,25 @@ import { describe, expect, it } from 'bun:test'
 import { mkdtemp, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { compileNativeScreens, nativeScreenFiles, nativeScreenName } from '../src/build/native-screens'
+import { assertCraftSupportsRouteConstraints, compileNativeScreens, nativeScreenFiles, nativeScreenName } from '../src/build/native-screens'
 import { toCraftAndroidConfig } from '../src/build/android-config'
 import { assertCraftSupportsChromeFonts, assertCraftSupportsTint } from '../src/build/ios-config'
 import { assertCraftSupportsAppShortcuts, assertCraftSupportsNativeFonts, resolveNativeFonts, assertCraftSupportsCapabilities, normalizeMobileUrl, portablePaths, resolveMobilePath, resolveSwipeNavigation, toCraftIosConfig, unsupportedCraftCapabilities, validateIosMobileConfig, withActivityTypes, writeIosActivityTypes } from '../src/build/ios-config'
 
 describe('build-owned iOS shortcuts', () => {
+  it('forwards parameter constraints and rejects hosts that would ignore them', () => {
+    const nativeScreenConstraints = { '/:username': { username: { pattern: '[a-z]+', exclude: ['terms'], ignoreCase: true } } }
+    const nativeScreens = { '/:username': 'resources/views/profile.stx' }
+    expect(toCraftIosConfig({ appName: 'HQ', bundleId: 'training.hq.app', nativeScreens, nativeScreenConstraints }).nativeScreenConstraints).toEqual(nativeScreenConstraints)
+    expect(toCraftAndroidConfig({ appName: 'HQ', packageName: 'training.hq.app', renderer: 'native', nativeScreens, nativeScreenConstraints }).nativeScreenConstraints).toEqual(nativeScreenConstraints)
+    expect(() => assertCraftSupportsRouteConstraints(undefined)).not.toThrow()
+    for (const platform of ['ios', 'android'] as const) {
+      expect(() => assertCraftSupportsRouteConstraints(nativeScreenConstraints, undefined, platform)).toThrow('nativeRouteConstraints support')
+      expect(() => assertCraftSupportsRouteConstraints(nativeScreenConstraints, false, platform)).toThrow('current published craft-native')
+      expect(() => assertCraftSupportsRouteConstraints(nativeScreenConstraints, true, platform)).not.toThrow()
+    }
+  })
+
   it('forwards opt-in sensors and declared background HealthKit types without enabling them by default', () => {
     const base = { appName: 'Sensors', bundleId: 'org.example.sensors' }
     const config = toCraftIosConfig({ ...base, capabilities: { barometer: true, pedometer: true, healthKit: true, healthKitBackground: true },

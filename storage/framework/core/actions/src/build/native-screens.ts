@@ -30,6 +30,12 @@ type CompileNativeBundle = (options: {
   shareStorage?: Record<string, string>
 }) => Promise<NativeBundleResult>
 
+/** Old native hosts must not silently broaden a configured route. */
+export function assertCraftSupportsRouteConstraints(constraints: IosMobileConfig['nativeScreenConstraints'], supported?: boolean, platform: 'ios' | 'android' = 'ios'): void {
+  if (constraints !== undefined && supported !== true)
+    throw new Error(`${platform}.nativeScreenConstraints requires a Craft builder with nativeRouteConstraints support. Install the current published craft-native package.`)
+}
+
 /**
  * The screen name a `nativeScreens` value stands for. A value is either a
  * screen's name in `nativeScreensDir` (`Today`) or, so the web views can be the

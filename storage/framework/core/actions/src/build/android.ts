@@ -8,7 +8,7 @@ import { craftBuilderSpecifier, craftBuilderVersion } from './craft-entry'
 import { resolveCraftBuilderProvenance } from './craft-provenance'
 import { androidRelease, assertCraftSupportsAndroid, assertCraftSupportsAndroidMapProvider, toCraftAndroidConfig, uploadAndroidMapping, validateAndroidMobileConfig } from './android-config'
 import { assertCraftSupportsChromeFonts, resolveCrashReporting, resolveMobilePath, resolveNativeFonts, assertCraftSupportsNativeFonts } from './ios-config'
-import { compileNativeScreens } from './native-screens'
+import { assertCraftSupportsRouteConstraints, compileNativeScreens } from './native-screens'
 import { writeAndroidIconTable } from './android-icons'
 import { reportMobileBuildTarget } from './mobile-target'
 import { resolveMobileSplash } from './mobile-splash'
@@ -17,6 +17,7 @@ process.exitCode = 1
 
 interface CraftAndroidBuilder {
   nativeSensorCapabilities?: readonly string[]
+  nativeRouteConstraints?: boolean
   nativeMapProviders?: readonly string[]
   /** The builder installs a directory of route bundles (Craft 0.0.242 and later). */
   nativeRouteBundles?: boolean
@@ -72,6 +73,7 @@ const output = resolveMobilePath(projectPath(), config.output) ?? storagePath('f
 const webAssets = resolveMobilePath(projectPath(), config.webAssets)
 const fallbackWebAssets = resolveMobilePath(projectPath(), config.fallbackWebAssets)
 const builder = await loadCraftAndroidBuilder()
+assertCraftSupportsRouteConstraints(config.nativeScreenConstraints, builder.nativeRouteConstraints, 'android')
 const craftConfig = toCraftAndroidConfig(config, builder.nativeSensorCapabilities)
 craftConfig.nativeFonts = resolveNativeFonts(config.nativeFonts, projectPath())
 craftConfig.appIconPath = resolveMobilePath(projectPath(), config.appIcon)

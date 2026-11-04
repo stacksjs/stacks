@@ -1,6 +1,15 @@
 export type MobileOrientation = 'portrait' | 'landscape-left' | 'landscape-right' | 'portrait-upside-down'
 export type IosDeviceFamily = 'iphone' | 'ipad'
 
+/** Rules for complete decoded native path parameters, applied before query items. */
+export interface NativeParameterConstraint {
+  pattern?: string
+  exclude?: readonly string[]
+  ignoreCase?: boolean
+}
+
+export type NativeRouteConstraints = Record<string, Record<string, NativeParameterConstraint>>
+
 export interface MobileCapabilities {
   speechRecognition?: boolean
   haptics?: boolean
@@ -306,6 +315,8 @@ export interface IosMobileConfig {
    * web page and the native screen, compiled natively by stx.
    */
   nativeScreens?: Record<string, string>
+  /** Constrain named path parameters consistently in the native host and app router. */
+  nativeScreenConstraints?: NativeRouteConstraints
   /** Where the native screens' `.stx` files live. Default `resources/native`. */
   nativeScreensDir?: string
   /** The screens' messages, shipped a language at a time (`NativeMessagesConfig`). */
@@ -440,6 +451,8 @@ export interface AndroidMobileConfig {
   renderer?: 'web' | 'native'
   /** Paths to the screens that draw them (`/m/workout/:id` → `Workout`), as `ios.nativeScreens`. */
   nativeScreens?: Record<string, string>
+  /** Constrain named path parameters consistently in the native host and app router. */
+  nativeScreenConstraints?: NativeRouteConstraints
   /** Where the screens' `.stx` files are (default `resources/native`). */
   nativeScreensDir?: string
   /** The screens' messages, as `ios.nativeMessages`. */

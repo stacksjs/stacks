@@ -37,6 +37,7 @@ export interface CraftIosConfig {
   associatedDomains?: string[]
   renderer?: IosMobileConfig['renderer']
   nativeScreens?: Record<string, string>
+  nativeScreenConstraints?: IosMobileConfig['nativeScreenConstraints']
   nativeBundle?: string
   /** The bundle route the app script runs under (stx's `__app`). */
   nativeApp?: string
@@ -317,6 +318,7 @@ export function toCraftIosConfig(config: IosMobileConfig, nativeSensorCapabiliti
     associatedDomains: config.associatedDomains,
     renderer: config.renderer,
     nativeScreens: nativeScreenRoutes(config),
+    nativeScreenConstraints: config.nativeScreenConstraints,
     nativeApp: config.nativeApp ? NATIVE_APP_ROUTE : undefined,
     nativeScriptThread: config.nativeScriptThread,
     tabs: config.tabs,

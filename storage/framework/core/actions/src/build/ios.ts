@@ -9,7 +9,7 @@ import { craftBuilderSpecifier, craftBuilderVersion } from './craft-entry'
 import { resolveCraftBuilderProvenance } from './craft-provenance'
 import { assertCraftSupportsAppShortcuts, assertCraftSupportsCapabilities, assertCraftSupportsCrashReporting, portablePaths, resolveCrashReporting, resolveMobilePath, resolveNativeFonts, assertCraftSupportsNativeFonts, toCraftIosConfig, validateIosMobileConfig, writeIosActivityTypes } from './ios-config'
 import { generateXcodeProject, resolveXcodegen } from './ios-toolchain'
-import { compileNativeScreens } from './native-screens'
+import { assertCraftSupportsRouteConstraints, compileNativeScreens } from './native-screens'
 import { writeIosShellSupport } from './ios-shell'
 import { reportMobileBuildTarget } from './mobile-target'
 import { resolveMobileSplash } from './mobile-splash'
@@ -21,6 +21,7 @@ process.exitCode = 1
 
 interface CraftIosBuilder {
   nativeSensorCapabilities?: readonly string[]
+  nativeRouteConstraints?: boolean
   init(options: {
     name: string
     bundleId: string
@@ -91,6 +92,7 @@ const fallbackWebAssets = resolveMobilePath(projectPath(), config.fallbackWebAss
 // upload below see one answer.
 const crashReporting = resolveCrashReporting(mobile.crashReporting, config.crashReporting)
 const builder = await loadCraftIosBuilder()
+assertCraftSupportsRouteConstraints(config.nativeScreenConstraints, builder.nativeRouteConstraints, 'ios')
 const craftConfig = toCraftIosConfig({ ...config, crashReporting }, builder.nativeSensorCapabilities)
 craftConfig.nativeFonts = resolveNativeFonts(config.nativeFonts, projectPath())
 craftConfig.appIconPath = resolveMobilePath(projectPath(), config.appIcon)
