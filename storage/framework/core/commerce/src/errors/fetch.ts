@@ -1,4 +1,5 @@
 import { db } from '@stacksjs/database/runtime'
+import { formatDate } from '@stacksjs/orm'
 
 export type ErrorResolution = 'unresolved' | 'resolved' | 'ignored'
 
@@ -65,15 +66,18 @@ export async function fetchAll(): Promise<ErrorRecord[]> {
  * Same errors are aggregated instead of creating duplicate entries
  */
 export async function fetchGrouped(): Promise<GroupedError[]> {
+  // Grouping reads the light columns only. Every row's stack and
+  // additional_info are what made this read heavy, and a group shows one
+  // stack, its representative's, which is fetched by id below.
   const errors = await db
     .selectFrom('errors')
-    .selectAll()
+    .select(['id', 'type', 'message', 'resolution', 'created_at'])
     .orderBy('created_at', 'desc')
-    .execute() as unknown as ErrorRecord[]
+    .execute() as unknown as GroupingRow[]
 
   // Group errors by type + message combination
   const groupMap = new Map<string, {
-    errors: ErrorRecord[]
+    errors: GroupingRow[]
     firstSeen: Date
     lastSeen: Date
   }>()
@@ -99,6 +103,8 @@ export async function fetchGrouped(): Promise<GroupedError[]> {
       group.lastSeen = errorDate
   }
 
+  const stacks = await fetchStacks([...groupMap.values()].flatMap(group => group.errors[0] ? [group.errors[0].id] : []))
+
   // Convert to grouped error format
   const groupedErrors: GroupedError[] = []
 
@@ -115,7 +121,7 @@ export async function fetchGrouped(): Promise<GroupedError[]> {
       id: representative.id,
       type: representative.type,
       message: representative.message,
-      stack: representative.stack,
+      stack: stacks.get(Number(representative.id)) ?? null,
       status: statusLabel,
       count: group.errors.length,
       first_seen: group.firstSeen.toISOString(),
@@ -128,6 +134,26 @@ export async function fetchGrouped(): Promise<GroupedError[]> {
   groupedErrors.sort((a, b) => new Date(b.last_seen).getTime() - new Date(a.last_seen).getTime())
 
   return groupedErrors
+}
+
+type GroupingRow = Pick<ErrorRecord, 'id' | 'type' | 'message' | 'resolution' | 'created_at'>
+
+/** How many ids one `IN` list carries, well under every driver's bound-parameter limit. */
+const STACK_BATCH = 500
+
+/** The stack of each of these errors, by id. */
+async function fetchStacks(ids: number[]): Promise<Map<number, string | null>> {
+  const stacks = new Map<number, string | null>()
+  for (let start = 0; start < ids.length; start += STACK_BATCH) {
+    const rows = await db
+      .selectFrom('errors')
+      .select(['id', 'stack'])
+      .where('id', 'in', ids.slice(start, start + STACK_BATCH))
+      .execute() as unknown as Pick<ErrorRecord, 'id' | 'stack'>[]
+    for (const row of rows)
+      stacks.set(Number(row.id), row.stack ?? null)
+  }
+  return stacks
 }
 
 /**
@@ -143,20 +169,48 @@ export async function fetchByGroup(type: string, message: string): Promise<Error
     .execute() as unknown as ErrorRecord[]
 }
 
+/** How many errors were recorded at or after this moment. */
+async function countSince(since: Date): Promise<number> {
+  const row = await db
+    .selectFrom('errors')
+    .where('created_at', '>=', formatDate(since))
+    .select(db.fn.count('id').as('count'))
+    .executeTakeFirst() as { count: number | string } | undefined
+  return Number(row?.count ?? 0)
+}
+
 /**
  * Fetch error statistics
+ *
+ * Counted by the database rather than by loading every error: the Errors page
+ * asks for these on every visit and again after each resolve, ignore or delete
+ * (stacksjs/stacks#3181).
  */
 export async function fetchStats(): Promise<ErrorStats> {
-  const errors = await fetchAll()
   const now = new Date()
   const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000)
   const twoDaysAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000)
 
-  const last24h = errors.filter(e => new Date(e.created_at) >= yesterday).length
-  const previous24h = errors.filter(e => {
-    const date = new Date(e.created_at)
-    return date >= twoDaysAgo && date < yesterday
-  }).length
+  const byResolution = await db
+    .selectFrom('errors')
+    .select(['resolution', db.fn.count('id').as('count')])
+    .groupBy('resolution')
+    .execute() as { resolution: ErrorResolution | null, count: number | string }[]
+
+  let total = 0
+  let resolved = 0
+  let ignored = 0
+  for (const row of byResolution) {
+    const count = Number(row.count)
+    total += count
+    if (row.resolution === 'resolved')
+      resolved += count
+    else if (row.resolution === 'ignored')
+      ignored += count
+  }
+
+  const last24h = await countSince(yesterday)
+  const previous24h = await countSince(twoDaysAgo) - last24h
 
   // Calculate trend (percentage change)
   const trend = previous24h === 0
@@ -164,10 +218,11 @@ export async function fetchStats(): Promise<ErrorStats> {
     : Math.round(((last24h - previous24h) / previous24h) * 100)
 
   return {
-    total: errors.length,
-    unresolved: errors.filter(e => (e.resolution ?? 'unresolved') === 'unresolved').length,
-    resolved: errors.filter(e => e.resolution === 'resolved').length,
-    ignored: errors.filter(e => e.resolution === 'ignored').length,
+    total,
+    // A missing resolution reads as unresolved, as it always has.
+    unresolved: total - resolved - ignored,
+    resolved,
+    ignored,
     last_24h: last24h,
     trend,
   }
@@ -175,10 +230,18 @@ export async function fetchStats(): Promise<ErrorStats> {
 
 /**
  * Fetch error timeline (hourly counts for the last 24 hours)
+ *
+ * Reads only the last 24 hours, and only their timestamps.
  */
 export async function fetchTimeline(): Promise<{ hour: string, count: number }[]> {
-  const errors = await fetchAll()
   const now = new Date()
+  const firstHour = new Date(now.getTime() - 23 * 60 * 60 * 1000)
+  firstHour.setMinutes(0, 0, 0)
+  const errors = await db
+    .selectFrom('errors')
+    .select(['created_at'])
+    .where('created_at', '>=', formatDate(firstHour))
+    .execute() as unknown as Pick<ErrorRecord, 'created_at'>[]
   const timeline: { hour: string, count: number }[] = []
 
   // Create hourly buckets for last 24 hours
