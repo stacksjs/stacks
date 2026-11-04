@@ -15,6 +15,7 @@ source and retained evidence; driver limits are explicit.
 ## Inside the skill
 
 - Ten rules that prevent the most common mistakes
+- Auto-imports: what is injected where, and the few files that still import
 - Data: models, queries, transactions, pagination, migrations
 - HTTP: actions, routes, middleware, responses, validation
 - Auth and access: sessions, tokens, 2FA, passkeys, gates, policies

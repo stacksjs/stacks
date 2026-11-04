@@ -28,14 +28,13 @@ or experimental.
    runtime. Write an Action only when the behavior differs from CRUD.
 3. **Override, don't fork.** A file at the same path under `app/` replaces
    the default. Use `extendModel()` to add fields to a built-in model.
-4. **Check auto-imports before importing.** After boot, models, jobs,
-   `Action`, `route`, `response`, `schema`, `log`, `config`, `db`, `Auth`,
-   `dispatch`, `mail`, `notify`, `emit` and `Feature` are server globals. See
-   `storage/framework/auto-imports/RUNTIME.md`. Model files, tests and imported
-   `.ts` modules still import explicitly.
-5. **Use runtime subpaths in handlers:** `@stacksjs/actions/runtime`,
-   `@stacksjs/database/runtime` and `@stacksjs/validation/runtime`. The full
-   barrels load tooling that a request does not need.
+4. **Don't import what Stacks auto-imports.** Actions, routes, jobs,
+   listeners, middleware, controllers, app commands and stx scripts use the
+   injected names bare (see [Auto-imports](#auto-imports)). Import only names
+   that aren't injected, and in the few files that load without a booted app.
+5. **When you do import, prefer runtime subpaths** such as
+   `@stacksjs/database/runtime` over full barrels. The barrels load tooling
+   that a request does not need.
 6. **Money is integer minor units** (cents), everywhere.
 7. **Writes in a transaction go through `tx`.** Model calls inside
    `transaction()` do not join it.
@@ -48,12 +47,45 @@ or experimental.
     `./buddy typecheck`. UI work also has to pass the `stacks-design-taste`
     preflight.
 
+## Auto-imports
+
+The full list for this app is `storage/framework/auto-imports/RUNTIME.md`
+(regenerate it with `./buddy generate:auto-imports`). The snippets below
+follow it, so **a missing import is deliberate.**
+
+- **Server, after boot:** every model (`User`, `Post`, ...) and every job
+  (`SendWelcomeEmail`, ...); `Action`, `route`, `response`, `request`,
+  `Middleware`, `url`, `schema`, `db`, `sql`, `log`, `config`, `path`, `HttpError`,
+  `Auth`, `dispatch`, `listen`, `mail`, `template`, `notify`, `emit`,
+  `emitToUser`, `createChannel`, `schedule`, `Feature`, `collect`, `t`,
+  `setLocale`, `makeHash`, `verifyHash`, `defineModel`; plus the exports of
+  `resources/functions/`.
+- **`<script client>`:** signals (`state`, `derived`, `effect`, `watch`),
+  lifecycle (`onMount`, `onDestroy`), `navigate`, `toast`, `useFetch`,
+  `useQuery`, `useMutation`, `useColorMode`, `useDark`, `keptState`, and the
+  macros (`defineProps`, ...). On-demand helpers such as `useForm`,
+  `useScroll` and `copyToClipboard` are bundled when you call them.
+- **Still import:**
+  - Names not in the list (`cache`, `env`, `Storage`, `transaction`, `job`,
+    `validate`, `defineEvents`, `defineGates`, `defineCommand`, ...).
+  - Type-only names, with `import type`.
+  - `Job` from `@stacksjs/queue`, because the global `Job` is the jobs-table
+    model.
+  - The `Error` and `Request` models, which are never made global.
+- **Files that load without globals, so they import everything:**
+  - Model files, because `generate:migrations`, `migrate` and `seed` read
+    them without booting.
+  - Tests, which never run the preloader. That also means a test that loads
+    a bare-style action directly gets "Action is not defined".
+  - Standalone scripts and framework packages.
+  - `.ts` modules imported by a client script.
+
 ## Data
 
 ### Models (`stacks-models`, `stacks-orm`)
 
 ```ts
-// app/Models/Post.ts
+// app/Models/Post.ts: imports stay, because migrate/generate/seed load models without globals
 import { defineModel } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
 
@@ -103,7 +135,7 @@ const page = await Post.where('status', 'published').paginate(20, 2)  // (perPag
 import { transaction } from '@stacksjs/orm'
 await transaction(async tx => tx.insertInto('posts').values({ title }).execute(), { retries: 2 })
 
-import { db } from '@stacksjs/database/runtime'   // raw builder: selectFrom / insertInto / updateTable / deleteFrom
+await db.updateTable('posts').set({ status: 'archived' }).where('id', '=', id).execute()   // raw builder (db is a global)
 ```
 
 - **More helpers:** `first`, `count`, `exists`, `pluck`, `whereIn`, `latest`,
@@ -132,11 +164,7 @@ import { db } from '@stacksjs/database/runtime'   // raw builder: selectFrom / i
 ### Actions (`stacks-actions`)
 
 ```ts
-// app/Actions/PublishPostAction.ts
-import { Action } from '@stacksjs/actions/runtime'
-import { schema } from '@stacksjs/validation'
-import { response } from '@stacksjs/router'
-
+// app/Actions/PublishPostAction.ts: Action, schema, response and Post are all globals
 export default new Action({
   name: 'Publish Post',
   method: 'POST',
@@ -171,7 +199,7 @@ const client = createTypedClient<typeof api>({ baseUrl })
 ```
 
 ```ts
-// app/Middleware/EnsureBeta.ts: return nothing to continue, throw to stop
+// app/Middleware/EnsureBeta.ts (Middleware is a global): return nothing to continue, throw to stop
 export default new Middleware({ name: 'EnsureBeta', priority: 5, async handle(request) { /* ... */ } })
 // app/Middleware.ts
 import { defineMiddleware } from '@stacksjs/router'
@@ -194,12 +222,12 @@ export default defineMiddleware({ beta: 'EnsureBeta' })   // merged over the bui
 ### Validation and errors (`stacks-validation`, `stacks-error-handling`)
 
 ```ts
-import { schema, validate } from '@stacksjs/validation'
+import { validate } from '@stacksjs/validation'   // schema is a global, validate is not
 const data = await validate(request, { email: schema.string().email().required() })  // 422 HttpError on failure
 
-import { fromPromise, HttpError } from '@stacksjs/error-handling'
+import { fromPromise } from '@stacksjs/error-handling'
 const r = await fromPromise(fetchThing()); if (r.isErr) log.warn(r.error)            // isOk / isErr are properties
-throw new HttpError(409, 'Already exists')
+throw new HttpError(409, 'Already exists')                                            // HttpError is a global
 ```
 
 **Gotcha:** `validate()` returns only the declared fields that were sent.
@@ -232,7 +260,7 @@ await request.authorize('update', post)                        // throws a 403
 ### Jobs and queues (`stacks-jobs`, `stacks-queue`)
 
 ```ts
-// app/Jobs/SendWelcomeEmail.ts
+// app/Jobs/SendWelcomeEmail.ts: import Job, because the global Job is the jobs-table model
 import { Job } from '@stacksjs/queue'
 export default new Job({ name: 'SendWelcomeEmail', queue: 'emails', tries: 3, backoff: [10, 30, 60], async handle({ email }: { email: string }) { /* ... */ } })
 
@@ -280,7 +308,7 @@ broadcasting, not events.
 ## Messaging
 
 ```ts
-// Mail (stacks-mail, stacks-email)
+// Mail (stacks-mail, stacks-email): mail, template, notify and emit are globals
 const { html, text } = await template('welcome', { variables: { name }, subject: 'Hi' })
 await mail.sendOrFail({ to: [email], subject: 'Hi', html, text })       // send() resolves on failure
 const r = await new WelcomeMail(user).send(); if (!r.success) await log.error(r.message)
@@ -305,12 +333,12 @@ nothing.
 ## Platform services
 
 ```ts
-// Cache (stacks-cache): TTL in seconds, 0 = forever, omitted = config.cache.ttl
+// Cache (stacks-cache): not a global. TTL in seconds, 0 = forever, omitted = config.cache.ttl
 import { cache } from '@stacksjs/cache'
 await cache.remember(`post:${id}`, 300, () => Post.find(id)); await cache.del(`post:${id}`)
 
 // Storage (stacks-storage)
-import { Storage } from '@stacksjs/storage'
+import { Storage } from '@stacksjs/storage'   // the global `storage` is a lower-level namespace, not this facade
 const saved = await Storage.put(file, { disk: 'public', dir: 'avatars' })   // { path, url, ... }
 await Storage.disk('s3').write('x.txt', bytes)   // disk() returns an adapter: write/read/deleteFile/publicUrl
 
@@ -322,7 +350,7 @@ await log.info('Order created', { orderId }); await log.error('Charge failed', e
 import { env } from '@stacksjs/env'
 const debug = env.DEBUG; const name = config.app.name   // config and log are globals; declare env keys in config/env.ts
 
-// i18n (stacks-i18n): locales/*.yml, {name} interpolation
+// i18n (stacks-i18n): t is a global; strings live in locales/*.yml with {name} interpolation
 t('greeting', { name })
 
 // Feature flags vs bundles (stacks-feature-flags, stacks-features)
@@ -351,8 +379,7 @@ import { commerce } from '@stacksjs/commerce'; await commerce.orders.placeOrder(
 
 // AI (stacks-ai): provider comes from config ai.default, a provider name or model id
 import { createAIClient, createEmbedding } from '@stacksjs/ai'
-import { ai } from '@stacksjs/config'
-const { content } = await createAIClient(ai).generate([{ role: 'user', content: 'Hi' }], { system: 'Be brief.' })
+const { content } = await createAIClient(config.ai).generate([{ role: 'user', content: 'Hi' }], { system: 'Be brief.' })
 ```
 
 - **Sites:** `@stacksjs/sites` provides `siteResolver`, `currentSite()` and
