@@ -74,6 +74,10 @@ try {
     assert.equal(await getPasswordChangedAt(1, trx), null)
     assert.equal((await db.primary.selectFrom('users').selectAll().execute()).length, 1, 'legacy lookup must not abort the transaction')
   })
+  await db.transaction(async () => {
+    assert.equal(await getPasswordChangedAt(1), null)
+    assert.equal((await db.primary.selectFrom('users').selectAll().execute()).length, 1, 'a default query runner inside an ambient transaction must preserve it too')
+  })
   await db.unsafe('DROP TABLE users').execute()
   assert.equal(await getPasswordChangedAt(1), null, 'an absent legacy owner table remains supported')
   assert.deepEqual(failures, [])

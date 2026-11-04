@@ -377,9 +377,10 @@ export async function getTokenOwnerCredentialState(
         return { exists: false, passwordChangedAt: null }
       return readOwner(databaseBoolean(schema?.stamp_exists))
     }
-    else if (isPostgres && q !== db) {
+    else if (isPostgres) {
       // A missing optional column aborts a PostgreSQL transaction even when
-      // its error is caught. Probe without raising before using a tx runner.
+      // its error is caught. The default db proxy can also carry an ambient
+      // transaction, so probe before every PostgreSQL owner lookup.
       const rows = await q.unsafe(`
         SELECT
           to_regclass($1) IS NOT NULL AS table_exists,
