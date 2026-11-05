@@ -85,7 +85,6 @@ export const actions = {
   'Actions/Buddy/BuddyTitleAction': '../defaults/app/Actions/Buddy/BuddyTitleAction.ts',
   'Actions/Buddy/JobCancelAction': '../defaults/app/Actions/Buddy/JobCancelAction.ts',
   'Actions/Buddy/JobRetryAction': '../defaults/app/Actions/Buddy/JobRetryAction.ts',
-  'Actions/Buddy/JobsListAction': '../defaults/app/Actions/Buddy/JobsListAction.ts',
   'Actions/Buddy/ScheduleListAction': '../defaults/app/Actions/Buddy/ScheduleListAction.ts',
   'Actions/Buddy/VersionsAction': '../defaults/app/Actions/Buddy/VersionsAction.ts',
   'Actions/Cms/AuthorDestroyAction': '../defaults/app/Actions/Cms/AuthorDestroyAction.ts',

@@ -44,6 +44,13 @@ export const RETIRED_SCAFFOLD_ROUTES: RetiredScaffoldRoute[] = [
     removedIn: '0.74.5',
     reason: 'the hand-written commands endpoint was dropped for `buddy list --json` (stacksjs/stacks#2056)',
   },
+  {
+    file: 'routes/buddy.ts',
+    statement: `route.get('/jobs', 'Actions/Buddy/JobsListAction')`,
+    action: 'Actions/Buddy/JobsListAction',
+    removedIn: '0.75.483',
+    reason: 'the dashboard lists jobs from /api/dashboard/jobs, and this duplicate read both job tables whole (stacksjs/stacks#3203)',
+  },
 ]
 
 export interface RouteActionReference {

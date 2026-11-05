@@ -59,6 +59,20 @@ describe('pruneRetiredScaffoldRoutes', () => {
     expect(findDanglingRouteActions(root)).toEqual([])
   })
 
+  // stacksjs/stacks#3203: the scaffold's /jobs route, once JobsListAction is gone.
+  it('removes the scaffold\'s /jobs route once its action is gone too', () => {
+    write('routes/buddy.ts', OLD_BUDDY_ROUTES)
+    rmSync(join(root, 'storage/framework/defaults/app/Actions/Buddy/JobsListAction.ts'))
+
+    const pruned = pruneRetiredScaffoldRoutes(root)
+
+    expect(pruned.map(route => route.action)).toEqual(['Actions/Buddy/CommandsAction', 'Actions/Buddy/JobsListAction'])
+    const after = readFileSync(join(root, 'routes/buddy.ts'), 'utf8')
+    expect(after).not.toContain('JobsListAction')
+    expect(after).toContain(`route.get('/versions', 'Actions/Buddy/VersionsAction')`)
+    expect(findDanglingRouteActions(root)).toEqual([])
+  })
+
   it('keeps the route when the app wrote its own CommandsAction', () => {
     write('routes/buddy.ts', OLD_BUDDY_ROUTES)
     write('app/Actions/Buddy/CommandsAction.ts', 'export default {}\n')
