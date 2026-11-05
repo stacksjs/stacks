@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.481...v0.75.482)
+
+## 🐛 Bug Fixes
+
+- **deps**: align all STX companion packages with the renderer ([341b913](https://github.com/stacksjs/stacks/commit/341b913)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.480...v0.75.481)
 
 ## 🐛 Bug Fixes
