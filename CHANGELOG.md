@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.479...v0.75.480)
+
+## 🐛 Bug Fixes
+
+- **mobile**: expose opt-in notification attachments ([2c377f8](https://github.com/stacksjs/stacks/commit/2c377f8)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.478...v0.75.479)
 
 ## 🐛 Bug Fixes
