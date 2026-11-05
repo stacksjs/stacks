@@ -5,6 +5,7 @@ import { resolveApiBaseUrl } from './api-url'
  * Provides a simple fetch wrapper with authentication and error handling.
  */
 
+import { withCsrfHeader } from '@stacksjs/browser/composables/csrf'
 import { useAuth } from './auth'
 
 const baseUrl = resolveApiBaseUrl()
@@ -69,14 +70,17 @@ export interface ApiError {
 }
 
 /**
- * Create headers with authentication
+ * Create headers with authentication.
+ *
+ * A write also carries the CSRF token: the server checks it on every write
+ * that rides the session cookie rather than a Bearer token, so without it
+ * each post, put, patch and del from a signed-in browser answered 403
+ * (stacksjs/stacks#3197), as `dashboardApi` already knew.
  */
-function createHeaders(contentType = 'application/json'): Headers {
+function createHeaders(contentType = 'application/json', write = false): Headers {
   const { getToken } = useAuth()
-  const headers = new Headers({
-    'Accept': 'application/json',
-    'Content-Type': contentType,
-  })
+  const base = { 'Accept': 'application/json', 'Content-Type': contentType }
+  const headers = new Headers(write ? withCsrfHeader(base) : base)
 
   const token = getToken()
   if (token) {
@@ -118,7 +122,7 @@ export async function get<T>(endpoint: string): Promise<T> {
 export async function post<T>(endpoint: string, body?: unknown): Promise<T> {
   const response = await fetch(requestUrl(endpoint), {
     method: 'POST',
-    headers: createHeaders(),
+    headers: createHeaders('application/json', true),
     body: body ? JSON.stringify(body) : undefined,
   })
 
@@ -131,7 +135,7 @@ export async function post<T>(endpoint: string, body?: unknown): Promise<T> {
 export async function put<T>(endpoint: string, body?: unknown): Promise<T> {
   const response = await fetch(requestUrl(endpoint), {
     method: 'PUT',
-    headers: createHeaders(),
+    headers: createHeaders('application/json', true),
     body: body ? JSON.stringify(body) : undefined,
   })
 
@@ -144,7 +148,7 @@ export async function put<T>(endpoint: string, body?: unknown): Promise<T> {
 export async function patch<T>(endpoint: string, body?: unknown): Promise<T> {
   const response = await fetch(requestUrl(endpoint), {
     method: 'PATCH',
-    headers: createHeaders(),
+    headers: createHeaders('application/json', true),
     body: body ? JSON.stringify(body) : undefined,
   })
 
@@ -157,7 +161,7 @@ export async function patch<T>(endpoint: string, body?: unknown): Promise<T> {
 export async function del<T>(endpoint: string): Promise<T> {
   const response = await fetch(requestUrl(endpoint), {
     method: 'DELETE',
-    headers: createHeaders(),
+    headers: createHeaders('application/json', true),
   })
 
   return handleResponse<T>(response)

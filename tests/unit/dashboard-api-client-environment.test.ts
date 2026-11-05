@@ -54,3 +54,45 @@ describe('the dashboard API client, called where it cannot send', () => {
     }
   })
 })
+
+describe('the dashboard API client, writing from a signed-in browser', () => {
+  // stacksjs/stacks#3197: a write that rides the session cookie must carry the
+  // CSRF token, or the server answers 403 before the action runs.
+  async function sentHeaders(verb: typeof VERBS[number]): Promise<Headers> {
+    const seen: Headers[] = []
+    const realFetch = globalThis.fetch
+    const scope = globalThis as Record<string, unknown>
+    const hadDocument = 'document' in scope
+    const realDocument = scope.document
+    scope.__STACKS_API_URL__ = 'http://127.0.0.1:1'
+    scope.document = { cookie: 'theme=dark; X-CSRF-Token=token-from-the-cookie' }
+    globalThis.fetch = (async (_url: unknown, init?: RequestInit) => {
+      seen.push(new Headers(init?.headers))
+      return new Response('{}', { status: 200, headers: { 'Content-Type': 'application/json' } })
+    }) as typeof fetch
+    try {
+      const fresh = await import(`../../storage/framework/defaults/functions/api?csrf=${verb}-${Date.now()}`)
+      await (fresh[verb] as (endpoint: string, body?: unknown) => Promise<unknown>)('/posts', { title: 'x' })
+    }
+    finally {
+      globalThis.fetch = realFetch
+      delete scope.__STACKS_API_URL__
+      if (hadDocument)
+        scope.document = realDocument
+      else
+        delete scope.document
+    }
+    expect(seen).toHaveLength(1)
+    return seen[0]!
+  }
+
+  it.each(['post', 'put', 'patch', 'del'] as const)('%s sends the CSRF token from the cookie', async (verb) => {
+    expect((await sentHeaders(verb)).get('X-CSRF-Token')).toBe('token-from-the-cookie')
+  })
+
+  it('get does not, since a read is not checked', async () => {
+    // The control: a client that attached the token to everything would pass
+    // the writes above for the wrong reason.
+    expect((await sentHeaders('get')).get('X-CSRF-Token')).toBeNull()
+  })
+})
