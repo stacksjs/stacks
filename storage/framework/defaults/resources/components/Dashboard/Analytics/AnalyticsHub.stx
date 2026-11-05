@@ -5,6 +5,10 @@ import { loadDiscoveredManifest } from '@stacksjs/defaults/resources/functions/d
 // off its models are never loaded, so the page it opens could only answer
 // 503 (stacksjs/stacks#3183).
 export const commerceAnalytics = loadDiscoveredManifest().sections.commerce
+
+// Declared, so the client block gets it typed rather than off the implicit
+// bridge, as the dashboard layout does with its role map.
+defineClientPayload({ commerceAnalytics })
 </script>
 
 <script client>
