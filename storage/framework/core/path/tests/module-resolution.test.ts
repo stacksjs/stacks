@@ -1,7 +1,7 @@
 import { afterEach, expect, test } from 'bun:test'
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { join, resolve, sep } from 'node:path'
 import { resolveModulePath } from '../src/module-resolution'
 
 const roots: string[] = []
@@ -24,7 +24,9 @@ test('the actual defaults export contract resolves raw source after relocating a
   const importer = join(relocated, 'storage/framework/auto-imports')
   mkdirSync(importer, { recursive: true })
   const target = resolveModulePath('@stacksjs/defaults/app/Models/Probe.ts', importer)
-  expect(target.startsWith(realpathSync(relocated))).toBe(true)
+  // Bun may retain /var's logical spelling on macOS after another resolution.
+  // Compare physical paths on both sides, including the directory boundary.
+  expect(realpathSync(target).startsWith(`${realpathSync(relocated)}${sep}`)).toBe(true)
   expect((await import(target)).default.marker).toBe(42)
   expect(() => resolveModulePath('@stacksjs/defaults/missing.ts', importer)).toThrow()
 })
