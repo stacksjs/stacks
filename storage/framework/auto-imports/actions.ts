@@ -571,6 +571,7 @@ export const actions = {
   'Actions/Dashboard/Queries/QueryIndexAction': '../defaults/app/Actions/Dashboard/Queries/QueryIndexAction.ts',
   'Actions/Dashboard/Queries/QueryShowAction': '../defaults/app/Actions/Dashboard/Queries/QueryShowAction.ts',
   'Actions/Dashboard/Queries/query-dashboard': '../defaults/app/Actions/Dashboard/Queries/query-dashboard.ts',
+  'Actions/Dashboard/Queries/query-list': '../defaults/app/Actions/Dashboard/Queries/query-list.ts',
   'Actions/Dashboard/Queue/QueueRetryFailedAction': '../defaults/app/Actions/Dashboard/Queue/QueueRetryFailedAction.ts',
   'Actions/Dashboard/Queue/QueueStatsAction': '../defaults/app/Actions/Dashboard/Queue/QueueStatsAction.ts',
   'Actions/Dashboard/Queue/QueueWorkersAction': '../defaults/app/Actions/Dashboard/Queue/QueueWorkersAction.ts',
