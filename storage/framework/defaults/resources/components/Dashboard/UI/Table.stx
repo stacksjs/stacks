@@ -195,6 +195,21 @@ const paginated = useReactiveProp('paginated', false)
 const pageSize = useReactiveProp('pageSize', 25)
 const pageSizeOptions = useReactiveProp<number[]>('pageSizeOptions', [10, 25, 50, 100])
 const manualSort = useReactiveProp('manualSort', false)
+/**
+ * Server-side paging, for a list too large to send whole.
+ *
+ * With `manual-pagination` the rows are already one page: they are shown as
+ * given, `total` is the size of the whole result and `current-page` is the
+ * page they are, and the pager only emits `page-change` / `page-size-change`
+ * for the parent to fetch. `manual-search` does the same for the search box:
+ * it emits `search` and filters nothing, because filtering one page would
+ * only find what happens to be on it (stacksjs/stacks#3191). A parent that
+ * pages on the server also sorts there, with `manual-sort`.
+ */
+const manualPagination = useReactiveProp('manualPagination', false)
+const manualSearch = useReactiveProp('manualSearch', false)
+const total = useReactiveProp('total', 0)
+const currentPage = useReactiveProp('currentPage', 1)
 const columnToggle = useReactiveProp('columnToggle', false)
 const exportable = useReactiveProp('exportable', false)
 const exportFilename = useReactiveProp('exportFilename', 'table')
@@ -246,6 +261,11 @@ effect(() => {
   sortResetKey()
   pageResetKey()
   page.set(1)
+})
+
+effect(() => {
+  if (manualPagination())
+    page.set(Math.max(1, Number(currentPage()) || 1))
 })
 const columnMenuOpen = state(false)
 const emit = defineEmits(['column-visibility-change', 'page-change', 'page-size-change', 'update:selectedKeys', 'selection-change', 'sort', 'filter-change', 'search', 'export', 'row-action'])
@@ -332,7 +352,7 @@ const searchableKeys = derived(() =>
 
 const searched = derived(() => {
   const term = query().trim().toLowerCase()
-  if (!term)
+  if (!term || manualSearch())
     return rows()
 
   const keys = searchableKeys()
@@ -434,7 +454,10 @@ const sorted = derived(() => {
 
 /* ------------------------------------------------------------- pagination */
 
-const pageCount = derived(() => (paginated() ? Math.max(1, Math.ceil(sorted().length / pageSize())) : 1))
+/** Rows in the whole result: the server's count when it pages, else what is held. */
+const totalRows = derived(() => (manualPagination() ? Math.max(0, Number(total()) || 0) : sorted().length))
+
+const pageCount = derived(() => (paginated() ? Math.max(1, Math.ceil(totalRows() / pageSize())) : 1))
 
 // A filter that shortens the list must not strand the viewer on a page that
 // no longer exists.
@@ -444,14 +467,14 @@ effect(() => {
 })
 
 const visibleRows = derived(() => {
-  if (!paginated())
+  if (!paginated() || manualPagination())
     return sorted()
   const start = (page() - 1) * pageSize()
   return sorted().slice(start, start + pageSize())
 })
 
-const rangeStart = derived(() => (sorted().length === 0 ? 0 : (page() - 1) * pageSize() + 1))
-const rangeEnd = derived(() => Math.min(page() * pageSize(), sorted().length))
+const rangeStart = derived(() => (totalRows() === 0 ? 0 : (page() - 1) * pageSize() + 1))
+const rangeEnd = derived(() => Math.min(page() * pageSize(), totalRows()))
 
 function goToPage(next: number): void {
   const target = Math.min(Math.max(1, next), pageCount())
@@ -963,11 +986,11 @@ function cellClass(column: DashboardTableColumn, index: number): string {
   </div>
 
   <div
-    :if="paginated() && sorted().length > 0"
+    :if="paginated() && totalRows() > 0"
     class="flex flex-wrap gap-3 items-center justify-between px-4 py-3 bg-neutral-50/50 dark:bg-neutral-800/25 border-neutral-200 border-t dark:border-neutral-700"
   >
     <div class="flex gap-3 items-center text-neutral-500 text-sm dark:text-neutral-400">
-      <span>Showing {{ rangeStart() }}-{{ rangeEnd() }} of {{ sorted().length }}</span>
+      <span>Showing {{ rangeStart() }}-{{ rangeEnd() }} of {{ totalRows() }}</span>
       <label class="flex gap-1.5 items-center">
         <span class="sr-only">Rows per page</span>
         <select
