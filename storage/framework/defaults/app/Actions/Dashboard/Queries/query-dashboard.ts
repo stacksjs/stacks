@@ -105,9 +105,11 @@ export function queryTypeSql(dialect: string): string {
   return `(CASE ${branches.join(' ')} ELSE 'OTHER' END)`
 }
 
-export function parseQueryLogList(value?: string | null, label = 'query log list'): string[] {
-  if (!value)
+export function parseQueryLogList(value?: unknown, label = 'query log list'): string[] {
+  if (value == null || value === '')
     return []
+  if (typeof value !== 'string')
+    throw new TypeError(`${label} must be JSON text`)
 
   let parsed: unknown
   try {
@@ -123,8 +125,15 @@ export function parseQueryLogList(value?: string | null, label = 'query log list
   return parsed
 }
 
-export function mapDashboardQueryLog(row: QueryLogSourceRow): DashboardQueryLog {
+export function mapDashboardQueryLog(row: QueryLogSourceRow | Record<string, unknown>): DashboardQueryLog {
   const label = `query log ${row.id}`
+  if (!((typeof row.id === 'number' && Number.isSafeInteger(row.id) && row.id > 0) || (typeof row.id === 'string' && row.id.trim())))
+    throw new TypeError('Query log id must be a positive integer or a non-empty string')
+  const text = (value: unknown, field: string): string => {
+    if (value == null) return ''
+    if (typeof value !== 'string') throw new TypeError(`${label} ${field} must be text or null`)
+    return value
+  }
   const status = queryStatus(row.status, label)
   if (typeof row.query !== 'string' || !row.query.trim())
     throw new TypeError(`${label} query must be a non-empty string`)
@@ -135,15 +144,15 @@ export function mapDashboardQueryLog(row: QueryLogSourceRow): DashboardQueryLog 
   return {
     id: row.id,
     query: row.query,
-    normalizedQuery: row.normalized_query || row.query,
+    normalizedQuery: text(row.normalized_query, 'normalized query') || row.query,
     type: queryType(row.query),
     duration: finiteNumber(row.duration, `${label} duration`),
-    connection: row.connection || 'unknown',
+    connection: text(row.connection, 'connection') || 'unknown',
     status,
-    error: row.error || '',
+    error: text(row.error, 'error'),
     executedAt,
-    model: row.model || '',
-    method: row.method || '',
+    model: text(row.model, 'model'),
+    method: text(row.method, 'method'),
     rowsAffected: nullableFiniteNumber(row.rows_affected, `${label} rows_affected`),
     memoryUsage: nullableFiniteNumber(row.memory_usage, `${label} memory_usage`),
     tags: parseQueryLogList(row.tags, `${label} tags`),

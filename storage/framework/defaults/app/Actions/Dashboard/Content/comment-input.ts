@@ -95,6 +95,27 @@ export interface CommentableRow {
   updated_at?: string | null
 }
 
+/** Decode the raw SQL boundary, including integer strings and SQL Date values. */
+export function parseCommentableRow(row: Record<string, unknown>): CommentableRow {
+  const text = (value: unknown, field: string): string | null => {
+    if (value == null) return null
+    if (typeof value !== 'string') throw new TypeError(`Comment ${field} must be text or null`)
+    return value
+  }
+  const id = (value: unknown, field: string): number => {
+    const number = typeof value === 'number' || (typeof value === 'string' && /^\d+$/.test(value)) ? Number(value) : Number.NaN
+    if (!Number.isSafeInteger(number) || number <= 0) throw new TypeError(`Comment ${field} must be a positive integer`)
+    return number
+  }
+  const timestamp = (value: unknown, field: string): string | null => value instanceof Date ? value.toISOString() : text(value, field)
+  return {
+    id: id(row.id, 'id'), title: text(row.title, 'title'), body: text(row.body, 'body'), status: text(row.status, 'status'),
+    commentables_id: id(row.commentables_id, 'owner id'), commentables_type: text(row.commentables_type, 'owner type') ?? '',
+    user_id: row.user_id == null ? null : id(row.user_id, 'user id'), author_name: text(row.author_name, 'author name'), author_email: text(row.author_email, 'author email'),
+    created_at: timestamp(row.created_at, 'created at'), updated_at: timestamp(row.updated_at, 'updated at'),
+  }
+}
+
 /** One row of the dashboard's comment list, from either table. */
 export interface DashboardComment {
   key: string

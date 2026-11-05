@@ -1,6 +1,6 @@
 import { db, getDatabaseDialect, sqlHelpers } from '@stacksjs/database/runtime'
 import type { CommentableRow, CommentStatus, DashboardComment } from './comment-input'
-import { COMMENT_STATUSES, commentableRecord, dashboardStatusForCommentable, isMissingTableError, isSafeTableName, newestFirst, normalizeCommentStatus } from './comment-input'
+import { COMMENT_STATUSES, commentableRecord, dashboardStatusForCommentable, isMissingTableError, isSafeTableName, newestFirst, normalizeCommentStatus, parseCommentableRow } from './comment-input'
 import type { ListQuery, QueryReader } from './content-list'
 import { countOf, pageWithin, parseListQuery, queryText } from './content-list'
 
@@ -262,11 +262,11 @@ async function prepareCommentables(query: CommentListQuery): Promise<Commentable
 }
 
 async function commentableRows(source: CommentableSource, limit: number): Promise<DashboardComment[]> {
-  const rows = await db.unsafe(
+  const rows = (await db.unsafe(
     `SELECT id, title, body, status, commentables_id, commentables_type, user_id, ${source.guestAuthors ? 'author_name, author_email' : 'NULL AS author_name, NULL AS author_email'}, created_at, updated_at
      FROM commentables ${source.where.sql} ORDER BY created_at DESC, id DESC LIMIT ${Math.trunc(limit)}`,
     source.where.values,
-  ).execute() as CommentableRow[]
+  ).execute()).map(parseCommentableRow)
 
   const labels = await ownerLabels(rows, source.columns)
   return rows.map(row => ({

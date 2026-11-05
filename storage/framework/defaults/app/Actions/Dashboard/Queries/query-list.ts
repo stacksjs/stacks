@@ -1,7 +1,7 @@
 import { db, getDatabaseDialect, sqlDateTime, sqlHelpers } from '@stacksjs/database/runtime'
 import type { QueryReader } from '../Content/content-list'
 import { countOf, LIST_PAGE_SIZES, pageWithin, queryText } from '../Content/content-list'
-import type { DashboardQueryLog, QueryLogSourceRow } from './query-dashboard'
+import type { DashboardQueryLog } from './query-dashboard'
 import { dashboardQueryColumns, mapDashboardQueryLog, QUERY_TYPES, queryTypeSql } from './query-dashboard'
 
 /**
@@ -116,9 +116,6 @@ function where(query: QueryListQuery, now: number): { range: { sql: string, valu
   return { range, all: { sql: `WHERE ${clauses.join(' AND ')}`, values } }
 }
 
-/** Aliased with a suffix: READS is reserved in MySQL. */
-interface CountRow { total_count: unknown, read_count: unknown, write_count: unknown, slow_count: unknown, failed_count: unknown, average_duration: unknown }
-
 export async function readQueryLogPage(query: QueryListQuery, now: number = Date.now()): Promise<QueryLogPage> {
   const type = queryTypeSql(getDatabaseDialect())
   const filter = where(query, now)
@@ -133,7 +130,7 @@ export async function readQueryLogPage(query: QueryListQuery, now: number = Date
         AVG(duration) AS average_duration
        FROM query_logs ${filter.all.sql}`,
       filter.all.values,
-    ).execute() as Promise<CountRow[]>,
+    ).execute(),
     db.unsafe(`SELECT DISTINCT connection FROM query_logs ${filter.range.sql} ORDER BY connection`, filter.range.values).execute() as Promise<Array<{ connection: unknown }>>,
   ])
 
@@ -153,7 +150,7 @@ export async function readQueryLogPage(query: QueryListQuery, now: number = Date
       `SELECT ${dashboardQueryColumns.join(', ')} FROM query_logs ${filter.all.sql}
        ORDER BY executed_at DESC, id DESC LIMIT ${Math.trunc(query.perPage)} OFFSET ${Math.trunc((page - 1) * query.perPage)}`,
       filter.all.values,
-    ).execute() as QueryLogSourceRow[]
+    ).execute()
 
   return {
     rows: rows.map(row => mapDashboardQueryLog(row)),
