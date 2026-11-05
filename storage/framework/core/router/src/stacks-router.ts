@@ -3062,7 +3062,9 @@ export function precognitionSuccess(): Response {
 }
 
 /**
- * The generated action registry: action path to file, resolved absolute.
+ * The generated action registry: action path to module specifier. Resolution
+ * belongs to the selected action; an unused retired default must not break
+ * unrelated routes when an app's generated map predates a framework upgrade.
  *
  * The same map `ActionPath` is `keyof`'d from, so a handler string that
  * type-checks is one that resolves. Null when the file is absent, and the
@@ -3084,9 +3086,7 @@ async function getActionRegistry(): Promise<Record<string, string> | null> {
     if (!module.actions)
       throw new Error(`Invalid actions registry: ${registryPath}`)
 
-    return Object.fromEntries(
-      Object.entries(module.actions).map(([name, file]) => [name, resolveModulePath(file, dir)]),
-    )
+    return module.actions
   })()
 
   return actionRegistryPromise
@@ -3199,7 +3199,8 @@ async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteH
     // The registry first: it already encodes the app-over-defaults override,
     // it is the same list the compiler checked the handler string against, and
     // it works inside a compiled binary where probing source paths does not.
-    const registered = (await getActionRegistry())?.[modulePath]
+    const specifier = (await getActionRegistry())?.[modulePath]
+    const registered = specifier ? resolveModulePath(specifier, storagePath('framework/auto-imports')) : undefined
     const userPath = appActionModulePath(projectPath(`app/${modulePath}.ts`))
 
     if (registered && !isInsideAppActions(registered) && await fileExists(userPath)) {

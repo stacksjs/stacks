@@ -617,7 +617,8 @@ function warnOnPayloadMismatch(
 
 /**
  * The generated name registries: listener name to file, and action path to
- * file, both resolved absolute.
+ * module specifier. Resolve only the selected name: an unused entry may name
+ * a default retired since the app last generated these maps.
  *
  * `buddy generate` writes `storage/framework/auto-imports/{listeners,actions}.ts`
  * from the same directories this module used to walk - and they are the same
@@ -648,9 +649,7 @@ async function loadNameRegistry(base: string, file: string, exportName: string):
     if (!map)
       throw new Error(`Invalid ${exportName} registry: ${registryPath}`)
 
-    return Object.fromEntries(
-      Object.entries(map).map(([name, file]) => [name, resolveModulePath(file, dir)]),
-    )
+    return map
   })()
 
   registryCache.set(key, loading)
@@ -674,7 +673,8 @@ async function registeredListenerFile(base: string, name: string): Promise<strin
   if (!listeners && !actions)
     return null
 
-  return listeners?.[name] ?? actions?.[`Actions/${name}`] ?? null
+  const specifier = listeners?.[name] ?? actions?.[`Actions/${name}`]
+  return specifier ? resolveModulePath(specifier, join(base, 'storage/framework/auto-imports')) : null
 }
 
 /** For tests, and for a dev server that regenerated the registries. */

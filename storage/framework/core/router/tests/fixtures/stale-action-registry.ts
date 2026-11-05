@@ -18,6 +18,7 @@ try {
   'Actions/Auth/LoginAction': '@stacksjs/defaults/app/Actions/Auth/LoginAction.ts',
   'Actions/Auth/LogoutAction': '@stacksjs/defaults/app/Actions/Auth/LogoutAction.ts',
   'Actions/Ordinary': '../../../app/Actions/Ordinary.ts',
+  'Actions/Retired': '@stacksjs/defaults/app/Actions/Retired.ts',
 }\n`)
   await put(join(directory, 'node_modules/@stacksjs/defaults/package.json'), JSON.stringify({ name: '@stacksjs/defaults', type: 'module', exports: { './app/Actions/*': './app/Actions/*' } }))
   for (const name of ['LoginAction', 'LogoutAction'])

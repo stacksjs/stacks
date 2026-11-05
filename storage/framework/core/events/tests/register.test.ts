@@ -77,6 +77,12 @@ function writeEventMap(entries: Record<string, string[]>): void {
   writeFileSync(join(root, 'app', 'Events.ts'), `export default ${JSON.stringify(entries)}`)
 }
 
+function writeEmptyDefaultsPackage(): void {
+  const directory = join(root, 'node_modules/@stacksjs/defaults')
+  mkdirSync(directory, { recursive: true })
+  writeFileSync(join(directory, 'package.json'), JSON.stringify({ name: '@stacksjs/defaults', type: 'module', exports: { './*': './*' } }))
+}
+
 function fired(): Fired[] {
   return globalThis.__register_test_fired ?? []
 }
@@ -102,6 +108,35 @@ describe('registerAppListeners', () => {
 
     dispatch(topic as never, { id: 1 } as never)
     expect(fired().length).toBe(1)
+  })
+
+  test('registers and dispatches valid handlers when an unused packaged action was retired', async () => {
+    writeEmptyDefaultsPackage()
+    writeListener('Actions', 'SendWelcome', '')
+    writeEventMap({ [topic]: ['SendWelcome'] })
+    const registries = join(root, 'storage/framework/auto-imports')
+    mkdirSync(registries, { recursive: true })
+    writeFileSync(join(registries, 'actions.ts'), `export const actions = {
+      'Actions/SendWelcome': '../../../app/Actions/SendWelcome.ts',
+      'Actions/Retired': '@stacksjs/defaults/app/Actions/Retired.ts',
+    }`)
+    writeFileSync(join(registries, 'listeners.ts'), `export const listeners = {
+      RetiredListener: '@stacksjs/defaults/app/Listeners/Retired.ts',
+    }`)
+    expect(await registerAppListeners({ base: root, log: quiet })).toBe(1)
+    dispatch(topic as never, { id: 12 } as never)
+    expect(fired()).toEqual([{ event: topic, payload: { id: 12 } }])
+  })
+
+  test('still reports a broken packaged action when the event map actually selects it', async () => {
+    writeEmptyDefaultsPackage()
+    writeEventMap({ [topic]: ['Retired'] })
+    const registries = join(root, 'storage/framework/auto-imports')
+    mkdirSync(registries, { recursive: true })
+    writeFileSync(join(registries, 'actions.ts'), `export const actions = {
+      'Actions/Retired': '@stacksjs/defaults/app/Actions/Retired.ts',
+    }`)
+    await expect(registerAppListeners({ base: root, log: quiet })).rejects.toThrow('@stacksjs/defaults')
   })
 
   test('one listener over several events is told which one fired', async () => {
