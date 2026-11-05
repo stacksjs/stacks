@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.480...v0.75.481)
+
+## 🐛 Bug Fixes
+
+- **server**: configure body budgets across API and views listeners ([791b99a](https://github.com/stacksjs/stacks/commit/791b99a)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh server native capability references ([2d2540b](https://github.com/stacksjs/stacks/commit/2d2540b)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.479...v0.75.480)
 
 ## 🐛 Bug Fixes
