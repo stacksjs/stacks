@@ -1,15 +1,8 @@
 import { Action } from '@stacksjs/actions/runtime'
 import { FailedJob, Job } from '@stacksjs/orm'
-import { getGlobalMetrics, queuedJobState } from '@stacksjs/queue'
+import { getGlobalMetrics } from '@stacksjs/queue'
 import { dashboardOperationalError } from '../dashboard-response'
-
-interface QueueBucket {
-  pending: number
-  active: number
-  completed: number
-  failed: number
-  total: number
-}
+import { readQueueCounts } from './queue-stats'
 
 // A queued job has no `status` column - `queuedJobState` in @stacksjs/queue
 // holds the rule (reserved_at means a worker has it; available_at in the
@@ -23,54 +16,23 @@ export default new Action({
   method: 'GET',
   async handle() {
     try {
-      const [totalJobs, failedJobCount, allJobs, allFailedJobs] = await Promise.all([
+      const [totalJobs, failedJobCount, counts] = await Promise.all([
         Job.count(),
         FailedJob.count(),
-        Job.all(),
-        FailedJob.all(),
+        readQueueCounts(),
       ])
 
-      const queueMap: Record<string, QueueBucket> = {}
-
-      // Per-queue failure counts come from failed_jobs, which is where a
-      // failure actually lands. This column read `status === 'failed'` off the
-      // jobs table before, and so was always zero.
-      const failedByQueue = new Map<string, number>()
-      for (const f of allFailedJobs) {
-        const queueName = String(f.get('queue') || 'default')
-        failedByQueue.set(queueName, (failedByQueue.get(queueName) ?? 0) + 1)
-      }
-      let active = 0
-      const completed = 0
-
-      for (const j of allJobs) {
-        const queueName = String(j.get('queue') || 'default')
-        const status = queuedJobState({ reserved_at: j.get('reserved_at'), available_at: j.get('available_at') })
-
-        if (!queueMap[queueName]) {
-          queueMap[queueName] = { pending: 0, active: 0, completed: 0, failed: 0, total: 0 }
-        }
-        const bucket = queueMap[queueName]
-        bucket.total++
-
-        if (status === 'processing') {
-          bucket.active++
-          active++
-        }
-        else {
-          bucket.pending++
-        }
-      }
-
-      const queues = Object.entries(queueMap).map(([name, data]) => ({
-        name,
-        status: data.active > 0 ? 'active' : 'idle',
-        pending: data.pending,
-        active: data.active,
-        completed: data.completed,
-        failed: failedByQueue.get(name) ?? data.failed,
-        total: data.total,
+      const queues = counts.map(queue => ({
+        name: queue.name,
+        status: queue.active > 0 ? 'active' : 'idle',
+        pending: queue.pending,
+        active: queue.active,
+        completed: 0,
+        failed: queue.failed,
+        total: queue.total,
       }))
+      const active = counts.reduce((sum, queue) => sum + queue.active, 0)
+      const completed = 0
 
       // The in-memory metrics tracker only sees jobs processed since the
       // current API process started, so it complements (not replaces) the DB
