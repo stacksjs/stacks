@@ -2,7 +2,7 @@
   "name": "@stacksjs/cms",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.483",
+  "version": "0.75.484",
   "description": "Stacks cms utilities.",
   "author": "Chris Breuer",
   "contributors": [

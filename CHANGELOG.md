@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.483...v0.75.484)
+
+## 🐛 Bug Fixes
+
+- **registries**: resolve the selected module without loading stale entries ([7322757](https://github.com/stacksjs/stacks/commit/7322757)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **path**: compare physical relocated module containment on macOS ([7d9760c](https://github.com/stacksjs/stacks/commit/7d9760c)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.482...v0.75.483)
 
 ## ✨ Features
