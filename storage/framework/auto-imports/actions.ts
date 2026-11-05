@@ -460,6 +460,7 @@ export const actions = {
   'Actions/Dashboard/Jobs/JobRetryAction': '../defaults/app/Actions/Dashboard/Jobs/JobRetryAction.ts',
   'Actions/Dashboard/Jobs/JobShowAction': '../defaults/app/Actions/Dashboard/Jobs/JobShowAction.ts',
   'Actions/Dashboard/Jobs/JobStatsAction': '../defaults/app/Actions/Dashboard/Jobs/JobStatsAction.ts',
+  'Actions/Dashboard/Jobs/job-list': '../defaults/app/Actions/Dashboard/Jobs/job-list.ts',
   'Actions/Dashboard/Jobs/job-records': '../defaults/app/Actions/Dashboard/Jobs/job-records.ts',
   'Actions/Dashboard/Kanban/BoardDestroyAction': '../defaults/app/Actions/Dashboard/Kanban/BoardDestroyAction.ts',
   'Actions/Dashboard/Kanban/BoardShowAction': '../defaults/app/Actions/Dashboard/Kanban/BoardShowAction.ts',

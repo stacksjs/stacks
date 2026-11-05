@@ -1,8 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
-import { FailedJob, Job } from '@stacksjs/orm'
 import { dashboardOperationalError } from '../dashboard-response'
-import { matchesJobSearch, normalizeActiveJob, normalizeFailedJob } from './job-records'
+import { readJobPage } from './job-list'
 
 export default new Action({
   name: 'JobIndexAction',
@@ -16,31 +15,20 @@ export default new Action({
     const search = String(request.get('search', '')).trim().toLowerCase()
 
     try {
-      const [activeJobs, failedJobs] = await Promise.all([
-        Job.orderByDesc('id').get(),
-        FailedJob.orderByDesc('id').get(),
-      ])
+      // An unknown status matched no job before the database did the
+      // filtering, and still matches none.
+      if (statusFilter && statusFilter !== 'all' && !['queued', 'processing', 'failed'].includes(statusFilter))
+        return { data: [], total: 0, page, perPage, queues: [], queueConnected: true }
 
-      const activeNormalized = activeJobs.map(normalizeActiveJob)
-      const failedNormalized = failedJobs.map(normalizeFailedJob)
-
-      const merged = [...activeNormalized, ...failedNormalized].sort((a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-      )
-
-      const filtered = merged.filter((job) => {
-        if (queueFilter && queueFilter !== 'all' && job.queue !== queueFilter) return false
-        if (statusFilter && statusFilter !== 'all' && job.status !== statusFilter) return false
-        if (!matchesJobSearch(job, search)) return false
-        return true
+      const result = await readJobPage({
+        page,
+        perPage,
+        queue: queueFilter === 'all' ? '' : queueFilter,
+        status: statusFilter === 'all' ? '' : statusFilter as 'queued' | 'processing' | 'failed' | '',
+        search,
       })
 
-      const total = filtered.length
-      const start = (page - 1) * perPage
-      const data = filtered.slice(start, start + perPage)
-      const queues = Array.from(new Set(merged.map(j => j.queue))).sort()
-
-      return { data, total, page, perPage, queues, queueConnected: true }
+      return { data: result.data, total: result.total, page: result.page, perPage, queues: result.queues, queueConnected: true }
     }
     catch (error) {
       return dashboardOperationalError(error, 'Job history could not be loaded.', 'JobIndexAction')

@@ -1,4 +1,5 @@
 import type { ReadableRecord } from '@stacksjs/orm'
+import { queuedJobState } from '@stacksjs/queue'
 export type JobRecordSource = 'job' | 'failed'
 export type DashboardJobStatus = 'queued' | 'processing' | 'failed'
 
@@ -154,6 +155,10 @@ export function normalizeActiveJob(record: ModelRecord): NormalizedJob {
   const payload = parsePayload(record.get('payload'))
   const queue = requiredString(record, 'queue')
   const reservedAt = timestampValue(record, 'reserved_at', 'Job', true)
+  // Reserved is `queuedJobState`'s rule: set and not 0. A 0 parsed as 1970
+  // and read as processing here while the queue and the stats called it
+  // waiting (stacksjs/stacks#3201).
+  const reserved = queuedJobState({ reserved_at: record.get('reserved_at'), available_at: record.get('available_at') }) === 'processing'
 
   return {
     id: jobReference('job', id),
@@ -162,7 +167,7 @@ export function normalizeActiveJob(record: ModelRecord): NormalizedJob {
     name: jobName(payload, queue),
     queue,
     connection: null,
-    status: reservedAt ? 'processing' : 'queued',
+    status: reserved ? 'processing' : 'queued',
     attempts: integerValue(record, 'attempts'),
     maxAttempts: payloadMaxAttempts(payload),
     duration: null,
@@ -171,8 +176,8 @@ export function normalizeActiveJob(record: ModelRecord): NormalizedJob {
     created_at: timestampValue(record, 'created_at')!,
     updated_at: timestampValue(record, 'updated_at', 'Job', true),
     available_at: timestampValue(record, 'available_at', 'Job', true),
-    reserved_at: reservedAt,
-    started_at: reservedAt,
+    reserved_at: reserved ? reservedAt : undefined,
+    started_at: reserved ? reservedAt : undefined,
   }
 }
 
