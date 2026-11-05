@@ -148,6 +148,7 @@
 
 <script client>
 import { useErrors } from '../../../../functions/monitoring/errors'
+import { pushToast } from '../../../../functions/toasts'
 
 interface ErrorGroup {
   id?: string | number
@@ -263,24 +264,42 @@ function closeDetailModal(): void {
 
 async function handleResolveError(value: ErrorGroup | CustomEvent<ErrorGroup>): Promise<void> {
   const error = eventValue(value)
-  await resolveErrorGroup(error.type, error.message)
-  await fetchErrorStats()
+  // Only a write that landed moves the group: this used to mark it resolved
+  // whatever the server answered (stacksjs/stacks#3194).
+  if (!await resolveErrorGroup(error.type, error.message)) {
+    pushToast('error', 'Could not resolve this error')
+    return
+  }
+  // Reread the groups too: the table does not see a status changed in place.
+  await Promise.all([fetchGroupedErrors(), fetchErrorStats()])
   if (isDetailModalOpen() && selectedError())
     selectedError.update(e => e ? { ...e, status: 'resolved' } : e)
 }
 
 async function handleIgnoreError(value: ErrorGroup | CustomEvent<ErrorGroup>): Promise<void> {
   const error = eventValue(value)
-  await ignoreErrorGroup(error.type, error.message)
-  await fetchErrorStats()
+  // Only a write that landed moves the group: this used to mark it ignored
+  // whatever the server answered (stacksjs/stacks#3194).
+  if (!await ignoreErrorGroup(error.type, error.message)) {
+    pushToast('error', 'Could not ignore this error')
+    return
+  }
+  // Reread the groups too: the table does not see a status changed in place.
+  await Promise.all([fetchGroupedErrors(), fetchErrorStats()])
   if (isDetailModalOpen() && selectedError())
     selectedError.update(e => e ? { ...e, status: 'ignored' } : e)
 }
 
 async function handleUnresolveError(value: ErrorGroup | CustomEvent<ErrorGroup>): Promise<void> {
   const error = eventValue(value)
-  await unresolveErrorGroup(error.type, error.message)
-  await fetchErrorStats()
+  // Only a write that landed moves the group: this used to mark it unresolved
+  // whatever the server answered (stacksjs/stacks#3194).
+  if (!await unresolveErrorGroup(error.type, error.message)) {
+    pushToast('error', 'Could not reopen this error')
+    return
+  }
+  // Reread the groups too: the table does not see a status changed in place.
+  await Promise.all([fetchGroupedErrors(), fetchErrorStats()])
   if (isDetailModalOpen() && selectedError())
     selectedError.update(e => e ? { ...e, status: 'unresolved' } : e)
 }
@@ -326,8 +345,12 @@ async function confirmDelete(): Promise<void> {
   const target = errorToDelete()
   if (!target)
     return
-  await deleteErrorGroup(target.type, target.message)
-  await fetchErrorStats()
+  if (!await deleteErrorGroup(target.type, target.message)) {
+    pushToast('error', 'Could not delete this error')
+    return
+  }
+  // Reread the groups too: the table does not see a status changed in place.
+  await Promise.all([fetchGroupedErrors(), fetchErrorStats()])
   closeDeleteModal()
 }
 

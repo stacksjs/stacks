@@ -1,4 +1,5 @@
 import { resolveApiBaseUrl } from '../api-url'
+import { dashboardApi } from '../dashboard-api'
 import { useStorage } from '@stacksjs/browser/composables/useStorage'
 
 export interface GroupedError {
@@ -154,17 +155,10 @@ async function fetchErrorTimeline(): Promise<ErrorTimelinePoint[]> {
  */
 async function resolveErrorGroup(type: string, message: string): Promise<boolean> {
   try {
-    const response = await fetch(`${baseURL}/errors/resolve`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ type, message }),
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
+    // Through dashboardApi, which sends the CSRF token: a bare fetch was
+    // refused with 403, so every resolve from this page did nothing
+    // (stacksjs/stacks#3194).
+    await dashboardApi(`${baseURL}/errors/resolve`, { method: 'PATCH', body: { type, message } })
 
     // Update local state
     const group = groupedErrors.value.find(
@@ -186,17 +180,10 @@ async function resolveErrorGroup(type: string, message: string): Promise<boolean
  */
 async function ignoreErrorGroup(type: string, message: string): Promise<boolean> {
   try {
-    const response = await fetch(`${baseURL}/errors/ignore`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ type, message }),
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
+    // Through dashboardApi, which sends the CSRF token: a bare fetch was
+    // refused with 403, so every ignore from this page did nothing
+    // (stacksjs/stacks#3194).
+    await dashboardApi(`${baseURL}/errors/ignore`, { method: 'PATCH', body: { type, message } })
 
     // Update local state
     const group = groupedErrors.value.find(
@@ -218,17 +205,10 @@ async function ignoreErrorGroup(type: string, message: string): Promise<boolean>
  */
 async function unresolveErrorGroup(type: string, message: string): Promise<boolean> {
   try {
-    const response = await fetch(`${baseURL}/errors/unresolve`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ type, message }),
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
+    // Through dashboardApi, which sends the CSRF token: a bare fetch was
+    // refused with 403, so every unresolve from this page did nothing
+    // (stacksjs/stacks#3194).
+    await dashboardApi(`${baseURL}/errors/unresolve`, { method: 'PATCH', body: { type, message } })
 
     // Update local state
     const group = groupedErrors.value.find(
@@ -250,13 +230,8 @@ async function unresolveErrorGroup(type: string, message: string): Promise<boole
  */
 async function deleteErrorGroup(type: string, message: string): Promise<boolean> {
   try {
-    const response = await fetch(`${baseURL}/errors?${errorGroupParams(type, message)}`, {
-      method: 'DELETE',
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
+    // Through dashboardApi for the CSRF token, as the triage writes above.
+    await dashboardApi(`${baseURL}/errors?${errorGroupParams(type, message)}`, { method: 'DELETE' })
 
     // Update local state
     groupedErrors.value = groupedErrors.value.filter(
