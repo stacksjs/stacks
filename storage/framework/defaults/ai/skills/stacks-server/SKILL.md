@@ -62,6 +62,19 @@ JOB_JITTER configure that one-shot mode. It is distinct from the durable
 
 ## Server Config (core/server/src/config.ts)
 
+`config/server.ts` may set `maxRequestBodySize` to a positive safe integer of
+bytes. Buddy forwards the same ceiling to its API and views listeners in
+development and production, including API requests proxied through the views
+host. Omit it to retain Bun's default. Include multipart framing above a file's
+limit; actions still enforce their own per-file validation.
+
+```typescript
+export default { maxRequestBodySize: 320 * 1024 * 1024 } satisfies ServerConfig
+```
+
+The shared `serverRequestBodyOptions` resolver rejects invalid values before
+starting a listener. It does not remove authentication or body validation.
+
 ```typescript
 function config(options: ServerOptions): { host: string, port: number, open: boolean }
 ```

@@ -22,6 +22,7 @@ import { config, overridesReady } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { appPath, frameworkPath } from '@stacksjs/path'
 import { disableViewRouting, route } from '@stacksjs/router'
+import { serverRequestBodyOptions } from '@stacksjs/server/request-body'
 import { ensureDiscoveredPackages } from '../discover-packages'
 import { resolveApiHost } from '../helpers/api-host'
 import { shutDownApiServer } from '../helpers/api-shutdown'
@@ -197,6 +198,7 @@ disableViewRouting(route.bunRouter)
 // bun-router spreads these options into Bun.serve verbatim.
 const isDeployed = ['production', 'staging', 'development'].includes((process.env.APP_ENV || '').toLowerCase())
 const server = await route.serve({
+  ...serverRequestBodyOptions(config.server?.maxRequestBodySize),
   port,
   hostname,
   reusePort: isDeployed,

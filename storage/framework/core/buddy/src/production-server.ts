@@ -6,6 +6,7 @@ import { log } from '@stacksjs/logging'
 import { siteConfigPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { resolveStxSource } from '@stacksjs/actions'
+import { serverRequestBodyOptions } from '@stacksjs/server/request-body'
 import type { EnhancedRequest } from '@stacksjs/router'
 
 /**
@@ -361,6 +362,7 @@ export async function startProductionServer(options?: { port?: string | number, 
       log.info(`Starting production server on port ${port}...`)
 
       await stxServe({
+        ...serverRequestBodyOptions(config.server?.maxRequestBodySize),
         patterns: viewPatterns.patterns,
         exclude: viewPatterns.exclude,
         port,

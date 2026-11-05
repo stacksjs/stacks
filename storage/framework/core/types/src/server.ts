@@ -44,7 +44,7 @@ export interface ApiProxyOptions {
 /**
  * **Server Options** - `config/server.ts`.
  *
- * How the views server behaves in the split views/API topology, shared by
+ * HTTP body limits and views behavior in the split views/API topology, shared by
  * `buddy dev` and `buddy serve`.
  */
 /**
@@ -174,6 +174,12 @@ export interface DomainRouteTarget {
 }
 
 export interface ServerConfig {
+  /**
+   * Maximum HTTP request-body bytes for Buddy's API and views listeners.
+   * Include multipart framing above any per-file upload limit. Omit to keep
+   * Bun's default ceiling; actions still validate their own file limits.
+   */
+  maxRequestBodySize?: number
   /** Headers on matching response paths. Keys are exact paths or prefixes ending in /*. */
   headers?: Record<string, Record<string, string>>
   /** Which requests reach the API process. See {@link ApiProxyOptions}. */

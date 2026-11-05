@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { config, enterRequestScope, feature, installRequestScope, overridesReady, resolveViewPatterns } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { projectPath, siteConfigPath } from '@stacksjs/path'
+import { serverRequestBodyOptions } from '@stacksjs/server/request-body'
 import { seedCsrfPageResponse } from './csrf'
 import { resolveDefaultsResources } from './defaults-resources'
 import { exitWithParent } from './exit-with-parent'
@@ -196,6 +197,7 @@ async function startDefaultServer() {
     log.debug(`Default views without a mounted route bundle behind them, not served: ${viewPatterns.withheld.join(', ')}`)
 
   await serve({
+    ...serverRequestBodyOptions(config.server?.maxRequestBodySize),
     patterns: viewPatterns.patterns,
     exclude: viewPatterns.exclude,
     port: preferredPort,

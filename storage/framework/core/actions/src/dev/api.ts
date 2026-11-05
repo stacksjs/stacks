@@ -12,6 +12,7 @@ import { path } from '@stacksjs/path'
 import type { Middleware } from '@stacksjs/router'
 import { disableViewRouting, route } from '@stacksjs/router'
 import { autoImportsAreStale, generateAutoImportFiles, generateServerAutoImportTypes, injectGlobalAutoImports, warnShadowedSecurityDefaults } from '@stacksjs/server'
+import { serverRequestBodyOptions } from '@stacksjs/server/request-body'
 import { reportApiReady, resolveApiHost, resolveApiPort } from '../helpers/api-host'
 import { exitWithParent } from './exit-with-parent'
 
@@ -230,6 +231,7 @@ disableViewRouting(route.bunRouter)
 // `./buddy dev:api` invoked standalone.
 try {
   const server = await route.serve({
+    ...serverRequestBodyOptions(config.server?.maxRequestBodySize),
     port,
     hostname,
   })
