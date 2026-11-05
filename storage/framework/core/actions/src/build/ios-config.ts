@@ -74,6 +74,7 @@ const CAPABILITY_KEYS = {
   biometric: 'enableBiometric',
   passkeys: 'enablePasskeys',
   pushNotifications: 'enablePushNotifications',
+  notificationAttachments: 'enableNotificationAttachments',
   secureStorage: 'enableSecureStorage',
   geolocation: 'enableGeolocation',
   backgroundLocation: 'enableBackgroundLocation',
@@ -135,6 +136,8 @@ export const IOS_UNMAPPED_CRAFT_FLAGS: Readonly<Record<`enable${string}`, string
  */
 export const CRAFT_CAPABILITY_FLOORS = {
   passkeys: '0.0.451',
+  // Tagged in Craft at 0.0.459; 0.0.464 is the first published release with it.
+  notificationAttachments: '0.0.464',
   audioRecording: '0.0.324',
   appleMusic: '0.0.144',
   heartRate: '0.0.152',

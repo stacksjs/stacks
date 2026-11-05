@@ -89,6 +89,17 @@ const MOBILE: MobileConfig = {
 }
 
 describe('iOS mobile build configuration', () => {
+  it('requires an explicit opt-in to generate the notification attachment extension', () => {
+    const base = { appName: 'HQ', bundleId: 'training.hq.app', url: 'https://hq.training/m' }
+    expect(toCraftIosConfig(base).enableNotificationAttachments).toBeUndefined()
+    expect(toCraftIosConfig({ ...base, capabilities: { pushNotifications: true } }).enableNotificationAttachments).toBeUndefined()
+    expect(toCraftIosConfig({ ...base, capabilities: { pushNotifications: true, notificationAttachments: true } }).enableNotificationAttachments).toBe(true)
+    expect(toCraftIosConfig({ ...base, capabilities: { pushNotifications: true, notificationAttachments: false } }).enableNotificationAttachments).toBe(false)
+    expect(() => assertCraftSupportsCapabilities({ notificationAttachments: true }, '0.0.451', 'fixture')).toThrow('ios.capabilities.notificationAttachments (needs >= 0.0.464)')
+    expect(() => assertCraftSupportsCapabilities({ notificationAttachments: true }, '0.0.464', 'fixture')).not.toThrow()
+    expect(() => assertCraftSupportsCapabilities({ notificationAttachments: false }, '0.0.451', 'fixture')).not.toThrow()
+  })
+
   it('maps Stacks capabilities onto Craft feature flags', () => {
     const config = toCraftIosConfig({
       appName: 'WildLoop',

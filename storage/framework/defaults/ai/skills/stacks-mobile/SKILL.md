@@ -199,6 +199,14 @@ For the web renderer, choose a primary content source:
 Only enable capabilities the product uses. Craft turns enabled capabilities
 into native bridge availability and required iOS privacy descriptions.
 
+`ios.capabilities.notificationAttachments` explicitly opts into Craft's rich
+push notification service extension (craft-native >= 0.0.464). It requires
+`pushNotifications: true`; enabling push alone never adds this extension. The
+generated `<AppName>NotificationService.appex` uses bundle id
+`<bundleId>.notificationservice`, inherits the app's version/build and team,
+and needs its own distribution profile or automatic signing. It needs no App
+Group. Leave it unset when the app does not use notification attachments.
+
 `capabilities.shakeGesture` arms the accelerometer while the app is in front,
 on iOS and Android, and sends the page Craft's `shake` event (with its `force`
 in g) once per deliberate shake. It needs craft-native 0.0.435 or later, and

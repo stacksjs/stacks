@@ -20,6 +20,8 @@ export interface MobileCapabilities {
   /** iOS passkeys through AuthenticationServices; requires a webcredentials associated domain. */
   passkeys?: boolean
   pushNotifications?: boolean
+  /** iOS rich push extension, explicitly opt-in. Requires pushNotifications and a separate extension signing profile. */
+  notificationAttachments?: boolean
   secureStorage?: boolean
   geolocation?: boolean
   backgroundLocation?: boolean
