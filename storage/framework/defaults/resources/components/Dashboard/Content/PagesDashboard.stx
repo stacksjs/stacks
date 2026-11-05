@@ -30,6 +30,24 @@ const deletingPage = state<PageRecord | null>(null)
 const deleting = state(false)
 const deleteError = state('')
 
+// The list is paged, searched and sorted by the server, and these are what
+// it was last asked for (stacksjs/stacks#3192). The cards count every page.
+const listPage = state(1)
+const perPage = state(25)
+const search = state('')
+const sort = state('')
+const sortDirection = state('asc')
+const total = state(0)
+const allCount = state(0)
+const viewCount = state(0)
+const conversionCount = state(0)
+const newestTitle = state('')
+let listRequestId = 0
+let searchTimer: ReturnType<typeof setTimeout> | undefined
+
+/** The server's name for each sortable column. */
+const SORT_KEYS: Record<string, string> = { title: 'title', publishState: 'published' }
+
 function normalize(record: any): PageRecord {
   return {
     id: String(record?.id || ''),
@@ -64,7 +82,7 @@ const ROW_ACTIONS = [
   { action: 'delete', label: 'Delete page', icon: 'i-hugeicons-delete-02', class: 'text-red-500' },
 ]
 
-/** `UI/Table` owns the search; the cells each read a field, so derive them. */
+/** The rows are the page the server chose; the cells each read a field, so derive them. */
 function visiblePages(): PageRecord[] {
   return pages().map(page => ({
     ...page,
@@ -82,14 +100,6 @@ function handleRowAction(payload: { action: string, row: PageRecord }): void {
     openDelete(payload.row)
 }
 
-function totalViews(): number {
-  return pages().reduce((sum, page) => sum + page.views, 0)
-}
-
-function totalConversions(): number {
-  return pages().reduce((sum, page) => sum + page.conversions, 0)
-}
-
 function formatNumber(value: number): string {
   return new Intl.NumberFormat('en-US').format(value)
 }
@@ -103,22 +113,87 @@ function formatDate(value: string): string {
     : new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(date)
 }
 
+interface PageListResponse {
+  pages?: unknown[]
+  total?: number
+  page?: number
+  allCount?: number
+  totalViews?: number
+  totalConversions?: number
+  newestTitle?: string
+}
+
+function listQuery(): string {
+  const params = new URLSearchParams({ page: String(listPage()), per_page: String(perPage()) })
+  if (search())
+    params.set('search', search())
+  if (sort()) {
+    params.set('sort', sort())
+    params.set('direction', sortDirection())
+  }
+  return params.toString()
+}
+
 async function loadPages(): Promise<void> {
+  // Only the newest request may land: typing, paging and sorting can each
+  // start one while another is still out.
+  const requestId = ++listRequestId
   loading.set(true)
   loadError.set('')
   try {
-    const data = await dashboardApi<{ pages?: unknown[] }>('/api/dashboard/pages')
+    const data = await dashboardApi<PageListResponse>(`/api/dashboard/pages?${listQuery()}`)
+    if (requestId !== listRequestId)
+      return
     if (!Array.isArray(data.pages))
       throw new TypeError('Pages were not returned in the expected shape.')
     pages.set(data.pages.map(normalize))
+    total.set(Number(data.total || 0))
+    // The server moves back to the last page when a delete or a narrower
+    // search leaves this one past the end.
+    listPage.set(Number(data.page || 1))
+    allCount.set(Number(data.allCount || 0))
+    viewCount.set(Number(data.totalViews || 0))
+    conversionCount.set(Number(data.totalConversions || 0))
+    newestTitle.set(String(data.newestTitle || ''))
   }
   catch (error) {
+    if (requestId !== listRequestId)
+      return
     loadError.set(error instanceof Error ? error.message : String(error))
     pushToast('error', 'Could not load pages', { detail: loadError() })
   }
   finally {
-    loading.set(false)
+    if (requestId === listRequestId)
+      loading.set(false)
   }
+}
+
+function changePage(next: number): void {
+  listPage.set(next)
+  void loadPages()
+}
+
+function changePageSize(size: number): void {
+  perPage.set(size)
+  listPage.set(1)
+  void loadPages()
+}
+
+function changeSearch(term: string): void {
+  if (searchTimer)
+    clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    search.set(String(term || '').trim())
+    listPage.set(1)
+    void loadPages()
+  }, 250)
+}
+
+function changeSort(next: { key: string, direction: string }): void {
+  sort.set(SORT_KEYS[next.key] || '')
+  sortDirection.set(next.direction === 'desc' ? 'desc' : 'asc')
+  listPage.set(1)
+  void loadPages()
 }
 
 function openCreate(): void {
@@ -208,10 +283,10 @@ onMount(() => {
   <div :if="loadError()" role="alert" class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"><span>{{ loadError() }}</span><Button variant="secondary" size="sm" @click="loadPages()">Retry</Button></div>
 
   <section aria-label="Page metrics" class="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Total</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ pages().length }}</p></article>
-    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Views</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(totalViews()) }}</p></article>
-    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Conversions</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(totalConversions()) }}</p></article>
-    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Newest</p><p class="mt-2 font-semibold text-gray-900 text-lg truncate dark:text-white">{{ pages()[0]?.title || 'None' }}</p></article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Total</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ allCount() }}</p></article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Views</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(viewCount()) }}</p></article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Conversions</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(conversionCount()) }}</p></article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Newest</p><p class="mt-2 font-semibold text-gray-900 text-lg truncate dark:text-white">{{ newestTitle() || 'None' }}</p></article>
   </section>
 
   <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
@@ -222,12 +297,21 @@ onMount(() => {
       :row-actions="ROW_ACTIONS"
       action-label-key="title"
       searchable
+      manual-search
       search-placeholder="Search pages"
       paginated
-      :page-size="25"
+      manual-pagination
+      manual-sort
+      :total="total()"
+      :current-page="listPage()"
+      :page-size="perPage()"
       empty-title="No pages found"
       empty-description="Adjust the search or create a page."
       @row-action="handleRowAction"
+      @page-change="changePage"
+      @page-size-change="changePageSize"
+      @search="changeSearch"
+      @sort="changeSort"
     />
   </section>
 </div>

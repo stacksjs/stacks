@@ -1,4 +1,6 @@
 import { db, sql } from '@stacksjs/database/runtime'
+import type { ListQuery, QueryReader } from './content-list'
+import { countOf, LIST_PAGE_SIZES, pageWithin, parseListQuery, queryText } from './content-list'
 
 /**
  * One page of the dashboard's posts list, read by the database.
@@ -10,7 +12,7 @@ import { db, sql } from '@stacksjs/database/runtime'
  * editor reads one post's body when it opens (`PostShowAction`).
  */
 
-export const POST_PAGE_SIZES = [10, 25, 50, 100] as const
+export const POST_PAGE_SIZES = LIST_PAGE_SIZES
 export const POST_STATUSES = ['draft', 'published', 'archived'] as const
 export const POST_SORTS = ['created_at', 'title', 'status', 'views'] as const
 
@@ -20,13 +22,8 @@ export const POST_PREVIEW_LENGTH = 240
 export type PostStatus = typeof POST_STATUSES[number]
 export type PostSort = typeof POST_SORTS[number]
 
-export interface PostListQuery {
-  page: number
-  perPage: number
-  search: string
+export interface PostListQuery extends ListQuery<PostSort> {
   status: PostStatus | 'all'
-  sort: PostSort
-  direction: 'asc' | 'desc'
 }
 
 export interface PostListRow {
@@ -58,51 +55,17 @@ export interface PostPage {
   totalViews: number
 }
 
-/** Reads one query value, in whatever shape the request holds it. */
-export type QueryReader = (key: string) => unknown
-
-function single(value: unknown): string {
-  if (Array.isArray(value))
-    return value.length > 0 ? String(value[0]) : ''
-  return value === undefined || value === null ? '' : String(value)
-}
-
-/**
- * The list query, or the reason it is invalid.
- *
- * Absent values take the defaults the page has always shown: the first page
- * of 25, newest first. A value that is present and wrong is an error rather
- * than a silent default, so a broken caller is visible.
- */
+/** The list query, with the post status filter on top of the shared one. */
 export function parsePostListQuery(read: QueryReader): PostListQuery | { error: string } {
-  const pageText = single(read('page')).trim()
-  const page = pageText === '' ? 1 : Number(pageText)
-  if (!Number.isInteger(page) || page < 1)
-    return { error: 'page must be a whole number of 1 or more.' }
+  const list = parseListQuery(read, POST_SORTS)
+  if ('error' in list)
+    return list
 
-  const sizeText = single(read('per_page')).trim()
-  const perPage = sizeText === '' ? 25 : Number(sizeText)
-  if (!(POST_PAGE_SIZES as readonly number[]).includes(perPage))
-    return { error: `per_page must be one of ${POST_PAGE_SIZES.join(', ')}.` }
-
-  const status = single(read('status')).trim() || 'all'
+  const status = queryText(read, 'status') || 'all'
   if (status !== 'all' && !(POST_STATUSES as readonly string[]).includes(status))
     return { error: `status must be all or one of ${POST_STATUSES.join(', ')}.` }
 
-  const sort = single(read('sort')).trim() || 'created_at'
-  if (!(POST_SORTS as readonly string[]).includes(sort))
-    return { error: `sort must be one of ${POST_SORTS.join(', ')}.` }
-
-  const directionText = single(read('direction')).trim().toLowerCase()
-  const direction = directionText === '' ? (sort === 'created_at' ? 'desc' : 'asc') : directionText
-  if (direction !== 'asc' && direction !== 'desc')
-    return { error: 'direction must be asc or desc.' }
-
-  const search = single(read('search')).trim()
-  if (search.length > 200)
-    return { error: 'search must be 200 characters or fewer.' }
-
-  return { page, perPage, search, status: status as PostListQuery['status'], sort: sort as PostSort, direction }
+  return { ...list, status: status as PostListQuery['status'] }
 }
 
 /** The search and status that a page and its count share. */
@@ -140,13 +103,9 @@ function ordered(chain: any, query: PostListQuery): any {
   return chain.orderBy('id', 'desc')
 }
 
-function count(row: { count?: unknown } | undefined): number {
-  return Number(row?.count ?? 0) || 0
-}
-
 export async function readPostPage(query: PostListQuery, database: typeof db = db): Promise<PostPage> {
-  const total = count(await filtered(query, database).select(database.fn.count('id').as('count')).executeTakeFirst())
-  const page = Math.min(query.page, Math.max(1, Math.ceil(total / query.perPage)))
+  const total = countOf((await filtered(query, database).select(database.fn.count('id').as('count')).executeTakeFirst() as { count?: unknown } | undefined)?.count)
+  const page = pageWithin(query.page, total, query.perPage)
 
   const rows = total === 0
     ? []
@@ -166,16 +125,16 @@ export async function readPostPage(query: PostListQuery, database: typeof db = d
 
   const statusCount = (status: PostStatus) => byStatus
     .filter(row => String(row.status).toLowerCase() === status)
-    .reduce((sum, row) => sum + count(row), 0)
+    .reduce((sum, row) => sum + countOf(row.count), 0)
 
   return {
     rows,
     total,
     page,
-    allCount: byStatus.reduce((sum, row) => sum + count(row), 0),
+    allCount: byStatus.reduce((sum, row) => sum + countOf(row.count), 0),
     publishedCount: statusCount('published'),
     draftCount: statusCount('draft'),
     archivedCount: statusCount('archived'),
-    totalViews: Number(views?.views ?? 0) || 0,
+    totalViews: countOf(views?.views),
   }
 }
