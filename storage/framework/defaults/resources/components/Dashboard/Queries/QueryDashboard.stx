@@ -1,17 +1,26 @@
 <script client>
-import type { DashboardQueryLog, DashboardQueryResponse } from '../../../../functions/queries'
+import type { DashboardQueryCounts, DashboardQueryFilters, DashboardQueryLog, DashboardQueryResponse } from '../../../../functions/queries'
 import { fetchDashboardQueries } from '../../../../functions/queries'
 
-type QueryRange = 'hour' | 'day' | 'week'
+type QueryRange = DashboardQueryFilters['range']
 type QueryMode = 'all' | 'slow' | 'history'
-type QueryType = DashboardQueryLog['type'] | 'all'
-type QueryStatus = DashboardQueryLog['status'] | 'all'
+type QueryType = DashboardQueryFilters['type']
+type QueryStatus = DashboardQueryFilters['status']
+
+const EMPTY_COUNTS: DashboardQueryCounts = { total: 0, reads: 0, writes: 0, slow: 0, failed: 0, averageDuration: 0 }
 
 const mode = useReactiveProp<QueryMode>('mode', 'all')
+// One page of the log, chosen by the server with the counts the cards show
+// (stacksjs/stacks#3204): the range, filters and paging are all its work.
 const data = state<DashboardQueryResponse>({
   enabled: false,
   slowThreshold: 100,
   queries: [],
+  total: 0,
+  page: 1,
+  perPage: 50,
+  counts: EMPTY_COUNTS,
+  connections: [],
 })
 const range = state<QueryRange>(mode() === 'history' ? 'week' : 'day')
 const connection = state('all')
@@ -21,35 +30,12 @@ const currentPage = state(1)
 const itemsPerPage = state(50)
 const loading = state(true)
 const loadError = state('')
+let listRequestId = 0
 
-const rangeHours: Record<QueryRange, number> = {
-  hour: 1,
-  day: 24,
-  week: 168,
-}
-
-const rangedQueries = derived(() => {
-  const cutoff = Date.now() - rangeHours[range()] * 60 * 60 * 1000
-  return data().queries.filter((query) => {
-    const executed = new Date(query.executedAt).getTime()
-    return Number.isFinite(executed) && executed >= cutoff
-  })
-})
-
-const filteredQueries = derived(() => rangedQueries().filter((query) => {
-  if (mode() === 'slow' && query.status !== 'slow')
-    return false
-  if (connection() !== 'all' && query.connection !== connection())
-    return false
-  if (status() !== 'all' && query.status !== status())
-    return false
-  return type() === 'all' || query.type === type()
-}))
-const totalPages = derived(() => Math.max(1, Math.ceil(filteredQueries().length / itemsPerPage())))
-const visibleQueries = derived(() => {
-  const start = (currentPage() - 1) * itemsPerPage()
-  return filteredQueries().slice(start, start + itemsPerPage())
-})
+const queries = derived(() => data().queries)
+const counts = derived(() => data().counts)
+const total = derived(() => counts().total)
+const totalPages = derived(() => Math.max(1, Math.ceil(total() / itemsPerPage())))
 
 const pageTitle = derived(() => mode() === 'slow' ? 'Slow Queries' : mode() === 'history' ? 'Query History' : 'Queries')
 const pageDescription = derived(() => mode() === 'slow'
@@ -58,30 +44,28 @@ const pageDescription = derived(() => mode() === 'slow'
     ? 'Review database work recorded by the native query logger.'
     : 'Inspect query volume and latency recorded by the native database logger.')
 const emptyTitle = derived(() => mode() === 'slow' ? 'No slow queries in this range' : 'No query logs in this range')
-const connections = derived(() => Array.from(new Set(data().queries.map(query => query.connection))).sort())
-const total = derived(() => filteredQueries().length)
-const selectCount = derived(() => filteredQueries().filter(query => query.type === 'SELECT').length)
-const writeCount = derived(() => filteredQueries().filter(query => ['INSERT', 'UPDATE', 'DELETE'].includes(query.type)).length)
-const slowCount = derived(() => filteredQueries().filter(query => query.status === 'slow').length)
-const failedCount = derived(() => filteredQueries().filter(query => query.status === 'failed').length)
-const averageDuration = derived(() => {
-  const rows = filteredQueries()
-  if (rows.length === 0)
-    return '0.00 ms'
-  return `${(rows.reduce((sum, query) => sum + query.duration, 0) / rows.length).toFixed(2)} ms`
-})
+const connections = derived(() => data().connections)
+const averageDuration = derived(() => `${counts().averageDuration.toFixed(2)} ms`)
+
+function filters(): DashboardQueryFilters {
+  return {
+    range: range(),
+    // The slow page lists slow queries whatever the status select last held.
+    status: mode() === 'slow' ? 'slow' : status(),
+    type: type(),
+    connection: connection() === 'all' ? '' : connection(),
+    page: currentPage(),
+    perPage: itemsPerPage(),
+  }
+}
 
 function setRange(value: QueryRange): void {
   range.set(value)
-  currentPage.set(1)
-}
-
-function resetPage(): void {
-  currentPage.set(1)
 }
 
 function setCurrentPage(page: number): void {
   currentPage.set(Math.min(Math.max(1, page), totalPages()))
+  void loadQueries()
 }
 
 function formatQuery(query: string): string {
@@ -121,20 +105,45 @@ function statusClass(value: DashboardQueryLog['status']): string {
 }
 
 async function loadQueries(): Promise<void> {
+  // Only the newest request may land: the range, filters and pager can each
+  // start one while another is still out.
+  const requestId = ++listRequestId
   loading.set(true)
   loadError.set('')
   try {
-    const result = await fetchDashboardQueries()
-    data.set(result)
+    const result = await fetchDashboardQueries(filters())
+    if (requestId !== listRequestId)
+      return
+    data.set({ ...result, counts: result.counts ?? EMPTY_COUNTS, connections: result.connections ?? [] })
+    // The server moves back to the last page when this one ran past the end.
+    currentPage.set(Number(result.page || 1))
     loadError.set(result.error || '')
   }
   catch (error) {
+    if (requestId !== listRequestId)
+      return
     loadError.set(error instanceof Error ? error.message : 'Query logs could not be loaded.')
   }
   finally {
-    loading.set(false)
+    if (requestId === listRequestId)
+      loading.set(false)
   }
 }
+
+// The range buttons and the three selects change the query; any change asks
+// the server for page 1. The selects stay plain x-model bindings.
+let shownFilters = ''
+effect(() => {
+  const key = [range(), connection(), type(), status()].join('|')
+  if (key === shownFilters)
+    return
+  const first = shownFilters === ''
+  shownFilters = key
+  if (first)
+    return
+  currentPage.set(1)
+  void loadQueries()
+})
 
 onMount(() => {
   void loadQueries()
@@ -165,16 +174,16 @@ onMount(() => {
       <template #value>{{ total() }}</template>
     </StatsCard>
     <StatsCard title="Reads" icon="i-hugeicons-search-01" iconBg="info">
-      <template #value>{{ selectCount() }}</template>
+      <template #value>{{ counts().reads }}</template>
     </StatsCard>
     <StatsCard title="Writes" icon="i-hugeicons-pencil-edit-02" iconBg="success">
-      <template #value>{{ writeCount() }}</template>
+      <template #value>{{ counts().writes }}</template>
     </StatsCard>
     <StatsCard title="Slow" icon="i-hugeicons-time-02" iconBg="warning">
-      <template #value>{{ slowCount() }}</template>
+      <template #value>{{ counts().slow }}</template>
     </StatsCard>
     <StatsCard title="Failed" icon="i-hugeicons-alert-02" iconBg="danger">
-      <template #value>{{ failedCount() }}</template>
+      <template #value>{{ counts().failed }}</template>
     </StatsCard>
     <StatsCard title="Average" icon="i-hugeicons-dashboard-speed-01" iconBg="neutral">
       <template #value>{{ averageDuration() }}</template>
@@ -190,14 +199,14 @@ onMount(() => {
         </div>
         <div class="flex gap-2 items-center">
           <label for="query-connection" class="sr-only">Connection</label>
-          <select id="query-connection" x-model="connection" class="px-3 py-2 text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700" @change="resetPage">
+          <select id="query-connection" x-model="connection" class="px-3 py-2 text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700">
             <option value="all">All connections</option>
             <template :for="item in connections()">
               <option :value="item">{{ item }}</option>
             </template>
           </select>
           <label for="query-type" class="sr-only">Query type</label>
-          <select id="query-type" x-model="type" class="px-3 py-2 text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700" @change="resetPage">
+          <select id="query-type" x-model="type" class="px-3 py-2 text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700">
             <option value="all">All types</option>
             <option value="SELECT">SELECT</option>
             <option value="INSERT">INSERT</option>
@@ -206,7 +215,7 @@ onMount(() => {
             <option value="OTHER">OTHER</option>
           </select>
           <label :if="mode() !== 'slow'" for="query-status" class="sr-only">Query status</label>
-          <select :if="mode() !== 'slow'" id="query-status" x-model="status" class="px-3 py-2 text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700" @change="resetPage">
+          <select :if="mode() !== 'slow'" id="query-status" x-model="status" class="px-3 py-2 text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700">
             <option value="all">All statuses</option>
             <option value="completed">Completed</option>
             <option value="slow">Slow</option>
@@ -218,13 +227,13 @@ onMount(() => {
 
     <div :if="loading()" aria-live="polite" class="p-10 text-center text-neutral-500 text-sm dark:text-neutral-400">Loading query logs</div>
     <div :if="loadError() && !loading()" role="alert" class="p-10 text-center text-red-600 text-sm dark:text-red-300">{{ loadError() }}</div>
-    <div :if="!loading() && !loadError() && filteredQueries().length === 0" class="p-10 text-center">
+    <div :if="!loading() && !loadError() && queries().length === 0" class="p-10 text-center">
       <span class="block mb-3 mx-auto h-8 w-8 text-neutral-400 i-hugeicons-database-02"></span>
       <p class="font-medium text-neutral-900 dark:text-white">{{ emptyTitle() }}</p>
       <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">{{ data().enabled ? (mode() === 'slow' ? 'Queries appear here after they exceed the configured threshold.' : 'Queries will appear as the application executes them.') : 'Enable database.queryLogging in config/database.ts to record queries.' }}</p>
     </div>
 
-    <div :if="!loading() && !loadError() && filteredQueries().length > 0" class="overflow-x-auto">
+    <div :if="!loading() && !loadError() && queries().length > 0" class="overflow-x-auto">
       <table class="w-full">
         <thead class="bg-neutral-50 dark:bg-neutral-800/50">
           <tr>
@@ -237,7 +246,7 @@ onMount(() => {
           </tr>
         </thead>
         <tbody class="divide-neutral-100 divide-y dark:divide-neutral-700">
-          <template :for="query in visibleQueries()">
+          <template :for="query in queries">
             <tr>
               <td class="pl-5 pr-4 py-3.5 max-w-2xl">
                 <div class="flex gap-2 items-start">
@@ -262,11 +271,11 @@ onMount(() => {
       </table>
     </div>
 
-    <div :if="!loading() && !loadError() && filteredQueries().length > 0" class="px-5 py-4 border-neutral-200 border-t dark:border-neutral-700">
+    <div :if="!loading() && !loadError() && queries().length > 0" class="px-5 py-4 border-neutral-200 border-t dark:border-neutral-700">
       <Pagination
         :currentPage="currentPage"
         :totalPages="totalPages"
-        :totalItems="filteredQueries().length"
+        :totalItems="total()"
         :itemsPerPage="itemsPerPage"
         showTotalItems
         @page="setCurrentPage"

@@ -75,7 +75,7 @@ export { fetchSchedulerOperations, runSchedulerTask, updateSchedulerTask, fetchR
 export type { SchedulerTask, OperatorOperation, SchedulerOperationsResponse, SchedulerMutationResponse, BackupResourceKind, RecoveryDestination, RecoveryPolicy, RecoveryPoint, RecoveryJob, RecoveryCoverage, RecoveryResource, RecoveryDataService, RecoveryOperationsResponse, RecoveryDestinationInput, RecoveryPolicyInput, RestorePlanInput, MigrationPlanOperation, MigrationLedgerEntry, MigrationOperationsResponse, ReleaseApprovalItem, ChangeOperationsResponse, IncidentAlert, IncidentOperationsResponse, AuditEvent, AuditOperationsResponse } from '../defaults/functions/operations'
 export { publicApplicationUrl } from '../defaults/functions/public-application-url'
 export { fetchDashboardQueries, fetchDashboardQuery } from '../defaults/functions/queries'
-export type { DashboardQueryLog, DashboardQueryResponse, DashboardQueryShowResponse } from '../defaults/functions/queries'
+export type { DashboardQueryLog, DashboardQueryCounts, DashboardQueryResponse, DashboardQueryFilters, DashboardQueryShowResponse } from '../defaults/functions/queries'
 export { fetchQueueStats, fetchQueueWorkers, retryQueueFailures, useQueue } from '../defaults/functions/queue'
 export type { QueueBucket, QueueAggregateStats, QueueWorker, QueueStatsResponse, QueueWorkersResponse } from '../defaults/functions/queue'
 export { fetchRealtimeDashboard, useRealtimeStats } from '../defaults/functions/realtime'
