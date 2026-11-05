@@ -40,7 +40,7 @@ for (const dialect of ['sqlite', 'postgres', 'mysql'] as const) {
         }, stdout: 'pipe', stderr: 'pipe',
       })
       let timedOut = false
-      const watchdog = setTimeout(() => { timedOut = true; child.kill() }, 25_000)
+      const watchdog = setTimeout(() => { timedOut = true; child.kill() }, 55_000)
       try {
         const [code, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
         expect(timedOut, 'commerce error aggregates must finish without a watchdog kill').toBe(false)
@@ -56,5 +56,5 @@ for (const dialect of ['sqlite', 'postgres', 'mysql'] as const) {
         finally { await rm(directory, { recursive: true, force: true }) }
       }
     }
-  }, 30_000)
+  }, 60_000)
 }

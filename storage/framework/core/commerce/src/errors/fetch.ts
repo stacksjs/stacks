@@ -1,4 +1,5 @@
-import { db } from '@stacksjs/database/runtime'
+import { db, sqlHelpers } from '@stacksjs/database/runtime'
+import { env } from '@stacksjs/env'
 import { formatDate } from '@stacksjs/orm'
 
 export type ErrorResolution = 'unresolved' | 'resolved' | 'ignored'
@@ -134,6 +135,143 @@ export async function fetchGrouped(): Promise<GroupedError[]> {
   groupedErrors.sort((a, b) => new Date(b.last_seen).getTime() - new Date(a.last_seen).getTime())
 
   return groupedErrors
+}
+
+/** A page of groups asks for these. */
+export interface ErrorGroupQuery {
+  page: number
+  perPage: number
+  /** Matched against the type and the message, case-insensitive. */
+  search: string
+  /** A group's state is its newest occurrence's, as in `fetchGrouped`. */
+  status: ErrorResolution | 'all'
+  /** An exact type, or empty for every type. */
+  type: string
+  /** Most recently seen first unless asked otherwise. */
+  sort?: 'last_seen' | 'count' | 'type' | 'status'
+  direction?: 'asc' | 'desc'
+}
+
+/**
+ * The order of a page of groups, the same on every dialect: types without
+ * case, states in the order they are declared, and the most recently seen
+ * first among equals, then the newest id, so a page boundary is stable.
+ */
+function groupOrder(query: ErrorGroupQuery): string {
+  const direction = query.direction === 'asc' ? 'ASC' : 'DESC'
+  const by = {
+    last_seen: `created_at ${direction}`,
+    count: `occurrences ${direction}`,
+    type: `LOWER(type) ${direction}`,
+    status: `CASE WHEN resolution = 'resolved' THEN 1 WHEN resolution = 'ignored' THEN 2 ELSE 0 END ${direction}`,
+  }[query.sort ?? 'last_seen']
+  return `${by}, created_at DESC, id DESC`
+}
+
+/** One group on a page: `GroupedError` without every occurrence's id. */
+export type GroupedErrorSummary = Omit<GroupedError, 'error_ids'>
+
+export interface GroupedErrorPage {
+  groups: GroupedErrorSummary[]
+  /** Groups matching the query, which the pager counts. */
+  total: number
+  /** The page the groups are, moved back to the last one when it ran past it. */
+  page: number
+  /** Every error type recorded, for the type filter. */
+  types: string[]
+}
+
+interface RankedGroupRow {
+  id: number | string
+  type: string
+  message: string
+  resolution: ErrorResolution | null
+  occurrences: number | string
+  first_seen: unknown
+  last_seen: unknown
+}
+
+/**
+ * One page of error groups, most recently seen first, read by the database.
+ *
+ * `fetchGrouped` reads every error to group them, and the Errors page used to
+ * take that whole list to show ten (stacksjs/stacks#3195). This ranks each
+ * group's occurrences newest first in SQL, so the group's state, count and
+ * first and last seen come back with only the page's groups, and fetches just
+ * those groups' stacks. Window functions are in every database Stacks runs
+ * on: SQLite 3.25, MySQL 8 and PostgreSQL.
+ */
+export async function fetchGroupedPage(query: ErrorGroupQuery): Promise<GroupedErrorPage> {
+  const helpers = sqlHelpers(env.DB_CONNECTION || 'sqlite')
+  const values: unknown[] = []
+  const bind = (value: unknown): string => {
+    values.push(value)
+    return helpers.param(values.length)
+  }
+
+  // The type and the message are the same for every row of a group, so these
+  // filter rows without splitting one.
+  const rowFilters: string[] = []
+  if (query.search) {
+    const term = `%${query.search}%`
+    rowFilters.push(`(LOWER(type) LIKE LOWER(${bind(term)}) OR LOWER(message) LIKE LOWER(${bind(term)}))`)
+  }
+  if (query.type)
+    rowFilters.push(`type = ${bind(query.type)}`)
+
+  // The state is not: a resolved error that recurs has an unresolved newest
+  // row, and reads as unresolved. So it filters the ranked groups.
+  const groupFilters = ['group_rank = 1']
+  if (query.status === 'unresolved')
+    groupFilters.push(`(resolution = ${bind('unresolved')} OR resolution IS NULL)`)
+  else if (query.status !== 'all')
+    groupFilters.push(`resolution = ${bind(query.status)}`)
+
+  // A derived table rather than a WITH clause: the SQLite driver decides a
+  // statement returns rows by its first word, and answers a query that opens
+  // with WITH as though it were a write, with no rows.
+  const ranked = `(
+    SELECT id, type, message, resolution, created_at,
+      ROW_NUMBER() OVER (PARTITION BY type, message ORDER BY created_at DESC, id DESC) AS group_rank,
+      COUNT(id) OVER (PARTITION BY type, message) AS occurrences,
+      MIN(created_at) OVER (PARTITION BY type, message) AS first_seen
+    FROM errors
+    ${rowFilters.length > 0 ? `WHERE ${rowFilters.join(' AND ')}` : ''}
+  ) ranked`
+  const where = `WHERE ${groupFilters.join(' AND ')}`
+
+  const [counted] = await db.unsafe(`SELECT COUNT(id) AS count FROM ${ranked} ${where}`, values).execute() as Array<{ count: unknown }>
+  const total = Number(counted?.count ?? 0) || 0
+  const page = Math.min(query.page, Math.max(1, Math.ceil(total / query.perPage)))
+
+  const [rows, types] = await Promise.all([
+    total === 0
+      ? Promise.resolve([] as RankedGroupRow[])
+      : db.unsafe(
+        `SELECT id, type, message, resolution, occurrences, first_seen, created_at AS last_seen FROM ${ranked} ${where}
+         ORDER BY ${groupOrder(query)} LIMIT ${Math.trunc(query.perPage)} OFFSET ${Math.trunc((page - 1) * query.perPage)}`,
+        values,
+      ).execute() as unknown as Promise<RankedGroupRow[]>,
+    db.unsafe('SELECT DISTINCT type FROM errors ORDER BY type').execute() as Promise<Array<{ type: string }>>,
+  ])
+
+  const stacks = await fetchStacks(rows.map(row => Number(row.id)))
+
+  return {
+    groups: rows.map(row => ({
+      id: Number(row.id),
+      type: row.type,
+      message: row.message,
+      stack: stacks.get(Number(row.id)) ?? null,
+      status: row.resolution ?? 'unresolved',
+      count: Number(row.occurrences) || 0,
+      first_seen: new Date(row.first_seen as string).toISOString(),
+      last_seen: new Date(row.last_seen as string).toISOString(),
+    })),
+    total,
+    page,
+    types: types.map(row => String(row.type)),
+  }
 }
 
 type GroupingRow = Pick<ErrorRecord, 'id' | 'type' | 'message' | 'resolution' | 'created_at'>

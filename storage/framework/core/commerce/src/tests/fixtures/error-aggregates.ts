@@ -126,8 +126,26 @@ try {
     }
   }
 
+  // Errors resolved and then seen again: the group's newest occurrence is
+  // unresolved, so the group is, whatever its older rows say.
+  for (let recurring = 0; recurring < 3; recurring++) {
+    for (const [hours, resolution] of [[150, 'resolved'], [120, 'resolved'], [0.2 + recurring / 100, 'unresolved']] as const) {
+      id++
+      await db.insertInto('errors').values({
+        id,
+        type: 'Recurring',
+        message: `recurs ${recurring}`,
+        stack: `Error: recurs ${recurring}\n${'    at frame (recur.ts:1:1)\n'.repeat(20)} ${id}`,
+        status: 500,
+        resolution,
+        additional_info: null,
+        created_at: formatDate(new Date(now - hours * 60 * 60 * 1000)),
+      }).execute()
+    }
+  }
+
   const all = await errors.fetchAll()
-  assert.equal(all.length, GROUPS * 2)
+  assert.equal(all.length, GROUPS * 2 + 9)
 
   const stats = await errors.fetchStats()
   const expectedStats = referenceStats(all, new Date())
@@ -141,9 +159,67 @@ try {
 
   const grouped = (await errors.fetchGrouped()).map(group => ({ ...group, id: Number(group.id), error_ids: group.error_ids.map(Number) }))
   const expectedGrouped = referenceGrouped(all)
-  assert.equal(grouped.length, GROUPS)
+  assert.equal(grouped.length, GROUPS + 3)
   assert(grouped.every(group => group.stack && group.stack.length > 255), `${dialect}: every group carries its representative's full stack`)
   assert.deepEqual(grouped, expectedGrouped, `${dialect}: grouped`)
+
+  // A page of groups is the same grouping, a page at a time
+  // (stacksjs/stacks#3195), with the newest occurrence deciding the state.
+  const summaries = expectedGrouped.map(({ error_ids: _ids, ...group }) => group)
+  type Query = Parameters<typeof errors.fetchGroupedPage>[0]
+  const base: Query = { page: 1, perPage: 50, search: '', status: 'all', type: '' }
+  async function everyPage(query: Omit<Query, 'page'>): Promise<{ groups: unknown[], totals: number[] }> {
+    const groups: unknown[] = []
+    const totals: number[] = []
+    for (let page = 1; ; page++) {
+      const result = await errors.fetchGroupedPage({ ...query, page })
+      assert.equal(result.page, Math.min(page, Math.max(1, Math.ceil(result.total / query.perPage))))
+      totals.push(result.total)
+      groups.push(...result.groups.map(group => ({ ...group, id: Number(group.id) })))
+      if (page * query.perPage >= result.total)
+        return { groups, totals }
+    }
+  }
+  const pageCases: Array<[string, Omit<Query, 'page'>, (group: typeof summaries[number]) => boolean]> = [
+    ['every group', base, () => true],
+    ['unresolved, recurring groups included', { ...base, status: 'unresolved' }, group => group.status === 'unresolved'],
+    ['resolved', { ...base, status: 'resolved' }, group => group.status === 'resolved'],
+    ['ignored', { ...base, status: 'ignored', perPage: 25 }, group => group.status === 'ignored'],
+    ['search, any case', { ...base, search: 'MESSAGE 12' }, group => `${group.type} ${group.message}`.toLowerCase().includes('message 12')],
+    ['type', { ...base, type: 'Type3' }, group => group.type === 'Type3'],
+    ['type within a state', { ...base, type: 'Recurring', status: 'resolved' }, () => false],
+  ]
+  // Sorted pages: the reference order, with the most recently seen first among
+  // equals, as the query orders them.
+  const rank = { unresolved: 0, resolved: 1, ignored: 2 } as Record<string, number>
+  const sortCases: Array<[string, Omit<Query, 'page'>, (group: typeof summaries[number]) => number | string]> = [
+    ['most occurrences first', { ...base, sort: 'count', direction: 'desc' }, group => group.count],
+    ['type, ignoring case', { ...base, sort: 'type', direction: 'asc' }, group => group.type.toLowerCase()],
+    ['state, in its declared order', { ...base, sort: 'status', direction: 'asc' }, group => rank[group.status]!],
+    ['least recently seen first', { ...base, sort: 'last_seen', direction: 'asc' }, group => new Date(group.last_seen).getTime()],
+  ]
+  for (const [label, query, key] of sortCases) {
+    const sign = query.direction === 'asc' ? 1 : -1
+    const expected = [...summaries].sort((a, b) => {
+      const x = key(a)
+      const y = key(b)
+      return (x < y ? -sign : x > y ? sign : 0)
+        || new Date(b.last_seen).getTime() - new Date(a.last_seen).getTime()
+        || b.id - a.id
+    })
+    assert.deepEqual((await everyPage(query)).groups, expected, `${dialect} groups page, ${label}`)
+  }
+
+  for (const [label, query, keep] of pageCases) {
+    const expected = summaries.filter(keep)
+    const { groups, totals } = await everyPage(query)
+    assert(totals.every(total => total === expected.length), `${dialect} groups page, ${label}: total`)
+    assert.deepEqual(groups, expected, `${dialect} groups page, ${label}`)
+  }
+  assert.equal(summaries.filter(group => group.type === 'Recurring' && group.status === 'unresolved').length, 3, 'the seed must reach the recurring case')
+  const past = await errors.fetchGroupedPage({ ...base, page: 99 })
+  assert.equal(past.page, Math.ceil(summaries.length / base.perPage), `${dialect}: a page past the end moves back to the last`)
+  assert.deepEqual(past.types, [...new Set(all.map(error => error.type))].sort(), `${dialect}: every type, for the filter`)
 
   console.log('commerce error aggregates OK')
 }
