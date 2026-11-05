@@ -1,5 +1,7 @@
 import type { DashboardProviderUnavailable } from '../Dashboard/dashboard-provider'
 import { errors } from '@stacksjs/commerce'
+import type { QueryReader } from '../Dashboard/Content/content-list'
+import { LIST_PAGE_SIZES, queryText } from '../Dashboard/Content/content-list'
 import { HQ_READ_UNAVAILABLE, readThroughProvider, resolveDashboardDriver } from '../Dashboard/dashboard-provider'
 
 /**
@@ -81,7 +83,39 @@ export interface DashboardGroupedError {
   count: number
   first_seen: string
   last_seen: string
-  error_ids: number[]
+}
+
+/**
+ * What a page of error groups asks for. A group's state is its newest
+ * occurrence's, so `status` filters groups, not rows.
+ */
+export interface DashboardErrorGroupQuery {
+  page: number
+  perPage: number
+  search: string
+  status: DashboardErrorStatus | 'all'
+  type: string
+  sort: typeof ERROR_GROUP_SORTS[number]
+  direction: 'asc' | 'desc'
+}
+
+export const ERROR_GROUP_SORTS = ['last_seen', 'count', 'type', 'status'] as const
+
+/**
+ * One page of error groups, most recently seen first (stacksjs/stacks#3195).
+ *
+ * The section used to take every group, each with the id of every one of its
+ * occurrences, to show ten. Nothing read those ids, and a busy group has
+ * thousands, so a page carries the groups' counts instead.
+ */
+export interface DashboardGroupedErrorPage {
+  groups: DashboardGroupedError[]
+  /** Groups matching the query, which the pager counts. */
+  total: number
+  /** The page the groups are, moved back to the last one when it ran past it. */
+  page: number
+  /** Every recorded error type, for the type filter. */
+  types: string[]
 }
 
 export interface DashboardErrorStats {
@@ -99,7 +133,7 @@ export interface DashboardErrorTimelinePoint {
 }
 
 export interface DashboardErrorsProvider {
-  grouped: () => Promise<DashboardGroupedError[]>
+  grouped: (query: DashboardErrorGroupQuery) => Promise<DashboardGroupedErrorPage>
   stats: () => Promise<DashboardErrorStats>
   timeline: () => Promise<DashboardErrorTimelinePoint[]>
   byGroup: (type: string, message: string) => Promise<DashboardErrorRecord[]>
@@ -141,7 +175,7 @@ function toErrorStatus(value: string): DashboardErrorStatus {
  * next moves, this file stops compiling instead of quietly changing what a
  * remote provider is required to match.
  */
-function toGroupedError(row: Awaited<ReturnType<typeof errors.fetchGrouped>>[number]): DashboardGroupedError {
+function toGroupedError(row: Awaited<ReturnType<typeof errors.fetchGroupedPage>>['groups'][number]): DashboardGroupedError {
   return {
     id: row.id,
     type: row.type,
@@ -151,7 +185,6 @@ function toGroupedError(row: Awaited<ReturnType<typeof errors.fetchGrouped>>[num
     count: row.count,
     first_seen: row.first_seen,
     last_seen: row.last_seen,
-    error_ids: row.error_ids,
   }
 }
 
@@ -169,7 +202,10 @@ export function localErrorId(id: string | number): number | undefined {
 }
 
 export const localErrorsProvider: DashboardErrorsProvider = {
-  grouped: async () => (await errors.fetchGrouped()).map(toGroupedError),
+  grouped: async (query) => {
+    const page = await errors.fetchGroupedPage(query)
+    return { ...page, groups: page.groups.map(toGroupedError) }
+  },
   stats: () => errors.fetchStats(),
   timeline: () => errors.fetchTimeline(),
   byGroup: (type, message) => errors.fetchByGroup(type, message),
@@ -226,8 +262,50 @@ async function readErrors<T>(
   return payload
 }
 
-export function readGroupedErrors(): Promise<DashboardErrorsEnvelope<DashboardGroupedError[]>> {
-  return readErrors([], provider => provider.grouped(), Array.isArray)
+const EMPTY_GROUP_PAGE: DashboardGroupedErrorPage = { groups: [], total: 0, page: 1, types: [] }
+
+export function readGroupedErrors(query: DashboardErrorGroupQuery): Promise<DashboardErrorsEnvelope<DashboardGroupedErrorPage>> {
+  return readErrors(
+    EMPTY_GROUP_PAGE,
+    provider => provider.grouped(query),
+    payload => Boolean(payload) && Array.isArray((payload as DashboardGroupedErrorPage).groups),
+  )
+}
+
+/** The page query, or the reason it is invalid. Absent values: page 1 of 25, every group. */
+export function parseErrorGroupQuery(read: QueryReader): DashboardErrorGroupQuery | { error: string } {
+  const pageText = queryText(read, 'page')
+  const page = pageText === '' ? 1 : Number(pageText)
+  if (!Number.isInteger(page) || page < 1)
+    return { error: 'page must be a whole number of 1 or more.' }
+
+  const sizeText = queryText(read, 'per_page')
+  const perPage = sizeText === '' ? 25 : Number(sizeText)
+  if (!(LIST_PAGE_SIZES as readonly number[]).includes(perPage))
+    return { error: `per_page must be one of ${LIST_PAGE_SIZES.join(', ')}.` }
+
+  const status = queryText(read, 'status') || 'all'
+  if (status !== 'all' && !ERROR_STATUSES.includes(status as DashboardErrorStatus))
+    return { error: `status must be all or one of ${ERROR_STATUSES.join(', ')}.` }
+
+  const search = queryText(read, 'search')
+  if (search.length > 200)
+    return { error: 'search must be 200 characters or fewer.' }
+
+  const type = queryText(read, 'type')
+  if (type.length > 255)
+    return { error: 'type must be 255 characters or fewer.' }
+
+  const sort = queryText(read, 'sort') || 'last_seen'
+  if (!(ERROR_GROUP_SORTS as readonly string[]).includes(sort))
+    return { error: `sort must be one of ${ERROR_GROUP_SORTS.join(', ')}.` }
+
+  const directionText = queryText(read, 'direction').toLowerCase()
+  const direction = directionText === '' ? (sort === 'last_seen' || sort === 'count' ? 'desc' : 'asc') : directionText
+  if (direction !== 'asc' && direction !== 'desc')
+    return { error: 'direction must be asc or desc.' }
+
+  return { page, perPage, search, status: status as DashboardErrorGroupQuery['status'], type, sort: sort as DashboardErrorGroupQuery['sort'], direction }
 }
 
 export function readErrorStats(): Promise<DashboardErrorsEnvelope<DashboardErrorStats>> {

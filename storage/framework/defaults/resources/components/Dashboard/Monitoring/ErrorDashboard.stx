@@ -47,7 +47,9 @@
 
     <ErrorTable
       :errors="filteredErrors"
-      :pageResetKey="viewKey"
+      :total="groupTotal"
+      :currentPage="groupPage"
+      :perPage="groupPerPage"
       :emptyTitle="emptyTitle"
       :emptyDescription="emptyDescription"
       @row-click="viewError"
@@ -55,6 +57,9 @@
       @ignore="handleIgnoreError"
       @unresolve="handleUnresolveError"
       @delete="openDeleteModal"
+      @page-change="changeGroupPage"
+      @page-size-change="changeGroupPageSize"
+      @sort="changeGroupSort"
     />
   </Card>
 
@@ -161,11 +166,20 @@ interface ErrorGroup {
   stack?: string | null
 }
 
-const { groupedErrors, errorStats, fetchGroupedErrors, fetchErrorStats, resolveErrorGroup, ignoreErrorGroup, unresolveErrorGroup, deleteErrorGroup } = useErrors()
+const { groupedErrors, groupedErrorsPage, errorStats, fetchGroupedErrors, fetchErrorStats, resolveErrorGroup, ignoreErrorGroup, unresolveErrorGroup, deleteErrorGroup } = useErrors()
 
 const searchQuery = state('')
 const statusFilter = state('')
 const typeFilter = state('')
+
+// The groups are one page, searched, filtered and sorted by the server
+// (stacksjs/stacks#3195); these are what it was last asked for.
+const listPage = state(1)
+const perPage = state(10)
+const appliedSearch = state('')
+const sortKey = state('')
+const sortDirection = state<'asc' | 'desc'>('desc')
+let searchTimer: ReturnType<typeof setTimeout> | undefined
 
 const selectedError = state<ErrorGroup | null>(null)
 const isDetailModalOpen = state(false)
@@ -194,34 +208,82 @@ const last24hLabel = derived(() => String(statsValue()?.last_24h ?? 0))
 const resolvedStatsLabel = derived(() => String(statsValue()?.resolved ?? 0))
 const trendValue = derived(() => statsValue()?.trend ?? 0)
 
-const typeOptions = derived(() => {
-  const types = new Set(errorList().map(e => e.type))
-  return [
-    { value: '', label: 'All Types' },
-    ...Array.from(types).map(type => ({ value: type, label: type })),
-  ]
+function pageInfo(): { total: number, page: number, types: string[] } {
+  return (groupedErrorsPage.value as { total: number, page: number, types: string[] } | null) ?? { total: 0, page: 1, types: [] }
+}
+
+/** Every recorded type, from the server: a page alone would list only its own. */
+const typeOptions = derived(() => [
+  { value: '', label: 'All Types' },
+  ...pageInfo().types.map(type => ({ value: type, label: type })),
+])
+
+/** The page the server chose; its search, filters and order are already applied. */
+const filteredErrors = derived(() => errorList())
+const groupTotal = derived(() => pageInfo().total)
+const groupPage = derived(() => pageInfo().page)
+const groupPerPage = derived(() => perPage())
+
+async function loadGroups(): Promise<void> {
+  await fetchGroupedErrors({
+    page: listPage(),
+    perPage: perPage(),
+    search: appliedSearch(),
+    status: statusFilter(),
+    type: typeFilter(),
+    sort: sortKey() || undefined,
+    direction: sortDirection(),
+  })
+  // The server moves back to the last page when a delete or a narrower
+  // filter leaves this one past the end.
+  listPage.set(pageInfo().page)
+}
+
+function changeGroupPage(value: number | CustomEvent<number>): void {
+  listPage.set(Number(eventValue(value)) || 1)
+  void loadGroups()
+}
+
+function changeGroupPageSize(value: number | CustomEvent<number>): void {
+  perPage.set(Number(eventValue(value)) || 10)
+  listPage.set(1)
+  void loadGroups()
+}
+
+function changeGroupSort(value: { key: string, direction: string } | CustomEvent<{ key: string, direction: string }>): void {
+  const sort = eventValue(value)
+  sortKey.set(sort.key || '')
+  sortDirection.set(sort.direction === 'asc' ? 'asc' : 'desc')
+  listPage.set(1)
+  void loadGroups()
+}
+
+// The search and the two filters are model bindings; a change to any asks
+// the server for page 1, the search once typing pauses.
+let shownSearch = searchQuery()
+effect(() => {
+  const term = searchQuery().trim()
+  if (term === shownSearch)
+    return
+  shownSearch = term
+  if (searchTimer)
+    clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    appliedSearch.set(term)
+    listPage.set(1)
+    void loadGroups()
+  }, 250)
 })
 
-const filteredErrors = derived(() => {
-  const list = errorList()
-  const q = searchQuery().toLowerCase()
-  const status = statusFilter()
-  const type = typeFilter()
-  return list
-    .filter((error) => {
-      const matchesSearch = !q
-        || error.type.toLowerCase().includes(q)
-        || error.message.toLowerCase().includes(q)
-      const matchesStatus = !status || error.status === status
-      const matchesType = !type || error.type === type
-      return matchesSearch && matchesStatus && matchesType
-    })
-    // Most recently seen first: the order a header sort in the table falls back to.
-    .sort((a, b) => new Date(b.last_seen).getTime() - new Date(a.last_seen).getTime())
+let shownFilters = JSON.stringify([statusFilter(), typeFilter()])
+effect(() => {
+  const filters = JSON.stringify([statusFilter(), typeFilter()])
+  if (filters === shownFilters)
+    return
+  shownFilters = filters
+  listPage.set(1)
+  void loadGroups()
 })
-
-/** What the table is showing: a change to the search or a filter returns it to the first page. */
-const viewKey = derived(() => JSON.stringify([searchQuery(), statusFilter(), typeFilter()]))
 
 
 const hasFilters = derived(() => searchQuery() !== '' || (statusFilter() ?? '') !== '' || (typeFilter() ?? '') !== '')
@@ -271,7 +333,7 @@ async function handleResolveError(value: ErrorGroup | CustomEvent<ErrorGroup>): 
     return
   }
   // Reread the groups too: the table does not see a status changed in place.
-  await Promise.all([fetchGroupedErrors(), fetchErrorStats()])
+  await Promise.all([loadGroups(), fetchErrorStats()])
   if (isDetailModalOpen() && selectedError())
     selectedError.update(e => e ? { ...e, status: 'resolved' } : e)
 }
@@ -285,7 +347,7 @@ async function handleIgnoreError(value: ErrorGroup | CustomEvent<ErrorGroup>): P
     return
   }
   // Reread the groups too: the table does not see a status changed in place.
-  await Promise.all([fetchGroupedErrors(), fetchErrorStats()])
+  await Promise.all([loadGroups(), fetchErrorStats()])
   if (isDetailModalOpen() && selectedError())
     selectedError.update(e => e ? { ...e, status: 'ignored' } : e)
 }
@@ -299,7 +361,7 @@ async function handleUnresolveError(value: ErrorGroup | CustomEvent<ErrorGroup>)
     return
   }
   // Reread the groups too: the table does not see a status changed in place.
-  await Promise.all([fetchGroupedErrors(), fetchErrorStats()])
+  await Promise.all([loadGroups(), fetchErrorStats()])
   if (isDetailModalOpen() && selectedError())
     selectedError.update(e => e ? { ...e, status: 'unresolved' } : e)
 }
@@ -350,7 +412,7 @@ async function confirmDelete(): Promise<void> {
     return
   }
   // Reread the groups too: the table does not see a status changed in place.
-  await Promise.all([fetchGroupedErrors(), fetchErrorStats()])
+  await Promise.all([loadGroups(), fetchErrorStats()])
   closeDeleteModal()
 }
 
@@ -370,6 +432,6 @@ function formatDate(date: string): string {
 }
 
 onMount(async () => {
-  await Promise.all([fetchGroupedErrors(), fetchErrorStats()])
+  await Promise.all([loadGroups(), fetchErrorStats()])
 })
 </script>

@@ -15,9 +15,13 @@ interface ErrorGroup {
 const errors = useReactiveProp('errors', [])
 const emptyTitle = useReactiveProp('emptyTitle', 'No errors found')
 const emptyDescription = useReactiveProp('emptyDescription', 'Your application is running smoothly!')
-/** The parent's search and filters: a change returns to the first page. */
-const pageResetKey = useReactiveProp<unknown>('pageResetKey', '')
-const emit = defineEmits(['view', 'resolve', 'ignore', 'unresolve', 'delete'])
+// The rows are one page the server chose (stacksjs/stacks#3195): it searches,
+// filters, sorts and pages the groups, so this shows them as given and hands
+// paging and sorting back to the parent.
+const total = useReactiveProp('total', 0)
+const currentPage = useReactiveProp('currentPage', 1)
+const perPage = useReactiveProp('perPage', 10)
+const emit = defineEmits(['view', 'resolve', 'ignore', 'unresolve', 'delete', 'row-click', 'page-change', 'page-size-change', 'sort'])
 
 function formatRelativeTime(value: string): string {
   if (!value)
@@ -39,9 +43,8 @@ function formatRelativeTime(value: string): string {
 }
 
 /**
- * Last seen reads relative to now and sorts by the timestamp behind it, so
- * it is slotted rather than a datetime column. The parent's order, most
- * recently seen first, is what a header sort falls back to.
+ * Last seen reads relative to now, so it is slotted rather than a datetime
+ * column. Every sortable key here is one the server sorts by.
  */
 const COLUMNS = [
   { key: 'type', label: 'Type', type: 'badge' as const, sortable: true },
@@ -84,20 +87,38 @@ const rows = derived(() => (errors() as ErrorGroup[]).map((error, index) => ({
 function handleRowAction(payload: { action: string, row: ErrorGroup }): void {
   emit(payload.action === 'view' ? 'row-click' : payload.action, payload.row)
 }
+
+function changePage(page: number): void {
+  emit('page-change', page)
+}
+
+function changePageSize(size: number): void {
+  emit('page-size-change', size)
+}
+
+function changeSort(sort: { key: string, direction: string }): void {
+  emit('sort', sort)
+}
 </script>
 
 <Table
-  :page-reset-key="pageResetKey()"
   :columns="COLUMNS"
   :data="rows()"
   :row-actions="ROW_ACTIONS"
   action-label-key="actionName"
   row-key="rowId"
   paginated
-  :page-size="10"
+  manual-pagination
+  manual-sort
+  :total="total()"
+  :current-page="currentPage()"
+  :page-size="perPage()"
   :empty-title="emptyTitle()"
   :empty-description="emptyDescription()"
   @row-action="handleRowAction"
+  @page-change="changePage"
+  @page-size-change="changePageSize"
+  @sort="changeSort"
 >
   <template #cell="{ row }">
     <span class="text-neutral-500 text-sm whitespace-nowrap dark:text-neutral-400" x-text="row.lastSeenLabel"></span>
