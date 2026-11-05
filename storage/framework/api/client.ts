@@ -3182,6 +3182,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /api/dashboard/posts/{id}
+   */
+  getDashboardPostsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/posts/{id}", input ?? {}, [{"name":"id","in":"path","required":true}], null, "application/json", [], options)
+  },
+
+  /**
    * DELETE /api/dashboard/posts/{id}
    */
   deleteDashboardPostsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {

@@ -12249,6 +12249,38 @@
           }
         }
       },
+      "get": {
+        "summary": "/api/dashboard/posts/{id}",
+        "operationId": "get__api_dashboard_posts__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
       "patch": {
         "summary": "/api/dashboard/posts/{id}",
         "operationId": "patch__api_dashboard_posts__id_",
