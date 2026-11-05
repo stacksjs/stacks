@@ -269,11 +269,17 @@ export default new Action({
           chain = chain.where(column, value)
         }
         if (q && searchColumns.length > 0) {
+          // Lowercased on both sides, so the search ignores case on every
+          // dialect. A model query's whereLike is a plain LIKE, which is
+          // case-sensitive on PostgreSQL: "donald" did not find "Donald"
+          // there (stacksjs/stacks#3202). The column is one of the model's
+          // own (isSafeColumn), and the term is bound.
           chain = chain.whereGroup((group: any) => {
             for (const [index, column] of searchColumns.entries()) {
+              const match = `LOWER(${column}) LIKE LOWER(?)`
               group = index === 0
-                ? group.whereLike(column, `%${q}%`)
-                : group.orWhereLike(column, `%${q}%`)
+                ? group.whereRaw(match, `%${q}%`)
+                : group.orWhereRaw(match, `%${q}%`)
             }
             return group
           })

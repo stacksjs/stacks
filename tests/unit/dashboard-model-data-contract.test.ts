@@ -28,7 +28,9 @@ describe('dashboard model data integrity contract', () => {
 
   test('keeps every model query on the native ORM path', () => {
     expect(showSource).toContain('chain.whereGroup((group: any) => {')
-    expect(showSource).toContain('group.orWhereLike(column, `%${q}%`)')
+    // Lowercased on both sides, on the ORM path (stacksjs/stacks#3202).
+    expect(showSource).toContain('const match = `LOWER(${column}) LIKE LOWER(?)`')
+    expect(showSource).toContain('group.orWhereRaw(match, `%${q}%`)')
     expect(showSource).toContain("dashboardOperationalError(error, `${modelName} records could not be loaded.`, 'ModelShowAction.query')")
     expect(showSource).not.toContain('SearchUnsupported')
     expect(showSource).not.toContain('sqlite-fallback')
