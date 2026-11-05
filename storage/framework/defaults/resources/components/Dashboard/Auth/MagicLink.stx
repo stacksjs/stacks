@@ -1,4 +1,6 @@
 <script client>
+import { withCsrfHeader } from '@stacksjs/browser/composables/csrf'
+
 /**
  * The magic-link interstitial.
  *
@@ -23,9 +25,12 @@ async function consume() {
 
   status.set('working')
   try {
+    // With the CSRF token, as every other sign-in form sends it: consume is
+    // a POST the server checks, and without the header every link came back
+    // "CSRF token mismatch" (stacksjs/stacks#3196).
     const reply = await fetch('/auth/magic-link/consume', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       credentials: 'same-origin',
       body: JSON.stringify({ token: String(route.params.token || '') }),
     })
