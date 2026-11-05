@@ -6,6 +6,7 @@ import { openDevWindow } from '@stacksjs/desktop-build'
 import { defaultsPath, projectPath } from '@stacksjs/path'
 import { findStacksProjects } from '@stacksjs/utils'
 import { findAvailablePort, waitForServer } from './dashboard-utils'
+import { isTrustedTrayRequest, trayOrigins } from './tray-origin'
 
 interface TrayActionRequest {
   action?: string
@@ -23,6 +24,14 @@ const domain = appUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')
 const hasPrettyDomain = !domain.includes('localhost:') && domain !== 'localhost'
 const trayDomain = hasPrettyDomain ? `tray.${domain}` : null
 const localUrl = `http://localhost:${port}`
+const allowedOrigins = trayOrigins(port, trayDomain)
+
+/** Refuses a request from any page but the tray's own; see `tray-origin.ts`. */
+function forbidden(request: Request): Response | null {
+  return isTrustedTrayRequest(request, allowedOrigins)
+    ? null
+    : Response.json({ ok: false, error: 'This request did not come from the system tray' }, { status: 403 })
+}
 
 let cachedProjects: string[] | undefined
 async function discoverProjects(refresh = false): Promise<string[]> {
@@ -169,11 +178,11 @@ const serverPromise = serve({
   quiet: true,
   auth: false,
   routes: {
-    '/api/tray/projects': async () => Response.json({ ok: true, projects: await discoverProjects() }),
+    '/api/tray/projects': async (request: Request) => forbidden(request) ?? Response.json({ ok: true, projects: await discoverProjects() }),
     '/api/tray/action': async (request: Request) => {
       if (request.method !== 'POST')
         return Response.json({ ok: false, error: 'Method not allowed' }, { status: 405 })
-      return handleAction(await request.json() as TrayActionRequest)
+      return forbidden(request) ?? handleAction(await request.json() as TrayActionRequest)
     },
   },
 })
