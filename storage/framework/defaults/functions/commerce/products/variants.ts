@@ -1,5 +1,6 @@
 import { resolveApiBaseUrl } from '../../api-url'
 import type { ProductVariants } from '../../../types/defaults'
+import { withCsrfHeader } from '@stacksjs/browser/composables/csrf'
 import { useStorage } from '@stacksjs/browser/composables/useStorage'
 import { pushToast } from '../../toasts'
 
@@ -36,9 +37,7 @@ async function createVariant(variant: ProductVariants) {
   try {
     const response = await fetch(`${baseURL}/commerce/products/variants`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(variant),
     })
 
@@ -63,9 +62,7 @@ async function updateVariant(variant: ProductVariants) {
   try {
     const response = await fetch(`${baseURL}/commerce/products/variants/${variant.id}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(variant),
     })
 
@@ -93,6 +90,7 @@ async function deleteVariant(id: number) {
   try {
     const response = await fetch(`${baseURL}/commerce/products/variants/${id}`, {
       method: 'DELETE',
+      headers: withCsrfHeader(),
     })
 
     if (!response.ok) {

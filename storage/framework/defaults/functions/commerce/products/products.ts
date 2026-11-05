@@ -1,5 +1,6 @@
 import { resolveApiBaseUrl } from '../../api-url'
 import type { Products } from '../../../types/defaults'
+import { withCsrfHeader } from '@stacksjs/browser/composables/csrf'
 import { useStorage } from '@stacksjs/browser/composables/useStorage'
 import { pushToast } from '../../toasts'
 
@@ -36,9 +37,7 @@ async function createProduct(product: Products): Promise<Products | null> {
   try {
     const response = await fetch(`${baseURL}/commerce/products`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(product),
     })
 
@@ -63,9 +62,7 @@ async function updateProduct(product: Products): Promise<Products | null> {
   try {
     const response = await fetch(`${baseURL}/commerce/products/${product.id}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(product),
     })
 
@@ -93,6 +90,7 @@ async function deleteProduct(id: number): Promise<boolean> {
   try {
     const response = await fetch(`${baseURL}/commerce/products/${id}`, {
       method: 'DELETE',
+      headers: withCsrfHeader(),
     })
 
     if (!response.ok) {

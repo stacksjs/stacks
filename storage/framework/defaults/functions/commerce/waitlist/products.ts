@@ -1,5 +1,6 @@
 import { resolveApiBaseUrl } from '../../api-url'
 import type { WaitlistProduct } from '../../../types/defaults'
+import { withCsrfHeader } from '@stacksjs/browser/composables/csrf'
 import { useStorage } from '@stacksjs/browser/composables/useStorage'
 import { pushToast } from '../../toasts'
 
@@ -36,9 +37,7 @@ async function createWaitlistProduct(waitlistProduct: WaitlistProduct) {
   try {
     const response = await fetch(`${baseURL}/commerce/waitlist/products`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(waitlistProduct),
     })
 
@@ -63,9 +62,7 @@ async function updateWaitlistProduct(waitlistProduct: WaitlistProduct) {
   try {
     const response = await fetch(`${baseURL}/commerce/waitlist/products/${waitlistProduct.id}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(waitlistProduct),
     })
 
@@ -93,6 +90,7 @@ async function deleteWaitlistProduct(id: number) {
   try {
     const response = await fetch(`${baseURL}/commerce/waitlist/products/${id}`, {
       method: 'DELETE',
+      headers: withCsrfHeader(),
     })
 
     if (!response.ok) {

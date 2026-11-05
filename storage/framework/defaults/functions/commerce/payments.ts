@@ -1,5 +1,6 @@
 import { resolveApiBaseUrl } from '../api-url'
 import type { Payments } from '../../types/defaults'
+import { withCsrfHeader } from '@stacksjs/browser/composables/csrf'
 import { useStorage } from '@stacksjs/browser/composables/useStorage'
 import { pushToast } from '../toasts'
 
@@ -35,7 +36,7 @@ async function createPayment(payment: Payments): Promise<Payments | null> {
   try {
     const response = await fetch(`${baseURL}/commerce/payments`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(payment),
     })
 
@@ -61,7 +62,7 @@ async function updatePayment(payment: Payments): Promise<Payments | null> {
   try {
     const response = await fetch(`${baseURL}/commerce/payments/${payment.id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(payment),
     })
 
@@ -90,6 +91,7 @@ async function deletePayment(id: number): Promise<boolean> {
   try {
     const response = await fetch(`${baseURL}/commerce/payments/${id}`, {
       method: 'DELETE',
+      headers: withCsrfHeader(),
     })
 
     if (!response.ok) {

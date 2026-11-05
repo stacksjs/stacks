@@ -1,5 +1,6 @@
 import { resolveApiBaseUrl } from '../../api-url'
 import type { Reviews } from '../../../types/defaults'
+import { withCsrfHeader } from '@stacksjs/browser/composables/csrf'
 import { useStorage } from '@stacksjs/browser/composables/useStorage'
 import { pushToast } from '../../toasts'
 
@@ -36,9 +37,7 @@ async function createReview(review: Reviews): Promise<Reviews | null> {
   try {
     const response = await fetch(`${baseURL}/commerce/products/reviews`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(review),
     })
 
@@ -63,9 +62,7 @@ async function updateReview(review: Reviews): Promise<Reviews | null> {
   try {
     const response = await fetch(`${baseURL}/commerce/products/reviews/${review.id}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(review),
     })
 
@@ -93,6 +90,7 @@ async function deleteReview(id: number): Promise<boolean> {
   try {
     const response = await fetch(`${baseURL}/commerce/products/reviews/${id}`, {
       method: 'DELETE',
+      headers: withCsrfHeader(),
     })
 
     if (!response.ok) {

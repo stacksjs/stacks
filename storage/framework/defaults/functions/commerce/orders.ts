@@ -1,5 +1,6 @@
 import { resolveApiBaseUrl } from '../api-url'
 import type { Orders } from '../../types/defaults'
+import { withCsrfHeader } from '@stacksjs/browser/composables/csrf'
 import { useStorage } from '@stacksjs/browser/composables/useStorage'
 import { pushToast } from '../toasts'
 
@@ -28,7 +29,7 @@ async function createOrder(order: Orders) {
   try {
     const response = await fetch(`${baseURL}/commerce/orders`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(order),
     })
 
@@ -54,7 +55,7 @@ async function updateOrder(order: Orders) {
   try {
     const response = await fetch(`${baseURL}/commerce/orders/${order.id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(order),
     })
 
@@ -83,6 +84,7 @@ async function deleteOrder(id: number) {
   try {
     const response = await fetch(`${baseURL}/commerce/orders/${id}`, {
       method: 'DELETE',
+      headers: withCsrfHeader(),
     })
 
     if (!response.ok) {

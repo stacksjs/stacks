@@ -1,5 +1,6 @@
 import { resolveApiBaseUrl } from '../../api-url'
 import type { Manufacturers } from '../../../types/defaults'
+import { withCsrfHeader } from '@stacksjs/browser/composables/csrf'
 import { useStorage } from '@stacksjs/browser/composables/useStorage'
 import { pushToast } from '../../toasts'
 
@@ -36,9 +37,7 @@ async function createManufacturer(manufacturer: Manufacturers): Promise<Manufact
   try {
     const response = await fetch(`${baseURL}/commerce/product-manufacturers`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(manufacturer),
     })
 
@@ -63,9 +62,7 @@ async function updateManufacturer(manufacturer: Manufacturers): Promise<Manufact
   try {
     const response = await fetch(`${baseURL}/commerce/product-manufacturers/${manufacturer.id}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(manufacturer),
     })
 
@@ -93,6 +90,7 @@ async function deleteManufacturer(id: number): Promise<boolean> {
   try {
     const response = await fetch(`${baseURL}/commerce/product-manufacturers/${id}`, {
       method: 'DELETE',
+      headers: withCsrfHeader(),
     })
 
     if (!response.ok) {

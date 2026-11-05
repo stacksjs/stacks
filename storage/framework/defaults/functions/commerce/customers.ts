@@ -1,5 +1,6 @@
 import { resolveApiBaseUrl } from '../api-url'
 import type { Customers } from '../../types/defaults'
+import { withCsrfHeader } from '@stacksjs/browser/composables/csrf'
 import { useStorage } from '@stacksjs/browser/composables/useStorage'
 import { pushToast } from '../toasts'
 
@@ -38,9 +39,7 @@ async function createCustomer(customer: Omit<Customers, 'id'>) {
   try {
     const response = await fetch(`${baseURL}/commerce/customers`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(customer),
     })
 
@@ -66,9 +65,7 @@ async function updateCustomer(customer: Customers) {
   try {
     const response = await fetch(`${baseURL}/commerce/customers/${customer.id}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(customer),
     })
 
@@ -101,6 +98,7 @@ async function deleteCustomer(id: number) {
   try {
     const response = await fetch(`${baseURL}/commerce/customers/${id}`, {
       method: 'DELETE',
+      headers: withCsrfHeader(),
     })
 
     if (!response.ok) {

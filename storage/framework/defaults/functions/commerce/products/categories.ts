@@ -1,5 +1,6 @@
 import { resolveApiBaseUrl } from '../../api-url'
 import type { Categories } from '../../../types/defaults'
+import { withCsrfHeader } from '@stacksjs/browser/composables/csrf'
 import { useStorage } from '@stacksjs/browser/composables/useStorage'
 import { pushToast } from '../../toasts'
 
@@ -36,9 +37,7 @@ async function createCategory(category: Categories): Promise<Categories | null> 
   try {
     const response = await fetch(`${baseURL}/commerce/product-categories`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(category),
     })
 
@@ -63,9 +62,7 @@ async function updateCategory(category: Categories): Promise<Categories | null> 
   try {
     const response = await fetch(`${baseURL}/commerce/product-categories/${category.id}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(category),
     })
 
@@ -93,6 +90,7 @@ async function deleteCategory(id: number): Promise<boolean> {
   try {
     const response = await fetch(`${baseURL}/commerce/product-categories/${id}`, {
       method: 'DELETE',
+      headers: withCsrfHeader(),
     })
 
     if (!response.ok) {

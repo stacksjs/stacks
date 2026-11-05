@@ -1,5 +1,6 @@
 import { resolveApiBaseUrl } from '../api-url'
 import type { Coupons, NewCoupon } from '../../types/defaults'
+import { withCsrfHeader } from '@stacksjs/browser/composables/csrf'
 import { useStorage } from '@stacksjs/browser/composables/useStorage'
 import { pushToast } from '../toasts'
 
@@ -38,9 +39,7 @@ async function createCoupon(coupon: Omit<Coupons, 'id'>) {
   try {
     const response = await fetch(`${baseURL}/commerce/coupons`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(coupon),
     })
 
@@ -66,9 +65,7 @@ async function updateCoupon(id: number, coupon: NewCoupon) {
   try {
     const response = await fetch(`${baseURL}/commerce/coupons/${id}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(coupon),
     })
 
@@ -101,6 +98,7 @@ async function deleteCoupon(id: number) {
   try {
     const response = await fetch(`${baseURL}/commerce/coupons/${id}`, {
       method: 'DELETE',
+      headers: withCsrfHeader(),
     })
 
     if (!response.ok) {

@@ -1,5 +1,6 @@
 import { resolveApiBaseUrl } from '../api-url'
 import type { TaxRates } from '../../types/defaults'
+import { withCsrfHeader } from '@stacksjs/browser/composables/csrf'
 import { useStorage } from '@stacksjs/browser/composables/useStorage'
 import { pushToast } from '../toasts'
 
@@ -35,7 +36,7 @@ async function createTaxRate(taxRate: TaxRates) {
   try {
     const response = await fetch(`${baseURL}/commerce/tax-rates`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(taxRate),
     })
 
@@ -61,7 +62,7 @@ async function updateTaxRate(taxRate: TaxRates) {
   try {
     const response = await fetch(`${baseURL}/commerce/tax-rates/${taxRate.id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(taxRate),
     })
 
@@ -90,6 +91,7 @@ async function deleteTaxRate(id: number) {
   try {
     const response = await fetch(`${baseURL}/commerce/tax-rates/${id}`, {
       method: 'DELETE',
+      headers: withCsrfHeader(),
     })
 
     if (!response.ok) {

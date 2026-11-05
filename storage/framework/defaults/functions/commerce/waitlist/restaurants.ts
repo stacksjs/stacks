@@ -1,5 +1,6 @@
 import { resolveApiBaseUrl } from '../../api-url'
 import type { WaitlistRestaurant } from '../../../types/defaults'
+import { withCsrfHeader } from '@stacksjs/browser/composables/csrf'
 import { useStorage } from '@stacksjs/browser/composables/useStorage'
 import { pushToast } from '../../toasts'
 
@@ -36,9 +37,7 @@ async function createWaitlistRestaurant(waitlistRestaurant: WaitlistRestaurant) 
   try {
     const response = await fetch(`${baseURL}/commerce/waitlist/restaurants`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(waitlistRestaurant),
     })
 
@@ -63,9 +62,7 @@ async function updateWaitlistRestaurant(waitlistRestaurant: WaitlistRestaurant) 
   try {
     const response = await fetch(`${baseURL}/commerce/waitlist/restaurants/${waitlistRestaurant.id}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(waitlistRestaurant),
     })
 
@@ -93,6 +90,7 @@ async function deleteWaitlistRestaurant(id: number) {
   try {
     const response = await fetch(`${baseURL}/commerce/waitlist/restaurants/${id}`, {
       method: 'DELETE',
+      headers: withCsrfHeader(),
     })
 
     if (!response.ok) {

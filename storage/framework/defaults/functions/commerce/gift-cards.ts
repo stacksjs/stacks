@@ -1,5 +1,6 @@
 import { resolveApiBaseUrl } from '../api-url'
 import type { GiftCards } from '../../types/defaults'
+import { withCsrfHeader } from '@stacksjs/browser/composables/csrf'
 import { useStorage } from '@stacksjs/browser/composables/useStorage'
 import { pushToast } from '../toasts'
 
@@ -35,7 +36,7 @@ async function createGiftCard(giftCard: GiftCards): Promise<GiftCards | null> {
   try {
     const response = await fetch(`${baseURL}/commerce/gift-cards`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(giftCard),
     })
 
@@ -61,7 +62,7 @@ async function updateGiftCard(giftCard: GiftCards): Promise<GiftCards | null> {
   try {
     const response = await fetch(`${baseURL}/commerce/gift-cards/${giftCard.id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(giftCard),
     })
 
@@ -90,6 +91,7 @@ async function deleteGiftCard(id: number): Promise<boolean> {
   try {
     const response = await fetch(`${baseURL}/commerce/gift-cards/${id}`, {
       method: 'DELETE',
+      headers: withCsrfHeader(),
     })
 
     if (!response.ok) {
