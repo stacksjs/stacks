@@ -8,12 +8,20 @@ import { verifyReleaseEvidence } from '../src/release-evidence'
 // Public release verification catches false adoption receipts. It does not
 // establish platform fidelity or verify a registry's signing authority.
 const roots: string[] = []
+// Bun prints only the outer message for an error thrown from a hook, so the
+// filesystem error that stopped the removal (stacksjs/stacks#2991: a Windows
+// run reported "disposal failed" and nothing else) is spelled out in it.
+function disposalFailure(cause: unknown): string {
+  const error = (cause ?? {}) as { code?: unknown, syscall?: unknown, path?: unknown, message?: unknown }
+  const field = (value: unknown) => typeof value === 'string' && value ? value.slice(0, 300) : 'unknown'
+  return `code ${field(error.code)}, syscall ${field(error.syscall)}, path ${field(error.path)}: ${field(error.message)}`
+}
 const timeoutFailures = new Map<string, string>()
 afterEach(() => {
   // Immediate removal also detects a helper still owning its working directory.
   for (const root of roots.splice(0)) {
     try { rmSync(root, { recursive: true, force: true }) }
-    catch (cause) { throw new Error(`Immediate fixture disposal failed. Verification result: ${timeoutFailures.get(root) ?? 'not a timeout fixture'}`, { cause }) }
+    catch (cause) { throw new Error(`Immediate fixture disposal failed (${disposalFailure(cause)}). Verification result: ${timeoutFailures.get(root) ?? 'not a timeout fixture'}`, { cause }) }
     finally { timeoutFailures.delete(root) }
   }
 })
