@@ -1,5 +1,50 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.482...v0.75.483)
+
+## ✨ Features
+
+- **dashboard**: Table can show a page the server already chose ([fe03b7a](https://github.com/stacksjs/stacks/commit/fe03b7a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3191](https://github.com/stacksjs/stacks/issues/3191))
+
+## 🐛 Bug Fixes
+
+- **dashboard**: decode raw SQL rows before rendering ([9c3a91e](https://github.com/stacksjs/stacks/commit/9c3a91e)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **queue**: drain database reservations through handler completion ([91e8c60](https://github.com/stacksjs/stacks/commit/91e8c60)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **dashboard**: the Models page search ignores case on PostgreSQL ([ce647a4](https://github.com/stacksjs/stacks/commit/ce647a4)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3202](https://github.com/stacksjs/stacks/issues/3202))
+- **dev**: the system tray only takes requests from its own page ([e7aff2f](https://github.com/stacksjs/stacks/commit/e7aff2f)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3199](https://github.com/stacksjs/stacks/issues/3199))
+- **commerce**: the commerce browser composables send the CSRF token on writes ([e6c0d96](https://github.com/stacksjs/stacks/commit/e6c0d96)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3198](https://github.com/stacksjs/stacks/issues/3198))
+- **dashboard**: the API client's writes send the CSRF token ([783b124](https://github.com/stacksjs/stacks/commit/783b124)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3197](https://github.com/stacksjs/stacks/issues/3197))
+- **auth**: the magic-link page sends the CSRF token when it consumes ([1512c0e](https://github.com/stacksjs/stacks/commit/1512c0e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3196](https://github.com/stacksjs/stacks/issues/3196))
+- **dashboard**: resolving, ignoring and deleting an error reach the server ([b80dc39](https://github.com/stacksjs/stacks/commit/b80dc39)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3194](https://github.com/stacksjs/stacks/issues/3194))
+- **orm**: keep a column the models no longer declare instead of refusing ([94e4e4e](https://github.com/stacksjs/stacks/commit/94e4e4e)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: declare the Analytics hub's commerce flag as client payload ([eabe3b2](https://github.com/stacksjs/stacks/commit/eabe3b2)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3183](https://github.com/stacksjs/stacks/issues/3183))
+
+## ⚡ Performance Improvements
+
+- **dashboard**: the Queries pages show the page and counts the server chose ([e6d19b0](https://github.com/stacksjs/stacks/commit/e6d19b0)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3204](https://github.com/stacksjs/stacks/issues/3204))
+- **dashboard**: the query log is filtered, counted and paged by the database ([8d87827](https://github.com/stacksjs/stacks/commit/8d87827)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3204](https://github.com/stacksjs/stacks/issues/3204))
+- **dashboard**: the Jobs list reads one page instead of both job tables ([9087452](https://github.com/stacksjs/stacks/commit/9087452)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3201](https://github.com/stacksjs/stacks/issues/3201))
+- **dashboard**: the Queue page counts jobs per queue in the database ([b795773](https://github.com/stacksjs/stacks/commit/b795773)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3200](https://github.com/stacksjs/stacks/issues/3200))
+- **dashboard**: the Errors list asks for one page of groups ([fefec75](https://github.com/stacksjs/stacks/commit/fefec75)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3195](https://github.com/stacksjs/stacks/issues/3195))
+- **commerce**: read one page of error groups in the database ([8eede80](https://github.com/stacksjs/stacks/commit/8eede80)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3195](https://github.com/stacksjs/stacks/issues/3195))
+- **dashboard**: the Comments page reads one page instead of both tables whole ([37b165d](https://github.com/stacksjs/stacks/commit/37b165d)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3193](https://github.com/stacksjs/stacks/issues/3193))
+- **dashboard**: the Pages list reads one page instead of every page ([42185fa](https://github.com/stacksjs/stacks/commit/42185fa)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3192](https://github.com/stacksjs/stacks/issues/3192))
+- **dashboard**: the Posts page reads one page instead of every post ([0fd102f](https://github.com/stacksjs/stacks/commit/0fd102f)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3191](https://github.com/stacksjs/stacks/issues/3191))
+
+## ✅ Tests
+
+- **actions**: a failed fixture disposal names its filesystem error ([d35e678](https://github.com/stacksjs/stacks/commit/d35e678)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2991](https://github.com/stacksjs/stacks/issues/2991), [stacksjs/stacks#2991](https://github.com/stacksjs/stacks/issues/2991))
+
+## 🔧 Chores
+
+- **release**: refresh generated framework contracts ([84163b8](https://github.com/stacksjs/stacks/commit/84163b8)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **buddy**: remove the unused /api/buddy/jobs endpoint ([90b6946](https://github.com/stacksjs/stacks/commit/90b6946)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3203](https://github.com/stacksjs/stacks/issues/3203))
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.481...v0.75.482)
 
 ## 🐛 Bug Fixes
