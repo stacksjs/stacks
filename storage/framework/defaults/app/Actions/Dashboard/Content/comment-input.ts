@@ -152,7 +152,10 @@ export function isSafeTableName(value: string): boolean {
  * every space-separated one on the same day.
  */
 export function newestFirst(a: DashboardComment, b: DashboardComment): number {
-  const at = (value: string | null) => str(value).replace('T', ' ').slice(0, 19)
+  // PostgreSQL and MySQL hand timestamps back as Dates, and `String(date)`
+  // starts with the weekday, so it compared Thursday before Wednesday whatever
+  // the year (stacksjs/stacks#3193).
+  const at = (value: string | Date | null) => (value instanceof Date ? value.toISOString() : str(value)).replace('T', ' ').slice(0, 19)
 
   return at(b.created_at).localeCompare(at(a.created_at)) || b.key.localeCompare(a.key)
 }

@@ -381,6 +381,7 @@ export const actions = {
   'Actions/Dashboard/Content/TagStoreAction': '../defaults/app/Actions/Dashboard/Content/TagStoreAction.ts',
   'Actions/Dashboard/Content/author-input': '../defaults/app/Actions/Dashboard/Content/author-input.ts',
   'Actions/Dashboard/Content/comment-input': '../defaults/app/Actions/Dashboard/Content/comment-input.ts',
+  'Actions/Dashboard/Content/comment-list': '../defaults/app/Actions/Dashboard/Content/comment-list.ts',
   'Actions/Dashboard/Content/content-input': '../defaults/app/Actions/Dashboard/Content/content-input.ts',
   'Actions/Dashboard/Content/content-list': '../defaults/app/Actions/Dashboard/Content/content-list.ts',
   'Actions/Dashboard/Content/file-manager': '../defaults/app/Actions/Dashboard/Content/file-manager.ts',

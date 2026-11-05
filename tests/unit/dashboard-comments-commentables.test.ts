@@ -100,7 +100,7 @@ describe('dashboard comment moderation covers commentable-trait comments', () =>
     await run(`INSERT INTO commentables (title, body, status, commentables_id, commentables_type, created_at)
       VALUES ('', 'On something unknown', 'pending', 5, 'no_such_table', '2026-09-19T08:00:00')`)
 
-    const { comments } = await json(await CommentIndexAction.handle())
+    const { comments } = await json(await CommentIndexAction.handle(request({})))
 
     expect(comments.map((c: any) => c.key)).toEqual(['commentables:1', 'commentables:2', 'comments:1', 'commentables:3'])
 
@@ -177,7 +177,7 @@ describe('dashboard comment moderation covers commentable-trait comments', () =>
   it('lists no trait comments, rather than failing, when the trait table was never migrated', async () => {
     await run(`DROP TABLE commentables`)
 
-    const { comments } = await json(await CommentIndexAction.handle())
+    const { comments } = await json(await CommentIndexAction.handle(request({})))
     expect(comments.map((c: any) => c.key)).toEqual(['comments:1'])
 
     await run(commentablesTableSql(sqlHelpers('sqlite')))
