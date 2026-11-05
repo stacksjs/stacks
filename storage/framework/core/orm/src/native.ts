@@ -17,10 +17,51 @@ export interface NativeModel {
   limit: (count: number) => { offset: (offset: number) => { get: () => Promise<unknown> } }
 }
 
+/** Compare statements by shape, so whitespace does not decide whether one is skipped. */
+const sameSql = (sql: string | undefined) => (sql ?? '').replace(/\s+/g, ' ').trim()
+
+/**
+ * A plan that still describes the columns a drop was declined for.
+ *
+ * The snapshot has to match what is physically in the database. If a retained
+ * column were left out of it, the build that introduced the column would read
+ * the snapshot, decide the column is missing and emit `ADD COLUMN` for one that
+ * already exists — turning a store this build can open into one that build
+ * cannot. Carrying the definition over from the previous snapshot keeps both
+ * directions working.
+ */
+function retainingColumns(next: MigrationPlan, previous: MigrationPlan | undefined, retained: readonly { table?: string, column?: string }[]): MigrationPlan {
+  const wanted = new Map<string, Set<string>>()
+  for (const operation of retained) {
+    if (!operation.table || !operation.column) continue
+    const columns = wanted.get(operation.table) ?? new Set<string>()
+    columns.add(operation.column)
+    wanted.set(operation.table, columns)
+  }
+  if (!wanted.size) return next
+  const plan = next as { tables?: { table?: string, columns?: { name?: string }[] }[] }
+  const before = previous as { tables?: { table?: string, columns?: { name?: string }[] }[] } | undefined
+  const tables = (plan.tables ?? []).map((table) => {
+    const names = wanted.get(table.table ?? '')
+    if (!names?.size) return table
+    const earlier = (before?.tables ?? []).find(entry => entry.table === table.table)
+    const carried = (earlier?.columns ?? []).filter(column => column.name && names.has(column.name))
+    return carried.length ? { ...table, columns: [...(table.columns ?? []), ...carried] } : table
+  })
+  return { ...plan, tables } as MigrationPlan
+}
+
 /**
  * Own one SQLite database in a native backend process. Schema comes from the
  * same migration planner as Buddy; additive upgrades and the snapshot commit
  * atomically. Destructive upgrades require an explicit application migration.
+ *
+ * One destructive change is tolerated rather than refused: a column that is in
+ * the store but not in this build's models. That is what an installed app sees
+ * after a rollback, and refusing left it unable to open at all — in a launcher
+ * with no dock icon, with nothing on screen to say why. The column is kept
+ * instead. This build cannot read it, so keeping it costs only space, and the
+ * build that wrote it still can.
  */
 export function openNativeDatabase(options: { path: string, models: Record<string, NativeModel> }): Database {
   if (options.path !== ':memory:' && !isAbsolute(options.path))
@@ -42,14 +83,20 @@ export function openNativeDatabase(options: { path: string, models: Record<strin
       const saved = db.query('SELECT snapshot FROM _stacks_native_schema WHERE id = 1').get() as { snapshot: string } | null
       const previous = saved ? JSON.parse(saved.snapshot) as MigrationPlan : undefined
       const diff = generateDiffOperations(previous, next, { externalTransaction: true })
-      if (diff.operations.some(operation => operation.destructive))
+      const retained = diff.operations.filter(operation => operation.destructive && operation.kind === 'drop_column')
+      if (diff.operations.some(operation => operation.destructive && operation.kind !== 'drop_column'))
         throw new Error('Native model upgrade contains destructive changes; provide an explicit data migration')
+      // SQLite drops a column by rebuilding the table, so one statement can carry other work too. Skip a statement
+      // only when every operation that produced it is a drop being declined.
+      const kept = new Set(diff.operations.filter(operation => !retained.includes(operation)).map(operation => sameSql(operation.sql)))
+      const skip = new Set(retained.map(operation => sameSql(operation.sql)).filter(sql => sql && !kept.has(sql)))
       for (const statement of diff.statements) {
+        if (skip.has(sameSql(statement))) continue
         if (statement.replace(/--[^\n]*/g, '').trim()) db.exec(statement)
       }
       if (db.query('PRAGMA foreign_key_check').all().length)
         throw new Error('Native model upgrade violates foreign-key constraints')
-      db.query('INSERT INTO _stacks_native_schema (id, snapshot) VALUES (1, ?) ON CONFLICT (id) DO UPDATE SET snapshot = excluded.snapshot').run(JSON.stringify(next))
+      db.query('INSERT INTO _stacks_native_schema (id, snapshot) VALUES (1, ?) ON CONFLICT (id) DO UPDATE SET snapshot = excluded.snapshot').run(JSON.stringify(retainingColumns(next, previous, retained)))
     }).immediate()
     db.exec('PRAGMA foreign_keys = ON;')
     configureOrm({ database: db })

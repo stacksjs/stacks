@@ -130,3 +130,38 @@ test('a required value the request leaves out is a 422 with no driver text, not 
   expect(await missing!.json()).toEqual({ error: 'Note is missing a required value' })
   expect((await api(request('', 'POST', { title: '' })))?.status).toBe(201)
 })
+
+test('a store from a newer build still opens, and going back to that build still works', async () => {
+  const path = fixture()
+  // The newer build: it knows a column the older one does not.
+  const Newer = makeModel({ shortcut: { type: 'string', default: '', fillable: true } })
+  const first = openNativeDatabase({ path, models: { Note: Newer } })
+  await Newer.create({ title: 'Kept', shortcut: 'cmd+k' })
+  releaseOrm(); first.close()
+
+  // Rolling back. The column is not in these models, and refusing here is what left an installed app unable to open.
+  const Older = makeModel()
+  const rolled = openNativeDatabase({ path, models: { Note: Older } })
+  expect(rolled.query('SELECT title FROM native_notes').get()).toEqual({ title: 'Kept' })
+  // The column it cannot read is kept rather than dropped, so the newer build's data survives the downgrade.
+  expect(rolled.query('SELECT shortcut FROM native_notes').get()).toEqual({ shortcut: 'cmd+k' })
+  releaseOrm(); rolled.close()
+
+  // Forward again. The snapshot has to have stayed honest about the retained column, or this emits ADD COLUMN for one
+  // that already exists and breaks the upgrade in the other direction.
+  const again = openNativeDatabase({ path, models: { Note: Newer } })
+  expect(again.query('SELECT title, shortcut FROM native_notes').get()).toEqual({ title: 'Kept', shortcut: 'cmd+k' })
+  releaseOrm(); again.close()
+})
+
+test('a dropped table is still refused, because its rows cannot be kept by leaving them alone', async () => {
+  const path = fixture()
+  const Note = makeModel()
+  const db = openNativeDatabase({ path, models: { Note } })
+  await Note.create({ title: 'Original' })
+  releaseOrm(); db.close()
+  expect(() => openNativeDatabase({ path, models: {} })).toThrow('destructive')
+  const check = new Database(path)
+  expect(check.query('SELECT title FROM native_notes').get()).toEqual({ title: 'Original' })
+  check.close()
+})
