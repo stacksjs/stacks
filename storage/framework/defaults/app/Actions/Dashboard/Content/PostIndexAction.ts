@@ -1,21 +1,9 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
 import { db } from '@stacksjs/database/runtime'
+import { response } from '@stacksjs/router'
 import { dashboardOperationalError } from '../dashboard-response'
-
-interface PostRow {
-  id: number
-  title: string
-  excerpt: string | null
-  content: string | null
-  poster: string | null
-  status: string | null
-  views: number | null
-  published_at: string | null
-  created_at: string | null
-  updated_at: string | null
-  author_id: number | null
-  is_featured: number | null
-}
+import { parsePostListQuery, readPostPage } from './post-list'
 
 interface PivotRow {
   relatedId: number
@@ -44,20 +32,14 @@ function normalizeStatus(status: string | null): string {
   return value === 'published' || value === 'archived' ? value : 'draft'
 }
 
-function counts(posts: Array<{ status: string }>) {
-  return {
-    publishedCount: posts.filter(p => p.status === 'published').length,
-    draftCount: posts.filter(p => p.status === 'draft').length,
-    archivedCount: posts.filter(p => p.status === 'archived').length,
-  }
-}
-
 /**
  * `GET /api/dashboard/posts` — backs `views/dashboard/content/posts/index.stx`.
  *
- * Uses one bounded query per persisted dataset and groups pivot ids in maps,
- * avoiding relation N+1 queries. Writes use the same model-declared pivots on
- * one native database transaction.
+ * Reads one page of posts, searched, filtered, sorted and counted by the
+ * database (`post-list.ts`, stacksjs/stacks#3191), and the category and tag
+ * links for that page only, grouped in maps to avoid relation N+1 queries.
+ * Writes use the same model-declared pivots on one native database
+ * transaction.
  *
  * There is deliberately no mock-data fallback. This action used to catch every
  * error and serve placeholder rows, which made a page that was 404ing against
@@ -69,19 +51,19 @@ export default new Action({
   description: 'Returns CMS posts for the dashboard.',
   method: 'GET',
   apiResponse: true,
-  async handle() {
-    try {
-      const rows = await db
-        .selectFrom('posts')
-        .selectAll()
-        .orderBy('created_at', 'desc')
-        .execute() as unknown as PostRow[]
+  async handle(request: RequestInstance) {
+    const query = parsePostListQuery(key => request.get<unknown>(key, ''))
+    if ('error' in query)
+      return response.json({ message: query.error }, 422)
 
-      const posts = rows.map(row => ({
+    try {
+      const page = await readPostPage(query)
+
+      const posts = page.rows.map(row => ({
         id: Number(row.id),
         title: String(row.title || ''),
         excerpt: String(row.excerpt || ''),
-        content: String(row.content || ''),
+        preview: String(row.preview || ''),
         poster: String(row.poster || ''),
         status: normalizeStatus(row.status),
         views: Number(row.views || 0),
@@ -121,7 +103,20 @@ export default new Action({
         tagIds: tagIdsByPost.get(post.id) || [],
       }))
 
-      return { posts: withRelations, categories, tags, authors, ...counts(posts) }
+      return {
+        posts: withRelations,
+        categories,
+        tags,
+        authors,
+        total: page.total,
+        page: page.page,
+        perPage: query.perPage,
+        allCount: page.allCount,
+        publishedCount: page.publishedCount,
+        draftCount: page.draftCount,
+        archivedCount: page.archivedCount,
+        totalViews: page.totalViews,
+      }
     }
     catch (error) {
       return dashboardOperationalError(error, 'Posts could not be loaded.', 'PostIndexAction')

@@ -224,6 +224,7 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.get('/content/overview', 'Actions/Dashboard/Content/ContentDashboardAction'))
   guard(route.get('/posts', 'Actions/Dashboard/Content/PostIndexAction'))
   guard(route.post('/posts', 'Actions/Dashboard/Content/PostStoreAction'))
+  guard(route.get('/posts/{id}', 'Actions/Dashboard/Content/PostShowAction'))
   guard(route.patch('/posts/{id}', 'Actions/Dashboard/Content/PostUpdateAction'))
   guard(route.delete('/posts/{id}', 'Actions/Dashboard/Content/PostDestroyAction'))
 

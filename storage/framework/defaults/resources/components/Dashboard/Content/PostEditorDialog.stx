@@ -6,7 +6,6 @@ interface PostRecord {
   id: string
   title: string
   excerpt: string
-  content: string
   poster: string
   status: PostStatus
   authorId: string
@@ -36,6 +35,12 @@ const editing = useReactiveProp('post', null as PostRecord | null)
 const categories = useReactiveProp('categories', [] as OptionRecord[])
 const tags = useReactiveProp('tags', [] as OptionRecord[])
 const authors = useReactiveProp('authors', [] as AuthorRecord[])
+// The list row carries a preview, not the body, so the parent reads the body
+// when an edit opens and hands it in here (stacksjs/stacks#3191), as the blog
+// editor does.
+const loadedContent = useReactiveProp('loadedContent', '')
+const contentLoading = useReactiveProp('contentLoading', false)
+const contentLoadFailed = useReactiveProp('contentLoadFailed', false)
 const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
 const title = state('')
@@ -47,16 +52,18 @@ const authorId = state('')
 const featured = state(false)
 const categoryIds = state<string[]>([])
 const tagIds = state<string[]>([])
-const emit = defineEmits(['close', 'submit'])
+const emit = defineEmits(['close', 'submit', 'retry'])
 let wasOpen = false
+let activeId = ''
 
 effect(() => {
   const isOpen = open()
   if (isOpen && !wasOpen) {
     const record = editing()
+    activeId = record?.id || ''
     title.set(record?.title || '')
     excerpt.set(record?.excerpt || '')
-    content.set(record?.content || '')
+    content.set('')
     poster.set(record?.poster || '')
     status.set(record?.status || 'draft')
     authorId.set(record?.authorId || '')
@@ -67,9 +74,15 @@ effect(() => {
   wasOpen = isOpen
 })
 
+effect(() => {
+  if (open() && activeId && editing()?.id === activeId && !contentLoading())
+    content.set(loadedContent())
+})
+
 function valid(): boolean {
   const excerptLength = excerpt().trim().length
-  return title().trim().length >= 3 && title().trim().length <= 255
+  return !contentLoading() && !contentLoadFailed()
+    && title().trim().length >= 3 && title().trim().length <= 255
     && content().trim().length >= 10 && content().length <= 100000
     && (excerptLength === 0 || excerptLength >= 10) && excerpt().length <= 500
 }
@@ -139,8 +152,14 @@ function submit(): void {
       <span class="block mt-1 text-gray-500 text-xs dark:text-gray-400">{{ excerpt().length }}/500</span>
     </label>
     <label>
-      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Content</span>
-      <textarea x-model="content" name="content" required minlength="10" maxlength="100000" rows="10" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea>
+      <span class="flex gap-3 items-center justify-between">
+        <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Content</span>
+        <span :if="contentLoading()" role="status" class="inline-flex gap-1.5 items-center text-gray-500 text-xs dark:text-neutral-400">
+          <span aria-hidden="true" class="h-3.5 w-3.5 animate-spin i-hugeicons-loading-03"></span>
+          Loading content
+        </span>
+      </span>
+      <textarea x-model="content" name="content" required minlength="10" maxlength="100000" rows="10" :disabled="contentLoading() || contentLoadFailed()" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-60"></textarea>
       <span class="block mt-1 text-gray-500 text-xs dark:text-gray-400">{{ content().length }}/100000</span>
     </label>
     <div class="grid gap-4 lg:grid-cols-2">
@@ -165,8 +184,9 @@ function submit(): void {
     </div>
   </form>
 
-  <div :if="error()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
-    {{ error() }}
+  <div :if="error()" role="alert" class="flex flex-wrap gap-3 items-center justify-between mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
+    <span>{{ error() }}</span>
+    <Button :if="contentLoadFailed()" variant="secondary" size="sm" @click="emit('retry')">Retry loading content</Button>
   </div>
 
   <template #footer>

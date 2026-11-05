@@ -15,6 +15,7 @@ const readActions = [
   'ContentDashboardAction.ts',
   'PageIndexAction.ts',
   'PostIndexAction.ts',
+  'PostShowAction.ts',
   'TagIndexAction.ts',
 ]
 
