@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.478...v0.75.479)
+
+## 🐛 Bug Fixes
+
+- **build**: preserve published speech transcriber types ([23cab5d](https://github.com/stacksjs/stacks/commit/23cab5d)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.477...v0.75.478)
 
 ## 🐛 Bug Fixes

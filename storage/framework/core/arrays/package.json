@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/arrays",
   "type": "module",
-  "version": "0.75.478",
+  "version": "0.75.479",
   "description": "The Stacks array utilities.",
   "author": "Chris Breuer",
   "contributors": [
