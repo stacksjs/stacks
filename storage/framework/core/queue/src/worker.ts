@@ -65,6 +65,9 @@ let workerId = ''
  * loses customer data. See stacksjs/stacks#1872 Q-10.
  */
 const inFlightJobs = new Set<Promise<unknown>>()
+// A claim can commit after shutdown begins but before a handler is registered.
+// Track the whole claim-to-handler handoff so the drain cannot return in that gap.
+const inFlightDatabaseBatches = new Set<Promise<unknown>>()
 
 /** When a reserve failure was last reported, per queue. See the poll loop. */
 const reserveErrorLoggedAt = new Map<string, number>()
@@ -74,9 +77,9 @@ const reserveErrorLoggedAt = new Map<string, number>()
  * promise is removed from the set when it settles (regardless of
  * outcome) so the set stays bounded.
  */
-function trackInFlight<T>(promise: Promise<T>): Promise<T> {
-  inFlightJobs.add(promise)
-  promise.finally(() => inFlightJobs.delete(promise))
+function trackInFlight<T>(promise: Promise<T>, pending = inFlightJobs): Promise<T> {
+  pending.add(promise)
+  promise.then(() => pending.delete(promise), () => pending.delete(promise))
   return promise
 }
 
@@ -372,49 +375,11 @@ async function processJobsFromDatabase(initialQueues: string[], concurrency: num
         }
         catch { /* table missing or read failure — proceed without gating */ }
 
-        let jobs: any[] = []
-        try {
-          jobs = await fetchPendingJobs(queueName, concurrency)
-        }
-        catch (error) {
-          // Reported, not swallowed. This `catch` used to be bare, and it hid a
-          // worker that could not reserve anything at all: `whereNull` did not
-          // exist on the update builder, so every claim threw a TypeError in
-          // here and the loop carried on printing "Listening for jobs..." once a
-          // second with no error anywhere. A transient database failure and a
-          // reserve that can never work looked identical for months.
-          //
-          // Rate-limited to once a minute per queue, because the alternative to
-          // silence is a log line every second, and a log nobody can read is the
-          // same as no log.
-          const now = Date.now()
-          const last = reserveErrorLoggedAt.get(queueName) ?? 0
-          if (now - last > 60_000) {
-            reserveErrorLoggedAt.set(queueName, now)
-            log.error(`[queue] Could not reserve jobs on "${queueName}" - retrying each cycle:`, error)
-          }
-          continue
-        }
-
-        processedJobs ||= jobs.length > 0
-
-        // Process the reserved batch CONCURRENTLY (stacksjs/stacks#1984).
-        // Previously this awaited each job in a for-loop, so `--concurrency=N`
-        // reserved N jobs but ran them one at a time — the flag delivered no
-        // parallelism, and if the worker died mid-batch the reserved-but-
-        // unstarted jobs sat `reserved_at` (a burned attempt each) until the
-        // sweep. Running them together starts every reserved job at once.
-        // Default `concurrency=1` → a single-element batch, so the common case
-        // is unchanged. processJob catches internally, but guard anyway.
-        await Promise.all(jobs.map(async (job) => {
-          try {
-            log.info(`Processing job ${job.id} from queue "${queueName}"`)
-            await trackInFlight(processJob(job))
-          }
-          catch {
-            log.error(`Unexpected error processing job ${job.id}`)
-          }
-        }))
+        // The circuit-breaker read may have yielded to shutdown. Do not begin
+        // a fresh claim after the drain has already inspected its pending work.
+        if (!workerRunning) break
+        const processed = await trackInFlight(processDatabaseBatch(queueName, concurrency), inFlightDatabaseBatches)
+        processedJobs ||= processed
       }
 
       // Poll only when no queue had runnable work. A nonempty bounded batch
@@ -428,6 +393,52 @@ async function processJobsFromDatabase(initialQueues: string[], concurrency: num
   }
 }
 
+/** Keep reservation completion and its handlers in one shutdown obligation. */
+async function processDatabaseBatch(queueName: string, concurrency: number): Promise<boolean> {
+  let jobs: any[] = []
+  try {
+    jobs = await fetchPendingJobs(queueName, concurrency)
+  }
+  catch (error) {
+    // Reported, not swallowed. This `catch` used to be bare, and it hid a
+    // worker that could not reserve anything at all: `whereNull` did not
+    // exist on the update builder, so every claim threw a TypeError in
+    // here and the loop carried on printing "Listening for jobs..." once a
+    // second with no error anywhere. A transient database failure and a
+    // reserve that can never work looked identical for months.
+    //
+    // Rate-limited to once a minute per queue, because the alternative to
+    // silence is a log line every second, and a log nobody can read is the
+    // same as no log.
+    const now = Date.now()
+    const last = reserveErrorLoggedAt.get(queueName) ?? 0
+    if (now - last > 60_000) {
+      reserveErrorLoggedAt.set(queueName, now)
+      log.error(`[queue] Could not reserve jobs on "${queueName}" - retrying each cycle:`, error)
+    }
+    return false
+  }
+
+  // Process the reserved batch CONCURRENTLY (stacksjs/stacks#1984).
+  // Previously this awaited each job in a for-loop, so `--concurrency=N`
+  // reserved N jobs but ran them one at a time — the flag delivered no
+  // parallelism, and if the worker died mid-batch the reserved-but-
+  // unstarted jobs sat `reserved_at` (a burned attempt each) until the
+  // sweep. Running them together starts every reserved job at once.
+  // Default `concurrency=1` → a single-element batch, so the common case
+  // is unchanged. processJob catches internally, but guard anyway.
+  await Promise.all(jobs.map(async (job) => {
+    try {
+      log.info(`Processing job ${job.id} from queue "${queueName}"`)
+      await trackInFlight(processJob(job))
+    }
+    catch {
+      log.error(`Unexpected error processing job ${job.id}`)
+    }
+  }))
+  return jobs.length > 0
+}
+
 /**
  * Fetch pending jobs from the database
  */
@@ -436,7 +447,7 @@ async function fetchPendingJobs(queueName: string, limit: number): Promise<any[]
   const { db } = await import('@stacksjs/database/runtime')
   const claimed: any[] = []
 
-  for (let i = 0; i < limit; i++) {
+  for (let i = 0; i < limit && workerRunning; i++) {
     // Atomic claim: select + reserve in one step to prevent race conditions
     const job = await db
       .selectFrom('jobs')
@@ -448,7 +459,7 @@ async function fetchPendingJobs(queueName: string, limit: number): Promise<any[]
       .selectAll()
       .executeTakeFirst()
 
-    if (!job) break
+    if (!job || !workerRunning) break
 
     // Atomically reserve only if still unreserved (CAS pattern)
     const result = await db
@@ -1076,14 +1087,15 @@ export async function stopProcessor(options: { graceMs?: number } = {}): Promise
   const graceMs = options.graceMs ?? 10_000
   workerRunning = false
 
-  if (inFlightJobs.size > 0 && graceMs > 0) {
-    log.info(`[queue] Draining ${inFlightJobs.size} in-flight job(s) (grace ${graceMs}ms)`)
-    const drain = Promise.allSettled([...inFlightJobs])
+  const pending = new Set([...inFlightDatabaseBatches, ...inFlightJobs])
+  if (pending.size > 0 && graceMs > 0) {
+    log.info(`[queue] Draining database reservations and in-flight jobs (grace ${graceMs}ms)`)
+    const drain = Promise.allSettled([...pending])
     const timeout = new Promise<'timeout'>(resolve => setTimeout(() => resolve('timeout'), graceMs))
     const outcome = await Promise.race([drain.then(() => 'drained' as const), timeout])
-    if (outcome === 'timeout' && inFlightJobs.size > 0) {
+    if (outcome === 'timeout' && (inFlightJobs.size > 0 || inFlightDatabaseBatches.size > 0)) {
       log.warn(
-        `[queue] Drain timed out with ${inFlightJobs.size} job(s) still active. `
+        `[queue] Drain timed out with reservations or jobs still active. `
         + `Their reservations will be reclaimed by the next worker's sweep (Q-2).`,
       )
     }

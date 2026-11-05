@@ -119,3 +119,15 @@ state for all workers in a fleet.
 Evidence: `tests/dlq-quarantine-wiring.test.ts`, `failure-path-correctness.test.ts`,
 `worker-declared-retries.test.ts`, `graceful-shutdown-wiring.test.ts` and
 `worker-queues.test.ts`. Driver status comes from `core/config/src/capabilities.ts`.
+
+## Graceful database-worker shutdown
+
+`stopProcessor` drains database batches from the start of their reservation through
+handler completion. A reservation whose SQL response arrives during shutdown still
+finishes its committed job within the existing grace window. A selection returning
+after shutdown does not start a new reservation. An exhausted grace window still
+falls back to the normal stale-reservation recovery; it does not clear another
+worker's reservation or change attempts or retry deadlines.
+
+Evidence: `tests/worker-reservation-drain.test.ts` blocks real SQLite/PostgreSQL
+selection and committed reservation responses while shutdown begins.
