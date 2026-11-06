@@ -275,6 +275,17 @@ export const tsCloud: TsCloudConfig = {
           'mail-host-maintenance.service',
         ],
       },
+      // Mutable repository packs and artifacts must share the capacity policy
+      // with releases. Keep application and backup paths stable across reboot.
+      persistentStorage: {
+        volume: 'deployments',
+        migrateExisting: true,
+        locks: ['/run/lock/mail-host-maintenance.lock', '/run/lock/host-backup.lock'],
+        paths: [
+          { path: '/var/www/reviewos-shared/blobs', units: ['reviewos-*.service', 'reviewos-*.timer'], healthChecks: ['https://reviewos.org'] },
+          { path: '/var/www/reviewos-reviewos/shared/storage', units: ['reviewos-*.service', 'reviewos-*.timer'], healthChecks: ['https://reviewos.org'] },
+        ],
+      },
       disk: {
         size: 320,
         type: 'ssd', // Provider-agnostic: 'standard', 'ssd', 'premium'
