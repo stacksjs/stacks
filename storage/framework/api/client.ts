@@ -1824,6 +1824,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /api/dashboard/commerce/pos/products
+   */
+  getDashboardCommercePosProducts(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/commerce/pos/products", {}, [], null, "application/json", [], options)
+  },
+
+  /**
    * GET /api/dashboard/commerce/print-devices
    */
   getDashboardCommercePrintDevices(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {

@@ -120,7 +120,7 @@ export function createRequestCapture(options: {
   }
 }
 
-const capture = createRequestCapture({
+const capture: RequestCapture = createRequestCapture({
   enabled: requestCaptureEnabled,
   allowed: capturePathAllowed,
   async store({ occurredAt, ...row }) {
@@ -131,8 +131,8 @@ const capture = createRequestCapture({
   warn() { process.stderr.write('[http-capture] Request metadata storage unavailable or buffer full; some observations were dropped.\n') },
 })
 
-export const beginRequestCapture = capture.begin
-export const finishRequestCapture = capture.finish
-export const skipRequestCapture = capture.skip
-export const observeHttpRequest = capture.observe
-export const flushRequestCaptures = capture.flush
+export const beginRequestCapture: RequestCapture['begin'] = capture.begin
+export const finishRequestCapture: RequestCapture['finish'] = capture.finish
+export const skipRequestCapture: RequestCapture['skip'] = capture.skip
+export const observeHttpRequest: RequestCapture['observe'] = capture.observe
+export const flushRequestCaptures: RequestCapture['flush'] = capture.flush
