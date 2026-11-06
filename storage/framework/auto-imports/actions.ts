@@ -327,6 +327,7 @@ export const actions = {
   'Actions/Dashboard/Commerce/ShippingRateIndexAction': '../defaults/app/Actions/Dashboard/Commerce/ShippingRateIndexAction.ts',
   'Actions/Dashboard/Commerce/ShippingZoneIndexAction': '../defaults/app/Actions/Dashboard/Commerce/ShippingZoneIndexAction.ts',
   'Actions/Dashboard/Commerce/TaxRateDefaultAction': '../defaults/app/Actions/Dashboard/Commerce/TaxRateDefaultAction.ts',
+  'Actions/Dashboard/Commerce/commerce-category-list': '../defaults/app/Actions/Dashboard/Commerce/commerce-category-list.ts',
   'Actions/Dashboard/Commerce/commerce-category-records': '../defaults/app/Actions/Dashboard/Commerce/commerce-category-records.ts',
   'Actions/Dashboard/Commerce/commerce-choice-records': '../defaults/app/Actions/Dashboard/Commerce/commerce-choice-records.ts',
   'Actions/Dashboard/Commerce/commerce-choices': '../defaults/app/Actions/Dashboard/Commerce/commerce-choices.ts',
