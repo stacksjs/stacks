@@ -8,9 +8,8 @@ import {
   normalizeCommerceOrderRecord,
   normalizeOrderCouponId,
   normalizeOrderCustomerContext,
-  referencedIds,
 } from './commerce-order-records'
-import { commerceCurrency, commerceIdentifier, commerceValue } from './commerce-record'
+import { commerceCurrency, commerceIdentifier, commerceValue, referencedIds } from './commerce-record'
 
 /**
  * One page of orders, searched, filtered, sorted, counted and summarised by the

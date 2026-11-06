@@ -224,3 +224,24 @@ export function commerceOptionalDate(input: unknown, source: string, field: stri
     return ''
   return commerceDate(input, source, field)
 }
+
+/**
+ * The ids a set of records points at through one field, as integers, once
+ * each, so a page reads exactly the related rows it references.
+ *
+ * The commerce normalizers refuse a record whose order, customer, coupon,
+ * category or manufacturer is missing from what they were given, and those
+ * used to come from a fixed first 500. Past that, one record pointing further
+ * failed the whole page: Orders past 500 customers, Payments past a store's
+ * 500th order, Products past 500 categories (stacksjs/stacks#3218).
+ */
+export function referencedIds(records: unknown[], ...keys: string[]): number[] {
+  const ids = new Set<number>()
+  for (const record of records) {
+    const value = commerceValue(record, ...keys)
+    const id = Number(value)
+    if (value !== undefined && value !== null && value !== '' && Number.isSafeInteger(id) && id > 0)
+      ids.add(id)
+  }
+  return [...ids].sort((left, right) => left - right)
+}

@@ -4,9 +4,9 @@ import {
   normalizeCommerceOrderRecord,
   normalizeOrderCustomerContext,
   normalizeOrderCustomerOption,
-  referencedIds,
   summarizeCommerceOrders,
 } from './commerce-order-records'
+import { referencedIds } from './commerce-record'
 
 function order(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {

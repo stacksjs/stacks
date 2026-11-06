@@ -5,6 +5,7 @@ import {
   paymentsToCsv,
   summarizePayments,
 } from './payment-records'
+import { referencedIds } from './commerce-record'
 
 function payment(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
@@ -101,5 +102,20 @@ describe('dashboard payment records', () => {
     expect(csv.split('\n')).toHaveLength(2)
     expect(csv).toContain('ID,Created,Status,Method')
     expect(csv).toContain('1,2026-07-29T10:00:00.000Z,completed,creditCard,1000')
+  })
+})
+
+describe('the orders and customers a payments page reads', () => {
+  test('a payment for an order past the 500 oldest normalizes from the referenced read', () => {
+    // A store's 704th order is outside a read of its 500 oldest. The ids the
+    // payments reference still name it, so the payment is accepted.
+    const payments = [payment({ id: 1, order_id: 704, customer_id: 9 }), payment({ id: 2, order_id: 12 })]
+    const orderIds = new Set(referencedIds(payments, 'order_id').map(String))
+    const customerIds = new Set(referencedIds(payments, 'customer_id').map(String))
+    expect(normalizePaymentRecord(payments[0], { orderIds, customerIds }).orderId).toBe('704')
+
+    // The refusal this prevents is real: without order 704 the payment is rejected.
+    const oldest = new Set(Array.from({ length: 500 }, (_, index) => String(index + 1)))
+    expect(() => normalizePaymentRecord(payments[0], { orderIds: oldest, customerIds })).toThrow('references missing Order 704')
   })
 })
