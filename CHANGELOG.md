@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.494...v0.75.495)
+
+## 🐛 Bug Fixes
+
+- retain application route names over framework fallbacks ([941b94b](https://github.com/stacksjs/stacks/commit/941b94b)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.493...v0.75.494)
 
 ## 🐛 Bug Fixes
