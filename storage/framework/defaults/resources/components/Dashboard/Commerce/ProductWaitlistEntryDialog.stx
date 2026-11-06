@@ -1,5 +1,7 @@
 <script client>
-import type { ProductWaitlistOptions, ProductWaitlistRecord, ProductWaitlistWritePayload } from '../../../../app/Actions/Dashboard/Commerce/product-waitlist-records'
+import type { CustomerChoice, ProductChoice } from '../../../../app/Actions/Dashboard/Commerce/commerce-choices'
+import type { ProductWaitlistRecord, ProductWaitlistWritePayload } from '../../../../app/Actions/Dashboard/Commerce/product-waitlist-records'
+import { dashboardApi } from '../../../../functions/dashboard-api'
 import { formErrorMessages } from '../../../../functions/dashboard-form'
 
 type DialogMode = 'add' | 'edit'
@@ -7,10 +9,6 @@ type DialogMode = 'add' | 'edit'
 const open = useReactiveProp('open', false)
 const mode = useReactiveProp('mode', 'add' as DialogMode)
 const record = useReactiveProp('record', null as ProductWaitlistRecord | null)
-const options = useReactiveProp('options', {
-  products: [],
-  customers: [],
-} as ProductWaitlistOptions)
 const busy = useReactiveProp('busy', false)
 const errors = useReactiveProp('errors', {} as Record<string, string>)
 const emit = defineEmits(['submit', 'close'])
@@ -26,6 +24,84 @@ const source = state('website')
 const notes = state('')
 const status = state<ProductWaitlistWritePayload['status']>('waiting')
 let lastSync = ''
+
+// The product and customer choices are server searches (stacksjs/stacks#3218):
+// this used to be handed the first 500 of each by name, so an entry could not
+// be made for a product or customer past the 500th.
+const productChoices = state<ProductChoice[]>([])
+const productMatches = state(0)
+const productQuery = state('')
+const customerChoices = state<CustomerChoice[]>([])
+const customerMatches = state(0)
+const customerQuery = state('')
+const requests = { products: 0, customers: 0 }
+const timers: Record<'products' | 'customers', ReturnType<typeof setTimeout> | null> = { products: null, customers: null }
+
+async function loadChoices(kind: 'products' | 'customers', term: string): Promise<void> {
+  const request = ++requests[kind]
+  const params = new URLSearchParams()
+  if (term)
+    params.set('q', term)
+  const path = kind === 'products' ? '/api/dashboard/commerce/product-choices' : '/api/dashboard/commerce/customer-choices'
+  try {
+    const data = await dashboardApi<{ choices?: Array<ProductChoice & Partial<CustomerChoice>>, total?: number }>(`${path}${term ? `?${params}` : ''}`)
+    if (request !== requests[kind])
+      return
+    const choices = Array.isArray(data.choices) ? data.choices : []
+    if (kind === 'products') {
+      productChoices.set(choices)
+      productMatches.set(data.total ?? choices.length)
+    }
+    else {
+      customerChoices.set(choices as CustomerChoice[])
+      customerMatches.set(data.total ?? choices.length)
+    }
+  }
+  catch {
+    // Soft-fail: the entry's own product and customer stay selectable.
+    if (request !== requests[kind])
+      return
+    if (kind === 'products') {
+      productChoices.set([])
+      productMatches.set(0)
+    }
+    else {
+      customerChoices.set([])
+      customerMatches.set(0)
+    }
+  }
+}
+
+function searchSoon(kind: 'products' | 'customers'): void {
+  const timer = timers[kind]
+  if (timer)
+    clearTimeout(timer)
+  timers[kind] = setTimeout(() => {
+    void loadChoices(kind, (kind === 'products' ? productQuery() : customerQuery()).trim())
+  }, 250)
+}
+
+/** The choices to show: the search results, with the entry's own product kept in. */
+const products = derived((): ProductChoice[] => {
+  const found = productChoices()
+  const entry = record()
+  if (!entry?.productId || found.some(choice => choice.id === entry.productId))
+    return found
+  return [{ id: entry.productId, label: entry.productName || `Product ${entry.productId}`, detail: '' }, ...found]
+})
+
+/** The choices to show: the search results, with the entry's own customer kept in. */
+const customers = derived((): CustomerChoice[] => {
+  const found = customerChoices()
+  const entry = record()
+  if (!entry?.customerId || found.some(choice => choice.id === entry.customerId))
+    return found
+  return [{ id: entry.customerId, label: entry.name || `Customer ${entry.customerId}`, detail: entry.email, email: entry.email, phone: entry.phone }, ...found]
+})
+
+function moreLabel(shown: number, total: number, noun: string): string {
+  return total > shown ? `Showing ${shown} of ${total.toLocaleString()} matching ${noun}. Search to narrow it down.` : ''
+}
 
 function relationId(value: number | string): number | null {
   if (value === '')
@@ -60,11 +136,15 @@ effect(() => {
 
   lastSync = signature
   reset(entry)
+  productQuery.set('')
+  customerQuery.set('')
+  void loadChoices('products', '')
+  void loadChoices('customers', '')
 })
 
 function hydrateCustomer(event: Event): void {
   const selectedId = (event.target as HTMLSelectElement).value
-  const customer = options().customers.find(option => option.id === selectedId)
+  const customer = customers().find(option => option.id === selectedId)
   if (!customer)
     return
   if (!name().trim())
@@ -115,19 +195,27 @@ function errorMessages(): string[] {
     <div class="grid gap-4 sm:grid-cols-2 mt-6">
       <label class="block sm:col-span-2">
         <span class="block font-medium text-gray-900 text-sm dark:text-neutral-200">Product</span>
-        <select x-model="productId" required class="block mt-2 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600">
-          <option value="">Select a product</option>
-          <option :for="option in options().products" :value="option.id">{{ option.label }}{{ option.detail ? ' · ' + option.detail : '' }}</option>
-        </select>
+        <input x-model="productQuery" @input="searchSoon('products')" type="search" name="product_search" aria-label="Search products by name or id" placeholder="Search products by name or id" class="block mt-2 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" />
       </label>
+      <div class="sm:col-span-2 -mt-2">
+        <select x-model="productId" required aria-label="Product" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600">
+          <option value="">Select a product</option>
+          <template :for="option in products()" :key="option.id"><option :value="option.id" :selected="option.id === String(productId())">{{ option.label }}{{ option.detail ? ' · ' + option.detail : '' }}</option></template>
+        </select>
+        <p :if="moreLabel(productChoices().length, productMatches(), 'products')" class="mt-1 text-gray-500 text-xs dark:text-neutral-400" :text="moreLabel(productChoices().length, productMatches(), 'products')"></p>
+      </div>
 
       <label class="block sm:col-span-2">
         <span class="block font-medium text-gray-900 text-sm dark:text-neutral-200">Existing customer</span>
-        <select x-model="customerId" class="block mt-2 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" @change="hydrateCustomer($event)">
-          <option value="">No linked customer</option>
-          <option :for="option in options().customers" :value="option.id">{{ option.label }}{{ option.detail ? ' · ' + option.detail : '' }}</option>
-        </select>
+        <input x-model="customerQuery" @input="searchSoon('customers')" type="search" name="customer_search" aria-label="Search customers by name, email or phone" placeholder="Search customers by name, email or phone" class="block mt-2 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" />
       </label>
+      <div class="sm:col-span-2 -mt-2">
+        <select x-model="customerId" aria-label="Existing customer" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" @change="hydrateCustomer($event)">
+          <option value="">No linked customer</option>
+          <template :for="option in customers()" :key="option.id"><option :value="option.id" :selected="option.id === String(customerId())">{{ option.label }}{{ option.detail ? ' · ' + option.detail : '' }}</option></template>
+        </select>
+        <p :if="moreLabel(customerChoices().length, customerMatches(), 'customers')" class="mt-1 text-gray-500 text-xs dark:text-neutral-400" :text="moreLabel(customerChoices().length, customerMatches(), 'customers')"></p>
+      </div>
 
       <label class="block">
         <span class="block font-medium text-gray-900 text-sm dark:text-neutral-200">Name</span>

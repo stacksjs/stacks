@@ -1,3 +1,4 @@
+import type { CustomerChoice, ProductChoice } from './commerce-choices'
 import {
   commerceEmail,
   commerceEnum,
@@ -21,6 +22,8 @@ export interface ProductWaitlistRecord {
   notes: string
   status: string
   productId: string
+  /** The waitlisted product's name, read with the entry. */
+  productName: string
   customerId: string
   createdAt: string
 }
@@ -33,21 +36,11 @@ export interface ProductWaitlistSummary {
   conversionRate: number
 }
 
-export interface ProductWaitlistOption {
-  id: string
-  label: string
-  detail: string
-}
+/** A product the entry dialog offers (commerce-choices.ts). */
+export type ProductWaitlistOption = ProductChoice
 
-export interface ProductWaitlistCustomerOption extends ProductWaitlistOption {
-  email: string
-  phone: string
-}
-
-export interface ProductWaitlistOptions {
-  products: ProductWaitlistOption[]
-  customers: ProductWaitlistCustomerOption[]
-}
+/** A customer the entry dialog offers (commerce-choices.ts). */
+export type ProductWaitlistCustomerOption = CustomerChoice
 
 export interface ProductWaitlistWritePayload {
   productId: number
@@ -62,9 +55,14 @@ export interface ProductWaitlistWritePayload {
   status: 'waiting' | 'notified' | 'purchased' | 'cancelled'
 }
 
+/**
+ * An entry as the dashboard shows it. `products` maps each product the entry
+ * may reference to its name; an entry for any other product is refused, as is
+ * one for a customer outside `customerIds`.
+ */
 export function normalizeProductWaitlistRecord(
   record: any,
-  productIds?: Set<string>,
+  products?: Map<string, string>,
   customerIds?: Set<string>,
 ): ProductWaitlistRecord {
   const id = commerceIdentifier(commerceValue(record, 'id', 'uuid'), 'WaitlistProduct')
@@ -74,7 +72,7 @@ export function normalizeProductWaitlistRecord(
     source,
     'product_id',
   )
-  if (productIds && !productIds.has(productId))
+  if (products && !products.has(productId))
     throw new TypeError(`${source}.product_id references missing Product ${productId}.`)
   const customerId = commerceOptionalIdentifier(
     commerceValue(record, 'customer_id', 'customerId'),
@@ -107,40 +105,13 @@ export function normalizeProductWaitlistRecord(
       'cancelled',
     ]),
     productId,
+    productName: products?.get(productId) ?? '',
     customerId,
     createdAt: commerceTimestamp(commerceValue(record, 'created_at', 'createdAt'), source),
   }
 }
 
-export function normalizeProductWaitlistOption(record: any): ProductWaitlistOption {
-  const id = commerceIdentifier(commerceValue(record, 'id', 'uuid'), 'Product')
-  const source = `Product ${id}`
-  const inventory = commerceNumber(
-    commerceValue(record, 'inventory_count', 'inventoryCount'),
-    source,
-    'inventory_count',
-    { min: 0, integer: true },
-  )
-  return {
-    id,
-    label: commerceRequiredString(commerceValue(record, 'name'), source, 'name'),
-    detail: `${inventory} in inventory`,
-  }
-}
-
-export function normalizeProductWaitlistCustomerOption(record: any): ProductWaitlistCustomerOption {
-  const id = commerceIdentifier(commerceValue(record, 'id', 'uuid'), 'Customer')
-  const source = `Customer ${id}`
-  const email = commerceEmail(commerceValue(record, 'email'), source)
-  const phone = commerceOptionalString(commerceValue(record, 'phone'), source, 'phone')
-  return {
-    id,
-    label: commerceRequiredString(commerceValue(record, 'name'), source, 'name'),
-    detail: email || phone,
-    email,
-    phone,
-  }
-}
+export { normalizeCustomerChoice as normalizeProductWaitlistCustomerOption, normalizeProductChoice as normalizeProductWaitlistOption } from './commerce-choices'
 
 export function summarizeProductWaitlist(records: ProductWaitlistRecord[]): ProductWaitlistSummary {
   const waiting = records.filter(record => record.status === 'waiting').length

@@ -107,6 +107,9 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.get('/library/components', 'Actions/Dashboard/Library/GetComponents'))
   guard(route.post('/library/components', 'Actions/Dashboard/Library/CreateComponent'))
   if (feature('commerce')) {
+    // The products and customers the waitlist dialogs offer, searched (commerce-choices.ts).
+    guard(route.get('/commerce/product-choices', 'Actions/Dashboard/Commerce/CommerceProductChoicesAction'))
+    guard(route.get('/commerce/customer-choices', 'Actions/Dashboard/Commerce/CommerceCustomerChoicesAction'))
     guard(route.get('/commerce/waitlist-products', 'Actions/Dashboard/Commerce/ProductWaitlistIndexAction'))
     guard(route.post('/commerce/waitlist-products', 'Actions/Commerce/WaitlistProductStoreAction'))
     guard(route.patch('/commerce/waitlist-products/{id}', 'Actions/Commerce/WaitlistProductUpdateAction'))

@@ -1,15 +1,18 @@
 @import('../UI/Table')
 
 <script client>
-import type { ProductWaitlistOptions, ProductWaitlistRecord } from '../../../../app/Actions/Dashboard/Commerce/product-waitlist-records'
+import type { ProductWaitlistRecord } from '../../../../app/Actions/Dashboard/Commerce/product-waitlist-records'
 
 const records = useReactiveProp('records', [] as ProductWaitlistRecord[])
-const options = useReactiveProp('options', {
-  products: [],
-  customers: [],
-} as ProductWaitlistOptions)
 const loading = useReactiveProp('loading', false)
-const emit = defineEmits(['edit', 'delete'])
+/**
+ * The server pages and sorts what the parent's search and filter match
+ * (stacksjs/stacks#3218): how many entries match, the page shown and its size.
+ */
+const total = useReactiveProp('total', 0)
+const currentPage = useReactiveProp('currentPage', 1)
+const perPage = useReactiveProp('perPage', 25)
+const emit = defineEmits(['edit', 'delete', 'page-change', 'page-size-change', 'sort'])
 
 const STATUS_CLASSES = {
   purchased: 'text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/30',
@@ -31,29 +34,37 @@ const ROW_ACTIONS = [
   { action: 'delete', label: 'Delete waitlist entry for', icon: 'i-hugeicons-waste', class: 'text-red-500' },
 ]
 
-function productLabel(productId: string): string {
-  return options().products.find(option => option.id === productId)?.label || (productId ? `Product ${productId}` : 'Not linked')
-}
-
 /**
- * `contact` and `productName` are computed per row because a column reads a
- * field: the contact line falls back through email then phone, and the product
- * name is looked up in the options the parent passed.
+ * `contact` is computed per row because a column reads a field: the contact
+ * line falls back through email then phone. The product's name comes with
+ * the entry.
  */
 const rows = derived(() => records().map(entry => ({
   ...entry,
   contact: entry.email || entry.phone || 'No contact recorded',
-  productName: productLabel(entry.productId),
+  productName: entry.productName || (entry.productId ? `Product ${entry.productId}` : 'Not linked'),
 })))
 
 function handleRowAction(payload: { action: string, row: ProductWaitlistRecord }): void {
   emit(payload.action, payload.row)
 }
+
+function changePage(page: number): void {
+  emit('page-change', page)
+}
+
+function changePageSize(size: number): void {
+  emit('page-size-change', size)
+}
+
+function changeSort(sort: { key: string, direction: string }): void {
+  emit('sort', sort)
+}
 </script>
 
 {{--
   No `searchable` or `filterable`: the parent dashboard owns the search box and
-  the filter selects. Paging is what was missing.
+  the filter select, and the server pages and sorts what they match.
 --}}
 <Table
   :columns="COLUMNS"
@@ -62,8 +73,15 @@ function handleRowAction(payload: { action: string, row: ProductWaitlistRecord }
   :row-actions="ROW_ACTIONS"
   action-label-key="name"
   paginated
-  :page-size="25"
+  manual-pagination
+  manual-sort
+  :total="total()"
+  :current-page="currentPage()"
+  :page-size="perPage()"
   empty-title="No product waitlist records found"
   empty-description="Add an entry or adjust the current filters."
   @row-action="handleRowAction"
+  @page-change="changePage"
+  @page-size-change="changePageSize"
+  @sort="changeSort"
 />

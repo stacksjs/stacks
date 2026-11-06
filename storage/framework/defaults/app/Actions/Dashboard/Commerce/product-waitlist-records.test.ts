@@ -28,13 +28,14 @@ describe('dashboard product waitlist records', () => {
   it('normalizes database and model attribute names', () => {
     expect(normalizeProductWaitlistRecord(
       entry({ quantity: '3', customer_id: 9 }),
-      new Set(['8']),
+      new Map([['8', 'Native Mug']]),
       new Set(['9']),
     )).toMatchObject({
       id: '4',
       quantity: 3,
       notificationPreference: 'email',
       productId: '8',
+      productName: 'Native Mug',
       customerId: '9',
       status: 'waiting',
       createdAt: '2026-07-28T12:00:00.000Z',
@@ -44,21 +45,21 @@ describe('dashboard product waitlist records', () => {
   it('rejects corrupt fields and missing relationships', () => {
     expect(() => normalizeProductWaitlistRecord(
       entry({ quantity: 0 }),
-      new Set(['8']),
+      new Map([['8', 'Native Mug']]),
     )).toThrow('WaitlistProduct 4.quantity must be at least 1')
     expect(() => normalizeProductWaitlistRecord(
       entry({ product_id: 99 }),
-      new Set(),
+      new Map(),
     )).toThrow('WaitlistProduct 4.product_id references missing Product 99')
     expect(() => normalizeProductWaitlistRecord(
       entry({ customer_id: 99 }),
-      new Set(['8']),
+      new Map([['8', 'Native Mug']]),
       new Set(),
     )).toThrow('WaitlistProduct 4.customer_id references missing Customer 99')
   })
 
   it('summarizes only native record states', () => {
-    const productIds = new Set(['8'])
+    const productIds = new Map([['8', 'Native Mug']])
     const records = [
       normalizeProductWaitlistRecord(entry({ id: 1, status: 'waiting' }), productIds),
       normalizeProductWaitlistRecord(entry({ id: 2, status: 'notified' }), productIds),

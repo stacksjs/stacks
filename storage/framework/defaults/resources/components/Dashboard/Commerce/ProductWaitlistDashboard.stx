@@ -1,19 +1,31 @@
 <script client>
-import type { ProductWaitlistOptions, ProductWaitlistRecord, ProductWaitlistSummary, ProductWaitlistWritePayload } from '../../../../app/Actions/Dashboard/Commerce/product-waitlist-records'
+import type { ProductWaitlistRecord, ProductWaitlistSummary, ProductWaitlistWritePayload } from '../../../../app/Actions/Dashboard/Commerce/product-waitlist-records'
 import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
 
 interface ProductWaitlistResponse {
   records: ProductWaitlistRecord[]
+  total: number
+  page: number
+  perPage: number
   summary: ProductWaitlistSummary
-  options: ProductWaitlistOptions
 }
 
 const records = state<ProductWaitlistRecord[]>([])
 const summary = state<ProductWaitlistSummary>({ total: 0, waiting: 0, notified: 0, purchased: 0, conversionRate: 0 })
-const options = state<ProductWaitlistOptions>({ products: [], customers: [] })
+/** Whether any product exists, so an entry can be added at all. */
+const hasProducts = state(true)
 const search = state('')
 const status = state('all')
+// The server searches, filters, sorts and pages (stacksjs/stacks#3218), where
+// this page used to do all of that with the newest 500.
+const matchingTotal = state(0)
+const page = state(1)
+const perPage = state(25)
+const appliedSearch = state('')
+const headerSort = state<{ sort: string, direction: string } | null>(null)
+let listRequest = 0
+let searchTimer: ReturnType<typeof setTimeout> | null = null
 const isLoading = state(true)
 const loadError = state('')
 const entryDialogOpen = state(false)
@@ -31,15 +43,19 @@ const metrics = derived(() => [
   { label: 'Conversion', value: `${summary().conversionRate}%` },
 ])
 
-function rows(): ProductWaitlistRecord[] {
-  const query = search().trim().toLowerCase()
-  return records().filter((record) => {
-    if (status() !== 'all' && record.status !== status())
-      return false
-    const productName = options().products.find(option => option.id === record.productId)?.label || ''
-    return !query || [record.name, record.email, record.phone, record.source, productName, record.productId]
-      .some(value => value.toLowerCase().includes(query))
-  })
+/** The table's sortable columns, as the server's sort names. */
+const COLUMN_SORTS: Record<string, string> = {
+  name: 'name',
+  productName: 'product',
+  quantity: 'quantity',
+  status: 'status',
+  notificationPreference: 'preference',
+  createdAt: 'created',
+}
+
+function matchingLabel(): string {
+  const count = matchingTotal()
+  return `${count} matching ${count === 1 ? 'entry' : 'entries'}`
 }
 
 function openAddDialog(): void {
@@ -74,24 +90,104 @@ function closeDeleteDialog(): void {
 }
 
 async function loadRecords(): Promise<void> {
+  const request = ++listRequest
   isLoading.set(true)
   loadError.set('')
   try {
-    const result = await dashboardApi<ProductWaitlistResponse>('/api/dashboard/commerce/waitlist-products')
+    const params = new URLSearchParams()
+    const order = headerSort() ?? { sort: 'created', direction: 'desc' }
+    params.set('sort', order.sort)
+    params.set('direction', order.direction)
+    if (appliedSearch())
+      params.set('q', appliedSearch())
+    if (status() !== 'all')
+      params.set('status', status())
+    params.set('page', String(page()))
+    params.set('per_page', String(perPage()))
+    const result = await dashboardApi<ProductWaitlistResponse>(`/api/dashboard/commerce/waitlist-products?${params}`)
+    // Only the newest request lands.
+    if (request !== listRequest)
+      return
     records.set(Array.isArray(result.records) ? result.records : [])
+    matchingTotal.set(Number(result.total) || 0)
+    page.set(Number(result.page) || 1)
     summary.set(result.summary ?? { total: 0, waiting: 0, notified: 0, purchased: 0, conversionRate: 0 })
-    options.set(result.options ?? { products: [], customers: [] })
   }
   catch (error) {
+    if (request !== listRequest)
+      return
     loadError.set('Product waitlist records could not be loaded.')
     pushToast('error', 'Could not load product waitlist', {
       detail: error instanceof Error ? error.message : String(error),
     })
   }
   finally {
-    isLoading.set(false)
+    if (request === listRequest)
+      isLoading.set(false)
   }
 }
+
+/** Whether there is any product to make an entry for: one choice is enough to know. */
+async function loadHasProducts(): Promise<void> {
+  try {
+    const result = await dashboardApi<{ total?: number }>('/api/dashboard/commerce/product-choices?limit=1')
+    hasProducts.set(Number(result.total) > 0)
+  }
+  catch {
+    // Unknown: leave Add enabled, and the dialog says when nothing matches.
+    hasProducts.set(true)
+  }
+}
+
+function eventValue<T>(value: T | CustomEvent<T>): T {
+  return value instanceof CustomEvent ? value.detail : value
+}
+
+function changePage(value: number | CustomEvent<number>): void {
+  page.set(Number(eventValue(value)) || 1)
+  void loadRecords()
+}
+
+function changePageSize(value: number | CustomEvent<number>): void {
+  perPage.set(Number(eventValue(value)) || 25)
+  page.set(1)
+  void loadRecords()
+}
+
+function changeColumnSort(value: { key: string, direction: string } | CustomEvent<{ key: string, direction: string }>): void {
+  const column = eventValue(value)
+  const serverSort = COLUMN_SORTS[column.key]
+  headerSort.set(serverSort ? { sort: serverSort, direction: column.direction === 'asc' ? 'asc' : 'desc' } : null)
+  page.set(1)
+  void loadRecords()
+}
+
+// The status filter asks the server for page 1 when it changes, and the
+// search once typing pauses.
+let shownStatus = status()
+effect(() => {
+  const current = status()
+  if (current === shownStatus)
+    return
+  shownStatus = current
+  page.set(1)
+  void loadRecords()
+})
+
+let shownSearch = search().trim()
+effect(() => {
+  const term = search().trim()
+  if (term === shownSearch)
+    return
+  shownSearch = term
+  if (searchTimer)
+    clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    appliedSearch.set(term)
+    page.set(1)
+    void loadRecords()
+  }, 250)
+})
 
 async function saveRecord(payload: ProductWaitlistWritePayload): Promise<void> {
   const current = editingRecord()
@@ -146,6 +242,7 @@ async function deleteSelectedRecord(): Promise<void> {
 
 onMount(() => {
   void loadRecords()
+  void loadHasProducts()
 })
 </script>
 
@@ -156,7 +253,7 @@ onMount(() => {
       <span :if="!isLoading()" class="h-4 w-4 i-hugeicons-refresh"></span>
       Refresh
     </Button>
-    <Button :disabled="isLoading() || options().products.length === 0" @click="openAddDialog()">
+    <Button :disabled="isLoading() || !hasProducts()" @click="openAddDialog()">
       <span class="h-4 w-4 i-hugeicons-add-01"></span>
       Add entry
     </Button>
@@ -164,7 +261,7 @@ onMount(() => {
   </PageHeader>
 
   <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>
-  <div :if="!isLoading() && options().products.length === 0" class="p-4 text-amber-800 text-sm dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-900">
+  <div :if="!isLoading() && !hasProducts()" class="p-4 text-amber-800 text-sm dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-900">
     Add a product before creating a product waitlist entry.
   </div>
 
@@ -181,7 +278,7 @@ onMount(() => {
     <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div>
         <h2 class="font-semibold text-gray-900 dark:text-white">Waitlist entries</h2>
-        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Up to 200 recent records from the application model.</p>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">{{ matchingLabel() }}</p>
       </div>
       <div class="flex gap-2">
         <label class="sr-only" for="waitlist-status">Status</label>
@@ -197,7 +294,7 @@ onMount(() => {
       </div>
     </div>
 
-    <ProductWaitlistTable :records="rows()" :options="options()" :loading="isLoading()" @edit="openEditDialog" @delete="openDeleteDialog" />
+    <ProductWaitlistTable :records="records()" :total="matchingTotal()" :current-page="page()" :per-page="perPage()" :loading="isLoading()" @edit="openEditDialog" @delete="openDeleteDialog" @page-change="changePage" @page-size-change="changePageSize" @sort="changeColumnSort" />
   </section>
 </div>
 
@@ -205,7 +302,6 @@ onMount(() => {
   :open="entryDialogOpen()"
   :mode="entryDialogMode()"
   :record="editingRecord()"
-  :options="options()"
   :busy="isSaving()"
   :errors="validationErrors()"
   @submit="saveRecord"
