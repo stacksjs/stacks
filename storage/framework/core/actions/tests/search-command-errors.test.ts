@@ -15,13 +15,17 @@ test('search maintenance scripts propagate provider failures to their exit statu
           plugins: [{
             name: 'search-provider-fixture',
             setup(build) {
-              build.onResolve({ filter: /^@stacksjs\/(?:cli|logging|search-engine)$/ }, args => ({ path: args.path, namespace: 'fixture' }))
+              build.onResolve({ filter: /^@stacksjs\/(?:cli|logging|search-engine|config|server)$/ }, args => ({ path: args.path, namespace: 'fixture' }))
               build.onLoad({ filter: /.*/, namespace: 'fixture' }, args => ({
                 contents: args.path.endsWith('/cli')
                   ? 'export const parseOptions = () => ({model:"Repository"})'
                   : args.path.endsWith('/logging')
-                    ? 'export const log = {error:async()=>{}}'
-                    : `const result={isErr:${failed},error:"search provider refused the request"}; export const importModelDocuments=async()=>result; export const flushModelDocuments=async()=>result; export const updateIndexSettings=async()=>result; export const listIndexSettings=async()=>result;`,
+                    ? 'export const log = {error:async()=>{},flush:async()=>{}}'
+                    : args.path.endsWith('/config')
+                      ? 'export const overridesReady = Promise.resolve()'
+                      : args.path.endsWith('/server')
+                        ? 'export const injectGlobalAutoImports = async()=>{}'
+                        : `const result={isErr:${failed},error:"search provider refused the request"}; export const importModelDocuments=async()=>result; export const flushModelDocuments=async()=>result; export const updateIndexSettings=async()=>result; export const listIndexSettings=async()=>result;`,
                 loader: 'js',
               }))
             },

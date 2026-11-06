@@ -1530,6 +1530,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /api/dashboard/commerce/customer-choices
+   */
+  getDashboardCommerceCustomerChoices(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/commerce/customer-choices", {}, [], null, "application/json", [], options)
+  },
+
+  /**
    * GET /api/dashboard/commerce/customers
    */
   getDashboardCommerceCustomers(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
@@ -1649,6 +1656,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /api/dashboard/commerce/gift-cards/export
+   */
+  getDashboardCommerceGiftCardsExport(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/commerce/gift-cards/export", {}, [], null, "application/json", [], options)
+  },
+
+  /**
    * DELETE /api/dashboard/commerce/gift-cards/{id}
    */
   deleteDashboardCommerceGiftCardsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
@@ -1747,6 +1761,20 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /api/dashboard/commerce/orders/customers
+   */
+  getDashboardCommerceOrdersCustomers(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/commerce/orders/customers", {}, [], null, "application/json", [], options)
+  },
+
+  /**
+   * GET /api/dashboard/commerce/orders/export
+   */
+  getDashboardCommerceOrdersExport(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/commerce/orders/export", {}, [], null, "application/json", [], options)
+  },
+
+  /**
    * DELETE /api/dashboard/commerce/orders/{id}
    */
   deleteDashboardCommerceOrdersId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
@@ -1765,6 +1793,13 @@ export function createClient(config: ClientConfig) {
    */
   getDashboardCommercePayments(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "GET", "/api/dashboard/commerce/payments", {}, [], null, "application/json", [], options)
+  },
+
+  /**
+   * GET /api/dashboard/commerce/payments/export
+   */
+  getDashboardCommercePaymentsExport(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/commerce/payments/export", {}, [], null, "application/json", [], options)
   },
 
   /**
@@ -1831,6 +1866,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /api/dashboard/commerce/product-choices
+   */
+  getDashboardCommerceProductChoices(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/commerce/product-choices", {}, [], null, "application/json", [], options)
+  },
+
+  /**
    * GET /api/dashboard/commerce/products
    */
   getDashboardCommerceProducts(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
@@ -1842,6 +1884,13 @@ export function createClient(config: ClientConfig) {
    */
   postDashboardCommerceProducts(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "POST", "/api/dashboard/commerce/products", {}, [], null, "application/json", [], options)
+  },
+
+  /**
+   * GET /api/dashboard/commerce/products/export
+   */
+  getDashboardCommerceProductsExport(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/commerce/products/export", {}, [], null, "application/json", [], options)
   },
 
   /**

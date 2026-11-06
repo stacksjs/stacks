@@ -5553,6 +5553,31 @@
         }
       }
     },
+    "/api/dashboard/commerce/customer-choices": {
+      "get": {
+        "summary": "/api/dashboard/commerce/customer-choices",
+        "operationId": "get__api_dashboard_commerce_customer_choices",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/dashboard/commerce/customers": {
       "get": {
         "summary": "/api/dashboard/commerce/customers",
@@ -6032,6 +6057,31 @@
         }
       }
     },
+    "/api/dashboard/commerce/gift-cards/export": {
+      "get": {
+        "summary": "/api/dashboard/commerce/gift-cards/export",
+        "operationId": "get__api_dashboard_commerce_gift_cards_export",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/dashboard/commerce/gift-cards/{id}": {
       "delete": {
         "summary": "/api/dashboard/commerce/gift-cards/{id}",
@@ -6431,6 +6481,56 @@
         }
       }
     },
+    "/api/dashboard/commerce/orders/customers": {
+      "get": {
+        "summary": "/api/dashboard/commerce/orders/customers",
+        "operationId": "get__api_dashboard_commerce_orders_customers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/commerce/orders/export": {
+      "get": {
+        "summary": "/api/dashboard/commerce/orders/export",
+        "operationId": "get__api_dashboard_commerce_orders_export",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/dashboard/commerce/orders/{id}": {
       "delete": {
         "summary": "/api/dashboard/commerce/orders/{id}",
@@ -6501,6 +6601,31 @@
       "get": {
         "summary": "/api/dashboard/commerce/payments",
         "operationId": "get__api_dashboard_commerce_payments",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/commerce/payments/export": {
+      "get": {
+        "summary": "/api/dashboard/commerce/payments/export",
+        "operationId": "get__api_dashboard_commerce_payments_export",
         "parameters": [],
         "responses": {
           "200": {
@@ -6779,6 +6904,31 @@
         }
       }
     },
+    "/api/dashboard/commerce/product-choices": {
+      "get": {
+        "summary": "/api/dashboard/commerce/product-choices",
+        "operationId": "get__api_dashboard_commerce_product_choices",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/dashboard/commerce/products": {
       "get": {
         "summary": "/api/dashboard/commerce/products",
@@ -6806,6 +6956,31 @@
       "post": {
         "summary": "/api/dashboard/commerce/products",
         "operationId": "post__api_dashboard_commerce_products",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/commerce/products/export": {
+      "get": {
+        "summary": "/api/dashboard/commerce/products/export",
+        "operationId": "get__api_dashboard_commerce_products_export",
         "parameters": [],
         "responses": {
           "200": {
