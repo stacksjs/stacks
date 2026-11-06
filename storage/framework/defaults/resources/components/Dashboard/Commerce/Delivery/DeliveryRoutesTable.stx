@@ -15,9 +15,14 @@ interface DeliveryRouteRow {
 
 const routes = useReactiveProp('routes', [] as DeliveryRouteRow[])
 const loading = useReactiveProp('loading', false)
-/** The parent's search: a change returns to the first page. */
-const pageResetKey = useReactiveProp<unknown>('pageResetKey', '')
-const emit = defineEmits(['edit', 'delete'])
+/**
+ * The server pages and sorts what the parent's search matches
+ * (stacksjs/stacks#3218): how many routes match, the page shown and its size.
+ */
+const total = useReactiveProp('total', 0)
+const currentPage = useReactiveProp('currentPage', 1)
+const perPage = useReactiveProp('perPage', 25)
+const emit = defineEmits(['edit', 'delete', 'page-change', 'page-size-change', 'sort'])
 
 function formatNumber(value: number): string {
   return new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(value)
@@ -52,25 +57,43 @@ const rows = derived(() => routes().map(route => ({
 function handleRowAction(payload: { action: string, row: DeliveryRouteRow }): void {
   emit(payload.action, payload.row)
 }
+
+function changePage(page: number): void {
+  emit('page-change', page)
+}
+
+function changePageSize(size: number): void {
+  emit('page-size-change', size)
+}
+
+function changeSort(sort: { key: string, direction: string }): void {
+  emit('sort', sort)
+}
 </script>
 
 {{--
-  No `searchable` or `filterable`: the parent dashboard owns the search box.
-  Table pages the whole filtered list the parent passes, and stays mounted
-  while it loads.
+  No `searchable` or `filterable`: the parent dashboard owns the search box,
+  and the server pages and sorts what it matches. The table stays mounted
+  while a page loads.
 --}}
 <Table
-  :page-reset-key="pageResetKey()"
   :columns="COLUMNS"
   :data="rows()"
   :loading="loading()"
   :row-actions="ROW_ACTIONS"
   action-label-key="actionName"
   paginated
-  :page-size="10"
+  manual-pagination
+  manual-sort
+  :total="total()"
+  :current-page="currentPage()"
+  :page-size="perPage()"
   empty-title="No delivery routes found"
   empty-description="Add a route, or adjust the search."
   @row-action="handleRowAction"
+  @page-change="changePage"
+  @page-size-change="changePageSize"
+  @sort="changeSort"
 >
   <template #cell="{ row, column }">
     <span :if="column.key === 'delivery_time'" class="tabular-nums whitespace-nowrap" x-text="row.timeLabel"></span>

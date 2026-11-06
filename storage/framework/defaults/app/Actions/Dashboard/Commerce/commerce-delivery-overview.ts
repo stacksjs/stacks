@@ -35,7 +35,7 @@ function activeFirst(dialect: QueryBuilderDialect): string {
  * else is kept from the day before the cutoff on, and buildDeliveryOverview
  * makes the exact cut.
  */
-function recentRoutes(dialect: QueryBuilderDialect, now: Date): { where: string, values: unknown[] } {
+export function recentRoutes(dialect: QueryBuilderDialect, now: Date): { where: string, values: unknown[] } {
   const { bind, values } = binder(dialect)
   const cutoff = now.getTime() - DAY_MS
   const column = asText('last_active', dialect)

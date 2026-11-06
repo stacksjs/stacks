@@ -1,24 +1,35 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
-import { DeliveryRoute, Courier } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
 import { dashboardOperationalError } from '../dashboard-response'
-import {
-  indexDeliveryRouteCouriers,
-  normalizeDeliveryRouteRecord,
-} from './delivery-route-records'
+import { parseDeliveryRouteListQuery, readDeliveryRoutePage } from './commerce-delivery-route-list'
 
+/**
+ * `GET /api/dashboard/commerce/delivery-routes` - one page of delivery routes,
+ * searched, sorted and counted by the database, with the summary of every
+ * route (commerce-delivery-route-list.ts, stacksjs/stacks#3218). It used to
+ * return the 500 most recently active routes as a bare array.
+ */
 export default new Action({
   name: 'Dashboard Delivery Routes',
-  description: 'Returns validated delivery routes and their optional Courier relationships.',
+  description: 'Returns one page of delivery routes with their linked couriers.',
   method: 'GET',
   apiResponse: true,
 
-  async handle() {
+  async handle(request: RequestInstance) {
+    const query = parseDeliveryRouteListQuery(key => request.get<unknown>(key, ''))
+    if ('error' in query)
+      return response.json({ message: query.error }, 422)
+
     try {
-      const routes = await DeliveryRoute.orderByDesc('last_active').limit(500).get()
-      const courierIds = [...new Set(routes.map(route => route.get('courier_id')).filter(Boolean))]
-      const couriers = courierIds.length ? await Courier.whereIn('id', courierIds).get() : []
-      const couriersById = indexDeliveryRouteCouriers(couriers)
-      return routes.map(route => normalizeDeliveryRouteRecord(route, couriersById))
+      const routes = await readDeliveryRoutePage(query)
+      return {
+        records: routes.records,
+        total: routes.total,
+        page: routes.page,
+        perPage: query.perPage,
+        summary: routes.summary,
+      }
     }
     catch (error) {
       return dashboardOperationalError(error, 'Delivery route records could not be read.', 'DeliveryRouteIndexAction')

@@ -1,5 +1,5 @@
 import type { Signal } from '@stacksjs/stx'
-import { state } from '@stacksjs/stx'
+import { effect, state } from '@stacksjs/stx'
 
 /**
  * Shared pieces of the dashboard's list screens.
@@ -253,5 +253,202 @@ export function useRecordsDashboard<T>(options: RecordsDashboardOptions<T>): Rec
     },
 
     clampPage,
+  }
+}
+
+/** One page as a server-paged list endpoint answers it. */
+export interface ServerListPage<T> {
+  records?: T[]
+  total?: number
+  page?: number
+}
+
+export interface ServerListOptions<T> {
+  /**
+   * Ask for one page. `params` carries `sort`, `direction`, `q`, the filters,
+   * `page` and `per_page`, as the commerce list endpoints read them.
+   */
+  fetch: (params: URLSearchParams) => Promise<ServerListPage<T>>
+  /** The order before any column header is clicked. */
+  defaultSort: { sort: string, direction: 'asc' | 'desc' }
+  /** The table's sortable column keys, as the server's sort names. A column not listed returns to `defaultSort`. */
+  columnSorts?: Record<string, string>
+  /** The filter values, read reactively: a change asks for page 1. `''` or `'all'` leaves a filter out. */
+  filters?: () => Record<string, string>
+  /** Rows per page. Default 25, the list endpoints' own default. */
+  perPage?: number
+  /** How long typing pauses before the search is sent. Default 250ms. */
+  searchDelay?: number
+  /** Called with whatever a load threw, after `loadError` is set. */
+  onError?: (error: unknown) => void
+  /** Called with each answer that lands, for anything else it carries (a summary, choices). */
+  onLoad?: (result: ServerListPage<T>) => void
+}
+
+export interface ServerList<T> {
+  records: Signal<T[]>
+  /** How many rows match, across every page. */
+  total: Signal<number>
+  page: Signal<number>
+  perPage: Signal<number>
+  /** What the search box holds; it is sent once typing pauses. */
+  search: Signal<string>
+  loading: Signal<boolean>
+  loadError: Signal<string>
+  /** The search, filters and order as query parameters, without the page: what an export link needs. */
+  params: () => URLSearchParams
+  /** Ask for the current page again, after a save or a delete. */
+  load: () => Promise<void>
+  changePage: (value: number | CustomEvent<number>) => void
+  changePageSize: (value: number | CustomEvent<number>) => void
+  changeSort: (value: { key: string, direction: string } | CustomEvent<{ key: string, direction: string }>) => void
+}
+
+function eventValue<V>(value: V | CustomEvent<V>): V {
+  return typeof CustomEvent !== 'undefined' && value instanceof CustomEvent ? value.detail : value as V
+}
+
+/**
+ * A list the server searches, filters, sorts and pages (stacksjs/stacks#3218).
+ *
+ * The Orders, Payments, Products, Gift Cards, Reviews and waitlist pages each
+ * wrote the same request counter, page, page size, header sort and search
+ * debounce. This is that, once: only the newest answer lands, a filter or
+ * search change asks for page 1, and a column header the server cannot sort
+ * by returns to the default order.
+ *
+ * The caller still owns when to load first (call `load()` in `onMount`), its
+ * toasts, and what its endpoint returns beyond the page (`onLoad`).
+ */
+export function useServerList<T>(options: ServerListOptions<T>): ServerList<T> {
+  const records = state<T[]>([])
+  const total = state(0)
+  const page = state(1)
+  const perPage = state(options.perPage ?? 25)
+  const search = state('')
+  const loading = state(true)
+  const loadError = state('')
+  const appliedSearch = state('')
+  const headerSort = state<{ sort: string, direction: string } | null>(null)
+  let request = 0
+  let timer: ReturnType<typeof setTimeout> | null = null
+
+  const params = (): URLSearchParams => {
+    const query = new URLSearchParams()
+    const order = headerSort() ?? options.defaultSort
+    query.set('sort', order.sort)
+    query.set('direction', order.direction)
+    if (appliedSearch())
+      query.set('q', appliedSearch())
+    for (const [name, value] of Object.entries(options.filters?.() ?? {})) {
+      if (value !== '' && value !== 'all')
+        query.set(name, value)
+    }
+    return query
+  }
+
+  const load = async (): Promise<void> => {
+    const current = ++request
+    loading.set(true)
+    loadError.set('')
+    try {
+      const query = params()
+      query.set('page', String(page()))
+      query.set('per_page', String(perPage()))
+      const result = await options.fetch(query)
+      if (current !== request)
+        return
+      records.set(Array.isArray(result.records) ? result.records : [])
+      total.set(Number(result.total) || 0)
+      page.set(Number(result.page) || 1)
+      options.onLoad?.(result)
+    }
+    catch (error) {
+      if (current !== request)
+        return
+      loadError.set(error instanceof Error ? error.message : String(error))
+      options.onError?.(error)
+    }
+    finally {
+      if (current === request)
+        loading.set(false)
+    }
+  }
+
+  if (options.filters) {
+    let shown = JSON.stringify(options.filters())
+    effect(() => {
+      const filters = JSON.stringify(options.filters!())
+      if (filters === shown)
+        return
+      shown = filters
+      page.set(1)
+      void load()
+    })
+  }
+
+  let shownSearch = search().trim()
+  effect(() => {
+    const term = search().trim()
+    if (term === shownSearch)
+      return
+    shownSearch = term
+    if (timer)
+      clearTimeout(timer)
+    timer = setTimeout(() => {
+      appliedSearch.set(term)
+      page.set(1)
+      void load()
+    }, options.searchDelay ?? 250)
+  })
+
+  return {
+    records,
+    total,
+    page,
+    perPage,
+    search,
+    loading,
+    loadError,
+    params,
+    load,
+    changePage(value) {
+      page.set(Number(eventValue(value)) || 1)
+      void load()
+    },
+    changePageSize(value) {
+      perPage.set(Number(eventValue(value)) || (options.perPage ?? 25))
+      page.set(1)
+      void load()
+    },
+    changeSort(value) {
+      const column = eventValue(value)
+      const sort = options.columnSorts?.[column.key]
+      headerSort.set(sort ? { sort, direction: column.direction === 'asc' ? 'asc' : 'desc' } : null)
+      page.set(1)
+      void load()
+    },
+  }
+}
+
+/** The largest page the list endpoints serve. */
+export const LARGEST_PAGE = 100
+
+/**
+ * Every record a paged list endpoint holds, a page at a time: for a caller
+ * that does want all of them, such as a resource's `fetchAll`. Stops at the
+ * first short page, so a count that moved while it read cannot loop it.
+ */
+export async function readEveryPage<T>(
+  get: (page: number, perPage: number) => Promise<{ records?: T[], total?: number }>,
+): Promise<T[]> {
+  const all: T[] = []
+  for (let page = 1; ; page++) {
+    const data = await get(page, LARGEST_PAGE)
+    if (!Array.isArray(data?.records))
+      throw new TypeError('Server returned a page without records')
+    all.push(...data.records)
+    if (data.records.length < LARGEST_PAGE || all.length >= Number(data.total))
+      return all
   }
 }

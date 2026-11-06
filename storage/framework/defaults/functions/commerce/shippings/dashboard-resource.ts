@@ -1,4 +1,5 @@
 import { dashboardApi } from '../../dashboard-api'
+import { readEveryPage } from '../../dashboard-list'
 import { pushToast } from '../../toasts'
 import { useStorage } from '@stacksjs/browser/composables/useStorage'
 
@@ -11,6 +12,13 @@ interface DashboardResourceOptions {
   storageKey: string
   singular: string
   plural: string
+  /**
+   * The endpoint answers one page at a time (`{ records, total }`, with
+   * `page` and `per_page`) instead of a bare array, as the dashboard's
+   * delivery routes do (stacksjs/stacks#3218). `fetchAll` then reads every
+   * page, so it still returns every record.
+   */
+  paged?: boolean
 }
 
 export function createDashboardResource<
@@ -19,9 +27,12 @@ export function createDashboardResource<
 >(options: DashboardResourceOptions) {
   const items = useStorage<TRecord[]>(options.storageKey, [])
 
+  const fetchPages = (): Promise<TRecord[]> => readEveryPage((page, perPage) =>
+    dashboardApi<{ records?: TRecord[], total?: number }>(`${options.path}?page=${page}&per_page=${perPage}`))
+
   async function fetchAll(): Promise<TRecord[]> {
     try {
-      const data = await dashboardApi<TRecord[]>(options.path)
+      const data = options.paged ? await fetchPages() : await dashboardApi<TRecord[]>(options.path)
       if (!Array.isArray(data))
         throw new TypeError('Server returned a non-array response')
 

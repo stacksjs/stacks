@@ -1,6 +1,6 @@
 <script client>
 import { dashboardApi } from '../../../../../functions/dashboard-api'
-import { useRecordsDashboard } from '../../../../../functions/dashboard-list'
+import { useRecordsDashboard, useServerList } from '../../../../../functions/dashboard-list'
 import { pushToast } from '../../../../../functions/toasts'
 
 interface CourierRecord {
@@ -32,23 +32,25 @@ interface DeliveryRoutePayload {
   lastActive: number
 }
 
-function matchesQuery(records: DeliveryRouteRecord[], query: string): DeliveryRouteRecord[] {
-  return records.filter(record => [
-    record.id,
-    record.courier,
-    record.courier_record?.name,
-    record.vehicle,
-    record.stops,
-    record.delivery_time,
-    record.total_distance,
-  ].some(value => String(value || '').toLowerCase().includes(query)))
+interface DeliveryRouteSummary {
+  total: number
+  linked: number
+  stops: number
+  distance: number
+  active: number
 }
 
+interface DeliveryRoutePage {
+  records: DeliveryRouteRecord[]
+  total: number
+  page: number
+  summary?: DeliveryRouteSummary
+}
+
+// The dialog and the delete confirmation. The list itself is the server's
+// (stacksjs/stacks#3218): this page used to read the 500 most recently
+// active routes and search, page and count them in the browser.
 const {
-  records,
-  loading,
-  loadError,
-  search,
   editorOpen,
   editorMode,
   editing,
@@ -57,18 +59,43 @@ const {
   deleting,
   deleteBusy,
   deleteError,
-  filteredRecords,
-  handleSearch,
   openCreate,
   openEdit,
   closeEditor,
   requestDelete,
   closeDelete,
-  upsert,
-  remove,
-} = useRecordsDashboard<DeliveryRouteRecord>({ filter: matchesQuery })
+} = useRecordsDashboard<DeliveryRouteRecord>({ filter: records => records })
 
 const couriers = state<CourierRecord[]>([])
+const summary = state<DeliveryRouteSummary>({ total: 0, linked: 0, stops: 0, distance: 0, active: 0 })
+
+const {
+  records,
+  total,
+  page,
+  perPage,
+  search,
+  loading,
+  loadError,
+  load,
+  changePage,
+  changePageSize,
+  changeSort,
+} = useServerList<DeliveryRouteRecord>({
+  fetch: params => dashboardApi<DeliveryRoutePage>(`/api/dashboard/commerce/delivery-routes?${params}`),
+  defaultSort: { sort: 'active', direction: 'desc' },
+  columnSorts: {
+    routeLabel: 'id',
+    courierLabel: 'courier',
+    vehicle: 'vehicle',
+    stops: 'stops',
+    delivery_time: 'time',
+    total_distance: 'distance',
+    last_active: 'active',
+  },
+  onLoad: result => summary.set((result as DeliveryRoutePage).summary ?? { total: 0, linked: 0, stops: 0, distance: 0, active: 0 }),
+  onError: error => pushToast('error', 'Could not load delivery routes', { detail: error instanceof Error ? error.message : String(error) }),
+})
 
 function courierFor(id?: number | null): CourierRecord | undefined {
   return id ? couriers().find(courier => courier.id === id) : undefined
@@ -81,45 +108,45 @@ function withCourier(record: DeliveryRouteRecord): DeliveryRouteRecord {
   }
 }
 
-function routeTime(value: string | number): number {
-  if (typeof value === 'number' || /^\d+$/.test(String(value)))
-    return Number(value)
-  return new Date(String(value).replace(' ', 'T')).getTime()
+function rows(): DeliveryRouteRecord[] {
+  return records().map(withCourier)
+}
+
+function handleSearch(value: string): void {
+  search.set(value)
+}
+
+function matchingLabel(): string {
+  const count = total()
+  return `${count.toLocaleString()} matching ${count === 1 ? 'record' : 'records'}`
 }
 
 function metricCards(): Array<{ label: string, value: string, detail: string }> {
-  const totalStops = records().reduce((sum, record) => sum + record.stops, 0)
-  const totalDistance = records().reduce((sum, record) => sum + record.total_distance, 0)
-  const activeCutoff = Date.now() - (24 * 60 * 60 * 1000)
-  const activeRoutes = records().filter(record => routeTime(record.last_active) >= activeCutoff).length
+  const current = summary()
   return [
-    { label: 'Routes', value: records().length.toLocaleString(), detail: `${records().filter(record => record.courier_id).length} linked to couriers` },
-    { label: 'Stops', value: totalStops.toLocaleString(), detail: 'Across the current route plan' },
-    { label: 'Distance', value: `${totalDistance.toLocaleString()} mi`, detail: 'Planned route distance' },
-    { label: 'Active in 24h', value: activeRoutes.toLocaleString(), detail: 'Based on persisted activity time' },
+    { label: 'Routes', value: current.total.toLocaleString(), detail: `${current.linked.toLocaleString()} linked to couriers` },
+    { label: 'Stops', value: current.stops.toLocaleString(), detail: 'Across the current route plan' },
+    { label: 'Distance', value: `${current.distance.toLocaleString()} mi`, detail: 'Planned route distance' },
+    { label: 'Active in 24h', value: current.active.toLocaleString(), detail: 'Based on persisted activity time' },
   ]
 }
 
-async function loadRoutes(): Promise<void> {
-  loading.set(true)
-  loadError.set('')
+/** The couriers the dialog offers and the rows show; store configuration, read whole. */
+async function loadCouriers(): Promise<void> {
   try {
-    const [routeData, courierData] = await Promise.all([
-      dashboardApi<DeliveryRouteRecord[]>('/api/dashboard/commerce/delivery-routes'),
-      dashboardApi<CourierRecord[]>('/api/dashboard/commerce/couriers'),
-    ])
-    if (!Array.isArray(routeData) || !Array.isArray(courierData))
-      throw new TypeError('Delivery route resources were not returned in the expected shape.')
+    const courierData = await dashboardApi<CourierRecord[]>('/api/dashboard/commerce/couriers')
+    if (!Array.isArray(courierData))
+      throw new TypeError('Couriers were not returned in the expected shape.')
     couriers.set(courierData)
-    records.set(routeData.map(withCourier))
   }
   catch (error) {
-    loadError.set(error instanceof Error ? error.message : String(error))
-    pushToast('error', 'Could not load delivery routes', { detail: loadError() })
+    pushToast('error', 'Could not load couriers', { detail: error instanceof Error ? error.message : String(error) })
   }
-  finally {
-    loading.set(false)
-  }
+}
+
+function loadRoutes(): void {
+  void load()
+  void loadCouriers()
 }
 
 function setEditorError(message: string): void {
@@ -141,10 +168,10 @@ async function saveRoute(payload: DeliveryRoutePayload): Promise<void> {
       },
     )
     const hydrated = withCourier(updated)
-    upsert(hydrated, current)
     editorOpen.set(false)
     editing.set(null)
     pushToast('success', current ? 'Delivery route updated' : 'Delivery route added', { detail: `Route #${hydrated.id}` })
+    await load()
   }
   catch (error) {
     editorError.set(error instanceof Error ? error.message : String(error))
@@ -164,9 +191,9 @@ async function confirmDelete(): Promise<void> {
     await dashboardApi(`/api/dashboard/commerce/delivery-routes/${current.id}`, {
       method: 'DELETE',
     })
-    remove(current)
     deleting.set(null)
     pushToast('success', 'Delivery route deleted', { detail: `Route #${current.id}` })
+    await load()
   }
   catch (error) {
     deleteError.set(error instanceof Error ? error.message : String(error))
@@ -177,7 +204,7 @@ async function confirmDelete(): Promise<void> {
 }
 
 onMount(() => {
-  void loadRoutes()
+  loadRoutes()
 })
 </script>
 
@@ -198,10 +225,10 @@ onMount(() => {
 
   <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-4 border-b border-gray-200 dark:border-neutral-700">
-      <div><h2 class="font-semibold text-gray-900 dark:text-white">Route plan</h2><p class="mt-0.5 text-gray-500 text-xs dark:text-neutral-400">{{ filteredRecords().length }} matching records</p></div>
+      <div><h2 class="font-semibold text-gray-900 dark:text-white">Route plan</h2><p class="mt-0.5 text-gray-500 text-xs dark:text-neutral-400">{{ matchingLabel() }}</p></div>
       <SearchFilter placeholder="Search delivery routes" class="w-full sm:w-80" @search="handleSearch" />
     </div>
-    <DeliveryRoutesTable :routes="filteredRecords()" :loading="loading()" :page-reset-key="search()" @edit="openEdit" @delete="requestDelete" />
+    <DeliveryRoutesTable :routes="rows()" :total="total()" :current-page="page()" :per-page="perPage()" :loading="loading()" @edit="openEdit" @delete="requestDelete" @page-change="changePage" @page-size-change="changePageSize" @sort="changeSort" />
   </section>
 </div>
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
-import { pageControls, useRecordsDashboard } from './dashboard-list'
+import { state } from '@stacksjs/stx'
+import { LARGEST_PAGE, pageControls, readEveryPage, useRecordsDashboard, useServerList } from './dashboard-list'
 
 /** The smallest thing with the two members `pageControls` reads. */
 function pageSignal(initial: number) {
@@ -224,5 +225,135 @@ describe('useRecordsDashboard goToPage', () => {
     const d = seeded(25)
     d.goToPage(Number.NaN)
     expect(d.page()).toBe(1)
+  })
+})
+
+describe('useServerList', () => {
+  /** A fetch that records what it was asked and answers when told to. */
+  function server() {
+    const asked: URLSearchParams[] = []
+    const pending: Array<(answer: { records: string[], total: number, page: number }) => void> = []
+    const fetch = (params: URLSearchParams) => {
+      asked.push(params)
+      return new Promise<{ records: string[], total: number, page: number }>(resolve => pending.push(resolve))
+    }
+    return { asked, pending, fetch }
+  }
+  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
+  it('asks for the default order and lands the answer', async () => {
+    const api = server()
+    const list = useServerList<string>({ fetch: api.fetch, defaultSort: { sort: 'created', direction: 'desc' } })
+    const loading = list.load()
+    expect(api.asked[0]!.toString()).toBe('sort=created&direction=desc&page=1&per_page=25')
+    api.pending[0]!({ records: ['a', 'b'], total: 30, page: 1 })
+    await loading
+    expect(list.records()).toEqual(['a', 'b'])
+    expect(list.total()).toBe(30)
+    expect(list.loading()).toBe(false)
+  })
+
+  it('keeps only the newest answer when two overlap', async () => {
+    const api = server()
+    const list = useServerList<string>({ fetch: api.fetch, defaultSort: { sort: 'created', direction: 'desc' } })
+    const first = list.load()
+    const second = list.load()
+    api.pending[1]!({ records: ['new'], total: 1, page: 1 })
+    api.pending[0]!({ records: ['old'], total: 9, page: 1 })
+    await Promise.all([first, second])
+    expect(list.records()).toEqual(['new'])
+    expect(list.total()).toBe(1)
+  })
+
+  it('asks for page 1 when a filter changes, and leaves out "all"', async () => {
+    const api = server()
+    const status = state('all')
+    const list = useServerList<string>({ fetch: api.fetch, defaultSort: { sort: 'id', direction: 'asc' }, filters: () => ({ status: status() }) })
+    list.page.set(3)
+    status.set('active')
+    expect(api.asked.length).toBe(1)
+    expect(api.asked[0]!.get('status')).toBe('active')
+    expect(api.asked[0]!.get('page')).toBe('1')
+    status.set('all')
+    expect(api.asked[1]!.has('status')).toBe(false)
+  })
+
+  it('sends the search once typing pauses', async () => {
+    const api = server()
+    const list = useServerList<string>({ fetch: api.fetch, defaultSort: { sort: 'id', direction: 'asc' }, searchDelay: 20 })
+    list.search.set('a')
+    list.search.set('ab')
+    list.search.set('abc ')
+    expect(api.asked.length).toBe(0)
+    await sleep(40)
+    expect(api.asked.length).toBe(1)
+    expect(api.asked[0]!.get('q')).toBe('abc')
+    expect(list.params().get('q')).toBe('abc')
+  })
+
+  it('maps a column header to the server sort, and an unknown one back to the default', () => {
+    const api = server()
+    const list = useServerList<string>({ fetch: api.fetch, defaultSort: { sort: 'created', direction: 'desc' }, columnSorts: { stopsLabel: 'stops' } })
+    list.changeSort({ key: 'stopsLabel', direction: 'asc' })
+    expect(api.asked[0]!.get('sort')).toBe('stops')
+    expect(api.asked[0]!.get('direction')).toBe('asc')
+    list.changeSort({ key: 'notes', direction: 'asc' })
+    expect(api.asked[1]!.get('sort')).toBe('created')
+    expect(api.asked[1]!.get('direction')).toBe('desc')
+  })
+
+  it('reports a failed load, and ignores one that a newer load replaced', async () => {
+    const errors: unknown[] = []
+    let calls = 0
+    const list = useServerList<string>({
+      fetch: async () => {
+        calls++
+        if (calls === 1)
+          throw new Error('boom')
+        return { records: ['ok'], total: 1, page: 1 }
+      },
+      defaultSort: { sort: 'id', direction: 'asc' },
+      onError: error => errors.push(error),
+    })
+    await list.load()
+    expect(list.loadError()).toBe('boom')
+    expect(errors.length).toBe(1)
+    await list.load()
+    expect(list.loadError()).toBe('')
+    expect(list.records()).toEqual(['ok'])
+  })
+})
+
+describe('readEveryPage', () => {
+  /** A paged endpoint over `count` numbered rows. */
+  function endpoint(count: number) {
+    const asked: number[] = []
+    const get = async (page: number, perPage: number) => {
+      asked.push(page)
+      const records = Array.from({ length: count }, (_, i) => i + 1).slice((page - 1) * perPage, page * perPage)
+      return { records, total: count }
+    }
+    return { asked, get }
+  }
+
+  it('reads every page, past the 500 a single read used to stop at', async () => {
+    const api = endpoint(523)
+    const rows = await readEveryPage(api.get)
+    expect(rows.length).toBe(523)
+    expect(rows.at(-1)).toBe(523)
+    expect(api.asked).toEqual([1, 2, 3, 4, 5, 6])
+  })
+
+  it('stops at an exact multiple of the page size, and on an empty list', async () => {
+    const exact = endpoint(LARGEST_PAGE * 2)
+    expect((await readEveryPage(exact.get)).length).toBe(LARGEST_PAGE * 2)
+    expect(exact.asked).toEqual([1, 2])
+    const empty = endpoint(0)
+    expect(await readEveryPage(empty.get)).toEqual([])
+    expect(empty.asked).toEqual([1])
+  })
+
+  it('refuses an answer that is not a page', async () => {
+    await expect(readEveryPage(async () => ({ total: 3 }) as never)).rejects.toThrow('without records')
   })
 })

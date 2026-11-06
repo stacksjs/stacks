@@ -6,6 +6,7 @@ const resource = createDashboardResource<DeliveryRoutes, NewDeliveryRoute>({
   storageKey: 'deliveryRoutes',
   singular: 'delivery route',
   plural: 'delivery routes',
+  paged: true,
 })
 
 export function useDeliveryRoutes() {
