@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { webSidebarRoleMap } from '../../storage/framework/defaults/resources/functions/dashboard/sidebar'
 
 const layoutSource = readFileSync(
   resolve('storage/framework/defaults/views/dashboard/layouts/default.stx'),
@@ -119,19 +120,18 @@ describe('dashboard layout client architecture', () => {
   // initializer and the client's iteration over what the bridge delivers.
   test('publishes the sidebar role map as a map the client can iterate', () => {
     const server = layoutSource.match(/<script server>([\s\S]*?)<\/script>/)?.[1] ?? ''
-    // Up to the `)` that closes it, alone at the start of a line.
-    const initializer = server.match(/export const sidebarRoleMap\b[^=]*=\s*([\s\S]*?\n\))/)?.[1]
+    const initializer = server.match(/export const sidebarRoleMap\b[^=]*=\s*(webSidebarRoleMap\(sidebarSections\))/)?.[1]
     expect(initializer).toBeDefined()
 
-    const js = new Bun.Transpiler({ loader: 'ts' }).transformSync(`export default (sidebarSections) => (${initializer})`)
+    const js = new Bun.Transpiler({ loader: 'ts' }).transformSync(`export default (sidebarSections, webSidebarRoleMap) => (${initializer})`)
     // eslint-disable-next-line no-new-func
-    const build = new Function(`${js.replace('export default', 'return')}`)() as (sections: unknown) => unknown
+    const build = new Function(`${js.replace('export default', 'return')}`)() as (sections: unknown, roleMap: typeof webSidebarRoleMap) => unknown
     const sections = [
       { items: [{ id: 'users', roles: ['admin'] }, { id: 'home' }, { id: 'logs', roles: [] }] },
       { items: [{ id: 'deploys', roles: ['admin', 'dev'] }] },
     ]
 
-    const received = JSON.parse(JSON.stringify(build(sections))) as unknown
+    const received = JSON.parse(JSON.stringify(build(sections, webSidebarRoleMap))) as unknown
     expect(typeof received).toBe('object')
     expect(received).toEqual({ users: ['admin'], deploys: ['admin', 'dev'] })
 

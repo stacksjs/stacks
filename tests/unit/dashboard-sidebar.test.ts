@@ -11,6 +11,7 @@ import {
   filterSchemaNavSections,
   loadDiscoveredManifest,
   parseDiscoveredManifest,
+  webSidebarRoleMap,
 } from '../../storage/framework/defaults/resources/functions/dashboard/sidebar'
 
 describe('dashboard sidebar data', () => {
@@ -44,7 +45,7 @@ describe('dashboard sidebar data', () => {
       },
     ])
     const dataItems = sections.find(([id]) => id === 'data')?.[2] ?? []
-    const auditItem = dataItems.find(item => item.to === '/models/audit-log')
+    const auditItem = dataItems.find(item => item.id === 'models-more')?.children?.find(item => item.to === '/models/audit-log')
 
     expect(auditItem).toEqual({
       to: '/models/audit-log',
@@ -52,6 +53,37 @@ describe('dashboard sidebar data', () => {
       text: 'Audit Trail',
       roles: ['admin'],
     })
+  })
+
+  it('pins only highlighted models in numeric order and collapses the remainder', () => {
+    const models = [
+      { id: 'z', name: 'Zebra', category: 'userland' as const, dashboard: { highlight: 1 } },
+      { id: 'b', name: 'Beta', category: 'userland' as const },
+      { id: 'a', name: 'Alpha', category: 'userland' as const, dashboard: { highlight: 5 } },
+      { id: 'c', name: 'Charlie', category: 'userland' as const, dashboard: { highlight: true } },
+      { id: 'private', name: 'Private', category: 'userland' as const, dashboard: { highlight: true, access: false } },
+      { id: 'hidden', name: 'Hidden', category: 'userland' as const, dashboard: { enabled: false } },
+    ]
+    const items = buildNavSections(models).find(([id]) => id === 'data')![2]
+    expect(items.filter(item => item.to.startsWith('/models/')).map(item => item.to)).toEqual(['/models/z', '/models/a', '/models/c'])
+    const more = items.find(item => item.id === 'models-more')!
+    expect(more.expanded).toBe(false)
+    expect(more.children?.map(item => item.to)).toEqual(['/models/b'])
+    const allPinned = buildNavSections(models.filter(model => model.dashboard?.highlight)).find(([id]) => id === 'data')![2]
+    expect(allPinned.some(item => item.id === 'models-more')).toBe(false)
+  })
+
+  it('retains role gates on nested model rows', () => {
+    expect(webSidebarRoleMap([{ id: 'data', label: 'Data', items: [{ id: 'models-more', label: 'More models', icon: '', iconColor: '', children: [{ id: 'models-private', label: 'Restricted', icon: '', iconColor: '', roles: ['admin'] }] }] }]))
+      .toEqual({ 'models-private': ['admin'] })
+  })
+
+  it('shows a highlighted app model when its incompatible built-in page is disabled', () => {
+    const user = { id: 'user', name: 'User', category: 'userland' as const, hasDedicatedPage: true, dashboard: { highlight: 1 } }
+    const links = (users: boolean) => buildNavSections([user], { ...DEFAULT_TOGGLES, data: { ...DEFAULT_TOGGLES.data, users } }).find(([id]) => id === 'data')![2].map(item => item.to)
+    expect(links(false)).toContain('/models/user')
+    expect(links(true)).toContain('/data/users')
+    expect(links(true)).not.toContain('/models/user')
   })
 
   it('returns component data without serialized markup', () => {

@@ -519,3 +519,14 @@ commands, not a project's resolved models.
   of a validator is not a promise that an arbitrary request body is safe.
 - Dashboard-highlighted models (`dashboard: { highlight: true }`) appear
   prominently in the admin UI.
+
+### Bounded retention jobs
+
+`pruneRetainedData({ models: { Request }, now, batchSize: 500, after })` scans at
+most 500 candidates per model. Persist `result.next` in the next queue job and
+reuse the same `now` until no cursors remain, even when a page changed zero rows.
+This handles mixed SQL/ISO timestamps without skipping candidates. Each bounded
+page commits its deletion/anonymization and retention audit together. A dry run
+returns cursors without changing records. Omitting `batchSize` retains the CLI's
+whole-run behavior. Declare the policy on `traits.gdpr.retention`, publish the
+native `GdprRequest` audit model, and run cleanup through durable queue workers.

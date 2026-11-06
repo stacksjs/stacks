@@ -18,6 +18,7 @@ type ModelCategory = 'userland' | 'data' | 'commerce' | 'content' | 'marketing' 
  * full type imports aren't available. Keep in sync with the source.
  */
 interface DashboardModelOptionsLite {
+  highlight?: boolean | number
   access?: boolean
   enabled?: boolean
   label?: string
@@ -102,6 +103,9 @@ export const DEFAULT_TOGGLES: DashboardSectionToggles = {
 }
 
 interface NavItem {
+  id?: string
+  children?: NavItem[]
+  expanded?: boolean
   to: string
   icon: string
   text: string
@@ -413,13 +417,13 @@ export function buildNavSections(
     ...categoryNavItems(discoveredModels, 'system', new Set()),
   ]])
 
-  // Data section: configurable basic rows + ALL userland models + any
-  // root-level framework `data` models. Per-row toggles let projects hide
-  // the basic rows they don't need; userland models always appear.
+  // Data pins model-declared highlights. Other visible models stay accessible
+  // through a collapsed disclosure using the shared Sidebar component.
   // Per-model rows link to `/models/<id>` (dynamic ORM viewer); the
   // built-in dashboard / activity / users / teams / subscribers rows keep
   // their bespoke pages under `/data/<row>`.
   const dataRows = toggles.data ?? DEFAULT_DATA_TOGGLES
+  const dedicatedDataRows: Record<string, keyof DataRowToggles> = { user: 'users', team: 'teams', subscriber: 'subscribers', activity: 'activity' }
   const dataNav: NavItem[] = []
   if (dataRows.dashboard) dataNav.push({ to: '/data/dashboard', icon: 'dashboard', text: 'Dashboard' })
   if (dataRows.activity) dataNav.push({ to: '/data/activity', icon: 'activity', text: 'Activity' })
@@ -427,23 +431,36 @@ export function buildNavSections(
   if (dataRows.teams) dataNav.push({ to: '/data/teams', icon: 'group', text: 'Teams' })
   if (dataRows.subscribers) dataNav.push({ to: '/data/subscribers', icon: 'mail', text: 'Subscribers' })
   if (dataRows.allModels) dataNav.push({ to: '/models', icon: 'table', text: 'All Models' })
-  for (const m of discoveredModels) {
+  const moreModels: NavItem[] = []
+  const highlighted = (model: DiscoveredModel) => model.dashboard?.highlight === true
+    || (typeof model.dashboard?.highlight === 'number' && Number.isFinite(model.dashboard.highlight))
+  const rank = (model: DiscoveredModel) => typeof model.dashboard?.highlight === 'number' ? model.dashboard.highlight : Number.POSITIVE_INFINITY
+  const dataModels = [...discoveredModels].sort((a, b) => {
+    if (highlighted(a) !== highlighted(b)) return highlighted(a) ? -1 : 1
+    if (highlighted(a)) return rank(a) - rank(b) || a.name.localeCompare(b.name)
+    return a.name.localeCompare(b.name)
+  })
+  for (const m of dataModels) {
     // Skip when:
     //   - explicit `dashboard.enabled === false` (effectiveCategory returns undefined)
     //   - pinned to a different section via `dashboard.section`
     //   - already has a dedicated dashboard page
     const eff = effectiveCategory(m)
     if (eff !== 'userland' && eff !== 'data') continue
-    if (m.hasDedicatedPage) continue
-    dataNav.push({
+    const dedicatedRow = dedicatedDataRows[m.id]
+    if (m.hasDedicatedPage && (!dedicatedRow || dataRows[dedicatedRow])) continue
+    const item: NavItem = {
       to: `/models/${m.id}`,
       icon: m.dashboard?.icon ?? m.icon ?? 'table',
       text: m.dashboard?.label ?? m.name,
       ...(m.dashboard?.roles && m.dashboard.roles.length > 0
         ? { roles: m.dashboard.roles }
         : {}),
-    })
+    }
+    if (highlighted(m)) dataNav.push(item)
+    else moreModels.push(item)
   }
+  if (moreModels.length) dataNav.push({ id: 'models-more', to: '', text: 'More models', icon: 'table', expanded: false, children: moreModels })
   sections.push(['data', 'data', dataNav])
 
   if (toggles.commerce) {
@@ -650,7 +667,9 @@ export interface WebSidebarItem {
   icon: string
   /** macOS system color name or CSS color for the icon tint. */
   iconColor: string
-  href: string
+  href?: string
+  children?: WebSidebarItem[]
+  expanded?: boolean
   roles?: string[]
 }
 
@@ -726,6 +745,15 @@ export function buildWebSidebarSections(): WebSidebarSection[] {
   const appNav = manifest.nav.length > 0 ? manifest.nav : loadAppNavFromConfig()
   const sections = filterSchemaNavSections(buildNavSections(manifest.models, manifest.sections, appNav), manifest.schemaModels)
 
+  const webItem = (item: NavItem): WebSidebarItem => ({
+    id: item.id ?? navItemId(item.to),
+    label: item.text,
+    icon: resolveNavIcon(item.icon),
+    iconColor: 'blue',
+    ...(item.to ? { href: item.to } : {}),
+    ...(item.roles?.length ? { roles: item.roles } : {}),
+    ...(item.children ? { children: item.children.map(webItem), expanded: item.expanded ?? false } : {}),
+  })
   return [
     {
       id: 'top',
@@ -735,14 +763,20 @@ export function buildWebSidebarSections(): WebSidebarSection[] {
     ...sections.map(([key, label, items]) => ({
       id: key,
       label: titleCase(label),
-      items: items.map(item => ({
-        id: navItemId(item.to),
-        label: item.text,
-        icon: resolveNavIcon(item.icon),
-        iconColor: 'blue',
-        href: item.to,
-        ...(item.roles && item.roles.length > 0 ? { roles: item.roles } : {}),
-      })),
+      items: items.map(webItem),
     })),
   ]
+}
+
+/** Role metadata follows nested model rows as well as pinned rows. */
+export function webSidebarRoleMap(sections: WebSidebarSection[]): Record<string, string[]> {
+  const roles: Record<string, string[]> = Object.create(null)
+  const visit = (items: WebSidebarItem[]) => {
+    for (const item of items) {
+      if (item.roles?.length) roles[item.id] = item.roles
+      if (item.children) visit(item.children)
+    }
+  }
+  for (const section of sections) visit(section.items)
+  return roles
 }

@@ -452,6 +452,48 @@ describe('retention', () => {
     expect(result.skipped).toEqual(['ghosts'])
     expect(result.changes.find(change => change.model === 'Visit')!.changed).toBe(2)
   })
+
+  test('bounded retention advances over unexpired candidates and resumes the same cutoff', async () => {
+    const scoped = { Visit: models.Visit }
+    let after: Record<string, string | number> | undefined
+    let calls = 0
+    let deleted = 0
+    do {
+      const result = await pruneRetainedData({ models: scoped, now, batchSize: 1, after })
+      expect(result.changes[0]!.changed).toBeLessThanOrEqual(1)
+      expect(result.cutoffs.Visit).toBe('2026-05-02T12:00:00.000Z')
+      deleted += result.changes[0]!.changed
+      after = result.next
+      calls++
+      expect(calls).toBeLessThan(6)
+    } while (Object.keys(after ?? {}).length)
+    expect(deleted).toBe(2)
+    expect((await rows('visits')).map(row => row.path)).toEqual(['/edge-inside', '/new', '/undated'])
+    expect(calls).toBe(4)
+    expect((await pruneRetainedData({ models: scoped, now, batchSize: 1 })).changes[0]!.changed).toBe(0)
+  })
+
+  test('bounded previews preserve data and invalid bounds fail before writes', async () => {
+    const before = await rows('visits')
+    const scoped = { Visit: models.Visit }
+    const result = await pruneRetainedData({ models: scoped, now, batchSize: 1, dryRun: true })
+    expect(result.next?.Visit).toBeDefined()
+    expect(await rows('visits')).toEqual(before)
+    for (const batchSize of [0, -1, 1.5, 10001, Number.NaN])
+      await expect(pruneRetainedData({ models: scoped, now, batchSize })).rejects.toThrow('batchSize')
+    await expect(pruneRetainedData({ models: scoped, now: new Date('invalid'), batchSize: 1 })).rejects.toThrow('valid date')
+    expect(await rows('gdpr_requests')).toHaveLength(0)
+  })
+
+  test('bounded deletion rolls back when its audit cannot be saved', async () => {
+    const before = await rows('visits')
+    await db.unsafe("CREATE TRIGGER reject_retention_audit BEFORE INSERT ON gdpr_requests BEGIN SELECT RAISE(ABORT, 'audit unavailable'); END").execute()
+    try {
+      await expect(pruneRetainedData({ models: { Visit: models.Visit }, now, batchSize: 1 })).rejects.toThrow('audit unavailable')
+      expect(await rows('visits')).toEqual(before)
+    }
+    finally { await db.unsafe('DROP TRIGGER reject_retention_audit').execute() }
+  })
 })
 
 describe('processing register', () => {

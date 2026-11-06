@@ -740,3 +740,11 @@ by itself: configure `createDatabaseErrorReporter()` from
 `Error`, and migrate it. Reporting is bounded, buffered, identity-deduplicated
 by `captureError`, and flushed by `flushErrorReporters`/the logger. The database
 reporter stores allowlisted operational context and excludes bodies and headers.
+
+### Pinned model rows
+
+Declare `dashboard: { highlight: true }` on a model to pin its Data row, or use
+numeric `highlight` values to order pinned rows. Other enabled Data models live
+under the native Sidebar's collapsed More models disclosure. Labels, icons and
+role gates apply to nested rows too. `enabled: false` omits navigation;
+`access: false` excludes generic catalogs and reads as well.

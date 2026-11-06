@@ -154,6 +154,8 @@ export interface GdprErasureResult {
 }
 
 export interface GdprPruneResult {
+  /** Cursors for models with another bounded page to scan. Reuse the same cutoff date. */
+  next?: Record<string, string | number>
   dryRun: boolean
   cutoffs: Record<string, string>
   changes: GdprModelChange[]

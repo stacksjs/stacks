@@ -57,6 +57,10 @@ export interface GdprPruneOptions extends GdprRunOptions {
   dryRun?: boolean
   /** The moment ages are measured from. @default new Date() */
   now?: Date
+  /** Maximum rows scanned per model in this call. Continue with the returned `next` cursors. */
+  batchSize?: number
+  /** Primary-key cursors from a previous bounded call, with the same `now`. */
+  after?: Record<string, string | number>
 }
 
 export class GdprSubjectNotFoundError extends Error {
@@ -501,10 +505,14 @@ const DAY_MS = 86_400_000
 export async function pruneRetainedData(options: GdprPruneOptions = {}): Promise<GdprPruneResult> {
   const dryRun = options.dryRun === true
   const now = options.now ?? new Date()
+  if (!Number.isFinite(now.getTime())) throw new RangeError('Retention requires a valid date')
+  if (options.batchSize !== undefined && (!Number.isSafeInteger(options.batchSize) || options.batchSize < 1 || options.batchSize > 10000))
+    throw new RangeError('Retention batchSize must be an integer from 1 to 10000')
+  const next: Record<string, string | number> = {}
   const plan = await loadPlan(options.models)
   const policies = plan.models.filter(model => model.retention)
   if (!policies.length)
-    return { dryRun, cutoffs: {}, changes: [], skipped: [] }
+    return { dryRun, cutoffs: {}, changes: [], skipped: [], ...(options.batchSize === undefined ? {} : { next }) }
 
   if (!dryRun)
     await requireAuditTable()
@@ -520,13 +528,14 @@ export async function pruneRetainedData(options: GdprPruneOptions = {}): Promise
     cutoffs[model.model] = cutoff.toISOString()
 
     const expired: Row[] = []
-    let last: unknown
+    let last: unknown = options.after?.[model.model]
     for (;;) {
       const handle: Handle = db
       let query = handle.selectFrom(model.table).selectAll().where(retention.column, '<', bound)
       if (last !== undefined)
         query = query.where(model.primaryKey, '>', last)
-      const page: Row[] = await query.orderBy(model.primaryKey, 'asc').limit(CHUNK).execute()
+      const size = options.batchSize ?? CHUNK
+      const page: Row[] = await query.orderBy(model.primaryKey, 'asc').limit(size).execute()
       if (!page.length)
         break
       for (const row of page) {
@@ -535,6 +544,14 @@ export async function pruneRetainedData(options: GdprPruneOptions = {}): Promise
           expired.push(row)
       }
       last = page[page.length - 1]![model.primaryKey]
+      if (options.batchSize !== undefined) {
+        if (page.length === size) {
+          if (typeof last === 'bigint') last = last.toString()
+          if (typeof last !== 'string' && typeof last !== 'number') throw new TypeError('Retention requires a string or numeric primary key')
+          next[model.model] = last
+        }
+        break
+      }
       if (page.length < CHUNK)
         break
     }
@@ -546,6 +563,10 @@ export async function pruneRetainedData(options: GdprPruneOptions = {}): Promise
           await deleteRows(handle, model, pending)
         else
           await anonymizeRows(handle, model, pending)
+        if (options.batchSize !== undefined) await recordAudit(handle, 'retention', null, options.actor ?? 'scheduler', {
+          changes: [{ model: model.model, action: retention.action, matched: expired.length, changed: pending.length }],
+          cutoffs: { [model.model]: cutoff.toISOString() },
+        })
       })
     }
 
@@ -559,12 +580,12 @@ export async function pruneRetainedData(options: GdprPruneOptions = {}): Promise
     })
   }
 
-  if (!dryRun && changes.some(change => change.changed > 0)) {
+  if (!dryRun && options.batchSize === undefined && changes.some(change => change.changed > 0)) {
     await recordAudit(db, 'retention', null, options.actor ?? 'scheduler', {
       changes: changes.map(({ model, action, matched, changed }) => ({ model, action, matched, changed })),
       cutoffs,
     })
   }
 
-  return { dryRun, cutoffs, changes: changes.sort((a, b) => a.model.localeCompare(b.model)), skipped }
+  return { dryRun, cutoffs, changes: changes.sort((a, b) => a.model.localeCompare(b.model)), skipped, ...(options.batchSize === undefined ? {} : { next }) }
 }

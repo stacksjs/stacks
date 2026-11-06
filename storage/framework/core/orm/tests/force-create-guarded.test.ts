@@ -64,6 +64,19 @@ describe('forceCreate persists guarded columns', () => {
     expect(row).toEqual({ name: 'yelp', api_key: 'secret-key', note: 'set deliberately' })
   })
 
+  it('awaits asynchronous setters exactly once through the trusted create path', async () => {
+    let calls = 0
+    const AsyncCredential = defineModel({
+      name: 'AsyncFcCredential', table: 'fc_credentials',
+      attributes: { name: { fillable: true }, apiKey: { guarded: true }, note: { guarded: true } },
+      set: { note: async (attributes: Record<string, unknown>) => { calls++; return `encoded:${attributes.note}` } },
+    } as const)
+    const created = await AsyncCredential.forceCreate({ name: 'async', apiKey: 'key', note: 'plain' })
+    const row = db.query('SELECT note FROM fc_credentials WHERE id = ?').get(Number(created.id)) as { note: string }
+    expect(row.note).toBe('encoded:plain')
+    expect(calls).toBe(1)
+  })
+
   it('returns a row carrying the guarded values', async () => {
     const created = await (Credential as any).forceCreate({ name: 'google', apiKey: 'another-key' })
     expect(Number(created.id)).toBeGreaterThan(0)

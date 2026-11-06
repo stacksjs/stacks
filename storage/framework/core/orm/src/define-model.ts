@@ -1328,10 +1328,11 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
         const instance = await (make as Function).call(baseModel) as {
           forceFill?: (data: Record<string, unknown>) => unknown
           save?: () => Promise<unknown>
+          saveAsync?: () => Promise<unknown>
         } | null
         if (instance && typeof instance.forceFill === 'function' && typeof instance.save === 'function') {
           instance.forceFill(data)
-          const saved = await instance.save()
+          const saved = await (typeof instance.saveAsync === 'function' ? instance.saveAsync() : instance.save())
           // The wrapped instance, never the builder's raw `this`: that one
           // reads every column as undefined (see keepWrapped).
           return saved && typeof saved === 'object' && saved !== instance && !(saved as { [STACKS_PROXY_TAG]?: boolean })[STACKS_PROXY_TAG]

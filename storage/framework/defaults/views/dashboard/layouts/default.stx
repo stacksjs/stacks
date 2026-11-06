@@ -16,7 +16,7 @@
 // vendored or linked. `@stacksjs/defaults/*` is mapped onto the vendored tree in
 // `storage/framework/tsconfig.app.json` and falls back to the installed
 // package when there is none, so it resolves in both layouts.
-import { buildWebSidebarSections } from '@stacksjs/defaults/resources/functions/dashboard/sidebar'
+import { buildWebSidebarSections, webSidebarRoleMap } from '@stacksjs/defaults/resources/functions/dashboard/sidebar'
 
 export const sidebarSections = buildWebSidebarSections()
 
@@ -31,15 +31,7 @@ export const sidebarSections = buildWebSidebarSections()
 // then ran `Object.entries` over that string, which yields index/character
 // pairs, and called `.some()` on a single character. Every dashboard load
 // threw inside applyRoleFilter before it could filter anything.
-export const sidebarRoleMap: Record<string, string[]> = Object.fromEntries(
-  sidebarSections.flatMap(section =>
-    section.items.flatMap(item =>
-      item.roles && item.roles.length > 0
-        ? [[item.id, item.roles] as const]
-        : [],
-    ),
-  ),
-)
+export const sidebarRoleMap: Record<string, string[]> = webSidebarRoleMap(sidebarSections)
 
 // Declared, so the client block below gets the map typed rather than inferred
 // off the implicit bridge - which is what let the mismatch above go unseen.

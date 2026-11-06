@@ -396,7 +396,7 @@ export interface DashboardModelOptions {
   label?: string
 
   /**
-   * Give this model a prominent row. A number orders the highlighted set;
+   * Pin this model in Data above the collapsed More models group. A number orders the highlighted set;
    * `true` highlights without taking a position.
    */
   highlight?: boolean | number
