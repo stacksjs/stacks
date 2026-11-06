@@ -4,6 +4,7 @@ import {
   normalizeCommerceOrderRecord,
   normalizeOrderCustomerContext,
   normalizeOrderCustomerOption,
+  referencedIds,
   summarizeCommerceOrders,
 } from './commerce-order-records'
 
@@ -132,5 +133,33 @@ describe('dashboard commerce order records', () => {
         email: 'guest@example.test',
       },
     })
+  })
+})
+
+describe('the customers and coupons an order page reads', () => {
+  test('are exactly the ids the orders reference, once each, in order', () => {
+    const orders = [
+      order({ id: 1, customer_id: 704, coupon_id: null }),
+      order({ id: 2, customer_id: 12, coupon_id: 9 }),
+      order({ id: 3, customer_id: 704, coupon_id: '9' }),
+      order({ id: 4, customer_id: null, coupon_id: 3 }),
+    ]
+    expect(referencedIds(orders, 'customer_id', 'customerId')).toEqual([12, 704])
+    expect(referencedIds(orders, 'coupon_id', 'couponId')).toEqual([3, 9])
+  })
+
+  test('cover every order, so none is refused for a customer that was not read', () => {
+    // The 704th customer by name is past any fixed first-500 read. The map
+    // built from the referenced ids still holds it, so the order normalizes.
+    const orders = [order({ id: 1, customer_id: 704 })]
+    const ids = referencedIds(orders, 'customer_id')
+    const customers = new Map(ids.map(id => [String(id), { name: `Customer ${id}`, email: `c${id}@example.com` }]))
+    expect(normalizeCommerceOrderRecord(orders[0], customers, new Map()).customerName).toBe('Customer 704')
+    // And the refusal it prevents is real: without that customer the order is rejected.
+    expect(() => normalizeCommerceOrderRecord(orders[0], new Map(), new Map())).toThrow('references missing Customer 704')
+  })
+
+  test('ignore empty, zero and non-numeric references', () => {
+    expect(referencedIds([order({ customer_id: '' }), order({ customer_id: 0 }), order({ customer_id: 'abc' }), order({ customer_id: -4 })], 'customer_id')).toEqual([])
   })
 })

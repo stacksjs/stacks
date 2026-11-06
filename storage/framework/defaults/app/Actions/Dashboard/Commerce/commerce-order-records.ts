@@ -169,6 +169,25 @@ export function normalizeOrderCustomerContext(customer: any): { id: string, cont
   }
 }
 
+/**
+ * The ids a set of records points at through one field, as integers, once
+ * each. Orders are read with exactly the customers and coupons they reference,
+ * not the first 500 of each: `normalizeCommerceOrderRecord` refuses an order
+ * whose customer or coupon is missing from what it was given, so with more
+ * than 500 customers a single order from one past the 500th by name failed the
+ * whole Orders page.
+ */
+export function referencedIds(records: unknown[], ...keys: string[]): number[] {
+  const ids = new Set<number>()
+  for (const record of records) {
+    const value = commerceValue(record, ...keys)
+    const id = Number(value)
+    if (value !== undefined && value !== null && value !== '' && Number.isSafeInteger(id) && id > 0)
+      ids.add(id)
+  }
+  return [...ids].sort((left, right) => left - right)
+}
+
 export function normalizeOrderCouponId(coupon: any): string {
   return commerceIdentifier(commerceValue(coupon, 'id', 'uuid'), 'Coupon')
 }

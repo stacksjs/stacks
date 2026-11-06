@@ -8,6 +8,7 @@ import {
   normalizeOrderCouponId,
   normalizeOrderCustomerContext,
   normalizeOrderCustomerOption,
+  referencedIds,
   summarizeCommerceOrders,
 } from './commerce-order-records'
 import { commerceCurrency, commerceIdentifier, commerceValue } from './commerce-record'
@@ -25,12 +26,18 @@ export default new Action({
         commerceIdentifier(commerceValue(order, 'id', 'uuid'), 'Order'),
       ))
       const numericOrderIds = [...orderIds].map(Number).filter(Number.isSafeInteger)
-      const [customers, coupons, items] = await Promise.all([
-        Customer.orderBy('name', 'asc').limit(500).get(),
-        Coupon.orderBy('id', 'asc').limit(500).get(),
+      // Exactly the customers and coupons these orders reference, so no order
+      // points at one that was not read (commerce-order-records.ts).
+      const customerIds = referencedIds(orders, 'customer_id', 'customerId')
+      const couponReferences = referencedIds(orders, 'coupon_id', 'couponId')
+      const [referencedCustomers, coupons, items, customers] = await Promise.all([
+        customerIds.length > 0 ? Customer.whereIn('id', customerIds).get() : [],
+        couponReferences.length > 0 ? Coupon.whereIn('id', couponReferences).get() : [],
         numericOrderIds.length > 0 ? OrderItem.whereIn('order_id', numericOrderIds).get() : [],
+        // The order dialog's customer choices.
+        Customer.orderBy('name', 'asc').limit(500).get(),
       ])
-      const customerContexts = customers.map(normalizeOrderCustomerContext)
+      const customerContexts = referencedCustomers.map(normalizeOrderCustomerContext)
       const customerMap = new Map(customerContexts.map(customer => [customer.id, customer.context]))
       const couponIds = new Set(coupons.map(normalizeOrderCouponId))
       const itemCounts = new Map<string, number>()
