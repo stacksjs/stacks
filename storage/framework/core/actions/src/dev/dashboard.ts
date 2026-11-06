@@ -24,7 +24,14 @@ if (process.env.STACKS_DASHBOARD_WORKER !== '1') {
 
 // Dashboard routes, layout types and bundles belong to this server. Sharing
 // the application's STX directory would overwrite its web route manifest.
-process.env.STX_DIR = storagePath('framework/runtime/dashboard/stx')
+//
+// A sibling of `framework/runtime/dashboard`, never inside it: that directory
+// is a watched root (see `watchDirs` below, for the models manifest), and stx
+// writes bundles and CSS here on every render. Inside it, each render looked
+// like a source change: it bumped the HMR version, so every open page
+// reloaded, rendered again and bumped it again, and the kept-page cache never
+// matched its own fingerprint, so nothing was served from it.
+process.env.STX_DIR = storagePath('framework/runtime/dashboard-stx')
 
 // buddyOptions serializes `verbose: false` as `--verbose false`, so
 // process.argv.includes('--verbose') would always match. Check the value too.

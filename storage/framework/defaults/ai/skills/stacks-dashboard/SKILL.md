@@ -690,8 +690,10 @@ that remain exposed.
 
 The standalone dashboard registers its guarded JSON API even when the application
 skips default route bundles. Its STX state lives in
-`storage/framework/runtime/dashboard/stx`, so opening it does not replace the
-application's generated routes or layout types. Built-in module links follow
+`storage/framework/runtime/dashboard-stx`, so opening it does not replace the
+application's generated routes or layout types. It sits beside
+`storage/framework/runtime/dashboard`, not inside it: that directory is watched,
+and stx writes there on every render. Built-in module links follow
 the native schema inventory, including private operational models.
 
 The sidebar, model catalog and global search use the database's native model
