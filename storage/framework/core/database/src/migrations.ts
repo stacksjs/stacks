@@ -48,7 +48,7 @@ import {
   probeTargetDatabase,
   resolveConnectionTarget,
 } from './ensure-database'
-import { declaredModelTables, outOfScopeRelationMessage, resolveModelSources } from './model-sources'
+import { appModelTables, declaredModelTables, outOfScopeRelationMessage, resolveModelSources } from './model-sources'
 import type { DatabaseRenameResult, FrameworkRename, RenameSqlRunner } from './framework-renames'
 import { applicableFrameworkRenames, applyFrameworkRenamesToDatabase, applyFrameworkRenamesToPlan } from './framework-renames'
 import { findShadowedColumnDrops, shadowDropsAllowed, shadowedDropMessage } from './shadowed-models'
@@ -1275,7 +1275,7 @@ export function resetDatabaseBootstrapCache(): void {
 export async function featureGatedMigrationFiles(dir: string = migrationDirectory()): Promise<Array<{ file: string, feature: string, table: string | null }>> {
   const gated: Array<{ file: string, feature: string, table: string | null }> = []
   try {
-    const { appModelClaimsTable, FEATURE_NAMES, migrationFeature, migrationTable } = await import('@stacksjs/features')
+    const { FEATURE_NAMES, migrationFeature, migrationTable } = await import('@stacksjs/features')
     const { feature: isFeatureEnabled } = await import('@stacksjs/config')
 
     if (!existsSync(dir)) return gated
@@ -1284,12 +1284,13 @@ export async function featureGatedMigrationFiles(dir: string = migrationDirector
       (FEATURE_NAMES as readonly string[]).filter((f: string) => !(isFeatureEnabled as (name: string) => boolean)(f)),
     )
     if (disabledFeatures.size === 0) return gated
+    const appTables = await appModelTables()
 
     for (const file of readdirSync(dir).filter(f => f.endsWith('.sql'))) {
       const owner = (migrationFeature as (filename: string) => string | null)(file)
       if (!owner || !disabledFeatures.has(owner)) continue
       const table = (migrationTable as (filename: string) => string | null)(file)
-      if (table && (appModelClaimsTable as (table: string) => boolean)(table)) continue
+      if (table && appTables.has(table.toLowerCase())) continue
       gated.push({ file, feature: owner, table })
     }
   }

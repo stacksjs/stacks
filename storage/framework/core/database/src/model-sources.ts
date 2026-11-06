@@ -38,6 +38,7 @@ import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, rmSync, sy
 import { basename, join } from 'node:path'
 import process from 'node:process'
 import { config } from '@stacksjs/config'
+import { appModelFiles } from '@stacksjs/features'
 import { path } from '@stacksjs/path'
 import { plural, snakeCase } from '@stacksjs/strings'
 import { packageModelRoots } from './package-models'
@@ -503,4 +504,20 @@ export function declaredModelTables(options: {
   ]
 
   return new Set(models.map(declaredTableName))
+}
+
+/**
+ * Tables actually exported by app-owned models. Loading definitions preserves
+ * re-exports, spreads, extendModel and computed table names without interpreting
+ * TypeScript source. The feature manifest still excludes untouched scaffolding.
+ * An import error must reach the caller, never silently hide the model's table.
+ */
+export async function appModelTables(root?: string, templateRoot?: string): Promise<Set<string>> {
+  const tables = new Set<string>()
+  for (const file of appModelFiles(root, templateRoot)) {
+    const definition = (await import(file)).default
+    if (typeof definition?.table === 'string')
+      tables.add(definition.table.toLowerCase())
+  }
+  return tables
 }

@@ -280,20 +280,6 @@ export function migrationFeature(filename: string): FeatureName | null {
   return null
 }
 
-/**
- * True when an application-owned, top-level model explicitly declares a table.
- * This lets apps intentionally use generic names such as `payments` without
- * their migrations being mistaken for disabled framework-feature scaffolding.
- *
- * A root model listed in FEATURE_FILES is feature scaffolding while it is
- * byte-identical to the template the feature published (`templateRoot`, the
- * framework defaults) - the same rule `feature:uninstall` uses to decide what
- * it may delete. Once it differs, the app wrote or rewrote it and owns the
- * table: an app with its own `Subscription` model over `subscriptions`, and
- * the commerce feature off, still gets the table the model declares. Before,
- * its generated `create-subscriptions-table` was hidden and a fresh database
- * was built without it.
- */
 /** Whether a project file is still the unmodified copy of its template. */
 function isPublishedTemplate(file: string, template: string): boolean {
   if (!existsSync(template)) return false
@@ -305,20 +291,35 @@ function isPublishedTemplate(file: string, template: string): boolean {
   }
 }
 
-export function appModelClaimsTable(table: string, root: string = projectPath(), templateRoot: string = frameworkPath('defaults')): boolean {
+/** Application model files, excluding byte-identical optional feature scaffolding. */
+export function appModelFiles(root: string = projectPath(), templateRoot: string = frameworkPath('defaults')): string[] {
   const modelsDir = join(root, 'app/Models')
-  if (!existsSync(modelsDir)) return false
-  const featureModelFiles = new Set(
-    FEATURE_NAMES.flatMap(feature => FEATURE_FILES[feature])
-      .filter(path => path.startsWith('app/Models/') && !path.endsWith('/')),
-  )
+  if (!existsSync(modelsDir)) return []
+  const featureModelPaths = FEATURE_NAMES.flatMap(feature => FEATURE_FILES[feature])
+    .filter(path => path.startsWith('app/Models/'))
+  const files: string[] = []
+  const collect = (directory: string, relative: string): void => {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      if (entry.name.startsWith('.') || entry.name.startsWith('index')) continue
+      const file = join(directory, entry.name)
+      const rel = `${relative}/${entry.name}`
+      if (entry.isDirectory()) {
+        collect(file, rel)
+        continue
+      }
+      if (!entry.isFile() || !/\.[cm]?[jt]s$/.test(entry.name)) continue
+      const scaffold = featureModelPaths.some(path => path.endsWith('/') ? rel.startsWith(path) : rel === path)
+      if (scaffold && isPublishedTemplate(file, join(templateRoot, rel))) continue
+      files.push(file)
+    }
+  }
+  collect(modelsDir, 'app/Models')
+  return files.sort()
+}
+
+/** Static declaration lookup. Migrations load the exported definitions instead. */
+export function appModelClaimsTable(table: string, root: string = projectPath(), templateRoot: string = frameworkPath('defaults')): boolean {
   const escaped = table.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   const declaration = new RegExp(`\\btable\\s*:\\s*['"]${escaped}['"]`)
-  for (const entry of readdirSync(modelsDir, { withFileTypes: true })) {
-    if (!entry.isFile() || !/\.[cm]?[jt]s$/.test(entry.name)) continue
-    const rel = `app/Models/${entry.name}`
-    if (featureModelFiles.has(rel) && isPublishedTemplate(join(modelsDir, entry.name), join(templateRoot, rel))) continue
-    if (declaration.test(readFileSync(join(modelsDir, entry.name), 'utf8'))) return true
-  }
-  return false
+  return appModelFiles(root, templateRoot).some(file => declaration.test(readFileSync(file, 'utf8')))
 }
