@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.493...v0.75.494)
+
+## 🐛 Bug Fixes
+
+- preserve inherited application models in migration feature gates ([dc834f1](https://github.com/stacksjs/stacks/commit/dc834f1)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh native model ownership catalog ([4808c04](https://github.com/stacksjs/stacks/commit/4808c04)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.492...v0.75.493)
 
 ## ✨ Features
