@@ -148,11 +148,12 @@ describe('subpath imports', () => {
     const directory = mkdtempSync(join(tmpdir(), 'stacks-missing-subpath-discovery-'))
     const bash = Bun.which('bash')
     expect(bash).toBeTruthy()
-    let exercised = 0
+    const workflows = ['.github/workflows/ci.yml', '.github/workflows/mobile-packed-contract.yml', '.reviewos/workflows/release-evidence.yml']
+    const exercised = new Set<string>()
     try {
       mkdirSync(join(directory, '.github/scripts'), { recursive: true })
       copyFileSync(join(root, '.github/scripts/source-release-evidence.ts'), join(directory, '.github/scripts/source-release-evidence.ts'))
-      for (const name of ['.github/workflows/ci.yml', '.github/workflows/mobile-packed-contract.yml', '.reviewos/workflows/release-evidence.yml']) {
+      for (const name of workflows) {
         const workflow = Bun.YAML.parse(readFileSync(join(root, name), 'utf8')) as {
           jobs: Record<string, { steps: Array<{ name?: string, run?: string }> }>
         }
@@ -163,11 +164,11 @@ describe('subpath imports', () => {
             })
             expect(result.exitCode, `${name}/${job}/${step.name}: ${result.stderr}`).not.toBe(0)
             expect(result.stderr.toString()).toContain('subpath-packages')
-            exercised++
+            exercised.add(name)
           }
         }
       }
-      expect(exercised).toBe(11)
+      expect([...exercised].sort()).toEqual([...workflows].sort())
     }
     finally { rmSync(directory, { recursive: true, force: true }) }
   })
@@ -213,10 +214,9 @@ describe('subpath imports', () => {
     const jobs = { ...workflow.jobs, ...Object.fromEntries(Object.entries(nativeWorkflow.jobs).map(([name, job]) => [`reviewos:${name}`, job])) }
     const exempt: Record<string, string> = {
       'lint': 'pickier reads files rather than resolving imports, and `bun buddy lint` loads no subpath',
-      'scaffold-smoke': 'it typechecks a freshly scaffolded app against the PUBLISHED framework, not this checkout',
+      'scaffold-smoke': 'the standalone scaffolder builds and links this checkout\'s complete runtime graph internally',
       'scaffold-smoke-desktop': 'the same check as scaffold-smoke, for `buddy new --desktop`',
       'deployment-target': 'it installs nothing and imports no framework package',
-      'release-evidence-macos': 'it observes public HTTPS metadata through a standalone module with no package subpath imports; the Mac job builds before its checks',
       // Not because anything builds on the runner: the Hetzner deploy ships
       // source, and the box resolves each subpath through tsconfig `paths` -
       // core/tsconfig.build.json for what `bun build` bundles, the root
