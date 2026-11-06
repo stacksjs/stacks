@@ -4,7 +4,7 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, utim
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 
-test.each(['lazy', 'eager', 'stale'] as const)('dashboard boots globals for %s actions without weakening auth or CSRF', async (loading) => {
+test.each(['lazy', 'eager', 'stale', 'defaults'] as const)('dashboard boots globals for %s actions without weakening auth or CSRF', async (loading) => {
   const checkout = resolve(import.meta.dir, '../../../../..')
   const root = mkdtempSync(join(tmpdir(), 'stacks-dashboard-runtime-'))
   let child: ReturnType<typeof Bun.spawn> | undefined
@@ -68,7 +68,7 @@ export default new Action({
         PATH: process.env.PATH,
         APP_ENV: 'test', NODE_ENV: 'test', APP_URL: 'http://127.0.0.1:4320', PORT_ADMIN: String(port),
         STACKS_DASHBOARD_WORKER: '1', STACKS_NO_NATIVE: '1', STACKS_DEV_SERVER: '1',
-        STACKS_DEV_AUTO_MIGRATE: '0', STACKS_SKIP_DEFAULT_ROUTES: '1',
+        STACKS_DEV_AUTO_MIGRATE: '0', STACKS_SKIP_DEFAULT_ROUTES: loading === 'defaults' ? '0' : '1',
         DB_CONNECTION: 'sqlite', DB_DATABASE_PATH: join(root, 'fixture.sqlite'),
       },
       stdout: 'pipe', stderr: 'pipe',
@@ -96,6 +96,10 @@ export default new Action({
     const definitions = await fetch(`${origin}/api/dashboard/jobs/definitions`)
     expect(definitions.status).toBe(200)
     expect(Array.isArray((await definitions.json()).data)).toBe(true)
+    if (loading === 'defaults') {
+      const home = await fetch(`${origin}/api/dashboard/home`)
+      expect(home.status).toBe(200)
+    }
     const guest = await fetch(`${origin}/api/private`)
     expect(guest.status).toBe(401)
     const csrf = await fetch(`${origin}/api/mutate`, { method: 'POST', body: '{}' })

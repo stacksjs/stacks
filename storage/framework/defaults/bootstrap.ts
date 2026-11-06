@@ -22,6 +22,7 @@
  */
 
 import { config, feature } from '@stacksjs/config'
+import process from 'node:process'
 import { frameworkPath } from '@stacksjs/path'
 import { log } from '@stacksjs/logging/runtime'
 import { bundleMounts, DEFAULT_ROUTE_BUNDLE_FEATURES, route, withRouteAdmission } from '@stacksjs/router'
@@ -108,7 +109,11 @@ async function registerDefaultBundles(): Promise<void> {
     await route.register(frameworkPath('defaults/routes/dashboard.ts'))
     // JSON endpoints for the dev dashboard UI. Kept separate from the view
     // routes above so the data layer is one obvious file to grep.
-    await route.register(frameworkPath('defaults/routes/dashboard-api.ts'))
+    // The standalone dashboard registers this after the app loader finishes,
+    // outside table admission. Its home endpoint intentionally reports optional
+    // stores as unavailable instead of disappearing when Request is not used.
+    if (process.env.STACKS_DASHBOARD_WORKER !== '1')
+      await route.register(frameworkPath('defaults/routes/dashboard-api.ts'))
     // The dev dashboard boots through this file rather than the application
     // router's importRoutes() path, so load model-declared useApi routes here too.
     //

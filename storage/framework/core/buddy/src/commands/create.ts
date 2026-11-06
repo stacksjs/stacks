@@ -18,6 +18,7 @@ import { ensureAuthRoutesEnv } from '../minimal-routes'
 import { scaffoldDesktopApp } from '../scaffold-desktop'
 
 interface NewOptions extends CreateOptions {
+  provision?: boolean
   native?: boolean
   desktop?: boolean
   adopt?: boolean
@@ -66,6 +67,7 @@ export function create(buddy: CLI): void {
     .option('--adopt', 'Integrate an existing native app without replacing its source (requires --native)', { default: false })
     .option('--with-core', descriptions.withCore, { default: false })
     .option('--vendor-defaults', descriptions.vendorDefaults, { default: false })
+    .option('--no-provision', 'Install JavaScript dependencies without provisioning system packages')
     .option('--verbose', descriptions.verbose, { default: false })
     // .option('--auth', 'Scaffold an authentication?', { default: true })
     .action(async (name, options: NewOptions) => {
@@ -554,8 +556,14 @@ function ensureExecutableScripts(path: string) {
   }
 }
 
-async function ensureEnv(path: string, _options: CreateOptions) {
+async function ensureEnv(path: string, options: NewOptions) {
   log.info('Ensuring your environment is ready...')
+  if (options.provision === false) {
+    const installed = await runCommand(['bun', 'install'], { cwd: path })
+    if (resultFailed(installed)) throw installed.error
+    log.success('JavaScript dependencies installed; system provisioning skipped')
+    return
+  }
   // Bootstrap the Pantry CLI (idempotent) and install the new project's
   // complete machine and project dependency graph declared by the template.
   await ensurePantryInstalled()

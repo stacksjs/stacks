@@ -64,7 +64,7 @@ async function main(): Promise<void> {
 
   console.log(`Scaffolding into ${appDir}${desktop ? ' (--desktop --minimal, into a directory holding only .git)' : ''}`)
 
-  const scaffold = Bun.spawn(['./buddy', 'new', appDir, '--name', 'smoke-app', ...(desktop ? ['--desktop', '--minimal'] : [])], {
+  const scaffold = Bun.spawn(['./buddy', 'new', appDir, '--name', 'smoke-app', '--no-provision', ...(desktop ? ['--desktop', '--minimal'] : [])], {
     cwd: repoRoot,
     stdout: 'inherit',
     stderr: 'inherit',
@@ -73,18 +73,9 @@ async function main(): Promise<void> {
   const scaffoldCode = await scaffold.exited
 
   /**
-   * Did the scaffold produce an app, whatever its exit status said?
-   *
-   * `buddy new` installs system packages through pantry as its last act, and on
-   * a CI runner that step can fail for reasons that have nothing to do with the
-   * template: the first run of this job died on `bun.sh@1.3.14 (FileBusy)`,
-   * because the runner is already executing the Bun it was asked to install.
-   * Treating that as "the scaffold is broken" would make the job red for a
-   * property it does not test, which is how a check gets muted.
-   *
-   * So the question asked here is the one this job is actually about: is there
-   * an app to typecheck? If the template failed to write, there is not, and
-   * that IS a scaffold failure worth reporting.
+   * CI already provides the native tools. --no-provision still installs the
+   * complete JavaScript graph, so a nonzero exit means an incomplete app and
+   * cannot count as a successful scaffold even if its config files exist.
    */
   const scaffolded = ['package.json', 'tsconfig.json', 'config'].every(entry => existsSync(join(appDir, entry)))
 
@@ -93,8 +84,10 @@ async function main(): Promise<void> {
     process.exit(1)
   }
 
-  if (scaffoldCode !== 0)
-    console.log(`\nNote: \`buddy new\` exited ${scaffoldCode}, but wrote an app — typechecking it anyway.`)
+  if (scaffoldCode !== 0) {
+    console.error(`\n\`buddy new --no-provision\` exited ${scaffoldCode}; the scaffold must complete before typechecking.`)
+    process.exit(1)
+  }
 
   if (desktop) {
     const missing = ['config/desktop.ts', 'resources/native/Main.stx', 'app/Desktop/Agent.ts', '.git'].filter(entry => !existsSync(join(appDir, entry)))
