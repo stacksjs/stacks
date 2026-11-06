@@ -1,5 +1,18 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.490...v0.75.491)
+
+## 🐛 Bug Fixes
+
+- **search**: allow omitted model selectors in native CLI ([6ba81f1](https://github.com/stacksjs/stacks/commit/6ba81f1)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **dashboard**: product variants are listed by the database and the variant dialog searches every product ([70832b4](https://github.com/stacksjs/stacks/commit/70832b4)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3218](https://github.com/stacksjs/stacks/issues/3218))
+- **dashboard**: product units are listed by the database and the unit dialog searches every product ([80b231b](https://github.com/stacksjs/stacks/commit/80b231b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3218](https://github.com/stacksjs/stacks/issues/3218))
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.489...v0.75.490)
 
 ## 🐛 Bug Fixes
