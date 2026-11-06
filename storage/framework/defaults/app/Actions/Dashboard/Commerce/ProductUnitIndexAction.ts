@@ -1,32 +1,36 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
-import { Product, ProductUnit } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
 import { dashboardOperationalError } from '../dashboard-response'
-import {
-  normalizeProductUnitRecord,
-  productUnitOptions,
-  summarizeProductUnits,
-} from './product-unit-records'
+import { parseProductUnitListQuery, readProductUnitPage } from './commerce-product-unit-list'
 
+/**
+ * `GET /api/dashboard/commerce/units` - one page of product units, searched,
+ * filtered, sorted and counted by the database, with the summary of every
+ * unit and every unit type (commerce-product-unit-list.ts,
+ * stacksjs/stacks#3218). The dialog searches products through
+ * GET /commerce/product-choices; this used to send the first 500 of each.
+ */
 export default new Action({
   name: 'ProductUnitIndexAction',
-  description: 'Returns persisted product units and their product relationships for dashboard management.',
+  description: 'Returns one page of persisted product units with their products.',
   method: 'GET',
   apiResponse: true,
 
-  async handle() {
-    try {
-      const [units, products] = await Promise.all([
-        ProductUnit.orderByDesc('id').limit(500).get(),
-        Product.orderBy('name').limit(500).get(),
-      ])
-      const options = productUnitOptions(products)
-      const productNames = new Map(options.map(product => [product.id, product.name]))
-      const records = units.map(unit => normalizeProductUnitRecord(unit, productNames))
+  async handle(request: RequestInstance) {
+    const query = parseProductUnitListQuery(key => request.get<unknown>(key, ''))
+    if ('error' in query)
+      return response.json({ message: query.error }, 422)
 
+    try {
+      const units = await readProductUnitPage(query)
       return {
-        records,
-        products: options,
-        summary: summarizeProductUnits(records),
+        records: units.records,
+        total: units.total,
+        page: units.page,
+        perPage: query.perPage,
+        summary: units.summary,
+        types: units.types,
       }
     }
     catch (error) {

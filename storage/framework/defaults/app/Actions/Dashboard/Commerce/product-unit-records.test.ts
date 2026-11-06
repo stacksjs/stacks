@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import {
   normalizeProductUnitRecord,
-  productUnitOptions,
   summarizeProductUnits,
 } from './product-unit-records'
 
@@ -74,17 +73,5 @@ describe('dashboard product unit records', () => {
     ]
 
     expect(summarizeProductUnits(records).defaultConflicts).toBe(1)
-  })
-
-  it('builds stable, validated product options from model rows', () => {
-    expect(productUnitOptions([
-      { id: 2, name: 'Tea' },
-      { id: 1, name: 'Coffee' },
-    ])).toEqual([
-      { id: '1', name: 'Coffee' },
-      { id: '2', name: 'Tea' },
-    ])
-    expect(() => productUnitOptions([{ id: 3, name: '' }]))
-      .toThrow('Product 3.name must be a non-empty string')
   })
 })

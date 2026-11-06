@@ -20,29 +20,12 @@ export interface ProductUnitRecord {
   createdAt: string
 }
 
-export interface ProductUnitOption {
-  id: string
-  name: string
-}
-
 export interface ProductUnitSummary {
   total: number
   defaults: number
   types: number
   linkedProducts: number
   defaultConflicts: number
-}
-
-export function productUnitOptions(products: any[]): ProductUnitOption[] {
-  return products
-    .map((product) => {
-      const id = commerceIdentifier(commerceValue(product, 'id', 'uuid'), 'Product')
-      return {
-        id,
-        name: commerceRequiredString(commerceValue(product, 'name'), `Product ${id}`, 'name'),
-      }
-    })
-    .sort((left, right) => left.name.localeCompare(right.name))
 }
 
 export function normalizeProductUnitRecord(

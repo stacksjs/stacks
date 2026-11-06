@@ -302,6 +302,20 @@ describe('useServerList', () => {
     expect(api.asked[1]!.get('direction')).toBe('desc')
   })
 
+  it('follows a sort select, handing the order back from a header sort', () => {
+    const api = server()
+    const sort = state<{ sort: string, direction: 'asc' | 'desc' }>({ sort: 'name', direction: 'asc' })
+    const list = useServerList<string>({ fetch: api.fetch, defaultSort: () => sort(), columnSorts: { typeLabel: 'type' } })
+    list.changeSort({ key: 'typeLabel', direction: 'desc' })
+    expect(api.asked[0]!.get('sort')).toBe('type')
+    list.page.set(4)
+    sort.set({ sort: 'newest', direction: 'desc' })
+    expect(api.asked.length).toBe(2)
+    expect(api.asked[1]!.get('sort')).toBe('newest')
+    expect(api.asked[1]!.get('direction')).toBe('desc')
+    expect(api.asked[1]!.get('page')).toBe('1')
+  })
+
   it('reports a failed load, and ignores one that a newer load replaced', async () => {
     const errors: unknown[] = []
     let calls = 0

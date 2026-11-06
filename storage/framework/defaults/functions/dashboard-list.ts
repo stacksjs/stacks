@@ -269,8 +269,12 @@ export interface ServerListOptions<T> {
    * `page` and `per_page`, as the commerce list endpoints read them.
    */
   fetch: (params: URLSearchParams) => Promise<ServerListPage<T>>
-  /** The order before any column header is clicked. */
-  defaultSort: { sort: string, direction: 'asc' | 'desc' }
+  /**
+   * The order before any column header is clicked. An accessor when the page
+   * has a sort select: changing it hands the order back from a header sort
+   * and asks for page 1.
+   */
+  defaultSort: { sort: string, direction: 'asc' | 'desc' } | (() => { sort: string, direction: 'asc' | 'desc' })
   /** The table's sortable column keys, as the server's sort names. A column not listed returns to `defaultSort`. */
   columnSorts?: Record<string, string>
   /** The filter values, read reactively: a change asks for page 1. `''` or `'all'` leaves a filter out. */
@@ -332,10 +336,11 @@ export function useServerList<T>(options: ServerListOptions<T>): ServerList<T> {
   const headerSort = state<{ sort: string, direction: string } | null>(null)
   let request = 0
   let timer: ReturnType<typeof setTimeout> | null = null
+  const defaultOrder = () => typeof options.defaultSort === 'function' ? options.defaultSort() : options.defaultSort
 
   const params = (): URLSearchParams => {
     const query = new URLSearchParams()
-    const order = headerSort() ?? options.defaultSort
+    const order = headerSort() ?? defaultOrder()
     query.set('sort', order.sort)
     query.set('direction', order.direction)
     if (appliedSearch())
@@ -382,6 +387,19 @@ export function useServerList<T>(options: ServerListOptions<T>): ServerList<T> {
       if (filters === shown)
         return
       shown = filters
+      page.set(1)
+      void load()
+    })
+  }
+
+  if (typeof options.defaultSort === 'function') {
+    let shownOrder = JSON.stringify(defaultOrder())
+    effect(() => {
+      const order = JSON.stringify(defaultOrder())
+      if (order === shownOrder)
+        return
+      shownOrder = order
+      headerSort.set(null)
       page.set(1)
       void load()
     })

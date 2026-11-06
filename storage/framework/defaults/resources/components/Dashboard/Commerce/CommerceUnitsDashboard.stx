@@ -1,16 +1,18 @@
 <script client>
 import type {
-  ProductUnitOption,
   ProductUnitRecord,
   ProductUnitSummary,
 } from '../../../../app/Actions/Dashboard/Commerce/product-unit-records'
 import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
+import { useServerList } from '../../../../functions/dashboard-list'
 import { pushToast } from '../../../../functions/toasts'
 
 interface ProductUnitIndexResponse {
   records: ProductUnitRecord[]
-  products: ProductUnitOption[]
+  total: number
+  page: number
   summary: ProductUnitSummary
+  types: string[]
 }
 
 interface ProductUnitWritePayload {
@@ -23,15 +25,11 @@ interface ProductUnitWritePayload {
 }
 
 const emptySummary: ProductUnitSummary = { total: 0, defaults: 0, types: 0, linkedProducts: 0, defaultConflicts: 0 }
-const records = state<ProductUnitRecord[]>([])
-const products = state<ProductUnitOption[]>([])
 const summary = state<ProductUnitSummary>({ ...emptySummary })
-const search = state('')
+const types = state<string[]>([])
 const typeFilter = state('all')
 const defaultFilter = state('all')
 const sort = state('name')
-const loading = state(true)
-const loadError = state('')
 const dialogOpen = state(false)
 const dialogMode = state<'add' | 'edit'>('add')
 const editingRecord = state<ProductUnitRecord | null>(null)
@@ -40,40 +38,51 @@ const saving = state(false)
 const deleting = state(false)
 const validationErrors = state<Record<string, string>>({})
 
-function unitTypes(): string[] {
-  return [...new Set(records().map(record => record.type).filter(Boolean))].sort()
+const SELECT_SORTS: Record<string, { sort: string, direction: 'asc' | 'desc' }> = {
+  name: { sort: 'name', direction: 'asc' },
+  type: { sort: 'type', direction: 'asc' },
+  product: { sort: 'product', direction: 'asc' },
+  newest: { sort: 'newest', direction: 'desc' },
 }
 
-function visibleRecords(): ProductUnitRecord[] {
-  const query = search().trim().toLowerCase()
-  const type = typeFilter()
-  const defaultState = defaultFilter()
+// The server searches, filters, sorts and pages (stacksjs/stacks#3218), where
+// this page used to do all of that with the newest 500 units.
+const {
+  records,
+  total,
+  page,
+  perPage,
+  search,
+  loading,
+  loadError,
+  load,
+  changePage,
+  changePageSize,
+  changeSort,
+} = useServerList<ProductUnitRecord>({
+  fetch: params => dashboardApi<ProductUnitIndexResponse>(`/api/dashboard/commerce/units?${params}`),
+  defaultSort: () => SELECT_SORTS[sort()] ?? SELECT_SORTS.name!,
+  columnSorts: { name: 'name', defaultFlag: 'default', type: 'type', productName: 'product', createdAt: 'created' },
+  filters: () => ({ type: typeFilter(), default: defaultFilter() }),
+  onLoad: (result) => {
+    const data = result as ProductUnitIndexResponse
+    summary.set(data.summary ?? { ...emptySummary })
+    types.set(Array.isArray(data.types) ? data.types : [])
+  },
+  onError: error => pushToast('error', 'Could not load product units', { detail: error instanceof Error ? error.message : String(error) }),
+})
 
-  return [...records()]
-    .filter((record) => {
-      if (type !== 'all' && record.type !== type)
-        return false
-      if (defaultState === 'default' && !record.isDefault)
-        return false
-      if (defaultState === 'not-default' && record.isDefault)
-        return false
-      return !query || [
-        record.name,
-        record.abbreviation,
-        record.type,
-        record.description,
-        record.productName,
-      ].some(value => value.toLowerCase().includes(query))
-    })
-    .sort((left, right) => {
-      if (sort() === 'type')
-        return left.type.localeCompare(right.type) || left.name.localeCompare(right.name)
-      if (sort() === 'product')
-        return left.productName.localeCompare(right.productName) || left.name.localeCompare(right.name)
-      if (sort() === 'newest')
-        return Number(right.id) - Number(left.id)
-      return left.name.localeCompare(right.name)
-    })
+function unitTypes(): string[] {
+  return types()
+}
+
+function loadUnits(): Promise<void> {
+  return load()
+}
+
+function matchingLabel(): string {
+  const count = total()
+  return `${count.toLocaleString()} matching product ${count === 1 ? 'unit' : 'units'}`
 }
 
 function metricCards(): Array<{ label: string, value: string }> {
@@ -83,26 +92,6 @@ function metricCards(): Array<{ label: string, value: string }> {
     { label: 'Unit types', value: String(summary().types) },
     { label: 'Linked products', value: String(summary().linkedProducts) },
   ]
-}
-
-async function loadUnits(): Promise<void> {
-  loading.set(true)
-  loadError.set('')
-  try {
-    const data = await dashboardApi<ProductUnitIndexResponse>('/api/dashboard/commerce/units')
-    records.set(Array.isArray(data.records) ? data.records : [])
-    products.set(Array.isArray(data.products) ? data.products : [])
-    summary.set(data.summary ?? { ...emptySummary })
-  }
-  catch (error) {
-    loadError.set('Product unit records could not be loaded.')
-    pushToast('error', 'Could not load product units', {
-      detail: error instanceof Error ? error.message : String(error),
-    })
-  }
-  finally {
-    loading.set(false)
-  }
 }
 
 function openAdd(): void {
@@ -253,7 +242,7 @@ onMount(() => {
     </div>
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <p class="text-gray-500 text-sm dark:text-neutral-400">{{ visibleRecords().length }} matching product units</p>
+      <p class="text-gray-500 text-sm dark:text-neutral-400">{{ matchingLabel() }}</p>
       <label class="flex gap-2 items-center text-gray-500 text-sm dark:text-neutral-400">
         Sort
         <select x-model="sort" class="px-3 py-1.5 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
@@ -265,7 +254,7 @@ onMount(() => {
       </label>
     </div>
 
-    <CommerceUnitsTable :sort-reset-key="sort()" :records="visibleRecords()" :loading="loading()" @edit="openEdit" @delete="openDelete" />
+    <CommerceUnitsTable :sort-reset-key="sort()" :records="records()" :total="total()" :current-page="page()" :per-page="perPage()" :loading="loading()" @edit="openEdit" @delete="openDelete" @page-change="changePage" @page-size-change="changePageSize" @sort="changeSort" />
   </section>
 </div>
 
@@ -273,7 +262,6 @@ onMount(() => {
   :open="dialogOpen()"
   :mode="dialogMode()"
   :record="editingRecord()"
-  :products="products()"
   :types="unitTypes()"
   :busy="saving()"
   :errors="validationErrors()"

@@ -7,7 +7,14 @@ const records = useReactiveProp('records', [] as ProductUnitRecord[])
 const loading = useReactiveProp('loading', false)
 /** The parent's sort select; a change hands the order back from a header sort. */
 const sortResetKey = useReactiveProp<unknown>('sortResetKey', '')
-const emit = defineEmits(['edit', 'delete'])
+/**
+ * The server pages and sorts what the parent's search and filters match
+ * (stacksjs/stacks#3218): how many units match, the page shown and its size.
+ */
+const total = useReactiveProp('total', 0)
+const currentPage = useReactiveProp('currentPage', 1)
+const perPage = useReactiveProp('perPage', 25)
+const emit = defineEmits(['edit', 'delete', 'page-change', 'page-size-change', 'sort'])
 
 /**
  * No slots. `UI/Table`'s `cell` and `actions` slots cannot be used yet -
@@ -50,12 +57,24 @@ const rows = derived(() => records().map(record => ({
 function handleRowAction(payload: { action: string, row: ProductUnitRecord }): void {
   emit(payload.action, payload.row)
 }
+
+function changePage(page: number): void {
+  emit('page-change', page)
+}
+
+function changePageSize(size: number): void {
+  emit('page-size-change', size)
+}
+
+function changeSort(sort: { key: string, direction: string }): void {
+  emit('sort', sort)
+}
 </script>
 
 {{--
   No `searchable` or `filterable`: the parent dashboard already owns the
   search box and the filter selects, and a second set inside the table would
-  duplicate them. Paging is what was missing, and Table brings it.
+  duplicate them. The server pages and sorts what they match.
 --}}
 <Table
   :sort-reset-key="sortResetKey()"
@@ -65,8 +84,15 @@ function handleRowAction(payload: { action: string, row: ProductUnitRecord }): v
   :row-actions="ROW_ACTIONS"
   action-label-key="name"
   paginated
-  :page-size="25"
+  manual-pagination
+  manual-sort
+  :total="total()"
+  :current-page="currentPage()"
+  :page-size="perPage()"
   empty-title="No product units found"
   empty-description="Adjust the filters or add a ProductUnit record."
   @row-action="handleRowAction"
+  @page-change="changePage"
+  @page-size-change="changePageSize"
+  @sort="changeSort"
 />
