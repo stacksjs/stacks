@@ -1547,11 +1547,11 @@
       "source": "pantry",
       "resolved": "registry:invisible-island.net/ncurses@6.6.0"
     },
-    "libexpat.github.io@2.9.0": {
+    "libexpat.github.io@2.10.0": {
       "name": "libexpat.github.io",
-      "version": "2.9.0",
+      "version": "2.10.0",
       "source": "pantry",
-      "resolved": "registry:libexpat.github.io@2.9.0"
+      "resolved": "registry:libexpat.github.io@2.10.0"
     },
     "lz4.org@1.11.0": {
       "name": "lz4.org",

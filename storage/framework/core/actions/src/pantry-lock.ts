@@ -49,6 +49,25 @@ interface PantryLock {
   packages?: Record<string, unknown>
 }
 
+/** An SDK version bump must not re-resolve an unchanged native toolchain for the publisher's OS. */
+export function preservePantrySystemPins(lock: string, baseline: string): string {
+  const next = JSON.parse(lock) as PantryLock
+  const previous = JSON.parse(baseline) as PantryLock
+  const systems = (value: PantryLock) => Object.entries(value.workspaces ?? {})
+    .filter(([, workspace]) => workspace.system && typeof workspace.system === 'object')
+    .map(([path, workspace]) => [path, Object.entries(workspace.system as Record<string, unknown>).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)])
+    .sort(([a], [b]) => String(a) < String(b) ? -1 : String(a) > String(b) ? 1 : 0)
+  const declared = systems(previous)
+  if (!declared.length || JSON.stringify(declared) !== JSON.stringify(systems(next))) return lock
+  const native = (value: unknown) => !!value && typeof value === 'object' && (value as { source?: string }).source === 'pantry'
+  const pinned = Object.entries(previous.packages ?? {}).filter(([, value]) => native(value))
+  if (!pinned.length) return lock
+  const packages = Object.fromEntries(Object.entries(next.packages ?? {}).filter(([, value]) => !native(value)))
+  for (const [name, value] of pinned) packages[name] = value
+  next.packages = Object.fromEntries(Object.entries(packages).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0))
+  return `${JSON.stringify(next, null, 2)}\n`
+}
+
 /**
  * Split a `packages` key into its name and version.
  *
