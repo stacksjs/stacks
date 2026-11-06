@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.495...v0.75.496)
+
+## 🐛 Bug Fixes
+
+- **dashboard**: render model-defined icons in the catalog ([d077d51](https://github.com/stacksjs/stacks/commit/d077d51)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **dashboard**: pluralize and space model sidebar labels ([86d76d0](https://github.com/stacksjs/stacks/commit/86d76d0)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh native catalog for dashboard icon changes ([b37c85c](https://github.com/stacksjs/stacks/commit/b37c85c)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.494...v0.75.495)
 
 ## 🐛 Bug Fixes
