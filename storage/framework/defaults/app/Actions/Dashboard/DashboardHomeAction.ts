@@ -5,23 +5,35 @@ import { checkApplicationHealth, type ApplicationHealthCheck } from '@stacksjs/r
 import { formatRelative, safeGet } from '../../../resources/functions/dashboard/data'
 import { dashboardOperationalIssue } from './dashboard-response'
 
-interface HttpRequestSample {
-  duration: number
-  status: number
+/** Totals over every captured request, counted by the database. */
+export interface HttpRequestTotals {
+  total: number
+  /** 2xx and 3xx responses. */
+  successful: number
+  /** 4xx and 5xx responses. */
+  failed: number
+  /** Mean `duration_ms`, or 0 with no requests. */
+  averageDuration: number
 }
 
-export function summarizeHttpRequests(total: number, requests: HttpRequestSample[]) {
-  const successful = requests.filter(request => request.status >= 200 && request.status < 400).length
-  const failed = requests.filter(request => request.status >= 400).length
-  const averageDuration = requests.length > 0
-    ? Math.round(requests.reduce((sum, request) => sum + request.duration, 0) / requests.length)
-    : 0
+/**
+ * The Home page's request cards, over all captured requests.
+ *
+ * The rates and the average used to come from the newest 1,000 rows, fetched
+ * whole on every visit and averaged here, while the cards beside them said
+ * "All captured requests" and the Requests page counted every row. So the two
+ * pages disagreed, and the rates' labels did not say they were a sample. Every
+ * card now reads the same totals the Requests page does.
+ */
+export function summarizeHttpRequests(totals: HttpRequestTotals) {
+  const { total, successful, failed } = totals
+  const rate = (count: number) => total > 0 ? `${((count / total) * 100).toFixed(1)}%` : 'N/A'
 
   return [
     { title: 'HTTP Requests', value: total.toLocaleString(), detail: 'All captured requests', icon: 'i-hugeicons-global' },
-    { title: 'Average Response', value: `${averageDuration}ms`, detail: `Latest ${requests.length.toLocaleString()} requests`, icon: 'i-hugeicons-clock-01' },
-    { title: 'Success Rate', value: requests.length > 0 ? `${((successful / requests.length) * 100).toFixed(1)}%` : 'N/A', detail: '2xx and 3xx responses', icon: 'i-hugeicons-checkmark-circle-02' },
-    { title: 'Error Rate', value: requests.length > 0 ? `${((failed / requests.length) * 100).toFixed(1)}%` : 'N/A', detail: '4xx and 5xx responses', icon: 'i-hugeicons-alert-02' },
+    { title: 'Average Response', value: `${Math.round(totals.averageDuration)}ms`, detail: 'All captured requests', icon: 'i-hugeicons-clock-01' },
+    { title: 'Success Rate', value: rate(successful), detail: '2xx and 3xx responses', icon: 'i-hugeicons-checkmark-circle-02' },
+    { title: 'Error Rate', value: rate(failed), detail: '4xx and 5xx responses', icon: 'i-hugeicons-alert-02' },
   ]
 }
 
@@ -105,7 +117,9 @@ export default new Action({
       recentOrders,
       recentUsers,
       requestCount,
-      recentRequests,
+      successfulRequests,
+      failedRequests,
+      averageDuration,
     ] = await settleEach([
       () => User.count(),
       commerce ? () => Product.count() : none,
@@ -114,18 +128,23 @@ export default new Action({
       commerce ? () => Order.orderBy('created_at', 'desc').limit(5).get() : async () => [],
       () => User.orderBy('created_at', 'desc').limit(5).get(),
       () => Request.count(),
-      () => Request.orderBy('created_at', 'desc').limit(1000).get(),
+      () => Request.where('status_code', '>=', 200).where('status_code', '<', 400).count(),
+      () => Request.where('status_code', '>=', 400).count(),
+      () => Request.avg('duration_ms'),
     ] as const)
     const healthResult = await Promise.allSettled([checkApplicationHealth()])
 
     const stats = homeStats({ users: userCount, products: productCount, revenue: totalRevenue, orders: orderCount }, commerce)
 
-    const httpMetrics = requestCount.status === 'fulfilled' && recentRequests.status === 'fulfilled'
-      ? summarizeHttpRequests(requestCount.value, recentRequests.value.map(request => ({
-        duration: Number(request.get('duration_ms')) || 0,
-        status: Number(request.get('status_code')) || 500,
-      })))
-      : summarizeHttpRequests(0, [])
+    const httpMetrics = requestCount.status === 'fulfilled' && successfulRequests.status === 'fulfilled'
+      && failedRequests.status === 'fulfilled' && averageDuration.status === 'fulfilled'
+      ? summarizeHttpRequests({
+          total: Number(requestCount.value) || 0,
+          successful: Number(successfulRequests.value) || 0,
+          failed: Number(failedRequests.value) || 0,
+          averageDuration: Number(averageDuration.value) || 0,
+        })
+      : summarizeHttpRequests({ total: 0, successful: 0, failed: 0, averageDuration: 0 })
 
     const health = healthResult[0]
     const services = health.status === 'fulfilled'
@@ -177,7 +196,9 @@ export default new Action({
       ['Recent orders', recentOrders],
       ['Recent users', recentUsers],
       ['Request count', requestCount],
-      ['Recent requests', recentRequests],
+      ['Successful requests', successfulRequests],
+      ['Failed requests', failedRequests],
+      ['Average response', averageDuration],
     ]
     const issues = sources
       .map(([source, result]) => issue(source, result))
