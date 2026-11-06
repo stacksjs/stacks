@@ -16,9 +16,18 @@ test('Mac source acceptance executes the same release tests as Linux and Windows
     const command = `bun .github/scripts/source-release-evidence.ts ${mode}`
     expect(github.jobs['release-evidence'].steps.some((step: any) => step.run === command)).toBe(true)
     expect(reviewos.jobs.macos.steps.some((step: any) => step.run === command)).toBe(true)
+    for (const name of ['release-evidence-macos', 'release-evidence-macos-pr'])
+      expect(github.jobs[name].steps.some((step: any) => step.run === command)).toBe(true)
   }
   expect(releaseEvidenceTests).toContain('./storage/framework/core/testing/tests/process-tree.test.ts')
   expect(releaseEvidenceTests).toContain('./storage/framework/core/actions/tests/reviewos-evidence.test.ts')
-  expect(github.jobs['release-evidence-macos'].steps.some((step: any) => step.run === 'bun .github/scripts/await-reviewos-macos.ts')).toBe(true)
-  expect(github.jobs['release-evidence-macos']['runs-on']).toBe('ubuntu-latest')
+  for (const name of ['release-evidence-macos', 'release-evidence-macos-pr']) {
+    const job = github.jobs[name]
+    expect(job['runs-on']).toBe('macos-latest')
+    expect(job.steps.some((step: any) => step.run === 'bun install --frozen-lockfile')).toBe(true)
+    const platform = job.steps.find((step: any) => step.name === 'Verify native platform').run
+    expect(platform).toContain('process.platform !== "darwin"')
+    expect(platform).toContain('process.arch !== "arm64"')
+    expect(platform).toContain('Bun.version !== "1.4.4"')
+  }
 })

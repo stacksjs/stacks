@@ -1,7 +1,7 @@
 import { resolve } from 'node:path'
 import { subpathBuildTargets } from './subpath-packages'
 
-/** One source contract shared by GitHub's Linux/Windows and ReviewOS's Mac. */
+/** One source contract shared by native Linux, Windows and macOS runners. */
 export const releaseEvidenceTests = [
   'actions/tests/release-evidence.test.ts', 'buddy/tests/release-evidence.test.ts',
   'actions/tests/reviewos-evidence.test.ts',

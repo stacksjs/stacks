@@ -107,13 +107,14 @@ green run cannot hide a newer failed run. Reads refuse redirects and bound
 request time, response bytes and pagination. No runner or administrator
 credential is sent to the forge.
 
-Stacks runs its release evidence on native macOS arm64 through ReviewOS and
-on Linux and Windows through GitHub. Every platform calls the same committed
-`source-release-evidence.ts` build, test and stress commands. The GitHub source
-gate waits for the Mac's actual execution before publication; an Ubuntu job
-waiting on metadata is not itself proof of Mac execution. A missing runner
-keeps publication blocked. Fork pull requests retain their hosted Mac job and
-are never offered to the trusted self-hosted source runner.
+Stacks runs its required macOS arm64, Linux and Windows source checks directly
+on GitHub-hosted runners. Every platform calls the same committed
+`source-release-evidence.ts` build, test and stress commands. The Mac job also
+asserts its actual platform, architecture and pinned Bun version. Publication
+requires that job's successful execution, without depending on execution
+metadata from another forge. The independent ReviewOS workflow retains the same
+contract for projects that opt into its execution gates. Fork pull requests
+use hosted Mac runners and are never offered to trusted self-hosted runners.
 
 ## Retained adoption evidence
 

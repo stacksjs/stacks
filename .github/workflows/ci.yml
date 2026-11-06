@@ -78,8 +78,8 @@ jobs:
   release-evidence-macos:
     name: Release evidence (macos-arm64)
     if: github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
-    timeout-minutes: 90
+    runs-on: macos-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -87,8 +87,16 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: ${{ env.BUN_VERSION }}
-      - name: Require exact-source execution on ReviewOS's native Mac runner
-        run: bun .github/scripts/await-reviewos-macos.ts
+      - name: Verify native platform
+        run: bun -e 'if (process.platform !== "darwin" || process.arch !== "arm64" || Bun.version !== "1.4.4") throw new Error("Expected native macOS arm64 and Bun 1.4.4")'
+      - name: Install committed dependencies
+        run: bun install --frozen-lockfile
+      - name: Build source packages
+        run: bun .github/scripts/source-release-evidence.ts build
+      - name: Verify release evidence
+        run: bun .github/scripts/source-release-evidence.ts test
+      - name: Stress immediate exit ordering
+        run: bun .github/scripts/source-release-evidence.ts stress
 
   release-evidence-macos-pr:
     name: Release evidence (macos PR)
@@ -102,6 +110,8 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: ${{ env.BUN_VERSION }}
+      - name: Verify native platform
+        run: bun -e 'if (process.platform !== "darwin" || process.arch !== "arm64" || Bun.version !== "1.4.4") throw new Error("Expected native macOS arm64 and Bun 1.4.4")'
       - name: Install committed dependencies
         run: bun install --frozen-lockfile
       - name: Build source packages
