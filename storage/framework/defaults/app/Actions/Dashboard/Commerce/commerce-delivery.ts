@@ -81,6 +81,19 @@ export function formatDeliveryDuration(minutes: number): string {
   return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`
 }
 
+/** How many couriers there are, by status, when the database counted them. */
+export interface DeliveryCourierCounts {
+  total: number
+  active: number
+  onDelivery: number
+  onBreak: number
+}
+
+/**
+ * The overview from the rows it shows. `courierRows` are the couriers the
+ * routes reference; `courierCounts`, when given, are every courier counted by
+ * the database (readDeliveryOverview), and otherwise `courierRows` are counted.
+ */
 export function buildDeliveryOverview(
   methodRows: any[],
   routeRows: any[],
@@ -88,6 +101,7 @@ export function buildDeliveryOverview(
   courierRows: any[],
   currency = 'USD',
   now = new Date(),
+  courierCounts?: DeliveryCourierCounts,
 ): DeliveryOverviewResult {
   const normalizedCurrency = commerceCurrency(currency, 'Commerce configuration')
   const normalizedCouriers = courierRows.map((courier) => {
@@ -222,10 +236,16 @@ export function buildDeliveryOverview(
       return statusOrder || left.name.localeCompare(right.name)
     })
 
-  const courierStatusCounts = normalizedCouriers.reduce<Record<string, number>>((counts, courier) => {
+  const counted = normalizedCouriers.reduce<Record<string, number>>((counts, courier) => {
     counts[courier.status] = (counts[courier.status] || 0) + 1
     return counts
   }, {})
+  const couriers: DeliveryCourierCounts = courierCounts ?? {
+    total: normalizedCouriers.length,
+    active: counted.active || 0,
+    onDelivery: counted.on_delivery || 0,
+    onBreak: counted.on_break || 0,
+  }
 
   const averageRouteMinutes = activeRoutes.length > 0
     ? Math.round(activeRoutes.reduce((total, route) => total + (routeMinutesById.get(route.id) || 0), 0) / activeRoutes.length)
@@ -241,8 +261,8 @@ export function buildDeliveryOverview(
       },
       {
         label: 'Couriers on Delivery',
-        value: (courierStatusCounts.on_delivery || 0).toLocaleString('en-US'),
-        detail: `${courierRows.length.toLocaleString('en-US')} couriers total`,
+        value: couriers.onDelivery.toLocaleString('en-US'),
+        detail: `${couriers.total.toLocaleString('en-US')} couriers total`,
       },
       {
         label: 'Average Route',
@@ -258,12 +278,7 @@ export function buildDeliveryOverview(
     routes: activeRoutes.slice(0, 5),
     methods: methods.slice(0, 5),
     zones: zones.slice(0, 5),
-    couriers: {
-      total: normalizedCouriers.length,
-      active: courierStatusCounts.active || 0,
-      onDelivery: courierStatusCounts.on_delivery || 0,
-      onBreak: courierStatusCounts.on_break || 0,
-    },
+    couriers,
   }
 }
 import {

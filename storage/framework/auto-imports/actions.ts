@@ -330,6 +330,7 @@ export const actions = {
   'Actions/Dashboard/Commerce/commerce-choices': '../defaults/app/Actions/Dashboard/Commerce/commerce-choices.ts',
   'Actions/Dashboard/Commerce/commerce-customer-records': '../defaults/app/Actions/Dashboard/Commerce/commerce-customer-records.ts',
   'Actions/Dashboard/Commerce/commerce-dashboard': '../defaults/app/Actions/Dashboard/Commerce/commerce-dashboard.ts',
+  'Actions/Dashboard/Commerce/commerce-delivery-overview': '../defaults/app/Actions/Dashboard/Commerce/commerce-delivery-overview.ts',
   'Actions/Dashboard/Commerce/commerce-delivery': '../defaults/app/Actions/Dashboard/Commerce/commerce-delivery.ts',
   'Actions/Dashboard/Commerce/commerce-gift-card-list': '../defaults/app/Actions/Dashboard/Commerce/commerce-gift-card-list.ts',
   'Actions/Dashboard/Commerce/commerce-order-list': '../defaults/app/Actions/Dashboard/Commerce/commerce-order-list.ts',
