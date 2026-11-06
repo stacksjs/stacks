@@ -20,6 +20,7 @@ const resource = createDashboardResource<LicenseKeys, NewLicenseKey>({
   storageKey: 'licenseKeys',
   singular: 'license key',
   plural: 'license keys',
+  paged: true,
 })
 
 const options = useStorage<LicenseKeyOptions>('licenseKeyOptions', {
