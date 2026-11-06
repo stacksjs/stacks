@@ -5894,6 +5894,7 @@ Drop a vendored storage/framework/core/<pkg>/ and go back to the installed @stac
 | --- | --- | --- | --- |
 | `--all` | Unvendor the whole framework: remove storage/framework/core and resolve every @stacksjs package from the `stacks` dependency in package.json | boolean, optional | `false` |
 | `--force` | Delete the vendored source even when it has uncommitted changes | boolean, optional | `false` |
+| `--installer` | Install the published packages with `bun` or `pantry` instead of detecting which one the project uses | value, required | - |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `unpublish:defaults`

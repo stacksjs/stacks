@@ -22,7 +22,7 @@ import { describe, expect, it } from 'bun:test'
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { detectInstaller } from '../src/unvendor-rewrite'
+import { chooseInstaller, detectInstaller, isUnvendorInstaller } from '../src/unvendor-rewrite'
 
 function project(files: Record<string, string>, dirs: string[] = []): string {
   const dir = mkdtempSync(join(tmpdir(), 'installer-linker-'))
@@ -64,5 +64,34 @@ describe('detectInstaller', () => {
       return
 
     expect(detectInstaller(dir)).toEqual(['pantry', 'install'])
+  })
+})
+
+describe('chooseInstaller (#3209)', () => {
+  it('uses Bun when asked, even where a failed pantry install left pantry/ behind', () => {
+    // The shape `buddy new` leaves when pantry cannot reach its registry: the
+    // pantry/ directory from the failed attempt, and node_modules from Bun.
+    const dir = project({ 'bunfig.toml': '[install]\nlinker = "hoisted"\n', 'pantry.lock': '{}' }, ['pantry', 'node_modules'])
+
+    expect(chooseInstaller(dir, 'bun')).toEqual(['bun', 'install'])
+  })
+
+  it('uses Pantry when asked, carrying the linker', () => {
+    const dir = project({ 'bunfig.toml': '[install]\nlinker = "hoisted"\n' }, ['node_modules'])
+
+    expect(chooseInstaller(dir, 'pantry')).toEqual(['pantry', 'install', '--linker', 'hoisted'])
+  })
+
+  it('detects as before when nothing is asked for', () => {
+    const dir = project({ 'bunfig.toml': '[install]\nlinker = "hoisted"\n' }, ['node_modules'])
+
+    expect(chooseInstaller(dir)).toEqual(detectInstaller(dir))
+  })
+
+  it('accepts only bun and pantry', () => {
+    expect(isUnvendorInstaller('bun')).toBeTrue()
+    expect(isUnvendorInstaller('pantry')).toBeTrue()
+    expect(isUnvendorInstaller('npm')).toBeFalse()
+    expect(isUnvendorInstaller(true)).toBeFalse()
   })
 })

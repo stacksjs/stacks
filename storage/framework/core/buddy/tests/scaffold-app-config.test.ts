@@ -103,6 +103,6 @@ describe('buddy new installs the app config template', () => {
 
   test('runs before the framework tree is removed', () => {
     expect(source.indexOf('applyAppConfigTemplate(path)'))
-      .toBeLessThan(source.indexOf('await unvendorCore(path, options)'))
+      .toBeLessThan(source.indexOf('await unvendorCore(path, options'))
   })
 })

@@ -228,7 +228,10 @@ async function isPantryInstalled(): Promise<boolean> {
   }
 }
 
-async function installPantry(): Promise<void> {
+const PANTRY_NOT_ON_PATH = 'Pantry installed but is not available on PATH. Open a new shell and run `buddy setup` again.'
+
+/** Installs Pantry. Resolves to why it failed, or `null`; `installPantry` is the exiting form. */
+async function attemptPantryInstall(): Promise<{ error: unknown } | null> {
   const bundledInstaller = p.frameworkPath('scripts/pantry-install')
   const command = existsSync(bundledInstaller)
     ? [bundledInstaller]
@@ -242,12 +245,24 @@ async function installPantry(): Promise<void> {
     process.env.PATH = `${localBin}:${process.env.PATH || ''}`
 
   if (result.isOk && await isPantryInstalled())
+    return null
+
+  return { error: resultFailed(result) ? result.error : new Error(PANTRY_NOT_ON_PATH) }
+}
+
+async function reportPantryFailure(error: unknown): Promise<void> {
+  if (error instanceof Error && error.message === PANTRY_NOT_ON_PATH)
+    await log.error(PANTRY_NOT_ON_PATH)
+  else
+    handleError(error)
+}
+
+async function installPantry(): Promise<void> {
+  const failure = await attemptPantryInstall()
+  if (failure === null)
     return
 
-  if (resultFailed(result))
-    handleError(result.error)
-  else
-    await log.error('Pantry installed but is not available on PATH. Open a new shell and run `buddy setup` again.')
+  await reportPantryFailure(failure.error)
   process.exit(ExitCode.FatalError)
 }
 
@@ -259,8 +274,20 @@ export async function ensurePantryInstalled(): Promise<void> {
   await installPantry()
 }
 
-export async function ensurePantryDependencies(cwd: string): Promise<void> {
-  await ensurePantryInstalled()
+/**
+ * `pantry install` in `cwd`, installing Pantry first if it is missing, without
+ * exiting. Resolves to why it failed, or `null`.
+ *
+ * `buddy new` uses this form, because exiting there leaves a half-built tree
+ * (stacksjs/stacks#3209). `ensurePantryDependencies` is the exiting form.
+ */
+export async function attemptPantryDependencies(cwd: string): Promise<{ error: unknown } | null> {
+  if (!await isPantryInstalled()) {
+    log.info('Pantry is required. Installing it from https://pantry.dev...')
+    const installFailure = await attemptPantryInstall()
+    if (installFailure !== null)
+      return installFailure
+  }
 
   log.info('Installing project dependencies with Pantry...')
 
@@ -269,8 +296,13 @@ export async function ensurePantryDependencies(cwd: string): Promise<void> {
     timeoutMs: PANTRY_DEPENDENCIES_TIMEOUT_MS,
   })
 
-  if (resultFailed(result)) {
-    handleError(result.error)
+  return resultFailed(result) ? { error: result.error } : null
+}
+
+export async function ensurePantryDependencies(cwd: string): Promise<void> {
+  const failure = await attemptPantryDependencies(cwd)
+  if (failure !== null) {
+    await reportPantryFailure(failure.error)
     process.exit(ExitCode.FatalError)
   }
 

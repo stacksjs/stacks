@@ -175,6 +175,6 @@ describe('buddy new wiring', () => {
     // The starter lives under `storage/framework/defaults`, which unvendoring
     // deletes.
     expect(source.indexOf('replaceFrameworkSite(path)'))
-      .toBeLessThan(source.indexOf('await unvendorCore(path, options)'))
+      .toBeLessThan(source.indexOf('await unvendorCore(path, options'))
   })
 })

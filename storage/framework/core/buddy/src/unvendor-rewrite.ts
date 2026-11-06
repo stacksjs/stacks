@@ -90,6 +90,34 @@ export function detectInstaller(cwd: string): string[] {
   return ['bun', 'install']
 }
 
+/** The installers `buddy unpublish:core --installer` accepts. */
+export const UNVENDOR_INSTALLERS = ['bun', 'pantry'] as const
+export type UnvendorInstaller = typeof UNVENDOR_INSTALLERS[number]
+
+export function isUnvendorInstaller(value: unknown): value is UnvendorInstaller {
+  return typeof value === 'string' && (UNVENDOR_INSTALLERS as readonly string[]).includes(value)
+}
+
+/**
+ * The install command for the unvendored project: the one asked for, or the
+ * one `detectInstaller` picks.
+ *
+ * `buddy new` asks for Bun when `pantry install` already failed on the app's
+ * system dependencies (stacksjs/stacks#3209). The failed attempt leaves a
+ * `pantry/` directory, so detection would pick Pantry again, and the retries
+ * below would spend eight minutes re-running an install that cannot reach its
+ * registry, when all this step needs is the JavaScript packages.
+ */
+export function chooseInstaller(cwd: string, requested?: UnvendorInstaller): string[] {
+  if (requested === 'bun')
+    return ['bun', 'install']
+
+  if (requested === 'pantry')
+    return hoistedLinker(cwd) ? ['pantry', 'install', '--linker', 'hoisted'] : ['pantry', 'install']
+
+  return detectInstaller(cwd)
+}
+
 /**
  * How long to keep retrying an install that failed, between attempts.
  *

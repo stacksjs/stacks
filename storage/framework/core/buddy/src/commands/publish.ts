@@ -9,7 +9,8 @@ import { syncPackageProjectFiles, vendorDefaultsTree } from '@stacksjs/actions/u
 import { installedDefaultsVersion, linkPackagedDefaults, packagedDefaultsRoot, path, usesVendoredDefaults } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { pruneVendoredCoreFromWorkflows, splitFrameworkTypecheckScript } from '../workflow-prune'
-import { detectInstaller, findCoreReferences, INSTALL_RETRY_DELAYS_MS, installWithRetry, isDanglingLink, rewriteCoreCommandPaths, rewriteCoreSourceImports, rewriteSurvivingFrameworkManifests } from '../unvendor-rewrite'
+import { chooseInstaller, findCoreReferences, INSTALL_RETRY_DELAYS_MS, installWithRetry, isDanglingLink, isUnvendorInstaller, rewriteCoreCommandPaths, rewriteCoreSourceImports, rewriteSurvivingFrameworkManifests, UNVENDOR_INSTALLERS } from '../unvendor-rewrite'
+import type { UnvendorInstaller } from '../unvendor-rewrite'
 import { fetchPublishedVersions } from '../registry'
 import { locateDefaultStx, pointImportsAtDefaults, type StxResourceKind } from '../publish-stx'
 import { adoptPackagedDefaults, unignoreDefaults, VENDORED_DEFAULTS } from '../scaffold-package-app'
@@ -27,6 +28,7 @@ interface PublishCoreOptions extends PublishOptions {
 
 interface UnpublishOptions extends PublishOptions {
   all?: boolean
+  installer?: string
 }
 
 export function publish(buddy: CLI): void {
@@ -51,6 +53,7 @@ export function publish(buddy: CLI): void {
     pkg: 'The name of the framework package (e.g. router, orm, faker - without @stacksjs/ prefix)',
     force: 'Overwrite an existing userland file',
     forceUnpublish: 'Delete the vendored source even when it has uncommitted changes',
+    installer: 'Install the published packages with `bun` or `pantry` instead of detecting which one the project uses',
     verbose: 'Enable verbose output',
   }
 
@@ -166,10 +169,16 @@ export function publish(buddy: CLI): void {
     .command('unpublish:core [pkg]', descriptions.unpublishCore)
     .option('--all', descriptions.all, { default: false })
     .option('--force', descriptions.forceUnpublish, { default: false })
+    .option('--installer <installer>', descriptions.installer)
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (pkg: string | undefined, options: UnpublishOptions) => {
+      if (options.installer !== undefined && !isUnvendorInstaller(options.installer)) {
+        await log.error(`--installer must be one of ${UNVENDOR_INSTALLERS.join(', ')}, not "${String(options.installer)}".`)
+        process.exit(ExitCode.InvalidArgument)
+      }
+
       if (options.all) {
-        await unvendorFramework(!!options.force)
+        await unvendorFramework(!!options.force, options.installer)
         return
       }
 
@@ -977,7 +986,7 @@ async function unvendorDefaults(force: boolean): Promise<void> {
   log.info('Commit the removal. Go back to a vendored copy any time with `buddy publish:defaults`.')
 }
 
-async function unvendorFramework(force: boolean): Promise<void> {
+async function unvendorFramework(force: boolean, requestedInstaller?: UnvendorInstaller): Promise<void> {
   const coreDir = path.frameworkPath('core')
   const rel = (p: string) => p.replace(`${process.cwd()}/`, '')
 
@@ -1319,7 +1328,7 @@ async function unvendorFramework(force: boolean): Promise<void> {
     log.info('Run those through `./buddy <command>` or a package specifier before deploying.')
   }
 
-  const installer = detectInstaller(process.cwd())
+  const installer = chooseInstaller(process.cwd(), requestedInstaller)
   log.info(`Installing the published packages with \`${installer.join(' ')}\`...`)
   const code = await installWithRetry(
     () => Bun.spawn(installer, { cwd: process.cwd(), stdout: 'inherit', stderr: 'inherit' }).exited,

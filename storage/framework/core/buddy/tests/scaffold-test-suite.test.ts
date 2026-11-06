@@ -34,7 +34,7 @@ describe('scaffolding does not hand the app the framework tests', () => {
     // and after that point the app is left holding tests whose subject is
     // gone. Removing first means the app never sees them at all.
     expect(source.indexOf('removeFrameworkTests(path)'))
-      .toBeLessThan(source.indexOf('await unvendorCore(path, options)'))
+      .toBeLessThan(source.indexOf('await unvendorCore(path, options'))
   })
 
   test('it keeps the harness', () => {

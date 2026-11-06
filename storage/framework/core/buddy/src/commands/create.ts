@@ -4,11 +4,11 @@ import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { bold, cyan, dim, intro, log, onUnknownSubcommand, runCommand } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
-import { relative, resolve } from '@stacksjs/path'
+import { isCompiledBinary, relative, resolve } from '@stacksjs/path'
 import { isFolder } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
 import { uninstallAllFeatures } from './features'
-import { ensurePantryDependencies, ensurePantryInstalled, optimizePantryDeps } from './setup'
+import { attemptPantryDependencies, optimizePantryDeps } from './setup'
 import { resultFailed } from '../result'
 import { appIdentity, applyAppAgentsTemplate, applyAppChangelogTemplate, applyAppEnvTemplate, applyAppPackageTemplate, removeFrameworkLicense, renderTemplate } from '../scaffold-app'
 import { applyAppSiteTemplate } from '../scaffold-site'
@@ -16,6 +16,7 @@ import { adoptPackagedDefaults, applyAppPackageScripts, applyPackageAppTsconfig,
 import { fetchPublishedVersions } from '../registry'
 import { ensureAuthRoutesEnv } from '../minimal-routes'
 import { scaffoldDesktopApp } from '../scaffold-desktop'
+import { bunExecutable, failureReason, installScaffoldDependencies } from '../scaffold-dependencies'
 
 interface NewOptions extends CreateOptions {
   provision?: boolean
@@ -120,7 +121,7 @@ export function create(buddy: CLI): void {
   replaceFrameworkSite(path)
   removeFrameworkTests(path)
   await generatePantryDeps(path)
-  await ensureEnv(path, options)
+  const missingSystemDependencies = await ensureEnv(path, options)
 
   // Strip BEFORE install, not after. `install()` runs pantry's
   // post-database-setup hook, which shells out to `./buddy migrate` and
@@ -138,7 +139,7 @@ export function create(buddy: CLI): void {
 
   if (!options.withCore) {
     trimFrameworkOnlyFiles(path)
-    await unvendorCore(path, options)
+    await unvendorCore(path, options, missingSystemDependencies !== null)
     applyPackageAppTsconfig(path)
 
     if (!options.vendorDefaults)
@@ -158,6 +159,17 @@ export function create(buddy: CLI): void {
     const written = scaffoldDesktopApp(path, appIdentity(path))
     log.success(`Added the Mac app (${written.join(', ')}). Run ${cyan('bun run dev:desktop')} to open it.`)
   }
+
+      if (missingSystemDependencies !== null) {
+        // Everything but the system dependencies is in place, so say exactly
+        // that and how to finish, and still fail: a script or CI job running
+        // `buddy new` must not read an incomplete environment as success.
+        log.warn(`The app is scaffolded at ${path}, but Pantry could not install its system dependencies: ${missingSystemDependencies}`)
+        log.warn(`Finish with: ${cyan(`cd ${name ?? '.'} && pantry install`)}`)
+        log.warn(`Its JavaScript packages were installed with ${cyan('bun install')} instead, so everything else is ready.`)
+        await log.flush()
+        process.exit(ExitCode.FatalError)
+      }
 
       if (startTime) {
         const time = performance.now() - startTime
@@ -556,19 +568,56 @@ function ensureExecutableScripts(path: string) {
   }
 }
 
-async function ensureEnv(path: string, options: NewOptions) {
+/**
+ * Install the new project's system dependencies and JavaScript packages.
+ *
+ * Resolves to why the system dependencies are missing, or `null` when
+ * everything is installed. A Pantry failure no longer ends the scaffold
+ * halfway (stacksjs/stacks#3209): the JavaScript packages, which every later
+ * step needs, are installed with Bun instead, and the caller reports what is
+ * left. Only a scaffold with no `node_modules` at all stops here.
+ */
+async function ensureEnv(path: string, options: NewOptions): Promise<string | null> {
   log.info('Ensuring your environment is ready...')
   if (options.provision === false) {
     const installed = await runCommand(['bun', 'install'], { cwd: path })
     if (resultFailed(installed)) throw installed.error
     log.success('JavaScript dependencies installed; system provisioning skipped')
-    return
+    // Nothing is missing: skipping the system packages is what was asked for.
+    return null
   }
-  // Bootstrap the Pantry CLI (idempotent) and install the new project's
-  // complete machine and project dependency graph declared by the template.
-  await ensurePantryInstalled()
-  await ensurePantryDependencies(path)
-  log.success('Environment is ready')
+
+  const outcome = await installScaffoldDependencies({
+    pantry: async () => {
+      const failure = await attemptPantryDependencies(path)
+      return failure === null ? null : failureReason(failure.error)
+    },
+    hasNodeModules: () => existsSync(resolve(path, 'node_modules')),
+    bunInstall: async () => {
+      const bun = bunExecutable(Bun.which('bun'), process.execPath, isCompiledBinary())
+      if (bun === null)
+        return 'Bun is not on PATH, and this buddy is a compiled binary, so it cannot run Bun itself.'
+      log.info('Installing the JavaScript packages with Bun...')
+      const result = await runCommand([bun, 'install'], { cwd: path })
+      return resultFailed(result) ? failureReason(result.error) : null
+    },
+  })
+
+  if (outcome.status === 'complete') {
+    log.success('Environment is ready')
+    return null
+  }
+
+  if (outcome.status === 'system-dependencies-missing') {
+    log.warn(`Pantry could not install the system dependencies (${outcome.pantryFailure}). Continuing with the JavaScript packages Bun installed.`)
+    return outcome.pantryFailure
+  }
+
+  if (outcome.pantryFailure !== null)
+    await log.error(`Pantry could not install the dependencies: ${outcome.pantryFailure}`)
+  await log.error(`Bun could not install the JavaScript packages either: ${outcome.bunFailure}`)
+  await log.error(`${path} is only partly scaffolded. Delete it and run \`buddy new\` again once the installers can reach their registries.`)
+  process.exit(ExitCode.FatalError)
 }
 
 async function install(path: string, options: CreateOptions) {
@@ -633,10 +682,13 @@ async function install(path: string, options: CreateOptions) {
  * download seconds old. Unvendoring before the first commit also keeps ~2,000
  * vendored framework files out of the repository's history for good.
  */
-async function unvendorCore(path: string, options: NewOptions) {
+async function unvendorCore(path: string, options: NewOptions, withBun: boolean) {
   log.info('Resolving the framework from npm (pass --with-core to keep it vendored)...')
 
-  const result = await runCommand('./buddy unpublish:core --all --force', { ...options, cwd: path })
+  // Pantry already failed on the system dependencies, so install the published
+  // packages with Bun rather than retrying Pantry for eight minutes (#3209).
+  const command = withBun ? './buddy unpublish:core --all --force --installer bun' : './buddy unpublish:core --all --force'
+  const result = await runCommand(command, { ...options, cwd: path })
 
   if (resultFailed(result)) {
     const reason = result.error instanceof Error
