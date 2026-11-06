@@ -535,6 +535,7 @@ export const actions = {
   'Actions/Dashboard/Models/ModelUpdateAction': '../defaults/app/Actions/Dashboard/Models/ModelUpdateAction.ts',
   'Actions/Dashboard/Models/ModelsIndexAction': '../defaults/app/Actions/Dashboard/Models/ModelsIndexAction.ts',
   'Actions/Dashboard/Models/model-api': '../defaults/app/Actions/Dashboard/Models/model-api.ts',
+  'Actions/Dashboard/Models/model-migration': '../defaults/app/Actions/Dashboard/Models/model-migration.ts',
   'Actions/Dashboard/Models/model-write': '../defaults/app/Actions/Dashboard/Models/model-write.ts',
   'Actions/Dashboard/Notifications/NotificationDeliveryHistoryAction': '../defaults/app/Actions/Dashboard/Notifications/NotificationDeliveryHistoryAction.ts',
   'Actions/Dashboard/Notifications/NotificationDeliveryIndexAction': '../defaults/app/Actions/Dashboard/Notifications/NotificationDeliveryIndexAction.ts',

@@ -150,6 +150,7 @@ export * from './vschema'
 
 // SQL dialect helpers & connection defaults
 export * from './sql-helpers'
+export * from './table-exists'
 export * from './defaults'
 
 // Dialect classification for the committed migration corpus, so a corpus

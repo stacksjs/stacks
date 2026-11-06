@@ -11,6 +11,7 @@ interface ModelRow {
   source: 'userland' | 'framework'
   apiUri: string
   apiRoutes: string[]
+  migrated?: boolean
   error: string | null
 }
 
@@ -26,6 +27,7 @@ interface ModelsResponse {
   totalRecords: number
   userlandCount: number
   unavailableModels: number
+  unmigratedModels?: number
   categoryGroups: ModelGroup[]
 }
 
@@ -35,6 +37,7 @@ const totalModels = state(0)
 const totalRecords = state(0)
 const userlandCount = state(0)
 const unavailableModels = state(0)
+const unmigratedModels = state(0)
 const categoryGroups = state<ModelGroup[]>([])
 const loading = state(true)
 const loadError = state('')
@@ -78,6 +81,7 @@ async function loadModels(): Promise<void> {
     totalRecords.set(response.totalRecords || 0)
     userlandCount.set(response.userlandCount || 0)
     unavailableModels.set(response.unavailableModels || 0)
+    unmigratedModels.set(response.unmigratedModels || 0)
     categoryGroups.set(response.categoryGroups || [])
   }
   catch (error) {
@@ -85,6 +89,7 @@ async function loadModels(): Promise<void> {
     totalRecords.set(0)
     userlandCount.set(0)
     unavailableModels.set(0)
+    unmigratedModels.set(0)
     categoryGroups.set([])
     loadError.set(error instanceof Error ? error.message : 'Models could not be loaded.')
   }
@@ -98,7 +103,7 @@ onMount(() => {
 })
 </script>
 
-<div class="space-y-6">
+<div class="flex flex-col gap-6">
   <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
     <div>
       <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">{{ title() }}</h1>
@@ -130,6 +135,11 @@ onMount(() => {
   <div :if="!loadError() && unavailableModels() > 0" role="status" class="flex gap-3 items-start px-4 py-3 text-amber-800 text-sm dark:text-amber-200 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 rounded-lg dark:border-amber-900">
     <span class="flex-none mt-0.5 h-4 w-4 i-hugeicons-alert-02"></span>
     <span>{{ unavailableModels() }} model {{ unavailableModels() === 1 ? 'count is' : 'counts are' }} unavailable. Affected cards remain unavailable instead of reporting zero records.</span>
+  </div>
+
+  <div :if="!loadError() && unmigratedModels() > 0" role="status" class="flex gap-3 items-start px-4 py-3 text-neutral-700 text-sm dark:text-neutral-200 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 rounded-lg dark:border-neutral-700">
+    <span aria-hidden="true" class="flex-none mt-0.5 h-4 w-4 i-hugeicons-database-sync-01"></span>
+    <span>{{ unmigratedModels() }} {{ unmigratedModels() === 1 ? 'model has' : 'models have' }} no table yet. Run <code>./buddy migrate</code> to create {{ unmigratedModels() === 1 ? 'it' : 'them' }}.</span>
   </div>
 
   <Card padding="none">
@@ -191,7 +201,8 @@ onMount(() => {
               <div>
                 <dt class="text-neutral-500 text-xs dark:text-neutral-400">Records</dt>
                 <dd :if="model.count !== null" class="mt-1 font-medium text-neutral-900 text-sm dark:text-white">{{ model.count.toLocaleString() }}</dd>
-                <dd :if="model.count === null" class="mt-1 font-medium text-amber-700 text-sm dark:text-amber-300">Unavailable</dd>
+                <dd :if="model.count === null && model.migrated !== false" class="mt-1 font-medium text-amber-700 text-sm dark:text-amber-300">Unavailable</dd>
+                <dd :if="model.migrated === false" class="mt-1 font-medium text-neutral-500 text-sm dark:text-neutral-400">Not migrated</dd>
               </div>
               <div>
                 <dt class="text-neutral-500 text-xs dark:text-neutral-400">Attributes</dt>

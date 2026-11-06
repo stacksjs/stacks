@@ -4,6 +4,7 @@ import { resolveModelSources } from '@stacksjs/database/model-sources'
 import { countRows } from '../../../../resources/functions/dashboard/data'
 import { dashboardOperationalError, dashboardOperationalIssue } from '../dashboard-response'
 import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
+import { isUnmigratedTable } from './model-migration'
 import { modelApiConfiguration } from './model-api'
 
 /**
@@ -32,6 +33,8 @@ interface ModelRow {
   source: 'userland' | 'framework'
   apiUri: string
   apiRoutes: string[]
+  /** False when the model's table does not exist yet. Its count is `null`, and it is not an error. */
+  migrated: boolean
   error: string | null
 }
 
@@ -91,6 +94,7 @@ function unavailableModelRow(model: DiscoveredModel, error: string): ModelRow {
     source: model.source,
     apiUri: '',
     apiRoutes: [],
+    migrated: true,
     error,
   }
 }
@@ -138,18 +142,25 @@ export default new Action({
           dashboardOperationalIssue(error, 'Model metadata could not be loaded.', `ModelsIndexAction.metadata.${m.name}`),
         )
       }
+      const table = String(Model.table || pluralize(pascalToSnake(m.name)))
       let count: number | null = null
       let error: string | null = null
+      let migrated = true
       try {
         count = await countRows(Model)
       }
       catch (cause) {
-        error = dashboardOperationalIssue(cause, 'Model count could not be loaded.', `ModelsIndexAction.count.${m.name}`)
+        // A table that was never migrated is reported as that, without logging
+        // a driver error for it on every visit to this page.
+        if (await isUnmigratedTable(table))
+          migrated = false
+        else
+          error = dashboardOperationalIssue(cause, 'Model count could not be loaded.', `ModelsIndexAction.count.${m.name}`)
       }
 
       return {
         name: m.name,
-        table: String(Model.table || pluralize(pascalToSnake(m.name))),
+        table,
         href: `/models/${pascalToKebab(m.name)}`,
         count,
         attributeCount: Object.keys(Model.attributes || {}).length,
@@ -157,6 +168,7 @@ export default new Action({
         source: m.source,
         apiUri: api.uri ? `/api/${api.uri}` : '',
         apiRoutes: api.routes,
+        migrated,
         error,
       }
     }))
@@ -168,6 +180,7 @@ export default new Action({
     const totalRecords = enriched.reduce((sum, m) => sum + (m.count ?? 0), 0)
     const userlandCount = enriched.filter(m => m.source === 'userland').length
     const unavailableModels = enriched.filter(m => m.error !== null).length
+    const unmigratedModels = enriched.filter(m => !m.migrated).length
 
     const groupMap = new Map<string, ModelRow[]>()
     for (const m of enriched) {
@@ -192,6 +205,7 @@ export default new Action({
       totalRecords,
       userlandCount,
       unavailableModels,
+      unmigratedModels,
       categoryGroups,
     }
   },

@@ -47,6 +47,7 @@ interface ResponseShape {
   writeCapabilities: WriteCapabilities
   createFields: CreateField[]
   updateColumns: string[]
+  migrated?: boolean
   error: string | null
 }
 
@@ -69,6 +70,9 @@ const writeCapabilities = state<WriteCapabilities>({ create: false, update: fals
 const createFields = state<CreateField[]>([])
 const updateColumns = state<string[]>([])
 const error = state<string | null>(null)
+// False when the model's table has not been created yet: the server checked the
+// catalog after the query failed, so this is never a guess from an error.
+const migrated = state(true)
 const loading = state(true)
 const showFilters = state(false)
 
@@ -103,7 +107,11 @@ const filterLabel = derived(() => {
   return n === 0 ? 'Filter' : `Filter (${n})`
 })
 
-const isEmpty = derived(() => !loading() && !error() && rows().length === 0)
+const isEmpty = derived(() => !loading() && !error() && migrated() && rows().length === 0)
+
+const subtitle = derived(() => migrated()
+  ? `${recordLabel()} · ${tableName()} · via Stacks ORM`
+  : `Not migrated · ${tableName()}`)
 const canManageRows = derived(() => writeCapabilities().update || writeCapabilities().destroy)
 
 const deleteDescription = derived(() => {
@@ -213,6 +221,7 @@ async function load() {
     writeCapabilities.set(data.writeCapabilities ?? { create: false, update: false, destroy: false })
     createFields.set(data.createFields ?? [])
     updateColumns.set(data.updateColumns ?? [])
+    migrated.set(data.migrated !== false)
     error.set(data.error ?? null)
   }
   catch (e) {
@@ -377,7 +386,7 @@ void load()
   <div class="flex flex-wrap gap-4 items-start justify-between">
     <div class="min-w-0">
       <h1 class="font-semibold text-2xl text-neutral-900 truncate dark:text-white" :text="modelName()"></h1>
-      <p class="mt-1 text-[13px] text-neutral-500 dark:text-neutral-400" :text="recordLabel() + ' · ' + tableName() + ' · via Stacks ORM'"></p>
+      <p class="mt-1 text-[13px] text-neutral-500 dark:text-neutral-400" :text="subtitle()"></p>
     </div>
     <div class="flex gap-2 items-center">
       <Button
@@ -388,6 +397,7 @@ void load()
         Create
       </Button>
       <Button
+        :if="migrated()"
         variant="secondary"
         size="sm"
         interaction="toggle"
@@ -401,7 +411,7 @@ void load()
   </div>
 
   <!-- Search + page size -->
-  <div class="flex flex-wrap gap-3 items-center">
+  <div :if="migrated()" class="flex flex-wrap gap-3 items-center">
     <div class="relative flex-1 max-w-sm">
       <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
         <div class="h-4 w-4 text-neutral-400 dark:text-neutral-500 i-hugeicons-search-01"></div>
@@ -448,6 +458,16 @@ void load()
     </div>
   </div>
 
+  <div :if="!loading() && !error() && !migrated()" role="status" class="p-12 text-center bg-white dark:bg-neutral-900 border border-black/8 rounded-xl dark:border-white/10">
+    <span aria-hidden="true" class="mx-auto h-10 w-10 text-neutral-300 dark:text-neutral-600 i-hugeicons-database-sync-01"></span>
+    <h3 class="mt-3 font-medium text-[15px] text-neutral-900 dark:text-white">
+      The <code :text="tableName()"></code> table has not been created yet
+    </h3>
+    <p class="mt-1.5 text-[13px] text-neutral-500 dark:text-neutral-400">
+      Run <code>./buddy migrate</code> to create it, then reload this page.
+    </p>
+  </div>
+
   <div :if="isEmpty()" class="p-12 text-center bg-white dark:bg-neutral-900 border border-black/8 rounded-xl dark:border-white/10">
     <span class="mx-auto h-10 w-10 text-neutral-300 dark:text-neutral-600 i-hugeicons-database-01"></span>
     <h3 class="mt-3 font-medium text-[15px] text-neutral-900 dark:text-white">
@@ -460,7 +480,7 @@ void load()
     </p>
   </div>
 
-  <div :if="!error() && (rows().length > 0 || loading())" class="overflow-hidden bg-white dark:bg-neutral-900 border border-black/8 rounded-xl dark:border-white/10">
+  <div :if="!error() && migrated() && (rows().length > 0 || loading())" class="overflow-hidden bg-white dark:bg-neutral-900 border border-black/8 rounded-xl dark:border-white/10">
     <div class="overflow-x-auto">
       <table class="min-w-full">
         <thead class="bg-neutral-50 dark:bg-white/5">

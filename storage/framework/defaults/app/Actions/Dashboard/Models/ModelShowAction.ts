@@ -5,6 +5,7 @@ import { response as routerResponse } from '@stacksjs/router'
 import { safeGet } from '../../../../resources/functions/dashboard/data'
 import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
 import { dashboardOperationalError } from '../dashboard-response'
+import { isUnmigratedTable } from './model-migration'
 import { isValidModelSlug, type ModelCreateField, type ModelWriteCapabilities, modelCreateFields, modelSchemaColumns, modelWritableColumns, modelWriteCapabilities, slugToPascal } from './model-write'
 
 /**
@@ -56,6 +57,8 @@ interface ResponseShape {
   writeCapabilities: ModelWriteCapabilities
   createFields: ModelCreateField[]
   updateColumns: string[]
+  /** False when the model's table does not exist yet: `./buddy migrate` creates it. */
+  migrated: boolean
   error: string | null
 }
 
@@ -214,6 +217,7 @@ export default new Action({
       writeCapabilities: { create: false, update: false, destroy: false },
       createFields: [],
       updateColumns: [],
+      migrated: true,
       error: null,
     }
 
@@ -296,6 +300,10 @@ export default new Action({
       })
     }
     catch (error) {
+      // Not an error to report: the table simply has not been created yet, and
+      // the page says so and names the command that creates it.
+      if (await isUnmigratedTable(response.tableName))
+        return { ...response, columns: [], rows: [], migrated: false }
       return dashboardOperationalError(error, `${modelName} records could not be loaded.`, 'ModelShowAction.query')
     }
 
