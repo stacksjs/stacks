@@ -131,11 +131,11 @@ for (const dialect of ['postgres', 'mysql'] as const) {
 
     const name = `stacks_product_variants_${crypto.randomUUID().replaceAll('-', '')}`
     const quoted = dialect === 'mysql' ? `\`${name}\`` : `"${name}"`
-    const admin = new SQL(url.href)
+    const admin = new SQL({ url: url.href, database: decodeURIComponent(url.pathname.slice(1)) || undefined })
     await admin.unsafe(`CREATE DATABASE ${quoted}`)
     const scoped = new URL(url.href)
     scoped.pathname = `/${name}`
-    const database = new SQL(scoped.href)
+    const database = new SQL({ url: scoped.href, database: name })
 
     try {
       await setUp(async (sql, values = []) => await database.unsafe(sql, values), dialect)
