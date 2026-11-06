@@ -143,6 +143,8 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
     guard(route.get('/commerce/pos', 'Actions/Dashboard/Commerce/CommercePosAction'))
     guard(route.post('/commerce/pos/checkout', 'Actions/Dashboard/Commerce/CommercePosCheckoutAction'))
     guard(route.get('/commerce/products', 'Actions/Dashboard/Commerce/CommerceProductsAction'))
+    // Before `{id}`, so "export" is never read as a product id.
+    guard(route.get('/commerce/products/export', 'Actions/Dashboard/Commerce/CommerceProductsExportAction'))
     guard(route.get('/commerce/products/{id}', 'Actions/Dashboard/Commerce/CommerceProductDetailAction'))
     guard(route.post('/commerce/products', 'Actions/Commerce/Product/ProductStoreAction'))
     guard(route.patch('/commerce/products/{id}', 'Actions/Commerce/Product/ProductUpdateAction'))

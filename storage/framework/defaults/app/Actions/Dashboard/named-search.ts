@@ -68,7 +68,8 @@ export async function searchNamedRows(
 
   const counted = await runner.unsafe(`SELECT COUNT(*) AS total_count FROM ${table}${where}`, values).execute() as Array<{ total_count: unknown }>
   const found = await runner.unsafe(
-    `SELECT id, name, email FROM ${table}${where} ORDER BY name ASC, id ASC LIMIT ${query.limit}`,
+    // LOWER, so the order is the same on every dialect: each collates case its own way.
+    `SELECT id, name, email FROM ${table}${where} ORDER BY LOWER(COALESCE(name, '')) ASC, id ASC LIMIT ${query.limit}`,
     values,
   ).execute() as Array<{ id: unknown, name: string | null, email: string | null }>
 
