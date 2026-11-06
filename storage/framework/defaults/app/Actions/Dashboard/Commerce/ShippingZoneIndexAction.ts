@@ -14,7 +14,9 @@ export default new Action({
 
   async handle() {
     try {
-      const zones = await ShippingZone.orderBy('name', 'asc').limit(500).get()
+      // Read whole: store configuration, which the page searches in full. The
+      // first 500 left the rest unlisted and unsearchable (stacksjs/stacks#3218).
+      const zones = await ShippingZone.orderBy('name', 'asc').get()
       const methodIds = [...new Set(zones.map(zone => zone.get('shipping_method_id')).filter(Boolean))]
       const methods = methodIds.length
         ? await ShippingMethod.whereIn('id', methodIds).get()

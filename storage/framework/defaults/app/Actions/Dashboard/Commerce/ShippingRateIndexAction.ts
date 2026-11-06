@@ -15,7 +15,9 @@ export default new Action({
 
   async handle() {
     try {
-      const rates = await ShippingRate.orderBy('weight_from', 'asc').limit(500).get()
+      // Read whole: store configuration, which the page searches in full. The
+      // first 500 left the rest unlisted and unsearchable (stacksjs/stacks#3218).
+      const rates = await ShippingRate.orderBy('weight_from', 'asc').get()
       const methodIds = [...new Set(rates.map(rate => rate.get('shipping_method_id')).filter(Boolean))]
       const zoneIds = [...new Set(rates.map(rate => rate.get('shipping_zone_id')).filter(Boolean))]
       const [methods, zones] = await Promise.all([

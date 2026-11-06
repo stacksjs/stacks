@@ -11,7 +11,9 @@ export default new Action({
 
   async handle() {
     try {
-      const records = await DigitalDelivery.orderByDesc('id').limit(500).get()
+      // Read whole: store configuration, which the page searches in full. The
+      // first 500 left the rest unlisted and unsearchable (stacksjs/stacks#3218).
+      const records = await DigitalDelivery.orderByDesc('id').get()
       return records.map(normalizeDigitalDeliveryRecord)
     }
     catch (error) {

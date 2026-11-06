@@ -15,7 +15,9 @@ export default new Action({
 
   async handle() {
     try {
-      const methods = await ShippingMethod.orderBy('name', 'asc').limit(500).get()
+      // Read whole: store configuration, which the page searches in full. The
+      // first 500 left the rest unlisted and unsearchable (stacksjs/stacks#3218).
+      const methods = await ShippingMethod.orderBy('name', 'asc').get()
       const methodIds = shippingMethodIds(methods)
       const zones = methodIds.size
         ? await ShippingZone.whereIn('shipping_method_id', [...methodIds]).orderBy('name', 'asc').get()
