@@ -92,6 +92,7 @@
     "PublishScheduledPagesJob": true,
     "QueryController": true,
     "QueryLog": true,
+    "QueueWorker": true,
     "Receipt": true,
     "Redirect": true,
     "Referral": true,

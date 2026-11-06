@@ -42,6 +42,7 @@ const plan = buildMigrationPlan(await loadModels({ modelsDir: join(import.meta.d
 plan.tables = plan.tables.filter(table => table.table === 'jobs')
 assert.equal(plan.tables.length, 1)
 
+const { searchModelRows } = await import('../../../storage/framework/defaults/app/Actions/Dashboard/Search/GlobalSearchAction')
 const { Job, ormReady } = await import('@stacksjs/orm')
 await ormReady
 
@@ -69,6 +70,14 @@ try {
   assert.equal(await matches('nothing like this'), 0, `${dialect}: no match`)
   assert.equal(await matches('e'), 2, `${dialect}: a term in both`)
 
+  for (const term of ['Emails', 'emails', 'EMAILS', 'welcome', 'WELCOME']) {
+    const rows = await searchModelRows(Job, ['queue', 'payload'], 'id', term)
+    assert.equal(rows.length, 1, `${dialect}: global search uses the configured connection`)
+    assert.deepEqual(Object.keys(rows[0]!).sort(), ['id', 'payload', 'queue'])
+  }
+  assert.equal((await searchModelRows(Job, ['queue'], 'id', "' OR 1=1 --")).length, 0, 'search values are bound')
+  assert.equal((await searchModelRows(Job, ['queue'], 'id', 'e', 1)).length, 1, 'search limit is applied in SQL')
+  await assert.rejects(searchModelRows(Job, ['queue; DROP TABLE jobs'], 'id', 'x'), /model identifiers/)
   console.log('model search OK')
 }
 finally { resetDatabaseConnection() }

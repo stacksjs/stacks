@@ -3,7 +3,6 @@ import { Action } from '@stacksjs/actions/runtime'
 import { db } from '@stacksjs/database/runtime'
 import { transaction } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
-import { randomUUIDv7 } from 'bun'
 import { dashboardOperationalError } from '../dashboard-response'
 import { findRow, insertedId, slugify, str, timestamp } from './content-input'
 
@@ -32,7 +31,7 @@ export default new Action({
       const category = await transaction(async (rawTrx) => {
         const trx = rawTrx as unknown as typeof db
         const duplicate = await trx
-          .selectFrom('categories')
+          .selectFrom('categorizables').where('categorizable_type', '=', 'posts')
           .select(['id'])
           .where('slug', '=', slug)
           .executeTakeFirst()
@@ -41,21 +40,16 @@ export default new Action({
           return null
 
         const now = timestamp()
-        const displayOrder = await trx
-          .selectFrom('categories')
-          .select(db.fn.max('display_order').as('max_display_order'))
-          .executeTakeFirst()
-
         const result = await trx
-          .insertInto('categories')
+          .insertInto('categorizables')
           .values({
-            uuid: randomUUIDv7(),
             name,
             slug,
             description,
             // A real boolean: on PostgreSQL the column is boolean and refuses 1.
             is_active: true,
-            display_order: Number(displayOrder?.max_display_order || 0) + 1,
+            categorizable_type: 'posts',
+            categorizable_id: 0,
             created_at: now,
             updated_at: now,
           } as any)
@@ -68,7 +62,7 @@ export default new Action({
         if (!id)
           throw new Error('Category insert did not return an id.')
 
-        const created = await findRow('categories', id, trx)
+        const created = await findRow('categorizables', id, trx)
         if (!created)
           throw new Error('Created category could not be loaded.')
         return created

@@ -89,7 +89,7 @@ export async function invalidPostReference(payload: PostPayload, database: typeo
       ? database.selectFrom('authors').select(['id']).where('id', '=', payload.authorId).executeTakeFirst()
       : Promise.resolve(undefined),
     payload.categoryIds.length
-      ? database.selectFrom('categories').whereIn('id', payload.categoryIds).select(['id']).execute()
+      ? database.selectFrom('categorizables').where('categorizable_type', '=', 'posts').whereIn('id', payload.categoryIds).select(['id']).execute()
       : Promise.resolve([]),
     payload.tagIds.length
       ? database.selectFrom('tags').whereIn('id', payload.tagIds).select(['id']).execute()

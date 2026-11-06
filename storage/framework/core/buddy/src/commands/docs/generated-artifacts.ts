@@ -55,6 +55,10 @@ export function validateOpenApi(document: OpenApiDocument): string[] {
 }
 
 async function expectedArtifacts(): Promise<{ openApi: string, apiTypes: string, client: string }> {
+  // These are framework reference artifacts, not one developer's feature subset.
+  // Set canonical mode before the router loads so disabled local features do
+  // not delete their documented routes on every regeneration.
+  process.env.STACKS_CANONICAL_FEATURES = '1'
   const { renderApiClient, generateOpenApi, renderOpenApiTypes } = await generators()
   const document = await generateOpenApi({ write: false })
   const errors = validateOpenApi(document)

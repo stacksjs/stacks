@@ -1,0 +1,8 @@
+@extends('layouts/default')
+
+@section('content')
+@title('Dashboard - Search Engine')
+<PageLayout>
+  <SearchEngineDashboard />
+</PageLayout>
+@endsection

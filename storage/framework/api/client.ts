@@ -2496,6 +2496,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /api/dashboard/jobs/definitions
+   */
+  getDashboardJobsDefinitions(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/jobs/definitions", {}, [], null, "application/json", [], options)
+  },
+
+  /**
    * GET /api/dashboard/jobs/stats
    */
   getDashboardJobsStats(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
@@ -3392,6 +3399,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /api/dashboard/search-engine
+   */
+  getDashboardSearchEngine(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/search-engine", {}, [], null, "application/json", [], options)
+  },
+
+  /**
    * GET /api/dashboard/serverless
    */
   getDashboardServerless(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
@@ -3550,6 +3564,27 @@ export function createClient(config: ClientConfig) {
    */
   feedbackStore(input: { "token": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "POST", "/api/feedback/{token}", input ?? {}, [{"name":"token","in":"path","required":true}], null, "application/json", [], options)
+  },
+
+  /**
+   * GET /api/forms/{uuid}
+   */
+  getFormsUuid(input: { "uuid": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/forms/{uuid}", input ?? {}, [{"name":"uuid","in":"path","required":true}], null, "application/json", [], options)
+  },
+
+  /**
+   * POST /api/forms/{uuid}/submissions
+   */
+  postFormsUuidSubmissions(input: { "uuid": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/forms/{uuid}/submissions", input ?? {}, [{"name":"uuid","in":"path","required":true}], null, "application/json", [], options)
+  },
+
+  /**
+   * POST /api/forms/{uuid}/uploads
+   */
+  postFormsUuidUploads(input: { "uuid": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/forms/{uuid}/uploads", input ?? {}, [{"name":"uuid","in":"path","required":true}], null, "application/json", [], options)
   },
 
   /**
@@ -4285,6 +4320,41 @@ export function createClient(config: ClientConfig) {
    */
   getDashboardStats2(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "GET", "/dashboard/stats", {}, [], null, "application/json", [], options)
+  },
+
+  /**
+   * POST /delivery/pings
+   */
+  postDeliveryPings(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/delivery/pings", {}, [], null, "application/json", [], options)
+  },
+
+  /**
+   * POST /delivery/routes/{id}/start
+   */
+  postDeliveryRoutesIdStart(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/delivery/routes/{id}/start", input ?? {}, [{"name":"id","in":"path","required":true}], null, "application/json", [], options)
+  },
+
+  /**
+   * POST /delivery/stops/{id}/complete
+   */
+  postDeliveryStopsIdComplete(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/delivery/stops/{id}/complete", input ?? {}, [{"name":"id","in":"path","required":true}], null, "application/json", [], options)
+  },
+
+  /**
+   * POST /delivery/stops/{id}/fail
+   */
+  postDeliveryStopsIdFail(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/delivery/stops/{id}/fail", input ?? {}, [{"name":"id","in":"path","required":true}], null, "application/json", [], options)
+  },
+
+  /**
+   * POST /delivery/stops/{id}/start
+   */
+  postDeliveryStopsIdStart(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/delivery/stops/{id}/start", input ?? {}, [{"name":"id","in":"path","required":true}], null, "application/json", [], options)
   },
 
   /**
@@ -5048,6 +5118,13 @@ export function createClient(config: ClientConfig) {
    */
   postWebhooksEmailSes(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "POST", "/webhooks/email/ses", {}, [], null, "application/json", [], options)
+  },
+
+  /**
+   * POST /webhooks/payments
+   */
+  postWebhooksPayments(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/webhooks/payments", {}, [], null, "application/json", [], options)
   },
   }
 }

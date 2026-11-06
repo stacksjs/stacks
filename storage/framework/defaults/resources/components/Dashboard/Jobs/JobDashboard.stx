@@ -1,8 +1,19 @@
+@import('../UI/Table')
+
 <script client>
-import type { DashboardJob, JobStatsResponse } from '../../../../functions/jobs'
-import { fetchJobs, fetchJobStats, retryJob } from '../../../../functions/jobs'
+import type { DashboardJob, JobDefinition, JobStatsResponse } from '../../../../functions/jobs'
+import { fetchJobDefinitions, fetchJobs, fetchJobStats, retryJob } from '../../../../functions/jobs'
 import { pushToast } from '../../../../functions/toasts'
 
+const definitions = state<JobDefinition[]>([])
+const definitionColumns = [
+  { key: 'name', label: 'Job', subtitleKey: 'description', sortable: true },
+  { key: 'queue', label: 'Queue', sortable: true },
+  { key: 'tries', label: 'Attempts', type: 'number' },
+  { key: 'timeout', label: 'Timeout (seconds)', type: 'number', emptyText: 'Default' },
+  { key: 'schedule', label: 'Schedule', emptyText: 'On dispatch' },
+  { key: 'enabled', label: 'Enabled', type: 'boolean' },
+]
 const jobs = state<DashboardJob[]>([])
 const stats = state<JobStatsResponse | null>(null)
 const isLoading = state(true)
@@ -16,10 +27,12 @@ async function loadDashboard(): Promise<void> {
   isLoading.set(true)
   loadError.set('')
   try {
-    const [list, summary] = await Promise.all([
+    const [list, summary, catalog] = await Promise.all([
       fetchJobs({ page: 1, perPage: 10 }),
       fetchJobStats(),
+      fetchJobDefinitions(),
     ])
+    definitions.set(catalog.data)
     jobs.set(list.data)
     stats.set(summary)
   }
@@ -55,7 +68,7 @@ onMount(() => {
   <header class="flex items-start justify-between">
     <div>
       <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Jobs</h1>
-      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Queue activity from Job and FailedJob records plus the current worker metrics.</p>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Application job definitions, queued work, failures and shared worker metrics.</p>
     </div>
     <Button variant="secondary" :loading="isLoading()" @click="loadDashboard">
       <span :if="!isLoading()" class="h-4 w-4 i-hugeicons-refresh"></span>
@@ -85,10 +98,16 @@ onMount(() => {
   </section>
 
   <section>
+    <h2 class="mb-3 font-semibold text-gray-900 dark:text-white">Job definitions</h2>
+    <p :if="!isLoading && !loadError && definitions().length === 0" class="py-8 text-gray-500 text-sm">No application jobs have been defined.</p>
+    <Table :if="definitions().length > 0" :columns="definitionColumns" :data="definitions" row-key="name" paginated :page-size="25" />
+  </section>
+
+  <section>
     <div class="flex items-end justify-between mb-3">
       <div>
         <h2 class="font-semibold text-gray-900 dark:text-white">Recent jobs</h2>
-        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">No synthetic throughput is shown. Metrics reflect the running queue process.</p>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Metrics use worker heartbeats. Stopped sessions are retained for seven days.</p>
       </div>
       <StxLink to="/jobs/history" class="inline-flex items-center font-medium text-blue-600 text-sm dark:text-blue-400">
         Full history

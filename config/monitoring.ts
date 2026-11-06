@@ -1,4 +1,5 @@
 import type { BugHqMonitoringOptions, MonitoringConfig } from '@stacksjs/types'
+import { createDatabaseErrorReporter } from '@stacksjs/error-handling/database-reporter'
 import { createBugHqReporter } from '@stacksjs/error-handling/bughq'
 import { env, initializeIntegration, REMOTE_TELEMETRY_ENVIRONMENTS } from '@stacksjs/env'
 
@@ -32,5 +33,5 @@ const remoteReporter = bughqInitialization?.initialized
 export default {
   enabled: true,
   bughq,
-  reporters: remoteReporter ? [remoteReporter] : [],
+  reporters: [createDatabaseErrorReporter(), ...(remoteReporter ? [remoteReporter] : [])],
 } satisfies MonitoringConfig

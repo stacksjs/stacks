@@ -145,3 +145,17 @@ export function useJobs() {
     retryFailedJobs: retryAllFailedJobs,
   }
 }
+
+export interface JobDefinition {
+  name: string
+  description: string
+  queue: string
+  tries: number
+  timeout: number | null
+  schedule: string
+  enabled: boolean
+}
+
+export async function fetchJobDefinitions(): Promise<{ data: JobDefinition[] }> {
+  return dashboardApi<{ data: JobDefinition[] }>('/api/dashboard/jobs/definitions')
+}

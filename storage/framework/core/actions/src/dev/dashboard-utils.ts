@@ -144,6 +144,7 @@ export function modelsWithEnabledFeatures(
   enabled: (feature: string) => boolean,
 ): DiscoveredModel[] {
   return models.filter((model) => {
+    if (model.dashboard?.access === false) return false
     if (model.category === 'userland') return true
     const gate = featureOf(model.name)
     return gate === undefined || enabled(gate)
@@ -245,6 +246,26 @@ export async function discoverModels(userModelsPath: string, defaultModelsPath: 
   return models.sort((a, b) => a.name.localeCompare(b.name))
 }
 
+/** Discover the native application schema, including installed package models. */
+export async function discoverProjectModels(): Promise<DiscoveredModel[]> {
+  const { overridesReady } = await import('@stacksjs/config')
+  const { resolveModelSources } = await import('@stacksjs/database/model-sources')
+  await overridesReady
+  const models: DiscoveredModel[] = []
+  for (const model of resolveModelSources()?.models ?? []) {
+    if (excludeModels.has(model.name.toLowerCase())) continue
+    const dashboard = await readModelDashboardConfig(model.file)
+    models.push({
+      name: model.name,
+      id: modelNameToId(model.name),
+      icon: dashboard?.icon ?? getModelIcon(model.name),
+      category: categorizeModel(model.file, modelNameToId(model.name), model.origin === 'framework' ? undefined : 'userland'),
+      dashboard,
+    })
+  }
+  return models.sort((a, b) => a.name.localeCompare(b.name))
+}
+
 /**
  * Manifest row written to `storage/framework/runtime/dashboard/.discovered-models.json`
  * for the web-side sidebar to consume. Includes the per-model `dashboard`
@@ -263,7 +284,7 @@ export interface DiscoveredModelManifestRow {
 
 /** Build the manifest array for discovered models */
 export function buildManifest(models: DiscoveredModel[]): DiscoveredModelManifestRow[] {
-  return models.map((m) => {
+  return models.filter(model => model.dashboard?.access !== false).map((m) => {
     const row: DiscoveredModelManifestRow = {
       id: m.id,
       name: m.name,
@@ -430,7 +451,7 @@ export interface DashboardSectionToggles {
  * should skip the row entirely in that case.
  */
 function effectiveCategory(m: DiscoveredModel): ModelCategory | undefined {
-  if (m.dashboard?.enabled === false)
+  if (m.dashboard?.access === false || m.dashboard?.enabled === false)
     return undefined
   // `dashboard.section` is a superset of `ModelCategory` ('home', 'app',
   // 'utilities', etc.). Narrow when comparing against framework
@@ -563,6 +584,7 @@ export function buildSidebarConfig(
       { id: 'realtime', label: 'Realtime', icon: 'link', url: `${baseRoute}/realtime` },
       { id: 'actions', label: 'Actions', icon: 'bolt.fill', url: `${baseRoute}/actions` },
       { id: 'commands', label: 'Commands', icon: 'terminal.fill', url: `${baseRoute}/commands` },
+      { id: 'search-engine', label: 'Search Engine', icon: 'magnifyingglass', url: `${baseRoute}/search-engine` },
       { id: 'queue', label: 'Queue', icon: 'list.bullet.rectangle.fill', url: `${baseRoute}/queue` },
       { id: 'jobs', label: 'Jobs', icon: 'briefcase.fill', url: `${baseRoute}/jobs` },
       { id: 'inbox', label: 'Inbox', icon: 'tray.full.fill', url: `${baseRoute}/inbox` },

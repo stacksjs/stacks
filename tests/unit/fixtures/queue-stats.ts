@@ -62,6 +62,8 @@ function reference(jobs: Array<Record<string, unknown>>, failedJobs: Array<Recor
     else
       bucket.pending++
   }
+  for (const name of failedByQueue.keys())
+    queueMap[name] ??= { pending: 0, active: 0, total: 0 }
   return Object.entries(queueMap).map(([name, data]) => ({ name, pending: data.pending, active: data.active, failed: failedByQueue.get(name) ?? 0, total: data.total }))
 }
 
@@ -93,7 +95,7 @@ try {
   // The seed must reach each case, or the comparison passes on nothing.
   assert(expected.some(queue => queue.active > 0 && queue.pending > 0), 'active and pending in one queue')
   assert(jobs.some(job => job.reserved_at === 0 || job.reserved_at === '0'), 'a reserved_at of 0')
-  assert(!expected.some(queue => queue.name === 'ghost'), 'a queue with only failures is not listed')
+  assert(expected.some(queue => queue.name === 'ghost' && queue.failed === 1 && queue.total === 0), 'a queue with only failures stays visible')
 
   assert.deepEqual(await readQueueCounts(), expected, `${dialect}: per-queue counts`)
   console.log('queue stats OK')

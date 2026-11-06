@@ -76,7 +76,7 @@ export default new Action({
 
       const postIds = posts.map(post => post.id)
       const [categories, tags, authors, categoryRelations, tagRelations] = await Promise.all([
-        db.selectFrom('categories').select(['id', 'name', 'slug']).orderBy('name').execute(),
+        db.selectFrom('categorizables').where('categorizable_type', '=', 'posts').select(['id', 'name', 'slug']).orderBy('name').execute(),
         db.selectFrom('tags').select(['id', 'name', 'slug']).orderBy('name').execute(),
         db.selectFrom('authors').select(['id', 'name', 'email']).orderBy('name').execute(),
         postIds.length

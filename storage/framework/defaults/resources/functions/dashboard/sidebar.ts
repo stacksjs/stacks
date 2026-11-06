@@ -18,6 +18,7 @@ type ModelCategory = 'userland' | 'data' | 'commerce' | 'content' | 'marketing' 
  * full type imports aren't available. Keep in sync with the source.
  */
 interface DashboardModelOptionsLite {
+  access?: boolean
   enabled?: boolean
   label?: string
   icon?: string
@@ -278,7 +279,7 @@ export function loadDiscoveredModels(): DiscoveredModel[] {
  * explicitly disabled so callers can skip the row.
  */
 function effectiveCategory(m: DiscoveredModel): string | undefined {
-  if (m.dashboard?.enabled === false)
+  if (m.dashboard?.access === false || m.dashboard?.enabled === false)
     return undefined
   if (m.dashboard?.section)
     return m.dashboard.section
@@ -372,6 +373,7 @@ export function buildNavSections(
     { to: '/actions', icon: 'bolt', text: 'Actions' },
     { to: '/commands', icon: 'terminal', text: 'Commands' },
     { to: '/queue', icon: 'queue', text: 'Queue' },
+    { to: '/search-engine', icon: 'search', text: 'Search Engine' },
     { to: '/jobs', icon: 'briefcase', text: 'Jobs' },
     { to: '/jobs/history', icon: 'clock', text: 'Job History' },
     { to: '/queries', icon: 'search', text: 'Queries' },
@@ -470,7 +472,7 @@ export function buildNavSections(
       { to: '/marketing/lists', icon: 'list-settings', text: 'Lists' },
       { to: '/marketing/social-posts', icon: 'clock', text: 'Social Posts' },
       { to: '/marketing/campaigns', icon: 'rocket', text: 'Campaigns' },
-      { to: '/marketing/abandoned-carts', icon: 'cart', text: 'Abandoned Carts' },
+      ...(toggles.commerce ? [{ to: '/marketing/abandoned-carts', icon: 'cart', text: 'Abandoned Carts' }] : []),
       // Product reviews are commerce records, so with commerce off this page
       // could only say so (stacksjs/stacks#3186).
       ...(toggles.commerce ? [{ to: '/marketing/reviews', icon: 'star', text: 'Reviews' }] : []),

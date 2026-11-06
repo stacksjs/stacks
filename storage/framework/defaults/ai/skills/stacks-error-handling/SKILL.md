@@ -82,3 +82,11 @@ http.ts, error-page.ts, reporters.ts, bughq.ts and unique-violation.ts.
 Tests: result-type.test.ts, http-errors.test.ts, error-page-render.test.ts,
 custom-error-pages.test.ts and reporters.test.ts under core/error-handling/tests.
 Keep error payloads and credentials out of public responses and diagnostics.
+
+
+For the local dashboard error store, add `createDatabaseErrorReporter()` from
+`@stacksjs/error-handling/database-reporter` to `monitoring.reporters`. Publish
+and migrate the native Error model in an application with its own schema.
+The bounded reporter buffers at most 100 writes, isolates storage failures,
+stores only allowlisted operational context, and drains through
+`flushErrorReporters()`. Remote reporters may coexist with the local store.

@@ -37,7 +37,6 @@ const QUEUE_COLUMNS = [
   { key: 'name', label: 'Queue', sortable: true, subtitleKey: 'status', class: 'font-medium text-gray-900 dark:text-white' },
   count('pending', 'Pending'),
   count('active', 'Active'),
-  count('completed', 'Completed'),
   count('failed', 'Failed'),
   { ...count('total', 'Total'), class: 'font-medium text-gray-900 dark:text-white' },
 ]
@@ -97,7 +96,7 @@ onMount(() => {
 </script>
 
 <div class="space-y-6">
-  <PageHeader title="Queue" description="Recorded queue state and current-process worker metrics.">
+  <PageHeader title="Queue" description="Recorded queue state and shared worker heartbeats.">
   <div class="flex gap-2 items-center">
     <span :class="'inline-flex items-center px-2.5 py-1 font-medium text-xs rounded-full ' + (queueConnected() ? 'text-green-700 bg-green-100 dark:text-green-300 dark:bg-green-950' : 'text-red-700 bg-red-100 dark:text-red-300 dark:bg-red-950')">
       <span :class="'mr-1.5 h-1.5 w-1.5 rounded-full ' + (queueConnected() ? 'bg-green-500' : 'bg-red-500')"></span>
@@ -137,7 +136,7 @@ onMount(() => {
         <h2 class="font-semibold text-gray-900 dark:text-white">Queue breakdown</h2>
         <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Status totals come from Job records grouped by queue name.</p>
       </div>
-      <p class="text-gray-500 text-sm dark:text-neutral-400">{{ stats()?.throughputPerMinute || 0 }} jobs/min in this process</p>
+      <p class="text-gray-500 text-sm dark:text-neutral-400">{{ stats()?.throughputPerMinute || 0 }} jobs/min across reporting workers</p>
     </div>
     <div :if="!isLoading() && queueRows().length === 0" class="px-5 py-12 text-center">
       <div class="mb-3 mx-auto h-9 w-9 text-gray-400 i-hugeicons-queue-02"></div>

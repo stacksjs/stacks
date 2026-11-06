@@ -9409,6 +9409,31 @@
         }
       }
     },
+    "/api/dashboard/jobs/definitions": {
+      "get": {
+        "summary": "/api/dashboard/jobs/definitions",
+        "operationId": "get__api_dashboard_jobs_definitions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/dashboard/jobs/stats": {
       "get": {
         "summary": "/api/dashboard/jobs/stats",
@@ -13080,6 +13105,31 @@
         }
       }
     },
+    "/api/dashboard/search-engine": {
+      "get": {
+        "summary": "/api/dashboard/search-engine",
+        "operationId": "get__api_dashboard_search_engine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/dashboard/serverless": {
       "get": {
         "summary": "/api/dashboard/serverless",
@@ -13735,6 +13785,108 @@
         "parameters": [
           {
             "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/forms/{uuid}": {
+      "get": {
+        "summary": "/api/forms/{uuid}",
+        "operationId": "get__api_forms__uuid_",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/forms/{uuid}/submissions": {
+      "post": {
+        "summary": "/api/forms/{uuid}/submissions",
+        "operationId": "post__api_forms__uuid__submissions",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/forms/{uuid}/uploads": {
+      "post": {
+        "summary": "/api/forms/{uuid}/uploads",
+        "operationId": "post__api_forms__uuid__uploads",
+        "parameters": [
+          {
+            "name": "uuid",
             "in": "path",
             "required": true,
             "schema": {
@@ -16618,6 +16770,167 @@
         "summary": "/dashboard/stats",
         "operationId": "get__dashboard_stats",
         "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/delivery/pings": {
+      "post": {
+        "summary": "/delivery/pings",
+        "operationId": "post__delivery_pings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/delivery/routes/{id}/start": {
+      "post": {
+        "summary": "/delivery/routes/{id}/start",
+        "operationId": "post__delivery_routes__id__start",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/delivery/stops/{id}/complete": {
+      "post": {
+        "summary": "/delivery/stops/{id}/complete",
+        "operationId": "post__delivery_stops__id__complete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/delivery/stops/{id}/fail": {
+      "post": {
+        "summary": "/delivery/stops/{id}/fail",
+        "operationId": "post__delivery_stops__id__fail",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/delivery/stops/{id}/start": {
+      "post": {
+        "summary": "/delivery/stops/{id}/start",
+        "operationId": "post__delivery_stops__id__start",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -19725,6 +20038,31 @@
       "post": {
         "summary": "/webhooks/email/ses",
         "operationId": "post__webhooks_email_ses",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/webhooks/payments": {
+      "post": {
+        "summary": "/webhooks/payments",
+        "operationId": "post__webhooks_payments",
         "parameters": [],
         "responses": {
           "200": {

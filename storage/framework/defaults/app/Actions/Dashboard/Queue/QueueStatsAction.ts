@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions/runtime'
 import { FailedJob, Job } from '@stacksjs/orm'
-import { getGlobalMetrics } from '@stacksjs/queue'
+import { aggregateWorkerMetrics, readWorkerSnapshots } from '@stacksjs/queue'
 import { dashboardOperationalError } from '../dashboard-response'
 import { readQueueCounts } from './queue-stats'
 
@@ -32,18 +32,16 @@ export default new Action({
         total: queue.total,
       }))
       const active = counts.reduce((sum, queue) => sum + queue.active, 0)
-      const completed = 0
 
-      // The in-memory metrics tracker only sees jobs processed since the
-      // current API process started, so it complements (not replaces) the DB
-      // counts. If the process just booted there's nothing here yet.
-      const metrics = getGlobalMetrics().getMetrics()
+      // Workers publish bounded snapshots through their native QueueWorker model.
+      // The dashboard reads those across processes rather than its own empty tracker.
+      const metrics = aggregateWorkerMetrics(await readWorkerSnapshots())
 
       const stats = {
         totalQueues: queues.length,
         totalJobs,
         activeJobs: active,
-        completedJobs: completed,
+        completedJobs: metrics.counts.completed,
         failedJobs: failedJobCount,
         throughputPerMinute: metrics.throughputPerMinute,
         averageProcessingTimeMs: Math.round(metrics.averageDuration),

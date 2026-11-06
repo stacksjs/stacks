@@ -12,18 +12,7 @@ interface CategoryRow {
   updated_at: string | null
 }
 
-/**
- * `GET /api/dashboard/categories` — backs `views/dashboard/content/categories/index.stx`.
- *
- * Reads the `categories` table via `db`. The previous `Category.all()` call
- * threw on every request (the ORM model exposes no query methods) and the catch
- * turned that into an empty list, so a broken read was indistinguishable from a
- * CMS with no categories. It also mapped `parent_id` and `post_count`, neither
- * of which this table has.
- *
- * Note this is the same `categories` table the commerce `Category` model owns —
- * CMS and commerce categories are not separated in the schema today.
- */
+/** The CMS catalog owns categorizables; commerce's categories have a separate id space. */
 export default new Action({
   name: 'CategoryIndexAction',
   description: 'Returns CMS categories for the dashboard.',
@@ -32,7 +21,7 @@ export default new Action({
   async handle() {
     try {
       const rows = await db
-        .selectFrom('categories')
+        .selectFrom('categorizables').where('categorizable_type', '=', 'posts')
         .selectAll()
         .orderBy('created_at', 'desc')
         .execute() as unknown as CategoryRow[]

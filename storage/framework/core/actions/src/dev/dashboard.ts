@@ -8,7 +8,7 @@ import { resolveComponentsLibraryRoot } from './defaults-resources'
 import { shouldDelegateDashboardRequest } from './dashboard-request-routing'
 import { resolveDashboardCraftExecutable, type CraftBinaryResolver } from './dashboard-native'
 import { resolveDashboardDomain, resolveDashboardProxyStrategy } from './dashboard-proxy'
-import { buildManifest, discoverModels, findAvailablePort, modelsWithEnabledFeatures, waitForServer, writeFileIfChanged } from './dashboard-utils'
+import { buildManifest, discoverProjectModels, findAvailablePort, modelsWithEnabledFeatures, waitForServer, writeFileIfChanged } from './dashboard-utils'
 import { runDashboardSupervisor } from './dashboard-supervisor'
 import { ensureDiscoveredPackages } from '../discover-packages'
 import { resolveStxSource } from '../stx-source'
@@ -594,7 +594,7 @@ async function startReverseProxy(): Promise<boolean> {
 // eslint-disable-next-line ts/no-top-level-await
 const [, allDiscoveredModels] = await Promise.all([
   startStxServer(),
-  discoverModels(projectPath('app/Models'), defaultsPath('app/Models')),
+  discoverProjectModels(),
 ])
 
 // eslint-disable-next-line ts/no-top-level-await

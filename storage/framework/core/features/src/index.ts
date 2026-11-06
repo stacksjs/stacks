@@ -126,6 +126,7 @@ export const FEATURE_FILES: Record<FeatureName, readonly string[]> = {
     'app/Jobs/',
     'app/Models/Job.ts',
     'app/Models/FailedJob.ts',
+    'app/Models/QueueWorker.ts',
     'functions/jobs.ts',
     'resources/views/dashboard/queue/',
     'resources/views/dashboard/jobs/',
@@ -240,7 +241,7 @@ export const FEATURE_TABLES: Record<FeatureName, readonly string[]> = {
   ],
   monitoring: ['errors'],
   realtime: ['websockets'],
-  queue: ['jobs', 'failed_jobs'],
+  queue: ['queue_workers', 'jobs', 'failed_jobs'],
 }
 
 /**

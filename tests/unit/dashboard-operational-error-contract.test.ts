@@ -78,7 +78,8 @@ describe('dashboard operational error contract', () => {
     expect(buddy).toContain("dashboardOperationalError(error, 'Buddy could not answer the question.', 'BuddyChatAction', 502)")
     expect(search).toContain("dashboardOperationalError(error, 'Search results could not be loaded.', 'GlobalSearchAction')")
     expect(search).toContain('modelCatalog.promise = null')
-    expect(search).toContain('finally {\n        db.close()')
+    expect(search).not.toContain("import('bun:sqlite')")
+    expect(search).toContain('searchModelRows(model.model')
   })
 
   test('protects commerce read failures', () => {

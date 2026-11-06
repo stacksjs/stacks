@@ -1,8 +1,6 @@
 import { Action } from '@stacksjs/actions/runtime'
-import { existsSync, readdirSync } from 'node:fs'
-import { join } from 'node:path'
-import process from 'node:process'
-import { frameworkDefaultsRoot } from '@stacksjs/path'
+import { overridesReady } from '@stacksjs/config'
+import { resolveModelSources } from '@stacksjs/database/model-sources'
 import { countRows } from '../../../../resources/functions/dashboard/data'
 import { dashboardOperationalError, dashboardOperationalIssue } from '../dashboard-response'
 import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
@@ -64,25 +62,6 @@ function pluralize(word: string): string {
   return `${word}s`
 }
 
-function walkModels(dir: string, recursive: boolean): Array<{ name: string, file: string }> {
-  const out: Array<{ name: string, file: string }> = []
-  if (!existsSync(dir))
-    return out
-
-  const entries = readdirSync(dir, { withFileTypes: true })
-  for (const ent of entries) {
-    const full = join(dir, ent.name)
-    if (ent.isDirectory()) {
-      if (recursive) out.push(...walkModels(full, true))
-      continue
-    }
-    if (!ent.name.endsWith('.ts')) continue
-    if (ent.name.startsWith('_') || ent.name === 'index.ts' || ent.name === 'README.ts') continue
-    out.push({ name: ent.name.replace('.ts', ''), file: full })
-  }
-  return out
-}
-
 function categorize(model: { source: 'userland' | 'framework', file: string }): string {
   if (model.source === 'userland') return 'userland'
   const segs = model.file.split('/Models/')[1]?.split('/') ?? []
@@ -122,28 +101,17 @@ export default new Action({
   method: 'GET',
   apiResponse: true,
   async handle() {
-    const cwd = process.cwd()
-    const userlandDir = join(cwd, 'app', 'Models')
-    const defaultsDir = join(frameworkDefaultsRoot(), 'app/Models')
-
-    let userland: Array<Omit<DiscoveredModel, 'source'>>
-    let defaults: Array<Omit<DiscoveredModel, 'source'>>
+    await overridesReady
+    let merged: DiscoveredModel[]
     try {
-      userland = walkModels(userlandDir, true)
-      defaults = walkModels(defaultsDir, true)
+      merged = (resolveModelSources()?.models ?? []).map(model => ({
+        name: model.name,
+        file: model.file,
+        source: model.origin === 'framework' ? 'framework' : 'userland',
+      }))
     }
     catch (error) {
       return dashboardOperationalError(error, 'Model catalog could not be loaded.', 'ModelsIndexAction.catalog')
-    }
-
-    const seen = new Set<string>()
-    const merged: DiscoveredModel[] = []
-    for (const list of [userland, defaults]) {
-      for (const m of list) {
-        if (seen.has(m.name)) continue
-        seen.add(m.name)
-        merged.push({ ...m, source: list === userland ? 'userland' : 'framework' })
-      }
     }
 
     const candidates = await Promise.all(merged.map(async (m): Promise<ModelRow | null> => {

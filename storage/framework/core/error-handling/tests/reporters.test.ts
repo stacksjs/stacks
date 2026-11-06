@@ -113,11 +113,12 @@ describe('error reporters', () => {
   })
 
   test('returns a copy of the registered reporter list', () => {
+    const before = reporters().map(reporter => reporter.name)
     attach([])
 
     const attached = reporters()
-    expect(attached.map(reporter => reporter.name)).toEqual(['test-reporter'])
+    expect(attached.map(reporter => reporter.name)).toEqual([...before, 'test-reporter'])
     ;(attached as ErrorReporter[]).length = 0
-    expect(reporters()).toHaveLength(1)
+    expect(reporters().map(reporter => reporter.name)).toEqual([...before, 'test-reporter'])
   })
 })

@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions/runtime'
 import { FailedJob, Job } from '@stacksjs/orm'
-import { getGlobalMetrics } from '@stacksjs/queue'
+import { aggregateWorkerMetrics, readWorkerSnapshots } from '@stacksjs/queue'
 import { dashboardOperationalError } from '../dashboard-response'
 
 export default new Action({
@@ -14,7 +14,7 @@ export default new Action({
         FailedJob.count(),
       ])
 
-      const metrics = getGlobalMetrics().getMetrics()
+      const metrics = aggregateWorkerMetrics(await readWorkerSnapshots())
       const completedSeen = metrics.counts.completed
       const failedSeen = metrics.counts.failed
       const totalSeen = completedSeen + failedSeen

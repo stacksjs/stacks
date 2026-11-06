@@ -4,6 +4,7 @@
  * Automatically discovers and registers job classes from the app/Jobs directory.
  */
 
+import { existsSync } from 'node:fs'
 import type { JobOptions } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
@@ -133,9 +134,10 @@ export const jobRegistry = new JobRegistry()
 /**
  * Discover jobs from the app/Jobs directory
  */
-export async function discoverJobs(jobsPath?: string): Promise<DiscoveredJob[]> {
+export async function discoverJobs(jobsPath?: string, options: { strict?: boolean } = {}): Promise<DiscoveredJob[]> {
   const basePath = jobsPath || p.userJobsPath()
   const discovered: DiscoveredJob[] = []
+  if (!existsSync(basePath)) return discovered
 
   try {
     const glob = new Bun.Glob('**/*.{ts,js}')
@@ -143,18 +145,19 @@ export async function discoverJobs(jobsPath?: string): Promise<DiscoveredJob[]> 
 
     for await (const file of glob.scan(scanOptions)) {
       // Skip test files and index files
-      if (file.includes('.test.') || file.includes('.spec.') || file.endsWith('index.ts') || file.endsWith('index.js')) {
+      if (file.endsWith('.d.ts') || file.includes('.test.') || file.includes('.spec.') || file.endsWith('index.ts') || file.endsWith('index.js')) {
         continue
       }
 
       try {
-        const job = await loadJob(file)
+        const job = await loadJob(file, options.strict)
         if (job) {
           discovered.push(job)
           jobRegistry.register(job)
         }
       }
       catch (error) {
+        if (options.strict) throw error
         log.warn(`Failed to load job from ${file}: ${(error as Error).message}`)
       }
     }
@@ -165,6 +168,7 @@ export async function discoverJobs(jobsPath?: string): Promise<DiscoveredJob[]> 
     return discovered
   }
   catch (error) {
+    if (options.strict) throw error
     log.error(`Failed to discover jobs: ${(error as Error).message}`)
     return []
   }
@@ -173,7 +177,7 @@ export async function discoverJobs(jobsPath?: string): Promise<DiscoveredJob[]> 
 /**
  * Load a single job file
  */
-async function loadJob(filePath: string): Promise<DiscoveredJob | null> {
+async function loadJob(filePath: string, strict = false): Promise<DiscoveredJob | null> {
   try {
     const module = await import(filePath)
 
@@ -214,9 +218,11 @@ async function loadJob(filePath: string): Promise<DiscoveredJob | null> {
       }
     }
 
+    if (strict) throw new TypeError(`No executable job export in ${filePath}`)
     return null
   }
   catch (error) {
+    if (strict) throw error
     log.debug(`Could not load job from ${filePath}: ${(error as Error).message}`)
     return null
   }

@@ -16,12 +16,17 @@ await db.unsafe(`CREATE TABLE failed_jobs (id INTEGER PRIMARY KEY AUTOINCREMENT,
   payload TEXT NOT NULL, exception TEXT NOT NULL, attempts INTEGER, max_attempts INTEGER, duration_ms INTEGER,
   failed_at DATETIME DEFAULT CURRENT_TIMESTAMP, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME)`).execute()
 
+const { buildMigrationPlan, generateSql, loadModels } = await import('bun-query-builder')
+const plan = buildMigrationPlan(await loadModels({ modelsDir: new URL('../../../../defaults/app/Models', import.meta.url).pathname }), { dialect: 'sqlite' })
+plan.tables = plan.tables.filter(table => table.table === 'queue_workers')
+for (const statement of generateSql(plan)) await db.unsafe(statement).execute()
+
 const { job } = await import('../../src/job')
 const { startProcessor, stopProcessor } = await import('../../src/worker')
 
 await job('FlakyJob' as never, {} as never).dispatch()
 
-void startProcessor('default')
+const processing = startProcessor('default')
 const deadline = Date.now() + 15_000
 let state = { jobs: 1, failed: 0 }
 while (Date.now() < deadline) {
@@ -33,6 +38,15 @@ while (Date.now() < deadline) {
     break
 }
 await stopProcessor({ graceMs: 1000 })
+await processing
+const { readWorkerSnapshots } = await import('../../src/worker-monitor')
+const snapshots = await readWorkerSnapshots()
+const assert = (await import('node:assert/strict')).default
+assert.equal(snapshots.length, 1)
+assert.equal(snapshots[0]!.worker.status, 'stopped')
+assert.equal(snapshots[0]!.metrics.completed, 1)
+assert.equal(snapshots[0]!.metrics.failed, 1)
+assert.equal(snapshots[0]!.activeJobs, 0)
 
 const { runs } = await import(`${process.cwd()}/app/Jobs/FlakyJob.ts`)
 console.log(JSON.stringify({ ...state, runs: runs() }))

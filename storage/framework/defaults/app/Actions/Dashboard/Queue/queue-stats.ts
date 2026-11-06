@@ -22,7 +22,7 @@ const queueName = (value: unknown): string => String(value || 'default')
  * worker has reserved it, which is `queuedJobState`'s rule in
  * `@stacksjs/queue`: a `reserved_at` that is set and not 0, so the filter
  * below is `!= 0`, which NULL never matches. Queues are listed in the order of
- * their first job, and a queue with only failures is not listed, as before.
+ * their first job, including queues whose only remaining records are failures.
  */
 export async function readQueueCounts(database: typeof db = db): Promise<QueueCounts[]> {
   const [jobRows, failedRows] = await Promise.all([
@@ -55,6 +55,10 @@ export async function readQueueCounts(database: typeof db = db): Promise<QueueCo
       active: current.active + Number(row.active),
       firstId: Math.min(current.firstId, Number(row.first_id)),
     })
+  }
+
+  for (const name of failed.keys()) {
+    if (!queues.has(name)) queues.set(name, { total: 0, active: 0, firstId: Number.POSITIVE_INFINITY })
   }
 
   return [...queues.entries()]

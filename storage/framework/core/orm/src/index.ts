@@ -395,6 +395,7 @@ export const User = lazyModel<typeof import('../../../defaults/app/Models/User')
 // can check `await ormReady; if (!Job) throw …` to surface a clear
 // "run ./buddy queue:install" error.
 export const Job = lazyModel<typeof import('../../../defaults/app/Models/Job').default>('Job')
+export const QueueWorker = lazyModel<typeof import('../../../defaults/app/Models/QueueWorker').default>('QueueWorker')
 export const FailedJob = lazyModel<typeof import('../../../defaults/app/Models/FailedJob').default>('FailedJob')
 
 // ---------------------------------------------------------------------------
@@ -559,6 +560,8 @@ queueMicrotask(async () => {
     if (userModel) _loaded.User = userModel
 
     if (feature('queue')) {
+      const queueWorker = await loadUserlandModel('QueueWorker')
+      if (queueWorker) _loaded.QueueWorker = queueWorker
       const job = await loadUserlandModel('Job')
       if (job) _loaded.Job = job
       const failedJob = await loadUserlandModel('FailedJob')
@@ -699,7 +702,7 @@ export const Websocket = lazyModel<typeof import('../../../defaults/app/Models/r
 // any stx page render fires (request time), the microtask queue has long
 // drained, so `await Order.all()` resolves transparently.
 const _allExports: Record<string, any> = {
-  User, Job, FailedJob,
+  User, Job, FailedJob, QueueWorker,
   Activity, AnalyticsEvent, Automation, AutomationRun, Auction, AuctionItem,
   Author, Bid, Board, BoardColumn, Campaign, CampaignSend, CampaignVariant, Card,
   CardComment, Cart, CartItem, Categorizable, Category, Comment, Coupon, Customer,

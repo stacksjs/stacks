@@ -1,3 +1,4 @@
+import { persistWorkerSnapshot, pruneWorkerSnapshots } from './worker-monitor'
 import { batchMembershipId } from './batch-payload'
 import { resolveQueueDriver } from './driver'
 /**
@@ -225,6 +226,35 @@ function getQueueDriver(): string {
   return resolveQueueDriver()
 }
 
+async function monitorWorker(id: string): Promise<() => Promise<void>> {
+  const { getWorkerTracker, getGlobalMetrics } = await import('./events')
+  let writing: Promise<void> | undefined
+  let warned = false
+  const persist = () => {
+    if (writing) return writing
+    const worker = getWorkerTracker().getAll().find(worker => worker.id === id)
+    if (!worker) return Promise.resolve()
+    const metrics = getGlobalMetrics().getMetrics()
+    writing = persistWorkerSnapshot({ worker: { ...worker }, heartbeatAt: Date.now(), activeJobs: getActiveJobCount(),
+      metrics: { completed: worker.processedCount, failed: worker.failedCount, throughputPerMinute: metrics.throughputPerMinute, averageDuration: metrics.averageDuration } })
+      .catch((error) => {
+        if (warned) return
+        warned = true
+        log.warn(`Queue worker telemetry unavailable. Run migrations for QueueWorker: ${error instanceof Error ? error.message : String(error)}`)
+      }).finally(() => { writing = undefined })
+    return writing
+  }
+  void pruneWorkerSnapshots().catch(() => {})
+  void persist()
+  const timer = setInterval(() => { void persist() }, 10_000)
+  timer.unref()
+  return async () => {
+    clearInterval(timer)
+    await writing
+    await persist()
+  }
+}
+
 /**
  * Start the queue processor (worker)
  * This is the main function called by `buddy queue:work`
@@ -233,6 +263,8 @@ export async function startProcessor(
   queueName?: string,
   options: { concurrency?: number } = {},
 ): Promise<Result<undefined, Error>> {
+  let stopMonitor: (() => Promise<void>) | undefined
+  let monitoredId: string | undefined
   try {
     log.info('Starting queue processor...')
 
@@ -245,7 +277,9 @@ export async function startProcessor(
 
     const { getWorkerTracker, getGlobalMetrics } = await import('./events')
     getGlobalMetrics() // ensure metrics are listening
-    getWorkerTracker().register(workerId, queueName || 'default')
+    getWorkerTracker().register(workerId, queueName || '*')
+    monitoredId = workerId
+    stopMonitor = await monitorWorker(monitoredId)
 
     if (queueDriver === 'redis') {
       log.info('Using Redis queue driver (bun-queue)')
@@ -274,6 +308,11 @@ export async function startProcessor(
   catch (error) {
     workerRunning = false
     return err(error as Error)
+  }
+  finally {
+    const { getWorkerTracker } = await import('./events')
+    if (monitoredId) getWorkerTracker().unregister(monitoredId)
+    await stopMonitor?.()
   }
 }
 

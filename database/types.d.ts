@@ -1328,6 +1328,15 @@ declare module '@stacksjs/database' {
       paused_at: string | null
       resume_at: string | null
     }
+    queue_workers: {
+      // columns
+      id: number
+      created_at: string
+      updated_at: string | null
+      worker_id: string
+      snapshot: string
+      heartbeat_at: number | bigint
+    }
     receipts: {
       // columns
       id: number

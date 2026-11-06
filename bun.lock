@@ -776,6 +776,7 @@
       "dependencies": {
         "@bughq/sdk": "^0.3.0",
         "@stacksjs/config": "workspace:*",
+        "@stacksjs/database": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/stx": "0.2.807",
         "@stacksjs/types": "workspace:*",

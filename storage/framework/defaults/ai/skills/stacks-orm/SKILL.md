@@ -1,6 +1,6 @@
 ---
 name: stacks-orm
-description: Use when querying or writing Stacks models, using transactions and relationships, preserving inferred model types, or enabling native model traits. Covers @stacksjs/orm, the model runtime, and 107 built-in models.
+description: Use when querying or writing Stacks models, using transactions and relationships, preserving inferred model types, or enabling native model traits. Covers @stacksjs/orm, the model runtime, and 108 built-in models.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -10,7 +10,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 `defineModel` produces an immediately usable query surface over
 `bun-query-builder`. Model-driven migrations change the schema; there are no
-per-model ORM classes to generate. The framework declares 107 models on disk,
+per-model ORM classes to generate. The framework declares 108 models on disk,
 but optional feature gates determine which built-ins load in a running app.
 
 ## Definitions and typed rows

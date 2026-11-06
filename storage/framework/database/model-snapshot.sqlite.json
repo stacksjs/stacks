@@ -13892,10 +13892,49 @@
             "type": "unique"
           }
         ]
+      },
+      {
+        "table": "queue_workers",
+        "columns": [
+          {
+            "name": "worker_id",
+            "type": "string",
+            "isPrimaryKey": true,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
+            "name": "snapshot",
+            "type": "text",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "heartbeat_at",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          }
+        ],
+        "indexes": [
+          {
+            "name": "queue_workers_heartbeat_at_index",
+            "columns": [
+              "heartbeat_at"
+            ],
+            "type": "index"
+          }
+        ]
       }
     ]
   },
-  "hash": "60a0df9e25a7034cf74ac2a82e0162f4108d11339ec1e0536c24c1731659c077",
+  "hash": "7cf62aa4aae99d0858498aef6fbc69cb7116fdadb3c259fe80e7c5ad9bca6aff",
   "dialect": "sqlite",
-  "updatedAt": "2026-10-26T18:08:18.640Z"
+  "updatedAt": "2026-11-06T03:14:12.329Z"
 }

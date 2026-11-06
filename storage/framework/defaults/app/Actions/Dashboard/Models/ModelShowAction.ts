@@ -1,3 +1,4 @@
+import { hiddenModelColumns } from '../../../../resources/functions/dashboard/model-columns'
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
 import { response as routerResponse } from '@stacksjs/router'
@@ -83,17 +84,6 @@ function humanize(column: string): string {
 // dropped from the response body AND from the sort/filter allowlist: a
 // column you cannot see is still an enumeration oracle if you can sort or
 // filter by it.
-const HIDDEN_COLUMNS = new Set(['password', 'remember_token', 'api_token', 'access_token', 'refresh_token', 'secret', 'two_factor_secret'])
-
-function hiddenModelColumns(Model: any): Set<string> {
-  const hidden = new Set(HIDDEN_COLUMNS)
-  for (const [name, definition] of Object.entries(Model?.attributes ?? {})) {
-    if ((definition as { hidden?: boolean })?.hidden)
-      hidden.add(pascalToSnake(name))
-  }
-  return hidden
-}
-
 /**
  * Column identifiers reach the query builder as raw, unquoted SQL, so only
  * valid identifiers from the table's own column list may ever be used.

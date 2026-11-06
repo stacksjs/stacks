@@ -37,6 +37,7 @@ export { default as PaymentProduct } from '../defaults/app/Models/PaymentProduct
 export { default as PaymentTransaction } from '../defaults/app/Models/PaymentTransaction'
 export { default as PersonalAccessToken } from '../defaults/app/Models/PersonalAccessToken'
 export { default as QueryLog } from '../defaults/app/Models/QueryLog'
+export { default as QueueWorker } from '../defaults/app/Models/QueueWorker'
 export { default as Referral } from '../defaults/app/Models/Referral'
 export { default as ReferralCode } from '../defaults/app/Models/ReferralCode'
 export { default as Release } from '../defaults/app/Models/Release'

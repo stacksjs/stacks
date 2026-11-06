@@ -1,18 +1,19 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
-import { env } from '@stacksjs/env'
-import { readdirSync } from 'node:fs'
-import { basename, extname, join } from 'node:path'
-import process from 'node:process'
-import { frameworkDefaultsRoot } from '@stacksjs/path'
+import { getDatabaseDialect, sqlHelpers } from '@stacksjs/database/runtime'
+import { overridesReady } from '@stacksjs/config'
+import { resolveModelSources } from '@stacksjs/database/model-sources'
+import { hiddenModelColumns } from '../../../../resources/functions/dashboard/model-columns'
 import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
-import { dashboardOperationalError } from '../dashboard-response'
+import { dashboardOperationalError, dashboardOperationalIssue } from '../dashboard-response'
 
 interface SearchableModel {
   name: string
   table: string
   slug: string
   fields: string[]
+  primaryKey: string
+  model: any
   icon: string
 }
 
@@ -68,36 +69,6 @@ function isSafeIdentifier(value: string): boolean {
   return /^[A-Z_][A-Z0-9_]*$/i.test(value) && value.length <= 64
 }
 
-function modelFiles(root: string): string[] {
-  const files: string[] = []
-
-  function walk(directory: string): void {
-    let entries
-    try {
-      entries = readdirSync(directory, { withFileTypes: true })
-    }
-    catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT')
-        return
-      throw new Error(`Could not scan searchable models in ${directory}: ${error instanceof Error ? error.message : String(error)}`)
-    }
-
-    for (const entry of entries) {
-      const file = join(directory, entry.name)
-      if (entry.isDirectory()) {
-        walk(file)
-        continue
-      }
-      if (!['.ts', '.js'].includes(extname(entry.name))) continue
-      if (entry.name.startsWith('.') || entry.name.startsWith('_') || entry.name.startsWith('index')) continue
-      files.push(file)
-    }
-  }
-
-  walk(root)
-  return files.sort()
-}
-
 function iconForModel(name: string): string {
   const icons: Record<string, string> = {
     User: 'i-hugeicons-user-group',
@@ -115,17 +86,11 @@ function iconForModel(name: string): string {
 }
 
 async function loadSearchableModels(): Promise<SearchableModel[]> {
-  const defaultsRoot = join(frameworkDefaultsRoot(), 'app/Models')
-  const userRoot = join(process.cwd(), 'app/Models')
-  const merged = new Map<string, string>()
-
-  for (const file of modelFiles(defaultsRoot))
-    merged.set(basename(file, extname(file)), file)
-  for (const file of modelFiles(userRoot))
-    merged.set(basename(file, extname(file)), file)
+  await overridesReady
+  const sources = resolveModelSources()?.models ?? []
 
   const models: SearchableModel[] = []
-  for (const [fallbackName, file] of merged) {
+  for (const { name: fallbackName, file } of sources) {
     try {
       const module = await import(file)
       const definition = await resolveDashboardModel(fallbackName, module.default ?? module)
@@ -134,9 +99,11 @@ async function loadSearchableModels(): Promise<SearchableModel[]> {
       const search = definition.traits?.useSearch
       if (!search || typeof search !== 'object' || !Array.isArray(search.searchable)) continue
 
+      const hidden = hiddenModelColumns(definition)
+      const stored = new Set(Object.keys(definition.attributes ?? {}).map(snakeCase))
       const fields: string[] = (search.searchable as unknown[])
         .map((field: unknown) => snakeCase(String(field)))
-        .filter((field: string) => isSafeIdentifier(field) && !HIDDEN_FIELDS.has(field))
+        .filter((field: string) => isSafeIdentifier(field) && !HIDDEN_FIELDS.has(field) && !hidden.has(field) && stored.has(field))
       const table = String(definition.table || pluralize(snakeCase(name)))
       if (fields.length === 0 || !isSafeIdentifier(table)) continue
 
@@ -145,6 +112,8 @@ async function loadSearchableModels(): Promise<SearchableModel[]> {
         table,
         slug: kebabCase(name),
         fields: [...new Set(fields)],
+        primaryKey: String(definition.primaryKey || 'id'),
+        model: definition,
         icon: iconForModel(name),
       })
     }
@@ -190,6 +159,28 @@ function resultSubtitle(model: SearchableModel, row: Record<string, unknown>, ti
   return undefined
 }
 
+/** Use the configured ORM connection, including PostgreSQL, and select only approved fields. */
+export async function searchModelRows(Model: any, fields: string[], primaryKey: string, term: string, limit = RESULTS_PER_MODEL): Promise<Array<Record<string, unknown>>> {
+  if (!isSafeIdentifier(primaryKey) || fields.some(field => !isSafeIdentifier(field)))
+    throw new TypeError('Search columns must be model identifiers.')
+  if (fields.length === 0) return []
+  const dialect = sqlHelpers(getDatabaseDialect())
+  const quote = (column: string) => dialect.isMysql ? `\`${column}\`` : `"${column}"`
+  const rows = await Model.query()
+    .select(...new Set([primaryKey, ...fields]))
+    .whereGroup((group: any) => {
+      for (const [index, column] of fields.entries()) {
+        const match = `LOWER(CAST(${quote(column)} AS ${dialect.isMysql ? 'CHAR' : 'TEXT'})) LIKE LOWER(?)`
+        group = index === 0 ? group.whereRaw(match, `%${term}%`) : group.orWhereRaw(match, `%${term}%`)
+      }
+      return group
+    })
+    .orderBy(primaryKey, 'asc')
+    .limit(limit)
+    .get()
+  return rows.map((row: any) => typeof row.toJSON === 'function' ? row.toJSON() : row.attributes ?? row)
+}
+
 export default new Action({
   name: 'GlobalSearchAction',
   description: 'Searches fields declared by model useSearch traits and groups matching records by model.',
@@ -202,52 +193,18 @@ export default new Action({
     try {
       const models = await catalog()
       if (models.length === 0) return { results: {}, unavailable: [] }
-      const { Database } = await import('bun:sqlite')
-      const db = new Database(env.DB_DATABASE_PATH || 'database/stacks.sqlite', { readonly: true })
       const results: Record<string, SearchResult[]> = {}
       const unavailable: SearchUnavailable[] = []
 
-      try {
-        for (const model of models) {
-          if (Object.keys(results).length >= MAX_GROUPS) break
-
-          const columns = db.query(`PRAGMA table_info(${model.table})`).all() as Array<{ name: string }>
-          if (columns.length === 0) {
-            unavailable.push({
-              model: model.name,
-              reason: `Table ${model.table} has not been migrated.`,
-            })
-            continue
-          }
-
-          const available = new Set(columns.map(column => column.name))
-          const fields = model.fields.filter(field => available.has(field))
-          if (fields.length === 0) {
-            unavailable.push({
-              model: model.name,
-              reason: 'Declared useSearch fields are not present in the migrated table.',
-            })
-            continue
-          }
-
-          const selected = [...new Set(['id', ...fields])].filter(field => available.has(field))
-          const where = fields.map(field => `${field} LIKE ? COLLATE NOCASE`).join(' OR ')
-          const bindings = fields.map(() => `%${q}%`)
-          let rows: Array<Record<string, unknown>>
-          try {
-            rows = db
-              .query(`SELECT ${selected.join(', ')} FROM ${model.table} WHERE ${where} LIMIT ?`)
-              .all(...bindings, RESULTS_PER_MODEL) as Array<Record<string, unknown>>
-          }
-          catch (error) {
-            throw new Error(`Could not search model ${model.name}: ${error instanceof Error ? error.message : String(error)}`)
-          }
+      for (const model of models) {
+        if (Object.keys(results).length >= MAX_GROUPS) break
+        try {
+          const rows = await searchModelRows(model.model, model.fields, model.primaryKey, q, RESULTS_PER_MODEL)
           if (rows.length === 0) continue
-
-          results[model.name] = rows.map((row, index) => {
+          results[model.name] = rows.map((row) => {
             const title = resultTitle(model, row)
             return {
-              id: (row.id as string | number | undefined) ?? index,
+              id: row[model.primaryKey] as string | number,
               title,
               subtitle: resultSubtitle(model, row, title),
               href: `/models/${model.slug}?q=${encodeURIComponent(q)}`,
@@ -255,9 +212,10 @@ export default new Action({
             }
           })
         }
-      }
-      finally {
-        db.close()
+        catch (error) {
+          unavailable.push({ model: model.name, reason: 'Could not search model. Check its migrated schema and declared useSearch fields.' })
+          dashboardOperationalIssue(error, 'Could not search model.', `GlobalSearchAction.${model.name}`)
+        }
       }
 
       return { results, unavailable }

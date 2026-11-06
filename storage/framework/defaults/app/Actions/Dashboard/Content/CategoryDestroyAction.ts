@@ -25,7 +25,7 @@ export default new Action({
     try {
       const deleted = await transaction(async (rawTrx) => {
         const trx = rawTrx as unknown as typeof db
-        const category = await trx.selectFrom('categories').select(['id']).where('id', '=', id).executeTakeFirst()
+        const category = await trx.selectFrom('categorizables').where('categorizable_type', '=', 'posts').select(['id']).where('id', '=', id).executeTakeFirst()
         if (!category)
           return false
 
@@ -34,7 +34,7 @@ export default new Action({
           .where('category_id', '=', id)
           .where('categorizable_type', '=', 'posts')
           .execute()
-        await trx.deleteFrom('categories').where('id', '=', id).execute()
+        await trx.deleteFrom('categorizables').where('categorizable_type', '=', 'posts').where('id', '=', id).execute()
         return true
       })
 

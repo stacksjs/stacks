@@ -1,0 +1,58 @@
+@import('../UI/Table')
+
+<script client>
+import type { SearchEngineInventory } from '../../../../functions/search-engine'
+import { fetchSearchEngineInventory } from '../../../../functions/search-engine'
+
+const inventory = state<SearchEngineInventory | null>(null)
+const loading = state(true)
+const error = state('')
+const modelRows = derived(() => (inventory()?.models ?? []).map(model => ({
+  ...model,
+  searchable: model.searchable.join(', '),
+  filterable: model.filterable.join(', ') || 'None',
+  sortable: model.sortable.join(', ') || 'None',
+})))
+const columns = [
+  { key: 'name', label: 'Model', sortable: true },
+  { key: 'index', label: 'Index', sortable: true },
+  { key: 'searchable', label: 'Searchable fields' },
+  { key: 'filterable', label: 'Filterable fields' },
+  { key: 'sortable', label: 'Sortable fields' },
+]
+const indexColumns = [
+  { key: 'name', label: 'Index', sortable: true },
+  { key: 'documents', label: 'Documents', type: 'number', emptyText: 'Not reported' },
+]
+async function refresh() {
+  loading.set(true)
+  error.set('')
+  try { inventory.set(await fetchSearchEngineInventory()) }
+  catch { error.set('Search inventory could not be loaded. Try refreshing.') }
+  finally { loading.set(false) }
+}
+onMount(() => { void refresh() })
+</script>
+
+<div class="space-y-6">
+  <PageHeader title="Search Engine" description="Configured search service and model indexing conventions.">
+    <Button variant="secondary" :loading="loading" @click="refresh">Refresh</Button>
+  </PageHeader>
+  <p :if="loading" role="status" class="text-gray-500 text-sm">Loading search inventory...</p>
+  <p :if="error" role="alert" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 rounded-lg">{{ error }}</p>
+  <section :if="inventory" class="p-5 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <p class="font-semibold text-gray-900 dark:text-white">{{ inventory()?.driver }}: {{ inventory()?.connected ? 'Connected' : 'Unavailable' }}</p>
+    <p :if="inventory()?.unavailable" role="status" class="mt-2 text-amber-700 text-sm dark:text-amber-300">{{ inventory()?.unavailable }}</p>
+    <p class="mt-2 text-gray-500 text-sm dark:text-neutral-400">Models are discovered from the application schema and their useSearch traits.</p>
+  </section>
+  <section>
+    <h2 class="mb-3 font-semibold text-gray-900 dark:text-white">Searchable models</h2>
+    <p :if="!loading && modelRows().length === 0" class="py-8 text-gray-500 text-sm">No models declare the useSearch trait.</p>
+    <Table :if="modelRows().length > 0" :columns="columns" :data="modelRows" row-key="name" paginated :page-size="25" />
+  </section>
+  <section :if="inventory()?.connected">
+    <h2 class="mb-3 font-semibold text-gray-900 dark:text-white">Provider indexes</h2>
+    <p :if="inventory()?.indexes.length === 0" class="py-8 text-gray-500 text-sm">The configured service has no indexes yet.</p>
+    <Table :if="inventory()?.indexes.length" :columns="indexColumns" :data="inventory()?.indexes || []" row-key="name" paginated :page-size="25" />
+  </section>
+</div>

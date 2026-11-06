@@ -238,3 +238,6 @@ export async function getRedisQueue() {
 }
 
 export { resolveQueueDriver } from './driver'
+
+export { aggregateWorkerMetrics, readWorkerSnapshots } from './worker-monitor'
+export type { WorkerSnapshot } from './worker-monitor'

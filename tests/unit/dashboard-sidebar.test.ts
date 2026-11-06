@@ -67,7 +67,8 @@ describe('dashboard sidebar data', () => {
 
     expect(marketingLinks(true)).toContain('/marketing/reviews')
     expect(marketingLinks(false)).not.toContain('/marketing/reviews')
-    expect(marketingLinks(false)).toContain('/marketing/abandoned-carts')
+    expect(marketingLinks(true)).toContain('/marketing/abandoned-carts')
+    expect(marketingLinks(false)).not.toContain('/marketing/abandoned-carts')
   })
 
   // Settings used to be listed twice: once in Utilities beside Appearance and
@@ -229,4 +230,10 @@ describe('discovered-models manifest location', () => {
       rmSync(dir, { recursive: true, force: true })
     }
   })
+})
+
+
+it('private models do not leave broken links in the sidebar', () => {
+  const sections = buildNavSections([{ id: 'private-record', name: 'PrivateRecord', category: 'userland', dashboard: { access: false } }])
+  expect(sections.flatMap(([, , items]) => items).some(item => item.to === '/models/private-record')).toBe(false)
 })
