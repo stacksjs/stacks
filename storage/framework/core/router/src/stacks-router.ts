@@ -936,6 +936,25 @@ interface NamedRoute {
   /** Pre-compiled `:name(?=$|/)` regex per param, anchored to a slash boundary. */
   colonRegex: Map<string, RegExp>
 }
+/**
+ * Merge framework bootstrap names beneath the app's existing named routes.
+ * The loader registers app files first and awaits this boot phase before
+ * serving. Merging definitions also retains their compiled parameter shapes;
+ * no ambient registration mode changes ordinary app name() semantics.
+ */
+export async function withFallbackRouteNames(register: () => Promise<unknown>): Promise<void> {
+  const applicationNames = new Map(namedRouteRegistry)
+  try {
+    await register()
+  }
+  finally {
+    if (applicationNames.size) {
+      const registry = namedRouteRegistry ??= new Map()
+      for (const [name, definition] of applicationNames) registry.set(name, definition)
+    }
+  }
+}
+
 let namedRouteRegistry: Map<string, NamedRoute> | undefined
 
 /** The statuses `route.redirect()` answers with, as Laravel's `Route::redirect` takes them. */

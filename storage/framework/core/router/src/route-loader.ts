@@ -23,7 +23,7 @@ import type { MiddlewareReference } from '@stacksjs/bun-router'
 import type { RouteDefinition, RouteRegistry } from './route-types'
 import { existsSync } from 'node:fs'
 import { log } from '@stacksjs/logging/runtime'
-import { route } from './stacks-router'
+import { route, withFallbackRouteNames } from './stacks-router'
 
 export interface RootMountedAppRoute {
   method: string
@@ -400,7 +400,7 @@ async function loadFrameworkRoutes(): Promise<void> {
     const { frameworkPath } = await import('@stacksjs/path')
     const bootstrapPath = frameworkPath('defaults/bootstrap.ts')
     if (await Bun.file(bootstrapPath).exists()) {
-      await import(bootstrapPath)
+      await withFallbackRouteNames(() => import(bootstrapPath))
     }
   }
   catch (error) {
