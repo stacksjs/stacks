@@ -2,7 +2,7 @@
   "name": "@stacksjs/audio",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.491",
+  "version": "0.75.492",
   "description": "Native audio delivery planning for Stacks.",
   "author": "Chris Breuer",
   "license": "MIT",

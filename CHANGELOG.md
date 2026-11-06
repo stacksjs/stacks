@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.491...v0.75.492)
+
+## ✅ Tests
+
+- isolate new product dashboard databases from inherited environment ([325bef1](https://github.com/stacksjs/stacks/commit/325bef1)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.490...v0.75.491)
 
 ## 🐛 Bug Fixes
