@@ -85,6 +85,14 @@
       : 'Every column on this board will also be deleted.'
   })
 
+  // The dialog stays open on a failed delete and says why, inside it.
+  const boardDeleteError = derived(() => kanban.deleteError() || '')
+
+  function closeBoardDelete(): void {
+    pendingBoardDelete.set(null)
+    kanban.deleteError.set(null)
+  }
+
   async function confirmBoardDelete(): Promise<void> {
     const selected = pendingBoardDelete()
     if (!selected || deletingBoard())
@@ -276,8 +284,9 @@
     title="Delete this board?"
     :description="boardDeleteDescription()"
     :busy="deletingBoard()"
+    :error="boardDeleteError()"
     :confirmLabel="deletingBoard() ? 'Deleting' : 'Delete'"
-    @close="pendingBoardDelete.set(null)"
+    @close="closeBoardDelete"
     @confirm="confirmBoardDelete"
   />
 </div>

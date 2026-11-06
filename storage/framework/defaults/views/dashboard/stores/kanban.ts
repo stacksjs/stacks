@@ -126,6 +126,10 @@ export const kanbanStore = defineStore('kanban', () => {
   const loading = state(true)
   const loadingBoard = state(false)
   const error = state<string | null>(null)
+  // Why the last board delete failed. Kept apart from `error`, which means the
+  // board list could not load: a failed delete used to replace the whole list
+  // with "Couldn't load boards" (stacksjs/stacks#3217).
+  const deleteError = state<string | null>(null)
   const errorBoard = state<string | null>(null)
 
   // Card detail modal state. Holding card + comments here
@@ -229,6 +233,7 @@ export const kanbanStore = defineStore('kanban', () => {
 
   async function deleteBoard(id: number): Promise<boolean> {
     const snapshot = boards()
+    deleteError.set(null)
     // Optimistic remove.
     boards.set(snapshot.filter(b => b.id !== id))
     try {
@@ -237,7 +242,7 @@ export const kanbanStore = defineStore('kanban', () => {
     }
     catch (e) {
       boards.set(snapshot)
-      error.set(e instanceof Error ? e.message : String(e))
+      deleteError.set(e instanceof Error ? e.message : String(e))
       return false
     }
   }
@@ -724,6 +729,7 @@ export const kanbanStore = defineStore('kanban', () => {
     loading,
     loadingBoard,
     error,
+    deleteError,
     errorBoard,
     hasBoards,
     loadBoards,
