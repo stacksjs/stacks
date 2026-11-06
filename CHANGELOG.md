@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.485...v0.75.486)
+
+## 🐛 Bug Fixes
+
+- keep database error reporting outside the error package ([1ce474a](https://github.com/stacksjs/stacks/commit/1ce474a)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.484...v0.75.485)
 
 ## 🐛 Bug Fixes
