@@ -4,7 +4,7 @@ import type { QueryReader } from '../Content/content-list'
 import { containsPattern, countOf, LIST_PAGE_SIZES, pageWithin, queryText } from '../Content/content-list'
 import { commerceCurrency, commerceIdentifier, commerceValue, referencedIds } from './commerce-record'
 import type { CommerceSqlRunner } from './commerce-sql'
-import { asText, binder, idPlaceholders, sqlRows } from './commerce-sql'
+import { asText, binder, idPlaceholders, isTrue, sqlRows } from './commerce-sql'
 import type { GiftCardCurrencySummary, GiftCardRecord, GiftCardStatus, GiftCardSummary } from './gift-card-records'
 import { normalizeGiftCardRecord } from './gift-card-records'
 
@@ -84,14 +84,6 @@ export function parseGiftCardListQuery(read: QueryReader): GiftCardListQuery | {
   }
 }
 
-/**
- * "This flag is set", the same on every dialect: SQLite and MySQL store 0 and
- * 1, and PostgreSQL a boolean, which the cast reads as 0 or 1.
- */
-function isSet(column: string, dialect: QueryBuilderDialect): string {
-  return dialect === 'postgres' ? `CAST(${column} AS INTEGER) = 1` : `${column} = 1`
-}
-
 function sortExpression(sort: GiftCardSort, dialect: QueryBuilderDialect): string {
   switch (sort) {
     case 'id': return 'id'
@@ -99,7 +91,7 @@ function sortExpression(sort: GiftCardSort, dialect: QueryBuilderDialect): strin
     case 'recipient': return `LOWER(COALESCE(recipient_name, ''))`
     case 'balance': return 'current_balance'
     case 'status': return asText('status', dialect)
-    case 'delivery': return `CASE WHEN ${isSet('is_digital', dialect)} THEN 1 ELSE 0 END`
+    case 'delivery': return `CASE WHEN ${isTrue('is_digital', dialect)} THEN 1 ELSE 0 END`
     case 'expiry': return 'expiry_date'
     default: return 'created_at'
   }
@@ -112,13 +104,13 @@ export function giftCardFilter(query: Pick<GiftCardListQuery, 'search' | 'status
     // A text comparison: PostgreSQL keeps the status as an enum.
     clauses.push(`${asText('status', dialect)} = ${bind(query.status)}`)
   if (query.enabled === 'enabled')
-    clauses.push(isSet('is_active', dialect))
+    clauses.push(isTrue('is_active', dialect))
   if (query.enabled === 'disabled')
-    clauses.push(`NOT (${isSet('is_active', dialect)})`)
+    clauses.push(`NOT (${isTrue('is_active', dialect)})`)
   if (query.delivery === 'digital')
-    clauses.push(isSet('is_digital', dialect))
+    clauses.push(isTrue('is_digital', dialect))
   if (query.delivery === 'physical')
-    clauses.push(`NOT (${isSet('is_digital', dialect)})`)
+    clauses.push(`NOT (${isTrue('is_digital', dialect)})`)
   if (query.search) {
     const pattern = containsPattern(query.search)
     const columns = [
@@ -162,7 +154,7 @@ async function summarize(run: CommerceSqlRunner, dialect: QueryBuilderDialect): 
   const status = asText('status', dialect)
   const count = (condition: string) => `SUM(CASE WHEN ${condition} THEN 1 ELSE 0 END)`
   const [totals, byStatus, byCurrency] = await Promise.all([
-    run.unsafe(`SELECT COUNT(*) AS total_count, ${count(`${status} = 'ACTIVE' AND ${isSet('is_active', dialect)} AND current_balance > 0`)} AS available_count, ${count(isSet('is_active', dialect))} AS enabled_count, ${count(isSet('is_digital', dialect))} AS digital_count, ${count(isSet('is_reloadable', dialect))} AS reloadable_count FROM gift_cards`).execute(),
+    run.unsafe(`SELECT COUNT(*) AS total_count, ${count(`${status} = 'ACTIVE' AND ${isTrue('is_active', dialect)} AND current_balance > 0`)} AS available_count, ${count(isTrue('is_active', dialect))} AS enabled_count, ${count(isTrue('is_digital', dialect))} AS digital_count, ${count(isTrue('is_reloadable', dialect))} AS reloadable_count FROM gift_cards`).execute(),
     run.unsafe(`SELECT ${status} AS value, COUNT(*) AS item_count FROM gift_cards GROUP BY ${status}`).execute(),
     run.unsafe('SELECT currency, COUNT(*) AS item_count, SUM(initial_balance) AS initial_total, SUM(current_balance) AS current_total, SUM(CASE WHEN initial_balance > current_balance THEN initial_balance - current_balance ELSE 0 END) AS redeemed_total FROM gift_cards GROUP BY currency').execute(),
   ])

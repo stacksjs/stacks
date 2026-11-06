@@ -6,7 +6,7 @@ import type { CommerceProductRecord, CommerceProductSummary, ProductOption } fro
 import { normalizeCommerceProductRecord, normalizeManufacturerOption, normalizeProductOption } from './commerce-product-records'
 import { referencedIds } from './commerce-record'
 import type { CommerceSqlRunner } from './commerce-sql'
-import { asText, binder, idPlaceholders, sqlRows } from './commerce-sql'
+import { asText, binder, idPlaceholders, isTrue, sqlRows } from './commerce-sql'
 
 /**
  * One page of products, searched, filtered, sorted and counted by the database,
@@ -69,15 +69,6 @@ export function parseProductListQuery(read: QueryReader): ProductListQuery | { e
   return { search, category, availability: availability as ProductListQuery['availability'], sort: sort as ProductSort, direction, page, perPage }
 }
 
-/**
- * "This product is available", the same on every dialect: SQLite and MySQL
- * store 0 and 1, and PostgreSQL a boolean, or an integer in an older schema,
- * which the cast reads either way.
- */
-function isAvailable(column: string, dialect: QueryBuilderDialect): string {
-  return dialect === 'postgres' ? `CAST(${column} AS INTEGER) = 1` : `${column} = 1`
-}
-
 function sortExpression(sort: ProductSort, dialect: QueryBuilderDialect): string {
   switch (sort) {
     case 'id': return 'p.id'
@@ -85,7 +76,7 @@ function sortExpression(sort: ProductSort, dialect: QueryBuilderDialect): string
     case 'category': return `LOWER(COALESCE(c.name, ''))`
     case 'price': return 'p.price'
     case 'inventory': return 'p.inventory_count'
-    case 'available': return `CASE WHEN ${isAvailable('p.is_available', dialect)} THEN 1 ELSE 0 END`
+    case 'available': return `CASE WHEN ${isTrue('p.is_available', dialect)} THEN 1 ELSE 0 END`
     default: return 'p.created_at'
   }
 }
@@ -98,9 +89,9 @@ export function productFilter(query: Pick<ProductListQuery, 'search' | 'category
   if (query.category)
     clauses.push(`p.category_id = ${bind(Number(query.category))}`)
   if (query.availability === 'available')
-    clauses.push(isAvailable('p.is_available', dialect))
+    clauses.push(isTrue('p.is_available', dialect))
   if (query.availability === 'unavailable')
-    clauses.push(`NOT (${isAvailable('p.is_available', dialect)})`)
+    clauses.push(`NOT (${isTrue('p.is_available', dialect)})`)
   if (query.availability === 'out-of-stock')
     clauses.push('p.inventory_count = 0')
   if (query.search) {
@@ -160,7 +151,7 @@ async function recordsFor(products: Array<Record<string, unknown>>, run: Commerc
 /** The summary cards, over the whole catalogue as before. */
 async function summarize(run: CommerceSqlRunner, dialect: QueryBuilderDialect): Promise<CommerceProductSummary> {
   const row = sqlRows(await run.unsafe(
-    `SELECT COUNT(*) AS total_count, SUM(CASE WHEN ${isAvailable('is_available', dialect)} THEN 1 ELSE 0 END) AS available_count, SUM(CASE WHEN inventory_count = 0 THEN 1 ELSE 0 END) AS out_count, SUM(inventory_count) AS inventory_total FROM products`,
+    `SELECT COUNT(*) AS total_count, SUM(CASE WHEN ${isTrue('is_available', dialect)} THEN 1 ELSE 0 END) AS available_count, SUM(CASE WHEN inventory_count = 0 THEN 1 ELSE 0 END) AS out_count, SUM(inventory_count) AS inventory_total FROM products`,
   ).execute())[0] ?? {}
   const total = countOf(row.total_count)
   const available = countOf(row.available_count)

@@ -45,3 +45,13 @@ export function binder(dialect: QueryBuilderDialect): { bind: (value: unknown) =
     },
   }
 }
+
+/**
+ * "This flag is set", the same on every dialect: SQLite and MySQL store 0 and
+ * 1, and PostgreSQL a boolean, or an integer in an older schema, which the
+ * cast reads either way. A bare `column = 1` is an error on a PostgreSQL
+ * boolean.
+ */
+export function isTrue(column: string, dialect: QueryBuilderDialect): string {
+  return dialect === 'postgres' ? `CAST(${column} AS INTEGER) = 1` : `${column} = 1`
+}
