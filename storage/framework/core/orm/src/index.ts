@@ -414,6 +414,9 @@ export const FailedJob = lazyModel<typeof import('../../../defaults/app/Models/F
 // stays neutralised.
 // ---------------------------------------------------------------------------
 const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature: StacksFeature]> = [
+  // Queue telemetry follows the normal feature-owned model convention.
+  ['QueueWorker', [''], 'queue'],
+
   // Auth
   ['Referral', [''], 'auth'],
   ['ReferralCode', [''], 'auth'],
@@ -560,8 +563,6 @@ queueMicrotask(async () => {
     if (userModel) _loaded.User = userModel
 
     if (feature('queue')) {
-      const queueWorker = await loadUserlandModel('QueueWorker')
-      if (queueWorker) _loaded.QueueWorker = queueWorker
       const job = await loadUserlandModel('Job')
       if (job) _loaded.Job = job
       const failedJob = await loadUserlandModel('FailedJob')

@@ -22,6 +22,7 @@ export function createDatabaseErrorReporter(): ErrorReporter {
         const value = event.context?.[key]
         if (typeof value === 'string' || typeof value === 'number') context[key] = value
       }
+      const occurredAt = new Date()
       const row = {
         type: event.error.name || 'Error',
         message: event.error.message,
@@ -29,13 +30,12 @@ export function createDatabaseErrorReporter(): ErrorReporter {
         status: typeof event.context?.status === 'number' ? event.context.status : null,
         resolution: 'unresolved' as const,
         additional_info: JSON.stringify(context),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       }
       pending++
       writing = writing.then(async () => {
-        const { db } = await import('./runtime')
-        await db.insertInto('errors').values(row).execute()
+        const { db, sqlDateTime } = await import('./runtime')
+        const timestamp = sqlDateTime(occurredAt)
+        await db.insertInto('errors').values({ ...row, created_at: timestamp, updated_at: timestamp }).execute()
       }).catch((error) => {
         // Never log through report()/log.error here: a failed reporter must
         // not recursively report itself or replace the original exception.

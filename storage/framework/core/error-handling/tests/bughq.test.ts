@@ -113,15 +113,15 @@ describe('default monitoring config', () => {
   test('registers BugHQ in an allowed environment when a key is present', async () => {
     expect(await readConfig('production', 'bughq_test')).toEqual({
       key: 'bughq_test',
-      reporters: ['bughq'],
+      reporters: ['database', 'bughq'],
     })
   })
 
   test('does not register BugHQ when the key is absent', async () => {
-    expect(await readConfig('production', '')).toEqual({ key: '', reporters: [] })
+    expect(await readConfig('production', '')).toEqual({ key: '', reporters: ['database'] })
   })
 
   test('does not register BugHQ outside the shared telemetry environments', async () => {
-    expect(await readConfig('local', 'bughq_test')).toEqual({ key: 'bughq_test', reporters: [] })
+    expect(await readConfig('local', 'bughq_test')).toEqual({ key: 'bughq_test', reporters: ['database'] })
   })
 })
