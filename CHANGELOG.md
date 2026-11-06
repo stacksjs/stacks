@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.487...v0.75.488)
+
+## 🐛 Bug Fixes
+
+- verify dashboard integration in consuming applications ([d2931dc](https://github.com/stacksjs/stacks/commit/d2931dc)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.486...v0.75.487)
 
 ## 🐛 Bug Fixes
