@@ -1,18 +1,15 @@
 import { searchIndexName } from './trait-settings'
 import type {Result} from '@stacksjs/error-handling'
-import type { Model } from '@stacksjs/types'
 import { err, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import { getTableName } from '@stacksjs/orm'
-import { path } from '@stacksjs/path'
+import { getTableName, getModelName } from '@stacksjs/orm'
+import { selectedSearchModels } from './models'
 import { useSearchEngine } from '@stacksjs/search-engine'
 
-export async function listIndexSettings(modelName: string): Promise<Result<string, string>> {
+export async function listIndexSettings(modelName?: string): Promise<Result<string, string>> {
   try {
-    const modelFile = path.userModelsPath(`${modelName}.ts`)
-    const modelInstance = (await import(modelFile)).default as Model
     const { getFilterableAttributes, getSortableAttributes, getSearchableAttributes, getDisplayedAttributes } = useSearchEngine()
-
+    for (const { file: modelFile, model: modelInstance } of await selectedSearchModels(modelName)) {
     const searchable = modelInstance.traits?.useSearch
 
     const tableName = searchIndexName(searchable, getTableName(modelInstance, modelFile))
@@ -24,7 +21,8 @@ export async function listIndexSettings(modelName: string): Promise<Result<strin
       const searchableAttributes = await getSearchableAttributes(tableName)
 
       // eslint-disable-next-line no-console
-      console.table({ displayedAttributes, filterableAttributes, sortableAttributes, searchableAttributes })
+      console.table({ model: getModelName(modelInstance, modelFile), index: tableName, displayedAttributes, filterableAttributes, sortableAttributes, searchableAttributes })
+    }
     }
 
     return ok('Successfully update index settings!')

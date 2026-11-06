@@ -8,6 +8,7 @@ import { ExitCode } from '@stacksjs/types'
 import { resolveStxSource } from '@stacksjs/actions'
 import { serverRequestBodyOptions } from '@stacksjs/server/request-body'
 import type { EnhancedRequest } from '@stacksjs/router'
+import { beginRequestCapture, finishRequestCapture } from '@stacksjs/router/request-capture'
 
 /**
  * `requestContext` for `<script server>` blocks in `.stx` pages, the same one
@@ -435,6 +436,7 @@ export async function startProductionServer(options?: { port?: string | number, 
         // and static assets, so the holding page renders and visitors with a
         // valid bypass cookie pass through.
         onRequest: async (req: Request, server?: Parameters<typeof registerPeerSource>[0]) => {
+          beginRequestCapture(req)
           // First, before any `await`: this request's scope for its
           // server scripts (see `installRequestScope()` above).
           const snapshot = enterRequestScope(req)
@@ -558,8 +560,10 @@ export async function startProductionServer(options?: { port?: string | number, 
           const secured = applyResponseHeaders(req, securityResponse ?? response, config.server?.headers) ?? securityResponse
 
           const method = req.method.toUpperCase()
-          if (method !== 'GET' && method !== 'HEAD')
+          if (method !== 'GET' && method !== 'HEAD') {
+            finishRequestCapture(req, secured ?? response)
             return secured
+          }
 
           // A 404 from stx-serve gives the CMS page tree its chance — coded
           // views win by construction because they never 404. Mirrors the dev
@@ -600,10 +604,14 @@ export async function startProductionServer(options?: { port?: string | number, 
           //
           // An app that declared no document cache keeps the existing
           // contract exactly, `undefined` — meaning "unchanged" — included.
-          if (!documentCacheControl)
+          if (!documentCacheControl) {
+            finishRequestCapture(req, finished ?? response)
             return finished
+          }
 
-          return applyDocumentCacheControl(req, finished ?? response, documentCacheControl)
+          const cached = applyDocumentCacheControl(req, finished ?? response, documentCacheControl)
+          finishRequestCapture(req, cached ?? finished ?? response)
+          return cached
         },
       })
 

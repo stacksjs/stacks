@@ -174,6 +174,12 @@ export interface DomainRouteTarget {
 }
 
 export interface ServerConfig {
+  /** Record completed HTTP metadata in the native Request model table. Off by default. */
+  captureRequests?: boolean | {
+    enabled?: boolean
+    /** Exact paths or prefixes ending in /* to omit, in addition to framework traffic. */
+    exclude?: string[]
+  }
   /**
    * Maximum HTTP request-body bytes for Buddy's API and views listeners.
    * Include multipart framing above any per-file upload limit. Omit to keep

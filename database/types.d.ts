@@ -1399,7 +1399,7 @@ declare module '@stacksjs/database' {
       created_at: string
       updated_at: string | null
       deleted_at: string | null
-      method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS" | "HEAD"
+      method: string
       path: string
       status_code: number
       duration_ms: number

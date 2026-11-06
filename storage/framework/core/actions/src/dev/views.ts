@@ -8,6 +8,7 @@ import { seedCsrfPageResponse } from './csrf'
 import { resolveDefaultsResources } from './defaults-resources'
 import { exitWithParent } from './exit-with-parent'
 import type { EnhancedRequest } from '@stacksjs/router'
+import { beginRequestCapture, finishRequestCapture } from '@stacksjs/router/request-capture'
 
 /**
  * Boot the views/SSR dev server.
@@ -234,6 +235,7 @@ async function startDefaultServer() {
     // A page's ambient `ip`, resolved as `buddy serve` resolves it.
     clientAddress: viewClientAddress,
     onRequest: async (req: Request, server?: Parameters<typeof registerPeerSource>[0]) => {
+      beginRequestCapture(req)
       // First, before any `await`: this request's scope for its server
       // scripts (see `installRequestScope()` above).
       const snapshot = enterRequestScope(req)
@@ -382,6 +384,7 @@ async function startDefaultServer() {
       }
 
       const seeded = await seedCsrfPageResponse(req, current)
+      finishRequestCapture(req, seeded ?? current)
       return seeded ?? (current === baseline ? secured : current)
     },
   })

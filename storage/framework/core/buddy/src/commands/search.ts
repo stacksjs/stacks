@@ -19,7 +19,7 @@ export function search(buddy: CLI): void {
 
   buddy
     .command('search-engine:update', descriptions.import)
-    .option('-m, --model [model]', descriptions.model, { default: '' })
+    .option('-m, --model <model>', descriptions.model, { default: false })
     .option('-f, --flush [flush]', descriptions.flush, { default: false })
     .option('-s, --settings [settings]', descriptions.settings, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
@@ -67,12 +67,9 @@ export function search(buddy: CLI): void {
 
   buddy
     .command('search-engine:settings', descriptions.list)
-    .option('-m, --model [model]', descriptions.model, { default: false })
+    .option('-m, --model <model>', descriptions.model, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: SearchCommandOptions) => {
-      if (!options.model)
-        log.error('Missing required option --model')
-
       log.debug('Running `search-engine:settings` ...', options)
 
       const perf = await intro('search-engine:settings')

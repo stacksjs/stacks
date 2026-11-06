@@ -688,6 +688,22 @@ that remain exposed.
 
 ## Application observability
 
+HTTP capture is opt-in through `config/server.ts: captureRequests: true` (or
+`{ enabled: true, exclude: ['/assets/*'] }`). Publish the native `Request` model
+into the app schema and generate/migrate its table. Infrastructure-only overrides
+can disable `useSeeder` and `useApi` and set `dashboard.access: false`; the guarded
+Requests page and home metrics still use the private native schema inventory.
+
+The recorder observes final responses in API dispatch and dev/production page
+servers, including middleware refusals, 404s, and 405s. Proxied API traffic is
+recorded by the API process once. Dashboard polling and framework assets are
+excluded. It stores method, pathname, status, response-generation duration and
+process heap usage, never bodies, headers or query parameters. Credential-bearing
+path tails are redacted. IP and user-agent columns stay empty. Writes are buffered
+with a 100-row pending limit; storage failures cannot replace HTTP responses.
+`flushRequestCaptures()` from `@stacksjs/router/request-capture` drains the buffer;
+API shutdown hooks call it. This is operational telemetry, not a delivery audit.
+
 The standalone dashboard registers its guarded JSON API even when the application
 skips default route bundles. Its STX state lives in
 `storage/framework/runtime/dashboard-stx`, so opening it does not replace the

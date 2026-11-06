@@ -1,19 +1,17 @@
 import type {Result} from '@stacksjs/error-handling'
-import type { Model } from '@stacksjs/types'
 import { err, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { getTableName } from '@stacksjs/orm'
 import { useSearchEngine } from '@stacksjs/search-engine'
-import { searchModelFiles } from './models'
+import { selectedSearchModels } from './models'
 import { searchIndexName, settingsFromSearchTrait } from './trait-settings'
 
-export async function updateIndexSettings(): Promise<Result<string, string>> {
+export async function updateIndexSettings(modelOption?: string): Promise<Result<string, string>> {
   try {
-    const modelFiles = await searchModelFiles()
+    const models = await selectedSearchModels(modelOption)
     const { updateSettings } = useSearchEngine()
 
-    for (const model of modelFiles) {
-      const modelInstance = (await import(model)).default as Model
+    for (const { file: model, model: modelInstance } of models) {
       const searchable = modelInstance.traits?.useSearch
 
       const tableName = searchIndexName(searchable, getTableName(modelInstance, model))

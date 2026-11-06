@@ -1,19 +1,17 @@
 import { searchIndexName } from './trait-settings'
 import type {Result} from '@stacksjs/error-handling'
-import type { Model } from '@stacksjs/types'
 import { err, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { getModelName, getTableName } from '@stacksjs/orm'
 import { useSearchEngine } from '@stacksjs/search-engine'
-import { searchModelFiles } from './models'
+import { selectedSearchModels } from './models'
 
 export async function flushModelDocuments(modelOption?: string): Promise<Result<string, string>> {
   try {
-    const modelFiles = await searchModelFiles()
+    const models = await selectedSearchModels(modelOption)
     const { deleteIndex } = useSearchEngine()
 
-    for (const model of modelFiles) {
-      const modelInstance = (await import(model)).default as Model
+    for (const { file: model, model: modelInstance } of models) {
       const searchable = modelInstance.traits?.useSearch
 
       const tableName = searchIndexName(searchable, getTableName(modelInstance, model))

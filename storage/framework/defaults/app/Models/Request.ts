@@ -48,9 +48,11 @@ export default defineModel({
     method: {
       fillable: true,
       validation: {
-        rule: schema.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD']),
+        // Observations include rejected methods (for example PROPFIND -> 405).
+        // An enum of application verbs silently lost those requests at insert.
+        rule: schema.string().max(255),
         message: {
-          enum: 'method must be a valid HTTP method',
+          string: 'method must be an HTTP method token',
           required: 'method is required',
         },
       },

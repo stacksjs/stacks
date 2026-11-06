@@ -10,6 +10,8 @@ import type { ServerConfig } from '@stacksjs/types'
  * Discord or GitHub Discussions.
  */
 export default {
+  // Opt in after publishing the native Request model and migrating its table.
+  captureRequests: false,
   /**
    * **API Proxy**
    *

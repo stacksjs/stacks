@@ -6,6 +6,7 @@
  */
 
 import { clientAddress, peerAddress, registerPeerSource } from '@stacksjs/bun-router'
+import { skipRequestCapture } from '@stacksjs/router/request-capture'
 
 /** The prefix that is always API-bound, with or without configuration. */
 export const DEFAULT_API_PREFIX = '/api/'
@@ -254,6 +255,9 @@ export async function proxyToBackend(req: Request, backendBase: string, stripPre
     // Rewrites may replace req; cancellation belongs to the incoming socket.
     signal: peerOf.signal,
   })
+  // The API process records the completed request. Keep gateway failures in
+  // the views process, but never count a successful forwarding hop twice.
+  skipRequestCapture(peerOf)
 
   // Re-emit the body without the upstream's content-length /
   // content-encoding — the body we forward may be re-chunked, and

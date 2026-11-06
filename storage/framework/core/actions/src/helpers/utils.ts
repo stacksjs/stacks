@@ -294,7 +294,9 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
   // whitespace without a shell, so a value or a path containing a space was
   // cut into several arguments (see `buddyOptionArgs`).
   const opts = isDevAction || !options ? [] : buddyOptionArgs(options as Record<string, any>)
-  const cmd = ['bun', developmentCondition, watchFlag, path, ...opts].filter(Boolean)
+  // Only optional launcher flags may disappear. An empty option value is
+  // still an argv token: dropping it turns `--model ''` into `--model true`.
+  const cmd = [...['bun', developmentCondition, watchFlag, path].filter(Boolean), ...opts]
 
   // Ensure pantry packages are resolvable via NODE_PATH
   // This allows compiled pantry packages (e.g., bun-plugin-stx/serve.js) to

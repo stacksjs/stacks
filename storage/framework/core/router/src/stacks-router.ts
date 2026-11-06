@@ -18,6 +18,7 @@ import type { Middleware } from './middleware'
 // and `req.input(...)` access in this file type-checks without `as any`
 // (stacksjs/stacks#1863 T-3).
 import './request-augmentation'
+import { flushRequestCaptures, observeHttpRequest, requestCaptureEnabled } from './request-capture'
 import process from 'node:process'
 import { Buffer } from 'node:buffer'
 import { existsSync, lstatSync, statSync } from 'node:fs'
@@ -5621,6 +5622,10 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
 
     // Serve the router
     async serve(options: ServerOptions = {}): Promise<Server<unknown>> {
+      const { overridesReady } = await import('@stacksjs/config')
+      await overridesReady
+      if (requestCaptureEnabled() && !shutdownHooks().hooks.some(hook => hook.name === 'http-capture'))
+        shutdownHooks().hooks.push({ name: 'http-capture', run: flushRequestCaptures })
       // Warn (don't crash) on a split router (#1975/#1982). The route table is
       // now a process-global singleton, so a second instance pulled in by user
       // route files shares the same table — routing works — but a duplicated
@@ -5665,7 +5670,9 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
 
     // Handle a request directly
     handleRequest(req: Request): Promise<Response> {
-      return bunRouter.handleRequest(req)
+      return requestCaptureEnabled()
+        ? observeHttpRequest(req, () => bunRouter.handleRequest(req))
+        : bunRouter.handleRequest(req)
     },
 
     // Mirror bun-router's introspection: which HTTP methods are registered
@@ -6458,6 +6465,12 @@ function wrapNativeRoutesForDatabaseContext(router: Router, dispatchInRoutingCon
         }
       }
     }
+    if (requestCaptureEnabled()) {
+      for (const methods of Object.values(routes)) {
+        for (const [method, handler] of Object.entries(methods))
+          methods[method] = request => observeHttpRequest(request, () => handler(request))
+      }
+    }
     return routes
   }
   nativeRouter._nativeDatabaseContextWrapped = true
@@ -6470,7 +6483,9 @@ async function wrapHandleRequestForDatabaseContext(router: Router): Promise<void
   if (databaseContextWrappedRouters.has(router)) return
   wrapNativeRoutesForDatabaseContext(router, dispatchInRoutingContext)
   const original = router.handleRequest.bind(router)
-  router.handleRequest = request => dispatchInRoutingContext(original, request)
+  router.handleRequest = request => requestCaptureEnabled()
+    ? observeHttpRequest(request, () => dispatchInRoutingContext(original, request))
+    : dispatchInRoutingContext(original, request)
   databaseContextWrappedRouters.add(router)
 }
 
