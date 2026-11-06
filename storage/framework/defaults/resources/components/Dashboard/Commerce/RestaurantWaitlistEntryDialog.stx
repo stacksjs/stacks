@@ -1,6 +1,8 @@
 <script client>
-import type { RestaurantWaitlistOptions, RestaurantWaitlistRecord, RestaurantWaitlistWritePayload } from '../../../../app/Actions/Dashboard/Commerce/restaurant-waitlist-records'
+import type { CustomerChoice } from '../../../../app/Actions/Dashboard/Commerce/commerce-choice-records'
+import type { RestaurantWaitlistRecord, RestaurantWaitlistWritePayload } from '../../../../app/Actions/Dashboard/Commerce/restaurant-waitlist-records'
 import { restaurantWaitlistDateTimeLocal, restaurantWaitlistTimestamp } from '../../../../app/Actions/Dashboard/Commerce/restaurant-waitlist-records'
+import { dashboardApi } from '../../../../functions/dashboard-api'
 import { formErrorMessages } from '../../../../functions/dashboard-form'
 
 type DialogMode = 'add' | 'edit'
@@ -8,7 +10,6 @@ type DialogMode = 'add' | 'edit'
 const open = useReactiveProp('open', false)
 const mode = useReactiveProp('mode', 'add' as DialogMode)
 const record = useReactiveProp('record', null as RestaurantWaitlistRecord | null)
-const options = useReactiveProp('options', { customers: [] } as RestaurantWaitlistOptions)
 const busy = useReactiveProp('busy', false)
 const errors = useReactiveProp('errors', {} as Record<string, string>)
 const emit = defineEmits(['submit', 'close'])
@@ -25,6 +26,58 @@ const quotedWaitTime = state(15)
 const actualWaitTime = state<number | string>('')
 const queuePosition = state<number | string>('')
 let lastSync = ''
+
+// The customer choices are a server search (stacksjs/stacks#3218): this used
+// to be handed the first 500 customers by name, so a party could not be
+// linked to a customer past the 500th.
+const customerChoices = state<CustomerChoice[]>([])
+const customerMatches = state(0)
+const customerQuery = state('')
+let customerRequest = 0
+let customerTimer: ReturnType<typeof setTimeout> | null = null
+
+async function loadCustomers(term: string): Promise<void> {
+  const request = ++customerRequest
+  const params = new URLSearchParams()
+  if (term)
+    params.set('q', term)
+  try {
+    const data = await dashboardApi<{ choices?: CustomerChoice[], total?: number }>(`/api/dashboard/commerce/customer-choices${term ? `?${params}` : ''}`)
+    if (request !== customerRequest)
+      return
+    const choices = Array.isArray(data.choices) ? data.choices : []
+    customerChoices.set(choices)
+    customerMatches.set(data.total ?? choices.length)
+  }
+  catch {
+    // Soft-fail: the party's own customer stays selectable.
+    if (request === customerRequest) {
+      customerChoices.set([])
+      customerMatches.set(0)
+    }
+  }
+}
+
+function searchCustomersSoon(): void {
+  if (customerTimer)
+    clearTimeout(customerTimer)
+  customerTimer = setTimeout(() => { void loadCustomers(customerQuery().trim()) }, 250)
+}
+
+/** The choices to show: the search results, with the party's own customer kept in. */
+const customers = derived((): CustomerChoice[] => {
+  const found = customerChoices()
+  const entry = record()
+  if (!entry?.customerId || found.some(choice => choice.id === entry.customerId))
+    return found
+  return [{ id: entry.customerId, label: entry.name || `Customer ${entry.customerId}`, detail: entry.email, email: entry.email, phone: entry.phone }, ...found]
+})
+
+const moreCustomersLabel = derived(() => {
+  const shown = customerChoices().length
+  const total = customerMatches()
+  return total > shown ? `Showing ${shown} of ${total.toLocaleString()} matching customers. Search to narrow it down.` : ''
+})
 
 function relationId(value: number | string): number | null {
   if (value === '')
@@ -67,11 +120,13 @@ effect(() => {
 
   lastSync = signature
   reset(entry)
+  customerQuery.set('')
+  void loadCustomers('')
 })
 
 function hydrateCustomer(event: Event): void {
   const selectedId = (event.target as HTMLSelectElement).value
-  const customer = options().customers.find(option => option.id === selectedId)
+  const customer = customers().find(option => option.id === selectedId)
   if (!customer)
     return
   if (!name().trim())
@@ -125,11 +180,15 @@ function errorMessages(): string[] {
     <div class="grid gap-4 sm:grid-cols-2 mt-6">
       <label class="block sm:col-span-2">
         <span class="block font-medium text-gray-900 text-sm dark:text-neutral-200">Existing customer</span>
-        <select x-model="customerId" class="block mt-2 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" @change="hydrateCustomer($event)">
-          <option value="">No linked customer</option>
-          <option :for="option in options().customers" :value="option.id">{{ option.label }}{{ option.detail ? ' · ' + option.detail : '' }}</option>
-        </select>
+        <input x-model="customerQuery" @input="searchCustomersSoon()" type="search" name="customer_search" aria-label="Search customers by name, email or phone" placeholder="Search customers by name, email or phone" class="block mt-2 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" />
       </label>
+      <div class="sm:col-span-2 -mt-2">
+        <select x-model="customerId" aria-label="Existing customer" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" @change="hydrateCustomer($event)">
+          <option value="">No linked customer</option>
+          <template :for="option in customers()" :key="option.id"><option :value="option.id" :selected="option.id === String(customerId())">{{ option.label }}{{ option.detail ? ' · ' + option.detail : '' }}</option></template>
+        </select>
+        <p :if="moreCustomersLabel()" class="mt-1 text-gray-500 text-xs dark:text-neutral-400" :text="moreCustomersLabel()"></p>
+      </div>
 
       <label class="block">
         <span class="block font-medium text-gray-900 text-sm dark:text-neutral-200">Name</span>

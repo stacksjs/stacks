@@ -1,3 +1,4 @@
+import type { CustomerChoice } from './commerce-choice-records'
 import {
   commerceEmail,
   commerceEnum,
@@ -37,17 +38,8 @@ export interface RestaurantWaitlistSummary {
   seatingRate: number
 }
 
-export interface RestaurantWaitlistCustomerOption {
-  id: string
-  label: string
-  detail: string
-  email: string
-  phone: string
-}
-
-export interface RestaurantWaitlistOptions {
-  customers: RestaurantWaitlistCustomerOption[]
-}
+/** A customer the entry dialog offers (commerce-choice-records.ts). */
+export type RestaurantWaitlistCustomerOption = CustomerChoice
 
 export interface RestaurantWaitlistWritePayload {
   customerId: number | null
@@ -151,19 +143,7 @@ export function normalizeRestaurantWaitlistRecord(
   }
 }
 
-export function normalizeRestaurantWaitlistCustomerOption(record: any): RestaurantWaitlistCustomerOption {
-  const id = commerceIdentifier(commerceValue(record, 'id', 'uuid'), 'Customer')
-  const source = `Customer ${id}`
-  const email = commerceEmail(commerceValue(record, 'email'), source)
-  const phone = commerceOptionalString(commerceValue(record, 'phone'), source, 'phone')
-  return {
-    id,
-    label: commerceRequiredString(commerceValue(record, 'name'), source, 'name'),
-    detail: email || phone,
-    email,
-    phone,
-  }
-}
+export { normalizeCustomerChoice as normalizeRestaurantWaitlistCustomerOption } from './commerce-choice-records'
 
 export function summarizeRestaurantWaitlist(records: RestaurantWaitlistRecord[]): RestaurantWaitlistSummary {
   const waitingRecords = records.filter(record => record.status === 'waiting')

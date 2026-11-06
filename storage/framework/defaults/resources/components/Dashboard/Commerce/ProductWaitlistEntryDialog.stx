@@ -1,5 +1,5 @@
 <script client>
-import type { CustomerChoice, ProductChoice } from '../../../../app/Actions/Dashboard/Commerce/commerce-choices'
+import type { CustomerChoice, ProductChoice } from '../../../../app/Actions/Dashboard/Commerce/commerce-choice-records'
 import type { ProductWaitlistRecord, ProductWaitlistWritePayload } from '../../../../app/Actions/Dashboard/Commerce/product-waitlist-records'
 import { dashboardApi } from '../../../../functions/dashboard-api'
 import { formErrorMessages } from '../../../../functions/dashboard-form'

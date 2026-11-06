@@ -2,14 +2,8 @@ import type { QueryBuilderDialect } from '@stacksjs/database/runtime'
 import { db, getDatabaseDialect } from '@stacksjs/database/runtime'
 import { containsPattern, countOf } from '../Content/content-list'
 import type { NamedSearchQuery } from '../named-search'
-import {
-  commerceEmail,
-  commerceIdentifier,
-  commerceNumber,
-  commerceOptionalString,
-  commerceRequiredString,
-  commerceValue,
-} from './commerce-record'
+import type { CustomerChoice, ProductChoice } from './commerce-choice-records'
+import { normalizeCustomerChoice, normalizeProductChoice } from './commerce-choice-records'
 import type { CommerceSqlRunner } from './commerce-sql'
 import { asText, binder, sqlRows } from './commerce-sql'
 
@@ -21,48 +15,10 @@ import { asText, binder, sqlRows } from './commerce-sql'
  *
  * The query is the pickers' usual `q` and `limit` (`parseNamedSearchQuery`):
  * case is ignored, `%` and `_` are characters to find, the answer is bounded,
- * and `total` says how many matched.
+ * and `total` says how many matched. The choices themselves, and their
+ * normalizers, are in commerce-choice-records.ts.
  */
-export interface ProductChoice {
-  id: string
-  label: string
-  detail: string
-}
-
-export interface CustomerChoice extends ProductChoice {
-  email: string
-  phone: string
-}
-
-export function normalizeProductChoice(record: any): ProductChoice {
-  const id = commerceIdentifier(commerceValue(record, 'id', 'uuid'), 'Product')
-  const source = `Product ${id}`
-  const inventory = commerceNumber(
-    commerceValue(record, 'inventory_count', 'inventoryCount'),
-    source,
-    'inventory_count',
-    { min: 0, integer: true },
-  )
-  return {
-    id,
-    label: commerceRequiredString(commerceValue(record, 'name'), source, 'name'),
-    detail: `${inventory} in inventory`,
-  }
-}
-
-export function normalizeCustomerChoice(record: any): CustomerChoice {
-  const id = commerceIdentifier(commerceValue(record, 'id', 'uuid'), 'Customer')
-  const source = `Customer ${id}`
-  const email = commerceEmail(commerceValue(record, 'email'), source)
-  const phone = commerceOptionalString(commerceValue(record, 'phone'), source, 'phone')
-  return {
-    id,
-    label: commerceRequiredString(commerceValue(record, 'name'), source, 'name'),
-    detail: email || phone,
-    email,
-    phone,
-  }
-}
+export type { CustomerChoice, ProductChoice } from './commerce-choice-records'
 
 async function search<T>(
   table: 'products' | 'customers',

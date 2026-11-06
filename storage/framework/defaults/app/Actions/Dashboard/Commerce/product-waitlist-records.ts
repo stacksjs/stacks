@@ -1,4 +1,4 @@
-import type { CustomerChoice, ProductChoice } from './commerce-choices'
+import type { CustomerChoice, ProductChoice } from './commerce-choice-records'
 import {
   commerceEmail,
   commerceEnum,
@@ -36,10 +36,10 @@ export interface ProductWaitlistSummary {
   conversionRate: number
 }
 
-/** A product the entry dialog offers (commerce-choices.ts). */
+/** A product the entry dialog offers (commerce-choice-records.ts). */
 export type ProductWaitlistOption = ProductChoice
 
-/** A customer the entry dialog offers (commerce-choices.ts). */
+/** A customer the entry dialog offers (commerce-choice-records.ts). */
 export type ProductWaitlistCustomerOption = CustomerChoice
 
 export interface ProductWaitlistWritePayload {
@@ -111,7 +111,7 @@ export function normalizeProductWaitlistRecord(
   }
 }
 
-export { normalizeCustomerChoice as normalizeProductWaitlistCustomerOption, normalizeProductChoice as normalizeProductWaitlistOption } from './commerce-choices'
+export { normalizeCustomerChoice as normalizeProductWaitlistCustomerOption, normalizeProductChoice as normalizeProductWaitlistOption } from './commerce-choice-records'
 
 export function summarizeProductWaitlist(records: ProductWaitlistRecord[]): ProductWaitlistSummary {
   const waiting = records.filter(record => record.status === 'waiting').length

@@ -9,7 +9,14 @@ import {
 const records = useReactiveProp('records', [] as RestaurantWaitlistRecord[])
 const loading = useReactiveProp('loading', false)
 const busyId = useReactiveProp('busyId', '')
-const emit = defineEmits(['seat', 'no-show', 'edit', 'delete'])
+/**
+ * The server pages and sorts what the parent's search and filters match
+ * (stacksjs/stacks#3218): how many parties match, the page shown and its size.
+ */
+const total = useReactiveProp('total', 0)
+const currentPage = useReactiveProp('currentPage', 1)
+const perPage = useReactiveProp('perPage', 25)
+const emit = defineEmits(['seat', 'no-show', 'edit', 'delete', 'page-change', 'page-size-change', 'sort'])
 
 const STATUS_CLASSES = {
   seated: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/30',
@@ -73,11 +80,23 @@ const rows = derived(() => records().map(entry => ({
 function handleRowAction(payload: { action: string, row: RestaurantWaitlistRecord }): void {
   emit(payload.action, payload.row)
 }
+
+function changePage(page: number): void {
+  emit('page-change', page)
+}
+
+function changePageSize(size: number): void {
+  emit('page-size-change', size)
+}
+
+function changeSort(sort: { key: string, direction: string }): void {
+  emit('sort', sort)
+}
 </script>
 
 {{--
   No `searchable` or `filterable`: the parent dashboard owns the search box and
-  the filter selects. Paging is what was missing.
+  the filter selects, and the server pages and sorts what they match.
 --}}
 <Table
   :columns="COLUMNS"
@@ -88,8 +107,15 @@ function handleRowAction(payload: { action: string, row: RestaurantWaitlistRecor
   busy-key="id"
   :busy-value="busyId()"
   paginated
-  :page-size="25"
+  manual-pagination
+  manual-sort
+  :total="total()"
+  :current-page="currentPage()"
+  :page-size="perPage()"
   empty-title="No restaurant waitlist records found"
   empty-description="Add a party or adjust the current filters."
   @row-action="handleRowAction"
+  @page-change="changePage"
+  @page-size-change="changePageSize"
+  @sort="changeSort"
 />
