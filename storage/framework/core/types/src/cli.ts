@@ -515,7 +515,7 @@ export interface PortsOptions extends CliOptions {
 export interface SaasOptions extends CliOptions {}
 
 export interface SearchCommandOptions extends CliOptions {
-  model: string
+  model?: string
   settings: boolean
   flush: boolean
 }

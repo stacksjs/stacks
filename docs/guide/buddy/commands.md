@@ -5072,7 +5072,7 @@ List index settings
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-m`, `--model` | Target a specific model | value, required | `false` |
+| `-m`, `--model` | Target a specific model | value, required | - |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `search-engine:update`
@@ -5086,7 +5086,7 @@ Indexes database data to search engine
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-m`, `--model` | Target a specific model | value, required | `false` |
+| `-m`, `--model` | Target a specific model | value, required | - |
 | `-f`, `--flush` | Flushes all data from search engine | value, optional | `false` |
 | `-s`, `--settings` | Update index settings | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
