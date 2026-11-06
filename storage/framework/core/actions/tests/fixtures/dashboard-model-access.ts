@@ -21,6 +21,7 @@ await writeFile(join(project, 'storage/framework/defaults/app/Models/User.ts'), 
 for (const [name, table, dashboard] of [
   ['PrivateRecord', 'private_records', { access: false, highlight: true }],
   ['PublicRecord', 'public_records', { enabled: false, icon: 'i-lucide-book-open' }],
+  ['Coupon', 'custom_coupons', { icon: 'i-lucide-ticket-percent' }],
   // Absent private tables prove generic reads/counts/search never reach their database work.
   ['MissingPrivateRecord', 'missing_private_records', { access: false }],
   ['User', 'private_users', { access: false }],
@@ -31,6 +32,7 @@ for (const [name, table, dashboard] of [
 const sql = new Database(file)
 sql.run('CREATE TABLE private_records (id INTEGER PRIMARY KEY, name TEXT)')
 sql.run('CREATE TABLE public_records (id INTEGER PRIMARY KEY, name TEXT)')
+sql.run('CREATE TABLE custom_coupons (id INTEGER PRIMARY KEY, name TEXT)')
 sql.run('CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT)')
 sql.run("INSERT INTO users (name) VALUES ('framework-user-must-not-be-counted')")
 sql.close()
@@ -43,11 +45,16 @@ const { configureOrm, releaseOrm } = await import('@stacksjs/query-builder')
 configureOrm({ database: file })
 const Private = (await import(join(project, 'app/Models/PrivateRecord.ts'))).default
 const Public = (await import(join(project, 'app/Models/PublicRecord.ts'))).default
+const Coupon = (await import(join(project, 'app/Models/Coupon.ts'))).default
+const frameworkCoupon = (await import('@stacksjs/orm')).Coupon
+assert(!('where' in frameworkCoupon), 'the fixture keeps framework commerce disabled')
+Object.assign(globalThis, { Coupon: frameworkCoupon })
 Object.assign(globalThis, { PrivateRecord: Private, PublicRecord: Public })
 for (const name of ['MissingPrivateRecord', 'User', 'Subscriber'])
   Object.assign(globalThis, { [name]: (await import(join(project, `app/Models/${name === 'User' ? 'internal/' : ''}${name}.ts`))).default })
 const row = await Private.create({ name: 'private-marker' })
 await Public.create({ name: 'public-marker' })
+await Coupon.create({ name: 'app-owned-coupon' })
 assert.equal((await Private.find(row.id)).name, 'private-marker')
 const { ensureFrameworkAuthTables } = await import('../../../auth/tests/helpers/auth-schema')
 await ensureFrameworkAuthTables()
@@ -96,6 +103,7 @@ for (const nativeRoutes of [false, true]) {
     assert.equal(await Private.find(apiRow.id), undefined)
     assert.deepEqual(await (await fetch(`${base}/named`)).json(), { name: 'private-marker' })
     assert.equal((await fetch(`${base}/generic/public-record`)).status, 200, 'enabled:false remains presentation only')
+    assert.equal((await fetch(`${base}/generic/coupon`)).status, 200, 'an app-owned model wins over a disabled framework proxy')
     const createdResponse = await fetch(`${base}/generic/public-record`, { method: 'POST', headers: { authorization: 'Bearer fixture-csrf-exemption', 'content-type': 'application/json' }, body: '{"fields":{"name":"public-created"}}' })
     assert.equal(createdResponse.status, 200)
     const created = await createdResponse.json() as { id: number }
@@ -117,8 +125,9 @@ for (const nativeRoutes of [false, true]) {
     const catalogData = JSON.parse(catalog)
     assert.equal(catalogData.categoryGroups.flatMap((group: any) => group.models).find((model: any) => model.name === 'PublicRecord').icon, 'i-lucide-book-open', 'the model directory preserves model-defined icons')
     assert(!catalogData.categoryGroups.flatMap((group: { models: Array<{ name: string }> }) => group.models).some((model: { name: string }) => model.name === 'User'), 'nested private User override must suppress its framework catalog entry')
-    assert.equal(catalogData.totalModels, 1)
-    assert.equal(catalogData.totalRecords, 1)
+    assert(catalog.includes('Coupon'), 'the catalog includes app-owned commerce models')
+    assert.equal(catalogData.totalModels, 2)
+    assert.equal(catalogData.totalRecords, 2)
     const legacy = await (await fetch(`${base}/legacy`)).text()
     assert(!legacy.includes('PrivateRecord'))
     assert(legacy.includes('PublicRecord'))
