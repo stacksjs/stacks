@@ -4,7 +4,7 @@ import { posix } from 'node:path'
 import type { JobName } from '@stacksjs/queue'
 import type { StorageAdapter, StorageManager, UploadedFileLike, Visibility } from '@stacksjs/storage'
 import { Storage } from '@stacksjs/storage'
-import type { StorageItemTask, StorageMetadataStore, StorageTaskKind, StorageTaskState } from './file-metadata'
+import type { StorageItemMetadata, StorageItemTask, StorageMetadataStore, StorageTaskKind, StorageTaskState } from './file-metadata'
 import {
   aggregateTaskState,
   dispatchTasks,
@@ -22,6 +22,7 @@ import {
   variantsPathFor,
 } from './file-metadata'
 import { databaseMetadataStore } from './file-metadata-store'
+import { isUnmigratedTable } from '../Models/model-migration'
 import { claimedContentType, hasPreview, previewPathFor, previewPlanFor, previewUrlFor } from './file-preview'
 
 const DEFAULT_DISK = 'public'
@@ -330,6 +331,44 @@ export function normalizeDashboardFileLimit(value: unknown): number {
   return normalized
 }
 
+/** The tables the advisory file metadata lives in (`app/Models/StorageItem.ts`). */
+const METADATA_TABLES = ['storage_items', 'storage_item_tasks'] as const
+
+export const METADATA_NOT_MIGRATED = 'Stars, tags and processing status are off until the storage_items tables exist. Run ./buddy migrate to create them.'
+
+/**
+ * The stars, tags and tasks recorded for a disk, for a listing.
+ *
+ * The disk is authoritative and these rows are advisory: a path with no row
+ * is a file with no stars, the normal case. So an app that has not migrated
+ * the metadata tables still gets its files, without stars, tags or tasks, and
+ * a warning that names the command. The listing used to fail outright with
+ * "Files could not be loaded" (stacksjs/stacks#3211).
+ *
+ * Only a missing table is treated that way, and the catalog decides it: any
+ * other failure is rethrown, so a database outage still fails the listing.
+ */
+export async function readListingMetadata(
+  store: StorageMetadataStore,
+  disk: string,
+  isMissing: (table: string) => Promise<boolean> = isUnmigratedTable,
+): Promise<{ records: Map<string, StorageItemMetadata>, tasks: Map<string, StorageItemTask[]>, migrated: boolean }> {
+  try {
+    return {
+      records: await metadataUnder(store, disk),
+      tasks: await store.tasksUnder(disk, ''),
+      migrated: true,
+    }
+  }
+  catch (error) {
+    for (const table of METADATA_TABLES) {
+      if (await isMissing(table))
+        return { records: new Map(), tasks: new Map(), migrated: false }
+    }
+    throw error
+  }
+}
+
 export async function getDashboardFileSnapshot(
   options: { disk?: string, maxEntries?: number } = {},
   manager: Manager = Storage,
@@ -354,8 +393,7 @@ export async function getDashboardFileSnapshot(
   // One query for the whole subtree, not one per file: a folder of a thousand
   // files would otherwise be a thousand round trips to answer a question about
   // the handful of them anybody starred (stacksjs/stacks#2577).
-  const records = await metadataUnder(store, selected.name)
-  const tasks = await store.tasksUnder(selected.name, '')
+  const { records, tasks, migrated: metadataMigrated } = await readListingMetadata(store, selected.name)
 
   const stated = await mapInBatches(
     entries,
@@ -509,13 +547,15 @@ export async function getDashboardFileSnapshot(
   // this takes the flag: a truncated walk has not shown that a path is absent,
   // only that it stopped before reaching it, and sweeping on that would delete
   // the metadata of every file past the limit (stacksjs/stacks#2577).
-  await sweepMetadata(
-    store,
-    selected.name,
-    '',
-    new Set(stated.map(entry => entry.path)),
-    { truncated },
-  )
+  if (metadataMigrated) {
+    await sweepMetadata(
+      store,
+      selected.name,
+      '',
+      new Set(stated.map(entry => entry.path)),
+      { truncated },
+    )
+  }
 
   return {
     disk: selected.name,
@@ -528,6 +568,7 @@ export async function getDashboardFileSnapshot(
     truncated,
     warnings: [
       ...(capacity.warning ? [capacity.warning] : []),
+      ...(metadataMigrated ? [] : [METADATA_NOT_MIGRATED]),
       ...stated.flatMap(entry => entry.warnings),
     ],
   }
