@@ -74,6 +74,8 @@ export interface AppNavSection {
 
 export interface DiscoveredManifest {
   models: DiscoveredModel[]
+  /** Native schema inventory, including private operational models. */
+  schemaModels?: string[]
   sections: DashboardSectionToggles
   /** Sections this application declared. Empty for a project that declared none. */
   nav: AppNavSection[]
@@ -181,9 +183,32 @@ export function parseDiscoveredManifest(source: string): DiscoveredManifest {
 
   return {
     models,
+    ...(envelope.schemaModels === undefined ? {} : { schemaModels: normalizeSchemaModels(envelope.schemaModels) }),
     sections: normalizeManifestToggles(envelope.sections),
     nav: normalizeManifestNav(envelope.nav),
   }
+}
+
+function normalizeSchemaModels(value: unknown): string[] {
+  if (!Array.isArray(value) || value.some(name => typeof name !== 'string'))
+    throw new TypeError('manifest schemaModels must be an array of model names')
+  return value as string[]
+}
+
+/** Hide built-in modules whose backing models are outside this app's schema. */
+export function filterSchemaNavSections(sections: Array<[string, string, NavItem[]]>, schemaModels?: readonly string[]): Array<[string, string, NavItem[]]> {
+  if (!schemaModels) return sections
+  const available = new Set(schemaModels)
+  const required: Record<string, string[]> = {
+    '/activity': ['Activity'], '/teams': ['Team'], '/subscribers': ['Subscriber'],
+    '/releases': ['Release'], '/deployments': ['Deployment'], '/requests': ['Request'],
+    '/queries': ['QueryLog'], '/queries/slow': ['QueryLog'], '/queries/history': ['QueryLog'],
+    '/errors': ['Error'], '/notifications/dashboard': ['Notification'], '/logs': ['Log'],
+    '/management/permissions': ['Role', 'Permission'], '/kanban': ['Board', 'Card', 'Column'],
+  }
+  return sections.map(([id, label, items]): [string, string, NavItem[]] => [id, label, id.startsWith('app-nav-') ? items : items.filter(item =>
+    (required[item.to] ?? []).every(model => available.has(model)))])
+    .filter(([, , items]) => items.length > 0)
 }
 
 /**
@@ -699,7 +724,7 @@ function loadAppNavFromConfig(configPath = resolve(process.cwd(), 'config/dashbo
 export function buildWebSidebarSections(): WebSidebarSection[] {
   const manifest = loadDiscoveredManifest()
   const appNav = manifest.nav.length > 0 ? manifest.nav : loadAppNavFromConfig()
-  const sections = buildNavSections(manifest.models, manifest.sections, appNav)
+  const sections = filterSchemaNavSections(buildNavSections(manifest.models, manifest.sections, appNav), manifest.schemaModels)
 
   return [
     {

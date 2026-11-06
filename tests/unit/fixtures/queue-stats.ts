@@ -42,7 +42,7 @@ for (const table of plan.tables) {
     delete column.references
 }
 
-const { readQueueCounts } = await import('../../../storage/framework/defaults/app/Actions/Dashboard/Queue/queue-stats')
+const { readQueueCounts, withDeclaredQueues } = await import('../../../storage/framework/defaults/app/Actions/Dashboard/Queue/queue-stats')
 const { queuedJobState } = await import('@stacksjs/queue')
 
 /** The loop this replaced, over every row, as QueueStatsAction ran it. */
@@ -98,6 +98,8 @@ try {
   assert(expected.some(queue => queue.name === 'ghost' && queue.failed === 1 && queue.total === 0), 'a queue with only failures stays visible')
 
   assert.deepEqual(await readQueueCounts(), expected, `${dialect}: per-queue counts`)
+  assert.deepEqual(withDeclaredQueues([], ['health-sync', 'health-sync']), [{ name: 'health-sync', pending: 0, active: 0, failed: 0, total: 0 }])
+  assert.deepEqual(withDeclaredQueues(expected, ['health-sync', 'emails']), [...expected, { name: 'health-sync', pending: 0, active: 0, failed: 0, total: 0 }])
   console.log('queue stats OK')
 }
 finally { resetDatabaseConnection() }

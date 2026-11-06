@@ -1330,9 +1330,6 @@ declare module '@stacksjs/database' {
     }
     queue_workers: {
       // columns
-      id: number
-      created_at: string
-      updated_at: string | null
       worker_id: string
       snapshot: string
       heartbeat_at: number | bigint

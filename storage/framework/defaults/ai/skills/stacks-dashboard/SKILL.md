@@ -688,6 +688,12 @@ that remain exposed.
 
 ## Application observability
 
+The standalone dashboard registers its guarded JSON API even when the application
+skips default route bundles. Its STX state lives in
+`storage/framework/runtime/dashboard/stx`, so opening it does not replace the
+application's generated routes or layout types. Built-in module links follow
+the native schema inventory, including private operational models.
+
 The sidebar, model catalog and global search use the database's native model
 scope: application overrides and discovered package models, with framework
 models as a fallback. Global search uses the configured ORM connection on
@@ -706,8 +712,9 @@ model scope and generate/migrate its schema before using worker metrics. The
 dashboard reads snapshots across processes. A heartbeat older than 60 seconds
 marks the worker stopped and clears live throughput; sessions are retained for
 seven days. Completion/failure totals describe those retained worker sessions,
-not a durable per-job completion history. Queues containing only failed jobs
-stay visible. Database queue rows are authoritative for pending/reserved work.
+not a durable per-job completion history. Declared job queues appear before
+their first dispatch, and queues containing only failed jobs stay visible.
+Database queue rows are authoritative for pending/reserved work.
 
 The local error page reads `errors`. An Error model does not capture exceptions
 by itself: configure `createDatabaseErrorReporter()` from

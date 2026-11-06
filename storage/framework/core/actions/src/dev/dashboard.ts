@@ -22,6 +22,10 @@ if (process.env.STACKS_DASHBOARD_WORKER !== '1') {
   process.exit(exitCode)
 }
 
+// Dashboard routes, layout types and bundles belong to this server. Sharing
+// the application's STX directory would overwrite its web route manifest.
+process.env.STX_DIR = storagePath('framework/runtime/dashboard/stx')
+
 // buddyOptions serializes `verbose: false` as `--verbose false`, so
 // process.argv.includes('--verbose') would always match. Check the value too.
 const verboseIdx = process.argv.indexOf('--verbose')
@@ -393,6 +397,11 @@ async function startStxServer(): Promise<void> {
   // `app/Routes.ts` is optional: an app whose routes all live in
   // `routes/api.ts` needs no manifest saying so.
   await router.loadRoutes(await router.appRouteRegistry())
+  // Opening the standalone dashboard explicitly opts into its operational
+  // JSON API, even when the application skips default route bundles. Keep
+  // the application's public bundles unchanged; this process serves only
+  // the developer dashboard, and these endpoints retain their own guards.
+  await router.route.register(defaultsPath('routes/dashboard-api.ts'))
   const stacksRoute = router.route
 
   const serverPromise = serve({
@@ -640,8 +649,11 @@ const discoveredModels = modelsWithEnabledFeatures(allDiscoveredModels, framewor
 const manifestDir = storagePath('framework/runtime/dashboard')
 const manifestPath = storagePath('framework/runtime/dashboard/.discovered-models.json')
 mkdirSync(manifestDir, { recursive: true })
+// eslint-disable-next-line ts/no-top-level-await
+const { resolveModelSources } = await import('@stacksjs/database/model-sources')
 const manifestPayload = {
   models: buildManifest(discoveredModels),
+  schemaModels: (resolveModelSources()?.models ?? []).map(model => model.name),
   sections: dashboardToggles,
   nav: dashboardNav,
 }

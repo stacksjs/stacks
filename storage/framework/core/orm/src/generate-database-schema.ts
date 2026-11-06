@@ -437,7 +437,7 @@ function usersGuaranteed(dialect: Dialect): Record<string, string> {
 }
 
 function deriveSystemColumns(model: Model, dialect: Dialect): Record<string, string> {
-  const out: Record<string, string> = { id: 'number' }
+  const out: Record<string, string> = (model.primaryKey ?? 'id') === 'id' ? { id: 'number' } : {}
   const traits = model.traits ?? {}
   if (traits.useUuid) out.uuid = 'string'
   const ts = traits.useTimestamps ?? traits.timestampable

@@ -8,11 +8,28 @@ import {
   LEGACY_DISCOVERED_MANIFEST_PATH,
   buildNavSections,
   buildWebSidebarSections,
+  filterSchemaNavSections,
   loadDiscoveredManifest,
   parseDiscoveredManifest,
 } from '../../storage/framework/defaults/resources/functions/dashboard/sidebar'
 
 describe('dashboard sidebar data', () => {
+  it('shows operational links only when their private backing models are in the native schema', () => {
+    const sections = buildNavSections([])
+    const links = (models: string[]) => filterSchemaNavSections(sections, models).flatMap(([, , items]) => items.map(item => item.to))
+    const scoped = links(['Error', 'Job', 'FailedJob', 'QueueWorker'])
+    expect(scoped).toContain('/errors')
+    expect(scoped).toContain('/jobs')
+    expect(scoped).toContain('/queue')
+    expect(scoped).not.toContain('/requests')
+    expect(scoped).not.toContain('/logs')
+    expect(scoped).not.toContain('/kanban')
+    expect(scoped).not.toContain('/management/permissions')
+    expect(links(['Request', 'Log', 'Role', 'Permission'])).toContain('/management/permissions')
+    expect(filterSchemaNavSections(sections)).toBe(sections)
+    expect(filterSchemaNavSections([['app-nav-0', 'App', [{ to: '/requests', text: 'My requests', icon: 'api' }]]], [])).toHaveLength(1)
+  })
+
   it('maps discovered models through native sidebar metadata', () => {
     const sections = buildNavSections([
       {

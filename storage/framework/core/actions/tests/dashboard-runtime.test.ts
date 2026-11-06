@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import { Database } from 'bun:sqlite'
-import { cpSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 
@@ -18,6 +18,8 @@ test.each(['lazy', 'eager', 'stale'] as const)('dashboard boots globals for %s a
     symlinkSync(join(checkout, 'node_modules'), join(root, 'node_modules'), 'dir')
     write('package.json', '{"name":"dashboard-runtime-fixture","type":"module"}')
     write('bunfig.toml', '# No application preloads in this isolated worker.\n')
+    for (const file of ['routes.ts', 'route-types.d.ts', 'layout-types.d.ts'])
+      write(`storage/framework/stx/${file}`, '// Application route artifact\nexport {}\n')
     // The proxy is a system boundary: a regression must never create real
     // certificates, change hosts files, or talk to a developer's rpx daemon.
     write('proxy-guard.ts', `import { mock } from 'bun:test'
@@ -90,6 +92,10 @@ export default new Action({
       await Bun.sleep(100)
     }
     expect(ready).toBe(true)
+    // An app can skip framework routes and still open its developer dashboard.
+    const definitions = await fetch(`${origin}/api/dashboard/jobs/definitions`)
+    expect(definitions.status).toBe(200)
+    expect(Array.isArray((await definitions.json()).data)).toBe(true)
     const guest = await fetch(`${origin}/api/private`)
     expect(guest.status).toBe(401)
     const csrf = await fetch(`${origin}/api/mutate`, { method: 'POST', body: '{}' })
@@ -108,6 +114,8 @@ export default new Action({
     expect(transcript).toContain('Native window disabled')
     expect(transcript).not.toContain('UNEXPECTED_PROXY_CALL')
     expect(transcript).not.toContain('https://dashboard.')
+    for (const file of ['routes.ts', 'route-types.d.ts', 'layout-types.d.ts'])
+      expect(readFileSync(join(root, `storage/framework/stx/${file}`), 'utf8')).toBe('// Application route artifact\nexport {}\n')
   }
   finally {
     child?.kill()

@@ -7,6 +7,7 @@ export default defineModel({
   table: 'queue_workers',
   primaryKey: 'worker_id',
   autoIncrement: false,
+  traits: { useTimestamps: false },
   dashboard: { access: false },
   indexes: [{ name: 'queue_workers_heartbeat_at_index', columns: ['heartbeat_at'] }],
   attributes: {

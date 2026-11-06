@@ -14,6 +14,16 @@ export interface QueueCounts {
 
 const queueName = (value: unknown): string => String(value || 'default')
 
+/** Declared queues remain discoverable before their first job is dispatched. */
+export function withDeclaredQueues(counts: QueueCounts[], names: Iterable<string>): QueueCounts[] {
+  const queues = new Map(counts.map(row => [row.name, row]))
+  for (const name of [...new Set(names)].sort()) {
+    const key = queueName(name)
+    if (!queues.has(key)) queues.set(key, { name: key, pending: 0, active: 0, failed: 0, total: 0 })
+  }
+  return [...queues.values()]
+}
+
 /**
  * Every queue that has jobs, counted by the database (stacksjs/stacks#3200).
  *

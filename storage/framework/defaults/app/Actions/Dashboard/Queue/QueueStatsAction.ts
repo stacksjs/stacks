@@ -1,8 +1,8 @@
 import { Action } from '@stacksjs/actions/runtime'
 import { FailedJob, Job } from '@stacksjs/orm'
-import { aggregateWorkerMetrics, readWorkerSnapshots } from '@stacksjs/queue'
+import { aggregateWorkerMetrics, discoverJobs, readWorkerSnapshots } from '@stacksjs/queue'
 import { dashboardOperationalError } from '../dashboard-response'
-import { readQueueCounts } from './queue-stats'
+import { readQueueCounts, withDeclaredQueues } from './queue-stats'
 
 // A queued job has no `status` column - `queuedJobState` in @stacksjs/queue
 // holds the rule (reserved_at means a worker has it; available_at in the
@@ -12,7 +12,7 @@ import { readQueueCounts } from './queue-stats'
 
 export default new Action({
   name: 'QueueStatsAction',
-  description: 'Returns aggregated queue statistics from the jobs/failed_jobs tables and the in-memory metrics tracker.',
+  description: 'Returns declared queues, database job counts and shared worker metrics.',
   method: 'GET',
   async handle() {
     try {
@@ -22,7 +22,8 @@ export default new Action({
         readQueueCounts(),
       ])
 
-      const queues = counts.map(queue => ({
+      const definitions = await discoverJobs()
+      const queues = withDeclaredQueues(counts, definitions.map(job => job.config.queue ?? 'default')).map(queue => ({
         name: queue.name,
         status: queue.active > 0 ? 'active' : 'idle',
         pending: queue.pending,

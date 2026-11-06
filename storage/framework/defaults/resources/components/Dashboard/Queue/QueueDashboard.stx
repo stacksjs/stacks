@@ -134,7 +134,7 @@ onMount(() => {
     <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-neutral-700">
       <div>
         <h2 class="font-semibold text-gray-900 dark:text-white">Queue breakdown</h2>
-        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Status totals come from Job records grouped by queue name.</p>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Declared queues and recorded jobs, with totals grouped by queue name.</p>
       </div>
       <p class="text-gray-500 text-sm dark:text-neutral-400">{{ stats()?.throughputPerMinute || 0 }} jobs/min across reporting workers</p>
     </div>

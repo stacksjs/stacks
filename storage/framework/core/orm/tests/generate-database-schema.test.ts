@@ -57,6 +57,18 @@ describe('renderDatabaseTypeFile - pure renderer', () => {
 })
 
 describe('buildDatabaseSchema - walks model files end-to-end', () => {
+  test('does not invent id or timestamps for a model with an explicit primary key', async () => {
+    const root = mkScratch()
+    const modelsDir = join(root, 'app/Models')
+    writeModel(modelsDir, 'Worker.ts', `export default {
+      name: 'Worker', table: 'workers', primaryKey: 'worker_id', autoIncrement: false,
+      traits: { useTimestamps: false },
+      attributes: { worker_id: { type: 'string' }, heartbeat_at: { type: 'bigint' } },
+    }`)
+    const result = await buildDatabaseSchema({ modelsDir, defaultsDir: join(root, 'no-defaults'), outFile: join(root, 'database/types.d.ts'), migrationsDir: false })
+    expect(result.tables[0]?.columns).toEqual({ worker_id: 'string', heartbeat_at: 'number | bigint' })
+  })
+
   test('returns empty schema with no errors when no models exist', async () => {
     const root = mkScratch()
     const result = await buildDatabaseSchema({
