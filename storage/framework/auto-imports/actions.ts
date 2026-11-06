@@ -335,6 +335,7 @@ export const actions = {
   'Actions/Dashboard/Commerce/commerce-product-list': '../defaults/app/Actions/Dashboard/Commerce/commerce-product-list.ts',
   'Actions/Dashboard/Commerce/commerce-product-records': '../defaults/app/Actions/Dashboard/Commerce/commerce-product-records.ts',
   'Actions/Dashboard/Commerce/commerce-record': '../defaults/app/Actions/Dashboard/Commerce/commerce-record.ts',
+  'Actions/Dashboard/Commerce/commerce-review-list': '../defaults/app/Actions/Dashboard/Commerce/commerce-review-list.ts',
   'Actions/Dashboard/Commerce/commerce-sql': '../defaults/app/Actions/Dashboard/Commerce/commerce-sql.ts',
   'Actions/Dashboard/Commerce/coupon-records': '../defaults/app/Actions/Dashboard/Commerce/coupon-records.ts',
   'Actions/Dashboard/Commerce/courier-records': '../defaults/app/Actions/Dashboard/Commerce/courier-records.ts',
