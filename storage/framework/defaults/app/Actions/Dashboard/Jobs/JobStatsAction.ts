@@ -1,7 +1,8 @@
 import { Action } from '@stacksjs/actions/runtime'
 import { FailedJob, Job } from '@stacksjs/orm'
-import { aggregateWorkerMetrics, readWorkerSnapshots } from '@stacksjs/queue'
+import { aggregateWorkerMetrics } from '@stacksjs/queue'
 import { dashboardOperationalError } from '../dashboard-response'
+import { readDashboardWorkerSnapshots } from '../Queue/worker-snapshots'
 
 export default new Action({
   name: 'JobStatsAction',
@@ -14,7 +15,8 @@ export default new Action({
         FailedJob.count(),
       ])
 
-      const metrics = aggregateWorkerMetrics(await readWorkerSnapshots())
+      const workers = await readDashboardWorkerSnapshots()
+      const metrics = aggregateWorkerMetrics(workers.snapshots)
       const completedSeen = metrics.counts.completed
       const failedSeen = metrics.counts.failed
       const totalSeen = completedSeen + failedSeen
@@ -31,6 +33,7 @@ export default new Action({
         avgProcessingTime,
         jobsPerMinute: metrics.throughputPerMinute,
         failureRate,
+        workersMigrated: workers.migrated,
         // The composable doesn't render a chart, so we omit the synthetic
         // throughput/waitTime arrays the previous handler returned. If you
         // need historical data, persist completion events and serve them

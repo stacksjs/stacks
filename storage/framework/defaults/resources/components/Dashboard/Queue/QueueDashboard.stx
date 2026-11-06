@@ -11,6 +11,7 @@ const stats = state<QueueAggregateStats | null>(null)
 const queueConnected = state(false)
 const workerRunning = state(false)
 const activeWorkerJobs = state(0)
+const workersMigrated = state(true)
 const isLoading = state(true)
 const isRetrying = state(false)
 const loadError = state('')
@@ -63,6 +64,7 @@ async function loadQueue(): Promise<void> {
     workers.set(workerData.data)
     workerRunning.set(workerData.worker_running)
     activeWorkerJobs.set(workerData.active_jobs)
+    workersMigrated.set(workerData.workers_migrated !== false)
   }
   catch (error) {
     loadError.set('Queue data could not be loaded.')
@@ -159,7 +161,11 @@ onMount(() => {
         Retry failed jobs
       </Button>
     </div>
-    <div :if="!isLoading() && workerRows().length === 0" class="px-5 py-12 text-center">
+    <div :if="!isLoading() && !workersMigrated()" role="status" class="px-5 py-12 text-center">
+      <p class="font-semibold text-gray-900 dark:text-white">Worker telemetry is not set up yet</p>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Workers report here through the <code>queue_workers</code> table. Run <code>./buddy migrate</code> to create it.</p>
+    </div>
+    <div :if="!isLoading() && workersMigrated() && workerRows().length === 0" class="px-5 py-12 text-center">
       <p class="font-semibold text-gray-900 dark:text-white">No workers tracked in this process</p>
       <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Start a queue worker to populate heartbeat and processing metrics.</p>
     </div>

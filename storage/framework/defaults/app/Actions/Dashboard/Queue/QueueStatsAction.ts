@@ -1,8 +1,9 @@
 import { Action } from '@stacksjs/actions/runtime'
 import { FailedJob, Job } from '@stacksjs/orm'
-import { aggregateWorkerMetrics, discoverJobs, readWorkerSnapshots } from '@stacksjs/queue'
+import { aggregateWorkerMetrics, discoverJobs } from '@stacksjs/queue'
 import { dashboardOperationalError } from '../dashboard-response'
 import { readQueueCounts, withDeclaredQueues } from './queue-stats'
+import { readDashboardWorkerSnapshots } from './worker-snapshots'
 
 // A queued job has no `status` column - `queuedJobState` in @stacksjs/queue
 // holds the rule (reserved_at means a worker has it; available_at in the
@@ -36,7 +37,8 @@ export default new Action({
 
       // Workers publish bounded snapshots through their native QueueWorker model.
       // The dashboard reads those across processes rather than its own empty tracker.
-      const metrics = aggregateWorkerMetrics(await readWorkerSnapshots())
+      const workers = await readDashboardWorkerSnapshots()
+      const metrics = aggregateWorkerMetrics(workers.snapshots)
 
       const stats = {
         totalQueues: queues.length,
@@ -48,7 +50,7 @@ export default new Action({
         averageProcessingTimeMs: Math.round(metrics.averageDuration),
       }
 
-      return { queues, stats, queueConnected: true }
+      return { queues, stats, queueConnected: true, workersMigrated: workers.migrated }
     }
     catch (error) {
       return dashboardOperationalError(error, 'Queue statistics could not be loaded.', 'QueueStatsAction')

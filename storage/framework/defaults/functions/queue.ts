@@ -51,6 +51,8 @@ export interface QueueWorkersResponse {
   data: QueueWorker[]
   worker_running: boolean
   active_jobs: number
+  /** False when `queue_workers` has not been migrated: there is no worker telemetry to read yet. */
+  workers_migrated?: boolean
 }
 
 export async function fetchQueueStats(): Promise<QueueStatsResponse> {

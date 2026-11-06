@@ -578,6 +578,7 @@ export const actions = {
   'Actions/Dashboard/Queue/QueueStatsAction': '../defaults/app/Actions/Dashboard/Queue/QueueStatsAction.ts',
   'Actions/Dashboard/Queue/QueueWorkersAction': '../defaults/app/Actions/Dashboard/Queue/QueueWorkersAction.ts',
   'Actions/Dashboard/Queue/queue-stats': '../defaults/app/Actions/Dashboard/Queue/queue-stats.ts',
+  'Actions/Dashboard/Queue/worker-snapshots': '../defaults/app/Actions/Dashboard/Queue/worker-snapshots.ts',
   'Actions/Dashboard/Rbac/PermissionDestroyAction': '../defaults/app/Actions/Dashboard/Rbac/PermissionDestroyAction.ts',
   'Actions/Dashboard/Rbac/PermissionStoreAction': '../defaults/app/Actions/Dashboard/Rbac/PermissionStoreAction.ts',
   'Actions/Dashboard/Rbac/PermissionsIndexAction': '../defaults/app/Actions/Dashboard/Rbac/PermissionsIndexAction.ts',

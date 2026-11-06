@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions/runtime'
-import { readWorkerSnapshots } from '@stacksjs/queue'
 import { dashboardOperationalError } from '../dashboard-response'
+import { readDashboardWorkerSnapshots } from './worker-snapshots'
 
 export default new Action({
   name: 'QueueWorkersAction',
@@ -8,7 +8,7 @@ export default new Action({
   method: 'GET',
   async handle() {
     try {
-      const snapshots = await readWorkerSnapshots()
+      const { snapshots, migrated } = await readDashboardWorkerSnapshots()
       const tracked = snapshots.map(snapshot => snapshot.worker)
 
       // Translate the tracker's internal status into the dashboard's vocabulary
@@ -38,6 +38,7 @@ export default new Action({
         data,
         worker_running: tracked.some(worker => worker.status !== 'stopped'),
         active_jobs: snapshots.reduce((sum, snapshot) => sum + snapshot.activeJobs, 0),
+        workers_migrated: migrated,
       }
     }
     catch (error) {
