@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.492...v0.75.493)
+
+## ✨ Features
+
+- bound retention cleanup and pin highlighted dashboard models ([5bc42e5](https://github.com/stacksjs/stacks/commit/5bc42e5)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.491...v0.75.492)
 
 ## ✅ Tests
