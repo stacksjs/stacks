@@ -22,7 +22,7 @@
  * framework is by definition the PREVIOUS release, so the app can never agree
  * with a template that uses something this release adds, and the release that
  * would publish it waits on this job being green: the check could only ever
- * fail. Then the app is typechecked against THIS commit's `@stacksjs/types`
+ * fail. Then the app is typechecked against THIS commit's core packages
  * (built and linked into the app's node_modules, the way the attached-site
  * deploy links the framework it is about to publish), which still catches the
  * template disagreeing with the framework it ships with.
@@ -44,6 +44,7 @@ import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
+import { buildFramework } from './build-framework'
 
 async function main(): Promise<void> {
   const repoRoot = process.cwd()
@@ -121,13 +122,18 @@ async function main(): Promise<void> {
   const publishWindow = Boolean(packument && vendored && !(vendored in (packument.versions ?? {})))
 
   if (publishWindow) {
-    console.log(`stacks@${vendored} is not on npm yet: typechecking against this commit's @stacksjs/types instead of the previous release's.`)
-    const build = Bun.spawnSync(['bun', 'build.ts'], { cwd: join(repoRoot, 'storage/framework/core/types'), stdout: 'inherit', stderr: 'inherit' })
-    const link = build.exitCode === 0
-      ? Bun.spawnSync(['./buddy', 'link:core', 'types', '--path', repoRoot, '--cwd', appDir], { cwd: repoRoot, stdout: 'inherit', stderr: 'inherit' })
-      : build
+    console.log(`stacks@${vendored} is not on npm yet: typechecking against this commit's built core packages.`)
+    // Config types import declarations from other framework packages. Linking
+    // only @stacksjs/types still parses the previous release's queue/database
+    // declarations, so an already-fixed declaration could block its own release.
+    const builds = await buildFramework(repoRoot)
+    if (builds.some(result => result.exitCode !== 0)) {
+      console.error('Could not build this commit\'s core packages, so the scaffold was not typechecked.')
+      process.exit(1)
+    }
+    const link = Bun.spawnSync(['./buddy', 'link:core', '--all', '--path', repoRoot, '--cwd', appDir], { cwd: repoRoot, stdout: 'inherit', stderr: 'inherit' })
     if (link.exitCode !== 0) {
-      console.error('Could not build and link this commit\'s @stacksjs/types into the scaffolded app, so it was not typechecked.')
+      console.error('Could not link this commit\'s built core packages into the scaffolded app, so it was not typechecked.')
       process.exit(1)
     }
   }
@@ -154,7 +160,7 @@ async function main(): Promise<void> {
 
   if (code === 0) {
     console.log(publishWindow
-      ? '✓ the scaffolded app typechecks against this commit\'s @stacksjs/types (the release is not published yet)'
+      ? '✓ the scaffolded app typechecks against this commit\'s built core packages (the release is not published yet)'
       : '✓ the scaffolded app typechecks against the framework version it pinned')
     return
   }
