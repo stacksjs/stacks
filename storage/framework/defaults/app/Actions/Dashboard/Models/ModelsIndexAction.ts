@@ -4,6 +4,7 @@ import { resolveModelSources } from '@stacksjs/database/model-sources'
 import { countRows } from '../../../../resources/functions/dashboard/data'
 import { dashboardOperationalError, dashboardOperationalIssue } from '../dashboard-response'
 import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
+import { resolveDashboardIcon } from '../../../../resources/functions/dashboard/sidebar'
 import { isUnmigratedTable } from './model-migration'
 import { modelApiConfiguration } from './model-api'
 
@@ -25,6 +26,7 @@ import { modelApiConfiguration } from './model-api'
  */
 interface ModelRow {
   name: string
+  icon: string
   table: string
   href: string
   count: number | null
@@ -86,6 +88,7 @@ function categoryLabel(k: string): string {
 function unavailableModelRow(model: DiscoveredModel, error: string): ModelRow {
   return {
     name: model.name,
+    icon: resolveDashboardIcon('table'),
     table: pluralize(pascalToSnake(model.name)),
     href: `/models/${pascalToKebab(model.name)}`,
     count: null,
@@ -160,6 +163,7 @@ export default new Action({
 
       return {
         name: m.name,
+        icon: resolveDashboardIcon(Model.dashboard?.icon ?? 'table'),
         table,
         href: `/models/${pascalToKebab(m.name)}`,
         count,

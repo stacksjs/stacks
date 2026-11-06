@@ -700,7 +700,7 @@ function titleCase(label: string): string {
  * an application should not be limited to the icons the framework happened to
  * name, and `i-hugeicons-champion` is the spelling its own templates use.
  */
-function resolveNavIcon(icon: string): string {
+export function resolveDashboardIcon(icon: string): string {
   if (icon.startsWith('i-'))
     return icon
 
@@ -749,7 +749,7 @@ export function buildWebSidebarSections(): WebSidebarSection[] {
   const webItem = (item: NavItem): WebSidebarItem => ({
     id: item.id ?? navItemId(item.to),
     label: item.text,
-    icon: resolveNavIcon(item.icon),
+    icon: resolveDashboardIcon(item.icon),
     iconColor: 'blue',
     ...(item.to ? { href: item.to } : {}),
     ...(item.roles?.length ? { roles: item.roles } : {}),
@@ -759,7 +759,7 @@ export function buildWebSidebarSections(): WebSidebarSection[] {
     {
       id: 'top',
       label: '',
-      items: [{ id: 'home', label: 'Home', icon: NAV_ICON_CLASSES.home, iconColor: 'blue', href: '/' }],
+      items: [{ id: 'home', label: 'Home', icon: NAV_ICON_CLASSES.home!, iconColor: 'blue', href: '/' }],
     },
     ...sections.map(([key, label, items]) => ({
       id: key,

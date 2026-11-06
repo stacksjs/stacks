@@ -246,7 +246,9 @@ async function startStxServer(): Promise<void> {
   let dashboardIconCss: Promise<string> | null = null
   async function buildDashboardIconCss(): Promise<string> {
     const { generateCss } = await import('@stacksjs/stx')
-    const dirs = [dashboardPath, userDashboardPath, dashboardComponentsPath, userDashboardComponentsPath]
+    // Model-defined icons can appear only in the async catalog (for example a
+    // model hidden from navigation), so rendered sidebar markup cannot seed them.
+    const dirs = [dashboardPath, userDashboardPath, dashboardComponentsPath, userDashboardComponentsPath, projectPath('app/Models'), defaultsPath('app/Models')]
     const icons = new Set<string>()
     for (const dir of dirs) {
       if (!existsSync(dir))

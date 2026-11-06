@@ -20,7 +20,7 @@ const definition = new URL('../../../orm/src/define-model.ts', import.meta.url).
 await writeFile(join(project, 'storage/framework/defaults/app/Models/User.ts'), `import { defineModel } from ${JSON.stringify(definition)}\nexport default defineModel({ name: 'User', table: 'users', traits: { useTimestamps: false }, attributes: { name: { type: 'string' } } } as const)\n`)
 for (const [name, table, dashboard] of [
   ['PrivateRecord', 'private_records', { access: false, highlight: true }],
-  ['PublicRecord', 'public_records', { enabled: false }],
+  ['PublicRecord', 'public_records', { enabled: false, icon: 'i-lucide-book-open' }],
   // Absent private tables prove generic reads/counts/search never reach their database work.
   ['MissingPrivateRecord', 'missing_private_records', { access: false }],
   ['User', 'private_users', { access: false }],
@@ -115,6 +115,7 @@ for (const nativeRoutes of [false, true]) {
     assert(catalog.includes('PublicRecord'))
     assert(!catalog.includes('MissingPrivateRecord') && !catalog.includes('private_users') && !catalog.includes('private_subscribers'))
     const catalogData = JSON.parse(catalog)
+    assert.equal(catalogData.categoryGroups.flatMap((group: any) => group.models).find((model: any) => model.name === 'PublicRecord').icon, 'i-lucide-book-open', 'the model directory preserves model-defined icons')
     assert(!catalogData.categoryGroups.flatMap((group: { models: Array<{ name: string }> }) => group.models).some((model: { name: string }) => model.name === 'User'), 'nested private User override must suppress its framework catalog entry')
     assert.equal(catalogData.totalModels, 1)
     assert.equal(catalogData.totalRecords, 1)
