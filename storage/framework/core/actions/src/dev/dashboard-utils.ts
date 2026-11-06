@@ -1,4 +1,5 @@
 import type { DashboardModelOptions } from '@stacksjs/types'
+import { capitalCase, plural } from '@stacksjs/strings'
 import { Glob } from 'bun'
 import { randomUUID } from 'node:crypto'
 import { existsSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
@@ -473,7 +474,7 @@ function categoryRows(
     .filter(m => !dedicatedPages.has(m.id) && !dedicated.has(m.id))
     .map(m => ({
       id: `model-${m.id}`,
-      label: m.dashboard?.label ?? m.name,
+      label: m.dashboard?.label ?? capitalCase(plural(m.name)),
       icon: m.icon, // already resolved with dashboard.icon override at scan time
       url: `${baseRoute}/models/${m.id}`,
       // Surface role gate as item metadata. The client-side filter in
@@ -632,7 +633,7 @@ export function buildSidebarConfig(
     .filter(m => !dedicatedPages.has(m.id))
     .map(model => ({
       id: `model-${model.id}`,
-      label: model.dashboard?.label ?? model.name,
+      label: model.dashboard?.label ?? capitalCase(plural(model.name)),
       icon: model.icon,
       url: `${baseRoute}/models/${model.id}`,
       ...(model.dashboard?.roles && model.dashboard.roles.length > 0

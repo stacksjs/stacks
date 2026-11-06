@@ -413,7 +413,7 @@ describe('dashboard-utils', () => {
 
       const modelItems = dataSection.items.filter(i => i.id.startsWith('model-'))
       expect(modelItems.length).toBe(2)
-      expect(modelItems.find(i => i.id === 'model-widget')!.label).toBe('Widget')
+      expect(modelItems.find(i => i.id === 'model-widget')!.label).toBe('Widgets')
       expect(modelItems.find(i => i.id === 'model-widget')!.url).toBe('http://localhost:3456/pages/models/widget')
       expect(modelItems.find(i => i.id === 'model-gadget')).toBeDefined()
     })

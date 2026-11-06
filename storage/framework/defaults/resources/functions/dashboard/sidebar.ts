@@ -5,6 +5,7 @@
  * native STX Sidebar component. Markup, icons, disclosure state, and
  * persistence stay inside the component instead of being serialized as HTML.
  */
+import { capitalCase, plural } from '@stacksjs/strings'
 import { existsSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { resolve } from 'node:path'
@@ -326,7 +327,7 @@ function categoryNavItems(
     .map((m): NavItem => ({
       to: `/models/${m.id}`,
       icon: m.dashboard?.icon ?? m.icon ?? 'table',
-      text: m.dashboard?.label ?? m.name,
+      text: m.dashboard?.label ?? capitalCase(plural(m.name)),
       ...(m.dashboard?.roles && m.dashboard.roles.length > 0
         ? { roles: m.dashboard.roles }
         : {}),
@@ -452,7 +453,7 @@ export function buildNavSections(
     const item: NavItem = {
       to: `/models/${m.id}`,
       icon: m.dashboard?.icon ?? m.icon ?? 'table',
-      text: m.dashboard?.label ?? m.name,
+      text: m.dashboard?.label ?? capitalCase(plural(m.name)),
       ...(m.dashboard?.roles && m.dashboard.roles.length > 0
         ? { roles: m.dashboard.roles }
         : {}),
