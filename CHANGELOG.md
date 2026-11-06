@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.496...v0.75.497)
+
+## 🐛 Bug Fixes
+
+- **release**: preserve unchanged native toolchain pins ([1ae7c02](https://github.com/stacksjs/stacks/commit/1ae7c02)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **ci**: validate declarations before frozen Pantry installs ([5bae68a](https://github.com/stacksjs/stacks/commit/5bae68a)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **dashboard**: prefer app models over disabled framework proxies ([f632cb7](https://github.com/stacksjs/stacks/commit/f632cb7)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.495...v0.75.496)
 
 ## 🐛 Bug Fixes
