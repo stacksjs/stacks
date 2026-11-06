@@ -347,6 +347,7 @@ export const actions = {
   'Actions/Dashboard/Commerce/commerce-product-list': '../defaults/app/Actions/Dashboard/Commerce/commerce-product-list.ts',
   'Actions/Dashboard/Commerce/commerce-product-records': '../defaults/app/Actions/Dashboard/Commerce/commerce-product-records.ts',
   'Actions/Dashboard/Commerce/commerce-product-unit-list': '../defaults/app/Actions/Dashboard/Commerce/commerce-product-unit-list.ts',
+  'Actions/Dashboard/Commerce/commerce-product-variant-list': '../defaults/app/Actions/Dashboard/Commerce/commerce-product-variant-list.ts',
   'Actions/Dashboard/Commerce/commerce-product-waitlist-list': '../defaults/app/Actions/Dashboard/Commerce/commerce-product-waitlist-list.ts',
   'Actions/Dashboard/Commerce/commerce-record': '../defaults/app/Actions/Dashboard/Commerce/commerce-record.ts',
   'Actions/Dashboard/Commerce/commerce-restaurant-waitlist-list': '../defaults/app/Actions/Dashboard/Commerce/commerce-restaurant-waitlist-list.ts',

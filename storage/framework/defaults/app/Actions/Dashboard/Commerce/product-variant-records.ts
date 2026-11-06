@@ -21,11 +21,6 @@ export interface ProductVariantRecord {
   createdAt: string
 }
 
-export interface ProductVariantOption {
-  id: string
-  name: string
-}
-
 export interface ProductVariantSummary {
   total: number
   active: number
@@ -35,18 +30,6 @@ export interface ProductVariantSummary {
 
 export function parseVariantOptions(input: unknown): string[] {
   return commerceStringList(input, 'ProductVariant', 'options')
-}
-
-export function productVariantOptions(products: any[]): ProductVariantOption[] {
-  return products
-    .map((product) => {
-      const id = commerceIdentifier(commerceValue(product, 'id', 'uuid'), 'Product')
-      return {
-        id,
-        name: commerceRequiredString(commerceValue(product, 'name'), `Product ${id}`, 'name'),
-      }
-    })
-    .sort((left, right) => left.name.localeCompare(right.name))
 }
 
 export function normalizeProductVariantRecord(

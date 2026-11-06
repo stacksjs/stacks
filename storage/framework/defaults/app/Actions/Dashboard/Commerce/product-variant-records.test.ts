@@ -2,7 +2,6 @@ import { describe, expect, it } from 'bun:test'
 import {
   normalizeProductVariantRecord,
   parseVariantOptions,
-  productVariantOptions,
   summarizeProductVariants,
 } from './product-variant-records'
 
@@ -69,17 +68,5 @@ describe('dashboard product variant records', () => {
       draft: 1,
       linkedProducts: 2,
     })
-  })
-
-  it('builds validated Product options', () => {
-    expect(productVariantOptions([
-      { id: 2, name: 'Tea' },
-      { id: 1, name: 'Coffee' },
-    ])).toEqual([
-      { id: '1', name: 'Coffee' },
-      { id: '2', name: 'Tea' },
-    ])
-    expect(() => productVariantOptions([{ id: 3, name: '' }]))
-      .toThrow('Product 3.name must be a non-empty string')
   })
 })

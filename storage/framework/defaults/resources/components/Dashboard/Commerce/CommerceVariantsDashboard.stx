@@ -1,16 +1,24 @@
 <script client>
 import type {
-  ProductVariantOption,
   ProductVariantRecord,
   ProductVariantSummary,
 } from '../../../../app/Actions/Dashboard/Commerce/product-variant-records'
 import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
+import { useServerList } from '../../../../functions/dashboard-list'
 import { pushToast } from '../../../../functions/toasts'
+
+interface VariantProduct {
+  id: string
+  name: string
+}
 
 interface ProductVariantIndexResponse {
   records: ProductVariantRecord[]
-  products: ProductVariantOption[]
+  total: number
+  page: number
   summary: ProductVariantSummary
+  types: string[]
+  products: VariantProduct[]
 }
 
 interface ProductVariantWritePayload {
@@ -23,16 +31,14 @@ interface ProductVariantWritePayload {
 }
 
 const emptySummary: ProductVariantSummary = { total: 0, active: 0, draft: 0, linkedProducts: 0 }
-const records = state<ProductVariantRecord[]>([])
-const products = state<ProductVariantOption[]>([])
+// The products that have a variant, for the product filter; the dialog searches every product.
+const products = state<VariantProduct[]>([])
+const types = state<string[]>([])
 const summary = state<ProductVariantSummary>({ ...emptySummary })
-const search = state('')
 const statusFilter = state('all')
 const typeFilter = state('all')
 const productFilter = state('all')
 const sort = state('variant')
-const loading = state(true)
-const loadError = state('')
 const dialogOpen = state(false)
 const dialogMode = state<'add' | 'edit'>('add')
 const editingRecord = state<ProductVariantRecord | null>(null)
@@ -41,40 +47,52 @@ const saving = state(false)
 const deleting = state(false)
 const validationErrors = state<Record<string, string>>({})
 
-function variantTypes(): string[] {
-  return [...new Set(records().map(record => record.type).filter(Boolean))].sort()
+const SELECT_SORTS: Record<string, { sort: string, direction: 'asc' | 'desc' }> = {
+  variant: { sort: 'variant', direction: 'asc' },
+  options: { sort: 'options', direction: 'desc' },
+  product: { sort: 'product', direction: 'asc' },
+  newest: { sort: 'newest', direction: 'desc' },
 }
 
-function visibleRecords(): ProductVariantRecord[] {
-  const query = search().trim().toLowerCase()
-  const status = statusFilter()
-  const type = typeFilter()
-  const product = productFilter()
-  return [...records()]
-    .filter((record) => {
-      if (status !== 'all' && record.status !== status)
-        return false
-      if (type !== 'all' && record.type !== type)
-        return false
-      if (product !== 'all' && record.productId !== product)
-        return false
-      return !query || [
-        record.variant,
-        record.type,
-        record.description,
-        record.productName,
-        ...record.options,
-      ].some(value => value.toLowerCase().includes(query))
-    })
-    .sort((left, right) => {
-      if (sort() === 'options')
-        return right.options.length - left.options.length || left.variant.localeCompare(right.variant)
-      if (sort() === 'product')
-        return left.productName.localeCompare(right.productName) || left.variant.localeCompare(right.variant)
-      if (sort() === 'newest')
-        return Number(right.id) - Number(left.id)
-      return left.variant.localeCompare(right.variant)
-    })
+// The server searches, filters, sorts and pages (stacksjs/stacks#3218), where
+// this page used to do all of that with the newest 500 variants.
+const {
+  records,
+  total,
+  page,
+  perPage,
+  search,
+  loading,
+  loadError,
+  load,
+  changePage,
+  changePageSize,
+  changeSort,
+} = useServerList<ProductVariantRecord>({
+  fetch: params => dashboardApi<ProductVariantIndexResponse>(`/api/dashboard/commerce/variants?${params}`),
+  defaultSort: () => SELECT_SORTS[sort()] ?? SELECT_SORTS.variant!,
+  columnSorts: { variant: 'variant', productName: 'product', status: 'status', createdAt: 'created' },
+  filters: () => ({ status: statusFilter(), type: typeFilter(), product: productFilter() }),
+  onLoad: (result) => {
+    const data = result as ProductVariantIndexResponse
+    summary.set(data.summary ?? { ...emptySummary })
+    types.set(Array.isArray(data.types) ? data.types : [])
+    products.set(Array.isArray(data.products) ? data.products : [])
+  },
+  onError: error => pushToast('error', 'Could not load product variants', { detail: error instanceof Error ? error.message : String(error) }),
+})
+
+function variantTypes(): string[] {
+  return types()
+}
+
+function loadVariants(): Promise<void> {
+  return load()
+}
+
+function matchingLabel(): string {
+  const count = total()
+  return `${count.toLocaleString()} matching product ${count === 1 ? 'variant' : 'variants'}`
 }
 
 function metricCards(): Array<{ label: string, value: string }> {
@@ -84,26 +102,6 @@ function metricCards(): Array<{ label: string, value: string }> {
     { label: 'Draft', value: String(summary().draft) },
     { label: 'Linked products', value: String(summary().linkedProducts) },
   ]
-}
-
-async function loadVariants(): Promise<void> {
-  loading.set(true)
-  loadError.set('')
-  try {
-    const data = await dashboardApi<ProductVariantIndexResponse>('/api/dashboard/commerce/variants')
-    records.set(Array.isArray(data.records) ? data.records : [])
-    products.set(Array.isArray(data.products) ? data.products : [])
-    summary.set(data.summary ?? { ...emptySummary })
-  }
-  catch (error) {
-    loadError.set('Product variant records could not be loaded.')
-    pushToast('error', 'Could not load product variants', {
-      detail: error instanceof Error ? error.message : String(error),
-    })
-  }
-  finally {
-    loading.set(false)
-  }
 }
 
 function openAdd(): void {
@@ -222,13 +220,13 @@ onMount(() => {
     </div>
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <p class="text-gray-500 text-sm dark:text-neutral-400">{{ visibleRecords().length }} matching product variants</p>
+      <p class="text-gray-500 text-sm dark:text-neutral-400">{{ matchingLabel() }}</p>
       <label class="flex gap-2 items-center text-gray-500 text-sm dark:text-neutral-400">Sort<select x-model="sort" class="px-3 py-1.5 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="variant">Name</option><option value="options">Most options</option><option value="product">Product</option><option value="newest">Newest</option></select></label>
     </div>
 
-    <CommerceVariantsTable :sort-reset-key="sort()" :records="visibleRecords()" :loading="loading()" @edit="openEdit" @delete="openDelete" />
+    <CommerceVariantsTable :sort-reset-key="sort()" :records="records()" :total="total()" :current-page="page()" :per-page="perPage()" :loading="loading()" @edit="openEdit" @delete="openDelete" @page-change="changePage" @page-size-change="changePageSize" @sort="changeSort" />
   </section>
 </div>
 
-<CommerceVariantDialog :open="dialogOpen()" :mode="dialogMode()" :record="editingRecord()" :products="products()" :types="variantTypes()" :busy="saving()" :errors="validationErrors()" @submit="saveVariant" @close="closeDialog()" />
+<CommerceVariantDialog :open="dialogOpen()" :mode="dialogMode()" :record="editingRecord()" :types="variantTypes()" :busy="saving()" :errors="validationErrors()" @submit="saveVariant" @close="closeDialog()" />
 <CommerceVariantDeleteDialog :open="Boolean(deletingRecord())" :record="deletingRecord()" :busy="deleting()" @confirm="deleteVariant()" @close="closeDelete()" />

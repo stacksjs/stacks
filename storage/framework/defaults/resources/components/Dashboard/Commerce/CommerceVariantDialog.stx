@@ -1,11 +1,12 @@
 <script client>
-import type { ProductVariantOption, ProductVariantRecord } from '../../../../app/Actions/Dashboard/Commerce/product-variant-records'
+import type { ProductChoice } from '../../../../app/Actions/Dashboard/Commerce/commerce-choice-records'
+import type { ProductVariantRecord } from '../../../../app/Actions/Dashboard/Commerce/product-variant-records'
+import { dashboardApi } from '../../../../functions/dashboard-api'
 import { formErrorMessages } from '../../../../functions/dashboard-form'
 
 const open = useReactiveProp('open', false)
 const mode = useReactiveProp('mode', 'add')
 const record = useReactiveProp('record', null as ProductVariantRecord | null)
-const products = useReactiveProp('products', [] as ProductVariantOption[])
 const types = useReactiveProp('types', [] as string[])
 const busy = useReactiveProp('busy', false)
 const errors = useReactiveProp('errors', {} as Record<string, string>)
@@ -17,6 +18,57 @@ const options = state('')
 const status = state<'active' | 'inactive' | 'draft'>('active')
 const productId = state('')
 let hydrationKey = ''
+
+// The product choices are a server search (stacksjs/stacks#3218): this used
+// to be handed the first 500 products by name, so a variant could not be given
+// any later product.
+const productChoices = state<ProductChoice[]>([])
+const productMatches = state(0)
+const productQuery = state('')
+let productRequest = 0
+let productTimer: ReturnType<typeof setTimeout> | null = null
+
+async function loadProducts(term: string): Promise<void> {
+  const request = ++productRequest
+  const params = new URLSearchParams()
+  if (term)
+    params.set('q', term)
+  let found: ProductChoice[] = []
+  let count = 0
+  try {
+    const data = await dashboardApi<{ choices?: ProductChoice[], total?: number }>(`/api/dashboard/commerce/product-choices${term ? `?${params}` : ''}`)
+    found = Array.isArray(data.choices) ? data.choices : []
+    count = Number(data.total) || found.length
+  }
+  catch {
+    // Soft-fail: the variant's own product stays selectable.
+  }
+  if (request !== productRequest)
+    return
+  productChoices.set(found)
+  productMatches.set(count)
+}
+
+function searchProductsSoon(): void {
+  if (productTimer)
+    clearTimeout(productTimer)
+  productTimer = setTimeout(() => { void loadProducts(productQuery().trim()) }, 250)
+}
+
+/** The choices to show: the search results, with the variant's own product kept in. */
+function products(): ProductChoice[] {
+  const found = productChoices()
+  const current = record()
+  if (!current?.productId || found.some(choice => choice.id === current.productId))
+    return found
+  return [{ id: current.productId, label: current.productName || `Product ${current.productId}`, detail: '' }, ...found]
+}
+
+function moreProductsLabel(): string {
+  const shown = productChoices().length
+  const total = productMatches()
+  return total > shown ? `Showing ${shown} of ${total.toLocaleString()} matching products. Search to narrow it down.` : ''
+}
 
 effect(() => {
   if (!open()) {
@@ -34,6 +86,8 @@ effect(() => {
   options.set(current?.options.join(', ') || '')
   status.set(current?.status || 'active')
   productId.set(current?.productId || '')
+  productQuery.set('')
+  void loadProducts('')
 })
 
 function submit(): void {
@@ -70,7 +124,7 @@ function errorMessages(): string[] {
             <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Variant</span><input x-model="variant" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
             <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Type</span><input x-model="type" type="text" list="product-variant-types" maxlength="50" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /><datalist id="product-variant-types"><template :for="variantType in types()" :key="variantType"><option :value="variantType"></option></template></datalist></label>
           </div>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Product</span><select x-model="productId" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="">Unassigned</option><template :for="product in products()" :key="product.id"><option :value="product.id">{{ product.name }}</option></template></select></label>
+          <div><label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Product</span><input x-model="productQuery" @input="searchProductsSoon()" type="search" name="product_search" aria-label="Search products by name or id" placeholder="Search by name or id" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label><select x-model="productId" aria-label="Product" class="mt-2 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="">Unassigned</option><template :for="product in products()" :key="product.id"><option :value="product.id" :selected="product.id === productId()">{{ product.label }}</option></template></select><p :if="moreProductsLabel()" class="mt-1 text-gray-500 text-xs dark:text-neutral-400" :text="moreProductsLabel()"></p></div>
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Description</span><textarea x-model="description" rows="3" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea></label>
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Options</span><textarea x-model="options" rows="3" placeholder="Small, Medium, Large" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea><span class="block mt-1 text-gray-500 text-xs dark:text-neutral-400">Separate options with commas or new lines.</span></label>
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select x-model="status" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="active">Active</option><option value="inactive">Inactive</option><option value="draft">Draft</option></select></label>

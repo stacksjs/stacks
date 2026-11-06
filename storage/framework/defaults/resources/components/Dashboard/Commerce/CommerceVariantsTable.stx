@@ -7,7 +7,14 @@ const records = useReactiveProp('records', [] as ProductVariantRecord[])
 const loading = useReactiveProp('loading', false)
 /** The parent's sort select; a change hands the order back from a header sort. */
 const sortResetKey = useReactiveProp<unknown>('sortResetKey', '')
-const emit = defineEmits(['edit', 'delete'])
+/**
+ * The server pages and sorts what the parent's search and filters match
+ * (stacksjs/stacks#3218): how many variants match, the page shown and its size.
+ */
+const total = useReactiveProp('total', 0)
+const currentPage = useReactiveProp('currentPage', 1)
+const perPage = useReactiveProp('perPage', 25)
+const emit = defineEmits(['edit', 'delete', 'page-change', 'page-size-change', 'sort'])
 
 /**
  * Two slotted columns, dispatched on `column.key`: the variant with its type
@@ -47,6 +54,18 @@ const rows = derived(() => records().map(record => ({
 function handleRowAction(payload: { action: string, row: ProductVariantRecord }): void {
   emit(payload.action, payload.row)
 }
+
+function changePage(page: number): void {
+  emit('page-change', page)
+}
+
+function changePageSize(size: number): void {
+  emit('page-size-change', size)
+}
+
+function changeSort(sort: { key: string, direction: string }): void {
+  emit('sort', sort)
+}
 </script>
 
 <Table
@@ -57,10 +76,17 @@ function handleRowAction(payload: { action: string, row: ProductVariantRecord })
   :row-actions="ROW_ACTIONS"
   action-label-key="variant"
   paginated
-  :page-size="25"
+  manual-pagination
+  manual-sort
+  :total="total()"
+  :current-page="currentPage()"
+  :page-size="perPage()"
   empty-title="No product variants found"
   empty-description="Adjust the filters or add a ProductVariant record."
   @row-action="handleRowAction"
+  @page-change="changePage"
+  @page-size-change="changePageSize"
+  @sort="changeSort"
 >
   <template #cell="{ row, column }">
     <template :if="column.key === 'variant'">
