@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.488...v0.75.489)
+
+## 🐛 Bug Fixes
+
+- isolate scaffold provisioning and dashboard route admission ([2554cd1](https://github.com/stacksjs/stacks/commit/2554cd1)) _(by Chris Breuer <chris@stacksjs.com>)_
+- execute required Mac source evidence on hosted ARM64 runners ([180bac8](https://github.com/stacksjs/stacks/commit/180bac8)) _(by Chris Breuer <chris@stacksjs.com>)_
+- validate scaffold types against the complete source cohort ([75cd153](https://github.com/stacksjs/stacks/commit/75cd153)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- discover all native preparation steps without a fixed count ([346b153](https://github.com/stacksjs/stacks/commit/346b153)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.487...v0.75.488)
 
 ## 🐛 Bug Fixes
