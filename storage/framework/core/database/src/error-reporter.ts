@@ -34,7 +34,7 @@ export function createDatabaseErrorReporter(): ErrorReporter {
       }
       pending++
       writing = writing.then(async () => {
-        const { db } = await import('@stacksjs/database/runtime')
+        const { db } = await import('./runtime')
         await db.insertInto('errors').values(row).execute()
       }).catch((error) => {
         // Never log through report()/log.error here: a failed reporter must

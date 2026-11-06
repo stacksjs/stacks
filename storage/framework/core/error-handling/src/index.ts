@@ -57,4 +57,3 @@ export {
   renderProductionErrorPage,
 } from './error-page'
 
-export { createDatabaseErrorReporter } from './database-reporter'

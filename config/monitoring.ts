@@ -1,5 +1,5 @@
 import type { BugHqMonitoringOptions, MonitoringConfig } from '@stacksjs/types'
-import { createDatabaseErrorReporter } from '@stacksjs/error-handling/database-reporter'
+import { createDatabaseErrorReporter } from '@stacksjs/database/error-reporter'
 import { createBugHqReporter } from '@stacksjs/error-handling/bughq'
 import { env, initializeIntegration, REMOTE_TELEMETRY_ENVIRONMENTS } from '@stacksjs/env'
 

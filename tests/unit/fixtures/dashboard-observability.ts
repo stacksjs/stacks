@@ -34,7 +34,7 @@ initializeDbConfig({ app: { env: 'test' }, database: {
 } })
 
 const { persistWorkerSnapshot, readWorkerSnapshots, workerSnapshotState, aggregateWorkerMetrics, pruneWorkerSnapshots, WORKER_RETENTION_MS } = await import('../../../storage/framework/core/queue/src/worker-monitor')
-const { createDatabaseErrorReporter } = await import('../../../storage/framework/core/error-handling/src/database-reporter')
+const { createDatabaseErrorReporter } = await import('../../../storage/framework/core/database/src/error-reporter')
 const { captureError, flushErrorReporters } = await import('../../../storage/framework/core/error-handling/src/reporters')
 
 if (process.env.STACKS_OBSERVABILITY_READ === '1') {

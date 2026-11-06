@@ -711,7 +711,7 @@ stay visible. Database queue rows are authoritative for pending/reserved work.
 
 The local error page reads `errors`. An Error model does not capture exceptions
 by itself: configure `createDatabaseErrorReporter()` from
-`@stacksjs/error-handling/database-reporter` in `monitoring.reporters`, publish
+`@stacksjs/database/error-reporter` in `monitoring.reporters`, publish
 `Error`, and migrate it. Reporting is bounded, buffered, identity-deduplicated
 by `captureError`, and flushed by `flushErrorReporters`/the logger. The database
 reporter stores allowlisted operational context and excludes bodies and headers.
