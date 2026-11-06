@@ -1,5 +1,55 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.489...v0.75.490)
+
+## 🐛 Bug Fixes
+
+- **dashboard**: product categories are read whole ([950952b](https://github.com/stacksjs/stacks/commit/950952b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3218](https://github.com/stacksjs/stacks/issues/3218))
+- **dashboard**: print logs summarise, break down and export every matching log ([83fbe2d](https://github.com/stacksjs/stacks/commit/83fbe2d)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3218](https://github.com/stacksjs/stacks/issues/3218))
+- **dashboard**: the point of sale searches every product and customer ([1f75a01](https://github.com/stacksjs/stacks/commit/1f75a01)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3218](https://github.com/stacksjs/stacks/issues/3218))
+- capture native HTTP metadata and bootstrap search projections ([66028e4](https://github.com/stacksjs/stacks/commit/66028e4)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **dashboard**: licence keys are listed by the database and the key dialog searches every customer, product and order ([de6b101](https://github.com/stacksjs/stacks/commit/de6b101)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3218](https://github.com/stacksjs/stacks/issues/3218))
+- **dashboard**: delivery routes are searched, sorted, paged and summarised by the database ([cfae0e6](https://github.com/stacksjs/stacks/commit/cfae0e6)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3218](https://github.com/stacksjs/stacks/issues/3218))
+- **dashboard**: the delivery configuration lists show every record ([3ae1c09](https://github.com/stacksjs/stacks/commit/3ae1c09)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3218](https://github.com/stacksjs/stacks/issues/3218))
+- **dashboard**: the delivery overview counts every courier, route and zone ([40738ed](https://github.com/stacksjs/stacks/commit/40738ed)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3218](https://github.com/stacksjs/stacks/issues/3218))
+- **dashboard**: the restaurant waitlist is listed by the database and its dialog searches every customer ([afbc405](https://github.com/stacksjs/stacks/commit/afbc405)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3218](https://github.com/stacksjs/stacks/issues/3218))
+- **dashboard**: the product waitlist is listed by the database and its dialog searches every product and customer ([859a41a](https://github.com/stacksjs/stacks/commit/859a41a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3218](https://github.com/stacksjs/stacks/issues/3218))
+- **dashboard**: Reviews is searched, filtered, sorted, paged and summarised by the database ([cef0362](https://github.com/stacksjs/stacks/commit/cef0362)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3218](https://github.com/stacksjs/stacks/issues/3218))
+- **dashboard**: Gift Cards is searched, filtered, sorted, paged and summarised by the database ([2679ef4](https://github.com/stacksjs/stacks/commit/2679ef4)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3218](https://github.com/stacksjs/stacks/issues/3218))
+- **dashboard**: the gift card breakdown shows its numbers ([0a5fde3](https://github.com/stacksjs/stacks/commit/0a5fde3)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3218](https://github.com/stacksjs/stacks/issues/3218))
+- **dashboard**: Products is searched, filtered, sorted, paged and summarised by the database ([795bb73](https://github.com/stacksjs/stacks/commit/795bb73)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3218](https://github.com/stacksjs/stacks/issues/3218))
+- **dashboard**: Payments is searched, filtered, sorted, paged and summarised by the database ([5e4551e](https://github.com/stacksjs/stacks/commit/5e4551e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3218](https://github.com/stacksjs/stacks/issues/3218))
+- **dashboard**: Payments and Products read the records they reference ([c5e8ed5](https://github.com/stacksjs/stacks/commit/c5e8ed5)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3218](https://github.com/stacksjs/stacks/issues/3218))
+- **dashboard**: the order dialog searches every customer ([99f615b](https://github.com/stacksjs/stacks/commit/99f615b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3218](https://github.com/stacksjs/stacks/issues/3218), [#3216](https://github.com/stacksjs/stacks/issues/3216))
+- **dashboard**: Orders is searched, filtered, sorted, paged and totalled by the database ([648e2bb](https://github.com/stacksjs/stacks/commit/648e2bb)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3218](https://github.com/stacksjs/stacks/issues/3218))
+- **dashboard**: Orders reads the customers and coupons its orders reference ([60f6040](https://github.com/stacksjs/stacks/commit/60f6040)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3218](https://github.com/stacksjs/stacks/issues/3218))
+- **dashboard**: Kanban says which tables are missing instead of failing blind ([7702642](https://github.com/stacksjs/stacks/commit/7702642)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3217](https://github.com/stacksjs/stacks/issues/3217), [#3210](https://github.com/stacksjs/stacks/issues/3210))
+- **dashboard**: the Kanban assignee picker searches every user ([a220b5d](https://github.com/stacksjs/stacks/commit/a220b5d)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3216](https://github.com/stacksjs/stacks/issues/3216))
+- **dashboard**: Home's request cards count every captured request ([2b8e5d0](https://github.com/stacksjs/stacks/commit/2b8e5d0)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: the Queue and Jobs pages work before queue_workers is migrated ([27414a2](https://github.com/stacksjs/stacks/commit/27414a2)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3214](https://github.com/stacksjs/stacks/issues/3214), [#3210](https://github.com/stacksjs/stacks/issues/3210))
+- **dashboard**: stx writes outside the directory the dev server watches ([feb7aaf](https://github.com/stacksjs/stacks/commit/feb7aaf)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3212](https://github.com/stacksjs/stacks/issues/3212), [#3035](https://github.com/stacksjs/stacks/issues/3035))
+- **dashboard**: the file manager lists a disk without its metadata tables ([8c0f41b](https://github.com/stacksjs/stacks/commit/8c0f41b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3211](https://github.com/stacksjs/stacks/issues/3211), [#3210](https://github.com/stacksjs/stacks/issues/3210))
+- **dashboard**: a model whose table was never migrated says so instead of failing ([6f2da9a](https://github.com/stacksjs/stacks/commit/6f2da9a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3210](https://github.com/stacksjs/stacks/issues/3210))
+- **buddy**: buddy new finishes the scaffold when Pantry cannot install ([09156bc](https://github.com/stacksjs/stacks/commit/09156bc)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3209](https://github.com/stacksjs/stacks/issues/3209))
+
+## ♻️ Code Refactoring
+
+- **dashboard**: one boolean comparison for the commerce lists ([cf6ef28](https://github.com/stacksjs/stacks/commit/cf6ef28)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3218](https://github.com/stacksjs/stacks/issues/3218))
+
+## 🔧 Chores
+
+- release v0.75.490 category isolation preparation ([61b0daf](https://github.com/stacksjs/stacks/commit/61b0daf)) _(by Chris Breuer <chris@stacksjs.com>)_
+- release v0.75.490 isolated dashboard database checks ([3704d6f](https://github.com/stacksjs/stacks/commit/3704d6f)) _(by Chris Breuer <chris@stacksjs.com>)_
+- release v0.75.490 declaration check preparation ([342ecc1](https://github.com/stacksjs/stacks/commit/342ecc1)) _(by Chris Breuer <chris@stacksjs.com>)_
+- release v0.75.490 public capture types ([1c41868](https://github.com/stacksjs/stacks/commit/1c41868)) _(by Chris Breuer <chris@stacksjs.com>)_
+- release v0.75.490 source catalog ([abec83f](https://github.com/stacksjs/stacks/commit/abec83f)) _(by Chris Breuer <chris@stacksjs.com>)_
+- release v0.75.490 preparation ([1440606](https://github.com/stacksjs/stacks/commit/1440606)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.488...v0.75.489)
 
 ## 🐛 Bug Fixes
