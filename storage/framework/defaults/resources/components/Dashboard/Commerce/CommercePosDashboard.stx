@@ -1,10 +1,8 @@
 <script client>
-import type {
-  CommercePosCustomer,
-  CommercePosProduct,
-} from '../../../../app/Actions/Dashboard/Commerce/commerce-pos'
+import type { CommercePosProduct } from '../../../../app/Actions/Dashboard/Commerce/commerce-pos'
 import type { ProductOption } from '../../../../app/Actions/Dashboard/Commerce/commerce-product-records'
 import { dashboardApi } from '../../../../functions/dashboard-api'
+import { useServerList } from '../../../../functions/dashboard-list'
 import { pushToast } from '../../../../functions/toasts'
 import { formatCurrency } from '@stacksjs/commerce/money'
 
@@ -20,9 +18,7 @@ interface PosSummary {
 }
 
 interface PosIndexResponse {
-  products: CommercePosProduct[]
   categories: ProductOption[]
-  customers: CommercePosCustomer[]
   taxRate: number
   defaultCurrency: string
   paymentMethods: PosPaymentMethod[]
@@ -72,18 +68,15 @@ interface PosCheckoutResponse {
   receipt: PosReceipt
 }
 
-const products = state<CommercePosProduct[]>([])
 const categories = state<ProductOption[]>([])
-const customers = state<CommercePosCustomer[]>([])
 const paymentMethods = state<PosPaymentMethod[]>([])
 const summary = state<PosSummary>({ products: 0, sellable: 0, inventory: 0 })
 const taxRate = state(0)
 const defaultCurrency = state('USD')
-const search = state('')
 const categoryFilter = state('all')
 const availabilityFilter = state('sellable')
 const cartLines = state<PosCartLine[]>([])
-const loading = state(true)
+const settingsLoading = state(true)
 const loadError = state('')
 const checkoutOpen = state(false)
 const checkoutBusy = state(false)
@@ -118,25 +111,31 @@ function formatMoney(value: number): string {
   return formatCurrency(value, defaultCurrency())
 }
 
-function visibleProducts(): CommercePosProduct[] {
-  const query = search().trim().toLowerCase()
-  const selectedCategory = categoryFilter()
-  const selectedAvailability = availabilityFilter()
-  return products().filter((product) => {
-    const sellable = product.isAvailable && product.inventoryCount > 0
-    if (selectedCategory !== 'all' && product.categoryId !== selectedCategory)
-      return false
-    if (selectedAvailability === 'sellable' && !sellable)
-      return false
-    if (selectedAvailability === 'unavailable' && sellable)
-      return false
-    return !query || [
-      product.name,
-      product.description,
-      product.categoryName,
-      ...product.allergens,
-    ].some(value => value.toLowerCase().includes(query))
-  })
+// The catalogue is the server's, searched and paged (stacksjs/stacks#3218):
+// this screen used to read the first 500 products by name and filter them
+// here, so a later product could not be rung up.
+const {
+  records: products,
+  total: matchingProducts,
+  page: catalogPage,
+  perPage: catalogPerPage,
+  search,
+  loading: catalogLoading,
+  load: loadCatalog,
+  changePage: changeCatalogPage,
+} = useServerList<CommercePosProduct>({
+  fetch: params => dashboardApi<{ records: CommercePosProduct[], total: number, page: number }>(`/api/dashboard/commerce/pos/products?${params}`),
+  defaultSort: { sort: 'name', direction: 'asc' },
+  filters: () => ({
+    category: categoryFilter(),
+    availability: availabilityFilter() === 'unavailable' ? 'unsellable' : availabilityFilter(),
+  }),
+  perPage: 50,
+  onError: error => pushToast('error', 'Could not load products', { detail: error instanceof Error ? error.message : String(error) }),
+})
+
+function loading(): boolean {
+  return settingsLoading() || catalogLoading()
 }
 
 function metricCards(): Array<{ label: string, value: string, detail: string }> {
@@ -148,32 +147,43 @@ function metricCards(): Array<{ label: string, value: string, detail: string }> 
   ]
 }
 
+/**
+ * Bring the cart's lines up to date with exactly the products they hold, as
+ * they are now: a new price or stock level, or gone when a product is no
+ * longer sellable. The catalogue page on screen may not include them.
+ */
+async function refreshCart(): Promise<void> {
+  const ids = cartLines().map(line => line.productId)
+  if (ids.length === 0)
+    return
+  const data = await dashboardApi<{ records?: CommercePosProduct[] }>(`/api/dashboard/commerce/pos/products?ids=${ids.join(',')}`)
+  const currentProducts = new Map((data.records ?? []).map(product => [product.id, product]))
+  cartLines.set(cartLines().flatMap((line) => {
+    const product = currentProducts.get(line.productId)
+    if (!product || !product.isAvailable || product.inventoryCount <= 0)
+      return []
+    return [{
+      ...line,
+      name: product.name,
+      unitPrice: product.price,
+      inventoryCount: product.inventoryCount,
+      quantity: Math.min(line.quantity, product.inventoryCount),
+    }]
+  }))
+}
+
 async function loadPos(): Promise<void> {
-  loading.set(true)
+  settingsLoading.set(true)
   loadError.set('')
+  void loadCatalog()
   try {
     const data = await dashboardApi<PosIndexResponse>('/api/dashboard/commerce/pos')
-    products.set(Array.isArray(data.products) ? data.products : [])
     categories.set(Array.isArray(data.categories) ? data.categories : [])
-    customers.set(Array.isArray(data.customers) ? data.customers : [])
     paymentMethods.set(Array.isArray(data.paymentMethods) ? data.paymentMethods : [])
     taxRate.set(Number(data.taxRate) || 0)
     defaultCurrency.set(data.defaultCurrency || 'USD')
     summary.set(data.summary ?? { products: 0, sellable: 0, inventory: 0 })
-
-    const currentProducts = new Map(products().map(product => [product.id, product]))
-    cartLines.set(cartLines().flatMap((line) => {
-      const product = currentProducts.get(line.productId)
-      if (!product || !product.isAvailable || product.inventoryCount <= 0)
-        return []
-      return [{
-        ...line,
-        name: product.name,
-        unitPrice: product.price,
-        inventoryCount: product.inventoryCount,
-        quantity: Math.min(line.quantity, product.inventoryCount),
-      }]
-    }))
+    await refreshCart()
   }
   catch (error) {
     loadError.set('Point of sale data could not be loaded.')
@@ -182,7 +192,7 @@ async function loadPos(): Promise<void> {
     })
   }
   finally {
-    loading.set(false)
+    settingsLoading.set(false)
   }
 }
 
@@ -323,10 +333,10 @@ onMount(() => {
   <MetricCards label="Point of sale metrics" columns="grid-cols-2 xl:grid-cols-4" :items="metricCards()" />
 
   <div class="grid gap-6 grid-cols-1 items-start lg:grid-cols-[minmax(0,1fr)_20rem]">
-    <CommercePosCatalog :products="visibleProducts()" :categories="categories()" :search="search()" :category="categoryFilter()" :availability="availabilityFilter()" :currency="defaultCurrency()" :loading="loading()" @search="search.set($event)" @category="categoryFilter.set($event)" @availability="availabilityFilter.set($event)" @add="addProduct" />
+    <CommercePosCatalog :products="products()" :categories="categories()" :search="search()" :category="categoryFilter()" :availability="availabilityFilter()" :currency="defaultCurrency()" :loading="catalogLoading()" :total="matchingProducts()" :current-page="catalogPage()" :per-page="catalogPerPage()" @search="search.set($event)" @category="categoryFilter.set($event)" @availability="availabilityFilter.set($event)" @add="addProduct" @page="changeCatalogPage" />
     <CommercePosCart :lines="cartLines()" :currency="defaultCurrency()" :subtotal="subtotal()" :tax-rate="taxRate()" :tax-amount="taxAmount()" :total-amount="totalAmount()" @increase="increaseLine" @decrease="decreaseLine" @remove="removeLine" @instructions="updateInstructions" @clear="clearCart()" @checkout="openCheckout()" />
   </div>
 </div>
 
-<CommercePosCheckoutDialog :open="checkoutOpen()" :customers="customers()" :payment-methods="paymentMethods()" :currency="defaultCurrency()" :subtotal="subtotal()" :tax-amount="taxAmount()" :total-amount="totalAmount()" :unit-count="cartUnits()" :busy="checkoutBusy()" :error="checkoutError()" @submit="completeCheckout" @close="closeCheckout()" />
+<CommercePosCheckoutDialog :open="checkoutOpen()" :payment-methods="paymentMethods()" :currency="defaultCurrency()" :subtotal="subtotal()" :tax-amount="taxAmount()" :total-amount="totalAmount()" :unit-count="cartUnits()" :busy="checkoutBusy()" :error="checkoutError()" @submit="completeCheckout" @close="closeCheckout()" />
 <CommercePosReceiptDialog :open="receiptOpen()" :receipt="receipt()" @close="closeReceipt()" />

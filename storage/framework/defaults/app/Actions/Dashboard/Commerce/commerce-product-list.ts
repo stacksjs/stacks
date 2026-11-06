@@ -19,7 +19,11 @@ import { asText, binder, idPlaceholders, isTrue, sqlRows } from './commerce-sql'
 export const PRODUCT_SORTS = ['created', 'id', 'name', 'category', 'price', 'inventory', 'available'] as const
 export type ProductSort = typeof PRODUCT_SORTS[number]
 
-export const PRODUCT_AVAILABILITY = ['available', 'unavailable', 'out-of-stock'] as const
+/**
+ * `sellable` is what the point of sale can ring up: available with stock on
+ * hand; `unsellable` is everything else.
+ */
+export const PRODUCT_AVAILABILITY = ['available', 'unavailable', 'out-of-stock', 'sellable', 'unsellable'] as const
 export type ProductAvailability = typeof PRODUCT_AVAILABILITY[number]
 
 export interface ProductListQuery {
@@ -81,7 +85,9 @@ function sortExpression(sort: ProductSort, dialect: QueryBuilderDialect): string
   }
 }
 
-const FROM = ' FROM products p LEFT JOIN categories c ON c.id = p.category_id LEFT JOIN manufacturers m ON m.id = p.manufacturer_id'
+/** Products with the category and manufacturer the search and sorts read, as `p`, `c` and `m`. */
+export const PRODUCT_FROM = ' FROM products p LEFT JOIN categories c ON c.id = p.category_id LEFT JOIN manufacturers m ON m.id = p.manufacturer_id'
+const FROM = PRODUCT_FROM
 
 export function productFilter(query: Pick<ProductListQuery, 'search' | 'category' | 'availability'>, dialect: QueryBuilderDialect): { where: string, values: unknown[] } {
   const { bind, values } = binder(dialect)
@@ -94,6 +100,10 @@ export function productFilter(query: Pick<ProductListQuery, 'search' | 'category
     clauses.push(`NOT (${isTrue('p.is_available', dialect)})`)
   if (query.availability === 'out-of-stock')
     clauses.push('p.inventory_count = 0')
+  if (query.availability === 'sellable')
+    clauses.push(`${isTrue('p.is_available', dialect)} AND p.inventory_count > 0`)
+  if (query.availability === 'unsellable')
+    clauses.push(`NOT (${isTrue('p.is_available', dialect)} AND p.inventory_count > 0)`)
   if (query.search) {
     const pattern = containsPattern(query.search)
     const columns = [
@@ -129,11 +139,21 @@ async function relationCounts(table: 'product_variants' | 'product_units' | 'rev
   return new Map(rows.map(row => [String(row.product_id), countOf(row.item_count)]))
 }
 
-/** Products turned into records, against exactly the categories and manufacturers they reference. */
-async function recordsFor(products: Array<Record<string, unknown>>, run: CommerceSqlRunner, dialect: QueryBuilderDialect): Promise<CommerceProductRecord[]> {
+/**
+ * Products turned into records, against exactly the categories and
+ * manufacturers they reference. Without `counts`, the variant, unit and review
+ * counts are left at zero, for a caller that does not show them (the point of
+ * sale).
+ */
+export async function productRecordsFor(
+  products: Array<Record<string, unknown>>,
+  run: CommerceSqlRunner,
+  dialect: QueryBuilderDialect,
+  counts: boolean = true,
+): Promise<CommerceProductRecord[]> {
   if (products.length === 0)
     return []
-  const productIds = referencedIds(products, 'id')
+  const productIds = counts ? referencedIds(products, 'id') : []
   const categoryIds = referencedIds(products, 'category_id')
   const manufacturerIds = referencedIds(products, 'manufacturer_id')
   const [categories, manufacturers, variants, units, reviews] = await Promise.all([
@@ -207,7 +227,7 @@ export async function readProductPage(
     `SELECT p.*${FROM}${where}${orderBy(query, dialect)} LIMIT ${query.perPage} OFFSET ${(page - 1) * query.perPage}`,
     values,
   ).execute()
-  return { records: await recordsFor(sqlRows(products), run, dialect), total, page, summary, ...choices }
+  return { records: await productRecordsFor(sqlRows(products), run, dialect), total, page, summary, ...choices }
 }
 
 /** Every product matching the query, in its order, for the CSV export, a batch at a time. */
@@ -224,7 +244,7 @@ export async function readProductsForExport(
       `SELECT p.*${FROM}${where}${orderBy(query, dialect)} LIMIT ${batchSize} OFFSET ${offset}`,
       values,
     ).execute())
-    records.push(...await recordsFor(batch, run, dialect))
+    records.push(...await productRecordsFor(batch, run, dialect))
     if (batch.length < batchSize)
       return records
   }

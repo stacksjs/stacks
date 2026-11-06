@@ -22,7 +22,9 @@ export default new Action({
       return response.json({ message: query.error }, 422)
 
     try {
-      const { choices, total } = await searchCustomerChoices(query)
+      // `active=1` keeps to Active customers, as the point of sale offers them.
+      const activeOnly = ['1', 'true'].includes(String(request.get<unknown>('active', '') ?? '').trim())
+      const { choices, total } = await searchCustomerChoices(query, undefined, undefined, { activeOnly })
       return { choices, total, limit: query.limit }
     }
     catch (error) {

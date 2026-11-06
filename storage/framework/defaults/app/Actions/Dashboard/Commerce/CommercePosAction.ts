@@ -1,65 +1,35 @@
 import { Action } from '@stacksjs/actions/runtime'
 import { config } from '@stacksjs/config'
-import { Category, Customer, Manufacturer, Product, TaxRate } from '@stacksjs/orm'
 import { dashboardOperationalError } from '../dashboard-response'
-import {
-  isCommercePosCustomerActive,
-  normalizeCommercePosCustomer,
-  normalizeCommercePosProduct,
-  selectCommercePosTaxRate,
-} from './commerce-pos'
-import {
-  normalizeCommerceProductRecord,
-  normalizeCommerceCurrency,
-  normalizeManufacturerOption,
-  normalizeProductOption,
-} from './commerce-product-records'
+import { readPosSettings } from './commerce-pos-catalog'
+import { normalizeCommerceCurrency } from './commerce-product-records'
 
+/**
+ * `GET /api/dashboard/commerce/pos` - the point of sale's settings: the
+ * categories in use, the tax rate, the currency, the payment methods and the
+ * catalogue summary, counted over every product (commerce-pos-catalog.ts,
+ * stacksjs/stacks#3218).
+ *
+ * The catalogue itself is GET /commerce/pos/products, searched and paged, and
+ * the checkout searches customers through GET /commerce/customer-choices.
+ * This used to send the first 500 products, categories, manufacturers,
+ * customers and tax rates.
+ */
 export default new Action({
   name: 'CommercePosAction',
-  description: 'Returns persisted products, customers, and tax configuration for the native point of sale.',
+  description: 'Returns the native point of sale settings and catalogue summary.',
   method: 'GET',
   apiResponse: true,
 
   async handle() {
     try {
-      const [products, categories, manufacturers, customers, taxRates] = await Promise.all([
-        Product.orderBy('name', 'asc').limit(500).get(),
-        Category.orderBy('name', 'asc').limit(500).get(),
-        Manufacturer.orderBy('manufacturer', 'asc').limit(500).get(),
-        Customer.orderBy('name', 'asc').limit(500).get(),
-        TaxRate.orderBy('id', 'asc').limit(500).get(),
-      ])
-      const categoryOptions = categories.map(normalizeProductOption)
-      const manufacturerOptions = manufacturers.map(normalizeManufacturerOption)
-      const categoryMap = new Map(categoryOptions.map(option => [option.id, option.label]))
-      const manufacturerMap = new Map(manufacturerOptions.map(option => [option.id, option.label]))
-      const emptyCounts = new Map<string, number>()
-      const records = products.map(product => normalizeCommercePosProduct(normalizeCommerceProductRecord(
-        product,
-        categoryMap,
-        manufacturerMap,
-        emptyCounts,
-        emptyCounts,
-        emptyCounts,
-      )))
-      const sellable = records.filter(record => record.isAvailable && record.inventoryCount > 0)
-      const usedCategoryIds = new Set(records.map(record => record.categoryId).filter(Boolean))
-
+      const settings = await readPosSettings()
       return {
-        products: records,
-        categories: categoryOptions.filter(category => usedCategoryIds.has(category.id)),
-        customers: customers
-          .filter(isCommercePosCustomerActive)
-          .map(normalizeCommercePosCustomer),
-        taxRate: selectCommercePosTaxRate(taxRates),
+        categories: settings.categories,
+        taxRate: settings.taxRate,
         defaultCurrency: normalizeCommerceCurrency(config.commerce?.currency),
         paymentMethods: [{ id: 'cash', label: 'Cash' }],
-        summary: {
-          products: records.length,
-          sellable: sellable.length,
-          inventory: records.reduce((sum, record) => sum + record.inventoryCount, 0),
-        },
+        summary: settings.summary,
       }
     }
     catch (error) {

@@ -1,5 +1,6 @@
 <script client>
-import type { CommercePosCustomer } from '../../../../app/Actions/Dashboard/Commerce/commerce-pos'
+import type { CustomerChoice } from '../../../../app/Actions/Dashboard/Commerce/commerce-choice-records'
+import { dashboardApi } from '../../../../functions/dashboard-api'
 import { formatCurrency } from '@stacksjs/commerce/money'
 
 interface PosPaymentMethod {
@@ -8,7 +9,6 @@ interface PosPaymentMethod {
 }
 
 const open = useReactiveProp('open', false)
-const customers = useReactiveProp('customers', [] as CommercePosCustomer[])
 const paymentMethods = useReactiveProp('paymentMethods', [] as PosPaymentMethod[])
 const currency = useReactiveProp('currency', 'USD')
 const subtotal = useReactiveProp('subtotal', 0)
@@ -24,6 +24,48 @@ const paymentMethod = state('cash')
 const specialInstructions = state('')
 let hydrated = false
 
+// The customers are a server search over Active customers
+// (stacksjs/stacks#3218): this used to be handed the first 500 by name, so a
+// sale could not be given a customer past the 500th.
+const customers = state<CustomerChoice[]>([])
+const customerMatches = state(0)
+const customerQuery = state('')
+let customerRequest = 0
+let customerTimer: ReturnType<typeof setTimeout> | null = null
+
+async function loadCustomers(term: string): Promise<void> {
+  const request = ++customerRequest
+  const params = new URLSearchParams({ active: '1' })
+  if (term)
+    params.set('q', term)
+  let found: CustomerChoice[] = []
+  let count = 0
+  try {
+    const data = await dashboardApi<{ choices?: CustomerChoice[], total?: number }>(`/api/dashboard/commerce/customer-choices?${params}`)
+    found = Array.isArray(data.choices) ? data.choices : []
+    count = Number(data.total) || found.length
+  }
+  catch {
+    // Soft-fail: a guest sale needs no customer.
+  }
+  if (request !== customerRequest)
+    return
+  customers.set(found)
+  customerMatches.set(count)
+}
+
+function searchCustomersSoon(): void {
+  if (customerTimer)
+    clearTimeout(customerTimer)
+  customerTimer = setTimeout(() => { void loadCustomers(customerQuery().trim()) }, 250)
+}
+
+function moreCustomersLabel(): string {
+  const shown = customers().length
+  const total = customerMatches()
+  return total > shown ? `Showing ${shown} of ${total.toLocaleString()} matching customers. Search to narrow it down.` : ''
+}
+
 effect(() => {
   if (!open()) {
     hydrated = false
@@ -33,6 +75,8 @@ effect(() => {
     return
   hydrated = true
   customerId.set('')
+  customerQuery.set('')
+  void loadCustomers('')
   orderType.set('TAKEOUT')
   paymentMethod.set(paymentMethods()[0]?.id || 'cash')
   specialInstructions.set('')
@@ -63,7 +107,7 @@ function submit(): void {
     <div :if="error()" class="mb-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ error() }}</div>
 
     <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
-      <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Customer</span><select x-model="customerId" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="">Guest sale</option><template :for="customer in customers()" :key="customer.id"><option :value="customer.id">{{ customer.label }}{{ customer.email ? ' · ' + customer.email : '' }}</option></template></select></label>
+      <div class="sm:col-span-2"><label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Customer</span><input x-model="customerQuery" @input="searchCustomersSoon()" type="search" name="customer_search" aria-label="Search customers by name, email or phone" placeholder="Search by name, email or phone" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label><select x-model="customerId" aria-label="Customer" class="mt-2 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="">Guest sale</option><template :for="customer in customers()" :key="customer.id"><option :value="customer.id" :selected="customer.id === customerId()">{{ customer.label }}{{ customer.email ? ' · ' + customer.email : '' }}</option></template></select><p :if="moreCustomersLabel()" class="mt-1 text-gray-500 text-xs dark:text-neutral-400" :text="moreCustomersLabel()"></p></div>
       <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Order type</span><select x-model="orderType" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="TAKEOUT">Takeout</option><option value="DINE_IN">Dine in</option></select></label>
       <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Payment</span><select x-model="paymentMethod" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><template :for="method in paymentMethods()" :key="method.id"><option :value="method.id">{{ method.label }}</option></template></select></label>
       <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Order instructions</span><textarea x-model="specialInstructions" rows="3" maxlength="1000" placeholder="Optional instructions for the whole sale" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea></label>

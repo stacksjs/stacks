@@ -13,12 +13,6 @@ export interface CommercePosProduct {
   categoryName: string
 }
 
-export interface CommercePosCustomer {
-  id: string
-  label: string
-  email: string
-}
-
 export interface CommercePosCheckoutLine {
   productId: number
   quantity: number
@@ -140,26 +134,6 @@ export function normalizeCommercePosProduct(record: CommerceProductRecord): Comm
     categoryId: record.categoryId,
     categoryName: record.categoryName,
   }
-}
-
-export function normalizeCommercePosCustomer(record: any): CommercePosCustomer {
-  const id = identifier(value(record, 'id'), 'Customer')
-  const source = `Customer ${id}`
-  const name = requiredText(value(record, 'name'), source, 'name')
-  const email = requiredText(value(record, 'email'), source, 'email')
-  return {
-    id,
-    label: name,
-    email,
-  }
-}
-
-export function isCommercePosCustomerActive(record: any): boolean {
-  const id = identifier(value(record, 'id'), 'Customer')
-  const status = requiredText(value(record, 'status'), `Customer ${id}`, 'status')
-  if (status !== 'Active' && status !== 'Inactive')
-    throw recordError(`Customer ${id}`, 'status', 'Active or Inactive')
-  return status === 'Active'
 }
 
 export function parseCommercePosLines(input: unknown): CommercePosLineInputResult {

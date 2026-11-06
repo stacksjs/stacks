@@ -28,13 +28,15 @@ async function search<T>(
   normalize: (row: Record<string, unknown>) => T,
   run: CommerceSqlRunner,
   dialect: QueryBuilderDialect,
+  only: string[] = [],
 ): Promise<{ choices: T[], total: number }> {
   const { bind, values } = binder(dialect)
-  let where = ''
+  const clauses = [...only]
   if (query.search) {
     const pattern = containsPattern(query.search)
-    where = ` WHERE ${searched.map(column => `LOWER(${column}) LIKE ${bind(pattern)} ESCAPE '!'`).join(' OR ')}`
+    clauses.push(`(${searched.map(column => `LOWER(${column}) LIKE ${bind(pattern)} ESCAPE '!'`).join(' OR ')})`)
   }
+  const where = clauses.length > 0 ? ` WHERE ${clauses.join(' AND ')}` : ''
   const [counted, found] = await Promise.all([
     run.unsafe(`SELECT COUNT(*) AS total_count FROM ${table}${where}`, values).execute(),
     // LOWER, so the order is the same on every dialect: each collates case its own way.
@@ -52,11 +54,17 @@ export function searchProductChoices(
   return search('products', 'id, name, inventory_count', [`COALESCE(name, '')`, asText('id', dialect)], query, normalizeProductChoice, run, dialect)
 }
 
-/** Customers by name, email or phone. */
+/**
+ * Customers by name, email or phone. `activeOnly` keeps to customers whose
+ * status is Active, as the point of sale offers them.
+ */
 export function searchCustomerChoices(
   query: NamedSearchQuery,
   run: CommerceSqlRunner = db,
   dialect: QueryBuilderDialect = getDatabaseDialect(),
+  options: { activeOnly?: boolean } = {},
 ): Promise<{ choices: CustomerChoice[], total: number }> {
-  return search('customers', 'id, name, email, phone', [`COALESCE(name, '')`, `COALESCE(email, '')`, `COALESCE(phone, '')`], query, normalizeCustomerChoice, run, dialect)
+  // A text comparison: PostgreSQL keeps the status as an enum.
+  const only = options.activeOnly ? [`${asText('status', dialect)} = 'Active'`] : []
+  return search('customers', 'id, name, email, phone', [`COALESCE(name, '')`, `COALESCE(email, '')`, `COALESCE(phone, '')`], query, normalizeCustomerChoice, run, dialect, only)
 }

@@ -2,8 +2,6 @@ import { describe, expect, it } from 'bun:test'
 import {
   calculateCommercePosSale,
   deriveCommercePosTaxRate,
-  isCommercePosCustomerActive,
-  normalizeCommercePosCustomer,
   parseCommercePosLines,
   selectCommercePosTaxRate,
 } from './commerce-pos'
@@ -81,16 +79,7 @@ describe('dashboard commerce POS helpers', () => {
     expect(() => deriveCommercePosTaxRate(100, -1)).toThrow('non-negative')
   })
 
-  it('validates persisted customers and tax rates', () => {
-    const customer = { id: 1, name: 'Chris', email: 'chris@example.com', status: 'Active' }
-    expect(isCommercePosCustomerActive(customer)).toBeTrue()
-    expect(normalizeCommercePosCustomer(customer)).toEqual({
-      id: '1',
-      label: 'Chris',
-      email: 'chris@example.com',
-    })
-    expect(() => normalizeCommercePosCustomer({ id: 1, name: '', email: '' }))
-      .toThrow('Customer 1.name must be a non-empty string')
+  it('validates persisted tax rates', () => {
     expect(() => selectCommercePosTaxRate([{ id: 1, status: 'active', is_default: false, rate: 'invalid' }]))
       .toThrow('TaxRate 1.rate must be a finite number')
   })
