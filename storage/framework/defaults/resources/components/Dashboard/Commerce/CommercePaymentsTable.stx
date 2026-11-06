@@ -8,7 +8,13 @@ const records = useReactiveProp('records', [] as PaymentRecord[])
 const loading = useReactiveProp('loading', false)
 /** The parent's sort select; a change hands the order back from a header sort. */
 const sortResetKey = useReactiveProp<unknown>('sortResetKey', '')
-const emit = defineEmits(['view'])
+// One page the server chose (stacksjs/stacks#3218): it searches, filters, sorts
+// and pages the payments, so this shows them as given and hands paging and
+// column sorting back to the parent.
+const total = useReactiveProp('total', 0)
+const currentPage = useReactiveProp('currentPage', 1)
+const perPage = useReactiveProp('perPage', 25)
+const emit = defineEmits(['view', 'page-change', 'page-size-change', 'sort'])
 
 /** `partiallyRefunded` and `bank_transfer` as words, each capitalized. */
 function label(value: string): string {
@@ -82,6 +88,18 @@ const rows = derived(() => records().map(record => ({
 function handleRowAction(payload: { action: string, row: PaymentRecord }): void {
   emit(payload.action, payload.row)
 }
+
+function changePage(page: number): void {
+  emit('page-change', page)
+}
+
+function changePageSize(size: number): void {
+  emit('page-size-change', size)
+}
+
+function changeSort(sort: { key: string, direction: string }): void {
+  emit('sort', sort)
+}
 </script>
 
 <Table
@@ -92,10 +110,17 @@ function handleRowAction(payload: { action: string, row: PaymentRecord }): void 
   :row-actions="ROW_ACTIONS"
   action-label-key="id"
   paginated
-  :page-size="25"
+  manual-pagination
+  manual-sort
+  :total="total()"
+  :current-page="currentPage()"
+  :page-size="perPage()"
   empty-title="No payments found"
   empty-description="Adjust the filters to inspect another part of the native ledger."
   @row-action="handleRowAction"
+  @page-change="changePage"
+  @page-size-change="changePageSize"
+  @sort="changeSort"
 >
   <template #cell="{ row }">
     <p class="font-medium text-gray-900 text-sm dark:text-white" x-text="row.amountLabel"></p>

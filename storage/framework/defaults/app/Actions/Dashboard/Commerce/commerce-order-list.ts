@@ -1,5 +1,5 @@
 import type { QueryBuilderDialect } from '@stacksjs/database/runtime'
-import { db, getDatabaseDialect, sqlHelpers } from '@stacksjs/database/runtime'
+import { db, getDatabaseDialect } from '@stacksjs/database/runtime'
 import type { QueryReader } from '../Content/content-list'
 import { containsPattern, countOf, LIST_PAGE_SIZES, pageWithin, queryText } from '../Content/content-list'
 import type { CommerceOrderRecord, CommerceOrderSummary } from './commerce-order-records'
@@ -10,6 +10,8 @@ import {
   normalizeOrderCustomerContext,
 } from './commerce-order-records'
 import { commerceCurrency, commerceIdentifier, commerceValue, referencedIds } from './commerce-record'
+import type { CommerceSqlRunner } from './commerce-sql'
+import { asText, binder, idPlaceholders, sqlRows as rows } from './commerce-sql'
 
 /**
  * One page of orders, searched, filtered, sorted, counted and summarised by the
@@ -32,10 +34,7 @@ export interface OrderListQuery {
   perPage: number
 }
 
-/** What runs the queries: the configured `db`, or a test's own connection. */
-export interface OrderListRunner {
-  unsafe: (sql: string, values?: unknown[]) => { execute: () => Promise<unknown> }
-}
+export type OrderListRunner = CommerceSqlRunner
 
 /** The status groups the summary cards count, matched without regard to case. */
 const STATUS_GROUPS = {
@@ -93,18 +92,9 @@ function sortExpression(sort: OrderSort): string {
   }
 }
 
-function isMysqlWire(dialect: QueryBuilderDialect): boolean {
-  return dialect === 'mysql' || dialect === 'singlestore' || dialect === 'vitess'
-}
-
 /** The WHERE clause and its values for a query's search and filters. */
 export function orderFilter(query: Pick<OrderListQuery, 'search' | 'status' | 'type'>, dialect: QueryBuilderDialect): { where: string, values: unknown[] } {
-  const sql = sqlHelpers(dialect)
-  const values: unknown[] = []
-  const bind = (value: unknown): string => {
-    values.push(value)
-    return sql.param(values.length)
-  }
+  const { bind, values } = binder(dialect)
   const clauses: string[] = []
   if (query.status)
     clauses.push(`o.status = ${bind(query.status)}`)
@@ -113,7 +103,7 @@ export function orderFilter(query: Pick<OrderListQuery, 'search' | 'status' | 't
   if (query.search) {
     const pattern = containsPattern(query.search)
     const columns = [
-      `CAST(o.id AS ${isMysqlWire(dialect) ? 'CHAR' : 'TEXT'})`,
+      asText('o.id', dialect),
       `COALESCE(c.name, '')`,
       `COALESCE(c.email, '')`,
       `COALESCE(o.status, '')`,
@@ -127,15 +117,6 @@ export function orderFilter(query: Pick<OrderListQuery, 'search' | 'status' | 't
 
 const FROM = ' FROM orders o LEFT JOIN customers c ON c.id = o.customer_id'
 
-function rows(result: unknown): Array<Record<string, unknown>> {
-  return Array.isArray(result) ? result as Array<Record<string, unknown>> : []
-}
-
-function idList(ids: number[], dialect: QueryBuilderDialect): string {
-  const sql = sqlHelpers(dialect)
-  return ids.map((_, index) => sql.param(index + 1)).join(', ')
-}
-
 /**
  * Orders turned into records: their referenced customers and coupons read by
  * id, and their item counts. Shared by the page and the export.
@@ -148,9 +129,9 @@ async function recordsFor(orders: Array<Record<string, unknown>>, run: OrderList
   const couponIds = referencedIds(orders, 'coupon_id')
   const orderIds = referencedIds(orders, 'id')
   const [customers, coupons, items] = await Promise.all([
-    customerIds.length > 0 ? run.unsafe(`SELECT id, name, email FROM customers WHERE id IN (${idList(customerIds, dialect)})`, customerIds).execute() : [],
-    couponIds.length > 0 ? run.unsafe(`SELECT id FROM coupons WHERE id IN (${idList(couponIds, dialect)})`, couponIds).execute() : [],
-    orderIds.length > 0 ? run.unsafe(`SELECT id, order_id, quantity FROM order_items WHERE order_id IN (${idList(orderIds, dialect)})`, orderIds).execute() : [],
+    customerIds.length > 0 ? run.unsafe(`SELECT id, name, email FROM customers WHERE id IN (${idPlaceholders(customerIds, dialect)})`, customerIds).execute() : [],
+    couponIds.length > 0 ? run.unsafe(`SELECT id FROM coupons WHERE id IN (${idPlaceholders(couponIds, dialect)})`, couponIds).execute() : [],
+    orderIds.length > 0 ? run.unsafe(`SELECT id, order_id, quantity FROM order_items WHERE order_id IN (${idPlaceholders(orderIds, dialect)})`, orderIds).execute() : [],
   ])
 
   const customerMap = new Map(rows(customers).map(normalizeOrderCustomerContext).map(customer => [customer.id, customer.context]))

@@ -1,8 +1,5 @@
 <script client>
-import type {
-  PaymentRecord,
-} from '../../../../app/Actions/Dashboard/Commerce/payment-records'
-import { isSuccessfulPayment } from '../../../../app/Actions/Dashboard/Commerce/payment-records'
+import type { PaymentBreakdown } from '../../../../app/Actions/Dashboard/Commerce/commerce-payment-list'
 import { formatCurrency } from '@stacksjs/commerce/money'
 
 interface CountRow {
@@ -17,38 +14,24 @@ interface CurrencyRow {
   refunded: number
 }
 
-const records = useReactiveProp('records', [] as PaymentRecord[])
+// Counted by the server over every matching payment (stacksjs/stacks#3218);
+// this used to count whichever of the newest 500 matched.
+const breakdown = useReactiveProp('breakdown', { statuses: [], methods: [], currencies: [] } as PaymentBreakdown)
 
 function countRows(field: 'status' | 'method'): CountRow[] {
-  const counts = new Map<string, number>()
-  for (const record of records()) {
-    const key = record[field] || 'unknown'
-    counts.set(key, (counts.get(key) || 0) + 1)
-  }
-  const total = records().length
-  return [...counts.entries()]
-    .map(([key, count]) => ({
-      key,
-      count,
-      percentage: total ? Math.round((count / total) * 1000) / 10 : 0,
+  const counts = field === 'status' ? breakdown().statuses : breakdown().methods
+  const total = counts.reduce((sum, row) => sum + row.count, 0)
+  return counts
+    .map(row => ({
+      key: row.key,
+      count: row.count,
+      percentage: total ? Math.round((row.count / total) * 1000) / 10 : 0,
     }))
     .sort((left, right) => right.count - left.count || left.key.localeCompare(right.key))
 }
 
 function currencyRows(): CurrencyRow[] {
-  const currencies = new Map<string, CurrencyRow>()
-  for (const record of records()) {
-    const row = currencies.get(record.currency) ?? {
-      currency: record.currency,
-      captured: 0,
-      refunded: 0,
-    }
-    if (isSuccessfulPayment(record))
-      row.captured += record.amount
-    row.refunded += record.refundAmount
-    currencies.set(record.currency, row)
-  }
-  return [...currencies.values()].sort((left, right) => right.captured - left.captured)
+  return [...breakdown().currencies].sort((left, right) => right.captured - left.captured)
 }
 
 function label(value: string): string {

@@ -166,6 +166,7 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
     guard(route.patch('/commerce/variants/{id}', 'Actions/Commerce/Product/ProductVariantUpdateAction'))
     guard(route.delete('/commerce/variants/{id}', 'Actions/Commerce/Product/ProductVariantDestroyAction'))
     guard(route.get('/commerce/payments', 'Actions/Dashboard/Commerce/CommercePaymentsAction'))
+    guard(route.get('/commerce/payments/export', 'Actions/Dashboard/Commerce/CommercePaymentsExportAction'))
     guard(route.post('/commerce/payments/{id}/refund', 'Actions/Dashboard/Commerce/PaymentRefundAction'))
     guard(route.get('/commerce/print-devices', 'Actions/Dashboard/Commerce/CommercePrintDevicesAction'))
     guard(route.post('/commerce/print-devices', 'Actions/Commerce/PrintDeviceStoreAction'))
