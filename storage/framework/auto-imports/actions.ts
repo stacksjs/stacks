@@ -490,6 +490,7 @@ export const actions = {
   'Actions/Dashboard/Kanban/kanban-comment': '../defaults/app/Actions/Dashboard/Kanban/kanban-comment.ts',
   'Actions/Dashboard/Kanban/kanban-model': '../defaults/app/Actions/Dashboard/Kanban/kanban-model.ts',
   'Actions/Dashboard/Kanban/kanban-response': '../defaults/app/Actions/Dashboard/Kanban/kanban-response.ts',
+  'Actions/Dashboard/Kanban/kanban-users': '../defaults/app/Actions/Dashboard/Kanban/kanban-users.ts',
   'Actions/Dashboard/Library/CreateComponent': '../defaults/app/Actions/Dashboard/Library/CreateComponent.ts',
   'Actions/Dashboard/Library/CreateFunction': '../defaults/app/Actions/Dashboard/Library/CreateFunction.ts',
   'Actions/Dashboard/Library/DependencyIndexAction': '../defaults/app/Actions/Dashboard/Library/DependencyIndexAction.ts',

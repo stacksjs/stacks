@@ -19,6 +19,14 @@ const commentEditDraft = state('')
 const savingCommentId = state<number | null>(null)
 const showLabelPicker = state(false)
 const showAssigneePicker = state(false)
+const assigneeQuery = state('')
+// One search per pause in typing, not one per keystroke.
+const { start: searchAssigneesSoon } = useTimeoutFn(() => { void kanban.loadUsers(assigneeQuery()) }, 250, { immediate: false })
+const moreAssigneesLabel = derived(() => {
+  const shown = kanban.users().length
+  const total = kanban.usersTotal()
+  return total > shown ? `Showing ${shown} of ${total.toLocaleString()} matching users. Search to narrow it down.` : ''
+})
 const showNewLabelComposer = state(false)
 const newLabelName = state('')
 const newLabelColor = state('slate')
@@ -410,8 +418,20 @@ function formatTimestamp(iso: string | null | undefined): string {
             <span :if="cardAssignees().length === 0" class="italic text-xs text-zinc-500 dark:text-zinc-400">Unassigned</span>
           </div>
 
+          <input
+            :if="showAssigneePicker()"
+            type="search"
+            name="assignee_search"
+            aria-label="Search users to assign"
+            placeholder="Search by name or email"
+            x-model="assigneeQuery"
+            @input="searchAssigneesSoon()"
+            class="mb-2 px-2 py-1 w-full text-xs text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-950 border border-zinc-200 rounded dark:border-zinc-800 focus:border-violet-400 focus:outline-none"
+          />
+          <p :if="showAssigneePicker() && moreAssigneesLabel()" class="mb-2 text-[11px] text-zinc-500 dark:text-zinc-400" :text="moreAssigneesLabel()"></p>
           <div :if="showAssigneePicker()" class="overflow-y-auto space-y-1 max-h-48">
-            <p :if="kanban.users().length === 0" class="italic text-xs text-zinc-500 dark:text-zinc-400">No users to assign.</p>
+            <p :if="kanban.users().length === 0 && !kanban.userSearch()" class="italic text-xs text-zinc-500 dark:text-zinc-400">No users to assign.</p>
+            <p :if="kanban.users().length === 0 && kanban.userSearch()" class="italic text-xs text-zinc-500 dark:text-zinc-400">No users match that search.</p>
             <button :for="user in kanban.users" type="button" :aria-pressed="String(cardAssignees().some(assignee => assignee.userId === user.id))" @click="toggleAssignee(user.id)" class="flex gap-2 items-center px-2 py-1.5 w-full text-left text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded">
               <span class="inline-flex flex-shrink-0 items-center justify-center h-6 w-6 font-medium text-[10px] text-white bg-violet-500 rounded-full" :text="initialsOf(user.name, user.email)"></span>
               <span class="flex-1 text-zinc-700 truncate dark:text-zinc-200" :text="user.name || user.email"></span>

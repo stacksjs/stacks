@@ -1,11 +1,13 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
-import { db } from '@stacksjs/database/runtime'
+import { response } from '@stacksjs/router'
 import { kanbanActionError } from './kanban-response'
+import { parseKanbanUserQuery, readKanbanUsers } from './kanban-users'
 
 /**
  * `GET /api/dashboard/kanban/users`.
  *
- * Lightweight user list for the assignee picker on the card detail
+ * Searchable user list for the assignee picker on the card detail
  * modal. Returns `{ id, name, email }` only — no roles, no profile,
  * no avatars. The modal renders initials from `name`, so anything
  * heavier would be wasted bytes.
@@ -20,14 +22,16 @@ export default new Action({
   description: 'Lightweight user list for the kanban assignee picker.',
   method: 'GET',
   apiResponse: true,
-  async handle() {
+  async handle(request: RequestInstance) {
+    const query = parseKanbanUserQuery(key => request.get<unknown>(key, ''))
+    if ('error' in query)
+      return response.json({ message: query.error }, 422)
+
     try {
-      const rows = await db.unsafe(
-        'SELECT id, name, email FROM users ORDER BY name ASC, id ASC LIMIT 500',
-      ).execute() as Array<{ id: number, name: string | null, email: string | null }>
-      return {
-        users: (rows ?? []).map(r => ({ id: r.id, name: r.name, email: r.email })),
-      }
+      // `?q=` searches name and email; `limit` bounds the answer, and `total`
+      // says how many matched (kanban-users.ts).
+      const { users, total } = await readKanbanUsers(query)
+      return { users, total, limit: query.limit }
     }
     catch (err) {
       return kanbanActionError(err, 'UsersListAction')
