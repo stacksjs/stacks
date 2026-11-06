@@ -180,6 +180,7 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
     guard(route.patch('/commerce/print-devices/{id}', 'Actions/Commerce/PrintDeviceUpdateAction'))
     guard(route.delete('/commerce/print-devices/{id}', 'Actions/Commerce/PrintDeviceDestroyAction'))
     guard(route.get('/commerce/print-logs', 'Actions/Dashboard/Commerce/CommercePrintLogsAction'))
+    guard(route.get('/commerce/print-logs/export', 'Actions/Dashboard/Commerce/CommercePrintLogsExportAction'))
     guard(route.delete('/commerce/print-logs/{id}', 'Actions/Commerce/ReceiptDestroyAction'))
   }
   guard(route.get('/deployments', 'Actions/Dashboard/Deployments/GetDeployments'))

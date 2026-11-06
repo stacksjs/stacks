@@ -1,14 +1,13 @@
 <script client>
+import type { PrintLogBreakdown } from '../../../../app/Actions/Dashboard/Commerce/commerce-print-log-list'
 import type { PrintLogRecord, PrintLogSummary } from '../../../../app/Actions/Dashboard/Commerce/print-log-records'
-import {
-  printLogsToCsv,
-} from '../../../../app/Actions/Dashboard/Commerce/print-log-records'
 import { dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
 
 interface PrintLogsResponse {
   records: PrintLogRecord[]
   summary: PrintLogSummary
+  breakdown: PrintLogBreakdown
   pagination: {
     page: number
     perPage: number
@@ -32,6 +31,7 @@ const summary = state<PrintLogSummary>({
   averagePages: 0,
   averageSuccessfulDuration: 0,
 })
+const breakdown = state<PrintLogBreakdown>({ printers: [], statuses: [], slots: [] })
 const printerOptions = state<string[]>([])
 const statusOptions = state<string[]>([])
 const search = state('')
@@ -66,19 +66,28 @@ function metricCards(): Array<{ label: string, value: string, detail: string }> 
   const current = summary()
   const warningLabel = current.warnings === 1 ? 'warning' : 'warnings'
   return [
-    { label: 'Print jobs', value: String(current.total), detail: 'On the current page' },
+    { label: 'Print jobs', value: String(current.total), detail: 'Matching the current filters' },
     { label: 'Success rate', value: `${current.successRate}%`, detail: `${current.failed} failed, ${current.warnings} ${warningLabel}` },
     { label: 'Pages', value: String(current.totalPages), detail: `${current.averagePages} average per job` },
     { label: 'Successful duration', value: `${current.averageSuccessfulDuration}s`, detail: 'Average completed print time' },
   ]
 }
 
-function exportHref(): string {
-  return `data:text/csv;charset=utf-8,${encodeURIComponent(`\uFEFF${printLogsToCsv(records())}`)}`
+/** The search, filters and order as query parameters, without the page. */
+function filterParams(): URLSearchParams {
+  const params = new URLSearchParams({ range: timeRange(), sort: sort() })
+  if (search().trim())
+    params.set('search', search().trim())
+  if (printerFilter() !== 'all')
+    params.set('printer', printerFilter())
+  if (statusFilter() !== 'all')
+    params.set('status', statusFilter())
+  return params
 }
 
-function exportFilename(): string {
-  return `print-logs-${new Date().toISOString().slice(0, 10)}.csv`
+/** Every matching log as CSV, built by the server, not just the page shown. */
+function exportHref(): string {
+  return `/api/dashboard/commerce/print-logs/export?${filterParams()}`
 }
 
 function reloadFilters(): void {
@@ -91,24 +100,16 @@ async function loadPrintLogs(): Promise<void> {
   loading.set(true)
   loadError.set('')
   try {
-    const params = new URLSearchParams({
-      page: String(page()),
-      per_page: String(pageSize),
-      range: timeRange(),
-      sort: sort(),
-    })
-    if (search().trim())
-      params.set('search', search().trim())
-    if (printerFilter() !== 'all')
-      params.set('printer', printerFilter())
-    if (statusFilter() !== 'all')
-      params.set('status', statusFilter())
+    const params = filterParams()
+    params.set('page', String(page()))
+    params.set('per_page', String(pageSize))
 
     const data = await dashboardApi<PrintLogsResponse>(`/api/dashboard/commerce/print-logs?${params}`)
     if (sequence !== loadSequence)
       return
     records.set(Array.isArray(data.records) ? data.records : [])
     summary.set(data.summary)
+    breakdown.set(data.breakdown ?? { printers: [], statuses: [], slots: [] })
     printerOptions.set(Array.isArray(data.options?.printers) ? data.options.printers : [])
     statusOptions.set(Array.isArray(data.options?.statuses) ? data.options.statuses : [])
     total.set(Number(data.pagination?.total) || 0)
@@ -192,7 +193,7 @@ onMount(() => {
   <PageHeader title="Print logs" description="Inspect native Receipt records from configured print devices.">
   <div class="flex flex-wrap gap-2">
     <Button variant="secondary" :loading="loading()" @click="loadPrintLogs"><span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button>
-    <Button tag="a" :href="exportHref()" :download="exportFilename()"><span class="h-4 w-4 i-hugeicons-download-04"></span>Export current page</Button>
+    <Button tag="a" :href="exportHref()" download><span class="h-4 w-4 i-hugeicons-download-04"></span>Export filtered</Button>
   </div>
   </PageHeader>
 
@@ -200,7 +201,7 @@ onMount(() => {
 
   <MetricCards label="Print log metrics" columns="grid-cols-2 lg:grid-cols-4" :items="metricCards()" />
 
-  <PrintLogBreakdown :records="records()" />
+  <PrintLogBreakdown :breakdown="breakdown()" />
 
   <section class="space-y-3">
     <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-6">

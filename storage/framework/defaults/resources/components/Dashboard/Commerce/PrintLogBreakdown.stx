@@ -1,6 +1,5 @@
 <script client>
-import type { PrintLogRecord } from '../../../../app/Actions/Dashboard/Commerce/print-log-records'
-import { printLogTimestamp } from '../../../../app/Actions/Dashboard/Commerce/print-log-records'
+import type { PrintLogBreakdown } from '../../../../app/Actions/Dashboard/Commerce/commerce-print-log-list'
 
 interface CountRow {
   key: string
@@ -8,28 +7,33 @@ interface CountRow {
   percentage: number
 }
 
-const records = useReactiveProp('records', [] as PrintLogRecord[])
+// Counted by the server over every log the search and filters match
+// (stacksjs/stacks#3218); this used to count the twenty rows on the page.
+const breakdown = useReactiveProp('breakdown', { printers: [], statuses: [], slots: [] } as PrintLogBreakdown)
 
 function countRows(field: 'printer' | 'status'): CountRow[] {
-  const counts = new Map<string, number>()
-  for (const record of records()) {
-    const key = record[field] || 'Unknown'
-    counts.set(key, (counts.get(key) || 0) + 1)
-  }
-  const total = records().length
-  return [...counts.entries()]
-    .map(([key, count]) => ({ key, count, percentage: total ? Math.round((count / total) * 1000) / 10 : 0 }))
-    .sort((left, right) => right.count - left.count || left.key.localeCompare(right.key))
+  const counts = field === 'printer' ? breakdown().printers : breakdown().statuses
+  const total = counts.reduce((sum, row) => sum + row.count, 0)
+  return counts.map(row => ({
+    key: row.key,
+    count: row.count,
+    percentage: total ? Math.round((row.count / total) * 1000) / 10 : 0,
+  }))
 }
 
+/**
+ * Logs by local hour of the day. Each slot is a UTC day and quarter hour, so
+ * its own instant says which local hour it falls in, with the offset that
+ * applied that day, daylight saving included.
+ */
 function hourlyRows(): CountRow[] {
   const counts = new Map<number, number>()
-  for (const record of records()) {
-    const timestamp = printLogTimestamp(record.timestamp)
-    if (!timestamp)
+  for (const slot of breakdown().slots) {
+    const instant = Date.parse(`${slot.day}T00:00:00.000Z`) + slot.quarter * 15 * 60_000
+    if (!Number.isFinite(instant))
       continue
-    const hour = new Date(timestamp).getHours()
-    counts.set(hour, (counts.get(hour) || 0) + 1)
+    const hour = new Date(instant).getHours()
+    counts.set(hour, (counts.get(hour) || 0) + slot.count)
   }
   const max = Math.max(0, ...counts.values())
   return [...counts.entries()]
