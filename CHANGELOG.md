@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.484...v0.75.485)
+
+## 🐛 Bug Fixes
+
+- discover application operations in the dashboard ([ecd1fa3](https://github.com/stacksjs/stacks/commit/ecd1fa3)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.483...v0.75.484)
 
 ## 🐛 Bug Fixes
