@@ -1866,6 +1866,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /api/dashboard/commerce/print-logs/export
+   */
+  getDashboardCommercePrintLogsExport(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/commerce/print-logs/export", {}, [], null, "application/json", [], options)
+  },
+
+  /**
    * DELETE /api/dashboard/commerce/print-logs/{id}
    */
   deleteDashboardCommercePrintLogsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
