@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.486...v0.75.487)
+
+## 🐛 Bug Fixes
+
+- align dashboard monitoring with framework contracts ([5d2e52c](https://github.com/stacksjs/stacks/commit/5d2e52c)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.485...v0.75.486)
 
 ## 🐛 Bug Fixes
