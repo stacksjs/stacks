@@ -1,7 +1,7 @@
 import type { QueryBuilderDialect } from '@stacksjs/database/runtime'
 import { db, getDatabaseDialect, sqlHelpers } from '@stacksjs/database/runtime'
 import type { QueryReader } from '../Content/content-list'
-import { countOf, queryText } from '../Content/content-list'
+import { containsPattern, countOf, queryText } from '../Content/content-list'
 
 /**
  * The users the card dialog's assignee picker offers.
@@ -44,15 +44,6 @@ export function parseKanbanUserQuery(read: QueryReader): KanbanUserQuery | { err
   return { search, limit }
 }
 
-/**
- * A `LIKE` pattern that matches `term` anywhere, with its own `%` and `_`
- * taken literally. `!` is the escape character because it means the same in
- * every dialect: SQLite has no default escape, and MySQL reads a backslash in
- * a string literal as an escape of its own.
- */
-export function containsPattern(term: string): string {
-  return `%${term.toLowerCase().replace(/[!%_]/g, character => `!${character}`)}%`
-}
 
 export async function readKanbanUsers(
   query: KanbanUserQuery,

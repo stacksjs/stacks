@@ -67,3 +67,13 @@ export function pageWithin(page: number, total: number, perPage: number): number
 export function countOf(value: unknown): number {
   return Number(value ?? 0) || 0
 }
+
+/**
+ * A `LIKE` pattern that matches `term` anywhere, ignoring case, with its own
+ * `%` and `_` taken literally. Use it with `ESCAPE '!'`: `!` means the same in
+ * every dialect, where SQLite has no default escape and MySQL reads a
+ * backslash in a string literal as an escape of its own.
+ */
+export function containsPattern(term: string): string {
+  return `%${term.toLowerCase().replace(/[!%_]/g, character => `!${character}`)}%`
+}

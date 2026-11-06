@@ -2,7 +2,8 @@ import { Database } from 'bun:sqlite'
 import { SQL } from 'bun'
 import { describe, expect, test } from 'bun:test'
 import type { KanbanUserRunner } from './kanban-users'
-import { containsPattern, parseKanbanUserQuery, readKanbanUsers } from './kanban-users'
+import { containsPattern } from '../Content/content-list'
+import { parseKanbanUserQuery, readKanbanUsers } from './kanban-users'
 
 /**
  * The assignee picker's search, against each dialect's real engine

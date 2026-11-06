@@ -1,62 +1,47 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
 import { config } from '@stacksjs/config'
-import { Coupon, Customer, Order, OrderItem } from '@stacksjs/orm'
+import { Customer } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
 import { dashboardOperationalError } from '../dashboard-response'
-import {
-  addOrderItemQuantity,
-  normalizeCommerceOrderRecord,
-  normalizeOrderCouponId,
-  normalizeOrderCustomerContext,
-  normalizeOrderCustomerOption,
-  referencedIds,
-  summarizeCommerceOrders,
-} from './commerce-order-records'
-import { commerceCurrency, commerceIdentifier, commerceValue } from './commerce-record'
+import { parseOrderListQuery, readOrderPage } from './commerce-order-list'
+import { normalizeOrderCustomerOption } from './commerce-order-records'
+import { commerceCurrency } from './commerce-record'
 
+/**
+ * `GET /api/dashboard/commerce/orders` - one page of orders, searched, filtered,
+ * sorted, counted and summarised by the database (commerce-order-list.ts,
+ * stacksjs/stacks#3218). It used to return the newest 500 for the browser to
+ * do all of that with.
+ */
 export default new Action({
   name: 'CommerceOrdersAction',
-  description: 'Returns persisted Order records with customer context and item counts for dashboard management.',
+  description: 'Returns one page of Order records with customer context, item counts and store-wide totals.',
   method: 'GET',
   apiResponse: true,
 
-  async handle() {
+  async handle(request: RequestInstance) {
+    const query = parseOrderListQuery(key => request.get<unknown>(key, ''))
+    if ('error' in query)
+      return response.json({ message: query.error }, 422)
+
     try {
-      const orders = await Order.orderBy('created_at', 'desc').limit(500).get()
-      const orderIds = new Set(orders.map(order =>
-        commerceIdentifier(commerceValue(order, 'id', 'uuid'), 'Order'),
-      ))
-      const numericOrderIds = [...orderIds].map(Number).filter(Number.isSafeInteger)
-      // Exactly the customers and coupons these orders reference, so no order
-      // points at one that was not read (commerce-order-records.ts).
-      const customerIds = referencedIds(orders, 'customer_id', 'customerId')
-      const couponReferences = referencedIds(orders, 'coupon_id', 'couponId')
-      const [referencedCustomers, coupons, items, customers] = await Promise.all([
-        customerIds.length > 0 ? Customer.whereIn('id', customerIds).get() : [],
-        couponReferences.length > 0 ? Coupon.whereIn('id', couponReferences).get() : [],
-        numericOrderIds.length > 0 ? OrderItem.whereIn('order_id', numericOrderIds).get() : [],
+      const [orders, customers] = await Promise.all([
+        readOrderPage(query),
         // The order dialog's customer choices.
         Customer.orderBy('name', 'asc').limit(500).get(),
       ])
-      const customerContexts = referencedCustomers.map(normalizeOrderCustomerContext)
-      const customerMap = new Map(customerContexts.map(customer => [customer.id, customer.context]))
-      const couponIds = new Set(coupons.map(normalizeOrderCouponId))
-      const itemCounts = new Map<string, number>()
-      for (const item of items)
-        addOrderItemQuantity(item, orderIds, itemCounts)
-
-      const records = orders.map(order =>
-        normalizeCommerceOrderRecord(order, customerMap, itemCounts, couponIds),
-      )
-      const defaultStatuses = ['PENDING', 'PREPARING', 'READY', 'DELIVERED', 'CANCELED']
-      const defaultTypes = ['DINE_IN', 'TAKEOUT', 'DELIVERY']
       return {
-        records,
-        summary: summarizeCommerceOrders(records),
+        records: orders.records,
+        total: orders.total,
+        page: orders.page,
+        perPage: query.perPage,
+        summary: orders.summary,
         customers: customers
           .map(normalizeOrderCustomerOption)
           .sort((left, right) => left.label.localeCompare(right.label)),
-        statuses: [...new Set([...defaultStatuses, ...records.map(record => record.status)])],
-        orderTypes: [...new Set([...defaultTypes, ...records.map(record => record.orderType)])],
+        statuses: orders.statuses,
+        orderTypes: orders.orderTypes,
         defaultCurrency: commerceCurrency(config.commerce?.currency, 'Commerce configuration'),
       }
     }
