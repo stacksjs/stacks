@@ -2,7 +2,6 @@
 import type {
   CommerceOrderRecord,
   CommerceOrderSummary,
-  OrderCustomerOption,
 } from '../../../../app/Actions/Dashboard/Commerce/commerce-order-records'
 import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
@@ -14,7 +13,6 @@ interface OrderIndexResponse {
   page: number
   perPage: number
   summary: CommerceOrderSummary
-  customers: OrderCustomerOption[]
   statuses: string[]
   orderTypes: string[]
   defaultCurrency: string
@@ -47,7 +45,6 @@ const emptySummary: CommerceOrderSummary = {
 }
 const records = state<CommerceOrderRecord[]>([])
 const summary = state<CommerceOrderSummary>({ ...emptySummary })
-const customers = state<OrderCustomerOption[]>([])
 const statuses = state<string[]>([])
 const orderTypes = state<string[]>([])
 const defaultCurrency = state('USD')
@@ -160,7 +157,6 @@ async function loadOrders(): Promise<void> {
     // filter leaves this one past the end.
     page.set(Number(data.page) || 1)
     summary.set(data.summary ?? { ...emptySummary })
-    customers.set(Array.isArray(data.customers) ? data.customers : [])
     statuses.set(Array.isArray(data.statuses) ? data.statuses : [])
     orderTypes.set(Array.isArray(data.orderTypes) ? data.orderTypes : [])
     defaultCurrency.set(data.defaultCurrency || 'USD')
@@ -365,6 +361,6 @@ onMount(() => {
   </section>
 </div>
 
-<CommerceOrderDialog :open="dialogOpen()" :mode="dialogMode()" :record="editingRecord()" :customers="customers()" :statuses="statuses()" :order-types="orderTypes()" :default-currency="defaultCurrency()" :busy="saving()" :errors="validationErrors()" @submit="saveOrder" @close="closeDialog()" />
+<CommerceOrderDialog :open="dialogOpen()" :mode="dialogMode()" :record="editingRecord()" :statuses="statuses()" :order-types="orderTypes()" :default-currency="defaultCurrency()" :busy="saving()" :errors="validationErrors()" @submit="saveOrder" @close="closeDialog()" />
 <CommerceOrderDetailsDialog :open="Boolean(detailsRecord())" :record="detailsRecord()" @edit="openEdit" @delete="openDelete" @close="closeDetails()" />
 <CommerceOrderDeleteDialog :open="Boolean(deletingRecord())" :record="deletingRecord()" :busy="deleting()" @confirm="deleteOrder()" @close="closeDelete()" />

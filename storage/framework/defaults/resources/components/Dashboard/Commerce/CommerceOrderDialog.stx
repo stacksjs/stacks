@@ -4,12 +4,20 @@ import type {
   OrderCustomerOption,
 } from '../../../../app/Actions/Dashboard/Commerce/commerce-order-records'
 import { minorToInput, moneyInputError, moneyInputStep, parseMoneyInput } from '@stacksjs/commerce/money'
+import { dashboardApi } from '../../../../functions/dashboard-api'
 import { formErrorMessages } from '../../../../functions/dashboard-form'
 
 const open = useReactiveProp('open', false)
 const mode = useReactiveProp('mode', 'add')
 const record = useReactiveProp('record', null as CommerceOrderRecord | null)
-const customers = useReactiveProp('customers', [] as OrderCustomerOption[])
+// The customer choices are a server search (stacksjs/stacks#3218): this used
+// to be handed the first 500 customers by name, so nobody past the 500th could
+// be chosen.
+const customerOptions = state<OrderCustomerOption[]>([])
+const customerMatches = state(0)
+const customerQuery = state('')
+let customerRequest = 0
+let customerTimer: ReturnType<typeof setTimeout> | null = null
 const statuses = useReactiveProp('statuses', [] as string[])
 const orderTypes = useReactiveProp('orderTypes', [] as string[])
 const defaultCurrency = useReactiveProp('defaultCurrency', 'USD')
@@ -42,6 +50,8 @@ effect(() => {
   if (hydrationKey === key)
     return
   hydrationKey = key
+  customerQuery.set('')
+  void loadCustomers('')
   customerId.set(current?.customerId || '')
   couponId.set(current?.couponId || '')
   status.set(current?.status || statuses()[0] || 'PENDING')
@@ -59,6 +69,49 @@ effect(() => {
   estimatedDeliveryTime.set(current?.estimatedDeliveryTime.slice(0, 16) || '')
   appliedCouponId.set(current?.appliedCouponId || '')
 })
+
+/** The choices to show: the search results, with the order's own customer kept in. */
+const customers = derived(() => {
+  const options = customerOptions()
+  const current = record()
+  if (!current?.customerId || options.some(option => option.id === current.customerId))
+    return options
+  return [{ id: current.customerId, label: current.customerName || `Customer ${current.customerId}` }, ...options]
+})
+
+const moreCustomersLabel = derived(() => {
+  const shown = customerOptions().length
+  const total = customerMatches()
+  return total > shown ? `Showing ${shown} of ${total.toLocaleString()} matching customers. Search to narrow it down.` : ''
+})
+
+async function loadCustomers(term: string): Promise<void> {
+  const request = ++customerRequest
+  try {
+    const params = new URLSearchParams()
+    if (term)
+      params.set('q', term)
+    const suffix = params.toString()
+    const data = await dashboardApi<{ customers?: OrderCustomerOption[], total?: number }>(`/api/dashboard/commerce/orders/customers${suffix ? `?${suffix}` : ''}`)
+    if (request !== customerRequest)
+      return
+    customerOptions.set(data.customers ?? [])
+    customerMatches.set(data.total ?? (data.customers?.length ?? 0))
+  }
+  catch {
+    // Soft-fail: the order's own customer stays selectable, and Unassigned.
+    if (request === customerRequest) {
+      customerOptions.set([])
+      customerMatches.set(0)
+    }
+  }
+}
+
+function searchCustomersSoon(): void {
+  if (customerTimer)
+    clearTimeout(customerTimer)
+  customerTimer = setTimeout(() => { void loadCustomers(customerQuery().trim()) }, 250)
+}
 
 function label(value: string): string {
   return value.replaceAll('_', ' ').toLowerCase().replace(/\b\w/g, letter => letter.toUpperCase())
@@ -125,7 +178,11 @@ function errorMessages(): string[] {
           <template :for="message in errorMessages()" :key="message"><li>{{ message }}</li></template>
         </ul>
         <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Customer</span><select x-model="customerId" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="">Unassigned customer</option><template :for="option in customers()" :key="option.id"><option :value="option.id">{{ option.label }}</option></template></select></label>
+          <div class="block">
+            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Customer</span><input x-model="customerQuery" @input="searchCustomersSoon()" type="search" name="customer_search" aria-label="Search customers by name or email" placeholder="Search by name or email" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+            <select x-model="customerId" aria-label="Customer" class="mt-2 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="">Unassigned customer</option><template :for="option in customers()" :key="option.id"><option :value="option.id" :selected="option.id === customerId()">{{ option.label }}</option></template></select>
+            <p :if="moreCustomersLabel()" class="mt-1 text-gray-500 text-xs dark:text-neutral-400" :text="moreCustomersLabel()"></p>
+          </div>
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select x-model="status" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><template :for="option in statuses()" :key="option"><option :value="option">{{ label(option) }}</option></template></select></label>
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Order type</span><select x-model="orderType" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><template :for="option in orderTypes()" :key="option"><option :value="option">{{ label(option) }}</option></template></select></label>
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Currency</span><input x-model="currency" type="text" minlength="3" maxlength="3" required spellcheck="false" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
