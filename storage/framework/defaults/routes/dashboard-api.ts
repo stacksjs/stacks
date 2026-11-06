@@ -123,6 +123,7 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
     guard(route.patch('/commerce/coupons/{id}', 'Actions/Commerce/CouponUpdateAction'))
     guard(route.delete('/commerce/coupons/{id}', 'Actions/Commerce/CouponDestroyAction'))
     guard(route.get('/commerce/gift-cards', 'Actions/Dashboard/Commerce/CommerceGiftCardsAction'))
+    guard(route.get('/commerce/gift-cards/export', 'Actions/Dashboard/Commerce/CommerceGiftCardsExportAction'))
     guard(route.post('/commerce/gift-cards', 'Actions/Commerce/GiftCardStoreAction'))
     guard(route.patch('/commerce/gift-cards/{id}', 'Actions/Commerce/GiftCardUpdateAction'))
     guard(route.delete('/commerce/gift-cards/{id}', 'Actions/Commerce/GiftCardDestroyAction'))
