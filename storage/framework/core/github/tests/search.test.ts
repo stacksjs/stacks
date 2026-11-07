@@ -8,9 +8,9 @@ test('public search preserves query syntax and never borrows environment credent
     return Response.json({ total_count: 0, incomplete_results: false, items: [] })
   }) as typeof fetch }
   await searchGitHubRepositories('org:stacksjs launcher & tools', options)
-  await searchGitHubIssues('repo:stacksjs/launchpad is:open', 'pr', options)
+  await searchGitHubIssues('repo:example/project is:open', 'pr', options)
   expect(new URL(calls[0]!.url).searchParams.get('q')).toBe('org:stacksjs launcher & tools')
-  expect(new URL(calls[1]!.url).searchParams.get('q')).toBe('is:pr repo:stacksjs/launchpad is:open')
+  expect(new URL(calls[1]!.url).searchParams.get('q')).toBe('is:pr repo:example/project is:open')
   expect(calls.every(call => !call.headers.has('authorization'))).toBe(true)
 })
 
