@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/dns",
   "type": "module",
-  "version": "0.75.509",
+  "version": "0.75.510",
   "description": "Easily manage your DNS.",
   "author": "Chris Breuer",
   "contributors": [
