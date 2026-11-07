@@ -24,3 +24,9 @@ Mail restore drills order after already queued application backups, integrity
 checks and database drills. Their runtime budget starts when the drill can run,
 so a long initial upload cannot exhaust the mail service's lock-wait budget.
 The existing shared lock still serializes later arrivals.
+
+Host integrity checks and database drills order after already queued backups
+and retries. They begin their own six-hour operational budget when runnable.
+This accounts for full SQLite validation on the persistent volume; observed
+random-read throughput was about 1 MiB/s during the initial 4.5 GiB snapshot
+set. Integrity and restore validation remain complete.
