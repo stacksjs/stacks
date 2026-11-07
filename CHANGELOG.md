@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.504...v0.75.505)
+
+## 🐛 Bug Fixes
+
+- **testing**: wait for stable browser click geometry ([d7b2f9a](https://github.com/stacksjs/stacks/commit/d7b2f9a)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.503...v0.75.504)
 
 ## 🐛 Bug Fixes
