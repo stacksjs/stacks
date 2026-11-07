@@ -4,7 +4,7 @@ import { path as p } from '@stacksjs/path'
 import { incrementVersion, isReleaseType, isValidVersion, versionBump } from '@stacksjs/bumpx'
 import { isCalendarBump, nextCalendarVersion } from './calendar-version'
 import { describeGitHubRelease, publishGitHubRelease } from './github-release'
-import { pantryLockViolations, preservePantrySystemPins } from './pantry-lock'
+import { pantryLockViolations } from './pantry-lock'
 import { resolvePantryToolchain } from './pantry-toolchain'
 import { releasePushTarget } from './release-push-target'
 import { generateChangelog, loadLogsmithConfig } from '@stacksjs/logsmith'
@@ -307,11 +307,6 @@ async function refreshPantryLock(): Promise<void> {
     })
     if (!existsSync(lockPath))
       throw new Error('Pantry completed without writing pantry.lock')
-    if (isFrameworkRelease) {
-      // Refresh JS workspace versions, retaining CI's native graph when no
-      // system declaration changed. Pantry's platform resolution can differ.
-      writeFileSync(lockPath, preservePantrySystemPins(readFileSync(lockPath, 'utf8'), previousLock.toString('utf8')))
-    }
   }
   catch (error) {
     writeFileSync(lockPath, previousLock)
@@ -321,8 +316,8 @@ async function refreshPantryLock(): Promise<void> {
     )
   }
 
-  // `pantry install` is not reproducible across platforms today, and a release
-  // runs it on whichever machine is cutting the release (stacksjs/stacks#2843).
+  // Historical cross-platform installer defects made successful regeneration
+  // insufficient evidence of a valid workspace lock (stacksjs/stacks#2843).
   // An install that succeeds is therefore not evidence that it produced a
   // lockfile this workspace can use: the same `craft-native` record was walked
   // back below its declared range by five consecutive releases, each of them

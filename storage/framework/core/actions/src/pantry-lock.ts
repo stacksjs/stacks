@@ -7,27 +7,12 @@
  * bump that left it alone would commit a lock describing the previous release
  * and CI's "the lockfiles still describe this workspace" step would reject it.
  *
- * The problem is that the refresh runs wherever the release runs, and `pantry
- * install` is not reproducible across platforms today. On macOS it drops the
- * root `system` block, and with it the `bun.sh` toolchain pin that `Setup
- * Pantry` provisions before any job starts, and it has repeatedly walked
- * `craft-native` back to a version that does not satisfy the `>=` range the
- * workspace itself declares. Release commits are authored locally, so the
- * result is decided by whichever machine ran the release
- * (pantry-pm/pantry#231, #232, #233).
- *
- * That turned into a loop. The same record was corrected five times and
- * reverted by the next release each time, because nobody connects a red
- * `compile` to a release that happened hours earlier. A lock that violates its
- * own declared ranges is not a stale-but-valid pin: an install MUST re-resolve
- * it, which is exactly what CI reports.
- *
- * So this does not try to make `pantry install` reproducible, which is not
- * Stacks' file to fix. It makes the release refuse to commit a lock that is
- * self-inconsistent, turning a silently red main into a release that stops and
- * says why. Both checks are deliberately ones that cannot produce a false
- * positive: a range the lock itself records, and a block the previous lock
- * already had.
+ * Historical installer defects dropped system pins and selected versions below
+ * declared ranges (pantry-pm/pantry#231, #232, #233). A release must reject an
+ * inconsistent result before committing it. Native resolution belongs to the
+ * declared Pantry installer; this validator never rewrites its selected pins.
+ * Current workspace declarations also come from Bun's freshly generated lock,
+ * so a self-consistent but stale Pantry workspace cannot pass validation.
  */
 
 /** The manifest fields whose ranges a lockfile is expected to honour. */
@@ -47,25 +32,6 @@ const UNCOMPARABLE_RANGE = /^(?:workspace|file|link|git|github|npm|catalog):/
 interface PantryLock {
   workspaces?: Record<string, Record<string, unknown>>
   packages?: Record<string, unknown>
-}
-
-/** An SDK version bump must not re-resolve an unchanged native toolchain for the publisher's OS. */
-export function preservePantrySystemPins(lock: string, baseline: string): string {
-  const next = JSON.parse(lock) as PantryLock
-  const previous = JSON.parse(baseline) as PantryLock
-  const systems = (value: PantryLock) => Object.entries(value.workspaces ?? {})
-    .filter(([, workspace]) => workspace.system && typeof workspace.system === 'object')
-    .map(([path, workspace]) => [path, Object.entries(workspace.system as Record<string, unknown>).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)])
-    .sort(([a], [b]) => String(a) < String(b) ? -1 : String(a) > String(b) ? 1 : 0)
-  const declared = systems(previous)
-  if (!declared.length || JSON.stringify(declared) !== JSON.stringify(systems(next))) return lock
-  const native = (value: unknown) => !!value && typeof value === 'object' && (value as { source?: string }).source === 'pantry'
-  const pinned = Object.entries(previous.packages ?? {}).filter(([, value]) => native(value))
-  if (!pinned.length) return lock
-  const packages = Object.fromEntries(Object.entries(next.packages ?? {}).filter(([, value]) => !native(value)))
-  for (const [name, value] of pinned) packages[name] = value
-  next.packages = Object.fromEntries(Object.entries(packages).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0))
-  return `${JSON.stringify(next, null, 2)}\n`
 }
 
 /**

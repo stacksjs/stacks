@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { pantryLockViolations, preservePantrySystemPins } from '../src/pantry-lock'
+import { pantryLockViolations } from '../src/pantry-lock'
 
 /**
  * The release guard for `pantry.lock` (stacksjs/stacks#2843).
@@ -37,34 +37,6 @@ const sound = {
 const lockOf = (value: unknown) => JSON.stringify(value)
 const committed = lockOf(sound)
 const clone = () => JSON.parse(committed) as typeof sound
-
-describe('release native toolchain pins', () => {
-  const previous = { ...sound, packages: { ...sound.packages,
-    'libexpat.github.io@2.10.0': { name: 'libexpat.github.io', version: '2.10.0', source: 'pantry' },
-  } }
-  const regenerated = { ...sound, packages: {
-    'pickier@0.1.66': { name: 'pickier', version: '0.1.66' },
-    'libexpat.github.io@2.9.0': { name: 'libexpat.github.io', version: '2.9.0', source: 'pantry' },
-  } }
-
-  it('keeps the validated system graph while refreshing JS resolutions', () => {
-    const result = JSON.parse(preservePantrySystemPins(lockOf(regenerated), lockOf(previous)))
-    expect(result.packages['libexpat.github.io@2.10.0'].version).toBe('2.10.0')
-    expect(result.packages['libexpat.github.io@2.9.0']).toBeUndefined()
-    expect(result.packages['pickier@0.1.66'].version).toBe('0.1.66')
-    expect(result.packages['pickier@0.1.65']).toBeUndefined()
-  })
-
-  it('allows an intentional native toolchain declaration change', () => {
-    const changed = JSON.parse(lockOf(regenerated))
-    changed.workspaces[''].system['bun.sh'] = '1.4.3'
-    expect(preservePantrySystemPins(lockOf(changed), lockOf(previous))).toBe(lockOf(changed))
-  })
-
-  it('does not invent a system graph for projects that declared none', () => {
-    expect(preservePantrySystemPins(lockOf(regenerated), '{"packages":{}}')).toBe(lockOf(regenerated))
-  })
-})
 
 describe('pantryLockViolations', () => {
   it('rejects a self-consistent lock that still records the previous release declarations', () => {
