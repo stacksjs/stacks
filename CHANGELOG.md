@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.500...v0.75.501)
+
+## 🐛 Bug Fixes
+
+- **dashboard**: scroll tall sections continuously during reordering ([5acfb95](https://github.com/stacksjs/stacks/commit/5acfb95)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.499...v0.75.500)
 
 ## 🐛 Bug Fixes
