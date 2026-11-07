@@ -45,6 +45,7 @@
  * the updater's keys. `Cdp.closed` is still set if Chrome goes away for
  * another reason, and every pending command fails at once.
  */
+import { randomUUID } from 'node:crypto'
 import { closeSync, existsSync, mkdtempSync, openSync, readSync, rmSync, statSync } from 'node:fs'
 import { availableParallelism, freemem, loadavg, tmpdir, totalmem } from 'node:os'
 import { join } from 'node:path'
@@ -71,15 +72,43 @@ export async function waitFor<T>(read: () => Promise<T> | T, timeoutMs: number =
   return value as NonNullable<T>
 }
 
-/** Scroll, wait for stable layout and hit testing, then click through Chrome's real input path. */
+/** Scroll, wait for actionability, and guard the target through trusted input delivery. */
 export async function click(cdp: Cdp, target: string | { selector: string, text?: string }, options: { timeoutMs?: number } = {}): Promise<void> {
   const selector = typeof target === 'string' ? target : target.selector
   const text = typeof target === 'string' ? undefined : target.text
-  const point = await waitFor(() => cdp.evaluate<{ x: number, y: number } | null>(`(async () => {
+  const timeoutMs = options.timeoutMs ?? 12_000
+  const label = `an enabled, unobscured ${selector}${text === undefined ? '' : ` named ${JSON.stringify(text)}`}`
+  const deadline = Date.now() + timeoutMs
+  const binding = `__stacksTestingClick${randomUUID().replaceAll('-', '')}`
+  const cleanup = `${binding}Stop`
+  type Receipt = { attempt: number, accepted: number, clicked: boolean, blocked: boolean }
+  let attempt = 0
+  let receipt: Receipt | undefined
+  // CDP events update this between awaits, outside TypeScript's local flow.
+  const latestReceipt = (): Receipt | undefined => receipt
+  let finish: ((value: Receipt) => void) | undefined
+  const off = cdp.on('Runtime.bindingCalled', (event) => {
+    if (event.name !== binding) return
+    const value = JSON.parse(event.payload) as Receipt
+    if (value.attempt !== attempt) return
+    receipt = value
+    if (value.clicked || value.blocked) finish?.(value)
+  })
+  const stop = (cancel = false) => cdp.evaluate(`window[${JSON.stringify(cleanup)}]?.(${cancel})`)
+  try {
+    let registered = false
+    await waitFor(async () => {
+      if (!registered) {
+        await cdp.send('Runtime.addBinding', { name: binding })
+        registered = true
+      }
+      attempt++
+      receipt = undefined
+      const point = await cdp.evaluate<{ x: number, y: number } | null>(`(async () => {
     const matches = [...document.querySelectorAll(${JSON.stringify(selector)})].filter(node => ${text === undefined ? 'true' : `node.textContent.trim() === ${JSON.stringify(text)}`})
     if (matches.length > 1) throw new Error('Ambiguous click target: ' + ${JSON.stringify(selector)})
     const node = matches[0]
-    if (!node || node.matches(':disabled') || node.getAttribute('aria-disabled') === 'true') return null
+    if (!node || node.matches(':disabled') || node.closest('[aria-disabled="true"], [inert]')) return null
     node.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' })
     // Waiting for frames alone does not establish stability: a reactive
     // editor's pending scroll or an animated control can still move between
@@ -88,7 +117,7 @@ export async function click(cdp: Cdp, target: string | { selector: string, text?
     let rect = null
     for (let frame = 0; frame < 3; frame++) {
       await new Promise(requestAnimationFrame)
-      if (!node.isConnected || node.matches(':disabled') || node.getAttribute('aria-disabled') === 'true') return null
+      if (!node.isConnected || node.matches(':disabled') || node.closest('[aria-disabled="true"], [inert]')) return null
       rect = node.getBoundingClientRect()
       const current = [rect.x, rect.y, rect.width, rect.height, scrollX, scrollY]
       if (previous && current.some((value, index) => value !== previous[index])) return null
@@ -98,10 +127,82 @@ export async function click(cdp: Cdp, target: string | { selector: string, text?
     const x = Math.max(0, Math.min(innerWidth - 1, rect.x + rect.width / 2))
     const y = Math.max(0, Math.min(innerHeight - 1, rect.y + rect.height / 2))
     const hit = document.elementFromPoint(x, y)
-    return hit && node.contains(hit) ? { x, y } : null
-  })()`), options.timeoutMs ?? 12_000, { label: `an enabled, unobscured ${selector}${text === undefined ? '' : ` named ${JSON.stringify(text)}`}` })
-  await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', ...point, button: 'left', clickCount: 1 })
-  await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', ...point, button: 'left', clickCount: 1 })
+    if (!hit || !node.contains(hit)) return null
+    const state = { attempt: ${attempt}, accepted: 0, clicked: false, blocked: false }
+    const events = ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click']
+    const detach = () => events.forEach(type => window.removeEventListener(type, intercept, true))
+    const report = () => window[${JSON.stringify(binding)}](JSON.stringify(state))
+    const intercept = event => {
+      if (!event.isTrusted) return
+      const currentHit = document.elementFromPoint(event.clientX, event.clientY)
+      const intended = node.isConnected && !node.matches(':disabled') && !node.closest('[aria-disabled="true"], [inert]')
+        && (event.composedPath().includes(node) || node.contains(event.target)) && currentHit && node.contains(currentHit)
+      if (state.blocked || !intended) {
+        state.blocked = true
+        event.preventDefault()
+        event.stopImmediatePropagation()
+      }
+      else {
+        state.accepted++
+        if (event.type === 'click') {
+          state.clicked = true
+          // Default actions, including a label forwarding to its input, belong
+          // to this accepted click and must not be intercepted afterwards.
+          detach()
+        }
+      }
+      report()
+    }
+    Object.defineProperty(window, ${JSON.stringify(cleanup)}, { configurable: true, value: cancel => {
+      if (cancel) { state.blocked = true; return }
+      detach()
+      delete window[${JSON.stringify(cleanup)}]
+    } })
+    events.forEach(type => window.addEventListener(type, intercept, { capture: true, passive: false }))
+    return { x, y }
+  })()`)
+      if (!point) return null
+      let released = false
+      let timer: ReturnType<typeof setTimeout> | undefined
+      try {
+        await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', ...point, button: 'left', clickCount: 1 })
+        await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', ...point, button: 'left', clickCount: 1 })
+        released = true
+        const delivered = latestReceipt()
+        const outcome = delivered && (delivered.clicked || delivered.blocked) ? delivered : await new Promise<Receipt>((resolve, reject) => {
+          finish = resolve
+          timer = setTimeout(() => reject(new Error(`Timed out after ${timeoutMs}ms waiting for ${label}: input delivery was not verified`)), Math.max(0, deadline - Date.now()))
+        })
+        if (outcome.clicked) return true
+        if (outcome.accepted) throw new Error(`Click target changed after input delivery began: ${selector}`)
+        // The entire stale gesture was suppressed before application/default
+        // effects. Re-resolve it under the same deadline; never replay input
+        // that was already accepted by the application.
+        return null
+      }
+      catch (error) {
+        if (!released && !latestReceipt()?.clicked) {
+          await stop(true).catch(() => {})
+          await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', ...point, button: 'left', clickCount: 1 }).catch(() => {})
+        }
+        throw error
+      }
+      finally {
+        clearTimeout(timer)
+        finish = undefined
+        // A successful click can immediately navigate or open a native dialog.
+        // Its listeners are already detached; do not stall that action's return.
+        if (latestReceipt()?.clicked) void stop().catch(() => {})
+        else await stop()
+      }
+    }, timeoutMs, { label })
+  }
+  finally {
+    off()
+    void stop().catch(() => {})
+    await cdp.send('Runtime.removeBinding', { name: binding }).catch(() => {})
+    void cdp.evaluate(`delete window[${JSON.stringify(binding)}]`).catch(() => {})
+  }
 }
 
 // ---------------------------------------------------------------------------

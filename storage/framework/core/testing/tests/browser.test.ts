@@ -460,6 +460,21 @@ describe.skipIf(!realChrome)('a real Chrome', () => {
               button.style.transform = 'translateY(120px)';
             }));
           </script>`, { headers: { 'Content-Type': 'text/html' } })
+        if (pathname === '/click-shift-before-input') return new Response(`<input id="other" style="position:absolute;left:100px;top:100px;width:160px;height:40px;box-sizing:border-box">
+          <button id="save" style="position:absolute;left:100px;top:100px;width:160px;height:40px">Save</button>
+          <script>
+            document.body.dataset.saved = '0';
+            document.body.dataset.wrongDown = '0';
+            document.body.dataset.wrongFocus = 'no';
+            document.body.dataset.trusted = 'no';
+            document.querySelector('#other').addEventListener('pointerdown', () => { document.body.dataset.wrongDown = String(Number(document.body.dataset.wrongDown) + 1) });
+            document.querySelector('#other').addEventListener('focus', () => { document.body.dataset.wrongFocus = 'yes' });
+            document.querySelector('#save').addEventListener('click', event => {
+              document.body.dataset.saved = String(Number(document.body.dataset.saved) + 1);
+              document.body.dataset.trusted = event.isTrusted ? 'yes' : 'no';
+            });
+            document.body.dataset.ready = 'yes';
+          </script>`, { headers: { 'Content-Type': 'text/html' } })
         return new Response(`<title>Busy</title><script>
           fetch('/api/me'); fetch('/api/me'); fetch('/api/missing');
           console.error('something broke')
@@ -489,6 +504,150 @@ describe.skipIf(!realChrome)('a real Chrome', () => {
       await waitFor(() => cdp.evaluate('document.body.dataset.moving === "yes"'))
       await click(cdp, 'button')
       expect(await cdp.evaluate('document.body.dataset.clicked')).toBe('settled')
+    }
+    finally { await close() }
+  }, 90_000)
+
+  test('click keeps its intended target when layout changes after measurement', async () => {
+    const { cdp, close } = await launch()
+    const send = cdp.send.bind(cdp)
+    let shifted = false
+    // A real layout change in the protocol gap, followed by real trusted input.
+    // This does not depend on racing an arbitrary sleep against the browser.
+    cdp.send = async <T = any>(method: string, params: any = {}): Promise<T> => {
+      if (!shifted && method === 'Input.dispatchMouseEvent' && params.type === 'mousePressed') {
+        shifted = true
+        await send('Runtime.evaluate', { expression: `document.querySelector('#save').style.top = '260px'`, returnByValue: true })
+      }
+      return send<T>(method, params)
+    }
+    try {
+      await cdp.send('Page.navigate', { url: `http://127.0.0.1:${server.port}/click-shift-before-input` })
+      await waitFor(() => cdp.evaluate('document.body?.dataset.ready === "yes"'))
+      await click(cdp, '#save')
+      expect(await cdp.evaluate(`({ saved: Number(document.body.dataset.saved), wrongDown: Number(document.body.dataset.wrongDown), wrongFocus: document.body.dataset.wrongFocus, trusted: document.body.dataset.trusted })`))
+        .toEqual({ saved: 1, wrongDown: 0, wrongFocus: 'no', trusted: 'yes' })
+      expect(cdp.errors).toEqual([])
+    }
+    finally { await close() }
+  }, 90_000)
+
+  test('click resolves a replacement before delivering any application input', async () => {
+    const { cdp, close } = await launch()
+    const send = cdp.send.bind(cdp)
+    let replaced = false
+    cdp.send = async <T = any>(method: string, params: any = {}): Promise<T> => {
+      if (!replaced && method === 'Input.dispatchMouseEvent' && params.type === 'mousePressed') {
+        replaced = true
+        await cdp.evaluate(`(() => {
+          const old = document.querySelector('#save');
+          const next = old.cloneNode(true);
+          next.onclick = event => {
+            document.body.dataset.saved = String(Number(document.body.dataset.saved) + 1);
+            document.body.dataset.trusted = event.isTrusted ? 'yes' : 'no';
+          };
+          old.replaceWith(next);
+        })()`)
+      }
+      return send<T>(method, params)
+    }
+    try {
+      await cdp.send('Page.navigate', { url: `http://127.0.0.1:${server.port}/click-shift-before-input` })
+      await waitFor(() => cdp.evaluate('document.body?.dataset.ready === "yes"'))
+      await click(cdp, '#save')
+      expect(await cdp.evaluate(`({ saved: document.body.dataset.saved, trusted: document.body.dataset.trusted, wrongDown: document.body.dataset.wrongDown })`))
+        .toEqual({ saved: '1', trusted: 'yes', wrongDown: '0' })
+      expect(cdp.errors).toEqual([])
+    }
+    finally { await close() }
+  }, 90_000)
+
+  test('click never replays a gesture once application input has been accepted', async () => {
+    const { cdp, close } = await launch()
+    const send = cdp.send.bind(cdp)
+    let presses = 0
+    cdp.send = async <T = any>(method: string, params: any = {}): Promise<T> => {
+      if (method === 'Input.dispatchMouseEvent' && params.type === 'mousePressed') presses++
+      if (method === 'Input.dispatchMouseEvent' && params.type === 'mouseReleased')
+        await cdp.evaluate(`document.querySelector('#save').style.top = '260px'`)
+      return send<T>(method, params)
+    }
+    try {
+      await cdp.send('Page.navigate', { url: `http://127.0.0.1:${server.port}/click-shift-before-input` })
+      await waitFor(() => cdp.evaluate('document.body?.dataset.ready === "yes"'))
+      await cdp.evaluate(`document.querySelector('#other').onmouseup = () => { document.body.dataset.wrongUp = 'yes' }`)
+      await expect(click(cdp, '#save')).rejects.toThrow(/changed after input delivery began/)
+      expect(presses).toBe(1)
+      expect(await cdp.evaluate(`({ saved: document.body.dataset.saved, wrongUp: document.body.dataset.wrongUp ?? 'no' })`))
+        .toEqual({ saved: '0', wrongUp: 'no' })
+      // The failed action leaves neither a pressed mouse nor an interceptor.
+      cdp.send = send
+      await click(cdp, '#save')
+      expect(await cdp.evaluate('document.body.dataset.saved')).toBe('1')
+      expect(cdp.errors).toEqual([])
+    }
+    finally { await close() }
+  }, 90_000)
+
+  test('click suppresses release after a transport failure without repeating the action', async () => {
+    const { cdp, close } = await launch()
+    const send = cdp.send.bind(cdp)
+    let presses = 0
+    cdp.send = async <T = any>(method: string, params: any = {}): Promise<T> => {
+      const result = await send<T>(method, params)
+      if (method === 'Input.dispatchMouseEvent' && params.type === 'mousePressed') {
+        presses++
+        throw new Error('lost press acknowledgement')
+      }
+      return result
+    }
+    try {
+      await cdp.send('Page.navigate', { url: `http://127.0.0.1:${server.port}/click-shift-before-input` })
+      await waitFor(() => cdp.evaluate('document.body?.dataset.ready === "yes"'))
+      await expect(click(cdp, '#save')).rejects.toThrow('lost press acknowledgement')
+      expect(presses).toBe(1)
+      expect(await cdp.evaluate('document.body.dataset.saved')).toBe('0')
+      cdp.send = send
+      await click(cdp, '#save')
+      expect(await cdp.evaluate('document.body.dataset.saved')).toBe('1')
+      expect(cdp.errors).toEqual([])
+    }
+    finally { await close() }
+  }, 90_000)
+
+  test('click bounds repeated suppressed gestures by the original action deadline', async () => {
+    const { cdp, close } = await launch()
+    const send = cdp.send.bind(cdp)
+    cdp.send = async <T = any>(method: string, params: any = {}): Promise<T> => {
+      if (method === 'Input.dispatchMouseEvent' && params.type === 'mousePressed')
+        await cdp.evaluate(`(() => { const node = document.querySelector('#save'); node.style.top = node.style.top === '260px' ? '100px' : '260px' })()`)
+      return send<T>(method, params)
+    }
+    try {
+      await cdp.send('Page.navigate', { url: `http://127.0.0.1:${server.port}/click-shift-before-input` })
+      await waitFor(() => cdp.evaluate('document.body?.dataset.ready === "yes"'))
+      const started = Date.now()
+      await expect(click(cdp, '#save', { timeoutMs: 500 })).rejects.toThrow(/Timed out after 500ms/)
+      expect(Date.now() - started).toBeLessThan(2_000)
+      expect(await cdp.evaluate(`({ saved: document.body.dataset.saved, wrongDown: document.body.dataset.wrongDown, wrongFocus: document.body.dataset.wrongFocus })`))
+        .toEqual({ saved: '0', wrongDown: '0', wrongFocus: 'no' })
+      expect(cdp.errors).toEqual([])
+    }
+    finally { await close() }
+  }, 90_000)
+
+  test('click preserves descendant targeting, label defaults and navigation', async () => {
+    const { cdp, close } = await launch()
+    try {
+      await navigate(cdp, `http://127.0.0.1:${server.port}/clean`, { quietMs: 0 })
+      await cdp.evaluate(`document.body.innerHTML = '<label for="choice"><span id="caption">Choice</span></label><input id="choice" type="checkbox"><a href="/clean">Continue</a>'`)
+      await click(cdp, '#caption')
+      expect(await cdp.evaluate('document.querySelector("#choice").checked')).toBe(true)
+      await click(cdp, 'label')
+      expect(await cdp.evaluate('document.querySelector("#choice").checked')).toBe(false)
+      await click(cdp, 'a')
+      await waitFor(() => cdp.evaluate('document.title === "Clean" && !document.querySelector("a")'))
+      expect(cdp.errors).toEqual([])
     }
     finally { await close() }
   }, 90_000)

@@ -49,6 +49,21 @@ while background prefetches remain observable. This changes only readiness:
 HTTP failures, duplicate API calls, console errors and runtime failures still
 appear in audits and can fail `pageAuditClean`.
 
+## Trusted browser clicks
+
+`click` from `@stacksjs/testing/browser` resolves a unique selector (optionally
+with exact text), scrolls it into view, and waits for stable geometry and an
+enabled, unobscured target. It uses Chrome's trusted input path and checks the
+target again as the pointer and mouse events arrive. A layout change or DOM
+replacement between measurement and delivery cannot silently click a different
+control.
+
+A wholly suppressed gesture can resolve the target again within the original
+action deadline (12 seconds by default). Once any input has reached the target,
+a later target change fails the action rather than replaying it. Transport
+failures also fail without retrying an action whose effects are uncertain.
+Accepted clicks retain normal descendant, label, focus and navigation behavior.
+
 ## ☘️ Features
 
 wip
