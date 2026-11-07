@@ -62,13 +62,13 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/bunpress": "^0.2.15",
+    "@stacksjs/bunpress": "^0.2.31",
     "@stacksjs/clapp": "^0.2.12",
     "@stacksjs/events": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/stx": "0.2.807",
     "@stacksjs/ts-validation": "^0.5.7",
-    "bun-query-builder": "^0.3.38"
+    "bun-query-builder": "^0.3.42"
   },
   "peerDependencies": {
     "meilisearch": "^0.62.0",
