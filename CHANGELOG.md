@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.507...v0.75.508)
+
+## ✅ Tests
+
+- **browser**: wait for the document during animation readiness ([a7a05b8](https://github.com/stacksjs/stacks/commit/a7a05b8)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.506...v0.75.507)
 
 ## 🐛 Bug Fixes
