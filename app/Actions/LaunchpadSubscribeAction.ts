@@ -1,3 +1,5 @@
+import { Action } from '@stacksjs/actions/runtime'
+import { schema } from '@stacksjs/validation/runtime'
 import { rateLimit } from '@stacksjs/router'
 import { sendSubscriptionConfirmation } from '@stacksjs/defaults/app/Mail/SubscriptionConfirmation.ts'
 import { subscribeToLaunchpad } from '../Services/launchpad-subscriptions'

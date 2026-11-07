@@ -12,6 +12,7 @@ export const routeNames = {
   'email.unsubscribe': '/api/email/unsubscribe',
   'email.unsubscribe.oneclick': '/api/email/unsubscribe',
   'feedback.store': '/api/feedback/{token}',
+  'launchpad.subscribe': '/api/launchpad/subscribe',
 } as const
 
 // Every `route.redirect()` and `route.permanentRedirect()` on a page path. The
