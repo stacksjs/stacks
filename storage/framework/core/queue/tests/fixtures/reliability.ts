@@ -124,21 +124,25 @@ try {
       assert.equal((await listCircuitState()).find(row => row.queue_name === 'success')?.success_count, 1)
     }
     else if (scenario === 'scheduled-dispatch') {
+      const { freezeTime, useRealTime } = await import('@stacksjs/testing/time')
       const { jobRegistry } = await import('../../src/discovery')
       const { startScheduler, stopScheduler } = await import('../../src/scheduler')
       // Another due job must not change which fixture envelope is inspected.
-      // This exercises the top-of-hour collision without freezing wall time.
+      // Keep all restarts in one cron minute, including on a busy CI host.
       jobRegistry.register({
         name: 'OtherDueJob', path: '', config: { rate: '* * * * *', queue: 'default' }, type: 'function', module: { handle() {} },
       })
       const register = (queue: string) => jobRegistry.register({
         name: 'AuditScheduled', path: '', config: { rate: '* * * * *', queue }, type: 'function', module: { handle() {} },
       })
+      freezeTime('2026-11-06T12:34:59.950Z')
       try {
         register('blocked')
         await startScheduler({ checkInterval: 60_000, preventOverlapping: false })
         assert.equal(await db.selectFrom('scheduled_job_runs').where('job_name', '=', 'AuditScheduled').selectAll().executeTakeFirst(), undefined, 'failed enqueue must not record a run')
         await stopScheduler()
+        // A real wall-clock boundary must not invalidate the same-minute case.
+        await Bun.sleep(100)
         register('default')
         await startScheduler({ checkInterval: 60_000, preventOverlapping: false })
         const jobs = await db.selectFrom('jobs').selectAll().execute()
@@ -156,7 +160,10 @@ try {
         assert.equal((await db.selectFrom('jobs').selectAll().execute()).filter(row => JSON.parse(String(row.payload)).jobName === 'AuditScheduled').length, 1, 'successful dispatch remains deduplicated across restart')
         assert.equal((await db.selectFrom('jobs').selectAll().execute()).filter(row => JSON.parse(String(row.payload)).jobName === 'OtherDueJob').length, 1, 'the other due job also stays deduplicated across restart')
       }
-      finally { await stopScheduler() }
+      finally {
+        try { await stopScheduler() }
+        finally { useRealTime() }
+      }
     }
     else throw new Error(`Unknown reliability scenario: ${scenario}`)
     console.log(`${scenario} OK`)
