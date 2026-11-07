@@ -3490,6 +3490,20 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /api/dashboard/sidebar-order
+   */
+  getDashboardSidebarOrder(options?: RequestOptions): Promise<ApiResult<{ [key: string]: unknown }>> {
+    return request(config, "GET", "/api/dashboard/sidebar-order", {}, [], null, "application/json", [], options)
+  },
+
+  /**
+   * PUT /api/dashboard/sidebar-order
+   */
+  putDashboardSidebarOrder(input: { body: { "order": Record<string, unknown>; "scope": string } }, options?: RequestOptions): Promise<ApiResult<{ [key: string]: unknown }>> {
+    return request(config, "PUT", "/api/dashboard/sidebar-order", input ?? {}, [], {"required":true,"content":["application/json"]}, "application/json", [], options)
+  },
+
+  /**
    * GET /api/dashboard/source/actions
    */
   getDashboardSourceActions(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {

@@ -114,7 +114,7 @@ export default new Action({
     const blockedSave = await fetch(`${origin}/api/dashboard/sidebar-order`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order: personalOrder }) })
     expect(blockedSave.status).toBe(403)
     const saveHeaders = { 'Content-Type': 'application/json', 'Cookie': csrfCookie, 'X-CSRF-Token': token }
-    const changedViewer = await fetch(`${origin}/api/dashboard/sidebar-order`, { method: 'PUT', headers: saveHeaders, body: JSON.stringify({ order: personalOrder, scope: 'another-viewer' }) })
+    const changedViewer = await fetch(`${origin}/api/dashboard/sidebar-order`, { method: 'PUT', headers: saveHeaders, body: JSON.stringify({ order: personalOrder, scope: '0'.repeat(32) }) })
     expect(changedViewer.status).toBe(409)
     const save = await fetch(`${origin}/api/dashboard/sidebar-order`, { method: 'PUT', headers: saveHeaders, body: JSON.stringify({ order: personalOrder, scope: initialSidebar.scope }) })
     expect(save.status).toBe(200)

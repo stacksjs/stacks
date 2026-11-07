@@ -9283,6 +9283,45 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  "/api/dashboard/sidebar-order": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { [key: string]: unknown } } }
+      "422": { content: never }
+      "500": { content: never }
+      "503": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: { content: { "application/json": { "order": Record<string, unknown>; "scope": string } } }
+    responses: {
+      "200": { content: { "application/json": { [key: string]: unknown } } }
+      "409": { content: never }
+      "422": { content: never }
+      "500": { content: never }
+      "503": { content: never }
+    }
+  }
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   "/api/dashboard/source/actions": {
     get: {
     parameters: {

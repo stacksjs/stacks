@@ -13439,6 +13439,89 @@
         }
       }
     },
+    "/api/dashboard/sidebar-order": {
+      "get": {
+        "summary": "/api/dashboard/sidebar-order",
+        "operationId": "get__api_dashboard_sidebar_order",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The saved order, viewer scope and any recoverable file warning.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          },
+          "503": {
+            "description": "The local preference file could not be read."
+          }
+        }
+      },
+      "put": {
+        "summary": "/api/dashboard/sidebar-order",
+        "operationId": "put__api_dashboard_sidebar_order",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The saved personal order.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The viewer or project changed since the order was loaded."
+          },
+          "422": {
+            "description": "The order payload is invalid or exceeds its bounds."
+          },
+          "500": {
+            "description": "Server error"
+          },
+          "503": {
+            "description": "The local preference file could not be written."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "order": {
+                    "type": "object"
+                  },
+                  "scope": {
+                    "type": "string",
+                    "minLength": 32,
+                    "maxLength": 32
+                  }
+                },
+                "required": [
+                  "order",
+                  "scope"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/dashboard/source/actions": {
       "get": {
         "summary": "/api/dashboard/source/actions",
