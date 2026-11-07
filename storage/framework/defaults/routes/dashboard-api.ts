@@ -55,6 +55,8 @@ function authenticatedGuard(r: any): any {
 }
 
 route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
+  guard(route.get('/sidebar-order', 'Actions/Dashboard/Settings/SidebarOrderShowAction'))
+  guard(route.put('/sidebar-order', 'Actions/Dashboard/Settings/SidebarOrderUpdateAction'))
   guard(route.get('/home', 'Actions/Dashboard/DashboardHomeAction'))
   guard(route.get('/stats', 'Actions/Dashboard/DashboardStatsAction'))
   guard(route.get('/activity', 'Actions/Dashboard/DashboardActivityAction'))

@@ -33,8 +33,13 @@ mock.module('@stacksjs/rpx', () => ({ isDaemonRunning: unexpected, startProxies:
       }
     }
     write('config/database.ts', `export default { default: 'sqlite', connections: { sqlite: { database: ${JSON.stringify(join(root, 'fixture.sqlite'))} } } }`)
+    write('config/dashboard.ts', `export default { nav: [{ title: 'Sample', items: [{ label: 'Alpha', href: '/alpha' }, { label: 'Beta', href: '/beta' }, { label: 'Gamma', href: '/gamma' }] }] }`)
+    for (const page of ['order-test', 'alpha', 'beta', 'gamma'])
+      write(`resources/views/dashboard/${page}.stx`, `@extends('layouts/default')\n@section('content')\n<h1>Sidebar ordering fixture</h1>\n@endsection`)
     write('app/Models/RuntimeProbe.ts', `import { defineModel } from '@stacksjs/orm'
 export default defineModel({ name: 'RuntimeProbe', table: 'runtime_probes', attributes: { name: { fillable: true } } })`)
+    write('app/Models/RuntimeSecond.ts', `import { defineModel } from '@stacksjs/orm'
+export default defineModel({ name: 'RuntimeSecond', table: 'runtime_seconds', attributes: { name: { fillable: true } } })`)
     write('resources/functions/runtime-label.ts', `export function runtimeLabel() { return 'dashboard fixture' }`)
     write('app/Routes.ts', `${loading === 'eager' ? "import './Actions/RuntimeProbeAction'" : ''}\nexport default { api: 'api' }`)
     write('app/Gates.ts', `export default { gates: { 'fixture-access': (_user, label) => label === runtimeLabel() } }`)
@@ -53,6 +58,7 @@ export default new Action({
 })`)
     const db = new Database(join(root, 'fixture.sqlite'))
     db.exec("CREATE TABLE runtime_probes (id INTEGER PRIMARY KEY, name TEXT); INSERT INTO runtime_probes VALUES (1, 'isolated row')")
+    db.exec('CREATE TABLE runtime_seconds (id INTEGER PRIMARY KEY, name TEXT)')
     db.close()
 
     const reservation = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch: () => new Response() })
@@ -70,6 +76,7 @@ export default new Action({
         STACKS_DASHBOARD_WORKER: '1', STACKS_NO_NATIVE: '1', STACKS_DEV_SERVER: '1',
         STACKS_DEV_AUTO_MIGRATE: '0', STACKS_SKIP_DEFAULT_ROUTES: loading === 'defaults' ? '0' : '1',
         DB_CONNECTION: 'sqlite', DB_DATABASE_PATH: join(root, 'fixture.sqlite'),
+        XDG_CONFIG_HOME: join(root, 'machine-config'),
       },
       stdout: 'pipe', stderr: 'pipe',
     })
@@ -96,6 +103,24 @@ export default new Action({
     const definitions = await fetch(`${origin}/api/dashboard/jobs/definitions`)
     expect(definitions.status).toBe(200)
     expect(Array.isArray((await definitions.json()).data)).toBe(true)
+    const sidebar = await fetch(`${origin}/api/dashboard/sidebar-order`)
+    expect(sidebar.status).toBe(200)
+    expect(sidebar.headers.get('cache-control')).toBe('private, no-store')
+    const initialSidebar = await sidebar.json()
+    expect(initialSidebar.order).toEqual({ version: 1, sections: [], items: {} })
+    const csrfCookie = sidebar.headers.getSetCookie().find(cookie => cookie.startsWith('X-CSRF-Token='))!.split(';')[0]!
+    const token = decodeURIComponent(csrfCookie.slice('X-CSRF-Token='.length))
+    const personalOrder = { version: 1, sections: ['data', 'top'], items: {} }
+    const blockedSave = await fetch(`${origin}/api/dashboard/sidebar-order`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order: personalOrder }) })
+    expect(blockedSave.status).toBe(403)
+    const saveHeaders = { 'Content-Type': 'application/json', 'Cookie': csrfCookie, 'X-CSRF-Token': token }
+    const changedViewer = await fetch(`${origin}/api/dashboard/sidebar-order`, { method: 'PUT', headers: saveHeaders, body: JSON.stringify({ order: personalOrder, scope: 'another-viewer' }) })
+    expect(changedViewer.status).toBe(409)
+    const save = await fetch(`${origin}/api/dashboard/sidebar-order`, { method: 'PUT', headers: saveHeaders, body: JSON.stringify({ order: personalOrder, scope: initialSidebar.scope }) })
+    expect(save.status).toBe(200)
+    expect((await (await fetch(`${origin}/api/dashboard/sidebar-order`)).json()).order).toEqual(personalOrder)
+    const invalidSave = await fetch(`${origin}/api/dashboard/sidebar-order`, { method: 'PUT', headers: saveHeaders, body: JSON.stringify({ order: { version: 3 }, scope: initialSidebar.scope }) })
+    expect(invalidSave.status).toBe(422)
     if (loading === 'defaults') {
       const home = await fetch(`${origin}/api/dashboard/home`)
       expect(home.status).toBe(200)
@@ -111,6 +136,10 @@ export default new Action({
     expect(body.rows).toEqual([{ id: 1, name: 'isolated row' }])
     expect(body.allowed).toBe(true)
     expect(body.denied).toBe(false)
+    if (loading === 'lazy' && process.env.STACKS_BROWSER_TESTS === '1') {
+      const { verifySidebarOrdering } = await import('./fixtures/dashboard-sidebar-order-browser')
+      await verifySidebarOrdering(origin)
+    }
     // HTTP starts before proxy setup. Wait for the final startup message so
     // an early successful request cannot hide subsequent system side effects.
     for (let attempt = 0; attempt < 100 && !transcript.includes('Native window disabled'); attempt++)
@@ -126,4 +155,4 @@ export default new Action({
     if (child) await child.exited
     rmSync(root, { recursive: true, force: true })
   }
-}, 30_000)
+}, 120_000)

@@ -35,7 +35,7 @@ export const sidebarRoleMap: Record<string, string[]> = webSidebarRoleMap(sideba
 
 // Declared, so the client block below gets the map typed rather than inferred
 // off the implicit bridge - which is what let the mismatch above go unseen.
-defineClientPayload({ sidebarRoleMap })
+defineClientPayload({ sidebarRoleMap, sidebarSections })
 </script>
 
 @head
@@ -400,6 +400,35 @@ html[data-appearance="arc"] [data-sidebar-section] > div:first-child {
 [data-sidebar-section][data-viewer-hidden="true"] {
   display: none;
 }
+/* Grips are separate controls, so dragging never follows a link or toggles disclosure. */
+[data-dashboard-sidebar-order] [data-sidebar-section],
+[data-dashboard-sidebar-order] [data-sidebar-row] { position: relative; }
+[data-dashboard-sidebar-order] [data-sidebar-item] { padding-right: 28px; }
+[data-dashboard-sidebar-order] [data-sidebar-section-header] { padding-right: 50px; }
+.dashboard-sidebar-order-grip {
+  position: absolute;
+  right: 1px;
+  top: 2px;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  color: currentColor;
+  opacity: .55;
+  cursor: grab;
+  touch-action: none;
+}
+.dashboard-sidebar-order-grip[data-sidebar-order-handle="section"] { right: 23px; top: 7px; }
+[data-section-id="top"] > .dashboard-sidebar-order-grip { right: 1px; top: 2px; }
+.dashboard-sidebar-order-grip > span { display: block; width: 14px; height: 14px; }
+.dashboard-sidebar-order-grip:hover,
+.dashboard-sidebar-order-grip:focus-visible { opacity: 1; background: rgba(127, 127, 127, .16); }
+.dashboard-sidebar-order-grip:focus-visible { outline: 2px solid #3b82f6; outline-offset: -2px; }
+.dashboard-sidebar-order-grip:disabled { cursor: wait; opacity: .25; }
+[data-order-dragging="true"] > .dashboard-sidebar-order-grip { cursor: grabbing; opacity: 1; }
+[data-order-drop="before"] { box-shadow: 0 -2px #3b82f6; }
+[data-order-drop="after"] { box-shadow: 0 2px #3b82f6; }
 </style>
 
 <script client>
@@ -416,6 +445,7 @@ import { ensureCraftNativeSidebarMarker, useCraftSidebarSelection } from '@stack
 import { readStoredAppearance, useAppearance } from '@stacksjs/defaults/views/dashboard/composables/useAppearance'
 import { authStore } from '@stacksjs/defaults/views/dashboard/stores/auth'
 import { kanbanStore } from '@stacksjs/defaults/views/dashboard/stores/kanban'
+import { createDashboardSidebarOrder } from '@stacksjs/defaults/functions/dashboard-sidebar-order'
 import { rbacStore } from '@stacksjs/defaults/views/dashboard/stores/rbac'
 const { toasts } = useToasts()
 registerStoresClient({ authStore, kanbanStore, rbacStore })
@@ -452,6 +482,12 @@ const auth = authStore
 const route = useRoute()
 const sidebarHost = useRef('dashboardSidebarHost')
 const mobileSidebarHost = useRef('dashboardMobileSidebarHost')
+const sidebarOrderStatus = state({ ready: false, saving: false, custom: false, message: 'Loading sidebar order…' })
+const sidebarOrder = createDashboardSidebarOrder({
+  pane: () => sidebarPanes()[0],
+  sections: sidebarSections,
+  status: value => sidebarOrderStatus.set(value),
+})
 let removeCraftSidebarSelection = () => {}
 ensureCraftNativeSidebarMarker()
 auth.load()
@@ -651,6 +687,8 @@ useEventListener('craft:ready', () => {
 })
 
 onMount(() => {
+  sidebarOrder.attach()
+  void sidebarOrder.load()
   syncActiveSidebarRow()
   applyRoleFilter()
   applySectionVisibility()
@@ -658,6 +696,7 @@ onMount(() => {
 })
 
 onDestroy(() => {
+  sidebarOrder.destroy()
   removeCraftSidebarSelection()
 })
 </script>
@@ -683,6 +722,13 @@ onDestroy(() => {
           region, and in a browser it is the same empty strip macOS sidebars
           carry above their first row. -->
       <SidebarHeader windowControls="native" />
+    </template>
+    <template #footer>
+      <div class="px-3 py-2 text-neutral-600 text-xs dark:text-neutral-300" data-sidebar-order-controls>
+        <p role="status" aria-live="polite" :text="sidebarOrderStatus.message"></p>
+        <button :if="!sidebarOrderStatus.ready" type="button" class="mt-1 underline" @click="sidebarOrder.load()">Retry loading order</button>
+        <button :if="sidebarOrderStatus.ready" type="button" class="mt-1 underline disabled:opacity-50" :disabled="sidebarOrderStatus.saving" @click="sidebarOrder.reset()">Reset order</button>
+      </div>
     </template>
   </Sidebar>
 </div>

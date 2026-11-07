@@ -201,18 +201,20 @@ function normalizeSchemaModels(value: unknown): string[] {
 }
 
 /** Hide built-in modules whose backing models are outside this app's schema. */
-export function filterSchemaNavSections(sections: Array<[string, string, NavItem[]]>, schemaModels?: readonly string[]): Array<[string, string, NavItem[]]> {
-  if (!schemaModels) return sections
-  const available = new Set(schemaModels)
+export function filterSchemaNavSections(sections: Array<[string, string, NavItem[]]>, schemaModels?: readonly string[], capabilities: { inbox?: boolean } = {}): Array<[string, string, NavItem[]]> {
+  const available = schemaModels ? new Set(schemaModels) : undefined
   const required: Record<string, string[]> = {
     '/activity': ['Activity'], '/teams': ['Team'], '/subscribers': ['Subscriber'],
     '/releases': ['Release'], '/deployments': ['Deployment'], '/requests': ['Request'],
     '/queries': ['QueryLog'], '/queries/slow': ['QueryLog'], '/queries/history': ['QueryLog'],
     '/errors': ['Error'], '/notifications/dashboard': ['Notification'], '/logs': ['Log'],
     '/management/permissions': ['Role', 'Permission'], '/kanban': ['Board', 'Card', 'Column'],
+    '/data/activity': ['Activity'], '/data/teams': ['Team'], '/data/subscribers': ['Subscriber'],
+    '/inbox/settings': ['MailPreference'],
   }
   return sections.map(([id, label, items]): [string, string, NavItem[]] => [id, label, id.startsWith('app-nav-') ? items : items.filter(item =>
-    (required[item.to] ?? []).every(model => available.has(model)))])
+    (!(capabilities.inbox === false && ['/inbox', '/inbox/activity'].includes(item.to))
+      && (required[item.to] ?? []).every(model => !available || available.has(model))))])
     .filter(([, , items]) => items.length > 0)
 }
 
@@ -744,7 +746,12 @@ function loadAppNavFromConfig(configPath = resolve(process.cwd(), 'config/dashbo
 export function buildWebSidebarSections(): WebSidebarSection[] {
   const manifest = loadDiscoveredManifest()
   const appNav = manifest.nav.length > 0 ? manifest.nav : loadAppNavFromConfig()
-  const sections = filterSchemaNavSections(buildNavSections(manifest.models, manifest.sections, appNav), manifest.schemaModels)
+  const { config } = createRequire(import.meta.url)('@stacksjs/config')
+  // The current inbox SDK reads S3 objects. The native IMAP/SMTP server does
+  // not write that bucket; linking its mailboxes to this UI only produces 503s.
+  const mailServer = config.email?.server
+  const inbox = !(mailServer?.enabled && (mailServer.mode ?? 'server') === 'server')
+  const sections = filterSchemaNavSections(buildNavSections(manifest.models, manifest.sections, appNav), manifest.schemaModels, { inbox })
 
   const webItem = (item: NavItem): WebSidebarItem => ({
     id: item.id ?? navItemId(item.to),

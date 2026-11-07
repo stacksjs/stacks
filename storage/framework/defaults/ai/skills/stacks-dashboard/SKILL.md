@@ -748,3 +748,29 @@ numeric `highlight` values to order pinned rows. Other enabled Data models live
 under the native Sidebar's collapsed More models disclosure. Labels, icons and
 role gates apply to nested rows too. `enabled: false` omits navigation;
 `access: false` excludes generic catalogs and reads as well.
+
+### Personal sidebar order
+
+Drag the grip on a section or item to reorder it. Focus a grip and press the
+up/down arrow keys for the same operation. Items remain within their sibling
+group, and moving a parent carries its descendants. Links, disclosure state,
+role gates and model visibility remain owned by the shared Sidebar.
+
+The guarded `GET|PUT /api/dashboard/sidebar-order` Actions persist identifiers
+only in a machine-local file outside the checkout. `config/dashboard.ts` and
+model `dashboard.highlight` values remain the team defaults. Reset order
+restores the current defaults; new rows append in team order, and removed rows
+cannot be resurrected by old preferences.
+
+Files live under `$XDG_CONFIG_HOME/stacks/dashboard/`, or
+`~/Library/Application Support/stacks/dashboard/` on macOS and
+`~/.config/stacks/dashboard/` elsewhere. Canonical project-root and viewer
+hashes isolate projects and authenticated users. The local developer dashboard
+uses the local viewer. Writes are atomic and owner-readable; API reads are
+private/no-store. These preferences survive framework upgrades and runtime
+cache cleanup. They belong on the machine serving the dashboard, so browsers
+and Craft windows connected to that project share the saved order.
+
+The current Inbox SDK requires the S3 mailbox provider. Native IMAP/SMTP mail
+servers do not publish Inbox/Mail Activity links; captured outgoing mail remains
+available. Mail Settings requires the native MailPreference schema.

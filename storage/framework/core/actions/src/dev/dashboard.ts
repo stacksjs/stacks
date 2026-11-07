@@ -248,7 +248,7 @@ async function startStxServer(): Promise<void> {
     const { generateCss } = await import('@stacksjs/stx')
     // Model-defined icons can appear only in the async catalog (for example a
     // model hidden from navigation), so rendered sidebar markup cannot seed them.
-    const dirs = [dashboardPath, userDashboardPath, dashboardComponentsPath, userDashboardComponentsPath, projectPath('app/Models'), defaultsPath('app/Models')]
+    const dirs = [dashboardPath, userDashboardPath, dashboardComponentsPath, userDashboardComponentsPath, projectPath('app/Models'), defaultsPath('app/Models'), defaultsPath('functions'), defaultsPath('resources/functions')]
     const icons = new Set<string>()
     for (const dir of dirs) {
       if (!existsSync(dir))
@@ -462,6 +462,7 @@ async function startStxServer(): Promise<void> {
     watchDirs: [
       projectPath('resources/functions'),
       defaultsPath('resources/functions'),
+      defaultsPath('functions'),
       // The layout's server script builds the sidebar from the models manifest
       // written below (the models and `config/dashboard.ts`'s sections, as of
       // boot) and reads `config/dashboard.ts` itself; no page template pulls
