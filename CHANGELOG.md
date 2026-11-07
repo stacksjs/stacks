@@ -1,5 +1,26 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.497...v0.75.498)
+
+## ✨ Features
+
+- **dashboard**: persist personal sidebar ordering locally ([cb1713d](https://github.com/stacksjs/stacks/commit/cb1713d)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **ops**: retain and rotate PostgreSQL logs on persistent storage ([d432974](https://github.com/stacksjs/stacks/commit/d432974)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **ops**: preserve backups and move recurring disk writes off root ([ceb7cf6](https://github.com/stacksjs/stacks/commit/ceb7cf6)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **cloud**: serialize persistent data cutovers with deployments ([7b01ce7](https://github.com/stacksjs/stacks/commit/7b01ce7)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **cloud**: place mutable ReviewOS storage on the persistent volume ([b0bbebd](https://github.com/stacksjs/stacks/commit/b0bbebd)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **dashboard**: publish sidebar API contracts and native catalogs ([b880e24](https://github.com/stacksjs/stacks/commit/b880e24)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.496...v0.75.497)
 
 ## 🐛 Bug Fixes
