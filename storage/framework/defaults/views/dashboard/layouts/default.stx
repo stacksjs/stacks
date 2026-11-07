@@ -726,8 +726,8 @@ onDestroy(() => {
     <template #footer>
       <div class="px-3 py-2 text-neutral-600 text-xs dark:text-neutral-300" data-sidebar-order-controls>
         <p role="status" aria-live="polite" :text="sidebarOrderStatus.message"></p>
-        <button :if="!sidebarOrderStatus.ready" type="button" class="mt-1 underline" @click="sidebarOrder.load()">Retry loading order</button>
-        <button :if="sidebarOrderStatus.ready" type="button" class="mt-1 underline disabled:opacity-50" :disabled="sidebarOrderStatus.saving" @click="sidebarOrder.reset()">Reset order</button>
+        <Button :if="!sidebarOrderStatus.ready" variant="ghost" size="xs" @click="sidebarOrder.load()">Retry loading order</Button>
+        <Button :if="sidebarOrderStatus.ready" variant="ghost" size="xs" :disabled="sidebarOrderStatus.saving" @click="sidebarOrder.reset()">Reset order</Button>
       </div>
     </template>
   </Sidebar>

@@ -141,6 +141,6 @@ describe('dashboard layout client architecture', () => {
     expect(allowed).toEqual([['users', false], ['deploys', true]])
 
     // Declared, so `typecheck:views` types the client's view of it.
-    expect(server).toContain('defineClientPayload({ sidebarRoleMap })')
+    expect(server).toContain('defineClientPayload({ sidebarRoleMap, sidebarSections })')
   })
 })

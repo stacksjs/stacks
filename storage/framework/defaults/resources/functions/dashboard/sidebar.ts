@@ -202,6 +202,7 @@ function normalizeSchemaModels(value: unknown): string[] {
 
 /** Hide built-in modules whose backing models are outside this app's schema. */
 export function filterSchemaNavSections(sections: Array<[string, string, NavItem[]]>, schemaModels?: readonly string[], capabilities: { inbox?: boolean } = {}): Array<[string, string, NavItem[]]> {
+  if (!schemaModels && capabilities.inbox !== false) return sections
   const available = schemaModels ? new Set(schemaModels) : undefined
   const required: Record<string, string[]> = {
     '/activity': ['Activity'], '/teams': ['Team'], '/subscribers': ['Subscriber'],
