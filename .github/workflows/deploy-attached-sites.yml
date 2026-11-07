@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       project:
-        description: Independent tenant to deploy from its main branch
+        description: Launchpad service deployment
         type: choice
         required: true
-        options: [launchpad, dtsx]
+        options: [launchpad]
 
 permissions:
   contents: read
@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   deploy:
-    if: ${{ github.ref == 'refs/heads/main' && contains(fromJSON('["launchpad","dtsx"]'), inputs.project) }}
+    if: ${{ github.ref == 'refs/heads/main' && contains(fromJSON('["launchpad"]'), inputs.project) }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment: production
@@ -26,7 +26,7 @@ jobs:
       - name: Checkout tenant main
         uses: actions/checkout@v6
         with:
-          repository: ${{ inputs.project == 'launchpad' && 'stacksjs/launchpad' || 'stacksjs/dtsx' }}
+          repository: stacksjs/launchpad
           ref: main
           fetch-depth: 0
           persist-credentials: false
@@ -71,4 +71,4 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           PORKBUN_API_KEY: ${{ secrets.PORKBUN_API_KEY }}
           PORKBUN_SECRET_KEY: ${{ secrets.PORKBUN_SECRET_KEY }}
-          DOTENV_PRIVATE_KEY_PRODUCTION: ${{ inputs.project == 'launchpad' && secrets.LAUNCHPAD_SERVER_DOTENV_PRIVATE_KEY_PRODUCTION || secrets.DTSX_DOTENV_PRIVATE_KEY_PRODUCTION }}
+          DOTENV_PRIVATE_KEY_PRODUCTION: ${{ secrets.LAUNCHPAD_SERVER_DOTENV_PRIVATE_KEY_PRODUCTION }}
