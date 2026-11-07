@@ -670,6 +670,18 @@ There is no force option, because there is nothing to force: a job that is still
 running when the grace period expires keeps its reservation, and the next
 worker's sweep reclaims it. `graceMs` defaults to 10 seconds.
 
+On Linux, database reservations record the machine, boot and process birth
+identity and PID namespace of their worker. A restarted worker can reclaim a
+positively dead local owner immediately. PID reuse cannot impersonate the
+previous owner. Foreign owners or namespaces, unavailable process information
+and older reservations keep the configured reservation TTL. Recovery compares the original reservation
+and payload before updating it, so a concurrent claim remains protected.
+
+Application checkpoints can use `captureProcessLeaseOwner()` and
+`processLeaseOwnerStatus(owner)` from `@stacksjs/queue` to apply the same
+ownership proof to their own durable leases. An `unknown` result never
+authorizes early recovery.
+
 ### Job Retries with Backoff
 
 ```typescript

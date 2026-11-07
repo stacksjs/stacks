@@ -14,6 +14,7 @@ import { log } from '@stacksjs/logging'
 import process from 'node:process'
 import { parseEnvelope } from './envelope'
 import { updatedRowCount } from './utils'
+import { captureProcessLeaseOwner, processLeaseOwnerStatus } from './process-owner'
 
 /**
  * Keep a RUNNING worker alive through a failure in one job.
@@ -72,6 +73,18 @@ const inFlightDatabaseBatches = new Set<Promise<unknown>>()
 
 /** When a reserve failure was last reported, per queue. See the poll loop. */
 const reserveErrorLoggedAt = new Map<string, number>()
+let reservationScanAfter = 0
+
+function ownedReservationPayload(payload: string): string {
+  const owner = captureProcessLeaseOwner()
+  if (!owner) return payload
+  try {
+    const envelope = JSON.parse(payload)
+    if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope)) return payload
+    return JSON.stringify({ ...envelope, _queueProcessOwner: owner })
+  }
+  catch { return payload }
+}
 
 /**
  * Track a job promise so {@link stopProcessor} can await it. The
@@ -182,11 +195,27 @@ async function sweepStaleReservations(): Promise<number> {
       .set({ reserved_at: null, available_at: now })
       .where('reserved_at', '<=', cutoff)
       .executeTakeFirst()
-    const requeued = updatedRowCount(result)
+    let requeued = updatedRowCount(result)
+    // A positively dead local process needs no TTL wait. Walk bounded pages
+    // so foreign/live owners cannot starve a later abandoned reservation.
+    const owned = await db.selectFrom('jobs').select(['id', 'payload', 'reserved_at'])
+      .where('reserved_at', '>', cutoff).where('id', '>', reservationScanAfter)
+      .orderBy('id', 'asc').limit(128).execute()
+    reservationScanAfter = owned.length === 128 ? Number(owned.at(-1)!.id) : 0
+    for (const row of owned) {
+      let owner: unknown
+      try { owner = JSON.parse(String(row.payload))._queueProcessOwner }
+      catch { continue }
+      if (processLeaseOwnerStatus(owner) !== 'dead') continue
+      const released = await db.updateTable('jobs').set({ reserved_at: null, available_at: now })
+        .where('id', '=', row.id).where('reserved_at', '=', row.reserved_at!)
+        .where('payload', '=', row.payload).executeTakeFirst()
+      requeued += updatedRowCount(released)
+    }
     if (requeued > 0) {
       log.warn(
-        `[queue] Requeued ${requeued} job(s) whose reservation exceeded the `
-        + `${ttlSec}s TTL - likely victims of a worker crash. Set `
+        `[queue] Requeued ${requeued} job(s) after their owner exited or their reservation exceeded the `
+        + `${ttlSec}s TTL. Set `
         + `STACKS_QUEUE_RESERVATION_TTL_SEC to tune.`,
       )
     }
@@ -501,19 +530,21 @@ async function fetchPendingJobs(queueName: string, limit: number): Promise<any[]
     if (!job || !workerRunning) break
 
     // Atomically reserve only if still unreserved (CAS pattern)
+    const payload = ownedReservationPayload(String(job.payload))
     const result = await db
       .updateTable('jobs')
       // `jobs` is typed from the migration corpus (stacksjs/stacks#2409), but
       // sqlite still hands `attempts` back as whatever it stored, so the
       // coercion stays.
-      .set({ reserved_at: now, attempts: Number(job.attempts || 0) + 1 })
+      .set({ reserved_at: now, attempts: Number(job.attempts || 0) + 1, payload })
       .where('id', '=', (job).id)
       .whereNull('reserved_at')
+      .where('payload', '=', job.payload)
       .executeTakeFirst()
 
     const updated = updatedRowCount(result)
     if (updated > 0) {
-      claimed.push(job)
+      claimed.push({ ...job, payload })
     }
     // If updated === 0, another worker claimed it first; try next
   }

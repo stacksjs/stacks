@@ -26,6 +26,8 @@ export * from './bun-queue'
 // Stacks Job class for file-based jobs (app/Jobs/*.ts)
 // =============================================================================
 export { Job } from './action'
+export { captureProcessLeaseOwner, processLeaseOwnerStatus } from './process-owner'
+export type { ProcessLeaseOwner } from './process-owner'
 
 // How a job runs an action it names by string. `@stacksjs/actions` registers
 // itself here on import; see ./action-runner for why the queue asks rather
