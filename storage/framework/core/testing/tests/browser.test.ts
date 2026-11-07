@@ -566,7 +566,14 @@ describe.skipIf(!realChrome)('a real Chrome', () => {
     const { cdp, close } = await launch()
     const send = cdp.send.bind(cdp)
     let presses = 0
+    let outcome = 'pending'
+    const trace: unknown[] = []
+    const record = (phase: string) => trace.push({ phase, outcome, presses, closed: cdp.closed, at: performance.now() })
+    const offTrace = cdp.on('Runtime.bindingCalled', event => {
+      if (event.name?.startsWith('__stacksTestingClick')) trace.push({ binding: event.name, receipt: JSON.parse(event.payload), at: performance.now() })
+    })
     cdp.send = async <T = any>(method: string, params: any = {}): Promise<T> => {
+      trace.push({ method, type: params.type, closed: cdp.closed, at: performance.now() })
       if (method === 'Input.dispatchMouseEvent' && params.type === 'mousePressed') presses++
       if (method === 'Input.dispatchMouseEvent' && params.type === 'mouseReleased')
         await cdp.evaluate(`document.querySelector('#save').style.top = '260px'`)
@@ -576,7 +583,11 @@ describe.skipIf(!realChrome)('a real Chrome', () => {
       await cdp.send('Page.navigate', { url: `http://127.0.0.1:${server.port}/click-shift-before-input` })
       await waitFor(() => cdp.evaluate('document.body?.dataset.ready === "yes"'))
       await cdp.evaluate(`document.querySelector('#other').onmouseup = () => { document.body.dataset.wrongUp = 'yes' }`)
-      await expect(click(cdp, '#save')).rejects.toThrow(/changed after input delivery began/)
+      const action = click(cdp, '#save')
+      void action.then(() => { outcome = 'resolved'; record('action-resolved') }, error => { outcome = String(error); record('action-rejected') })
+      record('before-expect-rejection')
+      await expect(action).rejects.toThrow(/changed after input delivery began/)
+      record('after-expect-rejection')
       expect(presses).toBe(1)
       expect(await cdp.evaluate(`({ saved: document.body.dataset.saved, wrongUp: document.body.dataset.wrongUp ?? 'no' })`))
         .toEqual({ saved: '0', wrongUp: 'no' })
@@ -586,7 +597,13 @@ describe.skipIf(!realChrome)('a real Chrome', () => {
       expect(await cdp.evaluate('document.body.dataset.saved')).toBe('1')
       expect(cdp.errors).toEqual([])
     }
-    finally { await close() }
+    finally {
+      record('before-close')
+      await close()
+      record('after-close')
+      offTrace()
+      console.error('mid-gesture-delivery-trace', JSON.stringify(trace))
+    }
   }, 90_000)
 
   test('click suppresses release after a transport failure without repeating the action', async () => {
