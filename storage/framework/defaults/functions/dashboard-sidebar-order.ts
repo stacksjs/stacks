@@ -132,15 +132,21 @@ export function createDashboardSidebarOrder(options: {
     }
     let drag: { source: Target, handle: HTMLElement, x: number, y: number, pointer: number, moved: boolean } | undefined
     let destination: { target: Target, after: boolean } | undefined
+    let pointer: Pick<PointerEvent, 'clientX' | 'clientY'> | undefined
+    let frame: number | undefined
+    const view = pane.ownerDocument.defaultView
     function clear() {
       const previous = drag
       drag = undefined
+      pointer = undefined
+      if (frame !== undefined) view?.cancelAnimationFrame(frame)
+      frame = undefined
       if (previous?.handle.hasPointerCapture(previous.pointer)) previous.handle.releasePointerCapture(previous.pointer)
       previous?.source.element.removeAttribute('data-order-dragging')
       destination?.target.element.removeAttribute('data-order-drop')
       destination = undefined
     }
-    function targetAt(event: PointerEvent): Target | undefined {
+    function targetAt(event: Pick<PointerEvent, 'clientX' | 'clientY'>): Target | undefined {
       const hit = pane!.ownerDocument.elementFromPoint(event.clientX, event.clientY)
       const element = hit?.closest<HTMLElement>(drag?.source.kind === 'section' ? '[data-sidebar-section]' : '[data-sidebar-row]')
       return [...targets.values()].find(target => target.element === element && target.kind === drag?.source.kind && target.group === drag.source.group)
@@ -151,7 +157,7 @@ export function createDashboardSidebarOrder(options: {
       if (!source || !ready || event.button !== 0) return
       event.preventDefault()
       event.stopPropagation()
-      handle.focus()
+      handle.focus({ preventScroll: true })
       handle.setPointerCapture(event.pointerId)
       drag = { source, handle, x: event.clientX, y: event.clientY, pointer: event.pointerId, moved: false }
     }
@@ -159,19 +165,35 @@ export function createDashboardSidebarOrder(options: {
       if (!drag || drag.pointer !== event.pointerId) return
       if (Math.hypot(event.clientX - drag.x, event.clientY - drag.y) < 5 && !drag.moved) return
       drag.moved = true
+      pointer = { clientX: event.clientX, clientY: event.clientY }
       drag.source.element.setAttribute('data-order-dragging', 'true')
+      updateDestination()
+      if (frame === undefined) frame = view?.requestAnimationFrame(scrollDrag)
+    }
+    function updateDestination() {
       destination?.target.element.removeAttribute('data-order-drop')
       destination = undefined
-      const target = targetAt(event)
+      if (!drag || !pointer) return
+      const target = targetAt(pointer)
       if (!target || target.id === drag.source.id) return
       const rect = (target.kind === 'section' ? target.element.querySelector('[data-sidebar-section-header]') ?? target.element : target.element).getBoundingClientRect()
-      const after = event.clientY >= rect.top + Math.min(rect.height, 40) / 2
+      const after = pointer.clientY >= rect.top + Math.min(rect.height, 40) / 2
       destination = { target, after }
       target.element.setAttribute('data-order-drop', after ? 'after' : 'before')
+    }
+    function scrollDrag() {
+      frame = undefined
+      if (!drag || !pointer || !view) return
       const scroll = pane!.querySelector<HTMLElement>('[data-sidebar-scroll]') ?? pane!
       const bounds = scroll.getBoundingClientRect()
-      if (event.clientY < bounds.top + 36) scroll.scrollBy(0, -24)
-      else if (event.clientY > bounds.bottom - 36) scroll.scrollBy(0, 24)
+      const inside = pointer.clientX >= bounds.left && pointer.clientX <= bounds.right && pointer.clientY >= bounds.top - 36 && pointer.clientY <= bounds.bottom + 36
+      const amount = !inside ? 0 : pointer.clientY < bounds.top + 36 ? -24 : pointer.clientY > bounds.bottom - 36 ? 24 : 0
+      if (amount) {
+        const previous = scroll.scrollTop
+        scroll.scrollBy({ top: amount, behavior: 'instant' })
+        if (scroll.scrollTop !== previous) updateDestination()
+      }
+      if (drag) frame = view.requestAnimationFrame(scrollDrag)
     }
     function pointerup(event: PointerEvent) {
       if (!drag || event.pointerId !== drag.pointer) return

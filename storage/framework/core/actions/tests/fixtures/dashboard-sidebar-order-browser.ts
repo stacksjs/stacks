@@ -9,6 +9,7 @@ export async function verifySidebarOrdering(origin: string): Promise<void> {
   const section = (id: string) => `${pane} [data-section-id="${id}"] > [data-sidebar-order-handle="section"]`
   const order = () => cdp.evaluate<string[]>(`[...document.querySelectorAll('${pane} [data-section-id="app-nav-0"] [data-sidebar-row]')].map(row => row.dataset.itemId)`)
   const saved = () => fetch(`${origin}/api/dashboard/sidebar-order`).then(response => response.json())
+  let edgeDiagnostics: unknown
   try {
     await navigate(cdp, `${origin}/order-test`)
     await waitFor(() => cdp.evaluate(`Boolean(document.querySelector('${item('alpha')}:not(:disabled)'))`), 15_000, { label: 'hydrated drag grips' })
@@ -76,6 +77,31 @@ export async function verifySidebarOrdering(origin: string): Promise<void> {
     await cdp.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'ArrowDown', windowsVirtualKeyCode: 40 })
     await waitFor(async () => (await saved()).order.items[JSON.stringify(['data', moreId])]?.[0] === nested[1])
     expect(await cdp.evaluate(`document.querySelector('${pane} [data-item-id="${nested[0]}"]')?.getAttribute('data-parents')`)).toBe(moreId)
+    // A tall section must scroll past its own descendants while a drag is
+    // held at the viewport edge, including when the pointer stays still.
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 320, deviceScaleFactor: 1, mobile: false })
+    const edge = await cdp.evaluate<any>(`(async () => {
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const handle = document.querySelector('${section('data')}'); handle.scrollIntoView({ block: 'center' });
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const scroll = document.querySelector('${pane} [data-sidebar-scroll]');
+      const a = handle.getBoundingClientRect(), b = scroll.getBoundingClientRect();
+      const x = a.x + a.width / 2, y = b.bottom - 8;
+      return { from: { x, y: a.y + a.height / 2 }, to: { x, y }, before: scroll.scrollTop, remaining: scroll.scrollHeight - scroll.clientHeight - scroll.scrollTop, target: document.elementFromPoint(x, y)?.closest('[data-sidebar-section]')?.dataset.sectionId };
+    })()`)
+    edgeDiagnostics = edge
+    expect(edge.target).toBe('data')
+    expect(edge.remaining).toBeGreaterThan(48)
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', ...edge.from, button: 'left', clickCount: 1 })
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', ...edge.to, button: 'left', buttons: 1 })
+    await waitFor(() => cdp.evaluate(`document.querySelector('${pane} [data-sidebar-scroll]').scrollTop > ${edge.before + 48}`), 2000, { label: 'continuous drag edge scrolling' })
+    await cdp.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', windowsVirtualKeyCode: 27 })
+    await cdp.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', windowsVirtualKeyCode: 27 })
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', ...edge.to, button: 'left', clickCount: 1 })
+    const stoppedAt = await cdp.evaluate<number>(`document.querySelector('${pane} [data-sidebar-scroll]').scrollTop`)
+    await Bun.sleep(80)
+    expect(await cdp.evaluate(`document.querySelector('${pane} [data-sidebar-scroll]').scrollTop`)).toBe(stoppedAt)
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false })
     await click(cdp, `${moreSelector} [data-sidebar-disclosure]`)
     expect(await cdp.evaluate(`document.querySelector('${pane} [data-item-id="${nested[0]}"]')?.hasAttribute('data-collapsed')`)).toBe(true)
 
@@ -96,7 +122,7 @@ export async function verifySidebarOrdering(origin: string): Promise<void> {
     expect(cdp.errors.filter(error => !error.includes('503') && !error.includes('Disk unavailable'))).toEqual([])
   }
   catch (error) {
-    console.error('Sidebar browser diagnostics:', JSON.stringify({ errors: cdp.errors, page: await cdp.evaluate('document.body.innerText.slice(0,2000)'), handles: await cdp.evaluate('[...document.querySelectorAll("[data-sidebar-order-handle]")].slice(0,5).map(node => node.outerHTML)') }))
+    console.error('Sidebar browser diagnostics:', JSON.stringify({ errors: cdp.errors, edge: edgeDiagnostics, scroll: await cdp.evaluate(`(() => { const node = document.querySelector('${pane} [data-sidebar-scroll]'); const b = node.getBoundingClientRect(); return { top: node.scrollTop, height: node.clientHeight, rect: { left: b.left, right: b.right, top: b.top, bottom: b.bottom }, dragging: document.querySelector('[data-order-dragging]')?.getAttribute('data-section-id') }; })()`), page: await cdp.evaluate('document.body.innerText.slice(0,2000)'), handles: await cdp.evaluate('[...document.querySelectorAll("[data-sidebar-order-handle]")].slice(0,5).map(node => node.outerHTML)') }))
     throw error
   }
   finally { await browser.close() }

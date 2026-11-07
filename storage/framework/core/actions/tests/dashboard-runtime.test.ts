@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { basename, join, resolve } from 'node:path'
 
 test.each(['lazy', 'eager', 'stale', 'defaults'] as const)('dashboard boots globals for %s actions without weakening auth or CSRF', async (loading) => {
   const checkout = resolve(import.meta.dir, '../../../../..')
@@ -14,7 +14,12 @@ test.each(['lazy', 'eager', 'stale', 'defaults'] as const)('dashboard boots glob
     writeFileSync(target, contents)
   }
   try {
-    cpSync(join(checkout, 'storage/framework/defaults'), join(root, 'storage/framework/defaults'), { recursive: true })
+    // Editor integrations may have local development dependencies installed;
+    // the disposable application needs framework defaults, not those trees.
+    cpSync(join(checkout, 'storage/framework/defaults'), join(root, 'storage/framework/defaults'), {
+      recursive: true,
+      filter: source => basename(source) !== 'node_modules',
+    })
     symlinkSync(join(checkout, 'node_modules'), join(root, 'node_modules'), 'dir')
     write('package.json', '{"name":"dashboard-runtime-fixture","type":"module"}')
     write('bunfig.toml', '# No application preloads in this isolated worker.\n')
