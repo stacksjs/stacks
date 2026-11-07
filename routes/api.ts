@@ -1,4 +1,5 @@
 import { response, route } from '@stacksjs/router'
+import LaunchpadSubscribeAction from '../app/Actions/LaunchpadSubscribeAction'
 
 /**
  * This file is the entry point for your application's API routes.
@@ -31,3 +32,6 @@ route.get('/hello', () => response.text('hello world'))
 // Launch the site with `./buddy launch`. Maintenance mode (503 page,
 // distinct cookie + state file) is the separate `./buddy down` /
 // `./buddy up` pair.
+
+// The static Launchpad site posts here. Its native list has independent opt-out.
+route.post('/launchpad/subscribe', LaunchpadSubscribeAction).name('launchpad.subscribe').skipCsrf()
