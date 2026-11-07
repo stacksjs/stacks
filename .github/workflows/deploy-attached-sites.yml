@@ -72,3 +72,68 @@ jobs:
           PORKBUN_API_KEY: ${{ secrets.PORKBUN_API_KEY }}
           PORKBUN_SECRET_KEY: ${{ secrets.PORKBUN_SECRET_KEY }}
           DOTENV_PRIVATE_KEY_PRODUCTION: ${{ secrets.LAUNCHPAD_SERVER_DOTENV_PRIVATE_KEY_PRODUCTION }}
+      - name: Verify independent service over HTTPS
+        run: |
+          curl --fail --retry 6 --retry-delay 10 --retry-all-errors https://launchpad.stacksjs.com/api/health -o /tmp/launchpad-health.json
+          bun -e 'const health=await Bun.file("/tmp/launchpad-health.json").json();if(health.service!=="launchpad-api"||health.ok!==true)throw new Error("Independent Launchpad service is not live")'
+
+  website:
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    steps:
+      - name: Checkout Stacks main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Setup Pantry toolchain
+        uses: pantry-pm/pantry/packages/action@624cd6674f8c5c2d4e4204c11ece62a00d7fac0a
+        with:
+          version: '0.11.184'
+          install: 'false'
+          packages: 'bun.com@1.4.4 git-scm.org curl.se sqlite.org'
+      - name: Install framework dependencies
+        run: bun install --frozen-lockfile
+      - name: Checkout Launchpad website
+        uses: actions/checkout@v6
+        with:
+          repository: stacksjs/launchpad
+          ref: main
+          path: storage/framework/runtime/sites/launchpad
+          persist-credentials: false
+      - name: Install website dependencies
+        working-directory: storage/framework/runtime/sites/launchpad
+        run: bun install --frozen-lockfile
+      - name: Prepare deploy SSH key
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          test -n "$DEPLOY_SSH_KEY"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keygen -y -f ~/.ssh/id_ed25519 > ~/.ssh/id_ed25519.pub
+          if [ -n "$SSH_KNOWN_HOSTS" ]; then
+            printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+            chmod 600 ~/.ssh/known_hosts
+          fi
+      - name: Deploy marketing site after the service is healthy
+        run: |
+          export GITHUB_SHA="$(git rev-parse HEAD)"
+          ./buddy deploy --prod --site launchpad --yes
+        env:
+          APP_ENV: production
+          GITHUB_REF: refs/heads/main
+          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          PORKBUN_API_KEY: ${{ secrets.PORKBUN_API_KEY }}
+          PORKBUN_SECRET_KEY: ${{ secrets.PORKBUN_SECRET_KEY }}
+          DOTENV_PRIVATE_KEY_PRODUCTION: ${{ secrets.DOTENV_PRIVATE_KEY_PRODUCTION }}
+      - name: Verify the subscription form is live
+        run: |
+          curl --fail --retry 6 --retry-delay 10 --retry-all-errors https://launchpad.stacksjs.com/ -o /tmp/launchpad-website.html
+          bun -e 'const html=await Bun.file("/tmp/launchpad-website.html").text();if(!html.includes("subscriber-email"))throw new Error("Subscription form is not live")'
