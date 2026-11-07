@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.505...v0.75.506)
+
+## 🐛 Bug Fixes
+
+- **testing**: guard trusted clicks through input delivery ([af54b95](https://github.com/stacksjs/stacks/commit/af54b95)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **ops**: distinguish disposable databases from durable backup selections ([79ed263](https://github.com/stacksjs/stacks/commit/79ed263)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 💚 Continuous Integration
+
+- exercise trusted click delivery in the browser gate ([9bf500c](https://github.com/stacksjs/stacks/commit/9bf500c)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.504...v0.75.505)
 
 ## 🐛 Bug Fixes
