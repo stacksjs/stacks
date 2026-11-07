@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.498...v0.75.499)
+
+## 🐛 Bug Fixes
+
+- **dashboard**: preserve shared shell and navigation contracts ([beec960](https://github.com/stacksjs/stacks/commit/beec960)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.497...v0.75.498)
 
 ## ✨ Features
