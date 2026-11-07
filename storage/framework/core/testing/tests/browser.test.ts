@@ -450,6 +450,16 @@ describe.skipIf(!realChrome)('a real Chrome', () => {
           <button disabled onclick="document.body.dataset.clicked='yes'"><span>Record feedback</span></button>
           <div id="cover" style="position:fixed;inset:0;background:white"></div>
           <script>setTimeout(() => { document.querySelector('button').disabled=false; document.querySelector('#cover').remove() }, 250)</script>`, { headers: { 'Content-Type': 'text/html' } })
+        if (pathname === '/click-moving') return new Response(`<button style="margin:100px;transition:transform 400ms linear"
+          onclick="document.body.dataset.clicked = document.body.dataset.moving === 'yes' ? 'moving' : 'settled'">Save</button>
+          <script>
+            const button = document.querySelector('button');
+            button.addEventListener('transitionend', () => { document.body.dataset.moving = 'no' });
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+              document.body.dataset.moving = 'yes';
+              button.style.transform = 'translateY(120px)';
+            }));
+          </script>`, { headers: { 'Content-Type': 'text/html' } })
         return new Response(`<title>Busy</title><script>
           fetch('/api/me'); fetch('/api/me'); fetch('/api/missing');
           console.error('something broke')
@@ -468,6 +478,17 @@ describe.skipIf(!realChrome)('a real Chrome', () => {
       await expect(click(cdp, '#missing', { timeoutMs: 100 })).rejects.toThrow(/unobscured #missing/)
       await cdp.evaluate(`document.body.insertAdjacentHTML('beforeend', '<button>Record feedback</button>')`)
       await expect(click(cdp, { selector: 'button', text: 'Record feedback' })).rejects.toThrow(/Ambiguous click target/)
+    }
+    finally { await close() }
+  }, 90_000)
+
+  test('click waits for a moving control to settle before dispatching input', async () => {
+    const { cdp, close } = await launch()
+    try {
+      await cdp.send('Page.navigate', { url: `http://127.0.0.1:${server.port}/click-moving` })
+      await waitFor(() => cdp.evaluate('document.body.dataset.moving === "yes"'))
+      await click(cdp, 'button')
+      expect(await cdp.evaluate('document.body.dataset.clicked')).toBe('settled')
     }
     finally { await close() }
   }, 90_000)

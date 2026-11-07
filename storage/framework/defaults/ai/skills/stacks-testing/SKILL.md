@@ -301,7 +301,7 @@ expect(pageAuditClean(report)).toBe(true) // no duplicate /api/ requests, failed
   declarations. The raw `inFlight` map and all HTTP, duplicate API, console and runtime audit
   failures remain observable. `navigate` and `auditPage` accept the same option.
 - `click(cdp, selector | { selector, text }, { timeoutMs? })` scrolls the unique target into view,
-  waits for layout, enabled state and an unobscured hit test, then uses Chrome's real mouse input.
+  waits for unchanged geometry across two animation-frame intervals, enabled state and an unobscured hit test, then uses Chrome's real mouse input.
   Use it for journey controls instead of local coordinate-click helpers or DOM-dispatched clicks.
 - `auditPage(url, { cdp?, launch?, viewport?, isApiRequest?, beforeNavigate?, pageLoads?, quietMs, timeoutMs })`
   returns `{ url, finalUrl, apiRequests, duplicates, loads, failed, errors, settled, durationMs }`

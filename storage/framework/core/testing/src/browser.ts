@@ -71,7 +71,7 @@ export async function waitFor<T>(read: () => Promise<T> | T, timeoutMs: number =
   return value as NonNullable<T>
 }
 
-/** Scroll, wait for layout and hit testing, then click through Chrome's real input path. */
+/** Scroll, wait for stable layout and hit testing, then click through Chrome's real input path. */
 export async function click(cdp: Cdp, target: string | { selector: string, text?: string }, options: { timeoutMs?: number } = {}): Promise<void> {
   const selector = typeof target === 'string' ? target : target.selector
   const text = typeof target === 'string' ? undefined : target.text
@@ -81,11 +81,19 @@ export async function click(cdp: Cdp, target: string | { selector: string, text?
     const node = matches[0]
     if (!node || node.matches(':disabled') || node.getAttribute('aria-disabled') === 'true') return null
     node.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' })
-    // A synchronous bounding rect can precede the compositor's scroll/hit-test update.
-    await new Promise(requestAnimationFrame)
-    await new Promise(requestAnimationFrame)
-    if (!node.isConnected || node.matches(':disabled')) return null
-    const rect = node.getBoundingClientRect()
+    // Waiting for frames alone does not establish stability: a reactive
+    // editor's pending scroll or an animated control can still move between
+    // measurement and real input. Observe two unchanged frame intervals.
+    let previous = null
+    let rect = null
+    for (let frame = 0; frame < 3; frame++) {
+      await new Promise(requestAnimationFrame)
+      if (!node.isConnected || node.matches(':disabled') || node.getAttribute('aria-disabled') === 'true') return null
+      rect = node.getBoundingClientRect()
+      const current = [rect.x, rect.y, rect.width, rect.height, scrollX, scrollY]
+      if (previous && current.some((value, index) => value !== previous[index])) return null
+      previous = current
+    }
     if (!rect.width || !rect.height || rect.bottom <= 0 || rect.right <= 0 || rect.top >= innerHeight || rect.left >= innerWidth) return null
     const x = Math.max(0, Math.min(innerWidth - 1, rect.x + rect.width / 2))
     const y = Math.max(0, Math.min(innerHeight - 1, rect.y + rect.height / 2))
