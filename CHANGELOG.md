@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.511...v0.75.512)
+
+## 🐛 Bug Fixes
+
+- consume active-instance liveness selection ([2b9b9e8](https://github.com/stacksjs/stacks/commit/2b9b9e8)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.510...v0.75.511)
 
 ## 🐛 Bug Fixes
