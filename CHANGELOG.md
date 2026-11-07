@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.506...v0.75.507)
+
+## 🐛 Bug Fixes
+
+- **cloud**: require the coherent SDK 107 deployment release ([b25fec9](https://github.com/stacksjs/stacks/commit/b25fec9)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.505...v0.75.506)
 
 ## 🐛 Bug Fixes
