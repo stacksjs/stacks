@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.510...v0.75.511)
+
+## 🐛 Bug Fixes
+
+- pin the portable expat packaging revision ([92a1ff6](https://github.com/stacksjs/stacks/commit/92a1ff6)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.509...v0.75.510)
 
 ## 🔧 Chores
