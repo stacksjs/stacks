@@ -10,9 +10,15 @@ describe('published cloud entrypoints', () => {
 
     const probe = Bun.spawnSync({
       cmd: [process.execPath, '-e', `
-        const cloud = await import('./dist/index.js')
-        const upstream = await import('@stacksjs/ts-cloud')
-        const aws = await import('@stacksjs/ts-cloud/aws')
+        const { dirname, resolve } = await import('node:path')
+        const { pathToFileURL } = await import('node:url')
+        const entry = resolve('dist/index.js')
+        // Eval resolves bare imports from the workspace root on Bun. The built
+        // package can correctly own a different SDK version; compare its own
+        // dependency's bindings, as an installed consumer would resolve them.
+        const cloud = await import(pathToFileURL(entry).href)
+        const upstream = await import(pathToFileURL(Bun.resolveSync('@stacksjs/ts-cloud', dirname(entry))).href)
+        const aws = await import(pathToFileURL(Bun.resolveSync('@stacksjs/ts-cloud/aws', dirname(entry))).href)
         for (const name of ['AWSClient', 'S3Client', 'SecretsManagerClient']) {
           if (cloud[name] !== upstream[name]) throw new Error('Published client binding differs: ' + name)
         }
