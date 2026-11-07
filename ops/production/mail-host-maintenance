@@ -1,0 +1,186 @@
+#!/usr/bin/env python3
+"""Retain verified off-host backups and reclaim inactive code; preserve live data."""
+
+import argparse
+import contextlib
+import fcntl
+import math
+import os
+from pathlib import Path
+import re
+import shutil
+import time
+
+from app_backup_retention import archive_backups, cleanup_staging
+
+
+RELEASE_ID = re.compile(r"[0-9a-f]{7,40}\Z")
+
+
+def usage(path):
+    stats = os.statvfs(path)
+    used = stats.f_blocks - stats.f_bfree
+    return math.ceil(100 * used / (used + stats.f_bavail))
+
+
+def process_paths(proc=Path("/proc")):
+    """Protect releases referenced by running processes, including open files."""
+    paths = set()
+    # Never recurse into a mounted data directory inside a release.
+    for mount in (proc / "self/mountinfo").read_text().splitlines():
+        paths.add(re.sub(r"\\([0-7]{3})", lambda m: chr(int(m[1], 8)), mount.split()[4]))
+    for process in proc.iterdir():
+        if not process.name.isdigit():
+            continue
+        try:
+            links = [process / "cwd", process / "exe", *list((process / "fd").iterdir())]
+            for link in links:
+                try:
+                    paths.add(os.readlink(link).removesuffix(" (deleted)"))
+                except FileNotFoundError:
+                    pass  # A process or file descriptor closed during the scan.
+            for arg in (process / "cmdline").read_bytes().split(b"\0"):
+                if arg.startswith(b"/"):
+                    paths.add(os.fsdecode(arg))
+        except (FileNotFoundError, ProcessLookupError):
+            pass
+    return paths
+
+
+@contextlib.contextmanager
+def site_lock(site):
+    # The deployer takes the same lock. Never unlink/replace its inode.
+    lock = site / ".ts-cloud/deploy.lock"
+    try:
+        descriptor = os.open(lock, os.O_RDWR | os.O_NOFOLLOW)
+    except FileNotFoundError:
+        yield False
+        return
+    try:
+        try:
+            fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            yield False
+            return
+        yield True
+    finally:
+        os.close(descriptor)
+
+
+def release_candidates(site, referenced, now=None):
+    now = time.time() if now is None else now
+    site = site.resolve()
+    releases = site / "releases"
+    if releases.is_symlink() or not (site / "current").is_symlink():
+        return []
+    current = (site / "current").resolve()
+    if current.parent != releases or not current.is_dir():
+        return []
+    device = site.stat().st_dev
+    dirs = sorted(
+        (p for p in releases.iterdir()
+         if RELEASE_ID.fullmatch(p.name) and not p.is_symlink()
+         and p.is_dir() and p.stat().st_dev == device),
+        key=lambda p: p.stat().st_mtime, reverse=True,
+    )
+    # Keep the two newest, the active release, AND any recorded rollback.
+    keep = set(dirs[:2]) | {current}
+    previous = site / ".ts-cloud/previous-release"
+    if previous.is_file():
+        name = previous.read_text().strip()
+        if RELEASE_ID.fullmatch(name):
+            keep.add(releases / name)
+    return [p for p in dirs if p not in keep
+            and now - p.stat().st_mtime >= 86400
+            and not any(ref == str(p) or ref.startswith(str(p) + "/") for ref in referenced)]
+
+
+def prune_releases(web_root, apply, target, disk_path, read_usage=usage, references=process_paths):
+    for site in sorted(web_root.iterdir()):
+        if site.is_symlink() or not site.is_dir() or not (site / ".ts-cloud/owner").is_file():
+            continue
+        with site_lock(site) as locked:
+            if not locked:
+                print(f"skip busy/unmanaged site: {site}", flush=True)
+                continue
+            for release in release_candidates(site, references()):
+                if apply and read_usage(disk_path) <= target:
+                    return
+                print(f"{'remove' if apply else 'would remove'} inactive release: {release}", flush=True)
+                if apply:
+                    # rmtree does not follow symlinks within the release tree.
+                    shutil.rmtree(release)
+
+
+def prune_mail_binaries(mail_root, apply):
+    backups = sorted(
+        (p for p in mail_root.glob("mail-server.bak-*")
+         if re.fullmatch(r"mail-server\.bak-[0-9]+", p.name)
+         and p.is_file() and not p.is_symlink()),
+        key=lambda p: int(p.name.rsplit("-", 1)[1]), reverse=True,
+    )
+    for backup in backups[3:]:
+        if time.time() - backup.stat().st_mtime < 7 * 86400:
+            continue
+        print(f"{'remove' if apply else 'would remove'} old mail binary: {backup}", flush=True)
+        if apply:
+            backup.unlink()
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--apply", action="store_true", help="default is a read-only plan")
+    parser.add_argument("--web-root", type=Path, default=Path("/var/www"))
+    parser.add_argument("--mail-root", type=Path, default=Path("/opt/mail"))
+    parser.add_argument("--high-water", type=int, default=85)
+    parser.add_argument("--target", type=int, default=75)
+    parser.add_argument("--verify-only", action="store_true", help="check capacity without removing backups or releases")
+    args = parser.parse_args()
+    if not 0 < args.target < args.high_water < 100:
+        parser.error("need 0 < target < high-water < 100")
+    if args.apply and os.geteuid() != 0:
+        parser.error("--apply requires root")
+    before = usage("/")
+    print(f"root disk usage before: {before}%", flush=True)
+    if args.verify_only:
+        if before >= args.high_water:
+            raise SystemExit("disk remains above high-water; investigate live data/capacity")
+        print("capacity healthy; all data, backups and releases preserved", flush=True)
+        return
+    # Serialize timer/manual runs. Site locks separately serialize deploys.
+    with open("/run/lock/mail-host-maintenance.lock", "a") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            print("maintenance already running; skipping")
+            return
+        backup_error = None
+        try:
+            with open("/run/lock/host-backup.lock", "a") as backup_lock:
+                try:
+                    fcntl.flock(backup_lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                except BlockingIOError:
+                    print("daily backup/check running; defer archival until next hourly scan", flush=True)
+                else:
+                    cleanup_staging(Path("/var/cache/host-backup"), process_paths(), args.apply)
+                    archive_backups(args.web_root, args.apply, site_lock, process_paths,
+                                    Path("/var/lib/mail-storage/data/restic/restic.env"),
+                                    Path("/var/lib/mail-storage/data/restic/app-backup-receipts"))
+        except Exception as error:
+            # Off-host failure must not disable independent cleanup of old code.
+            # Unverified local backups stay intact, and the unit reports failure.
+            backup_error = str(error)
+            print(f"backup retention failed: {backup_error}", flush=True)
+        prune_mail_binaries(args.mail_root, args.apply)
+        if usage("/") >= args.high_water:
+            prune_releases(args.web_root, args.apply, args.target, Path("/"))
+        after = usage("/")
+        print(f"root disk usage after: {after}%", flush=True)
+        if args.apply and after >= args.high_water:
+            raise SystemExit("disk remains above high-water; investigate live data/capacity")
+        if backup_error:
+            raise SystemExit(backup_error)
+
+
+if __name__ == "__main__":
+    main()

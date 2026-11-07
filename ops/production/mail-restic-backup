@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Create a transactionally consistent local archive, then copy it into an
+# independent client-side encrypted AWS and Hetzner Restic repositories.
+# AWS retains its existing server-side encryption policy as a second layer.
+
+MAIL_ROOT="${MAIL_ROOT:-/opt/mail}"
+RESTIC_CONFIG_DIR="${MAIL_RESTIC_CONFIG_DIR:-/var/lib/mail-storage/data/restic}"
+RESTIC_ENV="${MAIL_RESTIC_ENV:-${RESTIC_CONFIG_DIR}/restic.env}"
+BACKUP_SCRIPT="${MAIL_BACKUP_SCRIPT:-${MAIL_ROOT}/backup.sh}"
+STATUS_FILE="${MAIL_RESTIC_STATUS_FILE:-${RESTIC_CONFIG_DIR}/last-success}"
+
+die() {
+  echo "mail-restic-backup: $*" >&2
+  exit 1
+}
+
+[[ "${EUID}" -eq 0 ]] || die "must run as root"
+mountpoint -q /var/lib/mail-storage || die "encrypted mail storage is not mounted"
+[[ -x "${BACKUP_SCRIPT}" ]] || die "${BACKUP_SCRIPT} is not executable"
+[[ -r "${RESTIC_ENV}" ]] || die "${RESTIC_ENV} is unavailable"
+command -v restic >/dev/null 2>&1 || die "restic is not installed"
+exec 8>/run/lock/host-backup.lock
+flock -w 3600 8 || die "another backup/check job did not finish in time"
+
+umask 077
+"${BACKUP_SCRIPT}"
+
+latest="$(find -L "${MAIL_ROOT}/backups" -maxdepth 1 -type f -name 'mail-backup-*.tgz' \
+-printf '%T@ %p\n' | sort -nr | sed -n '1s/^[^ ]* //p')"
+[[ -n "${latest}" && -f "${latest}" ]] || die "no local backup archive was produced"
+tar -tzf "${latest}" >/dev/null
+
+declare -a inputs=("${latest}")
+env_archive="${latest%.tgz}.env.tar"
+[[ -f "${env_archive}" ]] && inputs+=("${env_archive}")
+
+failures=0
+for destination in aws hetzner; do
+  config="${RESTIC_ENV}"
+  status="${STATUS_FILE}"
+  if [[ "${destination}" == hetzner ]]; then
+    config="${RESTIC_CONFIG_DIR}/hetzner.env"
+    status="${STATUS_FILE}-hetzner"
+  fi
+  backup_destination() (
+  [[ -r "${config}" ]] || die "${destination} repository configuration missing"
+  # Each provider has independent credentials. Do not inherit AWS-only tokens
+  # or encryption headers into a Hetzner request.
+  unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN AWS_SECURITY_TOKEN RESTIC_REPOSITORY RESTIC_PASSWORD RESTIC_PASSWORD_FILE RESTIC_CACHE_DIR AWS_DEFAULT_REGION
+  set -a
+  source "${config}" || return 1
+  set +a
+  export RESTIC_CACHE_DIR="${RESTIC_CACHE_DIR:-${RESTIC_CONFIG_DIR}/cache-${destination}}"
+  install -d -m 0700 "${RESTIC_CACHE_DIR}" || return 1
+  : "${RESTIC_REPOSITORY:?RESTIC_REPOSITORY is required}"
+  : "${RESTIC_PASSWORD_FILE:?RESTIC_PASSWORD_FILE is required}"
+  : "${AWS_ACCESS_KEY_ID:?AWS_ACCESS_KEY_ID is required}"
+  : "${AWS_SECRET_ACCESS_KEY:?AWS_SECRET_ACCESS_KEY is required}"
+  restic --retry-lock 5m backup --host "$(hostname -f 2>/dev/null || hostname)" \
+    --tag mail --tag production "${inputs[@]}" || return 1
+  restic --retry-lock 5m check || return 1
+  if [[ "${MAIL_BACKUP_PRESERVE:-0}" != 1 ]]; then
+    restic --retry-lock 5m forget --tag mail --group-by tags \
+      --keep-daily 7 --keep-weekly 5 --keep-monthly 12 --prune || return 1
+  fi
+  install -d -m 0700 "$(dirname "${status}")" || return 1
+  {
+    echo "timestamp=$(date -u +%s)"
+    echo "archive=$(basename "${latest}")"
+    echo "repository=${RESTIC_REPOSITORY}"
+  } > "${status}.tmp" || return 1
+  chmod 0600 "${status}.tmp" || return 1
+  mv "${status}.tmp" "${status}" || return 1
+  )
+  if backup_destination; then
+    echo "mail-restic-backup: ${destination} uploaded and checked $(basename "${latest}")"
+  else
+    echo "mail-restic-backup: ${destination} failed" >&2
+    failures=$(( failures + 1 ))
+  fi
+done
+(( failures == 0 )) || die "${failures} destination(s) failed; local recovery archives retained"

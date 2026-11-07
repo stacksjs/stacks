@@ -1,0 +1,22 @@
+{
+  "host-backup.py": {
+    "target": "/usr/local/sbin/host-backup.py",
+    "baseline": "17a7e96756aaae920386270c63f1e8c44d67fb4b0a97c70a5ed0a96fce6653ea"
+  },
+  "mail-backup.sh": {
+    "target": "/opt/mail/backup.sh",
+    "baseline": "3c90b0f04145e03adc6fc00129da45710da1b11e0c9dd7d917bf9a820588ec86"
+  },
+  "mail-restic-backup": {
+    "target": "/usr/local/sbin/mail-restic-backup",
+    "baseline": "d2cfbab4e8de515b9564d2c3289a22b9b16b9021bc58942e271034eab5567599"
+  },
+  "mail-host-maintenance": {
+    "target": "/usr/local/sbin/mail-host-maintenance",
+    "baseline": "62843367c78a07ffbfbb4cf7e93f646a0fe495908bd64ab3c8ab990411080172"
+  },
+  "configure-host-backup.py": {
+    "target": "/usr/local/sbin/configure-host-backup.py",
+    "baseline": "66e2192ccc4aaa862df912584d5a6b3879493c0985ffa776008d75db5a0fe3ab"
+  }
+}
