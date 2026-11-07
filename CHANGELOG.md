@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.513...v0.75.514)
+
+## 🐛 Bug Fixes
+
+- ship newsletter modules and deploy isolated attached tenants ([5e38b09](https://github.com/stacksjs/stacks/commit/5e38b09)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh native newsletter package references ([5d200d2](https://github.com/stacksjs/stacks/commit/5d200d2)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.512...v0.75.513)
 
 ## 🐛 Bug Fixes
