@@ -1,7 +1,7 @@
 {
   "host-backup.py": {
     "target": "/usr/local/sbin/host-backup.py",
-    "baseline": "17a7e96756aaae920386270c63f1e8c44d67fb4b0a97c70a5ed0a96fce6653ea"
+    "baseline": "bb46505bf0c110c63d61322ceac394aa296a8cc61dbff6fcf8c978ca47274766"
   },
   "mail-backup.sh": {
     "target": "/opt/mail/backup.sh",

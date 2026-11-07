@@ -35,16 +35,20 @@ def save(path, data):
     temporary.replace(path)
 
 
+def project_backup_due(status, repositories, now):
+    """Failed, newly discovered and stale groups all need a verified backup."""
+    if status.get("error"):
+        return True
+    for name in repositories:
+        recovered = status.get(name, {})
+        if not recovered.get("restore_verified") or not 0 <= now - recovered.get("timestamp", 0) <= 36 * 3600:
+            return True
+    return False
+
+
 def all_projects_recovered(config, state, now):
-    for project in config["projects"]:
-        status = state.get("projects", {}).get(project, {})
-        if status.get("error"):
-            return False
-        for name in config["repositories"]:
-            recovered = status.get(name, {})
-            if not recovered.get("restore_verified") or not 0 <= now - recovered.get("timestamp", 0) <= 36 * 3600:
-                return False
-    return True
+    return all(not project_backup_due(state.get("projects", {}).get(project, {}), config["repositories"], now)
+               for project in config["projects"])
 
 
 def sqlite_snapshot(source, target):
@@ -319,7 +323,7 @@ def main():
     parser.add_argument("--config", type=Path, default=CONFIG)
     parser.add_argument("--check", action="store_true", help="rotate through a seventh of all repository data")
     parser.add_argument("--drill", action="store_true", help="load recovered PostgreSQL/Vitess dumps in disposable instances")
-    parser.add_argument("--retry-failed", action="store_true", help="retry failed app groups without repeating successful backups")
+    parser.add_argument("--retry-failed", action="store_true", help="retry failed, missing or stale app groups without repeating fresh verified backups")
     parser.add_argument("--preserve-backups", action="store_true", help="verify fresh backups without expiring any existing snapshots")
     args = parser.parse_args()
     os.umask(0o077)
@@ -362,8 +366,9 @@ def main():
                 save(STATE, state)
                 print(f"{name}: repository check {partition}/7 passed", flush=True)
             return
-        if args.retry_failed and not any(item.get("error") for item in state.get("projects", {}).values()):
-            print("No failed app backups to retry", flush=True)
+        retry_at = time.time()
+        if args.retry_failed and all_projects_recovered(config, state, retry_at):
+            print("All app backups are fresh and recovery-verified", flush=True)
             return
         stage = Path(config.get("staging", "/var/cache/host-backup"))
         stage.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -373,7 +378,7 @@ def main():
         failures = []
         for project, specification in config["projects"].items():
             previous = state.setdefault("projects", {}).get(project, {})
-            if args.retry_failed and not previous.get("error"):
+            if args.retry_failed and not project_backup_due(previous, config["repositories"], retry_at):
                 continue
             try:
                 results, error = project_backup(project, specification, archives, stage)
