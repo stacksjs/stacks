@@ -1,27 +1,8 @@
-import { dts } from 'bun-plugin-dtsx'
-import { frameworkExternal, intro, outro } from '../build/src'
+import { intro, outro, transpilePackage } from '../build/src'
 
-const { startTime } = await intro({
-  dir: import.meta.dir,
-})
+const { startTime } = await intro({ dir: import.meta.dir })
 
-const result = await Bun.build({
-  entrypoints: ['./src/index.ts'],
-  outdir: './dist',
-  format: 'esm',
-  target: 'bun',
-  minify: true,
-  external: frameworkExternal(),
-  plugins: [
-    dts({
-      root: './src',
-      outdir: './dist',
-    }),
-  ],
-})
+// Every declared subpath must ship executable JavaScript, not just declarations.
+await transpilePackage({ dir: import.meta.dir })
 
-await outro({
-  dir: import.meta.dir,
-  startTime,
-  result,
-})
+await outro({ dir: import.meta.dir, startTime, result: { errors: [], warnings: [] } })

@@ -1,0 +1,74 @@
+name: Deploy attached sites
+
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: Independent tenant to deploy from its main branch
+        type: choice
+        required: true
+        options: [launchpad, dtsx]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: attached-production-${{ inputs.project }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: ${{ github.ref == 'refs/heads/main' && contains(fromJSON('["launchpad","dtsx"]'), inputs.project) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    steps:
+      - name: Checkout tenant main
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ inputs.project == 'launchpad' && 'stacksjs/launchpad' || 'stacksjs/dtsx' }}
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+      - name: Select tenant root and revision
+        run: |
+          if [ '${{ inputs.project }}' = launchpad ]; then
+            echo 'TENANT_ROOT=server' >> "$GITHUB_ENV"
+          else
+            echo 'TENANT_ROOT=.' >> "$GITHUB_ENV"
+          fi
+          echo "TENANT_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - name: Install frozen tenant dependencies
+        working-directory: ${{ env.TENANT_ROOT }}
+        run: bun install --frozen-lockfile
+      - name: Prepare deploy SSH key
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          test -n "$DEPLOY_SSH_KEY"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keygen -y -f ~/.ssh/id_ed25519 > ~/.ssh/id_ed25519.pub
+          if [ -n "$SSH_KNOWN_HOSTS" ]; then
+            printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+            chmod 600 ~/.ssh/known_hosts
+          fi
+      - name: Deploy independent tenant with native Stacks
+        working-directory: ${{ env.TENANT_ROOT }}
+        run: ./buddy deploy --prod --yes
+        env:
+          APP_ENV: production
+          GITHUB_SHA: ${{ env.TENANT_SHA }}
+          GITHUB_REF: refs/heads/main
+          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          PORKBUN_API_KEY: ${{ secrets.PORKBUN_API_KEY }}
+          PORKBUN_SECRET_KEY: ${{ secrets.PORKBUN_SECRET_KEY }}
+          DOTENV_PRIVATE_KEY_PRODUCTION: ${{ inputs.project == 'launchpad' && secrets.LAUNCHPAD_SERVER_DOTENV_PRIVATE_KEY_PRODUCTION || secrets.DTSX_DOTENV_PRIVATE_KEY_PRODUCTION }}
