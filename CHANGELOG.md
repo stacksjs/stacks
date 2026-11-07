@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.508...v0.75.509)
+
+## 🐛 Bug Fixes
+
+- **testing**: retain shared Chrome leases across expiry ([ba29f38](https://github.com/stacksjs/stacks/commit/ba29f38)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **browser**: await partial gesture rejection before assertions ([5c71a19](https://github.com/stacksjs/stacks/commit/5c71a19)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **browser**: retain mid-gesture rejection and cleanup traces ([bb4d8b1](https://github.com/stacksjs/stacks/commit/bb4d8b1)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.507...v0.75.508)
 
 ## ✅ Tests
