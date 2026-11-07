@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.512...v0.75.513)
+
+## 🐛 Bug Fixes
+
+- consume native lock replay from published Pantry ([4ab844f](https://github.com/stacksjs/stacks/commit/4ab844f)) _(by Chris Breuer <chris@stacksjs.com>)_
+- retain candidate locks after frozen install failures ([22aeb78](https://github.com/stacksjs/stacks/commit/22aeb78)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.511...v0.75.512)
 
 ## 🐛 Bug Fixes
