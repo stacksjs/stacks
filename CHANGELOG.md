@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.503...v0.75.504)
+
+## 🐛 Bug Fixes
+
+- **queue**: preserve operator scopes through native command actions ([527ed70](https://github.com/stacksjs/stacks/commit/527ed70)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.502...v0.75.503)
 
 ## ✅ Tests
