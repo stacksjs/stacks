@@ -16,6 +16,12 @@ The inventory places future database dump staging on the mounted deployments vol
 
 Checks: `python3 test-preserve-backups.py` on Linux as root, shell syntax checks, ts-cloud driver tests and its isolated Linux mount tests. Verify database readiness, app HTTPS, workers, persistent mount identities, fstab, backups, mail protocols and failed units after applying.
 
+The hourly backup retry also selects newly discovered projects, missing provider
+receipts, unverified restores and backups older than the health check's 36-hour
+window. It skips only fresh, recovery-verified groups on every provider. Verify
+this selection with `python3 test-backup-retry.py`; the root integration exercises
+the real retry coordinator and confirms preservation mode never prunes snapshots.
+
 ReviewOS uses a separate private, versioned `reviewos-production` bucket in `hel1`, declared in its `cloud/object-storage.ts`. The shared host's existing operator credential can be installed into the app's private credential file using `reviewos-credentials.py --source <protected-S3-env-file>`. It never emits credentials or overwrites a different key pair. Prefer a dedicated project credential when rotating keys; the current trusted application processes already run as root on this host. Keep the backup bucket and its snapshots untouched.
 
 `install-preserving.py --apply` checks all operator baselines first, saves prior versions, installs the companion systemd declarations and reloads systemd. The declarations preserve app/mail backup history, put staging behind the required volume and make automated capacity maintenance read-only. The PostgreSQL declaration requires the logging volume before startup.
