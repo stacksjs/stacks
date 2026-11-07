@@ -1,8 +1,9 @@
+import { queueActionOptions } from './options'
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
-import { Job, FailedJob } from '@stacksjs/orm'
+import { db } from '@stacksjs/database'
 
-const options = parseArgs()
+const options = queueActionOptions()
 const jobId = options.id
 const failedFlag = options.failed === 'true'
 
@@ -54,7 +55,7 @@ try {
 
   if (failedFlag) {
     // Inspect failed job
-    const failedResult = await FailedJob.find(id)
+    const failedResult = await db.selectFrom('failed_jobs').selectAll().where('id', '=', id).executeTakeFirst()
 
     if (!failedResult) {
       await log.error(`Failed job with ID ${id} not found`)
@@ -69,7 +70,7 @@ try {
     console.log(`│ ID:         ${String(job.id).padEnd(52)} │`)
     console.log(`│ Queue:      ${(job.queue || 'default').padEnd(52)} │`)
     console.log(`│ Connection: ${(job.connection || 'database').padEnd(52)} │`)
-    console.log(`│ Failed At:  ${(job.failed_at || 'N/A').padEnd(52)} │`)
+    console.log(`│ Failed At:  ${String(job.failed_at || 'N/A').padEnd(52)} │`)
     console.log('├────────────────────────────────────────────────────────────────┤')
     console.log('│ Exception:                                                     │')
     console.log('├────────────────────────────────────────────────────────────────┤')
@@ -121,7 +122,7 @@ try {
   }
   else {
     // Inspect pending/processing job
-    const jobResult = await Job.find(id)
+    const jobResult = await db.selectFrom('jobs').selectAll().where('id', '=', id).executeTakeFirst()
 
     if (!jobResult) {
       await log.error(`Job with ID ${id} not found`)
@@ -226,22 +227,4 @@ try {
 catch (error) {
   await log.error('Failed to inspect job', error)
   process.exit(1)
-}
-
-function parseArgs(): { [key: string]: string } {
-  const args: { [key: string]: string } = {}
-
-  process.argv.forEach((arg) => {
-    if (arg.startsWith('--')) {
-      const [key, value] = arg.slice(2).split('=')
-      if (key && value) {
-        args[key] = value
-      }
-      else if (key) {
-        args[key] = 'true'
-      }
-    }
-  })
-
-  return args
 }

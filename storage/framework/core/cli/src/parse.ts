@@ -18,7 +18,8 @@ function isShortOption(arg: string): boolean {
   return arg.startsWith('-') && !isLongOption(arg)
 }
 
-function parseValue(value: string): string | boolean | number {
+function parseValue(value: string, coerceValues = true): string | boolean | number {
+  if (!coerceValues) return value
   if (value === 'true')
     return true
 
@@ -37,10 +38,12 @@ function parseLongOption(
   argv: string[],
   index: number,
   options: { [k: string]: string | boolean | number },
+  coerceValues: boolean,
 ): number {
-  const [key, value] = arg.slice(2).split('=')
+  const [key, ...parts] = arg.slice(2).split('=')
+  const value = parts.length ? parts.join('=') : undefined
   if (value !== undefined) {
-    options[key as string] = parseValue(value)
+    options[key as string] = parseValue(value, coerceValues)
   }
   else if (index + 1 < argv.length && !argv[index + 1]?.startsWith('-')) {
     options[key as string] = argv[index + 1] as string
@@ -57,20 +60,22 @@ function parseShortOption(
   argv: string[],
   index: number,
   options: { [k: string]: string | boolean | number },
+  coerceValues: boolean,
 ): number {
-  const [key, value] = arg.slice(1).split('=')
+  const [key, ...parts] = arg.slice(1).split('=')
+  const value = parts.length ? parts.join('=') : undefined
 
   // Check if key is undefined and handle it
   if (key === undefined)
     return index
 
   if (value !== undefined && key !== undefined) {
-    for (let j = 0; j < key.length; j++) options[key[j] as string] = parseValue(value)
+    for (let j = 0; j < key.length; j++) options[key[j] as string] = parseValue(value, coerceValues)
   }
   else {
     for (let j = 0; j < key.length; j++) {
       if (index + 1 < argv.length && j === key.length - 1 && !argv[index + 1]?.startsWith('-')) {
-        options[key[j] as string] = parseValue(argv[index + 1] as string)
+        options[key[j] as string] = parseValue(argv[index + 1] as string, coerceValues)
         index++
       }
       else {
@@ -82,7 +87,8 @@ function parseShortOption(
   return index
 }
 
-export function parseArgv(argv?: string[]): ParsedArgv {
+/** Set coerceValues to false when option values are identities rather than scalars. */
+export function parseArgv(argv?: string[], config: { coerceValues?: boolean } = {}): ParsedArgv {
   if (argv === undefined)
     argv = process.argv.slice(2)
 
@@ -94,9 +100,9 @@ export function parseArgv(argv?: string[]): ParsedArgv {
     if (!arg)
       continue
     if (isLongOption(arg))
-      i = parseLongOption(arg, argv, i, options)
+      i = parseLongOption(arg, argv, i, options, config.coerceValues !== false)
     else if (isShortOption(arg))
-      i = parseShortOption(arg, argv, i, options)
+      i = parseShortOption(arg, argv, i, options, config.coerceValues !== false)
     else args.push(arg)
   }
 

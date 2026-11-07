@@ -22,6 +22,11 @@ retain TTL protection. Application leases can share this proof through
 `captureProcessLeaseOwner()` and `processLeaseOwnerStatus(owner)`; only `dead`
 authorizes early recovery, never `unknown`. No custom heartbeat is needed.
 
+Operator commands accept both `--queue name` and `--queue=name`, preserving
+identity values and rejecting a missing queue value before any mutation.
+`queue:clear` and `queue:flush` require `--force` and keep an explicit queue
+filter on the native database delete; unrelated queues stay intact.
+
 ## Source Files
 ```
 queue/src/

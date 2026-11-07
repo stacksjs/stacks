@@ -1,8 +1,9 @@
+import { queueActionOptions } from './options'
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
-import { Job, FailedJob } from '@stacksjs/orm'
+import { db } from '@stacksjs/database'
 
-const options = parseArgs()
+const options = queueActionOptions()
 const queueName = options.queue
 
 try {
@@ -10,12 +11,12 @@ try {
 
   // Get all jobs grouped by queue
   const allJobs = queueName
-    ? await Job.where('queue', queueName).get()
-    : await Job.all()
+    ? await db.selectFrom('jobs').selectAll().where('queue', '=', queueName).execute()
+    : await db.selectFrom('jobs').selectAll().execute()
 
   const failedJobs = queueName
-    ? await FailedJob.where('queue', queueName).get()
-    : await FailedJob.all()
+    ? await db.selectFrom('failed_jobs').selectAll().where('queue', '=', queueName).execute()
+    : await db.selectFrom('failed_jobs').selectAll().execute()
 
   // Group jobs by queue
   const queueStats = new Map<string, { pending: number, processing: number, delayed: number }>()
@@ -109,19 +110,4 @@ catch (error) {
   }
   await log.error('Failed to get queue status', error)
   process.exit(1)
-}
-
-function parseArgs(): { [key: string]: string } {
-  const args: { [key: string]: string } = {}
-
-  process.argv.forEach((arg) => {
-    if (arg.startsWith('--')) {
-      const [key, value] = arg.slice(2).split('=')
-      if (key && value) {
-        args[key] = value
-      }
-    }
-  })
-
-  return args
 }

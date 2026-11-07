@@ -1,8 +1,9 @@
+import { queueActionOptions } from './options'
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { retryDeadLetterJob } from '@stacksjs/queue'
 
-const options = parseArgs()
+const options = queueActionOptions()
 const idArg = options.id
 if (!idArg) {
   await log.error('Usage: buddy queue:dlq:retry --id=<id>')
@@ -27,15 +28,4 @@ try {
 catch (error) {
   await log.error('Failed to re-enqueue dead-letter job', error)
   process.exit(1)
-}
-
-function parseArgs(): Record<string, string> {
-  const args: Record<string, string> = {}
-  process.argv.forEach((arg) => {
-    if (arg.startsWith('--')) {
-      const [key, value] = arg.slice(2).split('=')
-      if (key && value) args[key] = value
-    }
-  })
-  return args
 }

@@ -1,6 +1,7 @@
+import { queueActionOptions } from './options'
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
-import { Job } from '@stacksjs/orm'
+import { db } from '@stacksjs/database'
 
 /**
  * `buddy queue:list` — flat-row listing of pending jobs across all
@@ -17,7 +18,7 @@ import { Job } from '@stacksjs/orm'
  *   --limit=<n>         cap rows (default 50)
  */
 
-const options = parseArgs()
+const options = queueActionOptions()
 const queueName = options.queue
 const statusFilter = options.status as 'pending' | 'reserved' | 'delayed' | undefined
 const limit = options.limit ? Number.parseInt(options.limit, 10) : 50
@@ -26,8 +27,8 @@ try {
   log.info('Fetching queued jobs...\n')
 
   let jobs = queueName
-    ? await Job.where('queue', queueName).get()
-    : await Job.all()
+    ? await db.selectFrom('jobs').selectAll().where('queue', '=', queueName).execute()
+    : await db.selectFrom('jobs').selectAll().execute()
 
   const nowSec = Math.floor(Date.now() / 1000)
   if (statusFilter === 'pending') {
@@ -99,15 +100,4 @@ function extractJobName(payload: unknown): string {
 function formatUnixTime(seconds: unknown): string {
   if (typeof seconds !== 'number' || !Number.isFinite(seconds)) return 'N/A'
   return new Date(seconds * 1000).toISOString().slice(0, 19).replace('T', ' ')
-}
-
-function parseArgs(): { [key: string]: string } {
-  const args: { [key: string]: string } = {}
-  process.argv.forEach((arg) => {
-    if (arg.startsWith('--')) {
-      const [key, value] = arg.slice(2).split('=')
-      if (key && value) args[key] = value
-    }
-  })
-  return args
 }

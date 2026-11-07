@@ -1,8 +1,9 @@
+import { queueActionOptions } from './options'
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { executeFailedJobs, retryFailedJob } from '@stacksjs/queue'
 
-const options = parseArgs()
+const options = queueActionOptions()
 
 const jobId = options.id
 const all = options.all === 'true'
@@ -37,22 +38,4 @@ try {
 catch (error) {
   await log.error('Failed to retry job(s)', error)
   process.exit(1)
-}
-
-function parseArgs(): { [key: string]: string } {
-  const args: { [key: string]: string } = {}
-
-  process.argv.forEach((arg) => {
-    if (arg.startsWith('--')) {
-      const [key, value] = arg.slice(2).split('=')
-      if (key && value) {
-        args[key] = value
-      }
-      else if (key) {
-        args[key] = 'true'
-      }
-    }
-  })
-
-  return args
 }

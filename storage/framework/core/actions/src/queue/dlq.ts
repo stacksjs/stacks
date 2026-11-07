@@ -1,3 +1,4 @@
+import { queueActionOptions } from './options'
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { listDeadLetterJobs } from '@stacksjs/queue'
@@ -9,7 +10,7 @@ import { listDeadLetterJobs } from '@stacksjs/queue'
  * operator can triage repeat-failure vs poison vs circuit-broken.
  */
 
-const options = parseArgs()
+const options = queueActionOptions()
 const queueName = options.queue || undefined
 const reason = (options.reason || undefined) as ('repeat-failure' | 'poison-detected' | 'circuit-broken' | 'manual') | undefined
 const sinceArg = options.since
@@ -52,16 +53,6 @@ catch (error) {
   process.exit(1)
 }
 
-function parseArgs(): Record<string, string> {
-  const args: Record<string, string> = {}
-  process.argv.forEach((arg) => {
-    if (arg.startsWith('--')) {
-      const [key, value] = arg.slice(2).split('=')
-      if (key && value) args[key] = value
-    }
-  })
-  return args
-}
 
 function parseSinceDuration(input: string): number | null {
   const m = /^(\d+)([smhd])$/.exec(input.trim())

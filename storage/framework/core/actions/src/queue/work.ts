@@ -1,3 +1,4 @@
+import { queueActionOptions } from './options'
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { startProcessor, stopProcessor } from '@stacksjs/queue'
@@ -49,7 +50,7 @@ async function gracefulShutdown(signal: NodeJS.Signals): Promise<void> {
 process.on('SIGTERM', () => { void gracefulShutdown('SIGTERM') })
 process.on('SIGINT', () => { void gracefulShutdown('SIGINT') })
 
-const options = parseArgs()
+const options = queueActionOptions()
 
 const queue = options.queue
 const concurrency = Number(options.concurrency) || 1
@@ -75,40 +76,3 @@ log.success('Queue worker started successfully!')
 
 // Keep the process running forever
 await new Promise(() => {})
-
-function parseArgs(): { [key: string]: string } {
-  const args: { [key: string]: string } = {}
-
-  const argv = process.argv
-
-  for (let index = 0; index < argv.length; index++) {
-    const arg = argv[index]
-    if (!arg?.startsWith('--'))
-      continue
-
-    const [key, inline] = arg.slice(2).split('=')
-    if (!key)
-      continue
-
-    if (inline !== undefined) {
-      args[key] = inline
-      continue
-    }
-
-    // `--queue default`, which is what the CLI advertises and what anybody
-    // types. Reading only `--key=value` turned this into `queue: 'true'`, so the
-    // worker polled a queue literally named `true` and drained nothing - and
-    // said so in a log line, "Processing queues: true", that reads exactly like
-    // a boolean status message.
-    const next = argv[index + 1]
-    if (next !== undefined && !next.startsWith('-')) {
-      args[key] = next
-      index++
-      continue
-    }
-
-    args[key] = 'true'
-  }
-
-  return args
-}

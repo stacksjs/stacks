@@ -1,8 +1,9 @@
+import { queueActionOptions } from './options'
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
-import { FailedJob } from '@stacksjs/orm'
+import { db } from '@stacksjs/database'
 
-const options = parseArgs()
+const options = queueActionOptions()
 const queueName = options.queue
 const force = options.force === 'true'
 
@@ -13,26 +14,11 @@ try {
     process.exit(1)
   }
 
-  let deletedCount = 0
-
-  if (queueName) {
-    log.info(`Flushing all failed jobs from queue "${queueName}"...`)
-    const failedJobs = await FailedJob.where('queue', queueName).get()
-    deletedCount = failedJobs.length
-
-    for (const job of failedJobs) {
-      await (job as unknown as { delete: () => Promise<void> }).delete()
-    }
-  }
-  else {
-    log.info('Flushing all failed jobs from all queues...')
-    const failedJobs = await FailedJob.all()
-    deletedCount = failedJobs.length
-
-    for (const job of failedJobs) {
-      await (job as unknown as { delete: () => Promise<void> }).delete()
-    }
-  }
+  // One scoped native delete avoids loading every payload into memory.
+  let query = db.deleteFrom('failed_jobs')
+  if (queueName) query = query.where('queue', '=', queueName)
+  const result = await query.executeTakeFirst()
+  const deletedCount = Number(result.numDeletedRows ?? 0)
 
   log.success(`Flushed ${deletedCount} failed job(s)`)
   await log.flush()
@@ -47,22 +33,4 @@ catch (error) {
   }
   await log.error('Failed to flush failed jobs', error)
   process.exit(1)
-}
-
-function parseArgs(): { [key: string]: string } {
-  const args: { [key: string]: string } = {}
-
-  process.argv.forEach((arg) => {
-    if (arg.startsWith('--')) {
-      const [key, value] = arg.slice(2).split('=')
-      if (key && value) {
-        args[key] = value
-      }
-      else if (key) {
-        args[key] = 'true'
-      }
-    }
-  })
-
-  return args
 }

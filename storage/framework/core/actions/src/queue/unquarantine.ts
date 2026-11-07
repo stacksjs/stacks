@@ -1,8 +1,9 @@
+import { queueActionOptions } from './options'
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { unquarantineJob } from '@stacksjs/queue'
 
-const options = parseArgs()
+const options = queueActionOptions()
 const jobName = options.name
 if (!jobName) {
   await log.error('Usage: buddy queue:unquarantine --name=<JobName>')
@@ -18,15 +19,4 @@ try {
 catch (error) {
   await log.error('Failed to unquarantine', error)
   process.exit(1)
-}
-
-function parseArgs(): Record<string, string> {
-  const args: Record<string, string> = {}
-  process.argv.forEach((arg) => {
-    if (arg.startsWith('--')) {
-      const [key, value] = arg.slice(2).split('=')
-      if (key && value) args[key] = value
-    }
-  })
-  return args
 }

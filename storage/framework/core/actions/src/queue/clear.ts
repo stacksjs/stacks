@@ -1,8 +1,9 @@
+import { queueActionOptions } from './options'
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
-import { Job } from '@stacksjs/orm'
+import { db } from '@stacksjs/database'
 
-const options = parseArgs()
+const options = queueActionOptions()
 const queueName = options.queue
 const force = options.force === 'true'
 
@@ -13,26 +14,11 @@ try {
     process.exit(1)
   }
 
-  let deletedCount = 0
-
-  if (queueName) {
-    log.info(`Clearing all jobs from queue "${queueName}"...`)
-    const jobs = await Job.where('queue', queueName).get()
-    deletedCount = jobs.length
-
-    for (const job of jobs) {
-      await job.delete()
-    }
-  }
-  else {
-    log.info('Clearing all jobs from all queues...')
-    const jobs = await Job.all()
-    deletedCount = jobs.length
-
-    for (const job of jobs) {
-      await job.delete()
-    }
-  }
+  // One scoped native delete avoids loading every payload into memory.
+  let query = db.deleteFrom('jobs')
+  if (queueName) query = query.where('queue', '=', queueName)
+  const result = await query.executeTakeFirst()
+  const deletedCount = Number(result.numDeletedRows ?? 0)
 
   log.success(`Cleared ${deletedCount} job(s)`)
   await log.flush()
@@ -41,22 +27,4 @@ try {
 catch (error) {
   await log.error('Failed to clear jobs', error)
   process.exit(1)
-}
-
-function parseArgs(): { [key: string]: string } {
-  const args: { [key: string]: string } = {}
-
-  process.argv.forEach((arg) => {
-    if (arg.startsWith('--')) {
-      const [key, value] = arg.slice(2).split('=')
-      if (key && value) {
-        args[key] = value
-      }
-      else if (key) {
-        args[key] = 'true'
-      }
-    }
-  })
-
-  return args
 }

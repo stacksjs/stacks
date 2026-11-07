@@ -232,6 +232,11 @@ const activeJobs = getActiveJobCount()
 await stopProcessor()
 ```
 
+Operator controls accept `--queue name` and `--queue=name` with identical
+scoping. A missing queue value is rejected. `queue:clear --queue name --force`
+removes only that queue's control messages; `queue:flush` applies the same
+filter to failed-job records. Omitting `--force` refuses either deletion.
+
 ## Failed Jobs
 
 ### Managing Failed Jobs

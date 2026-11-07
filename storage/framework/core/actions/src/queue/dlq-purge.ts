@@ -1,8 +1,9 @@
+import { queueActionOptions } from './options'
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { purgeDeadLetterJobs } from '@stacksjs/queue'
 
-const options = parseArgs()
+const options = queueActionOptions()
 const days = options.olderThanDays
   ? Number.parseInt(options.olderThanDays, 10)
   : (options['older-than-days'] ? Number.parseInt(options['older-than-days'], 10) : 30)
@@ -22,15 +23,4 @@ try {
 catch (error) {
   await log.error('Failed to purge dead-letter jobs', error)
   process.exit(1)
-}
-
-function parseArgs(): Record<string, string> {
-  const args: Record<string, string> = {}
-  process.argv.forEach((arg) => {
-    if (arg.startsWith('--')) {
-      const [key, value] = arg.slice(2).split('=')
-      if (key && value) args[key] = value
-    }
-  })
-  return args
 }

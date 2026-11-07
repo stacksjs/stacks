@@ -1,8 +1,9 @@
+import { queueActionOptions } from './options'
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
-import { FailedJob } from '@stacksjs/orm'
+import { db } from '@stacksjs/database'
 
-const options = parseArgs()
+const options = queueActionOptions()
 const queueName = options.queue
 const sinceArg = options.since
 // Date filter (stacksjs/stacks#1872 Q-11). Accepts `--since=1h`,
@@ -16,10 +17,10 @@ try {
   let failedJobs
 
   if (queueName) {
-    failedJobs = await FailedJob.where('queue', queueName).get()
+    failedJobs = await db.selectFrom('failed_jobs').selectAll().where('queue', '=', queueName).execute()
   }
   else {
-    failedJobs = await FailedJob.all()
+    failedJobs = await db.selectFrom('failed_jobs').selectAll().execute()
   }
 
   // Time-window filter (stacksjs/stacks#1872 Q-11). Applied in JS
@@ -27,9 +28,9 @@ try {
   // in WHERE clauses needs per-driver TZ handling we don't have
   // a unified helper for yet.
   if (sinceCutoff) {
-    failedJobs = failedJobs.filter((j: { failed_at?: string | null }) => {
+    failedJobs = failedJobs.filter((j) => {
       if (!j.failed_at) return false
-      const ts = Date.parse(j.failed_at)
+      const ts = Date.parse(String(j.failed_at))
       return Number.isFinite(ts) && ts >= sinceCutoff
     })
   }
@@ -79,20 +80,6 @@ catch (error) {
   process.exit(1)
 }
 
-function parseArgs(): { [key: string]: string } {
-  const args: { [key: string]: string } = {}
-
-  process.argv.forEach((arg) => {
-    if (arg.startsWith('--')) {
-      const [key, value] = arg.slice(2).split('=')
-      if (key && value) {
-        args[key] = value
-      }
-    }
-  })
-
-  return args
-}
 
 /**
  * Parse a `--since` duration like `30s` / `15m` / `2h` / `7d` into
