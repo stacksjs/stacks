@@ -53,7 +53,7 @@ jobs:
       - name: Verify trusted browser input delivery
         env:
           STACKS_BROWSER_TESTS: '1'
-        run: bun test ./storage/framework/core/testing/tests/browser.test.ts
+        run: bun test ./storage/framework/core/testing/tests/browser.test.ts ./storage/framework/core/testing/tests/browser-shared.test.ts
 
   release-evidence:
     name: Release evidence (${{ matrix.os }})

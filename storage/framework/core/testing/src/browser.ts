@@ -1175,7 +1175,11 @@ function releaseShared(key: string, shared: SharedChrome, immediately = false): 
   const stop = async () => {
     if (shared.sessions > 0) return
     const entry = sharedChromes.get(key)
-    if (entry && await entry.catch(() => null) === shared) sharedChromes.delete(key)
+    const registered = entry && await entry.catch(() => null)
+    // Clearing a timer cannot cancel a retirement already suspended above.
+    // A borrower may have acquired a lease while that promise was resolving.
+    if (shared.sessions > 0) return
+    if (registered === shared && sharedChromes.get(key) === entry) sharedChromes.delete(key)
     shared.browser.disconnect()
     await shared.chrome.close()
     if (shared.chrome.pid !== null) sharedProcesses.delete(shared.chrome.pid)

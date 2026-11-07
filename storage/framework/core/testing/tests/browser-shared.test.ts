@@ -1,4 +1,4 @@
-import { afterAll, describe, expect, test } from 'bun:test'
+import { afterAll, describe, expect, spyOn, test } from 'bun:test'
 import process from 'node:process'
 import { closeSharedBrowsers, findChrome, launch, SHARED_CHROME_LINGER_MS } from '../src/browser'
 
@@ -27,6 +27,46 @@ async function open(cdp: any, path = '/'): Promise<void> {
 }
 
 describe.skipIf(!chrome || process.platform === 'win32')('a shared Chrome', () => {
+  test('an in-flight expiry cannot retire a Chrome borrowed by the next session', async () => {
+    const set = globalThis.setTimeout.bind(globalThis)
+    const clear = globalThis.clearTimeout.bind(globalThis)
+    let expiry: { timer: ReturnType<typeof setTimeout>, run: () => void } | undefined
+    let deliverExpiry = false
+    // Model an expiry callback already delivered when the borrower cancels
+    // its timer. Its async retirement must recheck the new session lease.
+    const setting = spyOn(globalThis, 'setTimeout').mockImplementation((callback: any, delay?: number, ...args: any[]) => {
+      const timer = set(callback, delay, ...args)
+      if (delay === SHARED_CHROME_LINGER_MS) expiry = { timer, run: () => callback(...args) }
+      return timer
+    })
+    const clearing = spyOn(globalThis, 'clearTimeout').mockImplementation((timer) => {
+      if (deliverExpiry && expiry && timer === expiry.timer) {
+        deliverExpiry = false
+        expiry.run()
+      }
+      clear(timer)
+    })
+    let before: Awaited<ReturnType<typeof launch>> | undefined
+    let after: Awaited<ReturnType<typeof launch>> | undefined
+    try {
+      before = await launch()
+      expect(await before.cdp.evaluate('1 + 1')).toBe(2)
+      await before.close()
+      expect(expiry).toBeDefined()
+      deliverExpiry = true
+      after = await launch()
+      expect(after.port).toBe(before.port)
+      expect(await after.cdp.evaluate('1 + 1')).toBe(2)
+    }
+    finally {
+      deliverExpiry = false
+      clearing.mockRestore()
+      setting.mockRestore()
+      await before?.close()
+      await after?.close()
+    }
+  }, 60_000)
+
   test('two sessions at once share the process and nothing else', async () => {
     const first = await launch()
     const startedSecond = Date.now()
