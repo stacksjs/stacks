@@ -50,6 +50,10 @@ jobs:
       - name: Verify actual browser device scale
         working-directory: ${{ runner.temp }}
         run: bun "${{ github.workspace }}/tests/browser/browse-device-scale.ts"
+      - name: Verify trusted browser input delivery
+        env:
+          STACKS_BROWSER_TESTS: '1'
+        run: bun test ./storage/framework/core/testing/tests/browser.test.ts
 
   release-evidence:
     name: Release evidence (${{ matrix.os }})
