@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.501...v0.75.502)
+
+## 🐛 Bug Fixes
+
+- **queue**: recover reservations owned by exited local processes ([483dd3e](https://github.com/stacksjs/stacks/commit/483dd3e)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh native capability references for process ownership ([894b3e0](https://github.com/stacksjs/stacks/commit/894b3e0)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.500...v0.75.501)
 
 ## 🐛 Bug Fixes
