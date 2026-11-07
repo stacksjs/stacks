@@ -19,3 +19,8 @@ Checks: `python3 test-preserve-backups.py` on Linux as root, shell syntax checks
 ReviewOS uses a separate private, versioned `reviewos-production` bucket in `hel1`, declared in its `cloud/object-storage.ts`. The shared host's existing operator credential can be installed into the app's private credential file using `reviewos-credentials.py --source <protected-S3-env-file>`. It never emits credentials or overwrites a different key pair. Prefer a dedicated project credential when rotating keys; the current trusted application processes already run as root on this host. Keep the backup bucket and its snapshots untouched.
 
 `install-preserving.py --apply` checks all operator baselines first, saves prior versions, installs the companion systemd declarations and reloads systemd. The declarations preserve app/mail backup history, put staging behind the required volume and make automated capacity maintenance read-only. The PostgreSQL declaration requires the logging volume before startup.
+
+Mail restore drills order after already queued application backups, integrity
+checks and database drills. Their runtime budget starts when the drill can run,
+so a long initial upload cannot exhaust the mail service's lock-wait budget.
+The existing shared lock still serializes later arrivals.
