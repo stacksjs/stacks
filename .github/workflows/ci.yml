@@ -54,6 +54,15 @@ jobs:
         env:
           STACKS_BROWSER_TESTS: '1'
         run: bun test ./storage/framework/core/testing/tests/browser.test.ts ./storage/framework/core/testing/tests/browser-shared.test.ts
+      - name: Verify repeated mid-gesture rejection and cleanup
+        env:
+          STACKS_BROWSER_TESTS: '1'
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          set -o pipefail
+          bun test ./storage/framework/core/testing/tests/browser.test.ts --test-name-pattern 'never replays a gesture' --rerun-each=25 2>&1 | tee artifacts/mid-gesture-repetitions.log
+          bun -e 'import { stripVTControlCharacters } from "node:util"; const text = stripVTControlCharacters(await Bun.file("artifacts/mid-gesture-repetitions.log").text()); if (!/\b25 pass\b/.test(text) || /\b[1-9]\d* (?:fail|skip)\b/.test(text)) throw new Error("Expected 25 actual passes without failures or skips")'
 
   release-evidence:
     name: Release evidence (${{ matrix.os }})
