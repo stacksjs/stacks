@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.502...v0.75.503)
+
+## ✅ Tests
+
+- **cloud**: resolve published bindings from their installed package ([98187ca](https://github.com/stacksjs/stacks/commit/98187ca)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.501...v0.75.502)
 
 ## 🐛 Bug Fixes
