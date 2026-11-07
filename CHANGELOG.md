@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.499...v0.75.500)
+
+## 🐛 Bug Fixes
+
+- **cloud**: adopt verified persistent storage checks ([649c57b](https://github.com/stacksjs/stacks/commit/649c57b)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **backup**: preserve verification budgets while host work is queued ([d46f16f](https://github.com/stacksjs/stacks/commit/d46f16f)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **backup**: order mail recovery after queued host verification ([c8a4d4e](https://github.com/stacksjs/stacks/commit/c8a4d4e)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **queue**: pin the scheduler retry minute across restarts ([d36005a](https://github.com/stacksjs/stacks/commit/d36005a)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.498...v0.75.499)
 
 ## 🐛 Bug Fixes
