@@ -281,6 +281,7 @@ export const tsCloud: TsCloudConfig = {
         volume: 'deployments',
         migrateExisting: true,
         locks: ['/run/lock/mail-host-maintenance.lock', '/run/lock/host-backup.lock'],
+        deploymentLocks: ['/var/www/reviewos-api/.ts-cloud/deploy.lock', '/var/www/reviewos-reviewos/.ts-cloud/deploy.lock'],
         paths: [
           { path: '/var/www/reviewos-shared/blobs', units: ['reviewos-*.service', 'reviewos-*.timer'], healthChecks: ['https://reviewos.org'] },
           { path: '/var/www/reviewos-reviewos/shared/storage', units: ['reviewos-*.service', 'reviewos-*.timer'], healthChecks: ['https://reviewos.org'] },
