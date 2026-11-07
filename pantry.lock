@@ -18,6 +18,7 @@
         "bun.sh": "1.4.4",
         "curl.se": "^8.22.0",
         "git-scm.org": "^2.53.0",
+        "libexpat.github.io": "2.10.0.1",
         "sqlite.org": "^3.53.4"
       }
     },
@@ -1547,11 +1548,11 @@
       "source": "pantry",
       "resolved": "registry:invisible-island.net/ncurses@6.6.0"
     },
-    "libexpat.github.io@2.10.0": {
+    "libexpat.github.io@2.10.0.1": {
       "name": "libexpat.github.io",
-      "version": "2.10.0",
+      "version": "2.10.0.1",
       "source": "pantry",
-      "resolved": "registry:libexpat.github.io@2.10.0"
+      "resolved": "registry:libexpat.github.io@2.10.0.1"
     },
     "lz4.org@1.11.0": {
       "name": "lz4.org",
