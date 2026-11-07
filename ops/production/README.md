@@ -30,3 +30,12 @@ and retries. They begin their own six-hour operational budget when runnable.
 This accounts for full SQLite validation on the persistent volume; observed
 random-read throughput was about 1 MiB/s during the initial 4.5 GiB snapshot
 set. Integrity and restore validation remain complete.
+
+Disposable verification databases are excluded from discovery only when they
+carry the explicit PostgreSQL comment `stacks:disposable-verification` and
+belong to a role with a finite expiry within 24 hours. Unmarked databases
+remain protected. If an older fixture was already discovered, preview its
+retirement with `configure-host-backup.py --retire-missing-database NAME`,
+then use `--apply` after review. This refuses live databases and selections
+with file, SQLite or MySQL sources, archives the previous inventory, and
+retains every existing backup and recovery receipt.

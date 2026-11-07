@@ -17,6 +17,6 @@
   },
   "configure-host-backup.py": {
     "target": "/usr/local/sbin/configure-host-backup.py",
-    "baseline": "66e2192ccc4aaa862df912584d5a6b3879493c0985ffa776008d75db5a0fe3ab"
+    "baseline": "20f4d76e12f773850cec8f20905c089934b7ada7dfbd40f1ba75e9c0fc7a6f82"
   }
 }

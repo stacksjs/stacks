@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """Discover managed persistent app data; write a reviewable backup inventory."""
 
+import argparse
 import json
 import os
 from pathlib import Path
 import re
 import shlex
+import shutil
 import subprocess
 import time
 
@@ -74,14 +76,63 @@ def discover(web_root):
     return projects
 
 
-def main():
-    base = Path("/var/lib/mail-storage/data/restic")
-    projects = discover(Path("/var/www"))
+def postgres_inventory():
     # Back up every local PostgreSQL database, independently of app deployments.
     result = subprocess.run(["runuser", "-u", "postgres", "--", "/usr/local/bin/psql", "-Atc",
-                             "select datname from pg_database where not datistemplate and datname <> 'postgres'"],
+                             """select json_build_object('name', d.datname, 'disposable',
+                               coalesce(shobj_description(d.oid, 'pg_database') = 'stacks:disposable-verification'
+                               and r.rolvaliduntil <= now() + interval '24 hours', false))
+                             from pg_database d join pg_roles r on r.oid = d.datdba
+                             where not d.datistemplate and d.datname <> 'postgres'"""],
                             capture_output=True, text=True, check=True)
-    for name in result.stdout.splitlines():
+    return [json.loads(line) for line in result.stdout.splitlines() if line.strip()]
+
+
+def retire_missing_database(config, name, live_names):
+    if name in live_names:
+        raise ValueError('A live database cannot be retired from backup selection')
+    specification = config['projects'].get(name)
+    if not specification or specification.get('postgres') != [name] or any(specification.get(key) for key in ('sqlite', 'files', 'mysql')):
+        raise ValueError('Only a missing database-only selection can be retired')
+    config.setdefault('retired_databases', []).append({'name': name, 'specification': specification, 'retired_at': int(time.time())})
+    del config['projects'][name]
+
+
+def write_inventory(config, destination):
+    temporary = destination.with_suffix(".tmp")
+    with temporary.open("w") as output:
+        temporary.chmod(0o600)
+        output.write(json.dumps(config, indent=2) + "\n")
+        output.flush()
+        os.fsync(output.fileno())
+    temporary.replace(destination)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--retire-missing-database')
+    parser.add_argument('--apply', action='store_true')
+    options = parser.parse_args()
+    base = Path("/var/lib/mail-storage/data/restic")
+    destination = base / "host-backup.json"
+    if options.retire_missing_database:
+        config = json.loads(destination.read_text())
+        retire_missing_database(config, options.retire_missing_database, {row['name'] for row in postgres_inventory()})
+        if not options.apply:
+            print('Reviewed retirement only; pass --apply to update selection. Backups remain intact.')
+            return
+        archive = Path('/var/lib/stacks-deployments/recovery/backup-inventories')
+        archive.mkdir(parents=True, exist_ok=True, mode=0o700)
+        shutil.copy2(destination, archive / f'inventory-before-retirement-{time.time_ns()}.json')
+        write_inventory(config, destination)
+        print('Retired missing database selection; prior inventory and every backup preserved')
+        return
+    projects = discover(Path("/var/www"))
+    databases = postgres_inventory()
+    for row in databases:
+        if row['disposable']:
+            continue
+        name = row['name']
         projects.setdefault(name, {"sqlite": set(), "postgres": set(), "files": set()})["postgres"].add(name)
     projects["host-config"] = {"sqlite": set(), "postgres": set(), "files": {
         "/etc/mail", "/etc/systemd/system", str(base / "app-backup-receipts")}}
@@ -123,13 +174,9 @@ def main():
                 if key == "mysql":
                     continue
                 project[key] = sorted(set(project[key]) | set(specification.get(key, [])))
-    temporary = destination.with_suffix(".tmp")
-    with temporary.open("w") as output:
-        temporary.chmod(0o600)
-        output.write(json.dumps(config, indent=2) + "\n")
-        output.flush()
-        os.fsync(output.fileno())
-    temporary.replace(destination)
+    if destination.exists():
+        config['retired_databases'] = old.get('retired_databases', [])
+    write_inventory(config, destination)
     print(f"Configured {len(config['projects'])} app groups")
     for name, specification in config["projects"].items():
         print(name, len(specification["sqlite"]), "SQLite", len(specification["postgres"]), "PostgreSQL", len(specification["files"]), "persistent paths")
