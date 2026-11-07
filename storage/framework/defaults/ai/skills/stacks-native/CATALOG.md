@@ -62,7 +62,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/logging` | [`stacks-logging`](../stacks-logging/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/logging/src/index.ts) | 14 |
 | `@stacksjs/mobile` | [`stacks-mobile`](../stacks-mobile/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/mobile/src/index.ts) | 23 |
 | `@stacksjs/model-meta` | [`stacks-models`](../stacks-models/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/model-meta/src/index.ts) | 1 |
-| `@stacksjs/newsletter` | [`stacks-newsletter`](../stacks-newsletter/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/newsletter/src/index.ts) | 9 |
+| `@stacksjs/newsletter` | [`stacks-newsletter`](../stacks-newsletter/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/newsletter/src/index.ts) | 10 |
 | `@stacksjs/notifications` | [`stacks-notifications`](../stacks-notifications/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/notifications/src/index.ts) | 18 |
 | `@stacksjs/objects` | [`stacks-objects`](../stacks-objects/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/objects/src/index.ts) | 10 |
 | `@stacksjs/orm` | [`stacks-orm`](../stacks-orm/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/orm/src/index.ts) | 77 |
@@ -611,7 +611,7 @@ Read the entrypoint and package export map for re-exported or type-only surfaces
 
 Local source modules: [src/campaigns.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/newsletter/src/campaigns.ts), [src/delivery.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/newsletter/src/delivery.ts), [src/headers.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/newsletter/src/headers.ts), [src/lists.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/newsletter/src/lists.ts), [src/newsletter.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/newsletter/src/newsletter.ts), [src/subscriptions.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/newsletter/src/subscriptions.ts), [src/sync.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/newsletter/src/sync.ts), [src/types.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/newsletter/src/types.ts), [src/usage.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/newsletter/src/usage.ts).
 
-Evidence directory: [9 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/newsletter/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [10 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/newsletter/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/notifications
 
