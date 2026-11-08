@@ -37,7 +37,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/cron` | [`stacks-cron`](../stacks-cron/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cron/src/index.ts) | 6 |
 | `@stacksjs/database` | [`stacks-database`](../stacks-database/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/database/src/index.ts) | 142 |
 | `@stacksjs/datetime` | [`stacks-datetime`](../stacks-datetime/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/index.ts) | 22 |
-| `@stacksjs/defaults` | [`stacks-build`](../stacks-build/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/defaults/package.json) | 2 |
+| `@stacksjs/defaults` | [`stacks-build`](../stacks-build/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/defaults/package.json) | 3 |
 | `@stacksjs/deploy` | [`stacks-deploy`](../stacks-deploy/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/deploy/package.json) | 1 |
 | `@stacksjs/desktop-build` | [`stacks-desktop`](../stacks-desktop/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/desktop/src/index.ts) | 15 |
 | `@stacksjs/development` | [`stacks-development`](../stacks-development/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/development/package.json) | 1 |
@@ -94,7 +94,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/types` | [`stacks-types`](../stacks-types/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/types/src/index.ts) | 2 |
 | `@stacksjs/ui` | [`stacks-ui`](../stacks-ui/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/ui/src/index.ts) | 6 |
 | `@stacksjs/utils` | [`stacks-utils`](../stacks-utils/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/utils/src/index.ts) | 28 |
-| `@stacksjs/validation` | [`stacks-validation`](../stacks-validation/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/src/index.ts) | 25 |
+| `@stacksjs/validation` | [`stacks-validation`](../stacks-validation/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/src/index.ts) | 26 |
 | `@stacksjs/video` | [`stacks-video`](../stacks-video/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/video/src/index.ts) | 3 |
 | `@stacksjs/whois` | [`stacks-whois`](../stacks-whois/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/whois/src/index.ts) | 5 |
 
@@ -375,7 +375,7 @@ Guidance: [`stacks-build`](../stacks-build/SKILL.md). Source: [storage/framework
 
 Read the entrypoint and package export map for re-exported or type-only surfaces.
 
-Evidence directory: [2 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/defaults/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [3 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/defaults/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/deploy
 
@@ -921,7 +921,7 @@ Declared runtime exports: `applyConditionals`, `isArray`, `isBoolean`, `isFuncti
 
 Local source modules: [src/input.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/src/input.ts), [src/messages.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/src/messages.ts), [src/reporter.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/src/reporter.ts), [src/schema.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/src/schema.ts), [src/validator.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/src/validator.ts).
 
-Evidence directory: [25 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [26 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/video
 
