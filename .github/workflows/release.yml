@@ -230,6 +230,9 @@ jobs:
       - name: Verify the shipped validation messages without application aliases
         run: bun test ./.github/scripts/validation-package.acceptance.ts
 
+      - name: Verify the shipped API generator entrypoints without application aliases
+        run: bun test ./.github/scripts/api-package.acceptance.ts
+
       - name: Verify the shipped queue declarations without application aliases
         run: bun test ./.github/scripts/queue-package.acceptance.ts
 

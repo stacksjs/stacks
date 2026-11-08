@@ -22,7 +22,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/browser` | [`stacks-browser`](../stacks-browser/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/browser/src/index.ts) | 9 |
 | `@stacksjs/browser-extension` | [`stacks-browser-extension`](../stacks-browser-extension/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/browser-extension/src/index.ts) | 9 |
 | `@stacksjs/buddy` | [`stacks-buddy`](../stacks-buddy/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/buddy/src/index.ts) | 184 |
-| `@stacksjs/build` | [`stacks-build`](../stacks-build/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/build/src/index.ts) | 6 |
+| `@stacksjs/build` | [`stacks-build`](../stacks-build/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/build/src/index.ts) | 7 |
 | `@stacksjs/cache` | [`stacks-cache`](../stacks-cache/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cache/src/index.ts) | 24 |
 | `@stacksjs/calendar-api` | [`stacks-calendar`](../stacks-calendar/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/calendar-api/src/index.ts) | 5 |
 | `@stacksjs/charts` | [`stacks-charts`](../stacks-charts/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/charts/src/index.ts) | 3 |
@@ -229,7 +229,7 @@ Declared runtime exports: `buildWorkspacePackages`, `dependencyLayers`, `framewo
 
 Local source modules: [src/dependency-layers.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/build/src/dependency-layers.ts), [src/workspace.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/build/src/workspace.ts).
 
-Evidence directory: [6 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/build/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [7 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/build/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/cache
 

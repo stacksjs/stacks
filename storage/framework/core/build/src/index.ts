@@ -234,10 +234,11 @@ export async function transpilePackage(options: {
   // output, so a published package carries no formatting it does not need.
   const transpiler = new Bun.Transpiler({
     loader: 'ts',
-    // Preserve literal lazy require calls so a subsequent standalone Bun
-    // build can discover and embed them. The Bun target rewrites them through
-    // import.meta.require, which hides dependencies from that later build.
-    target: 'node',
+    // Syntax-only output: keep literal require calls discoverable by a later
+    // bundler, and preserve Bun's import.meta.main entrypoint semantics.
+    // The Bun target binds require; the Node target rewrites the main guard.
+    // Neither runtime adapter belongs in a 1:1 library transpilation.
+    target: 'browser',
     minifyWhitespace: true,
     // Bun otherwise substitutes the builder's NODE_ENV, even for a library.
     // Env-file selection and other runtime branches belong to the consumer.
