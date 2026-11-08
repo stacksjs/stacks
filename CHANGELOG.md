@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.517...v0.75.518)
+
+## 🐛 Bug Fixes
+
+- **build**: qualify native dependency locks and clean scaffold artifacts ([cad2fb4](https://github.com/stacksjs/stacks/commit/cad2fb4)) _(by Chris Breuer <chris@stacksjs.com>)_
+- restore reproducible builds and lazy validation imports ([c9334b4](https://github.com/stacksjs/stacks/commit/c9334b4)) _(by Chris Breuer <chris@stacksjs.com>)_
+- refresh framework skills on upgrade and audit documentation ([44c2808](https://github.com/stacksjs/stacks/commit/44c2808)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.516...v0.75.517)
 
 ## 🐛 Bug Fixes
