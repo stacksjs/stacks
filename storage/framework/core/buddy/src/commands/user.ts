@@ -66,6 +66,42 @@ async function loadUserModel(): Promise<any> {
   process.exit(ExitCode.FatalError)
 }
 
+/** Reads and writes the stored password column, past the model (which hides it). */
+export interface PasswordColumn {
+  read: (address: string) => Promise<string>
+  write: (address: string, hash: string) => Promise<void>
+}
+
+const usersTable: PasswordColumn = {
+  async read(address) {
+    const { db } = await import('@stacksjs/database')
+    const row = await (db as any).selectFrom('users').select(['password']).where('email', '=', address).executeTakeFirst()
+    return String(row?.password ?? '')
+  },
+  async write(address, hash) {
+    const { db } = await import('@stacksjs/database')
+    await (db as any).updateTable('users').set({ password: hash }).where('email', '=', address).execute()
+  },
+}
+
+/**
+ * Make sure the column holds a hash of `password`, never the password.
+ *
+ * A model `create` runs the model's password setter; a query-builder
+ * `update` does not, and wrote the new password into the column as typed
+ * (2026-11-08: `--update` stored the password in plain text, which signs
+ * nobody in and sits readable in the database). So whatever wrote it, the
+ * column is read back: anything that is not a recognisable hash is replaced
+ * with one, and the result has to verify before the command says it worked.
+ */
+export async function ensureHashed(address: string, password: string, column: PasswordColumn = usersTable): Promise<void> {
+  const { check, detectAlgorithm, make } = await import('@stacksjs/security')
+  if (detectAlgorithm(await column.read(address)) === 'unknown')
+    await column.write(address, await make(password, { algorithm: 'bcrypt' }))
+  if (!await check(password, await column.read(address)))
+    throw new Error(`The password stored for ${address} does not verify; it was not changed safely.`)
+}
+
 export function user(buddy: CLI): void {
   buddy
     .command('user:add <email>', 'Create a user account (optionally an admin)')
@@ -98,16 +134,26 @@ export function user(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      if (account) {
-        // The model's own setter hashes it, exactly as a create would.
-        await User.where('email', address).update({ password })
-        log.success(`Updated ${address}`)
+      const existed = Boolean(account)
+      if (existed) {
+        // A query-builder update runs no model setter: hash it here.
+        const { make } = await import('@stacksjs/security')
+        await User.where('email', address).update({ password: await make(password) })
       }
       else {
         await User.create({ email: address, name, password })
         account = await User.where('email', address).first()
-        log.success(`Created ${address}`)
       }
+
+      try {
+        await ensureHashed(address, password)
+      }
+      catch (error) {
+        await log.error(error instanceof Error ? error.message : String(error))
+        await log.flush()
+        process.exit(ExitCode.FatalError)
+      }
+      log.success(`${existed ? 'Updated' : 'Created'} ${address}`)
 
       if (options.role) {
         const { createBqbRbacStore, Rbac, seedDefaultRoles } = await import('@stacksjs/auth')
