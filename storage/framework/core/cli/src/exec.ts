@@ -3,7 +3,8 @@ import type { CliOptions, ErrorLike, SpawnOptions, Subprocess } from '@stacksjs/
 import process from 'node:process'
 import { err, handleError, ok } from '@stacksjs/error-handling'
 import { ExitCode } from '@stacksjs/types'
-import { italic, log } from './'
+import { log } from '@stacksjs/logging'
+import { italic } from './utils'
 
 /**
  * Execute a command.
