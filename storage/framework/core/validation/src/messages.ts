@@ -1,3 +1,5 @@
+import { getCustomMessages } from '@stacksjs/ts-validation'
+
 /**
  * Custom validation messages, put on the errors they name.
  *
@@ -70,7 +72,6 @@ export function validationFailure(message: string, name: string): ReportedError 
 function namesFromErrors(rule: RuleLike, value: unknown, errors: ReadonlyArray<ReportedError>): Array<string | undefined> {
   // Load only when a failure needs its rule name; the upstream Bun export
   // supports synchronous loading without pulling validation onto success paths.
-  const { getCustomMessages } = require('@stacksjs/ts-validation') as typeof import('@stacksjs/ts-validation')
   const provider = getCustomMessages()
   if (rule.isRequired && (value === undefined || value === null || value === '')) {
     const message = provider.getMessage('required', undefined, rule.fieldName)
