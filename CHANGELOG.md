@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.526...v0.75.527)
+
+## 🐛 Bug Fixes
+
+- **ui**: keep model viewer label and fallback reactive ([59e64f1](https://github.com/stacksjs/stacks/commit/59e64f1)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.525...v0.75.526)
 
 ## ✨ Features
