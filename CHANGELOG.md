@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.520...v0.75.521)
+
+## 🐛 Bug Fixes
+
+- **ui**: make storefront controls reactive and support generic product cards ([6c350eb](https://github.com/stacksjs/stacks/commit/6c350eb)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.519...v0.75.520)
 
 ## 🐛 Bug Fixes
