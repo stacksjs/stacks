@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.523...v0.75.524)
+
+## 🐛 Bug Fixes
+
+- **buddy**: store user:add passwords hashed, never as typed ([c222700](https://github.com/stacksjs/stacks/commit/c222700)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- refresh the native skill catalog ([d254105](https://github.com/stacksjs/stacks/commit/d254105)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.522...v0.75.523)
 
 ## ✨ Features
