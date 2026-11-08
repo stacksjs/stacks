@@ -84,3 +84,13 @@ describe('createErrorResponse - production 4xx (#1946)', () => {
     expect(body.details).toBeUndefined()
   })
 })
+
+test('action error responses preserve retry metadata for JSON and browser clients', async () => {
+  const error = Object.assign(new Error('Too many requests'), { headers: { 'Retry-After': '30', 'Content-Type': 'incorrect/type' } })
+  for (const accept of ['application/json', 'text/html']) {
+    const response = await createErrorResponse(error, new Request('https://example.test/subscribe', { headers: { Accept: accept } }), { status: 429 })
+    expect(response.status).toBe(429)
+    expect(response.headers.get('Retry-After')).toBe('30')
+    expect(response.headers.get('Content-Type')).toContain(accept === 'text/html' ? 'text/html' : 'application/json')
+  }
+})

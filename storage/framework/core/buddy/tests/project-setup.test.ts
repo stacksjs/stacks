@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+import { FEATURE_NAMES } from '@stacksjs/features'
 import { shouldSkipAppKeyCheck } from '../src/project-setup'
 
 describe('Buddy project setup guards', () => {
@@ -22,6 +23,14 @@ describe('Buddy project setup guards', () => {
   it('links framework packages without creating application secrets', () => {
     expect(shouldSkipAppKeyCheck('link:core')).toBe(true)
     expect(shouldSkipAppKeyCheck('unlink:core')).toBe(true)
+  })
+
+  it('configures feature bundles without creating an unrelated runtime key', () => {
+    for (const feature of FEATURE_NAMES) {
+      expect(shouldSkipAppKeyCheck(`${feature}:install`)).toBe(true)
+      expect(shouldSkipAppKeyCheck(`${feature}:uninstall`)).toBe(true)
+    }
+    expect(shouldSkipAppKeyCheck('marketing:send')).toBe(false)
   })
 
   it('retains initialization for commands that require an application', () => {

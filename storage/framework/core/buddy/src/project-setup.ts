@@ -1,3 +1,5 @@
+import { FEATURE_NAMES } from '@stacksjs/features'
+
 const APP_KEY_OPTIONAL_COMMANDS = [
   /*
    * `env:*` reads and writes an encrypted `.env` file and touches nothing else.
@@ -57,6 +59,8 @@ export function shouldSkipAppKeyCheck(
   return Boolean(
     mode.isHelpFlag
     || mode.isHelpMode
+    // Enabling a feature changes project configuration, not application data.
+    || FEATURE_NAMES.some(feature => requestedCommand === `${feature}:install` || requestedCommand === `${feature}:uninstall`)
     || APP_KEY_OPTIONAL_COMMANDS.some(command => requestedCommand === command || requestedCommand.startsWith(`${command}:`)),
   )
 }

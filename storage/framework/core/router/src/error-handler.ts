@@ -226,6 +226,7 @@ export async function createErrorResponse(
   },
 ): Promise<Response> {
   const status = options?.status || 500
+  const errorHeaders = (error as Error & { headers?: Record<string, string> }).headers
   log.debug(`[error] ${status} ${error.message}`)
   const debugAllowed = isDebugAllowed()
 
@@ -254,13 +255,13 @@ export async function createErrorResponse(
             ? errDetails as Record<string, unknown>
             : undefined,
         }),
-        { status, headers: getJsonHeaders() },
+        { status, headers: getJsonHeaders(errorHeaders) },
       )
     }
     const { renderProductionErrorPage } = await import('@stacksjs/error-handling/error-page')
     return new Response(renderProductionErrorPage(status), {
       status,
-      headers: getErrorHeaders('text/html; charset=utf-8'),
+      headers: getErrorHeaders('text/html; charset=utf-8', errorHeaders),
     })
   }
 
@@ -368,7 +369,7 @@ export async function createErrorResponse(
       </html>
     `, {
       status,
-      headers: getErrorHeaders('text/html; charset=utf-8'),
+      headers: getErrorHeaders('text/html; charset=utf-8', errorHeaders),
     })
   }
 }
