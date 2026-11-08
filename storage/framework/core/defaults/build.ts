@@ -12,7 +12,7 @@
  * handful of root/support files that live outside the defaults tree.
  */
 import { cp, readdir, readFile, rm, writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import { basename, join } from 'node:path'
 
 const here = import.meta.dir
 const defaults = join(here, '../../defaults')
@@ -32,11 +32,13 @@ const EXTENSION_DEVELOPMENT_PATHS = ['src', 'tests', 'scripts', 'dist', 'node_mo
   .map(path => join(defaults, 'ide/vscode', path))
 
 function shipsToApps(source: string): boolean {
+  if (basename(source) === '.DS_Store' || basename(source).startsWith('._')) return false
   return !EXTENSION_DEVELOPMENT_PATHS.some(path => source === path || source.startsWith(`${path}/`))
 }
 
 for (const entry of await readdir(defaults)) {
   const source = join(defaults, entry)
+  if (!shipsToApps(source)) continue
   const dest = join(here, entry)
   await rm(dest, { recursive: true, force: true })
   await cp(source, dest, { recursive: true, filter: shipsToApps })

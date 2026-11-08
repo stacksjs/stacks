@@ -41,6 +41,7 @@ const manifest = JSON.parse(readFileSync(resolve(import.meta.dir, '../package.js
 const DOES_NOT_SHIP = new Map<string, string>([
   // A placeholder that exists only to keep the directory in git.
   ['.gitkeep', 'git placeholder, meaningless in a package'],
+  ['.DS_Store', 'macOS folder metadata, excluded by the publish wrapper'],
 ])
 
 describe('@stacksjs/defaults ships the whole scaffold', () => {

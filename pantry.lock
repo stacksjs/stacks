@@ -19,8 +19,10 @@
         "curl.se": "^8.22.0",
         "git-scm.org": "^2.53.0",
         "gnu.org/readline": "8.3.0.1",
+        "invisible-island.net/ncurses": "6.6.0.1",
         "libexpat.github.io": "2.10.0.1",
-        "sqlite.org": "^3.53.4"
+        "sqlite.org": "^3.53.4",
+        "zlib.net": "1.4"
       }
     },
     "storage/framework": {
@@ -1543,11 +1545,11 @@
       "source": "pantry",
       "resolved": "registry:gnu.org/readline@8.3.0.1"
     },
-    "invisible-island.net/ncurses@6.6.0": {
+    "invisible-island.net/ncurses@6.6.0.1": {
       "name": "invisible-island.net/ncurses",
-      "version": "6.6.0",
+      "version": "6.6.0.1",
       "source": "pantry",
-      "resolved": "registry:invisible-island.net/ncurses@6.6.0"
+      "resolved": "registry:invisible-island.net/ncurses@6.6.0.1"
     },
     "libexpat.github.io@2.10.0.1": {
       "name": "libexpat.github.io",
@@ -1596,6 +1598,12 @@
       "version": "1.3.2",
       "source": "pantry",
       "resolved": "registry:zlib.net@1.3.2"
+    },
+    "zlib.net@1.4": {
+      "name": "zlib.net",
+      "version": "1.4",
+      "source": "pantry",
+      "resolved": "registry:zlib.net@1.4"
     }
   }
 }
