@@ -264,3 +264,24 @@ describe('relations to framework models that are out of scope', () => {
     expect(resolveModelSources({ userRoot, frameworkRoot, packageRoots: [] })?.outOfScopeRelations).toEqual([])
   })
 })
+
+describe('database model selection', () => {
+  it('stages only the selected models and protects all unselected application tables', () => {
+    const user = join(TMP, 'user')
+    makeModel(user, 'LocalActivity')
+    makeModel(user, 'Subscriber')
+    const resolved = resolveModelSources({ userRoot: user, frameworkRoot: join(TMP, 'none'), include: ['subscriber'] })!
+    expect(resolved.models.map(model => model.name)).toEqual(['Subscriber'])
+    expect(resolved.staged).toBe(true)
+    expect(readdirSync(resolved.dir).filter(file => file.endsWith('.ts'))).toEqual(['Subscriber.ts'])
+    expect(resolved.excludedTables).toContain('local_activities')
+    expect(withoutProtectedTableDropSql(['DROP TABLE local_activities;'], resolved.excludedTables, []).statements).toEqual([])
+  })
+
+  it('refuses empty or misspelled selections before producing a migration', () => {
+    const user = join(TMP, 'user')
+    makeModel(user, 'Subscriber')
+    expect(() => resolveModelSources({ userRoot: user, frameworkRoot: join(TMP, 'none'), include: [] })).toThrow('at least one')
+    expect(() => resolveModelSources({ userRoot: user, frameworkRoot: join(TMP, 'none'), include: ['Subcriber'] })).toThrow('unknown models')
+  })
+})

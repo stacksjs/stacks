@@ -262,3 +262,30 @@ buddy deploy:rollback
 Activates a preserved release. `--env <environment>` selects the environment, `--to <release>`
 names a specific preserved release, and `--dry-run` previews the change without making it. On the
 AWS path, `buddy cloud:remove` tears the stack down instead.
+
+### Separate runtime environments
+
+For SSH, Hetzner and Fly deployments, a project can build a native app and deploy a website from the same top-level
+`app/`, `routes/` and `config/` directories. Keep signing credentials out of the
+web runtime by selecting its environment file explicitly:
+
+```sh
+buddy deploy --prod --env-file .env.web
+```
+
+The selected file must exist and decrypt completely. Its own scoped key, such as
+`DOTENV_PRIVATE_KEY_WEB`, is used. Deployment never falls back to `.env.production`
+and ships only values from the selected file plus the site's declared overrides.
+The production branch and release checks still apply.
+
+When transferring a hostname out of an existing host project, remove its site
+from that project's configuration and explicitly retire the omitted hostname:
+
+```sh
+buddy deploy --prod --site main --retire-domains old.example.com
+```
+
+This reconciles the host's own gateway fragment. The independent application
+keeps its own repository, deployment workflow, secrets, slug and `cloud.attachTo`
+configuration. The hostname need not remain in the host's public source code.
+A hostname still declared in the model cannot be retired through this option.

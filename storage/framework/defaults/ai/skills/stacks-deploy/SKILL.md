@@ -249,3 +249,20 @@ installed file's shape rather than moving tsCloud settings into an unrelated
 flat object. A cloud SQS queue definition does not implement QUEUE_DRIVER=sqs
 in the Stacks queue package. Previews, destructive removal, secret writes and
 provider mutations need the user's existing task authorization.
+
+## Projects with multiple runtimes
+
+Keep an application's models, routes and cloud configuration in its own top-level
+project. An attached app owns its website and API and deploys from its own repo;
+the compute host must not check out or publish tenant source. Use `cloud.attachTo`
+with an independent project slug.
+
+`buddy deploy --prod --env-file .env.web` selects only the web runtime's env file
+and its scoped decryption key. It never falls back to the native signing file.
+Use `database.models.include` and `security.api.models` to scope hosted schema and
+APIs, keeping local native models in their explicit native registry.
+
+For an intentional hostname handoff, the old owner removes its site and runs
+`buddy deploy --prod --retire-domains old.example.com`. This operator input retires
+omitted names without committing tenant names to the host's config. It cannot
+retire a domain the configuration still declares.

@@ -1182,6 +1182,8 @@ Deploy your project
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--domain` | Specify a domain to deploy to | value, required | - |
+| `--env-file` | Deploy with only this runtime environment file | value, required | - |
+| `--retire-domains` | Explicitly retire omitted gateway hostnames (comma-separated) | value, required | - |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--prod` | Deploy to production | boolean, optional | `false` |
 | `--dev` | Deploy to development | boolean, optional | `false` |

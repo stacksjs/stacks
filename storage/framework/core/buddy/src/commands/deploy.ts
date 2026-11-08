@@ -24,6 +24,7 @@ import { assertCurrentDeploymentRevision, assertNotBehindLiveRelease, automatedD
 import { dnsCredentialFix, envFileForEnvironment, resolveZoneNameservers } from '../dns-credentials'
 import { assertComputeResidency } from '@stacksjs/ts-cloud'
 import { resultFailed } from '../result'
+import { deploymentRetirements, explicitDeploymentEnvFile, validateDeploymentProviderInputs } from '../deployment-inputs'
 import { findUnbackedManagedServices, hasOffsiteBackupDestination, unbackedDataMessage } from '../unbacked-data'
 import { applyDeploymentDomainOverride, createDeploymentPreview, deploymentPreviewJsonPrefix, formatDeploymentPreview, resolveDeploymentEnvironment } from './deploy-preview'
 import { buildPreviewTeardownScript, derivePreviewConfig, previewDomain, previewPort, previewTarget } from './preview-deploy'
@@ -221,7 +222,12 @@ async function findPantryMailBinary(): Promise<string | null> {
   return null
 }
 
-async function ensureDeployPrerequisites(verbose = false, environment = 'production'): Promise<void> {
+async function ensureDeployPrerequisites(verbose = false, environment = 'production', envFile?: string): Promise<void> {
+  if (envFile) {
+    const values = await resolveDeployEnvValues(environment as 'production', undefined, envFile)
+    if (!values.APP_KEY?.trim()) throw new Error('The selected deployment environment requires APP_KEY')
+    return
+  }
   // Setup loads the development/build toolchain. Publication policy must run
   // before any deployment prerequisites are loaded or executed.
   const { ensureAppKey, ensureDeployEnvIsSet, ensureEnvIsSet } = await import('./setup')
@@ -5604,7 +5610,7 @@ async function removePreview(target: ReturnType<typeof previewTarget>, base: str
  * converge the Fly app. The work is in `deploy-fly.ts`; this supplies the real
  * process runner, filesystem and ts-cloud, and reports the outcome.
  */
-async function deployToFlyProvider(tsCloudConfig: any, environment: string, verbose: boolean): Promise<void> {
+async function deployToFlyProvider(tsCloudConfig: any, environment: string, verbose: boolean, envFile?: string): Promise<void> {
   await runBeforeDeployHook(p.projectPath(), { environment, region: tsCloudConfig.project?.region || 'us-east-1' })
   const { FlyDeployError, runFlyDeploy } = await import('./deploy-fly')
   const api = await loadTsCloudDeployApi()
@@ -5629,7 +5635,7 @@ async function deployToFlyProvider(tsCloudConfig: any, environment: string, verb
       environment: deployEnv,
       token: process.env.FLY_API_TOKEN,
       release,
-      envValues: await resolveDeployEnvValues(deployEnv, tsCloudConfig),
+      envValues: await resolveDeployEnvValues(deployEnv, tsCloudConfig, envFile),
       projectRoot: p.projectPath(),
     }, {
       api,
@@ -5738,6 +5744,8 @@ export function deploy(buddy: CLI): void {
   buddy
     .command('deploy [env]', descriptions.deploy)
     .option('--domain <domain>', descriptions.domain, { default: undefined })
+    .option('--env-file <file>', 'Deploy with only this runtime environment file', { default: undefined })
+    .option('--retire-domains <domains>', 'Explicitly retire omitted gateway hostnames (comma-separated)', { default: undefined })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--prod', descriptions.production, { default: false })
     .option('--dev', descriptions.development, { default: false })
@@ -5769,6 +5777,11 @@ export function deploy(buddy: CLI): void {
         development: options.dev,
       })
       const deployEnv = deployEnvName
+      const selectedEnvFile = explicitDeploymentEnvFile(p.projectPath(), options.envFile)
+      if (selectedEnvFile) {
+        const values = await resolveDeployEnvValues(deployEnvName as 'production', undefined, selectedEnvFile)
+        for (const [key, value] of Object.entries(values)) process.env[key] = value
+      }
 
       try {
         applyDeploymentDomainOverride({}, options.domain)
@@ -5783,8 +5796,8 @@ export function deploy(buddy: CLI): void {
         // exits before prerequisites, builds, packaging, hooks, providers,
         // persistence, DNS, or TLS can mutate anything.
         process.env.APP_ENV = deployEnvName
-        const envFile = deployEnvName === 'production' ? '.env.production' : `.env.${deployEnvName}`
-        if (existsSync(p.projectPath(envFile))) {
+        const envFile = selectedEnvFile ?? (deployEnvName === 'production' ? '.env.production' : `.env.${deployEnvName}`)
+        if (!selectedEnvFile && existsSync(p.projectPath(envFile))) {
           try {
             const { loadEnv } = await import('@stacksjs/env')
             loadEnv({ path: envFile, env: deployEnvName, keysFile: '.env.keys', overload: true, quiet: true })
@@ -5794,7 +5807,8 @@ export function deploy(buddy: CLI): void {
           }
         }
 
-        const tsCloudConfig = await loadTsCloudConfig(deployEnvName)
+        const tsCloudConfig = deploymentRetirements(await loadTsCloudConfig(deployEnvName) ?? {}, options.retireDomains)
+        validateDeploymentProviderInputs(resolveProvider(tsCloudConfig), { envFile: selectedEnvFile, retireDomains: options.retireDomains })
         const { resolveSiteKind } = await loadTsCloudDeployApi()
         const unbacked = tsCloudConfig ? findUnbackedManagedServices(tsCloudConfig, await hasOffsiteBackupDestination()) : []
         let plan: DeploymentPreview
@@ -5839,7 +5853,7 @@ export function deploy(buddy: CLI): void {
 
       // Resolved BEFORE the prerequisites, because which env file has to be in
       // place is the first thing they check.
-      await ensureDeployPrerequisites(options.verbose === true, deployEnvName)
+      await ensureDeployPrerequisites(options.verbose === true, deployEnvName, selectedEnvFile)
 
       // Deterministic, environment-aware secret resolution. Explicitly load the
       // TARGET environment's decrypted secrets into process.env BEFORE the config
@@ -5850,8 +5864,8 @@ export function deploy(buddy: CLI): void {
       // regardless of which .env* files exist locally.
       process.env.APP_ENV = deployEnvName
       {
-        const envFile = deployEnvName === 'production' ? '.env.production' : `.env.${deployEnvName}`
-        if (existsSync(p.projectPath(envFile))) {
+        const envFile = selectedEnvFile ?? (deployEnvName === 'production' ? '.env.production' : `.env.${deployEnvName}`)
+        if (!selectedEnvFile && existsSync(p.projectPath(envFile))) {
           try {
             const { loadEnv } = await import('@stacksjs/env')
             loadEnv({ path: envFile, env: deployEnvName, keysFile: '.env.keys', overload: true, quiet: true })
@@ -5866,14 +5880,15 @@ export function deploy(buddy: CLI): void {
       // provision + deploy through ts-cloud and have nothing to do with the AWS
       // CloudFormation path below. Route them off before any AWS credential or
       // domain check runs.
-      const tsCloudConfig = await loadTsCloudConfig(deployEnvName)
+      const tsCloudConfig = deploymentRetirements(await loadTsCloudConfig(deployEnvName) ?? {}, options.retireDomains)
+      validateDeploymentProviderInputs(resolveProvider(tsCloudConfig), { envFile: selectedEnvFile, retireDomains: options.retireDomains })
       // Fly.io runs an image on Machines: no box, no SSH, no CloudFormation.
       if (tsCloudConfig && resolveProvider(tsCloudConfig) === 'fly') {
-        await deployToFlyProvider(tsCloudConfig, deployEnvName, options.verbose === true)
+        await deployToFlyProvider(tsCloudConfig, deployEnvName, options.verbose === true, selectedEnvFile)
         return
       }
       if (tsCloudConfig && isSshPipelineProvider(resolveProvider(tsCloudConfig))) {
-        await deployOverSsh(applyDeploymentDomainOverride(tsCloudConfig, options.domain), deployEnv, options)
+        await deployOverSsh(applyDeploymentDomainOverride(tsCloudConfig, options.domain), deployEnv, options, selectedEnvFile)
         return
       }
 
@@ -5909,7 +5924,7 @@ export function deploy(buddy: CLI): void {
       // `https://stacksjs.com`.
       let productionUrl: string | undefined
       if (deployEnv === 'production' || deployEnv === 'prod') {
-        const productionValues = await resolveDeployEnvValues('production', tsCloudConfig)
+        const productionValues = await resolveDeployEnvValues('production', tsCloudConfig, selectedEnvFile)
         productionUrl = productionValues.APP_URL?.trim() || undefined
         if (productionUrl)
           log.debug('Using APP_URL from .env.production:', productionUrl)

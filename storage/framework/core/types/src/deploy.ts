@@ -9,6 +9,8 @@ import type { CliOptions } from './cli'
  */
 export interface DeployOptions extends CliOptions {
   domain?: string
+  envFile?: string
+  retireDomains?: string
   deploy?: boolean
   prod?: boolean
   dev?: boolean

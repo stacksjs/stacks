@@ -84,7 +84,7 @@ export interface ResolvedModelSources {
    */
   shadowed: ShadowedModel[]
   /**
-   * Framework defaults left OUT because userland has its own models.
+   * Model definitions left out of this database's schema, including unselected app models.
    *
    * Empty in the two cases that matter most: an app that opted back into the
    * union, and a vendored checkout with no `app/Models` (where the defaults
@@ -142,9 +142,10 @@ export function outOfScopeRelationMessage(relations: OutOfScopeRelation[]): stri
   const lines = relations.map(relation => `  - ${relation.model} -> ${relation.related}`)
 
   return [
-    `${relations.length} relation${relations.length === 1 ? '' : 's'} point at framework models that are out of scope, so their tables are never created:`,
+    `${relations.length} relation${relations.length === 1 ? '' : 's'} point at models that are out of scope, so their tables are never created:`,
     ...lines,
-    'An app with its own app/Models does not get the framework models. Bring each one in with a re-export, e.g.:',
+    'If database.models.include is configured, include both sides of each relationship.',
+    'An app with its own app/Models does not get the framework models. Bring a missing framework model in with a re-export, e.g.:',
     ...names.map(name => `  app/Models/${name}.ts:  export { default } from '@stacksjs/defaults/app/Models/${name}'`),
   ].join('\n')
 }
@@ -360,6 +361,8 @@ export function excludedFrameworkModels(options: { userRoot?: string, frameworkR
  * state of a project that has not defined any models yet.
  */
 export function resolveModelSources(options: {
+  /** Select a database's models without moving definitions out of app/Models. */
+  include?: readonly string[]
   userRoot?: string
   frameworkRoot?: string
   /** Force the merge on or off, bypassing config and env. */
@@ -433,7 +436,19 @@ export function resolveModelSources(options: {
   for (const model of contributing) byName.set(model.name, model)
   for (const model of user) byName.set(model.name, model)
 
-  const models = [...byName.values()].sort((a, b) => a.name.localeCompare(b.name))
+  const allModels = [...byName.values()].sort((a, b) => a.name.localeCompare(b.name))
+  const include = options.include ?? config?.database?.models?.include
+  let models = allModels
+  if (include !== undefined) {
+    if (!Array.isArray(include) || include.length === 0 || include.some(name => typeof name !== 'string' || !name.trim()))
+      throw new Error('database.models.include must name at least one model')
+    const selected = new Set(include.map(name => name.trim().toLowerCase()))
+    const known = new Set(allModels.map(model => model.name.toLowerCase()))
+    const unknown = [...selected].filter(name => !known.has(name))
+    if (unknown.length) throw new Error(`database.models.include names unknown models: ${unknown.join(', ')}`)
+    models = allModels.filter(model => selected.has(model.name.toLowerCase()))
+    excluded.push(...allModels.filter(model => !selected.has(model.name.toLowerCase())))
+  }
 
   const roots: string[] = []
   if (user.length > 0)
@@ -450,9 +465,9 @@ export function resolveModelSources(options: {
   // so the common userland-only project keeps reading its own directory.
   const onlyUser = contributing.length === 0
   const allFlat = models.every(m => basename(join(m.file, '..')) === basename(onlyUser ? userRoot : frameworkRoot))
-  const outOfScopeRelations = findOutOfScopeRelations(user, excluded)
+  const outOfScopeRelations = findOutOfScopeRelations(models.filter(model => model.origin === 'user'), excluded)
 
-  if (!options.forceStage && roots.length === 1 && allFlat) {
+  if (include === undefined && !options.forceStage && roots.length === 1 && allFlat) {
     return { dir: roots[0]!, models, roots, staged: false, shadowed, excluded, excludedTables, outOfScopeRelations }
   }
 

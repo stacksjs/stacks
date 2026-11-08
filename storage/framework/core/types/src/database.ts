@@ -203,6 +203,8 @@ export interface DatabaseOptions {
 
   /** How the migration generator decides which model definitions are in scope. */
   models?: {
+    /** Limit this database's schema to named models from app/Models. Other models remain protected from drops. */
+    include?: string[]
     /**
      * Also generate migrations for the framework's own models in
      * `storage/framework/defaults/app/Models`, on top of your `app/Models`.
