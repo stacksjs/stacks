@@ -6,15 +6,6 @@ import process from 'node:process'
 import { createInterface } from 'node:readline'
 import type { Interface } from 'node:readline'
 
-// Protect stdin from being closed by readline
-const _originalDestroy = process.stdin.destroy
-process.stdin.destroy = function(this: any, error?: Error) {
-  if (error) {
-    this.emit('error', error)
-  }
-  return this
-}
-
 // Single global readline interface that we reuse
 let globalRl: Interface | null = null
 
@@ -71,11 +62,10 @@ function readLineOrEof(prompt: string): Promise<string | typeof EOF> {
 
     // Without this, a question that is pending when stdin reaches EOF never
     // settles and the process hangs forever: `rl.question`'s callback is only
-    // invoked for a completed line, and `process.stdin.destroy` is neutered
-    // above. That bites whenever stdin is a TTY at guard time but closes
-    // afterwards, e.g. an SSH connection dropping, the terminal window being
-    // closed, or a parent process exiting. Treat EOF as an empty answer, which
-    // every caller already handles as "take the default / cancel".
+    // invoked for a completed line. The input can close after the TTY guard,
+    // e.g. when an SSH connection drops or the terminal's parent exits.
+    // Preserve the EOF sentinel so each
+    // caller applies its existing default or cancellation policy.
     const onClose = () => finish(EOF)
 
     // Only an active prompt owns this exit. Importing the CLI must leave
