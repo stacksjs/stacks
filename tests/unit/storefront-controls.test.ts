@@ -8,6 +8,22 @@ import { click, findChrome, launch, navigate, settle } from '@stacksjs/testing/b
 
 const componentsDir = resolve(import.meta.dir, '../../storage/framework/defaults/resources/components/Storefront')
 
+test('basket summaries distinguish an item subtotal from a quoted final total without changing default labels', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'stacks-order-summary-'))
+  try {
+    const options = { ...defaultConfig, root, componentsDir, cache: false }
+    const custom = await processDirectives('<OrderSummary heading="Your basket" totalTitle="Items total" subtotalLabel="$399.00" shippingLabel="At checkout" totalLabel="$399.00" taxLabel="At checkout" />', {}, join(root, 'Custom.stx'), options, new Set())
+    expect(custom).toContain('Your basket')
+    expect(custom).toContain('Items total')
+    expect(custom).toContain('>Tax</dt>')
+    const standard = await processDirectives('<OrderSummary subtotalLabel="$20.00" shippingLabel="$5.00" totalLabel="$25.00" />', {}, join(root, 'Standard.stx'), options, new Set())
+    expect(standard).toContain('Order summary')
+    expect(standard).toContain('>Total</p>')
+    expect(standard).not.toContain('>Tax</dt>')
+  }
+  finally { await rm(root, { recursive: true, force: true }) }
+})
+
 test('product cards render generic descriptions and transparent pricing without image overlays', async () => {
   const root = await mkdtemp(join(tmpdir(), 'stacks-product-card-'))
   try {

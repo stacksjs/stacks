@@ -7,6 +7,10 @@ interface OrderSummaryItem {
 }
 
 interface OrderSummaryProps {
+  /** Labels let a basket distinguish an item subtotal from a quoted final total. */
+  heading?: string
+  totalTitle?: string
+  taxLabel?: string
   items?: OrderSummaryItem[]
   /** Pre-formatted price labels — STX defineProps numerics aren't in scope
    *  for SSR template evaluation, so .toFixed() etc. has to happen at the
@@ -26,6 +30,9 @@ interface OrderSummaryProps {
 }
 
 const {
+  heading = 'Order summary',
+  totalTitle = 'Total',
+  taxLabel = '',
   items = [],
   subtotalLabel,
   shippingLabel,
@@ -40,8 +47,8 @@ const {
 } = defineProps<OrderSummaryProps>()
 </script>
 
-<aside class="rounded-2xl border border-stone-200 p-6 {{ sticky ? 'lg:sticky lg:top-28' : '' }}">
-  <p class="font-semibold text-stone-500 text-xs tracking-wider uppercase">Order summary</p>
+<aside class="storefront-summary rounded-2xl border border-stone-200 p-6 {{ sticky ? 'lg:sticky lg:top-28' : '' }}">
+  <p class="font-semibold text-stone-500 text-xs tracking-wider uppercase">{{ heading }}</p>
 
   @if (showItems && items.length > 0)
     <ul class="mt-4 space-y-2 text-sm">
@@ -58,6 +65,9 @@ const {
   <dl class="space-y-3 text-sm {{ showItems ? '' : 'mt-4' }}">
     <div class="flex justify-between"><dt class="text-stone-600">Subtotal</dt><dd class="font-semibold text-stone-900">{{ subtotalLabel }}</dd></div>
     <div class="flex justify-between"><dt class="text-stone-600">Shipping</dt><dd class="font-semibold text-stone-900">{{ shippingLabel }}</dd></div>
+    @if (taxLabel)
+      <div class="flex justify-between"><dt class="text-stone-600">Tax</dt><dd class="font-semibold text-stone-900">{{ taxLabel }}</dd></div>
+    @endif
     @if (freeShippingNote)
       <p class="px-3 py-2 text-emerald-700 text-xs bg-emerald-50 rounded-lg">{{ freeShippingNote }}</p>
     @endif
@@ -66,7 +76,7 @@ const {
   <hr class="my-4 border-stone-200">
 
   <div class="flex justify-between text-base">
-    <p class="font-semibold text-stone-900">Total</p>
+    <p class="font-semibold text-stone-900">{{ totalTitle }}</p>
     <p class="font-bold text-stone-900">{{ totalLabel }}</p>
   </div>
 
