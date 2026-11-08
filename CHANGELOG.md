@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.524...v0.75.525)
+
+## 🐛 Bug Fixes
+
+- **database**: close idle pooled connections by default ([071703b](https://github.com/stacksjs/stacks/commit/071703b)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **skills**: refresh the native skill catalog ([eda9286](https://github.com/stacksjs/stacks/commit/eda9286)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.523...v0.75.524)
 
 ## 🐛 Bug Fixes
