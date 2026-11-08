@@ -10,11 +10,11 @@
 
 import { describe, expect, it } from 'bun:test'
 import { createHash } from 'node:crypto'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { acceptedPublications, publicationMatchesOriginal } from '../../../../../.github/scripts/npm-publication'
-import { BYPASS_ENV, formatPreflightFailure, pinnedCheckScripts, runPinnedChecks } from '../src/release-preflight'
+import { BYPASS_ENV, formatPreflightFailure, pinnedCheckScripts, readPinnedChecks, runPinnedChecks } from '../src/release-preflight'
 
 describe('accepted npm publication recovery', () => {
   const bytes = new TextEncoder().encode('original accepted archive')
@@ -248,5 +248,45 @@ describe('formatPreflightFailure', () => {
       { script: 'a', output: '' },
       { script: 'b', output: '' },
     ])).toContain('2 pinned checks failed')
+  })
+})
+
+describe('pinned checks outside the framework repository', () => {
+  const scripts = {
+    'docs:artifacts:check': './buddy docs:artifacts:check',
+    'docs:links:check': 'buddy docs:links:check',
+    'docs:audit:check': 'bun scripts/audit-docs.ts',
+    'declarations:check': './buddy declarations:check',
+  }
+  const project = (framework: boolean): string => {
+    const dir = mkdtempSync(join(tmpdir(), 'preflight-'))
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({ scripts }))
+    if (framework) {
+      mkdirSync(join(dir, 'storage/framework/core/buddy'), { recursive: true })
+    }
+    return dir
+  }
+
+  it('leaves out the buddy docs tools an application cannot run, and keeps its own checks', () => {
+    const dir = project(false)
+    try {
+      expect(readPinnedChecks(dir)).toEqual(['declarations:check', 'docs:audit:check'])
+    }
+    finally { rmSync(dir, { recursive: true, force: true }) }
+  })
+
+  it('runs every one in the framework repository itself', () => {
+    const dir = project(true)
+    try {
+      expect(readPinnedChecks(dir)).toEqual(['declarations:check', 'docs:artifacts:check', 'docs:audit:check', 'docs:links:check'])
+    }
+    finally { rmSync(dir, { recursive: true, force: true }) }
+  })
+})
+
+describe('release lockfile regeneration', () => {
+  it('is reserved for the framework release', () => {
+    const source = readFileSync(join(import.meta.dir, '../src/bump.ts'), 'utf8')
+    expect(source).toContain('if (!isDryRun && isFrameworkRelease && committedBunLock) {')
   })
 })

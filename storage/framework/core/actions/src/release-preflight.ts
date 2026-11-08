@@ -13,7 +13,7 @@
  * is created, including runtime inventories changed by dependency upgrades.
  */
 
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 /** Set to '1' or 'true' to skip the pre-flight. Mirrors the workflow's RELEASE_GATE_BYPASS variable. */
@@ -40,10 +40,32 @@ export function pinnedCheckScripts(scripts: Record<string, unknown>): string[] {
     .sort()
 }
 
+/**
+ * Whether a script just runs one of buddy's `docs:*` tools. Those regenerate and
+ * check the Stacks framework repository's own artifacts (its openapi.json, its
+ * command reference, its docs links) and refuse to run anywhere else.
+ */
+function runsFrameworkDocsTool(command: unknown): boolean {
+  return typeof command === 'string' && /(?:^|\s)(?:\.\/)?(?:buddy|bud|stacks)\s+docs:/.test(command)
+}
+
+/**
+ * The pinned checks that can run in `cwd`.
+ *
+ * An application's package.json is scaffolded with the framework's `docs:*`
+ * scripts, but its checks can never pass there: the tools refuse to run outside
+ * the framework repository. Counting them blocked every release of every app,
+ * on Stacks 0.75.522 and later, with a message about a repository the app does
+ * not contain. A `docs:*:check` the app wrote itself still runs.
+ */
 export function readPinnedChecks(cwd: string): string[] {
   try {
     const pkg = JSON.parse(readFileSync(join(cwd, 'package.json'), 'utf8')) as { scripts?: Record<string, unknown> }
-    return pinnedCheckScripts(pkg.scripts ?? {})
+    const scripts = pkg.scripts ?? {}
+    const names = pinnedCheckScripts(scripts)
+    if (existsSync(join(cwd, 'storage/framework/core/buddy')))
+      return names
+    return names.filter(name => !runsFrameworkDocsTool(scripts[name]))
   }
   catch {
     // A release from a tree with no readable package.json has bigger problems,

@@ -374,7 +374,16 @@ function restoreCommittedLockfiles(): void {
 // Keep the root Bun lockfile synchronized in the same release commit; otherwise
 // every post-release CI job using `bun install --frozen-lockfile` fails before
 // lint, typecheck, or tests can run.
-if (!isDryRun && committedBunLock) {
+//
+// Only the framework release needs this. An application's bump changes its own
+// `version` and nothing else: its bun.lock names no workspace manifests that
+// moved, so rebuilding it from scratch buys nothing and costs a lot. Deleting
+// the lock makes Bun resolve every caret range to whatever is newest today, so
+// a patch release of a site quietly upgraded its reverse proxy, its tooling and
+// its type packages, and on Bun 1.4 it also rewrote the file in lockfile
+// format 2, which the format check below then (rightly) refused, blocking the
+// release over a change nobody asked for.
+if (!isDryRun && isFrameworkRelease && committedBunLock) {
   const lockPath = bunLockPath
 
   // Bun updates package resolutions in place, but it does not rewrite stale
