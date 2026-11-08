@@ -5,14 +5,16 @@ import { plugin } from 'bun'
 plugin({
   name: 'failing-actions',
   setup(build) {
-    build.module('@stacksjs/actions', () => ({
-      loader: 'object',
-      exports: {
-        runAction: async (action: string) => {
-          console.log(`ran ${action}`)
-          return { isErr: true, isOk: false, error: new Error(`${action} failed`) }
+    for (const entry of ['@stacksjs/actions', '@stacksjs/actions/run-action']) {
+      build.module(entry, () => ({
+        loader: 'object',
+        exports: {
+          runAction: async (action: string) => {
+            console.log(`ran ${action}`)
+            return { isErr: true, isOk: false, error: new Error(`${action} failed`) }
+          },
         },
-      },
-    }))
+      }))
+    }
   },
 })

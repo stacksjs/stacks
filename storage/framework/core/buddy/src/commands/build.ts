@@ -7,13 +7,12 @@ import { projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { resultFailed } from '../result'
 
-// Lazy-load @stacksjs/actions — importing it at module level forces every
-// `buddy <anything>` invocation to resolve the actions barrel before
-// `--help` can render. Pulling it in only when a build subcommand
-// actually fires keeps `buddy --help` snappy.
-let _runAction: typeof import('@stacksjs/actions').runAction | undefined
-async function runAction(...args: Parameters<typeof import('@stacksjs/actions').runAction>): ReturnType<typeof import('@stacksjs/actions').runAction> {
-  if (!_runAction) _runAction = (await import('@stacksjs/actions')).runAction
+// Load only the action resolver when a build runs. The package root also
+// imports generators, database tooling and dev servers that are unrelated to
+// the selected target. Keep help lazy and let the child load its own action.
+let _runAction: typeof import('@stacksjs/actions/run-action').runAction | undefined
+async function runAction(...args: Parameters<typeof import('@stacksjs/actions/run-action').runAction>): ReturnType<typeof import('@stacksjs/actions/run-action').runAction> {
+  if (!_runAction) _runAction = (await import('@stacksjs/actions/run-action')).runAction
   return _runAction(...args)
 }
 

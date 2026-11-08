@@ -1,6 +1,6 @@
 import type { CLI, TestingOptions } from '@stacksjs/types'
 import process from 'node:process'
-import { runAction } from '@stacksjs/actions'
+import { runAction } from '@stacksjs/actions/run-action'
 import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
 import { projectPath } from '@stacksjs/path'
