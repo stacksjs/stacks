@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/commerce",
   "type": "module",
-  "version": "0.75.527",
+  "version": "0.75.528",
   "description": "Stacks commerce utilities.",
   "author": "Chris Breuer",
   "contributors": [

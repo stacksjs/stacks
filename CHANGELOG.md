@@ -1,5 +1,22 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.527...v0.75.528)
+
+## 🐛 Bug Fixes
+
+- **actions**: preserve development condition in spawn argv ([82d914b](https://github.com/stacksjs/stacks/commit/82d914b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **release**: stop an app's release failing on framework-only gates ([10faf17](https://github.com/stacksjs/stacks/commit/10faf17)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **buddy**: resolve build and test actions through narrow entry ([ce56853](https://github.com/stacksjs/stacks/commit/ce56853)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **actions**: execute conditional exports through spawned argv ([08edb74](https://github.com/stacksjs/stacks/commit/08edb74)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.526...v0.75.527)
 
 ## 🐛 Bug Fixes
