@@ -14,14 +14,16 @@ test.skipIf(!findChrome())('native ModelViewer renders two isolated scenes, reac
     const source = `<!doctype html><html><body><script client>
 const scene = state({nodes:[{id:'first',geometry:{kind:'box',size:[10,20,30]},color:'#234b38'}]})
 const second = state({nodes:[{id:'second',geometry:{kind:'box',size:[20,10,10]}}]})
+const label = state('Second model')
+const poster = state('/poster.svg')
 function add(){scene.set({nodes:[...scene().nodes,{id:'added',geometry:{kind:'box',size:[5,5,5]},color:'#88948e'}]})}
-function fail(){second.set({nodes:[{id:'missing',geometry:{kind:'stl',src:'/missing.stl'}}]})}
-</script><div id="first"><ModelViewer :scene="scene()" label="First model" /></div><div id="second"><ModelViewer :scene="second()" label="Second model" poster="/poster.svg" /></div><button id="add" @click="add()">Add</button><button id="fail" @click="fail()">Fail</button></body></html>`
+function fail(){batch(()=>{label.set('Updated model');poster.set('/updated.svg');second.set({nodes:[{id:'missing',geometry:{kind:'stl',src:'/missing.stl'}}]})})}
+</script><div id="first"><ModelViewer :scene="scene()" label="First model" /></div><div id="second"><ModelViewer :scene="second()" :label="label()" :poster="poster()" /></div><button id="add" @click="add()">Add</button><button id="fail" @click="fail()">Fail</button></body></html>`
     const html = await processDirectives(source, {}, join(root, 'Page.stx'), { ...defaultConfig, root, componentsDir: resolve(import.meta.dir, '../../storage/framework/defaults/resources/components'), cache: false }, new Set())
     server = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch(request) {
       const path = new URL(request.url).pathname
       if (path === '/missing.stl') return new Response('Missing', { status: 404 })
-      if (path === '/poster.svg') return new Response('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><rect width="20" height="20" fill="green"/></svg>', { headers: { 'Content-Type': 'image/svg+xml' } })
+      if (path === '/poster.svg' || path === '/updated.svg') return new Response('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><rect width="20" height="20" fill="green"/></svg>', { headers: { 'Content-Type': 'image/svg+xml' } })
       return new Response(html, { headers: { 'Content-Type': 'text/html' } })
     } })
     browser = await launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] })
@@ -40,6 +42,9 @@ function fail(){second.set({nodes:[{id:'missing',geometry:{kind:'stl',src:'/miss
     await waitFor(() => cdp.evaluate("document.querySelector('#second [data-model-status]').dataset.modelStatus === 'error'"))
     await settle(cdp)
     expect(await cdp.evaluate("document.querySelector('#second .stx-model-viewer-fallback').textContent")).toContain('could not be loaded')
+    expect(await cdp.evaluate("document.querySelector('#second canvas').getAttribute('aria-label')")).toStartWith('Updated model.')
+    expect(await cdp.evaluate("document.querySelector('#second .stx-model-viewer-fallback img').getAttribute('src')")).toBe('/updated.svg')
+    expect(await cdp.evaluate("document.querySelector('#second .stx-model-viewer-fallback img').getAttribute('alt')")).toBe('Updated model drawing')
     expect(await cdp.evaluate("document.querySelector('#first [data-model-status]').dataset.modelStatus")).toBe('ready')
     expect(cdp.errors.filter(error => !error.includes('404 (Not Found)'))).toEqual([])
   }

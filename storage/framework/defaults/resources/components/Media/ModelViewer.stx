@@ -1,6 +1,4 @@
 <script server>
-export const label = $props.label || 'Interactive 3D model'
-export const poster = $props.poster || ''
 export const className = $props.className || ''
 </script>
 <script client>
@@ -8,6 +6,8 @@ import type { ModelScene, ModelViewerController } from '@stacksjs/browser/model-
 import { createModelViewer } from '@stacksjs/browser/model-viewer'
 
 const scene = useReactiveProp('scene', { nodes: [] } as ModelScene)
+const modelLabel = useReactiveProp('label', 'Interactive 3D model')
+const modelPoster = useReactiveProp('poster', '')
 const canvas = useRef('modelCanvas')
 const status = state('loading')
 const message = state('')
@@ -35,10 +35,10 @@ onDestroy(() => viewer?.dispose())
     </span>
   </div>
   <div class="stx-model-viewer-stage">
-    <canvas ref="modelCanvas" class="stx-model-viewer-canvas" tabindex="0" role="img" aria-label="{{ label }}. Drag to rotate, scroll or pinch to zoom. Arrow keys rotate, plus and minus zoom, Home resets.">Interactive 3D requires a browser with WebGL. Use the drawing and downloads below.</canvas>
+    <canvas ref="modelCanvas" class="stx-model-viewer-canvas" tabindex="0" role="img" :aria-label="modelLabel() + '. Drag to rotate, scroll or pinch to zoom. Arrow keys rotate, plus and minus zoom, Home resets.'">Interactive 3D requires a browser with WebGL. Use the drawing and downloads below.</canvas>
     <div class="stx-model-viewer-loading" :if="status() === 'loading'" role="status">Preparing the model…</div>
     <div class="stx-model-viewer-fallback" :if="status() === 'error'">
-      @if (poster)<img src="{{ poster }}" alt="{{ label }} drawing" width="1400" height="1000">@endif
+      <img :if="modelPoster()" :src="modelPoster()" :alt="modelLabel() + ' drawing'" width="1400" height="1000">
       <p role="status">{{ message() }}</p>
     </div>
   </div>

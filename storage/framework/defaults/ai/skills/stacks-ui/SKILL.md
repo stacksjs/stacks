@@ -106,6 +106,8 @@ state and do not install global click handlers.
 renders a reactive `ModelScene` from `@stacksjs/browser/model-viewer`, using native
 WebGL without a third-party 3D library. Camera presets, orbit, pinch/wheel zoom,
 keyboard input, responsive backing resolution and drawing fallback are built in.
+Bind `:label` and `:poster` when switching models; both react with the scene so
+the accessible canvas description and fallback drawing keep the selected context.
 See `stacks-browser` for units, geometry, source limits and cleanup contracts.
 
 ## Gotchas
