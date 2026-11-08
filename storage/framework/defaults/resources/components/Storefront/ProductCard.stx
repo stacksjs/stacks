@@ -10,6 +10,13 @@ interface ProductCardProps {
   weight?: string
   badge?: string
   speciesLabel?: string
+  /** Generic product copy, preferred over the legacy food-specific ingredient. */
+  description?: string
+  /** Explain a price's status, such as a target price or price per unit. */
+  priceNote?: string
+  /** An application may use a shared configurator instead of a slug route. */
+  href?: string
+  imageAlt?: string
 }
 
 const {
@@ -21,10 +28,14 @@ const {
   weight = '',
   badge = '',
   speciesLabel = '',
+  description = '',
+  priceNote = '',
+  href = '',
+  imageAlt = '',
 } = defineProps<ProductCardProps>()
 </script>
 
-<a href="/products/{{ slug }}" class="block overflow-hidden bg-stone-50 border border-stone-200 rounded-2xl hover:border-stone-900 transition-colors group">
+<a href="{{ href || '/products/' + slug }}" class="block overflow-hidden bg-stone-50 border border-stone-200 rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 hover:border-stone-900 transition-colors group">
   <div class="aspect-square overflow-hidden relative bg-stone-200">
     {{-- decoding=async + loading=lazy so a long catalog grid below the fold
         doesn't block first paint, and explicit width/height (matched to a
@@ -33,18 +44,18 @@ const {
         (home featured, /products grid) so lazy is always safe. --}}
     <img
       src="{{ image }}"
-      alt="{{ name }}"
+      alt="{{ imageAlt || name }}"
       width="600"
       height="600"
       loading="lazy"
       decoding="async"
       class="object-cover h-full w-full duration-500 transition-transform group-hover:scale-105"
     >
-    @if (badge)
-      <span class="absolute left-3 top-3 px-2 py-0.5 font-semibold text-[10px] text-stone-900 tracking-wider uppercase bg-stone-50 rounded-full">{{ badge }}</span>
-    @endif
   </div>
   <div class="p-4">
+    @if (badge)
+      <p class="mb-2 font-medium text-stone-600 text-xs">{{ badge }}</p>
+    @endif
     <div class="flex items-center justify-between">
       <span class="font-semibold text-[10px] text-stone-500 tracking-wider uppercase">{{ speciesLabel }}</span>
       @if (weight)
@@ -52,12 +63,15 @@ const {
       @endif
     </div>
     <h3 class="mt-2 font-semibold leading-snug text-stone-900">{{ name }}</h3>
-    @if (ingredient)
-      <p class="mt-1 text-stone-500 text-xs">{{ ingredient }}</p>
+    @if (description || ingredient)
+      <p class="mt-1 text-sm text-stone-600">{{ description || ingredient }}</p>
     @endif
     <div class="flex items-center justify-between mt-3">
       <p class="font-bold text-stone-900">{{ priceLabel }}</p>
       <span class="font-medium text-stone-500 text-xs group-hover:text-stone-900">View →</span>
     </div>
+    @if (priceNote)
+      <p class="mt-1 text-stone-600 text-xs">{{ priceNote }}</p>
+    @endif
   </div>
 </a>

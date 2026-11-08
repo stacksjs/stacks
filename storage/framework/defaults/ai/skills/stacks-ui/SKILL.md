@@ -82,6 +82,24 @@ Pass `memberId` and a localized `memberIdLabel` to engrave a permanent account i
 
 Theme the finish through inherited CSS custom properties on the card's container or the application's root. Every property falls back to the original graphite finish: `--membership-card-background`, `--membership-card-color`, `--membership-card-border`, `--membership-card-shadow`, `--membership-card-inset-border`, `--membership-card-grain`, `--membership-card-label`, `--membership-card-name`, `--membership-card-divider`, `--membership-card-serial`, and `--membership-card-detail`. `--membership-card-confetti-1` through `--membership-card-confetti-4` color the celebration. Keep label and name colors readable against every stop of a custom gradient; the component's layout, stable identifier and reduced-motion behavior remain the same.
 
+## Storefront components
+
+`<ProductCard>` accepts generic `description`, `priceNote`, `href` and
+`imageAlt` props alongside the legacy food-specific `ingredient` prop.
+`description` takes precedence over `ingredient`; `priceNote` can explain a
+target or per-unit price without implying a discount. Status badges appear
+with the product copy below the image. Format money at the caller.
+
+`<QuantitySelector>` uses STX component state rather than document listeners.
+It binds `value` through `useModel`, supports `min`/`max`, defaults to whole
+quantities from 1 through 99, and keeps its named native number input ready
+for normal form submission. Use `label` for the input's accessible name.
+Buttons emit native input/change events for existing form integrations;
+`v-model:value` supports reactive parents; `change` remains a single bubbling
+native input event, without an additional custom event.
+Validate quantities again on the server. Multiple selectors keep independent
+state and do not install global click handlers.
+
 ## Gotchas
 
 - `config/ui.ts` configures STX topology; `config/css.ts` configures utilities.

@@ -1,102 +1,39 @@
-<script>
-interface QuantitySelectorProps {
-  name?: string
-  value?: number
-  min?: number
-  max?: number
-  className?: string
-}
-
-const {
-  name = 'quantity',
-  value = 1,
-  min = 1,
-  max = 99,
-  className = '',
-} = defineProps<QuantitySelectorProps>()
+<script server>
+export const name = $props.name || 'quantity'
+export const min = Number.isSafeInteger(Number($props.min)) ? Number($props.min) : 1
+export const max = Math.max(min, Number.isSafeInteger(Number($props.max)) ? Number($props.max) : 99)
+export const value = Math.max(min, Math.min(max, Number.isSafeInteger(Number($props.value)) ? Number($props.value) : min))
+export const className = $props.className || ''
+export const label = $props.label || 'Quantity'
 </script>
 
-<div
-  class="flex items-center rounded-full border border-stone-300 overflow-hidden {{ className }}"
-  data-stx-qty
-  data-min="{{ min }}"
-  data-max="{{ max }}"
->
-  <button type="button" class="px-4 py-3 text-stone-500 hover:text-stone-900 focus-visible:bg-stone-100 focus-visible:outline-none transition-colors" data-stx-qty-dec aria-label="Decrease quantity">−</button>
-  <input
-    name="{{ name }}"
-    value="{{ value }}"
-    type="number"
-    min="{{ min }}"
-    max="{{ max }}"
-    class="w-12 text-center bg-transparent focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield]"
-  >
-  <button type="button" class="px-4 py-3 text-stone-500 hover:text-stone-900 focus-visible:bg-stone-100 focus-visible:outline-none transition-colors" data-stx-qty-inc aria-label="Increase quantity">+</button>
-</div>
+<script client>
+const lower = useReactiveProp('min', {{ min }})
+const upper = useReactiveProp('max', {{ max }})
+const quantity = useModel('value', { default: {{ value }} })
+const input = useRef('quantityInput')
+const normalized = derived(() => Math.max(lower(), Math.min(Math.max(lower(), upper()), Number.isSafeInteger(Number(quantity())) ? Number(quantity()) : lower())))
+effect(() => {
+  const next = normalized()
+  if (quantity() !== next)
+    quantity.set(next)
+})
 
-<script data-stx-scoped>
-;(() => {
-  // Delegate one document-level click handler so:
-  //   1. Repeated SSR'd <script data-stx-scoped> blocks (one per
-  //      QuantitySelector instance) don't stack listeners on the same
-  //      buttons. Without delegation, two QuantitySelectors on a page
-  //      = two listeners per button = doubled increments per click.
-  //   2. SPA fragment swaps that re-inject our scoped script don't
-  //      keep multiplying handlers; the guard below early-returns.
-  const w = window as Window & {
-    /** Set by this block so a fragment swap cannot stack a second set of listeners. */
-    __stxQtyWired?: boolean
-  }
-
-  if (w.__stxQtyWired) return
-  w.__stxQtyWired = true
-
-  // Default min/max chosen to match the component's defineProps fallbacks.
-  // STX SSR doesn't reliably propagate defineProps default values into
-  // template attribute interpolation, so the rendered HTML can carry
-  // empty `min=""` / `max=""` attributes. Number("") is 0, so without
-  // these fallbacks Math.min(0, qty+1) capped every increment at 0 and
-  // the +/- buttons appeared dead. Read either the data-* on the wrapper
-  // or the input attribute, whichever is non-empty.
-  function bound(wrap: HTMLElement, kind: string, fallback: number) {
-    const fromData = wrap.getAttribute('data-' + kind)
-    if (fromData && fromData.trim() !== '') {
-      const n = Number(fromData)
-      if (Number.isFinite(n)) return n
-    }
-    const input = wrap.querySelector<HTMLInputElement>('input[type="number"]')
-    const fromAttr = input && input.getAttribute(kind)
-    if (fromAttr && fromAttr.trim() !== '') {
-      const n = Number(fromAttr)
-      if (Number.isFinite(n)) return n
-    }
-    return fallback
-  }
-
-  function step(wrap: HTMLElement, delta: number) {
-    const input = wrap.querySelector<HTMLInputElement>('input[type="number"]')
-    if (!input) return
-    const min = bound(wrap, 'min', 1)
-    const max = bound(wrap, 'max', 99)
-    const current = Number(input.value)
-    const seed = Number.isFinite(current) ? current : min
-    const next = Math.max(min, Math.min(max, seed + delta))
-    if (next === seed) return
-    input.value = String(next)
-    input.dispatchEvent(new Event('input', { bubbles: true }))
-    input.dispatchEvent(new Event('change', { bubbles: true }))
-  }
-
-  document.addEventListener('click', (e) => {
-    const target = e.target instanceof Element ? e.target : null
-    if (!target) return
-    const dec = target.closest('[data-stx-qty-dec]')
-    const inc = target.closest('[data-stx-qty-inc]')
-    if (!dec && !inc) return
-    const wrap = (dec ?? inc)?.closest<HTMLElement>('[data-stx-qty]')
-    if (!wrap) return
-    e.preventDefault()
-    step(wrap, dec ? -1 : 1)
+function commit(next: number): void {
+  quantity.set(Math.max(lower(), Math.min(Math.max(lower(), upper()), next)))
+  // Preserve native form integrations without a document-level listener.
+  void nextTick(() => {
+    input.current?.dispatchEvent(new Event('input', { bubbles: true }))
+    input.current?.dispatchEvent(new Event('change', { bubbles: true }))
   })
-})()
+}
+function normalize(): void {
+  quantity.set(normalized())
+}
 </script>
+
+<div class="flex items-center rounded-full border border-stone-300 overflow-hidden {{ className }}" data-stx-qty>
+  <button type="button" class="px-4 py-3 text-stone-700 hover:bg-stone-100 focus-visible:outline focus-visible:outline-2 disabled:opacity-40" data-stx-qty-dec aria-label="Decrease quantity" :disabled="normalized() <= lower()" @click="commit(normalized() - 1)">−</button>
+  <input ref="quantityInput" name="{{ name }}" value="{{ value }}" type="number" min="{{ min }}" max="{{ max }}" :min="lower()" :max="upper()" step="1" aria-label="{{ label }}" x-model.number="quantity" @change="normalize()" class="py-3 w-12 text-center bg-transparent focus-visible:outline focus-visible:outline-2 [appearance:textfield]">
+  <button type="button" class="px-4 py-3 text-stone-700 hover:bg-stone-100 focus-visible:outline focus-visible:outline-2 disabled:opacity-40" data-stx-qty-inc aria-label="Increase quantity" :disabled="normalized() >= upper()" @click="commit(normalized() + 1)">+</button>
+</div>
