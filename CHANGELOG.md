@@ -1,5 +1,27 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.514...v0.75.515)
+
+## ✨ Features
+
+- scope runtime schemas and deployment environment files ([b93aa1c](https://github.com/stacksjs/stacks/commit/b93aa1c)) _(by Chris Breuer <chris@stacksjs.com>)_
+- deploy the Launchpad website after its isolated API is healthy ([0a40642](https://github.com/stacksjs/stacks/commit/0a40642)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- keep application deployment ownership out of the framework host ([7e5adbc](https://github.com/stacksjs/stacks/commit/7e5adbc)) _(by Chris Breuer <chris@stacksjs.com>)_
+- keep Launchpad deployment ownership in its own repository ([7eab2ab](https://github.com/stacksjs/stacks/commit/7eab2ab)) _(by Chris Breuer <chris@stacksjs.com>)_
+- retry missing and stale recovery-verified backups ([18fa5c1](https://github.com/stacksjs/stacks/commit/18fa5c1)) _(by Chris Breuer <chris@stacksjs.com>)_
+- preserve the dedicated dtsx website deployment owner ([2de1c1f](https://github.com/stacksjs/stacks/commit/2de1c1f)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🎉 Miscellaneous
+
+- Merge remote-tracking branch 'origin/main' into codex/launchpad-service-deploy ([35b7a7d](https://github.com/stacksjs/stacks/commit/35b7a7d)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.513...v0.75.514)
 
 ## 🐛 Bug Fixes
