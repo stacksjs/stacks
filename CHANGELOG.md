@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.522...v0.75.523)
+
+## ✨ Features
+
+- **ui**: support explicit basket totals and tax labels ([f14f0c3](https://github.com/stacksjs/stacks/commit/f14f0c3)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **cli**: preserve native stdin when importing prompts ([d557cee](https://github.com/stacksjs/stacks/commit/d557cee)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh native CLI test inventory ([33eaba4](https://github.com/stacksjs/stacks/commit/33eaba4)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.521...v0.75.522)
 
 ## 🐛 Bug Fixes
