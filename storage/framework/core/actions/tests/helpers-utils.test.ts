@@ -24,7 +24,7 @@ describe('developmentConditionForProject', () => {
     mkdirSync(join(root, 'node_modules/@stacksjs/env/src'), { recursive: true })
     writeFileSync(join(root, 'node_modules/@stacksjs/env/src/index.ts'), '')
 
-    expect(developmentConditionForProject(root)).toBe('--conditions development')
+    expect(developmentConditionForProject(root)).toBe('--conditions=development')
   })
 
   it('leaves published dist-only installs unchanged', () => {

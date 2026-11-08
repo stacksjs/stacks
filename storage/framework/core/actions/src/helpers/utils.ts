@@ -79,7 +79,7 @@ export function publishedActionCandidates(action: string, packageRoot?: string):
 export function developmentConditionForProject(projectRoot: string): string {
   return existsSync(join(projectRoot, 'storage/framework/core'))
     && existsSync(join(projectRoot, 'node_modules/@stacksjs/env/src/index.ts'))
-    ? '--conditions development'
+    ? '--conditions=development'
     : ''
 }
 
