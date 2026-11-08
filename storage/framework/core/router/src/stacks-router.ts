@@ -514,7 +514,7 @@ interface ResourceKindOf {
  */
 type ActiveResourceActions<TOnly extends ResourceAction, TExcept extends ResourceAction>
   = [TOnly] extends [never]
-    ? ([TExcept] extends [never] ? ResourceAction : Exclude<ResourceAction, TExcept>)
+    ? Exclude<ResourceAction, TExcept>
     : TOnly
 
 /** The action files a call needs, given its base and its active actions. */
