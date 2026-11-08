@@ -21,6 +21,7 @@ import { env as envVars } from '@stacksjs/env/runtime'
 import type { QueryBuilderDialect } from './dialect'
 import type { FrameworkSchema } from './framework-schema'
 import type { PoolConfig, ReadPolicyConfig, ReplicaConfig } from './driver-config'
+import { resolvePoolConfig } from './pool-defaults'
 import { getConnectionDefaults } from './defaults'
 import { isLibsqlDriver, isMysqlWire, isVitessSharded, normalizeDatabaseDriver, setConfiguredDatabaseDriver, toQueryBuilderDialect } from './dialect'
 import { relativeMigrationDirectory, resolveMigrationDirectory, snapshotDirForQueryBuilder } from './migration-path'
@@ -512,7 +513,8 @@ function syncDatabaseQueryHooks(): void {
 syncDatabaseQueryHooks()
 
 /**
- * The active connection's pool block, if it declared one.
+ * The active connection's pool: its declared block over the framework's
+ * defaults, with DB_POOL_* from the environment on top (see pool-defaults).
  *
  * SQLite is excluded on purpose: it is embedded and single-connection, so
  * a pool block there is a config mistake rather than something to honor.
@@ -523,7 +525,7 @@ function getPoolConfig(): PoolConfig | undefined {
   if (driver === 'sqlite' || isLibsqlDriver(driver))
     return undefined
   const connections = getDatabaseConfig().connections as Record<string, DbConnectionConfig | undefined>
-  return connections?.[driver]?.pool
+  return resolvePoolConfig(connections?.[driver]?.pool, envVars)
 }
 
 /** Replicas declared on the active connection. */
