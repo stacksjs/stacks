@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.516...v0.75.517)
+
+## 🐛 Bug Fixes
+
+- **validation**: bundle message providers in native executables ([63b2ea7](https://github.com/stacksjs/stacks/commit/63b2ea7)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh native package references after validation coverage ([e347f69](https://github.com/stacksjs/stacks/commit/e347f69)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.515...v0.75.516)
 
 ## 🐛 Bug Fixes
