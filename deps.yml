@@ -7,3 +7,5 @@ dependencies:
   # Immutable packaging repair: the original 2.10.0 Mac artifact targets macOS 27.
   libexpat.github.io: 2.10.0.1
   sqlite: ^3.53.4
+  # Immutable Readline repair used by the native SQLite dependency graph.
+  gnu.org/readline: 8.3.0.1

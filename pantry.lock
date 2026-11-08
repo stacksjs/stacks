@@ -18,6 +18,7 @@
         "bun.sh": "1.4.4",
         "curl.se": "^8.22.0",
         "git-scm.org": "^2.53.0",
+        "gnu.org/readline": "8.3.0.1",
         "libexpat.github.io": "2.10.0.1",
         "sqlite.org": "^3.53.4"
       }
@@ -1536,11 +1537,11 @@
       "source": "pantry",
       "resolved": "registry:gnu.org/mpfr@4.2.2"
     },
-    "gnu.org/readline@8.3.0": {
+    "gnu.org/readline@8.3.0.1": {
       "name": "gnu.org/readline",
-      "version": "8.3.0",
+      "version": "8.3.0.1",
       "source": "pantry",
-      "resolved": "registry:gnu.org/readline@8.3.0"
+      "resolved": "registry:gnu.org/readline@8.3.0.1"
     },
     "invisible-island.net/ncurses@6.6.0": {
       "name": "invisible-island.net/ncurses",

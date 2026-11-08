@@ -279,3 +279,13 @@ checks used by the build contract. A type declaration export without a matching
 runtime file is a package failure, not a successful build. The current public
 implementation is `storage/framework/core/build/src/index.ts`. Use Bun/TS
 for supporting build scripts and pickier for lint.
+
+## Lazy dependencies in published packages
+
+The shared transpiler emits Node-compatible module syntax while retaining Bun
+runtime APIs. This preserves literal `require('package')` calls inside lazy
+functions, so a later `bun build --compile` can discover and embed the dependency.
+Transpiling to the Bun syntax target first rewrites those calls through
+`import.meta.require`, hiding them from the later standalone build. Preserve
+lazy loading at source boundaries and verify both the source and emitted-package
+paths when changing a dependency used only on errors or optional features.
