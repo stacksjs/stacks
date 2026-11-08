@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.519...v0.75.520)
+
+## 🐛 Bug Fixes
+
+- **database**: honor model scopes during schema drift audits ([9d028a2](https://github.com/stacksjs/stacks/commit/9d028a2)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.518...v0.75.519)
 
 ## 🐛 Bug Fixes
