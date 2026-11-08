@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.521...v0.75.522)
+
+## 🐛 Bug Fixes
+
+- **router**: simplify resource action exclusion for declaration builds ([a12f2f7](https://github.com/stacksjs/stacks/commit/a12f2f7)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.520...v0.75.521)
 
 ## 🐛 Bug Fixes
