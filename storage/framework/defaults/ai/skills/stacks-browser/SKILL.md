@@ -106,6 +106,28 @@ authority over amounts, ownership and payment completion. Utility/composable
 re-exports have their own signatures in utils/ and composables/; read the native
 composable skill instead of copying another fixed inventory of globals.
 
+## On-demand 3D model inspection
+
+Import `createModelViewer`, `modelTransform` and the `ModelScene` type from
+`@stacksjs/browser/model-viewer`. This narrow module has no boot side effect or
+external renderer. It renders binary STL, boxes, square tubes and hollow/solid
+cylinders through native WebGL. Node transforms use millimeters (or one consistent
+caller unit), column-major matrices and Euler degrees. STL URLs must be same-origin.
+The renderer owns pointer orbit, pinch/wheel zoom, keyboard controls, responsive
+canvas sizing, one GPU buffer and abortable STL loads. Call `dispose()` on teardown.
+Source/format/context failures report through `onStatus`; provide a fallback.
+
+`<ModelViewer :scene="scene()" label="Frame inspection" poster="/drawing.png" />`
+is the corresponding native STX component. Its scene prop is reactive. It includes
+camera presets, loading/error states and accessible keyboard instructions. Theme
+through inherited `--model-surface`, `--model-ink`, `--model-line`, `--model-height`
+and `--model-mobile-height`. It does not perform CAD booleans, generate print files,
+validate structural strength or prescribe mechanical settings. Keep manufacturing
+geometry, export provenance and domain checks in the application.
+
+Evidence: `core/browser/src/model-viewer.ts`, its retained geometry/parser tests,
+and `tests/unit/model-viewer-component.test.ts` for live STX prop delivery.
+
 ## Source and evidence
 
 `storage/framework/core/browser/src/index.ts`, auto-init.ts, model-loader.ts,

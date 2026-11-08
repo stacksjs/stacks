@@ -1,0 +1,65 @@
+<script server>
+export const label = $props.label || 'Interactive 3D model'
+export const poster = $props.poster || ''
+export const className = $props.className || ''
+</script>
+<script client>
+import type { ModelScene, ModelViewerController } from '@stacksjs/browser/model-viewer'
+import { createModelViewer } from '@stacksjs/browser/model-viewer'
+
+const scene = useReactiveProp('scene', { nodes: [] } as ModelScene)
+const canvas = useRef('modelCanvas')
+const status = state('loading')
+const message = state('')
+let viewer: ModelViewerController | undefined
+onMount(() => {
+  try {
+    viewer = createModelViewer(canvas.current as HTMLCanvasElement, { onStatus: (next, detail) => { status.set(next); message.set(detail || '') } })
+    void viewer.setScene(scene())
+  }
+  catch (error) { status.set('error'); message.set(error instanceof Error ? error.message : 'Interactive 3D could not start.') }
+})
+effect(() => { const next = scene(); if (viewer) void viewer.setScene(next) })
+onDestroy(() => viewer?.dispose())
+</script>
+
+<div class="stx-model-viewer {{ className }}" :data-model-status="status()" data-stx-model-viewer>
+  <div class="stx-model-viewer-toolbar" role="group" aria-label="Model camera">
+    <button type="button" @click="viewer?.view('home')" :disabled="status() !== 'ready'" aria-label="Reset 3D view">Reset view</button>
+    <button type="button" @click="viewer?.view('front')" :disabled="status() !== 'ready'">Front</button>
+    <button type="button" @click="viewer?.view('side')" :disabled="status() !== 'ready'">Side</button>
+    <button type="button" @click="viewer?.view('top')" :disabled="status() !== 'ready'">Top</button>
+    <span class="stx-model-viewer-zoom">
+      <button type="button" @click="viewer?.zoom(0.85)" :disabled="status() !== 'ready'" aria-label="Zoom in">+</button>
+      <button type="button" @click="viewer?.zoom(1.15)" :disabled="status() !== 'ready'" aria-label="Zoom out">−</button>
+    </span>
+  </div>
+  <div class="stx-model-viewer-stage">
+    <canvas ref="modelCanvas" class="stx-model-viewer-canvas" tabindex="0" role="img" aria-label="{{ label }}. Drag to rotate, scroll or pinch to zoom. Arrow keys rotate, plus and minus zoom, Home resets.">Interactive 3D requires a browser with WebGL. Use the drawing and downloads below.</canvas>
+    <div class="stx-model-viewer-loading" :if="status() === 'loading'" role="status">Preparing the model…</div>
+    <div class="stx-model-viewer-fallback" :if="status() === 'error'">
+      @if (poster)<img src="{{ poster }}" alt="{{ label }} drawing" width="1400" height="1000">@endif
+      <p role="status">{{ message() }}</p>
+    </div>
+  </div>
+  <p class="stx-model-viewer-hint">Drag to orbit. Scroll or pinch to zoom. Keyboard: arrows, +, −, Home.</p>
+</div>
+
+<style>
+.stx-model-viewer{--model-surface:#eef0e9;--model-ink:#213e30;--model-line:#cbd3c7;position:relative;border-radius:16px;overflow:hidden;background:var(--model-surface);color:var(--model-ink)}
+.stx-model-viewer-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:4px;padding:14px 16px;border-bottom:1px solid var(--model-line)}
+.stx-model-viewer-toolbar button{background:transparent;border:1px solid transparent;border-radius:8px;padding:8px 12px;min-height:42px;color:inherit;font:inherit;font-size:.8rem;cursor:pointer}
+.stx-model-viewer-toolbar button:hover{background:var(--model-line)}
+.stx-model-viewer-toolbar button:focus-visible,.stx-model-viewer-canvas:focus-visible{outline:2px solid currentColor;outline-offset:-3px}
+.stx-model-viewer-toolbar button:disabled{opacity:.45;cursor:default}
+.stx-model-viewer-zoom{display:flex;margin-left:auto}
+.stx-model-viewer-stage{position:relative;height:var(--model-height,520px)}
+.stx-model-viewer-canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+.stx-model-viewer-canvas:active{cursor:grabbing}
+.stx-model-viewer-loading,.stx-model-viewer-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:24px;text-align:center;background:var(--model-surface);font-size:.875rem}
+.stx-model-viewer-loading{pointer-events:none;background:transparent;justify-content:flex-end}
+.stx-model-viewer-fallback img{max-width:100%;max-height:80%;object-fit:contain;mix-blend-mode:multiply}
+.stx-model-viewer-fallback p{max-width:420px}
+.stx-model-viewer-hint{margin:0;padding:12px 20px;font-size:.75rem;border-top:1px solid var(--model-line)}
+@media(max-width:600px){.stx-model-viewer-stage{height:var(--model-mobile-height,340px)}.stx-model-viewer-toolbar{padding:8px}.stx-model-viewer-toolbar button{padding:7px 9px}.stx-model-viewer-hint{padding:12px;font-size:.7rem}}
+</style>

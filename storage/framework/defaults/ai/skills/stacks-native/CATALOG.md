@@ -19,7 +19,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/arrays` | [`stacks-arrays`](../stacks-arrays/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/arrays/src/index.ts) | 12 |
 | `@stacksjs/audio` | [`stacks-audio`](../stacks-audio/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/audio/src/index.ts) | 3 |
 | `@stacksjs/auth` | [`stacks-auth`](../stacks-auth/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/auth/src/index.ts) | 131 |
-| `@stacksjs/browser` | [`stacks-browser`](../stacks-browser/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/browser/src/index.ts) | 9 |
+| `@stacksjs/browser` | [`stacks-browser`](../stacks-browser/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/browser/src/index.ts) | 10 |
 | `@stacksjs/browser-extension` | [`stacks-browser-extension`](../stacks-browser-extension/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/browser-extension/src/index.ts) | 9 |
 | `@stacksjs/buddy` | [`stacks-buddy`](../stacks-buddy/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/buddy/src/index.ts) | 185 |
 | `@stacksjs/build` | [`stacks-build`](../stacks-build/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/build/src/index.ts) | 7 |
@@ -199,7 +199,7 @@ Declared runtime exports: `BrowserQueryBuilder`, `BrowserQueryError`, `browserAu
 
 Local source modules: [src/auto-init.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/browser/src/auto-init.ts), [src/composables/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/browser/src/composables/index.ts), [src/model-loader.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/browser/src/model-loader.ts), [src/types/globals.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/browser/src/types/globals.ts), [src/utils/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/browser/src/utils/index.ts).
 
-Evidence directory: [9 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/browser/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [10 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/browser/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/browser-extension
 

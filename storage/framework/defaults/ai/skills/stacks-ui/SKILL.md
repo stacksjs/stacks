@@ -100,6 +100,14 @@ native input event, without an additional custom event.
 Validate quantities again on the server. Multiple selectors keep independent
 state and do not install global click handlers.
 
+## Native 3D viewer
+
+`<ModelViewer :scene="scene()" label="Model inspection" poster="/drawing.png" />`
+renders a reactive `ModelScene` from `@stacksjs/browser/model-viewer`, using native
+WebGL without a third-party 3D library. Camera presets, orbit, pinch/wheel zoom,
+keyboard input, responsive backing resolution and drawing fallback are built in.
+See `stacks-browser` for units, geometry, source limits and cleanup contracts.
+
 ## Gotchas
 
 - `config/ui.ts` configures STX topology; `config/css.ts` configures utilities.
