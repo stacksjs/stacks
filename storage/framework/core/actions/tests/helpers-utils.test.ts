@@ -27,6 +27,26 @@ describe('developmentConditionForProject', () => {
     expect(developmentConditionForProject(root)).toBe('--conditions=development')
   })
 
+  it('selects development exports when passed as one spawn argv token', () => {
+    const root = projectRoot()
+    mkdirSync(join(root, 'storage/framework/core'), { recursive: true })
+    mkdirSync(join(root, 'node_modules/@stacksjs/env/src'), { recursive: true })
+    writeFileSync(join(root, 'node_modules/@stacksjs/env/src/index.ts'), '')
+    const dependency = join(root, 'node_modules/condition-witness')
+    mkdirSync(dependency, { recursive: true })
+    writeFileSync(join(dependency, 'package.json'), JSON.stringify({
+      name: 'condition-witness', type: 'module', exports: { development: './development.mjs', default: './default.mjs' },
+    }))
+    writeFileSync(join(dependency, 'development.mjs'), 'export default "development"')
+    writeFileSync(join(dependency, 'default.mjs'), 'export default "default"')
+    writeFileSync(join(root, 'entry.mjs'), 'import value from "condition-witness"; console.log(value)')
+    const child = Bun.spawnSync([process.execPath, developmentConditionForProject(root), join(root, 'entry.mjs')], {
+      cwd: root, stdout: 'pipe', stderr: 'pipe',
+    })
+    expect(child.exitCode, child.stderr.toString()).toBe(0)
+    expect(child.stdout.toString().trim()).toBe('development')
+  })
+
   it('leaves published dist-only installs unchanged', () => {
     const root = projectRoot()
     mkdirSync(join(root, 'storage/framework/core'), { recursive: true })
