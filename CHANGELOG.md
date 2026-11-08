@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.525...v0.75.526)
+
+## ✨ Features
+
+- **browser**: add native WebGL model viewer and reactive STX component ([c6f6d04](https://github.com/stacksjs/stacks/commit/c6f6d04)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh native component inventory after viewer addition ([d0d251e](https://github.com/stacksjs/stacks/commit/d0d251e)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.524...v0.75.525)
 
 ## 🐛 Bug Fixes
