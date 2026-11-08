@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.518...v0.75.519)
+
+## 🐛 Bug Fixes
+
+- **build**: preserve Bun entrypoint guards in published libraries ([27ef240](https://github.com/stacksjs/stacks/commit/27ef240)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.517...v0.75.518)
 
 ## 🐛 Bug Fixes
