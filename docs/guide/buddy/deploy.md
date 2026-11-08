@@ -1,6 +1,6 @@
 ---
 title: Deploy Command
-description: "The  command deploys your Stacks application to cloud infrastructure, handling all aspects of the deployment process including DNS configuration, SSL certi..."
+description: "The buddy deploy command deploys your Stacks application to cloud infrastructure, handling all aspects of the deployment process including DNS configuration, SSL certificates, and CDN setup."
 ---
 # Deploy Command
 

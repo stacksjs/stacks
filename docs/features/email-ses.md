@@ -1,6 +1,6 @@
 ---
 title: Sending email via AWS SES
-description: "This page is the practical checklist for routing outgoing mail through AWS SES from a Stacks app. The companion Email Server page covers the EC2-based mail..."
+description: "This page is the practical checklist for routing outgoing mail through AWS SES from a Stacks app."
 ---
 # Sending email via AWS SES
 

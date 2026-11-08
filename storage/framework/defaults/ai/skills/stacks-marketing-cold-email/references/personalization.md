@@ -87,4 +87,4 @@ Agents make Level 4 research affordable at scale, and they make invented persona
 - **Allow "no hook found."** When research turns up nothing specific, use the segment-level message instead of a manufactured one.
 - **Review before sending** for Tier 1 and a sample of Tier 2.
 
-The full research rules and the account brief template are in the prospecting skill's account research reference.
+The full research rules and the account brief template are in the stacks-marketing-prospecting skill's account research reference.

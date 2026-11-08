@@ -107,7 +107,7 @@ When the user says "my offer isn't converting" or "I want to improve my offer":
 4. **Audit the anatomy** - which of the six components is missing or weak?
 5. **Pick one lever to fix this iteration** - don't rebuild everything. The biggest lever is usually the one currently scoring lowest.
 6. **Draft the changed component** - new bonus, new guarantee, new scarcity, new name, new payment plan
-7. **Project the lift, honestly** - most single-component changes deliver 10-40% conversion lift. Anyone promising 5x is selling something. Two consecutive iterations on different levers can stack to 2-3x.
+7. **Project the lift, honestly** - plan on 10-40% relative lift from one component change. Multiply the lifts, don't add them: +20% then +30% = `1.20 × 1.30 = 1.56` (2% → 3.12%, +1.12 percentage points). Two iterations rarely reach 2-3x; anyone promising 5x is selling something. Confirm the combined offer with a test (see ab-testing).
 
 ---
 

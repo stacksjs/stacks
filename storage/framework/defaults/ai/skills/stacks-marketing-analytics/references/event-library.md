@@ -211,8 +211,8 @@ referrer: "https://google.com"
 ```
 source: "google"
 medium: "cpc"
-campaign: "spring_sale"
-content: "hero_cta"
+campaign: "spring-sale"
+content: "hero-cta"
 ```
 
 **Product Context (E-commerce):**

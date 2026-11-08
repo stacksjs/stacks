@@ -1,6 +1,6 @@
 ---
 title: Changelog Command
-description: "The  command generates a  file based on your conventional commit history, providing a clear record of changes across versions."
+description: "The buddy changelog command generates a CHANGELOG.md file based on your conventional commit history, providing a clear record of changes across versions."
 ---
 # Changelog Command
 

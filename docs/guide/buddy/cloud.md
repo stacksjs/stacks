@@ -1,6 +1,6 @@
 ---
 title: Cloud Command
-description: The  command provides tools for interacting with and managing your Stacks cloud infrastructure on AWS.
+description: "The buddy cloud command provides tools for interacting with and managing your Stacks cloud infrastructure on AWS."
 ---
 # Cloud Command
 

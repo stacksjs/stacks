@@ -19,7 +19,7 @@ Product context: check for `.agents/product-marketing.md` and read it if present
 State these up front so you don't rebuild neighboring skills:
 
 - **General event tracking, tracking plans, UTM setup, GA4/GTM** → **stacks-marketing-analytics**. Attribution *assumes tracking exists*. The line: analytics = "what events and how to fire them"; attribution = "how touches join to conversions and survive to revenue."
-- **Ad-platform pixels, CAPI, server-side conversion tracking** → **stacks-marketing-ads** (`references/conversion-tracking.md`). Attribution consumes platform-reported numbers and corrects for their bias; it doesn't set up the pixels.
+- **Ad-platform pixels, CAPI, server-side conversion tracking** → **stacks-marketing-conversion-tracking**. Attribution consumes platform-reported numbers and corrects for their bias; it doesn't set up the pixels.
 - **Pipeline stages, lead lifecycle, CRM revenue dashboards** → **stacks-marketing-revops**. Attribution feeds pipeline data; it doesn't define stages.
 - **Showing up in / measuring AI search** → **stacks-marketing-ai-seo**. Attribution names AI traffic as a blind spot only.
 
@@ -199,25 +199,25 @@ Deliver an **attribution readout**, not a data dump:
 
 ## Tool Integrations
 
-For implementation, see the [tools registry](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/REGISTRY.md). Key tools:
+For implementation, see the [tools registry](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/REGISTRY.md). Key tools:
 
 | Tool | Best For | MCP | Guide |
 |------|----------|:---:|-------|
-| **PostHog** | First-party attribution, identify/merge, funnels | - | [posthog.md](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/integrations/posthog.md) |
-| **GA4** | Web analytics, model comparison, user-id stitching | ✓ | [ga4.md](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/integrations/ga4.md) |
-| **Dub** | Short-link + click attribution | ✓ | [dub-co.md](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/integrations/dub-co.md) |
-| **Segment** | CDP - route identify/track to every destination | - | [segment.md](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/integrations/segment.md) |
-| **HubSpot** | CRM lead-source + self-reported fields | ✓ | [hubspot.md](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/integrations/hubspot.md) |
-| **Salesforce** | CRM as revenue source of truth | - | [salesforce.md](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/integrations/salesforce.md) |
-| **Supermetrics** | Pull platform numbers into one place to reconcile | ✓ | [supermetrics.md](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/integrations/supermetrics.md) |
-| **RB2B** | De-anonymize B2B website visitors | - | [rb2b.md](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/integrations/rb2b.md) |
+| **PostHog** | First-party attribution, identify/merge, funnels | - | [posthog.md](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/integrations/posthog.md) |
+| **GA4** | Web analytics, model comparison, user-id stitching | ✓ | [ga4.md](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/integrations/ga4.md) |
+| **Dub** | Short-link + click attribution | ✓ | [dub-co.md](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/integrations/dub-co.md) |
+| **Segment** | CDP - route identify/track to every destination | - | [segment.md](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/integrations/segment.md) |
+| **HubSpot** | CRM lead-source + self-reported fields | ✓ | [hubspot.md](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/integrations/hubspot.md) |
+| **Salesforce** | CRM as revenue source of truth | - | [salesforce.md](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/integrations/salesforce.md) |
+| **Supermetrics** | Pull platform numbers into one place to reconcile | ✓ | [supermetrics.md](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/integrations/supermetrics.md) |
+| **RB2B** | De-anonymize B2B website visitors | - | [rb2b.md](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/integrations/rb2b.md) |
 
 ---
 
 ## Related Skills
 
 - **stacks-marketing-analytics** - event tracking, tracking plans, UTMs, GA4/GTM setup. Do this *before* attribution.
-- **stacks-marketing-ads** - ad-platform pixels, CAPI, server-side conversion tracking (`references/conversion-tracking.md`).
+- **stacks-marketing-conversion-tracking** - ad-platform pixels, CAPI, server-side conversion tracking, and tracking audits.
 - **stacks-marketing-revops** - pipeline stages, lead lifecycle, CRM revenue reporting. Attribution feeds it.
 - **stacks-marketing-ai-seo** - the AI-search attribution blind spot in depth.
 - **stacks-marketing-ab-testing** - controlled experiments; the incrementality mindset applied to on-site changes.

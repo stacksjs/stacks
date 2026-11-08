@@ -1,7 +1,7 @@
 > Adapted playbook. Read [the Stacks rules](../stacks-flow/ENGINEERING.md) first. Commit, push, publish, and tracker mutations are conditional on the user's authorization.
 
 
-Spin up a **background agent** to do the research, so you keep working while it reads.
+Spin up a **background agent** to do the research, so you keep working while it reads. Start it with a fresh context window.
 
 Its job:
 

@@ -1,7 +1,7 @@
 # Marketing catalog
 
-Read the selected entrypoint before choosing its workflow. All 50
-source skills are retained at revision 1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff.
+Read the selected entrypoint before choosing its workflow. All 53
+source skills are retained at revision 96798cf38736ecdba015a1d2b0521b0c8f8f41dd.
 
 | Topic | Stacks skill |
 |---|---|
@@ -58,3 +58,6 @@ source skills are retained at revision 1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff.
 
 Framework API references such as stacks-analytics, stacks-email, and stacks-sms
 remain separate from marketing planning.
+| [conversion-tracking](../stacks-marketing-conversion-tracking/SKILL.md) | stacks-marketing-conversion-tracking |
+| [link-building](../stacks-marketing-link-building/SKILL.md) | stacks-marketing-link-building |
+| [reverse-engineer-marketing](../stacks-marketing-reverse-engineer-marketing/SKILL.md) | stacks-marketing-reverse-engineer-marketing |

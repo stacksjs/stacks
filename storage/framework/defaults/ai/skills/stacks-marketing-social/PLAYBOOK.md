@@ -43,10 +43,10 @@ Gather this context (ask if not provided):
 | LinkedIn | B2B, thought leadership | 3-5x/week | Carousels, stories |
 | Twitter/X | Tech, real-time, community | 3-10x/day | Threads, hot takes |
 | Instagram | Visual brands, lifestyle | 1-2 posts + Stories daily | Reels, carousels |
-| TikTok | Brand awareness, younger audiences | 1-4x/day | Short-form video |
+| TikTok | Brand awareness, younger audiences | 1x/day, up to 3x once posts clear a view floor | Short-form video |
 | Facebook | Communities, local businesses | 1-2x/day | Groups, native video |
 
-**For detailed platform strategies**: See [references/platforms.md](references/platforms.md)
+**For detailed platform strategies** (LinkedIn, X, Instagram, TikTok, Facebook, Telegram): See [references/platforms.md](references/platforms.md)
 
 **For hashtag limits and character counts**: See [references/platform-limits.md](references/platform-limits.md)
 
@@ -326,7 +326,7 @@ work:
 1. **Check what's connected.** Ask the user what they schedule with. Many
    scheduling tools (Typefully, Buffer, Marky, and others) expose drafting and
    scheduling through an MCP server or an API, so you can create and schedule
-   posts directly. Check the [tools registry](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/REGISTRY.md) for guides.
+   posts directly. Check the [tools registry](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/REGISTRY.md) for guides.
 2. **Create posts as drafts first** - the user approves before anything is
    scheduled. Never auto-publish without an explicit go-ahead.
 3. **Schedule per the calendar you built** (spacing and platform rules from
@@ -429,7 +429,7 @@ Tools: CapCut (free), Descript, Captions.ai, Premiere Pro
 5. **No CTA** - tell viewers what to do
 6. **Ignoring comments** - engagement in first hour matters
 
-**For video hook formulas and scripting templates**: See [references/short-form-video.md](references/short-form-video.md)
+**For video hook formulas, scripting templates, warming up a new account, staged posting cadence, and finding a winning format**: See [references/short-form-video.md](references/short-form-video.md)
 
 ---
 
@@ -448,5 +448,6 @@ Tools: CapCut (free), Descript, Captions.ai, Premiere Pro
 
 - **stacks-marketing-copywriting**: For longer-form content that feeds social
 - **stacks-marketing-launch**: For coordinating social with launches
+- **stacks-marketing-reverse-engineer-marketing**: For reading a company's content patterns, house style, and formulas across every channel
 - **stacks-marketing-emails**: For nurturing social audience via email
 - **stacks-marketing-psychology**: For understanding what drives engagement

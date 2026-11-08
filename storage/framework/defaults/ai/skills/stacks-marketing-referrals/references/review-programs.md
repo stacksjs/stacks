@@ -88,7 +88,7 @@ Return a concise program or response packet with:
 
 ## Tools and Handoffs
 
-For configured API access, consult [Trustpilot](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/integrations/trustpilot.md), [G2](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/integrations/g2.md), and the [tool registry](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/REGISTRY.md#reviews). These guides describe different capabilities; do not infer that a read API can create invitations or public replies. Dashboard workflows and a simple private spreadsheet can be sufficient. Do not require a paid tool for a single response.
+For configured API access, consult [Trustpilot](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/integrations/trustpilot.md), [G2](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/integrations/g2.md), and the [tool registry](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/REGISTRY.md#reviews). These guides describe different capabilities; do not infer that a read API can create invitations or public replies. Dashboard workflows and a simple private spreadsheet can be sufficient. Do not require a paid tool for a single response.
 
 - **stacks-marketing-customer-research** - mine themes and language from existing reviews; do not turn research selection into invitation gating.
 - **cro / copywriting** - present permissioned proof on conversion pages.

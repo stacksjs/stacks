@@ -112,6 +112,19 @@
         "Makes no unnecessary rewrites and introduces no new tells"
       ],
       "files": []
+    },
+    {
+      "id": 9,
+      "prompt": "Just fix the headline, it feels flat. Leave the rest alone.\n\nHeadline: Better invoicing for small agencies\nSubhead: Ledgerly sends invoices the day a project milestone closes and chases late payers for you, so most clients pay within 9 days.\nBody: We built Ledgerly after our own agency waited 61 days on a $40k invoice. Connect Asana or ClickUp, pick which milestones bill, and Ledgerly drafts the invoice for you to approve.\nCTA: Start a 14-day trial",
+      "expected_output": "Should treat this as a point edit (Situation C). Should rewrite only the headline, drawing on facts already in the copy (milestone-triggered invoices, 9-day payment, the 61-day story), and return just the new headline with a one-line reason, optionally one alternative. Should not run or report the Seven Sweeps, and should not rewrite the subhead, body, or CTA. May flag a serious problem elsewhere in one line without fixing it.",
+      "assertions": [
+        "Changes only the headline",
+        "Does not rewrite or return edited versions of the subhead, body, or CTA",
+        "Does not produce a seven-sweep report",
+        "New headline uses facts already present in the copy and invents no new stats",
+        "Gives a short reason for the change"
+      ],
+      "files": []
     }
   ]
 }

@@ -1,6 +1,6 @@
 ---
 title: Commit Command
-description: The  command provides an interactive interface for creating conventional commits with proper formatting and messages.
+description: "The buddy commit command provides an interactive interface for creating conventional commits with proper formatting and messages."
 ---
 # Commit Command
 

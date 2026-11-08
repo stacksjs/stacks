@@ -219,7 +219,11 @@ const CLAIMS: Claim[] = [
   {
     what: 'skills',
     measure: () => countDirs(SKILLS),
-    sites: [{ file: `${SKILLS}/stacks-writing-for-agents/SKILL.md`, pattern: /ships (\d+) skills/ }],
+    sites: [
+      { file: `${SKILLS}/stacks-writing-for-agents/SKILL.md`, pattern: /ships (\d+) skills/ },
+      { file: `docs/skills.md`, pattern: /The (\d+) agent skills Stacks ships/ },
+      { file: `docs/skills.md`, pattern: /ships \*\*(\d+) agent skills\*\*/ },
+    ],
   },
 ]
 

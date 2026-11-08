@@ -45,7 +45,7 @@ Hierarchy of data defensibility:
 5. Public (anyone can use-weakest)
 
 ### 3. Clean URL Structure
-**Use subfolders, not subdomains** - subfolders consolidate domain authority while subdomains split it:
+**Prefer subfolders to subdomains.** Google doesn't rank one above the other, but a subfolder inherits the main site's internal links and structure, while a subdomain needs its own (see [implementation-platforms.md](references/implementation-platforms.md)):
 - Good: `yoursite.com/templates/resume/`
 - Bad: `templates.yoursite.com/resume/`
 

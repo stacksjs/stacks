@@ -1,6 +1,6 @@
 ---
 title: Clean Command
-description: "The  command removes all nodemodules directories and lock files from your project, providing a clean slate for dependency reinstallation."
+description: "The buddy clean command removes all nodemodules directories and lock files from your project, providing a clean slate for dependency reinstallation."
 ---
 # Clean Command
 

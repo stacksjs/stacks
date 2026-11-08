@@ -2,7 +2,7 @@
 
 Being cited by an AI engine and being recommended by it are **two different outcomes governed by two different systems**. A citation means your page was useful enough to pull information from. A recommendation means the model put your brand on the buyer's shortlist. Optimizing for the first does not automatically earn the second - and for smaller brands, conflating them leads to content strategies that can actively help competitors.
 
-Source note: the analysis and data in this reference draw on Lily Ray's (Amsive) 2026 study of B2B "best [category] software" queries, behavioral studies by Scrunch and SimilarWeb, and commentary by John-Henry Scherck (Growth Plays).
+Source note: the analysis and data in this reference draw on Lily Ray's (Amsive) 2026 study of B2B "best [category] software" queries, behavioral studies by Scrunch and SimilarWeb, and commentary by John-Henry Scherck (Growth Plays). The citation-mix taxonomy and decision rules are adapted (re-expressed and restructured) from Profound's MIT-licensed ai-citation-mix-strategist skill, credited.
 
 ---
 
@@ -59,6 +59,37 @@ Recommendation is a consensus signal. The inputs the models weigh live mostly of
 The test to apply before investing in another self-ranked guide: *if a model ignored everything on our domain, would the rest of the web still put us on the shortlist?* If not, that gap is the priority. AEO discourse often stops at "are we in the answer?" - the better question is "are we credible enough to be recommended?"
 
 The encouraging flip side: earning an AI recommendation is harder to game than a top search ranking ever was. The durable strategy is the same at every stage - be the best fit for a clear set of buyers, and give those buyers reasons to talk about you in public, where the models can retrieve it.
+
+---
+
+## Reading the Citation Mix Before Picking Channels
+
+"Do more PR" and "post on Reddit" are guesses until you know which sources the engines actually cite for your prompts. The mix differs sharply by engine and industry. Profound's analysis of 11.84 billion citations across eight models and 29 industries found about 57% went to company-operated sites overall, with ChatGPT at 47% and Gemini at 69%; in 24 of 29 industries, the median Profound customer got more citations from brand sites than from earned or social sources (Profound, July 2026). Profound sells AI visibility tracking, so treat this as vendor research. Ahrefs Brand Radar, Semrush, Peec AI, and Otterly also report cited domains you can classify the same way.
+
+**Classify every cited source** across a stable prompt sample, split by engine and prompt cluster:
+
+| Class | Examples | Roll-up |
+|---|---|---|
+| Your own site | Product, docs, pricing, blog | Owned |
+| Competitor or adjacent company site | A rival's comparison page, a partner's docs | Owned (someone else's) |
+| Earned editorial | Trade press, independent reviews, newsletters | Earned |
+| Institutional or primary authority | Standards bodies, government, universities, analyst firms | Earned |
+| PR wire | Press release distribution | Earned |
+| Social and user-generated | Reddit, YouTube, LinkedIn, forums | Community |
+| Marketplace, directory, or review platform | G2, Capterra, app stores, Amazon | Community |
+| Other or unknown | Anything you can't classify yet | Unclassified |
+
+Diagnose with the granular classes; report to executives with the three roll-ups. Separate sources that cite *you* from sources that only shape the surrounding answer.
+
+**Then follow the mix:**
+
+- **Engines already cite company sites, and yours lacks the facts:** strengthen owned content first. State specific, current facts on the page that should own them.
+- **Editorial or institutional sources dominate:** pursue earned coverage and analyst inclusion. The **stacks-marketing-link-building** skill turns the cited pages into a prospect list.
+- **Communities contribute materially:** participate where you can do it honestly and in your own name. Skip communities the engines don't cite.
+- **Competitor pages get cited:** read them for the facts and framing you're missing. Don't copy them.
+- **Engines disagree:** plan per engine. A blended average can hide opposite behavior.
+
+Re-measure on the same prompt cohort over time; mixes shift with retrieval updates (see the volatility section in [agent-readiness.md](agent-readiness.md)).
 
 ---
 

@@ -2,7 +2,7 @@
 
 Scripts for the first 30 seconds of a cold call, voicemails, and the pushback that comes right after the opener. Internalize the structure and say it in your own words. Prospects can hear reading.
 
-For where calls fit in a multichannel cadence (timing, attempts, which tiers get calls) and the rules on Do Not Call lists and AI voice, see the stacks-marketing-cold-email skill's multichannel cadence reference and the prospecting skill's compliance reference.
+For where calls fit in a multichannel cadence (timing, attempts, which tiers get calls) and the rules on Do Not Call lists and AI voice, see the stacks-marketing-cold-email skill's multichannel cadence reference and the stacks-marketing-prospecting skill's compliance reference.
 
 ## The first 30 seconds
 

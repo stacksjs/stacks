@@ -218,11 +218,19 @@ Track these leading indicators of churn:
 | Billing page visits increase | High | Days before cancel |
 | Team seats removed | High | 1-2 weeks before cancel |
 | Data export initiated | Critical | Days before cancel |
-| NPS score drops below 6 | Medium | 1-3 months before cancel |
+| Individual recommendation rating is 0-6 (detractor) | Medium | 1-3 months before cancel |
 
 ### Health Score Model
 
-Build a simple health score (0-100) from weighted signals:
+Build a simple health score (0-100) from weighted signals. Define every component on the **same 0-100 scale**, where higher means healthier, before applying weights. Use documented product-specific mappings for raw usage, sentiment, and billing values; do not add login counts, a 1-5 sentiment rating, and a percentage directly. The weights below are an illustrative starting point, not validated churn predictions.
+
+Treat missing or stale signals as unavailable, rather than automatically healthy or zero. Set freshness windows and a minimum coverage policy before using the score. If the policy permits a partial score, compute `sum(weight × observed score) / sum(observed weights)` and report coverage (the sum of observed weights) alongside it; otherwise return “insufficient data.” All unavailable means no score. For example, only login (80) and feature usage (60) produce `(0.30×80 + 0.25×60)/0.55 = 70.91`, with 55% coverage. Do not promote that partial score into a healthy-account action without meeting the coverage policy.
+
+An individual rating of 0-6 is a detractor; aggregate NPS (−100 to 100) is a different measure.
+
+[Gainsight's measure-weight documentation](https://support.gainsight.com/gainsight_nxt/05Scorecards/02Admin_Guides/Measure_Weights_in_Scorecards) explains redistribution for unavailable measures.
+
+Illustrative complete-data model:
 
 ```
 Health Score = (
@@ -233,6 +241,8 @@ Health Score = (
   Engagement score      × 0.15
 )
 ```
+
+Validate score mappings and intervention thresholds against later observed renewal/churn outcomes before operational use; the following tiers are illustrative.
 
 | Score | Status | Action |
 |-------|--------|--------|
@@ -356,7 +366,7 @@ Test one variable at a time:
 | Offer presentation (modal vs full page) | Full page gets more attention | Save rate |
 | Copy tone (empathetic vs direct) | Empathetic reduces friction | Save rate |
 
-**How to run cancel flow experiments:** Use the **stacks-marketing-ab-testing** skill to design statistically rigorous tests. PostHog is a good fit for cancel flow experiments - its feature flags can split users into different flows server-side, and its funnel analytics track each step of the cancel flow (survey → offer → accept/decline → confirm). See the [PostHog integration guide](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/integrations/posthog.md) for setup.
+**How to run cancel flow experiments:** Use the **stacks-marketing-ab-testing** skill to design statistically rigorous tests. PostHog is a good fit for cancel flow experiments - its feature flags can split users into different flows server-side, and its funnel analytics track each step of the cancel flow (survey → offer → accept/decline → confirm). See the [PostHog integration guide](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/integrations/posthog.md) for setup.
 
 ---
 
@@ -377,7 +387,7 @@ Test one variable at a time:
 
 ## Tool Integrations
 
-For implementation, see the [tools registry](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/REGISTRY.md).
+For implementation, see the [tools registry](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/REGISTRY.md).
 
 ### Retention Platforms
 

@@ -1,6 +1,6 @@
 ---
 title: Payments Package
-description: "provides Stripe customers, payment intents, checkout sessions, subscriptions, payment methods, invoices, products, prices, coupons, transactions, and signe..."
+description: "@stacksjs/payments provides Stripe customers, payment intents, checkout sessions, subscriptions, payment methods, invoices, products, prices, coupons, transactions, and signed webhooks."
 ---
 # Payments
 

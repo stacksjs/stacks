@@ -15,7 +15,7 @@ Run it in three passes: before the switch, at the switch, and in the first two w
 **Forms and conversions**
 - [ ] Submit every form with a test entry and confirm it reaches the inbox, CRM, or tool it should
 - [ ] Confirmation messages and redirects work, and spam protection doesn't block real submissions
-- [ ] Conversion tracking fires on the confirmed submission, not the button click (the `conversion-tracking` skill covers the setup and the test)
+- [ ] Conversion tracking fires on the confirmed submission, not the button click (the `stacks-marketing-conversion-tracking` skill covers the setup and the test)
 - [ ] Analytics is installed once, on every page, with internal traffic filtered
 - [ ] Consent banner works and tags respect it
 
@@ -37,7 +37,7 @@ Run it in three passes: before the switch, at the switch, and in the first two w
 - [ ] You know how to roll back on this platform, and someone has done it once. Examples: Vercel and Netlify promote a previous deployment; Webflow restores a site backup; WordPress restores from a backup plugin or host snapshot; Ploy ◆ promotes a previous deploy from its Deploys screen (its CLI always publishes to production, with no staging target, so preview before publishing).
 - [ ] DNS TTL lowered a day ahead if the switch involves DNS changes
 
-◆ marks a [Verified Partner](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/REGISTRY.md#verified-partners) of this repository: disclosure, not endorsement.
+◆ marks a [Verified Partner](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/REGISTRY.md#verified-partners) of this repository: disclosure, not endorsement.
 
 ## At the switch
 

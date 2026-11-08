@@ -403,11 +403,14 @@ Don't rely on email alone. Show payment failures in the app:
 ### ROI Calculation
 
 ```
-Monthly failed payment MRR:        $10,000
-Current recovery rate:              30% ($3,000 recovered)
-Target recovery rate:               60% ($6,000 recovered)
-Monthly improvement:                $3,000/month
-Annual improvement:                 $36,000/year
-Cost of dunning optimization:       ~$200-500/month (tooling)
-ROI:                                6-15x
+Assumed failed invoice amount:       $10,000/month
+Baseline collected amount:           30% ($3,000/month)
+Scenario collected amount:           60% ($6,000/month)
+Additional recovered cash:           $3,000/month
+If repeated for 12 months:           $36,000/year
+Assumed incremental tooling cost:    $200-500/month
+Recovered-revenue / tooling ratio:   6-15x
+After tooling alone / tooling cost:  5-14x (500-1,400%)
 ```
+
+The 6-15x is recovered cash ÷ tooling cost. Net of tooling it is 5-14x (`(3,000 - 500) / 500 = 5`; `(3,000 - 200) / 200 = 14`), before labor and payment fees. Validate the 60% recovery target against your own baseline. See [gross versus net profit](https://stripe.com/resources/more/gross-vs-net-profit-what-businesses-need-to-know).

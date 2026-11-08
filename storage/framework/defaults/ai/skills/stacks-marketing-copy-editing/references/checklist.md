@@ -2,8 +2,32 @@
 
 Use this checklist alongside the Seven Sweeps Framework (see SKILL.md) as a final QA pass before delivering edited copy.
 
+## Pick the Edit Mode
+
+Decide what you were handed before running any sweep. The mode sets how much you're allowed to change.
+
+| Mode | Signs | What to do |
+|---|---|---|
+| **A. Blank or slop** | Generic company-speak, AI mush, no point of view | Run all seven sweeps. You may rebuild sentences from the underlying facts; never invent stats, customers, or results |
+| **B. Real voice** | A clear angle or opinion, recognizable word choices, rough execution | Run all seven sweeps as restoration. Keep their argument, vocabulary, and emphasis. Fix the buried lead, vague lines, AI tells, and structure |
+| **C. Point edit** | "Fix this headline," "is this sentence OK?", "tighten paragraph two" | Skip the sweeps. Use point-edit mode below |
+
+**Point-edit mode**
+- [ ] Change only the line, word, or section named, plus the minimum around it needed for the edit to read cleanly (a pronoun, a transition)
+- [ ] Check the edit against the AI Tells list and the surrounding voice, so the new line doesn't stand out
+- [ ] Return only the changed text with a one-line reason per change, and offer one alternative if the choice is close
+- [ ] Mention a serious problem elsewhere in one line at the end (a false claim, a broken CTA) without fixing it unasked
+- [ ] Don't rewrite neighboring lines, add sections, or run a full sweep report
+
+**Reading taste (B and C).** What the author gave you is evidence of their choices. Their vocabulary is a voice decision ("stuff" and "ship" stay), where they spent words is a priority decision, and what they left out is a scope decision. Match those; don't swap in your own.
+
+**Leave-it-alone test (all modes).** For each change, ask whether it's measurably better or just different. Revert anything you can't give a reason for.
+
+*Modes adapted from Profound's `improved-copywriting` and Wispr Flow's `stacks-marketing-copy-editing` skills ([skills-marketing-library](https://github.com/retieedra-profound/skills-marketing-library), MIT).*
+
 ## Before You Start
 
+- [ ] Pick the edit mode (above); for a point edit, stop here and use point-edit mode
 - [ ] Understand the goal of this copy
 - [ ] Know the target audience
 - [ ] Identify the desired action

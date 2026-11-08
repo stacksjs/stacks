@@ -11,7 +11,7 @@ the other sections answer "which package", these answer "what do I do now".
 [Flow](/skills/craft/flow) is the router over them, and
 [Flows](/skills/flows) walks the routes they form.
 
-34 skills.
+35 skills.
 
 | Skill | What it is for |
 |---|---|
@@ -53,3 +53,4 @@ the other sections answer "which package", these answer "what do I do now".
 Every page here describes one `SKILL.md` under
 [`storage/framework/defaults/ai/skills`](https://github.com/stacksjs/stacks/tree/main/storage/framework/defaults/ai/skills).
 See [Using skills](/skills/using) to wire them into your agent.
+| [Software Factory](/skills/craft/software-factory) | Design recurring agent work across tickets, Git, runners and observability. |

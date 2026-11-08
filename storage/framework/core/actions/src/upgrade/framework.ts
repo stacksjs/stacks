@@ -39,12 +39,14 @@ import {
   detectDependencyInstaller,
   resolveDependencyRefreshCommand,
   resolvePantryExecutable,
+  runPostSyncAiRefresh,
   runPostSyncDatabaseTypesRefresh,
   runPostSyncDependencyRefresh,
   runPostSyncMigration,
   shouldRefreshPostSyncDependencies,
   shouldRunPostSyncHooks,
 } from './framework-hooks'
+import { detectProjectAiProviders } from './package-project'
 import { describeDanglingRouteActions, findDanglingRouteActions, pruneRetiredScaffoldRoutes } from './route-actions'
 
 interface UpgradeOptions {
@@ -255,24 +257,6 @@ if (ownHashBefore !== 0n && ownHashAfter !== 0n && ownHashBefore !== ownHashAfte
   process.exit(code ?? 0)
 }
 
-// Persist channel choice (not when pinning a specific version). We also record
-// the synced commit sha so the next `buddy update` can short-circuit when
-// nothing has moved. This runs only in the FINAL executing instance: when the
-// upgrade re-execs (above), the parent exits before reaching here, so the
-// re-exec'd child is the one that writes both files exactly once.
-//
-// The --force path skips the precheck, so `resolvedRemoteSha` may be null here
-// — re-fetch once so a forced sync still records a fresh sha.
-if (!ctx.targetVersion) {
-  writeChannel(channelFile, ctx.channel)
-  if (!resolvedRemoteSha)
-    resolvedRemoteSha = await getRemoteSha(ctx, usingLocal, detectedLocal)
-  if (resolvedRemoteSha)
-    writeSyncedVersion(versionFile, ctx.channel, resolvedRemoteSha)
-}
-
-console.log(`✔ ${resolveSuccessMessage(ctx, currentVersion, newVersion, currentChannel, !!options.force)}`)
-
 // Per-path summary — useful when an update touches >1 area so the user can
 // see "ah, defaults moved a lot too".
 console.log('Sync summary:')
@@ -315,13 +299,31 @@ for (const { managed, summary } of perPath) {
 const runHooks = !options.noPostinstall && options.postinstall !== false
 if (runHooks) {
   try {
-    await runPostSyncHooks({ aggregate, perPath, projectRoot, alreadyRestarted })
+    await runPostSyncHooks({ aggregate, perPath, projectRoot, alreadyRestarted: alreadyRestarted || !!options.force })
   }
   catch (err) {
     console.error(`Post-sync hooks failed: ${(err as Error)?.message || err}`)
     process.exit(ExitCode.FatalError)
   }
 }
+
+// Persist channel choice (not when pinning a specific version). We also record
+// the synced commit sha so the next `buddy update` can short-circuit when
+// nothing has moved. This runs only in the FINAL executing instance: when the
+// upgrade re-execs (above), the parent exits before reaching here, so the
+// re-exec'd child is the one that writes both files exactly once.
+//
+// The --force path skips the precheck, so `resolvedRemoteSha` may be null here
+// — re-fetch once so a forced sync still records a fresh sha.
+if (!ctx.targetVersion) {
+  writeChannel(channelFile, ctx.channel)
+  if (!resolvedRemoteSha)
+    resolvedRemoteSha = await getRemoteSha(ctx, usingLocal, detectedLocal)
+  if (resolvedRemoteSha)
+    writeSyncedVersion(versionFile, ctx.channel, resolvedRemoteSha)
+}
+
+console.log(`✔ ${resolveSuccessMessage(ctx, currentVersion, newVersion, currentChannel, !!options.force)}`)
 
 if (ctx.channel === 'canary' && !ctx.targetVersion) {
   console.warn('⚠ Canary builds may contain bugs or breaking changes. Not recommended for production.')
@@ -484,7 +486,7 @@ async function runDryRunPreview(): Promise<void> {
   if (!runHooks) {
     console.log('    - skip post-sync hooks (--no-postinstall)')
   }
-  else if (aggregate.added + aggregate.changed + aggregate.removed === 0) {
+  else if (aggregate.added + aggregate.changed + aggregate.removed === 0 && !options.force) {
     console.log('    - skip post-sync hooks (nothing changed)')
   }
   else {
@@ -496,12 +498,15 @@ async function runDryRunPreview(): Promise<void> {
       if (summary.added + summary.changed === 0) return false
       return pkgJsonInTree(join(projectRoot, managed.localPath))
     })
-    if (corePkgChanged)
-      console.log('    - run `bun install` to refresh dependencies')
+    if (shouldRefreshPostSyncDependencies(corePkgChanged, !!options.force)) {
+      const installer = detectDependencyInstaller(existsSync(join(projectRoot, 'pantry.lock')))
+      console.log(`    - run \`${installer} install --force\` to refresh dependencies`)
+    }
     if (existsSync(join(projectRoot, 'database', 'types.d.ts')))
       console.log('    - regenerate database/types.d.ts')
     if (existsSync(join(projectRoot, 'database', 'migrations')))
       console.log('    - run pending migrations')
+    console.log(`    - refresh AI setup for ${detectProjectAiProviders(projectRoot).join(', ')} (including bundled skills)`)
   }
 
   if (sawRemoved > 0)
@@ -811,6 +816,15 @@ async function runPostSyncHooks(args: {
       spawn: spawnOptions => Bun.spawn(spawnOptions),
     })
   }
+
+  // The new skill sources alone do not add new Claude links or refresh copied
+  // provider files. Use a fresh CLI process against the just-synced defaults.
+  console.log('Refreshing AI setup and bundled skills...')
+  await runPostSyncAiRefresh({
+    cli: [process.argv[0] || 'bun', p.frameworkPath('core/buddy/src/cli.ts')],
+    projectRoot,
+    spawn: spawnOptions => Bun.spawn(spawnOptions),
+  })
 }
 
 /**

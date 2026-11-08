@@ -10,9 +10,8 @@ import { join, relative } from 'node:path'
 import process from 'node:process'
 import { runCommand } from '@stacksjs/cli'
 import { installedDefaultsVersion } from '@stacksjs/path'
-import { runPostSyncDatabaseTypesRefresh } from './framework-hooks'
+import { runPostSyncAiRefresh, runPostSyncDatabaseTypesRefresh } from './framework-hooks'
 import {
-  detectProjectAiProviders,
   measureDefaultsDrift,
   migratePackageProjectManifest,
   migratePackageProjectTsconfig,
@@ -681,12 +680,16 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
   if (changes.length > 0 || dependenciesNeedInstall || structureChanges.length > 0 || options.force)
     await regenerateDatabaseTypes(projectRoot)
 
-  for (const provider of detectProjectAiProviders(projectRoot)) {
-    const result = await runCommand(`./buddy setup:ai ${provider} --force`, { cwd: projectRoot })
-    if (result.isErr) {
-      console.error(`\n✗ AI setup refresh failed for ${provider}. Re-run \`buddy setup:ai ${provider} --force\`.\n`)
-      process.exit(1)
-    }
+  try {
+    await runPostSyncAiRefresh({
+      cli: ['./buddy'],
+      projectRoot,
+      spawn: spawnOptions => Bun.spawn(spawnOptions),
+    })
+  }
+  catch (err) {
+    console.error(`\n✗ ${(err as Error).message}\n`)
+    process.exit(1)
   }
 
   const didChange = changes.length > 0

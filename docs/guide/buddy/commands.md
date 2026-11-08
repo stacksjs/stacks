@@ -5956,7 +5956,7 @@ Upgrade the Stacks framework to the latest version
 | `--allow-downgrade` | Accept a release that moves a dependency this app declares to an older version (refused by default) | boolean, optional | `false` |
 | `-f`, `--force` | Force re-download, bypassing cache and version checks | boolean, optional | `false` |
 | `--from` | Sync from a local stacks checkout (e.g. ~/Code/stacks). Skips GitHub. | value, required | - |
-| `--no-postinstall` | Skip post-sync hooks (auto-imports, bun install, migrate) | boolean, optional, negated | `true` |
+| `--no-postinstall` | Skip dependency installation and post-sync hooks (auto-imports, database types, migrations, AI setup) | boolean, optional, negated | `true` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 Examples:

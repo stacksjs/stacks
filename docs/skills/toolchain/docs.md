@@ -1,12 +1,12 @@
 ---
 title: "Docs skill"
-description: "Use when building or configuring documentation for a Stacks project - BunPress setup, doc generation, navigation, sidebar structure, or documentation meta/SEO. Covers @stacksjs/docs and config/docs.ts."
+description: "Use when auditing, writing, building or configuring Stacks documentation, including source accuracy, generated references, snippets, links, navigation and metadata.
 ---
 # Docs
 
 `stacks-docs` · Native Stacks · model-invoked
 
-Use when building or configuring documentation for a Stacks project - BunPress setup, doc generation, navigation, sidebar structure, or documentation meta/SEO. Covers @stacksjs/docs and config/docs.ts.
+Use when auditing, writing, building or configuring Stacks documentation, including source accuracy, generated references, snippets, links, navigation and metadata.
 
 Read the skill for the implementation workflow and its current signatures. The
 [Native capabilities](/skills/platform/native) catalog maps the package to

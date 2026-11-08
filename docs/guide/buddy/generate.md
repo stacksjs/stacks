@@ -1,6 +1,6 @@
 ---
 title: Generate Command
-description: "The  command provides code generation capabilities for various project artifacts, from TypeScript types to IDE helpers and component metadata."
+description: "The buddy generate command provides code generation capabilities for various project artifacts, from TypeScript types to IDE helpers and component metadata."
 ---
 # Generate Command
 

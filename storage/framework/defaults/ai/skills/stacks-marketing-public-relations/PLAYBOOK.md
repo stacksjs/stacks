@@ -148,3 +148,6 @@ Go to [podcast-guest-prep.md](references/podcast-guest-prep.md): research the sh
 
 ### "Build my press page"
 Use the checklist above. Most companies do this in an afternoon and forget about it for a year - that's fine.
+
+### "Get us more backlinks"
+PR earns the highest-ceiling links but takes the most effort. For reclamation, partner pages, best-X lists, and the rest of a link program, use the **stacks-marketing-link-building** skill and treat PR as one of its tactics.

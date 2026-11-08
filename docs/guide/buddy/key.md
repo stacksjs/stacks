@@ -1,6 +1,6 @@
 ---
 title: Key Command
-description: "The  command generates and sets a cryptographically secure application key for your Stacks project, used for encryption and security purposes."
+description: "The buddy key:generate command generates and sets a cryptographically secure application key for your Stacks project, used for encryption and security purposes."
 ---
 # Key Command
 

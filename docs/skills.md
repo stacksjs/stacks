@@ -1,10 +1,10 @@
 ---
 title: Skills
-description: "The 203 agent skills Stacks ships, what each one is for, and how to wire them into your AI coding agent."
+description: "The 207 agent skills Stacks ships, what each one is for, and how to wire them into your AI coding agent."
 ---
 # Skills
 
-Stacks ships **203 agent skills**. Each one is a `SKILL.md` that documents part
+Stacks ships **207 agent skills**. Each one is a `SKILL.md` that documents part
 of the framework, or part of the craft of working in it, authoritatively enough
 that an agent reads it instead of guessing at an API.
 
@@ -90,8 +90,8 @@ credit in each `SKILL.md`. The originals are worth reading on their own.
 [theclaymethod/unslop](https://github.com/theclaymethod/unslop). Their bundled
 notices record upstream revisions, license details, and the Stacks adaptations.
 
-The marketing collection ports all 50 skills from
+The marketing collection ports all 53 skills from
 [coreyhaines31/marketingskills](https://github.com/coreyhaines31/marketingskills).
-The Matt Pocock refresh accounts for all 38 skills in its recorded snapshot,
+The Matt Pocock refresh accounts for all 39 skills in its recorded snapshot,
 including merged workflows and Stacks-native tooling substitutes. See
 [Upstream ports](/skills/upstream) for the source revisions and mapping.

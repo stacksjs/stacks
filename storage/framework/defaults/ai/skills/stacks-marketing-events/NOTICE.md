@@ -1,7 +1,7 @@
 # Source and license
 
 Adapted from [coreyhaines31/marketingskills](https://github.com/coreyhaines31/marketingskills),
-revision [1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff](https://github.com/coreyhaines31/marketingskills/tree/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff),
+revision [96798cf38736ecdba015a1d2b0521b0c8f8f41dd](https://github.com/coreyhaines31/marketingskills/tree/96798cf38736ecdba015a1d2b0521b0c8f8f41dd),
 upstream skill `events`, version 1.0.0.
 The original MIT copyright and permission notice is in [LICENSE](LICENSE).
 

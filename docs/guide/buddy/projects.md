@@ -1,6 +1,6 @@
 ---
 title: Projects Command
-description: "The  command helps you discover and manage all Stacks projects on your system, making it easy to work with multiple projects."
+description: "The buddy projects command helps you discover and manage all Stacks projects on your system, making it easy to work with multiple projects."
 ---
 # Projects Command
 

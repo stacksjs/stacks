@@ -1,6 +1,6 @@
 ---
 title: Scaffolding Commands (Make)
-description: The  commands generate boilerplate code and scaffold new files for your Stacks application.
+description: "The make commands generate boilerplate code and scaffold new files for your Stacks application."
 ---
 # Scaffolding Commands (Make)
 

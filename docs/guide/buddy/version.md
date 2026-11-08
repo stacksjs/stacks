@@ -1,6 +1,6 @@
 ---
 title: Version Command
-description: "The  command displays version information for your Stacks project, including the framework version and Bun runtime version."
+description: "The buddy version command displays version information for your Stacks project, including the framework version and Bun runtime version."
 ---
 # Version Command
 

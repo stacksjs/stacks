@@ -92,6 +92,11 @@ Full primer in `references/aarrr-framework.md`. Quick rule:
 
 Brand and content are **cross-cutting**, not their own AARRR stage - they serve every stage.
 
+When the plan defines stage metrics, every rate divides matching closed
+windows: an activation rate counts only cohorts whose observation window has
+ended (a trial still inside its window is pending, not failed - keep it out of
+the denominator and label it pending).
+
 ## Marketing as investing - the north-star framing
 
 AARRR gives the plan its *structure*. This gives it its *spine*. Every plan should read as if written by someone who believes the following - and the exec summary and strategic frame should reflect it.

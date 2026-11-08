@@ -201,7 +201,7 @@ Early-stage products (or new categories) lack first-party review data. Don't inv
 Personas built this way are provisional: tag each with its proxy source, and replace proxy evidence with first-party evidence as real reviews arrive.
 
 
-Personas should be built from research, not invented. Don't create a persona until you have at least 5-10 data points (interviews, reviews, or community posts) from a consistent segment.
+Personas should be built from research, not invented. Don't create a persona until you have at least 5 independent data points (10 is better) (interviews, reviews, or community posts) from a consistent segment.
 
 ### Persona Structure
 

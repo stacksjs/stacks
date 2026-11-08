@@ -205,6 +205,7 @@ const config: BunPressOptions = {
           collapsed: false,
           items: [
             { text: 'All engineering craft skills', link: '/skills/craft' },
+            { text: 'Software Factory', link: '/skills/craft/software-factory' },
             { text: 'Browse', link: '/skills/craft/browse' },
             { text: 'Codebase design', link: '/skills/craft/codebase-design' },
             { text: 'Domain modeling', link: '/skills/craft/domain-modeling' },
@@ -246,6 +247,9 @@ const config: BunPressOptions = {
           collapsed: true,
           items: [
             { text: 'All marketing skills', link: '/skills/marketing' },
+            { text: 'Marketing Reverse Engineer Marketing', link: '/skills/marketing/marketing-reverse-engineer-marketing' },
+            { text: 'Marketing Link Building', link: '/skills/marketing/marketing-link-building' },
+            { text: 'Marketing Conversion Tracking', link: '/skills/marketing/marketing-conversion-tracking' },
             { text: 'Marketing', link: '/skills/marketing/marketing' },
             { text: 'Marketing A/B Testing', link: '/skills/marketing/marketing-ab-testing' },
             { text: 'Marketing Ad Creative', link: '/skills/marketing/marketing-ad-creative' },

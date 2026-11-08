@@ -64,7 +64,7 @@ describe('documentation frontmatter', () => {
 
       // A literal backslash-n means a multi-line snippet was flattened in.
       // ` ;` and ` ()` are what is left where a code span used to be.
-      if (/\\n/.test(text) || /\s;/.test(text) || /\s\(\s*\)/.test(text))
+      if (/\\n/.test(text) || /\s;/.test(text) || /\s\(\s*\)/.test(text) || /\b[Tt]he {2,}(?:command|commands|package)\b/.test(text))
         damaged.push(`${file.replace(root, '')}: ${text.slice(0, 60)}`)
     }
 

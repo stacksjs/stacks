@@ -6,7 +6,7 @@ description: "Positioning, acquisition, conversion, retention, research, and mea
 
 Positioning, acquisition, conversion, retention, research, and measurement.
 
-51 skills.
+54 skills.
 
 | Skill | What it is for |
 |---|---|
@@ -64,3 +64,6 @@ Positioning, acquisition, conversion, retention, research, and measurement.
 
 Every page describes a bundled skill under
 `storage/framework/defaults/ai/skills`. See [Using skills](/skills/using).
+| [Marketing Conversion Tracking](/skills/marketing/marketing-conversion-tracking) | Audit and configure consent-aware conversion measurement. |
+| [Marketing Link Building](/skills/marketing/marketing-link-building) | Find and qualify relevant link opportunities and prepare outreach. |
+| [Marketing Reverse Engineer Marketing](/skills/marketing/marketing-reverse-engineer-marketing) | Build an evidence-backed competitor marketing teardown. |

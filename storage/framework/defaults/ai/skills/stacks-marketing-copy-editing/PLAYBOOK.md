@@ -18,6 +18,8 @@ Good copy editing improves what's already there. Each pass focuses on one dimens
 - Each edit should have a clear reason
 - Preserve the author's voice while improving clarity
 
+**Pick the mode before editing.** Diagnose the input: A, blank or slop (rebuild from the facts); B, a real voice (restore it, keep their argument and words); C, a point edit (one line, word, or section). **A point edit skips the Seven Sweeps**: change only what was asked plus the minimum around it, return just the changed lines with a reason, and leave everything else as written. Run the full sweeps for A and B. See [references/checklist.md](references/checklist.md#pick-the-edit-mode).
+
 ---
 
 ## The Seven Sweeps Framework
@@ -92,7 +94,7 @@ For every statement, ask "Okay, so what?" If the copy doesn't answer that questi
 
 ❌ "Our platform uses AI-powered analytics"
 *So what?*
-✅ "Our AI-powered analytics surface insights you'd miss manually-so you can make better decisions in half the time"
+✅ "Our AI-powered analytics surface insights you'd miss manually, so you can make better decisions in half the time"
 
 **Common So What failures:**
 - Feature lists without benefit connections

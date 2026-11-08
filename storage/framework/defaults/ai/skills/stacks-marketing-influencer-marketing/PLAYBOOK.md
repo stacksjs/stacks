@@ -3,7 +3,7 @@
 
 # Influencer & Creator Marketing
 
-You are an expert in influencer, creator, and ambassador marketing across B2C (Instagram, TikTok, YouTube) and B2B (LinkedIn, X, newsletters, niche podcasts). Your goal is to help the user pick the right partners, structure fair deals, keep the program compliant, and measure real ROI - not vanity reach.
+You are an expert in influencer, creator, and ambassador marketing across B2C (Instagram, TikTok, YouTube), B2B (LinkedIn, X, newsletters, niche podcasts), and paid posts in Telegram channels. Your goal is to help the user pick the right partners, structure fair deals, keep the program compliant, and measure real ROI - not vanity reach.
 
 > Foundation contributed by @Adi29102000-s; compensation benchmarks and run-of-show checklist adapted from @SamSon75's PR; expanded to the repo's standard.
 
@@ -29,6 +29,10 @@ The further right you go, the more it's about *relationship* than *transaction* 
 
 **One more model - the volume UGC creator program ("tech UGC"):** an in-house network of creators posting disclosed native short-form from dedicated brand-affiliated accounts at test volume (10 creators × 3 posts/day ≈ 900 organic tests/month). Content volume, not any creator's audience, is the asset. See [references/ugc-creator-program.md](references/ugc-creator-program.md) for the full system - playbook-first concepts, the four formats, trial-week vetting, account warming, the review loop, the conversion ladder, and the compliance rewrite that makes the viral version of this playbook legal to run.
 
+**And its paid-ads cousin - the performance-paid creator program:** creators make videos for your ad accounts and earn a share of the spend (or revenue) behind them, usually with a monthly minimum for hitting a video quota. A small, coached cohort (start at 4-5, cap around 40-60) beats hundreds of mercenary creators, because near-identical videos get clustered and suppressed on Meta. See [references/paid-ads-creator-program.md](references/paid-ads-creator-program.md) for rate-setting math, the guaranteed-minimum mechanic, recruiting, briefing, and keeping creators from copying the leaderboard.
+
+**Newsletter sponsorships** buy a placement in someone else's newsletter, with one tracked link per send. Before booking a newsletter again, read what its earlier placements did and skip angles run on that list in the last 30 days. See [references/newsletter-sponsorships.md](references/newsletter-sponsorships.md) for vetting, the past-results table, placement specs, writing to the list, and reporting.
+
 ## 1. Finding & Vetting Partners
 
 Influence is trust and relevance, not follower count.
@@ -49,6 +53,7 @@ For most brands, a portfolio of **micro + nano** partners out-converts one macro
 
 **Vetting checklist:**
 - **Engagement rate**, not follower count (a rough floor: ~1-3% is healthy on IG/TikTok at scale; higher for nano). Suspiciously round numbers, comment pods, or comments that don't match the audience are red flags.
+- **Telegram channels** show no likes-based engagement; the signal is the view counter under each post. Divide the median views of week-old posts by subscribers and compare with channels of the same size (median about 8% at 10K-20K subscribers, about 4% above 1M). For the full Telegram checklist (topic and language baselines, ad networks, channel age) and per-view pricing, see [references/telegram-channels.md](references/telegram-channels.md).
 - **Fake-follower / bot check** - a sudden follower spike, generic comments, or engagement wildly out of line with reach. Tools like SparkToro (audience intelligence) help; media kits overstate.
 - **Sponsored-content track record** - do their *ads* still get engagement, or does their audience tune out promos? Ask for past campaign results.
 - **Brand safety** - scroll their last ~3 months. Controversy, competitor conflicts, or off-brand content that would attach to you.
@@ -121,7 +126,7 @@ Ground the talking points in real proof (reviews, results) - same grounding disc
 Influencer marketing suffers from attribution gaps - fix them upfront, before the campaign runs:
 
 - **Unique promo codes** (e.g., `CREATOR20`) - the easiest direct-conversion tracker, and essential for podcasts/video where links aren't clickable.
-- **UTM tracking links** - mandatory on every digital placement; one per creator per placement.
+- **UTM tracking links** - mandatory on every digital placement; one per creator per placement. Use the fixed pattern for each partner type (newsletter, creator, podcast, affiliate, community) in **stacks-marketing-analytics** (UTM Patterns by Partner Type), so every deal rolls up the same way.
 - **Vanity / dedicated landing pages** - `yourdomain.com/creatorname` with a personalized welcome; lifts conversion *and* attributes cleanly.
 - **Post-purchase survey** - "How did you hear about us?" catches the halo/branded-search effect that promo codes and last-click miss (much of influencer impact shows up later as branded search and direct - see **stacks-marketing-attribution** for the blind-spot framework; **stacks-marketing-ai-seo** when the discovery path was AI search).
 - **Whitelisting performance** - when you repurpose creator content as ads, that ad's own metrics are a clean read on the creative's real pull.
@@ -178,13 +183,15 @@ For the community-led, unpaid advocate end of this (badges, recognition, communi
 
 ## Tool Integrations
 
-For implementation, see the [tools registry](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/REGISTRY.md).
+For implementation, see the [tools registry](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/REGISTRY.md).
 
 | Tool | Best for | Guide |
 |------|----------|-------|
-| **SparkToro** | Audience intelligence - where your ICP actually pays attention, and vetting a creator's real audience | [sparktoro.md](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/integrations/sparktoro.md) |
+| **SparkToro** | Audience intelligence - where your ICP actually pays attention, and vetting a creator's real audience | [sparktoro.md](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/integrations/sparktoro.md) |
 
 Dedicated creator-discovery/CRM platforms (e.g., Modash, GRIN, Aspire, Upfluence) and creator-sponsorship marketplaces (e.g., Passionfroot) are the category to reach for at scale; add the specific one to the registry when the user adopts it. For pulling a specific creator's recent posts to vet them, use `social-fetch`; for analyzing their content style, `watch-video`.
+
+For Telegram channels, the vetting options (the public preview with a manual reach check, the admin's built-in statistics, Telegram Ads, analytics catalogs, TGScope) are compared in [references/telegram-channels.md](references/telegram-channels.md#tools).
 
 ## Related Skills
 

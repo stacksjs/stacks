@@ -1,14 +1,60 @@
 import { describe, expect, it } from 'bun:test'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import {
   detectDependencyInstaller,
   resolveDependencyRefreshCommand,
   resolvePantryExecutable,
+  runPostSyncAiRefresh,
   runPostSyncDatabaseTypesRefresh,
   runPostSyncDependencyRefresh,
   runPostSyncMigration,
   shouldRefreshPostSyncDependencies,
   shouldRunPostSyncHooks,
 } from '../src/upgrade/framework-hooks'
+
+describe('upgrade agent setup refresh', () => {
+  it('refreshes every configured provider and seeds canonical guidance without enabling unrelated providers', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'stacks-upgrade-ai-'))
+    try {
+      mkdirSync(join(root, '.claude'))
+      mkdirSync(join(root, '.cursor'))
+      const calls: string[][] = []
+      await runPostSyncAiRefresh({
+        cli: ['/opt/bun', '/app/cli.ts'],
+        projectRoot: root,
+        spawn: (options) => {
+          expect(options.cwd).toBe(root)
+          expect(options.stdin).toBe('ignore')
+          calls.push(options.cmd)
+          return { exited: Promise.resolve(0) }
+        },
+      })
+      expect(calls).toEqual(['codex', 'claude', 'cursor'].map(provider => [
+        '/opt/bun', '/app/cli.ts', 'setup:ai', provider, '--force',
+      ]))
+    }
+    finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  it('fails the upgrade when an agent refresh fails and identifies the repair command', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'stacks-upgrade-ai-'))
+    try {
+      writeFileSync(join(root, 'GEMINI.md'), 'project guidance')
+      await expect(runPostSyncAiRefresh({
+        cli: ['./buddy'],
+        projectRoot: root,
+        spawn: options => ({ exited: Promise.resolve(options.cmd.includes('gemini') ? 7 : 0) }),
+      })).rejects.toThrow('AI setup refresh failed for gemini (exit 7). Re-run `buddy setup:ai gemini --force`.')
+    }
+    finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+})
 
 describe('vendored upgrade post-sync hook scheduling', () => {
   it('runs deferred hooks after an internal restart even when the new process sees no diff', () => {

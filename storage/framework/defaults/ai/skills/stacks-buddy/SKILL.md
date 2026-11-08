@@ -574,7 +574,7 @@ buddy outdated               # check outdated deps
 buddy add                    # add dependency
 
 buddy upgrade                # upgrade Stacks framework (alias: update)
-  -v/--version <version>     # install specific version (e.g., 0.70.23)
+  -V/--version <version>     # install specific version (e.g., 0.70.23)
   --canary                   # upgrade to canary build
   --stable                   # switch to stable release
   -f/--force                 # force re-download

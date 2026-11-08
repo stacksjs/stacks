@@ -1,6 +1,6 @@
 ---
 title: Stacks Architecture
-description: "Stacks is a full-stack TypeScript framework for web, API, desktop, CLI, and cloud applications. Bun is the runtime, package manager, test runner, and bundl..."
+description: "Stacks is a full-stack TypeScript framework for web, API, desktop, CLI, and cloud applications. Bun is the runtime, package manager, test runner, and bundler. Framework packages are first-party and available under storage/framework/core/."
 ---
 # Stacks Architecture
 

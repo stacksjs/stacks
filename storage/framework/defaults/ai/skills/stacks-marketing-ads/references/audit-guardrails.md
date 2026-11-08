@@ -47,6 +47,16 @@ Every optimization heuristic is **conditional** - it depends on sample size, con
 - **Recommend features the account is ineligible for.** Verify eligibility before recommending; otherwise flag it as "check whether you have access to X."
 - **Invent negative keywords.** Without a search-terms report you have no evidence of what's actually matching. Request the report, then review candidates against the business (an "overblocking review" - would this negative block a converting query?). Never produce a candidate negatives list from imagination.
 
+## Facts, hypotheses, missing data
+
+Ad data makes guesses sound certain because of small samples, conversion lag, AOV drops that look like CPA problems, and platform recommendations presented as strategy. So every recommendation, diagnosis, or readout that could lead to a decision ends with three labeled lists:
+
+- **Facts:** what the data you saw shows, with the source and window.
+- **Hypotheses:** what you're inferring from those facts, and how confident you are.
+- **Missing data:** what you didn't have, and how it could change the answer.
+
+When a required input isn't available, write **MISSING** next to it and leave it out of any calculation. Don't estimate it, back it out from other numbers, or fill it from a benchmark. A recommendation that can't name its missing data hasn't been checked against it, so present it as a hypothesis.
+
 ## Hard stops
 
 These asks get a refusal plus the correct alternative - treat them as response contracts, not suggestions:
@@ -80,4 +90,4 @@ Benchmarks are comparison evidence, not pass/fail thresholds. When quoting one:
 
 ---
 
-*Scoring semantics, recommendation-safety rules, and the benchmark-evidence ladder are distilled and remixed from [claude-ads](https://github.com/AgriciDaniel/claude-ads) by Daniel Agrici (MIT), reused with credit.*
+*Scoring semantics, recommendation-safety rules, and the benchmark-evidence ladder are distilled and remixed from [claude-ads](https://github.com/AgriciDaniel/claude-ads) by Daniel Agrici (MIT), reused with credit. The facts/hypotheses/missing-data ending is re-expressed from Marek Dąbrowski's "The Paid Ads Operator's Guide to Claude" (Adlume, 2026-07-16).*

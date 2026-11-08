@@ -444,7 +444,6 @@ Ideas to A/B test with expected outcomes
 ## Related Skills
 
 - **stacks-marketing-lead-magnets**: For planning lead magnets to promote via popups
-- **stacks-marketing-cro**: For optimizing the form inside the popup
-- **stacks-marketing-cro**: For the page context around popups
+- **stacks-marketing-cro**: For optimizing the form inside the popup and the page around it
 - **stacks-marketing-emails**: For what happens after popup conversion
 - **stacks-marketing-ab-testing**: For testing popup variations

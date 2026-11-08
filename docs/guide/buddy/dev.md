@@ -1,6 +1,6 @@
 ---
 title: Development Server
-description: The  command starts development servers for your Stacks application with hot module replacement (HMR) and live reload capabilities.
+description: "The buddy dev command starts development servers for your Stacks application with hot module replacement (HMR) and live reload capabilities."
 ---
 # Development Server
 

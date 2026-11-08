@@ -14,7 +14,10 @@ A free tier that never expires, with paid tiers for more capacity or features.
 Full (or near-full) access for a fixed window: **3, 7, 14, or 30 days**.
 
 - Shorter trials create urgency and force faster time-to-value; longer trials suit complex products with longer setup.
-- **Credit-card requirement is the key lever**: requiring a card up front **cuts signups by 50-70%**, but the users who do sign up **convert 2-3× better**. Fewer, higher-intent leads vs. more, lower-intent leads - choose based on your funnel goals.
+- **Credit-card requirement is a tradeoff to test**: it adds signup friction and can change who enters the trial. A higher trial→paid rate among those who provide a card does not by itself mean more paying customers from the same incoming traffic.
+- [ChartMogul's 2026 report](https://chartmogul.com/reports/saas-conversion-report-2/) (200 B2B products): card-required trials convert ~30% trial→paid, over 5x no-card trials. That's observational and comes on fewer signups, so decide on visitor→paid, not trial→paid.
+- Compare visitor→trial × trial→paid = visitor→paid over the same conversion horizon and eligible traffic. Include net contribution per visitor, refunds, early churn, and support costs. For example, 10% signup × 10% trial conversion = 1% visitor→paid; 3% signup × 25% trial conversion = 0.75%, despite the higher trial conversion. These are illustrative inputs.
+- Where practical, randomize eligible visitors between clearly disclosed trial terms and wait for complete follow-up. Choose the gate from the whole funnel and retained customer economics.
 
 ### 3. Paid trial
 A low-cost paid entry, typically **$7-10 for 7 days**.

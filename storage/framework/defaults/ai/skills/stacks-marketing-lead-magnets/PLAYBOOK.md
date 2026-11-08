@@ -299,9 +299,8 @@ When creating a lead magnet strategy, provide:
 - **stacks-marketing-free-tools**: For interactive tools as lead magnets (calculators, graders, quizzes)
 - **stacks-marketing-copywriting**: For writing the lead magnet content itself
 - **stacks-marketing-emails**: For nurture sequences after lead capture
-- **stacks-marketing-cro**: For optimizing lead magnet landing pages
+- **stacks-marketing-cro**: For optimizing lead magnet landing pages and capture forms
 - **stacks-marketing-popups**: For popup-based lead capture
-- **stacks-marketing-cro**: For optimizing capture forms
 - **stacks-marketing-content-strategy**: For content planning and topic selection
 - **stacks-marketing-analytics**: For measuring lead magnet performance
 - **stacks-marketing-ads**: For paid promotion of lead magnets

@@ -1,3 +1,5 @@
+import { detectProjectAiProviders } from './package-project'
+
 interface PostSyncSpawnOptions {
   cmd: string[]
   cwd: string
@@ -7,6 +9,26 @@ interface PostSyncSpawnOptions {
 }
 
 type PostSyncSpawn = (options: PostSyncSpawnOptions) => { exited: Promise<number> }
+
+/** Refresh agent entrypoints after the upgraded defaults are available. */
+export async function runPostSyncAiRefresh(options: {
+  cli: string[]
+  projectRoot: string
+  spawn: PostSyncSpawn
+}): Promise<void> {
+  for (const provider of detectProjectAiProviders(options.projectRoot)) {
+    const child = options.spawn({
+      cmd: [...options.cli, 'setup:ai', provider, '--force'],
+      cwd: options.projectRoot,
+      stdin: 'ignore',
+      stdout: 'inherit',
+      stderr: 'inherit',
+    })
+    const code = await child.exited
+    if (code !== 0)
+      throw new Error(`AI setup refresh failed for ${provider} (exit ${code}). Re-run \`buddy setup:ai ${provider} --force\`.`)
+  }
+}
 
 interface PostSyncMigrationOptions {
   bunExecutable: string

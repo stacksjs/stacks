@@ -10,7 +10,7 @@ Most buyers need to see a name a few times, in more than one place, before they 
 | Tier 2 (1:few) | Email and LinkedIn; phone for the best-fit accounts |
 | Tier 3 (1:many) | Email; LinkedIn only if it can be done without automation risk |
 
-Tiers are defined in the prospecting skill's signal plays reference.
+Tiers are defined in the stacks-marketing-prospecting skill's signal plays reference.
 
 ## A 21-day Tier 1 cadence
 

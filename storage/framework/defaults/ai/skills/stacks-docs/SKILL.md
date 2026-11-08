@@ -1,6 +1,6 @@
 ---
 name: stacks-docs
-description: Use when building or configuring documentation for a Stacks project - BunPress setup, doc generation, navigation, sidebar structure, or documentation meta/SEO. Covers @stacksjs/docs and config/docs.ts.
+description: Use when auditing, writing, building or configuring Stacks documentation - source accuracy, generated references, snippets, links, BunPress navigation, metadata or SEO. Covers @stacksjs/docs and config/docs.ts.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,102 +8,100 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Documentation
 
-## Key Paths
-- Core package: `storage/framework/core/docs/src/`
-- Doc content: `docs/`
-- Config: `config/docs.ts`
-- Output: `storage/framework/docs/dist/`
-- Package: `@stacksjs/docs`
+## Source and configuration
 
-## Source Files
-```
-docs/src/
-├── index.ts              # frameworkDefaults + merged docsConfig
-└── meta.ts               # CDN URLs, social links, PWA patterns
-```
+Read `config/docs.ts`, `storage/framework/core/docs/src/index.ts`, and the
+implementation behind the topic before editing its docs. `@stacksjs/docs`
+exports `frameworkDefaults`, `docsConfig`, and the constants in `src/meta.ts`.
+The config type is `BunPressOptions` from `@stacksjs/bunpress`, not a type export
+from `@stacksjs/docs`.
 
-## API
+The package defaults to `docs/` and `storage/framework/docs/dist/`, then shallow
+merges user configuration over those defaults. The repository's `config/docs.ts`
+sets `outDir: './dist/docs'`. The Buddy build action invokes BunPress in the
+project root; inspect the loaded BunPress config and the deploy consumer before
+choosing an output path. BunPress renders HTML under the output directory's
+`.bunpress/` subdirectory. This repository deploys `dist/docs/.bunpress`.
+A nested config object replaces that defaults object;
+do not assume a recursive merge.
 
-```typescript
-import { frameworkDefaults, docsConfig } from '@stacksjs/docs'
-
-// Framework defaults
-const frameworkDefaults: BunPressOptions = {
-  docsDir: path.projectPath('docs'),
-  outDir: path.frameworkPath('docs/dist'),
-}
-
-// Merged config (framework defaults + user config from config/docs.ts)
-const docsConfig: BunPressOptions = { ...frameworkDefaults, ...userConfig }
-```
-
-## Meta Exports
+BunPress reads this configuration shape:
 
 ```typescript
-import { googleapis, gstatic, font, ogUrl, ogImage, github, releases, contributing, discord, twitter, pwaFontsRegex, pwaFontStylesRegex } from '@stacksjs/docs'
-```
-
-Social and CDN constants used in documentation templates and PWA configuration.
-
-## Configuration (config/docs.ts)
-
-```typescript
-import type { BunPressOptions } from '@stacksjs/docs'
+import type { BunPressOptions } from '@stacksjs/bunpress'
 
 export default {
-  // Navigation
-  nav: [
-    { text: 'Changelog', link: 'https://github.com/stacksjs/stacks/blob/main/CHANGELOG.md' },
-    { text: 'Blog', link: 'https://updates.stacksjs.com' },
-  ],
-
-  // Markdown settings
+  docsDir: './docs',
+  outDir: './dist/docs',
+  nav: [{ text: 'Skills', link: '/skills' }],
   markdown: {
-    title: 'Stacks.js',
-    syntaxHighlighting: { theme: 'material-theme-palenight' },
-    toc: { depth: 2 },
+    title: 'Project documentation',
+    meta: { description: 'Guides and API reference for this project.' },
+    syntaxHighlightTheme: 'github-dark',
+    toc: { enabled: true, minDepth: 2, maxDepth: 3 },
+    sidebar: {
+      '/': [{ text: 'Getting started', items: [{ text: 'Introduction', link: '/guide/intro' }] }],
+    },
   },
-
-  // Sidebar structure
-  sidebar: {
-    '/prologue/': [/* ... */],
-    '/get-started/': [/* ... */],
-    '/basics/': [/* ... */],
-    '/digging-deeper/': [/* ... */],
-    '/cloud/': [/* ... */],
-    '/cli/': [/* ... */],
-    '/packages/': [/* ... */],
-    '/testing/': [/* ... */],
-    '/project/': [/* ... */],
-  },
-
-  // Theme
-  theme: {
-    logo: '/images/logos/logo-transparent.svg',
-    footer: { message: 'Released under the MIT License.', copyright: 'Copyright © 2025' },
-    socialLinks: [
-      { icon: 'twitter', link: 'https://twitter.com/stacksjs' },
-      { icon: 'github', link: 'https://github.com/stacksjs/stacks' },
-      { icon: 'discord', link: 'https://stacksjs.com/discord' },
-    ],
-  },
-
-  // SEO
-  sitemap: { hostname: 'https://stacksjs.com/docs' },
-  robotsTxt: { enabled: true },
 } satisfies BunPressOptions
 ```
 
-## CLI Commands
+Keep links aligned with actual Markdown paths. Check the installed BunPress
+options before adding theme, sitemap, robots or SEO settings; a configuration
+example is not evidence that those features are enabled.
+
+## Accuracy and editing
+
+1. Read each affected public API, runtime command or configuration registry.
+   Record any limits, provider differences and failure behavior in the guide.
+2. Lead with the behavior a reader needs. Include a runnable example and the
+   next step. Keep package-managed and vendored upgrade contracts explicit.
+3. Use valid YAML frontmatter with a concrete title and description. Quote
+   descriptions containing punctuation such as `: `. Preserve inline code's
+   words in metadata; removing markup must not remove the command or package.
+4. Regenerate source-derived references rather than editing their rendered
+   inventories by hand. Keep authored explanation beside the generated block.
+5. Read the final prose, check internal links and compile documented imports.
+   The import check does not execute examples or verify every API claim.
+
+Read `stacks-writing-for-agents` for bundled skill edits. Each bundled skill
+also has a page under `docs/skills/`; keep its summary and invocation current.
+Application skills belong under `app/Skills/` and override bundled names.
+
+## Framework repository checks
+
+The framework provides these freshness checks. They are contributor tooling;
+an application need not carry the framework's documentation inventory.
 
 ```bash
-buddy dev:docs          # Start docs dev server
-buddy build:docs        # Build documentation site
+buddy docs:buddy:check
+buddy docs:artifacts:check
+buddy docs:capabilities:check
+buddy docs:desktop-matrix:check
+buddy docs:links:check
+buddy docs:snippets:check
+buddy docs:agent-counts:check
+buddy docs:native-skills:check
 ```
 
-## Gotchas
-- **BunPress, not VitePress** — the docs engine is BunPress (Stacks' own documentation tool)
-- **Config merging** — `docsConfig` merges framework defaults with user config from `config/docs.ts`
-- **Sidebar is section-based** — organized by URL prefix (prologue, get-started, basics, etc.)
-- **SEO built-in** — sitemap and robots.txt generation enabled by default
-- **Output goes to `storage/framework/docs/dist/`** — not the `docs/` source directory
+The corresponding command without `:check` regenerates an inventory where
+supported. `docs:links` reports links. `docs:snippets` writes an exception
+baseline, so fix broken examples instead of using it to accept regressions.
+
+In a fresh contributor checkout, install the frozen dependency graph and build
+the packages listed by `.github/scripts/subpath-packages.ts`, as CI does, before
+running checks that import built subpaths. Run the documentation/skill contract
+tests when editing those surfaces, and lint through `buddy lint` (pickier).
+
+## Build and verify
+
+```bash
+buddy dev:docs
+buddy build:docs
+```
+
+Build the actual site after content or navigation changes. Confirm generated
+pages have their title, description, code blocks, navigation and valid links,
+including a changed guide and a skill page. A successful build alone does not
+prove the prose or API examples are correct. For deployment work, read
+`stacks-deploy` and verify the CI run for the pushed commit plus the live docs.

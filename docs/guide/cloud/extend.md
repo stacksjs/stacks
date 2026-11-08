@@ -1,6 +1,6 @@
 ---
 title: Extending cloud infrastructure
-description: Stacks keeps application cloud configuration in  and project-specific server definitions in .
+description: "Stacks keeps application cloud configuration in config/cloud.ts and project-specific server definitions in cloud/servers.ts."
 ---
 # Extending cloud infrastructure
 

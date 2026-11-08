@@ -25,8 +25,7 @@ thinks while the sub-agents work.
 
 ### 2. Spawn sub-agents
 
-Spawn three or more sub-agents in parallel. Each must produce a **radically
-different** interface for the deepened module.
+Spawn 3+ sub-agents in parallel, each with a fresh context window. Each must produce a **radically different** interface for the deepened module.
 
 Prompt each with a separate technical brief: file paths, coupling details, the
 dependency category, what sits behind the seam. The brief is independent of the

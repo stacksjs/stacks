@@ -140,10 +140,17 @@ Benchmarks:
 ### Calculating Referral Program ROI
 
 ```
-Referral Program ROI = (Revenue from referred customers - Program costs) / Program costs
+Referral program return = (Incremental contribution before program costs - Program costs) / Program costs
 
-Program costs = Rewards paid + Tool costs + Management time
+Contribution before program costs = Net referred revenue - Serving / product costs
+Program costs = Reward economic cost + Allocated tool / campaign costs + Management hours × Loaded hourly cost
 ```
+
+Use the same cohort and observation window for revenue and costs. Net revenue accounts for refunds and discounts; serving/product costs include the costs needed to deliver the referred customer's purchase. Value credits consistently and avoid subtracting a discount in both net revenue and reward cost. Report the ratio as a percentage when multiplying by 100. With zero program cost the ratio is undefined; report contribution and costs separately.
+
+**Illustrative margin check:**$10,000 net referred revenue at 20% contribution margin yields $2,000 contribution before program costs. With $3,000 program cost, return is ($2,000 - $3,000) / $3,000 =**−33.3%**, despite a revenue-minus-program-cost ratio of +233.3%. Revenue is not profit; see [Google's ROI explanation](https://support.google.com/google-ads/answer/1722066?hl=en).
+
+Referral attribution does not prove all referred sales are incremental. Estimate the counterfactual with a suitable holdout or other defensible design. If you only have attributed sales, label the result **attributed contribution return**, state the incrementality assumption, and do not claim causal program ROI. Separate observed cash recovery from projected lifetime contribution.
 
 **Track separately:**
 - Cost per referred customer (CAC via referral)

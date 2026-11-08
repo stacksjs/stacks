@@ -77,7 +77,7 @@ Default to time-of-day cron for review-style loops (weekly review, ranking watch
 
 ## The Catalog
 
-`references/loop-catalog.md` holds the full library - 52 marketing loops with thorough funnel coverage: SEO & Content, Paid, Earned/Social/Partnerships, Outbound, Activation, Retention, Revenue, Referral & Advocacy, and Ongoing Ops. Each is a complete, adaptable spec. Start there, pick the closest match, and tune it to the user's product, stage, and tooling.
+`references/loop-catalog.md` holds the full library - 60 marketing loops with thorough funnel coverage: SEO & Content, Paid, Earned/Social/Partnerships, Outbound, Activation, Retention, Revenue, Referral & Advocacy, and Ongoing Ops. Each is a complete, adaptable spec. Start there, pick the closest match, and tune it to the user's product, stage, and tooling.
 
 ## Running a whole channel: the SEO operator
 
@@ -108,4 +108,5 @@ Avoid: "set it and forget it," "fully autonomous marketing," "AI does everything
 - **stacks-marketing-ideas** - one-off tactics and inspiration (what to try). Loops operationalize the ones worth repeating.
 - **stacks-marketing-ab-testing** - the experimentation loop specifically (hypothesis → test → promote winner → repeat).
 - **stacks-marketing-analytics** - most loops read from analytics to decide whether to act.
-- Individual channel skills (`stacks-marketing-ads`, `stacks-marketing-seo-audit`, `stacks-marketing-emails`, `stacks-marketing-social`, `stacks-marketing-churn-prevention`, `stacks-marketing-pricing`, `stacks-marketing-referrals`) - the loop bodies orchestrate these.
+- **stacks-marketing-reverse-engineer-marketing** - the growth-move watch loop keeps a competitor teardown current, and teardown plays name the loop that sustains each one.
+- Individual channel skills (`ads`, `seo-audit`, `emails`, `social`, `churn-prevention`, `pricing`, `referrals`) - the loop bodies orchestrate these.

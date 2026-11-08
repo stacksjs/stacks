@@ -10,7 +10,7 @@ Work top to bottom. For each item, record the result, the evidence you saw (or t
 
 ## Tracking
 
-1. **Conversion tracking configuration** - Confirm a single source of truth for purchases. Two systems counting the same order (GA4 import + native tag, or a duplicate gtag) inflates conversions and makes the bidder optimize toward phantom volume. *Fail if double-counting or missing purchase value; pass on a verified test conversion with the right value + currency.* Deep dive: [conversion-tracking.md](conversion-tracking.md).
+1. **Conversion tracking configuration** - Confirm a single source of truth for purchases. Two systems counting the same order (GA4 import + native tag, or a duplicate gtag) inflates conversions and makes the bidder optimize toward phantom volume. *Fail if double-counting or missing purchase value; pass on a verified test conversion with the right value + currency.* Deep dive: the **stacks-marketing-conversion-tracking** skill.
 
 ## Targeting
 
@@ -72,6 +72,39 @@ Work top to bottom. For each item, record the result, the evidence you saw (or t
 
 ---
 
+## Deep dives for items 1 and 3
+
+These two checks find the most money on most accounts. When either fails, run the deeper version.
+
+### Conversion signal audit (item 1)
+
+Item 1 asks whether conversions are counted correctly. This asks whether the bidder is learning from the right actions. Smart Bidding optimizes toward whatever is included in the "Conversions" column, so a cheap action included there trains the account to buy more of it. Setup mechanics live in [conversion-tracking.md](conversion-tracking.md); this is the audit.
+
+Pull every active conversion action with its category, count setting (one or every), value (static or dynamic), primary or secondary status, and recent volume. Then check:
+
+1. **Low-intent actions feeding bidding.** Newsletter signups, page views, scroll depth, add-to-cart on a lead-gen account, or any form fill that sales would not call a lead. If one is primary, the bidder is optimizing toward it.
+2. **Double counting.** The same event tracked twice (GA4 import plus the native tag, two tags on one thank-you page), or a lead action set to count "every" when a person can submit more than once.
+3. **Value mismatches.** A static value on an action whose real value varies (purchases with different order sizes, leads that close at different deal sizes), or values that don't reflect margin or close rate.
+4. **Primary vs secondary.** Only actions that track revenue or qualified pipeline should be primary. Keep the rest as secondary (observation only) so you can still report on them.
+5. **Lead quality, for lead gen.** Join a sample of recent conversions to CRM outcomes. If one action's leads rarely become opportunities, it shouldn't be teaching the bidder.
+
+End with the single change most likely to improve lead or revenue quality, and what to verify before making it. Changing which actions are primary resets learning on every campaign that uses them, so draft it for approval and time it outside a peak period.
+
+### Wasted spend and negatives (item 3)
+
+With a search-terms report (and a placement report for Display, PMax, or Demand Gen) for the last 30-60 days:
+
+1. **Flag terms and placements with spend above target CPA and zero conversions.** Use the break-even CVR math in [reading-google-ads-data.md](reading-google-ads-data.md) before calling low-spend terms wasted.
+2. **Group them by reason:** irrelevant intent, wrong geography, junk placements, competitor terms you don't want, job seekers, and so on.
+3. **Split the list in two:**
+   - **Safe to add now:** clearly irrelevant to anything you sell.
+   - **Check before excluding:** brand-adjacent terms, upper-funnel research queries, and anything that might assist a later conversion. These need a human call.
+4. **Total the spend each list would have saved last period.** That number is what gets the list reviewed.
+
+The negatives stay a draft for approval. Run the overblocking review in [audit-guardrails.md](audit-guardrails.md) on every candidate, and check match-type mechanics (a negative broad needs all its words present) in [google-search-playbook.md](google-search-playbook.md).
+
+---
+
 ## Rolling it up
 
 - Score only verified items. Present **health** (pass/fail ratio on verified checks) and **evidence coverage** (share of applicable checks you could verify) as two separate numbers - never blend them.
@@ -81,4 +114,4 @@ Work top to bottom. For each item, record the result, the evidence you saw (or t
 
 ---
 
-*Adapted into this skill's framing from ECHELONN's public Google Ads Audit Checklist (Jackson Blackledge, ECHELONN.IO). Item structure credited; descriptions and scoring are rewritten to this skill's voice and paired with the four-state audit model in [audit-guardrails.md](audit-guardrails.md).*
+*Adapted into this skill's framing from ECHELONN's public Google Ads Audit Checklist (Jackson Blackledge, ECHELONN.IO). Item structure credited; descriptions and scoring are rewritten to this skill's voice and paired with the four-state audit model in [audit-guardrails.md](audit-guardrails.md). The deep dives for items 1 and 3 re-express the conversion signal audit and wasted-spend finder from Marek Dąbrowski's "The Paid Ads Operator's Guide to Claude" (Adlume, 2026-07-16).*

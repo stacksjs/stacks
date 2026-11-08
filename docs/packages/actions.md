@@ -1,6 +1,6 @@
 ---
 title: Actions Package
-description: "Actions are reusable server-side business operations. Application actions live in , while framework defaults live in ."
+description: "Actions are reusable server-side business operations. Application actions live in app/Actions/, while framework defaults live in storage/framework/defaults/app/Actions/."
 ---
 # Actions
 

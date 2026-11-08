@@ -16,7 +16,7 @@ export function upgrade(buddy: CLI): void {
     allowDowngrade: 'Accept a release that moves a dependency this app declares to an older version (refused by default)',
     force: 'Force re-download, bypassing cache and version checks',
     from: 'Sync from a local stacks checkout (e.g. ~/Code/stacks). Skips GitHub.',
-    noPostinstall: 'Skip post-sync hooks (auto-imports, bun install, migrate)',
+    noPostinstall: 'Skip dependency installation and post-sync hooks (auto-imports, database types, migrations, AI setup)',
     verbose: 'Enable verbose output',
     dependencies: 'Upgrade your dependencies (pantry.yaml & package.json)',
     bun: 'Upgrade Bun to the latest version',

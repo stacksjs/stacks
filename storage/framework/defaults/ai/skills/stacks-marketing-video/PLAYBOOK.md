@@ -47,9 +47,9 @@ Pick the right tool for the job:
 
 Build videos with code. Best for repeatable, templated, or data-driven video at scale.
 
-### Hyperframes (HTML/CSS - recommended for agents)
+### Hyperframes (HTML)
 
-Open-source, Apache 2.0, from HeyGen. Uses plain HTML/CSS/JS - no framework DSL to learn. LLM-native: AI models generate better HTML than React components.
+Open-source framework from HeyGen. Compositions are plain HTML/CSS/JS files. Docs: [hyperframes.heygen.com](https://hyperframes.heygen.com/introduction).
 
 ```bash
 bunx --bun hyperframes init my-video && cd my-video
@@ -57,21 +57,19 @@ bunx --bun hyperframes preview               # live preview
 bunx --bun hyperframes render -o output.mp4  # render index.html
 ```
 
-**Key concept:** A composition is one HTML file. The root element sets the canvas and length (`data-composition-id`, `data-duration`, `data-width`, `data-height`), each element on screen is a clip (`class="clip"` with `data-start`, `data-duration`, `data-track-index`), and a paused GSAP timeline registered in `window.__timelines` drives the animation. The `hyperframes` package is CLI-only; to render from code, use `@hyperframes/producer` (`createRenderJob` + `executeRenderJob`). Full syntax and a working example: [Hyperframes integration guide](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/integrations/hyperframes.md).
+**Key concept:** A composition is one HTML file. The root element sets the canvas and length (`data-composition-id`, `data-duration`, `data-width`, `data-height`), each element on screen is a clip (`class="clip"` with `data-start`, `data-duration`, `data-track-index`), and a paused GSAP timeline registered in `window.__timelines` drives the animation. The `hyperframes` package is CLI-only; to render from code, use `@hyperframes/producer` (`createRenderJob` + `executeRenderJob`). Full syntax and a working example: [Hyperframes integration guide](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/integrations/hyperframes.md).
 
 **Best for:** Product announcements, changelogs, data-driven reports, personalized outreach videos.
 
-**Why agents prefer it:** Plain HTML/CSS means any coding agent can write a composition without learning a framework. Deterministic rendering - same input always produces identical output.
-
 ### Remotion (React)
 
-Mature open-source framework. More powerful than Hyperframes but requires React knowledge.
+Framework where compositions are React components. Docs: [remotion.dev](https://www.remotion.dev/docs).
 
 ```bash
 bunx --bun create-video@latest
 ```
 
-**Key concept:** React components are frames. Props drive content. Render locally or via Remotion Lambda (AWS) for scale.
+**Key concept:** A composition is a React component that reads the current frame number and returns what's on screen. Props drive content.
 
 ```tsx
 export const ProductDemo: React.FC<{ title: string; features: string[] }> = ({
@@ -91,17 +89,18 @@ export const ProductDemo: React.FC<{ title: string; features: string[] }> = ({
 };
 ```
 
-**Best for:** Complex animations, interactive previews, large-scale batch rendering (Lambda).
+**Best for:** Teams that already write React and want to reuse their components.
 
 ### When to Pick Which
 
-| Factor | Hyperframes | Remotion |
-|--------|-------------|----------|
-| Agent compatibility | Better (plain HTML) | Good (React) |
-| Animation complexity | GSAP timelines (plus CSS) | Advanced (Spring, interpolate) |
-| Batch rendering | Local | Lambda (AWS) for scale |
-| Learning curve | Minimal | Moderate (React + Remotion API) |
-| License | Apache 2.0 | Company license for commercial use |
+Both render web pages to video in a headless browser. The difference is what you write:
+
+| | Hyperframes | Remotion |
+|--|-------------|----------|
+| You write | HTML, CSS, JS | React components (TypeScript) |
+| Timing | Declared in markup; the renderer seeks a paused animation timeline | Computed in code from the current frame number |
+
+Pick the one that matches what your team and source material already are: existing HTML, CSS, or browser animations point to Hyperframes; an existing React codebase points to Remotion. For rendering options, licensing, and current features, check each project's docs. They change faster than this skill.
 
 ---
 
@@ -164,7 +163,7 @@ cinematic color grading, 4K
 
 Create talking-head videos without filming. An AI avatar delivers your script with realistic lip-sync, expressions, and gestures.
 
-### HeyGen (recommended - has MCP server)
+### HeyGen (has MCP server)
 
 Best lip-sync and micro-expressions. 230+ avatars, 140+ languages.
 
@@ -245,6 +244,8 @@ To replicate the *style* of a video edit you admire - the cut rhythm, caption tr
 
 **Scripted in-app recording:** for a repeatable demo of a web app flow (re-recorded every release, run against a local build), drive the app with Playwright and add subtitles, a visible cursor, and optional TTS narration. See [references/product-demo-recording.md](references/product-demo-recording.md) for the workflow, step modes, and local-app gotchas.
 
+**Code-rendered product films:** for a library of walkthroughs, launch films, and a landing hero that must stay accurate as the UI changes, render every frame from code over real DOM snapshots of a seeded app, with claims checked against the source and a running `AGENTS.md` of taste rules. See [references/code-rendered-product-films.md](references/code-rendered-product-films.md) for the repo setup, UI capture, audio, render, review, and measurement.
+
 ### Explainer Video
 
 1. **Script** the problem → solution → CTA arc
@@ -260,6 +261,22 @@ To replicate the *style* of a video edit you admire - the cut rhythm, caption tr
 3. **Render batch** - one template, many variations
 4. **Add platform-specific captions** via CapCut or Captions.ai
 5. **Schedule** across platforms
+
+### Personalized Video per Account
+
+A tailored product film for each target account, made by agents. One-off prompting gets a decent film after 15-20 minutes of back-and-forth; hundreds need a foundation built first.
+
+1. **Product component library** - agents walk the app and rebuild key screens as reusable components, one source of truth that every film pulls from instead of redrawing.
+2. **Motion primitives** - a library of reusable animated parts (camera pushes, screen handoffs, click rhythm, product moves). Fix one and every film inherits the fix.
+3. **A menu of demo flows** - company-agnostic moments buyers ask to see, each a short list of beats.
+4. **Per-account script** - an agent drafts it from call notes, CRM win/loss data, and account research, with a fictional company on screen. Voiceover from a cloned narrator voice, with the narrator's consent.
+5. **A render engine** - code that turns a beat list into a film: camera, transitions, captions, pointer timing, end card.
+6. **Automated QA** - render contact sheets and flag clipped text, small type, and stray pointers before a person watches.
+7. **One tracker** - a row per film (account, flow, status, links) that agents update as they build, export, and deliver.
+
+Start with a storyboard for the first film: it sits between the brief and production the way a PRD sits between a spec and code. Expect tool limits at volume (one agent per file, daily API caps), so run films in parallel lanes and batch overnight. Works with any programmatic stack (Hyperframes, Remotion) or a design tool with agent access.
+
+*Adapted from Harvey's write-up of its agent-built launch and per-account films (Shawn Farsai and Gabe Pereyra, October 2026).*
 
 ---
 
@@ -315,8 +332,8 @@ Output: Ready-to-publish video
 
 | Tool | Type | MCP | Guide |
 |------|------|:---:|-------|
-| **HeyGen** | AI avatars | Yes | [heygen.md](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/integrations/heygen.md) |
-| **Hyperframes** | Programmatic video | - | [hyperframes.md](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/integrations/hyperframes.md) |
+| **HeyGen** | AI avatars | Yes | [heygen.md](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/integrations/heygen.md) |
+| **Hyperframes** | Programmatic video | - | [hyperframes.md](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/integrations/hyperframes.md) |
 | **Remotion** | Programmatic video | - | [remotion.dev](https://www.remotion.dev/docs) |
 | **Runway** | AI generation | - | [runwayml.com/docs](https://docs.dev.runwayml.com) |
 

@@ -170,6 +170,7 @@ it when you cannot remember which one fits.
 | Capture writing fragments or shape an article | `stacks-writing-fragments`, `stacks-writing-shape`, `stacks-writing-beats` |
 | Draft a questionnaire, clarify a message, or specify a recurring workflow | `stacks-to-questionnaire`, `stacks-wait-what`, `stacks-loop` |
 | Coordinate an explicitly requested long-running effort | `stacks-chief-of-staff` |
+| Design recurring agent work across tickets, Git and runners | `stacks-software-factory` |
 
 Several of these are adapted, with credit in each `SKILL.md`, from
 [mattpocock/skills](https://github.com/mattpocock/skills) (MIT).
@@ -181,7 +182,7 @@ The complete reviewed source-to-Stacks mapping is in
 
 ### Marketing
 
-Read `stacks-marketing` to choose among the 50 marketing playbooks ported from
+Read `stacks-marketing` to choose among the 53 marketing playbooks ported from
 [coreyhaines31/marketingskills](https://github.com/coreyhaines31/marketingskills).
 The complete index is `stacks-marketing/CATALOG.md` beside its `SKILL.md`.
 Marketing workflows complement the framework package skills; for example,

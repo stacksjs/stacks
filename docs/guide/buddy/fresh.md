@@ -1,6 +1,6 @@
 ---
 title: Fresh Command
-description: "The  command performs a clean reinstallation of all npm dependencies, removing existing nodemodules and lock files before installing fresh copies."
+description: "The buddy fresh command performs a clean reinstallation of all npm dependencies, removing existing nodemodules and lock files before installing fresh copies."
 ---
 # Fresh Command
 

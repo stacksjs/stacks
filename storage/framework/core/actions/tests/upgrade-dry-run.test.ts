@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
-import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { delimiter, join } from 'node:path'
 import { diffSnapshots, diffSnapshotsDetailed, snapshotTree } from '../src/upgrade/framework-utils'
@@ -113,6 +113,58 @@ describe('diffSnapshotsDetailed', () => {
 })
 
 describe('buddy upgrade --dry-run (framework sync)', () => {
+  it('previews agent refresh without creating new skill links', async () => {
+    mkdirSync(join(appDir, '.claude'), { recursive: true })
+    const { code, stdout } = await runUpgradeScript(['--from', checkoutDir, '--dryRun'])
+    expect(code).toBe(0)
+    expect(stdout).toContain('refresh AI setup for codex, claude (including bundled skills)')
+    expect(existsSync(join(appDir, '.claude/skills'))).toBe(false)
+  })
+
+  it('refreshes real agent setup after syncing skills, and repairs missing links on a forced no-diff run', async () => {
+    const setupModule = join(import.meta.dir, '../../buddy/src/commands/setup-ai.ts')
+    write('storage/framework/core/buddy/src/cli.ts', `
+import { setupAiProvider } from ${JSON.stringify(setupModule)}
+if (process.argv[2] !== 'setup:ai') process.exit(2)
+setupAiProvider(process.argv[3], { force: true })
+`, checkoutDir)
+    write('storage/framework/defaults/ai/AGENTS.md', 'framework guidance', checkoutDir)
+    write('storage/framework/defaults/ai/claude/launch.json', '{"configurations":[]}', checkoutDir)
+    write('storage/framework/defaults/ai/skills/stacks-new-skill/SKILL.md', 'new skill', checkoutDir)
+    write('AGENTS.md', 'authored project guidance', appDir)
+    mkdirSync(join(appDir, '.claude/skills'), { recursive: true })
+    symlinkSync('../../../storage/framework/defaults/ai/skills/retired', join(appDir, '.claude/skills/retired'))
+    // Exercise actual framework sync and agent materialization. Dependency
+    // installation is outside this fixture's scope and has its own tests.
+    write('pantry.lock', '{}', appDir)
+    write('bin/pantry', '#!/bin/sh\nexit 0\n', baseDir)
+    chmodSync(join(baseDir, 'bin/pantry'), 0o755)
+
+    const first = await runUpgradeScript(['--from', checkoutDir, '--force'])
+    expect(first.code, first.stderr).toBe(0)
+    const link = join(appDir, '.claude/skills/stacks-new-skill/SKILL.md')
+    expect(readFileSync(link, 'utf8')).toBe('new skill')
+    expect(existsSync(join(appDir, '.claude/skills/retired'))).toBe(false)
+    expect(readFileSync(join(appDir, 'AGENTS.md'), 'utf8')).toBe('authored project guidance')
+
+    rmSync(join(appDir, '.claude/skills/stacks-new-skill'))
+    const repair = await runUpgradeScript(['--from', checkoutDir, '--force'])
+    expect(repair.code, repair.stderr).toBe(0)
+    expect(readFileSync(link, 'utf8')).toBe('new skill')
+  }, 30000)
+
+  it('does not announce or record success when agent setup fails', async () => {
+    write('storage/framework/core/buddy/src/cli.ts', 'process.exit(7)', checkoutDir)
+    write('pantry.lock', '{}', appDir)
+    write('bin/pantry', '#!/bin/sh\nexit 0\n', baseDir)
+    chmodSync(join(baseDir, 'bin/pantry'), 0o755)
+    const { code, stdout, stderr } = await runUpgradeScript(['--from', checkoutDir, '--force'])
+    expect(code).not.toBe(0)
+    expect(stderr).toContain('AI setup refresh failed for codex (exit 7)')
+    expect(stdout).not.toContain('Upgraded Stacks from')
+    expect(existsSync(join(appDir, '.stacks-channel'))).toBe(false)
+  }, 15000)
+
   it('writes nothing and lists what would change', async () => {
     const before = await snapshotTree(appDir)
 

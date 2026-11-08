@@ -20,8 +20,18 @@ Ask each respondent:
 
 ### How to Analyze
 
-1. Plot cumulative distributions for each question
-2. Find the intersections:
+1. Validate responses in one currency, billing period, and product description. Flag missing, nonnumeric, or inconsistent threshold ordering (`too cheap ≤ cheap ≤ expensive ≤ too expensive`); document any exclusions instead of silently changing answers.
+2. Plot candidate price on the x-axis and the share of respondents on the y-axis. The two cheap curves decrease as price rises; the two expensive curves increase. At each candidate price `p`, use:
+
+   | Curve | Share to plot | Direction |
+   |-------|---------------|-----------|
+   | Too cheap | Respondents whose too-cheap threshold is at or above `p` | Decreasing |
+   | Cheap / good value | Respondents whose cheap threshold is at or above `p` | Decreasing |
+   | Expensive | Respondents whose expensive threshold is at or below `p` | Increasing |
+   | Too expensive | Respondents whose too-expensive threshold is at or below `p` | Increasing |
+
+   Use a consistent endpoint convention for ties and record it. Do not apply an increasing cumulative distribution to all four questions: it reverses the meaning of the cheap curves. [Sawtooth's example](https://sawtoothsoftware.com/resources/blog/posts/van-westendorp-pricing-sensitivity-meter) illustrates the too-cheap share falling as price increases.
+3. Find the intersections:
    - **Point of Marginal Cheapness (PMC):** "Too cheap" crosses "Expensive"
    - **Point of Marginal Expensiveness (PME):** "Too expensive" crosses "Cheap"
    - **Optimal Price Point (OPP):** "Too cheap" crosses "Too expensive"

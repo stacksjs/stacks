@@ -12,7 +12,7 @@ Read [WORKFLOW.md](WORKFLOW.md) for shared context and Stacks integration.
 Then choose the task-specific skill from [CATALOG.md](CATALOG.md). Read its
 entrypoint before recommending a workflow; the catalog is a discovery aid.
 
-The catalog ports all 50 skills in the recorded snapshot of
+The catalog ports all 53 skills in the recorded snapshot of
 [coreyhaines31/marketingskills](https://github.com/coreyhaines31/marketingskills).
 Each retains its playbook, supporting references, templates, and MIT notice.
 Marketing names are distinct from Stacks' runtime package skills: marketing

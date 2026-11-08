@@ -55,7 +55,7 @@ Reach out to people already using the product, when their usage shows they're re
 
 The default play for accounts with no product usage: lead with a problem the segment is known to have, prove you understand it, and offer something small.
 
-**Trigger:** a signal from the prospecting skill's signal plays reference, or a tightly defined segment.
+**Trigger:** a signal from the stacks-marketing-prospecting skill's signal plays reference, or a tightly defined segment.
 
 **Offer something smaller than a meeting:** a sample of the work (verify a sample of their list, audit one page, benchmark one metric), a relevant resource, or a quick answer to a question they're probably asking.
 

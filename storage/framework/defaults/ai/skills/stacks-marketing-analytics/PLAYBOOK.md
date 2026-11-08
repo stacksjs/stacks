@@ -40,6 +40,33 @@ Before implementing tracking, understand:
 - Monitor for issues
 - Clean data > more data
 
+### 5. Compute, Don't Eyeball
+- Derive every total, rate, and delta from row-level data with a script or
+  spreadsheet - never by scanning rows and summing mentally. One silently
+  dropped row corrupts every figure downstream of it.
+- Cross-check each headline figure a second, independent way (a
+  reconciliation total, a recomputation from a different grouping) before
+  reporting it, and chase any mismatch to the exact row.
+- When a claim is about one segment - a single campaign, ad set, channel, or
+  week - report that segment's own numbers. Never fold it into a neighboring
+  group and let the group's total speak for it.
+
+### 6. Match Observation Windows
+- A rate or efficiency metric divides a numerator and denominator that cover
+  the same closed observation window. Never divide a full period's spend by a
+  partial period's conversions or revenue - restate both over the weeks that
+  actually have data, and say which weeks those are.
+- Cohort rates use only cohorts whose observation window has ended. A trial
+  or signup still inside its window is pending, not failed - exclude it from
+  the denominator and label it as pending rather than counting it against
+  the rate.
+
+### 7. Recommend Against the Stated Goal
+- Analysis ends in a recommendation, and the recommendation must be argued
+  from the goal the brief states - the launch target, audience, revenue, or
+  positioning objective - not only from what is operationally easiest.
+  Name which stated goal each option serves and what it trades away.
+
 ---
 
 ## Tracking Plan Framework
@@ -139,10 +166,12 @@ checkout_payment_completed
 4. Configure custom events
 5. Mark conversions in Admin
 
-### Custom Event Example
+### Event Example
 
 ```javascript
-gtag('event', 'signup_completed', {
+// GA4's recommended sign_up event, not a custom name, so it feeds built-in reports.
+// Your tracking plan can still call this signup_completed; map the name explicitly.
+gtag('event', 'sign_up', {
   'method': 'email',
   'plan': 'free'
 });
@@ -184,15 +213,44 @@ dataLayer.push({
 |-----------|---------|---------|
 | utm_source | Traffic source | google, newsletter |
 | utm_medium | Marketing medium | cpc, email, social |
-| utm_campaign | Campaign name | spring_sale |
-| utm_content | Differentiate versions | hero_cta |
-| utm_term | Paid search keywords | running+shoes |
+| utm_campaign | Campaign name | spring-sale |
+| utm_content | Differentiate versions | hero-cta |
+| utm_term | Paid search keywords | running-shoes |
 
 ### Naming Conventions
-- Lowercase everything
-- Use underscores or hyphens consistently
-- Be specific but concise: `blog_footer_cta`, not `cta1`
-- Document all UTMs in a spreadsheet
+- **Lowercase everything.** GA4 treats `LinkedIn` and `linkedin` as two sources, and the split never merges back.
+- **Hyphens between words.** No spaces, underscores, or `+`. Pick one separator for the whole company; this skill uses hyphens.
+- **One spelling per source.** `linkedin`, never also `li` or `linkedin.com`. Keep the allowed values in a shared sheet and build links from it.
+- **No personal data.** Never put emails, names, phone numbers, or user IDs in a UTM. They land in analytics reports and in referrer logs, and Google's terms prohibit sending PII to GA4.
+- **Specific but short:** `blog-footer-cta`, not `cta1`.
+- **Test the final URL.** Shorteners and redirects can drop or double parameters. Click the live link and check the landing URL before the campaign ships.
+
+### UTM Patterns by Partner Type
+
+Partner links break most often because each deal gets named on the spot. Fix the pattern per partner type once: `utm_medium` names the kind of deal, `utm_source` names who sent the traffic.
+
+| Partner type | utm_source | utm_medium | utm_campaign | utm_content |
+|---|---|---|---|---|
+| Newsletter | `{partner}` (one per partner, across all their publications) | `newsletter` | `{partner}-{publication}-{yyyy}-{mm}` | `{placement}-{yyyy-mm-dd}` |
+| Creator (YouTube, LinkedIn, TikTok) | `{platform}` | `creator` | `{creator}` | `{post-date}` or the video ID |
+| Podcast | `{podcast}` | `podcast` | `{podcast}-{yyyy}-{mm}` | `{spot}-{yyyy-mm-dd}` (pre-roll, mid-roll) |
+| Affiliate | `{partner}` | `affiliate` | `{partner}-affiliate` | placement, if they have several |
+| Community | `{community}` | `community` | `{community}-{program}` | the channel or post, if known |
+
+- **Use `creator` as the medium for paid creator deals**, not `social` (which mixes them with your organic posts) or `video` (which mixes them with paid video ads). The platform goes in `utm_source`.
+- **One link per placement.** A newsletter that runs you on two dates gets two links, so each date's clicks stay separate. The monthly `utm_campaign` rolls them up.
+- **Add a custom channel group in GA4.** GA4's default grouping sends mediums like `newsletter`, `creator`, `podcast`, and `community` to Unassigned (only `affiliate` and `email` map to a default channel). Create a channel group with a rule per medium so partner traffic shows up as its own channels.
+- Podcast and video links often aren't clickable, so pair the UTM link with a promo code or vanity URL. See **stacks-marketing-influencer-marketing** for the rest of partner measurement.
+
+*The partner-type pattern is adapted from Wispr Flow's link-creator skill (MIT), published in the skills.marketing library.*
+
+### Traffic From AI Assistants
+
+You can't tag links that ChatGPT, Claude, Perplexity, Gemini, or Copilot put in their answers. Some of those visits arrive with a referrer (`chatgpt.com`, `perplexity.ai`) or an assistant-added `utm_source`; many arrive as direct, or come later through a branded search.
+
+- Add a GA4 channel group rule that matches known assistant referrers and sources into an "AI assistants" channel, and update the list as new assistants appear.
+- Treat that channel as the floor. Assistant-driven visits that show up as direct or branded search can be most of the effect, and they won't carry the referrer.
+- For measuring the full effect (exposure, delayed visits, and longer attribution windows), see **stacks-marketing-ai-seo**. For reconciling it with other sources, see **stacks-marketing-attribution**.
 
 ---
 
@@ -286,21 +344,22 @@ dataLayer.push({
 
 ## Tool Integrations
 
-For implementation, see the [tools registry](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/REGISTRY.md). Key analytics tools:
+For implementation, see the [tools registry](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/REGISTRY.md). Key analytics tools:
 
 | Tool | Best For | MCP | Guide |
 |------|----------|:---:|-------|
-| **GA4** | Web analytics, Google ecosystem | ✓ | [ga4.md](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/integrations/ga4.md) |
-| **Mixpanel** | Product analytics, event tracking | - | [mixpanel.md](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/integrations/mixpanel.md) |
-| **Amplitude** | Product analytics, cohort analysis | - | [amplitude.md](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/integrations/amplitude.md) |
-| **PostHog** | Open-source analytics, session replay | - | [posthog.md](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/integrations/posthog.md) |
-| **Segment** | Customer data platform, routing | - | [segment.md](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/integrations/segment.md) |
+| **GA4** | Web analytics, Google ecosystem | ✓ | [ga4.md](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/integrations/ga4.md) |
+| **Mixpanel** | Product analytics, event tracking | - | [mixpanel.md](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/integrations/mixpanel.md) |
+| **Amplitude** | Product analytics, cohort analysis | - | [amplitude.md](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/integrations/amplitude.md) |
+| **PostHog** | Open-source analytics, session replay | - | [posthog.md](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/integrations/posthog.md) |
+| **Segment** | Customer data platform, routing | - | [segment.md](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/integrations/segment.md) |
 
 ---
 
 ## Related Skills
 
 - **stacks-marketing-ab-testing**: For experiment tracking
+- **stacks-marketing-conversion-tracking**: For getting conversions (including GA4 key events from forms and bookings) to ad platforms and GA4, and verifying they arrive
 - **stacks-marketing-attribution**: For attribution models, multi-touch/MMM/incrementality, and reconciling conflicting numbers across tools (once tracking is live)
 - **stacks-marketing-seo-audit**: For organic traffic analysis
 - **stacks-marketing-cro**: For conversion optimization (uses this data)

@@ -1,6 +1,6 @@
 ---
 title: Build Command
-description: "The  command compiles your Stacks application and libraries for production use, optimizing assets for deployment to npm, CDNs, or cloud providers."
+description: "The buddy build command compiles your Stacks application and libraries for production use, optimizing assets for deployment to npm, CDNs, or cloud providers."
 ---
 # Build Command
 

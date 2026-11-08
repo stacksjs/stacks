@@ -1,6 +1,6 @@
 ---
 title: DNS Command
-description: "The  command queries DNS records for domains, providing a developer-friendly interface for DNS debugging and verification."
+description: "The buddy dns command queries DNS records for domains, providing a developer-friendly interface for DNS debugging and verification."
 ---
 # DNS Command
 

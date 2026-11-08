@@ -13,7 +13,7 @@ Read [the shared Stacks workflow](../stacks-marketing/WORKFLOW.md), then
 only for the branch the playbook routes to.
 
 This ports `ab-testing` from
-[coreyhaines31/marketingskills](https://github.com/coreyhaines31/marketingskills/tree/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/skills/ab-testing).
+[coreyhaines31/marketingskills](https://github.com/coreyhaines31/marketingskills/tree/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/skills/ab-testing).
 [NOTICE.md](NOTICE.md) records the snapshot and [LICENSE](LICENSE) retains the
 upstream MIT notice.
 

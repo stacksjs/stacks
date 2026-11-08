@@ -426,10 +426,12 @@ Only ask if not answered by context or input:
 ## Related Skills
 
 - **stacks-marketing-competitors**: For creating comparison/alternative pages from these profiles
+- **stacks-marketing-reverse-engineer-marketing**: For a dated teardown of how a competitor grew, which moves lined up with growth, and plays to copy
 - **stacks-marketing-prospecting**: For broader list-building qualification (this skill does deep research on specific accounts; prospecting builds the initial list)
 - **stacks-marketing-customer-research**: For mining reviews and community sentiment in depth
 - **stacks-marketing-content-strategy**: For using competitor content gaps to plan your own content
 - **stacks-marketing-seo-audit**: For auditing your own site relative to competitors
+- **stacks-marketing-link-building**: For turning competitors' referring domains into a link gap prospect list
 - **stacks-marketing-sales-enablement**: For turning profiles into battle cards and sales collateral
 - **stacks-marketing-ads**: For analyzing competitor ad strategies
 - **stacks-marketing-pricing**: For deeper pricing analysis informed by competitor profiles

@@ -139,6 +139,8 @@ When the goal of a piece is backlinks specifically, format choice matters more t
 
 The counterintuitive read: **curating statistics earns ~5x the links of producing original research.** Writers link to whatever makes citation easiest - a maintained stat-roundup page is citation infrastructure, while original research often gets cited *via* the roundups that aggregate it. Implications: (1) publish a stats page for your category and keep it fresh - it's cheap and compounds, and citable one-line stats are also what LLMs lift, making it an AI-visibility play (see **stacks-marketing-ai-seo**); (2) when you do run original research, pair it with your own stat-roundup page that presents the findings as citable one-liners, so you capture the links your data generates. The formats at the bottom aren't dead - guides, templates, and thought leadership earn their keep on rankings, conversions, and brand. Judge each piece by the job it's for, and don't expect links from formats that don't earn them.
 
+To get those assets in front of the people who link, and to point their authority at the pages that need it, see **stacks-marketing-link-building**.
+
 For programmatic content at scale, see **stacks-marketing-programmatic-seo** skill.
 
 ---
@@ -332,7 +334,7 @@ Score each idea on four factors:
 
 | Idea | Customer Impact (40%) | Content-Market Fit (30%) | Search Potential (20%) | Resources (10%) | Total |
 |------|----------------------|-------------------------|----------------------|-----------------|-------|
-| Topic A | 8 | 9 | 7 | 6 | 8.0 |
+| Topic A | 8 | 9 | 7 | 6 | 7.9 |
 | Topic B | 6 | 7 | 9 | 8 | 7.1 |
 
 Score 1-10 per factor, multiply by the weight, sum for the total. Rank the list; make the top-scoring pieces first.
@@ -429,6 +431,7 @@ Visual or structured representation of how content interconnects.
 
 - **stacks-marketing-copywriting**: For writing individual content pieces
 - **stacks-marketing-seo-audit**: For technical SEO and on-page optimization
+- **stacks-marketing-link-building**: For earning links to the content and the pages it supports
 - **stacks-marketing-ai-seo**: For optimizing content for AI search engines and getting cited by LLMs
 - **stacks-marketing-programmatic-seo**: For scaled content generation
 - **stacks-marketing-site-architecture**: For page hierarchy, navigation design, and URL structure

@@ -162,6 +162,7 @@ When recommending ideas, provide for each:
 - **stacks-marketing-plan**: When the user wants a comprehensive plan instead of standalone ideas. Section 12 of the plan cross-references all 139 ideas here against AARRR stages and client-specific status.
 - **stacks-marketing-programmatic-seo**: For scaling SEO content (#4)
 - **stacks-marketing-competitors**: For comparison pages (#11)
+- **stacks-marketing-reverse-engineer-marketing**: For ideas drawn from how a specific company grew, with plays to copy
 - **stacks-marketing-emails**: For email marketing tactics
 - **stacks-marketing-free-tools**: For engineering as marketing (#15)
 - **stacks-marketing-referrals**: For viral growth (#93)

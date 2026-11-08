@@ -1,517 +1,191 @@
 ---
 title: Upgrade Command
-description: "The  command upgrades your project's dependencies, the Stacks framework, Bun runtime, and shell integrations to their latest versions."
+description: "Upgrade Stacks, synchronize framework defaults and skills, and refresh the agent setup already used by your project."
 ---
 # Upgrade Command
 
-The `buddy upgrade` command upgrades your project's dependencies, the Stacks framework, Bun runtime, and shell integrations to their latest versions.
-
-## Basic Usage
-
-```bash
-# Upgrade the Stacks framework
-buddy upgrade
-
-# Upgrade everything (framework, dependencies, Bun & binary)
-buddy upgrade:all
-```
-
-## Command Syntax
+`buddy upgrade` updates the Stacks framework. It synchronizes the framework's
+managed files and bundled skills, then refreshes the agent setup your project
+already uses. `buddy update` is an alias.
 
 ```bash
-buddy upgrade [options]
-buddy upgrade:<type> [options]
+buddy upgrade --dry-run     # Review the target and proposed changes
+buddy upgrade               # Apply the upgrade
+buddy test                  # Verify your application against the new framework
 ```
 
-`buddy update` is an alias for `buddy upgrade`.
+Run this in an application checkout. Framework contributors update the Stacks
+source through Git, then test and release that source for applications to use.
+Keep application customizations in `app/`, including `app/Skills/` for skill
+overrides, rather than editing framework-managed files.
 
-### Options
+## Choose a release or source
 
-| Option | Description |
-|--------|-------------|
-| `-v, --version <version>` | Install a specific version (e.g., 0.70.23) |
-| `--canary` | Upgrade to the latest canary (bleeding-edge `main`) build |
-| `--stable` | Switch to the latest vetted stable release |
-| `--dry-run` | Preview which dependencies and managed project files would change, without writing or installing |
-| `--allow-downgrade` | Accept a release that moves a dependency this app declares to an older version (refused by default) |
-| `-f, --force` | Force re-download, bypassing cache and version checks |
-| `--from <path>` | Sync from a local stacks checkout (e.g. ~/Code/stacks), skips GitHub |
-| `--no-postinstall` | Skip post-sync hooks (auto-imports, bun install, migrate) |
-| `--verbose` | Enable verbose output |
-
-## Available Upgrade Commands
-
-### Upgrade Framework
-
-Run without a subcommand to upgrade the Stacks framework to the latest version:
+| Option | Behavior |
+| --- | --- |
+| `-V, --version <version>` | Select a published framework version |
+| `--stable` | Select the latest stable release |
+| `--canary` | Select the canary channel; vendored apps sync `main`, package-managed apps use the npm `canary` dist-tag |
+| `--from <path>` | Sync a vendored app from a local Stacks source checkout |
+| `--dry-run` | Preview without writing files, installing dependencies, running migrations, or refreshing AI setup |
+| `--allow-downgrade` | Accept older dependency versions that the target release requires |
+| `-f, --force` | Reapply the selected target; in vendored apps, also allow overwriting uncommitted managed files |
+| `--no-postinstall` | Skip installation and follow-up hooks; review the recovery steps below |
+| `--verbose` | Print diagnostic output |
 
 ```bash
-buddy upgrade
+buddy upgrade --stable --dry-run
+buddy upgrade --version 0.75.517 --dry-run
+buddy upgrade --canary
+buddy upgrade --from ~/Code/stacks --dry-run
 ```
 
-Package-managed upgrades also move flat root `overrides` and `resolutions`
-version pins for packages published in lockstep with the requested framework
-release. The preview labels those changes by field, including when an override
-is the only stale declaration. Independently versioned packages, scoped or
-nested rules, aliases, local links and `$dependency` references keep their
-application-defined values.
+An explicit version selects that release. Otherwise the saved channel applies,
+with stable as the default. A vendored app can auto-detect a nearby Stacks
+checkout when no explicit release/channel choice prevents it. Read the printed
+`source:` line to confirm what will be installed. `--from` is for vendored apps;
+package-managed apps install published releases.
 
-### When the release is behind your app
+Stable refers to the published release channel, not a guarantee that your app
+needs no compatibility testing. Review the [release notes](https://github.com/stacksjs/stacks/releases)
+and the [upgrade guide](/upgrade-guide) before applying changes.
 
-A framework release pins the STX, components and runtime versions it was built
-with. STX ships patches between framework releases, so an app that already
-declares a newer patch on the same line (`0.2.799` against a release built
-with `0.2.798`) keeps it: those declarations are left as they are.
+## What the framework upgrade changes
 
-Anything else that would move **backwards**, such as a newer STX minor line or
-a vendored framework manifest ahead of the release, is listed separately,
-marked `(downgrade)`, and refused by default with nothing written:
+### Package-managed apps
 
-```text
-  The following dependencies would be downgraded, because stacks@0.75.318 declares older versions than this app does:
-    @stacksjs/stx              0.3.0  →  0.2.691   (downgrade)
-    @stacksjs/stx (overrides)  0.3.0  →  0.2.691   (downgrade)
+When `storage/framework/core` is absent, the upgrade selects a published
+`stacks` release, aligns applicable framework declarations in `package.json`,
+and installs that exact target. It checks the installed version before syncing
+managed project files from `@stacksjs/defaults`.
 
-✗ Refusing to downgrade 2 dependencies. Nothing was written or installed.
-```
+The sync refreshes launch scripts, supported project configuration, and an
+existing vendored defaults copy. Apps using a link to `@stacksjs/defaults`
+continue to use that package. A copied defaults tree receives a version stamp
+at `storage/framework/defaults/.stacks-sync.json`; files the package no longer
+ships are removed from that copy. Keep overrides in `app/`.
 
-Wait for a release that declares those versions or newer
-(`buddy upgrade --version <version> --dry-run` checks one), or pass
-`--allow-downgrade` to accept them (it also replaces a kept newer STX patch
-with the release's own pins). `--dry-run` shows the same section and says
-whether a real run would refuse. A downgrade is a separate decision from an
-upgrade because its symptoms appear at runtime, far from the command that
-caused them.
+Flat `overrides` and `resolutions` for lockstep framework packages follow the
+selected release. Nested rules, aliases, local links, `$dependency` references,
+and independently versioned packages retain their application-defined values.
 
-### Craft and the lockfile
+The release's paired STX versions and Craft minimums are also considered. A
+newer STX patch on the same release line is retained by default. Other declared
+downgrades are listed and refused before writing or installing. Use
+`--allow-downgrade` only when you intend to accept the target's versions; it
+also opts into replacing a retained newer STX patch. Craft declarations below
+the release's minimum are raised, while newer versions are retained.
 
-The release also declares the Craft it needs (`craft-native >=0.0.443`). An app
-that pins `craft-native` or an `@craft-native/*` builder below that floor, in
-its dependencies or its `overrides`, is raised to it; a newer Craft is left
-alone. Raised exact pins are re-resolved with `bun add --exact --lockfile-only`,
-which keeps an existing `bun.lock` in its current format. If Bun rewrites the
-lockfile to a newer `lockfileVersion` anyway, the upgrade says so.
+### Vendored apps
 
-### Why `bun install` is not the whole upgrade
+When `storage/framework/core` exists, the upgrade syncs framework source:
 
-A package-managed app keeps a copy of the framework scaffold in
-`storage/framework/defaults`, and `buddy upgrade` is the only thing that writes
-it. Bumping `stacks` in `package.json` and running `bun install`, which is the
-ordinary way to move a dependency, advances `node_modules/@stacksjs/defaults`
-and leaves the vendored tree exactly where it was.
+- `storage/framework/core/`, including runtime packages and commands.
+- `storage/framework/defaults/`, including built-in actions, models and AI skills.
+- `storage/framework/types/`, excluding the app-generated browser/server declarations.
+- The root `buddy` and `bootstrap` launchers.
 
-Every sync stamps `storage/framework/defaults/.stacks-sync.json` with the
-version it copied from. Two things read that stamp.
+Derived directories and files such as `node_modules`, `dist`, and package
+lockfiles under the core tree are excluded. The sync copies additions and
+changes; files absent from the source are reported but retained in this path.
+Uncommitted edits in managed paths stop the upgrade unless `--force` is set.
 
-**Boot prefers whichever copy the app actually declared.** A vendored tree
-stamped from an older release than the installed package is a cache of a
-release you have already moved past, so framework defaults resolve from
-`@stacksjs/defaults` instead. A `bun install` bump therefore runs the code you
-installed, not last month's. Nothing else changes order: a tree that matches, a
-tree with no stamp, a framework checkout, and a `bun link` all keep resolving to
-the vendored copy exactly as before.
+If the upgrade action itself changes, it restarts once using the new action so
+new sync paths and deferred hooks can run in the same invocation.
 
-**Three commands report the gap**, because a tree on disk that is not what runs
-is still confusing to debug against:
+## Skills and agent setup
 
-- `buddy dev` prints a one-line warning at startup when the two disagree.
-- `buddy doctor` has a **Framework defaults** check with the file counts.
-- `buddy upgrade --dry-run` previews the scaffold changes, not just the
-  dependency bumps.
+Bundled skills ship as framework defaults. An upgrade refreshes those sources,
+then runs `buddy setup:ai <provider> --force` for detected providers: Claude,
+Cursor, Copilot, and Gemini. Codex setup always runs so a missing `AGENTS.md`
+can be seeded. It does not enable every provider in a project.
 
-Running `buddy upgrade` clears all of it. Until then an unstamped tree, which is
-any tree synced before stamping existed, still wins at boot: with no recorded
-version there is nothing to compare, so the checks report the difference without
-changing what resolves.
+Claude setup adds links for new skills and refreshes existing generated skill
+entries. Framework skills and project overrides under `app/Skills/` use the
+same resolution order as a manual setup. Generated files installed with
+`--copy` can be replaced by the forced refresh; keep authored skill changes in
+`app/Skills/`. Existing authored `AGENTS.md`, real `CLAUDE.md`, and
+`.claude/launch.json` are preserved by setup.
 
-Note that the sync also removes files under `storage/framework/defaults` that
-the package no longer ships, so it is not purely additive. The tree is
-gitignored, so `git checkout` cannot undo it. Keep customizations in `app/`,
-which overrides the defaults and is never touched by the sync.
-
-### Upgrade All
-
-Upgrade framework, dependencies, Bun, and binary at once:
+A failed agent refresh fails the upgrade and reports the provider's repair
+command. To refresh a provider separately:
 
 ```bash
-buddy upgrade:all
+buddy setup:ai claude --force
 ```
 
-### Upgrade Dependencies
+The framework distributes its reviewed skill snapshot. It does not download
+arbitrary upstream skill repositories during an application upgrade.
 
-Update package.json and pantry.yaml dependencies:
+## Follow-up hooks and recovery
+
+Package-managed upgrades refresh dependencies before syncing defaults and agent
+setup. Vendored upgrades regenerate auto-imports, refresh dependencies when
+needed, regenerate an existing `database/types.d.ts`, and apply pending local
+migrations when `database/migrations/` exists. A `pantry.lock` selects Pantry
+for the vendored dependency refresh; otherwise Bun runs. Both use
+`install --force`.
+
+Vendored auto-import, dependency-install and database-type failures currently
+print non-fatal warnings. Migration and agent-setup failures return a nonzero
+exit. Read the complete output and resolve warnings before deploying.
+
+`--no-postinstall` skips these follow-up steps. For package-managed apps it
+also returns before the installed defaults and agent setup are synchronized.
+Use it to stage a manifest change, then rerun the upgrade without the flag to
+complete installation and synchronization.
+
+If files synchronized but a hook failed, repair the reported step and rerun
+with `buddy upgrade --force` to reapply the target and hooks. Run your tests,
+lint and typechecks before deploying. A preview performs none of these writes
+or hooks.
+
+## Why a dependency install alone is insufficient
+
+Changing the `stacks` version and running `bun install` updates installed
+packages, but does not perform the upgrade's managed project-file sync or
+refresh generated agent entrypoints.
+
+Boot uses a packaged defaults copy when a stamped vendored copy is older than
+the declared installed framework. An unstamped tree retains the legacy
+vendored precedence. `buddy dev`, `buddy doctor`, and `buddy upgrade --dry-run`
+report defaults drift; `buddy upgrade` reconciles it.
+
+## Other upgrade commands
+
+| Command | Scope |
+| --- | --- |
+| `buddy upgrade:dependencies` / `upgrade:deps` | Run the project's dependency update action (`pantry --update && bun install`) |
+| `buddy upgrade:bun` | Invoke the Bun upgrade action; inspect its availability in your installed release |
+| `buddy upgrade:shell` | Refresh the Oh My Zsh Buddy integration |
+| `buddy upgrade:binary` | Build and install the global Stacks binary; the CLI currently requires root |
+| `buddy upgrade:all` | Request framework, dependency, Bun and binary upgrades |
+
+These commands have different scopes. Plain `buddy upgrade` does not update
+all unrelated dependencies or the system runtime. The dependency action does
+not implement security prioritization or an interactive major-version review.
+Use [Buddy Bot](https://github.com/stacksjs/buddy-bot) for a reviewed dependency
+update workflow.
+
+## Roll back deliberately
+
+Before upgrading, commit application changes and back up any database the
+vendored migration hook can change. Git can restore tracked manifests and
+lockfiles, but cannot restore a gitignored defaults copy or undo migrations.
+
+To return to a published framework release, preview it explicitly:
 
 ```bash
-buddy upgrade:dependencies
-# or
-buddy upgrade:deps
+buddy upgrade --version <previous-version> --allow-downgrade --dry-run
 ```
 
-### Upgrade Bun
-
-Upgrade to the latest Bun version:
-
-```bash
-buddy upgrade:bun
-```
-
-### Upgrade Shell Integration
-
-Update shell completions and aliases:
-
-```bash
-buddy upgrade:shell
-```
-
-### Upgrade Binary
-
-Upgrade the global `stacks` binary (requires sudo):
-
-```bash
-sudo buddy upgrade:binary
-```
-
-## Examples
-
-### Full Upgrade
-
-```bash
-buddy upgrade:all
-```
-
-Output:
-
-```
-buddy upgrade:all
-
-Upgrading dependencies...
-Upgrading framework...
-Upgrading Bun...
-
-All upgrades complete.
-
-Completed in 45.23s
-```
-
-### Upgrade with Verbose Output
-
-```bash
-buddy upgrade:all --verbose
-```
-
-### Force Framework Update
-
-Force a re-download of the framework, bypassing cache and version checks:
-
-```bash
-buddy upgrade --force
-```
-
-### Upgrade Specific Project
-
-```bash
-buddy upgrade:dependencies -p my-project
-```
-
-## What Gets Upgraded
-
-### Dependencies
-
-- npm packages in `package.json`
-- Pantry modules in `pantry.yaml`
-- Development dependencies
-- Peer dependencies
-
-### Framework
-
-- Core Stacks packages
-- Framework utilities
-- Type definitions
-- Configuration defaults
-
-### Bun Runtime
-
-- Bun version matching project requirements
-- Bun dependencies and lockfile
-
-### Shell Integration
-
-- Oh My Zsh plugin
-- Command completions
-- Shell aliases
-
-### Binary
-
-- Global `stacks` command
-- CLI utilities
-
-## Update Strategy
-
-### Minor and Patch Updates
-
-By default, upgrades to compatible versions:
-
-```
-express: ^4.17.0 -> ^4.18.2
-```
-
-### Major Updates
-
-Major version updates require confirmation:
-
-```
-? Upgrade express from 4.x to 5.x? (Breaking changes may occur)
-```
-
-### Security Updates
-
-Security-related updates are prioritized:
-
-```
-! express 4.17.0 has known vulnerabilities
-  Upgrading to 4.17.3 (security fix)
-```
-
-## Pre-Upgrade Checklist
-
-Before upgrading:
-
-1. **Commit current changes**
-
-   ```bash
-   git add . && git commit -m "chore: pre-upgrade snapshot"
-   ```
-
-2. **Run tests**
-
-   ```bash
-   buddy test
-   ```
-
-3. **Check for breaking changes**
-
-   ```bash
-   buddy outdated
-   ```
-
-## Post-Upgrade Steps
-
-After upgrading:
-
-1. **Install new dependencies**
-
-   ```bash
-   buddy install
-   ```
-
-2. **Run tests**
-
-   ```bash
-   buddy test
-   ```
-
-3. **Check for deprecation warnings**
-
-   ```bash
-   buddy dev --verbose
-   ```
-
-4. **Update configurations** (if needed)
-
-## Troubleshooting
-
-### Upgrade Fails
-
-```
-Error: Failed to upgrade dependencies
-```
-
-**Solutions**:
-
-1. Clear package cache: `buddy clean`
-2. Fresh install: `buddy fresh`
-3. Try with verbose: `buddy upgrade --verbose`
-
-### Compatibility Issues
-
-```
-Error: Peer dependency conflict
-```
-
-**Solutions**:
-
-1. Check conflicting packages
-2. Update related packages together
-3. Use `--force` flag (with caution)
-
-### Binary Upgrade Permission
-
-```
-Error: Permission denied
-```
-
-**Solution**: Run with sudo:
-
-```bash
-sudo buddy upgrade:binary
-```
-
-### Shell Integration Issues
-
-```
-Error: Shell integration failed
-```
-
-**Solutions**:
-
-1. Ensure Oh My Zsh is installed
-2. Check shell configuration file
-3. Restart terminal after upgrade
-
-### Bun Version Mismatch
-
-```
-Warning: Bun version mismatch
-```
-
-**Solution**: Upgrade Bun:
-
-```bash
-buddy upgrade:bun
-```
-
-## Rollback
-
-If an upgrade causes issues:
-
-### Restore from Git
-
-```bash
-# Restore package.json
-git checkout HEAD -- package.json bun.lockb
-
-# Reinstall
-buddy install
-```
-
-### Restore Specific Package
-
-```bash
-# Install specific version
-bun add express@4.17.0
-```
-
-### Framework Rollback
-
-```bash
-# Install specific framework version
-bun add stacks@0.74.24
-```
-
-## Automation
-
-### Scheduled Upgrades
-
-Create a script for regular upgrades:
-
-```bash
-# !/bin/bash
-# upgrade-all.sh
-
-echo "Checking for updates..."
-buddy outdated
-
-echo "Upgrading dependencies..."
-buddy upgrade:dependencies
-
-echo "Running tests..."
-buddy test
-
-if [ $? -eq 0 ]; then
-  echo "All tests passed!"
-  buddy commit -m "chore: upgrade dependencies"
-else
-  echo "Tests failed, rolling back..."
-  git checkout -- package.json bun.lockb
-  buddy install
-fi
-```
-
-### CI/CD Integration
-
-```yaml
-# .github/workflows/upgrade.yml
-name: Dependency Update
-
-on:
-  schedule:
-
-    - cron: '0 0 * * 0' # Weekly
-
-jobs:
-  upgrade:
-    runs-on: ubuntu-latest
-    steps:
-
-      - uses: actions/checkout@v3
-      - uses: oven-sh/setup-bun@v1
-
-      - name: Upgrade dependencies
-
-        run: buddy upgrade:dependencies
-
-      - name: Run tests
-
-        run: buddy test
-
-      - name: Create PR
-
-        uses: peter-evans/create-pull-request@v5
-        with:
-          title: 'chore: upgrade dependencies'
-```
-
-## Best Practices
-
-### Regular Updates
-
-Update dependencies regularly (weekly/monthly) to:
-
-- Get security fixes
-- Avoid large upgrade jumps
-- Keep current with features
-
-### Test After Upgrades
-
-Always run tests after upgrading:
-
-```bash
-buddy upgrade:dependencies && buddy test
-```
-
-### Review Changelogs
-
-Before major upgrades, review package changelogs for:
-
-- Breaking changes
-- Deprecations
-- Migration guides
-
-### Stage Upgrades
-
-Test upgrades in staging before production:
-
-```bash
-# Staging
-APP_ENV=staging buddy upgrade:all
-buddy test
-
-# Production (after verification)
-APP_ENV=production buddy upgrade:all
-```
-
-## Related Commands
-
-- [buddy fresh](/guide/buddy/fresh) - Fresh install
-- [buddy clean](/guide/buddy/clean) - Clean dependencies
-- [buddy version](/guide/buddy/version) - View versions
+Apply the same command without `--dry-run` after reviewing it. Restore the
+application's corresponding tracked files and database backup as required by
+that release. Installing an older `stacks` dependency alone does not reverse
+all managed files or database changes.
+
+## Related commands
+
+- [Command reference](/guide/buddy/commands)
+- [Health checks](/guide/buddy/commands#doctor)
+- [Using skills](/skills/using)

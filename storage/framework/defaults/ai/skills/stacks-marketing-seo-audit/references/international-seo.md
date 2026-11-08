@@ -27,7 +27,9 @@ Every page must include itself (self-referencing) in the hreflang set. Missing s
 
 ### x-default
 
-Introduced April 2013. Designates the fallback page for users whose language/region matches no declared variant. Can point to the same URL as one of the language-specific alternates. Must be included in the complete set of annotations on every variant page.
+This is a recommended fallback for unmatched language/region users, not a mandatory condition for valid language annotations. Report its absence as a design recommendation when a fallback is useful, rather than declaring the whole hreflang implementation invalid.
+
+Introduced April 2013. Designates the fallback page for users whose language/region matches no declared variant. Can point to the same URL as one of the language-specific alternates. If used, include it consistently in the complete annotation set on each variant page.
 
 - [Google Blog: x-default hreflang](https://developers.google.com/search/blog/2013/04/x-default-hreflang-for-international-pages)
 - [Google Blog: How x-default can help you (2023)](https://developers.google.com/search/blog/2023/05/x-default)

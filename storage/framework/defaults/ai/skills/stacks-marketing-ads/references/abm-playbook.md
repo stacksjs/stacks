@@ -38,7 +38,7 @@ Three motions, by list size:
 - **Personalization layer on the existing site** (Mutiny and similar): swaps headlines and proof by visiting company.
 - **CMS template fed from a list** (Webflow, WordPress, or Framer CMS, with Clay, Whalesync, or the CMS API filling one item per account).
 - **Hand-coded dynamic route** reading from your CRM or a sheet.
-- **AI site platform** (Ploy ◆ documents a Clay row posting to a webhook that runs a Ploybook to publish `/for/<company>`; ◆ marks a [Verified Partner](https://github.com/coreyhaines31/marketingskills/blob/1efedbc5148b54b2f0f6c6c9fe0be62e151c7fff/tools/REGISTRY.md#verified-partners) of this repository, disclosure not endorsement).
+- **AI site platform** (Ploy ◆ documents a Clay row posting to a webhook that runs a Ploybook to publish `/for/<company>`; ◆ marks a [Verified Partner](https://github.com/coreyhaines31/marketingskills/blob/96798cf38736ecdba015a1d2b0521b0c8f8f41dd/tools/REGISTRY.md#verified-partners) of this repository, disclosure not endorsement).
 
 Whichever you use: keep account pages `noindex` and out of the sitemap, use only public or first-party facts about the account, and have a human review before anything publishes.
 

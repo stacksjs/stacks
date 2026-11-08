@@ -1,6 +1,6 @@
 ---
 title: Test Command
-description: "The  command runs your test suite, including unit tests, feature tests, and type checking, powered by Bun's built-in test runner."
+description: "The buddy test command runs your test suite, including unit tests, feature tests, and type checking, powered by Bun's built-in test runner."
 ---
 # Test Command
 

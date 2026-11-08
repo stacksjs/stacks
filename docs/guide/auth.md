@@ -1,6 +1,6 @@
 ---
 title: Authentication
-description: "Stacks provides token authentication, passkeys, two-factor authentication, authorization gates, policies, role-based access control, email verification, an..."
+description: "Stacks provides token authentication, passkeys, two-factor authentication, authorization gates, policies, role-based access control, email verification, and password resets through @stacksjs/auth."
 ---
 # Authentication
 

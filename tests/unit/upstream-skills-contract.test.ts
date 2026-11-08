@@ -19,8 +19,8 @@ describe('upstream skill ports', () => {
   test('accounts for both complete reviewed catalogs at fixed revisions', () => {
     expect(manifest.schemaVersion).toBe(1)
     expect(manifest.sources.map(source => [source.repository, source.skills.length])).toEqual([
-      ['coreyhaines31/marketingskills', 50],
-      ['mattpocock/skills', 38],
+      ['coreyhaines31/marketingskills', 53],
+      ['mattpocock/skills', 39],
     ])
 
     for (const source of manifest.sources) {
@@ -42,6 +42,17 @@ describe('upstream skill ports', () => {
       expect(getSkill(name)).not.toBeNull()
       expect(readFileSync(join(ai, 'skills', name, 'LICENSE'), 'utf8')).toContain('MIT License')
       expect(readFileSync(join(ai, 'skills', name, 'NOTICE.md'), 'utf8')).toContain('Source')
+    }
+  })
+
+  test('publishes the complete source catalog and revisions in the docs', () => {
+    const page = readFileSync('docs/skills/upstream.md', 'utf8')
+    for (const source of manifest.sources) {
+      expect(page).toContain(`All ${source.expectedSkills} upstream skills are accounted for.`)
+      for (const skill of source.skills) {
+        expect(page).toContain(`https://github.com/${source.repository}/blob/${source.revision}/${skill.path}`)
+        expect(page).toContain(`\`${skill.target}\``)
+      }
     }
   })
 

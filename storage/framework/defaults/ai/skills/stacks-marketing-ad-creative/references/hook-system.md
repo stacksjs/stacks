@@ -59,6 +59,13 @@ A menu of proven opening structures. Cycle through them like the static template
 | **Question** | Ask the exact question the buyer types into search or ChatGPT | Use their phrasing verbatim from the corpus |
 | **Countdown / gamified** | A timer or on-screen challenge that promises a payoff at the end | Payoff must exist; hold-rate collapses on cheats |
 | **Proof-first** | Lead with the receipt - the result screenshot, the stat, the demo money-shot | Strongest when the proof brags by itself |
+| **Choice** | Put two options in front of the viewer: "Sandler or MEDDIC for a $50K deal?" | Both options must be real ones the audience weighs; viewers who know both stay to see who wins, viewers who know neither stay to learn |
+| **Old vs. new** | "We used to take elixirs. Now everyone drinks prebiotic soda. Which is better for your gut?" | Answer the question from expertise; the hook only works if the payoff takes a side |
+| **Us vs. them** | "Most [role]s do X. The ones who [result] do Y." | Name a behavior the audience will recognize as what "most" people really do |
+| **False assumption** | Challenge something the buyer believes they need: "You can cancel ClickFunnels" | Draws the strongest reactions, including angry ones; keep the body fair to the named product, and get legal review before naming a competitor in paid ads |
+| **Declaration, then question** | State what the audience already agrees with, then doubt it: "You need to spend $20K a month recruiting on Indeed. Or do you?" | The doubt needs a real answer in the body; still being tested by the practitioners who shared it (October 2026) |
+
+The last five are one family: **contrast**. People understand a thing by comparing it with something else, so a hook that sets up two states, two options, or two groups gives the viewer a question to stay for. That is also why AI copy leans on "it's not X, it's Y." The difference is that a good contrast hook compares two things the audience actually weighs, while the AI tell negates a claim nobody made (see the copywriting skill's AI-tells reference). Contrast hooks work best for educational content and decisions; for impulse products, lead with proof or POV instead.
 
 ---
 

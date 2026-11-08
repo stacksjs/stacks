@@ -112,13 +112,13 @@ in their stated context. `buddy generate`, `buddy generate:auto-imports` and
 | Specify a recurring workflow or coordinate a long-running effort | `stacks-loop`, `stacks-chief-of-staff` |
 
 **Marketing**: read `stacks-marketing`, then choose the task-specific skill from
-its `CATALOG.md`. The framework bundles all 50 reviewed marketing playbooks,
+its `CATALOG.md`. The framework bundles all 53 reviewed marketing playbooks,
 including copywriting, SEO, acquisition, conversion, retention, and measurement.
 They complement framework skills such as `stacks-analytics` and `stacks-email`.
 Use stx and ts-css for implementation. A draft does not authorize sending,
 spending, publishing, or scheduling; existing explicit authorization carries forward.
 
-Source revisions, hashes, native substitutes, and all 38 reviewed Matt Pocock
+Source revisions, hashes, native substitutes, and all 39 reviewed Matt Pocock
 skill mappings live in `stacks-flow/upstream-skills.json` beside its entrypoint.
 
 Add your own with `app/Skills/<name>/SKILL.md`, then re-run `buddy setup:ai`.
