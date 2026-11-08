@@ -1,5 +1,6 @@
 import type { Model } from '@stacksjs/types'
 import fs from 'node:fs'
+import { config, overridesReady } from '@stacksjs/config'
 import { path } from '@stacksjs/path'
 
 /**
@@ -48,8 +49,9 @@ export interface SchemaDriftReport {
  * subdirectories, and one unreadable model must not cost every other model its
  * audit. Mirrors the loader in relation-columns.ts.
  */
-async function loadModelsFrom(dir: string): Promise<Model[]> {
+export async function loadSchemaAuditModels(dir: string, include?: readonly string[]): Promise<Model[]> {
   const out: Model[] = []
+  const selected = include === undefined ? undefined : new Set(include.map(name => name.trim().toLowerCase()))
   if (!fs.existsSync(dir))
     return out
 
@@ -57,11 +59,15 @@ async function loadModelsFrom(dir: string): Promise<Model[]> {
     const fullPath = path.join(dir, entry.name)
 
     if (entry.isDirectory()) {
-      out.push(...(await loadModelsFrom(fullPath)))
+      out.push(...(await loadSchemaAuditModels(fullPath, include)))
       continue
     }
 
     if (!entry.name.endsWith('.ts') || entry.name.startsWith('_') || entry.name.startsWith('index'))
+      continue
+    // Match migration generation's file-based model names before importing.
+    // Models owned by another runtime have no tables in this database.
+    if (selected && !selected.has(entry.name.slice(0, -3).toLowerCase()))
       continue
 
     try {
@@ -99,7 +105,8 @@ export async function auditSchemaDrift(): Promise<SchemaDriftReport> {
   }
 
   try {
-    const models = await loadModelsFrom(path.appPath('Models'))
+    await overridesReady
+    const models = await loadSchemaAuditModels(path.appPath('Models'), config.database?.models?.include)
     if (models.length === 0)
       return empty
 
