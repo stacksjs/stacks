@@ -15,7 +15,7 @@
  */
 
 import { describe, expect, it } from 'bun:test'
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { isBuiltin } from 'node:module'
 import { dirname, join, resolve, sep } from 'node:path'
@@ -74,22 +74,47 @@ describe('published package dependencies', () => {
     expect(packages.length).toBeGreaterThan(50)
   })
 
-  it('ships one STX release across compiler, runtime, desktop and sanitizer declarations', async () => {
+  it('ships one STX cohort across declarations and the installed runtime graph', async () => {
+    const rootDir = join(import.meta.dir, '..')
     const root = await Bun.file(join(import.meta.dir, '../package.json')).json()
     const umbrella = await Bun.file(join(coreDir, 'package.json')).json()
     const expected = root.dependencies['@stacksjs/stx']
-    expect(expected).toMatch(/^\d+\.\d+\.\d+(?:-[\w.-]+)?$/)
+    const commit = /^https:\/\/registry\.pantry\.dev\/@stacksjs\/stx@([a-f0-9]{7,40})$/.exec(expected)?.[1]
+    const installedStx = await Bun.file(join(rootDir, 'node_modules/@stacksjs/stx/package.json')).json()
+    const producerVersion = commit ? installedStx.version : expected
+    expect(producerVersion).toMatch(/^\d+\.\d+\.\d+(?:-[\w.-]+)?$/)
+    const artifacts = new Set(['@stacksjs/stx', '@stacksjs/components', 'bun-plugin-stx'])
     const runtimePackages = new Set(['@stacksjs/stx', '@stacksjs/components', 'bun-plugin-stx', '@stacksjs/desktop', '@stacksjs/sanitizer', 'stx-router'])
     const mismatched: string[] = []
     for (const manifest of [root, umbrella, ...packages.map(pkg => pkg.json)]) {
       for (const field of ['dependencies', 'devDependencies', 'optionalDependencies']) {
-        for (const [name, version] of Object.entries(manifest[field] ?? {})) {
-          if (runtimePackages.has(name) && version !== expected)
-            mismatched.push(`${manifest.name}: ${field}.${name} is ${version}; expected ${expected}`)
+        for (const [name, declaredVersion] of Object.entries(manifest[field] ?? {})) {
+          const required = commit && artifacts.has(name) ? `https://registry.pantry.dev/${name}@${commit}` : producerVersion
+          if (runtimePackages.has(name) && declaredVersion !== required)
+            mismatched.push(`${manifest.name}: ${field}.${name} is ${declaredVersion}; expected ${required}`)
         }
       }
     }
     expect(mismatched.sort()).toEqual([])
+
+    // Commit artifacts retain their producer's release version. Check the
+    // installed versions too, and reject nested registry copies of the same
+    // version: matching manifest strings alone missed that mixed graph.
+    const installed = [...runtimePackages].filter(name => name !== 'stx-router')
+    for (const name of installed) {
+      const directory = join(rootDir, 'node_modules', name)
+      const manifest = await Bun.file(join(directory, 'package.json')).json()
+      expect(manifest.name).toBe(name)
+      expect(manifest.version, `${name} must match the installed STX producer version`).toBe(producerVersion)
+      if (commit && artifacts.has(name))
+        expect(root.overrides?.[name]).toBe(`https://registry.pantry.dev/${name}@${commit}`)
+      for (const dependency of installed) {
+        if (manifest.dependencies?.[dependency] || manifest.optionalDependencies?.[dependency]) {
+          expect(realpathSync(Bun.resolveSync(dependency, directory)), `${name} resolves a second copy of ${dependency}`)
+            .toBe(realpathSync(Bun.resolveSync(dependency, rootDir)))
+        }
+      }
+    }
   })
 
   it('declares every package its source imports', async () => {
