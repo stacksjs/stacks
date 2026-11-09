@@ -1,22 +1,20 @@
 import { Action } from '@stacksjs/actions/runtime'
-import { TaxRate } from '@stacksjs/orm'
 import { dashboardOperationalError } from '../dashboard-response'
-import { normalizeTaxRateRecord, summarizeTaxRates } from './tax-rate-records'
+import { readTaxRates } from './commerce-tax-rate-list'
 
+/**
+ * `GET /api/dashboard/commerce/taxes` - every tax rate, read whole (commerce-tax-rate-list.ts,
+ * stacksjs/stacks#3218). This used to send the newest 500.
+ */
 export default new Action({
   name: 'CommerceTaxesAction',
-  description: 'Returns persisted TaxRate records for dashboard management.',
+  description: 'Returns every persisted TaxRate record for dashboard management.',
   method: 'GET',
   apiResponse: true,
 
   async handle() {
     try {
-      const rates = await TaxRate.orderByDesc('id').limit(500).get()
-      const records = rates.map(normalizeTaxRateRecord)
-      return {
-        records,
-        summary: summarizeTaxRates(records),
-      }
+      return await readTaxRates()
     }
     catch (error) {
       return dashboardOperationalError(error, 'Tax rate records could not be read.', 'CommerceTaxesAction')
