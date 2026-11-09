@@ -64,7 +64,7 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/sites": "workspace:*",
     "@stacksjs/slug": "workspace:*",
-    "@stacksjs/stx": "0.2.837",
+    "@stacksjs/stx": "https://registry.pantry.dev/@stacksjs/stx@f1790ff",
     "@stacksjs/validation": "workspace:*",
     "ts-medium-editor": "^0.2.0",
     "ts-slug": "^0.2.1",

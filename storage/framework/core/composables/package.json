@@ -51,7 +51,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/stx": "0.2.837",
+    "@stacksjs/stx": "https://registry.pantry.dev/@stacksjs/stx@f1790ff",
     "@stacksjs/datetime": "workspace:*"
   },
   "devDependencies": {
