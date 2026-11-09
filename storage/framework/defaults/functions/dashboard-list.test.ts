@@ -278,6 +278,13 @@ describe('useServerList', () => {
     expect(api.asked[1]!.has('status')).toBe(false)
   })
 
+  it('sends no sort for a list with no order to choose', async () => {
+    const api = server()
+    const list = useServerList<string>({ fetch: api.fetch })
+    void list.load()
+    expect(api.asked[0]!.toString()).toBe('page=1&per_page=25')
+  })
+
   it('sends the search under the name the endpoint reads', async () => {
     const api = server()
     const list = useServerList<string>({ fetch: api.fetch, defaultSort: { sort: 'id', direction: 'asc' }, searchDelay: 5, searchParam: 'search' })

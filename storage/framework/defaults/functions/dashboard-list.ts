@@ -272,9 +272,10 @@ export interface ServerListOptions<T> {
   /**
    * The order before any column header is clicked. An accessor when the page
    * has a sort select: changing it hands the order back from a header sort
-   * and asks for page 1.
+   * and asks for page 1. Left out for a list with no order to choose, which
+   * then sends no sort at all.
    */
-  defaultSort: { sort: string, direction: 'asc' | 'desc' } | (() => { sort: string, direction: 'asc' | 'desc' })
+  defaultSort?: { sort: string, direction: 'asc' | 'desc' } | (() => { sort: string, direction: 'asc' | 'desc' })
   /** The table's sortable column keys, as the server's sort names. A column not listed returns to `defaultSort`. */
   columnSorts?: Record<string, string>
   /** The filter values, read reactively: a change asks for page 1. `''` or `'all'` leaves a filter out. */
@@ -346,8 +347,10 @@ export function useServerList<T>(options: ServerListOptions<T>): ServerList<T> {
   const params = (): URLSearchParams => {
     const query = new URLSearchParams()
     const order = headerSort() ?? defaultOrder()
-    query.set('sort', order.sort)
-    query.set('direction', order.direction)
+    if (order) {
+      query.set('sort', order.sort)
+      query.set('direction', order.direction)
+    }
     if (appliedSearch())
       query.set(options.searchParam ?? 'q', appliedSearch())
     for (const [name, value] of Object.entries(options.filters?.() ?? {})) {
