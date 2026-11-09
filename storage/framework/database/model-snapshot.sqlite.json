@@ -4510,20 +4510,12 @@
           },
           {
             "name": "method",
-            "type": "enum",
+            "type": "string",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
             "hasDefault": false,
-            "enumValues": [
-              "GET",
-              "POST",
-              "PUT",
-              "PATCH",
-              "DELETE",
-              "OPTIONS",
-              "HEAD"
-            ]
+            "maxLength": 255
           },
           {
             "name": "path",
@@ -6231,7 +6223,8 @@
             "hasDefault": false,
             "references": {
               "table": "users",
-              "column": "id"
+              "column": "id",
+              "onDelete": "cascade"
             }
           },
           {
@@ -6592,7 +6585,8 @@
             "hasDefault": false,
             "references": {
               "table": "users",
-              "column": "id"
+              "column": "id",
+              "onDelete": "cascade"
             }
           },
           {
@@ -13934,7 +13928,7 @@
       }
     ]
   },
-  "hash": "7cf62aa4aae99d0858498aef6fbc69cb7116fdadb3c259fe80e7c5ad9bca6aff",
+  "hash": "9c4a75f2726806c97889d238f0aee9c70e4671f2d47ddb1075d565579ceb8b54",
   "dialect": "sqlite",
-  "updatedAt": "2026-11-06T03:14:12.329Z"
+  "updatedAt": "2026-11-09T14:46:08.789Z"
 }

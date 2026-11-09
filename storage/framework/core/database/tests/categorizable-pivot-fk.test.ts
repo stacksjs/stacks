@@ -53,6 +53,11 @@ describe('polymorphic pivot foreign keys', () => {
       '0000000132-add-trait-model-owner-ids.sql',
       '0000000133-normalize-tag-uniques.sql',
       '0000000134-auto-misc.sql',
+      // Rebuilds notifications and notification_deliveries to cascade with
+      // their user. Those tables come from the framework's notification
+      // tables step, not the corpus, so this harness has neither, as with
+      // 0000000133 and 0000000134. The real runner applies it.
+      '1789486698574-auto-misc.sql',
     ])
   })
 
