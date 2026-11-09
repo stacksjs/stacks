@@ -855,9 +855,9 @@
       "name": "@stacksjs/image",
       "version": "0.75.529",
       "dependencies": {
-        "@stacksjs/ts-svg": "^0.1.5",
+        "@stacksjs/ts-svg": "https://registry.pantry.dev/@stacksjs/ts-svg@367a010",
         "@stacksjs/types": "workspace:*",
-        "ts-images": "^0.2.33"
+        "ts-images": "https://registry.pantry.dev/ts-images@22073a9"
       },
       "devDependencies": {
         "better-dx": "^0.2.24"
@@ -1291,7 +1291,7 @@
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/ts-cloud": "^0.16.109",
         "@stacksjs/ts-xml": "^0.1.0",
-        "ts-images": "^0.2.33"
+        "ts-images": "https://registry.pantry.dev/ts-images@22073a9"
       },
       "devDependencies": {
         "@stacksjs/types": "workspace:*",

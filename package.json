@@ -128,6 +128,8 @@
   "overrides": {
     "@stacksjs/stx": "https://registry.pantry.dev/@stacksjs/stx@f1790ff",
     "bun-plugin-stx": "https://registry.pantry.dev/bun-plugin-stx@f1790ff",
-    "@stacksjs/components": "https://registry.pantry.dev/@stacksjs/components@f1790ff"
+    "@stacksjs/components": "https://registry.pantry.dev/@stacksjs/components@f1790ff",
+    "ts-images": "https://registry.pantry.dev/ts-images@22073a9",
+    "@stacksjs/ts-svg": "https://registry.pantry.dev/@stacksjs/ts-svg@367a010"
   }
 }
