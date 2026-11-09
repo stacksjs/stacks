@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { normalizeCouponRecord, summarizeCoupons } from './coupon-records'
+import { normalizeCouponRecord } from './coupon-records'
 
 function coupon(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
@@ -72,20 +72,5 @@ describe('dashboard coupon records', () => {
     expect(() => normalizeCouponRecord(coupon({
       start_date: '2026-02-30',
     }))).toThrow('valid YYYY-MM-DD date')
-  })
-
-  test('summarizes persisted status and usage fields', () => {
-    const records = [
-      normalizeCouponRecord(coupon({ id: 1, status: 'Active', is_active: true, usage_count: 3 })),
-      normalizeCouponRecord(coupon({ id: 2, status: 'Scheduled', is_active: true, usage_count: 2 })),
-      normalizeCouponRecord(coupon({ id: 3, status: 'Expired', is_active: false, usage_count: 8 })),
-    ]
-    expect(summarizeCoupons(records)).toEqual({
-      total: 3,
-      enabled: 2,
-      scheduled: 1,
-      expired: 1,
-      redemptions: 13,
-    })
   })
 })

@@ -1,29 +1,33 @@
 <script client>
-import type { CouponRecord } from '../../../../app/Actions/Dashboard/Commerce/coupon-records'
+import type { CouponSummary } from '../../../../app/Actions/Dashboard/Commerce/coupon-records'
 
-const records = useReactiveProp('records', [] as CouponRecord[])
+/**
+ * Counted by the server over every coupon (stacksjs/stacks#3218); this used
+ * to count the records the page had, which were the newest 500.
+ */
+const summary = useReactiveProp<CouponSummary>('summary', { total: 0, enabled: 0, active: 0, scheduled: 0, expired: 0, percentage: 0, fixedAmount: 0, redemptions: 0, mostUsed: [] })
 
 function statuses(): Array<{ label: string, count: number, color: string }> {
   return [
-    { label: 'Active', count: records().filter(record => record.status === 'Active').length, color: 'bg-emerald-500' },
-    { label: 'Scheduled', count: records().filter(record => record.status === 'Scheduled').length, color: 'bg-blue-500' },
-    { label: 'Expired', count: records().filter(record => record.status === 'Expired').length, color: 'bg-gray-400' },
+    { label: 'Active', count: summary().active, color: 'bg-emerald-500' },
+    { label: 'Scheduled', count: summary().scheduled, color: 'bg-blue-500' },
+    { label: 'Expired', count: summary().expired, color: 'bg-gray-400' },
   ]
 }
 
 function width(count: number): string {
-  return `${records().length ? Math.round((count / records().length) * 100) : 0}%`
+  return `${summary().total ? Math.round((count / summary().total) * 100) : 0}%`
 }
 
 function discountTypes(): Array<{ label: string, count: number }> {
   return [
-    { label: 'Percentage', count: records().filter(record => record.discountType === 'percentage').length },
-    { label: 'Fixed amount', count: records().filter(record => record.discountType === 'fixed_amount').length },
+    { label: 'Percentage', count: summary().percentage },
+    { label: 'Fixed amount', count: summary().fixedAmount },
   ]
 }
 
-function mostUsed(): CouponRecord[] {
-  return [...records()].sort((left, right) => right.usageCount - left.usageCount || left.code.localeCompare(right.code)).slice(0, 5)
+function mostUsed(): CouponSummary['mostUsed'] {
+  return summary().mostUsed ?? []
 }
 </script>
 

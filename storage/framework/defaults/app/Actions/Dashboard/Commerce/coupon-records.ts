@@ -34,12 +34,18 @@ export interface CouponRecord {
   createdAt: string
 }
 
+/** The cards and breakdowns, over every coupon (commerce-coupon-list.ts). */
 export interface CouponSummary {
   total: number
   enabled: number
+  active: number
   scheduled: number
   expired: number
+  percentage: number
+  fixedAmount: number
   redemptions: number
+  /** The five most used, by code on a tie. */
+  mostUsed: Array<{ id: string, code: string, usageCount: number }>
 }
 
 export function normalizeCouponRecord(
@@ -127,15 +133,5 @@ export function normalizeCouponRecord(
       'end_date',
     ),
     createdAt: commerceTimestamp(commerceValue(record, 'created_at', 'createdAt'), source),
-  }
-}
-
-export function summarizeCoupons(records: CouponRecord[]): CouponSummary {
-  return {
-    total: records.length,
-    enabled: records.filter(record => record.isActive).length,
-    scheduled: records.filter(record => record.status === 'Scheduled').length,
-    expired: records.filter(record => record.status === 'Expired').length,
-    redemptions: records.reduce((sum, record) => sum + record.usageCount, 0),
   }
 }
