@@ -2,6 +2,7 @@
 
 <script client>
 import { dashboardApi } from '../../../../functions/dashboard-api'
+import { useServerList } from '../../../../functions/dashboard-list'
 import { pushToast } from '../../../../functions/toasts'
 
 interface PageRecord {
@@ -19,9 +20,6 @@ interface PageDraft {
   published: boolean
 }
 
-const pages = state<PageRecord[]>([])
-const loading = state(true)
-const loadError = state('')
 const formOpen = state(false)
 const editingPage = state<PageRecord | null>(null)
 const saving = state(false)
@@ -30,20 +28,11 @@ const deletingPage = state<PageRecord | null>(null)
 const deleting = state(false)
 const deleteError = state('')
 
-// The list is paged, searched and sorted by the server, and these are what
-// it was last asked for (stacksjs/stacks#3192). The cards count every page.
-const listPage = state(1)
-const perPage = state(25)
-const search = state('')
-const sort = state('')
-const sortDirection = state('asc')
-const total = state(0)
+// The cards count every page (stacksjs/stacks#3192).
 const allCount = state(0)
 const viewCount = state(0)
 const conversionCount = state(0)
 const newestTitle = state('')
-let listRequestId = 0
-let searchTimer: ReturnType<typeof setTimeout> | undefined
 
 /** The server's name for each sortable column. */
 const SORT_KEYS: Record<string, string> = { title: 'title', publishState: 'published' }
@@ -84,7 +73,7 @@ const ROW_ACTIONS = [
 
 /** The rows are the page the server chose; the cells each read a field, so derive them. */
 function visiblePages(): PageRecord[] {
-  return pages().map(page => ({
+  return records().map(page => ({
     ...page,
     viewsLabel: `${formatNumber(page.views)} views`,
     conversionsLabel: `${formatNumber(page.conversions)} conversions`,
@@ -123,77 +112,49 @@ interface PageListResponse {
   newestTitle?: string
 }
 
-function listQuery(): string {
-  const params = new URLSearchParams({ page: String(listPage()), per_page: String(perPage()) })
-  if (search())
-    params.set('search', search())
-  if (sort()) {
-    params.set('sort', sort())
-    params.set('direction', sortDirection())
-  }
-  return params.toString()
-}
-
-async function loadPages(): Promise<void> {
-  // Only the newest request may land: typing, paging and sorting can each
-  // start one while another is still out.
-  const requestId = ++listRequestId
-  loading.set(true)
-  loadError.set('')
-  try {
-    const data = await dashboardApi<PageListResponse>(`/api/dashboard/pages?${listQuery()}`)
-    if (requestId !== listRequestId)
-      return
+// The server pages, searches and sorts (stacksjs/stacks#3192); useServerList
+// keeps the request order, paging, header sort and search debounce this page
+// used to keep itself. Unsorted is newest first, which the server reads as
+// created_at descending.
+const {
+  records,
+  total,
+  page: listPage,
+  perPage,
+  search,
+  loading,
+  loadError,
+  load,
+  changePage,
+  changePageSize,
+  changeSort,
+} = useServerList<PageRecord>({
+  fetch: async (query) => {
+    const data = await dashboardApi<PageListResponse>(`/api/dashboard/pages?${query}`)
     if (!Array.isArray(data.pages))
       throw new TypeError('Pages were not returned in the expected shape.')
-    pages.set(data.pages.map(normalize))
-    total.set(Number(data.total || 0))
-    // The server moves back to the last page when a delete or a narrower
-    // search leaves this one past the end.
-    listPage.set(Number(data.page || 1))
+    return { ...data, records: data.pages.map(normalize) }
+  },
+  defaultSort: { sort: 'created_at', direction: 'desc' },
+  columnSorts: SORT_KEYS,
+  searchParam: 'search',
+  onLoad: (result) => {
+    const data = result as PageListResponse
     allCount.set(Number(data.allCount || 0))
     viewCount.set(Number(data.totalViews || 0))
     conversionCount.set(Number(data.totalConversions || 0))
     newestTitle.set(String(data.newestTitle || ''))
-  }
-  catch (error) {
-    if (requestId !== listRequestId)
-      return
-    loadError.set(error instanceof Error ? error.message : String(error))
-    pushToast('error', 'Could not load pages', { detail: loadError() })
-  }
-  finally {
-    if (requestId === listRequestId)
-      loading.set(false)
-  }
+  },
+  onError: error => pushToast('error', 'Could not load pages', { detail: error instanceof Error ? error.message : String(error) }),
+})
+
+function loadPages(): Promise<void> {
+  return load()
 }
 
-function changePage(next: number): void {
-  listPage.set(next)
-  void loadPages()
-}
-
-function changePageSize(size: number): void {
-  perPage.set(size)
-  listPage.set(1)
-  void loadPages()
-}
-
+/** The table's own search box; useServerList waits for typing to pause. */
 function changeSearch(term: string): void {
-  if (searchTimer)
-    clearTimeout(searchTimer)
-  searchTimer = setTimeout(() => {
-    search.set(String(term || '').trim())
-    listPage.set(1)
-    void loadPages()
-  }, 250)
-}
-
-function changeSort(next: { key: string, direction: string }): void {
-  sort.set(SORT_KEYS[next.key] || '')
-  sortDirection.set(next.direction === 'desc' ? 'desc' : 'asc')
-  listPage.set(1)
-  void loadPages()
+  search.set(String(term || ''))
 }
 
 function openCreate(): void {
