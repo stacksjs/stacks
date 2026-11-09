@@ -1481,6 +1481,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /api/dashboard/commerce/coupons/export
+   */
+  getDashboardCommerceCouponsExport(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/commerce/coupons/export", {}, [], null, "application/json", [], options)
+  },
+
+  /**
    * DELETE /api/dashboard/commerce/coupons/{id}
    */
   deleteDashboardCommerceCouponsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
@@ -1548,6 +1555,13 @@ export function createClient(config: ClientConfig) {
    */
   postDashboardCommerceCustomers(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "POST", "/api/dashboard/commerce/customers", {}, [], null, "application/json", [], options)
+  },
+
+  /**
+   * GET /api/dashboard/commerce/customers/export
+   */
+  getDashboardCommerceCustomersExport(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/commerce/customers/export", {}, [], null, "application/json", [], options)
   },
 
   /**
