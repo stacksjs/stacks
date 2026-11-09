@@ -27,7 +27,7 @@ import type { QueryBuilderOptions } from '@stacksjs/query-builder'
 import { createQueryBuilder, config as queryBuilderConfig, setConfig } from '@stacksjs/query-builder'
 import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging/runtime'
-import { API_ABILITIES, apiBasePath, applyCasts, applySorting, buildIndexPaginator, buildReadColumnMap, dashboardRoleMiddleware, describeContradictoryRoleGates, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, getWritableFields, indexRouteShapes, mapWriteError, ownershipDeclaredUnscoped, policyDecision, resolveAbilityMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, routeShapeKey, stampOwnership, stripHidden, toSnakeCase, toSnakeCaseKeys, validateWriteBody } from './auto-crud'
+import { API_ABILITIES, apiBasePath, applyCasts, applySorting, belongsToEntries, buildIndexPaginator, buildReadColumnMap, dashboardRoleMiddleware, describeContradictoryRoleGates, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, getWritableFields, indexRouteShapes, mapWriteError, ownershipDeclaredUnscoped, policyDecision, resolveAbilityMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, routeShapeKey, stampOwnership, stripHidden, toSnakeCase, toSnakeCaseKeys, validateWriteBody } from './auto-crud'
 import type { PolicyGate, RegisteredRouteLike } from './auto-crud'
 import { loadModelRegistryWithOrigins, resolveModelApiSelection, selectApiModels } from './model-registry'
 import { effectiveOwnershipConfig } from './ownership'
@@ -224,13 +224,13 @@ async function applyIncludes(
   const requested = includeParam.split(',').map(s => s.trim()).filter(Boolean)
   if (!requested.length) return rows
 
-  const belongsTo: string[] = Array.isArray(model.belongsTo) ? model.belongsTo : []
+  const belongsTo = belongsToEntries(model.belongsTo)
   const hasMany: string[] = Array.isArray(model.hasMany) ? model.hasMany : []
   const hasOne: string[] = Array.isArray(model.hasOne) ? model.hasOne : []
 
   // Build a lookup: snake_case include key → { kind, modelName }
-  const allowed = new Map<string, { kind: 'belongsTo' | 'hasOne' | 'hasMany', modelName: string }>()
-  for (const m of belongsTo) allowed.set(toSnakeCase(m), { kind: 'belongsTo', modelName: m })
+  const allowed = new Map<string, { kind: 'belongsTo' | 'hasOne' | 'hasMany', modelName: string, foreignKey?: string }>()
+  for (const relation of belongsTo) allowed.set(toSnakeCase(relation.model), { kind: 'belongsTo', modelName: relation.model, foreignKey: relation.foreignKey })
   for (const m of hasOne) allowed.set(toSnakeCase(m), { kind: 'hasOne', modelName: m })
   for (const m of hasMany) allowed.set(pluralize(toSnakeCase(m)), { kind: 'hasMany', modelName: m })
 
@@ -244,7 +244,7 @@ async function applyIncludes(
     const relatedAttrs = (id: any) => stripHidden(applyReadCasts(id, related), relatedHidden)
 
     if (meta.kind === 'belongsTo' || meta.kind === 'hasOne') {
-      const fkOnParent = `${toSnakeCase(meta.modelName)}_id`
+      const fkOnParent = meta.foreignKey ?? `${toSnakeCase(meta.modelName)}_id`
       const ids = [...new Set(rows.map(r => r[fkOnParent]).filter(v => v != null))]
       if (!ids.length) {
         for (const r of rows) r[include] = null

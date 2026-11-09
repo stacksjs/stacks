@@ -21,6 +21,18 @@ describe('userOwnershipField', () => {
     expect(userOwnershipField({ belongsTo: ['User'] })).toBe('user_id')
   })
 
+  it('reads a relation written as an object, as the migration does', () => {
+    // `{ model, onDelete }` is how a model cascades a delete. Matching only the
+    // string form dropped Notification's owner the moment it said so, and
+    // strict row scoping then withheld its writes.
+    expect(userOwnershipField({ belongsTo: [{ model: 'User', onDelete: 'cascade' }] })).toBe('user_id')
+    expect(teamOwnershipField({ belongsTo: [{ model: 'Team', onDelete: 'cascade' }] })).toBe('team_id')
+    // A declared foreign key is the column the migration creates, so it is
+    // the column that holds the owner.
+    expect(userOwnershipField({ belongsTo: [{ model: 'User', foreignKey: 'owner_id' }] })).toBe('owner_id')
+    expect(userOwnershipField({ belongsTo: [{ model: 'Team' }, { name: 'User' }] })).toBeNull()
+  })
+
   it('is null for a model with no user relation', () => {
     expect(userOwnershipField({ attributes: { name: {} }, belongsTo: ['Team'] })).toBeNull()
     expect(userOwnershipField(null)).toBeNull()

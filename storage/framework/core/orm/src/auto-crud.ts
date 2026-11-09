@@ -115,6 +115,43 @@ export function apiBasePath(uri: string, prefix?: string): string {
   return `/api/${cleanPrefix ? `${cleanPrefix}/` : ''}${cleanUri}`
 }
 
+/** One `belongsTo` relation: the model it points at and the column holding its key. */
+export interface BelongsToEntry {
+  model: string
+  foreignKey: string
+}
+
+/**
+ * Every `belongsTo` relation a model declares, in either form the migration
+ * layer accepts: `'User'`, or `{ model: 'User', foreignKey?, onDelete? }`.
+ *
+ * The readers below each matched only the string form, so a model that wrote
+ * a relation as an object (to cascade a delete, say) silently lost its owner
+ * scope, its writable foreign key and its `?include=`, while the migration
+ * still created the column and the key. The foreign key defaults to
+ * `<model>_id`, as the migration names it.
+ */
+export function belongsToEntries(belongsTo: unknown): BelongsToEntry[] {
+  if (!Array.isArray(belongsTo))
+    return []
+  const entries: BelongsToEntry[] = []
+  for (const relation of belongsTo) {
+    const model = typeof relation === 'string'
+      ? relation.trim()
+      : relation && typeof relation === 'object' && typeof (relation as { model?: unknown }).model === 'string'
+        ? (relation as { model: string }).model.trim()
+        : ''
+    if (!model)
+      continue
+    const declared = typeof relation === 'object' ? (relation as { foreignKey?: unknown }).foreignKey : undefined
+    entries.push({
+      model,
+      foreignKey: typeof declared === 'string' && declared.trim() ? declared.trim() : `${toSnakeCase(model)}_id`,
+    })
+  }
+  return entries
+}
+
 /**
  * Resolve the database column used for automatic team ownership.
  *
@@ -131,7 +168,7 @@ export function teamOwnershipField(model: {
   if (Object.prototype.hasOwnProperty.call(attributes, 'teamId') || Object.prototype.hasOwnProperty.call(attributes, 'team_id'))
     return 'team_id'
 
-  return model.belongsTo?.some(relation => relation === 'Team') ? 'team_id' : null
+  return belongsToEntries(model.belongsTo).find(relation => relation.model === 'Team')?.foreignKey ?? null
 }
 
 /**
@@ -157,7 +194,7 @@ export function userOwnershipField(model: {
   if (Object.prototype.hasOwnProperty.call(attributes, 'userId') || Object.prototype.hasOwnProperty.call(attributes, 'user_id'))
     return 'user_id'
 
-  return model.belongsTo?.some(relation => relation === 'User') ? 'user_id' : null
+  return belongsToEntries(model.belongsTo).find(relation => relation.model === 'User')?.foreignKey ?? null
 }
 
 /**
@@ -226,15 +263,13 @@ export function getWritableFields(model: {
     .filter(([, attribute]) => attribute?.fillable === true)
     .map(([name]) => name)
 
-  for (const relation of model.belongsTo ?? []) {
-    if (typeof relation !== 'string' || !relation.trim())
-      continue
-
-    const words = toSnakeCase(relation.trim()).split('_').filter(Boolean)
+  for (const relation of belongsToEntries(model.belongsTo)) {
+    const words = relation.foreignKey.split('_').filter(Boolean)
     if (words.length === 0)
       continue
 
-    const relationField = `${words[0]}${words.slice(1).map(word => `${word[0]?.toUpperCase()}${word.slice(1)}`).join('')}Id`
+    // The column in camelCase: `board_column_id` is written as `boardColumnId`.
+    const relationField = `${words[0]}${words.slice(1).map(word => `${word[0]?.toUpperCase()}${word.slice(1)}`).join('')}`
     fields.push(relationField)
   }
 

@@ -181,6 +181,12 @@ describe('getWritableFields (model attributes and belongsTo keys)', () => {
     })).toEqual(['productId'])
   })
 
+  it('reads a relation written as an object, with its declared foreign key', () => {
+    expect(getWritableFields({
+      belongsTo: [{ model: 'Board', onDelete: 'cascade' }, { model: 'User', foreignKey: 'owner_id' }],
+    })).toEqual(['boardId', 'ownerId'])
+  })
+
   it('ignores malformed relation declarations and missing models', () => {
     expect(getWritableFields({ belongsTo: ['', null, { name: 'Customer' }] })).toEqual([])
     expect(getWritableFields(undefined)).toEqual([])
