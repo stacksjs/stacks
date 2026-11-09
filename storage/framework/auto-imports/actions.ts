@@ -576,6 +576,7 @@ export const actions = {
   'Actions/Dashboard/Notifications/NotificationDeliveryIndexAction': '../defaults/app/Actions/Dashboard/Notifications/NotificationDeliveryIndexAction.ts',
   'Actions/Dashboard/Notifications/NotificationDeliveryOverviewAction': '../defaults/app/Actions/Dashboard/Notifications/NotificationDeliveryOverviewAction.ts',
   'Actions/Dashboard/Notifications/NotificationDeliveryRetryAction': '../defaults/app/Actions/Dashboard/Notifications/NotificationDeliveryRetryAction.ts',
+  'Actions/Dashboard/Notifications/notification-delivery-history': '../defaults/app/Actions/Dashboard/Notifications/notification-delivery-history.ts',
   'Actions/Dashboard/Notifications/notification-delivery': '../defaults/app/Actions/Dashboard/Notifications/notification-delivery.ts',
   'Actions/Dashboard/Operations/AuditIndexAction': '../defaults/app/Actions/Dashboard/Operations/AuditIndexAction.ts',
   'Actions/Dashboard/Operations/ChangeApprovalAction': '../defaults/app/Actions/Dashboard/Operations/ChangeApprovalAction.ts',
