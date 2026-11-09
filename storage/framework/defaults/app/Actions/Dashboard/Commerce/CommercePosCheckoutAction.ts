@@ -4,23 +4,17 @@ import { Action } from '@stacksjs/actions/runtime'
 import { orders } from '@stacksjs/commerce'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
-import { Category, Customer, Manufacturer, OrderItem, Payment, Product, TaxRate } from '@stacksjs/orm'
+import { Customer, OrderItem, Payment, Product } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 import { dashboardOperationalError } from '../dashboard-response'
 import {
   calculateCommercePosSale,
   CommercePosAvailabilityError,
   deriveCommercePosTaxRate,
-  normalizeCommercePosProduct,
   parseCommercePosLines,
-  selectCommercePosTaxRate,
 } from './commerce-pos'
-import {
-  normalizeCommerceProductRecord,
-  normalizeCommerceCurrency,
-  normalizeManufacturerOption,
-  normalizeProductOption,
-} from './commerce-product-records'
+import { readPosProducts, readPosTaxRate } from './commerce-pos-catalog'
+import { normalizeCommerceCurrency } from './commerce-product-records'
 
 function field(record: any, ...names: string[]): unknown {
   for (const name of names) {
@@ -239,27 +233,13 @@ export default new Action({
       return response.json({ message: 'Order instructions must be 1,000 characters or fewer.' }, 422)
 
     const productIds = parsed.lines.map(line => line.productId)
+    // The products as the point of sale reads them, against exactly the
+    // categories and manufacturers they name. This used to read the first 500
+    // of each by name, so a product in a later one could not be sold
+    // (stacksjs/stacks#3218).
     let products
-    let taxRates
     try {
-      const [productRows, categories, manufacturers, persistedTaxRates] = await Promise.all([
-        Product.whereIn('id', productIds).get(),
-        Category.orderBy('name', 'asc').limit(500).get(),
-        Manufacturer.orderBy('manufacturer', 'asc').limit(500).get(),
-        TaxRate.orderBy('id', 'asc').limit(500).get(),
-      ])
-      const categoryMap = new Map(categories.map(normalizeProductOption).map(option => [option.id, option.label]))
-      const manufacturerMap = new Map(manufacturers.map(normalizeManufacturerOption).map(option => [option.id, option.label]))
-      const emptyCounts = new Map<string, number>()
-      products = productRows.map(product => normalizeCommercePosProduct(normalizeCommerceProductRecord(
-        product,
-        categoryMap,
-        manufacturerMap,
-        emptyCounts,
-        emptyCounts,
-        emptyCounts,
-      )))
-      taxRates = persistedTaxRates
+      products = await readPosProducts(productIds)
     }
     catch (error) {
       return dashboardOperationalError(error, 'Product records could not be read.', 'CommercePosCheckoutAction')
@@ -269,7 +249,7 @@ export default new Action({
 
     let taxRate
     try {
-      taxRate = selectCommercePosTaxRate(taxRates)
+      taxRate = await readPosTaxRate()
     }
     catch (error) {
       return dashboardOperationalError(error, 'Tax rate records could not be read.', 'CommercePosCheckoutAction')

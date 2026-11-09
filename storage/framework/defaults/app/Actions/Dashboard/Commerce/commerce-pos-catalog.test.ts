@@ -3,7 +3,7 @@ import { SQL } from 'bun'
 import { describe, expect, test } from 'bun:test'
 import { searchCustomerChoices } from './commerce-choices'
 import type { PosCatalogQuery } from './commerce-pos-catalog'
-import { parsePosCatalogQuery, parsePosIds, readPosCatalogPage, readPosProducts, readPosSettings } from './commerce-pos-catalog'
+import { parsePosCatalogQuery, parsePosIds, readPosCatalogPage, readPosProducts, readPosSettings, readPosTaxRate } from './commerce-pos-catalog'
 import type { CommerceSqlRunner } from './commerce-sql'
 
 /**
@@ -71,8 +71,16 @@ async function setUp(run: (sql: string, values?: unknown[]) => Promise<unknown>,
     PRODUCTS.flatMap(product => [product.id, product.name, `item-${product.id}`, 100 + product.id, flag(product.available), product.inventory, 5, '[]', product.category, product.manufacturer, '2026-11-01 09:00:00']),
   )
   await run(`INSERT INTO customers (id, name, email, phone, status) VALUES ${rows(ROWS, 5)}`, all.flatMap(id => [id, id === 515 ? 'Quinn Late' : `Customer ${pad(id)}`, `buyer${id}@shop.test`, null, id % 2 === 1 ? 'Active' : 'Inactive']))
-  // The default active rate wins over an earlier active one and an inactive default.
-  await run(`INSERT INTO tax_rates (id, rate, status, is_default) VALUES ${rows(3, 4)}`, [1, 5, 'inactive', flag(true), 2, 7, 'active', flag(false), 3, 9, 'active', flag(true)])
+  // The default active rate wins over earlier active ones and an inactive
+  // default, though it is the last of 520: the checkout used to choose among
+  // the first 500 by id, and would have charged 7 where the screen showed 11.
+  const rates = all.map(id => id === 1
+    ? [1, 5, 'inactive', flag(true)]
+    : id === 2 ? [2, 7, 'active', flag(false)]
+      : id === 3 ? [3, 9, 'active', flag(false)]
+        : id === ROWS ? [id, 11, 'active', flag(true)]
+          : [id, 3, 'inactive', flag(false)])
+  await run(`INSERT INTO tax_rates (id, rate, status, is_default) VALUES ${rows(ROWS, 4)}`, rates.flat())
 }
 
 async function exercise(runner: CommerceSqlRunner, dialect: Dialect) {
@@ -82,7 +90,8 @@ async function exercise(runner: CommerceSqlRunner, dialect: Dialect) {
 
   // Settings, counted over every product.
   const settings = await readPosSettings(runner, dialect)
-  expect(settings.taxRate).toBe(9)
+  expect(settings.taxRate).toBe(11)
+  expect(await readPosTaxRate(runner, dialect)).toBe(11)
   expect(settings.summary).toEqual({
     products: ROWS,
     sellable: PRODUCTS.filter(sellable).length,
@@ -106,7 +115,10 @@ async function exercise(runner: CommerceSqlRunner, dialect: Dialect) {
   expect(last).toMatchObject({ name: 'item 520', categoryId: '515', categoryName: 'Category 515' })
 
   // The cart's own products, whatever page the catalogue shows; a deleted one is absent.
-  expect((await readPosProducts([520, 3, 99_999], runner, dialect)).map(product => product.id).sort()).toEqual(['3', '520'])
+  const cart = await readPosProducts([520, 3, 99_999], runner, dialect)
+  expect(cart.map(product => product.id).sort()).toEqual(['3', '520'])
+  // The checkout prices these, named by a category past the 500th.
+  expect(cart.find(product => product.id === '520')).toMatchObject({ categoryName: 'Category 515' })
 
   // The checkout's customers: Active only, and found past the 500th.
   const active = await searchCustomerChoices({ search: '', limit: 5 }, runner, dialect, { activeOnly: true })

@@ -122,6 +122,20 @@ export async function readPosProducts(
   return posProducts(sqlRows(rows), run, dialect)
 }
 
+/**
+ * The rate a sale is taxed at: the default active tax rate, else the first
+ * active one by id, else 0. The point of sale shows it and the checkout
+ * charges it, so both read it here; the checkout used to choose among the
+ * first 500 rates by id, so the two could disagree.
+ */
+export async function readPosTaxRate(
+  run: CommerceSqlRunner = db,
+  dialect: QueryBuilderDialect = getDatabaseDialect(),
+): Promise<number> {
+  const rows = await run.unsafe(`SELECT id, rate, status, is_default FROM tax_rates WHERE ${asText('status', dialect)} = 'active' ORDER BY CASE WHEN ${isTrue('is_default', dialect)} THEN 0 ELSE 1 END, id LIMIT 1`).execute()
+  return selectCommercePosTaxRate(sqlRows(rows))
+}
+
 export interface PosSettings {
   /** The categories some product is in, by name ignoring case. */
   categories: ProductOption[]
@@ -134,15 +148,15 @@ export async function readPosSettings(
   run: CommerceSqlRunner = db,
   dialect: QueryBuilderDialect = getDatabaseDialect(),
 ): Promise<PosSettings> {
-  const [categories, taxRates, totals] = await Promise.all([
+  const [categories, taxRate, totals] = await Promise.all([
     run.unsafe('SELECT c.id, c.name FROM categories c WHERE EXISTS (SELECT 1 FROM products p WHERE p.category_id = c.id) ORDER BY LOWER(c.name) ASC, c.id ASC').execute(),
-    run.unsafe(`SELECT id, rate, status, is_default FROM tax_rates WHERE ${asText('status', dialect)} = 'active' ORDER BY CASE WHEN ${isTrue('is_default', dialect)} THEN 0 ELSE 1 END, id LIMIT 1`).execute(),
+    readPosTaxRate(run, dialect),
     run.unsafe(`SELECT COUNT(*) AS product_count, SUM(CASE WHEN ${isTrue('is_available', dialect)} AND inventory_count > 0 THEN 1 ELSE 0 END) AS sellable_count, SUM(inventory_count) AS inventory_total FROM products`).execute(),
   ])
   const row = sqlRows(totals)[0] ?? {}
   return {
     categories: sqlRows(categories).map(normalizeProductOption),
-    taxRate: selectCommercePosTaxRate(sqlRows(taxRates)),
+    taxRate,
     summary: {
       products: countOf(row.product_count),
       sellable: countOf(row.sellable_count),
