@@ -6,6 +6,7 @@ import type {
   ProductWritePayload,
 } from '../../../../app/Actions/Dashboard/Commerce/commerce-product-records'
 import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
+import { useServerList } from '../../../../functions/dashboard-list'
 import { pushToast } from '../../../../functions/toasts'
 
 interface ProductIndexResponse {
@@ -26,27 +27,13 @@ const emptySummary: CommerceProductSummary = {
   outOfStock: 0,
   totalInventory: 0,
 }
-const records = state<CommerceProductRecord[]>([])
 const summary = state<CommerceProductSummary>({ ...emptySummary })
 const categories = state<ProductOption[]>([])
 const manufacturers = state<ProductOption[]>([])
 const defaultCurrency = state('USD')
-const search = state('')
 const categoryFilter = state('all')
 const availabilityFilter = state('all')
 const sort = state('newest')
-// The server's answer for the current search and filters
-// (stacksjs/stacks#3218): it searches, filters, sorts and pages every product,
-// where this page used to do all of that with the newest 500.
-const matchingTotal = state(0)
-const page = state(1)
-const perPage = state(25)
-const appliedSearch = state('')
-const headerSort = state<{ sort: string, direction: string } | null>(null)
-let listRequest = 0
-let searchTimer: ReturnType<typeof setTimeout> | null = null
-const loading = state(true)
-const loadError = state('')
 const dialogOpen = state(false)
 const dialogMode = state<'add' | 'edit'>('add')
 const editingRecord = state<CommerceProductRecord | null>(null)
@@ -56,7 +43,7 @@ const deleting = state(false)
 const validationErrors = state<Record<string, string>>({})
 
 /** The select's orders, as the server's sort and direction. */
-const SELECT_SORTS: Record<string, { sort: string, direction: string }> = {
+const SELECT_SORTS: Record<string, { sort: string, direction: 'asc' | 'desc' }> = {
   'newest': { sort: 'created', direction: 'desc' },
   'oldest': { sort: 'created', direction: 'asc' },
   'name': { sort: 'name', direction: 'asc' },
@@ -74,24 +61,40 @@ const COLUMN_SORTS: Record<string, string> = {
   availability: 'available',
 }
 
-/** The search, filters and order, as the query the server takes. */
-function filterParams(): URLSearchParams {
-  const params = new URLSearchParams()
-  const order = headerSort() ?? SELECT_SORTS[sort()] ?? SELECT_SORTS.newest
-  params.set('sort', order.sort)
-  params.set('direction', order.direction)
-  if (appliedSearch())
-    params.set('q', appliedSearch())
-  if (categoryFilter() !== 'all')
-    params.set('category', categoryFilter())
-  if (availabilityFilter() !== 'all')
-    params.set('availability', availabilityFilter())
-  return params
-}
+// The server searches, filters, sorts and pages (stacksjs/stacks#3218);
+// useServerList keeps the request order, paging, header sort and search
+// debounce this page used to keep itself.
+const {
+  records,
+  total,
+  page,
+  perPage,
+  search,
+  loading,
+  loadError,
+  params,
+  load,
+  changePage,
+  changePageSize,
+  changeSort,
+} = useServerList<CommerceProductRecord>({
+  fetch: query => dashboardApi<ProductIndexResponse>(`/api/dashboard/commerce/products?${query}`),
+  defaultSort: () => SELECT_SORTS[sort()] ?? SELECT_SORTS["newest"]!,
+  columnSorts: COLUMN_SORTS,
+  filters: () => ({ category: categoryFilter(), availability: availabilityFilter() }),
+  onLoad: (result) => {
+    const data = result as ProductIndexResponse
+    summary.set(data.summary ?? { ...emptySummary })
+    categories.set(Array.isArray(data.categories) ? data.categories : [])
+    manufacturers.set(Array.isArray(data.manufacturers) ? data.manufacturers : [])
+    defaultCurrency.set(data.defaultCurrency || 'USD')
+  },
+  onError: error => pushToast('error', "Could not load products", { detail: error instanceof Error ? error.message : String(error) }),
+})
 
 function matchingLabel(): string {
-  const count = matchingTotal()
-  return `${count} matching ${count === 1 ? 'product' : 'products'}`
+  const count = total()
+  return `${count.toLocaleString()} matching ${count === 1 ? 'product' : 'products'}`
 }
 
 function metricCards(): Array<{ label: string, value: string, detail: string }> {
@@ -107,96 +110,12 @@ function metricCards(): Array<{ label: string, value: string, detail: string }> 
 
 /** Every matching product as CSV, built by the server, not just the page shown. */
 function exportHref(): string {
-  return `/api/dashboard/commerce/products/export?${filterParams()}`
+  return `/api/dashboard/commerce/products/export?${params()}`
 }
 
-async function loadProducts(): Promise<void> {
-  const request = ++listRequest
-  loading.set(true)
-  loadError.set('')
-  try {
-    const params = filterParams()
-    params.set('page', String(page()))
-    params.set('per_page', String(perPage()))
-    const data = await dashboardApi<ProductIndexResponse>(`/api/dashboard/commerce/products?${params}`)
-    // Only the newest request lands.
-    if (request !== listRequest)
-      return
-    records.set(Array.isArray(data.records) ? data.records : [])
-    matchingTotal.set(Number(data.total) || 0)
-    page.set(Number(data.page) || 1)
-    summary.set(data.summary ?? { ...emptySummary })
-    categories.set(Array.isArray(data.categories) ? data.categories : [])
-    manufacturers.set(Array.isArray(data.manufacturers) ? data.manufacturers : [])
-    defaultCurrency.set(data.defaultCurrency || 'USD')
-  }
-  catch (error) {
-    if (request !== listRequest)
-      return
-    loadError.set('Product records could not be loaded.')
-    pushToast('error', 'Could not load products', {
-      detail: error instanceof Error ? error.message : String(error),
-    })
-  }
-  finally {
-    if (request === listRequest)
-      loading.set(false)
-  }
+function loadProducts(): Promise<void> {
+  return load()
 }
-
-function eventValue<T>(value: T | CustomEvent<T>): T {
-  return value instanceof CustomEvent ? value.detail : value
-}
-
-function changePage(value: number | CustomEvent<number>): void {
-  page.set(Number(eventValue(value)) || 1)
-  void loadProducts()
-}
-
-function changePageSize(value: number | CustomEvent<number>): void {
-  perPage.set(Number(eventValue(value)) || 25)
-  page.set(1)
-  void loadProducts()
-}
-
-function changeColumnSort(value: { key: string, direction: string } | CustomEvent<{ key: string, direction: string }>): void {
-  const column = eventValue(value)
-  const serverSort = COLUMN_SORTS[column.key]
-  headerSort.set(serverSort ? { sort: serverSort, direction: column.direction === 'asc' ? 'asc' : 'desc' } : null)
-  page.set(1)
-  void loadProducts()
-}
-
-// The filters and the select ask the server for page 1 when they change, and
-// the search once typing pauses. A select change hands the order back from a
-// column header.
-let shownFilters = JSON.stringify([categoryFilter(), availabilityFilter(), sort()])
-effect(() => {
-  const filters = JSON.stringify([categoryFilter(), availabilityFilter(), sort()])
-  if (filters === shownFilters)
-    return
-  const sortChanged = JSON.parse(shownFilters)[2] !== sort()
-  shownFilters = filters
-  if (sortChanged)
-    headerSort.set(null)
-  page.set(1)
-  void loadProducts()
-})
-
-let shownSearch = search().trim()
-effect(() => {
-  const term = search().trim()
-  if (term === shownSearch)
-    return
-  shownSearch = term
-  if (searchTimer)
-    clearTimeout(searchTimer)
-  searchTimer = setTimeout(() => {
-    appliedSearch.set(term)
-    page.set(1)
-    void loadProducts()
-  }, 250)
-})
 
 function openAdd(): void {
   dialogMode.set('add')
@@ -315,7 +234,7 @@ onMount(() => {
       <p class="text-gray-500 text-sm dark:text-neutral-400">{{ matchingLabel() }}</p>
     </div>
 
-    <CommerceProductsTable :sort-reset-key="sort()" :records="records()" :total="matchingTotal()" :current-page="page()" :per-page="perPage()" :loading="loading()" :currency="defaultCurrency()" @view="viewProduct" @edit="openEdit" @delete="openDelete" @page-change="changePage" @page-size-change="changePageSize" @sort="changeColumnSort" />
+    <CommerceProductsTable :sort-reset-key="sort()" :records="records()" :total="total()" :current-page="page()" :per-page="perPage()" :loading="loading()" :currency="defaultCurrency()" @view="viewProduct" @edit="openEdit" @delete="openDelete" @page-change="changePage" @page-size-change="changePageSize" @sort="changeSort" />
   </section>
 </div>
 
