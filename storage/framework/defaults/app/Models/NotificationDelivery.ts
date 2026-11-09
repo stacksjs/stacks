@@ -23,6 +23,10 @@ export default defineModel({
     },
   },
 
+  // Cascade, as the framework's own key repair has always made it
+  // (ensureNotificationForeignKeys): a user's delivery log goes with the user.
+  belongsTo: [{ model: 'User', onDelete: 'cascade' }],
+
   attributes: {
     userId: {
       required: false,

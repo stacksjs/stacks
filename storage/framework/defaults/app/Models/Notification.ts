@@ -21,7 +21,9 @@ export default defineModel({
     },
   },
 
-  belongsTo: ['User'],
+  // Cascade, as the framework's own key repair has always made it
+  // (ensureNotificationForeignKeys): a user's notifications go with the user.
+  belongsTo: [{ model: 'User', onDelete: 'cascade' }],
 
   attributes: {
     type: {
