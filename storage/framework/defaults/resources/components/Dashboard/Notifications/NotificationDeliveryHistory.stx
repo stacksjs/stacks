@@ -4,102 +4,74 @@ import type {
   NotificationDeliveryChannel,
   NotificationDeliveryStatus,
 } from '../../../../functions/notifications/deliveries'
+import { useServerList } from '../../../../functions/dashboard-list'
 import {
   fetchNotificationDeliveryHistory,
   retryNotificationDelivery,
 } from '../../../../functions/notifications/deliveries'
+import { pushToast } from '../../../../functions/toasts'
 
-const deliveries = state<NotificationDelivery[]>([])
-const currentPage = state(1)
-const perPage = state(20)
-const totalItems = state(0)
-const totalPages = state(1)
-const isLoading = state(true)
-const searchQuery = state('')
-const appliedSearch = state('')
+type DeliverySort = 'sent_at' | 'recipient' | 'channel' | 'status' | 'id'
+
 const selectedChannel = state<NotificationDeliveryChannel | 'all'>('all')
 const selectedStatus = state<NotificationDeliveryStatus | 'all'>('all')
-const sortField = state<'sent_at' | 'recipient' | 'channel' | 'status' | 'id'>('sent_at')
+const sortField = state<DeliverySort>('sent_at')
 const sortDirection = state<'asc' | 'desc'>('desc')
 const selectedDelivery = state<NotificationDelivery | null>(null)
 const showDetails = state(false)
 const retryingId = state<number | null>(null)
 
-let requestController: AbortController | null = null
+// The server searches, filters, sorts and pages; useServerList keeps the
+// request order, paging and search debounce this page used to keep itself.
+// The sort select and direction toggle are the order, so a change to either
+// asks for page 1.
+const {
+  records: deliveries,
+  total: totalItems,
+  page: currentPage,
+  perPage,
+  search: searchQuery,
+  loading: isLoading,
+  load,
+  changePage,
+} = useServerList<NotificationDelivery>({
+  fetch: async (query) => {
+    const result = await fetchNotificationDeliveryHistory(query)
+    return { records: result.deliveries, total: result.pagination.total, page: result.pagination.page }
+  },
+  defaultSort: () => ({ sort: sortField(), direction: sortDirection() }),
+  filters: () => ({ channel: selectedChannel(), status: selectedStatus() }),
+  perPage: 20,
+  searchParam: 'search',
+  onError: error => pushToast('error', 'Could not load notification delivery history', { detail: error instanceof Error ? error.message : String(error) }),
+})
 
+const totalPages = derived(() => Math.max(1, Math.ceil(totalItems() / perPage())))
 const rangeStart = derived(() => totalItems() === 0 ? 0 : (currentPage() - 1) * perPage() + 1)
 const rangeEnd = derived(() => Math.min(currentPage() * perPage(), totalItems()))
 const canGoBack = derived(() => currentPage() > 1)
 const canGoForward = derived(() => currentPage() < totalPages())
 
-async function loadHistory(): Promise<void> {
-  requestController?.abort()
-  const controller = new AbortController()
-  requestController = controller
-  isLoading.set(true)
-
-  const result = await fetchNotificationDeliveryHistory({
-    page: currentPage(),
-    perPage: perPage(),
-    channel: selectedChannel(),
-    status: selectedStatus(),
-    search: appliedSearch(),
-    sort: sortField(),
-    direction: sortDirection(),
-    signal: controller.signal,
-  })
-
-  if (controller.signal.aborted)
-    return
-
-  if (result) {
-    deliveries.set(result.deliveries)
-    totalItems.set(result.pagination.total)
-    totalPages.set(result.pagination.total_pages)
-  }
-  isLoading.set(false)
-}
-
-function applySearch(): void {
-  appliedSearch.set(searchQuery().trim())
-  currentPage.set(1)
-  void loadHistory()
-}
-
-function applyFilters(): void {
-  currentPage.set(1)
-  void loadHistory()
-}
-
 function resetFilters(): void {
   searchQuery.set('')
-  appliedSearch.set('')
   selectedChannel.set('all')
   selectedStatus.set('all')
   sortField.set('sent_at')
   sortDirection.set('desc')
-  currentPage.set(1)
-  void loadHistory()
 }
 
 function toggleSortDirection(): void {
   sortDirection.set(sortDirection() === 'asc' ? 'desc' : 'asc')
-  currentPage.set(1)
-  void loadHistory()
 }
 
 function previousPage(): void {
-  if (!canGoBack())
-    return
-  currentPage.update(page => page - 1)
-  void loadHistory()
+  if (canGoBack())
+    changePage(currentPage() - 1)
 }
 
 function nextPage(): void {
-  if (!canGoForward())
-    return
-  currentPage.update(page => page + 1)
-  void loadHistory()
+  if (canGoForward())
+    changePage(currentPage() + 1)
 }
 
 /**
@@ -126,12 +98,11 @@ async function retryDelivery(event: NotificationDelivery | CustomEvent<Notificat
   retryingId.set(delivery.id)
   const retried = await retryNotificationDelivery(delivery)
   if (retried)
-    await loadHistory()
+    await load()
   retryingId.set(null)
 }
 
-onMount(loadHistory)
-onDestroy(() => requestController?.abort())
+onMount(load)
 </script>
 
 <section class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
@@ -150,19 +121,14 @@ onDestroy(() => requestController?.abort())
       </StxLink>
     </div>
 
-    <form class="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-6 mt-6" @submit.prevent="applySearch()">
+    <div class="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-6 mt-6">
       <label class="xl:col-span-2">
         <span class="sr-only">Search notification history</span>
-        <span class="flex">
-          <input x-model.trim="searchQuery" type="search" placeholder="Search recipient or content..." class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-neutral-100 placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-l-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset" />
-          <Button type="submit">
-            Search
-          </Button>
-        </span>
+        <input x-model="searchQuery" type="search" placeholder="Search recipient or content..." class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-neutral-100 placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset" />
       </label>
       <label>
         <span class="sr-only">Channel</span>
-        <select x-model="selectedChannel" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-neutral-100 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600" @change="applyFilters()">
+        <select x-model="selectedChannel" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-neutral-100 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600">
           <option value="all">All Channels</option>
           <option value="email">Email</option>
           <option value="sms">SMS</option>
@@ -174,7 +140,7 @@ onDestroy(() => requestController?.abort())
       </label>
       <label>
         <span class="sr-only">Status</span>
-        <select x-model="selectedStatus" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-neutral-100 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600" @change="applyFilters()">
+        <select x-model="selectedStatus" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-neutral-100 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600">
           <option value="all">All Statuses</option>
           <option value="sent">Sent</option>
           <option value="delivered">Delivered</option>
@@ -184,7 +150,7 @@ onDestroy(() => requestController?.abort())
       </label>
       <label>
         <span class="sr-only">Sort field</span>
-        <select x-model="sortField" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-neutral-100 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600" @change="applyFilters()">
+        <select x-model="sortField" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-neutral-100 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600">
           <option value="sent_at">Attempted</option>
           <option value="recipient">Recipient</option>
           <option value="channel">Channel</option>
@@ -198,7 +164,7 @@ onDestroy(() => requestController?.abort())
         </Button>
         <Button variant="secondary" fullWidth @click="resetFilters()">Reset</Button>
       </div>
-    </form>
+    </div>
 
     <div class="mt-6">
       <NotificationDeliveryTable

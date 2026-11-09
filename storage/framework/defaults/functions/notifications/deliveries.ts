@@ -53,17 +53,6 @@ export interface NotificationDeliveryHistory {
   }
 }
 
-export interface NotificationDeliveryHistoryQuery {
-  page?: number
-  perPage?: number
-  channel?: NotificationDeliveryChannel | 'all'
-  status?: NotificationDeliveryStatus | 'all'
-  search?: string
-  sort?: 'sent_at' | 'recipient' | 'channel' | 'status' | 'id'
-  direction?: 'asc' | 'desc'
-  signal?: AbortSignal
-}
-
 export async function fetchNotificationDeliveries(channel: DashboardDeliveryChannel): Promise<NotificationDelivery[]> {
   try {
     const deliveries = await dashboardApi<NotificationDelivery[]>(`/api/dashboard/notification-deliveries?channel=${channel}`)
@@ -87,33 +76,13 @@ export async function fetchNotificationDeliveryOverview(): Promise<NotificationD
   }
 }
 
-export async function fetchNotificationDeliveryHistory(
-  query: NotificationDeliveryHistoryQuery = {},
-): Promise<NotificationDeliveryHistory | null> {
-  const params = new URLSearchParams()
-  params.set('page', String(query.page || 1))
-  params.set('per_page', String(query.perPage || 20))
-  params.set('sort', query.sort || 'sent_at')
-  params.set('direction', query.direction || 'desc')
-  if (query.channel && query.channel !== 'all')
-    params.set('channel', query.channel)
-  if (query.status && query.status !== 'all')
-    params.set('status', query.status)
-  if (query.search)
-    params.set('search', query.search)
-
-  try {
-    return await dashboardApi<NotificationDeliveryHistory>(
-      `/api/dashboard/notification-deliveries/history?${params.toString()}`,
-      { signal: query.signal },
-    )
-  }
-  catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError')
-      return null
-    pushToast('error', 'Could not load notification delivery history', { detail: String(error) })
-    return null
-  }
+/**
+ * One page of the delivery history. `query` is what the History page's
+ * useServerList sends: the search, channel, status, sort, direction, page and
+ * per_page. Throws on a failed read so the list can say so.
+ */
+export async function fetchNotificationDeliveryHistory(query: URLSearchParams): Promise<NotificationDeliveryHistory> {
+  return dashboardApi<NotificationDeliveryHistory>(`/api/dashboard/notification-deliveries/history?${query}`)
 }
 
 export async function retryNotificationDelivery(delivery: NotificationDelivery): Promise<boolean> {
