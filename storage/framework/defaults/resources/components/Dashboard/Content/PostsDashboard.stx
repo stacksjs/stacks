@@ -8,6 +8,7 @@ export const blogUrl = publicApplicationUrl('/blog')
 
 <script client>
 import { dashboardApi } from '../../../../functions/dashboard-api'
+import { useServerList } from '../../../../functions/dashboard-list'
 import { pushToast } from '../../../../functions/toasts'
 
 type PostStatus = 'draft' | 'published' | 'archived'
@@ -39,29 +40,17 @@ interface PostDraft {
   tagIds: string[]
 }
 
-const posts = state<PostRecord[]>([])
 const categories = state<OptionRecord[]>([])
 const tags = state<OptionRecord[]>([])
 const authors = state<AuthorRecord[]>([])
-const loading = state(true)
-const loadError = state('')
 const statusFilter = state('all')
 
-// The list is paged, searched and sorted by the server, and these are what
-// it was last asked for (stacksjs/stacks#3191). The cards count every post.
-const page = state(1)
-const perPage = state(25)
-const search = state('')
-const sort = state('')
-const sortDirection = state('asc')
-const total = state(0)
+// The cards count every post (stacksjs/stacks#3191).
 const allCount = state(0)
 const publishedCount = state(0)
 const draftCount = state(0)
 const archivedCount = state(0)
 const totalViewCount = state(0)
-let listRequestId = 0
-let searchTimer: ReturnType<typeof setTimeout> | undefined
 
 const loadedContent = state('')
 const contentLoading = state(false)
@@ -142,7 +131,7 @@ const ROW_ACTIONS = [
  * back into the component.
  */
 function visiblePosts(): PostRecord[] {
-  return posts()
+  return records()
     .map(post => ({
       ...post,
       summaryLabel: post.excerpt || post.preview,
@@ -198,89 +187,59 @@ interface PostPageResponse {
   totalViews?: number
 }
 
-function listQuery(): string {
-  const params = new URLSearchParams({ page: String(page()), per_page: String(perPage()) })
-  if (search())
-    params.set('search', search())
-  if (statusFilter() !== 'all')
-    params.set('status', statusFilter())
-  if (sort()) {
-    params.set('sort', sort())
-    params.set('direction', sortDirection())
-  }
-  return params.toString()
-}
-
-async function loadPosts(): Promise<void> {
-  // Only the newest request may land: typing, paging and filtering can each
-  // start one while another is still out.
-  const requestId = ++listRequestId
-  loading.set(true)
-  loadError.set('')
-  try {
-    const data = await dashboardApi<PostPageResponse>(`/api/dashboard/posts?${listQuery()}`)
-    if (requestId !== listRequestId)
-      return
+// The server pages, searches, filters and sorts (stacksjs/stacks#3191);
+// useServerList keeps the request order, paging, header sort and search
+// debounce this page used to keep itself. Unsorted is newest first, which the
+// server reads as created_at descending.
+const {
+  records,
+  total,
+  page,
+  perPage,
+  search,
+  loading,
+  loadError,
+  load,
+  changePage,
+  changePageSize,
+  changeSort,
+} = useServerList<PostRecord>({
+  fetch: async (query) => {
+    const data = await dashboardApi<PostPageResponse>(`/api/dashboard/posts?${query}`)
     if (!Array.isArray(data.posts) || !Array.isArray(data.categories) || !Array.isArray(data.tags) || !Array.isArray(data.authors))
       throw new TypeError('Posts were not returned in the expected shape.')
-    posts.set(data.posts.map(normalizePost))
-    categories.set(data.categories.map(normalizeOption))
-    tags.set(data.tags.map(normalizeOption))
-    authors.set(data.authors.map(normalizeAuthor))
-    total.set(Number(data.total || 0))
-    // The server moves back to the last page when a delete or a narrower
-    // search leaves this one past the end.
-    page.set(Number(data.page || 1))
+    return { ...data, records: data.posts.map(normalizePost) }
+  },
+  defaultSort: { sort: 'created_at', direction: 'desc' },
+  // The table's sortable columns are named as the server sorts them.
+  columnSorts: { title: 'title', status: 'status', views: 'views' },
+  filters: () => ({ status: statusFilter() }),
+  searchParam: 'search',
+  onLoad: (result) => {
+    const data = result as PostPageResponse
+    categories.set((data.categories ?? []).map(normalizeOption))
+    tags.set((data.tags ?? []).map(normalizeOption))
+    authors.set((data.authors ?? []).map(normalizeAuthor))
     allCount.set(Number(data.allCount || 0))
     publishedCount.set(Number(data.publishedCount || 0))
     draftCount.set(Number(data.draftCount || 0))
     archivedCount.set(Number(data.archivedCount || 0))
     totalViewCount.set(Number(data.totalViews || 0))
-  }
-  catch (error) {
-    if (requestId !== listRequestId)
-      return
-    loadError.set(error instanceof Error ? error.message : String(error))
-    pushToast('error', 'Could not load posts', { detail: loadError() })
-  }
-  finally {
-    if (requestId === listRequestId)
-      loading.set(false)
-  }
+  },
+  onError: error => pushToast('error', 'Could not load posts', { detail: error instanceof Error ? error.message : String(error) }),
+})
+
+function loadPosts(): Promise<void> {
+  return load()
 }
 
-function changePage(next: number): void {
-  page.set(next)
-  void loadPosts()
-}
-
-function changePageSize(size: number): void {
-  perPage.set(size)
-  page.set(1)
-  void loadPosts()
-}
-
+/** The table's own search box; useServerList waits for typing to pause. */
 function changeSearch(term: string): void {
-  if (searchTimer)
-    clearTimeout(searchTimer)
-  searchTimer = setTimeout(() => {
-    search.set(String(term || '').trim())
-    page.set(1)
-    void loadPosts()
-  }, 250)
-}
-
-function changeSort(next: { key: string, direction: string }): void {
-  sort.set(next.key || '')
-  sortDirection.set(next.direction === 'desc' ? 'desc' : 'asc')
-  page.set(1)
-  void loadPosts()
+  search.set(String(term || ''))
 }
 
 function changeStatus(event: Event): void {
   statusFilter.set((event.target as HTMLSelectElement).value)
-  page.set(1)
-  void loadPosts()
 }
 
 async function loadEditorContent(post: PostRecord): Promise<void> {
