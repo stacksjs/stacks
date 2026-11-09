@@ -68,7 +68,7 @@
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/stx": "0.2.807",
     "@stacksjs/ts-validation": "^0.5.7",
-    "bun-query-builder": "^0.3.38"
+    "bun-query-builder": "^0.3.44"
   },
   "peerDependencies": {
     "meilisearch": "^0.62.0",
