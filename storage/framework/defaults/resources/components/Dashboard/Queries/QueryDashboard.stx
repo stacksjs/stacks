@@ -1,5 +1,6 @@
 <script client>
 import type { DashboardQueryCounts, DashboardQueryFilters, DashboardQueryLog, DashboardQueryResponse } from '../../../../functions/queries'
+import { useServerList } from '../../../../functions/dashboard-list'
 import { fetchDashboardQueries } from '../../../../functions/queries'
 
 type QueryRange = DashboardQueryFilters['range']
@@ -10,8 +11,8 @@ type QueryStatus = DashboardQueryFilters['status']
 const EMPTY_COUNTS: DashboardQueryCounts = { total: 0, reads: 0, writes: 0, slow: 0, failed: 0, averageDuration: 0 }
 
 const mode = useReactiveProp<QueryMode>('mode', 'all')
-// One page of the log, chosen by the server with the counts the cards show
-// (stacksjs/stacks#3204): the range, filters and paging are all its work.
+// What the server says about the log beside its page of rows: whether it is
+// on, the slow threshold, the counts the cards show and the connections.
 const data = state<DashboardQueryResponse>({
   enabled: false,
   slowThreshold: 100,
@@ -26,13 +27,40 @@ const range = state<QueryRange>(mode() === 'history' ? 'week' : 'day')
 const connection = state('all')
 const type = state<QueryType>('all')
 const status = state<QueryStatus>('all')
-const currentPage = state(1)
-const itemsPerPage = state(50)
-const loading = state(true)
-const loadError = state('')
-let listRequestId = 0
+// One page of the log, chosen by the server (stacksjs/stacks#3204): the range,
+// filters and paging are all its work, and useServerList keeps the request
+// order and paging this page used to keep itself. The log has no order to
+// choose, so no sort is sent.
+const {
+  records: queries,
+  page: currentPage,
+  perPage: itemsPerPage,
+  loading,
+  loadError,
+  load,
+  changePage,
+} = useServerList<DashboardQueryLog>({
+  fetch: async (query) => {
+    const result = await fetchDashboardQueries(query)
+    return { ...result, records: result.queries }
+  },
+  filters: () => ({
+    range: range(),
+    // The slow page lists slow queries whatever the status select last held.
+    status: mode() === 'slow' ? 'slow' : status(),
+    type: type(),
+    connection: connection(),
+  }),
+  perPage: 50,
+  onLoad: (result) => {
+    const page = result as DashboardQueryResponse
+    data.set({ ...page, counts: page.counts ?? EMPTY_COUNTS, connections: page.connections ?? [] })
+    // The log answers with what it could not read (logging off, say) beside
+    // whatever rows it has.
+    loadError.set(page.error || '')
+  },
+})
 
-const queries = derived(() => data().queries)
 const counts = derived(() => data().counts)
 const total = derived(() => counts().total)
 const totalPages = derived(() => Math.max(1, Math.ceil(total() / itemsPerPage())))
@@ -47,25 +75,12 @@ const emptyTitle = derived(() => mode() === 'slow' ? 'No slow queries in this ra
 const connections = derived(() => data().connections)
 const averageDuration = derived(() => `${counts().averageDuration.toFixed(2)} ms`)
 
-function filters(): DashboardQueryFilters {
-  return {
-    range: range(),
-    // The slow page lists slow queries whatever the status select last held.
-    status: mode() === 'slow' ? 'slow' : status(),
-    type: type(),
-    connection: connection() === 'all' ? '' : connection(),
-    page: currentPage(),
-    perPage: itemsPerPage(),
-  }
-}
-
 function setRange(value: QueryRange): void {
   range.set(value)
 }
 
 function setCurrentPage(page: number): void {
-  currentPage.set(Math.min(Math.max(1, page), totalPages()))
-  void loadQueries()
+  changePage(Math.min(Math.max(1, page), totalPages()))
 }
 
 function formatQuery(query: string): string {
@@ -104,46 +119,9 @@ function statusClass(value: DashboardQueryLog['status']): string {
   return 'text-green-700 dark:text-green-300'
 }
 
-async function loadQueries(): Promise<void> {
-  // Only the newest request may land: the range, filters and pager can each
-  // start one while another is still out.
-  const requestId = ++listRequestId
-  loading.set(true)
-  loadError.set('')
-  try {
-    const result = await fetchDashboardQueries(filters())
-    if (requestId !== listRequestId)
-      return
-    data.set({ ...result, counts: result.counts ?? EMPTY_COUNTS, connections: result.connections ?? [] })
-    // The server moves back to the last page when this one ran past the end.
-    currentPage.set(Number(result.page || 1))
-    loadError.set(result.error || '')
-  }
-  catch (error) {
-    if (requestId !== listRequestId)
-      return
-    loadError.set(error instanceof Error ? error.message : 'Query logs could not be loaded.')
-  }
-  finally {
-    if (requestId === listRequestId)
-      loading.set(false)
-  }
+function loadQueries(): Promise<void> {
+  return load()
 }
-
-// The range buttons and the three selects change the query; any change asks
-// the server for page 1. The selects stay plain x-model bindings.
-let shownFilters = ''
-effect(() => {
-  const key = [range(), connection(), type(), status()].join('|')
-  if (key === shownFilters)
-    return
-  const first = shownFilters === ''
-  shownFilters = key
-  if (first)
-    return
-  currentPage.set(1)
-  void loadQueries()
-})
 
 onMount(() => {
   void loadQueries()

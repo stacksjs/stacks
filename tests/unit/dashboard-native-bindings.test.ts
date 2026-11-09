@@ -1080,11 +1080,14 @@ describe('dashboard native STX bindings', () => {
     expect(jobs).not.toMatch(/setTimeout|clearTimeout/)
 
     const queries = componentSource('Queries/QueryDashboard.stx')
-    expect(queries).toContain('const itemsPerPage = state(50)')
+    // Fifty a page, the endpoint's default, through the shared server list.
+    expect(queries).toContain('useServerList<DashboardQueryLog>')
+    expect(queries).toContain('perPage: itemsPerPage')
+    expect(queries).toContain('perPage: 50')
     // The rows are one page the server chose (#3204), not a slice of a
     // capped download the page filtered itself.
     expect(queries).toContain(':for="query in queries"')
-    expect(queries).toContain('fetchDashboardQueries(filters())')
+    expect(queries).toContain('fetchDashboardQueries(query)')
     expect(queries).not.toContain('filteredQueries')
     expect(queries).toContain('<a :href="queryDetailsPath(query.id)"')
     expect(queries).toContain('encodeURIComponent(String(id))')

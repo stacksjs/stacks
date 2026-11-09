@@ -56,16 +56,13 @@ export interface DashboardQueryShowResponse {
   query: DashboardQueryLog | null
 }
 
-export async function fetchDashboardQueries(filters: DashboardQueryFilters): Promise<DashboardQueryResponse> {
-  const params = new URLSearchParams({
-    range: filters.range,
-    status: filters.status,
-    type: filters.type,
-    connection: filters.connection,
-    page: String(filters.page),
-    per_page: String(filters.perPage),
-  })
-  return dashboardApi<DashboardQueryResponse>(`/api/dashboard/queries?${params}`)
+/**
+ * One page of the query log. `query` is what the Queries page's useServerList
+ * sends: the range, status, type and connection (each left out when it is
+ * "all", which the server reads the same), page and per_page.
+ */
+export async function fetchDashboardQueries(query: URLSearchParams): Promise<DashboardQueryResponse> {
+  return dashboardApi<DashboardQueryResponse>(`/api/dashboard/queries?${query}`)
 }
 
 export async function fetchDashboardQuery(id: string): Promise<DashboardQueryLog | null> {
