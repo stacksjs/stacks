@@ -101,7 +101,7 @@
     "docs:native-skills:check": "./buddy docs:native-skills:check"
   },
   "dependencies": {
-    "@stacksjs/stx": "0.2.835",
+    "@stacksjs/stx": "0.2.807",
     "stacks": "workspace:*"
   },
   "workspaces": [
