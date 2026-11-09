@@ -1,5 +1,33 @@
 import { expect, test } from 'bun:test'
 import { createModelGeometry, modelTransform, multiplyModelMatrices, parseBinaryModelStl, transformModelPoint } from '../src/model-viewer'
+import type { ModelGeometry } from '../src/model-viewer'
+
+test('indexed inline meshes preserve winding and repeated shared vertices without a fetch', () => {
+  const geometry: ModelGeometry = { kind: 'mesh', vertices: [[0, 0, 0], [10, 0, 0], [10, 20, 0], [0, 20, 0]], triangles: [[0, 1, 2], [0, 2, 3]] }
+  const output = createModelGeometry(geometry)
+  expect([...output]).toEqual([0, 0, 0, 10, 0, 0, 10, 20, 0, 0, 0, 0, 10, 20, 0, 0, 20, 0])
+  output[0] = 99
+  expect(geometry.vertices[0]).toEqual([0, 0, 0])
+})
+
+test('inline meshes reject malformed, nonfinite, Float32-overflowing and oversized input before delivery', () => {
+  const valid: Extract<ModelGeometry, { kind: 'mesh' }> = { kind: 'mesh', vertices: [[0, 0, 0], [1, 0, 0], [0, 1, 0]], triangles: [[0, 1, 2]] }
+  const invalid = [
+    { ...valid, vertices: [] }, { ...valid, triangles: [] },
+    { ...valid, vertices: [[Number.NaN, 0, 0], [1, 0, 0], [0, 1, 0]] },
+    { ...valid, vertices: [[1e100, 0, 0], [1, 0, 0], [0, 1, 0]] },
+    { ...valid, vertices: [[0, 0], [1, 0, 0], [0, 1, 0]] },
+    { ...valid, vertices: [[0, , 0], [1, 0, 0], [0, 1, 0]] },
+    { ...valid, triangles: [[0, 1, 3]] }, { ...valid, triangles: [[0, -1, 2]] },
+    { ...valid, triangles: [[0, 1.5, 2]] }, { ...valid, triangles: [[0, 0, 2]] },
+    { ...valid, triangles: [[0, 1]] },
+    { ...valid, triangles: [[0, , 2]] },
+    { ...valid, vertices: Array.from({ length: 500001 }, () => [0, 0, 0]) },
+    { ...valid, triangles: Array.from({ length: 500001 }, () => [0, 1, 2]) },
+  ]
+  for (const input of invalid)
+    expect(() => createModelGeometry(input as typeof valid)).toThrow()
+})
 
 test('model transforms preserve CAD millimeters and compose local rotations before world placement', () => {
   const point = transformModelPoint([70, 155, 6], modelTransform([0, 27, 200], [90, 0, 0]))

@@ -3,6 +3,7 @@ export type ModelVector = [number, number, number]
 export type ModelMatrix = number[]
 export type ModelGeometry =
   | { kind: 'stl', src: string }
+  | { kind: 'mesh', vertices: ModelVector[], triangles: [number, number, number][] }
   | { kind: 'box', size: ModelVector }
   | { kind: 'tube', outer: number, inner: number, length: number }
   | { kind: 'cylinder', radius: number, length: number, innerRadius?: number, segments?: number }
@@ -79,6 +80,27 @@ export function parseBinaryModelStl(buffer: ArrayBuffer): Float32Array {
 }
 
 export function createModelGeometry(geometry: Exclude<ModelGeometry, { kind: 'stl' }>): Float32Array {
+  // Indexed geometry is authored in the scene, so it needs no URL, fetch or
+  // retained STL resource. This keeps interactive procedural models native.
+  if (geometry.kind === 'mesh') {
+    if (!Array.isArray(geometry.vertices) || geometry.vertices.length < 3 || geometry.vertices.length > 500000
+      || !Array.isArray(geometry.triangles) || !geometry.triangles.length || geometry.triangles.length > 500000)
+      throw new Error('An inline mesh requires 3-500000 vertices and 1-500000 triangles.')
+    for (const vertex of geometry.vertices) {
+      if (!Array.isArray(vertex) || vertex.length !== 3 || ![0, 1, 2].every(axis => Number.isFinite(vertex[axis]) && Number.isFinite(Math.fround(vertex[axis]!))))
+        throw new Error('An inline mesh contains an invalid coordinate.')
+    }
+    const output = new Float32Array(geometry.triangles.length * 9)
+    for (let face = 0; face < geometry.triangles.length; face++) {
+      const indices = geometry.triangles[face]!
+      if (!Array.isArray(indices) || indices.length !== 3 || ![0, 1, 2].every(corner => Number.isInteger(indices[corner]) && indices[corner]! >= 0 && indices[corner]! < geometry.vertices.length)
+        || new Set(indices).size !== 3)
+        throw new Error('An inline mesh contains an invalid triangle index.')
+      for (let corner = 0; corner < 3; corner++)
+        output.set(geometry.vertices[indices[corner]!]!, face * 9 + corner * 3)
+    }
+    return output
+  }
   const positions: number[] = []
   const triangle = (a: ModelVector, b: ModelVector, c: ModelVector) => positions.push(...a, ...b, ...c)
   const quad = (a: ModelVector, b: ModelVector, c: ModelVector, d: ModelVector) => { triangle(a, b, c); triangle(a, c, d) }
