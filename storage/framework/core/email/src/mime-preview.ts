@@ -1,3 +1,5 @@
+import { decodeHtmlEntities } from '@stacksjs/strings'
+
 interface MimePart {
   contentType: string
   encoding: string
@@ -111,16 +113,14 @@ function stripLegacyMimePreamble(value: string): string {
 }
 
 function plainText(value: string): string {
-  return decodeQuotedPrintable(stripLegacyMimePreamble(value))
+  const stripped = decodeQuotedPrintable(stripLegacyMimePreamble(value))
     .replace(/<style\b[\s\S]*?<\/style>/gi, ' ')
     .replace(/<script\b[\s\S]*?<\/script>/gi, ' ')
     .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&')
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>')
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;/gi, '\'')
+
+  // Every reference, in one pass. Six by hand left `Trail Runner &times; 3`
+  // in a preview, and decoding `&amp;` first turned `&amp;lt;` into `<`.
+  return decodeHtmlEntities(stripped)
     .replace(/\s+/g, ' ')
     .trim()
 }

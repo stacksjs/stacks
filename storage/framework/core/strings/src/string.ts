@@ -1,5 +1,6 @@
 export * from './case'
 export * from './helpers'
+export * from './html'
 export * from './macro'
 export * from './pluralize'
 export * from './slug'

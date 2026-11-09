@@ -63,6 +63,22 @@ describe('captured dashboard mail', () => {
     expect(message?.text).toBe('')
   })
 
+  it('previews character references as the characters they stand for', async () => {
+    const directory = await temporaryDirectory()
+    const filename = '2026-11-10T09-00-00-000Z-Your-order.html'
+    await writeFile(join(directory, filename), `<!--
+  Captured by @stacksjs/email log driver at 2026-11-10T09:00:00.000Z
+  From:    Stacks <hello@example.com>
+  To:      Ada <ada@example.test>
+  Subject: Your order
+-->
+<table><tr><td>Trail Runner &times; 3</td><td>&euro;375</td></tr><tr><td>Use &amp;lt;b&amp;gt; for bold</td></tr></table>
+`)
+
+    const { messages } = await listCapturedMail(directory)
+    expect(messages[0]?.preview).toBe(`Trail Runner ${String.fromCodePoint(0xD7)} 3 ${String.fromCodePoint(0x20AC)}375 Use &lt;b&gt; for bold`)
+  })
+
   it('reports a malformed capture instead of fabricating metadata for it', async () => {
     const directory = await temporaryDirectory()
     await writeFile(join(directory, 'broken.html'), '<p>No capture header</p>')

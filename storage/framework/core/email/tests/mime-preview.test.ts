@@ -64,6 +64,14 @@ describe('email MIME previews', () => {
     expect(normalizeEmailHtmlBody(stored)).toBe('<p>Great news!</p>')
   })
 
+  test('decodes every character reference once', () => {
+    // An order email's HTML says `&times;`; the preview printed it as written.
+    expect(normalizeEmailPreview('<td>Trail Runner &times; 3</td><td>&euro;125&nbsp;each</td>'))
+      .toBe(`Trail Runner ${String.fromCodePoint(0xD7)} 3 ${String.fromCodePoint(0x20AC)}125 each`)
+    // Decoding `&amp;` first used to turn the text `&lt;` into a bracket.
+    expect(normalizeEmailPreview('<p>Write &amp;lt;b&amp;gt; for bold</p>')).toBe('Write &lt;b&gt; for bold')
+  })
+
   test('strips markup and bounds the preview', () => {
     expect(extractEmailPreview('Content-Type: text/html\r\n\r\n<style>x{}</style><p>Hello &amp; welcome</p>', 12))
       .toBe('Hello & welc')
