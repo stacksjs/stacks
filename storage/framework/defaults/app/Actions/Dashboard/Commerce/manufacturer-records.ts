@@ -2,7 +2,6 @@ import {
   commerceBoolean,
   commerceIdentifier,
   commerceNumber,
-  commerceOptionalIdentifier,
   commerceOptionalString,
   commerceRequiredString,
   commerceTimestamp,
@@ -24,34 +23,6 @@ export interface ManufacturerSummary {
   featured: number
   countries: number
   linkedProducts: number
-}
-
-export function manufacturerProductCounts(
-  products: any[],
-  manufacturerIds = new Set<string>(),
-): Map<string, number> {
-  const counts = new Map<string, number>()
-  for (const product of products) {
-    const id = commerceIdentifier(commerceValue(product, 'id', 'uuid'), 'Product')
-    const source = `Product ${id}`
-    const manufacturerId = commerceOptionalIdentifier(
-      commerceValue(product, 'manufacturer_id', 'manufacturerId'),
-      source,
-      'manufacturer_id',
-    )
-    if (!manufacturerId)
-      continue
-    if (!manufacturerIds.has(manufacturerId))
-      throw new TypeError(`${source}.manufacturer_id references missing Manufacturer ${manufacturerId}.`)
-    counts.set(manufacturerId, (counts.get(manufacturerId) ?? 0) + 1)
-  }
-  return counts
-}
-
-export function manufacturerIdentifiers(records: any[]): Set<string> {
-  return new Set(records.map(record =>
-    commerceIdentifier(commerceValue(record, 'id', 'uuid'), 'Manufacturer'),
-  ))
 }
 
 export function normalizeManufacturerRecord(

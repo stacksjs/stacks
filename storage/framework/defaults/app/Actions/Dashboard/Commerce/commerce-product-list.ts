@@ -185,11 +185,11 @@ async function summarize(run: CommerceSqlRunner, dialect: QueryBuilderDialect): 
 }
 
 /**
- * Every category and manufacturer, for the filter and the product dialog.
- * These are small reference tables, so they are read whole rather than the
- * first 500 of each.
+ * Every category and manufacturer, for the filter and the product dialog, here
+ * and on the product's own page. These are small reference tables, so they
+ * are read whole rather than the first 500 of each.
  */
-async function options(run: CommerceSqlRunner): Promise<{ categories: ProductOption[], manufacturers: ProductOption[] }> {
+export async function readProductOptions(run: CommerceSqlRunner = db): Promise<{ categories: ProductOption[], manufacturers: ProductOption[] }> {
   const [categories, manufacturers] = await Promise.all([
     // LOWER, so the order is the same on every dialect: each collates case its own way.
     run.unsafe('SELECT id, name FROM categories ORDER BY LOWER(name) ASC, id ASC').execute(),
@@ -219,7 +219,7 @@ export async function readProductPage(
   const [counted, summary, choices] = await Promise.all([
     run.unsafe(`SELECT COUNT(*) AS total_count${FROM}${where}`, values).execute(),
     summarize(run, dialect),
-    options(run),
+    readProductOptions(run),
   ])
   const total = countOf(sqlRows(counted)[0]?.total_count)
   const page = pageWithin(query.page, total, query.perPage)

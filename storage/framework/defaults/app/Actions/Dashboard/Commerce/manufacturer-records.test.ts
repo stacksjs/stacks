@@ -1,18 +1,10 @@
 import { describe, expect, test } from 'bun:test'
-import {
-  manufacturerProductCounts,
-  normalizeManufacturerRecord,
-  summarizeManufacturers,
-} from './manufacturer-records'
+import { normalizeManufacturerRecord, summarizeManufacturers } from './manufacturer-records'
 
 describe('dashboard manufacturer records', () => {
-  test('normalizes model columns and counts linked products', () => {
-    const counts = manufacturerProductCounts([
-      { id: 1, manufacturer_id: 4 },
-      { id: 2, manufacturerId: '4' },
-      { id: 3, manufacturer_id: 8 },
-      { id: 4, manufacturer_id: null },
-    ], new Set(['4', '8']))
+  // The products are counted by the database (commerce-manufacturer-list.test.ts).
+  test('normalizes model columns with their product count', () => {
+    const counts = new Map([['4', 2], ['8', 1]])
     const record = normalizeManufacturerRecord({
       id: 4,
       manufacturer: 'Native Systems',
@@ -33,7 +25,7 @@ describe('dashboard manufacturer records', () => {
     })
   })
 
-  test('rejects malformed fields and missing manufacturer relationships', () => {
+  test('rejects malformed fields', () => {
     expect(() => normalizeManufacturerRecord({
       id: 4,
       manufacturer: 'Native Systems',
@@ -42,10 +34,6 @@ describe('dashboard manufacturer records', () => {
       featured: 'yes',
       created_at: '2026-07-29 10:00:00',
     })).toThrow('Manufacturer 4.featured must be a boolean')
-
-    expect(() => manufacturerProductCounts([
-      { id: 9, manufacturer_id: 42 },
-    ], new Set())).toThrow('Product 9.manufacturer_id references missing Manufacturer 42')
   })
 
   test('summarizes persisted manufacturers without invented fields', () => {

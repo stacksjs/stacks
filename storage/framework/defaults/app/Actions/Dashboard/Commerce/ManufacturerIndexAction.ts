@@ -1,13 +1,13 @@
 import { Action } from '@stacksjs/actions/runtime'
-import { Manufacturer, Product } from '@stacksjs/orm'
 import { dashboardOperationalError } from '../dashboard-response'
-import {
-  manufacturerIdentifiers,
-  manufacturerProductCounts,
-  normalizeManufacturerRecord,
-  summarizeManufacturers,
-} from './manufacturer-records'
+import { readManufacturers } from './commerce-manufacturer-list'
 
+/**
+ * `GET /api/dashboard/commerce/manufacturers` - every manufacturer with how
+ * many products it makes, counted by the database (commerce-manufacturer-list.ts,
+ * stacksjs/stacks#3218). This used to read the newest 500 manufacturers and
+ * count over the first 500 products.
+ */
 export default new Action({
   name: 'ManufacturerIndexAction',
   description: 'Returns persisted manufacturers with linked product counts for dashboard management.',
@@ -16,19 +16,7 @@ export default new Action({
 
   async handle() {
     try {
-      const [manufacturers, products] = await Promise.all([
-        Manufacturer.orderByDesc('id').limit(500).get(),
-        Product.orderBy('id', 'asc').limit(500).get(),
-      ])
-      const productCounts = manufacturerProductCounts(products, manufacturerIdentifiers(manufacturers))
-      const records = manufacturers.map(manufacturer =>
-        normalizeManufacturerRecord(manufacturer, productCounts),
-      )
-
-      return {
-        records,
-        summary: summarizeManufacturers(records),
-      }
+      return await readManufacturers()
     }
     catch (error) {
       return dashboardOperationalError(error, 'Manufacturer records could not be read.', 'ManufacturerIndexAction')

@@ -338,6 +338,7 @@ export const actions = {
   'Actions/Dashboard/Commerce/commerce-delivery': '../defaults/app/Actions/Dashboard/Commerce/commerce-delivery.ts',
   'Actions/Dashboard/Commerce/commerce-gift-card-list': '../defaults/app/Actions/Dashboard/Commerce/commerce-gift-card-list.ts',
   'Actions/Dashboard/Commerce/commerce-license-key-list': '../defaults/app/Actions/Dashboard/Commerce/commerce-license-key-list.ts',
+  'Actions/Dashboard/Commerce/commerce-manufacturer-list': '../defaults/app/Actions/Dashboard/Commerce/commerce-manufacturer-list.ts',
   'Actions/Dashboard/Commerce/commerce-order-list': '../defaults/app/Actions/Dashboard/Commerce/commerce-order-list.ts',
   'Actions/Dashboard/Commerce/commerce-order-records': '../defaults/app/Actions/Dashboard/Commerce/commerce-order-records.ts',
   'Actions/Dashboard/Commerce/commerce-payment-list': '../defaults/app/Actions/Dashboard/Commerce/commerce-payment-list.ts',
