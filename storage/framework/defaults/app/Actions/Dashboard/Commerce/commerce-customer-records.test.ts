@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { normalizeCommerceCustomerRecord, summarizeCommerceCustomers } from './commerce-customer-records'
+import { normalizeCommerceCustomerRecord } from './commerce-customer-records'
 
 describe('dashboard commerce customer records', () => {
   test('normalizes persisted model columns without inventing contact data', () => {
@@ -35,38 +35,5 @@ describe('dashboard commerce customer records', () => {
       avatar: 'https://example.test/legacy.jpg',
       createdAt: '2026-07-29 12:00:00',
     })).toThrow('Customer 9.status must be Active or Inactive')
-  })
-
-  test('summarizes persisted status and spend values', () => {
-    const records = [
-      normalizeCommerceCustomerRecord({
-        id: 1,
-        name: 'Active customer',
-        email: 'active@example.test',
-        phone: '+1 555 010 1111',
-        totalSpent: 100,
-        status: 'Active',
-        avatar: 'https://example.test/active.jpg',
-        createdAt: '2026-07-29 12:00:00',
-      }),
-      normalizeCommerceCustomerRecord({
-        id: 2,
-        name: 'Inactive customer',
-        email: 'inactive@example.test',
-        phone: '+1 555 010 2222',
-        totalSpent: 50,
-        status: 'Inactive',
-        avatar: 'https://example.test/inactive.jpg',
-        createdAt: '2026-07-29 12:00:00',
-      }),
-    ]
-
-    expect(summarizeCommerceCustomers(records)).toEqual({
-      total: 2,
-      active: 1,
-      inactive: 1,
-      totalSpent: 150,
-      averageSpent: 75,
-    })
   })
 })

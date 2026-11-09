@@ -4,11 +4,14 @@ import type {
   CommerceCustomerSummary,
 } from '../../../../app/Actions/Dashboard/Commerce/commerce-customer-records'
 import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
+import { useServerList } from '../../../../functions/dashboard-list'
 import { pushToast } from '../../../../functions/toasts'
-import { formatCurrency, minorToInput } from '@stacksjs/commerce/money'
+import { formatCurrency } from '@stacksjs/commerce/money'
 
 interface CustomerIndexResponse {
   records: CommerceCustomerRecord[]
+  total: number
+  page: number
   summary: CommerceCustomerSummary
   currency: string
 }
@@ -30,14 +33,10 @@ const emptySummary: CommerceCustomerSummary = {
   totalSpent: 0,
   averageSpent: 0,
 }
-const records = state<CommerceCustomerRecord[]>([])
 const summary = state<CommerceCustomerSummary>({ ...emptySummary })
 const currency = state('USD')
-const search = state('')
 const statusFilter = state('all')
 const sort = state('name')
-const loading = state(true)
-const loadError = state('')
 const dialogOpen = state(false)
 const dialogMode = state<'add' | 'edit'>('add')
 const editingRecord = state<CommerceCustomerRecord | null>(null)
@@ -47,44 +46,48 @@ const saving = state(false)
 const deleting = state(false)
 const validationErrors = state<Record<string, string>>({})
 
-function timestamp(value: string): number {
-  if (!value)
-    return 0
-  const normalized = /^\d{4}-\d{2}-\d{2} \d/.test(value)
-    ? `${value.replace(' ', 'T')}Z`
-    : value
-  const result = new Date(normalized).getTime()
-  return Number.isFinite(result) ? result : 0
-}
-
 function formatMoney(value: number): string {
   return formatCurrency(value, currency())
 }
 
-function filteredRecords(): CommerceCustomerRecord[] {
-  const query = search().trim().toLowerCase()
-  const selectedStatus = statusFilter()
-  return [...records()]
-    .filter((record) => {
-      if (selectedStatus !== 'all' && record.status !== selectedStatus)
-        return false
-      return !query || [record.name, record.email, record.phone]
-        .some(value => value.toLowerCase().includes(query))
-    })
-    .sort((left, right) => {
-      if (sort() === 'spend-high')
-        return right.totalSpent - left.totalSpent || left.name.localeCompare(right.name)
-      if (sort() === 'recent-order')
-        return timestamp(right.lastOrder) - timestamp(left.lastOrder) || left.name.localeCompare(right.name)
-      if (sort() === 'newest')
-        return Number(right.id) - Number(left.id)
-      return left.name.localeCompare(right.name)
-    })
+const SELECT_SORTS: Record<string, { sort: string, direction: 'asc' | 'desc' }> = {
+  'name': { sort: 'name', direction: 'asc' },
+  'spend-high': { sort: 'spend', direction: 'desc' },
+  'recent-order': { sort: 'last-order', direction: 'desc' },
+  'newest': { sort: 'newest', direction: 'desc' },
 }
 
+// The server searches, filters, sorts and pages (stacksjs/stacks#3218), where
+// this page used to do all of that with the first 500 customers by name.
+const {
+  records,
+  total,
+  page,
+  perPage,
+  search,
+  loading,
+  loadError,
+  params,
+  load,
+  changePage,
+  changePageSize,
+  changeSort,
+} = useServerList<CommerceCustomerRecord>({
+  fetch: query => dashboardApi<CustomerIndexResponse>(`/api/dashboard/commerce/customers?${query}`),
+  defaultSort: () => SELECT_SORTS[sort()] ?? SELECT_SORTS.name!,
+  columnSorts: { nameLabel: 'name', emailLabel: 'email', totalSpent: 'spend', lastOrder: 'last-order', status: 'status' },
+  filters: () => ({ status: statusFilter() }),
+  onLoad: (result) => {
+    const data = result as CustomerIndexResponse
+    summary.set(data.summary ?? { ...emptySummary })
+    currency.set(data.currency || 'USD')
+  },
+  onError: error => pushToast('error', 'Could not load customers', { detail: error instanceof Error ? error.message : String(error) }),
+})
+
 function matchingLabel(): string {
-  const count = filteredRecords().length
-  return `${count} matching ${count === 1 ? 'customer' : 'customers'}`
+  const count = total()
+  return `${count.toLocaleString()} matching ${count === 1 ? 'customer' : 'customers'}`
 }
 
 function metricCards(): Array<{ label: string, value: string, detail: string }> {
@@ -97,50 +100,13 @@ function metricCards(): Array<{ label: string, value: string, detail: string }> 
   ]
 }
 
+/** Every matching customer as CSV, built by the server, not just the page shown. */
 function exportHref(): string {
-  const rows = filteredRecords().map(record => [
-    record.name,
-    record.email,
-    record.phone,
-    record.status,
-    minorToInput(record.totalSpent, currency()),
-    record.lastOrder,
-    record.avatar,
-  ])
-  const escape = (value: string): string => `"${value.replaceAll('"', '""')}"`
-  const csv = [
-    ['Name', 'Email', 'Phone', 'Status', `Total spent (${currency()})`, 'Last order', 'Avatar URL'],
-    ...rows,
-  ].map(row => row.map(escape).join(',')).join('\n')
-  return `data:text/csv;charset=utf-8,${encodeURIComponent(`\uFEFF${csv}`)}`
+  return `/api/dashboard/commerce/customers/export?${params()}`
 }
 
-/**
- * What the table is showing: a change returns it to the first page, as this
- * page's own pager did before the table took over paging.
- */
-function viewKey(): string {
-  return JSON.stringify([search(), statusFilter(), sort()])
-}
-
-async function loadCustomers(): Promise<void> {
-  loading.set(true)
-  loadError.set('')
-  try {
-    const data = await dashboardApi<CustomerIndexResponse>('/api/dashboard/commerce/customers')
-    records.set(Array.isArray(data.records) ? data.records : [])
-    summary.set(data.summary ?? { ...emptySummary })
-    currency.set(data.currency || 'USD')
-  }
-  catch (error) {
-    loadError.set('Customer records could not be loaded.')
-    pushToast('error', 'Could not load customers', {
-      detail: error instanceof Error ? error.message : String(error),
-    })
-  }
-  finally {
-    loading.set(false)
-  }
+function loadCustomers(): Promise<void> {
+  return load()
 }
 
 function openAdd(): void {
@@ -241,7 +207,7 @@ onMount(() => {
   <PageHeader title="Customers" description="Manage native Customer records, contact details, status, and recorded spend.">
   <div class="flex flex-wrap gap-2">
     <Button variant="secondary" :loading="loading()" @click="loadCustomers()"><span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button>
-    <Button tag="a" variant="secondary" :href="exportHref()" :download="'customers-' + new Date().toISOString().slice(0, 10) + '.csv'"><span class="h-4 w-4 i-hugeicons-download-04"></span>Export filtered</Button>
+    <Button tag="a" variant="secondary" :href="exportHref()" download><span class="h-4 w-4 i-hugeicons-download-04"></span>Export filtered</Button>
     <Button @click="openAdd()"><span class="h-4 w-4 i-hugeicons-add-01"></span>Add customer</Button>
   </div>
   </PageHeader>
@@ -257,7 +223,7 @@ onMount(() => {
         <span class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none"><span class="h-4 w-4 i-hugeicons-search-01"></span></span>
         <input x-model="search" type="search" placeholder="Search names, email, or phone" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" />
       </label>
-      <label><span class="sr-only">Customer status</span><select x-model="statusFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">Any status</option><option value="Active">Active</option><option value="Inactive">Inactive</option><option value="Unknown">Unknown</option></select></label>
+      <label><span class="sr-only">Customer status</span><select x-model="statusFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">Any status</option><option value="Active">Active</option><option value="Inactive">Inactive</option></select></label>
       <label><span class="sr-only">Sort customers</span><select x-model="sort" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="name">Name</option><option value="spend-high">Highest spend</option><option value="recent-order">Most recent order</option><option value="newest">Newest record</option></select></label>
     </div>
 
@@ -265,7 +231,7 @@ onMount(() => {
       <p class="text-gray-500 text-sm dark:text-neutral-400">{{ matchingLabel() }}</p>
     </div>
 
-    <CommerceCustomersTable :sort-reset-key="sort()" :page-reset-key="viewKey()" :records="filteredRecords()" :loading="loading()" :currency="currency()" @view="openDetails" @edit="openEdit" @delete="openDelete" />
+    <CommerceCustomersTable :sort-reset-key="sort()" :records="records()" :total="total()" :current-page="page()" :per-page="perPage()" :loading="loading()" :currency="currency()" @view="openDetails" @edit="openEdit" @delete="openDelete" @page-change="changePage" @page-size-change="changePageSize" @sort="changeSort" />
   </section>
 </div>
 

@@ -53,14 +53,3 @@ export function normalizeCommerceCustomerRecord(record: any): CommerceCustomerRe
 export function normalizeCommerceCustomerCurrency(input: unknown): string {
   return commerceCurrency(input, 'Commerce configuration')
 }
-
-export function summarizeCommerceCustomers(records: CommerceCustomerRecord[]): CommerceCustomerSummary {
-  const totalSpent = records.reduce((sum, record) => sum + record.totalSpent, 0)
-  return {
-    total: records.length,
-    active: records.filter(record => record.status === 'Active').length,
-    inactive: records.filter(record => record.status === 'Inactive').length,
-    totalSpent,
-    averageSpent: records.length > 0 ? totalSpent / records.length : 0,
-  }
-}

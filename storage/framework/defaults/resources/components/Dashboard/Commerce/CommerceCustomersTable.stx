@@ -7,10 +7,15 @@ const records = useReactiveProp('records', [] as CommerceCustomerRecord[])
 const loading = useReactiveProp('loading', false)
 /** The parent's sort select: a change hands the order back from a header sort. */
 const sortResetKey = useReactiveProp<unknown>('sortResetKey', '')
-/** The parent's search and filters: a change returns to the first page. */
-const pageResetKey = useReactiveProp<unknown>('pageResetKey', '')
 const currency = useReactiveProp('currency', 'USD')
-const emit = defineEmits(['view', 'edit', 'delete'])
+/**
+ * The server pages and sorts what the parent's search and filter match
+ * (stacksjs/stacks#3218): how many customers match, the page shown and its size.
+ */
+const total = useReactiveProp('total', 0)
+const currentPage = useReactiveProp('currentPage', 1)
+const perPage = useReactiveProp('perPage', 25)
+const emit = defineEmits(['view', 'edit', 'delete', 'page-change', 'page-size-change', 'sort'])
 
 /** Only the customer cell is slotted, for its initial. */
 const COLUMNS = [
@@ -51,25 +56,43 @@ const rows = derived(() => records().map(record => ({
 function handleRowAction(payload: { action: string, row: CommerceCustomerRecord }): void {
   emit(payload.action, payload.row)
 }
+
+function changePage(page: number): void {
+  emit('page-change', page)
+}
+
+function changePageSize(size: number): void {
+  emit('page-size-change', size)
+}
+
+function changeSort(sort: { key: string, direction: string }): void {
+  emit('sort', sort)
+}
 </script>
 
 {{--
   No `searchable` or `filterable`: the parent dashboard owns the search box
-  and the filter selects. Table pages the whole filtered list the parent passes.
+  and the filter selects. The server pages and sorts what they match.
 --}}
 <Table
   :sort-reset-key="sortResetKey()"
-  :page-reset-key="pageResetKey()"
   :columns="COLUMNS"
   :data="rows()"
   :loading="loading()"
   :row-actions="ROW_ACTIONS"
   action-label-key="nameLabel"
   paginated
-  :page-size="15"
+  manual-pagination
+  manual-sort
+  :total="total()"
+  :current-page="currentPage()"
+  :page-size="perPage()"
   empty-title="No customers found"
   empty-description="Adjust the filters or add a native Customer record."
   @row-action="handleRowAction"
+  @page-change="changePage"
+  @page-size-change="changePageSize"
+  @sort="changeSort"
 >
   <template #cell="{ row }">
     <div class="flex gap-3 items-center">
