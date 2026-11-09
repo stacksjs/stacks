@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { isAbsolute, join, relative } from 'node:path'
 import process from 'node:process'
+import { auditMigrationCorpus } from './migration-dialect'
 
 const DEFAULT_MIGRATION_DIR = 'database/migrations'
 const DEFAULT_SNAPSHOT_DIR = 'storage/framework/database'
@@ -60,10 +61,27 @@ export function resolveMigrationDirectory(dialect: string, options: {
    * way or the other and nothing else in these files is as reliable. Only a
    * dialect that did not write it gets a subdirectory of its own.
    */
-  if (hasOtherDialect && ownerOfFlatCorpus(absoluteConfigured) === wireOf(dialect))
+  if (hasOtherDialect && ownsFlatCorpus(absoluteConfigured, dialect))
     return absoluteConfigured
 
   return hasOtherDialect ? dialectDir : absoluteConfigured
+}
+
+/**
+ * Whether `dialect` wrote the flat corpus.
+ *
+ * Its SQL says so first: SQLite's `AUTOINCREMENT` or Postgres's `BIGSERIAL`
+ * belong to one dialect only. Quoting is the fallback for a corpus with no
+ * such marker, and only a fallback, because SQLite and Postgres both quote
+ * with `"`: read alone, it handed a SQLite corpus to Postgres, which then
+ * refused every pending file as SQLite-flavoured instead of generating its
+ * own corpus beside it.
+ */
+function ownsFlatCorpus(directory: string, dialect: string): boolean {
+  const { inferred } = auditMigrationCorpus({ dir: directory, target: dialect === 'sqlite' ? 'sqlite' : wireOf(dialect) })
+  if (inferred)
+    return inferred === (dialect === 'sqlite' ? 'sqlite' : wireOf(dialect))
+  return ownerOfFlatCorpus(directory) === wireOf(dialect)
 }
 
 /**

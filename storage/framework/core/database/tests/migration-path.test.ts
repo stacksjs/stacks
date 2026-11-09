@@ -52,6 +52,23 @@ describe('dialect migration corpus paths', () => {
     expect(resolveMigrationDirectory('mysql', { cwd })).toBe(join(flat, 'mysql'))
   })
 
+  it('gives Postgres its own corpus beside a SQLite one, though both quote with "', () => {
+    // Quoting alone handed this SQLite corpus to Postgres, which then refused
+    // every pending file as SQLite-flavoured.
+    const cwd = workspace()
+    const flat = join(cwd, 'database', 'migrations')
+    mkdirSync(flat, { recursive: true })
+    writeFileSync(join(flat, '0000000001-create-users-table.sql'), 'CREATE TABLE IF NOT EXISTS "users" ("id" INTEGER PRIMARY KEY AUTOINCREMENT);')
+
+    const snapshots = join(cwd, 'storage', 'framework', 'database')
+    mkdirSync(snapshots, { recursive: true })
+    writeFileSync(join(snapshots, 'model-snapshot.sqlite.json'), '{}')
+    writeFileSync(join(snapshots, 'model-snapshot.postgres.json'), '{}')
+
+    expect(resolveMigrationDirectory('postgres', { cwd })).toBe(join(flat, 'postgres'))
+    expect(resolveMigrationDirectory('sqlite', { cwd })).toBe(flat)
+  })
+
   it('reads the owner off the corpus, so a MySQL-first project keeps its flat one too', () => {
     const cwd = workspace()
     const flat = join(cwd, 'database', 'migrations')
