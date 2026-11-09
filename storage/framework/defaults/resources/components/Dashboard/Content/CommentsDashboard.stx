@@ -2,6 +2,7 @@
 
 <script client>
 import { dashboardApi } from '../../../../functions/dashboard-api'
+import { useServerList } from '../../../../functions/dashboard-list'
 import { pushToast } from '../../../../functions/toasts'
 
 type CommentStatus = 'pending' | 'approved' | 'spam' | 'trash'
@@ -23,25 +24,14 @@ interface CommentRecord {
   createdAt: string
 }
 
-const comments = state<CommentRecord[]>([])
-const loading = state(true)
-const loadError = state('')
-const search = state('')
 const statusFilter = state('all')
 const updatingId = state('')
 const deletingComment = state<CommentRecord | null>(null)
 const deleting = state(false)
 const deleteError = state('')
 
-// The list is one page, searched and filtered by the server, newest first
-// across both tables (stacksjs/stacks#3193). The cards count every comment.
-const listPage = state(1)
-const perPage = 25
-const appliedSearch = state('')
-const total = state(0)
+// The cards count every comment (stacksjs/stacks#3193).
 const counts = state<Record<string, number>>({ all: 0, pending: 0, approved: 0, spam: 0, trash: 0 })
-let listRequestId = 0
-let searchTimer: ReturnType<typeof setTimeout> | undefined
 
 function normalizeStatus(value: unknown): CommentStatus | null {
   const status = String(value || '').toLowerCase()
@@ -66,7 +56,7 @@ function normalize(record: any): CommentRecord {
 
 /** The page the server chose: its search and status are already applied. */
 function visibleComments(): CommentRecord[] {
-  return comments()
+  return records()
 }
 
 function statusCount(status: CommentStatus): number {
@@ -102,77 +92,40 @@ interface CommentPageResponse {
   counts?: Record<string, number>
 }
 
-function listQuery(): string {
-  const params = new URLSearchParams({ page: String(listPage()), per_page: String(perPage) })
-  if (appliedSearch())
-    params.set('search', appliedSearch())
-  if (statusFilter() !== 'all')
-    params.set('status', statusFilter())
-  return params.toString()
-}
-
-async function loadComments(): Promise<void> {
-  // Only the newest request may land: typing, paging and filtering can each
-  // start one while another is still out.
-  const requestId = ++listRequestId
-  loading.set(true)
-  loadError.set('')
-  try {
-    const data = await dashboardApi<CommentPageResponse>(`/api/dashboard/comments?${listQuery()}`)
-    if (requestId !== listRequestId)
-      return
+// The list is one page, searched and filtered by the server, newest first
+// across both tables (stacksjs/stacks#3193); useServerList keeps the request
+// order, paging and search debounce this page used to keep itself. The
+// search box and the status select stay plain x-model bindings.
+const {
+  records,
+  total,
+  page: listPage,
+  perPage,
+  search,
+  loading,
+  loadError,
+  load,
+  changePage,
+} = useServerList<CommentRecord>({
+  fetch: async (query) => {
+    const data = await dashboardApi<CommentPageResponse>(`/api/dashboard/comments?${query}`)
     if (!Array.isArray(data.comments))
       throw new TypeError('Comments were not returned in the expected shape.')
-    comments.set(data.comments.map(normalize))
-    total.set(Number(data.total || 0))
-    // The server moves back to the last page when moderation or a narrower
-    // search leaves this one past the end.
-    listPage.set(Number(data.page || 1))
+    return { ...data, records: data.comments.map(normalize) }
+  },
+  defaultSort: { sort: 'created_at', direction: 'desc' },
+  filters: () => ({ status: statusFilter() }),
+  searchParam: 'search',
+  onLoad: (result) => {
+    const data = result as CommentPageResponse
     counts.set(data.counts && typeof data.counts === 'object' ? data.counts : {})
-  }
-  catch (error) {
-    if (requestId !== listRequestId)
-      return
-    loadError.set(error instanceof Error ? error.message : String(error))
-    pushToast('error', 'Could not load comments', { detail: loadError() })
-  }
-  finally {
-    if (requestId === listRequestId)
-      loading.set(false)
-  }
-}
-
-function changePage(next: number): void {
-  listPage.set(next)
-  void loadComments()
-}
-
-// The search box and the status select stay plain x-model bindings; a change
-// to either asks the server for page 1, the search once typing pauses.
-let shownSearch = search()
-effect(() => {
-  const term = search().trim()
-  if (term === shownSearch)
-    return
-  shownSearch = term
-  if (searchTimer)
-    clearTimeout(searchTimer)
-  searchTimer = setTimeout(() => {
-    appliedSearch.set(term)
-    listPage.set(1)
-    void loadComments()
-  }, 250)
+  },
+  onError: error => pushToast('error', 'Could not load comments', { detail: error instanceof Error ? error.message : String(error) }),
 })
 
-let shownStatus = statusFilter()
-effect(() => {
-  const status = statusFilter()
-  if (status === shownStatus)
-    return
-  shownStatus = status
-  listPage.set(1)
-  void loadComments()
-})
+function loadComments(): Promise<void> {
+  return load()
+}
 
 async function setStatus(comment: CommentRecord, status: CommentStatus): Promise<void> {
   updatingId.set(comment.key)
@@ -260,8 +213,8 @@ onMount(() => {
       <div :else-if="visibleComments().length === 0" class="px-4 py-14 text-center"><span class="inline-block h-6 w-6 text-gray-400 i-hugeicons-comment-01"></span><p class="mt-2 font-medium text-gray-900 text-sm dark:text-white">No comments found</p><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Adjust the search or status filter.</p></div>
       <template :else><template :for="comment in visibleComments()"><article class="p-4"><div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between"><div class="min-w-0"><div class="flex flex-wrap gap-2 items-center"><p class="font-semibold text-gray-900 text-sm dark:text-white">{{ comment.authorName || 'Anonymous' }}</p><span :class="statusClass(comment.status)">{{ comment.status }}</span><span class="text-gray-500 text-xs dark:text-gray-400">{{ formatDate(comment.createdAt) }}</span></div><p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ comment.authorEmail }}<span :if="comment.postTitle"> on {{ comment.postTitle }}</span></p><p class="mt-3 max-w-4xl text-gray-700 text-sm whitespace-pre-wrap dark:text-neutral-200">{{ comment.content }}</p></div><div class="flex flex-shrink-0 flex-wrap gap-2"><Button :if="comment.status !== 'approved'" variant="success" size="sm" :disabled="Boolean(updatingId())" @click="setStatus(comment, 'approved')">Approve</Button><Button :if="comment.status !== 'pending'" variant="secondary" size="sm" :disabled="Boolean(updatingId())" @click="setStatus(comment, 'pending')">Restore</Button><Button :if="comment.status !== 'spam'" variant="warning" size="sm" :disabled="Boolean(updatingId())" @click="setStatus(comment, 'spam')">Spam</Button><Button :if="comment.status !== 'trash' && comment.source === 'comments'" variant="outline" size="sm" :disabled="Boolean(updatingId())" @click="setStatus(comment, 'trash')">Trash</Button><Button variant="ghost" size="sm" iconOnly :ariaLabel="'Permanently delete comment by ' + comment.authorName" :disabled="Boolean(updatingId())" @click="openDelete(comment)"><span class="block h-4 w-4 text-red-500 i-hugeicons-delete-02"></span></Button></div></div></article></template></template>
     </div>
-    <div :if="total() > perPage" class="px-4 py-3 border-gray-200 border-t dark:border-neutral-700">
-      <Pagination :currentPage="listPage()" :totalItems="total()" :itemsPerPage="perPage" showTotalItems @page="changePage" />
+    <div :if="total() > perPage()" class="px-4 py-3 border-gray-200 border-t dark:border-neutral-700">
+      <Pagination :currentPage="listPage()" :totalItems="total()" :itemsPerPage="perPage()" showTotalItems @page="changePage" />
     </div>
   </section>
 </div>
