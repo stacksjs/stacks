@@ -278,6 +278,15 @@ describe('useServerList', () => {
     expect(api.asked[1]!.has('status')).toBe(false)
   })
 
+  it('sends the search under the name the endpoint reads', async () => {
+    const api = server()
+    const list = useServerList<string>({ fetch: api.fetch, defaultSort: { sort: 'id', direction: 'asc' }, searchDelay: 5, searchParam: 'search' })
+    list.search.set('hello')
+    await sleep(20)
+    expect(api.asked[0]!.get('search')).toBe('hello')
+    expect(api.asked[0]!.has('q')).toBe(false)
+  })
+
   it('sends the search once typing pauses', async () => {
     const api = server()
     const list = useServerList<string>({ fetch: api.fetch, defaultSort: { sort: 'id', direction: 'asc' }, searchDelay: 20 })

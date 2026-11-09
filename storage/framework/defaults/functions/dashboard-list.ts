@@ -265,7 +265,7 @@ export interface ServerListPage<T> {
 
 export interface ServerListOptions<T> {
   /**
-   * Ask for one page. `params` carries `sort`, `direction`, `q`, the filters,
+   * Ask for one page. `params` carries `sort`, `direction`, the search, the filters,
    * `page` and `per_page`, as the commerce list endpoints read them.
    */
   fetch: (params: URLSearchParams) => Promise<ServerListPage<T>>
@@ -283,6 +283,11 @@ export interface ServerListOptions<T> {
   perPage?: number
   /** How long typing pauses before the search is sent. Default 250ms. */
   searchDelay?: number
+  /**
+   * The query parameter the search is sent as. Default `q`, as the commerce
+   * lists read it; the content lists read `search`.
+   */
+  searchParam?: string
   /** Called with whatever a load threw, after `loadError` is set. */
   onError?: (error: unknown) => void
   /** Called with each answer that lands, for anything else it carries (a summary, choices). */
@@ -344,7 +349,7 @@ export function useServerList<T>(options: ServerListOptions<T>): ServerList<T> {
     query.set('sort', order.sort)
     query.set('direction', order.direction)
     if (appliedSearch())
-      query.set('q', appliedSearch())
+      query.set(options.searchParam ?? 'q', appliedSearch())
     for (const [name, value] of Object.entries(options.filters?.() ?? {})) {
       if (value !== '' && value !== 'all')
         query.set(name, value)
