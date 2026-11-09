@@ -19,6 +19,7 @@ const emptyDescription = useReactiveProp('emptyDescription', 'Your application i
 // filters, sorts and pages the groups, so this shows them as given and hands
 // paging and sorting back to the parent.
 const total = useReactiveProp('total', 0)
+const loading = useReactiveProp('loading', false)
 const currentPage = useReactiveProp('currentPage', 1)
 const perPage = useReactiveProp('perPage', 10)
 const emit = defineEmits(['view', 'resolve', 'ignore', 'unresolve', 'delete', 'row-click', 'page-change', 'page-size-change', 'sort'])
@@ -104,6 +105,7 @@ function changeSort(sort: { key: string, direction: string }): void {
 <Table
   :columns="COLUMNS"
   :data="rows()"
+  :loading="loading()"
   :row-actions="ROW_ACTIONS"
   action-label-key="actionName"
   row-key="rowId"
