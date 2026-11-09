@@ -67,7 +67,7 @@ Stacks resolves files from `app/` first and falls back to `storage/framework/def
 customize a framework default (e.g. a CMS action), create the same path under `app/`
 (`app/Actions/Cms/PostIndexAction.ts`) and it wins. New files you add under `app/` are available to
 the app (e.g. `app/Actions/MyAction.ts` is referenced as `'Actions/MyAction'` in routes). There are
-720 default actions and 108 built-in models you can use or override.
+728 default actions and 108 built-in models you can use or override.
 
 ---
 
@@ -404,7 +404,7 @@ buddy generate:migrations     # 2. diff models vs current schema, emit SQL into 
 buddy migrate                 # 4. apply pending migrations   (--diff to preview SQL, --auth for auth tables)
 buddy migrate:fresh --seed    #    (dev) drop everything, re-migrate, then seed
 ```
-`buddy make:migration <name>` still exists for hand-written migrations, and 248 migrations ship for
+`buddy make:migration <name>` still exists for hand-written migrations, and 249 migrations ship for
 the built-in models. `buddy migrate` verifies models exist before running.
 
 ### Query builder
