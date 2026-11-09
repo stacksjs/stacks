@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.528...v0.75.529)
+
+## ✨ Features
+
+- **browser**: support indexed inline model geometry ([6c86fe9](https://github.com/stacksjs/stacks/commit/6c86fe9)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **cli**: import exit logging without the CLI barrel cycle ([5145690](https://github.com/stacksjs/stacks/commit/5145690)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.527...v0.75.528)
 
 ## 🐛 Bug Fixes
