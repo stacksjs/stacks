@@ -67,7 +67,7 @@ const dashboardPort = await findAvailablePort(preferredPort)
 
 // Determine if we have a custom domain (like stacks.localhost)
 const appUrl = process.env.APP_URL || ''
-const dashboardDomain = resolveDashboardDomain(appUrl)
+const dashboardDomain = resolveDashboardDomain(appUrl, process.env.STACKS_DEV_LOCALHOST === '1')
 const sslBasePath = `${process.env.HOME}/.stacks/ssl`
 
 function restoreConsole(): void {

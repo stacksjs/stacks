@@ -33,6 +33,13 @@ describe('dashboard proxy strategy', () => {
     expect(resolveDashboardDomain(appUrl)).toBe(expected)
   })
 
+  it('stays on localhost when told to, whatever APP_URL names', async () => {
+    const domain = resolveDashboardDomain('https://stacks.localhost', true)
+    expect(domain).toBeNull()
+    const unexpected = async (): Promise<boolean> => { throw new Error('must not probe the system') }
+    expect(await resolveDashboardProxyStrategy(domain, probes({ isDaemonRunning: unexpected, httpsPortAnswers: unexpected }))).toBe('origin-only')
+  })
+
   it('serves the origin URL only when no custom domain is configured', async () => {
     expect(await resolveDashboardProxyStrategy(null, probes())).toBe('origin-only')
   })

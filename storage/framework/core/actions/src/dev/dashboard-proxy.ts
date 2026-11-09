@@ -16,8 +16,15 @@ import { isIP } from 'node:net'
 
 export type DashboardProxyStrategy = 'parent-managed' | 'daemon-route' | 'own-proxy' | 'origin-only'
 
-export function resolveDashboardDomain(appUrl: string): string | null {
-  if (!appUrl.trim())
+/**
+ * `dashboard.<host>` for APP_URL's host, or null when the dashboard is only
+ * served on localhost: no custom host, or `localhostOnly`, which is
+ * `STACKS_DEV_LOCALHOST=1`, the opt-out `buddy dev` already honours. Without
+ * it a standalone `buddy dev:dashboard` asked for sudo before it would serve,
+ * even when told to stay on localhost.
+ */
+export function resolveDashboardDomain(appUrl: string, localhostOnly = false): string | null {
+  if (localhostOnly || !appUrl.trim())
     return null
   try {
     const value = appUrl.trim()
