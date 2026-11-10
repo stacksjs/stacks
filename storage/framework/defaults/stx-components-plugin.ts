@@ -42,7 +42,18 @@ function packageDirs(): string[] {
 }
 
 export default {
-  name: '@stacksjs/components',
+  /*
+   * Not `@stacksjs/components`, which is the library's own plugin name. stx
+   * treats a plugin with that name as the component package itself, so every
+   * directory listed below - the framework's first - became a "package"
+   * directory, and on a native screen the shared names (`Button`, `Checkbox`,
+   * `Switch`, `TextInput`, `Image`, `Video`) resolved to the framework's web
+   * components instead of the library's native-safe ones: four unrenderable
+   * diagnostics per `<Button>` (stacksjs/stacks#3213). Under its own name the
+   * list below is precedence and nothing more, and the library's own plugin,
+   * which stx loads by itself, is the one that answers for the shared names.
+   */
+  name: '@stacksjs/defaults/components',
   /*
    * Order is the precedence, because stx searches this list and takes the
    * first match.

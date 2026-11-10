@@ -66,7 +66,9 @@ describe('the stx components plugin', () => {
   test('loads, and reports directories that exist', async () => {
     const plugin = (await import(pluginFile)).default
 
-    expect(plugin.name).toBe('@stacksjs/components')
+    // Its own name: `@stacksjs/components` is the library's, and stx gives a
+    // plugin with that name the library's role on native screens (#3213).
+    expect(plugin.name).toBe('@stacksjs/defaults/components')
     expect(Array.isArray(plugin.components)).toBe(true)
     // The library and the framework defaults, at minimum. Package entries
     // depend on what is installed, so they are not asserted here.
@@ -103,3 +105,28 @@ test('the app keeps installed templates with the controllers it imports', () => 
   }
   finally { rmSync(project, { recursive: true, force: true }) }
 })
+
+/**
+ * On a native screen the shared names resolve to the library's native-safe
+ * component, not the framework's web one (stacksjs/stacks#3213). In its own
+ * process: stx keeps resolution state per process, and an earlier compile in
+ * the same one decided a later one's answer while this was being diagnosed.
+ */
+test('a native <Button> resolves to the library, through the real plugin', () => {
+  const child = Bun.spawnSync([process.execPath, resolve(import.meta.dir, 'fixtures/native-shared-button.ts'), pluginFile], {
+    cwd: resolve(import.meta.dir, '../../../../..'),
+    stdout: 'pipe',
+    stderr: 'pipe',
+  })
+  const line = child.stdout.toString().trim().split('\n').filter(entry => entry.startsWith('{')).at(-1)
+  expect({ code: child.exitCode, error: line ? '' : child.stderr.toString() }).toEqual({ code: 0, error: '' })
+  const result = JSON.parse(line!)
+  // The library's file; the path may be its realpath in Bun's install cache.
+  expect(result.button).toMatch(/@stacksjs\/components[^/]*\/src\/ui\/button\/Button\.stx$/)
+  // A client script the native compiler drops by design is the only report.
+  expect(result.unrenderable).toEqual([])
+  // Control: an app-written name with no shared counterpart still gets the
+  // framework's component, diagnostics and all, so the probe sees the host.
+  expect(result.avatar).toMatch(/Dashboard\/UI\/Avatar\.stx$/)
+  expect(result.avatarUnrenderable).toBeGreaterThan(0)
+}, 60_000)
