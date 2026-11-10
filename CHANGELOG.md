@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.531...v0.75.532)
+
+## 🐛 Bug Fixes
+
+- **docs**: analyze composition from template markup only ([cbdcf17](https://github.com/stacksjs/stacks/commit/cbdcf17)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.530...v0.75.531)
 
 ## ✨ Features
