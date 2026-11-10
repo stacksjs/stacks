@@ -279,20 +279,18 @@ onDestroy(() => {
         </header>
 
         <dl class="grid gap-3 grid-cols-2 xl:grid-cols-4 mt-6">
-          <template :for="stat in statCards">
-            <div class="px-4 py-3 bg-white dark:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600">
-              <div class="flex items-start justify-between">
-                <div>
-                  <dt class="text-gray-500 text-xs dark:text-neutral-400">{{ stat.name }}</dt>
-                  <dd class="mt-1 font-semibold tabular-nums text-gray-900 text-xl dark:text-white">{{ stat.value }}</dd>
-                </div>
-                <span :class="'flex items-center justify-center h-8 w-8 rounded-md ' + stat.tone">
-                  <span :class="'h-4 w-4 ' + stat.icon"></span>
-                </span>
+          <div :for="stat in statCards" class="px-4 py-3 bg-white dark:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600">
+            <div class="flex items-start justify-between">
+              <div>
+                <dt class="text-gray-500 text-xs dark:text-neutral-400">{{ stat.name }}</dt>
+                <dd class="mt-1 font-semibold tabular-nums text-gray-900 text-xl dark:text-white">{{ stat.value }}</dd>
               </div>
-              <p class="mt-2 text-gray-500 text-xs dark:text-neutral-400">{{ stat.detail }}</p>
+              <span :class="'flex items-center justify-center h-8 w-8 rounded-md ' + stat.tone">
+                <span :class="'h-4 w-4 ' + stat.icon"></span>
+              </span>
             </div>
-          </template>
+            <p class="mt-2 text-gray-500 text-xs dark:text-neutral-400">{{ stat.detail }}</p>
+          </div>
         </dl>
 
         <section class="mt-6 px-4 py-4 bg-white dark:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600">
@@ -378,22 +376,20 @@ onDestroy(() => {
                 </tr>
               </thead>
               <tbody class="divide-gray-200 divide-y dark:divide-neutral-600">
-                <template :for="item in activity.recent">
-                  <tr>
-                    <td class="px-4 py-3">
-                      <span class="inline-flex gap-2 items-center text-gray-700 text-sm dark:text-neutral-300">
-                        <span :class="'h-4 w-4 ' + (item.direction === 'received' ? 'i-hugeicons-mail-receive-02' : 'i-hugeicons-mail-send-02')"></span>
-                        <span class="capitalize">{{ item.direction }}</span>
-                      </span>
-                    </td>
-                    <td class="px-4 py-3 max-w-xs font-medium text-gray-900 text-sm truncate dark:text-white">{{ item.subject }}</td>
-                    <td class="px-4 py-3 max-w-xs text-gray-500 text-sm truncate dark:text-neutral-400">{{ item.correspondent }}</td>
-                    <td class="px-4 py-3 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ formatDate(item.occurred_at) }}</td>
-                    <td class="px-4 py-3">
-                      <span :class="'inline-flex px-2 py-0.5 font-medium text-xs rounded-full capitalize ' + statusClass(item.status)">{{ item.status }}</span>
-                    </td>
-                  </tr>
-                </template>
+                <tr :for="item in activity.recent">
+                  <td class="px-4 py-3">
+                    <span class="inline-flex gap-2 items-center text-gray-700 text-sm dark:text-neutral-300">
+                      <span :class="'h-4 w-4 ' + (item.direction === 'received' ? 'i-hugeicons-mail-receive-02' : 'i-hugeicons-mail-send-02')"></span>
+                      <span class="capitalize">{{ item.direction }}</span>
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 max-w-xs font-medium text-gray-900 text-sm truncate dark:text-white">{{ item.subject }}</td>
+                  <td class="px-4 py-3 max-w-xs text-gray-500 text-sm truncate dark:text-neutral-400">{{ item.correspondent }}</td>
+                  <td class="px-4 py-3 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ formatDate(item.occurred_at) }}</td>
+                  <td class="px-4 py-3">
+                    <span :class="'inline-flex px-2 py-0.5 font-medium text-xs rounded-full capitalize ' + statusClass(item.status)">{{ item.status }}</span>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>

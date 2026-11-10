@@ -92,9 +92,7 @@ onMount(() => {
     </div>
     <select x-model="selectedQueue" aria-label="Queue" class="block px-3 py-2 text-gray-900 text-sm dark:text-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
       <option value="all">All queues</option>
-      <template :for="queue in queues()">
-        <option :value="queue">{{ queue }}</option>
-      </template>
+      <option :for="queue in queues()" :value="queue">{{ queue }}</option>
     </select>
     <select x-model="selectedStatus" aria-label="Status" class="block px-3 py-2 text-gray-900 text-sm dark:text-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
       <option value="all">All statuses</option>

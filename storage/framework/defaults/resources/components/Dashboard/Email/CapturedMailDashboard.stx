@@ -113,9 +113,7 @@ onMount(() => {
               {{ unreadable().length }} capture{{ unreadable().length === 1 ? '' : 's' }} could not be read and {{ unreadable().length === 1 ? 'was' : 'were' }} left out of this list.
             </p>
             <ul class="mt-1 space-y-0.5">
-              <template :for="problem in unreadable()">
-                <li class="break-all"><span class="font-mono">{{ problem.capture }}</span> is {{ problemReason(problem) }}</li>
-              </template>
+              <li :for="problem in unreadable()" class="break-all"><span class="font-mono">{{ problem.capture }}</span> is {{ problemReason(problem) }}</li>
             </ul>
           </div>
         </div>

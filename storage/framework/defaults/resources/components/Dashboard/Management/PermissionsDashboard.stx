@@ -492,15 +492,13 @@
         </div>
         <div :if="roles().length === 0" class="px-5 py-8 text-center text-sm text-zinc-500 bg-white dark:bg-neutral-900 border border-zinc-200 rounded-lg dark:border-zinc-800">No roles yet. Create one on the Roles tab.</div>
         <div :if="roles().length > 0" class="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          <template :for="role in roles">
-            <button type="button" @click="selectRole(role)" class="block px-4 py-3 text-left bg-white dark:bg-neutral-900 border border-zinc-200 rounded-lg dark:border-zinc-800 hover:border-violet-300 dark:hover:border-violet-700 transition-colors">
-              <div class="flex gap-2 items-center justify-between">
-                <span class="font-medium text-sm text-zinc-900 dark:text-zinc-100">{{ role.name }}</span>
-                <code class="text-[10px] text-zinc-500">{{ role.guardName }}</code>
-              </div>
-              <div class="mt-0.5 text-xs text-zinc-500">{{ role.description || 'No description' }}</div>
-            </button>
-          </template>
+          <button :for="role in roles" type="button" @click="selectRole(role)" class="block px-4 py-3 text-left bg-white dark:bg-neutral-900 border border-zinc-200 rounded-lg dark:border-zinc-800 hover:border-violet-300 dark:hover:border-violet-700 transition-colors">
+            <div class="flex gap-2 items-center justify-between">
+              <span class="font-medium text-sm text-zinc-900 dark:text-zinc-100">{{ role.name }}</span>
+              <code class="text-[10px] text-zinc-500">{{ role.guardName }}</code>
+            </div>
+            <div class="mt-0.5 text-xs text-zinc-500">{{ role.description || 'No description' }}</div>
+          </button>
         </div>
       </div>
     </div>

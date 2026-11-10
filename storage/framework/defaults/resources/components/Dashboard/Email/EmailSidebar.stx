@@ -71,26 +71,24 @@ function mailboxLabel(): string {
   <div class="overflow-y-auto flex-1">
     <nav aria-label="Mail folders" class="mt-1">
       <ul>
-        <template :for="folder in folders">
-          <li class="mb-1">
-            <button
-              type="button"
-              :class="'flex items-center justify-between px-4 py-2 w-full text-sm ' + folderClass(folder.id)"
-              @click="emit('update:active-folder', folder.id)"
+        <li :for="folder in folders" class="mb-1">
+          <button
+            type="button"
+            :class="'flex items-center justify-between px-4 py-2 w-full text-sm ' + folderClass(folder.id)"
+            @click="emit('update:active-folder', folder.id)"
+          >
+            <span class="flex items-center min-w-0">
+              <span :class="'mr-3 h-5 w-5 flex-shrink-0 ' + folderIcon(folder)"></span>
+              <span class="truncate">{{ folder.name }}</span>
+            </span>
+            <span
+              :show="unreadCount(folder.id) > 0"
+              class="ml-2 px-2 font-medium text-gray-800 text-xs dark:text-neutral-200 bg-gray-200 dark:bg-neutral-600 rounded-full"
             >
-              <span class="flex items-center min-w-0">
-                <span :class="'mr-3 h-5 w-5 flex-shrink-0 ' + folderIcon(folder)"></span>
-                <span class="truncate">{{ folder.name }}</span>
-              </span>
-              <span
-                :show="unreadCount(folder.id) > 0"
-                class="ml-2 px-2 font-medium text-gray-800 text-xs dark:text-neutral-200 bg-gray-200 dark:bg-neutral-600 rounded-full"
-              >
-                {{ unreadCount(folder.id) }}
-              </span>
-            </button>
-          </li>
-        </template>
+              {{ unreadCount(folder.id) }}
+            </span>
+          </button>
+        </li>
       </ul>
     </nav>
 
@@ -98,24 +96,22 @@ function mailboxLabel(): string {
       <h3 class="font-semibold text-gray-500 text-xs tracking-wider uppercase dark:text-neutral-400">Categories</h3>
       <nav aria-label="Mail categories" class="mt-2">
         <ul>
-          <template :for="category in categories">
-            <li class="mb-1">
-              <button
-                type="button"
-                class="flex items-center px-2 py-2 w-full text-gray-700 text-sm dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-700 rounded"
-                @click="emit('category', category.id)"
+          <li :for="category in categories" class="mb-1">
+            <button
+              type="button"
+              class="flex items-center px-2 py-2 w-full text-gray-700 text-sm dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-700 rounded"
+              @click="emit('category', category.id)"
+            >
+              <span :class="'mr-3 h-5 w-5 ' + category.icon"></span>
+              <span>{{ category.name }}</span>
+              <span
+                :if="category.count > 0"
+                class="ml-auto px-2 font-medium text-gray-800 text-xs dark:text-neutral-200 bg-gray-200 dark:bg-neutral-600 rounded-full"
               >
-                <span :class="'mr-3 h-5 w-5 ' + category.icon"></span>
-                <span>{{ category.name }}</span>
-                <span
-                  :if="category.count > 0"
-                  class="ml-auto px-2 font-medium text-gray-800 text-xs dark:text-neutral-200 bg-gray-200 dark:bg-neutral-600 rounded-full"
-                >
-                  {{ category.count }}
-                </span>
-              </button>
-            </li>
-          </template>
+                {{ category.count }}
+              </span>
+            </button>
+          </li>
         </ul>
       </nav>
     </section>

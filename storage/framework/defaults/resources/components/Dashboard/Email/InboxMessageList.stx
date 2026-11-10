@@ -55,26 +55,24 @@ function listClass(): string {
       <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Try another filter or wait for mail to arrive.</p>
     </div>
     <ul :if="!loading() && !error() && rows().length > 0" class="divide-gray-200 divide-y dark:divide-neutral-600">
-      <template :for="email in rows()">
-        <li>
-          <button type="button" :class="rowClass(email)" @click="emit('select', email)">
-            <div class="flex gap-3 items-start justify-between">
-              <div class="min-w-0">
-                <div class="flex gap-2 items-center">
-                  <span :if="!email.read" class="flex-shrink-0 h-2 w-2 bg-blue-600 rounded-full"></span>
-                  <p class="font-medium text-gray-900 text-sm truncate dark:text-white">{{ email.from }}</p>
-                </div>
-                <p class="mt-1 text-gray-900 text-sm truncate dark:text-white">{{ email.subject }}</p>
-                <p class="mt-1 text-gray-500 text-xs truncate dark:text-neutral-400">{{ email.preview }}</p>
+      <li :for="email in rows()">
+        <button type="button" :class="rowClass(email)" @click="emit('select', email)">
+          <div class="flex gap-3 items-start justify-between">
+            <div class="min-w-0">
+              <div class="flex gap-2 items-center">
+                <span :if="!email.read" class="flex-shrink-0 h-2 w-2 bg-blue-600 rounded-full"></span>
+                <p class="font-medium text-gray-900 text-sm truncate dark:text-white">{{ email.from }}</p>
               </div>
-              <div class="flex flex-shrink-0 gap-2 items-center">
-                <span :if="email.hasAttachments" class="h-4 w-4 text-gray-400 i-hugeicons-attachment-01" x-tooltip="Has attachments" title="Has attachments"></span>
-                <time class="text-gray-500 text-xs dark:text-neutral-400" :datetime="email.date">{{ formatDate(email.date) }}</time>
-              </div>
+              <p class="mt-1 text-gray-900 text-sm truncate dark:text-white">{{ email.subject }}</p>
+              <p class="mt-1 text-gray-500 text-xs truncate dark:text-neutral-400">{{ email.preview }}</p>
             </div>
-          </button>
-        </li>
-      </template>
+            <div class="flex flex-shrink-0 gap-2 items-center">
+              <span :if="email.hasAttachments" class="h-4 w-4 text-gray-400 i-hugeicons-attachment-01" x-tooltip="Has attachments" title="Has attachments"></span>
+              <time class="text-gray-500 text-xs dark:text-neutral-400" :datetime="email.date">{{ formatDate(email.date) }}</time>
+            </div>
+          </div>
+        </button>
+      </li>
     </ul>
   </div>
 </section>
