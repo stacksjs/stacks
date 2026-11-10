@@ -100,7 +100,16 @@ export default defineModel({
         },
       },
 
-      factory: faker => faker.internet.email(),
+      // Built from the name seeded above it, so a demo user reads as one
+      // person: "Alex Castillo" was seeded as kimberly.lee@..., and every row
+      // of the dashboard's Users page looked like a data error. Titles and
+      // suffixes ("Dr.", "Jr.") are not part of anyone's address.
+      factory: (faker, { name }) => {
+        const words = String(name ?? '').split(/\s+/).filter(word => word && !word.endsWith('.') && !/^(?:jr|sr|ii|iii|iv|md|phd|dds)$/i.test(word))
+        if (words.length === 0)
+          return faker.internet.email()
+        return faker.internet.email({ firstName: words[0], lastName: words.at(-1) }).toLowerCase()
+      },
     },
     password: {
       personal: { export: false },
