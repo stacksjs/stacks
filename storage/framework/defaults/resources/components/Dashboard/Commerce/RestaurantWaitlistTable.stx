@@ -43,8 +43,8 @@ const COLUMNS = [
 const ROW_ACTIONS = [
   { action: 'seat', label: 'Seat party for', icon: 'i-hugeicons-checkmark-circle-02', class: 'text-green-600 dark:text-green-300', when: { key: 'status', equals: 'waiting' } },
   { action: 'no-show', label: 'Mark no show for', icon: 'i-hugeicons-user-remove-01', class: 'text-red-600 dark:text-red-300', when: { key: 'status', equals: 'waiting' } },
-  { action: 'edit', label: 'Edit restaurant waitlist entry for', icon: 'i-hugeicons-edit-01' },
-  { action: 'delete', label: 'Delete restaurant waitlist entry for', icon: 'i-hugeicons-waste', class: 'text-red-600 dark:text-red-300' },
+  { action: 'edit', label: 'Edit restaurant waitlist entry for' },
+  { action: 'delete', label: 'Delete restaurant waitlist entry for' },
 ]
 
 function formatDateTime(value: string): string {

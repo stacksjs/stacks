@@ -177,7 +177,7 @@ onMount(() => {
     </div>
     <div :if="record()" class="flex flex-wrap gap-2">
       <Button variant="secondary" :loading="loading()" @click="loadProduct()"><span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button>
-      <Button @click="openEdit()"><span class="h-4 w-4 i-hugeicons-edit-02"></span>Edit product</Button>
+      <Button @click="openEdit()"><span class="h-4 w-4 i-hugeicons-pencil-edit-02"></span>Edit product</Button>
       <Button variant="danger" @click="deleteOpen.set(true)"><span class="h-4 w-4 i-hugeicons-delete-02"></span>Delete</Button>
     </div>
   </header>

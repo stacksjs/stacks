@@ -30,8 +30,8 @@ const COLUMNS = [
 ]
 
 const ROW_ACTIONS = [
-  { action: 'edit', label: 'Edit waitlist entry for', icon: 'i-hugeicons-edit-01' },
-  { action: 'delete', label: 'Delete waitlist entry for', icon: 'i-hugeicons-waste', class: 'text-red-500' },
+  { action: 'edit', label: 'Edit waitlist entry for' },
+  { action: 'delete', label: 'Delete waitlist entry for' },
 ]
 
 /**
