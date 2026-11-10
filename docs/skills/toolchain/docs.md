@@ -1,6 +1,6 @@
 ---
 title: "Docs skill"
-description: "Use when auditing, writing, building or configuring Stacks documentation, including source accuracy, generated references, snippets, links, navigation and metadata.
+description: "Use when auditing, writing, building or configuring Stacks documentation, including source accuracy, generated references, snippets, links, navigation and metadata."
 ---
 # Docs
 
