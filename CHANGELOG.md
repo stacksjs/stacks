@@ -1,5 +1,117 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.529...v0.75.530)
+
+## ✨ Features
+
+- **dashboard**: Teams and Subscribers get a Create button ([8df8816](https://github.com/stacksjs/stacks/commit/8df8816)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3246](https://github.com/stacksjs/stacks/issues/3246))
+- **dashboard**: Create opens the create page instead of a dialog ([f9bdedc](https://github.com/stacksjs/stacks/commit/f9bdedc)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3245](https://github.com/stacksjs/stacks/issues/3245))
+- **dashboard**: a model has a create page at /models/{slug}/create ([9973126](https://github.com/stacksjs/stacks/commit/9973126)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3245](https://github.com/stacksjs/stacks/issues/3245))
+- **dashboard**: the pencil opens the record's edit page instead of a dialog ([eca5789](https://github.com/stacksjs/stacks/commit/eca5789)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3244](https://github.com/stacksjs/stacks/issues/3244))
+- **dashboard**: a record has an edit page at /models/{slug}/{id}/edit ([cdee7f0](https://github.com/stacksjs/stacks/commit/cdee7f0)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3244](https://github.com/stacksjs/stacks/issues/3244))
+- **dashboard**: the record page groups its fields into titled cards ([7619679](https://github.com/stacksjs/stacks/commit/7619679)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3243](https://github.com/stacksjs/stacks/issues/3243))
+- **dashboard**: the eye opens the record's page instead of a dialog ([1757d25](https://github.com/stacksjs/stacks/commit/1757d25)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3242](https://github.com/stacksjs/stacks/issues/3242))
+- **dashboard**: a record has its own page at /models/{slug}/{id} ([61c8876](https://github.com/stacksjs/stacks/commit/61c8876)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3242](https://github.com/stacksjs/stacks/issues/3242))
+- **dashboard**: Users, Teams and Subscribers get view, edit and delete ([27ff63e](https://github.com/stacksjs/stacks/commit/27ff63e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3240](https://github.com/stacksjs/stacks/issues/3240), [stacksjs/stx#2179](https://github.com/stacksjs/stx/issues/2179))
+- **dashboard**: one eye, pencil and trash for row actions, with hover names ([5968836](https://github.com/stacksjs/stacks/commit/5968836)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3240](https://github.com/stacksjs/stacks/issues/3240))
+- **cms**: ship CMS off, like commerce ([bcfb08a](https://github.com/stacksjs/stacks/commit/bcfb08a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3235](https://github.com/stacksjs/stacks/issues/3235))
+- **dashboard**: a table column can explain its header ([5494be0](https://github.com/stacksjs/stacks/commit/5494be0)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3234](https://github.com/stacksjs/stacks/issues/3234))
+- **dashboard**: useServerList can list without a sort ([721bb81](https://github.com/stacksjs/stacks/commit/721bb81)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: useServerList sends the search under the endpoint's name ([17b7f73](https://github.com/stacksjs/stacks/commit/17b7f73)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **dashboard**: Create is offered only where the form can supply every required field ([dc9f10e](https://github.com/stacksjs/stacks/commit/dc9f10e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3246](https://github.com/stacksjs/stacks/issues/3246))
+- **dashboard**: commerce, content and admin loops stop wrapping components in <template :for> ([f3b6ed2](https://github.com/stacksjs/stacks/commit/f3b6ed2)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3241](https://github.com/stacksjs/stacks/issues/3241))
+- **dashboard**: shared UI loops sit on the element they repeat ([a37486e](https://github.com/stacksjs/stacks/commit/a37486e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3241](https://github.com/stacksjs/stacks/issues/3241), [stacksjs/stx#2179](https://github.com/stacksjs/stx/issues/2179))
+- **dashboard**: row actions loop on real elements, so their buttons render ([1cecaf6](https://github.com/stacksjs/stacks/commit/1cecaf6)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3240](https://github.com/stacksjs/stacks/issues/3240), [stacksjs/stx#2179](https://github.com/stacksjs/stx/issues/2179))
+- **dashboard**: stacked components get their gap back ([2a5dc3e](https://github.com/stacksjs/stacks/commit/2a5dc3e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3239](https://github.com/stacksjs/stacks/issues/3239))
+- **dashboard**: an unframed table lines its edges up with its card ([adca7cb](https://github.com/stacksjs/stacks/commit/adca7cb)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3239](https://github.com/stacksjs/stacks/issues/3239))
+- **seeder**: a seeded user's email is built from their name ([a2076a7](https://github.com/stacksjs/stacks/commit/a2076a7)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3238](https://github.com/stacksjs/stacks/issues/3238))
+- **dashboard**: Users and Teams count in plain words and fill their stats row ([cc04231](https://github.com/stacksjs/stacks/commit/cc04231)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3237](https://github.com/stacksjs/stacks/issues/3237))
+- **dashboard**: table headers, frames and pager stop adding noise ([7110da0](https://github.com/stacksjs/stacks/commit/7110da0)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3237](https://github.com/stacksjs/stacks/issues/3237))
+- **ui**: Stacks' components plugin stops claiming the library's name ([a81bb0a](https://github.com/stacksjs/stacks/commit/a81bb0a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3213](https://github.com/stacksjs/stacks/issues/3213), [#2927](https://github.com/stacksjs/stacks/issues/2927))
+- **dashboard**: a disabled feature's pages are not served or linked ([50b8fa5](https://github.com/stacksjs/stacks/commit/50b8fa5)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3235](https://github.com/stacksjs/stacks/issues/3235))
+- **routes**: CMS and commerce routes mount only with their features ([e8e3f54](https://github.com/stacksjs/stacks/commit/e8e3f54)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3235](https://github.com/stacksjs/stacks/issues/3235))
+- **dashboard**: native selects get the shared chevron, clear of the border ([8912abc](https://github.com/stacksjs/stacks/commit/8912abc)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: content, model and library pages in plain words ([9063af2](https://github.com/stacksjs/stacks/commit/9063af2)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3234](https://github.com/stacksjs/stacks/issues/3234))
+- **dashboard**: tax types read with their meaning ([6aad6cd](https://github.com/stacksjs/stacks/commit/6aad6cd)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3234](https://github.com/stacksjs/stacks/issues/3234))
+- **dashboard**: DNS and mail pages say what their terms mean ([4e1d991](https://github.com/stacksjs/stacks/commit/4e1d991)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3234](https://github.com/stacksjs/stacks/issues/3234))
+- **assets**: recover PNG bytes lost to newline conversion ([8b9e157](https://github.com/stacksjs/stacks/commit/8b9e157)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **svg**: consume validated image and optimizer artifacts ([ec12d68](https://github.com/stacksjs/stacks/commit/ec12d68)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: adopt a coherent validated STX commit cohort ([a55421a](https://github.com/stacksjs/stacks/commit/a55421a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **email**: mail previews decode HTML entities ([32a86bd](https://github.com/stacksjs/stacks/commit/32a86bd)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3233](https://github.com/stacksjs/stacks/issues/3233))
+- **deps**: adopt the complete STX 0.2.837 cohort ([62936e8](https://github.com/stacksjs/stacks/commit/62936e8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: SQLite notification keys cascade with their user ([8fd6e45](https://github.com/stacksjs/stacks/commit/8fd6e45)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3232](https://github.com/stacksjs/stacks/issues/3232), [#3231](https://github.com/stacksjs/stacks/issues/3231))
+- **models**: notifications cascade with their user, as the database does ([80c246e](https://github.com/stacksjs/stacks/commit/80c246e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3231](https://github.com/stacksjs/stacks/issues/3231), [#3230](https://github.com/stacksjs/stacks/issues/3230))
+- **orm**: belongsTo relations written as objects keep their owner and keys ([288b9f0](https://github.com/stacksjs/stacks/commit/288b9f0)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3230](https://github.com/stacksjs/stacks/issues/3230))
+- **dashboard**: the notification history search works ([ae8e929](https://github.com/stacksjs/stacks/commit/ae8e929)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3229](https://github.com/stacksjs/stacks/issues/3229))
+- **dashboard**: the Errors page says when its groups cannot be read ([9065438](https://github.com/stacksjs/stacks/commit/9065438)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **database**: give Postgres its own corpus beside a SQLite one ([d5f1f41](https://github.com/stacksjs/stacks/commit/d5f1f41)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3228](https://github.com/stacksjs/stacks/issues/3228))
+- **dev**: dev:dashboard honours STACKS_DEV_LOCALHOST ([07146a0](https://github.com/stacksjs/stacks/commit/07146a0)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3227](https://github.com/stacksjs/stacks/issues/3227))
+- **dashboard**: tax rates and print devices are read whole ([0493f72](https://github.com/stacksjs/stacks/commit/0493f72)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3218](https://github.com/stacksjs/stacks/issues/3218))
+- **dashboard**: coupons are listed by the database, in the store currency ([fa39d3f](https://github.com/stacksjs/stacks/commit/fa39d3f)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3218](https://github.com/stacksjs/stacks/issues/3218))
+- **dashboard**: customers are listed by the database and exported in full ([d46435f](https://github.com/stacksjs/stacks/commit/d46435f)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3218](https://github.com/stacksjs/stacks/issues/3218))
+- **dashboard**: the point of sale charges the tax rate it shows ([3ac5801](https://github.com/stacksjs/stacks/commit/3ac5801)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3218](https://github.com/stacksjs/stacks/issues/3218))
+- **dashboard**: manufacturers and a product's choices are read whole ([5808518](https://github.com/stacksjs/stacks/commit/5808518)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3218](https://github.com/stacksjs/stacks/issues/3218))
+- **deps**: restore the coherent published STX release family ([5559383](https://github.com/stacksjs/stacks/commit/5559383)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **dashboard**: queries, realtime, remote, settings, UI, shared dialogs loops sit on the element they repeat ([efda014](https://github.com/stacksjs/stacks/commit/efda014)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3241](https://github.com/stacksjs/stacks/issues/3241))
+- **dashboard**: marketing, models, notifications loops sit on the element they repeat ([c3f0edc](https://github.com/stacksjs/stacks/commit/c3f0edc)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3241](https://github.com/stacksjs/stacks/issues/3241))
+- **dashboard**: email, jobs, management loops sit on the element they repeat ([5592526](https://github.com/stacksjs/stacks/commit/5592526)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3241](https://github.com/stacksjs/stacks/issues/3241))
+- **dashboard**: content loops sit on the element they repeat ([df5d317](https://github.com/stacksjs/stacks/commit/df5d317)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3241](https://github.com/stacksjs/stacks/issues/3241))
+- **dashboard**: commerce loops sit on the element they repeat ([bf6fe2d](https://github.com/stacksjs/stacks/commit/bf6fe2d)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3241](https://github.com/stacksjs/stacks/issues/3241))
+- **dashboard**: commerce loops sit on the element they repeat ([5b2d217](https://github.com/stacksjs/stacks/commit/5b2d217)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3241](https://github.com/stacksjs/stacks/issues/3241))
+- **dashboard**: commerce loops sit on the element they repeat ([bd677fe](https://github.com/stacksjs/stacks/commit/bd677fe)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3241](https://github.com/stacksjs/stacks/issues/3241))
+- **dashboard**: commerce loops sit on the element they repeat ([0f36b77](https://github.com/stacksjs/stacks/commit/0f36b77)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3241](https://github.com/stacksjs/stacks/issues/3241))
+- **dashboard**: commerce loops sit on the element they repeat ([b6302ac](https://github.com/stacksjs/stacks/commit/b6302ac)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3241](https://github.com/stacksjs/stacks/issues/3241))
+- **dashboard**: analytics, auth, billing, buddy loops sit on the element they repeat ([858f969](https://github.com/stacksjs/stacks/commit/858f969)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3241](https://github.com/stacksjs/stacks/issues/3241))
+- **dashboard**: split two <template :if :for> loops into a condition and a loop ([3578972](https://github.com/stacksjs/stacks/commit/3578972)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3241](https://github.com/stacksjs/stacks/issues/3241))
+- **dashboard**: marketing, monitoring, deployments and mail use the standard icons ([546fed0](https://github.com/stacksjs/stacks/commit/546fed0)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3240](https://github.com/stacksjs/stacks/issues/3240))
+- **dashboard**: shipping and content tables use the standard action icons ([46f7665](https://github.com/stacksjs/stacks/commit/46f7665)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3240](https://github.com/stacksjs/stacks/issues/3240))
+- **commerce**: units, printers, waitlists and delivery use the standard icons ([5ea641a](https://github.com/stacksjs/stacks/commit/5ea641a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3240](https://github.com/stacksjs/stacks/issues/3240))
+- **commerce**: catalogue and order tables use the standard action icons ([0c020ca](https://github.com/stacksjs/stacks/commit/0c020ca)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3240](https://github.com/stacksjs/stacks/issues/3240))
+- **dashboard**: the job history uses useServerList ([fb9b023](https://github.com/stacksjs/stacks/commit/fb9b023)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: the notification history uses useServerList ([155519b](https://github.com/stacksjs/stacks/commit/155519b)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: the query log uses useServerList ([a279aa1](https://github.com/stacksjs/stacks/commit/a279aa1)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: posts use useServerList ([0ae4ad2](https://github.com/stacksjs/stacks/commit/0ae4ad2)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: comments use useServerList ([6ada11b](https://github.com/stacksjs/stacks/commit/6ada11b)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: content pages list uses useServerList ([29044b5](https://github.com/stacksjs/stacks/commit/29044b5)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: the restaurant waitlist uses useServerList ([d1754d2](https://github.com/stacksjs/stacks/commit/d1754d2)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: the product waitlist uses useServerList ([c284335](https://github.com/stacksjs/stacks/commit/c284335)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: reviews use useServerList ([e6d9253](https://github.com/stacksjs/stacks/commit/e6d9253)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: orders use useServerList ([7c08da2](https://github.com/stacksjs/stacks/commit/7c08da2)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: products use useServerList ([7257d8a](https://github.com/stacksjs/stacks/commit/7257d8a)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: payments use useServerList ([7420dd8](https://github.com/stacksjs/stacks/commit/7420dd8)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: gift cards use useServerList ([3deb94f](https://github.com/stacksjs/stacks/commit/3deb94f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 📝 Documentation
+
+- **native**: refresh retained strings test pointers ([68ba87a](https://github.com/stacksjs/stacks/commit/68ba87a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- count 728 default actions and 249 migrations ([4a3a895](https://github.com/stacksjs/stacks/commit/4a3a895)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3232](https://github.com/stacksjs/stacks/issues/3232))
+
+## ✅ Tests
+
+- **dashboard**: CMS and commerce stay out of sight until installed ([8f73b29](https://github.com/stacksjs/stacks/commit/8f73b29)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3235](https://github.com/stacksjs/stacks/issues/3235))
+- **deps**: verify immutable STX cohorts and installed copies ([8a2b1ed](https://github.com/stacksjs/stacks/commit/8a2b1ed)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **native**: adopt Craft 0.0.490 across framework hosts ([67833ab](https://github.com/stacksjs/stacks/commit/67833ab)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **deps**: move the STX cohort to the 0.2.842 release ([08dcd7e](https://github.com/stacksjs/stacks/commit/08dcd7e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#3213](https://github.com/stacksjs/stacks/issues/3213), [stacksjs/stx#2177](https://github.com/stacksjs/stx/issues/2177))
+- **api**: regenerate the OpenAPI artifacts for the commerce exports ([7eae5de](https://github.com/stacksjs/stacks/commit/7eae5de)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **deps**: bun-query-builder ^0.3.44, so from-db migrations converge ([d20930f](https://github.com/stacksjs/stacks/commit/d20930f)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/bun-query-builder#1210](https://github.com/stacksjs/bun-query-builder/issues/1210))
+- **auto-imports**: regenerate the browser function inventory ([304ea88](https://github.com/stacksjs/stacks/commit/304ea88)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **deps**: use released STX with lazy worker loading ([0546c19](https://github.com/stacksjs/stacks/commit/0546c19)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.528...v0.75.529)
 
 ## ✨ Features
