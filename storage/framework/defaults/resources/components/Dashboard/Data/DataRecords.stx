@@ -11,7 +11,7 @@ import type {
 } from '../../../../functions/data'
 import { fetchDashboardData } from '../../../../functions/data'
 import type { ModelRecord, ModelWriteCapabilities } from '../../../../functions/dashboard-model-record'
-import { changedModelFields, deleteModelRecord, fetchModelCapabilities, fetchModelRecord, modelRecordFields, updateModelRecord } from '../../../../functions/dashboard-model-record'
+import { changedModelFields, deleteModelRecord, fetchModelCapabilities, fetchModelRecord, modelRecordFields, modelRecordHref, updateModelRecord } from '../../../../functions/dashboard-model-record'
 import { pushToast } from '../../../../functions/toasts'
 
 type DataRecord = DashboardActivity | DashboardSubscriber | DashboardTeam | DashboardUser
@@ -74,8 +74,8 @@ const ACTION_LABEL_KEYS: Partial<Record<DataMode, string>> = { users: 'name', te
 
 const modelSlug = derived(() => MODEL_SLUGS[mode()] ?? '')
 const capabilities = state<ModelWriteCapabilities>({ create: false, update: false, destroy: false })
+// The record open in the edit dialog. Viewing has its own page.
 const openRecord = state<ModelRecord | null>(null)
-const recordViewOnly = state(true)
 const confirmingDelete = state<Record<string, any> | null>(null)
 const working = state(false)
 const busyId = state<unknown>('')
@@ -91,7 +91,7 @@ const rowActions = derived(() => {
   ]
 })
 const actionLabelKey = derived(() => ACTION_LABEL_KEYS[mode()] ?? 'id')
-const recordFields = derived(() => openRecord() ? modelRecordFields(openRecord()!, recordViewOnly()) : [])
+const recordFields = derived(() => openRecord() ? modelRecordFields(openRecord()!) : [])
 const deleteTitle = derived(() => `Delete this ${page().one}?`)
 const deleteDescription = derived(() => {
   const row = confirmingDelete()
@@ -118,11 +118,14 @@ async function handleRowAction(payload: { action: string, row: Record<string, an
     confirmingDelete.set(payload.row)
     return
   }
+  if (payload.action === 'view') {
+    // The record's own page, which comes back here.
+    navigate(modelRecordHref(modelSlug(), payload.row.id, `/data/${mode()}`))
+    return
+  }
   busyId.set(payload.row.id)
   try {
-    const record = await fetchModelRecord(modelSlug(), payload.row.id)
-    recordViewOnly.set(payload.action !== 'edit')
-    openRecord.set(record)
+    openRecord.set(await fetchModelRecord(modelSlug(), payload.row.id))
   }
   catch (error) {
     pushToast('error', `Could not open this ${page().one}`, { detail: error instanceof Error ? error.message : String(error) })
@@ -421,7 +424,6 @@ onMount(() => {
     :modelName="openRecord()?.modelName || page().one"
     :fields="recordFields()"
     :busy="working()"
-    :viewOnly="recordViewOnly()"
     @close="openRecord.set(null)"
     @submit="saveRecord($event)"
   />

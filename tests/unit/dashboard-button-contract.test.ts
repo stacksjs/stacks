@@ -428,8 +428,7 @@ describe('dashboard button contract', () => {
     expect((actions.match(/<Button/g) || []).length).toBe(3)
     expect(source).toContain('<EditRecordModal')
     expect(editor).toContain('<Modal')
-    // Viewing has nothing to save, so the submit button is the pencil's only.
-    expect(editor).toContain('<Button :if="!viewOnly()" type="submit" form="model-edit-form"')
+    expect(editor).toContain('<Button type="submit" form="model-edit-form"')
     expect(source).toContain('interaction="toggle"')
     expect(source).toContain('@click="goToPage(page() + 1)"')
     expect(source).toContain('@click="goToPage(lastPage())"')

@@ -80,8 +80,6 @@ const showFilters = state(false)
 // working copy so cancelling leaves the table row unchanged.
 const editing = state<Record<string, unknown> | null>(null)
 const saving = state(false)
-// Whether the open record dialog is the eye (read only) or the pencil.
-const viewing = state(false)
 const confirmingDelete = state<Record<string, unknown> | null>(null)
 const showCreate = state(false)
 const creating = state(false)
@@ -135,7 +133,7 @@ const editFields = derived(() => {
     value: row[column.name] === null || row[column.name] === undefined ? '' : String(row[column.name]),
     // The model API accepts only fillable attributes and declared belongs-to
     // keys. Every other database column stays visible as read-only context.
-    readonly: viewing() || !updateColumns().includes(column.name),
+    readonly: !updateColumns().includes(column.name),
   }))
 })
 
@@ -273,13 +271,12 @@ function onPerPageChange() {
 }
 
 function startEdit(row: Record<string, unknown>) {
-  viewing.set(false)
   editing.set(row)
 }
 
+// The eye opens the record's own page, which has an address of its own.
 function startView(row: Record<string, unknown>) {
-  viewing.set(true)
-  editing.set(row)
+  navigate(`/models/${encodeURIComponent(slug())}/${encodeURIComponent(String(row.id))}`)
 }
 
 function openCreate(): void {
@@ -565,7 +562,6 @@ void load()
     :modelName="modelName()"
     :fields="editFields()"
     :busy="saving()"
-    :viewOnly="viewing()"
     @close="editing.set(null)"
     @submit="saveEdit($event)"
   />

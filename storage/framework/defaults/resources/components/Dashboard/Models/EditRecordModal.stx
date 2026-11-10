@@ -10,9 +10,6 @@ const open = useReactiveProp('open', false)
 const modelName = useReactiveProp('modelName', 'Record')
 const fields = useReactiveProp('fields', [] as EditField[])
 const busy = useReactiveProp('busy', false)
-// The eye: every field read-only and nothing to save, for a record a page
-// lists only in part.
-const viewOnly = useReactiveProp('viewOnly', false)
 const values = state<Record<string, string>>({})
 const emit = defineEmits(['submit', 'close'])
 let hydrationKey = ''
@@ -51,8 +48,8 @@ function close(): void {
 
 <Modal
   :isOpen="open()"
-  :title="(viewOnly() ? 'View ' : 'Edit ') + modelName()"
-  :description="viewOnly() ? 'Every stored field of this record, read only.' : 'Only changed writable fields will be sent through the model API.'"
+  :title="'Edit ' + modelName()"
+  description="Only changed writable fields will be sent through the model API."
   :closable="!busy()"
   @close="close"
 >
@@ -64,7 +61,7 @@ function close(): void {
         :name="field.readonly ? undefined : field.name"
         type="text"
         :value="values()[field.name] ?? field.value"
-        :readonly="viewOnly() || field.readonly"
+        :readonly="field.readonly"
         class="px-2.5 py-1.5 text-[13px] text-neutral-900 dark:text-neutral-100 read-only:text-neutral-500 dark:read-only:text-neutral-400 bg-white dark:bg-white/10 read-only:bg-neutral-50 dark:read-only:bg-white/5 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
         @input="updateValue(field.name, $event)"
       >
@@ -73,8 +70,8 @@ function close(): void {
 
   <template #footer>
     <div class="flex gap-2 items-center justify-end w-full">
-      <Button :disabled="busy()" variant="secondary" @click="close">{{ viewOnly() ? 'Close' : 'Cancel' }}</Button>
-      <Button :if="!viewOnly()" type="submit" form="model-edit-form" :loading="busy()">
+      <Button :disabled="busy()" variant="secondary" @click="close">Cancel</Button>
+      <Button type="submit" form="model-edit-form" :loading="busy()">
         {{ busy() ? 'Saving' : 'Save changes' }}
       </Button>
     </div>

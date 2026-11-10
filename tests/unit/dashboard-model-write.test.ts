@@ -122,8 +122,7 @@ describe('dashboard generic model writes', () => {
     expect(view).toContain('writeCapabilities.set(data.writeCapabilities')
     expect(view).toContain('createFields.set(data.createFields')
     expect(view).toContain('updateColumns.set(data.updateColumns')
-    // The eye shows every column read-only; the pencil only the unwritable ones.
-    expect(view).toContain('readonly: viewing() || !updateColumns().includes(column.name)')
+    expect(view).toContain('readonly: !updateColumns().includes(column.name)')
     expect(view).toContain('reason instanceof DashboardApiError && reason.fields')
     expect(view).toContain('<CreateRecordModal')
     expect(view).toContain('<EditRecordModal')

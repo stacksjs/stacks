@@ -122,6 +122,22 @@ describe('dashboard row actions', () => {
     expect(records.match(/:row-actions="rowActions\(\)"/g)?.length).toBe(2)
   })
 
+  test('the eye opens the record\'s own page, not a dialog', () => {
+    const detail = read('Models/ModelRecordDetail.stx')
+    const editor = read('Models/EditRecordModal.stx')
+    const browser = read('Models/ModelRecordsDashboard.stx')
+    // From a list page, with the way back to it; from the model browser, to the same page.
+    expect(records).toContain('navigate(modelRecordHref(modelSlug(), payload.row.id, `/data/${mode()}`))')
+    expect(browser).toContain('navigate(`/models/${encodeURIComponent(slug())}/${encodeURIComponent(String(row.id))}`)')
+    expect(readFileSync(resolve('storage/framework/defaults/views/dashboard/models/[model]/[id].stx'), 'utf8')).toContain('<ModelRecordDetail />')
+    expect(detail).toContain('modelRecordDetails(record()!)')
+    expect(detail).toContain('modelRecordBackHref(slug(), from)')
+    // The dialog is for editing only.
+    expect(editor).not.toContain('viewOnly')
+    expect(records).not.toContain('viewOnly')
+    expect(browser).not.toContain('viewOnly')
+  })
+
   test('an icon-only button names itself on hover', () => {
     const button = read('UI/Button.stx')
     expect(body(button, 'hoverTitle')).toContain(`liveTitle() || (liveIconOnly() ? liveAriaLabel() : '') || undefined`)
