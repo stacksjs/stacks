@@ -1,0 +1,8 @@
+@extends('layouts/default')
+
+@section('content')
+@title('Dashboard - Create Record')
+<PageLayout>
+  <ModelRecordCreate />
+</PageLayout>
+@endsection

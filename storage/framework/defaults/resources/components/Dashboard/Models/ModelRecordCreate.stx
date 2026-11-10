@@ -1,0 +1,193 @@
+<script client>
+// The page that creates a record (`/models/{slug}/create`), where the Create
+// button on a model's list leads. Laid out like the record's view and edit
+// pages: a breadcrumb back to the list, "Create Team", and the fields the
+// model's API accepts for a new record. A refusal stays on the page, with
+// each field's message under its field. A created record opens on its own
+// page.
+import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
+import type { ModelCreateField, ModelCreateForm } from '../../../../functions/dashboard-model-record'
+import { createModelRecord, fetchModelCreateForm, modelRecordBackHref, modelRecordHref, modelRecordListLabel } from '../../../../functions/dashboard-model-record'
+import { pushToast } from '../../../../functions/toasts'
+
+const navigation = useNavigation()
+const form = state<ModelCreateForm | null>(null)
+const values = state<Record<string, unknown>>({})
+const loading = state(true)
+const loadError = state('')
+const creating = state(false)
+const createError = state('')
+const createErrors = state<Record<string, string[]>>({})
+
+// `/models/{slug}/create`
+function slug(): string {
+  return navigation.urlSegment(-2)
+}
+
+const from = navigation.urlQuery('from')
+const listHref = derived(() => modelRecordBackHref(slug(), from))
+const listLabel = derived(() => modelRecordListLabel(form(), listHref()))
+const modelName = derived(() => form()?.modelName || 'Record')
+const fields = derived(() => form()?.fields ?? [])
+const canCreate = derived(() => Boolean(form()?.canCreate) && fields().length > 0)
+
+function setValue(field: string, value: unknown): void {
+  values.set({ ...values(), [field]: value })
+}
+
+function fieldValue(field: string): string {
+  const value = values()[field]
+  return value === null || value === undefined ? '' : String(value)
+}
+
+function fieldError(field: string): string {
+  return createErrors()[field]?.[0] || ''
+}
+
+function inputType(field: ModelCreateField): 'date' | 'datetime-local' | 'email' | 'number' | 'text' {
+  if (field.type === 'datetime')
+    return 'datetime-local'
+  if (field.type === 'date' || field.type === 'email' || field.type === 'number')
+    return field.type
+  return 'text'
+}
+
+async function loadForm(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    const loaded = await fetchModelCreateForm(slug())
+    form.set(loaded)
+    values.set(Object.fromEntries(loaded.fields.map(field => [field.name, field.defaultValue])))
+  }
+  catch (error) {
+    form.set(null)
+    loadError.set(error instanceof Error ? error.message : 'This form could not be loaded.')
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+async function create(): Promise<void> {
+  if (creating())
+    return
+  creating.set(true)
+  createError.set('')
+  createErrors.set({})
+  try {
+    const result = await createModelRecord(slug(), { ...values() })
+    if (!result.ok) {
+      createError.set(result.error)
+      createErrors.set(result.errors)
+      return
+    }
+    pushToast('success', `${modelName()} created`, { detail: result.id ? `Record ${result.id}` : undefined })
+    navigate(result.id === null ? listHref() : modelRecordHref(slug(), result.id, listHref() === from ? from : undefined))
+  }
+  finally {
+    creating.set(false)
+  }
+}
+
+function cancel(): void {
+  if (!creating())
+    navigate(listHref())
+}
+
+onMount(() => {
+  void loadForm()
+})
+</script>
+
+<div class="flex flex-col gap-6">
+  <header class="min-w-0">
+    <nav aria-label="Breadcrumb" class="flex gap-2 items-center mb-2 text-neutral-500 text-sm dark:text-neutral-400">
+      <StxLink :to="listHref()" class="font-medium hover:text-blue-600 dark:hover:text-blue-400">{{ listLabel() }}</StxLink>
+      <span aria-hidden="true" class="h-4 w-4 i-hugeicons-arrow-right-01"></span>
+      <span aria-current="page">Create</span>
+    </nav>
+    <h1 class="font-bold text-3xl text-neutral-900 tracking-tight truncate dark:text-white">Create {{ modelName() }}</h1>
+  </header>
+
+  <div :if="loading()" class="flex items-center justify-center py-20 text-neutral-500 text-sm dark:text-neutral-400">
+    <span aria-hidden="true" class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>
+    Loading form
+  </div>
+
+  <div :if="!loading() && loadError()" role="alert" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg dark:border-red-900">
+    <span>{{ loadError() }}</span>
+    <Button variant="secondary" size="sm" @click="loadForm">Try again</Button>
+  </div>
+
+  <EmptyState
+    :if="!loading() && form() && !canCreate()"
+    icon="i-hugeicons-square-lock-02"
+    :title="modelName() + ' records cannot be created here'"
+    description="This model does not accept new records through the dashboard."
+  />
+
+  <form :if="!loading() && canCreate()" id="model-create-form" class="flex flex-col gap-6" @submit.prevent="create">
+    <div :if="createError()" role="alert" class="px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg dark:border-red-900">
+      {{ createError() }}
+    </div>
+
+    <div class="max-w-3xl">
+      <Card padding="none">
+        <div class="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
+          <h2 class="font-semibold text-base text-neutral-900 dark:text-white">{{ modelName() }} Details</h2>
+          <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">The fields a new {{ modelName().toLowerCase() }} can be given. Anything else is set by the application.</p>
+        </div>
+        <div class="flex flex-col gap-5 p-6">
+          <div :for="field in fields()" class="contents">
+            <label :if="field.type === 'boolean'" class="flex gap-3 items-start p-3 border border-neutral-200 rounded-lg dark:border-neutral-700">
+              <input
+                :name="field.name"
+                type="checkbox"
+                :checked="Boolean(values()[field.name])"
+                :disabled="creating()"
+                class="mt-0.5 h-4 w-4 text-blue-600 border-neutral-300 rounded"
+                @change="setValue(field.name, $event.target.checked)"
+              />
+              <span>
+                <span class="block font-medium text-neutral-900 text-sm dark:text-white">{{ field.label }}</span>
+                <span :if="fieldError(field.name)" class="block mt-0.5 text-red-600 text-xs dark:text-red-400">{{ fieldError(field.name) }}</span>
+              </span>
+            </label>
+
+            <Select
+              :if="field.type === 'enum'"
+              :name="field.name"
+              :value="fieldValue(field.name)"
+              :options="field.options"
+              :label="field.label"
+              :ariaLabel="field.label"
+              :required="field.required"
+              :disabled="creating()"
+              :error="fieldError(field.name)"
+              @update:value="setValue(field.name, $event)"
+            />
+
+            <Input
+              :if="field.type !== 'boolean' && field.type !== 'enum'"
+              :name="field.name"
+              :value="fieldValue(field.name)"
+              :type="inputType(field)"
+              :label="field.label"
+              :ariaLabel="field.label"
+              :required="field.required"
+              :disabled="creating()"
+              :error="fieldError(field.name)"
+              @update:value="setValue(field.name, $event)"
+            />
+          </div>
+        </div>
+      </Card>
+    </div>
+
+    <div class="flex gap-3 items-center">
+      <Button type="submit" variant="primary" :loading="creating()">{{ 'Create ' + modelName() }}</Button>
+      <Button variant="secondary" :disabled="creating()" @click="cancel">Cancel</Button>
+    </div>
+  </form>
+</div>

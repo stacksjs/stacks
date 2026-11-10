@@ -2,15 +2,16 @@
  * One model record, read and written through the dashboard's generic model
  * API (`/api/dashboard/models/{slug}`): the record's own page
  * (`/models/{slug}/{id}`, where the eye leads), its edit page
- * (`/models/{slug}/{id}/edit`, where the pencil leads), and the trash on a
- * page that lists records of its own - Users, Teams and Subscribers.
+ * (`/models/{slug}/{id}/edit`, where the pencil leads), the page that creates
+ * one (`/models/{slug}/create`), and the trash on a page that lists records
+ * of its own - Users, Teams and Subscribers.
  *
  * What a page may do comes from the model, not the page: `writeCapabilities`
  * follows the model's `useApi` routes, so a model that does not expose
  * `update` or `destroy` (User, on purpose: its rows are personal data) offers
  * the eye and nothing else.
  */
-import { dashboardApi } from './dashboard-api'
+import { DashboardApiError, dashboardApi } from './dashboard-api'
 
 export interface ModelWriteCapabilities {
   create: boolean
@@ -45,11 +46,30 @@ export interface ModelRecordField {
 interface ModelShowResponse {
   modelName?: string
   tableName?: string
+  createFields?: ModelCreateField[]
   rows?: Array<Record<string, unknown>>
   columnMeta?: ModelColumn[]
   updateColumns?: string[]
   writeCapabilities?: ModelWriteCapabilities
   error?: string | null
+}
+
+/** A field of the create form, from the model's fillable attributes. */
+export interface ModelCreateField {
+  name: string
+  label: string
+  type: 'boolean' | 'date' | 'datetime' | 'email' | 'enum' | 'number' | 'text'
+  required: boolean
+  defaultValue: unknown
+  options: string[]
+}
+
+export interface ModelCreateForm {
+  modelName: string
+  tableName?: string
+  fields: ModelCreateField[]
+  /** Whether the model's API has a store route at all. */
+  canCreate: boolean
 }
 
 const NO_WRITES: ModelWriteCapabilities = { create: false, update: false, destroy: false }
@@ -62,6 +82,19 @@ function modelPath(slug: string): string {
 export async function fetchModelCapabilities(slug: string): Promise<ModelWriteCapabilities> {
   const data = await dashboardApi<ModelShowResponse>(`${modelPath(slug)}?perPage=1`)
   return data.writeCapabilities ?? NO_WRITES
+}
+
+/** What the create page needs: the model's name and the fields a new record takes. */
+export async function fetchModelCreateForm(slug: string): Promise<ModelCreateForm> {
+  const data = await dashboardApi<ModelShowResponse>(`${modelPath(slug)}?perPage=1`)
+  if (data.error)
+    throw new Error(data.error)
+  return {
+    modelName: data.modelName || 'Record',
+    tableName: data.tableName,
+    fields: data.createFields ?? [],
+    canCreate: Boolean(data.writeCapabilities?.create),
+  }
 }
 
 /** Every stored column of one record, with what an edit may change. */
@@ -214,7 +247,7 @@ export function modelRecordSections(record: ModelRecord): ModelRecordSection[] {
 }
 
 /** The list a record belongs to, as the breadcrumb names it: "Users", "Product Categories". */
-export function modelRecordListLabel(record: ModelRecord | null, backHref: string): string {
+export function modelRecordListLabel(record: { tableName?: string } | null, backHref: string): string {
   const last = backHref.split('/').filter(Boolean).pop() || ''
   if (backHref.startsWith('/data/') && last)
     return titleCase(last)
@@ -234,6 +267,12 @@ export function modelRecordTitle(record: ModelRecord): string {
 /** The record's own page. `from` is the list to go back to, when it is not the model's own. */
 export function modelRecordHref(slug: string, id: string | number, from?: string): string {
   const path = `/models/${encodeURIComponent(slug)}/${encodeURIComponent(String(id))}`
+  return from ? `${path}?from=${encodeURIComponent(from)}` : path
+}
+
+/** The page that creates a record. `from` is the list to return to. */
+export function modelRecordCreateHref(slug: string, from?: string): string {
+  const path = `/models/${encodeURIComponent(slug)}/create`
   return from ? `${path}?from=${encodeURIComponent(from)}` : path
 }
 
@@ -276,6 +315,35 @@ export async function updateModelRecord(slug: string, id: string | number, field
   const result = await dashboardApi<{ ok: boolean, error?: string }>(`${modelPath(slug)}/${encodeURIComponent(String(id))}`, { method: 'PATCH', body: { fields } })
   if (!result?.ok)
     throw new Error(result?.error || 'The update was rejected.')
+}
+
+export type ModelCreateResult
+  = | { ok: true, id: string | number | null }
+    | { ok: false, error: string, errors: Record<string, string[]> }
+
+/**
+ * Why a create was refused, in one shape: the message for the top of the form
+ * and the messages under each field. The API answers a refusal two ways, as a
+ * body with `ok: false` or as an error status carrying `fields`.
+ */
+export function modelCreateFailure(reason: unknown): { ok: false, error: string, errors: Record<string, string[]> } {
+  if (reason instanceof DashboardApiError) {
+    const errors = Object.fromEntries(Object.entries(reason.fields ?? {}).map(([field, message]) => [field, [message]]))
+    return { ok: false, error: reason.message, errors }
+  }
+  return { ok: false, error: reason instanceof Error ? reason.message : String(reason), errors: {} }
+}
+
+export async function createModelRecord(slug: string, fields: Record<string, unknown>): Promise<ModelCreateResult> {
+  try {
+    const result = await dashboardApi<{ ok: boolean, id?: number | string | null, error?: string, errors?: Record<string, string[]> }>(modelPath(slug), { method: 'POST', body: { fields } })
+    if (!result?.ok)
+      return { ok: false, error: result?.error || 'The record was rejected.', errors: result?.errors ?? {} }
+    return { ok: true, id: result.id ?? null }
+  }
+  catch (reason) {
+    return modelCreateFailure(reason)
+  }
 }
 
 export async function deleteModelRecord(slug: string, id: string | number): Promise<void> {

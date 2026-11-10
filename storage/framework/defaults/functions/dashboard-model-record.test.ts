@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
-import { changedModelFields, modelRecordBackHref, modelRecordEditHref, modelRecordFields, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRecordTitle } from './dashboard-model-record'
+import { DashboardApiError } from './dashboard-api'
+import { changedModelFields, modelCreateFailure, modelRecordBackHref, modelRecordCreateHref, modelRecordEditHref, modelRecordFields, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRecordTitle } from './dashboard-model-record'
 import type { ModelRecord } from './dashboard-model-record'
 
 const record: ModelRecord = {
@@ -120,5 +121,19 @@ describe('a model record on its own page', () => {
   it('never goes back to an address outside the dashboard', () => {
     for (const from of ['//evil.example', 'https://evil.example', 'javascript:alert(1)', '/data/users?x=<script>'])
       expect(modelRecordBackHref('user', from)).toBe('/models/user')
+  })
+})
+
+describe('creating a model record', () => {
+  it('links to the create page, remembering the list to return to', () => {
+    expect(modelRecordCreateHref('team')).toBe('/models/team/create')
+    expect(modelRecordCreateHref('team', '/data/teams')).toBe('/models/team/create?from=%2Fdata%2Fteams')
+  })
+
+  it('reports a refusal in one shape, with each field\'s message under its field', () => {
+    expect(modelCreateFailure(new DashboardApiError('The name is required.', 422, { name: 'The name is required.' })))
+      .toEqual({ ok: false, error: 'The name is required.', errors: { name: ['The name is required.'] } })
+    expect(modelCreateFailure(new DashboardApiError('Server error', 500))).toEqual({ ok: false, error: 'Server error', errors: {} })
+    expect(modelCreateFailure(new Error('offline'))).toEqual({ ok: false, error: 'offline', errors: {} })
   })
 })
