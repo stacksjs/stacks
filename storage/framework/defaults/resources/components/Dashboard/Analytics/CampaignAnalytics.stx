@@ -177,18 +177,16 @@ onMount(() => {
           <h2 class="font-semibold text-gray-900 dark:text-white">Spend by currency</h2>
         </div>
         <div class="divide-gray-200 divide-y dark:divide-neutral-700">
-          <template :for="spend in spendByCurrency()">
-            <div class="flex gap-4 items-center justify-between px-4 py-3">
-              <div>
-                <p class="font-medium text-gray-900 text-sm dark:text-white">{{ spend.currency }}</p>
-                <p class="text-gray-500 text-xs dark:text-neutral-400">{{ spend.campaigns }} campaigns</p>
-              </div>
-              <div class="text-right">
-                <p class="font-medium text-gray-900 text-sm dark:text-white">{{ formatMoney(spend.spent, spend.currency) }}</p>
-                <p class="text-gray-500 text-xs dark:text-neutral-400">of {{ formatMoney(spend.budget, spend.currency) }}</p>
-              </div>
+          <div :for="spend in spendByCurrency()" class="flex gap-4 items-center justify-between px-4 py-3">
+            <div>
+              <p class="font-medium text-gray-900 text-sm dark:text-white">{{ spend.currency }}</p>
+              <p class="text-gray-500 text-xs dark:text-neutral-400">{{ spend.campaigns }} campaigns</p>
             </div>
-          </template>
+            <div class="text-right">
+              <p class="font-medium text-gray-900 text-sm dark:text-white">{{ formatMoney(spend.spent, spend.currency) }}</p>
+              <p class="text-gray-500 text-xs dark:text-neutral-400">of {{ formatMoney(spend.budget, spend.currency) }}</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -197,12 +195,10 @@ onMount(() => {
           <h2 class="font-semibold text-gray-900 dark:text-white">Campaign statuses</h2>
         </div>
         <div class="divide-gray-200 divide-y dark:divide-neutral-700">
-          <template :for="status in statuses()">
-            <div class="flex items-center justify-between px-4 py-3">
-              <p class="font-medium text-gray-900 text-sm dark:text-white">{{ status.label }}</p>
-              <p class="text-gray-500 text-sm dark:text-neutral-300">{{ status.count }}</p>
-            </div>
-          </template>
+          <div :for="status in statuses()" class="flex items-center justify-between px-4 py-3">
+            <p class="font-medium text-gray-900 text-sm dark:text-white">{{ status.label }}</p>
+            <p class="text-gray-500 text-sm dark:text-neutral-300">{{ status.count }}</p>
+          </div>
         </div>
       </div>
     </section>
@@ -225,17 +221,15 @@ onMount(() => {
             </tr>
           </thead>
           <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
-            <template :for="channel in channels()">
-              <tr>
-                <td class="px-4 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ channel.name }}</td>
-                <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-300">{{ channel.currency }}</td>
-                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ channel.campaigns }}</td>
-                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(channel.sent) }}</td>
-                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatMoney(channel.spent, channel.currency) }}</td>
-                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatRate(channel.clickRate) }}</td>
-                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatRate(channel.conversionRate) }}</td>
-              </tr>
-            </template>
+            <tr :for="channel in channels()">
+              <td class="px-4 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ channel.name }}</td>
+              <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-300">{{ channel.currency }}</td>
+              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ channel.campaigns }}</td>
+              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(channel.sent) }}</td>
+              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatMoney(channel.spent, channel.currency) }}</td>
+              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatRate(channel.clickRate) }}</td>
+              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatRate(channel.conversionRate) }}</td>
+            </tr>
           </tbody>
         </table>
       </div>

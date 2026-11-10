@@ -155,13 +155,11 @@ onMount(() => {
           </tr>
         </thead>
         <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
-          <template :for="point in trafficRows()">
-            <tr>
-              <td class="px-4 py-3 text-gray-900 text-sm dark:text-white">{{ point.date }}</td>
-              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(point.visitors) }}</td>
-              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(point.pageViews) }}</td>
-            </tr>
-          </template>
+          <tr :for="point in trafficRows()">
+            <td class="px-4 py-3 text-gray-900 text-sm dark:text-white">{{ point.date }}</td>
+            <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(point.visitors) }}</td>
+            <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(point.pageViews) }}</td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -194,15 +192,13 @@ onMount(() => {
           </tr>
         </thead>
         <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
-          <template :for="row in currentRows()">
-            <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700/50">
-              <td class="px-4 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ rowName(row) }}</td>
-              <td :show="kind() === 'pages'" class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(row.entries || 0) }}</td>
-              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(rowVisitors(row)) }}</td>
-              <td :show="kind() === 'pages' || kind() === 'referrers'" class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(row.views || 0) }}</td>
-              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ rowPercentage(row) }}%</td>
-            </tr>
-          </template>
+          <tr :for="row in currentRows()" class="hover:bg-gray-50 dark:hover:bg-neutral-700/50">
+            <td class="px-4 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ rowName(row) }}</td>
+            <td :show="kind() === 'pages'" class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(row.entries || 0) }}</td>
+            <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(rowVisitors(row)) }}</td>
+            <td :show="kind() === 'pages' || kind() === 'referrers'" class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(row.views || 0) }}</td>
+            <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ rowPercentage(row) }}%</td>
+          </tr>
         </tbody>
       </table>
     </div>

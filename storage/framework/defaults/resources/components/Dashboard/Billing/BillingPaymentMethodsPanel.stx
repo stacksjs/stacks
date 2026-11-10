@@ -32,17 +32,15 @@ function expiry(method: BillingPaymentMethod): string {
   </div>
 
   <ul :else role="list" class="divide-gray-200 divide-y dark:divide-neutral-700">
-    <template :for="method in methods()" :key="method.id">
-      <li class="flex gap-4 items-center px-5 py-4">
-        <span class="flex flex-none items-center justify-center h-10 w-10 text-gray-500 dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700 rounded-lg"><span class="h-5 w-5 i-hugeicons-credit-card"></span></span>
-        <div class="flex-1 min-w-0">
-          <div class="flex gap-2 items-center">
-            <p class="font-medium text-gray-900 text-sm dark:text-white">{{ brand(method.brand) }} {{ method.lastFour ? 'ending in ' + method.lastFour : '' }}</p>
-            <span :if="method.isDefault" class="inline-flex px-2 py-0.5 font-medium text-[11px] text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-full">Default</span>
-          </div>
-          <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ expiry(method) }}</p>
+    <li :for="method in methods()" :key="method.id" class="flex gap-4 items-center px-5 py-4">
+      <span class="flex flex-none items-center justify-center h-10 w-10 text-gray-500 dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700 rounded-lg"><span class="h-5 w-5 i-hugeicons-credit-card"></span></span>
+      <div class="flex-1 min-w-0">
+        <div class="flex gap-2 items-center">
+          <p class="font-medium text-gray-900 text-sm dark:text-white">{{ brand(method.brand) }} {{ method.lastFour ? 'ending in ' + method.lastFour : '' }}</p>
+          <span :if="method.isDefault" class="inline-flex px-2 py-0.5 font-medium text-[11px] text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-full">Default</span>
         </div>
-      </li>
-    </template>
+        <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ expiry(method) }}</p>
+      </div>
+    </li>
   </ul>
 </section>

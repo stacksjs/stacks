@@ -151,13 +151,11 @@ onMount(() => {
       </div>
 
       <div :if="messages().length > 0" class="mx-auto space-y-4 max-w-4xl">
-        <template :for="message in messages()">
-          <div :class="'flex ' + (message.role === 'user' ? 'justify-end' : 'justify-start')">
-            <div :class="'max-w-[85%] px-4 py-3 text-sm whitespace-pre-wrap rounded-lg ' + (message.role === 'user' ? 'text-white bg-blue-600' : 'text-gray-800 dark:text-neutral-100 bg-gray-100 dark:bg-neutral-700')">
-              {{ message.content }}
-            </div>
+        <div :for="message in messages()" :class="'flex ' + (message.role === 'user' ? 'justify-end' : 'justify-start')">
+          <div :class="'max-w-[85%] px-4 py-3 text-sm whitespace-pre-wrap rounded-lg ' + (message.role === 'user' ? 'text-white bg-blue-600' : 'text-gray-800 dark:text-neutral-100 bg-gray-100 dark:bg-neutral-700')">
+            {{ message.content }}
           </div>
-        </template>
+        </div>
         <div :if="isSending()" class="flex justify-start">
           <div class="inline-flex items-center px-4 py-3 text-gray-500 text-sm dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700 rounded-lg">
             <span class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>

@@ -122,16 +122,14 @@ onMount(() => {
           </tr>
         </thead>
         <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
-          <template :for="total in currencyTotals()">
-            <tr>
-              <td class="px-4 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ total.currency }}</td>
-              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(total.orders) }}</td>
-              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatCurrency(total.gross, total.currency) }}</td>
-              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatCurrency(total.cancelled, total.currency) }}</td>
-              <td class="px-4 py-3 font-medium text-gray-900 text-right text-sm dark:text-white">{{ formatCurrency(total.net, total.currency) }}</td>
-              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatCurrency(total.average, total.currency) }}</td>
-            </tr>
-          </template>
+          <tr :for="total in currencyTotals()">
+            <td class="px-4 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ total.currency }}</td>
+            <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(total.orders) }}</td>
+            <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatCurrency(total.gross, total.currency) }}</td>
+            <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatCurrency(total.cancelled, total.currency) }}</td>
+            <td class="px-4 py-3 font-medium text-gray-900 text-right text-sm dark:text-white">{{ formatCurrency(total.net, total.currency) }}</td>
+            <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatCurrency(total.average, total.currency) }}</td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -159,17 +157,15 @@ onMount(() => {
           </tr>
         </thead>
         <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
-          <template :for="method in paymentMethods()">
-            <tr>
-              <td class="px-4 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ method.method }}</td>
-              <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-300">{{ method.currency }}</td>
-              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(method.transactions) }}</td>
-              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatCurrency(method.amount, method.currency) }}</td>
-              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatCurrency(method.refunds, method.currency) }}</td>
-              <td class="px-4 py-3 font-medium text-gray-900 text-right text-sm dark:text-white">{{ formatCurrency(method.net, method.currency) }}</td>
-              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ method.percentage }}%</td>
-            </tr>
-          </template>
+          <tr :for="method in paymentMethods()">
+            <td class="px-4 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ method.method }}</td>
+            <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-300">{{ method.currency }}</td>
+            <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(method.transactions) }}</td>
+            <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatCurrency(method.amount, method.currency) }}</td>
+            <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatCurrency(method.refunds, method.currency) }}</td>
+            <td class="px-4 py-3 font-medium text-gray-900 text-right text-sm dark:text-white">{{ formatCurrency(method.net, method.currency) }}</td>
+            <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ method.percentage }}%</td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -192,14 +188,12 @@ onMount(() => {
             </tr>
           </thead>
           <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
-            <template :for="day in dailyOrders()">
-              <tr>
-                <td class="px-4 py-3 text-gray-900 text-sm dark:text-white">{{ day.date }}</td>
-                <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-300">{{ day.currency }}</td>
-                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ day.orders }}</td>
-                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatCurrency(day.value, day.currency) }}</td>
-              </tr>
-            </template>
+            <tr :for="day in dailyOrders()">
+              <td class="px-4 py-3 text-gray-900 text-sm dark:text-white">{{ day.date }}</td>
+              <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-300">{{ day.currency }}</td>
+              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ day.orders }}</td>
+              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatCurrency(day.value, day.currency) }}</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -214,15 +208,13 @@ onMount(() => {
         <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Product performance appears after orders contain OrderItem records.</p>
       </div>
       <div :if="topProducts().length > 0" class="divide-gray-200 divide-y dark:divide-neutral-700">
-        <template :for="product in topProducts()">
-          <div class="flex gap-4 items-center justify-between px-4 py-3">
-            <div>
-              <p class="font-medium text-gray-900 text-sm dark:text-white">{{ product.name }}</p>
-              <p class="text-gray-500 text-xs dark:text-neutral-400">{{ formatNumber(product.quantity) }} units</p>
-            </div>
-            <p class="font-medium text-gray-900 text-sm dark:text-white">{{ formatCurrency(product.revenue, product.currency) }}</p>
+        <div :for="product in topProducts()" class="flex gap-4 items-center justify-between px-4 py-3">
+          <div>
+            <p class="font-medium text-gray-900 text-sm dark:text-white">{{ product.name }}</p>
+            <p class="text-gray-500 text-xs dark:text-neutral-400">{{ formatNumber(product.quantity) }} units</p>
           </div>
-        </template>
+          <p class="font-medium text-gray-900 text-sm dark:text-white">{{ formatCurrency(product.revenue, product.currency) }}</p>
+        </div>
       </div>
     </div>
   </section>

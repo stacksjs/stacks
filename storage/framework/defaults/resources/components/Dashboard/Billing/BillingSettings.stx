@@ -74,7 +74,7 @@ onMount(() => { void loadBilling() })
     <div :if="unavailable().length" role="status" class="p-4 text-amber-800 text-sm dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-900">
       <p class="font-semibold">Some provider-backed details are unavailable.</p>
       <ul class="mt-2 pl-5 space-y-1 list-disc">
-        <template :for="message in unavailable()"><li>{{ message }}</li></template>
+        <li :for="message in unavailable()">{{ message }}</li>
       </ul>
     </div>
 
