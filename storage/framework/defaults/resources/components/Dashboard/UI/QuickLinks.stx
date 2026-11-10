@@ -35,7 +35,7 @@ function toneClass(link: QuickLink): string {
 <section :class="customClass()">
   <h2 class="mb-4 font-semibold text-base text-neutral-900 dark:text-white">{{ title() }}</h2>
   <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-    <template :for="link in validLinks()">
+    <div :for="link in validLinks()" class="contents">
       <a
         :if="isExternal(link.href)"
         :href="link.href"
@@ -68,6 +68,6 @@ function toneClass(link: QuickLink): string {
           </div>
         </div>
       </StxLink>
-    </template>
+    </div>
   </div>
 </section>

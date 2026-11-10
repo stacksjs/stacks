@@ -81,7 +81,7 @@ onMount(() => {
   <section>
     <h2 class="font-semibold text-neutral-900 dark:text-white">Explore analytics</h2>
     <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-4">
-      <template :for="card in analyticsCards">
+      <div :for="card in analyticsCards" class="contents">
         <StxLink :to="card.to" class="block">
           <Card variant="default" padding="md" hoverable clickable>
             <div class="flex gap-4 items-start">
@@ -96,7 +96,7 @@ onMount(() => {
             </div>
           </Card>
         </StxLink>
-      </template>
+      </div>
     </div>
   </section>
 </div>

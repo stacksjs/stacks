@@ -76,7 +76,7 @@ function close(): void {
         {{ error() }}
       </div>
 
-      <template :for="field in fields()">
+      <div :for="field in fields()" class="contents">
         <label :if="field.type === 'boolean'" class="flex gap-3 items-start p-3 border border-neutral-200 rounded-lg dark:border-neutral-700">
           <input
             :name="field.name"
@@ -117,7 +117,7 @@ function close(): void {
           :error="fieldError(field.name)"
           @update:value="setValue(field.name, $event)"
         />
-      </template>
+      </div>
 
       <p :if="fields().length === 0" class="py-8 text-center text-neutral-500 text-sm dark:text-neutral-400">
         This model exposes no safe fillable fields.

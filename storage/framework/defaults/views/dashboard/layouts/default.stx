@@ -767,18 +767,16 @@ onDestroy(() => {
     Pointer-events-none on the wrapper + auto on individual toasts so
     surrounding UI stays clickable while a toast is up. -->
 <div class="flex fixed right-4 top-4 z-[60] flex-col gap-2 max-w-sm w-full pointer-events-none">
-  <template :for="toast in toasts">
-    <div role="alert" aria-live="assertive" :class="toastWrapperClass(toast.type)">
-      <div class="flex gap-3 items-start p-4">
-        <div :class="toastIconClass(toast.type)"></div>
-        <div class="flex-1 min-w-0">
-          <p class="font-medium text-gray-900 text-sm dark:text-neutral-100">{{ toast.title }}</p>
-          <p :if="toast.detail" class="mt-1 break-words text-gray-500 text-xs dark:text-neutral-400">{{ toast.detail }}</p>
-        </div>
-        <Button variant="ghost" size="xs" iconOnly ariaLabel="Dismiss notification" @click="dismissToast(toast.id)">
-          <span aria-hidden="true" class="h-4 w-4 i-hugeicons-cancel-01"></span>
-        </Button>
+  <div :for="toast in toasts" role="alert" aria-live="assertive" :class="toastWrapperClass(toast.type)">
+    <div class="flex gap-3 items-start p-4">
+      <div :class="toastIconClass(toast.type)"></div>
+      <div class="flex-1 min-w-0">
+        <p class="font-medium text-gray-900 text-sm dark:text-neutral-100">{{ toast.title }}</p>
+        <p :if="toast.detail" class="mt-1 break-words text-gray-500 text-xs dark:text-neutral-400">{{ toast.detail }}</p>
       </div>
+      <Button variant="ghost" size="xs" iconOnly ariaLabel="Dismiss notification" @click="dismissToast(toast.id)">
+        <span aria-hidden="true" class="h-4 w-4 i-hugeicons-cancel-01"></span>
+      </Button>
     </div>
-  </template>
+  </div>
 </div>

@@ -44,12 +44,10 @@ function toggle(): void {
   </button>
 
   <ul :if="isOpen()" class="space-y-1">
-    <template :for="element in elements()">
-      <li>
-        <StxLink :to="element.to" class="block px-2 py-1.5 text-neutral-600 text-sm dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-white/10 rounded-md" @click="setOpen(false)">
-          {{ element.label }}
-        </StxLink>
-      </li>
-    </template>
+    <li :for="element in elements()">
+      <StxLink :to="element.to" class="block px-2 py-1.5 text-neutral-600 text-sm dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-white/10 rounded-md" @click="setOpen(false)">
+        {{ element.label }}
+      </StxLink>
+    </li>
   </ul>
 </nav>

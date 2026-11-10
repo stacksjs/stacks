@@ -886,37 +886,35 @@ function cellClass(column: DashboardTableColumn, index: number): string {
             />
           </th>
 
-          <template :for="(column, index) in visibleColumns()">
-            <th
-              scope="col"
-              :class="headerClass(column, index)"
-              :style="column.width ? 'width: ' + column.width : undefined"
-              :aria-sort="ariaSort(column)"
+          <th :for="(column, index) in visibleColumns()"
+            scope="col"
+            :class="headerClass(column, index)"
+            :style="column.width ? 'width: ' + column.width : undefined"
+            :aria-sort="ariaSort(column)"
+          >
+            {{-- `bare`: a header button fills its `<th>` and carries no box
+                 of its own, so none of the sizes fit. It still comes through
+                 `UI/Button` for the shared focus ring and disabled handling.
+                 See stacksjs/stacks#2926. --}}
+            <Button
+              :if="column.sortable"
+              variant="bare"
+              :ariaLabel="sortLabel(column)"
+              class="inline-flex gap-1.5 items-center hover:text-stone-700 dark:hover:text-neutral-200"
+              @click="sort(column)"
             >
-              {{-- `bare`: a header button fills its `<th>` and carries no box
-                   of its own, so none of the sizes fit. It still comes through
-                   `UI/Button` for the shared focus ring and disabled handling.
-                   See stacksjs/stacks#2926. --}}
-              <Button
-                :if="column.sortable"
-                variant="bare"
-                :ariaLabel="sortLabel(column)"
-                class="inline-flex gap-1.5 items-center hover:text-stone-700 dark:hover:text-neutral-200"
-                @click="sort(column)"
-              >
-                <abbr :if="column.description" :title="column.description" class="underline underline-offset-2 cursor-help decoration-dotted">{{ column.label }}</abbr>
-                <span :else>{{ column.label }}</span>
-                <span
-                  aria-hidden="true"
-                  :class="'h-3.5 w-3.5 ' + (sortKey() === column.key ? (sortDirection() === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02') : 'opacity-30 i-hugeicons-arrow-up-down')"
-                ></span>
-              </Button>
-              <span :else>
-                <abbr :if="column.description" :title="column.description" class="underline underline-offset-2 cursor-help decoration-dotted">{{ column.label }}</abbr>
-                <span :else>{{ column.label }}</span>
-              </span>
-            </th>
-          </template>
+              <abbr :if="column.description" :title="column.description" class="underline underline-offset-2 cursor-help decoration-dotted">{{ column.label }}</abbr>
+              <span :else>{{ column.label }}</span>
+              <span
+                aria-hidden="true"
+                :class="'h-3.5 w-3.5 ' + (sortKey() === column.key ? (sortDirection() === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02') : 'opacity-30 i-hugeicons-arrow-up-down')"
+              ></span>
+            </Button>
+            <span :else>
+              <abbr :if="column.description" :title="column.description" class="underline underline-offset-2 cursor-help decoration-dotted">{{ column.label }}</abbr>
+              <span :else>{{ column.label }}</span>
+            </span>
+          </th>
 
           {{-- `$slots` only resolves as a standalone reference: inside a
                compound expression like `$slots.actions || hasRowActions()` the

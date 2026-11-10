@@ -540,24 +540,22 @@ void load()
         </tbody>
 
         <tbody :if="!loading()" class="divide-black/5 divide-y dark:divide-white/8">
-          <template :for="row in rows()">
-            <tr class="hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors group">
-              <template :for="column in columnMeta()">
-                <td :class="cellClass(column)" :title="cellValue(row, column)">{{ cellValue(row, column) }}</td>
-              </template>
-              <td class="right-0 sticky z-10 px-3 py-2 text-right bg-white dark:bg-neutral-900 group-hover:bg-neutral-50 dark:group-hover:bg-white/5 border-black/5 border-l dark:border-white/10 transition-colors">
-                <ModelRecordActions
-                  :record="row"
-                  :modelName="modelName()"
-                  :canUpdate="writeCapabilities().update"
-                  :canDestroy="writeCapabilities().destroy"
-                  @view="startView"
-                  @edit="startEdit"
-                  @delete="confirmingDelete.set($event)"
-                />
-              </td>
-            </tr>
-          </template>
+          <tr :for="row in rows()" class="hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors group">
+            <template :for="column in columnMeta()">
+              <td :class="cellClass(column)" :title="cellValue(row, column)">{{ cellValue(row, column) }}</td>
+            </template>
+            <td class="right-0 sticky z-10 px-3 py-2 text-right bg-white dark:bg-neutral-900 group-hover:bg-neutral-50 dark:group-hover:bg-white/5 border-black/5 border-l dark:border-white/10 transition-colors">
+              <ModelRecordActions
+                :record="row"
+                :modelName="modelName()"
+                :canUpdate="writeCapabilities().update"
+                :canDestroy="writeCapabilities().destroy"
+                @view="startView"
+                @edit="startEdit"
+                @delete="confirmingDelete.set($event)"
+              />
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>

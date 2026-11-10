@@ -99,7 +99,7 @@ function emitItemsPerPage(event: Event): void {
       <span class="block h-5 w-5 i-hugeicons-arrow-left-01"></span>
     </Button>
 
-    <template :for="page in visiblePages()">
+    <div :for="page in visiblePages()" class="contents">
       <span :if="typeof page !== 'number'" class="px-2 text-neutral-500 dark:text-neutral-500">...</span>
       <Button :if="typeof page === 'number' && page === currentPage()" @click="goToPage(page)">
         <span aria-current="page">{{ page }}</span>
@@ -107,7 +107,7 @@ function emitItemsPerPage(event: Event): void {
       <Button :if="typeof page === 'number' && page !== currentPage()" variant="secondary" @click="goToPage(page)">
         {{ page }}
       </Button>
-    </template>
+    </div>
 
     <Button variant="secondary" iconOnly :disabled="currentPage() >= totalPages()" ariaLabel="Next page" @click="nextPage">
       <span class="block h-5 w-5 i-hugeicons-arrow-right-01"></span>
