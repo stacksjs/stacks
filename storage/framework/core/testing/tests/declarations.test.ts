@@ -9,7 +9,7 @@
  */
 import { describe, expect, test } from 'bun:test'
 import { join } from 'node:path'
-import { processSource } from '@stacksjs/dtsx'
+import { processSource } from '@dtsx/dtsx'
 
 const emit = async (file: string) => processSource(await Bun.file(join(import.meta.dir, '../src', file)).text(), file)
 

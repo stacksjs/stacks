@@ -26,7 +26,9 @@ function fail(){batch(()=>{label.set('Updated model');poster.set('/updated.svg')
       if (path === '/poster.svg' || path === '/updated.svg') return new Response('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><rect width="20" height="20" fill="green"/></svg>', { headers: { 'Content-Type': 'image/svg+xml' } })
       return new Response(html, { headers: { 'Content-Type': 'text/html' } })
     } })
-    browser = await launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] })
+    // A cold software-rendered Chrome took 26 seconds to expose its port on
+    // the shared Linux runner. Leave time for the protocol handshake as well.
+    browser = await launch({ startTimeoutMs: 60_000, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] })
     const { cdp } = browser
     await navigate(cdp, `http://127.0.0.1:${server.port}`)
     await waitFor(() => cdp.evaluate("document.querySelectorAll('[data-model-status=ready]').length === 2"))
@@ -49,7 +51,7 @@ function fail(){batch(()=>{label.set('Updated model');poster.set('/updated.svg')
     expect(cdp.errors.filter(error => !error.includes('404 (Not Found)'))).toEqual([])
   }
   finally { await browser?.close(); server?.stop(true); await rm(root, { recursive: true, force: true }) }
-}, 45000)
+}, 120000)
 
 test.skipIf(!findChrome())('native viewer ignores a superseded mesh load and releases real GPU resources while aborting disposal work', async () => {
   let browser: Awaited<ReturnType<typeof launch>> | undefined
