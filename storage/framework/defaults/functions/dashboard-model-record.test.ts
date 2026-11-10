@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { changedModelFields, modelRecordBackHref, modelRecordFields, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRecordTitle } from './dashboard-model-record'
+import { changedModelFields, modelRecordBackHref, modelRecordEditHref, modelRecordFields, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRecordTitle } from './dashboard-model-record'
 import type { ModelRecord } from './dashboard-model-record'
 
 const record: ModelRecord = {
@@ -108,6 +108,13 @@ describe('a model record on its own page', () => {
     expect(modelRecordHref('user', 13, '/data/users')).toBe('/models/user/13?from=%2Fdata%2Fusers')
     expect(modelRecordBackHref('user', '/data/users')).toBe('/data/users')
     expect(modelRecordBackHref('user', null)).toBe('/models/user')
+  })
+
+  it('links to the edit page, remembering where the visitor came from', () => {
+    expect(modelRecordEditHref('team', 1)).toBe('/models/team/1/edit')
+    expect(modelRecordEditHref('team', 1, { from: '/data/teams' })).toBe('/models/team/1/edit?from=%2Fdata%2Fteams')
+    expect(modelRecordEditHref('team', 1, { from: '/data/teams', via: 'view' })).toBe('/models/team/1/edit?from=%2Fdata%2Fteams&via=view')
+    expect(modelRecordEditHref('team', 1, { via: 'view' })).toBe('/models/team/1/edit?via=view')
   })
 
   it('never goes back to an address outside the dashboard', () => {

@@ -1,7 +1,8 @@
 /**
  * One model record, read and written through the dashboard's generic model
  * API (`/api/dashboard/models/{slug}`): the record's own page
- * (`/models/{slug}/{id}`, where the eye leads), and the pencil and trash on a
+ * (`/models/{slug}/{id}`, where the eye leads), its edit page
+ * (`/models/{slug}/{id}/edit`, where the pencil leads), and the trash on a
  * page that lists records of its own - Users, Teams and Subscribers.
  *
  * What a page may do comes from the model, not the page: `writeCapabilities`
@@ -234,6 +235,20 @@ export function modelRecordTitle(record: ModelRecord): string {
 export function modelRecordHref(slug: string, id: string | number, from?: string): string {
   const path = `/models/${encodeURIComponent(slug)}/${encodeURIComponent(String(id))}`
   return from ? `${path}?from=${encodeURIComponent(from)}` : path
+}
+
+/**
+ * The record's edit page, where the pencil leads. `from` is the list the
+ * visitor came from. `via: 'view'` means they came from the record's own
+ * page, so saving or cancelling returns there instead of to the list.
+ */
+export function modelRecordEditHref(slug: string, id: string | number, options: { from?: string, via?: 'view' } = {}): string {
+  const path = `/models/${encodeURIComponent(slug)}/${encodeURIComponent(String(id))}/edit`
+  const query = [
+    options.from ? `from=${encodeURIComponent(options.from)}` : '',
+    options.via ? `via=${options.via}` : '',
+  ].filter(Boolean).join('&')
+  return query ? `${path}?${query}` : path
 }
 
 /**
