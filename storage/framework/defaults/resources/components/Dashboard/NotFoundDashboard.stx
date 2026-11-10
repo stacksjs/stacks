@@ -37,17 +37,17 @@
               </div>
             </div>
           </StxLink>
-          <StxLink to="/content/dashboard" class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow hover:shadow-md duration-200 transition-shadow">
+          <StxLink to="/models" class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow hover:shadow-md duration-200 transition-shadow">
             <div class="p-5">
               <div class="flex items-center">
                 <div class="flex-shrink-0 p-3 bg-green-500 rounded-md">
-                  <div class="h-6 w-6 text-white i-hugeicons-document-validation"></div>
+                  <div class="h-6 w-6 text-white i-hugeicons-database"></div>
                 </div>
                 <div class="flex-1 ml-5 w-0">
                   <dl>
-                    <dt class="font-medium text-gray-900 text-sm truncate dark:text-white">Blog</dt>
+                    <dt class="font-medium text-gray-900 text-sm truncate dark:text-white">Models</dt>
                     <dd class="mt-1 text-gray-500 text-sm dark:text-neutral-400">
-                      Manage your blog posts and categories
+                      Browse the records in your models
                     </dd>
                   </dl>
                 </div>

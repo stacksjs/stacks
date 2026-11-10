@@ -10,6 +10,7 @@ interface ActivityItem {
 
 const activities = useReactiveProp('activities', [] as ActivityItem[])
 const title = useReactiveProp('title', 'Recent activity')
+const description = useReactiveProp('description', 'Recent changes recorded by the application.')
 const loading = useReactiveProp('loading', false)
 
 function statusClass(status: string): string {
@@ -37,7 +38,7 @@ function statusIcon(status: string): string {
   <header class="flex items-center justify-between p-5 border-b border-neutral-200/60 dark:border-white/5">
     <div>
       <h2 class="font-semibold text-[14px] text-neutral-900 tracking-tight dark:text-white">{{ title() }}</h2>
-      <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Persisted orders and user registrations.</p>
+      <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ description() }}</p>
     </div>
     <slot name="actions" />
   </header>

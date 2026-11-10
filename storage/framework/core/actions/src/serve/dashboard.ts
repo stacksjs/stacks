@@ -43,10 +43,11 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
-import { config } from '@stacksjs/config'
+import { config, feature, overridesReady } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { projectPath, publicPath } from '@stacksjs/path'
 import { resolveComponentsLibraryRoot, resolveDefaultsRoot } from '../dev/defaults-resources'
+import { disabledFeatureViews } from '../dev/dashboard-feature-views'
 import { decideDashboardAccess } from './dashboard-gate'
 
 process.env.APP_ENV ||= 'production'
@@ -104,10 +105,15 @@ const { Auth } = await import('@stacksjs/auth')
 const { registerPeerSource } = await import('@stacksjs/router')
 const { serve } = await import('bun-plugin-stx/serve')
 
+// Feature flags are config, and config is framework defaults until this settles.
+await overridesReady
+
 await serve({
   // Both trees, exactly as the dev server discovers them: an app's own page
   // wins, and everything it does not define still comes from the framework.
   patterns: [appDashboard, frameworkDashboard].filter(dir => existsSync(dir)),
+  // A feature that is off has no pages, as in the dev server.
+  exclude: disabledFeatureViews(frameworkDashboard, feature),
   port,
 
   // The dashboard's own chrome and components, NOT the site's.

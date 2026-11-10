@@ -413,9 +413,16 @@ async function startStxServer(): Promise<void> {
   await router.route.register(defaultsPath('routes/dashboard-api.ts'))
   const stacksRoute = router.route
 
+  // The framework pages of a feature that is off are not served at all, so
+  // their URLs reach the not-found page (dashboard-feature-views.ts). Read
+  // now, after the `overridesReady` above: before it, config is defaults.
+  const { feature } = await import('@stacksjs/config')
+  const { disabledFeatureViews } = await import('./dashboard-feature-views')
+
   const serverPromise = serve({
     root: projectPath('resources'),
     patterns: [userDashboardPath, dashboardPath],
+    exclude: disabledFeatureViews(dashboardPath, feature),
     port: dashboardPort,
     // The app's dashboard components first, then the framework's, both ahead
     // of `@stacksjs/components` below: that library shares names with the

@@ -53,6 +53,13 @@ function quickLinks() {
   return allQuickLinks.filter(link => !link.section || available[link.section] !== false)
 }
 
+/** Orders are part of the feed only with commerce on, so they are named only then. */
+function activityDescription(): string {
+  return dashboard.sections.value.commerce === true
+    ? 'Persisted orders and user registrations.'
+    : 'Persisted user registrations.'
+}
+
 const resourceLinks = [
   {
     title: 'Documentation',
@@ -175,7 +182,7 @@ onMount(() => {
 
   <div class="grid gap-6 grid-cols-1 lg:grid-cols-2 mt-8">
     <ServiceHealth :services="services()" :loading="dashboard.isLoading.value" />
-    <ActivityTable :activities="activities()" :loading="dashboard.isLoading.value">
+    <ActivityTable :activities="activities()" :description="activityDescription()" :loading="dashboard.isLoading.value">
       <template #actions>
         <StxLink to="/data/activity" class="text-neutral-500 text-sm hover:text-neutral-700 dark:hover:text-neutral-300">View all</StxLink>
       </template>
