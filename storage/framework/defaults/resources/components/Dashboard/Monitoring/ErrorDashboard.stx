@@ -1,8 +1,8 @@
-<div class="p-6 space-y-6">
+<div class="flex flex-col gap-6 p-6">
 
   <PageHeader title="Error Tracking" description="Monitor and manage application errors. Similar errors are grouped together." />
 
-  <div :show="hasStats" class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+  <div :show="hasStats" class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
     <StatsCard title="Total Errors" icon="i-hugeicons-bug-01" iconBg="primary">
       <template #value>{{ totalErrorsLabel() }}</template>
     </StatsCard>

@@ -79,7 +79,7 @@ onMount(() => {
 })
 </script>
 
-<div class="space-y-6">
+<div class="flex flex-col gap-6">
   <header>
     <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Job History</h1>
     <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Search active and failed jobs recorded by the configured queue.</p>

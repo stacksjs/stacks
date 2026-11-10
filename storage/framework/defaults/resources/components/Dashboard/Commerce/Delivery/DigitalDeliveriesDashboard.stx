@@ -180,7 +180,7 @@ onMount(() => {
 })
 </script>
 
-<div class="space-y-6">
+<div class="flex flex-col gap-6">
   <TabNavigation model-value="digital" />
 
   <PageHeader title="Digital delivery" description="Control file access, download limits, expiry, and automatic fulfillment.">

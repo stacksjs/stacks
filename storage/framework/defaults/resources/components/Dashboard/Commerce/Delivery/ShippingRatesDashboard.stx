@@ -190,7 +190,7 @@ onMount(() => {
 })
 </script>
 
-<div class="space-y-6">
+<div class="flex flex-col gap-6">
   <TabNavigation model-value="rates" />
 
   <PageHeader title="Shipping rates" description="Price method and zone combinations across exact weight bands.">

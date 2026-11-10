@@ -178,7 +178,7 @@ onMount(() => {
 })
 </script>
 
-<div class="space-y-6">
+<div class="flex flex-col gap-6">
   <TabNavigation model-value="couriers" />
 
   <PageHeader title="Delivery couriers" description="Manage courier availability, vehicles, licenses, and optional user accounts.">

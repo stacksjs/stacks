@@ -184,7 +184,7 @@ onMount(() => {
 })
 </script>
 
-<div class="space-y-6">
+<div class="flex flex-col gap-6">
   <TabNavigation model-value="license" />
 
   <PageHeader title="License keys" description="Generate unique software licenses and manage their commerce assignments.">

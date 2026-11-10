@@ -189,7 +189,7 @@ void loadFiles()
 </script>
 
 <template>
-<div class="mx-auto pb-12 pt-6 px-6 space-y-6 max-w-7xl">
+<div class="flex flex-col gap-6 mx-auto pb-12 pt-6 px-6 max-w-7xl">
   <PageHeader
     title="Settings"
     description="Review and edit project configuration without losing comments or environment bindings"

@@ -191,7 +191,7 @@ onMount(() => {
     </ul>
   </section>
 
-  <section class="space-y-3">
+  <section class="flex flex-col gap-3">
     <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
       <label><span class="sr-only">Search carts</span><input x-model="search" type="search" placeholder="Search by customer or product" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
       <label><span class="sr-only">Filter cart state</span><select x-model="stateFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="open">Still out there</option><option value="cold">Never chased</option><option value="chased">Already chased</option><option value="recovered">Recovered</option><option value="all">Everything</option></select></label>

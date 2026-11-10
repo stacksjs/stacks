@@ -91,7 +91,7 @@ onMount(() => {
 })
 </script>
 
-<div class="space-y-6">
+<div class="flex flex-col gap-6">
   <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div>
       <StxLink to="/jobs" class="inline-flex gap-1 items-center mb-3 font-medium text-neutral-500 text-sm dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400">

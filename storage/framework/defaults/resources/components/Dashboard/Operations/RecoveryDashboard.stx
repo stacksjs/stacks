@@ -168,7 +168,7 @@ async function retention(): Promise<void> {
 onMount(() => { void loadRecovery() })
 </script>
 
-<div class="space-y-6">
+<div class="flex flex-col gap-6">
   <PageHeader title="Operations" description="Backup coverage, independent verification, restore planning, and recovery drills from the native control plane.">
     <template #actions>
       <Button variant="outline" :disabled="isLoading()" @click="showDestination.set(true)">Connect destination</Button>

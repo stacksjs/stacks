@@ -192,7 +192,7 @@
             </div>
           </div>
 
-          <div :show="isFiltersSection" class="space-y-6">
+          <div :show="isFiltersSection" class="flex flex-col gap-6">
             <EmailSettingsList
               title="Filter Rules"
               description="Keep a reusable list of mailbox filter expressions."

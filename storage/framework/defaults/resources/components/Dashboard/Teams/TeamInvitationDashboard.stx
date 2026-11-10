@@ -93,7 +93,7 @@ onMount(() => {
         <p class="text-red-600 text-sm dark:text-red-400">{{ error() }}</p>
       </div>
 
-      <div :show="invitation() && !acceptedTeamId()" class="space-y-5">
+      <div :show="invitation() && !acceptedTeamId()" class="flex flex-col gap-5">
         <div>
           <p class="text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Team</p>
           <p class="mt-1 font-semibold text-lg text-neutral-900 dark:text-white">{{ invitation()?.teamName }}</p>
@@ -127,7 +127,7 @@ onMount(() => {
           Accept invitation
         </Button>
 
-        <div :show="invitation()?.status === 'pending' && !isAuthenticated()" class="space-y-3">
+        <div :show="invitation()?.status === 'pending' && !isAuthenticated()" class="flex flex-col gap-3">
           <p class="text-neutral-500 text-sm dark:text-neutral-400">Sign in with {{ invitation()?.email }} to accept this invitation.</p>
           <Button tag="a" :href="loginHref()" variant="primary" size="lg" fullWidth>Sign in to accept</Button>
           <Button tag="a" :href="registerHref()" variant="secondary" size="lg" fullWidth>Create an account</Button>

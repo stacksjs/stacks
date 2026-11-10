@@ -188,7 +188,7 @@ onMount(() => {
 })
 </script>
 
-<div class="space-y-6">
+<div class="flex flex-col gap-6">
   <TabNavigation model-value="methods" />
 
   <PageHeader title="Shipping methods" description="Manage persisted rates, activation state, and shipping-zone coverage.">

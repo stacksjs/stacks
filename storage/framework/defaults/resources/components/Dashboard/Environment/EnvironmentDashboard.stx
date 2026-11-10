@@ -195,7 +195,7 @@ onMount(() => void loadEnvironment())
 </script>
 
 <template>
-<div class="mx-auto pb-12 pt-6 px-4 space-y-6 sm:px-6 lg:px-8 max-w-7xl">
+<div class="flex flex-col gap-6 mx-auto pb-12 pt-6 px-4 sm:px-6 lg:px-8 max-w-7xl">
   <PageHeader
     title="Environment Variables"
     description="Edit the project .env file with validation, conflict protection, and an automatic backup."
@@ -273,7 +273,7 @@ onMount(() => void loadEnvironment())
     size="sm"
     @close="closeAddModal"
   >
-    <form class="space-y-4" @submit.prevent="addVariable">
+    <form class="flex flex-col gap-4" @submit.prevent="addVariable">
       <Input v-model:value="newVarKey" label="Key" placeholder="APP_NAME" required />
       <Input v-model:value="newVarValue" label="Value" placeholder="My App" />
       <Input v-model:value="newVarDescription" label="Description" placeholder="Used in emails and the interface" hint="Optional comment placed above the variable." />

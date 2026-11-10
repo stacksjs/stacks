@@ -219,7 +219,7 @@ onMount(() => {
 })
 </script>
 
-<div class="space-y-6">
+<div class="flex flex-col gap-6">
   <PageHeader title="Gift Cards" description="Manage native GiftCard balances, recipients, delivery, and lifecycle state.">
   <div class="flex flex-wrap gap-2">
     <Button variant="secondary" :loading="loading()" @click="loadGiftCards()"><span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button>
@@ -234,7 +234,7 @@ onMount(() => {
 
   <CommerceGiftCardBreakdown :summary="summary()" />
 
-  <section class="space-y-3">
+  <section class="flex flex-col gap-3">
     <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-6">
       <label class="relative sm:col-span-2">
         <span class="sr-only">Search gift cards</span>

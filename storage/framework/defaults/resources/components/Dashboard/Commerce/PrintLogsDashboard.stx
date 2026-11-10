@@ -189,7 +189,7 @@ onMount(() => {
 })
 </script>
 
-<div class="space-y-6">
+<div class="flex flex-col gap-6">
   <PageHeader title="Print logs" description="Inspect native Receipt records from configured print devices.">
   <div class="flex flex-wrap gap-2">
     <Button variant="secondary" :loading="loading()" @click="loadPrintLogs"><span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button>
@@ -203,7 +203,7 @@ onMount(() => {
 
   <PrintLogBreakdown :breakdown="breakdown()" />
 
-  <section class="space-y-3">
+  <section class="flex flex-col gap-3">
     <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-6">
       <label class="relative sm:col-span-2">
         <span class="sr-only">Search print logs</span>

@@ -68,7 +68,7 @@ function statusClass(status: string): string {
 onMount(() => void load())
 </script>
 
-<div class="space-y-6">
+<div class="flex flex-col gap-6">
   <PageHeader title="Operations" description="Review model-derived schema changes and migration ledger health before changing the database.">
     <template #actions>
       <Button variant="secondary" :loading="loading()" @click="load">
@@ -131,7 +131,7 @@ onMount(() => void load())
   <OperationHistory :operations="data()?.operatorOperations || []" :loading="loading()" />
 
   <Modal :isOpen="dialog() !== ''" :title="dialog() === 'apply' ? 'Apply migration plan' : 'Reconcile migration ledger'" size="md" @close="closeDialog">
-    <div class="space-y-4">
+    <div class="flex flex-col gap-4">
       <div :if="dialog() === 'apply' && data()?.summary.destructive" role="alert" class="px-4 py-3 text-orange-800 text-sm dark:text-orange-200 bg-orange-50 dark:bg-orange-950/30 border border-orange-200 rounded-lg dark:border-orange-900">
         This plan contains {{ data()?.summary.destructive }} destructive operation{{ data()?.summary.destructive === 1 ? '' : 's' }}. Confirm that a verified recovery point exists before continuing.
       </div>

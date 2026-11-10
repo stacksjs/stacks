@@ -199,7 +199,7 @@ onMount(() => {
 })
 </script>
 
-<div class="space-y-6">
+<div class="flex flex-col gap-6">
   <PageHeader title="Deployments" description="Deployment model records through the guarded dashboard API.">
   <div class="flex gap-2 items-center">
     <Button :disabled="isStarting() || isPreviewing()" variant="outline" @click="openDeploymentDialog('preview')">
@@ -239,7 +239,7 @@ onMount(() => {
     </div>
   </section>
 
-  <section class="space-y-3">
+  <section class="flex flex-col gap-3">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div>
         <h2 class="font-semibold text-gray-900 dark:text-white">Deployment history</h2>
@@ -274,7 +274,7 @@ onMount(() => {
     size="sm"
     @close="showDeployModal.set(false)"
   >
-    <div class="space-y-4">
+    <div class="flex flex-col gap-4">
       <Select
         v-model:value="environment"
         :options="environmentOptions"
@@ -308,7 +308,7 @@ onMount(() => {
   <DeploymentPreviewDialog :plan="previewPlan" @close="previewPlan.set(null)" @deploy="continueFromPreview" />
 
   <Modal :isOpen="showRollbackModal()" title="Rollback deployment" description="Preview and validate a preserved release before changing the active runtime." size="lg" @close="showRollbackModal.set(false)">
-    <div class="space-y-4">
+    <div class="flex flex-col gap-4">
       <div class="grid gap-4 sm:grid-cols-2">
         <Select v-model:value="environment" :options="environmentOptions" label="Environment" placeholder="" />
         <Input v-model:value="rollbackSite" label="Site" placeholder="All application sites" hint="Optional site slug." />

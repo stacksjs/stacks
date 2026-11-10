@@ -376,7 +376,7 @@ function formatTimestamp(iso: string | null | undefined): string {
             <span :if="cardLabels().length === 0" class="italic text-xs text-zinc-500 dark:text-zinc-400">None</span>
           </div>
 
-          <div :if="showLabelPicker()" class="space-y-2">
+          <div :if="showLabelPicker()" class="flex flex-col gap-2">
             <div :for="label in allLabels" :class="`flex items-center gap-1 px-1 py-0.5 w-full rounded ${labelChipClass(label.color)}`">
               <button type="button" class="flex flex-1 items-center justify-between px-1 py-0.5 min-w-0 text-left text-xs rounded hover:opacity-90" :aria-pressed="String(cardLabels().some(cardLabel => cardLabel.id === label.id))" @click="toggleLabel(label.id)">
                 <span class="truncate" :text="label.name"></span>

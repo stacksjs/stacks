@@ -377,7 +377,7 @@ void load()
 </script>
 
 <template>
-<div class="p-6 space-y-4">
+<div class="flex flex-col gap-4 p-6">
 
   <!-- Written out rather than using <PageHeader>: that component renders on
       the server, so a `{{ }}` placeholder in it is baked at render time and

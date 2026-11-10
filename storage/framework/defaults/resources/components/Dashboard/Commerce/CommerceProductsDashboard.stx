@@ -205,7 +205,7 @@ onMount(() => {
 })
 </script>
 
-<div class="space-y-6">
+<div class="flex flex-col gap-6">
   <PageHeader title="Products" description="Manage native Product records, commerce availability, inventory, and relationships.">
   <div class="flex flex-wrap gap-2">
     <Button variant="secondary" :loading="loading()" @click="loadProducts()"><span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button>
@@ -218,7 +218,7 @@ onMount(() => {
 
   <MetricCards label="Product metrics" columns="grid-cols-2 lg:grid-cols-5" :items="metricCards()" />
 
-  <section class="space-y-3">
+  <section class="flex flex-col gap-3">
     <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
       <label class="relative sm:col-span-2">
         <span class="sr-only">Search products</span>

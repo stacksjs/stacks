@@ -212,7 +212,7 @@ onMount(() => {
     <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Campaigns</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ summary().campaigns.toLocaleString() }}</p><p class="mt-1 text-gray-500 text-xs dark:text-neutral-500">Linked campaign records</p></article>
   </section>
 
-  <section class="space-y-3">
+  <section class="flex flex-col gap-3">
     <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
       <label class="xl:col-span-1"><span class="sr-only">Search email lists</span><input x-model="search" type="search" placeholder="Search email lists" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
       <label><span class="sr-only">Filter status</span><select x-model="statusFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option><option value="archived">Archived</option></select></label>
