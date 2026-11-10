@@ -153,6 +153,9 @@ for (const server of servers) {
           APP_KEY,
           APP_MAINTENANCE: 'false',
           APP_COMING_SOON: 'false',
+          // This fixture exercises the storefront independently of the
+          // checkout's enabled features and default route selection.
+          STACKS_DEFAULT_ROUTES: 'storefront',
           DB_CONNECTION: 'sqlite',
           DB_DATABASE_PATH: database,
           STX_DEBUG: '',
