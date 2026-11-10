@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.536...v0.75.537)
+
+## 🐛 Bug Fixes
+
+- **docs**: preserve brand fonts in sandboxed previews ([8a39447](https://github.com/stacksjs/stacks/commit/8a39447)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.535...v0.75.536)
 
 ## 🐛 Bug Fixes
