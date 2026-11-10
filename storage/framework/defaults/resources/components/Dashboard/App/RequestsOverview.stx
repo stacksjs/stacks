@@ -233,6 +233,7 @@ onMount(() => {
     </div>
 
     <Table
+      :framed="false"
       :columns="COLUMNS"
       :data="requestRows()"
       :loading="loading()"

@@ -250,6 +250,7 @@ onMount(() => {
     </div>
 
     <Table
+      :framed="false"
       :columns="COLUMNS_BY_MODE[mode()]"
       :data="itemRows()"
       :loading="loading()"

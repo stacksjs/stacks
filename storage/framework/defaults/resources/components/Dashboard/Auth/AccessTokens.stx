@@ -298,7 +298,7 @@ onMount(() => {
       "Never", so it sorts on the date itself.
     --}}
     <div :if="!loading() && !authenticationRequired() && tokens().length > 0">
-      <Table :columns="TOKEN_COLUMNS" :data="tokenRows()" paginated :page-size="25">
+      <Table :columns="TOKEN_COLUMNS" :data="tokenRows()" paginated :page-size="25" :framed="false">
         <template #cell="{ row, column }">
           <template :if="column.key === 'scopesLabel'">
             <div class="flex flex-wrap gap-1">

@@ -128,6 +128,11 @@ interface DashboardTableColumn {
    */
   currencyKey?: string
   width?: string
+  /**
+   * Classes for this column's cells. Not its header: a cell's look - a code
+   * font for numbers, a muted colour for timestamps - set the header in the
+   * same code font and colour, so `Members` read as code.
+   */
   class?: string
   /** Hidden until switched on in the column menu. */
   hidden?: boolean
@@ -193,6 +198,10 @@ const emptyTitle = useReactiveProp('emptyTitle', 'No data')
 const emptyDescription = useReactiveProp('emptyDescription', 'There are no items to display.')
 const rowKey = useReactiveProp('rowKey', 'id')
 const hoverable = useReactiveProp('hoverable', true)
+// Its own border, corners and shadow. Off inside a container that already
+// draws them, such as a `Card padding="none"`, which otherwise framed the
+// table twice.
+const framed = useReactiveProp('framed', true)
 
 const searchable = useReactiveProp('searchable', false)
 const searchPlaceholder = useReactiveProp('searchPlaceholder', 'Search')
@@ -463,6 +472,16 @@ const sorted = derived(() => {
 /** Rows in the whole result: the server's count when it pages, else what is held. */
 const totalRows = derived(() => (manualPagination() ? Math.max(0, Number(total()) || 0) : sorted().length))
 
+/**
+ * Whether the pager has anything to do. Rows that all fit on the smallest page
+ * size are already on screen, so "Showing 1-5 of 5", a page-size picker and a
+ * "1 / 1" between two disabled arrows were three controls for nothing.
+ */
+function needsPager(): boolean {
+  const smallest = Math.min(...pageSizeOptions(), pageSize())
+  return totalRows() > smallest
+}
+
 const pageCount = derived(() => (paginated() ? Math.max(1, Math.ceil(totalRows() / pageSize())) : 1))
 
 // A filter that shortens the list must not strand the viewer on a page that
@@ -650,7 +669,6 @@ function headerClass(column: DashboardTableColumn, index: number): string {
     compact() ? 'py-2' : 'py-3.5',
     alignClass(column.align),
     index === 0 && stickyFirstColumn() ? 'sticky left-0 z-20 bg-stone-50 dark:bg-neutral-800' : '',
-    column.class || '',
   ].filter(Boolean).join(' ')
 }
 
@@ -725,7 +743,7 @@ function cellClass(column: DashboardTableColumn, index: number): string {
 }
 </script>
 
-<div class="overflow-hidden relative bg-white dark:bg-neutral-900 border border-stone-200/80 rounded-xl dark:border-neutral-700 shadow-sm">
+<div class="overflow-hidden relative bg-white dark:bg-neutral-900" :class="framed() ? 'border border-stone-200/80 rounded-xl dark:border-neutral-700 shadow-sm' : ''">
   <div :if="loading()" class="flex absolute inset-0 z-30 items-center justify-center bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm" role="status">
     <span aria-hidden="true" class="mr-2 h-5 w-5 text-blue-500 animate-spin i-hugeicons-loading-03"></span>
     <span class="text-neutral-500 text-sm dark:text-neutral-400">Loading</span>
@@ -996,7 +1014,7 @@ function cellClass(column: DashboardTableColumn, index: number): string {
   </div>
 
   <div
-    :if="paginated() && totalRows() > 0"
+    :if="paginated() && needsPager()"
     class="flex flex-wrap gap-3 items-center justify-between px-4 py-3 bg-neutral-50/50 dark:bg-neutral-800/25 border-neutral-200 border-t dark:border-neutral-700"
   >
     <div class="flex gap-3 items-center text-neutral-500 text-sm dark:text-neutral-400">

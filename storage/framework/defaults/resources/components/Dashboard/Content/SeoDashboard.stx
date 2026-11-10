@@ -299,6 +299,7 @@ void loadEntries()
          adding one to a working table, watching `/dependencies` stop
          responding, and removing it again. See stacksjs/stx#2101. --}}
     <Table
+      :framed="false"
       :columns="SEO_COLUMNS"
       :data="seoRows()"
       :loading="loading()"
