@@ -46,12 +46,47 @@ function formatDate(value: string): string {
     : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date)
 }
 
+// The protocol names as they are written, and what each does for someone who
+// has never set up a mail server. Keyed by the config name, lowercased.
+const FEATURES: Record<string, { label: string, meaning: string }> = {
+  imap: { label: 'IMAP', meaning: 'Mail apps read mail that stays on the server' },
+  pop3: { label: 'POP3', meaning: 'Mail apps download mail to one device' },
+  webmail: { label: 'Webmail', meaning: 'Read and send mail in a browser' },
+  caldav: { label: 'CalDAV', meaning: 'Calendar sync' },
+  carddav: { label: 'CardDAV', meaning: 'Contacts sync' },
+  activesync: { label: 'ActiveSync', meaning: 'Mail, calendar and contacts sync for phones' },
+}
+
+const PORTS: Record<string, { label: string, meaning: string }> = {
+  smtp: { label: 'SMTP', meaning: 'Receives mail from other servers' },
+  smtps: { label: 'SMTPS', meaning: 'Sending mail, encrypted from the start' },
+  submission: { label: 'Submission', meaning: 'Sending mail from mail apps, upgraded to encrypted (STARTTLS)' },
+  imap: { label: 'IMAP', meaning: 'Reading mail, unencrypted' },
+  imaps: { label: 'IMAPS', meaning: 'Reading mail, encrypted' },
+  pop3: { label: 'POP3', meaning: 'Downloading mail, unencrypted' },
+  pop3s: { label: 'POP3S', meaning: 'Downloading mail, encrypted' },
+}
+
+// A name with no entry reads as words: `spamFilter` becomes "Spam filter".
+function words(name: string): string {
+  const spaced = name.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase()
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1)
+}
+
 function featureLabel(feature: DashboardMailboxFeature): string {
-  return feature.name.replace(/([a-z])([A-Z])/g, '$1 $2')
+  return FEATURES[feature.name.toLowerCase()]?.label ?? words(feature.name)
+}
+
+function featureMeaning(feature: DashboardMailboxFeature): string {
+  return FEATURES[feature.name.toLowerCase()]?.meaning ?? ''
 }
 
 function portLabel(port: DashboardMailboxPort): string {
-  return port.name.replace(/([a-z])([A-Z])/g, '$1 $2')
+  return PORTS[port.name.toLowerCase()]?.label ?? words(port.name)
+}
+
+function portMeaning(port: DashboardMailboxPort): string {
+  return PORTS[port.name.toLowerCase()]?.meaning ?? ''
 }
 
 function storageLabel(item: DashboardMailboxStorage): string {
@@ -123,7 +158,7 @@ onMount(() => {
         <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">Mailboxes</h1>
         <CloudStatusBadge :status="server().enabled ? 'configured' : 'inactive'" />
       </div>
-      <p class="mt-1 max-w-2xl text-neutral-500 text-sm dark:text-neutral-400">Mailbox and mail-server declarations from config/email.ts. No delivery or provider health is inferred.</p>
+      <p class="mt-1 max-w-2xl text-neutral-500 text-sm dark:text-neutral-400">The mailboxes and mail server set up in config/email.ts. This page shows your settings, not whether mail is being delivered.</p>
     </div>
     <div class="flex gap-2 items-center">
       <Button tag="a" href="/inbox/activity" variant="secondary">Mail activity</Button>
@@ -172,17 +207,20 @@ onMount(() => {
       <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 mt-5">
         <div :for="feature in server().features" class="flex gap-3 items-center p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
           <span :class="'shrink-0 h-4 w-4 ' + (feature.enabled ? 'text-green-500 i-hugeicons-checkmark-circle-02' : 'text-neutral-400 i-hugeicons-cancel-circle')"></span>
-          <span class="capitalize text-neutral-700 text-sm dark:text-neutral-300">{{ featureLabel(feature) }}</span>
+          <span class="min-w-0">
+            <span class="block text-neutral-700 text-sm dark:text-neutral-300">{{ featureLabel(feature) }}</span>
+            <span :if="featureMeaning(feature)" class="block text-neutral-500 text-xs dark:text-neutral-400">{{ featureMeaning(feature) }}</span>
+          </span>
         </div>
       </div>
     </div>
 
     <div class="p-5 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
       <h2 class="font-semibold text-neutral-900 dark:text-white">Ports</h2>
-      <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Configured listener ports.</p>
+      <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">The ports this mail server listens on.</p>
       <dl class="grid gap-x-5 gap-y-3 grid-cols-2 mt-5 text-sm">
         <div :for="port in server().ports" class="flex gap-3 items-center justify-between">
-          <dt class="capitalize text-neutral-500 dark:text-neutral-400">{{ portLabel(port) }}</dt>
+          <dt class="text-neutral-500 dark:text-neutral-400"><abbr :title="portMeaning(port) || portLabel(port)" class="no-underline cursor-help">{{ portLabel(port) }}</abbr></dt>
           <dd class="font-mono font-semibold text-neutral-900 dark:text-white">{{ port.port }}</dd>
         </div>
       </dl>
@@ -191,7 +229,7 @@ onMount(() => {
 
   <section>
     <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-      <div><h2 class="font-semibold text-neutral-900 dark:text-white">Configured mailboxes</h2><p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Addresses are source-controlled in config/email.ts.</p></div>
+      <div><h2 class="font-semibold text-neutral-900 dark:text-white">Configured mailboxes</h2><p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Add or change addresses in config/email.ts.</p></div>
       <label class="block relative sm:w-72">
         <span class="sr-only">Search mailboxes</span>
         <span class="absolute left-3 top-2.5 h-4 w-4 text-neutral-400 i-hugeicons-search-01"></span>

@@ -41,17 +41,17 @@ interface MailSettingsResponse {
 
 const driverOptions = [
   { value: 'log', label: 'Log' },
-  { value: 'smtp', label: 'SMTP' },
-  { value: 'ses', label: 'Amazon SES' },
+  { value: 'smtp', label: 'SMTP (any mail server)' },
+  { value: 'ses', label: 'Amazon SES (Simple Email Service)' },
   { value: 'sendgrid', label: 'SendGrid' },
   { value: 'mailgun', label: 'Mailgun' },
   { value: 'mailtrap', label: 'Mailtrap' },
   { value: 'capture', label: 'Capture (tests)' },
 ]
 const encryptionOptions = [
-  { value: '', label: 'None' },
-  { value: 'tls', label: 'TLS / STARTTLS' },
-  { value: 'ssl', label: 'SSL / implicit TLS' },
+  { value: '', label: 'None (unencrypted)' },
+  { value: 'tls', label: 'STARTTLS (upgrade to encrypted, usually port 587)' },
+  { value: 'ssl', label: 'TLS/SSL (encrypted from the start, usually port 465)' },
 ]
 
 const revision = state('')
@@ -362,13 +362,13 @@ onMount(() => void loadSettings())
     <section :if="driver() === 'smtp'" class="p-5 bg-white dark:bg-neutral-900 border border-stone-200 rounded-xl dark:border-neutral-700">
       <div class="mb-5">
         <h2 class="font-semibold text-stone-900 dark:text-white">SMTP transport</h2>
-        <p class="mt-1 text-sm text-stone-500 dark:text-neutral-400">Use any SMTP relay: the local catcher from <code>buddy mail:dev</code>, Postmark SMTP, or a hosted mail server.</p>
+        <p class="mt-1 text-sm text-stone-500 dark:text-neutral-400">SMTP (Simple Mail Transfer Protocol) is the standard way servers send email. Use any SMTP server: the local catcher from <code>buddy mail:dev</code>, Postmark SMTP, or a hosted mail server.</p>
       </div>
       <div class="grid gap-4 md:grid-cols-2">
         <Input v-model:value="smtpHost" label="Host" placeholder="smtp.example.com" required :error="fieldError('smtp.host')" />
         <Input v-model:value="smtpPort" type="number" label="Port" placeholder="587" required :error="fieldError('smtp.port')" />
         <Input v-model:value="smtpUsername" label="Username" placeholder="mailer@example.com" :error="fieldError('smtp.username')" />
-        <Select v-model:value="smtpEncryption" :options="encryptionOptions" label="Encryption" placeholder="" :error="fieldError('smtp.encryption')" />
+        <Select v-model:value="smtpEncryption" :options="encryptionOptions" label="Encryption" placeholder="" hint="Match what your mail server expects. Most use STARTTLS on port 587." :error="fieldError('smtp.encryption')" />
         <div class="md:col-span-2">
           <Input
             v-model:value="smtpPassword"
@@ -391,7 +391,7 @@ onMount(() => void loadSettings())
     <section :if="driver() === 'ses'" class="p-5 bg-white dark:bg-neutral-900 border border-stone-200 rounded-xl dark:border-neutral-700">
       <div class="mb-5">
         <h2 class="font-semibold text-stone-900 dark:text-white">Amazon SES</h2>
-        <p class="mt-1 text-sm text-stone-500 dark:text-neutral-400">Explicit credentials are optional when the AWS profile or instance role already supplies them.</p>
+        <p class="mt-1 text-sm text-stone-500 dark:text-neutral-400">Amazon SES (Simple Email Service) sends email through your AWS account. The access keys are optional when the server already has AWS credentials, from a local AWS profile or the role of the server it runs on.</p>
       </div>
       <div class="grid gap-4 md:grid-cols-2">
         <Input v-model:value="sesRegion" label="AWS region" placeholder="us-east-1" required :error="fieldError('ses.region')" />
