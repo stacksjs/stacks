@@ -96,3 +96,35 @@ describe('dashboard spacing', () => {
     expect(offenders).toEqual([])
   })
 })
+
+describe('dashboard row actions', () => {
+  test('view, edit and delete look the same in every table: eye, pencil, red trash', () => {
+    expect(table).toContain(`view: { icon: 'i-hugeicons-view'`)
+    expect(table).toContain(`edit: { icon: 'i-hugeicons-pencil-edit-02', class: 'text-blue-500' }`)
+    expect(table).toContain(`delete: { icon: 'i-hugeicons-delete-02', class: 'text-red-500' }`)
+    // The standard icon wins, so no table can drift back to its own.
+    expect(body(table, 'rowActionIconClass')).toContain('standard?.icon ?? action.icon')
+  })
+
+  test('no table sets its own icon or colour for a standard action', () => {
+    const drifted: string[] = []
+    for (const file of templates(resolve('storage/framework/defaults/resources/components/Dashboard'))) {
+      for (const match of readFileSync(file, 'utf8').matchAll(/\{ action: '(?:view|edit|delete)'[^\n]*\b(?:icon|class): /g))
+        drifted.push(`${file.split('Dashboard/')[1]}: ${match[0].slice(0, 60)}`)
+    }
+    expect(drifted).toEqual([])
+  })
+
+  test('the Users, Teams and Subscribers tables offer actions their model allows', () => {
+    expect(records).toContain(`MODEL_SLUGS: Partial<Record<DataMode, string>> = { users: 'user', teams: 'team', subscribers: 'subscriber' }`)
+    expect(records).toContain(`...(capabilities().update ? [{ action: 'edit', label: 'Edit' }] : [])`)
+    expect(records).toContain(`...(capabilities().destroy ? [{ action: 'delete', label: 'Delete' }] : [])`)
+    expect(records.match(/:row-actions="rowActions\(\)"/g)?.length).toBe(2)
+  })
+
+  test('an icon-only button names itself on hover', () => {
+    const button = read('UI/Button.stx')
+    expect(body(button, 'hoverTitle')).toContain(`liveTitle() || (liveIconOnly() ? liveAriaLabel() : '') || undefined`)
+    expect(button.match(/:title="hoverTitle\(\)"/g)?.length).toBe(3)
+  })
+})

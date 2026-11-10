@@ -10,6 +10,9 @@ import type {
   DataStats,
 } from '../../../../functions/data'
 import { fetchDashboardData } from '../../../../functions/data'
+import type { ModelRecord, ModelWriteCapabilities } from '../../../../functions/dashboard-model-record'
+import { changedModelFields, deleteModelRecord, fetchModelCapabilities, fetchModelRecord, modelRecordFields, updateModelRecord } from '../../../../functions/dashboard-model-record'
+import { pushToast } from '../../../../functions/toasts'
 
 type DataRecord = DashboardActivity | DashboardSubscriber | DashboardTeam | DashboardUser
 
@@ -60,6 +63,117 @@ const metadata: Record<DataMode, { title: string, description: string, icon: str
 }
 
 const page = derived(() => metadata[mode()])
+
+/**
+ * The model behind each mode's rows, for the eye, pencil and trash. Activity
+ * has none: an audit trail is read, never edited or deleted.
+ */
+const MODEL_SLUGS: Partial<Record<DataMode, string>> = { users: 'user', teams: 'team', subscribers: 'subscriber' }
+/** The row field an action names: "Edit Ava", "Delete ava@example.com". */
+const ACTION_LABEL_KEYS: Partial<Record<DataMode, string>> = { users: 'name', teams: 'name', subscribers: 'email' }
+
+const modelSlug = derived(() => MODEL_SLUGS[mode()] ?? '')
+const capabilities = state<ModelWriteCapabilities>({ create: false, update: false, destroy: false })
+const openRecord = state<ModelRecord | null>(null)
+const recordViewOnly = state(true)
+const confirmingDelete = state<Record<string, any> | null>(null)
+const working = state(false)
+const busyId = state<unknown>('')
+
+/** View always; edit and delete only where the model's API allows them. */
+const rowActions = derived(() => {
+  if (!modelSlug())
+    return []
+  return [
+    { action: 'view', label: 'View' },
+    ...(capabilities().update ? [{ action: 'edit', label: 'Edit' }] : []),
+    ...(capabilities().destroy ? [{ action: 'delete', label: 'Delete' }] : []),
+  ]
+})
+const actionLabelKey = derived(() => ACTION_LABEL_KEYS[mode()] ?? 'id')
+const recordFields = derived(() => openRecord() ? modelRecordFields(openRecord()!, recordViewOnly()) : [])
+const deleteTitle = derived(() => `Delete this ${page().one}?`)
+const deleteDescription = derived(() => {
+  const row = confirmingDelete()
+  const name = row ? String(row[actionLabelKey()] ?? row.id) : ''
+  return `${name} will be removed through the model, so soft deletes and observers apply.`
+})
+
+async function loadCapabilities(): Promise<void> {
+  if (!modelSlug()) {
+    capabilities.set({ create: false, update: false, destroy: false })
+    return
+  }
+  try {
+    capabilities.set(await fetchModelCapabilities(modelSlug()))
+  }
+  catch {
+    // Without them the page still lists and views; it offers no writes.
+    capabilities.set({ create: false, update: false, destroy: false })
+  }
+}
+
+async function handleRowAction(payload: { action: string, row: Record<string, any> }): Promise<void> {
+  if (payload.action === 'delete') {
+    confirmingDelete.set(payload.row)
+    return
+  }
+  busyId.set(payload.row.id)
+  try {
+    const record = await fetchModelRecord(modelSlug(), payload.row.id)
+    recordViewOnly.set(payload.action !== 'edit')
+    openRecord.set(record)
+  }
+  catch (error) {
+    pushToast('error', `Could not open this ${page().one}`, { detail: error instanceof Error ? error.message : String(error) })
+  }
+  finally {
+    busyId.set('')
+  }
+}
+
+async function saveRecord(values: Record<string, string>): Promise<void> {
+  const record = openRecord()
+  if (!record)
+    return
+  const fields = changedModelFields(record.row, values)
+  if (Object.keys(fields).length === 0) {
+    openRecord.set(null)
+    return
+  }
+  working.set(true)
+  try {
+    await updateModelRecord(modelSlug(), String(record.row.id), fields)
+    pushToast('success', `${record.modelName} ${record.row.id} updated`)
+    openRecord.set(null)
+    await loadRecords()
+  }
+  catch (error) {
+    pushToast('error', 'Could not save', { detail: error instanceof Error ? error.message : String(error) })
+  }
+  finally {
+    working.set(false)
+  }
+}
+
+async function confirmDelete(): Promise<void> {
+  const row = confirmingDelete()
+  if (!row)
+    return
+  working.set(true)
+  try {
+    await deleteModelRecord(modelSlug(), row.id)
+    pushToast('success', `${capitalize(page().one)} ${row[actionLabelKey()] ?? row.id} deleted`)
+    confirmingDelete.set(null)
+    await loadRecords()
+  }
+  catch (error) {
+    pushToast('error', 'Could not delete', { detail: error instanceof Error ? error.message : String(error) })
+  }
+  finally {
+    working.set(false)
+  }
+}
 
 /** Each mode's stats fill their row: three cards in a four-column grid left a hole. */
 const statsGridClass = derived(() => page().cards === 3 ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-2 lg:grid-cols-4')
@@ -201,6 +315,7 @@ async function loadRecords(): Promise<void> {
 
 onMount(() => {
   void loadRecords()
+  void loadCapabilities()
 })
 </script>
 
@@ -288,7 +403,7 @@ onMount(() => {
         passed in the mode that has a slotted column.
       --}}
       <template :if="mode() === 'teams'">
-        <Table :columns="recordColumns()" :data="recordRows()" paginated :page-size="25" :framed="false">
+        <Table :columns="recordColumns()" :data="recordRows()" paginated :page-size="25" :framed="false" :row-actions="rowActions()" :action-label-key="actionLabelKey()" :busy-value="busyId()" @row-action="handleRowAction">
           <template #cell="{ row }">
             <StxLink :to="row.modelLink" class="font-medium text-neutral-900 text-sm dark:text-white hover:text-blue-600 dark:hover:text-blue-400">{{ row.name }}</StxLink>
             <p class="mt-0.5 max-w-xl text-neutral-500 text-xs dark:text-neutral-400" x-text="row.descriptionLabel"></p>
@@ -296,8 +411,28 @@ onMount(() => {
         </Table>
       </template>
       <template :else>
-        <Table :columns="recordColumns()" :data="recordRows()" paginated :page-size="25" :framed="false" />
+        <Table :columns="recordColumns()" :data="recordRows()" paginated :page-size="25" :framed="false" :row-actions="rowActions()" :action-label-key="actionLabelKey()" :busy-value="busyId()" @row-action="handleRowAction" />
       </template>
     </div>
   </Card>
+
+  <EditRecordModal
+    :open="Boolean(openRecord())"
+    :modelName="openRecord()?.modelName || page().one"
+    :fields="recordFields()"
+    :busy="working()"
+    :viewOnly="recordViewOnly()"
+    @close="openRecord.set(null)"
+    @submit="saveRecord($event)"
+  />
+
+  <ConfirmDialog
+    :isOpen="Boolean(confirmingDelete())"
+    :title="deleteTitle()"
+    :description="deleteDescription()"
+    :busy="working()"
+    :confirmLabel="working() ? 'Deleting' : 'Delete'"
+    @close="confirmingDelete.set(null)"
+    @confirm="confirmDelete"
+  />
 </div>
