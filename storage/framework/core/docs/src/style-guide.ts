@@ -299,8 +299,21 @@ export async function generateStyleGuide(config: StyleGuideConfig, options: { ro
     return `./assets/${name}`
   }
   const urls = [...new Set([...css.matchAll(/url\(\s*['"]?([^)'"\s]+)['"]?\s*\)/g)].map(match => match[1]!))]
+  const fontUrls = new Set([...css.matchAll(/@font-face\s*\{[^}]*\}/gi)].flatMap(block => [...block[0].matchAll(/url\(\s*['"]?([^)'"\s]+)['"]?\s*\)/g)].map(match => match[1]!)))
   for (const url of urls) {
-    css = css.replaceAll(url, await localAsset(url))
+    if (fontUrls.has(url) && !url.startsWith('data:')) {
+      // An allow-scripts iframe has an opaque origin. Font requests require
+      // CORS even when the stylesheet is local, so ordinary static hosting
+      // would silently substitute system faces. Embed only the font bytes;
+      // keep their original source hashes in the freshness contract.
+      const bytes = await readAsset(url)
+      assetHashes[url] = hash(bytes)
+      const mime = Bun.file(url).type || 'application/octet-stream'
+      css = css.replaceAll(url, `data:${mime};base64,${bytes.toString('base64')}`)
+    }
+    else {
+      css = css.replaceAll(url, await localAsset(url))
+    }
   }
   output.set(join(assets, 'components.css'), css)
   const implementation = hash(await readFile(import.meta.path))

@@ -84,15 +84,19 @@ describe('native style guide generation', () => {
     expect(await readFile(join(root, 'docs/style-guide/index.md'), 'utf8')).toContain('authored')
   })
 
-  test('copies local production assets and catches changed font bytes', async () => {
+  test('embeds brand fonts for opaque sandbox origins and catches changed font bytes', async () => {
     const { root, config } = await fixture()
     await mkdir(join(root, 'public/fonts'), { recursive: true })
     await writeFile(join(root, 'public/fonts/brand.woff2'), 'first-font')
     config.styles!.css = '@font-face{font-family:Brand;src:url(/fonts/brand.woff2)}'
     await generateStyleGuide(config, { root })
     const css = await readFile(join(root, 'docs/public/style-guide/generated/components.css'), 'utf8')
-    expect(css).toContain('./assets/')
+    expect(css).toContain(`data:font/woff2;base64,${Buffer.from('first-font').toString('base64')}`)
+    expect(css).not.toContain('./assets/')
     expect(css).not.toContain('/fonts/brand.woff2')
+    const manifest = JSON.parse(await readFile(join(root, 'docs/style-guide/generated/manifest.json'), 'utf8'))
+    expect(manifest.assets).toEqual(['/fonts/brand.woff2'])
+    expect(Object.keys(manifest.files).some(path => path.endsWith('.woff2'))).toBe(false)
     await writeFile(join(root, 'public/fonts/brand.woff2'), 'changed-font')
     await expect(generateStyleGuide(config, { root, check: true })).rejects.toThrow('stale')
   })

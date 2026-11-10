@@ -67,7 +67,7 @@ The optional `component` attribute associates the story and its annotations with
 
 Fixtures are trusted build inputs: server scripts and component imports execute during rendering. Use fictional, local data and pure helpers. Never import authenticated stores, services or account-connected screens. Stacks disables automatic application-store discovery for previews. The published iframe uses a sandbox and a restrictive content policy, including blocked network connections and form submissions. These are browser previews, not native host certification.
 
-`preview.componentDirs` sets component resolution order. `preview.appearances` can render every variant in multiple appearances, each with a name, body class, background and foreground. Without it, the guide uses `brand.background`, `brand.foreground` and `preview.bodyClass`. Provide local `/public` URLs for CSS assets. The generator copies and fingerprints referenced assets; remote CSS resources are rejected. Large STX runtime scripts are shared across examples.
+`preview.componentDirs` sets component resolution order. `preview.appearances` can render every variant in multiple appearances, each with a name, body class, background and foreground. Without it, the guide uses `brand.background`, `brand.foreground` and `preview.bodyClass`. Provide local `/public` URLs for CSS assets. The generator fingerprints referenced assets and copies images. Fonts referenced by `@font-face` are embedded in the shared stylesheet so opaque sandbox origins preserve brand typography without requiring font-server CORS headers. Remote CSS resources are rejected. Large STX runtime scripts are shared across examples.
 
 ## Document contracts accurately
 
