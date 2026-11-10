@@ -49,6 +49,7 @@ describe('native style guide generation', () => {
     const catalog = JSON.parse(await readFile(join(root, 'docs/public/style-guide/generated/catalog.json'), 'utf8'))
     expect(catalog.components[0].props).toEqual([{ name: 'label', type: 'string', description: 'Action text.' }])
     expect(catalog.components[0].events).toEqual(['click Activates the action.'])
+    expect(catalog.components[0].source).toBe('resources/components/Action.stx')
     expect(catalog.components[0].props.some((prop: { name: string }) => prop.name === 'localCounter')).toBe(false)
     const manifest = JSON.parse(await readFile(join(root, 'docs/style-guide/generated/manifest.json'), 'utf8'))
     const previewPath = Object.keys(manifest.files).find(path => path.endsWith('-default-default.html'))!
@@ -109,6 +110,10 @@ const saved = state(false)
     const manifest = JSON.parse(await readFile(join(root, 'docs/style-guide/generated/manifest.json'), 'utf8'))
     const previews = Object.keys(manifest.files).filter(path => /-default-(light|dark)\.html$/.test(path))
     expect(previews).toHaveLength(2)
+    const examplePath = Object.keys(manifest.files).find(path => /\/patterns\/.*\.md$/.test(path))!
+    const example = await readFile(join(root, examplePath), 'utf8')
+    expect(example).toContain('const saved = state(false)')
+    expect(example).toContain('resources/components/Action.story.stx')
     for (const path of previews) {
       const source = await readFile(join(root, path), 'utf8')
       expect(source).not.toContain('NEVER_PUBLISH_ACCOUNT_STORE')

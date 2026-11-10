@@ -229,7 +229,7 @@ export async function generateStyleGuide(config: StyleGuideConfig, options: { ro
       components.push({
         id: `${source.id}/${local.slice(0, -4)}`,
         name,
-        source: file.source,
+        source: contained(root, path) ? slash(relative(root, path)) : file.source,
         library: source.label || source.id,
         // Only an explicit public description belongs in published documentation.
         description: annotations(file.content, 'description')[0] || '',
@@ -398,9 +398,13 @@ export async function generateStyleGuide(config: StyleGuideConfig, options: { ro
         output.set(join(assets, name), preview)
         examples.push(`\n<a href="${publicUrl}/${name}">Open ${html(variant.title)} preview (${html(appearance.name)})</a>\n\n<iframe title="${html(`${story.title}: ${variant.title}, ${appearance.name}`)}" src="${publicUrl}/${name}" loading="lazy" sandbox="allow-scripts" style="width:100%;height:440px;border:1px solid #8884;border-radius:8px"></iframe>\n`)
       }
-      examples.push(`\n\`\`\`stx\n${variant.source}\n\`\`\`\n`)
+      // Copyable examples need the same signal setup and local styles that
+      // the preview rendered, rather than references to undeclared state.
+      const example = [scripts, variant.source, scopedStyles].filter(Boolean).join('\n\n')
+      examples.push(`\n\`\`\`stx\n${example}\n\`\`\`\n`)
     }
-    output.set(join(docs, 'patterns', `${story.id}.md`), page(story.title, `Source: \`${story.file.source}\`. Group: ${cell(story.group)}. Local demonstration data only.\n\n${examples.join('\n')}`))
+    const source = contained(root, story.file.path) ? slash(relative(root, story.file.path)) : story.file.source
+    output.set(join(docs, 'patterns', `${story.id}.md`), page(story.title, `Source: \`${source}\`. Group: ${cell(story.group)}. Local demonstration data only.\n\n${examples.join('\n')}`))
     sidebar.push({ text: story.title, link: `${docsRoute}/patterns/${story.id}` })
   }
   for (const component of components) {
@@ -413,7 +417,7 @@ export async function generateStyleGuide(config: StyleGuideConfig, options: { ro
   const patterns = stories.map(story => `- ${link(`patterns/${story.id}`, story.title)} (${cell(story.group)}, ${story.variants.length} variants)`).join('\n')
   output.set(join(docs, 'index.md'), page(`${config.brand.name} component guide`, `${cell(config.brand.description || '')}\n\n${components.length} components, ${stories.length} isolated stories and ${stories.reduce((count, story) => count + story.variants.length, 0)} variants. Generated from production sources, with ${cell(config.brand.name)} branding.\n\n${link('foundations', 'Foundations, tokens and branding')}\n\n## Patterns and live examples\n\n${patterns || 'No isolated stories configured yet.'}\n\n## All components\n\nEvery configured component is indexed. Reference-only entries do not claim tested behavior or visual coverage.\n\n| Component | Library | Examples |\n| --- | --- | --- |\n${inventory}\n`))
   output.set(join(docs, 'sidebar.json'), json(sidebar))
-  output.set(join(assets, 'catalog.json'), json({ brand: config.brand, tokens: config.tokens || {}, components, stories: stories.map(story => ({ id: story.id, title: story.title, group: story.group, source: story.file.source, variants: story.variants })) }))
+  output.set(join(assets, 'catalog.json'), json({ brand: config.brand, tokens: config.tokens || {}, components, stories: stories.map(story => ({ id: story.id, title: story.title, group: story.group, source: contained(root, story.file.path) ? slash(relative(root, story.file.path)) : story.file.source, variants: story.variants })) }))
   const result = { components: components.length, stories: stories.length, variants: stories.reduce((count, story) => count + story.variants.length, 0) }
   const files = Object.fromEntries([...output].map(([path, content]): [string, string] => [slash(relative(root, path)), hash(content)]).sort(([a], [b]) => a.localeCompare(b)))
   // Validate the entire write set before changing any file. Only our manifest owns deletion rights.
