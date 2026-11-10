@@ -5,6 +5,7 @@ import {
   modelCreateFields,
   modelWritableColumns,
   modelWriteCapabilities,
+  uncollectableRequiredFields,
 } from '../../storage/framework/defaults/app/Actions/Dashboard/Models/model-write'
 import { modelApiConfiguration } from '../../storage/framework/defaults/app/Actions/Dashboard/Models/model-api'
 
@@ -50,6 +51,35 @@ describe('dashboard generic model writes', () => {
       update: false,
       destroy: false,
     })
+  })
+
+  test('a model is creatable only when the form can supply every required field', () => {
+    // User.password: required, hidden from the form, no default. Every
+    // "Create user" used to end in a database error after the form was filled.
+    const required = { isRequired: true }
+    const user = {
+      traits: { useApi: { routes: ['index', 'store', 'show'] } },
+      attributes: {
+        name: { fillable: true, validation: { rule: required } },
+        password: { fillable: true, hidden: true, validation: { rule: required } },
+      },
+    }
+    expect(uncollectableRequiredFields(user)).toEqual(['password'])
+    expect(modelWriteCapabilities(user).create).toBe(false)
+
+    // Hidden but optional, hidden with a default, or required and on the form: all creatable.
+    for (const attributes of [
+      { token: { fillable: true, hidden: true } },
+      { token: { fillable: true, hidden: true, default: 'none', validation: { rule: required } } },
+      { name: { fillable: true, required: true } },
+      { secret: { hidden: true, validation: { rule: required } } },
+    ]) {
+      const model = { traits: { useApi: { routes: ['store'] } }, attributes }
+      expect(uncollectableRequiredFields(model)).toEqual([])
+      expect(modelWriteCapabilities(model).create).toBe(true)
+    }
+    // Updating and deleting are not affected.
+    expect(modelWriteCapabilities({ ...user, traits: { useApi: true } })).toEqual({ create: false, update: true, destroy: true })
   })
 
   test('create fields come only from safe fillable model metadata', () => {

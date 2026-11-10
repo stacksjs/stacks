@@ -128,10 +128,35 @@ function isProtectedField(name: string): boolean {
   return PROTECTED_COLUMNS.has(name) || PROTECTED_COLUMNS.has(column)
 }
 
+/**
+ * The attributes a new row must have that the create form cannot ask for:
+ * required, with no default, and withheld from the form because they are
+ * hidden or protected.
+ *
+ * `User.password` is the case that exists. The form leaves hidden fields out
+ * on purpose, the column is NOT NULL, and so every "Create user" ended in a
+ * 500 from the database after the visitor had filled the form in. A model in
+ * that position needs a flow of its own (registration, an invitation), not
+ * the generic form.
+ */
+export function uncollectableRequiredFields(Model: any): string[] {
+  const names: string[] = []
+  for (const [name, definition] of Object.entries((Model?.attributes ?? {}) as Record<string, any>)) {
+    if (!definition?.fillable || definition.default !== undefined)
+      continue
+    const required = definition.required === true || definition.validation?.rule?.isRequired === true
+    if (required && (definition.hidden || isProtectedField(name)))
+      names.push(name)
+  }
+  return names
+}
+
 export function modelWriteCapabilities(Model: any): ModelWriteCapabilities {
   const routes = modelApiConfiguration(Model).routes
   return {
-    create: routes.includes('store'),
+    // A store route is not enough: the form has to be able to supply every
+    // field a new row requires.
+    create: routes.includes('store') && uncollectableRequiredFields(Model).length === 0,
     update: routes.includes('update'),
     destroy: routes.includes('destroy'),
   }
@@ -314,9 +339,17 @@ export async function resolveWritableModel(slug: string, operation?: ModelWriteO
   if (!Model || typeof Model.find !== 'function')
     return { error: `No ORM model named ${modelName}. Rows from tables without a model are read-only.`, status: 404 }
   if (operation) {
-    const capability = operation === 'store' ? 'create' : operation
-    if (!modelWriteCapabilities(Model)[capability])
+    if (!modelApiConfiguration(Model).routes.includes(operation))
       return { error: `${modelName} does not declare the ${operation} route in its useApi trait.`, status: 405 }
+    if (operation === 'store') {
+      const missing = uncollectableRequiredFields(Model)
+      if (missing.length > 0) {
+        return {
+          error: `${modelName} records cannot be created from the dashboard: ${missing.map(humanize).join(', ')} ${missing.length === 1 ? 'is' : 'are'} required and the create form does not collect ${missing.length === 1 ? 'it' : 'them'}.`,
+          status: 405,
+        }
+      }
+    }
   }
   return { Model, modelName }
 }
