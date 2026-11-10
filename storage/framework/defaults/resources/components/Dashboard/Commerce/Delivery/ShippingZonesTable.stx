@@ -106,18 +106,14 @@ function handleRowAction(payload: { action: string, row: ShippingZoneRow }): voi
   <template #cell="{ row, column }">
     <template :if="column.key === 'countriesText'">
       <div class="flex flex-wrap gap-1">
-        <template :for="country in row.countryChips">
-          <span class="inline-flex px-2 py-1 font-medium text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-400/10 rounded-full" x-text="country"></span>
-        </template>
+        <span :for="country in row.countryChips" class="inline-flex px-2 py-1 font-medium text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-400/10 rounded-full" x-text="country"></span>
         <span :if="row.countriesMore" class="inline-flex px-2 py-1 font-medium text-stone-600 text-xs dark:text-neutral-300 bg-stone-100 dark:bg-white/5 rounded-full" x-text="row.countriesMore"></span>
         <span :if="row.countryChips.length === 0">All countries</span>
       </div>
     </template>
     <template :if="column.key === 'regionsText'">
       <div class="flex flex-wrap gap-1">
-        <template :for="region in row.regionChips">
-          <span class="inline-flex px-2 py-1 font-medium text-emerald-700 text-xs dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-400/10 rounded-full" x-text="region"></span>
-        </template>
+        <span :for="region in row.regionChips" class="inline-flex px-2 py-1 font-medium text-emerald-700 text-xs dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-400/10 rounded-full" x-text="region"></span>
         <span :if="row.regionsMore" class="inline-flex px-2 py-1 font-medium text-stone-600 text-xs dark:text-neutral-300 bg-stone-100 dark:bg-white/5 rounded-full" x-text="row.regionsMore"></span>
         <span :if="row.regionChips.length === 0">All regions</span>
       </div>

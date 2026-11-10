@@ -130,7 +130,7 @@ function submit(): void {
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Courier</span>
             <select x-model="courierId" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
               <option value="">Select a courier</option>
-              <template :for="courier in couriers()" :key="courier.id"><option :value="courier.id">{{ courier.name }} - {{ courier.vehicle_number }}</option></template>
+              <option :for="courier in couriers()" :key="courier.id" :value="courier.id">{{ courier.name }} - {{ courier.vehicle_number }}</option>
             </select>
           </label>
           <div :if="selectedCourier()" class="flex gap-3 items-center p-3 text-gray-600 text-sm dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900/60 border border-gray-200 rounded-lg dark:border-neutral-700">

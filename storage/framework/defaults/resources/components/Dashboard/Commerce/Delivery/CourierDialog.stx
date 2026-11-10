@@ -106,7 +106,7 @@ function submit(): void {
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Linked user</span>
             <select x-model="userId" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
               <option value="">No linked user</option>
-              <template :for="user in users()" :key="user.id"><option :value="user.id">{{ user.name }}{{ user.email ? ' - ' + user.email : '' }}</option></template>
+              <option :for="user in users()" :key="user.id" :value="user.id">{{ user.name }}{{ user.email ? ' - ' + user.email : '' }}</option>
             </select>
           </label>
         </div>

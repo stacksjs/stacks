@@ -175,16 +175,14 @@ onMount(() => {
 
   <div :if="!loading() && !loadError()" class="space-y-6">
     <section aria-label="Delivery metrics" class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-      <template :for="item in stats()" :key="item.label">
-        <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
-          <div class="flex items-start justify-between">
-            <p class="text-gray-500 text-xs dark:text-neutral-400">{{ item.label }}</p>
-            <span :class="'h-5 w-5 text-blue-600 dark:text-blue-400 ' + statIcon(item.label)"></span>
-          </div>
-          <p class="mt-2 font-semibold tabular-nums text-2xl text-gray-900 dark:text-white">{{ item.value }}</p>
-          <p class="mt-1 text-gray-500 text-xs dark:text-neutral-500">{{ item.detail }}</p>
-        </article>
-      </template>
+      <article :for="item in stats()" :key="item.label" class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+        <div class="flex items-start justify-between">
+          <p class="text-gray-500 text-xs dark:text-neutral-400">{{ item.label }}</p>
+          <span :class="'h-5 w-5 text-blue-600 dark:text-blue-400 ' + statIcon(item.label)"></span>
+        </div>
+        <p class="mt-2 font-semibold tabular-nums text-2xl text-gray-900 dark:text-white">{{ item.value }}</p>
+        <p class="mt-1 text-gray-500 text-xs dark:text-neutral-500">{{ item.detail }}</p>
+      </article>
     </section>
 
     <div class="grid gap-6 grid-cols-1 lg:grid-cols-3">
@@ -214,22 +212,20 @@ onMount(() => {
               </tr>
             </thead>
             <tbody class="divide-gray-100 divide-y dark:divide-neutral-700">
-              <template :for="route in routes()" :key="route.id">
-                <tr class="hover:bg-gray-50/70 dark:hover:bg-neutral-700/40">
-                  <td class="px-5 py-3.5">
-                    <p class="font-medium text-gray-900 text-sm dark:text-white">{{ route.courier }}</p>
-                    <p class="mt-0.5 text-gray-500 text-xs dark:text-neutral-400">{{ route.vehicle }}</p>
-                  </td>
-                  <td class="px-4 py-3.5 text-gray-600 text-sm whitespace-nowrap dark:text-neutral-300">
-                    <span class="font-medium tabular-nums text-gray-900 dark:text-white">{{ route.stops }}</span>
-                    {{ route.stops === 1 ? 'stop' : 'stops' }}
-                    <span class="mx-1 text-gray-300 dark:text-neutral-600">/</span>
-                    {{ route.duration }}
-                  </td>
-                  <td class="px-4 py-3.5 text-gray-600 text-sm whitespace-nowrap dark:text-neutral-300">{{ route.distance }}</td>
-                  <td class="px-5 py-3.5 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-400">{{ formatRelativeTime(route.lastActive) }}</td>
-                </tr>
-              </template>
+              <tr :for="route in routes()" :key="route.id" class="hover:bg-gray-50/70 dark:hover:bg-neutral-700/40">
+                <td class="px-5 py-3.5">
+                  <p class="font-medium text-gray-900 text-sm dark:text-white">{{ route.courier }}</p>
+                  <p class="mt-0.5 text-gray-500 text-xs dark:text-neutral-400">{{ route.vehicle }}</p>
+                </td>
+                <td class="px-4 py-3.5 text-gray-600 text-sm whitespace-nowrap dark:text-neutral-300">
+                  <span class="font-medium tabular-nums text-gray-900 dark:text-white">{{ route.stops }}</span>
+                  {{ route.stops === 1 ? 'stop' : 'stops' }}
+                  <span class="mx-1 text-gray-300 dark:text-neutral-600">/</span>
+                  {{ route.duration }}
+                </td>
+                <td class="px-4 py-3.5 text-gray-600 text-sm whitespace-nowrap dark:text-neutral-300">{{ route.distance }}</td>
+                <td class="px-5 py-3.5 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-400">{{ formatRelativeTime(route.lastActive) }}</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -279,18 +275,16 @@ onMount(() => {
         </div>
         <div :if="methods().length === 0" class="px-6 py-10 text-center text-gray-500 text-sm dark:text-neutral-400">No shipping methods configured.</div>
         <ul :if="methods().length > 0" class="divide-gray-100 divide-y dark:divide-neutral-700">
-          <template :for="method in methods()" :key="method.id">
-            <li class="flex gap-4 items-center justify-between px-5 py-3.5">
-              <div class="min-w-0">
-                <div class="flex gap-2 items-center">
-                  <p class="font-medium text-gray-900 text-sm truncate dark:text-white">{{ method.name }}</p>
-                  <span :class="'inline-flex px-2 py-0.5 font-medium text-xs ring-1 ring-inset rounded-full ' + statusClass(method.status)">{{ formatStatus(method.status) }}</span>
-                </div>
-                <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Free shipping: {{ method.freeShipping }}</p>
+          <li :for="method in methods()" :key="method.id" class="flex gap-4 items-center justify-between px-5 py-3.5">
+            <div class="min-w-0">
+              <div class="flex gap-2 items-center">
+                <p class="font-medium text-gray-900 text-sm truncate dark:text-white">{{ method.name }}</p>
+                <span :class="'inline-flex px-2 py-0.5 font-medium text-xs ring-1 ring-inset rounded-full ' + statusClass(method.status)">{{ formatStatus(method.status) }}</span>
               </div>
-              <p class="font-semibold tabular-nums text-gray-900 text-sm whitespace-nowrap dark:text-white">{{ method.baseRate }}</p>
-            </li>
-          </template>
+              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Free shipping: {{ method.freeShipping }}</p>
+            </div>
+            <p class="font-semibold tabular-nums text-gray-900 text-sm whitespace-nowrap dark:text-white">{{ method.baseRate }}</p>
+          </li>
         </ul>
       </section>
 
@@ -304,21 +298,19 @@ onMount(() => {
         </div>
         <div :if="zones().length === 0" class="px-6 py-10 text-center text-gray-500 text-sm dark:text-neutral-400">No shipping zones configured.</div>
         <ul :if="zones().length > 0" class="divide-gray-100 divide-y dark:divide-neutral-700">
-          <template :for="zone in zones()" :key="zone.id">
-            <li class="flex gap-4 items-center justify-between px-5 py-3.5">
-              <div class="min-w-0">
-                <div class="flex gap-2 items-center">
-                  <p class="font-medium text-gray-900 text-sm truncate dark:text-white">{{ zone.name }}</p>
-                  <span :class="'inline-flex px-2 py-0.5 font-medium text-xs ring-1 ring-inset rounded-full ' + statusClass(zone.status)">{{ formatStatus(zone.status) }}</span>
-                </div>
-                <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ zone.regions }} regional {{ zone.regions === 1 ? 'assignment' : 'assignments' }}</p>
+          <li :for="zone in zones()" :key="zone.id" class="flex gap-4 items-center justify-between px-5 py-3.5">
+            <div class="min-w-0">
+              <div class="flex gap-2 items-center">
+                <p class="font-medium text-gray-900 text-sm truncate dark:text-white">{{ zone.name }}</p>
+                <span :class="'inline-flex px-2 py-0.5 font-medium text-xs ring-1 ring-inset rounded-full ' + statusClass(zone.status)">{{ formatStatus(zone.status) }}</span>
               </div>
-              <div class="text-right">
-                <p class="font-semibold tabular-nums text-gray-900 text-sm dark:text-white">{{ zone.countries }}</p>
-                <p class="text-gray-500 text-xs dark:text-neutral-400">countries</p>
-              </div>
-            </li>
-          </template>
+              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ zone.regions }} regional {{ zone.regions === 1 ? 'assignment' : 'assignments' }}</p>
+            </div>
+            <div class="text-right">
+              <p class="font-semibold tabular-nums text-gray-900 text-sm dark:text-white">{{ zone.countries }}</p>
+              <p class="text-gray-500 text-xs dark:text-neutral-400">countries</p>
+            </div>
+          </li>
         </ul>
       </section>
     </div>
