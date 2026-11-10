@@ -251,7 +251,7 @@ onMount(() => {
 
   <section :if="summary().currencyTotals.length > 0" aria-label="Order currency totals" class="flex flex-wrap gap-2 items-center">
     <span class="text-gray-500 text-xs dark:text-neutral-400">Recorded order value</span>
-    <template :for="value in summary().currencyTotals" :key="value.currency"><span class="px-2.5 py-1 font-medium text-gray-700 text-xs dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-200 rounded-full dark:border-neutral-700">{{ formatMoney(value.amount, value.currency) }}</span></template>
+    <span :for="value in summary().currencyTotals" :key="value.currency" class="px-2.5 py-1 font-medium text-gray-700 text-xs dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-200 rounded-full dark:border-neutral-700">{{ formatMoney(value.amount, value.currency) }}</span>
   </section>
 
   <section class="flex flex-col gap-3">
@@ -261,8 +261,8 @@ onMount(() => {
         <span class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none"><span class="h-4 w-4 i-hugeicons-search-01"></span></span>
         <input x-model="search" type="search" placeholder="Search order, customer, status, or address" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" />
       </label>
-      <label><span class="sr-only">Order status</span><select x-model="statusFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">Any status</option><template :for="option in statuses()" :key="option"><option :value="option">{{ label(option) }}</option></template></select></label>
-      <label><span class="sr-only">Order type</span><select x-model="typeFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">Any order type</option><template :for="option in orderTypes()" :key="option"><option :value="option">{{ label(option) }}</option></template></select></label>
+      <label><span class="sr-only">Order status</span><select x-model="statusFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">Any status</option><option :for="option in statuses()" :key="option" :value="option">{{ label(option) }}</option></select></label>
+      <label><span class="sr-only">Order type</span><select x-model="typeFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">Any order type</option><option :for="option in orderTypes()" :key="option" :value="option">{{ label(option) }}</option></select></label>
       <label><span class="sr-only">Sort orders</span><select x-model="sort" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="total-high">Highest total</option><option value="total-low">Lowest total</option></select></label>
     </div>
 

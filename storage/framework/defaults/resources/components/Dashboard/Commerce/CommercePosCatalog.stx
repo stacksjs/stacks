@@ -49,7 +49,7 @@ function sellable(product: CommercePosProduct): boolean {
       <span class="sr-only">Product category</span>
       <select x-model="category" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="emit('category', $event.target.value)">
         <option value="all">Any category</option>
-        <template :for="option in categories()" :key="option.id"><option :value="option.id">{{ option.label }}</option></template>
+        <option :for="option in categories()" :key="option.id" :value="option.id">{{ option.label }}</option>
       </select>
     </label>
     <label>
@@ -79,7 +79,7 @@ function sellable(product: CommercePosProduct): boolean {
         </div>
       </div>
       <p class="mt-3 min-h-10 line-clamp-2 text-gray-500 text-xs dark:text-neutral-400">{{ product.description || 'No description recorded.' }}</p>
-      <div :if="product.allergens.length > 0" class="flex flex-wrap gap-1 mt-3"><template :for="allergen in product.allergens" :key="allergen"><span class="px-2 py-0.5 text-amber-700 text-xs dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 rounded-full">{{ allergen }}</span></template></div>
+      <div :if="product.allergens.length > 0" class="flex flex-wrap gap-1 mt-3"><span :for="allergen in product.allergens" :key="allergen" class="px-2 py-0.5 text-amber-700 text-xs dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 rounded-full">{{ allergen }}</span></div>
       <div class="flex items-end justify-between mt-auto pt-4">
         <div>
           <p class="font-semibold text-gray-900 dark:text-white">{{ formatMoney(product.price) }}</p>

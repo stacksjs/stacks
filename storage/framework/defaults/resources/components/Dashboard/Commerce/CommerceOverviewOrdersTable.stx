@@ -64,17 +64,15 @@ function statusClass(status: string): string {
         </tr>
       </thead>
       <tbody class="divide-gray-100 divide-y dark:divide-neutral-700">
-        <template :for="order in orders()" :key="order.id">
-          <tr>
-            <td class="px-5 py-3 font-medium font-mono text-gray-900 text-sm whitespace-nowrap dark:text-white">{{ order.id }}</td>
-            <td class="px-5 py-3 text-gray-600 text-sm dark:text-neutral-300">{{ order.customer }}</td>
-            <td class="px-5 py-3 font-medium text-gray-700 text-right text-sm whitespace-nowrap dark:text-neutral-200">{{ order.total }}</td>
-            <td class="px-5 py-3">
-              <span :class="'inline-flex px-2 py-1 font-medium text-xs capitalize rounded-full ' + statusClass(order.status)">{{ order.status.toLowerCase() }}</span>
-            </td>
-            <td class="px-5 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-400">{{ formatRelativeTime(order.createdAt) }}</td>
-          </tr>
-        </template>
+        <tr :for="order in orders()" :key="order.id">
+          <td class="px-5 py-3 font-medium font-mono text-gray-900 text-sm whitespace-nowrap dark:text-white">{{ order.id }}</td>
+          <td class="px-5 py-3 text-gray-600 text-sm dark:text-neutral-300">{{ order.customer }}</td>
+          <td class="px-5 py-3 font-medium text-gray-700 text-right text-sm whitespace-nowrap dark:text-neutral-200">{{ order.total }}</td>
+          <td class="px-5 py-3">
+            <span :class="'inline-flex px-2 py-1 font-medium text-xs capitalize rounded-full ' + statusClass(order.status)">{{ order.status.toLowerCase() }}</span>
+          </td>
+          <td class="px-5 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-400">{{ formatRelativeTime(order.createdAt) }}</td>
+        </tr>
       </tbody>
     </table>
   </div>

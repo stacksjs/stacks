@@ -28,13 +28,11 @@ const loading = useReactiveProp('loading', false)
         </tr>
       </thead>
       <tbody class="divide-gray-100 divide-y dark:divide-neutral-700">
-        <template :for="product in products()" :key="product.id">
-          <tr>
-            <td class="px-5 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ product.name }}</td>
-            <td class="px-5 py-3 font-mono text-gray-600 text-right text-sm dark:text-neutral-300">{{ product.sales }}</td>
-            <td class="px-5 py-3 font-medium text-gray-700 text-right text-sm dark:text-neutral-200">{{ product.revenue }}</td>
-          </tr>
-        </template>
+        <tr :for="product in products()" :key="product.id">
+          <td class="px-5 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ product.name }}</td>
+          <td class="px-5 py-3 font-mono text-gray-600 text-right text-sm dark:text-neutral-300">{{ product.sales }}</td>
+          <td class="px-5 py-3 font-medium text-gray-700 text-right text-sm dark:text-neutral-200">{{ product.revenue }}</td>
+        </tr>
       </tbody>
     </table>
   </div>
