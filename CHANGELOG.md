@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.530...v0.75.531)
+
+## ✨ Features
+
+- **docs**: generate branded component style guides from STX stories ([0f16b7c](https://github.com/stacksjs/stacks/commit/0f16b7c)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **auth**: declare the protected resource metadata contract ([f35ec39](https://github.com/stacksjs/stacks/commit/f35ec39)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.529...v0.75.530)
 
 ## ✨ Features
