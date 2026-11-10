@@ -168,33 +168,31 @@ onDestroy(() => {
       </div>
 
       <template :if="!error() && Object.keys(results()).length > 0">
-        <template :for="group in resultGroups()">
+        <div :for="group in resultGroups()" class="contents">
           <div class="pb-1 pt-3 px-3">
             <h3 class="px-1 font-semibold text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">
               {{ group.type }}
             </h3>
           </div>
-          <template :for="item in group.items">
-            <button
-              type="button"
-              class="flex gap-3 items-center px-4 py-2.5 w-full text-left transition-colors"
-              :class="resultIndex(item) === selectedIndex() ? 'bg-blue-50 dark:bg-blue-950/40' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800'"
-              @mouseenter="selectedIndex.set(resultIndex(item))"
-              @click="openResult(item)"
-            >
-              <span :class="'shrink-0 h-5 w-5 text-neutral-400 ' + item.icon"></span>
-              <span class="flex-1 min-w-0">
-                <span class="block font-medium text-neutral-900 text-sm truncate dark:text-white">
-                  {{ item.title }}
-                </span>
-                <span :if="item.subtitle" class="block text-neutral-500 text-xs truncate dark:text-neutral-400">
-                  {{ item.subtitle }}
-                </span>
+          <button :for="item in group.items"
+            type="button"
+            class="flex gap-3 items-center px-4 py-2.5 w-full text-left transition-colors"
+            :class="resultIndex(item) === selectedIndex() ? 'bg-blue-50 dark:bg-blue-950/40' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800'"
+            @mouseenter="selectedIndex.set(resultIndex(item))"
+            @click="openResult(item)"
+          >
+            <span :class="'shrink-0 h-5 w-5 text-neutral-400 ' + item.icon"></span>
+            <span class="flex-1 min-w-0">
+              <span class="block font-medium text-neutral-900 text-sm truncate dark:text-white">
+                {{ item.title }}
               </span>
-              <span class="shrink-0 h-4 w-4 text-neutral-300 dark:text-neutral-600 i-hugeicons-arrow-right-01"></span>
-            </button>
-          </template>
-        </template>
+              <span :if="item.subtitle" class="block text-neutral-500 text-xs truncate dark:text-neutral-400">
+                {{ item.subtitle }}
+              </span>
+            </span>
+            <span class="shrink-0 h-4 w-4 text-neutral-300 dark:text-neutral-600 i-hugeicons-arrow-right-01"></span>
+          </button>
+        </div>
       </template>
 
       <div :if="!error() && query().trim() && !isSearching() && Object.keys(results()).length === 0" class="px-4 py-8 text-center">

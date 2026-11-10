@@ -830,17 +830,15 @@ function cellClass(column: DashboardTableColumn, index: number): string {
           :if="columnMenuOpen()"
           class="absolute right-0 z-40 mt-1 p-2 w-52 bg-white dark:bg-neutral-800 border border-stone-200 rounded-lg dark:border-neutral-700 shadow-lg"
         >
-          <template :for="column in columns()">
-            <label class="flex gap-2 items-center px-2 py-1.5 text-neutral-700 text-sm dark:text-neutral-200 hover:bg-stone-50 dark:hover:bg-neutral-700 rounded cursor-pointer">
-              <input
-                type="checkbox"
-                :checked="!hiddenColumns().includes(column.key)"
-                @change="toggleColumn(column.key)"
-                class="h-3.5 w-3.5 text-blue-600 border-stone-300 rounded dark:border-neutral-600"
-              />
-              {{ column.label }}
-            </label>
-          </template>
+          <label :for="column in columns()" class="flex gap-2 items-center px-2 py-1.5 text-neutral-700 text-sm dark:text-neutral-200 hover:bg-stone-50 dark:hover:bg-neutral-700 rounded cursor-pointer">
+            <input
+              type="checkbox"
+              :checked="!hiddenColumns().includes(column.key)"
+              @change="toggleColumn(column.key)"
+              class="h-3.5 w-3.5 text-blue-600 border-stone-300 rounded dark:border-neutral-600"
+            />
+            {{ column.label }}
+          </label>
         </div>
       </div>
 
@@ -927,31 +925,27 @@ function cellClass(column: DashboardTableColumn, index: number): string {
         <!-- Per-column filter row. -->
         <tr :if="filterable()" class="border-stone-200/70 border-t dark:border-neutral-700">
           <td :if="selectable()" class="pl-6 pr-2 py-2"></td>
-          <template :for="(column, index) in visibleColumns()">
-            <td :class="edgePadding(index) + ' py-2'">
-              <select
-                :if="column.filterable && column.filterOptions"
-                :aria-label="'Filter by ' + column.label"
-                :value="columnFilters()[column.key] || ''"
-                @change="setFilter(column.key, $event)"
-                class="px-1.5 py-1 w-full text-xs bg-white dark:bg-neutral-800 border border-stone-300 rounded dark:border-neutral-600"
-              >
-                <option value="">All</option>
-                <template :for="option in column.filterOptions">
-                  <option :value="option">{{ option }}</option>
-                </template>
-              </select>
-              <input
-                :else-if="column.filterable"
-                type="text"
-                :aria-label="'Filter by ' + column.label"
-                :placeholder="column.label"
-                :value="columnFilters()[column.key] || ''"
-                @input="setFilter(column.key, $event)"
-                class="px-1.5 py-1 w-full text-xs bg-white dark:bg-neutral-800 border border-stone-300 rounded dark:border-neutral-600"
-              />
-            </td>
-          </template>
+          <td :for="(column, index) in visibleColumns()" :class="edgePadding(index) + ' py-2'">
+            <select
+              :if="column.filterable && column.filterOptions"
+              :aria-label="'Filter by ' + column.label"
+              :value="columnFilters()[column.key] || ''"
+              @change="setFilter(column.key, $event)"
+              class="px-1.5 py-1 w-full text-xs bg-white dark:bg-neutral-800 border border-stone-300 rounded dark:border-neutral-600"
+            >
+              <option value="">All</option>
+              <option :for="option in column.filterOptions" :value="option">{{ option }}</option>
+            </select>
+            <input
+              :else-if="column.filterable"
+              type="text"
+              :aria-label="'Filter by ' + column.label"
+              :placeholder="column.label"
+              :value="columnFilters()[column.key] || ''"
+              @input="setFilter(column.key, $event)"
+              class="px-1.5 py-1 w-full text-xs bg-white dark:bg-neutral-800 border border-stone-300 rounded dark:border-neutral-600"
+            />
+          </td>
           <td :if="$slots.actions" class="px-4 py-2"></td>
           <td :else-if="hasRowActions()" class="px-4 py-2"></td>
         </tr>
@@ -969,26 +963,24 @@ function cellClass(column: DashboardTableColumn, index: number): string {
               />
             </td>
 
-            <template :for="(column, columnIndex) in visibleColumns()">
-              <td :class="cellClass(column, columnIndex)">
-                {{-- No `$slots` here: it only resolves standalone, so the
-                     compound condition this used to carry made every slotted
-                     cell render nothing. The slot's own fallback covers the
-                     "caller gave no slot" case instead. See stacksjs/stx#2098. --}}
-                <template :if="column.slotted || !hasSlottedColumns()">
-                  <slot name="cell" :row="row" :column="column" :value="row[column.key]">
-                    <span :if="column.type === 'badge' && hasBadge(row, column)" :class="badgeClass(row, column)">{{ badgeLabel(row, column) }}</span>
-                    <span :if="column.type !== 'badge'">{{ displayValue(row, column) }}</span>
-                    <p :if="subtitleValue(row, column)" class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ subtitleValue(row, column) }}</p>
-                  </slot>
-                </template>
-                <template :else>
+            <td :for="(column, columnIndex) in visibleColumns()" :class="cellClass(column, columnIndex)">
+              {{-- No `$slots` here: it only resolves standalone, so the
+                   compound condition this used to carry made every slotted
+                   cell render nothing. The slot's own fallback covers the
+                   "caller gave no slot" case instead. See stacksjs/stx#2098. --}}
+              <template :if="column.slotted || !hasSlottedColumns()">
+                <slot name="cell" :row="row" :column="column" :value="row[column.key]">
                   <span :if="column.type === 'badge' && hasBadge(row, column)" :class="badgeClass(row, column)">{{ badgeLabel(row, column) }}</span>
                   <span :if="column.type !== 'badge'">{{ displayValue(row, column) }}</span>
                   <p :if="subtitleValue(row, column)" class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ subtitleValue(row, column) }}</p>
-                </template>
-              </td>
-            </template>
+                </slot>
+              </template>
+              <template :else>
+                <span :if="column.type === 'badge' && hasBadge(row, column)" :class="badgeClass(row, column)">{{ badgeLabel(row, column) }}</span>
+                <span :if="column.type !== 'badge'">{{ displayValue(row, column) }}</span>
+                <p :if="subtitleValue(row, column)" class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ subtitleValue(row, column) }}</p>
+              </template>
+            </td>
 
             <td :if="$slots.actions" class="px-4 w-12" :class="compact() ? 'py-2' : 'py-3'">
               <slot name="actions" :row="row" />
@@ -1051,9 +1043,7 @@ function cellClass(column: DashboardTableColumn, index: number): string {
           @change="changePageSize($event)"
           class="px-1.5 py-1 text-xs bg-white dark:bg-neutral-800 border border-stone-300 rounded dark:border-neutral-600"
         >
-          <template :for="option in pageSizeOptions()">
-            <option :value="String(option)">{{ option }} / page</option>
-          </template>
+          <option :for="option in pageSizeOptions()" :value="String(option)">{{ option }} / page</option>
         </select>
       </label>
     </div>

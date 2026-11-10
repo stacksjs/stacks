@@ -154,18 +154,14 @@ onMount(() => {
       <label class="flex flex-col gap-1 text-gray-700 text-sm dark:text-neutral-200">
         Host
         <select x-model="selectedHost" class="px-3 py-2 text-sm dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600">
-          <template :for="entry in hosts()">
-            <option :value="entry.key">{{ entry.key }}</option>
-          </template>
+          <option :for="entry in hosts()" :value="entry.key">{{ entry.key }}</option>
         </select>
       </label>
       <label class="flex flex-1 flex-col gap-1 text-gray-700 text-sm dark:text-neutral-200">
         Command
         <select x-model="selectedCommand" class="px-3 py-2 text-sm dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600">
           <option value="">Choose a command</option>
-          <template :for="command in commandsForHost()">
-            <option :value="command.key">{{ command.key }} - {{ command.description }}</option>
-          </template>
+          <option :for="command in commandsForHost()" :value="command.key">{{ command.key }} - {{ command.description }}</option>
         </select>
       </label>
       <Button type="submit" :disabled="!selectedCommand()" :loading="isRunning()">Run</Button>

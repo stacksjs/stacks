@@ -234,34 +234,32 @@ const selected = (a: unknown, b: unknown) => String(a === b)
     </div>
 
     <div class="grid gap-4 sm:grid-cols-2 p-6">
-      <template :for="option in styleOptions">
-        <button
-          type="button"
-          class="flex flex-col gap-3 p-4 w-full text-left rounded-xl appearance-option"
-          :data-selected="selected(sidebarStyle(), option.id)"
-          :aria-pressed="String(selected(sidebarStyle(), option.id))"
-          @click="selectStyle(option.id)"
-        >
-          <span class="appearance-preview" :data-style="option.id" aria-hidden="true">
-            <span class="appearance-preview-nav">
-              <span class="appearance-preview-row is-active"></span>
-              <span class="appearance-preview-row"></span>
-              <span class="appearance-preview-row"></span>
-              <span class="appearance-preview-row is-short"></span>
-            </span>
-            <span class="appearance-preview-main"></span>
+      <button :for="option in styleOptions"
+        type="button"
+        class="flex flex-col gap-3 p-4 w-full text-left rounded-xl appearance-option"
+        :data-selected="selected(sidebarStyle(), option.id)"
+        :aria-pressed="String(selected(sidebarStyle(), option.id))"
+        @click="selectStyle(option.id)"
+      >
+        <span class="appearance-preview" :data-style="option.id" aria-hidden="true">
+          <span class="appearance-preview-nav">
+            <span class="appearance-preview-row is-active"></span>
+            <span class="appearance-preview-row"></span>
+            <span class="appearance-preview-row"></span>
+            <span class="appearance-preview-row is-short"></span>
           </span>
+          <span class="appearance-preview-main"></span>
+        </span>
 
-          <span class="flex gap-2 items-center">
-            <span
-              class="flex-none h-4 w-4 appearance-check i-hugeicons-checkmark-circle-02"
-              aria-hidden="true"
-            ></span>
-            <span class="font-medium text-neutral-900 text-sm dark:text-white">{{ option.label }}</span>
-          </span>
-          <span class="leading-relaxed text-neutral-500 text-xs dark:text-neutral-400">{{ option.description }}</span>
-        </button>
-      </template>
+        <span class="flex gap-2 items-center">
+          <span
+            class="flex-none h-4 w-4 appearance-check i-hugeicons-checkmark-circle-02"
+            aria-hidden="true"
+          ></span>
+          <span class="font-medium text-neutral-900 text-sm dark:text-white">{{ option.label }}</span>
+        </span>
+        <span class="leading-relaxed text-neutral-500 text-xs dark:text-neutral-400">{{ option.description }}</span>
+      </button>
     </div>
   </Card>
 
@@ -275,18 +273,16 @@ const selected = (a: unknown, b: unknown) => String(a === b)
     </div>
 
     <div class="flex gap-3 p-6" role="group" aria-label="Color mode">
-      <template :for="mode in colorModes">
-        <button
-          type="button"
-          class="flex flex-1 gap-2 items-center justify-center px-3 py-2 font-medium text-neutral-600 text-sm dark:text-neutral-300 rounded-lg appearance-mode appearance-option"
-          :data-selected="selected(colorMode(), mode.id)"
-          :aria-pressed="String(selected(colorMode(), mode.id))"
-          @click="selectColorMode(mode.id)"
-        >
-          <span :class="mode.icon" class="h-4 w-4" aria-hidden="true"></span>
-          <span>{{ mode.label }}</span>
-        </button>
-      </template>
+      <button :for="mode in colorModes"
+        type="button"
+        class="flex flex-1 gap-2 items-center justify-center px-3 py-2 font-medium text-neutral-600 text-sm dark:text-neutral-300 rounded-lg appearance-mode appearance-option"
+        :data-selected="selected(colorMode(), mode.id)"
+        :aria-pressed="String(selected(colorMode(), mode.id))"
+        @click="selectColorMode(mode.id)"
+      >
+        <span :class="mode.icon" class="h-4 w-4" aria-hidden="true"></span>
+        <span>{{ mode.label }}</span>
+      </button>
     </div>
   </Card>
 
@@ -306,21 +302,19 @@ const selected = (a: unknown, b: unknown) => String(a === b)
     </div>
 
     <div class="divide-neutral-200/60 divide-y dark:divide-white/5">
-      <template :for="section in sections">
-        <label class="flex gap-4 items-center justify-between px-6 py-4 hover:bg-stone-50/60 dark:hover:bg-white/[0.02] cursor-pointer">
-          <span class="min-w-0">
-            <span class="block font-medium text-neutral-900 text-sm dark:text-white">{{ section.label }}</span>
-            <span class="block mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">{{ section.count }} items</span>
-          </span>
-          <input
-            type="checkbox"
-            :checked="isVisible(section.id)"
-            @change="toggleSection(section.id, $event)"
-            class="flex-none h-4 w-4 text-blue-600 border-neutral-300 rounded focus:ring-blue-500"
-            :aria-label="'Show ' + section.label + ' section'"
-          >
-        </label>
-      </template>
+      <label :for="section in sections" class="flex gap-4 items-center justify-between px-6 py-4 hover:bg-stone-50/60 dark:hover:bg-white/[0.02] cursor-pointer">
+        <span class="min-w-0">
+          <span class="block font-medium text-neutral-900 text-sm dark:text-white">{{ section.label }}</span>
+          <span class="block mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">{{ section.count }} items</span>
+        </span>
+        <input
+          type="checkbox"
+          :checked="isVisible(section.id)"
+          @change="toggleSection(section.id, $event)"
+          class="flex-none h-4 w-4 text-blue-600 border-neutral-300 rounded focus:ring-blue-500"
+          :aria-label="'Show ' + section.label + ' section'"
+        >
+      </label>
     </div>
   </Card>
 

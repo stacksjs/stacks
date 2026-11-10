@@ -87,25 +87,23 @@ function badgeClass(tab: DashboardTab): string {
 </script>
 
 <div role="tablist" :class="'flex overflow-x-auto ' + (fullWidth() ? 'w-full ' : '') + containerClasses[variant()]">
-  <template :for="tab in tabs()">
-    <button
-      type="button"
-      role="tab"
-      :aria-selected="String(activeTab() === tab.id)"
-      :aria-controls="tab.panelId || undefined"
-      :tabindex="activeTab() === tab.id ? 0 : -1"
-      :disabled="Boolean(tab.disabled)"
-      :class="tabClass(tab)"
-      @click="selectTab(tab)"
+  <button :for="tab in tabs()"
+    type="button"
+    role="tab"
+    :aria-selected="String(activeTab() === tab.id)"
+    :aria-controls="tab.panelId || undefined"
+    :tabindex="activeTab() === tab.id ? 0 : -1"
+    :disabled="Boolean(tab.disabled)"
+    :class="tabClass(tab)"
+    @click="selectTab(tab)"
+  >
+    <span :if="tab.icon" :class="tab.icon + ' h-4 w-4'"></span>
+    <span>{{ tab.label }}</span>
+    <span
+      :if="tab.badge !== undefined"
+      :class="'inline-flex items-center justify-center px-1.5 h-5 min-w-[1.25rem] font-medium text-xs rounded-full ' + badgeClass(tab)"
     >
-      <span :if="tab.icon" :class="tab.icon + ' h-4 w-4'"></span>
-      <span>{{ tab.label }}</span>
-      <span
-        :if="tab.badge !== undefined"
-        :class="'inline-flex items-center justify-center px-1.5 h-5 min-w-[1.25rem] font-medium text-xs rounded-full ' + badgeClass(tab)"
-      >
-        {{ tab.badge }}
-      </span>
-    </button>
-  </template>
+      {{ tab.badge }}
+    </span>
+  </button>
 </div>

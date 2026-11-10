@@ -125,20 +125,16 @@ onMount(() => {
     <div class="grid gap-4 grid-cols-1 lg:grid-cols-2">
       <Card title="Affected tables">
         <div :if="affectedTables().length > 0" class="flex flex-wrap gap-2">
-          <template :for="table in affectedTables()">
-            <span class="px-2 py-1 font-medium text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded">{{ table }}</span>
-          </template>
+          <span :for="table in affectedTables()" class="px-2 py-1 font-medium text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded">{{ table }}</span>
         </div>
         <p :if="affectedTables().length === 0" class="text-neutral-500 text-sm dark:text-neutral-400">No affected tables were recorded.</p>
       </Card>
       <Card title="Optimization">
         <ul :if="suggestions().length > 0" class="space-y-2">
-          <template :for="suggestion in suggestions()">
-            <li class="flex gap-2 items-start text-neutral-700 text-sm dark:text-neutral-300">
-              <span class="flex-none mt-0.5 h-4 w-4 text-amber-500 i-hugeicons-bulb"></span>
-              {{ suggestion }}
-            </li>
-          </template>
+          <li :for="suggestion in suggestions()" class="flex gap-2 items-start text-neutral-700 text-sm dark:text-neutral-300">
+            <span class="flex-none mt-0.5 h-4 w-4 text-amber-500 i-hugeicons-bulb"></span>
+            {{ suggestion }}
+          </li>
         </ul>
         <p :if="suggestions().length === 0" class="text-neutral-500 text-sm dark:text-neutral-400">No optimization suggestions were recorded.</p>
       </Card>

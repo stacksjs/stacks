@@ -1140,7 +1140,7 @@ describe('dashboard native STX bindings', () => {
     expect(page).toContain('x-model="query"')
     expect(page).toContain('x-model="drafts[field.key]"')
     expect(page).toContain('x-model.number="drafts[field.key]"')
-    expect(page).toContain('<template :for="field in fields">')
+    expect(page).toContain('<div :for="field in fields"')
     expect(page).toContain("@if(field.type === 'boolean' && field.editable)")
     expect(page).toContain('@elseif(field.editable)')
     expect(page).toContain('@endif')

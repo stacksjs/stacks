@@ -130,36 +130,22 @@ describe('dashboard row actions', () => {
 })
 
 describe('dashboard loops', () => {
-  test('no <template :for> wraps a component', () => {
+  test('no dashboard template loops on <template :for>', () => {
     // stx strips <template> wrappers, so a component inside a <template :for>
     // loses every prop and slot binding that reads the loop variable and
     // renders empty (stacksjs/stx#2179, which now warns on exactly this). The
-    // loop goes on the element it repeats. A <template :for> over plain
-    // elements renders correctly and is left alone: converting those was not
-    // free, since a <td :for> holding an <option :for> inside a hidden row
-    // took the whole table body down with it.
-    const tag = /<(\/?)([A-Za-z][\w.:-]*)\b((?:[^>"']|"[^"]*"|'[^']*')*?)(\/?)>/g
+    // loop goes on the element it repeats, which is stx's documented spelling,
+    // so the dashboard uses it everywhere and a later edit cannot put a
+    // component back inside a template loop by adding one to an existing loop.
     const offenders: string[] = []
     for (const root of ['storage/framework/defaults/resources/components/Dashboard', 'storage/framework/defaults/views/dashboard']) {
       for (const file of templates(resolve(root))) {
         const source = readFileSync(file, 'utf8')
           .replace(/<script\b[\s\S]*?<\/script>/g, '')
-          .replace(/<style\b[\s\S]*?<\/style>/g, '')
           .replace(/\{\{--[\s\S]*?--\}\}/g, '')
           .replace(/<!--[\s\S]*?-->/g, '')
-        const stack: Array<{ name: string, loop: boolean }> = []
-        for (const [, close, name, attrs, selfClosing] of source.matchAll(tag)) {
-          if (close) {
-            const at = stack.map(entry => entry.name).lastIndexOf(name!)
-            if (at >= 0)
-              stack.length = at
-            continue
-          }
-          if (/^[A-Z]/.test(name!) && stack.some(entry => entry.loop))
-            offenders.push(`${file.split('defaults/')[1]}: <${name}>`)
-          if (!selfClosing && !/^(?:input|img|br|hr|meta|link|source)$/i.test(name!))
-            stack.push({ name: name!, loop: name === 'template' && /(?:^|\s):for=/.test(attrs ?? '') })
-        }
+        if (/<template\b[^>]*\s:for=/.test(source))
+          offenders.push(file.split('defaults/')[1]!)
       }
     }
     expect(offenders).toEqual([])
