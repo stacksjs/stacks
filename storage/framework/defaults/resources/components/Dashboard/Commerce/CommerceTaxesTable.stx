@@ -2,6 +2,7 @@
 
 <script client>
 import type { TaxRateRecord } from '../../../../app/Actions/Dashboard/Commerce/tax-rate-records'
+import { taxTypeLabel } from '../../../../functions/commerce/tax-types'
 
 const records = useReactiveProp('records', [] as TaxRateRecord[])
 const loading = useReactiveProp('loading', false)
@@ -71,6 +72,6 @@ function handleRowAction(payload: { action: string, row: TaxRateRecord }): void 
       <span :if="row.code" class="px-2 py-0.5 font-mono text-gray-600 text-xs dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700 rounded-full" x-text="row.code"></span>
       <span :if="row.exemptible" class="px-2 py-0.5 font-medium text-amber-700 text-xs dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 rounded-full" x-tooltip="Not charged to a customer who qualifies for an exemption" title="Not charged to a customer who qualifies for an exemption">Exemptible</span>
     </div>
-    <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400" x-text="row.type"></p>
+    <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400" x-text="taxTypeLabel(row.type || '')"></p>
   </template>
 </Table>

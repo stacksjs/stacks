@@ -1,5 +1,6 @@
 <script client>
 import type { TaxRateRecord, TaxRateSummary } from '../../../../app/Actions/Dashboard/Commerce/tax-rate-records'
+import { taxTypeLabel } from '../../../../functions/commerce/tax-types'
 import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
 
@@ -250,7 +251,7 @@ onMount(() => {
         <span class="sr-only">Tax type</span>
         <select x-model="typeFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
           <option value="all">All tax types</option>
-          <template :for="type in taxTypes()" :key="type"><option :value="type">{{ type }}</option></template>
+          <template :for="type in taxTypes()" :key="type"><option :value="type">{{ taxTypeLabel(type) }}</option></template>
         </select>
       </label>
     </div>

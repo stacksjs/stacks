@@ -41,6 +41,7 @@ export { useLicenseKeys } from '../defaults/functions/commerce/shippings/license
 export { useShippingMethods } from '../defaults/functions/commerce/shippings/shipping-methods'
 export { useShippingRates } from '../defaults/functions/commerce/shippings/shipping-rates'
 export { useShippingZones } from '../defaults/functions/commerce/shippings/shipping-zones'
+export { taxTypeLabel } from '../defaults/functions/commerce/tax-types'
 export { useTaxRates } from '../defaults/functions/commerce/taxes'
 export { useWaitlistProducts } from '../defaults/functions/commerce/waitlist/products'
 export { useWaitlistRestaurants } from '../defaults/functions/commerce/waitlist/restaurants'
