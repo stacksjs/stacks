@@ -192,7 +192,7 @@ export async function transpilePackage(options: {
   pkgName?: string
   external?: string[]
 }): Promise<void> {
-  const { dts } = await import('bun-plugin-dtsx')
+  const { dts } = await import('@dtsx/bun')
   const srcDir = p.resolve(options.dir, 'src')
   const distDir = p.resolve(options.dir, 'dist')
 

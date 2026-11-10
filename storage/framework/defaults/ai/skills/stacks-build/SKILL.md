@@ -243,7 +243,7 @@ enum Action {
 |------|-------|
 | **Bun** | Primary bundler (`target: 'bun'`, `format: 'esm'`) |
 | **stx** | Component library builds |
-| **bun-plugin-dtsx** | TypeScript declaration generation |
+| **@dtsx/bun** | TypeScript declaration generation |
 | **Docker** | Server containerization |
 | **@babel/traverse** | AST traversal for export cleanup |
 

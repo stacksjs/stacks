@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { cp } from 'node:fs/promises'
 import { join } from 'node:path'
-import { dts } from 'bun-plugin-dtsx'
+import { dts } from '@dtsx/bun'
 import { frameworkExternal, intro, outro, transpilePackage } from '../build/src'
 
 const { startTime } = await intro({

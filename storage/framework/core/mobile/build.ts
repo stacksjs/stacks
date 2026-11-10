@@ -1,4 +1,4 @@
-import { dts } from 'bun-plugin-dtsx'
+import { dts } from '@dtsx/bun'
 import { frameworkExternal, intro, outro } from '../build/src'
 
 const { startTime } = await intro({ dir: import.meta.dir })

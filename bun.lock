@@ -181,7 +181,7 @@
         "better-dx": "^0.2.24",
       },
       "peerDependencies": {
-        "craft-native": ">=0.0.490",
+        "craft-native": ">=0.0.491",
         "pickier": "^0.1.75",
       },
       "optionalPeers": [
@@ -420,10 +420,10 @@
       "name": "@stacksjs/build",
       "version": "0.75.533",
       "dependencies": {
+        "@dtsx/bun": "^0.11.41",
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/storage": "workspace:*",
-        "bun-plugin-dtsx": "^0.11.31",
       },
       "devDependencies": {
         "better-dx": "^0.2.24",
@@ -670,7 +670,7 @@
         "@stacksjs/config": "0.75.533",
         "@stacksjs/router": "0.75.533",
         "@stacksjs/server": "0.75.533",
-        "craft-native": ">=0.0.490",
+        "craft-native": ">=0.0.491",
       },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
@@ -943,7 +943,7 @@
       "dependencies": {
         "@bughq/sdk": "^0.3.0",
         "@stacksjs/types": "workspace:*",
-        "craft-native": ">=0.0.490",
+        "craft-native": ">=0.0.491",
       },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
@@ -1594,7 +1594,9 @@
 
     "@cwcss/crosswind": ["@cwcss/crosswind@0.2.19", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "bunfig": "^0.15.17" }, "bin": { "crosswind": "./dist/cli.js" } }, "sha512-NswUZPNHbdkW4rxvmwjjIM7jyfQ/rr0X1J1uwjTUwixc3BXQs1Fk7pP5cC7MxkGGnmRTFs2O9J+U9tJ36ZJ7fQ=="],
 
-    "@dtsx/dtsx": ["@dtsx/dtsx@0.11.38", "", { "peerDependencies": { "prettier": "^3.9.10" }, "optionalPeers": ["prettier"], "bin": { "dtsx": "./dist/bin/cli.js" } }, "sha512-ZNc+6v59/zcGyYZd/0Yzs4/S6ajvu1das4Pn+WowKdlT9kwcnk5BpVfbfGRDe/AljG83MAnGA/dNZCIvQ/hePA=="],
+    "@dtsx/bun": ["@dtsx/bun@0.11.41", "", { "dependencies": { "@dtsx/dtsx": "0.11.41" } }, "sha512-p3e7iVBCaVDL9OOmmiywdnhUpWNKqWmJzXdA/SkQU1JIO7TO5HNbTLBygxqbv32djLMjQZhyp30VATNv3Ti7BQ=="],
+
+    "@dtsx/dtsx": ["@dtsx/dtsx@0.11.41", "", { "peerDependencies": { "prettier": "^3.9.10" }, "optionalPeers": ["prettier"], "bin": { "dtsx": "./dist/bin/cli.js" } }, "sha512-fW0N/COxlq/ZcJdmryVyOgKAoFUzdZbTojA9WkloYSP8iYCV5Tn19i/zyJ+WgKzFzzWhrslvATF8msvmz3b25g=="],
 
     "@hono/node-server": ["@hono/node-server@2.1.6", "", { "peerDependencies": { "hono": "^4 || ^5.0.0-0" } }, "sha512-p/KH9MnfNcsm3sR6x4lNgm5j+QN4Et8srKredl9DZfXiyZ1UQ3aQ2YVpFLbqktYN5JI+DB+VZFKM2PqE5hLKjQ=="],
 
@@ -2199,6 +2201,8 @@
     "@stacksjs/stx/ts-broadcasting": ["ts-broadcasting@0.0.11", "", { "bin": { "broadcast": "./dist/bin/cli.js" } }, "sha512-lqn/VGfW/JiXY8TMtzq4RLu2QlK6Q8oLQg/G9zLBtp5gFoO4dfxihyXPSr/elmGCvV9keC7RbLva6cMSBkhnQg=="],
 
     "body-parser/content-type": ["content-type@2.1.0", "", {}, "sha512-mj7UPXE0jaqaOsukNZRUEfEi2AcL7C/vwmwcHV0O97eO1E1pxBZuyjlZrx5seTaNBg1U6+o35wpa35Qfcc+7ag=="],
+
+    "bun-plugin-dtsx/@dtsx/dtsx": ["@dtsx/dtsx@0.11.38", "", { "peerDependencies": { "prettier": "^3.9.10" }, "optionalPeers": ["prettier"], "bin": { "dtsx": "./dist/bin/cli.js" } }, "sha512-ZNc+6v59/zcGyYZd/0Yzs4/S6ajvu1das4Pn+WowKdlT9kwcnk5BpVfbfGRDe/AljG83MAnGA/dNZCIvQ/hePA=="],
 
     "express/content-type": ["content-type@2.1.0", "", {}, "sha512-mj7UPXE0jaqaOsukNZRUEfEi2AcL7C/vwmwcHV0O97eO1E1pxBZuyjlZrx5seTaNBg1U6+o35wpa35Qfcc+7ag=="],
 

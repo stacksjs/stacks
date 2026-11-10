@@ -58,10 +58,10 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@dtsx/bun": "^0.11.41",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/path": "workspace:*",
-    "@stacksjs/storage": "workspace:*",
-    "bun-plugin-dtsx": "^0.11.31"
+    "@stacksjs/storage": "workspace:*"
   },
   "devDependencies": {
     "better-dx": "^0.2.24"
