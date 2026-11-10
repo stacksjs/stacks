@@ -47,6 +47,12 @@ import { parseDashboardDate } from '../../../../functions/dashboard-dates'
 interface DashboardTableColumn {
   key: string
   label: string
+  /**
+   * What the header means, for a label a newcomer may not know (`TTL`, a tax
+   * code). The header wears it through `<abbr>`: shown on hover, read out by
+   * screen readers, and marked with a dotted underline so it is findable.
+   */
+  description?: string
   align?: 'left' | 'center' | 'right'
   sortable?: boolean
   /** Show a filter control for this column in the filter row. */
@@ -851,13 +857,17 @@ function cellClass(column: DashboardTableColumn, index: number): string {
                 class="inline-flex gap-1.5 items-center hover:text-stone-700 dark:hover:text-neutral-200"
                 @click="sort(column)"
               >
-                <span>{{ column.label }}</span>
+                <abbr :if="column.description" :title="column.description" class="underline underline-offset-2 cursor-help decoration-dotted">{{ column.label }}</abbr>
+                <span :else>{{ column.label }}</span>
                 <span
                   aria-hidden="true"
                   :class="'h-3.5 w-3.5 ' + (sortKey() === column.key ? (sortDirection() === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02') : 'opacity-30 i-hugeicons-arrow-up-down')"
                 ></span>
               </Button>
-              <span :else>{{ column.label }}</span>
+              <span :else>
+                <abbr :if="column.description" :title="column.description" class="underline underline-offset-2 cursor-help decoration-dotted">{{ column.label }}</abbr>
+                <span :else>{{ column.label }}</span>
+              </span>
             </th>
           </template>
 
