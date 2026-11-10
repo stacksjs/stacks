@@ -1,8 +1,8 @@
 /**
  * One model record, read and written through the dashboard's generic model
- * API (`/api/dashboard/models/{slug}`), for a page that lists records of its
- * own - the Users, Teams and Subscribers pages - and wants the same eye,
- * pencil and trash the model records page offers.
+ * API (`/api/dashboard/models/{slug}`): the record's own page
+ * (`/models/{slug}/{id}`, where the eye leads), and the pencil and trash on a
+ * page that lists records of its own - Users, Teams and Subscribers.
  *
  * What a page may do comes from the model, not the page: `writeCapabilities`
  * follows the model's `useApi` routes, so a model that does not expose
@@ -20,6 +20,7 @@ export interface ModelWriteCapabilities {
 export interface ModelColumn {
   name: string
   label: string
+  type?: 'number' | 'boolean' | 'date' | 'json' | 'text'
 }
 
 export interface ModelRecord {
@@ -82,17 +83,79 @@ function text(value: unknown): string {
 }
 
 /**
- * The dialog's fields for a record. Viewing shows every column read-only;
- * editing leaves the rest visible as context and lets only the writable ones
- * change.
+ * The edit dialog's fields for a record: the writable columns can change, and
+ * the rest stay visible, read-only, as context.
  */
-export function modelRecordFields(record: ModelRecord, viewOnly: boolean): ModelRecordField[] {
+export function modelRecordFields(record: ModelRecord): ModelRecordField[] {
   return record.columns.map(column => ({
     name: column.name,
     label: column.label,
     value: text(record.row[column.name]),
-    readonly: viewOnly || !record.updateColumns.includes(column.name),
+    readonly: !record.updateColumns.includes(column.name),
   }))
+}
+
+export interface ModelRecordDetail {
+  name: string
+  label: string
+  /** As a person reads it: a date in their locale, Yes or No, formatted JSON. */
+  value: string
+  /** Nothing is stored in this column. */
+  empty: boolean
+  /** Preformatted, for JSON. */
+  block: boolean
+}
+
+function readable(value: unknown, type: ModelColumn['type']): { value: string, block: boolean } {
+  if (type === 'boolean')
+    return { value: value === true || value === 1 || value === '1' ? 'Yes' : 'No', block: false }
+  if (type === 'date') {
+    const date = new Date(value as string | number)
+    if (!Number.isNaN(date.getTime()))
+      return { value: new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date), block: false }
+  }
+  if (typeof value === 'object') {
+    try {
+      return { value: JSON.stringify(value, null, 2), block: true }
+    }
+    catch {
+      return { value: String(value), block: false }
+    }
+  }
+  return { value: String(value), block: false }
+}
+
+/** Every stored column of a record, as its own page shows it. */
+export function modelRecordDetails(record: ModelRecord): ModelRecordDetail[] {
+  return record.columns.map((column) => {
+    const stored = record.row[column.name]
+    const empty = stored === null || stored === undefined || stored === ''
+    return { name: column.name, label: column.label, empty, ...(empty ? { value: '', block: false } : readable(stored, column.type)) }
+  })
+}
+
+/** What to call a record in a heading: its name, title or email, else its id. */
+export function modelRecordTitle(record: ModelRecord): string {
+  for (const key of ['name', 'title', 'email', 'subject']) {
+    const value = record.row[key]
+    if (typeof value === 'string' && value.trim())
+      return value
+  }
+  return `${record.modelName} ${text(record.row.id)}`
+}
+
+/** The record's own page. `from` is the list to go back to, when it is not the model's own. */
+export function modelRecordHref(slug: string, id: string | number, from?: string): string {
+  const path = `/models/${encodeURIComponent(slug)}/${encodeURIComponent(String(id))}`
+  return from ? `${path}?from=${encodeURIComponent(from)}` : path
+}
+
+/**
+ * Where "back" goes: the list the visitor came from when it is a path inside
+ * the dashboard, else the model's records. Never an outside address.
+ */
+export function modelRecordBackHref(slug: string, from: string | null | undefined): string {
+  return from && /^\/(?!\/)[\w\-/]*$/.test(from) ? from : `/models/${encodeURIComponent(slug)}`
 }
 
 /**

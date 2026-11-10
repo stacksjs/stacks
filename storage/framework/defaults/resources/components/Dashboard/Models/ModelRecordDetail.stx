@@ -1,0 +1,173 @@
+<script client>
+// A record's own page (`/models/{slug}/{id}`), where the eye on any table row
+// leads: every stored field, read as a person reads it, with the edit and
+// delete the model's API allows. A page rather than a dialog, so a record has
+// an address to share, open in a tab and come back to.
+import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
+import type { ModelRecord } from '../../../../functions/dashboard-model-record'
+import { changedModelFields, deleteModelRecord, fetchModelRecord, modelRecordBackHref, modelRecordDetails, modelRecordFields, modelRecordTitle, updateModelRecord } from '../../../../functions/dashboard-model-record'
+import { pushToast } from '../../../../functions/toasts'
+
+const navigation = useNavigation()
+const record = state<ModelRecord | null>(null)
+const loading = state(true)
+const loadError = state('')
+const editing = state(false)
+const confirmingDelete = state(false)
+const working = state(false)
+
+// `/models/{slug}/{id}`: the last two segments of the address.
+function slug(): string {
+  return navigation.urlSegment(-2)
+}
+
+function recordId(): string {
+  return navigation.urlSegment(-1)
+}
+
+const from = navigation.urlQuery('from')
+const backHref = derived(() => modelRecordBackHref(slug(), from))
+/** "Users" for /data/users; the model's own list otherwise. */
+const backLabel = derived(() => {
+  const last = backHref().split('/').filter(Boolean).pop() || ''
+  if (backHref().startsWith('/data/') && last)
+    return last.charAt(0).toUpperCase() + last.slice(1)
+  return record() ? `${record()!.modelName} records` : 'Records'
+})
+
+const modelName = derived(() => record()?.modelName || 'Record')
+const title = derived(() => record() ? modelRecordTitle(record()!) : '')
+const details = derived(() => record() ? modelRecordDetails(record()!) : [])
+const editFields = derived(() => record() && editing() ? modelRecordFields(record()!) : [])
+const canEdit = derived(() => Boolean(record()?.writeCapabilities.update))
+const canDelete = derived(() => Boolean(record()?.writeCapabilities.destroy))
+
+async function loadRecord(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    record.set(await fetchModelRecord(slug(), recordId()))
+  }
+  catch (error) {
+    record.set(null)
+    loadError.set(error instanceof Error ? error.message : 'This record could not be loaded.')
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+async function saveRecord(values: Record<string, string>): Promise<void> {
+  const current = record()
+  if (!current)
+    return
+  const fields = changedModelFields(current.row, values)
+  if (Object.keys(fields).length === 0) {
+    editing.set(false)
+    return
+  }
+  working.set(true)
+  try {
+    await updateModelRecord(slug(), recordId(), fields)
+    pushToast('success', `${current.modelName} ${recordId()} updated`)
+    editing.set(false)
+    await loadRecord()
+  }
+  catch (error) {
+    pushToast('error', 'Could not save', { detail: error instanceof Error ? error.message : String(error) })
+  }
+  finally {
+    working.set(false)
+  }
+}
+
+async function deleteRecord(): Promise<void> {
+  const current = record()
+  if (!current)
+    return
+  working.set(true)
+  try {
+    await deleteModelRecord(slug(), recordId())
+    pushToast('success', `${current.modelName} ${recordId()} deleted`)
+    confirmingDelete.set(false)
+    navigate(backHref())
+  }
+  catch (error) {
+    pushToast('error', 'Could not delete', { detail: error instanceof Error ? error.message : String(error) })
+  }
+  finally {
+    working.set(false)
+  }
+}
+
+onMount(() => {
+  void loadRecord()
+})
+</script>
+
+<div class="flex flex-col gap-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div class="min-w-0">
+      <StxLink :to="backHref()" class="inline-flex gap-1 items-center mb-3 font-medium text-neutral-500 text-sm dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400">
+        <span aria-hidden="true" class="h-4 w-4 i-hugeicons-arrow-left-02"></span>
+        {{ backLabel() }}
+      </StxLink>
+      <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight truncate dark:text-white">{{ title() || modelName() }}</h1>
+      <p :if="record()" class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">{{ modelName() }} record {{ recordId() }}</p>
+    </div>
+    <div :if="record()" class="flex flex-none gap-2 items-center">
+      <Button :if="canEdit()" variant="secondary" @click="editing.set(true)">
+        <span aria-hidden="true" class="h-4 w-4 i-hugeicons-pencil-edit-02"></span>
+        Edit
+      </Button>
+      <Button :if="canDelete()" variant="danger" @click="confirmingDelete.set(true)">
+        <span aria-hidden="true" class="h-4 w-4 i-hugeicons-delete-02"></span>
+        Delete
+      </Button>
+    </div>
+  </header>
+
+  <div :if="loading()" class="flex items-center justify-center py-20 text-neutral-500 text-sm dark:text-neutral-400">
+    <span aria-hidden="true" class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>
+    Loading record
+  </div>
+
+  <div :if="!loading() && loadError()" role="alert" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg dark:border-red-900">
+    <span>{{ loadError() }}</span>
+    <Button variant="secondary" size="sm" @click="loadRecord">Try again</Button>
+  </div>
+
+  <Card :if="!loading() && record()" padding="none">
+    <div class="p-5 border-b border-neutral-200 dark:border-neutral-700">
+      <h2 class="font-semibold text-neutral-900 dark:text-white">Stored fields</h2>
+      <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Everything saved for this {{ modelName().toLowerCase() }}, as it is in the database.</p>
+    </div>
+    <dl class="divide-neutral-200 divide-y dark:divide-neutral-700">
+      <div :for="detail in details()" class="grid gap-1 grid-cols-1 sm:gap-4 sm:grid-cols-[14rem_minmax(0,1fr)] px-5 py-3.5">
+        <dt class="font-medium text-neutral-500 text-sm dark:text-neutral-400">{{ detail.label }}</dt>
+        <dd :if="detail.empty" class="text-neutral-400 text-sm dark:text-neutral-500">Not set</dd>
+        <dd :if="!detail.empty && detail.block" class="min-w-0"><pre class="overflow-x-auto p-3 font-mono text-neutral-800 text-xs dark:text-neutral-200 bg-neutral-50 dark:bg-neutral-900 rounded-lg">{{ detail.value }}</pre></dd>
+        <dd :if="!detail.empty && !detail.block" class="min-w-0 break-words text-neutral-900 text-sm dark:text-white">{{ detail.value }}</dd>
+      </div>
+    </dl>
+  </Card>
+
+  <EditRecordModal
+    :open="editing()"
+    :modelName="modelName()"
+    :fields="editFields()"
+    :busy="working()"
+    @close="editing.set(false)"
+    @submit="saveRecord($event)"
+  />
+
+  <ConfirmDialog
+    :isOpen="confirmingDelete()"
+    :title="'Delete this ' + modelName().toLowerCase() + '?'"
+    :description="(title() || modelName()) + ' will be removed through the model, so soft deletes and observers apply.'"
+    :busy="working()"
+    :confirmLabel="working() ? 'Deleting' : 'Delete'"
+    @close="confirmingDelete.set(false)"
+    @confirm="deleteRecord"
+  />
+</div>
