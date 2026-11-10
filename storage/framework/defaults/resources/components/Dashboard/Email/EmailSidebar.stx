@@ -31,7 +31,7 @@ function folderIcon(folder: MailFolder): string {
   if (folder.id === 'sent')
     return 'i-hugeicons-sent'
   if (folder.id === 'trash')
-    return 'i-hugeicons-waste'
+    return 'i-hugeicons-delete-02'
   return `i-hugeicons-${folder.id}`
 }
 

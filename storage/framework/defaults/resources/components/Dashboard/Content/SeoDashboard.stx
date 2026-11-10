@@ -124,7 +124,7 @@ const filteredEntries = derived(() => {
  * on a derived band and `badgeLabelKey` puts the number itself in the pill.
  */
 const SEO_ROW_ACTIONS = [
-  { action: 'edit', label: 'Edit SEO for', icon: 'i-hugeicons-edit-02' },
+  { action: 'edit', label: 'Edit SEO for' },
 ]
 
 const SEO_COLUMNS = [

@@ -69,8 +69,8 @@ const ROW_ACTIONS = [
   { action: 'schedule', label: 'Schedule', icon: 'i-hugeicons-calendar-03', when: { key: 'scheduleLabel', equals: 'schedule' } },
   { action: 'schedule', label: 'Reschedule', icon: 'i-hugeicons-calendar-03', when: { key: 'scheduleLabel', equals: 'reschedule' } },
   { action: 'cancel', label: 'Cancel delivery of', icon: 'i-hugeicons-cancel-circle', class: 'text-red-500', when: { key: 'cancellable', equals: true } },
-  { action: 'edit', label: 'Edit', icon: 'i-hugeicons-edit-02', when: { key: 'editable', equals: true } },
-  { action: 'delete', label: 'Delete', icon: 'i-hugeicons-delete-02', class: 'text-red-500', when: { key: 'deletable', equals: true } },
+  { action: 'edit', label: 'Edit', when: { key: 'editable', equals: true } },
+  { action: 'delete', label: 'Delete', when: { key: 'deletable', equals: true } },
 ]
 
 const rows = derived(() => records().map(record => ({

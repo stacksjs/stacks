@@ -66,7 +66,9 @@ const rows = derived(() => (deployments() as DeploymentRecord[]).map(deployment 
 >
   <template #actions="{ row }">
     <div class="text-right">
-      <StxLink :to="'/deployments/' + row.id" class="font-medium text-blue-600 text-sm dark:text-blue-400 hover:text-blue-500">View</StxLink>
+      <StxLink :to="'/deployments/' + row.id" :aria-label="'View deployment ' + row.id" :title="'View deployment ' + row.id" class="inline-flex items-center justify-center h-7 w-7 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-md">
+        <span aria-hidden="true" class="block h-4 w-4 text-neutral-500 dark:text-neutral-400 i-hugeicons-view"></span>
+      </StxLink>
     </div>
   </template>
 </Table>

@@ -38,7 +38,7 @@ function formatDate(value: string): string {
         <span :class="'block h-5 w-5 ' + (message()?.read ? 'i-hugeicons-mail-02' : 'i-hugeicons-mail-open-01')"></span>
       </Button>
       <Button variant="ghost" iconOnly ariaLabel="Delete message" @click="emit('request-delete')">
-        <span class="block h-5 w-5 i-hugeicons-waste"></span>
+        <span class="block h-5 w-5 i-hugeicons-delete-02"></span>
       </Button>
     </div>
   </div>

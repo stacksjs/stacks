@@ -68,11 +68,11 @@ const COLUMNS = [
 
 /** Resolve and ignore an open error; reopen one that is resolved or ignored. */
 const ROW_ACTIONS = [
-  { action: 'view', label: 'View details of', icon: 'i-hugeicons-view' },
+  { action: 'view', label: 'View details of' },
   { action: 'resolve', label: 'Resolve', icon: 'i-hugeicons-checkmark-circle-02', class: 'text-green-500', when: { key: 'open', equals: true } },
   { action: 'ignore', label: 'Ignore', icon: 'i-hugeicons-view-off', class: 'text-amber-500', when: { key: 'open', equals: true } },
   { action: 'unresolve', label: 'Unresolve', icon: 'i-hugeicons-refresh', class: 'text-neutral-500', when: { key: 'open', equals: false } },
-  { action: 'delete', label: 'Delete', icon: 'i-hugeicons-delete-02', class: 'text-red-500' },
+  { action: 'delete', label: 'Delete' },
 ]
 
 const rows = derived(() => (errors() as ErrorGroup[]).map((error, index) => ({

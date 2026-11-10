@@ -71,7 +71,7 @@ const COLUMNS = [
 
 const ROW_ACTIONS = [
   { action: 'retry', label: 'Retry delivery to', icon: 'i-hugeicons-reload', when: { key: 'retryable', equals: true } },
-  { action: 'view', label: 'View details of delivery to', icon: 'i-hugeicons-view' },
+  { action: 'view', label: 'View details of delivery to' },
 ]
 
 const rows = derived(() => deliveries().map(delivery => ({
