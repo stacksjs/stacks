@@ -130,12 +130,29 @@ describe('dashboard row actions', () => {
     expect(records).toContain('navigate(modelRecordHref(modelSlug(), payload.row.id, `/data/${mode()}`))')
     expect(browser).toContain('navigate(`/models/${encodeURIComponent(slug())}/${encodeURIComponent(String(row.id))}`)')
     expect(readFileSync(resolve('storage/framework/defaults/views/dashboard/models/[model]/[id].stx'), 'utf8')).toContain('<ModelRecordDetail />')
-    expect(detail).toContain('modelRecordDetails(record()!)')
+    expect(detail).toContain('modelRecordSections(record()!)')
     expect(detail).toContain('modelRecordBackHref(slug(), from)')
     // The dialog is for editing only.
     expect(editor).not.toContain('viewOnly')
     expect(records).not.toContain('viewOnly')
     expect(browser).not.toContain('viewOnly')
+  })
+
+  test('the record page is a breadcrumb, a title and titled field cards two across', () => {
+    const detail = read('Models/ModelRecordDetail.stx')
+    // "Users > View", then "View User", with Edit as the primary action.
+    expect(detail).toContain('<nav aria-label="Breadcrumb"')
+    expect(detail).toContain('<StxLink :to="backHref()"')
+    expect(detail).toContain('<span aria-current="page">View</span>')
+    expect(detail).toContain('View {{ modelName() }}</h1>')
+    expect(detail).toContain('<Button :if="canEdit()" variant="primary"')
+    // One card per group of fields, each field a label over its value.
+    expect(detail).toContain('class="grid gap-6 grid-cols-1 items-start lg:grid-cols-2"')
+    expect(detail).toContain('<div :for="section in sections()"')
+    expect(detail).toContain('{{ section.title }}</h2>')
+    expect(detail).toContain('<div :for="detail in section.details"')
+    for (const kind of ['boolean', 'badge', 'json', 'text'])
+      expect(detail).toContain(`detail.kind === '${kind}'`)
   })
 
   test('an icon-only button names itself on hover', () => {

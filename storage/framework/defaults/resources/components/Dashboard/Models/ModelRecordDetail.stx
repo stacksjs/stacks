@@ -1,11 +1,13 @@
 <script client>
 // A record's own page (`/models/{slug}/{id}`), where the eye on any table row
-// leads: every stored field, read as a person reads it, with the edit and
-// delete the model's API allows. A page rather than a dialog, so a record has
-// an address to share, open in a tab and come back to.
+// leads. A breadcrumb back to the list, "View User", and the record's fields
+// as titled cards two across: what it is, its settings, its identifiers and
+// its timestamps, each field a label over its value. Edit and Delete appear
+// where the model's API allows them. A page rather than a dialog, so a record
+// has an address to share, open in a tab and come back to.
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
 import type { ModelRecord } from '../../../../functions/dashboard-model-record'
-import { changedModelFields, deleteModelRecord, fetchModelRecord, modelRecordBackHref, modelRecordDetails, modelRecordFields, modelRecordTitle, updateModelRecord } from '../../../../functions/dashboard-model-record'
+import { changedModelFields, deleteModelRecord, fetchModelRecord, modelRecordBackHref, modelRecordFields, modelRecordListLabel, modelRecordSections, modelRecordTitle, updateModelRecord } from '../../../../functions/dashboard-model-record'
 import { pushToast } from '../../../../functions/toasts'
 
 const navigation = useNavigation()
@@ -27,17 +29,12 @@ function recordId(): string {
 
 const from = navigation.urlQuery('from')
 const backHref = derived(() => modelRecordBackHref(slug(), from))
-/** "Users" for /data/users; the model's own list otherwise. */
-const backLabel = derived(() => {
-  const last = backHref().split('/').filter(Boolean).pop() || ''
-  if (backHref().startsWith('/data/') && last)
-    return last.charAt(0).toUpperCase() + last.slice(1)
-  return record() ? `${record()!.modelName} records` : 'Records'
-})
+/** The list in the breadcrumb: "Users" for /data/users, else the model's table. */
+const listLabel = derived(() => modelRecordListLabel(record(), backHref()))
 
 const modelName = derived(() => record()?.modelName || 'Record')
 const title = derived(() => record() ? modelRecordTitle(record()!) : '')
-const details = derived(() => record() ? modelRecordDetails(record()!) : [])
+const sections = derived(() => record() ? modelRecordSections(record()!) : [])
 const editFields = derived(() => record() && editing() ? modelRecordFields(record()!) : [])
 const canEdit = derived(() => Boolean(record()?.writeCapabilities.update))
 const canDelete = derived(() => Boolean(record()?.writeCapabilities.destroy))
@@ -106,24 +103,21 @@ onMount(() => {
 </script>
 
 <div class="flex flex-col gap-6">
-  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
     <div class="min-w-0">
-      <StxLink :to="backHref()" class="inline-flex gap-1 items-center mb-3 font-medium text-neutral-500 text-sm dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400">
-        <span aria-hidden="true" class="h-4 w-4 i-hugeicons-arrow-left-02"></span>
-        {{ backLabel() }}
-      </StxLink>
-      <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight truncate dark:text-white">{{ title() || modelName() }}</h1>
-      <p :if="record()" class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">{{ modelName() }} record {{ recordId() }}</p>
+      <nav aria-label="Breadcrumb" class="flex gap-2 items-center mb-2 text-neutral-500 text-sm dark:text-neutral-400">
+        <StxLink :to="backHref()" class="font-medium hover:text-blue-600 dark:hover:text-blue-400">{{ listLabel() }}</StxLink>
+        <span aria-hidden="true" class="h-4 w-4 i-hugeicons-arrow-right-01"></span>
+        <span aria-current="page">View</span>
+      </nav>
+      <h1 class="font-bold text-3xl text-neutral-900 tracking-tight truncate dark:text-white">View {{ modelName() }}</h1>
     </div>
     <div :if="record()" class="flex flex-none gap-2 items-center">
-      <Button :if="canEdit()" variant="secondary" @click="editing.set(true)">
-        <span aria-hidden="true" class="h-4 w-4 i-hugeicons-pencil-edit-02"></span>
-        Edit
-      </Button>
-      <Button :if="canDelete()" variant="danger" @click="confirmingDelete.set(true)">
-        <span aria-hidden="true" class="h-4 w-4 i-hugeicons-delete-02"></span>
+      <Button :if="canDelete()" variant="outline" @click="confirmingDelete.set(true)">
+        <span aria-hidden="true" class="h-4 w-4 text-red-500 i-hugeicons-delete-02"></span>
         Delete
       </Button>
+      <Button :if="canEdit()" variant="primary" @click="editing.set(true)">Edit</Button>
     </div>
   </header>
 
@@ -137,20 +131,27 @@ onMount(() => {
     <Button variant="secondary" size="sm" @click="loadRecord">Try again</Button>
   </div>
 
-  <Card :if="!loading() && record()" padding="none">
-    <div class="p-5 border-b border-neutral-200 dark:border-neutral-700">
-      <h2 class="font-semibold text-neutral-900 dark:text-white">Stored fields</h2>
-      <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Everything saved for this {{ modelName().toLowerCase() }}, as it is in the database.</p>
+  <div :if="!loading() && record()" class="grid gap-6 grid-cols-1 items-start lg:grid-cols-2">
+    <div :for="section in sections()" class="min-w-0">
+      <Card padding="none">
+        <h2 class="px-6 py-4 font-semibold text-base text-neutral-900 dark:text-white border-b border-neutral-200 dark:border-neutral-700">{{ section.title }}</h2>
+        <dl :class="section.columns === 2 ? 'grid gap-x-8 gap-y-6 grid-cols-1 sm:grid-cols-2 p-6' : 'flex flex-col gap-6 p-6'">
+          <div :for="detail in section.details" :class="detail.wide ? 'min-w-0 sm:col-span-2' : 'min-w-0'">
+            <dt class="font-medium text-neutral-900 text-sm dark:text-white">{{ detail.label }}</dt>
+            <dd class="mt-1.5 text-sm">
+              <span :if="detail.kind === 'boolean'" class="inline-flex gap-1.5 items-center text-neutral-700 dark:text-neutral-200">
+                <span aria-hidden="true" :class="detail.yes ? 'h-5 w-5 text-green-600 dark:text-green-400 i-hugeicons-checkmark-circle-02' : 'h-5 w-5 text-neutral-400 dark:text-neutral-500 i-hugeicons-cancel-circle'"></span>
+                {{ detail.value }}
+              </span>
+              <span :if="detail.kind === 'badge'" class="inline-flex px-2 py-0.5 font-medium text-neutral-800 text-xs dark:text-neutral-100 border border-neutral-400 rounded-md dark:border-neutral-500">{{ detail.value }}</span>
+              <pre :if="detail.kind === 'json'" class="overflow-x-auto p-3 font-mono text-neutral-800 text-xs dark:text-neutral-200 bg-neutral-50 dark:bg-neutral-900 rounded-lg">{{ detail.value }}</pre>
+              <span :if="detail.kind === 'text'" :class="detail.empty ? 'text-neutral-400 dark:text-neutral-500' : 'break-words text-neutral-700 dark:text-neutral-200'">{{ detail.value }}</span>
+            </dd>
+          </div>
+        </dl>
+      </Card>
     </div>
-    <dl class="divide-neutral-200 divide-y dark:divide-neutral-700">
-      <div :for="detail in details()" class="grid gap-1 grid-cols-1 sm:gap-4 sm:grid-cols-[14rem_minmax(0,1fr)] px-5 py-3.5">
-        <dt class="font-medium text-neutral-500 text-sm dark:text-neutral-400">{{ detail.label }}</dt>
-        <dd :if="detail.empty" class="text-neutral-400 text-sm dark:text-neutral-500">Not set</dd>
-        <dd :if="!detail.empty && detail.block" class="min-w-0"><pre class="overflow-x-auto p-3 font-mono text-neutral-800 text-xs dark:text-neutral-200 bg-neutral-50 dark:bg-neutral-900 rounded-lg">{{ detail.value }}</pre></dd>
-        <dd :if="!detail.empty && !detail.block" class="min-w-0 break-words text-neutral-900 text-sm dark:text-white">{{ detail.value }}</dd>
-      </div>
-    </dl>
-  </Card>
+  </div>
 
   <EditRecordModal
     :open="editing()"

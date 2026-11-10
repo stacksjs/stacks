@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { changedModelFields, modelRecordBackHref, modelRecordDetails, modelRecordFields, modelRecordHref, modelRecordTitle } from './dashboard-model-record'
+import { changedModelFields, modelRecordBackHref, modelRecordFields, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRecordTitle } from './dashboard-model-record'
 import type { ModelRecord } from './dashboard-model-record'
 
 const record: ModelRecord = {
@@ -32,17 +32,69 @@ describe('a model record in the dashboard dialog', () => {
 })
 
 describe('a model record on its own page', () => {
-  it('shows every column as a person reads it, and marks the empty ones', () => {
-    const details = modelRecordDetails({ ...record, row: { ...record.row, active: 1, meta: { plan: 'pro' } }, columns: [...record.columns, { name: 'active', label: 'Active', type: 'boolean' }, { name: 'meta', label: 'Meta', type: 'json' }] })
-    const by = Object.fromEntries(details.map(detail => [detail.name, detail]))
-    expect(by.id).toMatchObject({ value: '4', empty: false })
-    expect(by.description).toMatchObject({ value: '', empty: true })
-    expect(by.active!.value).toBe('Yes')
-    expect(by.meta).toMatchObject({ block: true })
+  const user: ModelRecord = {
+    modelName: 'User',
+    tableName: 'users',
+    row: { id: 13, uuid: null, name: 'Ava', email: 'ava@example.com', avatar: null, status: 'active', two_factor_enabled: 0, login_count: 4, team_id: 2, meta: { plan: 'pro' }, created_at: '2026-11-05T23:01:51.038Z', updated_at: null, email_verified_at: null },
+    columns: [
+      { name: 'id', label: 'ID', type: 'number' },
+      { name: 'uuid', label: 'Uuid', type: 'text' },
+      { name: 'name', label: 'Name', type: 'text' },
+      { name: 'email', label: 'Email', type: 'text' },
+      { name: 'avatar', label: 'Avatar', type: 'text' },
+      { name: 'status', label: 'Status', type: 'text' },
+      { name: 'two_factor_enabled', label: 'Two Factor Enabled', type: 'boolean' },
+      { name: 'login_count', label: 'Login Count', type: 'number' },
+      { name: 'team_id', label: 'Team ID', type: 'number' },
+      { name: 'meta', label: 'Meta', type: 'json' },
+      { name: 'created_at', label: 'Created At', type: 'date' },
+      { name: 'updated_at', label: 'Updated At', type: 'date' },
+      { name: 'email_verified_at', label: 'Email Verified At', type: 'text' },
+    ],
+    updateColumns: [],
+    writeCapabilities: { create: true, update: false, destroy: false },
+  }
+
+  it('groups the fields into the cards of the page', () => {
+    const sections = modelRecordSections(user)
+    expect(sections.map(section => [section.id, section.title, section.columns])).toEqual([
+      ['information', 'User Information', 1],
+      ['details', 'User Details', 2],
+      ['identifiers', 'Identifiers', 2],
+      ['timestamps', 'Timestamps', 2],
+    ])
+    const names = Object.fromEntries(sections.map(section => [section.id, section.details.map(detail => detail.name)]))
+    expect(names.information).toEqual(['name', 'email', 'avatar', 'meta'])
+    expect(names.details).toEqual(['status', 'two_factor_enabled', 'login_count'])
+    expect(names.identifiers).toEqual(['id', 'uuid', 'team_id'])
+    expect(names.timestamps).toEqual(['created_at', 'updated_at', 'email_verified_at'])
+  })
+
+  it('reads each value as a person would, and says what is missing', () => {
+    const by = Object.fromEntries(modelRecordSections(user).flatMap(section => section.details).map(detail => [detail.name, detail]))
+    expect(by.avatar).toMatchObject({ value: 'No avatar', empty: true })
+    expect(by.uuid).toMatchObject({ label: 'UUID', value: 'No UUID', empty: true })
+    expect(by.status).toMatchObject({ value: 'Active', kind: 'badge' })
+    expect(by.two_factor_enabled).toMatchObject({ value: 'No', kind: 'boolean', yes: false, empty: false })
+    expect(by.meta).toMatchObject({ kind: 'json', wide: true })
     expect(by.meta!.value).toContain('"plan": "pro"')
-    // A date reads as a date, not as the stored ISO text.
-    expect(by.created_at!.value).not.toBe('2026-08-08')
+    // A date reads as a date, and its label drops the "At".
+    expect(by.created_at!.label).toBe('Created')
+    expect(by.created_at!.value).not.toContain('T23:01')
     expect(by.created_at!.value).toContain('2026')
+    expect(by.updated_at).toMatchObject({ label: 'Last Updated', value: 'Not yet', empty: true })
+    expect(by.email_verified_at).toMatchObject({ label: 'Email Verified', value: 'Not yet', empty: true })
+  })
+
+  it('leaves out a card with nothing in it', () => {
+    const sections = modelRecordSections({ ...user, columns: user.columns.filter(column => column.name === 'name') })
+    expect(sections.map(section => section.id)).toEqual(['information'])
+  })
+
+  it('names the list in the breadcrumb', () => {
+    expect(modelRecordListLabel(user, '/data/users')).toBe('Users')
+    expect(modelRecordListLabel({ ...user, tableName: 'product_categories' }, '/models/product-category')).toBe('Product Categories')
+    expect(modelRecordListLabel(null, '/models/user')).toBe('Records')
   })
 
   it('names the record by what it is called, else by its id', () => {
