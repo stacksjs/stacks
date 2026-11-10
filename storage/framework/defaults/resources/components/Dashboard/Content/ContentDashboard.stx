@@ -343,18 +343,16 @@ onDestroy(() => {
             <tr><td colspan="6" class="px-4 py-10 text-center text-gray-500 text-sm dark:text-neutral-400">No posts in this period.</td></tr>
           </template>
           <template :else>
-            <template :for="post in overview().topPosts">
-              <tr>
-                <td class="px-4 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ post.title }}</td>
-                <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-400">{{ post.category }}</td>
-                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-400">{{ formatNumber(post.views) }}</td>
-                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-400">{{ formatNumber(post.comments) }}</td>
-                <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-400">{{ formatDate(post.publishedAt) }}</td>
-                <td class="px-4 py-3">
-                  <span :class="postStatusClass(post.status)" class="inline-flex px-2 py-1 font-semibold text-xs rounded-full">{{ post.status }}</span>
-                </td>
-              </tr>
-            </template>
+            <tr :for="post in overview().topPosts">
+              <td class="px-4 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ post.title }}</td>
+              <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-400">{{ post.category }}</td>
+              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-400">{{ formatNumber(post.views) }}</td>
+              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-400">{{ formatNumber(post.comments) }}</td>
+              <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-400">{{ formatDate(post.publishedAt) }}</td>
+              <td class="px-4 py-3">
+                <span :class="postStatusClass(post.status)" class="inline-flex px-2 py-1 font-semibold text-xs rounded-full">{{ post.status }}</span>
+              </td>
+            </tr>
           </template>
         </tbody>
       </table>

@@ -52,7 +52,7 @@ function navRowClass(active: boolean): string {
     <label class="block">
       <span class="font-semibold text-[11px] text-stone-500 tracking-wider uppercase dark:text-neutral-500">Storage disk</span>
       <select x-model="disk" :disabled="busy()" class="mt-2 px-2.5 py-2 w-full text-sm text-stone-800 dark:text-white bg-white/80 dark:bg-neutral-800 border border-stone-200 rounded-lg dark:border-neutral-700 disabled:opacity-60" @change="emit('disk', $event.target.value)">
-        <template :for="option in disks"><option :value="option.name">{{ option.name }}{{ option.public ? ' (public)' : '' }}</option></template>
+        <option :for="option in disks" :value="option.name">{{ option.name }}{{ option.public ? ' (public)' : '' }}</option>
       </select>
     </label>
   </div>
@@ -71,12 +71,10 @@ function navRowClass(active: boolean): string {
   <div class="p-4 border-b border-black/[0.06] dark:border-white/[0.08]">
     <p class="font-semibold text-[11px] text-stone-500 tracking-wider uppercase dark:text-neutral-500">Content by type</p>
     <div class="mt-3 space-y-3">
-      <template :for="row in typeRows">
-        <div>
-          <div class="flex items-center justify-between text-[11px]"><span class="text-stone-600 dark:text-neutral-300">{{ row.label }}</span><span class="font-mono text-stone-500 dark:text-neutral-500">{{ row.size }}</span></div>
-          <div class="overflow-hidden mt-1 h-1.5 bg-black/[0.06] dark:bg-white/[0.08] rounded-full"><div :class="'h-full rounded-full ' + row.color" :style="row.barStyle"></div></div>
-        </div>
-      </template>
+      <div :for="row in typeRows">
+        <div class="flex items-center justify-between text-[11px]"><span class="text-stone-600 dark:text-neutral-300">{{ row.label }}</span><span class="font-mono text-stone-500 dark:text-neutral-500">{{ row.size }}</span></div>
+        <div class="overflow-hidden mt-1 h-1.5 bg-black/[0.06] dark:bg-white/[0.08] rounded-full"><div :class="'h-full rounded-full ' + row.color" :style="row.barStyle"></div></div>
+      </div>
     </div>
   </div>
 
@@ -88,9 +86,7 @@ function navRowClass(active: boolean): string {
 
   <nav aria-label="Storage folders" class="overflow-y-auto flex-1 p-2">
     <button type="button" :class="navRowClass(currentPath() === '')" @click="emit('navigate', '')"><span class="h-[18px] w-[18px] text-blue-500 i-hugeicons-home-02"></span>Home</button>
-    <template :for="folder in folders">
-      <button type="button" :class="navRowClass(currentPath() === folder.path)" @click="emit('navigate', folder.path)"><span class="h-[18px] w-[18px] text-amber-500 i-hugeicons-folder-02"></span><span class="truncate">{{ folder.name }}</span><span class="ml-auto tabular-nums text-[11px] text-stone-500 dark:text-neutral-500">{{ folder.count }}</span></button>
-    </template>
+    <button :for="folder in folders" type="button" :class="navRowClass(currentPath() === folder.path)" @click="emit('navigate', folder.path)"><span class="h-[18px] w-[18px] text-amber-500 i-hugeicons-folder-02"></span><span class="truncate">{{ folder.name }}</span><span class="ml-auto tabular-nums text-[11px] text-stone-500 dark:text-neutral-500">{{ folder.count }}</span></button>
   </nav>
 
   <div class="p-3 border-black/[0.06] border-t dark:border-white/[0.08]">
