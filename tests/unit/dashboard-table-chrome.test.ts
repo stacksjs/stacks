@@ -128,3 +128,16 @@ describe('dashboard row actions', () => {
     expect(button.match(/:title="hoverTitle\(\)"/g)?.length).toBe(3)
   })
 })
+
+describe('table loops', () => {
+  test('rows and row actions loop on real elements, never <template :for>', () => {
+    // stx strips <template> wrappers during server processing, so a component
+    // inside a <template :for> lost the bindings that read the loop variable:
+    // every row action rendered as an unlabelled square with no icon
+    // (stacksjs/stx#2179). Its documented spelling puts :for on the element.
+    expect(table).toContain('<tr :for="(row, rowIndex) in visibleRows()"')
+    expect(table).toContain('<span :for="action in rowActions()" class="contents">')
+    expect(table).not.toContain('<template :for="(row, rowIndex) in visibleRows()">')
+    expect(table).not.toContain('<template :for="action in rowActions()">')
+  })
+})

@@ -960,8 +960,7 @@ function cellClass(column: DashboardTableColumn, index: number): string {
       </thead>
 
       <tbody class="divide-stone-100 divide-y dark:divide-neutral-700">
-        <template :for="(row, rowIndex) in visibleRows()">
-          <tr :class="rowClass(rowIndex)" :data-row-id="String(row[rowKey()])">
+        <tr :for="(row, rowIndex) in visibleRows()" :class="rowClass(rowIndex)" :data-row-id="String(row[rowKey()])">
             <td :if="selectable()" class="pl-6 pr-2 w-12" :class="compact() ? 'py-2' : 'py-3.5'">
               <input
                 type="checkbox"
@@ -998,7 +997,7 @@ function cellClass(column: DashboardTableColumn, index: number): string {
             </td>
             <td :else-if="hasRowActions()" class="px-4 w-12" :class="compact() ? 'py-2' : 'py-3'">
               <div class="flex gap-1 justify-end">
-                <template :for="action in rowActions()">
+                <span :for="action in rowActions()" class="contents">
                   <Button
                     :if="showsRowAction(row, action)"
                     variant="ghost"
@@ -1010,11 +1009,10 @@ function cellClass(column: DashboardTableColumn, index: number): string {
                   >
                     <span aria-hidden="true" :class="rowActionIconClass(action)"></span>
                   </Button>
-                </template>
+                </span>
               </div>
             </td>
           </tr>
-        </template>
       </tbody>
     </table>
   </div>
