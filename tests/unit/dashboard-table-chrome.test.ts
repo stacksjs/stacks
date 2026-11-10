@@ -157,6 +157,16 @@ describe('dashboard row actions', () => {
     expect(edit).toContain(`:title="modelName() + ' records cannot be edited here'"`)
   })
 
+  test('the Users, Teams and Subscribers pages offer Create where the model can be created', () => {
+    // Teams and Subscribers get the button. Users does not: a new user needs
+    // a password the generic form does not collect, so the model reports that
+    // it cannot be created here and no button leads to a form that must fail.
+    expect(records).toContain('const canCreate = derived(() => Boolean(modelSlug()) && capabilities().create)')
+    expect(records).toContain('<Button :if="canCreate()" variant="primary" @click="createRecord">')
+    expect(records).toContain('{{ createLabel() }}')
+    expect(records).toContain('navigate(modelRecordCreateHref(modelSlug(), `/data/${mode()}`))')
+  })
+
   test('creating a record is a page too, opened from the model browser', () => {
     const create = read('Models/ModelRecordCreate.stx')
     const browser = read('Models/ModelRecordsDashboard.stx')
