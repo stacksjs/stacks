@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.535...v0.75.536)
+
+## 🐛 Bug Fixes
+
+- **router**: retain the complete published type contract ([a17fd58](https://github.com/stacksjs/stacks/commit/a17fd58)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- repair the documentation skill frontmatter ([ab8e0ff](https://github.com/stacksjs/stacks/commit/ab8e0ff)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.534...v0.75.535)
 
 ## 🐛 Bug Fixes
