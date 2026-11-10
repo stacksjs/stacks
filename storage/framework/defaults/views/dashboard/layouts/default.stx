@@ -101,6 +101,23 @@ body {
   background: transparent;
 }
 /*
+ * Every native single select draws the same chevron as the shared UI Select:
+ * the browser's own arrow sat flush against the right border, with no room.
+ * The glyph is hugeicons arrow-down-01 (the one UI Select renders), in
+ * neutral-400 so it reads in both color modes, 8px from the edge, with the
+ * text kept clear of it. UI Select marks its own element, which already has
+ * an icon, and multi-row lists keep the native look.
+ */
+select:not([multiple]):not([size]):not([data-ui-select]) {
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='none' stroke='%23a3a3a3' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M18 9s-4.419 6-6 6s-6-6-6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 0.875rem 0.875rem;
+  padding-right: 2rem;
+}
+/*
  * The pane offset follows the sidebar's own width variable, which the Sidebar
  * writes onto this element via `shell-selector`. The literal fallback keeps
  * the layout correct on the first paint, before the controller mounts, and

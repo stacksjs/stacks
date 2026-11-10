@@ -71,6 +71,23 @@ describe('dashboard layout client architecture', () => {
     expect(layoutSource).toContain('data-dashboard-web-sidebar')
   })
 
+  test('gives every native select the shared chevron, clear of the border', () => {
+    // The browser's own arrow sat flush against the right edge. One rule
+    // draws UI Select's glyph on every other single select, inset like UI
+    // Select's; UI Select opts out because it renders the icon itself.
+    const rule = layoutSource.slice(layoutSource.indexOf('select:not([multiple])'))
+    expect(rule.startsWith('select:not([multiple]):not([size]):not([data-ui-select]) {')).toBe(true)
+    const body = rule.slice(0, rule.indexOf('}'))
+    expect(body).toContain('appearance: none;')
+    expect(body).toContain("d='M18 9s-4.419 6-6 6s-6-6-6-6'")
+    expect(body).toContain('background-position: right 0.5rem center;')
+    expect(body).toContain('padding-right: 2rem;')
+
+    const select = readFileSync(resolve('storage/framework/defaults/resources/components/Dashboard/UI/Select.stx'), 'utf8')
+    expect(select).toMatch(/<select\s+data-ui-select\b/)
+    expect(select).toContain('i-hugeicons-arrow-down-01')
+  })
+
   test('contains wide page content inside the dashboard shell', () => {
     expect(layoutSource).toMatch(/\[data-stx-content\] \{[\s\S]*?overflow-x: hidden;/)
   })
