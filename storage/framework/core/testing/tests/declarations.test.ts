@@ -1,7 +1,7 @@
 /**
  * What the published `dist/*.d.ts` says, not what this repo infers.
  *
- * `bun-plugin-dtsx` cannot infer a class field from `new Map<string, string>()`
+ * The declaration emitter cannot infer a class field from `new Map<string, string>()`
  * or a parameter from a numeric default like `12_000`, and emits `unknown`.
  * Inside this repo the import resolves to the source, where inference works,
  * so a type-level test passes either way; an app installing the package got

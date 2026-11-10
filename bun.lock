@@ -1427,6 +1427,7 @@
         "very-happy-dom": "^0.4.1",
       },
       "devDependencies": {
+        "@dtsx/dtsx": "^0.11.41",
         "better-dx": "^0.2.24",
       },
     },
