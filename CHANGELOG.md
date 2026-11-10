@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.533...v0.75.534)
+
+## 🐛 Bug Fixes
+
+- **build**: adopt dtsx 0.11.41 and Craft 0.0.491 ([7215480](https://github.com/stacksjs/stacks/commit/7215480)) _(by Chris Breuer <chris@stacksjs.com>)_ ([#3247](https://github.com/stacksjs/stacks/issues/3247), [pantry-pm/pantry#266](https://github.com/pantry-pm/pantry/issues/266), [stacksjs/dtsx#3172](https://github.com/stacksjs/dtsx/issues/3172), [stacksjs/dtsx#3173](https://github.com/stacksjs/dtsx/issues/3173), [craft-native/craft#454](https://github.com/craft-native/craft/issues/454))
+
+## ✅ Tests
+
+- **buddy**: mount storefront routes for request isolation checks ([c115fd9](https://github.com/stacksjs/stacks/commit/c115fd9)) _(by Chris Breuer <chris@stacksjs.com>)_ ([#3247](https://github.com/stacksjs/stacks/issues/3247))
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.532...v0.75.533)
 
 ## 🐛 Bug Fixes
