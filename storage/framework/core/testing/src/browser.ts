@@ -350,21 +350,38 @@ export class Cdp {
   }
   /** Chrome went away; every later command fails at once. */
   closed: boolean = false
+  private closeCause: unknown
+  private socketFailure: { message: string, error: unknown } | undefined
 
   constructor(private socket: WebSocket, options: CdpOptions = {}) {
     this.commandTimeoutMs = options.commandTimeoutMs ?? 30_000
     // Fail what is waiting at once rather than after each command's timeout.
-    socket.addEventListener('close', () => this.markClosed())
+    socket.addEventListener('close', event => this.markClosed({
+      origin: 'remote', code: event.code, reason: event.reason, wasClean: event.wasClean, transportError: this.socketFailure,
+    }))
+    socket.addEventListener('error', (event) => {
+      const failure = event as ErrorEvent
+      this.socketFailure ??= { message: failure.message, error: failure.error }
+    })
     socket.addEventListener('message', event => this.receive(String(event.data)))
   }
 
-  private markClosed(): void {
+  private closedError(): Error {
+    const detail = this.closeCause instanceof Error ? this.closeCause.message : JSON.stringify(this.closeCause)
+    return new Error(`Chrome closed the connection${detail ? `: ${detail}` : ''}`, { cause: this.closeCause })
+  }
+
+  private markClosed(cause: unknown): void {
+    // A caller's disconnect is followed by a socket close event. Preserve the
+    // initiating cause so a late transport event cannot erase its call stack.
+    if (this.closed) return
     this.closed = true
+    this.closeCause = cause
     this.frameLoaders.clear()
     this.requestLoaders.clear()
     for (const [id, pending] of this.pending) {
       clearTimeout(pending.timer)
-      pending.reject(new Error('Chrome closed the connection'))
+      pending.reject(this.closedError())
       this.pending.delete(id)
     }
   }
@@ -556,7 +573,7 @@ export class Cdp {
    */
   once<T = any>(method: string, match: (params: T) => boolean = () => true, timeoutMs: number = this.commandTimeoutMs): Promise<T> {
     return new Promise<T>((resolve, reject) => {
-      if (this.closed) return reject(new Error('Chrome closed the connection'))
+      if (this.closed) return reject(this.closedError())
       const timer = setTimeout(() => {
         off()
         clearInterval(watch)
@@ -567,7 +584,7 @@ export class Cdp {
         clearTimeout(timer)
         clearInterval(watch)
         off()
-        reject(new Error('Chrome closed the connection'))
+        reject(this.closedError())
       }, 100)
       const off = this.on(method, (params: T) => {
         if (!match(params)) return
@@ -606,7 +623,7 @@ export class Cdp {
   private command<T = any>(method: string, params: Record<string, unknown> = {}): Promise<T> {
     const id = ++this.id
     return new Promise<T>((resolve, reject) => {
-      if (this.closed) return reject(new Error('Chrome closed the connection'))
+      if (this.closed) return reject(this.closedError())
       const timer = setTimeout(() => {
         this.pending.delete(id)
         reject(new Error(`Chrome command timed out: ${method}`))
@@ -625,7 +642,7 @@ export class Cdp {
 
   /** Close the socket (Chrome keeps running; `launch()`'s `close` stops it). */
   disconnect(): void {
-    this.markClosed()
+    this.markClosed(new Error('CDP session disconnected by caller'))
     try {
       this.socket.close()
     }

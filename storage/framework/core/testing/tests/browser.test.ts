@@ -70,6 +70,47 @@ describe('Cdp', () => {
     await expect(cdp.send('Page.enable')).rejects.toThrow(/closed/)
   })
 
+  test('a remote close retains its protocol cause for pending and later operations', async () => {
+    const { socket, cdp } = session()
+    const pending = cdp.send('Page.navigate').catch(error => error as Error)
+    const waiting = cdp.once('Page.loadEventFired').catch(error => error as Error)
+    socket.dispatchEvent(Object.assign(new Event('close'), { code: 1006, reason: 'renderer ended', wasClean: false }))
+    const error = await pending
+    expect(error.message).toBe('Chrome closed the connection: {"origin":"remote","code":1006,"reason":"renderer ended","wasClean":false}')
+    expect(error.cause).toEqual({ origin: 'remote', code: 1006, reason: 'renderer ended', wasClean: false })
+    expect((await waiting).cause).toBe(error.cause)
+    const later = await cdp.send('Page.enable').catch(error => error as Error)
+    expect(later.cause).toBe(error.cause)
+  })
+
+  test('a caller disconnect retains the initiating stack after the socket closes', async () => {
+    const { cdp } = session()
+    const pending = cdp.send('Page.navigate').catch(error => error as Error)
+    cdp.disconnect()
+    const error = await pending
+    expect(error.message).toBe('Chrome closed the connection: CDP session disconnected by caller')
+    expect(error.cause).toBeInstanceOf(Error)
+    expect((error.cause as Error).message).toBe('CDP session disconnected by caller')
+    expect((error.cause as Error).stack).toContain('disconnect')
+    const later = await cdp.send('Page.enable').catch(error => error as Error)
+    expect(later.cause).toBe(error.cause)
+  })
+
+  test('a failed transport retains the underlying error when the socket closes', async () => {
+    const { socket, cdp } = session()
+    const pending = cdp.send('Page.navigate').catch(error => error as Error)
+    const failure = Object.assign(new Error('Invalid compressed data'), { code: 'Z_DATA_ERROR' })
+    socket.dispatchEvent(Object.assign(new Event('error'), { message: failure.message, error: failure }))
+    socket.dispatchEvent(Object.assign(new Event('close'), { code: 1006, reason: '', wasClean: false }))
+    const error = await pending
+    expect(error.message).toContain('Invalid compressed data')
+    expect(error.message).toContain('Z_DATA_ERROR')
+    expect(error.cause).toEqual({ origin: 'remote', code: 1006, reason: '', wasClean: false, transportError: { message: failure.message, error: failure } })
+    expect((error.cause as { transportError: { error: unknown } }).transportError.error).toBe(failure)
+    const later = await cdp.send('Page.enable').catch(error => error as Error)
+    expect(later.cause).toBe(error.cause)
+  })
+
   test('once waits for a matching event', async () => {
     const { socket, cdp } = session()
     const next = cdp.once<{ frameId: string }>('Page.frameStoppedLoading', params => params.frameId === 'b')
