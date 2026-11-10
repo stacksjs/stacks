@@ -662,10 +662,23 @@ function alignClass(align: DashboardTableColumn['align']): string {
   return 'text-left'
 }
 
+/**
+ * The outer columns' padding. A framed table keeps its own 24px left inset. An
+ * unframed one sits in a card whose title and search box are inset 20px, so
+ * its first and last columns match that instead of drifting 4px either way.
+ */
+function edgePadding(index: number): string {
+  const first = index === 0 && !selectable()
+  const last = index === visibleColumns().length - 1 && !hasRowActions()
+  const left = first ? (framed() ? 'pl-6' : 'pl-5') : 'pl-4'
+  const right = last && !framed() ? 'pr-5' : 'pr-4'
+  return `${left} ${right}`
+}
+
 function headerClass(column: DashboardTableColumn, index: number): string {
   return [
-    index === 0 && !selectable() ? 'pl-6' : 'pl-4',
-    'pr-4 font-semibold text-xs uppercase tracking-wider text-stone-500 dark:text-neutral-400',
+    edgePadding(index),
+    'font-semibold text-xs uppercase tracking-wider text-stone-500 dark:text-neutral-400',
     compact() ? 'py-2' : 'py-3.5',
     alignClass(column.align),
     index === 0 && stickyFirstColumn() ? 'sticky left-0 z-20 bg-stone-50 dark:bg-neutral-800' : '',
@@ -732,8 +745,8 @@ function rowActionIconClass(action: DashboardTableRowAction): string {
 
 function cellClass(column: DashboardTableColumn, index: number): string {
   return [
-    index === 0 && !selectable() ? 'pl-6' : 'pl-4',
-    'pr-4 text-sm text-stone-700 dark:text-neutral-200',
+    edgePadding(index),
+    'text-sm text-stone-700 dark:text-neutral-200',
     compact() ? 'py-2' : 'py-3.5',
     alignClass(column.align),
     column.type === 'number' || column.type === 'currency' ? 'tabular-nums' : '',
@@ -901,7 +914,7 @@ function cellClass(column: DashboardTableColumn, index: number): string {
         <tr :if="filterable()" class="border-stone-200/70 border-t dark:border-neutral-700">
           <td :if="selectable()" class="pl-6 pr-2 py-2"></td>
           <template :for="(column, index) in visibleColumns()">
-            <td :class="(index === 0 && !selectable() ? 'pl-6' : 'pl-4') + ' pr-4 py-2'">
+            <td :class="edgePadding(index) + ' py-2'">
               <select
                 :if="column.filterable && column.filterOptions"
                 :aria-label="'Filter by ' + column.label"
