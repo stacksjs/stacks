@@ -244,14 +244,14 @@ onMount(() => {
         <span class="sr-only">Tax country</span>
         <select x-model="countryFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
           <option value="all">All countries</option>
-          <template :for="country in countries()" :key="country"><option :value="country">{{ country }}</option></template>
+          <option :for="country in countries()" :key="country" :value="country">{{ country }}</option>
         </select>
       </label>
       <label>
         <span class="sr-only">Tax type</span>
         <select x-model="typeFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
           <option value="all">All tax types</option>
-          <template :for="type in taxTypes()" :key="type"><option :value="type">{{ taxTypeLabel(type) }}</option></template>
+          <option :for="type in taxTypes()" :key="type" :value="type">{{ taxTypeLabel(type) }}</option>
         </select>
       </label>
     </div>

@@ -117,7 +117,7 @@ function errorMessages(): string[] {
 >
     <form id="product-unit-form" @submit.prevent="submit">
         <ul :if="errorMessages().length > 0" class="mb-5 p-3 space-y-1 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
-          <template :for="message in errorMessages()" :key="message"><li>{{ message }}</li></template>
+          <li :for="message in errorMessages()" :key="message">{{ message }}</li>
         </ul>
         <div class="space-y-4">
           <div class="grid gap-4 sm:grid-cols-2">
@@ -134,9 +134,7 @@ function errorMessages(): string[] {
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Type</span>
             <input x-model="type" type="text" list="product-unit-types" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
             <datalist id="product-unit-types">
-              <template :for="unitType in types()" :key="unitType">
-                <option :value="unitType"></option>
-              </template>
+              <option :for="unitType in types()" :key="unitType" :value="unitType"></option>
             </datalist>
           </label>
           <label class="block">
@@ -146,9 +144,7 @@ function errorMessages(): string[] {
           <div>
             <select x-model="productId" aria-label="Product" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
               <option value="">Unassigned</option>
-              <template :for="product in products()" :key="product.id">
-                <option :value="product.id" :selected="product.id === productId()">{{ product.label }}</option>
-              </template>
+              <option :for="product in products()" :key="product.id" :value="product.id" :selected="product.id === productId()">{{ product.label }}</option>
             </select>
             <p :if="moreProductsLabel()" class="mt-1 text-gray-500 text-xs dark:text-neutral-400" :text="moreProductsLabel()"></p>
           </div>

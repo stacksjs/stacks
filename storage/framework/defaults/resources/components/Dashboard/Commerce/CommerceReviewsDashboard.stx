@@ -253,9 +253,7 @@ onMount(() => {
         <span class="sr-only">Product</span>
         <select x-model="productFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
           <option value="all">All products</option>
-          <template :for="product in products()" :key="product.id">
-            <option :value="product.id">{{ product.label }}</option>
-          </template>
+          <option :for="product in products()" :key="product.id" :value="product.id">{{ product.label }}</option>
         </select>
       </label>
       <label>

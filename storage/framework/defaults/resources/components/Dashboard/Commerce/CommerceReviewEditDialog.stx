@@ -57,7 +57,7 @@ function errorMessages(): string[] {
 >
     <form id="review-form" @submit.prevent="submit">
         <ul :if="errorMessages().length > 0" class="mb-5 p-3 space-y-1 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
-          <template :for="message in errorMessages()" :key="message"><li>{{ message }}</li></template>
+          <li :for="message in errorMessages()" :key="message">{{ message }}</li>
         </ul>
 
         <div class="space-y-4">
