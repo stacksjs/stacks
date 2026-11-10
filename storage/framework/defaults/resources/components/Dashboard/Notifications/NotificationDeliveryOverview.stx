@@ -135,24 +135,22 @@ onMount(loadOverview)
         <div :if="!isLoading && overview.channels.length === 0" class="px-4 py-10 text-center text-gray-500 text-sm dark:text-neutral-400 bg-white dark:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600">
           No active channels yet.
         </div>
-        <template :for="channel in overview.channels">
-          <article class="px-4 py-4 bg-white dark:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600">
-            <div class="flex items-center justify-between">
-              <div class="inline-flex gap-2 items-center font-medium text-gray-900 text-sm dark:text-neutral-100">
-                <span :class="'h-5 w-5 ' + channelIcon(channel.channel)"></span>
-                <span class="capitalize">{{ channel.channel }}</span>
-              </div>
-              <span class="font-mono text-gray-500 text-xs dark:text-neutral-400">{{ attemptLabel(channel.total) }}</span>
+        <article :for="channel in overview.channels" class="px-4 py-4 bg-white dark:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600">
+          <div class="flex items-center justify-between">
+            <div class="inline-flex gap-2 items-center font-medium text-gray-900 text-sm dark:text-neutral-100">
+              <span :class="'h-5 w-5 ' + channelIcon(channel.channel)"></span>
+              <span class="capitalize">{{ channel.channel }}</span>
             </div>
-            <div class="overflow-hidden mt-4 h-2 bg-gray-100 dark:bg-neutral-600 rounded-full">
-              <div class="h-full bg-green-500 rounded-full" style="width: {{ channel.success_rate }}%"></div>
-            </div>
-            <div class="flex items-center justify-between mt-2 text-xs">
-              <span class="text-gray-500 dark:text-neutral-400">{{ channel.success_rate }}% successful</span>
-              <span :class="channel.failed > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-neutral-400'">{{ formatNumber(channel.failed) }} failed</span>
-            </div>
-          </article>
-        </template>
+            <span class="font-mono text-gray-500 text-xs dark:text-neutral-400">{{ attemptLabel(channel.total) }}</span>
+          </div>
+          <div class="overflow-hidden mt-4 h-2 bg-gray-100 dark:bg-neutral-600 rounded-full">
+            <div class="h-full bg-green-500 rounded-full" style="width: {{ channel.success_rate }}%"></div>
+          </div>
+          <div class="flex items-center justify-between mt-2 text-xs">
+            <span class="text-gray-500 dark:text-neutral-400">{{ channel.success_rate }}% successful</span>
+            <span :class="channel.failed > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-neutral-400'">{{ formatNumber(channel.failed) }} failed</span>
+          </div>
+        </article>
       </div>
     </section>
   </div>

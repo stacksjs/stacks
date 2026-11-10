@@ -173,9 +173,7 @@ function submit(): void {
               <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Email list</span>
               <select x-model="emailListId" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
                 <option value="">Select a list</option>
-                <template :for="list in lists">
-                  <option :value="list.id">{{ list.name }} - {{ list.activeMembers.toLocaleString() }} active</option>
-                </template>
+                <option :for="list in lists" :value="list.id">{{ list.name }} - {{ list.activeMembers.toLocaleString() }} active</option>
               </select>
             </label>
             <label class="block sm:col-span-2">

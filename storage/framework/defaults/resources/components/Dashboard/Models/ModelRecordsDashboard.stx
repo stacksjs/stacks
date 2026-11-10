@@ -445,9 +445,7 @@ void load()
         @change="onPerPageChange"
         class="px-2 h-8 text-[12px] text-neutral-700 dark:text-neutral-200 bg-white dark:bg-white/10 border border-black/10 rounded-md dark:border-white/15 focus:border-blue-500/50"
       >
-        <template :for="option in PER_PAGE_OPTIONS">
-          <option :value="option" :selected="option === perPage()">{{ option }}</option>
-        </template>
+        <option :for="option in PER_PAGE_OPTIONS" :value="option" :selected="option === perPage()">{{ option }}</option>
       </select>
     </div>
   </div>
@@ -492,30 +490,26 @@ void load()
       <table class="min-w-full">
         <thead class="bg-neutral-50 dark:bg-white/5">
           <tr>
-            <template :for="column in columnMeta()">
-              <th scope="col" class="px-3 py-2 whitespace-nowrap group">
-                <button type="button" @click="toggleSort(column)" :class="headerClass(column)">
-                  <span>{{ column.label }}</span>
-                  <span :class="sortIconClass(column)"></span>
-                </button>
-              </th>
-            </template>
+            <th :for="column in columnMeta()" scope="col" class="px-3 py-2 whitespace-nowrap group">
+              <button type="button" @click="toggleSort(column)" :class="headerClass(column)">
+                <span>{{ column.label }}</span>
+                <span :class="sortIconClass(column)"></span>
+              </button>
+            </th>
             <th scope="col" class="right-0 sticky z-20 px-3 py-2 w-28 font-medium text-[11px] text-neutral-500 text-right tracking-wide uppercase dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-800 border-black/5 border-l dark:border-white/10">Actions</th>
           </tr>
 
           <!-- Per-column filter row -->
           <tr :if="showFilters()" class="bg-white dark:bg-neutral-900">
-            <template :for="column in columnMeta()">
-              <th scope="col" class="pb-2 px-2">
-                <input
-                  type="text"
-                  :value="filters()[column.name] || ''"
-                  @input="onFilterInput(column.name, $event)"
-                  :placeholder="column.label"
-                  class="block px-2 py-1 w-full font-normal text-[12px] text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 bg-white dark:bg-white/10 border border-black/10 rounded-md dark:border-white/15 focus:border-blue-400 focus:outline-none"
-                >
-              </th>
-            </template>
+            <th :for="column in columnMeta()" scope="col" class="pb-2 px-2">
+              <input
+                type="text"
+                :value="filters()[column.name] || ''"
+                @input="onFilterInput(column.name, $event)"
+                :placeholder="column.label"
+                class="block px-2 py-1 w-full font-normal text-[12px] text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 bg-white dark:bg-white/10 border border-black/10 rounded-md dark:border-white/15 focus:border-blue-400 focus:outline-none"
+              >
+            </th>
             <th class="right-0 sticky z-20 bg-white dark:bg-neutral-900 border-black/5 border-l dark:border-white/10"></th>
           </tr>
         </thead>
@@ -525,25 +519,19 @@ void load()
             rather than one: `:if` and `:for` on the same <template> do not
             compose, and a table may legally carry several bodies. -->
         <tbody :if="loading()" class="divide-black/5 divide-y dark:divide-white/8">
-          <template :for="i in skeletonRows()">
-            <tr>
-              <template :for="column in columnMeta()">
-                <td class="px-3 py-2">
-                  <div class="h-3 bg-neutral-200 dark:bg-white/10 rounded animate-pulse"></div>
-                </td>
-              </template>
-              <td class="right-0 sticky z-10 px-3 py-2 bg-white dark:bg-neutral-900 border-black/5 border-l dark:border-white/10">
-                <div class="ml-auto h-3 w-16 bg-neutral-200 dark:bg-white/10 rounded animate-pulse"></div>
-              </td>
-            </tr>
-          </template>
+          <tr :for="i in skeletonRows()">
+            <td :for="column in columnMeta()" class="px-3 py-2">
+              <div class="h-3 bg-neutral-200 dark:bg-white/10 rounded animate-pulse"></div>
+            </td>
+            <td class="right-0 sticky z-10 px-3 py-2 bg-white dark:bg-neutral-900 border-black/5 border-l dark:border-white/10">
+              <div class="ml-auto h-3 w-16 bg-neutral-200 dark:bg-white/10 rounded animate-pulse"></div>
+            </td>
+          </tr>
         </tbody>
 
         <tbody :if="!loading()" class="divide-black/5 divide-y dark:divide-white/8">
           <tr :for="row in rows()" class="hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors group">
-            <template :for="column in columnMeta()">
-              <td :class="cellClass(column)" :title="cellValue(row, column)">{{ cellValue(row, column) }}</td>
-            </template>
+            <td :for="column in columnMeta()" :class="cellClass(column)" :title="cellValue(row, column)">{{ cellValue(row, column) }}</td>
             <td class="right-0 sticky z-10 px-3 py-2 text-right bg-white dark:bg-neutral-900 group-hover:bg-neutral-50 dark:group-hover:bg-white/5 border-black/5 border-l dark:border-white/10 transition-colors">
               <ModelRecordActions
                 :record="row"

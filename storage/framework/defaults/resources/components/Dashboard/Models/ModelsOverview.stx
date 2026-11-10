@@ -159,9 +159,7 @@ onMount(() => {
           <span class="sr-only">Filter model category</span>
           <select x-model="selectedCategory" class="block px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-neutral-300 rounded-lg dark:border-neutral-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
             <option value="all">All categories</option>
-            <template :for="category in categories()">
-              <option :value="category.key">{{ category.label }}</option>
-            </template>
+            <option :for="category in categories()" :value="category.key">{{ category.label }}</option>
           </select>
         </label>
       </div>

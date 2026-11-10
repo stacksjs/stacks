@@ -57,20 +57,18 @@ function close(): void {
   @close="close"
 >
   <form id="model-edit-form" class="overflow-y-auto space-y-3 max-h-[65vh]" @submit.prevent="submit">
-    <template :for="field in fields()">
-      <div class="flex flex-col gap-1.5">
-        <label :for="'model-edit-' + field.name" class="font-medium text-[12px] text-neutral-600 dark:text-neutral-300">{{ field.label }}</label>
-        <input
-          :id="'model-edit-' + field.name"
-          :name="field.readonly ? undefined : field.name"
-          type="text"
-          :value="values()[field.name] ?? field.value"
-          :readonly="viewOnly() || field.readonly"
-          class="px-2.5 py-1.5 text-[13px] text-neutral-900 dark:text-neutral-100 read-only:text-neutral-500 dark:read-only:text-neutral-400 bg-white dark:bg-white/10 read-only:bg-neutral-50 dark:read-only:bg-white/5 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-          @input="updateValue(field.name, $event)"
-        >
-      </div>
-    </template>
+    <div :for="field in fields()" class="flex flex-col gap-1.5">
+      <label :for="'model-edit-' + field.name" class="font-medium text-[12px] text-neutral-600 dark:text-neutral-300">{{ field.label }}</label>
+      <input
+        :id="'model-edit-' + field.name"
+        :name="field.readonly ? undefined : field.name"
+        type="text"
+        :value="values()[field.name] ?? field.value"
+        :readonly="viewOnly() || field.readonly"
+        class="px-2.5 py-1.5 text-[13px] text-neutral-900 dark:text-neutral-100 read-only:text-neutral-500 dark:read-only:text-neutral-400 bg-white dark:bg-white/10 read-only:bg-neutral-50 dark:read-only:bg-white/5 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+        @input="updateValue(field.name, $event)"
+      >
+    </div>
   </form>
 
   <template #footer>

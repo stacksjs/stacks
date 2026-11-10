@@ -176,18 +176,16 @@ onMount(() => {
     <h2 class="font-semibold text-gray-900 text-sm dark:text-white">Recovery campaigns</h2>
     <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Ordinary campaigns aimed at cold carts. They send, report and are edited on the campaigns screen like any other.</p>
     <ul class="mt-3 divide-gray-200 divide-y dark:divide-neutral-700">
-      <template :for="campaign in campaigns">
-        <li class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between py-3">
-          <div>
-            <p class="font-medium text-gray-900 text-sm dark:text-white">{{ campaign.name }}</p>
-            <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Carts idle {{ campaign.idleHours }}h or more<span :if="campaign.minimumValue > 0"> · {{ money(campaign.minimumValue) }} and up</span> · {{ campaignTiming(campaign) }}</p>
-          </div>
-          <div class="flex gap-3 items-center">
-            <p class="text-gray-500 text-xs dark:text-neutral-400">{{ campaign.sentCount.toLocaleString() }} sent</p>
-            <span class="inline-flex px-2 py-1 font-medium text-xs bg-gray-100 dark:bg-neutral-700 rounded-full">{{ campaign.status }}</span>
-          </div>
-        </li>
-      </template>
+      <li :for="campaign in campaigns" class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between py-3">
+        <div>
+          <p class="font-medium text-gray-900 text-sm dark:text-white">{{ campaign.name }}</p>
+          <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Carts idle {{ campaign.idleHours }}h or more<span :if="campaign.minimumValue > 0"> · {{ money(campaign.minimumValue) }} and up</span> · {{ campaignTiming(campaign) }}</p>
+        </div>
+        <div class="flex gap-3 items-center">
+          <p class="text-gray-500 text-xs dark:text-neutral-400">{{ campaign.sentCount.toLocaleString() }} sent</p>
+          <span class="inline-flex px-2 py-1 font-medium text-xs bg-gray-100 dark:bg-neutral-700 rounded-full">{{ campaign.status }}</span>
+        </div>
+      </li>
     </ul>
   </section>
 
