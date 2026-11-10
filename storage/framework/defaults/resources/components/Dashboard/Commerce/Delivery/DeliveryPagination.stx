@@ -92,7 +92,7 @@ function emitPage(page: number | string): void {
         <span class="h-5 w-5 i-hugeicons-arrow-left-01"></span>
       </Button>
 
-      <template :for="page in displayedPages">
+      <div :for="page in displayedPages" class="contents">
         <Button
           :if="page !== '...' && isCurrent(page)"
           @click="emitPage(page)"
@@ -112,7 +112,7 @@ function emitPage(page: number | string): void {
         >
           ...
         </span>
-      </template>
+      </div>
 
       <Button
         variant="secondary"

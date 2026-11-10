@@ -495,12 +495,10 @@ onMount(() => { void loadFiles() })
       </div>
 
       <div :else-if="viewMode() === 'grid'" class="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-        <template :for="item in filteredItems">
-          <article role="button" tabindex="0" :aria-label="(item.type === 'folder' ? 'Open folder ' : 'View file ') + item.name" :class="gridCardClass(item)" @click="onItemClick(item)" @keydown="onItemKeydown(item, $event)">
-            <MediaCard :item="item" />
-            <div class="absolute right-2 top-2 opacity-0 focus-within:opacity-100 group-hover:opacity-100 transition-opacity"><Button variant="secondary" size="sm" iconOnly :ariaLabel="'Delete ' + item.name" @click="openDelete(item, $event)"><span class="block h-4 w-4 text-red-500 i-hugeicons-delete-02"></span></Button></div>
-          </article>
-        </template>
+        <article :for="item in filteredItems" role="button" tabindex="0" :aria-label="(item.type === 'folder' ? 'Open folder ' : 'View file ') + item.name" :class="gridCardClass(item)" @click="onItemClick(item)" @keydown="onItemKeydown(item, $event)">
+          <MediaCard :item="item" />
+          <div class="absolute right-2 top-2 opacity-0 focus-within:opacity-100 group-hover:opacity-100 transition-opacity"><Button variant="secondary" size="sm" iconOnly :ariaLabel="'Delete ' + item.name" @click="openDelete(item, $event)"><span class="block h-4 w-4 text-red-500 i-hugeicons-delete-02"></span></Button></div>
+        </article>
       </div>
 
       {{--

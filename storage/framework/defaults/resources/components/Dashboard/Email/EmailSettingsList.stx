@@ -33,14 +33,12 @@ function addItem(): void {
   </form>
 
   <ul :if="items.length > 0" class="mt-4 divide-gray-200 divide-y dark:divide-neutral-600">
-    <template :for="item in items">
-      <li class="flex items-center justify-between py-3">
-        <span class="min-w-0 text-gray-700 text-sm truncate dark:text-neutral-200">{{ item }}</span>
-        <Button variant="danger" size="sm" iconOnly :ariaLabel="'Remove ' + item" @click="emit('remove', item)">
-          <span class="h-4 w-4 i-hugeicons-cancel-01"></span>
-        </Button>
-      </li>
-    </template>
+    <li :for="item in items" class="flex items-center justify-between py-3">
+      <span class="min-w-0 text-gray-700 text-sm truncate dark:text-neutral-200">{{ item }}</span>
+      <Button variant="danger" size="sm" iconOnly :ariaLabel="'Remove ' + item" @click="emit('remove', item)">
+        <span class="h-4 w-4 i-hugeicons-cancel-01"></span>
+      </Button>
+    </li>
   </ul>
 
   <p :if="items.length === 0" class="mt-4 py-5 text-center text-gray-500 text-sm dark:text-neutral-400">No entries configured.</p>
