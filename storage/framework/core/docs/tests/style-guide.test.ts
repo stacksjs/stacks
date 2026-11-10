@@ -129,7 +129,8 @@ interface Props {
 const { label = 'Save' } = defineProps<Props>()
 </script>
 <script client>const internalState = state(false)</script>
-<button>{{ label }}</button>`)
+<!-- <ExampleOnly><slot name="not-real" /></ExampleOnly> -->
+<button>{{ label }}<slot name="icon" /></button>`)
     await rm(join(root, 'resources/components/Action.story.stx'))
     await generateStyleGuide(config, { root })
     const catalog = JSON.parse(await readFile(join(root, 'docs/public/style-guide/generated/catalog.json'), 'utf8'))
@@ -137,6 +138,8 @@ const { label = 'Save' } = defineProps<Props>()
       { name: 'label', type: 'string', description: 'Optional. Displayed action text.' },
       { name: 'variant', type: "'primary' | 'secondary'", description: 'Required.' },
     ])
+    expect(catalog.components[0].dependencies).toEqual([])
+    expect(catalog.components[0].slots).toEqual(['icon'])
   })
 
   test('preserves identical output on repeated generation with static fixtures', async () => {

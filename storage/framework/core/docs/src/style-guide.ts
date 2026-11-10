@@ -221,7 +221,10 @@ export async function generateStyleGuide(config: StyleGuideConfig, options: { ro
         continue
       }
       const name = basename(path, '.stx')
-      const analyzed = analyzeComponent(file.content, name, file.source)
+      // Analyze template composition only. Type arguments such as <Props> and
+      // code samples in comments are not rendered child components or slots.
+      const template = file.content.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, '').replace(/<!--[\s\S]*?-->/g, '')
+      const analyzed = analyzeComponent(template, name, file.source)
       contracts.set(`${source.id}/${local.slice(0, -4)}`, file.content)
       components.push({
         id: `${source.id}/${local.slice(0, -4)}`,
