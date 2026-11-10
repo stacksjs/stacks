@@ -27,19 +27,22 @@ export type DefaultViewsSetting = boolean | string[]
  * `POST /password/forgot`, `/password/reset/{token}` to `POST /password/reset`,
  * `/auth/magic/{token}` to `POST /auth/magic-link/consume`.
  *
- * `dashboard` - the storefront, whose routes live in `defaults/routes/dashboard.ts`
- * and not in a bundle of their own: `/cart` posts to `/api/cart/update`, the
- * three checkout steps to `/api/checkout/{contact,shipping,place}`, and
- * `/orders/{id}` is where `place` lands. `dashboard/index.stx` is the stub
- * `/dashboard` renders on the views server, meaningless without the bundle.
- * `feedback/{token}` posts to `/api/feedback/{token}` from the same file.
+ * `dashboard` - `dashboard/index.stx` is the stub `/dashboard` renders on the
+ * views server, meaningless without the bundle, and `feedback/{token}` posts to
+ * `/api/feedback/{token}` in `defaults/routes/dashboard.ts`.
+ *
+ * `storefront` - `/cart` posts to `/api/cart/update`, the three checkout steps
+ * to `/api/checkout/{contact,shipping,place}`, and `/orders/{id}` is where
+ * `place` lands, all in `defaults/routes/storefront.ts`. The bundle follows the
+ * `commerce` feature, so an app without commerce does not serve these pages.
  *
  * Served with every bundle mounted, withheld without it: an app answering 200
  * on `/login` whose form posts into a 404 is worse than an app answering 404.
  */
 export const DEFAULT_VIEW_ROUTE_BUNDLES: Readonly<Record<string, readonly string[]>> = {
   auth: ['login.stx', 'register.stx', 'forgot-password.stx', 'password', 'auth'],
-  dashboard: ['cart.stx', 'checkout', 'orders', 'dashboard', 'feedback'],
+  dashboard: ['dashboard', 'feedback'],
+  storefront: ['cart.stx', 'checkout', 'orders'],
 }
 
 /**

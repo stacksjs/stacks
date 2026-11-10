@@ -15,6 +15,7 @@
  * ```
  */
 
+import { feature } from '@stacksjs/config'
 import { isLocalDeployment } from '@stacksjs/env'
 import { projectPath } from '@stacksjs/path'
 import { dashboardGroupMiddleware, describeUnknownDashboardGroups, resolveDashboardAccess, route } from '@stacksjs/router'
@@ -102,28 +103,8 @@ route.post('/api/team-invitations/{token}/accept', 'Actions/Teams/AcceptInvitati
 // leaked, not about guessing.
 route.post('/api/feedback/{token}', 'Actions/Dashboard/Feedback/FeedbackStoreAction').name('feedback.store').skipCsrf().rateLimit(10, 'minute')
 
-// ============================================================================
-// Storefront (anonymous cart + multi-step checkout)
-//
-// CSRF is skipped because the storefront uses progressive-enhancement
-// HTML forms — there's no JS to mint a token — and each cart is
-// already gated by an opaque, HttpOnly session cookie that can't be
-// guessed. Apps that want classic CSRF on top can re-register the
-// same routes in their `routes/api.ts` without `.skipCsrf()`.
-// ============================================================================
-
-route.get('/api/cart', 'Actions/Storefront/GetCartAction').skipCsrf()
-route.post('/api/cart/add', 'Actions/Storefront/AddToCartAction').skipCsrf()
-route.post('/api/cart/update', 'Actions/Storefront/UpdateCartItemAction').skipCsrf()
-route.post('/api/checkout/contact', 'Actions/Storefront/CheckoutContactAction').skipCsrf()
-route.post('/api/checkout/shipping', 'Actions/Storefront/CheckoutShippingAction').skipCsrf()
-route.post('/api/checkout/place', 'Actions/Storefront/PlaceOrderAction').skipCsrf()
-
-// Buyer-submitted product review. Tied to a shipped order via
-// order_id + email match (the SubmitReviewAction verifies ownership
-// and stamps is_verified_purchase=1). Stored as is_approved=0 for
-// admin moderation through `/dashboard/commerce/reviews`.
-route.post('/api/reviews/submit', 'Actions/Storefront/SubmitReviewAction').skipCsrf()
+// The storefront (cart, checkout, buyer reviews) is its own bundle,
+// `storefront.ts`, mounted with the commerce feature.
 
 // ============================================================================
 // Health & System
@@ -323,46 +304,48 @@ route.group({ prefix: '/api/monitoring', middleware: guarded('/api/monitoring') 
 // is no longer a DB/CMS mirror. /cms below remains the authoring API.
 // ============================================================================
 
-route.group({ prefix: '/cms', middleware: guarded('/cms') }, () => {
-  route.get('/dashboard', 'Actions/Dashboard/Content/ContentDashboardAction')
-  route.get('/posts', 'Actions/Cms/PostIndexAction')
-  route.get('/posts/{id}', 'Actions/Cms/PostShowAction')
-  route.post('/posts', 'Actions/Cms/PostStoreAction')
-  route.patch('/posts/{id}', 'Actions/Cms/PostUpdateAction')
-  route.delete('/posts/{id}', 'Actions/Cms/PostDestroyAction')
-  route.patch('/posts/{id}/views', 'Actions/Cms/PostViewsUpdateAction')
+if (feature('cms')) {
+  route.group({ prefix: '/cms', middleware: guarded('/cms') }, () => {
+    route.get('/dashboard', 'Actions/Dashboard/Content/ContentDashboardAction')
+    route.get('/posts', 'Actions/Cms/PostIndexAction')
+    route.get('/posts/{id}', 'Actions/Cms/PostShowAction')
+    route.post('/posts', 'Actions/Cms/PostStoreAction')
+    route.patch('/posts/{id}', 'Actions/Cms/PostUpdateAction')
+    route.delete('/posts/{id}', 'Actions/Cms/PostDestroyAction')
+    route.patch('/posts/{id}/views', 'Actions/Cms/PostViewsUpdateAction')
 
-  route.get('/authors', 'Actions/Cms/AuthorIndexAction')
-  route.get('/authors/{id}', 'Actions/Cms/AuthorShowAction')
-  route.post('/authors', 'Actions/Cms/AuthorStoreAction')
-  route.patch('/authors/{id}', 'Actions/Cms/AuthorUpdateAction')
-  route.delete('/authors/{id}', 'Actions/Cms/AuthorDestroyAction')
+    route.get('/authors', 'Actions/Cms/AuthorIndexAction')
+    route.get('/authors/{id}', 'Actions/Cms/AuthorShowAction')
+    route.post('/authors', 'Actions/Cms/AuthorStoreAction')
+    route.patch('/authors/{id}', 'Actions/Cms/AuthorUpdateAction')
+    route.delete('/authors/{id}', 'Actions/Cms/AuthorDestroyAction')
 
-  route.get('/categories', 'Actions/Cms/CategorizableIndexAction')
-  route.get('/categories/{id}', 'Actions/Cms/CategorizableShowAction')
-  route.post('/categories', 'Actions/Cms/CategorizableStoreAction')
-  route.patch('/categories/{id}', 'Actions/Cms/CategorizableUpdateAction')
-  route.delete('/categories/{id}', 'Actions/Cms/CategorizableDestroyAction')
+    route.get('/categories', 'Actions/Cms/CategorizableIndexAction')
+    route.get('/categories/{id}', 'Actions/Cms/CategorizableShowAction')
+    route.post('/categories', 'Actions/Cms/CategorizableStoreAction')
+    route.patch('/categories/{id}', 'Actions/Cms/CategorizableUpdateAction')
+    route.delete('/categories/{id}', 'Actions/Cms/CategorizableDestroyAction')
 
-  route.get('/tags', 'Actions/Cms/TaggableIndexAction')
-  route.get('/tags/{id}', 'Actions/Cms/TaggableShowAction')
-  route.post('/tags', 'Actions/Cms/TaggableStoreAction')
-  route.patch('/tags/{id}', 'Actions/Cms/TaggableUpdateAction')
-  route.delete('/tags/{id}', 'Actions/Cms/TaggableDestroyAction')
+    route.get('/tags', 'Actions/Cms/TaggableIndexAction')
+    route.get('/tags/{id}', 'Actions/Cms/TaggableShowAction')
+    route.post('/tags', 'Actions/Cms/TaggableStoreAction')
+    route.patch('/tags/{id}', 'Actions/Cms/TaggableUpdateAction')
+    route.delete('/tags/{id}', 'Actions/Cms/TaggableDestroyAction')
 
-  route.get('/comments', 'Actions/Cms/CommentIndexAction')
-  route.get('/comments/{id}', 'Actions/Cms/CommentShowAction')
-  route.post('/comments', 'Actions/Cms/CommentStoreAction')
-  route.patch('/comments/{id}', 'Actions/Cms/CommentUpdateAction')
-  route.delete('/comments/{id}', 'Actions/Cms/CommentDestroyAction')
+    route.get('/comments', 'Actions/Cms/CommentIndexAction')
+    route.get('/comments/{id}', 'Actions/Cms/CommentShowAction')
+    route.post('/comments', 'Actions/Cms/CommentStoreAction')
+    route.patch('/comments/{id}', 'Actions/Cms/CommentUpdateAction')
+    route.delete('/comments/{id}', 'Actions/Cms/CommentDestroyAction')
 
-  route.get('/pages', 'Actions/Cms/PageIndexAction')
-  route.post('/pages', 'Actions/Cms/PageStoreAction')
-  route.patch('/pages/{id}', 'Actions/Cms/PageUpdateAction')
-  route.delete('/pages/{id}', 'Actions/Cms/PageDestroyAction')
+    route.get('/pages', 'Actions/Cms/PageIndexAction')
+    route.post('/pages', 'Actions/Cms/PageStoreAction')
+    route.patch('/pages/{id}', 'Actions/Cms/PageUpdateAction')
+    route.delete('/pages/{id}', 'Actions/Cms/PageDestroyAction')
 
-  route.get('/files', 'Actions/Dashboard/Content/FileIndexAction')
-})
+    route.get('/files', 'Actions/Dashboard/Content/FileIndexAction')
+  })
+}
 
 // (The public /blog mirror — posts/categories/tags/feed/sitemap from the DB —
 // was retired. The blog is now BunPress + markdown; its feed.xml and
@@ -377,183 +360,184 @@ route.group({ prefix: '/cms', middleware: guarded('/cms') }, () => {
 // underlying actions, since user routes load before framework routes.
 // ============================================================================
 
-route.group({ prefix: '/api/commerce', middleware: guarded('/api/commerce') }, () => {
-  route.get('/dashboard', 'Actions/Dashboard/Commerce/CommerceDashboardAction')
-  route.get('/pos', 'Actions/Dashboard/Commerce/PosIndexAction')
-  route.get('/products', 'Actions/Commerce/Product/ProductIndexAction')
-  route.get('/products/{id}', 'Actions/Commerce/Product/ProductShowAction')
-  route.post('/products', 'Actions/Commerce/Product/ProductStoreAction')
-  route.patch('/products/{id}', 'Actions/Commerce/Product/ProductUpdateAction')
-  route.delete('/products/{id}', 'Actions/Commerce/Product/ProductDestroyAction')
+if (feature('commerce')) {
+  route.group({ prefix: '/api/commerce', middleware: guarded('/api/commerce') }, () => {
+    route.get('/dashboard', 'Actions/Dashboard/Commerce/CommerceDashboardAction')
+    route.get('/pos', 'Actions/Dashboard/Commerce/PosIndexAction')
+    route.get('/products', 'Actions/Commerce/Product/ProductIndexAction')
+    route.get('/products/{id}', 'Actions/Commerce/Product/ProductShowAction')
+    route.post('/products', 'Actions/Commerce/Product/ProductStoreAction')
+    route.patch('/products/{id}', 'Actions/Commerce/Product/ProductUpdateAction')
+    route.delete('/products/{id}', 'Actions/Commerce/Product/ProductDestroyAction')
 
-  // Product subresources nested under /products/* to match the
-  // frontend composables (defaults/functions/commerce/products/*.ts).
-  route.get('/products/{productId}/variants', 'Actions/Commerce/Product/ProductVariantIndexAction')
-  route.get('/products/variants', 'Actions/Commerce/Product/ProductVariantIndexAction')
-  route.get('/products/variants/{id}', 'Actions/Commerce/Product/ProductVariantShowAction')
-  route.post('/products/variants', 'Actions/Commerce/Product/ProductVariantStoreAction')
-  route.patch('/products/variants/{id}', 'Actions/Commerce/Product/ProductVariantUpdateAction')
-  route.delete('/products/variants/{id}', 'Actions/Commerce/Product/ProductVariantDestroyAction')
+    // Product subresources nested under /products/* to match the
+    // frontend composables (defaults/functions/commerce/products/*.ts).
+    route.get('/products/{productId}/variants', 'Actions/Commerce/Product/ProductVariantIndexAction')
+    route.get('/products/variants', 'Actions/Commerce/Product/ProductVariantIndexAction')
+    route.get('/products/variants/{id}', 'Actions/Commerce/Product/ProductVariantShowAction')
+    route.post('/products/variants', 'Actions/Commerce/Product/ProductVariantStoreAction')
+    route.patch('/products/variants/{id}', 'Actions/Commerce/Product/ProductVariantUpdateAction')
+    route.delete('/products/variants/{id}', 'Actions/Commerce/Product/ProductVariantDestroyAction')
 
-  route.get('/products/units', 'Actions/Commerce/Product/ProductUnitIndexAction')
-  route.get('/products/units/{id}', 'Actions/Commerce/Product/ProductUnitShowAction')
-  route.post('/products/units', 'Actions/Commerce/Product/ProductUnitStoreAction')
-  route.patch('/products/units/{id}', 'Actions/Commerce/Product/ProductUnitUpdateAction')
-  route.delete('/products/units/{id}', 'Actions/Commerce/Product/ProductUnitDestroyAction')
+    route.get('/products/units', 'Actions/Commerce/Product/ProductUnitIndexAction')
+    route.get('/products/units/{id}', 'Actions/Commerce/Product/ProductUnitShowAction')
+    route.post('/products/units', 'Actions/Commerce/Product/ProductUnitStoreAction')
+    route.patch('/products/units/{id}', 'Actions/Commerce/Product/ProductUnitUpdateAction')
+    route.delete('/products/units/{id}', 'Actions/Commerce/Product/ProductUnitDestroyAction')
 
-  route.get('/product-categories', 'Actions/Commerce/Product/ProductCategoryIndexAction')
-  route.post('/product-categories', 'Actions/Commerce/Product/ProductCategoryStoreAction')
+    route.get('/product-categories', 'Actions/Commerce/Product/ProductCategoryIndexAction')
+    route.post('/product-categories', 'Actions/Commerce/Product/ProductCategoryStoreAction')
 
-  // Manufacturers — frontend composable hits `/commerce/product-manufacturers`,
-  // so the resource name is namespaced to disambiguate from any future
-  // standalone manufacturers concept.
-  route.get('/product-manufacturers', 'Actions/Commerce/Product/ManufacturerIndexAction')
-  route.get('/product-manufacturers/{id}', 'Actions/Commerce/Product/ManufacturerShowAction')
-  route.post('/product-manufacturers', 'Actions/Commerce/Product/ManufacturerStoreAction')
-  route.patch('/product-manufacturers/{id}', 'Actions/Commerce/Product/ManufacturerUpdateAction')
-  route.delete('/product-manufacturers/{id}', 'Actions/Commerce/Product/ManufacturerDestroyAction')
+    // Manufacturers — frontend composable hits `/commerce/product-manufacturers`,
+    // so the resource name is namespaced to disambiguate from any future
+    // standalone manufacturers concept.
+    route.get('/product-manufacturers', 'Actions/Commerce/Product/ManufacturerIndexAction')
+    route.get('/product-manufacturers/{id}', 'Actions/Commerce/Product/ManufacturerShowAction')
+    route.post('/product-manufacturers', 'Actions/Commerce/Product/ManufacturerStoreAction')
+    route.patch('/product-manufacturers/{id}', 'Actions/Commerce/Product/ManufacturerUpdateAction')
+    route.delete('/product-manufacturers/{id}', 'Actions/Commerce/Product/ManufacturerDestroyAction')
 
-  route.get('/orders', 'Actions/Commerce/OrderIndexAction')
-  route.get('/orders/{id}', 'Actions/Commerce/OrderShowAction')
-  route.post('/orders', 'Actions/Commerce/OrderStoreAction')
-  route.patch('/orders/{id}', 'Actions/Commerce/OrderUpdateAction')
-  route.delete('/orders/{id}', 'Actions/Commerce/OrderDestroyAction')
-  route.get('/orders/export', 'Actions/Commerce/OrderExportAction')
+    route.get('/orders', 'Actions/Commerce/OrderIndexAction')
+    route.get('/orders/{id}', 'Actions/Commerce/OrderShowAction')
+    route.post('/orders', 'Actions/Commerce/OrderStoreAction')
+    route.patch('/orders/{id}', 'Actions/Commerce/OrderUpdateAction')
+    route.delete('/orders/{id}', 'Actions/Commerce/OrderDestroyAction')
+    route.get('/orders/export', 'Actions/Commerce/OrderExportAction')
 
-  route.get('/customers', 'Actions/Commerce/CustomerIndexAction')
-  route.get('/customers/{id}', 'Actions/Commerce/CustomerShowAction')
-  route.post('/customers', 'Actions/Commerce/CustomerStoreAction')
-  route.patch('/customers/{id}', 'Actions/Commerce/CustomerUpdateAction')
-  route.delete('/customers/{id}', 'Actions/Commerce/CustomerDestroyAction')
+    route.get('/customers', 'Actions/Commerce/CustomerIndexAction')
+    route.get('/customers/{id}', 'Actions/Commerce/CustomerShowAction')
+    route.post('/customers', 'Actions/Commerce/CustomerStoreAction')
+    route.patch('/customers/{id}', 'Actions/Commerce/CustomerUpdateAction')
+    route.delete('/customers/{id}', 'Actions/Commerce/CustomerDestroyAction')
 
-  route.get('/coupons', 'Actions/Commerce/CouponIndexAction')
-  route.get('/coupons/{id}', 'Actions/Commerce/CouponShowAction')
-  route.post('/coupons', 'Actions/Commerce/CouponStoreAction')
-  route.patch('/coupons/{id}', 'Actions/Commerce/CouponUpdateAction')
-  route.delete('/coupons/{id}', 'Actions/Commerce/CouponDestroyAction')
+    route.get('/coupons', 'Actions/Commerce/CouponIndexAction')
+    route.get('/coupons/{id}', 'Actions/Commerce/CouponShowAction')
+    route.post('/coupons', 'Actions/Commerce/CouponStoreAction')
+    route.patch('/coupons/{id}', 'Actions/Commerce/CouponUpdateAction')
+    route.delete('/coupons/{id}', 'Actions/Commerce/CouponDestroyAction')
 
-  route.get('/gift-cards', 'Actions/Commerce/GiftCardIndexAction')
-  route.get('/gift-cards/stats', 'Actions/Commerce/GiftCardStatsAction')
-  route.get('/gift-cards/{id}', 'Actions/Commerce/GiftCardShowAction')
-  route.post('/gift-cards', 'Actions/Commerce/GiftCardStoreAction')
-  route.patch('/gift-cards/{id}', 'Actions/Commerce/GiftCardUpdateAction')
-  route.patch('/gift-cards/{id}/balance', 'Actions/Commerce/GiftCardUpdateBalanceAction')
-  route.delete('/gift-cards/{id}', 'Actions/Commerce/GiftCardDestroyAction')
+    route.get('/gift-cards', 'Actions/Commerce/GiftCardIndexAction')
+    route.get('/gift-cards/stats', 'Actions/Commerce/GiftCardStatsAction')
+    route.get('/gift-cards/{id}', 'Actions/Commerce/GiftCardShowAction')
+    route.post('/gift-cards', 'Actions/Commerce/GiftCardStoreAction')
+    route.patch('/gift-cards/{id}', 'Actions/Commerce/GiftCardUpdateAction')
+    route.patch('/gift-cards/{id}/balance', 'Actions/Commerce/GiftCardUpdateBalanceAction')
+    route.delete('/gift-cards/{id}', 'Actions/Commerce/GiftCardDestroyAction')
 
-  route.get('/tax-rates', 'Actions/Commerce/TaxRateIndexAction')
-  route.get('/tax-rates/{id}', 'Actions/Commerce/TaxRateShowAction')
-  route.post('/tax-rates', 'Actions/Commerce/TaxRateStoreAction')
-  route.patch('/tax-rates/{id}', 'Actions/Commerce/TaxRateUpdateAction')
-  route.delete('/tax-rates/{id}', 'Actions/Commerce/TaxRateDestroyAction')
+    route.get('/tax-rates', 'Actions/Commerce/TaxRateIndexAction')
+    route.get('/tax-rates/{id}', 'Actions/Commerce/TaxRateShowAction')
+    route.post('/tax-rates', 'Actions/Commerce/TaxRateStoreAction')
+    route.patch('/tax-rates/{id}', 'Actions/Commerce/TaxRateUpdateAction')
+    route.delete('/tax-rates/{id}', 'Actions/Commerce/TaxRateDestroyAction')
 
-  // Reviews are scoped to products — frontend composable hits
-  // `/commerce/products/reviews`, not `/commerce/reviews`.
-  route.get('/products/reviews', 'Actions/Commerce/ReviewIndexAction')
-  route.get('/products/reviews/{id}', 'Actions/Commerce/ReviewShowAction')
-  route.post('/products/reviews', 'Actions/Commerce/ReviewStoreAction')
-  route.patch('/products/reviews/{id}', 'Actions/Commerce/ReviewUpdateAction')
-  route.delete('/products/reviews/{id}', 'Actions/Commerce/ReviewDestroyAction')
+    // Reviews are scoped to products — frontend composable hits
+    // `/commerce/products/reviews`, not `/commerce/reviews`.
+    route.get('/products/reviews', 'Actions/Commerce/ReviewIndexAction')
+    route.get('/products/reviews/{id}', 'Actions/Commerce/ReviewShowAction')
+    route.post('/products/reviews', 'Actions/Commerce/ReviewStoreAction')
+    route.patch('/products/reviews/{id}', 'Actions/Commerce/ReviewUpdateAction')
+    route.delete('/products/reviews/{id}', 'Actions/Commerce/ReviewDestroyAction')
 
-  route.get('/receipts', 'Actions/Commerce/ReceiptIndexAction')
-  route.get('/receipts/{id}', 'Actions/Commerce/ReceiptShowAction')
-  route.post('/receipts', 'Actions/Commerce/ReceiptStoreAction')
-  route.patch('/receipts/{id}', 'Actions/Commerce/ReceiptUpdateAction')
-  route.delete('/receipts/{id}', 'Actions/Commerce/ReceiptDestroyAction')
+    route.get('/receipts', 'Actions/Commerce/ReceiptIndexAction')
+    route.get('/receipts/{id}', 'Actions/Commerce/ReceiptShowAction')
+    route.post('/receipts', 'Actions/Commerce/ReceiptStoreAction')
+    route.patch('/receipts/{id}', 'Actions/Commerce/ReceiptUpdateAction')
+    route.delete('/receipts/{id}', 'Actions/Commerce/ReceiptDestroyAction')
 
-  route.get('/print-devices', 'Actions/Commerce/PrintDeviceIndexAction')
-  route.get('/print-devices/{id}', 'Actions/Commerce/PrintDeviceShowAction')
-  route.post('/print-devices', 'Actions/Commerce/PrintDeviceStoreAction')
-  route.patch('/print-devices/{id}', 'Actions/Commerce/PrintDeviceUpdateAction')
-  route.delete('/print-devices/{id}', 'Actions/Commerce/PrintDeviceDestroyAction')
+    route.get('/print-devices', 'Actions/Commerce/PrintDeviceIndexAction')
+    route.get('/print-devices/{id}', 'Actions/Commerce/PrintDeviceShowAction')
+    route.post('/print-devices', 'Actions/Commerce/PrintDeviceStoreAction')
+    route.patch('/print-devices/{id}', 'Actions/Commerce/PrintDeviceUpdateAction')
+    route.delete('/print-devices/{id}', 'Actions/Commerce/PrintDeviceDestroyAction')
 
-  route.get('/payment-stats', 'Actions/Commerce/PaymentFetchStatsAction')
-  route.get('/payment-trends', 'Actions/Commerce/PaymentMonthlyTrendsAction')
-  // Renamed from `/commerce-payments` — that path was double-prefixed
-  // because this group already mounts under `/commerce`, so callers
-  // hitting `/api/commerce/payments` (which the frontend composable
-  // does — see defaults/functions/commerce/payments.ts) were 404ing.
-  route.get('/payments', 'Actions/Commerce/PaymentIndexAction')
-  route.get('/payments/{id}', 'Actions/Commerce/PaymentShowAction')
-  route.post('/payments', 'Actions/Commerce/PaymentStoreAction')
-  route.patch('/payments/{id}', 'Actions/Commerce/PaymentUpdateAction')
-  route.delete('/payments/{id}', 'Actions/Commerce/PaymentDestroyAction')
+    route.get('/payment-stats', 'Actions/Commerce/PaymentFetchStatsAction')
+    route.get('/payment-trends', 'Actions/Commerce/PaymentMonthlyTrendsAction')
+    // Renamed from `/commerce-payments` — that path was double-prefixed
+    // because this group already mounts under `/commerce`, so callers
+    // hitting `/api/commerce/payments` (which the frontend composable
+    // does — see defaults/functions/commerce/payments.ts) were 404ing.
+    route.get('/payments', 'Actions/Commerce/PaymentIndexAction')
+    route.get('/payments/{id}', 'Actions/Commerce/PaymentShowAction')
+    route.post('/payments', 'Actions/Commerce/PaymentStoreAction')
+    route.patch('/payments/{id}', 'Actions/Commerce/PaymentUpdateAction')
+    route.delete('/payments/{id}', 'Actions/Commerce/PaymentDestroyAction')
 
-  route.get('/waitlist/products', 'Actions/Commerce/WaitlistProductIndexAction')
-  route.get('/waitlist/products/analytics', 'Actions/Commerce/WaitlistProductAnalyticsAction')
-  route.get('/waitlist/products/status', 'Actions/Commerce/WaitlistProductStatusAction')
-  route.get('/waitlist/products/time-series', 'Actions/Commerce/WaitlistProductTimeSeriesAction')
-  route.get('/waitlist/products/quantity-distribution', 'Actions/Commerce/WaitlistProductQuantityDistributionAction')
-  route.get('/waitlist/products/{id}', 'Actions/Commerce/WaitlistProductShowAction')
-  route.post('/waitlist/products', 'Actions/Commerce/WaitlistProductStoreAction')
-  route.patch('/waitlist/products/{id}', 'Actions/Commerce/WaitlistProductUpdateAction')
-  route.delete('/waitlist/products/{id}', 'Actions/Commerce/WaitlistProductDestroyAction')
+    route.get('/waitlist/products', 'Actions/Commerce/WaitlistProductIndexAction')
+    route.get('/waitlist/products/analytics', 'Actions/Commerce/WaitlistProductAnalyticsAction')
+    route.get('/waitlist/products/status', 'Actions/Commerce/WaitlistProductStatusAction')
+    route.get('/waitlist/products/time-series', 'Actions/Commerce/WaitlistProductTimeSeriesAction')
+    route.get('/waitlist/products/quantity-distribution', 'Actions/Commerce/WaitlistProductQuantityDistributionAction')
+    route.get('/waitlist/products/{id}', 'Actions/Commerce/WaitlistProductShowAction')
+    route.post('/waitlist/products', 'Actions/Commerce/WaitlistProductStoreAction')
+    route.patch('/waitlist/products/{id}', 'Actions/Commerce/WaitlistProductUpdateAction')
+    route.delete('/waitlist/products/{id}', 'Actions/Commerce/WaitlistProductDestroyAction')
 
-  route.get('/waitlist/restaurants', 'Actions/Commerce/WaitlistRestaurantIndexAction')
-  route.get('/waitlist/restaurants/dashboard', 'Actions/Commerce/WaitlistRestaurantDashboardAction')
-  route.get('/waitlist/restaurants/{id}', 'Actions/Commerce/WaitlistRestaurantShowAction')
-  route.post('/waitlist/restaurants', 'Actions/Commerce/WaitlistRestaurantStoreAction')
-  route.patch('/waitlist/restaurants/{id}', 'Actions/Commerce/WaitlistRestaurantUpdateAction')
-  route.delete('/waitlist/restaurants/{id}', 'Actions/Commerce/WaitlistRestaurantDestroyAction')
+    route.get('/waitlist/restaurants', 'Actions/Commerce/WaitlistRestaurantIndexAction')
+    route.get('/waitlist/restaurants/dashboard', 'Actions/Commerce/WaitlistRestaurantDashboardAction')
+    route.get('/waitlist/restaurants/{id}', 'Actions/Commerce/WaitlistRestaurantShowAction')
+    route.post('/waitlist/restaurants', 'Actions/Commerce/WaitlistRestaurantStoreAction')
+    route.patch('/waitlist/restaurants/{id}', 'Actions/Commerce/WaitlistRestaurantUpdateAction')
+    route.delete('/waitlist/restaurants/{id}', 'Actions/Commerce/WaitlistRestaurantDestroyAction')
 
-  // ----------------------------------------------------------------
-  // Shipping (moved from a top-level /shipping group on 2026-05-08).
-  // The frontend composables (defaults/functions/commerce/shippings/*.ts)
-  // all expect these resources under /commerce/*, so the prior /shipping
-  // group was orphaned — every shipping/courier/license/digital call
-  // from the dashboard was 404ing. Resource names match the composable
-  // file names: shipping-methods/rates/zones, delivery-routes, couriers,
-  // digital-deliveries, license-keys.
-  // ----------------------------------------------------------------
-  route.get('/shipping-methods', 'Actions/Commerce/Shipping/ShippingMethodIndexAction')
-  route.get('/shipping-methods/{id}', 'Actions/Commerce/Shipping/ShippingMethodShowAction')
-  route.post('/shipping-methods', 'Actions/Commerce/Shipping/ShippingMethodStoreAction')
-  route.patch('/shipping-methods/{id}', 'Actions/Commerce/Shipping/ShippingMethodUpdateAction')
-  route.delete('/shipping-methods/{id}', 'Actions/Commerce/Shipping/ShippingMethodDestroyAction')
+    // ----------------------------------------------------------------
+    // Shipping (moved from a top-level /shipping group on 2026-05-08).
+    // The frontend composables (defaults/functions/commerce/shippings/*.ts)
+    // all expect these resources under /commerce/*, so the prior /shipping
+    // group was orphaned — every shipping/courier/license/digital call
+    // from the dashboard was 404ing. Resource names match the composable
+    // file names: shipping-methods/rates/zones, delivery-routes, couriers,
+    // digital-deliveries, license-keys.
+    // ----------------------------------------------------------------
+    route.get('/shipping-methods', 'Actions/Commerce/Shipping/ShippingMethodIndexAction')
+    route.get('/shipping-methods/{id}', 'Actions/Commerce/Shipping/ShippingMethodShowAction')
+    route.post('/shipping-methods', 'Actions/Commerce/Shipping/ShippingMethodStoreAction')
+    route.patch('/shipping-methods/{id}', 'Actions/Commerce/Shipping/ShippingMethodUpdateAction')
+    route.delete('/shipping-methods/{id}', 'Actions/Commerce/Shipping/ShippingMethodDestroyAction')
 
-  route.get('/shipping-rates', 'Actions/Commerce/Shipping/ShippingRateIndexAction')
-  route.get('/shipping-rates/{id}', 'Actions/Commerce/Shipping/ShippingRateShowAction')
-  route.post('/shipping-rates', 'Actions/Commerce/Shipping/ShippingRateStoreAction')
-  route.patch('/shipping-rates/{id}', 'Actions/Commerce/Shipping/ShippingRateUpdateAction')
-  route.delete('/shipping-rates/{id}', 'Actions/Commerce/Shipping/ShippingRateDestroyAction')
+    route.get('/shipping-rates', 'Actions/Commerce/Shipping/ShippingRateIndexAction')
+    route.get('/shipping-rates/{id}', 'Actions/Commerce/Shipping/ShippingRateShowAction')
+    route.post('/shipping-rates', 'Actions/Commerce/Shipping/ShippingRateStoreAction')
+    route.patch('/shipping-rates/{id}', 'Actions/Commerce/Shipping/ShippingRateUpdateAction')
+    route.delete('/shipping-rates/{id}', 'Actions/Commerce/Shipping/ShippingRateDestroyAction')
 
-  route.get('/shipping-zones', 'Actions/Commerce/Shipping/ShippingZoneIndexAction')
-  route.get('/shipping-zones/{id}', 'Actions/Commerce/Shipping/ShippingZoneShowAction')
-  route.post('/shipping-zones', 'Actions/Commerce/Shipping/ShippingZoneStoreAction')
-  route.patch('/shipping-zones/{id}', 'Actions/Commerce/Shipping/ShippingZoneUpdateAction')
-  route.delete('/shipping-zones/{id}', 'Actions/Commerce/Shipping/ShippingZoneDestroyAction')
+    route.get('/shipping-zones', 'Actions/Commerce/Shipping/ShippingZoneIndexAction')
+    route.get('/shipping-zones/{id}', 'Actions/Commerce/Shipping/ShippingZoneShowAction')
+    route.post('/shipping-zones', 'Actions/Commerce/Shipping/ShippingZoneStoreAction')
+    route.patch('/shipping-zones/{id}', 'Actions/Commerce/Shipping/ShippingZoneUpdateAction')
+    route.delete('/shipping-zones/{id}', 'Actions/Commerce/Shipping/ShippingZoneDestroyAction')
 
-  route.get('/delivery-routes', 'Actions/Commerce/Shipping/DeliveryRouteIndexAction')
-  route.get('/delivery-routes/{id}', 'Actions/Commerce/Shipping/DeliveryRouteShowAction')
-  route.post('/delivery-routes', 'Actions/Commerce/Shipping/DeliveryRouteStoreAction')
-  route.patch('/delivery-routes/{id}', 'Actions/Commerce/Shipping/DeliveryRouteUpdateAction')
-  route.delete('/delivery-routes/{id}', 'Actions/Commerce/Shipping/DeliveryRouteDestroyAction')
+    route.get('/delivery-routes', 'Actions/Commerce/Shipping/DeliveryRouteIndexAction')
+    route.get('/delivery-routes/{id}', 'Actions/Commerce/Shipping/DeliveryRouteShowAction')
+    route.post('/delivery-routes', 'Actions/Commerce/Shipping/DeliveryRouteStoreAction')
+    route.patch('/delivery-routes/{id}', 'Actions/Commerce/Shipping/DeliveryRouteUpdateAction')
+    route.delete('/delivery-routes/{id}', 'Actions/Commerce/Shipping/DeliveryRouteDestroyAction')
 
-  route.get('/couriers', 'Actions/Commerce/Shipping/CourierIndexAction')
-  route.get('/couriers/{id}', 'Actions/Commerce/Shipping/CourierShowAction')
-  route.post('/couriers', 'Actions/Commerce/Shipping/CourierStoreAction')
-  route.patch('/couriers/{id}', 'Actions/Commerce/Shipping/CourierUpdateAction')
-  route.delete('/couriers/{id}', 'Actions/Commerce/Shipping/CourierDestroyAction')
+    route.get('/couriers', 'Actions/Commerce/Shipping/CourierIndexAction')
+    route.get('/couriers/{id}', 'Actions/Commerce/Shipping/CourierShowAction')
+    route.post('/couriers', 'Actions/Commerce/Shipping/CourierStoreAction')
+    route.patch('/couriers/{id}', 'Actions/Commerce/Shipping/CourierUpdateAction')
+    route.delete('/couriers/{id}', 'Actions/Commerce/Shipping/CourierDestroyAction')
 
-  // Renamed from `/digital` — frontend composable expects `/digital-deliveries`.
-  route.get('/digital-deliveries', 'Actions/Commerce/Shipping/DigitalDeliveryIndexAction')
-  route.get('/digital-deliveries/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryShowAction')
-  route.post('/digital-deliveries', 'Actions/Commerce/Shipping/DigitalDeliveryStoreAction')
-  route.patch('/digital-deliveries/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryUpdateAction')
-  route.delete('/digital-deliveries/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryDestroyAction')
+    // Renamed from `/digital` — frontend composable expects `/digital-deliveries`.
+    route.get('/digital-deliveries', 'Actions/Commerce/Shipping/DigitalDeliveryIndexAction')
+    route.get('/digital-deliveries/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryShowAction')
+    route.post('/digital-deliveries', 'Actions/Commerce/Shipping/DigitalDeliveryStoreAction')
+    route.patch('/digital-deliveries/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryUpdateAction')
+    route.delete('/digital-deliveries/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryDestroyAction')
 
-  route.get('/license-keys', 'Actions/Commerce/Shipping/LicenseKeyIndexAction')
-  route.get('/license-keys/{id}', 'Actions/Commerce/Shipping/LicenseKeyShowAction')
-  route.post('/license-keys', 'Actions/Commerce/Shipping/LicenseKeyStoreAction')
-  route.patch('/license-keys/{id}', 'Actions/Commerce/Shipping/LicenseKeyUpdateAction')
-  route.delete('/license-keys/{id}', 'Actions/Commerce/Shipping/LicenseKeyDestroyAction')
-})
+    route.get('/license-keys', 'Actions/Commerce/Shipping/LicenseKeyIndexAction')
+    route.get('/license-keys/{id}', 'Actions/Commerce/Shipping/LicenseKeyShowAction')
+    route.post('/license-keys', 'Actions/Commerce/Shipping/LicenseKeyStoreAction')
+    route.patch('/license-keys/{id}', 'Actions/Commerce/Shipping/LicenseKeyUpdateAction')
+    route.delete('/license-keys/{id}', 'Actions/Commerce/Shipping/LicenseKeyDestroyAction')
+  })
+}
 
 // ============================================================================
 // Analytics
 // ============================================================================
 
 route.group({ prefix: '/api/analytics', middleware: guarded('/api/analytics') }, () => {
-  route.get('/sales', 'Actions/Dashboard/Analytics/SalesAnalyticsAction')
   route.get('/web', 'Actions/Dashboard/Analytics/WebAnalyticsAction')
   route.get('/blog', 'Actions/Dashboard/Analytics/BlogAnalyticsAction')
   route.get('/browsers', 'Actions/Dashboard/Analytics/BrowserAnalyticsAction')
@@ -563,7 +547,12 @@ route.group({ prefix: '/api/analytics', middleware: guarded('/api/analytics') },
   route.get('/marketing', 'Actions/Dashboard/Analytics/MarketingAnalyticsAction')
   route.get('/pages', 'Actions/Dashboard/Analytics/PageAnalyticsAction')
   route.get('/referrers', 'Actions/Dashboard/Analytics/ReferrerAnalyticsAction')
-  route.get('/commerce', 'Actions/Dashboard/Analytics/CommerceAnalyticsAction')
+  // Sales and commerce analytics read the commerce tables, so they exist only
+  // with commerce installed.
+  if (feature('commerce')) {
+    route.get('/sales', 'Actions/Dashboard/Analytics/SalesAnalyticsAction')
+    route.get('/commerce', 'Actions/Dashboard/Analytics/CommerceAnalyticsAction')
+  }
 })
 
 // ============================================================================
@@ -632,30 +621,34 @@ route.get('/api/serverless', 'Actions/Dashboard/Cloud/ServerlessIndexAction').mi
 // Dashboard Views — Commerce
 // ============================================================================
 
-route.group({ prefix: '/dashboard/commerce', middleware: guarded('/dashboard/commerce') }, () => {
-  route.get('/customers', 'Actions/Dashboard/Commerce/CommerceCustomersAction')
-  route.get('/orders', 'Actions/Dashboard/Commerce/CommerceOrdersAction')
-  route.get('/products', 'Actions/Dashboard/Commerce/CommerceProductsAction')
-  route.get('/coupons', 'Actions/Dashboard/Commerce/CommerceCouponsAction')
-  route.get('/gift-cards', 'Actions/Dashboard/Commerce/CommerceGiftCardsAction')
-  route.get('/payments', 'Actions/Dashboard/Commerce/CommercePaymentsAction')
-  route.get('/delivery', 'Actions/Dashboard/Commerce/CommerceDeliveryAction')
-  route.get('/taxes', 'Actions/Dashboard/Commerce/CommerceTaxesAction')
-  route.get('/reviews', 'Actions/Dashboard/Commerce/ReviewIndexAction')
-})
+if (feature('commerce')) {
+  route.group({ prefix: '/dashboard/commerce', middleware: guarded('/dashboard/commerce') }, () => {
+    route.get('/customers', 'Actions/Dashboard/Commerce/CommerceCustomersAction')
+    route.get('/orders', 'Actions/Dashboard/Commerce/CommerceOrdersAction')
+    route.get('/products', 'Actions/Dashboard/Commerce/CommerceProductsAction')
+    route.get('/coupons', 'Actions/Dashboard/Commerce/CommerceCouponsAction')
+    route.get('/gift-cards', 'Actions/Dashboard/Commerce/CommerceGiftCardsAction')
+    route.get('/payments', 'Actions/Dashboard/Commerce/CommercePaymentsAction')
+    route.get('/delivery', 'Actions/Dashboard/Commerce/CommerceDeliveryAction')
+    route.get('/taxes', 'Actions/Dashboard/Commerce/CommerceTaxesAction')
+    route.get('/reviews', 'Actions/Dashboard/Commerce/ReviewIndexAction')
+  })
+}
 
 // ============================================================================
 // Dashboard Views — CMS Content
 // ============================================================================
 
-route.group({ prefix: '/dashboard/cms', middleware: guarded('/dashboard/cms') }, () => {
-  route.get('/posts', 'Actions/Dashboard/Content/PostIndexAction')
-  route.get('/pages', 'Actions/Dashboard/Content/PageIndexAction')
-  route.get('/categories', 'Actions/Dashboard/Content/CategoryIndexAction')
-  route.get('/tags', 'Actions/Dashboard/Content/TagIndexAction')
-  route.get('/comments', 'Actions/Dashboard/Content/CommentIndexAction')
-  route.get('/authors', 'Actions/Dashboard/Content/AuthorIndexAction')
-})
+if (feature('cms')) {
+  route.group({ prefix: '/dashboard/cms', middleware: guarded('/dashboard/cms') }, () => {
+    route.get('/posts', 'Actions/Dashboard/Content/PostIndexAction')
+    route.get('/pages', 'Actions/Dashboard/Content/PageIndexAction')
+    route.get('/categories', 'Actions/Dashboard/Content/CategoryIndexAction')
+    route.get('/tags', 'Actions/Dashboard/Content/TagIndexAction')
+    route.get('/comments', 'Actions/Dashboard/Content/CommentIndexAction')
+    route.get('/authors', 'Actions/Dashboard/Content/AuthorIndexAction')
+  })
+}
 
 // ============================================================================
 // Marketing

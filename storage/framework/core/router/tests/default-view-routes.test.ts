@@ -3,7 +3,7 @@
  * mounts (stacksjs/stacks#2237).
  *
  * `resolveViewPatterns` serves `/login` only while the `auth` bundle is
- * mounted and the storefront only while `dashboard` is. That is right exactly
+ * mounted and the storefront only while `storefront` is. That is right exactly
  * when the map in `DEFAULT_VIEW_ROUTE_BUNDLES` is right, so this checks it
  * against the routes each bundle really registers, in both directions: an app
  * mounting the bundle keeps a page whose every endpoint answers, and an app
@@ -68,7 +68,7 @@ function storefrontPosts(): Map<string, string[]> {
       pages.set(relative(views, full), actions)
     }
   }
-  for (const entry of DEFAULT_VIEW_ROUTE_BUNDLES.dashboard) {
+  for (const entry of DEFAULT_VIEW_ROUTE_BUNDLES.storefront) {
     const full = join(views, entry)
     if (statSync(full).isDirectory())
       visit(full)
@@ -114,11 +114,14 @@ describe('a mounted bundle answers every call its pages make', () => {
     }
   }, 120_000)
 
-  test('dashboard carries the storefront', async () => {
-    const [dashboard, none, auth] = await Promise.all([routesFor('dashboard'), routesFor('none'), routesFor('auth')])
-    for (const [page, posts] of storefrontPosts()) {
-      for (const route of posts) {
-        expect({ page, route, mounted: dashboard.has(route) }).toEqual({ page, route, mounted: true })
+  test('the storefront bundle carries the storefront, and dashboard does not', async () => {
+    const [storefront, dashboard, none, auth] = await Promise.all([routesFor('storefront'), routesFor('dashboard'), routesFor('none'), routesFor('auth')])
+    const posts = [...storefrontPosts()]
+    expect(posts.flatMap(([, routes]) => routes).length).toBeGreaterThan(0)
+    for (const [page, routes] of posts) {
+      for (const route of routes) {
+        expect({ page, route, mounted: storefront.has(route) }).toEqual({ page, route, mounted: true })
+        expect(dashboard.has(route)).toBeFalse()
         expect(none.has(route)).toBeFalse()
         expect(auth.has(route)).toBeFalse()
       }

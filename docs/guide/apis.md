@@ -135,14 +135,14 @@ STACKS_DEFAULT_ROUTES=all
 STACKS_DEFAULT_ROUTES=none
 ```
 
-Available bundles are `auth`, `dashboard`, `delivery`, `email`, `forms` and `payments`. `payments` mounts `POST /webhooks/payments`, which verifies a delivery with the configured payment driver and applies its payments and refunds to orders; like `delivery`, it mounts with the `commerce` feature when no bundles are named.
+Available bundles are `auth`, `dashboard`, `delivery`, `email`, `forms`, `payments` and `storefront`. `payments` mounts `POST /webhooks/payments`, which verifies a delivery with the configured payment driver and applies its payments and refunds to orders. `storefront` mounts the cart, checkout and buyer-review endpoints, and the default `/cart`, `/checkout` and `/orders` pages follow it. Like `delivery`, both mount with the `commerce` feature when no bundles are named.
 Unset means all of them, so an app that says nothing keeps the behaviour it
 already had. Each is still gated on its own feature, so naming a bundle in an
 app that has the feature switched off mounts nothing.
 `STACKS_SKIP_DEFAULT_ROUTES=1` still means "none" and is still supported.
 
 This exists so an app can mount `/login` and 2FA without also mounting the
-storefront, reviews, AI and voice routes that share `dashboard.ts`. Before it,
+AI, voice and admin routes that share `dashboard.ts`. Before it,
 the only way to avoid those was to turn everything off and re-declare the auth
 routes by hand, rate limits included.
 

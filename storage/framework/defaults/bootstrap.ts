@@ -96,8 +96,9 @@ async function registerDefaultBundles(): Promise<void> {
   if (mounts('auth'))
     await route.register(frameworkPath('defaults/routes/auth.ts'))
 
-  // The rest of dashboard.ts: email subscribe, storefront cart/checkout,
-  // reviews, sitemap, AI, voice, and the admin dashboard's REST surface. Still
+  // The rest of dashboard.ts: email subscribe, sitemap, AI, voice, and the
+  // admin dashboard's REST surface (its CMS and commerce groups follow their
+  // features). The storefront moved to its own bundle below. Still
   // one file and still one gate — splitting auth out was the case with a
   // reporter behind it; marketing.ts / commerce.ts / monitoring.ts remain the
   // obvious next cuts.
@@ -162,6 +163,13 @@ async function registerDefaultBundles(): Promise<void> {
   // they are meaningless without the delivery models behind them.
   if (mounts('delivery')) {
     await route.register(frameworkPath('defaults/routes/delivery.ts'))
+  }
+
+  // The storefront: cart, checkout and buyer reviews, behind the default
+  // `cart`, `checkout` and `orders` pages. Gated with the commerce surface, so
+  // an app without commerce neither mounts these routes nor serves the pages.
+  if (mounts('storefront')) {
+    await route.register(frameworkPath('defaults/routes/storefront.ts'))
   }
 
   // The payment provider's webhook, which applies payments and refunds to

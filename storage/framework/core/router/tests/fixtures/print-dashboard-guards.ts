@@ -18,6 +18,12 @@
  */
 
 if (import.meta.main) {
+  // Every group, including the CMS and commerce ones, which mount only with
+  // their features on and both ship off: the floor below has to hold for an
+  // app that installed them too.
+  const { enableFeature } = await import('@stacksjs/config')
+  enableFeature('cms')
+  enableFeature('commerce')
   const { listRegisteredRoutes } = await import('@stacksjs/router')
   await import('../../../../defaults/routes/dashboard')
 

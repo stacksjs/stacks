@@ -165,7 +165,7 @@ export async function loadRoutes(registry: RouteRegistry): Promise<void> {
  * cookie and the `/locale/{code}` redirect, and bootstrap registers it
  * unconditionally.
  */
-export const DEFAULT_ROUTE_BUNDLES = ['auth', 'dashboard', 'delivery', 'email', 'forms', 'payments'] as const
+export const DEFAULT_ROUTE_BUNDLES = ['auth', 'dashboard', 'delivery', 'email', 'forms', 'payments', 'storefront'] as const
 
 /**
  * Bundles an app must ask for. Excluded from the implicit default AND from
@@ -297,6 +297,9 @@ export const DEFAULT_ROUTE_BUNDLE_FEATURES = {
   // The payment webhook applies payments and refunds to orders, so it rides
   // with the rest of the commerce surface.
   payments: 'commerce',
+  // The cart, checkout and buyer reviews, and the default pages that post to
+  // them. Split out of `dashboard` so they follow commerce, not the dashboard.
+  storefront: 'commerce',
 } as const satisfies Record<typeof DEFAULT_ROUTE_BUNDLES[number], string>
 
 /**

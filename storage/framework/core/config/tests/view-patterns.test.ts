@@ -124,14 +124,16 @@ describe('both servers go through it (#2237)', () => {
 // `defaultViews: false` by hand. The route bundles already say what an app
 // mounts; the pages now follow them.
 
-const ALL_BUNDLES = new Set(['auth', 'dashboard', 'delivery', 'email', 'forms', 'payments'])
+const ALL_BUNDLES = new Set(['auth', 'dashboard', 'delivery', 'email', 'forms', 'payments', 'storefront'])
 const NO_BUNDLES = new Set<string>()
 
 const AUTH_PAGES = ['login.stx', 'register.stx', 'forgot-password.stx', 'password', 'auth']
-// The pages whose routes live in `defaults/routes/dashboard.ts`: the demo
-// storefront, the `/dashboard` stub, and the feedback form, which posts to
-// `/api/feedback/{token}` from that same file.
-const DASHBOARD_PAGES = ['cart.stx', 'checkout', 'orders', 'dashboard', 'feedback']
+// The pages whose routes live in `defaults/routes/dashboard.ts`: the
+// `/dashboard` stub, and the feedback form, which posts to
+// `/api/feedback/{token}` from that file.
+const DASHBOARD_PAGES = ['dashboard', 'feedback']
+// The demo storefront, whose routes are `defaults/routes/storefront.ts`.
+const STOREFRONT_PAGES = ['cart.stx', 'checkout', 'orders']
 
 function unset(mounted: ReadonlySet<string> | undefined) {
   return resolveViewPatterns(USER, DEFAULTS, undefined, exists, [], mounted)
@@ -139,9 +141,8 @@ function unset(mounted: ReadonlySet<string> | undefined) {
 
 describe('unset defaultViews follows the mounted route bundles', () => {
   it('an app mounting every bundle keeps every page, and loses only the CMS templates', () => {
-    // The app that set nothing anywhere: `dashboard` defaults on, so auth and
-    // the storefront both mount, and nothing it answered before goes away
-    // except `/cms/*`, which was never a working page.
+    // Every bundle mounted - which for the storefront means commerce is on -
+    // keeps every page except `/cms/*`, which was never a working page.
     const { withheld, exclude } = unset(ALL_BUNDLES)
     expect(withheld).toEqual(['cms'])
     expect(exclude).toEqual([join(DEFAULTS, 'cms')])
@@ -149,7 +150,7 @@ describe('unset defaultViews follows the mounted route bundles', () => {
 
   it('an app mounting nothing serves neither the auth pages nor the storefront', () => {
     const { withheld, exclude } = unset(NO_BUNDLES)
-    expect(withheld).toEqual([...AUTH_PAGES, ...DASHBOARD_PAGES, 'cms'])
+    expect(withheld).toEqual([...AUTH_PAGES, ...DASHBOARD_PAGES, ...STOREFRONT_PAGES, 'cms'])
     expect(exclude).toEqual(withheld.map(name => join(DEFAULTS, name)))
   })
 
@@ -157,17 +158,25 @@ describe('unset defaultViews follows the mounted route bundles', () => {
     const { withheld } = unset(new Set(['auth']))
     for (const page of AUTH_PAGES)
       expect(withheld).not.toContain(page)
-    for (const page of DASHBOARD_PAGES)
+    for (const page of [...DASHBOARD_PAGES, ...STOREFRONT_PAGES])
       expect(withheld).toContain(page)
   })
 
-  it('the storefront follows the dashboard bundle, where its routes live', () => {
-    // defaults/routes/dashboard.ts carries /api/cart/* and /api/checkout/*;
-    // there is no storefront bundle of its own.
+  it('the dashboard bundle no longer carries the storefront', () => {
+    // An app with a dashboard and no commerce: `/cart` and `/checkout` are not
+    // its pages. They follow the storefront bundle, which follows commerce.
     const { withheld } = unset(new Set(['dashboard']))
     for (const page of DASHBOARD_PAGES)
       expect(withheld).not.toContain(page)
-    for (const page of AUTH_PAGES)
+    for (const page of [...AUTH_PAGES, ...STOREFRONT_PAGES])
+      expect(withheld).toContain(page)
+  })
+
+  it('the storefront follows its own bundle, where its routes live', () => {
+    const { withheld } = unset(new Set(['storefront']))
+    for (const page of STOREFRONT_PAGES)
+      expect(withheld).not.toContain(page)
+    for (const page of DASHBOARD_PAGES)
       expect(withheld).toContain(page)
   })
 
@@ -265,9 +274,9 @@ describe('every default view is classified (the real tree)', () => {
     expect(owners('forgot-password.stx')).toEqual(['auth'])
     expect(owners('password/reset/[token].stx')).toEqual(['auth'])
     expect(owners('auth/magic/[token].stx')).toEqual(['auth'])
-    expect(owners('cart.stx')).toEqual(['dashboard'])
-    expect(owners('checkout/payment.stx')).toEqual(['dashboard'])
-    expect(owners('orders/[id].stx')).toEqual(['dashboard'])
+    expect(owners('cart.stx')).toEqual(['storefront'])
+    expect(owners('checkout/payment.stx')).toEqual(['storefront'])
+    expect(owners('orders/[id].stx')).toEqual(['storefront'])
     expect(owners('cms/page.stx')).toEqual(['template'])
     expect(owners('errors/404.stx')).toEqual(['always'])
     expect(owners('coming-soon.stx')).toEqual(['always'])
