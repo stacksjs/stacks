@@ -43,9 +43,9 @@ const COLUMNS = [
 ]
 
 const ROW_ACTIONS = [
-  { action: 'view', label: 'View product', icon: 'i-hugeicons-view' },
-  { action: 'edit', label: 'Edit product', icon: 'i-hugeicons-edit-02' },
-  { action: 'delete', label: 'Delete product', icon: 'i-hugeicons-delete-02', class: 'text-red-500' },
+  { action: 'view', label: 'View product' },
+  { action: 'edit', label: 'Edit product' },
+  { action: 'delete', label: 'Delete product' },
 ]
 
 const rows = derived(() => records().map(record => ({

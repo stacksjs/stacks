@@ -59,8 +59,8 @@ const ROW_ACTIONS = [
   { action: 'approve', label: 'Return review to pending', icon: 'i-hugeicons-cancel-circle', class: 'text-green-500', when: { key: 'approved', equals: true } },
   { action: 'feature', label: 'Feature review', icon: 'i-hugeicons-star', class: 'text-amber-500', when: { key: 'featured', equals: false } },
   { action: 'feature', label: 'Remove review from featured', icon: 'i-hugeicons-star-off', class: 'text-amber-500', when: { key: 'featured', equals: true } },
-  { action: 'edit', label: 'Edit review', icon: 'i-hugeicons-edit-01' },
-  { action: 'delete', label: 'Delete review', icon: 'i-hugeicons-waste', class: 'text-red-500' },
+  { action: 'edit', label: 'Edit review' },
+  { action: 'delete', label: 'Delete review' },
 ]
 
 const rows = derived(() => reviews().map(review => ({

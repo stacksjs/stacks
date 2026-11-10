@@ -65,7 +65,7 @@ const COLUMNS = [
 ]
 
 const ROW_ACTIONS = [
-  { action: 'view', label: 'View payment', icon: 'i-hugeicons-view' },
+  { action: 'view', label: 'View payment' },
 ]
 
 const rows = derived(() => records().map(record => ({
