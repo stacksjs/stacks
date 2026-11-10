@@ -167,8 +167,12 @@ interface DashboardTableRowAction {
   action: string
   /** Read out as "<label> <row[actionLabelKey]>", e.g. "Edit Kilogram". */
   label: string
-  /** Iconify class, e.g. `i-hugeicons-edit-01`. */
-  icon: string
+  /**
+   * Iconify class, e.g. `i-hugeicons-user-remove-01`. Not needed, and not
+   * used, for `view`, `edit` and `delete`: those take the dashboard's standard
+   * eye, pencil and trash, so the same action looks the same in every table.
+   */
+  icon?: string
   /** Colour class for the icon. Defaults to the usual blue. */
   class?: string
   /**
@@ -739,8 +743,20 @@ function rowIsBusy(row: DashboardTableRow): boolean {
   return rawValue(row, busyKey() || rowKey()) === value
 }
 
+/**
+ * The dashboard's three common row actions and how they look everywhere: an
+ * eye to view, a pencil to edit, a red trash can to delete. Tables had picked
+ * their own - two different pencils and two different bins across 40 tables.
+ */
+const STANDARD_ROW_ACTIONS: Record<string, { icon: string, class: string }> = {
+  view: { icon: 'i-hugeicons-view', class: 'text-neutral-500 dark:text-neutral-400' },
+  edit: { icon: 'i-hugeicons-pencil-edit-02', class: 'text-blue-500' },
+  delete: { icon: 'i-hugeicons-delete-02', class: 'text-red-500' },
+}
+
 function rowActionIconClass(action: DashboardTableRowAction): string {
-  return `block h-4 w-4 ${action.class || 'text-blue-500'} ${action.icon}`
+  const standard = STANDARD_ROW_ACTIONS[action.action]
+  return `block h-4 w-4 ${action.class || standard?.class || 'text-blue-500'} ${standard?.icon ?? action.icon ?? ''}`
 }
 
 function cellClass(column: DashboardTableColumn, index: number): string {

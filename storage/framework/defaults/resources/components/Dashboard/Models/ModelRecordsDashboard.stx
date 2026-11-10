@@ -80,6 +80,8 @@ const showFilters = state(false)
 // working copy so cancelling leaves the table row unchanged.
 const editing = state<Record<string, unknown> | null>(null)
 const saving = state(false)
+// Whether the open record dialog is the eye (read only) or the pencil.
+const viewing = state(false)
 const confirmingDelete = state<Record<string, unknown> | null>(null)
 const showCreate = state(false)
 const creating = state(false)
@@ -112,7 +114,6 @@ const isEmpty = derived(() => !loading() && !error() && migrated() && rows().len
 const subtitle = derived(() => migrated()
   ? `${recordLabel()} in the ${tableName()} table`
   : `The ${tableName()} table has not been created yet`)
-const canManageRows = derived(() => writeCapabilities().update || writeCapabilities().destroy)
 
 const deleteDescription = derived(() => {
   const row = confirmingDelete()
@@ -134,7 +135,7 @@ const editFields = derived(() => {
     value: row[column.name] === null || row[column.name] === undefined ? '' : String(row[column.name]),
     // The model API accepts only fillable attributes and declared belongs-to
     // keys. Every other database column stays visible as read-only context.
-    readonly: !updateColumns().includes(column.name),
+    readonly: viewing() || !updateColumns().includes(column.name),
   }))
 })
 
@@ -272,6 +273,12 @@ function onPerPageChange() {
 }
 
 function startEdit(row: Record<string, unknown>) {
+  viewing.set(false)
+  editing.set(row)
+}
+
+function startView(row: Record<string, unknown>) {
+  viewing.set(true)
   editing.set(row)
 }
 
@@ -493,7 +500,7 @@ void load()
                 </button>
               </th>
             </template>
-            <th :if="canManageRows()" scope="col" class="right-0 sticky z-20 px-3 py-2 w-24 font-medium text-[11px] text-neutral-500 text-right tracking-wide uppercase dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-800 border-black/5 border-l dark:border-white/10">Actions</th>
+            <th scope="col" class="right-0 sticky z-20 px-3 py-2 w-28 font-medium text-[11px] text-neutral-500 text-right tracking-wide uppercase dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-800 border-black/5 border-l dark:border-white/10">Actions</th>
           </tr>
 
           <!-- Per-column filter row -->
@@ -509,7 +516,7 @@ void load()
                 >
               </th>
             </template>
-            <th :if="canManageRows()" class="right-0 sticky z-20 bg-white dark:bg-neutral-900 border-black/5 border-l dark:border-white/10"></th>
+            <th class="right-0 sticky z-20 bg-white dark:bg-neutral-900 border-black/5 border-l dark:border-white/10"></th>
           </tr>
         </thead>
 
@@ -525,7 +532,7 @@ void load()
                   <div class="h-3 bg-neutral-200 dark:bg-white/10 rounded animate-pulse"></div>
                 </td>
               </template>
-              <td :if="canManageRows()" class="right-0 sticky z-10 px-3 py-2 bg-white dark:bg-neutral-900 border-black/5 border-l dark:border-white/10">
+              <td class="right-0 sticky z-10 px-3 py-2 bg-white dark:bg-neutral-900 border-black/5 border-l dark:border-white/10">
                 <div class="ml-auto h-3 w-16 bg-neutral-200 dark:bg-white/10 rounded animate-pulse"></div>
               </td>
             </tr>
@@ -538,12 +545,13 @@ void load()
               <template :for="column in columnMeta()">
                 <td :class="cellClass(column)" :title="cellValue(row, column)">{{ cellValue(row, column) }}</td>
               </template>
-              <td :if="canManageRows()" class="right-0 sticky z-10 px-3 py-2 text-right bg-white dark:bg-neutral-900 group-hover:bg-neutral-50 dark:group-hover:bg-white/5 border-black/5 border-l dark:border-white/10 transition-colors">
+              <td class="right-0 sticky z-10 px-3 py-2 text-right bg-white dark:bg-neutral-900 group-hover:bg-neutral-50 dark:group-hover:bg-white/5 border-black/5 border-l dark:border-white/10 transition-colors">
                 <ModelRecordActions
                   :record="row"
                   :modelName="modelName()"
                   :canUpdate="writeCapabilities().update"
                   :canDestroy="writeCapabilities().destroy"
+                  @view="startView"
                   @edit="startEdit"
                   @delete="confirmingDelete.set($event)"
                 />
@@ -571,6 +579,7 @@ void load()
     :modelName="modelName()"
     :fields="editFields()"
     :busy="saving()"
+    :viewOnly="viewing()"
     @close="editing.set(null)"
     @submit="saveEdit($event)"
   />

@@ -424,10 +424,12 @@ describe('dashboard button contract', () => {
 
     expect((source.match(/<Button/g) || []).length).toBeGreaterThanOrEqual(7)
     expect(source).toContain('<ModelRecordActions')
-    expect((actions.match(/<Button/g) || []).length).toBe(2)
+    // View, edit and delete: the eye is offered on every row.
+    expect((actions.match(/<Button/g) || []).length).toBe(3)
     expect(source).toContain('<EditRecordModal')
     expect(editor).toContain('<Modal')
-    expect(editor).toContain('<Button type="submit" form="model-edit-form"')
+    // Viewing has nothing to save, so the submit button is the pencil's only.
+    expect(editor).toContain('<Button :if="!viewOnly()" type="submit" form="model-edit-form"')
     expect(source).toContain('interaction="toggle"')
     expect(source).toContain('@click="goToPage(page() + 1)"')
     expect(source).toContain('@click="goToPage(lastPage())"')

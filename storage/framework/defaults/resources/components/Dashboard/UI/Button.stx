@@ -16,6 +16,8 @@ interface ButtonProps {
   target?: string
   rel?: string
   ariaLabel?: string
+  /** Hover text. An icon-only button shows its `ariaLabel` when this is unset. */
+  title?: string
   type?: string
   form?: string
   class?: string
@@ -85,6 +87,16 @@ const liveRel = useReactiveProp('rel', '')
 const liveType = useReactiveProp('type', 'button')
 const liveForm = useReactiveProp('form', '')
 const liveAriaLabel = useReactiveProp('ariaLabel', '')
+const liveTitle = useReactiveProp('title', '')
+const liveIconOnly = useReactiveProp('iconOnly', false)
+/**
+ * What a pointer sees on hover. An icon-only button has no visible words, so
+ * its accessible label doubles as the tooltip: a row of eye, pencil and trash
+ * icons names each action when hovered instead of leaving it to guesswork.
+ */
+function hoverTitle(): string | undefined {
+  return liveTitle() || (liveIconOnly() ? liveAriaLabel() : '') || undefined
+}
 /**
  * For a button that opens a menu or a disclosure.
  *
@@ -102,6 +114,7 @@ const liveAriaExpanded = useReactiveProp('ariaExpanded', '')
       :href="liveDisabled() || liveLoading() ? undefined : liveHref()"
       :download="liveDownload() || undefined"
       :aria-label="liveAriaLabel() || undefined"
+      :title="hoverTitle()"
       class="{{ buttonClass }}"
         :class="variantToggles()"
       :target="liveTarget() || undefined"
@@ -123,6 +136,7 @@ const liveAriaExpanded = useReactiveProp('ariaExpanded', '')
         class="{{ buttonClass }}"
         :class="variantToggles()"
         :aria-label="liveAriaLabel() || undefined"
+        :title="hoverTitle()"
         :aria-busy="liveLoading() ? 'true' : 'false'"
         :aria-pressed="String(livePressed())"
         :disabled="liveDisabled() || liveLoading()"
@@ -139,6 +153,7 @@ const liveAriaExpanded = useReactiveProp('ariaExpanded', '')
         class="{{ buttonClass }}"
         :class="variantToggles()"
         :aria-label="liveAriaLabel() || undefined"
+        :title="hoverTitle()"
         :aria-haspopup="liveAriaHasPopup() || undefined"
         :aria-expanded="liveAriaExpanded() || undefined"
         :aria-busy="liveLoading() ? 'true' : 'false'"

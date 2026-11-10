@@ -3,10 +3,19 @@ const record = useReactiveProp('record', {} as Record<string, unknown>)
 const modelName = useReactiveProp('modelName', 'Record')
 const canUpdate = useReactiveProp('canUpdate', false)
 const canDestroy = useReactiveProp('canDestroy', false)
-const emit = defineEmits(['edit', 'delete'])
+const emit = defineEmits(['view', 'edit', 'delete'])
 </script>
 
 <div class="flex gap-1 items-center justify-end">
+  <Button
+    variant="ghost"
+    size="sm"
+    iconOnly
+    :ariaLabel="'View ' + modelName() + ' ' + record().id"
+    @click="emit('view', record())"
+  >
+    <span class="h-4 w-4 text-neutral-500 dark:text-neutral-400 i-hugeicons-view"></span>
+  </Button>
   <Button
     :if="canUpdate()"
     variant="ghost"
@@ -15,7 +24,7 @@ const emit = defineEmits(['edit', 'delete'])
     :ariaLabel="'Edit ' + modelName() + ' ' + record().id"
     @click="emit('edit', record())"
   >
-    <span class="h-4 w-4 i-hugeicons-edit-02"></span>
+    <span class="h-4 w-4 text-blue-500 i-hugeicons-pencil-edit-02"></span>
   </Button>
   <Button
     :if="canDestroy()"
