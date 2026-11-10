@@ -54,8 +54,8 @@ const COLUMNS = [
 ]
 
 const ROW_ACTIONS = [
-  { action: 'edit', label: 'Edit author', icon: 'i-hugeicons-edit-02' },
-  { action: 'delete', label: 'Delete author', icon: 'i-hugeicons-delete-02', class: 'text-red-500' },
+  { action: 'edit', label: 'Edit author' },
+  { action: 'delete', label: 'Delete author' },
 ]
 
 /**

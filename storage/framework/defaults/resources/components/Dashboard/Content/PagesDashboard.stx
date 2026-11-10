@@ -67,8 +67,8 @@ const COLUMNS = [
 ]
 
 const ROW_ACTIONS = [
-  { action: 'edit', label: 'Edit page', icon: 'i-hugeicons-edit-02' },
-  { action: 'delete', label: 'Delete page', icon: 'i-hugeicons-delete-02', class: 'text-red-500' },
+  { action: 'edit', label: 'Edit page' },
+  { action: 'delete', label: 'Delete page' },
 ]
 
 /** The rows are the page the server chose; the cells each read a field, so derive them. */

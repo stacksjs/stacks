@@ -67,7 +67,7 @@ function columns() {
 }
 
 const ROW_ACTIONS = [
-  { action: 'delete', label: 'Delete', icon: 'i-hugeicons-delete-02', class: 'text-red-500' },
+  { action: 'delete', label: 'Delete' },
 ]
 
 /** `UI/Table` owns the search; the fourth cell is derived onto the row. */
