@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.534...v0.75.535)
+
+## 🐛 Bug Fixes
+
+- **docs**: publish complete examples and usable source paths ([d32f70a](https://github.com/stacksjs/stacks/commit/d32f70a)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **orm**: preserve public model types in published declarations ([c72cd79](https://github.com/stacksjs/stacks/commit/c72cd79)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- align release fixtures with current framework contracts ([1c7b4ba](https://github.com/stacksjs/stacks/commit/1c7b4ba)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.533...v0.75.534)
 
 ## 🐛 Bug Fixes
