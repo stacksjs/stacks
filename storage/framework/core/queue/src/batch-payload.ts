@@ -7,11 +7,11 @@ export function batchMembershipId(payload: unknown): string | undefined {
 }
 
 /** Reserved membership metadata always wins over the caller's payload. */
-export function batchMemberPayload(payload: unknown, batchId: string, index: number) {
+export function batchMemberPayload(payload: unknown, batchId: string, index: number): Record<string, unknown> & { _batchId: string, _batchIndex: number, _batchTerminalHandler: false } {
   return { ...(payload as Record<string, unknown> | undefined ?? {}), _batchId: batchId, _batchIndex: index, _batchTerminalHandler: false }
 }
 
 /** Keep the existing identifier available to the handler without enrolling it again. */
-export function batchTerminalPayload(payload: unknown, batchId: string) {
+export function batchTerminalPayload(payload: unknown, batchId: string): Record<string, unknown> & { _batchId: string, _batchTerminalHandler: true } {
   return { ...(payload as Record<string, unknown> | undefined ?? {}), _batchId: batchId, _batchTerminalHandler: true }
 }
