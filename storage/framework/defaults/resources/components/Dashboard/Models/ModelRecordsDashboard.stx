@@ -110,8 +110,8 @@ const filterLabel = derived(() => {
 const isEmpty = derived(() => !loading() && !error() && migrated() && rows().length === 0)
 
 const subtitle = derived(() => migrated()
-  ? `${recordLabel()} · ${tableName()} · via Stacks ORM`
-  : `Not migrated · ${tableName()}`)
+  ? `${recordLabel()} in the ${tableName()} table`
+  : `The ${tableName()} table has not been created yet`)
 const canManageRows = derived(() => writeCapabilities().update || writeCapabilities().destroy)
 
 const deleteDescription = derived(() => {

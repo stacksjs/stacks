@@ -242,7 +242,7 @@ onDestroy(() => {
     <div>
       <p class="font-semibold text-blue-600 text-xs tracking-wide uppercase dark:text-blue-400">Content</p>
       <h1 class="mt-1 font-bold text-2xl text-gray-900 dark:text-white">Content Dashboard</h1>
-      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Persisted CMS activity for the selected period.</p>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">What was written, published and read in the selected period.</p>
     </div>
     <div class="flex gap-2">
       <label>
@@ -319,7 +319,7 @@ onDestroy(() => {
     <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-neutral-700">
       <div>
         <h2 class="font-semibold text-gray-900 text-sm dark:text-white">Top posts</h2>
-        <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Ranked by persisted view count.</p>
+        <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Ranked by views.</p>
       </div>
       <a href="/content/posts" class="font-semibold text-blue-600 text-sm dark:text-blue-400">Manage posts</a>
     </div>

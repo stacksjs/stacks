@@ -122,7 +122,7 @@ onMount(() => {
       <p class="font-semibold text-blue-600 text-xs tracking-wide uppercase dark:text-blue-400">Library</p>
       <h1 class="mt-1 font-bold text-2xl text-gray-900 dark:text-white">Components</h1>
       <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">
-        STX component sources discovered from <span class="font-mono" :text="sourceRoot()"></span>.
+        The reusable interface pieces found in <span class="font-mono" :text="sourceRoot()"></span>, written in <abbr title="The Stacks template language: HTML with signals, directives and components" class="underline underline-offset-2 cursor-help decoration-dotted">STX</abbr>.
       </p>
     </div>
     <div class="flex gap-2">

@@ -203,7 +203,7 @@ onMount(() => {
                 <dt class="text-neutral-500 text-xs dark:text-neutral-400">Records</dt>
                 <dd :if="model.count !== null" class="mt-1 font-medium text-neutral-900 text-sm dark:text-white">{{ model.count.toLocaleString() }}</dd>
                 <dd :if="model.count === null && model.migrated !== false" class="mt-1 font-medium text-amber-700 text-sm dark:text-amber-300">Unavailable</dd>
-                <dd :if="model.migrated === false" class="mt-1 font-medium text-neutral-500 text-sm dark:text-neutral-400">Not migrated</dd>
+                <dd :if="model.migrated === false" class="mt-1 font-medium text-neutral-500 text-sm dark:text-neutral-400" title="Run ./buddy migrate to create its table">No table yet</dd>
               </div>
               <div>
                 <dt class="text-neutral-500 text-xs dark:text-neutral-400">Attributes</dt>

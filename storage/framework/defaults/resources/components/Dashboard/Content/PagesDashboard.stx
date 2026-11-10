@@ -237,7 +237,7 @@ onMount(() => {
 
 <div class="space-y-6">
   <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-    <div><p class="font-semibold text-blue-600 text-xs tracking-wide uppercase dark:text-blue-400">CMS</p><h1 class="mt-1 font-bold text-2xl text-gray-900 dark:text-white">Pages</h1><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Manage persisted CMS pages, templates, and publishing state.</p></div>
+    <div><p class="font-semibold text-blue-600 text-xs tracking-wide uppercase dark:text-blue-400">Content</p><h1 class="mt-1 font-bold text-2xl text-gray-900 dark:text-white">Pages</h1><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Create your site's pages, choose their templates, and decide when they go live.</p></div>
     <div class="flex gap-2"><Button :loading="loading()" variant="secondary" @click="loadPages()"><span :if="!loading()" aria-hidden="true" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button><Button @click="openCreate()"><span aria-hidden="true" class="h-4 w-4 i-hugeicons-add-01"></span>New page</Button></div>
   </header>
 

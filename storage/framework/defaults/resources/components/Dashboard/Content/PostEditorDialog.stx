@@ -111,7 +111,7 @@ function submit(): void {
 <Modal
   :isOpen="open()"
   :title="editing() ? 'Edit post' : 'New post'"
-  description="Content, ownership, and taxonomies are persisted together."
+  description="The text, author, categories and tags are saved together."
   size="xl"
   :closable="!busy()"
   @close="close"

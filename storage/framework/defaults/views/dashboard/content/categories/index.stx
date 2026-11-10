@@ -7,7 +7,7 @@
   <ContentTaxonomyDashboard
     resource="categories"
     title="Categories"
-    description="Organize persisted content and commerce records with the shared Category model."
+    description="Group posts and products into categories. One set of categories serves both."
   />
 </div>
 

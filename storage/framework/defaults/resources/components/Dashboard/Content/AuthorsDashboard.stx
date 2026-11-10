@@ -181,9 +181,9 @@ onMount(() => {
 <div class="space-y-6">
   <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div>
-      <p class="font-semibold text-blue-600 text-xs tracking-wide uppercase dark:text-blue-400">CMS</p>
+      <p class="font-semibold text-blue-600 text-xs tracking-wide uppercase dark:text-blue-400">Content</p>
       <h1 class="mt-1 font-bold text-2xl text-gray-900 dark:text-white">Authors</h1>
-      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Manage persisted authors and their post assignments.</p>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Manage the people who write posts, and which posts each one wrote.</p>
     </div>
     <div class="flex gap-2">
       <Button :loading="loading()" variant="secondary" @click="loadAuthors()"><span :if="!loading()" aria-hidden="true" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button>

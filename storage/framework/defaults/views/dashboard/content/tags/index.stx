@@ -7,7 +7,7 @@
   <ContentTaxonomyDashboard
     resource="tags"
     title="Tags"
-    description="Manage native Tag records used by content and generated APIs."
+    description="Label posts and files with tags, so related ones are easy to find."
   />
 </div>
 
