@@ -27,15 +27,12 @@ const { acquireDbConfigLock, commentablesTableSql, db, ensureDatabaseConfigLoade
 // The actions name their model as a server global, which only a booted app defines.
 ;(globalThis as any).Customer ??= {}
 
-const { configureOrm } = await import('bun-query-builder')
-
 const actions = '../../storage/framework/defaults/app/Actions/Commerce'
 const { default: CustomerStoreAction } = await import(`${actions}/CustomerStoreAction`)
 const { default: CustomerUpdateAction } = await import(`${actions}/CustomerUpdateAction`)
 const { default: PaymentUpdateAction } = await import(`${actions}/PaymentUpdateAction`)
 
 const cms = '../../storage/framework/defaults/app/Actions/Cms'
-const { default: AuthorUpdateAction } = await import(`${cms}/AuthorUpdateAction`)
 const { default: CategorizableUpdateAction } = await import(`${cms}/CategorizableUpdateAction`)
 const { default: CommentStoreAction } = await import(`${cms}/CommentStoreAction`)
 const { default: PostUpdateAction } = await import(`${cms}/PostUpdateAction`)
@@ -71,11 +68,6 @@ describe('actions write only the fields the request sent', () => {
         connections: { sqlite: { database: dbFile, prefix: '' }, mysql: {}, postgres: {} },
       },
     })
-    // `Author.find()` goes through the ORM, which keeps its own connection
-    // and loads its models after boot.
-    configureOrm({ database: dbFile })
-    await (await import('@stacksjs/orm')).ormReady
-
     await run(`CREATE TABLE customers (
       id INTEGER PRIMARY KEY AUTOINCREMENT, uuid TEXT, name TEXT NOT NULL, email TEXT NOT NULL,
       phone TEXT, total_spent INTEGER DEFAULT 0, last_order TEXT, status TEXT NOT NULL,
@@ -101,10 +93,6 @@ describe('actions write only the fields the request sent', () => {
       is_active INTEGER DEFAULT 1, taggable_id INTEGER, taggable_type TEXT, created_at TEXT, updated_at TEXT
     )`)
     await run(commentablesTableSql(sqlHelpers('sqlite')))
-    await run(`CREATE TABLE authors (
-      id INTEGER PRIMARY KEY AUTOINCREMENT, uuid TEXT, name TEXT, email TEXT, user_id INTEGER,
-      created_at TEXT, updated_at TEXT
-    )`)
   })
 
   afterAll(() => {
@@ -205,15 +193,26 @@ describe('actions write only the fields the request sent', () => {
       .toEqual({ name: 'Sale', slug: 'sale', description: 'Cut prices' })
   })
 
+  // Through the ORM, which loads `Author` only with CMS on, so in its own
+  // process: see the fixture.
   it('changes only the author fields an edit sends', async () => {
-    await run(`INSERT INTO authors (name, email) VALUES ('Grace Hopper', 'grace@example.com')`)
-    const { id } = await one(`SELECT id FROM authors WHERE email = 'grace@example.com'`)
-
-    await AuthorUpdateAction.handle(request({ id: String(id) }, { name: 'Rear Admiral Hopper' }))
-
-    expect(await one(`SELECT name, email FROM authors WHERE id = ?`, id))
-      .toEqual({ name: 'Rear Admiral Hopper', email: 'grace@example.com' })
-  })
+    const child = Bun.spawn([
+      process.execPath,
+      `--config=${import.meta.dir}/../../storage/framework/core/router/tests/fixtures/cold-start.toml`,
+      `${import.meta.dir}/fixtures/author-partial-update.ts`,
+    ], {
+      env: { ...process.env, APP_ENV: 'test', DB_CONNECTION: 'sqlite', DB_DATABASE_PATH: ':memory:' },
+      stdout: 'pipe',
+      stderr: 'pipe',
+    })
+    const [code, stdout, stderr] = await Promise.all([
+      child.exited,
+      new Response(child.stdout).text(),
+      new Response(child.stderr).text(),
+    ])
+    expect({ code, error: code === 0 ? '' : stderr }).toEqual({ code: 0, error: '' })
+    expect(stdout).toContain('author partial update: passed')
+  }, 30_000)
 
   it('keeps the comment defaults for a comment created without a status', async () => {
     const created = await json(await CommentStoreAction.handle(request({}, {
