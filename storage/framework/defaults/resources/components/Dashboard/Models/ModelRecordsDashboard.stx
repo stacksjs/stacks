@@ -7,23 +7,14 @@
 // works the same on a table with 10 rows and one with a million. Rows and
 // writes go through the model, so scopes, casts and observers apply.
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
-import { DashboardApiError, dashboardApi } from '@stacksjs/defaults/functions/dashboard-api'
-import { modelRecordEditHref, modelRecordHref } from '@stacksjs/defaults/functions/dashboard-model-record'
+import { dashboardApi } from '@stacksjs/defaults/functions/dashboard-api'
+import { modelRecordCreateHref, modelRecordEditHref, modelRecordHref } from '@stacksjs/defaults/functions/dashboard-model-record'
 import { pushToast } from '@stacksjs/defaults/functions/toasts'
 
 interface ColumnMeta {
   name: string
   label: string
   type: 'number' | 'boolean' | 'date' | 'json' | 'text'
-}
-
-interface CreateField {
-  name: string
-  label: string
-  type: 'boolean' | 'date' | 'datetime' | 'email' | 'enum' | 'number' | 'text'
-  required: boolean
-  defaultValue: unknown
-  options: string[]
 }
 
 interface WriteCapabilities {
@@ -46,7 +37,6 @@ interface ResponseShape {
   dir: 'asc' | 'desc'
   writable: boolean
   writeCapabilities: WriteCapabilities
-  createFields: CreateField[]
   updateColumns: string[]
   migrated?: boolean
   error: string | null
@@ -68,7 +58,6 @@ const dir = state<'asc' | 'desc'>('desc')
 const search = state(navigation.urlQuery('q') || '')
 const filters = state<Record<string, string>>({})
 const writeCapabilities = state<WriteCapabilities>({ create: false, update: false, destroy: false })
-const createFields = state<CreateField[]>([])
 const error = state<string | null>(null)
 // False when the model's table has not been created yet: the server checked the
 // catalog after the query failed, so this is never a guess from an error.
@@ -78,10 +67,6 @@ const showFilters = state(false)
 
 const saving = state(false)
 const confirmingDelete = state<Record<string, unknown> | null>(null)
-const showCreate = state(false)
-const creating = state(false)
-const createError = state('')
-const createErrors = state<Record<string, string[]>>({})
 
 const slug = derived(() => navigation.urlSegment(-1) || '')
 
@@ -198,7 +183,6 @@ async function load() {
     lastPage.set(data.lastPage ?? 1)
     sort.set(data.sort ?? '')
     writeCapabilities.set(data.writeCapabilities ?? { create: false, update: false, destroy: false })
-    createFields.set(data.createFields ?? [])
     migrated.set(data.migrated !== false)
     error.set(data.error ?? null)
   }
@@ -258,42 +242,9 @@ function startView(row: Record<string, unknown>) {
   navigate(modelRecordHref(slug(), String(row.id)))
 }
 
+// Creating has a page of its own too.
 function openCreate(): void {
-  createError.set('')
-  createErrors.set({})
-  showCreate.set(true)
-}
-
-async function createRecord(fields: Record<string, unknown>): Promise<void> {
-  creating.set(true)
-  createError.set('')
-  createErrors.set({})
-  try {
-    const result = await dashboardApi<{ ok: boolean, id?: number | string | null, error?: string, errors?: Record<string, string[]> }>(
-      `/api/dashboard/models/${encodeURIComponent(slug())}`,
-      { method: 'POST', body: { fields } },
-    )
-    if (!result?.ok) {
-      createError.set(result?.error || 'The record was rejected.')
-      createErrors.set(result?.errors ?? {})
-      return
-    }
-    pushToast('success', `${modelName()} created`, { detail: result.id ? `Record ${result.id}` : undefined })
-    showCreate.set(false)
-    page.set(1)
-    await load()
-  }
-  catch (reason) {
-    createError.set(reason instanceof Error ? reason.message : String(reason))
-    if (reason instanceof DashboardApiError && reason.fields) {
-      createErrors.set(Object.fromEntries(
-        Object.entries(reason.fields).map(([field, message]) => [field, [message]]),
-      ))
-    }
-  }
-  finally {
-    creating.set(false)
-  }
+  navigate(modelRecordCreateHref(slug()))
 }
 
 async function confirmDelete() {
@@ -509,17 +460,6 @@ void load()
     :confirmLabel="saving() ? 'Deleting' : 'Delete'"
     @close="confirmingDelete.set(null)"
     @confirm="confirmDelete"
-  />
-
-  <CreateRecordModal
-    :open="showCreate()"
-    :modelName="modelName()"
-    :fields="createFields()"
-    :busy="creating()"
-    :error="createError()"
-    :errors="createErrors()"
-    @close="showCreate.set(false)"
-    @submit="createRecord($event)"
   />
 </div>
 </template>

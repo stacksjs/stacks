@@ -231,7 +231,7 @@ describe('dashboard button contract', () => {
     const files = [
       'UI/Pagination.stx',
       'UI/Table.stx',
-      'CreateRecordModal.stx',
+      'Models/ModelRecordCreate.stx',
       'UI/Modal.stx',
       'UI/Drawer.stx',
       'UI/ConfirmDialog.stx',

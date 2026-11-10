@@ -157,6 +157,21 @@ describe('dashboard row actions', () => {
     expect(edit).toContain(`:title="modelName() + ' records cannot be edited here'"`)
   })
 
+  test('creating a record is a page too, opened from the model browser', () => {
+    const create = read('Models/ModelRecordCreate.stx')
+    const browser = read('Models/ModelRecordsDashboard.stx')
+    expect(browser).toContain('navigate(modelRecordCreateHref(slug()))')
+    expect(browser).not.toContain('CreateRecordModal')
+    expect(readFileSync(resolve('storage/framework/defaults/views/dashboard/models/[model]/create.stx'), 'utf8')).toContain('<ModelRecordCreate />')
+    expect(create).toContain('<nav aria-label="Breadcrumb"')
+    expect(create).toContain('<span aria-current="page">Create</span>')
+    expect(create).toContain('Create {{ modelName() }}</h1>')
+    // A created record opens on its own page; a refusal stays, with the messages.
+    expect(create).toContain('modelRecordHref(slug(), result.id')
+    expect(create).toContain('createError.set(result.error)')
+    expect(create).toContain(`:title="modelName() + ' records cannot be created here'"`)
+  })
+
   test('the record page is a breadcrumb, a title and titled field cards two across', () => {
     const detail = read('Models/ModelRecordDetail.stx')
     // "Users > View", then "View User", with Edit as the primary action.
