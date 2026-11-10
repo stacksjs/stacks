@@ -20,34 +20,57 @@ const search = state('')
 const loading = state(true)
 const loadError = state('')
 
-const metadata: Record<DataMode, { title: string, description: string, icon: string, empty: string }> = {
+const metadata: Record<DataMode, { title: string, description: string, icon: string, empty: string, one: string, many: string, cards: number }> = {
   activity: {
     title: 'Activity Log',
     description: 'Review the native application audit trail.',
     icon: 'i-hugeicons-activity-03',
     empty: 'No activity has been recorded.',
+    one: 'entry',
+    many: 'entries',
+    cards: 3,
   },
   users: {
     title: 'Users',
     description: 'Review registered application users.',
     icon: 'i-hugeicons-user-group',
     empty: 'No users have registered.',
+    one: 'user',
+    many: 'users',
+    cards: 3,
   },
   teams: {
     title: 'Teams',
     description: 'Review collaborative teams and membership totals.',
     icon: 'i-hugeicons-user-multiple-02',
     empty: 'No teams have been created.',
+    one: 'team',
+    many: 'teams',
+    cards: 4,
   },
   subscribers: {
     title: 'Subscribers',
     description: 'Review subscription status and acquisition sources.',
     icon: 'i-hugeicons-mail-account-01',
     empty: 'No subscribers have joined.',
+    one: 'subscriber',
+    many: 'subscribers',
+    cards: 4,
   },
 }
 
 const page = derived(() => metadata[mode()])
+
+/** Each mode's stats fill their row: three cards in a four-column grid left a hole. */
+const statsGridClass = derived(() => page().cards === 3 ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-2 lg:grid-cols-4')
+
+/** "13 users", or "2 of 13 users" while a search narrows them. */
+const countLabel = derived(() => {
+  const total = records().length
+  const shown = filteredRecords().length
+  const noun = (count: number) => count === 1 ? page().one : page().many
+  return shown === total ? `${total} ${noun(total)}` : `${shown} of ${total} ${noun(total)}`
+})
 const filteredRecords = derived(() => {
   const query = search().trim().toLowerCase()
   if (!query)
@@ -92,7 +115,7 @@ function capitalize(value: string): string {
   return value ? value.charAt(0).toUpperCase() + value.slice(1) : value
 }
 
-const recorded = (key: string, label: string) => ({ key, label, type: 'datetime' as const, align: 'right' as const, sortable: true, emptyText: 'Never', class: 'text-neutral-500 text-xs whitespace-nowrap dark:text-neutral-400' })
+const recorded = (key: string, label: string, emptyText = 'Never') => ({ key, label, type: 'datetime' as const, align: 'right' as const, sortable: true, emptyText, class: 'text-neutral-500 text-xs whitespace-nowrap dark:text-neutral-400' })
 const statusColumn = { key: 'statusTone', label: 'Status', type: 'badge' as const, sortable: true, badgeLabelKey: 'statusLabel', badgeClasses: TONES }
 
 const COLUMNS_BY_MODE = {
@@ -105,7 +128,9 @@ const COLUMNS_BY_MODE = {
   users: [
     { key: 'name', label: 'User', sortable: true, subtitleKey: 'email', class: 'font-medium text-neutral-900 dark:text-white' },
     { key: 'verificationTone', label: 'Verification', type: 'badge' as const, sortable: true, badgeLabelKey: 'verificationLabel', badgeClasses: TONES },
-    recorded('updatedAt', 'Updated'),
+    // A user nobody has edited has no update time; "Never" read as if the
+    // account were broken.
+    recorded('updatedAt', 'Updated', 'Not since registering'),
     recorded('createdAt', 'Registered'),
   ],
   teams: [
@@ -191,7 +216,7 @@ onMount(() => {
     </Button>
   </header>
 
-  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
+  <div class="grid gap-4" :class="statsGridClass()">
     <StatsCard :title="'Total ' + page().title" :icon="page().icon" iconBg="primary">
       <template #value>{{ statValue('total') }}</template>
     </StatsCard>
@@ -235,7 +260,7 @@ onMount(() => {
     <div class="flex flex-col gap-3 items-start sm:flex-row sm:items-center sm:justify-between p-5 border-b border-neutral-200 dark:border-neutral-700">
       <div>
         <h2 class="font-semibold text-neutral-900 dark:text-white">{{ page().title }}</h2>
-        <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Showing {{ filteredRecords().length }} of {{ records().length }} loaded records</p>
+        <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ countLabel() }}</p>
       </div>
       <label class="block relative w-full sm:w-72">
         <span class="sr-only">Search {{ page().title.toLowerCase() }}</span>
@@ -263,7 +288,7 @@ onMount(() => {
         passed in the mode that has a slotted column.
       --}}
       <template :if="mode() === 'teams'">
-        <Table :columns="recordColumns()" :data="recordRows()" paginated :page-size="25">
+        <Table :columns="recordColumns()" :data="recordRows()" paginated :page-size="25" :framed="false">
           <template #cell="{ row }">
             <StxLink :to="row.modelLink" class="font-medium text-neutral-900 text-sm dark:text-white hover:text-blue-600 dark:hover:text-blue-400">{{ row.name }}</StxLink>
             <p class="mt-0.5 max-w-xl text-neutral-500 text-xs dark:text-neutral-400" x-text="row.descriptionLabel"></p>
@@ -271,7 +296,7 @@ onMount(() => {
         </Table>
       </template>
       <template :else>
-        <Table :columns="recordColumns()" :data="recordRows()" paginated :page-size="25" />
+        <Table :columns="recordColumns()" :data="recordRows()" paginated :page-size="25" :framed="false" />
       </template>
     </div>
   </Card>
