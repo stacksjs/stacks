@@ -33,7 +33,8 @@ describe('framework model exports', () => {
       const name = basename(file, '.ts')
       const exportName = name === 'Error' ? 'ErrorModel' : name
 
-      expect(ormSource).toContain(`export const ${exportName} = lazyModel<`)
+      expect(ormSource).toContain(`export const ${exportName}: typeof import(`)
+      expect(ormSource).toContain(`= lazyModel('${name}')`)
       if (!specialModels.has(name))
         expect(ormSource).toContain(`['${name}', [`)
     }

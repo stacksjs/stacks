@@ -62,7 +62,7 @@ if (!runtimeProbe.success) {
  *
  * `src/index.ts` types every model off its definition file:
  *
- *   export const Post = lazyModel<typeof import('../../../defaults/app/Models/Content/Post').default>('Post')
+ *   export const Post: typeof import('../../../defaults/app/Models/Content/Post').default = lazyModel('Post')
  *
  * That specifier is correct inside this monorepo and NONSENSE once published.
  * From `node_modules/@stacksjs/orm/dist/` it climbs out of the package
