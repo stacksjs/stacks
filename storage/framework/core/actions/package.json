@@ -82,6 +82,7 @@
     "@stacksjs/database": "workspace:*",
     "@stacksjs/desktop-build": "workspace:*",
     "@stacksjs/dns": "workspace:*",
+    "@stacksjs/docs": "workspace:*",
     "@stacksjs/enums": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",

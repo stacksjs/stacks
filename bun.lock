@@ -141,6 +141,7 @@
         "@stacksjs/database": "workspace:*",
         "@stacksjs/desktop-build": "workspace:*",
         "@stacksjs/dns": "workspace:*",
+        "@stacksjs/docs": "workspace:*",
         "@stacksjs/enums": "workspace:*",
         "@stacksjs/env": "workspace:*",
         "@stacksjs/error-handling": "workspace:*",
@@ -365,6 +366,7 @@
         "@stacksjs/desktop-build": "0.75.530",
         "@stacksjs/dns": "0.75.530",
         "@stacksjs/dnsx": "^0.2.3",
+        "@stacksjs/docs": "0.75.530",
         "@stacksjs/email": "0.75.530",
         "@stacksjs/enums": "0.75.530",
         "@stacksjs/env": "0.75.530",
@@ -716,6 +718,7 @@
         "@stacksjs/bunpress": "^0.2.25",
         "@stacksjs/config": "workspace:*",
         "@stacksjs/path": "workspace:*",
+        "@stacksjs/stx": "0.2.842",
       },
       "devDependencies": {
         "@stacksjs/alias": "workspace:*",

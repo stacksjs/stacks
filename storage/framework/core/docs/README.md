@@ -1,59 +1,38 @@
-# Documentation
+# Stacks documentation
 
-wip
+`@stacksjs/docs` supplies BunPress defaults and native branded component guides.
 
-## ☘️ Features
+The root export provides `frameworkDefaults`, `docsConfig` and metadata constants.
+Configure the documentation site with `BunPressOptions` from `@stacksjs/bunpress`.
 
-wip
+## Component style guides
 
-- ⚡️
-
-wip
-
-## 🤖 Usage
-
-wip
+Create `config/style-guide.ts` using `StyleGuideConfig` from
+`@stacksjs/docs/style-guide`, then run:
 
 ```bash
-bun install -d @stacksjs/docs
+buddy docs:style-guide
+buddy docs:style-guide:check
 ```
 
-Now, you can use it in your project:
+The guide discovers production STX components, documents explicit public
+contracts, renders isolated `.story.stx` variants and reads the application's
+own design tokens and styles. Application stores are not auto-loaded into
+previews. `buddy build --docs` generates configured guides automatically.
 
-```js
-import * as docs from '@stacksjs/docs'
+Generated Markdown, a sidebar inventory, sandboxed public previews, local
+assets and a JSON catalog are tracked by an ownership manifest. Freshness
+checks are read-only; regeneration removes only stale owned outputs and keeps
+authored documentation intact.
 
-// wip
-```
+See [the complete configuration and story conventions](https://stacksjs.com/docs/basics/style-guide).
+The programmatic API exports `loadStyleGuideConfig`, `generateStyleGuide`,
+`runStyleGuide` and `styleGuideCssTokens` from `@stacksjs/docs/style-guide`.
 
-Learn more in the docs.
-
-## 🧪 Testing
+## Tests
 
 ```bash
-bun test
+bun test ./storage/framework/core/docs/tests
 ```
 
-## 📈 Changelog
-
-Please see our [releases](https://github.com/stacksjs/stacks/releases) page for more information on what has changed recently.
-
-## 🚜 Contributing
-
-Please review the [Contributing Guide](https://github.com/stacksjs/contributing) for details.
-
-## 🏝 Community
-
-For help, discussion about best practices, or any other conversation that would benefit from being searchable:
-
-[Discussions on GitHub](https://github.com/stacksjs/stacks/discussions)
-
-For casual chit-chat with others using this package:
-
-[Join the Stacks Discord Server](https://stacksjs.com/discord)
-
-## 📄 License
-
-The MIT License (MIT). Please see [LICENSE](https://github.com/stacksjs/stacks/tree/main/LICENSE.md) for more information.
-
-Made with 💙
+MIT license. Contributions follow the Stacks repository conventions.

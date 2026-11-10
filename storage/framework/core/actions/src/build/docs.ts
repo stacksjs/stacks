@@ -1,4 +1,5 @@
 import { projectPath } from '@stacksjs/path'
+import { runStyleGuide } from '@stacksjs/docs/style-guide'
 import { runBuildStep } from './run-build-step'
 
 /**
@@ -41,6 +42,8 @@ function bunpressCommand(): string {
     return 'bunpress'
   }
 }
+
+await runStyleGuide({ root: projectPath(), optional: true })
 
 // The result is checked rather than discarded. It was not, and the failure
 // this file's own docblock describes - the step dying and leaving no `dist/`

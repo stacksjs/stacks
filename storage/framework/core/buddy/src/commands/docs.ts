@@ -10,11 +10,22 @@ import { run as runNativeSkills } from './docs/native-skills'
 import { runTool } from './run-tool'
 
 /**
- * Framework-repo `buddy docs:*` commands wrapping the documentation-freshness
- * tooling under `commands/docs/`: the generated buddy command reference,
- * generated API artifacts (OpenAPI + types), and internal link checking.
+ * Application style guides and framework documentation freshness tooling.
+ * The style guide commands run in any app; commands under `commands/docs/`
+ * validate the framework repository's own reference artifacts.
  */
 export function docs(buddy: CLI): void {
+  for (const check of [false, true]) {
+    buddy
+      .command(check ? 'docs:style-guide:check' : 'docs:style-guide', check ? 'Verify generated application style guide freshness' : 'Generate a branded application component style guide')
+      .option('--config <path>', 'Style guide configuration path', { default: 'config/style-guide.ts' })
+      .action(async (options: { config?: string }) => {
+        const { runStyleGuide } = await import('@stacksjs/docs/style-guide')
+        const result = await runStyleGuide({ config: options.config, check })
+        console.log(`${check ? 'Verified' : 'Generated'} style guide: ${result!.components} components, ${result!.stories} stories, ${result!.variants} variants.`)
+      })
+  }
+
   buddy
     .command('docs:native-skills', 'Regenerate native skill package coverage and driver evidence')
     .action(async () => {

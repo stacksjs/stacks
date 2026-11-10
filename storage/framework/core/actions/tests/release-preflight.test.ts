@@ -256,6 +256,7 @@ describe('pinned checks outside the framework repository', () => {
     'docs:artifacts:check': './buddy docs:artifacts:check',
     'docs:links:check': 'buddy docs:links:check',
     'docs:audit:check': 'bun scripts/audit-docs.ts',
+    'docs:style-guide:check': './buddy docs:style-guide:check',
     'declarations:check': './buddy declarations:check',
   }
   const project = (framework: boolean): string => {
@@ -270,7 +271,7 @@ describe('pinned checks outside the framework repository', () => {
   it('leaves out the buddy docs tools an application cannot run, and keeps its own checks', () => {
     const dir = project(false)
     try {
-      expect(readPinnedChecks(dir)).toEqual(['declarations:check', 'docs:audit:check'])
+      expect(readPinnedChecks(dir)).toEqual(['declarations:check', 'docs:audit:check', 'docs:style-guide:check'])
     }
     finally { rmSync(dir, { recursive: true, force: true }) }
   })
@@ -278,7 +279,7 @@ describe('pinned checks outside the framework repository', () => {
   it('runs every one in the framework repository itself', () => {
     const dir = project(true)
     try {
-      expect(readPinnedChecks(dir)).toEqual(['declarations:check', 'docs:artifacts:check', 'docs:audit:check', 'docs:links:check'])
+      expect(readPinnedChecks(dir)).toEqual(['declarations:check', 'docs:artifacts:check', 'docs:audit:check', 'docs:links:check', 'docs:style-guide:check'])
     }
     finally { rmSync(dir, { recursive: true, force: true }) }
   })

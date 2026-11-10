@@ -75,6 +75,7 @@ const config: BunPressOptions = {
             { text: 'Commands', link: '/basics/commands' },
             { text: 'Jobs', link: '/basics/jobs' },
             { text: 'Components', link: '/basics/components' },
+            { text: 'Generated style guides', link: '/basics/style-guide' },
             { text: 'Functions', link: '/basics/functions' },
             { text: 'Validation', link: '/packages/validation' },
             { text: 'Error Handling', link: '/basics/error-handling' },

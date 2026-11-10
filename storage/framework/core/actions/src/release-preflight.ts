@@ -46,7 +46,7 @@ export function pinnedCheckScripts(scripts: Record<string, unknown>): string[] {
  * command reference, its docs links) and refuse to run anywhere else.
  */
 function runsFrameworkDocsTool(command: unknown): boolean {
-  return typeof command === 'string' && /(?:^|\s)(?:\.\/)?(?:buddy|bud|stacks)\s+docs:/.test(command)
+  return typeof command === 'string' && /(?:^|\s)(?:\.\/)?(?:buddy|bud|stacks)\s+docs:(?!style-guide(?::|\s|$))/.test(command)
 }
 
 /**

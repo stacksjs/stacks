@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **372 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **374 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -29,7 +29,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `desktop` | 7 |
 | `dev` | 8 |
 | `dns` | 3 |
-| `docs` | 16 |
+| `docs` | 18 |
 | `domains` | 3 |
 | `email` | 7 |
 | `env` | 7 |
@@ -1754,6 +1754,32 @@ Verify no NEW documented import fails to compile
 - Namespace: `docs`
 - Aliases: none
 - Arguments: none
+
+### `docs:style-guide`
+
+Generate a branded application component style guide
+
+- Usage: `$ buddy docs:style-guide`
+- Namespace: `docs`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--config` | Style guide configuration path | value, required | `"config/style-guide.ts"` |
+
+### `docs:style-guide:check`
+
+Verify generated application style guide freshness
+
+- Usage: `$ buddy docs:style-guide:check`
+- Namespace: `docs`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--config` | Style guide configuration path | value, required | `"config/style-guide.ts"` |
 
 ### `doctor`
 

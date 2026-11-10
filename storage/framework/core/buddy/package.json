@@ -96,6 +96,7 @@
   },
   "dependencies": {
     "@stacksjs/actions": "0.75.530",
+    "@stacksjs/docs": "0.75.530",
     "@stacksjs/ai": "0.75.530",
     "@stacksjs/alias": "0.75.530",
     "@stacksjs/analytics": "0.75.530",
