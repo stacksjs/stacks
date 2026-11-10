@@ -70,7 +70,9 @@ describe('the declared Craft floor', () => {
     for (const pkg of ['actions', 'mobile', 'desktop']) {
       const manifest = JSON.parse(readFileSync(join(import.meta.dir, '../..', pkg, 'package.json'), 'utf8'))
       const range = manifest.peerDependencies?.['craft-native'] ?? manifest.dependencies?.['craft-native']
-      expect(range, pkg).toBe(`>=${CRAFT_GENERATED_SPLASH_FLOOR}`)
+      expect(range, pkg).toMatch(/^>=\d+\.\d+\.\d+$/)
+      const minimum = range.slice(2)
+      expect(Bun.semver.satisfies(minimum, `>=${CRAFT_GENERATED_SPLASH_FLOOR}`), pkg).toBe(true)
     }
   })
 })
