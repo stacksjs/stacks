@@ -10,8 +10,8 @@ import type {
   DataStats,
 } from '../../../../functions/data'
 import { fetchDashboardData } from '../../../../functions/data'
-import type { ModelRecord, ModelWriteCapabilities } from '../../../../functions/dashboard-model-record'
-import { changedModelFields, deleteModelRecord, fetchModelCapabilities, fetchModelRecord, modelRecordFields, modelRecordHref, updateModelRecord } from '../../../../functions/dashboard-model-record'
+import type { ModelWriteCapabilities } from '../../../../functions/dashboard-model-record'
+import { deleteModelRecord, fetchModelCapabilities, modelRecordEditHref, modelRecordHref } from '../../../../functions/dashboard-model-record'
 import { pushToast } from '../../../../functions/toasts'
 
 type DataRecord = DashboardActivity | DashboardSubscriber | DashboardTeam | DashboardUser
@@ -74,11 +74,8 @@ const ACTION_LABEL_KEYS: Partial<Record<DataMode, string>> = { users: 'name', te
 
 const modelSlug = derived(() => MODEL_SLUGS[mode()] ?? '')
 const capabilities = state<ModelWriteCapabilities>({ create: false, update: false, destroy: false })
-// The record open in the edit dialog. Viewing has its own page.
-const openRecord = state<ModelRecord | null>(null)
 const confirmingDelete = state<Record<string, any> | null>(null)
 const working = state(false)
-const busyId = state<unknown>('')
 
 /** View always; edit and delete only where the model's API allows them. */
 const rowActions = derived(() => {
@@ -91,7 +88,6 @@ const rowActions = derived(() => {
   ]
 })
 const actionLabelKey = derived(() => ACTION_LABEL_KEYS[mode()] ?? 'id')
-const recordFields = derived(() => openRecord() ? modelRecordFields(openRecord()!) : [])
 const deleteTitle = derived(() => `Delete this ${page().one}?`)
 const deleteDescription = derived(() => {
   const row = confirmingDelete()
@@ -113,50 +109,14 @@ async function loadCapabilities(): Promise<void> {
   }
 }
 
-async function handleRowAction(payload: { action: string, row: Record<string, any> }): Promise<void> {
-  if (payload.action === 'delete') {
+/** The eye and the pencil each open a page of the record's own, which comes back here. */
+function handleRowAction(payload: { action: string, row: Record<string, any> }): void {
+  if (payload.action === 'delete')
     confirmingDelete.set(payload.row)
-    return
-  }
-  if (payload.action === 'view') {
-    // The record's own page, which comes back here.
+  else if (payload.action === 'edit')
+    navigate(modelRecordEditHref(modelSlug(), payload.row.id, { from: `/data/${mode()}` }))
+  else
     navigate(modelRecordHref(modelSlug(), payload.row.id, `/data/${mode()}`))
-    return
-  }
-  busyId.set(payload.row.id)
-  try {
-    openRecord.set(await fetchModelRecord(modelSlug(), payload.row.id))
-  }
-  catch (error) {
-    pushToast('error', `Could not open this ${page().one}`, { detail: error instanceof Error ? error.message : String(error) })
-  }
-  finally {
-    busyId.set('')
-  }
-}
-
-async function saveRecord(values: Record<string, string>): Promise<void> {
-  const record = openRecord()
-  if (!record)
-    return
-  const fields = changedModelFields(record.row, values)
-  if (Object.keys(fields).length === 0) {
-    openRecord.set(null)
-    return
-  }
-  working.set(true)
-  try {
-    await updateModelRecord(modelSlug(), String(record.row.id), fields)
-    pushToast('success', `${record.modelName} ${record.row.id} updated`)
-    openRecord.set(null)
-    await loadRecords()
-  }
-  catch (error) {
-    pushToast('error', 'Could not save', { detail: error instanceof Error ? error.message : String(error) })
-  }
-  finally {
-    working.set(false)
-  }
 }
 
 async function confirmDelete(): Promise<void> {
@@ -406,7 +366,7 @@ onMount(() => {
         passed in the mode that has a slotted column.
       --}}
       <template :if="mode() === 'teams'">
-        <Table :columns="recordColumns()" :data="recordRows()" paginated :page-size="25" :framed="false" :row-actions="rowActions()" :action-label-key="actionLabelKey()" :busy-value="busyId()" @row-action="handleRowAction">
+        <Table :columns="recordColumns()" :data="recordRows()" paginated :page-size="25" :framed="false" :row-actions="rowActions()" :action-label-key="actionLabelKey()" @row-action="handleRowAction">
           <template #cell="{ row }">
             <StxLink :to="row.modelLink" class="font-medium text-neutral-900 text-sm dark:text-white hover:text-blue-600 dark:hover:text-blue-400">{{ row.name }}</StxLink>
             <p class="mt-0.5 max-w-xl text-neutral-500 text-xs dark:text-neutral-400" x-text="row.descriptionLabel"></p>
@@ -414,19 +374,10 @@ onMount(() => {
         </Table>
       </template>
       <template :else>
-        <Table :columns="recordColumns()" :data="recordRows()" paginated :page-size="25" :framed="false" :row-actions="rowActions()" :action-label-key="actionLabelKey()" :busy-value="busyId()" @row-action="handleRowAction" />
+        <Table :columns="recordColumns()" :data="recordRows()" paginated :page-size="25" :framed="false" :row-actions="rowActions()" :action-label-key="actionLabelKey()" @row-action="handleRowAction" />
       </template>
     </div>
   </Card>
-
-  <EditRecordModal
-    :open="Boolean(openRecord())"
-    :modelName="openRecord()?.modelName || page().one"
-    :fields="recordFields()"
-    :busy="working()"
-    @close="openRecord.set(null)"
-    @submit="saveRecord($event)"
-  />
 
   <ConfirmDialog
     :isOpen="Boolean(confirmingDelete())"

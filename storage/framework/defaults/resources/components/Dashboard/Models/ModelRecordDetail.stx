@@ -2,19 +2,18 @@
 // A record's own page (`/models/{slug}/{id}`), where the eye on any table row
 // leads. A breadcrumb back to the list, "View User", and the record's fields
 // as titled cards two across: what it is, its settings, its identifiers and
-// its timestamps, each field a label over its value. Edit and Delete appear
-// where the model's API allows them. A page rather than a dialog, so a record
+// its timestamps, each field a label over its value. Edit (which opens the
+// record's edit page) and Delete appear where the model's API allows them. A page rather than a dialog, so a record
 // has an address to share, open in a tab and come back to.
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
 import type { ModelRecord } from '../../../../functions/dashboard-model-record'
-import { changedModelFields, deleteModelRecord, fetchModelRecord, modelRecordBackHref, modelRecordFields, modelRecordListLabel, modelRecordSections, modelRecordTitle, updateModelRecord } from '../../../../functions/dashboard-model-record'
+import { deleteModelRecord, fetchModelRecord, modelRecordBackHref, modelRecordEditHref, modelRecordListLabel, modelRecordSections, modelRecordTitle } from '../../../../functions/dashboard-model-record'
 import { pushToast } from '../../../../functions/toasts'
 
 const navigation = useNavigation()
 const record = state<ModelRecord | null>(null)
 const loading = state(true)
 const loadError = state('')
-const editing = state(false)
 const confirmingDelete = state(false)
 const working = state(false)
 
@@ -35,7 +34,6 @@ const listLabel = derived(() => modelRecordListLabel(record(), backHref()))
 const modelName = derived(() => record()?.modelName || 'Record')
 const title = derived(() => record() ? modelRecordTitle(record()!) : '')
 const sections = derived(() => record() ? modelRecordSections(record()!) : [])
-const editFields = derived(() => record() && editing() ? modelRecordFields(record()!) : [])
 const canEdit = derived(() => Boolean(record()?.writeCapabilities.update))
 const canDelete = derived(() => Boolean(record()?.writeCapabilities.destroy))
 
@@ -54,28 +52,9 @@ async function loadRecord(): Promise<void> {
   }
 }
 
-async function saveRecord(values: Record<string, string>): Promise<void> {
-  const current = record()
-  if (!current)
-    return
-  const fields = changedModelFields(current.row, values)
-  if (Object.keys(fields).length === 0) {
-    editing.set(false)
-    return
-  }
-  working.set(true)
-  try {
-    await updateModelRecord(slug(), recordId(), fields)
-    pushToast('success', `${current.modelName} ${recordId()} updated`)
-    editing.set(false)
-    await loadRecord()
-  }
-  catch (error) {
-    pushToast('error', 'Could not save', { detail: error instanceof Error ? error.message : String(error) })
-  }
-  finally {
-    working.set(false)
-  }
+// The edit page comes back here after saving or cancelling.
+function editRecord(): void {
+  navigate(modelRecordEditHref(slug(), recordId(), { from: backHref() === from ? from : undefined, via: 'view' }))
 }
 
 async function deleteRecord(): Promise<void> {
@@ -117,7 +96,7 @@ onMount(() => {
         <span aria-hidden="true" class="h-4 w-4 text-red-500 i-hugeicons-delete-02"></span>
         Delete
       </Button>
-      <Button :if="canEdit()" variant="primary" @click="editing.set(true)">Edit</Button>
+      <Button :if="canEdit()" variant="primary" @click="editRecord">Edit</Button>
     </div>
   </header>
 
@@ -152,15 +131,6 @@ onMount(() => {
       </Card>
     </div>
   </div>
-
-  <EditRecordModal
-    :open="editing()"
-    :modelName="modelName()"
-    :fields="editFields()"
-    :busy="working()"
-    @close="editing.set(false)"
-    @submit="saveRecord($event)"
-  />
 
   <ConfirmDialog
     :isOpen="confirmingDelete()"

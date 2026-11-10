@@ -122,20 +122,39 @@ describe('dashboard row actions', () => {
     expect(records.match(/:row-actions="rowActions\(\)"/g)?.length).toBe(2)
   })
 
-  test('the eye opens the record\'s own page, not a dialog', () => {
+  test('the eye and the pencil each open a page of the record\'s own, not a dialog', () => {
     const detail = read('Models/ModelRecordDetail.stx')
-    const editor = read('Models/EditRecordModal.stx')
+    const edit = read('Models/ModelRecordEdit.stx')
     const browser = read('Models/ModelRecordsDashboard.stx')
-    // From a list page, with the way back to it; from the model browser, to the same page.
+    // From a list page, with the way back to it.
     expect(records).toContain('navigate(modelRecordHref(modelSlug(), payload.row.id, `/data/${mode()}`))')
-    expect(browser).toContain('navigate(`/models/${encodeURIComponent(slug())}/${encodeURIComponent(String(row.id))}`)')
+    expect(records).toContain('navigate(modelRecordEditHref(modelSlug(), payload.row.id, { from: `/data/${mode()}` }))')
+    // From the model browser, to the same two pages.
+    expect(browser).toContain('navigate(modelRecordHref(slug(), String(row.id)))')
+    expect(browser).toContain('navigate(modelRecordEditHref(slug(), String(row.id)))')
+    // From the record page, Edit comes back to it.
+    expect(detail).toContain(`via: 'view'`)
     expect(readFileSync(resolve('storage/framework/defaults/views/dashboard/models/[model]/[id].stx'), 'utf8')).toContain('<ModelRecordDetail />')
+    expect(readFileSync(resolve('storage/framework/defaults/views/dashboard/models/[model]/[id]/edit.stx'), 'utf8')).toContain('<ModelRecordEdit />')
     expect(detail).toContain('modelRecordSections(record()!)')
     expect(detail).toContain('modelRecordBackHref(slug(), from)')
-    // The dialog is for editing only.
-    expect(editor).not.toContain('viewOnly')
-    expect(records).not.toContain('viewOnly')
-    expect(browser).not.toContain('viewOnly')
+    // No dialog is left for either.
+    for (const source of [records, browser, detail, edit]) {
+      expect(source).not.toContain('EditRecordModal')
+      expect(source).not.toContain('viewOnly')
+    }
+  })
+
+  test('the edit page mirrors the record page and returns where the visitor came from', () => {
+    const edit = read('Models/ModelRecordEdit.stx')
+    expect(edit).toContain('<nav aria-label="Breadcrumb"')
+    expect(edit).toContain('<span aria-current="page">Edit</span>')
+    expect(edit).toContain('Edit {{ modelName() }}</h1>')
+    expect(edit).toContain('const returnHref = derived(() => cameFromView ? viewHref() : listHref())')
+    expect(edit).toContain('<Button type="submit" variant="primary" :loading="saving()">Save changes</Button>')
+    expect(edit).toContain('@click="cancel">Cancel</Button>')
+    // A model that does not allow updates says so instead of showing a form.
+    expect(edit).toContain(`:title="modelName() + ' records cannot be edited here'"`)
   })
 
   test('the record page is a breadcrumb, a title and titled field cards two across', () => {

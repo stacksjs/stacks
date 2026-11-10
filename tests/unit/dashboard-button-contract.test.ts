@@ -413,7 +413,7 @@ describe('dashboard button contract', () => {
       'utf8',
     )
     const editor = readFileSync(
-      resolve('storage/framework/defaults/resources/components/Dashboard/Models/EditRecordModal.stx'),
+      resolve('storage/framework/defaults/resources/components/Dashboard/Models/ModelRecordEdit.stx'),
       'utf8',
     )
     const actions = readFileSync(
@@ -426,9 +426,10 @@ describe('dashboard button contract', () => {
     expect(source).toContain('<ModelRecordActions')
     // View, edit and delete: the eye is offered on every row.
     expect((actions.match(/<Button/g) || []).length).toBe(3)
-    expect(source).toContain('<EditRecordModal')
-    expect(editor).toContain('<Modal')
-    expect(editor).toContain('<Button type="submit" form="model-edit-form"')
+    // Editing is a page of the record's own, not a dialog over the table.
+    expect(source).not.toContain('<EditRecordModal')
+    expect(editor).not.toContain('<Modal')
+    expect(editor).toContain('<Button type="submit" variant="primary"')
     expect(source).toContain('interaction="toggle"')
     expect(source).toContain('@click="goToPage(page() + 1)"')
     expect(source).toContain('@click="goToPage(lastPage())"')

@@ -8,6 +8,7 @@
 // writes go through the model, so scopes, casts and observers apply.
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
 import { DashboardApiError, dashboardApi } from '@stacksjs/defaults/functions/dashboard-api'
+import { modelRecordEditHref, modelRecordHref } from '@stacksjs/defaults/functions/dashboard-model-record'
 import { pushToast } from '@stacksjs/defaults/functions/toasts'
 
 interface ColumnMeta {
@@ -68,7 +69,6 @@ const search = state(navigation.urlQuery('q') || '')
 const filters = state<Record<string, string>>({})
 const writeCapabilities = state<WriteCapabilities>({ create: false, update: false, destroy: false })
 const createFields = state<CreateField[]>([])
-const updateColumns = state<string[]>([])
 const error = state<string | null>(null)
 // False when the model's table has not been created yet: the server checked the
 // catalog after the query failed, so this is never a guess from an error.
@@ -76,9 +76,6 @@ const migrated = state(true)
 const loading = state(true)
 const showFilters = state(false)
 
-// The row being edited. `null` closes the editor; EditRecordModal owns the
-// working copy so cancelling leaves the table row unchanged.
-const editing = state<Record<string, unknown> | null>(null)
 const saving = state(false)
 const confirmingDelete = state<Record<string, unknown> | null>(null)
 const showCreate = state(false)
@@ -118,23 +115,6 @@ const deleteDescription = derived(() => {
   if (!row)
     return ''
   return `Row ${row.id} will be removed through the model, so soft deletes and observers apply.`
-})
-
-// Fields for the edit modal, carrying their starting value. Derived from the
-// row being edited rather than from its mutable draft, so the list changes
-// exactly once per open: deriving it from the working copy would rebuild
-// every input on each keystroke and steal focus mid-word.
-const editFields = derived(() => {
-  const row = editing()
-  if (!row) return []
-  return columnMeta().map(column => ({
-    name: column.name,
-    label: column.label,
-    value: row[column.name] === null || row[column.name] === undefined ? '' : String(row[column.name]),
-    // The model API accepts only fillable attributes and declared belongs-to
-    // keys. Every other database column stays visible as read-only context.
-    readonly: !updateColumns().includes(column.name),
-  }))
 })
 
 // Skeleton rows while a query is in flight. Matching the real row count
@@ -219,7 +199,6 @@ async function load() {
     sort.set(data.sort ?? '')
     writeCapabilities.set(data.writeCapabilities ?? { create: false, update: false, destroy: false })
     createFields.set(data.createFields ?? [])
-    updateColumns.set(data.updateColumns ?? [])
     migrated.set(data.migrated !== false)
     error.set(data.error ?? null)
   }
@@ -270,13 +249,13 @@ function onPerPageChange() {
   void load()
 }
 
+// The eye and the pencil each open a page of the record's own.
 function startEdit(row: Record<string, unknown>) {
-  editing.set(row)
+  navigate(modelRecordEditHref(slug(), String(row.id)))
 }
 
-// The eye opens the record's own page, which has an address of its own.
 function startView(row: Record<string, unknown>) {
-  navigate(`/models/${encodeURIComponent(slug())}/${encodeURIComponent(String(row.id))}`)
+  navigate(modelRecordHref(slug(), String(row.id)))
 }
 
 function openCreate(): void {
@@ -314,41 +293,6 @@ async function createRecord(fields: Record<string, unknown>): Promise<void> {
   }
   finally {
     creating.set(false)
-  }
-}
-
-async function saveEdit(values: Record<string, string>) {
-  const row = editing()
-  if (!row) return
-  // Send only what actually changed, so a save never rewrites columns the
-  // editor merely displayed.
-  const fields: Record<string, unknown> = {}
-  for (const [column, value] of Object.entries(values)) {
-    const original = row[column]
-    const originalText = original === null || original === undefined ? '' : String(original)
-    if (value !== originalText) fields[column] = value === '' ? null : value
-  }
-  if (Object.keys(fields).length === 0) {
-    editing.set(null)
-    return
-  }
-
-  saving.set(true)
-  try {
-    const result = await dashboardApi<{ ok: boolean, error?: string }>(
-      `/api/dashboard/models/${encodeURIComponent(slug())}/${row.id}`,
-      { method: 'PATCH', body: { fields } },
-    )
-    if (!result?.ok) throw new Error(result?.error || 'The update was rejected.')
-    pushToast('success', `${modelName()} ${row.id} updated`)
-    editing.set(null)
-    await load()
-  }
-  catch (e) {
-    pushToast('error', 'Could not save', { detail: e instanceof Error ? e.message : String(e) })
-  }
-  finally {
-    saving.set(false)
   }
 }
 
@@ -556,15 +500,6 @@ void load()
       </div>
     </div>
   </div>
-
-  <EditRecordModal
-    :open="Boolean(editing())"
-    :modelName="modelName()"
-    :fields="editFields()"
-    :busy="saving()"
-    @close="editing.set(null)"
-    @submit="saveEdit($event)"
-  />
 
   <ConfirmDialog
     :isOpen="Boolean(confirmingDelete())"
