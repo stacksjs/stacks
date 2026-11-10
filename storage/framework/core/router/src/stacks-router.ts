@@ -616,12 +616,14 @@ const CSRF_SKIPPED = 1
 const CSRF_REQUIRED = 2
 type RouteCsrfMode = typeof CSRF_DEFAULT | typeof CSRF_SKIPPED | typeof CSRF_REQUIRED
 
-const ROUTE_ACCEPTS_CSRF = 1 << 0
-const ROUTE_MAY_HAVE_BODY = 1 << 1
-const ROUTE_RENDERS_CSRF = 1 << 2
-const ROUTE_SEEDS_CSRF = 1 << 3
-const ROUTE_FORCES_JSON = 1 << 4
-const ROUTE_ACTION_SKIPS_CSRF = 1 << 5
+// Literal bitmasks preserve these flags and the declarations that follow them
+// in the published module. The public contract test compiles the built API.
+const ROUTE_ACCEPTS_CSRF = 0x01
+const ROUTE_MAY_HAVE_BODY = 0x02
+const ROUTE_RENDERS_CSRF = 0x04
+const ROUTE_SEEDS_CSRF = 0x08
+const ROUTE_FORCES_JSON = 0x10
+const ROUTE_ACTION_SKIPS_CSRF = 0x20
 
 /**
  * Mutable route-owned policy. The handler and chainable route retain one
