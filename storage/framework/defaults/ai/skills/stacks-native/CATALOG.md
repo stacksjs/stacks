@@ -21,7 +21,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/auth` | [`stacks-auth`](../stacks-auth/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/auth/src/index.ts) | 132 |
 | `@stacksjs/browser` | [`stacks-browser`](../stacks-browser/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/browser/src/index.ts) | 10 |
 | `@stacksjs/browser-extension` | [`stacks-browser-extension`](../stacks-browser-extension/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/browser-extension/src/index.ts) | 9 |
-| `@stacksjs/buddy` | [`stacks-buddy`](../stacks-buddy/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/buddy/src/index.ts) | 186 |
+| `@stacksjs/buddy` | [`stacks-buddy`](../stacks-buddy/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/buddy/src/index.ts) | 187 |
 | `@stacksjs/build` | [`stacks-build`](../stacks-build/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/build/src/index.ts) | 7 |
 | `@stacksjs/cache` | [`stacks-cache`](../stacks-cache/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cache/src/index.ts) | 24 |
 | `@stacksjs/calendar-api` | [`stacks-calendar`](../stacks-calendar/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/calendar-api/src/index.ts) | 5 |
@@ -55,6 +55,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/git` | [`stacks-git`](../stacks-git/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/git/src/index.ts) | 2 |
 | `@stacksjs/github` | [`stacks-git`](../stacks-git/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/github/src/index.ts) | 8 |
 | `@stacksjs/health` | [`stacks-health`](../stacks-health/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/health/src/index.ts) | 2 |
+| `@stacksjs/hq` | [`stacks-hq`](../stacks-hq/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/hq/src/index.ts) | 7 |
 | `@stacksjs/http` | [`stacks-http`](../stacks-http/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/http/src/index.ts) | 3 |
 | `@stacksjs/i18n` | [`stacks-i18n`](../stacks-i18n/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/i18n/src/index.ts) | 5 |
 | `@stacksjs/image` | [`stacks-image`](../stacks-image/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/image/src/index.ts) | 4 |
@@ -219,7 +220,7 @@ Read the entrypoint and package export map for re-exported or type-only surfaces
 
 Local source modules: [src/commands/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/buddy/src/commands/index.ts).
 
-Evidence directory: [186 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/buddy/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [187 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/buddy/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/build
 
@@ -538,6 +539,16 @@ Read the entrypoint and package export map for re-exported or type-only surfaces
 Local source modules: [src/drivers/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/health/src/drivers/index.ts), [src/notifications/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/health/src/notifications/index.ts).
 
 Evidence directory: [2 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/health/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+
+### @stacksjs/hq
+
+Guidance: [`stacks-hq`](../stacks-hq/SKILL.md). Source: [storage/framework/core/hq/src/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/hq/src/index.ts).
+
+Read the entrypoint and package export map for re-exported or type-only surfaces.
+
+Local source modules: [src/client.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/hq/src/client.ts), [src/meter.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/hq/src/meter.ts), [src/service.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/hq/src/service.ts).
+
+Evidence directory: [7 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/hq/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/http
 

@@ -1,10 +1,10 @@
 ---
 title: Skills
-description: "The 207 agent skills Stacks ships, what each one is for, and how to wire them into your AI coding agent."
+description: "The 208 agent skills Stacks ships, what each one is for, and how to wire them into your AI coding agent."
 ---
 # Skills
 
-Stacks ships **207 agent skills**. Each one is a `SKILL.md` that documents part
+Stacks ships **208 agent skills**. Each one is a `SKILL.md` that documents part
 of the framework, or part of the craft of working in it, authoritatively enough
 that an agent reads it instead of guessing at an API.
 
@@ -54,7 +54,7 @@ package cannot silently lack guidance.
 | [Messaging](/skills/messaging) | Email, SMS, push, chat, notifications and calendars. 8 skills. |
 | [Frontend](/skills/frontend) | stx templates, ts-css, composables, desktop and mobile. 9 skills. |
 | [Design](/skills/design) | Premium UI work, aesthetic presets, image-first pipelines and diagrams. 12 skills. |
-| [Domain packages](/skills/domain) | Commerce, payments, CMS, dashboard and i18n. 7 skills. |
+| [Domain packages](/skills/domain) | Commerce, payments, CMS, dashboard and i18n. 8 skills. |
 | [Toolchain](/skills/toolchain) | The buddy CLI, building, serving, deploying, testing and linting. 20 skills. |
 | [Platform](/skills/platform) | Config, env, dependencies, auto-imports, paths and types. 13 skills. |
 | [Utilities](/skills/utilities) | Strings, arrays, collections, objects, dates and slugs. 10 skills. |

@@ -63,6 +63,7 @@
   "dependencies": {
     "@stacksjs/database": "workspace:*",
     "@stacksjs/email": "workspace:*",
+    "@stacksjs/hq": "workspace:*",
     "@stacksjs/orm": "workspace:*",
     "@stacksjs/queue": "workspace:*"
   },

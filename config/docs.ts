@@ -427,6 +427,7 @@ const config: BunPressOptions = {
             { text: 'Payments', link: '/skills/domain/payments' },
             { text: 'Forms', link: '/skills/domain/forms' },
             { text: 'Sites', link: '/skills/domain/sites' },
+            { text: 'HQ', link: '/skills/domain/hq' },
           ],
         },
         {
