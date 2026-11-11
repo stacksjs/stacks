@@ -2979,6 +2979,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /api/dashboard/models/{slug}/options
+   */
+  getDashboardModelsSlugOptions(input: { "slug": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/models/{slug}/options", input ?? {}, [{"name":"slug","in":"path","required":true}], null, "application/json", [], options)
+  },
+
+  /**
    * DELETE /api/dashboard/models/{slug}/{id}
    */
   deleteDashboardModelsSlugId(input: { "slug": string; "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {

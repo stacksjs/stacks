@@ -512,6 +512,9 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   // server-side. ORM path first, raw SQLite fallback if no model file
   // matches the slug.
   guard(route.get('/models/{slug}', 'Actions/Dashboard/Models/ModelShowAction'))
+  // A model's records by name, for choosing one in a form: the picker behind
+  // every `belongsTo` field. Light on purpose, since it answers each keystroke.
+  guard(route.get('/models/{slug}/options', 'Actions/Dashboard/Models/ModelOptionsAction'))
 
   // Row writes from the same page. Guarded like every other mutating
   // dashboard endpoint; models with no ORM file stay read-only, which the

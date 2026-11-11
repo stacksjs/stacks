@@ -11350,6 +11350,40 @@
         }
       }
     },
+    "/api/dashboard/models/{slug}/options": {
+      "get": {
+        "summary": "/api/dashboard/models/{slug}/options",
+        "operationId": "get__api_dashboard_models__slug__options",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/dashboard/models/{slug}/{id}": {
       "delete": {
         "summary": "/api/dashboard/models/{slug}/{id}",
