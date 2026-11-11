@@ -393,7 +393,7 @@
       "name": "@stacksjs/build",
       "version": "0.75.538",
       "dependencies": {
-        "@dtsx/bun": "^0.11.41",
+        "@dtsx/bun": "^0.11.43",
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/storage": "workspace:*"
@@ -643,7 +643,7 @@
         "@stacksjs/config": "0.75.538",
         "@stacksjs/router": "0.75.538",
         "@stacksjs/server": "0.75.538",
-        "craft-native": ">=0.0.491"
+        "craft-native": ">=0.0.492"
       },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
@@ -900,7 +900,7 @@
       "dependencies": {
         "@bughq/sdk": "^0.3.0",
         "@stacksjs/types": "workspace:*",
-        "craft-native": ">=0.0.491"
+        "craft-native": ">=0.0.492"
       },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
@@ -1330,7 +1330,7 @@
         "very-happy-dom": "^0.4.1"
       },
       "devDependencies": {
-        "@dtsx/dtsx": "^0.11.41",
+        "@dtsx/dtsx": "^0.11.43",
         "better-dx": "^0.2.24"
       }
     },

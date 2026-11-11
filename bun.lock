@@ -181,7 +181,7 @@
         "better-dx": "^0.2.24",
       },
       "peerDependencies": {
-        "craft-native": ">=0.0.491",
+        "craft-native": ">=0.0.492",
         "pickier": "^0.1.75",
       },
       "optionalPeers": [
@@ -420,7 +420,7 @@
       "name": "@stacksjs/build",
       "version": "0.75.538",
       "dependencies": {
-        "@dtsx/bun": "^0.11.41",
+        "@dtsx/bun": "^0.11.43",
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/storage": "workspace:*",
@@ -670,7 +670,7 @@
         "@stacksjs/config": "0.75.538",
         "@stacksjs/router": "0.75.538",
         "@stacksjs/server": "0.75.538",
-        "craft-native": ">=0.0.491",
+        "craft-native": ">=0.0.492",
       },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
@@ -943,7 +943,7 @@
       "dependencies": {
         "@bughq/sdk": "^0.3.0",
         "@stacksjs/types": "workspace:*",
-        "craft-native": ">=0.0.491",
+        "craft-native": ">=0.0.492",
       },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
@@ -1427,7 +1427,7 @@
         "very-happy-dom": "^0.4.1",
       },
       "devDependencies": {
-        "@dtsx/dtsx": "^0.11.41",
+        "@dtsx/dtsx": "^0.11.43",
         "better-dx": "^0.2.24",
       },
     },
@@ -1595,9 +1595,9 @@
 
     "@cwcss/crosswind": ["@cwcss/crosswind@0.2.19", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "bunfig": "^0.15.17" }, "bin": { "crosswind": "./dist/cli.js" } }, "sha512-NswUZPNHbdkW4rxvmwjjIM7jyfQ/rr0X1J1uwjTUwixc3BXQs1Fk7pP5cC7MxkGGnmRTFs2O9J+U9tJ36ZJ7fQ=="],
 
-    "@dtsx/bun": ["@dtsx/bun@0.11.42", "", { "dependencies": { "@dtsx/dtsx": "0.11.42" } }, "sha512-EY7vzOvBZuWiFlxo8njZyUIpBaul7+nNI2Sbi6yRv/O83m9gW5xsv5p4zOeEvfBkOnb7wAD7JacsF0cCW1mDeg=="],
+    "@dtsx/bun": ["@dtsx/bun@0.11.43", "", { "dependencies": { "@dtsx/dtsx": "0.11.43" } }, "sha512-5uiaUq+AnKgbP58RFZ1tv5qzhZNPLsg7PoQpaqcn4AcrB01LxBSbP6HBChDGSoQD/wc91kBqK+wRPPLvvj6soA=="],
 
-    "@dtsx/dtsx": ["@dtsx/dtsx@0.11.42", "", { "peerDependencies": { "prettier": "^3.9.10" }, "optionalPeers": ["prettier"], "bin": { "dtsx": "./dist/bin/cli.js" } }, "sha512-FSfNR+ksPNDx7mbKm3jb8brsDDJStDwjJAV6hfaKgggd+wgekhyG6G1OxCqk/y8n/aLUAu8voip3H+JnaTO3PQ=="],
+    "@dtsx/dtsx": ["@dtsx/dtsx@0.11.43", "", { "peerDependencies": { "prettier": "^3.9.10" }, "optionalPeers": ["prettier"], "bin": { "dtsx": "./dist/bin/cli.js" } }, "sha512-Asfm9kuxDtB7R+NKeX+M/6HJgHQdNllcQRH415NLj9WA2kaN5F9tUYqDlBwbULFTydN2UG1zJE8+iYc3WLrVvg=="],
 
     "@hono/node-server": ["@hono/node-server@2.1.6", "", { "peerDependencies": { "hono": "^4 || ^5.0.0-0" } }, "sha512-p/KH9MnfNcsm3sR6x4lNgm5j+QN4Et8srKredl9DZfXiyZ1UQ3aQ2YVpFLbqktYN5JI+DB+VZFKM2PqE5hLKjQ=="],
 
