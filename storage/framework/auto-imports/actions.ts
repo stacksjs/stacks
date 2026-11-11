@@ -665,6 +665,8 @@ export const actions = {
   'Actions/Dashboard/Teams/team-invitation-delivery': '../defaults/app/Actions/Dashboard/Teams/team-invitation-delivery.ts',
   'Actions/Dashboard/Teams/team-member-count': '../defaults/app/Actions/Dashboard/Teams/team-member-count.ts',
   'Actions/Dashboard/Teams/team-records': '../defaults/app/Actions/Dashboard/Teams/team-records.ts',
+  'Actions/Dashboard/Users/UserInviteAction': '../defaults/app/Actions/Dashboard/Users/UserInviteAction.ts',
+  'Actions/Dashboard/Users/user-invitation': '../defaults/app/Actions/Dashboard/Users/user-invitation.ts',
   'Actions/Dashboard/dashboard-provider': '../defaults/app/Actions/Dashboard/dashboard-provider.ts',
   'Actions/Dashboard/dashboard-request': '../defaults/app/Actions/Dashboard/dashboard-request.ts',
   'Actions/Dashboard/dashboard-response': '../defaults/app/Actions/Dashboard/dashboard-response.ts',

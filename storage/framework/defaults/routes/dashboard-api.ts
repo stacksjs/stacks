@@ -221,6 +221,9 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.get('/operations/audit', 'Actions/Dashboard/Operations/AuditIndexAction'))
   guard(route.get('/data/activity', 'Actions/Dashboard/Data/ActivityIndexAction'))
   guard(route.get('/data/users', 'Actions/Dashboard/Data/UserIndexAction'))
+  // Adding a user: the account is created and its holder is mailed a link to
+  // choose their password, since no form can supply one.
+  guard(route.post('/users/invitations', 'Actions/Dashboard/Users/UserInviteAction'))
   guard(route.get('/data/teams', 'Actions/Dashboard/Data/TeamIndexAction'))
   guard(route.get('/data/subscribers', 'Actions/Dashboard/Data/SubscriberIndexAction'))
   guard(route.get('/teams/{id}/people', 'Actions/Dashboard/Teams/TeamPeopleIndexAction'))

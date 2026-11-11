@@ -3602,6 +3602,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * POST /api/dashboard/users/invitations
+   */
+  postDashboardUsersInvitations(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/users/invitations", {}, [], null, "application/json", [], options)
+  },
+
+  /**
    * GET /api/data/activity
    */
   getDataActivity(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
