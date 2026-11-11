@@ -1,6 +1,6 @@
 ---
 name: stacks-dashboard
-description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 419 built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
+description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 420 built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,7 +8,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Dashboard
 
-The Stacks admin dashboard provides a full-featured admin panel with 100+ route views, 419 components, and a multi-section layout.
+The Stacks admin dashboard provides a full-featured admin panel with 100+ route views, 420 components, and a multi-section layout.
 
 ## Key Paths
 - Dashboard components: `storage/framework/defaults/resources/components/Dashboard/`
@@ -733,14 +733,38 @@ forms draw them with one component, `Dashboard/Models/ModelFieldInputs`:
 | `number`, `integer`, `float`, `unix` | number box | a number |
 | `date` | date picker | the calendar day |
 | `timestamp`, `timestampTz`, `datetime` | date and time, in the visitor's zone | UTC `YYYY-MM-DD HH:MM:SS` (ISO for `timestampTz`) |
+| a declared `belongsTo` | search for the related record by name | its id |
 | `json` | tall fixed-width box, checked on save | JSON text |
 | `string` with `type: 'text'` | tall box | text |
 | any other `string` | one line (`email` when the name says so) | text |
 
-A foreign key is still a number box: picking the related record by name is not
-built yet. An edit sends only the fields that were changed. Labels, and the
+An edit sends only the fields that were changed. Labels, and the
 model's own name in titles, come from `humanizeIdentifier` ("Social Post",
 "Image URL").
+
+### Relations are picked by name
+
+A `belongsTo` is stored as an id and asked for as the record: each one is a
+`relation` field drawn by `Dashboard/Models/ModelRelationPicker`, a search box
+that lists the related model's records and stores the chosen one's id. It is
+one field whether the model leaves the key to the relation (`belongsTo:
+['Team']`) or also spells it out as an attribute (`userId`). Both spellings of
+a relation are read, the object form and its `foreignKey` included.
+
+Only a declared `belongsTo` is a relation. Other fields ending in `Id`
+(`externalId`, `providerMessageId`, a polymorphic `subjectId`) stay as they
+are, and so does a relation to a model the dashboard cannot reach (its
+feature is off, or `dashboard.access` is false).
+
+`GET /api/dashboard/models/{slug}/options` backs the picker: `?q=` searches by
+what a record is called and `?ids=3,7` names exactly those. A record is called
+by the first of `name`, `title`, `label`, `subject`, `email`, `domain`, `code`,
+`slug` the model has, with a person's email beside it, and by `Model #id` when
+it has none of them (such a model is searchable by id only).
+
+A record's page shows each relation as a link to the related record, by name.
+A write naming a record that has since been deleted comes back on that field
+("That team no longer exists. Choose another.").
 
 The edit form never writes `password`, tokens, secrets, `id`, `uuid` or the
 timestamps. A refused save comes back as a message under its field (a rule
