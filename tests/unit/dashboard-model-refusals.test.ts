@@ -91,7 +91,7 @@ describe('what the dashboard may write is the model\'s to say', () => {
 
   it('takes dashboard.writes over the routes, wider or narrower', () => {
     expect(modelDashboardWrites(account)).toEqual(['update', 'destroy'])
-    expect(modelWriteCapabilities(account)).toEqual({ create: false, update: true, destroy: true })
+    expect(modelWriteCapabilities(account)).toEqual({ create: false, update: true, destroy: true, invite: false })
     // Read-only in the dashboard whatever the API allows.
     expect(modelDashboardWrites({ traits: { useApi: true }, dashboard: { writes: [] } })).toEqual([])
   })
@@ -113,7 +113,7 @@ describe('what the dashboard may write is the model\'s to say', () => {
   it('User is editable and deletable here and still not through its API', () => {
     const user = source('storage/framework/defaults/app/Models/User.ts')
     expect(user).toContain('routes: [\'index\', \'store\', \'show\'],')
-    expect(user).toContain('writes: [\'update\', \'destroy\'],')
+    expect(user).toContain('writes: [\'store\', \'update\', \'destroy\'],')
     // The floor registration applies, and a message that says the same number.
     expect(user).toContain('schema.string().required().min(2).max(100)')
     expect(user).toContain('Name must have a minimum of 2 characters')

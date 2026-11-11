@@ -3,13 +3,7 @@ import { Action } from '@stacksjs/actions/runtime'
 import { isForeignKeyViolation } from '@stacksjs/error-handling'
 import { response } from '@stacksjs/router'
 import { dashboardOperationalError } from '../dashboard-response'
-import { parseRowId, resolveWritableModel } from './model-write'
-
-/** Whether rows of this model are the accounts people sign in with. */
-function isAccountModel(Model: any): boolean {
-  const traits = Model?.traits ?? {}
-  return Boolean(traits.useAuth ?? traits.authenticatable)
-}
+import { isAccountModel, parseRowId, resolveWritableModel } from './model-write'
 
 /** The id of the account making this request, when there is one. */
 async function signedInId(request: RequestInstance): Promise<number | null> {

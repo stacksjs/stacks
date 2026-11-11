@@ -160,10 +160,11 @@ export default defineModel({
   },
   dashboard: {
     highlight: true,
-    // Operators edit and remove accounts from the dashboard. Not through
+    // Operators add, edit and remove accounts from the dashboard. Not through
     // `useApi` above: a generated PATCH would let any signed-in caller change
     // their own email and password outside the flows that verify them.
-    // Creating one stays off until there is a way to give it a password.
-    writes: ['update', 'destroy'],
+    // `store` is by invitation: no form can supply a password, so the account
+    // is created and its holder is mailed a link to choose one.
+    writes: ['store', 'update', 'destroy'],
   },
 } as const)

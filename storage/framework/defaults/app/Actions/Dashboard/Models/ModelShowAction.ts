@@ -214,7 +214,7 @@ export default new Action({
       q,
       filters,
       writable: false,
-      writeCapabilities: { create: false, update: false, destroy: false },
+      writeCapabilities: { create: false, update: false, destroy: false, invite: false },
       createFields: [],
       updateColumns: [],
       migrated: true,

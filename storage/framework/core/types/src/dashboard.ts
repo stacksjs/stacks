@@ -442,9 +442,13 @@ export interface DashboardModelOptions {
    * operator edits and removes accounts, while a generated `PATCH /users/{id}`
    * would let every signed-in caller change their own email without
    * verifying it and their own password without knowing the current one.
-   * `writes: ['update', 'destroy']` gives the dashboard its pencil and trash
-   * and leaves the API as it was. `writes: []` makes a model read-only in the
-   * dashboard whatever its API allows.
+   * `update` and `destroy` give the dashboard its pencil and trash and leave
+   * the API as it was. `writes: []` makes a model read-only in the dashboard
+   * whatever its API allows.
+   *
+   * `store` on `User` is an invitation, not a form: the account is created
+   * and its holder is mailed a link to choose their password, because no
+   * form can supply one.
    *
    * It widens nothing outside the dashboard: these writes go through the
    * dashboard's own guarded endpoints, never through the `useApi` routes.

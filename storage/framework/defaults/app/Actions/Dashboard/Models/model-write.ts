@@ -54,6 +54,12 @@ export interface ModelWriteCapabilities {
   create: boolean
   update: boolean
   destroy: boolean
+  /**
+   * New rows are added by invitation: the account is created and its holder
+   * is mailed a link to choose their password. True for `User` when the
+   * dashboard may create one, since no form can supply a password for it.
+   */
+  invite: boolean
 }
 
 export interface ModelCreateField {
@@ -172,6 +178,12 @@ export function modelDashboardWrites(Model: any): ModelWriteOperation[] {
   return MODEL_WRITE_OPERATIONS.filter(operation => source.includes(operation))
 }
 
+/** Whether rows of this model are the accounts people sign in with. */
+export function isAccountModel(Model: any): boolean {
+  const traits = Model?.traits ?? {}
+  return Boolean(traits.useAuth ?? traits.authenticatable)
+}
+
 export function modelWriteCapabilities(Model: any): ModelWriteCapabilities {
   const writes = modelDashboardWrites(Model)
   return {
@@ -180,6 +192,9 @@ export function modelWriteCapabilities(Model: any): ModelWriteCapabilities {
     create: writes.includes('store') && uncollectableRequiredFields(Model).length === 0,
     update: writes.includes('update'),
     destroy: writes.includes('destroy'),
+    // The invitation mails the framework's account-setup link, which is the
+    // `users` table's, so this is `User` and not every model with `useAuth`.
+    invite: writes.includes('store') && Model?.name === 'User' && isAccountModel(Model),
   }
 }
 
@@ -387,7 +402,7 @@ export async function resolveWritableModel(slug: string, operation?: ModelWriteO
       const missing = uncollectableRequiredFields(Model)
       if (missing.length > 0) {
         return {
-          error: `${modelName} records cannot be created from the dashboard: ${missing.map(humanize).join(', ')} ${missing.length === 1 ? 'is' : 'are'} required and the create form does not collect ${missing.length === 1 ? 'it' : 'them'}.`,
+          error: `${modelName} records cannot be created from the dashboard: ${missing.map(humanize).join(', ')} ${missing.length === 1 ? 'is' : 'are'} required and the create form does not collect ${missing.length === 1 ? 'it' : 'them'}.${modelWriteCapabilities(Model).invite ? ' Invite the user instead.' : ''}`,
           status: 405,
         }
       }
