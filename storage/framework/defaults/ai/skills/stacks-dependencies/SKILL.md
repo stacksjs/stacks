@@ -84,6 +84,52 @@ Core packages use `workspace:*` references:
 | `ts-mocker` | Fake data generation |
 | `ts-slug` | URL slug generation |
 
+## The STX packages: one version, declared by the app
+
+STX is six packages released together at one version: `@stacksjs/stx` (the
+runtime), `@stacksjs/components`, `bun-plugin-stx` (the compiler),
+`stx-router`, `@stacksjs/desktop` and `@stacksjs/sanitizer`. They pin each
+other exactly, so choosing a version of the runtime chooses all six. Two
+versions in one app is two runtimes that do not share what they register:
+pages render with no routes or components, and the install log says nothing.
+
+An app picks its STX version in its own `package.json`, as ordinary
+dependencies, all three on the same version:
+
+```json
+{
+  "dependencies": { "stacks": "^0.75.540", "@stacksjs/stx": "0.2.851" },
+  "devDependencies": { "@stacksjs/components": "0.2.851", "bun-plugin-stx": "0.2.851" }
+}
+```
+
+The framework's packages ask for the release they were tested against or
+newer (`^0.2.842`), so they resolve to the app's copy. **No `overrides` are
+needed, and an app should not have any for these packages**: an override
+only stops the app choosing a newer STX without editing it too. They used to
+be necessary because the framework pinned STX exactly, which gave an app on a
+newer patch two copies.
+
+- Raise all three together. Raising one leaves the others behind, and that
+  is two versions again.
+- `buddy doctor` reports it: `STX packages: one copy, 0.2.851`, or which
+  versions are installed and where.
+- `buddy upgrade` raises the three to the release the framework was tested
+  against when the app is behind it, and leaves a newer one alone.
+- An app that declares none of them gets the newest STX the range allows at
+  install time. `buddy new` declares them, so a new app is on a tested
+  release from the start.
+
+In the framework repository itself, the root `package.json` names the
+release exactly and holds every workspace package to it through `overrides`:
+a workspace resolves each package's range on its own, and without the hold
+the ones the root does not declare took a newer release than the runtime.
+`buddy new` removes those overrides from the app it creates. To move the
+framework to a new STX release, change the root's three declarations, its
+five overrides, and the `^` floor in every `storage/framework/core/*`
+manifest to the same version; `tests/declared-dependencies.test.ts` fails on
+any that disagree.
+
 ## CLI Commands
 
 ```bash
