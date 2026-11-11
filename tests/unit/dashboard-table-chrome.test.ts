@@ -118,8 +118,9 @@ describe('dashboard row actions', () => {
   test('the Users, Teams and Subscribers tables offer actions their model allows', () => {
     // Activity too: its model declares no write routes, so its rows get the eye alone.
     expect(records).toContain(`MODEL_SLUGS: Record<DataMode, string> = { activity: 'activity', users: 'user', teams: 'team', subscribers: 'subscriber' }`)
-    expect(records).toContain(`...(capabilities().update ? [{ action: 'edit', label: 'Edit' }] : [])`)
-    expect(records).toContain(`...(capabilities().destroy ? [{ action: 'delete', label: 'Delete' }] : [])`)
+    // The pencil and trash also leave an anonymized account's row (stacksjs/stacks#3254).
+    expect(records).toContain(`...(capabilities().update ? [{ action: 'edit', label: 'Edit', when: NOT_ANONYMIZED }] : [])`)
+    expect(records).toContain(`...(capabilities().destroy ? [{ action: 'delete', label: 'Delete', when: NOT_ANONYMIZED }] : [])`)
     expect(records.match(/:row-actions="rowActions\(\)"/g)?.length).toBe(2)
   })
 

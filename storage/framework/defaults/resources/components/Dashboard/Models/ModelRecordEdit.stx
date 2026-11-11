@@ -46,7 +46,8 @@ const context = derived(() => {
     .flatMap(section => section.details)
     .filter(detail => !current.updateColumns.includes(detail.name))
 })
-const canEdit = derived(() => Boolean(record()?.writeCapabilities.update) && writable().length > 0)
+const anonymized = derived(() => Boolean(record()?.anonymized))
+const canEdit = derived(() => Boolean(record()?.writeCapabilities.update) && writable().length > 0 && !anonymized())
 
 function fieldError(field: string): string {
   return modelFieldError(saveErrors(), field)
@@ -131,10 +132,17 @@ onMount(() => {
   </div>
 
   <EmptyState
-    :if="!loading() && record() && !canEdit()"
+    :if="!loading() && record() && !canEdit() && !anonymized()"
     icon="i-hugeicons-square-lock-02"
     :title="modelName() + ' records cannot be edited here'"
     description="This model does not allow changes through the dashboard. You can still view the record."
+  />
+
+  <EmptyState
+    :if="!loading() && anonymized()"
+    icon="i-hugeicons-user-remove-01"
+    title="This account was anonymized"
+    description="Its name and email were removed and it can no longer sign in, so there is nothing to edit. Records that refer to it were kept."
   />
 
   <form :if="!loading() && canEdit()" id="model-edit-form" class="flex flex-col gap-6" @submit.prevent="save">

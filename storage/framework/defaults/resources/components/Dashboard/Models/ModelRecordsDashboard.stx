@@ -32,6 +32,8 @@ interface ResponseShape {
   dir: 'asc' | 'desc'
   writable: boolean
   writeCapabilities: ModelWriteCapabilities
+  /** Rows erased under the app's data-subject rules (users only). */
+  anonymizedIds?: Array<number | string>
   updateColumns: string[]
   migrated?: boolean
   error: string | null
@@ -43,6 +45,7 @@ const navigation = useNavigation()
 const modelName = state('')
 const tableName = state('')
 const rows = state<Array<Record<string, unknown>>>([])
+const anonymizedIds = state<string[]>([])
 const columnMeta = state<ColumnMeta[]>([])
 const totalCount = state(0)
 const page = state(1)
@@ -166,6 +169,7 @@ async function load() {
     modelName.set(data.modelName ?? '')
     tableName.set(data.tableName ?? '')
     rows.set(data.rows ?? [])
+    anonymizedIds.set((data.anonymizedIds ?? []).map(String))
     // Only reassign when the column set actually changes. It is the same for
     // every page and every sort of a given model, and re-rendering the
     // header `:for` on each query both wastes work and trips a reconciler
@@ -226,6 +230,12 @@ function goToPage(next: number) {
 function onPerPageChange() {
   page.set(1)
   void load()
+}
+
+// An anonymized account keeps its eye and loses its pencil and trash: there
+// is nothing left to edit, and deleting it again changes nothing.
+function isAnonymized(row: Record<string, unknown>): boolean {
+  return anonymizedIds().includes(String(row.id))
 }
 
 // The eye and the pencil each open a page of the record's own.
@@ -432,8 +442,8 @@ void load()
               <ModelRecordActions
                 :record="row"
                 :modelName="modelName()"
-                :canUpdate="writeCapabilities().update"
-                :canDestroy="writeCapabilities().destroy"
+                :canUpdate="writeCapabilities().update && !isAnonymized(row)"
+                :canDestroy="writeCapabilities().destroy && !isAnonymized(row)"
                 @view="startView"
                 @edit="startEdit"
                 @delete="confirmingDelete.set($event)"

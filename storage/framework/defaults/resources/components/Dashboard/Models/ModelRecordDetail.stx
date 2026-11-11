@@ -34,8 +34,10 @@ const listLabel = derived(() => modelRecordListLabel(record(), backHref()))
 const modelName = derived(() => record()?.modelName || 'Record')
 const title = derived(() => record() ? modelRecordTitle(record()!) : '')
 const sections = derived(() => record() ? modelRecordSections(record()!) : [])
-const canEdit = derived(() => Boolean(record()?.writeCapabilities.update))
-const canDelete = derived(() => Boolean(record()?.writeCapabilities.destroy))
+// An anonymized account has nothing left to edit, and deleting it again
+// would only anonymize what already is. The note below says what it is.
+const canEdit = derived(() => Boolean(record()?.writeCapabilities.update) && !record()?.anonymized)
+const canDelete = derived(() => Boolean(record()?.writeCapabilities.destroy) && !record()?.anonymized)
 
 async function loadRecord(): Promise<void> {
   loading.set(true)

@@ -738,7 +738,11 @@ An anonymized account is stored as `[erased]` / `erased-<id>`. The Users list
 shows it as "Anonymized user" with an "Anonymized" badge, and its own page
 carries a note, using `anonymizedRows('User', rows)` from `@stacksjs/orm`,
 which asks the erasure plan whether a row's personal columns hold what
-erasure writes. Give the account a real name and email again and it is an
+erasure writes. An anonymized account can be viewed and nothing else: its row
+loses the pencil and trash (the table's per-row `when`), its page has no Edit
+or Delete, and its edit address explains why there is no form. That is the
+dashboard's choice of what to offer, not a rule of the endpoints: deleting
+one again changes nothing, and a row given a real name and email again is an
 account again.
 
 ### Users are invited, not typed in

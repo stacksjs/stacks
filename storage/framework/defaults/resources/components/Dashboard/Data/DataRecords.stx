@@ -78,14 +78,21 @@ const capabilities = state<ModelWriteCapabilities>(NO_WRITES)
 const confirmingDelete = state<Record<string, any> | null>(null)
 const working = state(false)
 
+/**
+ * An anonymized account keeps its eye and loses its pencil and trash: its
+ * name and email are gone, so there is nothing to edit, and deleting it again
+ * would only anonymize what already is.
+ */
+const NOT_ANONYMIZED = { key: 'anonymized', equals: false }
+
 /** View always; edit and delete only where the model's API allows them. */
 const rowActions = derived(() => {
   if (!modelSlug())
     return []
   return [
     { action: 'view', label: 'View' },
-    ...(capabilities().update ? [{ action: 'edit', label: 'Edit' }] : []),
-    ...(capabilities().destroy ? [{ action: 'delete', label: 'Delete' }] : []),
+    ...(capabilities().update ? [{ action: 'edit', label: 'Edit', when: NOT_ANONYMIZED }] : []),
+    ...(capabilities().destroy ? [{ action: 'delete', label: 'Delete', when: NOT_ANONYMIZED }] : []),
   ]
 })
 const actionLabelKey = derived(() => ACTION_LABEL_KEYS[mode()] ?? 'id')
@@ -251,6 +258,8 @@ const recordRows = derived(() => filteredRecords().map((record) => {
   return {
     ...row,
     ...(anonymized && { name: 'Anonymized user', email: 'Name and email removed' }),
+    // On every row, of every mode: the pencil and trash ask for exactly false.
+    anonymized,
     subject: mode() === 'activity' ? formatSubject(record as DashboardActivity) : undefined,
     verificationTone: anonymized ? 'muted' : row.emailVerifiedAt ? 'positive' : 'pending',
     verificationLabel: anonymized ? 'Anonymized' : row.emailVerifiedAt ? 'Verified' : 'Unverified',

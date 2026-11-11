@@ -41,3 +41,44 @@ describe('an anonymized account is named for what it is', () => {
     expect(page).toContain('This account was anonymized. Its name and email were removed and it can no longer sign in. Records that refer to it were kept.')
   })
 })
+
+describe('an anonymized account can be viewed and nothing else', () => {
+  // Its name and email are gone, so there is nothing to edit, and deleting it
+  // again would only anonymize what already is (stacksjs/stacks#3254).
+  const components = 'storage/framework/defaults/resources/components/Dashboard'
+
+  it('its row in the Users list keeps the eye and loses the pencil and trash', () => {
+    const list = source(`${components}/Data/DataRecords.stx`)
+    expect(list).toContain('const NOT_ANONYMIZED = { key: \'anonymized\', equals: false }')
+    // The table shows such an action only where the row holds exactly false, so
+    // every row of every mode has to carry the flag or it would lose its actions.
+    const rows = list.slice(list.indexOf('const recordRows = derived('), list.indexOf('async function loadRecords()'))
+    expect(rows).toContain('const anonymized = mode() === \'users\' && row.anonymized === true')
+    expect(rows).toMatch(/\n {4}anonymized,\n/)
+    const table = source(`${components}/UI/Table.stx`)
+    expect(table).toContain('return !action.when || rawValue(row, action.when.key) === action.when.equals')
+    expect(table).toContain(':if="showsRowAction(row, action)"')
+  })
+
+  it('its row in the model browser does too', () => {
+    const browser = source(`${components}/Models/ModelRecordsDashboard.stx`)
+    expect(browser).toContain('anonymizedIds.set((data.anonymizedIds ?? []).map(String))')
+    expect(browser).toContain(':canUpdate="writeCapabilities().update && !isAnonymized(row)"')
+    expect(browser).toContain(':canDestroy="writeCapabilities().destroy && !isAnonymized(row)"')
+  })
+
+  it('its own page has no Edit or Delete button', () => {
+    const page = source(`${components}/Models/ModelRecordDetail.stx`)
+    expect(page).toContain('const canEdit = derived(() => Boolean(record()?.writeCapabilities.update) && !record()?.anonymized)')
+    expect(page).toContain('const canDelete = derived(() => Boolean(record()?.writeCapabilities.destroy) && !record()?.anonymized)')
+  })
+
+  it('its edit page, reached by address, says why there is no form', () => {
+    const edit = source(`${components}/Models/ModelRecordEdit.stx`)
+    expect(edit).toContain('&& writable().length > 0 && !anonymized())')
+    expect(edit).toContain(':if="!loading() && anonymized()"')
+    expect(edit).toContain('title="This account was anonymized"')
+    // Not the message for a model that allows no edits at all.
+    expect(edit).toContain(':if="!loading() && record() && !canEdit() && !anonymized()"')
+  })
+})
