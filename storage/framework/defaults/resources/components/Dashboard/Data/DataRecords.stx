@@ -65,12 +65,13 @@ const metadata: Record<DataMode, { title: string, description: string, icon: str
 const page = derived(() => metadata[mode()])
 
 /**
- * The model behind each mode's rows, for the eye, pencil and trash. Activity
- * has none: an audit trail is read, never edited or deleted.
+ * The model behind each mode's rows, for the eye, pencil and trash. Which of
+ * the three a page offers comes from the model: Activity declares no write
+ * routes, so an audit entry can be opened and nothing more.
  */
-const MODEL_SLUGS: Partial<Record<DataMode, string>> = { users: 'user', teams: 'team', subscribers: 'subscriber' }
+const MODEL_SLUGS: Record<DataMode, string> = { activity: 'activity', users: 'user', teams: 'team', subscribers: 'subscriber' }
 /** The row field an action names: "Edit Ava", "Delete ava@example.com". */
-const ACTION_LABEL_KEYS: Partial<Record<DataMode, string>> = { users: 'name', teams: 'name', subscribers: 'email' }
+const ACTION_LABEL_KEYS: Record<DataMode, string> = { activity: 'description', users: 'name', teams: 'name', subscribers: 'email' }
 
 const modelSlug = derived(() => MODEL_SLUGS[mode()] ?? '')
 const capabilities = state<ModelWriteCapabilities>({ create: false, update: false, destroy: false })
@@ -294,7 +295,7 @@ onMount(() => {
 <div class="flex flex-col gap-6">
   <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
     <div>
-      <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">{{ page().title }}</h1>
+      <h1 class="font-bold text-2xl text-neutral-900 tracking-tight dark:text-white">{{ page().title }}</h1>
       <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">{{ page().description }}</p>
     </div>
     <div class="flex flex-none gap-2 items-center">

@@ -250,7 +250,7 @@ void loadFiles()
           </div>
           <div class="flex gap-2 items-center">
             <Badge :if="isDirty()" variant="warning" size="sm">Unsaved changes</Badge>
-            <Badge variant="default" size="sm">{{ editableCount() }} editable</Badge>
+            <Badge variant="default" size="sm">{{ editableCount() + ' editable' }}</Badge>
             <Button variant="primary" size="sm" :disabled="saving() || editableCount() === 0 || !isDirty()" @click="save()">
               {{ saving() ? 'Saving...' : 'Save changes' }}
             </Button>
