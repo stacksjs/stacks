@@ -11,7 +11,7 @@ import type {
 } from '../../../../functions/data'
 import { fetchDashboardData } from '../../../../functions/data'
 import type { ModelWriteCapabilities } from '../../../../functions/dashboard-model-record'
-import { deleteModelRecord, fetchModelCapabilities, modelDeleteWarning, modelRecordCreateHref, modelRecordEditHref, modelRecordHref, NO_WRITES, userInviteHref } from '../../../../functions/dashboard-model-record'
+import { deleteModelRecord, fetchModelCapabilities, modelDeleteNotice, modelDeleteWarning, modelRecordCreateHref, modelRecordEditHref, modelRecordHref, NO_WRITES, userInviteHref } from '../../../../functions/dashboard-model-record'
 import { pushToast } from '../../../../functions/toasts'
 
 type DataRecord = DashboardActivity | DashboardSubscriber | DashboardTeam | DashboardUser
@@ -93,7 +93,7 @@ const deleteTitle = derived(() => `Delete this ${page().one}?`)
 const deleteDescription = derived(() => {
   const row = confirmingDelete()
   const name = row ? String(row[actionLabelKey()] ?? row.id) : ''
-  return modelDeleteWarning(name)
+  return modelDeleteWarning(name, capabilities().anonymize)
 })
 
 async function loadCapabilities(): Promise<void> {
@@ -140,8 +140,9 @@ async function confirmDelete(): Promise<void> {
     return
   working.set(true)
   try {
-    await deleteModelRecord(modelSlug(), row.id)
-    pushToast('success', `${capitalize(page().one)} ${row[actionLabelKey()] ?? row.id} deleted`)
+    const outcome = await deleteModelRecord(modelSlug(), row.id)
+    const notice = modelDeleteNotice(`${capitalize(page().one)} ${row[actionLabelKey()] ?? row.id}`, outcome)
+    pushToast('success', notice.title, { detail: notice.detail })
     confirmingDelete.set(null)
     await loadRecords()
   }
@@ -201,6 +202,7 @@ const TONES = {
   positive: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40',
   negative: 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40',
   pending: 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40',
+  muted: 'text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-white/10',
 }
 
 function capitalize(value: string): string {
@@ -243,11 +245,15 @@ const recordColumns = derived(() => COLUMNS_BY_MODE[mode()] ?? COLUMNS_BY_MODE.a
 
 const recordRows = derived(() => filteredRecords().map((record) => {
   const row = record as Record<string, any>
+  // An erased account is stored as "[erased]" and "erased-13". The table names
+  // it for what it is, and "Unverified" would be a strange thing to say of it.
+  const anonymized = mode() === 'users' && row.anonymized === true
   return {
     ...row,
+    ...(anonymized && { name: 'Anonymized user', email: 'Name and email removed' }),
     subject: mode() === 'activity' ? formatSubject(record as DashboardActivity) : undefined,
-    verificationTone: row.emailVerifiedAt ? 'positive' : 'pending',
-    verificationLabel: row.emailVerifiedAt ? 'Verified' : 'Unverified',
+    verificationTone: anonymized ? 'muted' : row.emailVerifiedAt ? 'positive' : 'pending',
+    verificationLabel: anonymized ? 'Anonymized' : row.emailVerifiedAt ? 'Verified' : 'Unverified',
     statusTone: statusTone(String(row.status ?? '')),
     statusLabel: capitalize(String(row.status ?? '')),
     sourceLabel: capitalize(String(row.source ?? '')),

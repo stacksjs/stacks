@@ -19,6 +19,8 @@ export interface ModelWriteCapabilities {
   destroy: boolean
   /** New records are added by invitation (users): see {@link inviteUser}. */
   invite: boolean
+  /** A delete other records block anonymizes the record instead (users). */
+  anonymize: boolean
 }
 
 export interface ModelColumn {
@@ -36,6 +38,8 @@ export interface ModelRecord {
   /** The columns an edit may change: fillable attributes and declared keys. */
   updateColumns: string[]
   writeCapabilities: ModelWriteCapabilities
+  /** Erased under the app's data-subject rules: its personal details are placeholders. */
+  anonymized: boolean
 }
 
 export interface ModelRecordField {
@@ -53,6 +57,7 @@ interface ModelShowResponse {
   columnMeta?: ModelColumn[]
   updateColumns?: string[]
   writeCapabilities?: ModelWriteCapabilities
+  anonymizedIds?: Array<number | string>
   error?: string | null
 }
 
@@ -77,7 +82,7 @@ export interface ModelCreateForm {
 }
 
 /** What a model offers before its capabilities are known, or when it has none. */
-export const NO_WRITES: ModelWriteCapabilities = { create: false, update: false, destroy: false, invite: false }
+export const NO_WRITES: ModelWriteCapabilities = { create: false, update: false, destroy: false, invite: false, anonymize: false }
 
 function modelPath(slug: string): string {
   return `/api/dashboard/models/${encodeURIComponent(slug)}`
@@ -119,6 +124,7 @@ export async function fetchModelRecord(slug: string, id: string | number): Promi
     columns: data.columnMeta ?? [],
     updateColumns: data.updateColumns ?? [],
     writeCapabilities: { ...NO_WRITES, ...data.writeCapabilities },
+    anonymized: (data.anonymizedIds ?? []).some(candidate => String(candidate) === String(id)),
   }
 }
 
@@ -382,16 +388,35 @@ export async function createModelRecord(slug: string, fields: Record<string, unk
  * What the confirmation says before a record is deleted.
  *
  * True whichever way the model deletes: a soft-deleted row stays in the
- * database, and the dashboard still has no way to bring it back.
+ * database, and the dashboard still has no way to bring it back. Where a
+ * blocked delete anonymizes instead (users), it says that too, before the
+ * button is pressed and not only afterwards.
  */
-export function modelDeleteWarning(name: string): string {
-  return `${name} will be deleted. This cannot be undone from the dashboard.`
+export function modelDeleteWarning(name: string, anonymizes = false): string {
+  const warning = `${name} will be deleted. This cannot be undone from the dashboard.`
+  return anonymizes
+    ? `${warning} If other records still refer to this account, it is anonymized instead: the name and email are removed, sign-in is revoked and those records are kept.`
+    : warning
 }
 
-export async function deleteModelRecord(slug: string, id: string | number): Promise<void> {
-  const result = await dashboardApi<{ ok: boolean, error?: string }>(`${modelPath(slug)}/${encodeURIComponent(String(id))}`, { method: 'DELETE' })
+/** What became of the record: gone, or kept with its personal details removed. */
+export type ModelDeleteOutcome = 'deleted' | 'anonymized'
+
+export async function deleteModelRecord(slug: string, id: string | number): Promise<ModelDeleteOutcome> {
+  const result = await dashboardApi<{ ok: boolean, anonymized?: boolean, error?: string }>(`${modelPath(slug)}/${encodeURIComponent(String(id))}`, { method: 'DELETE' })
   if (!result?.ok)
     throw new Error(result?.error || 'The delete was rejected.')
+  return result.anonymized ? 'anonymized' : 'deleted'
+}
+
+/**
+ * The toast after a delete. An anonymized account is still in the list, so
+ * "deleted" would be contradicted by the page the visitor is looking at.
+ */
+export function modelDeleteNotice(name: string, outcome: ModelDeleteOutcome): { title: string, detail?: string } {
+  if (outcome === 'anonymized')
+    return { title: `${name} anonymized`, detail: 'Other records still refer to this account, so it was kept with its name and email removed. It can no longer sign in.' }
+  return { title: `${name} deleted` }
 }
 
 /** Where the invite page lives, remembering the list to return to. */

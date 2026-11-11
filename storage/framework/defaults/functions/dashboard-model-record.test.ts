@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { DashboardApiError } from './dashboard-api'
-import { changedModelFields, modelDeleteWarning, modelFieldError, modelWriteFailure, userInviteHref, modelRecordBackHref, modelRecordCreateHref, modelRecordEditHref, modelRecordFields, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRecordTitle } from './dashboard-model-record'
+import { changedModelFields, modelDeleteNotice, modelDeleteWarning, modelFieldError, modelWriteFailure, userInviteHref, modelRecordBackHref, modelRecordCreateHref, modelRecordEditHref, modelRecordFields, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRecordTitle } from './dashboard-model-record'
 import type { ModelRecord } from './dashboard-model-record'
 
 const record: ModelRecord = {
@@ -14,7 +14,8 @@ const record: ModelRecord = {
     { name: 'created_at', label: 'Created At', type: 'date' },
   ],
   updateColumns: ['name', 'description', 'status'],
-  writeCapabilities: { create: true, update: true, destroy: true, invite: false },
+  writeCapabilities: { create: true, update: true, destroy: true, invite: false, anonymize: false },
+  anonymized: false,
 }
 
 describe('a model record in the dashboard dialog', () => {
@@ -53,7 +54,8 @@ describe('a model record on its own page', () => {
       { name: 'email_verified_at', label: 'Email Verified At', type: 'text' },
     ],
     updateColumns: [],
-    writeCapabilities: { create: true, update: false, destroy: false, invite: false },
+    writeCapabilities: { create: true, update: false, destroy: false, invite: false, anonymize: false },
+    anonymized: false,
   }
 
   it('groups the fields into the cards of the page', () => {
@@ -155,6 +157,20 @@ describe('a refused edit', () => {
 describe('the delete confirmation', () => {
   it('says what happens in plain words', () => {
     expect(modelDeleteWarning('Ava')).toBe('Ava will be deleted. This cannot be undone from the dashboard.')
+  })
+
+  it('says beforehand that an account other records refer to is anonymized instead', () => {
+    expect(modelDeleteWarning('Ava', true)).toBe('Ava will be deleted. This cannot be undone from the dashboard. If other records still refer to this account, it is anonymized instead: the name and email are removed, sign-in is revoked and those records are kept.')
+    expect(modelDeleteWarning('Ava', false)).toBe(modelDeleteWarning('Ava'))
+  })
+
+  it('reports afterwards which of the two happened', () => {
+    expect(modelDeleteNotice('User Ava', 'deleted')).toEqual({ title: 'User Ava deleted' })
+    // The account is still in the list, so "deleted" would be contradicted by the page.
+    expect(modelDeleteNotice('User Ava', 'anonymized')).toEqual({
+      title: 'User Ava anonymized',
+      detail: 'Other records still refer to this account, so it was kept with its name and email removed. It can no longer sign in.',
+    })
   })
 })
 

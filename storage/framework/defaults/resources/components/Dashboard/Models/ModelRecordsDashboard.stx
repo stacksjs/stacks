@@ -9,7 +9,7 @@
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
 import { dashboardApi } from '@stacksjs/defaults/functions/dashboard-api'
 import type { ModelWriteCapabilities } from '@stacksjs/defaults/functions/dashboard-model-record'
-import { modelDeleteWarning, modelRecordCreateHref, modelRecordEditHref, modelRecordHref, NO_WRITES, userInviteHref } from '@stacksjs/defaults/functions/dashboard-model-record'
+import { deleteModelRecord, modelDeleteNotice, modelDeleteWarning, modelRecordCreateHref, modelRecordEditHref, modelRecordHref, NO_WRITES, userInviteHref } from '@stacksjs/defaults/functions/dashboard-model-record'
 import { pushToast } from '@stacksjs/defaults/functions/toasts'
 
 interface ColumnMeta {
@@ -94,7 +94,7 @@ const deleteDescription = derived(() => {
   const row = confirmingDelete()
   if (!row)
     return ''
-  return modelDeleteWarning(`Row ${row.id}`)
+  return modelDeleteWarning(`Row ${row.id}`, writeCapabilities().anonymize)
 })
 
 // Skeleton rows while a query is in flight. Matching the real row count
@@ -252,12 +252,9 @@ async function confirmDelete() {
   if (!row) return
   saving.set(true)
   try {
-    const result = await dashboardApi<{ ok: boolean, error?: string }>(
-      `/api/dashboard/models/${encodeURIComponent(slug())}/${row.id}`,
-      { method: 'DELETE' },
-    )
-    if (!result?.ok) throw new Error(result?.error || 'The delete was rejected.')
-    pushToast('success', `${modelName()} ${row.id} deleted`)
+    const outcome = await deleteModelRecord(slug(), String(row.id))
+    const notice = modelDeleteNotice(`${modelName()} ${row.id}`, outcome)
+    pushToast('success', notice.title, { detail: notice.detail })
     confirmingDelete.set(null)
     // Deleting the last row of the final page would strand the viewer on an
     // empty page, so step back one.

@@ -19,6 +19,8 @@ export interface DashboardUser {
   id: number
   name: string
   email: string
+  /** Erased under the app's data-subject rules: the name and email are placeholders. */
+  anonymized?: boolean
   emailVerifiedAt: string
   createdAt: string
   updatedAt: string

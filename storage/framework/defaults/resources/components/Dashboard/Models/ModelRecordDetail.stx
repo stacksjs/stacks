@@ -7,7 +7,7 @@
 // has an address to share, open in a tab and come back to.
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
 import type { ModelRecord } from '../../../../functions/dashboard-model-record'
-import { deleteModelRecord, fetchModelRecord, modelDeleteWarning, modelRecordBackHref, modelRecordEditHref, modelRecordListLabel, modelRecordSections, modelRecordTitle } from '../../../../functions/dashboard-model-record'
+import { deleteModelRecord, fetchModelRecord, modelDeleteNotice, modelDeleteWarning, modelRecordBackHref, modelRecordEditHref, modelRecordListLabel, modelRecordSections, modelRecordTitle } from '../../../../functions/dashboard-model-record'
 import { pushToast } from '../../../../functions/toasts'
 
 const navigation = useNavigation()
@@ -63,8 +63,9 @@ async function deleteRecord(): Promise<void> {
     return
   working.set(true)
   try {
-    await deleteModelRecord(slug(), recordId())
-    pushToast('success', `${current.modelName} ${recordId()} deleted`)
+    const outcome = await deleteModelRecord(slug(), recordId())
+    const notice = modelDeleteNotice(`${current.modelName} ${recordId()}`, outcome)
+    pushToast('success', notice.title, { detail: notice.detail })
     confirmingDelete.set(false)
     navigate(backHref())
   }
@@ -110,6 +111,11 @@ onMount(() => {
     <Button variant="secondary" size="sm" @click="loadRecord">Try again</Button>
   </div>
 
+  <div :if="!loading() && record()?.anonymized" role="note" class="flex gap-3 items-start px-4 py-3 text-neutral-700 text-sm dark:text-neutral-200 bg-neutral-100 dark:bg-white/5 border border-neutral-200 rounded-lg dark:border-neutral-700">
+    <span aria-hidden="true" class="flex-none mt-0.5 h-4 w-4 text-neutral-500 i-hugeicons-user-remove-01"></span>
+    <span>This account was anonymized. Its name and email were removed and it can no longer sign in. Records that refer to it were kept.</span>
+  </div>
+
   <div :if="!loading() && record()" class="grid gap-6 grid-cols-1 items-start lg:grid-cols-2">
     <div :for="section in sections()" class="min-w-0">
       <Card padding="none">
@@ -135,7 +141,7 @@ onMount(() => {
   <ConfirmDialog
     :isOpen="confirmingDelete()"
     :title="'Delete this ' + modelName().toLowerCase() + '?'"
-    :description="modelDeleteWarning(title() || modelName())"
+    :description="modelDeleteWarning(title() || modelName(), Boolean(record()?.writeCapabilities.anonymize))"
     :busy="working()"
     :confirmLabel="working() ? 'Deleting' : 'Delete'"
     @close="confirmingDelete.set(false)"
