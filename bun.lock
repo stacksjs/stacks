@@ -181,7 +181,7 @@
         "better-dx": "^0.2.24",
       },
       "peerDependencies": {
-        "craft-native": ">=0.0.496",
+        "craft-native": ">=0.0.497",
         "pickier": "^0.1.75",
       },
       "optionalPeers": [
@@ -420,7 +420,7 @@
       "name": "@stacksjs/build",
       "version": "0.75.539",
       "dependencies": {
-        "@dtsx/bun": "^0.11.43",
+        "@dtsx/bun": "^0.11.45",
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/storage": "workspace:*",
@@ -670,7 +670,7 @@
         "@stacksjs/config": "0.75.539",
         "@stacksjs/router": "0.75.539",
         "@stacksjs/server": "0.75.539",
-        "craft-native": ">=0.0.496",
+        "craft-native": ">=0.0.497",
       },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
@@ -943,7 +943,7 @@
       "dependencies": {
         "@bughq/sdk": "^0.3.0",
         "@stacksjs/types": "workspace:*",
-        "craft-native": ">=0.0.496",
+        "craft-native": ">=0.0.497",
       },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
@@ -1427,7 +1427,7 @@
         "very-happy-dom": "^0.4.1",
       },
       "devDependencies": {
-        "@dtsx/dtsx": "^0.11.43",
+        "@dtsx/dtsx": "^0.11.45",
         "better-dx": "^0.2.24",
       },
     },
@@ -1595,9 +1595,9 @@
 
     "@cwcss/crosswind": ["@cwcss/crosswind@0.2.19", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "bunfig": "^0.15.17" }, "bin": { "crosswind": "./dist/cli.js" } }, "sha512-NswUZPNHbdkW4rxvmwjjIM7jyfQ/rr0X1J1uwjTUwixc3BXQs1Fk7pP5cC7MxkGGnmRTFs2O9J+U9tJ36ZJ7fQ=="],
 
-    "@dtsx/bun": ["@dtsx/bun@0.11.43", "", { "dependencies": { "@dtsx/dtsx": "0.11.43" } }, "sha512-5uiaUq+AnKgbP58RFZ1tv5qzhZNPLsg7PoQpaqcn4AcrB01LxBSbP6HBChDGSoQD/wc91kBqK+wRPPLvvj6soA=="],
+    "@dtsx/bun": ["@dtsx/bun@0.11.45", "", { "dependencies": { "@dtsx/dtsx": "0.11.45" } }, "sha512-+HG/unx27EMUxJDIS19Nxa8i2GIsfL31Qf9JlaekZI1gts5PryuNTX0f312Wo4ZDWl95e+PijzFKVw0V1lGJFg=="],
 
-    "@dtsx/dtsx": ["@dtsx/dtsx@0.11.43", "", { "peerDependencies": { "prettier": "^3.9.10" }, "optionalPeers": ["prettier"], "bin": { "dtsx": "./dist/bin/cli.js" } }, "sha512-Asfm9kuxDtB7R+NKeX+M/6HJgHQdNllcQRH415NLj9WA2kaN5F9tUYqDlBwbULFTydN2UG1zJE8+iYc3WLrVvg=="],
+    "@dtsx/dtsx": ["@dtsx/dtsx@0.11.45", "", { "peerDependencies": { "prettier": "^3.9.10" }, "optionalPeers": ["prettier"], "bin": { "dtsx": "./dist/bin/cli.js" } }, "sha512-Vxsn3X4M9rn+ZZuEQxIeuKXaSO41kFhoNDcPj/pHIaEQF8IySeDviVuNzvPzBtAY1hy2Exggvz3ZiBVfCS8Bxg=="],
 
     "@hono/node-server": ["@hono/node-server@2.1.6", "", { "peerDependencies": { "hono": "^4 || ^5.0.0-0" } }, "sha512-p/KH9MnfNcsm3sR6x4lNgm5j+QN4Et8srKredl9DZfXiyZ1UQ3aQ2YVpFLbqktYN5JI+DB+VZFKM2PqE5hLKjQ=="],
 
@@ -1963,7 +1963,7 @@
 
     "cors": ["cors@2.8.6", "", { "dependencies": { "object-assign": "^4", "vary": "^1" } }, "sha512-tJtZBBHA6vjIAaF6EnIaq6laBBP9aq/Y3ouVJjEfoHbRBcHBAHYcMh/w8LDrk2PvIMMq8gmopa5D4V8RmbrxGw=="],
 
-    "craft-native": ["craft-native@0.0.496", "", { "bin": { "craft-sdk": "dist/cli.js" } }, "sha512-m/wNcE0lDIc96WHXsgZk32493jLoX+pHGx0VryRkgTwQXwZHJl319/my7ldwsOYw5F5kgR/X83bAdIHV9FfzEA=="],
+    "craft-native": ["craft-native@0.0.497", "", { "bin": { "craft-sdk": "dist/cli.js" } }, "sha512-Tz3XpkB+VF+NPxcWwJVDYi8CpWoUgLFWwvuy6GH3jbJA8O+inVjhD5gFR8La5++VYlWhMKDD7c/vj3sowUSolQ=="],
 
     "cross-spawn": ["cross-spawn@7.0.6", "", { "dependencies": { "path-key": "^3.1.0", "shebang-command": "^2.0.0", "which": "^2.0.1" } }, "sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA=="],
 
