@@ -6,9 +6,9 @@ const require = createRequire(import.meta.url)
 
 type StripeConstructor = typeof Stripe
 
-// `stripe` is an opt-in dependency: it is only installed when Stripe payments
-// are enabled in config. Resolved lazily (synchronously, on first use) so
-// importing `@stacksjs/payments` never hard-requires the package.
+// The package owns the Stripe SDK used by its public declarations. Resolve
+// the constructor on first use so importing payments does not initialize a
+// provider client.
 function StripeCtor(): StripeConstructor {
   try {
     return require('stripe') as StripeConstructor
@@ -24,7 +24,7 @@ let _stripe: Stripe | null = null
 export interface StripeAvailability {
   /** A secret key is configured. */
   key: boolean
-  /** The optional `stripe` package resolves in this tree. */
+  /** The required `stripe` dependency resolves in this installation. */
   sdk: boolean
 }
 
@@ -32,8 +32,8 @@ export interface StripeAvailability {
  * Whether the two things Stripe needs are actually present.
  *
  * Reported separately because an app that is missing both should be told
- * both, and because the two are fixed in different places: one in the
- * environment, one in the app's package.json (stacksjs/stacks#2911).
+ * both: a missing key needs configuration, while a missing SDK means the
+ * dependency installation needs restoring (stacksjs/stacks#2911).
  */
 export function stripeAvailability(): StripeAvailability {
   return {
@@ -43,11 +43,10 @@ export function stripeAvailability(): StripeAvailability {
 }
 
 /**
- * Whether the optional `stripe` package resolves here.
+ * Whether the required Stripe dependency resolves here.
  *
- * Bun does not install optional peers, so an app that uses Stripe without
- * declaring the dependency itself gets a tree with no SDK in it. Not cached:
- * a cached `false` taken during a test that hid the package would outlive it.
+ * Check the actual installation. Do not cache a missing SDK across dependency
+ * restoration or tests that temporarily hide the package.
  */
 function isStripeSdkInstalled(): boolean {
   try {
@@ -87,8 +86,7 @@ export function describeStripeAvailability(available: StripeAvailability): strin
 
   if (!available.sdk) {
     reasons.push(
-      'the `stripe` package is not installed (it is an optional peer, which Bun does not install for you - '
-      + 'run `bun add stripe` in your app, pinned to an exact version)',
+      'the required `stripe` package is missing (restore the app dependencies with `bun install --frozen-lockfile`)',
     )
   }
 

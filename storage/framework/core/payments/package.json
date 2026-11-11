@@ -65,24 +65,20 @@
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/orm": "workspace:*",
-    "@stacksjs/types": "workspace:*"
+    "@stacksjs/types": "workspace:*",
+    "stripe": "23.0.0"
   },
   "peerDependencies": {
-    "@stripe/stripe-js": "^10.0.0",
-    "stripe": "23.0.0"
+    "@stripe/stripe-js": "^10.0.0"
   },
   "peerDependenciesMeta": {
     "@stripe/stripe-js": {
-      "optional": true
-    },
-    "stripe": {
       "optional": true
     }
   },
   "devDependencies": {
     "@stacksjs/utils": "workspace:*",
     "@stripe/stripe-js": "^10.0.0",
-    "better-dx": "^0.2.24",
-    "stripe": "23.0.0"
+    "better-dx": "^0.2.24"
   }
 }

@@ -1,13 +1,10 @@
-import { describe, expect, it } from 'bun:test'
 import { services } from '@stacksjs/config'
+import { describe, expect, it } from 'bun:test'
 import { describeStripeAvailability, isStripeConfigured, reportStripeAvailability, stripeAvailability } from '../src/drivers/stripe'
 
 /**
- * stacksjs/stacks#2911 — `stripe` is an optional peer, which Bun does not
- * install, so an app can have a perfectly good secret key and a tree with no
- * SDK in it. `isStripeConfigured()` checked only the key and answered `true`
- * there, which is the one answer that makes it useless: the reason to ask is
- * to find that out.
+ * Provider health reports configuration and dependency availability separately.
+ * A damaged installation can lack the required SDK even when a key is set.
  */
 
 function withKey<T>(value: string | undefined, run: () => T): T {
@@ -52,15 +49,15 @@ describe('describeStripeAvailability', () => {
 
   it('names the missing SDK, and how to fix it where it is fixed', () => {
     const reason = describeStripeAvailability({ key: true, sdk: false })!
-    expect(reason).toContain('`stripe` package is not installed')
-    expect(reason).toContain('bun add stripe')
+    expect(reason).toContain('required `stripe` package is missing')
+    expect(reason).toContain('bun install --frozen-lockfile')
     expect(reason).not.toContain('STRIPE_SECRET_KEY')
   })
 
   it('names the missing key', () => {
     const reason = describeStripeAvailability({ key: false, sdk: true })!
     expect(reason).toContain('STRIPE_SECRET_KEY')
-    expect(reason).not.toContain('bun add stripe')
+    expect(reason).not.toContain('bun install --frozen-lockfile')
   })
 
   it('names BOTH when both are missing, so the fix is not two deploys', () => {
@@ -68,7 +65,7 @@ describe('describeStripeAvailability', () => {
     // neither was told to set STRIPE_SECRET_KEY, and setting it produced a
     // different error.
     const reason = describeStripeAvailability({ key: false, sdk: false })!
-    expect(reason).toContain('`stripe` package is not installed')
+    expect(reason).toContain('required `stripe` package is missing')
     expect(reason).toContain('STRIPE_SECRET_KEY')
   })
 })
@@ -85,7 +82,7 @@ describe('reportStripeAvailability', () => {
     const { reported, lines } = reportOn({ key: true, sdk: false })
     expect(lines).toHaveLength(1)
     expect(lines[0]).toContain('[stacks]')
-    expect(lines[0]).toContain('`stripe` package is not installed')
+    expect(lines[0]).toContain('required `stripe` package is missing')
     // Returned as well as warned, so an entry point can log it its own way.
     expect(reported).toBe(lines[0]!.replace('[stacks] ', ''))
   })

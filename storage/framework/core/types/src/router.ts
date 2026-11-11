@@ -1,4 +1,4 @@
-import type { Action } from '@stacksjs/actions'
+import type { Action } from '@stacksjs/actions/action'
 type Request = any
 import type { ValidationType } from '@stacksjs/ts-validation'
 import type { HttpMethod } from './request'

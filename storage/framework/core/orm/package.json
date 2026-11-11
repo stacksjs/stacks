@@ -81,20 +81,17 @@
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/ts-validation": "^0.5.7",
     "@stacksjs/validation": "workspace:*",
-    "bun-query-builder": "^0.3.44"
+    "bun-query-builder": "^0.3.44",
+    "stripe": "23.0.0"
   },
   "peerDependencies": {
     "@stacksjs/auth": "workspace:*",
     "@stacksjs/payments": "workspace:*",
     "@stacksjs/queue": "workspace:*",
-    "@stacksjs/search-engine": "workspace:*",
-    "stripe": "23.0.0"
+    "@stacksjs/search-engine": "workspace:*"
   },
   "peerDependenciesMeta": {
     "@stacksjs/auth": {
-      "optional": true
-    },
-    "@stacksjs/payments": {
       "optional": true
     },
     "@stacksjs/queue": {
@@ -102,14 +99,10 @@
     },
     "@stacksjs/search-engine": {
       "optional": true
-    },
-    "stripe": {
-      "optional": true
     }
   },
   "devDependencies": {
     "@stacksjs/types": "workspace:*",
-    "better-dx": "^0.2.24",
-    "stripe": "23.0.0"
+    "better-dx": "^0.2.24"
   }
 }

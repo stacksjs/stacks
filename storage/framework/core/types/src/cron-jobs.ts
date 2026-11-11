@@ -1,5 +1,5 @@
 import type { DeepPartial } from './utils'
-import type { IntRange } from '@stacksjs/cron'
+import type { IntRange } from '@stacksjs/cron/types'
 
 export type Job = JobOptions
 export type Jobs = Job[]

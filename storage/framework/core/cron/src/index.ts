@@ -1,5 +1,3 @@
-/// <reference path="./bun-cron.d.ts" />
-
 export * from './types'
 export { parseCron } from './parser'
 
