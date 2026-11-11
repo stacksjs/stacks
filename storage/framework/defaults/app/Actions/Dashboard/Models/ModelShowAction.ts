@@ -7,7 +7,7 @@ import { safeGet } from '../../../../resources/functions/dashboard/data'
 import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
 import { dashboardOperationalError } from '../dashboard-response'
 import { isUnmigratedTable } from './model-migration'
-import { isErasureSubject, isValidModelSlug, type ModelCreateField, type ModelWriteCapabilities, modelCreateFields, modelSchemaColumns, modelWritableColumns, modelWriteCapabilities, slugToPascal } from './model-write'
+import { humanizeIdentifier, isErasureSubject, isValidModelSlug, type ModelCreateField, type ModelWriteCapabilities, modelCreateFields, modelSchemaColumns, modelWritableColumns, modelWriteCapabilities, slugToPascal } from './model-write'
 
 /**
  * `GET /api/dashboard/models/{slug}` (stacksjs/stacks#1838).
@@ -40,6 +40,8 @@ interface ColumnMeta {
 
 interface ResponseShape {
   modelName: string
+  /** The model's name as a person reads it: "Social Post" for `SocialPost`. */
+  modelLabel: string
   tableName: string
   rows: Array<Record<string, unknown>>
   columns: string[]
@@ -57,6 +59,8 @@ interface ResponseShape {
   writable: boolean
   writeCapabilities: ModelWriteCapabilities
   createFields: ModelCreateField[]
+  /** The fields an edit may change, described the way the create form's are. */
+  updateFields: ModelCreateField[]
   updateColumns: string[]
   /** Rows whose personal details erasure has replaced with placeholders (the subject model only). */
   anonymizedIds?: Array<number | string>
@@ -76,14 +80,6 @@ function pluralize(word: string): string {
   if (word.endsWith('y') && !/[aeiou]y$/.test(word)) return `${word.slice(0, -1)}ies`
   if (/(?:s|x|ch|sh)$/.test(word)) return `${word}es`
   return `${word}s`
-}
-
-function humanize(column: string): string {
-  return column
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, c => c.toUpperCase())
-    .replace(/\bId\b/g, 'ID')
-    .replace(/\bUrl\b/g, 'URL')
 }
 
 // Hide credential / token columns + private fields by default. These are
@@ -202,6 +198,7 @@ export default new Action({
 
     const response: ResponseShape = {
       modelName,
+      modelLabel: humanizeIdentifier(modelName),
       tableName,
       rows: [],
       columns: [],
@@ -219,6 +216,7 @@ export default new Action({
       writable: false,
       writeCapabilities: { create: false, update: false, destroy: false, invite: false, anonymize: false },
       createFields: [],
+      updateFields: [],
       updateColumns: [],
       migrated: true,
       error: null,
@@ -325,10 +323,11 @@ export default new Action({
     response.writable = Object.values(response.writeCapabilities).some(Boolean)
     response.createFields = response.writeCapabilities.create ? modelCreateFields(Model) : []
     response.updateColumns = response.writeCapabilities.update ? modelWritableColumns(Model) : []
+    response.updateFields = response.writeCapabilities.update ? modelCreateFields(Model) : []
     response.displayColumns = response.columns.filter(col => !col.startsWith('_'))
     response.columnMeta = response.displayColumns.map(name => ({
       name,
-      label: humanize(name),
+      label: humanizeIdentifier(name),
       type: typeForColumn(name, response.rows.map(r => r[name])),
     }))
     response.searchable = response.columnMeta.filter(c => c.type === 'text').map(c => c.name)

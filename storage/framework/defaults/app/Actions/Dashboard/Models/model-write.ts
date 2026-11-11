@@ -70,10 +70,20 @@ export interface ModelWriteCapabilities {
   anonymize: boolean
 }
 
+/**
+ * How a field is asked for in a form.
+ *
+ * `longtext` is prose (a description, a message body) and gets a multi-line
+ * box; `json` is a structured value the app reads back, edited as text and
+ * checked before it is stored; `datetime` is a moment, picked in the visitor's
+ * own time zone.
+ */
+export type ModelFieldType = 'boolean' | 'date' | 'datetime' | 'email' | 'enum' | 'json' | 'longtext' | 'number' | 'text'
+
 export interface ModelCreateField {
   name: string
   label: string
-  type: 'boolean' | 'date' | 'datetime' | 'email' | 'enum' | 'number' | 'text'
+  type: ModelFieldType
   required: boolean
   defaultValue: unknown
   options: string[]
@@ -91,13 +101,40 @@ function snakeCase(name: string): string {
     .toLowerCase()
 }
 
-function humanize(name: string): string {
+/** Initialisms a label keeps in capitals: "Image URL", not "Image Url". */
+const INITIALISMS: ReadonlySet<string> = new Set([
+  'api', 'css', 'csv', 'dns', 'html', 'id', 'ip', 'json', 'mfa', 'otp', 'pdf',
+  'seo', 'sku', 'sms', 'ssl', 'tls', 'uri', 'url', 'utm', 'uuid', 'vat',
+])
+
+/**
+ * A model, attribute or column name as a person reads it: `SocialPost` is
+ * "Social Post", `imageUrl` and `image_url` are both "Image URL", `userIds`
+ * is "User IDs".
+ *
+ * One function for every label the model pages show. There were two, one
+ * that knew "URL" and one that did not, so a field was "Image URL" on its
+ * record's page and "Image Url" in its form.
+ */
+export function humanizeIdentifier(name: string): string {
   return name
     .replace(/([a-z\d])([A-Z])/g, '$1 $2')
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, character => character.toUpperCase())
-    .replace(/\bId\b/g, 'ID')
+    .replace(/([A-Z])([A-Z][a-z])/g, '$1 $2')
+    .replace(/[_\s-]+/g, ' ')
+    .trim()
+    .split(' ')
+    .map((word) => {
+      const lower = word.toLowerCase()
+      if (INITIALISMS.has(lower))
+        return lower.toUpperCase()
+      if (lower.endsWith('s') && INITIALISMS.has(lower.slice(0, -1)))
+        return `${lower.slice(0, -1).toUpperCase()}s`
+      return word.charAt(0).toUpperCase() + word.slice(1)
+    })
+    .join(' ')
 }
+
+const humanize = humanizeIdentifier
 
 /**
  * Derive the physical columns declared by a model when its table has no rows
@@ -245,6 +282,46 @@ function relationFieldName(relation: string): string {
   return `${words[0]}${words.slice(1).map(word => `${word[0]?.toUpperCase()}${word.slice(1)}`).join('')}Id`
 }
 
+/** Rule names the migrations store as a moment: a `timestamp` or `datetime` column. */
+const MOMENT_RULES: ReadonlySet<string> = new Set(['timestamp', 'timestampTz', 'datetime'])
+
+/** Rule names stored as a number, and refused when sent as a string. */
+const NUMBER_RULES: ReadonlySet<string> = new Set(['number', 'integer', 'float', 'unix'])
+
+/**
+ * How a model attribute is asked for in a form, from its validation rule.
+ *
+ * Three of these used to be wrong in ways that failed on save, not only in
+ * how they looked. A `timestamp` was a number box, though its column is a
+ * timestamp and the number it invited was refused by the database. A `float`
+ * and a `unix` time were text boxes, and the text they sent was refused by
+ * their own rule. And prose and JSON shared one line of text with a name.
+ */
+export function modelFieldType(name: string, definition: any): ModelFieldType {
+  const rule = definition?.validation?.rule
+  const ruleName = String(rule?.name || definition?.type || 'string')
+  const declared = String(definition?.type || '').toLowerCase()
+  if ((Array.isArray(rule?.allowedValues) && rule.allowedValues.length > 0) || ruleName === 'enum')
+    return 'enum'
+  if (ruleName === 'boolean')
+    return 'boolean'
+  if (NUMBER_RULES.has(ruleName))
+    return 'number'
+  if (ruleName === 'date')
+    return 'date'
+  if (MOMENT_RULES.has(ruleName))
+    return 'datetime'
+  if (ruleName === 'json' || declared === 'json' || declared === 'jsonb')
+    return 'json'
+  // The attribute's own `type: 'text'` is what makes its column TEXT and not a
+  // short string: the model saying the value is long.
+  if (ruleName === 'text' || declared === 'text')
+    return 'longtext'
+  if (name.toLowerCase().includes('email'))
+    return 'email'
+  return 'text'
+}
+
 export function modelCreateFields(Model: any): ModelCreateField[] {
   const fields: ModelCreateField[] = []
   const attributes = Model?.attributes ?? {}
@@ -253,21 +330,8 @@ export function modelCreateFields(Model: any): ModelCreateField[] {
     if (!definition?.fillable || definition.hidden || isProtectedField(name))
       continue
     const rule = definition.validation?.rule
-    const ruleName = String(rule?.name || definition.type || 'string')
     const options = Array.isArray(rule?.allowedValues) ? rule.allowedValues.map(String) : []
-    let type: ModelCreateField['type'] = 'text'
-    if (options.length > 0 || ruleName === 'enum')
-      type = 'enum'
-    else if (ruleName === 'number' || ruleName === 'integer' || ruleName === 'timestamp')
-      type = 'number'
-    else if (ruleName === 'boolean')
-      type = 'boolean'
-    else if (ruleName === 'date')
-      type = 'date'
-    else if (ruleName === 'datetime' || ruleName === 'timestampTz')
-      type = 'datetime'
-    else if (name.toLowerCase().includes('email'))
-      type = 'email'
+    const type = modelFieldType(name, definition)
 
     fields.push({
       name,
@@ -307,7 +371,12 @@ export function modelWritableColumns(Model: any): string[] {
   return modelCreateFields(Model).map(field => snakeCase(field.name))
 }
 
-function normalizeModelValue(type: ModelCreateField['type'], value: unknown): unknown {
+/** A moment as the framework stores one: UTC, `YYYY-MM-DD HH:MM:SS`. */
+function storedMoment(date: Date): string {
+  return date.toISOString().slice(0, 19).replace('T', ' ')
+}
+
+function normalizeModelValue(type: ModelCreateField['type'], value: unknown, rule?: any): unknown {
   if (type === 'number') {
     if (value === '' || value === null || value === undefined)
       return null
@@ -316,6 +385,20 @@ function normalizeModelValue(type: ModelCreateField['type'], value: unknown): un
   }
   if (type === 'boolean')
     return value === true || value === 1 || value === '1' || value === 'true' || value === 'on'
+  if (type === 'datetime' && typeof value === 'string' && value.trim()) {
+    // The form sends the instant with its offset, so the visitor's zone is
+    // already accounted for. Stored the way the framework writes every other
+    // timestamp; a `T` and a `Z` are not a datetime to MySQL. The one rule
+    // that keeps a zone gets the full ISO string it asks for.
+    const moment = new Date(value)
+    if (Number.isNaN(moment.getTime()))
+      return value
+    return rule?.name === 'timestampTz' ? moment.toISOString() : storedMoment(moment)
+  }
+  if (type === 'json' && value !== null && value !== undefined && typeof value !== 'string') {
+    // An API caller may send the value itself; the rule and the column take text.
+    return JSON.stringify(value)
+  }
   return value
 }
 
@@ -360,7 +443,7 @@ export function prepareModelFields(
     }
 
     const rawValue = hasAttribute ? body[field.name] : body[column]
-    const value = normalizeModelValue(field.type, rawValue)
+    const value = normalizeModelValue(field.type, rawValue, attributes[field.name]?.validation?.rule)
     if ((value === '' || value === null || value === undefined) && field.required) {
       errors[field.name] = [`${field.label} is required.`]
       continue
