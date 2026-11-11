@@ -1,5 +1,41 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.540...v0.75.541)
+
+## ✨ Features
+
+- **scaffold**: the analytics site id comes from ANALYTICSHQ_SITE_ID ([06aa1d6](https://github.com/stacksjs/stacks/commit/06aa1d6)) _(by Chris Breuer)_
+- **buddy**: buddy new ends on a first commit of the generated app ([71684da](https://github.com/stacksjs/stacks/commit/71684da)) _(by Chris Breuer)_
+
+## 🐛 Bug Fixes
+
+- **ci**: the four failures left once the framework builds again ([f472a52](https://github.com/stacksjs/stacks/commit/f472a52)) _(by Chris Breuer)_
+- **build**: require the dtsx that declares createFetch parseably ([208ea0b](https://github.com/stacksjs/stacks/commit/208ea0b)) _(by Chris Breuer)_
+- **server**: a 404 asks the CMS tree only when the cms feature is on ([cfac0e9](https://github.com/stacksjs/stacks/commit/cfac0e9)) _(by Chris Breuer)_
+- **database**: migrate no longer calls a disabled feature's tables missing ([241491b](https://github.com/stacksjs/stacks/commit/241491b)) _(by Chris Breuer)_
+- **scaffold**: draw the starter list's borders on the rows ([25ecb49](https://github.com/stacksjs/stacks/commit/25ecb49)) _(by Chris Breuer)_
+- **scaffold**: a new app boots with no stx warning and a real document shell ([ea6d5ff](https://github.com/stacksjs/stacks/commit/ea6d5ff)) _(by Chris Breuer)_
+- **buddy**: buddy new lists only the flags it reads ([1560f50](https://github.com/stacksjs/stacks/commit/1560f50)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **skills**: name the stx version that makes layout comments inert ([f3f75e9](https://github.com/stacksjs/stacks/commit/f3f75e9)) _(by Chris Breuer)_
+- **skills**: stacks-new-app points at stacks-hq for metering, catalog counts refreshed ([3948f90](https://github.com/stacksjs/stacks/commit/3948f90)) _(by Chris Breuer)_
+- **skills**: stacks-new-app covers what the cursio build found ([a184d61](https://github.com/stacksjs/stacks/commit/a184d61)) _(by Chris Breuer)_
+- **skills**: add stacks-new-app and stacks-upstream, and three stx gotchas ([82ba3fe](https://github.com/stacksjs/stacks/commit/82ba3fe)) _(by Chris Breuer)_
+
+## 🔧 Chores
+
+- **deps**: move the STX cohort to the 0.2.854 release ([91d5f83](https://github.com/stacksjs/stacks/commit/91d5f83)) _(by Chris Breuer)_
+
+## ⏪ Reverts
+
+- chore(deps): move the STX cohort to the 0.2.854 release ([4e8a0ed](https://github.com/stacksjs/stacks/commit/4e8a0ed)) _(by Chris Breuer)_ ([stacksjs/stacks#3213](https://github.com/stacksjs/stacks/issues/3213))
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.539...v0.75.540)
 
 ## ✨ Features
