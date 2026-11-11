@@ -209,13 +209,42 @@ async function resolveTarget(options: PackageUpgradeOptions): Promise<{ version:
   return { version, metaDeps, runtimePins: await resolvePublishedRuntimePins(manifest.dependencies ?? {}), craftFloor: craftFloor(manifest) }
 }
 
-/** Independently versioned frontend packages paired with a published framework. */
+const RUNTIME_PACKAGES = ['@stacksjs/stx', '@stacksjs/components', 'bun-plugin-stx', '@stacksjs/desktop', '@stacksjs/sanitizer', 'stx-router'] as const
+/** The three every framework release declares: the runtime, its components, its compiler. */
+const RUNTIME_COHORT = ['@stacksjs/stx', '@stacksjs/components', 'bun-plugin-stx'] as const
+
+/**
+ * Independently versioned frontend packages paired with a published framework:
+ * the release the framework was built and tested against.
+ *
+ * A framework release names that release one of two ways. Exactly
+ * (`0.2.807`), as releases did for a while. Or as the floor of a range
+ * (`^0.2.842`), so that an app on a newer STX patch installs one copy of STX
+ * and not the framework's beside its own (stacksjs/stacks#3260); the release
+ * it was tested against is then the floor.
+ *
+ * A range is only read that way when the runtime, its components and its
+ * compiler all name the same floor. Older releases declared loose ranges with
+ * a different floor each (`^0.2.408` beside `^0.2.406`), which described no
+ * tested release, and taking a pin from one of those would align an app to a
+ * version nobody chose.
+ */
 export function publishedRuntimePins(dependencies: Record<string, string>): Record<string, string> {
+  const exact = /^\d+\.\d+\.\d+(?:-[\w.-]+)?$/
   const pins: Record<string, string> = {}
-  for (const name of ['@stacksjs/stx', '@stacksjs/components', 'bun-plugin-stx', '@stacksjs/desktop', '@stacksjs/sanitizer', 'stx-router']) {
+  for (const name of RUNTIME_PACKAGES) {
     const version = dependencies[name]
-    if (version && /^\d+\.\d+\.\d+(?:-[\w.-]+)?$/.test(version))
+    if (version && exact.test(version))
       pins[name] = version
+  }
+
+  const floors = RUNTIME_COHORT.map(name => /^\^(\d+\.\d+\.\d+(?:-[\w.-]+)?)$/.exec(dependencies[name] ?? '')?.[1])
+  const floor = floors[0]
+  if (floor && floors.every(candidate => candidate === floor)) {
+    for (const name of RUNTIME_PACKAGES) {
+      if (dependencies[name] === `^${floor}`)
+        pins[name] = floor
+    }
   }
   return pins
 }

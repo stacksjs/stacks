@@ -149,6 +149,32 @@ describe('frontend versions paired with a published framework', () => {
     expect(pkg.devDependencies).toEqual({ '@stacksjs/sanitizer': '~0.2.682' })
   })
 
+  it('takes the floor of a range as the release the framework was tested against', () => {
+    // The framework declares STX as `^0.2.842` so an app on a newer patch
+    // installs one copy (stacksjs/stacks#3260). Read as exact versions only,
+    // that gave no pins, and an upgrade stopped aligning STX without a word.
+    const published = { '@stacksjs/stx': '^0.2.842', '@stacksjs/components': '^0.2.842', 'bun-plugin-stx': '^0.2.842', '@stacksjs/sanitizer': '^0.2.842', 'better-dx': '^0.2.38' }
+    expect(publishedRuntimePins(published)).toEqual({ '@stacksjs/stx': '0.2.842', '@stacksjs/components': '0.2.842', 'bun-plugin-stx': '0.2.842', '@stacksjs/sanitizer': '0.2.842' })
+    // An app behind the floor is raised to it; one already past it is left alone.
+    const behind = { dependencies: { '@stacksjs/stx': '0.2.807', '@stacksjs/components': '0.2.807', 'bun-plugin-stx': '0.2.807' } }
+    expect(applyRuntimePins(behind, publishedRuntimePins(published))).toHaveLength(3)
+    expect(behind.dependencies).toEqual({ '@stacksjs/stx': '0.2.842', '@stacksjs/components': '0.2.842', 'bun-plugin-stx': '0.2.842' })
+    const ahead = { dependencies: { '@stacksjs/stx': '0.2.851', '@stacksjs/components': '0.2.851', 'bun-plugin-stx': '0.2.851' } }
+    expect(applyRuntimePins(ahead, publishedRuntimePins(published))).toEqual([])
+  })
+
+  it('reads a range as a pin only when the runtime, components and compiler name one release', () => {
+    // What older releases published: a floor each, describing no tested release.
+    expect(publishedRuntimePins({ '@stacksjs/stx': '^0.2.408', 'bun-plugin-stx': '^0.2.408', '@stacksjs/components': '^0.2.406' })).toEqual({})
+    expect(publishedRuntimePins({ '@stacksjs/stx': '^0.2.253', 'bun-plugin-stx': '^0.2.246' })).toEqual({})
+    expect(publishedRuntimePins({ '@stacksjs/stx': '^0.2.184' })).toEqual({})
+    // A member off the shared floor is left out; the three that agree are the pin.
+    expect(publishedRuntimePins({ '@stacksjs/stx': '^0.2.842', '@stacksjs/components': '^0.2.842', 'bun-plugin-stx': '^0.2.842', '@stacksjs/desktop': '^0.2.840' }))
+      .toEqual({ '@stacksjs/stx': '0.2.842', '@stacksjs/components': '0.2.842', 'bun-plugin-stx': '0.2.842' })
+    // Anything that is not a version, exact or ranged, is still not a pin.
+    expect(publishedRuntimePins({ '@stacksjs/stx': 'workspace:*', 'bun-plugin-stx': '>=0.2.842', '@stacksjs/components': 'latest' })).toEqual({})
+  })
+
   it('repairs direct runtime/compiler pins even when stacks already matches the target', () => {
     const pins = publishedRuntimePins({ '@stacksjs/stx': '0.2.679', '@stacksjs/components': '0.2.679', 'bun-plugin-stx': '0.2.679', 'better-dx': '^0.2.38' })
     const pkg = {
