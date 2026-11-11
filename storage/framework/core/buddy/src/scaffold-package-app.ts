@@ -164,6 +164,57 @@ export function applyAppPackageScripts(root: string): ScriptChanges {
   return changes
 }
 
+/**
+ * The STX runtime packages, released together at one version: the runtime,
+ * its components, its compiler, and the three the runtime itself pulls in.
+ */
+export const STX_RUNTIME_PACKAGES: readonly string[] = ['@stacksjs/stx', '@stacksjs/components', 'bun-plugin-stx', '@stacksjs/desktop', '@stacksjs/sanitizer', 'stx-router']
+
+/**
+ * The `overrides` an app keeps from the template: all but the framework's
+ * hold on the STX packages.
+ *
+ * The framework repository overrides those to one release because it is a
+ * workspace: on a fresh install each of its packages would otherwise resolve
+ * its own range of STX, and they would not agree. An app has no such
+ * workspace. It declares the STX packages it wants as ordinary dependencies,
+ * and the framework's packages, which ask for that release or newer, resolve
+ * to the same copy. Carried into an app, the override does one thing: it stops
+ * the app choosing a newer STX without also editing the override
+ * (stacksjs/stacks#3260).
+ */
+export function appPackageOverrides(overrides: Record<string, unknown>): { overrides: Record<string, unknown>, removed: string[] } {
+  const next: Record<string, unknown> = {}
+  const removed: string[] = []
+  for (const [name, rule] of Object.entries(overrides)) {
+    if (STX_RUNTIME_PACKAGES.includes(name))
+      removed.push(name)
+    else
+      next[name] = rule
+  }
+  return { overrides: next, removed }
+}
+
+/** Apply {@link appPackageOverrides} to the root package.json. Returns what was removed. */
+export function applyAppPackageOverrides(root: string): string[] {
+  const file = join(root, 'package.json')
+  if (!existsSync(file))
+    return []
+  const pkg = JSON.parse(readFileSync(file, 'utf8')) as { overrides?: Record<string, unknown> }
+  if (!pkg.overrides || typeof pkg.overrides !== 'object' || Array.isArray(pkg.overrides))
+    return []
+  const { overrides, removed } = appPackageOverrides(pkg.overrides)
+  if (removed.length === 0)
+    return []
+  // An empty `overrides` is noise in a manifest someone is about to read.
+  if (Object.keys(overrides).length > 0)
+    pkg.overrides = overrides
+  else
+    delete pkg.overrides
+  writeFileSync(file, `${JSON.stringify(pkg, null, 2)}\n`)
+  return removed
+}
+
 /** Keys that credit the framework or point at its repository. */
 const FRAMEWORK_CREDIT_KEYS = ['author', 'contributors', 'funding', 'homepage', 'repository', 'bugs']
 

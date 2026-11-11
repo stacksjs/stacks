@@ -8,7 +8,9 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
   adoptPackagedDefaults,
+  appPackageOverrides,
   appPackageScripts,
+  applyAppPackageOverrides,
   defaultsSpecifier,
   FRAMEWORK_ONLY_PATHS,
   ignoreDefaults,
@@ -189,4 +191,62 @@ test('the framework manifests an app keeps lose the framework\'s credits', () =>
   }
   // A vendored framework package keeps its own.
   expect(readFileSync(join(app, 'storage/framework/core/router/package.json'), 'utf8')).toContain('Chris Breuer')
+})
+
+describe('an app does not inherit the framework\'s hold on STX', () => {
+  // The framework repository overrides the STX packages to one release because
+  // it is a workspace. `buddy new` copies its package.json, and with it the
+  // override, which in an app only stops the app choosing a newer STX without
+  // editing the override as well (stacksjs/stacks#3260).
+  test('the STX overrides go, and anything else stays', () => {
+    const template = JSON.parse(readFileSync(join(REPO, 'package.json'), 'utf8')) as { overrides: Record<string, unknown> }
+    const { overrides, removed } = appPackageOverrides(template.overrides)
+    expect(removed.sort()).toEqual(['@stacksjs/components', '@stacksjs/desktop', '@stacksjs/sanitizer', '@stacksjs/stx', 'bun-plugin-stx'])
+    expect(Object.keys(overrides).some(name => /stx|@stacksjs\/(?:components|desktop|sanitizer)$/.test(name))).toBe(false)
+    // The template's other overrides are not this function's to judge.
+    for (const [name, rule] of Object.entries(template.overrides)) {
+      if (!removed.includes(name))
+        expect(overrides[name]).toBe(rule)
+    }
+  })
+
+  test('the app still declares the STX it runs, as ordinary dependencies', () => {
+    // That is what keeps a new app on a tested release now that the framework
+    // asks for "this release or newer": measured, an app that declares these
+    // three installs one copy of all six at its own version.
+    const template = JSON.parse(readFileSync(join(REPO, 'package.json'), 'utf8')) as { dependencies: Record<string, string>, devDependencies: Record<string, string> }
+    const declared = { ...template.devDependencies, ...template.dependencies }
+    const version = declared['@stacksjs/stx']
+    expect(version).toMatch(/^\d+\.\d+\.\d+$/)
+    expect(declared['@stacksjs/components']).toBe(version)
+    expect(declared['bun-plugin-stx']).toBe(version)
+  })
+
+  test('rewrites the manifest, and drops an overrides block it emptied', () => {
+    const root = mkdtempSync(join(tmpdir(), 'stacks-app-overrides-'))
+    try {
+      const file = join(root, 'package.json')
+      writeFileSync(file, JSON.stringify({ name: 'app', overrides: { '@stacksjs/stx': '0.2.842', 'bun-plugin-stx': '0.2.842', 'left-pad': '1.3.0' } }))
+      expect(applyAppPackageOverrides(root).sort()).toEqual(['@stacksjs/stx', 'bun-plugin-stx'])
+      expect(JSON.parse(readFileSync(file, 'utf8')).overrides).toEqual({ 'left-pad': '1.3.0' })
+
+      writeFileSync(file, JSON.stringify({ name: 'app', overrides: { '@stacksjs/stx': '0.2.842' } }))
+      expect(applyAppPackageOverrides(root)).toEqual(['@stacksjs/stx'])
+      expect('overrides' in JSON.parse(readFileSync(file, 'utf8'))).toBe(false)
+
+      // Nothing to remove: the file is not rewritten.
+      const untouched = JSON.stringify({ name: 'app', overrides: { 'left-pad': '1.3.0' } })
+      writeFileSync(file, untouched)
+      expect(applyAppPackageOverrides(root)).toEqual([])
+      expect(readFileSync(file, 'utf8')).toBe(untouched)
+    }
+    finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  test('buddy new applies it when it trims the template', () => {
+    const create = readFileSync(join(REPO, 'storage/framework/core/buddy/src/commands/create.ts'), 'utf8')
+    expect(create).toContain('applyAppPackageOverrides(path)')
+  })
 })

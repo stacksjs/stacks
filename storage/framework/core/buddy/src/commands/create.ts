@@ -12,7 +12,7 @@ import { attemptPantryDependencies, optimizePantryDeps } from './setup'
 import { resultFailed } from '../result'
 import { appIdentity, applyAppAgentsTemplate, applyAppChangelogTemplate, applyAppEnvTemplate, applyAppPackageTemplate, removeFrameworkLicense, renderTemplate } from '../scaffold-app'
 import { applyAppSiteTemplate } from '../scaffold-site'
-import { adoptPackagedDefaults, applyAppPackageScripts, applyPackageAppTsconfig, pruneFrameworkOnlyFiles, rewriteCoreContentPaths, stripFrameworkManifestCredits } from '../scaffold-package-app'
+import { adoptPackagedDefaults, applyAppPackageOverrides, applyAppPackageScripts, applyPackageAppTsconfig, pruneFrameworkOnlyFiles, rewriteCoreContentPaths, stripFrameworkManifestCredits } from '../scaffold-package-app'
 import { fetchPublishedVersions } from '../registry'
 import { ensureAuthRoutesEnv } from '../minimal-routes'
 import { scaffoldDesktopApp } from '../scaffold-desktop'
@@ -745,6 +745,8 @@ function trimFrameworkOnlyFiles(path: string) {
   try {
     const removed = pruneFrameworkOnlyFiles(path)
     const scripts = applyAppPackageScripts(path)
+    // The framework's own hold on the STX packages is for its workspace, not for an app.
+    applyAppPackageOverrides(path)
     rewriteCoreContentPaths(path)
     stripFrameworkManifestCredits(path)
     log.success(`Removed ${removed.length} framework-only path${removed.length === 1 ? '' : 's'} and ${scripts.removed.length} framework-only script${scripts.removed.length === 1 ? '' : 's'}`)
