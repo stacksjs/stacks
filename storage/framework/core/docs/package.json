@@ -60,7 +60,7 @@
     "@stacksjs/bunpress": "^0.2.25",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/path": "workspace:*",
-    "@stacksjs/stx": "^0.2.842"
+    "@stacksjs/stx": "^0.2.854"
   },
   "devDependencies": {
     "@stacksjs/alias": "workspace:*",
