@@ -27,13 +27,13 @@ function formatDate(value: string): string {
 
 <section :if="message()" aria-label="Selected message" class="flex flex-col w-full md:w-3/5 bg-white dark:bg-neutral-700">
   <div class="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-neutral-600">
-    <div class="flex items-center space-x-2 min-w-0">
+    <div class="flex gap-2 items-center min-w-0">
       <Button variant="ghost" iconOnly ariaLabel="Close message" @click="emit('close')">
         <span class="block h-5 w-5 i-hugeicons-arrow-left-02"></span>
       </Button>
       <h2 class="font-medium text-gray-900 text-lg truncate dark:text-white">{{ message()?.subject }}</h2>
     </div>
-    <div class="flex space-x-2">
+    <div class="flex gap-2">
       <Button variant="ghost" iconOnly :ariaLabel="message()?.read ? 'Mark as unread' : 'Mark as read'" @click="emit('toggle-read')">
         <span :class="'block h-5 w-5 ' + (message()?.read ? 'i-hugeicons-mail-02' : 'i-hugeicons-mail-open-01')"></span>
       </Button>

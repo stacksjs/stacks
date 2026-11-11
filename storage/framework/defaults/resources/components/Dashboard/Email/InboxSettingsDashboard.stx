@@ -211,7 +211,7 @@
             />
           </div>
 
-          <div :show="isLabelsSection" class="space-y-6">
+          <div :show="isLabelsSection" class="flex flex-col gap-6">
             <EmailSettingsList
               title="Mailbox Labels"
               description="Create labels that integrations can apply to incoming conversations."

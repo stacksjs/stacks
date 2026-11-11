@@ -81,7 +81,7 @@ function emitPage(page: number | string): void {
       results
     </p>
 
-    <nav class="inline-flex -space-x-px rounded-md shadow-sm isolate" aria-label="Pagination">
+    <nav class="flex gap-1 items-center" aria-label="Pagination">
       <Button
         variant="secondary"
         iconOnly

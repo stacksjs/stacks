@@ -83,7 +83,7 @@ onMount(() => {
 })
 </script>
 
-<div class="space-y-6">
+<div class="flex flex-col gap-6">
   <PageHeader title="Buddy" description="Ask framework questions through your configured Stacks AI provider.">
   <div class="flex gap-2 items-center">
     <span :class="'inline-flex items-center px-2.5 py-1 font-medium text-xs rounded-full ' + (chatState()?.configured ? 'text-green-700 bg-green-100 dark:text-green-300 dark:bg-green-950' : 'text-amber-700 bg-amber-100 dark:text-amber-300 dark:bg-amber-950')">
