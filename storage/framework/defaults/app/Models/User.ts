@@ -77,10 +77,13 @@ export default defineModel({
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.string().required().min(5).max(100),
+        // The same floor registration applies. This rule said five while its
+        // message said three, so "Ava" could sign up and then could not have
+        // a letter of her name corrected. The ceiling is the column's.
+        rule: schema.string().required().min(2).max(100),
         message: {
-          min: 'Name must have a minimum of 3 characters',
-          max: 'Name must have a maximum of 255 characters',
+          min: 'Name must have a minimum of 2 characters',
+          max: 'Name must have a maximum of 100 characters',
         },
       },
 
@@ -157,5 +160,10 @@ export default defineModel({
   },
   dashboard: {
     highlight: true,
+    // Operators edit and remove accounts from the dashboard. Not through
+    // `useApi` above: a generated PATCH would let any signed-in caller change
+    // their own email and password outside the flows that verify them.
+    // Creating one stays off until there is a way to give it a password.
+    writes: ['update', 'destroy'],
   },
 } as const)

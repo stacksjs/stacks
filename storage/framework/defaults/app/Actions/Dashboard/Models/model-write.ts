@@ -151,15 +151,55 @@ export function uncollectableRequiredFields(Model: any): string[] {
   return names
 }
 
+const MODEL_WRITE_OPERATIONS: readonly ModelWriteOperation[] = ['store', 'update', 'destroy']
+
+/**
+ * The writes the dashboard offers for a model.
+ *
+ * `dashboard.writes` when the model names them, and otherwise the write
+ * routes its `useApi` trait declares. The two are separate on purpose: the
+ * API is what a client may do to its own data, the dashboard is what an
+ * operator may do to anyone's. `User` keeps `update` and `destroy` off its
+ * API, where they would let a caller change their own email and password
+ * outside the flows that verify them, and still has to be editable here.
+ *
+ * Anything in the list that is not a write is ignored rather than trusted,
+ * and a value that is not a list reads as unset.
+ */
+export function modelDashboardWrites(Model: any): ModelWriteOperation[] {
+  const declared = Model?.dashboard?.writes
+  const source: unknown[] = Array.isArray(declared) ? declared : modelApiConfiguration(Model).routes
+  return MODEL_WRITE_OPERATIONS.filter(operation => source.includes(operation))
+}
+
 export function modelWriteCapabilities(Model: any): ModelWriteCapabilities {
-  const routes = modelApiConfiguration(Model).routes
+  const writes = modelDashboardWrites(Model)
   return {
-    // A store route is not enough: the form has to be able to supply every
-    // field a new row requires.
-    create: routes.includes('store') && uncollectableRequiredFields(Model).length === 0,
-    update: routes.includes('update'),
-    destroy: routes.includes('destroy'),
+    // Being allowed to create is not enough: the form has to be able to
+    // supply every field a new row requires.
+    create: writes.includes('store') && uncollectableRequiredFields(Model).length === 0,
+    update: writes.includes('update'),
+    destroy: writes.includes('destroy'),
   }
+}
+
+/**
+ * Field errors for a write the database refused as a duplicate.
+ *
+ * The driver names the constraint, not the field, and not in one spelling
+ * across SQLite, MySQL and Postgres. The model does know which of the columns
+ * being written it marks `unique`, and that is who the message is for: the
+ * one unique field in the request is the duplicate. With several, each is
+ * named, because any of them may be. Keyed by attribute name, like every
+ * other field error these endpoints return.
+ */
+export function duplicateFieldErrors(Model: any, columns: string[]): Record<string, string[]> {
+  const errors: Record<string, string[]> = {}
+  for (const [name, definition] of Object.entries((Model?.attributes ?? {}) as Record<string, any>)) {
+    if (definition?.unique === true && columns.includes(snakeCase(name)))
+      errors[name] = [`${humanize(name)} is already in use.`]
+  }
+  return errors
 }
 
 function relationFieldName(relation: string): string {
@@ -339,8 +379,10 @@ export async function resolveWritableModel(slug: string, operation?: ModelWriteO
   if (!Model || typeof Model.find !== 'function')
     return { error: `No ORM model named ${modelName}. Rows from tables without a model are read-only.`, status: 404 }
   if (operation) {
-    if (!modelApiConfiguration(Model).routes.includes(operation))
-      return { error: `${modelName} does not declare the ${operation} route in its useApi trait.`, status: 405 }
+    if (!modelDashboardWrites(Model).includes(operation)) {
+      const verb = { store: 'created', update: 'edited', destroy: 'deleted' }[operation]
+      return { error: `${modelName} records cannot be ${verb} from the dashboard: the model allows it in neither \`dashboard.writes\` nor its \`useApi\` routes.`, status: 405 }
+    }
     if (operation === 'store') {
       const missing = uncollectableRequiredFields(Model)
       if (missing.length > 0) {

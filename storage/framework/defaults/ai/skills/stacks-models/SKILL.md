@@ -130,6 +130,13 @@ model-browser CRUD Actions before database work. Its default is `true`;
 direct ORM calls, named domain Actions and generated `useApi` routes available.
 Those APIs require their own route selection, middleware, ownership and policies.
 
+`dashboard: { writes: ['update', 'destroy'] }` names what an operator may do to
+the model's rows from the dashboard (`store`, `update`, `destroy`). Left out,
+the dashboard offers the writes the `useApi` routes declare. Name it when the
+two should differ: `User` is editable and deletable in the dashboard while its
+API offers neither. It opens nothing on the generated API. See
+`stacks-dashboard`.
+
 `useApi` is an API capability, not a dashboard-view generator. Its generated
 routes are registered from the merged model registry. Framework defaults are
 loaded first, then recursive `app/Models/` definitions override matching model

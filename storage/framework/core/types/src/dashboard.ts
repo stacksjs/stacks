@@ -369,6 +369,9 @@ export type DashboardConfig = Partial<DashboardOptions>
  *      resolved middleware, which `dashboard.enforce: false` opts out of
  *      (stacksjs/stacks#2883).
  */
+/** A write the dashboard can make to a model's rows, in the `useApi` route vocabulary. */
+export type DashboardModelWrite = 'store' | 'update' | 'destroy'
+
 export interface DashboardModelOptions {
   /**
    * Expose this model through generic dashboard catalogs, counts, global
@@ -426,6 +429,27 @@ export interface DashboardModelOptions {
     | 'utilities'
     | 'data'
     | 'app'
+
+  /**
+   * What an operator may do to this model's rows from the dashboard: create
+   * them (`store`), edit them (`update`), delete them (`destroy`).
+   *
+   * Left out, the dashboard offers the writes the model's `useApi` routes
+   * declare, which is right for most models: what a client may do through the
+   * API, an operator may do from the dashboard.
+   *
+   * Name the list when the two differ. `User` is the case that exists: an
+   * operator edits and removes accounts, while a generated `PATCH /users/{id}`
+   * would let every signed-in caller change their own email without
+   * verifying it and their own password without knowing the current one.
+   * `writes: ['update', 'destroy']` gives the dashboard its pencil and trash
+   * and leaves the API as it was. `writes: []` makes a model read-only in the
+   * dashboard whatever its API allows.
+   *
+   * It widens nothing outside the dashboard: these writes go through the
+   * dashboard's own guarded endpoints, never through the `useApi` routes.
+   */
+  writes?: DashboardModelWrite[]
 
   /**
    * Which roles this model is for.

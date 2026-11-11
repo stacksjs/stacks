@@ -1,9 +1,9 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
-import { ModelValidationError, toSnakeCaseKeys } from '@stacksjs/orm'
+import { isUniqueViolation, ModelValidationError, toSnakeCaseKeys } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 import { dashboardOperationalError } from '../dashboard-response'
-import { parseRowId, prepareModelFields, resolveWritableModel } from './model-write'
+import { duplicateFieldErrors, parseRowId, prepareModelFields, resolveWritableModel } from './model-write'
 
 interface ModelWriteInput {
   fields?: unknown
@@ -59,6 +59,14 @@ export default new Action({
       // field by field, not a server failure (stacksjs/stacks#3007).
       if (error instanceof ModelValidationError)
         return response.json({ message: 'Validation failed.', errors: error.errors }, 422)
+      // A value another row already holds, on a field the model marks unique
+      // (a user's email). The person can fix that, so it is named on the field
+      // like any other rule, not reported as a failed save.
+      if (isUniqueViolation(error)) {
+        const errors = duplicateFieldErrors(resolved.Model, Object.keys(changes))
+        if (Object.keys(errors).length > 0)
+          return response.json({ message: 'Validation failed.', errors }, 422)
+      }
       return dashboardOperationalError(error, 'The model record could not be updated.', 'ModelUpdateAction', 500)
     }
   },
