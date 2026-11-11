@@ -1,6 +1,6 @@
 ---
 name: stacks-dashboard
-description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 418 built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
+description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 419 built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,7 +8,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Dashboard
 
-The Stacks admin dashboard provides a full-featured admin panel with 100+ route views, 418 components, and a multi-section layout.
+The Stacks admin dashboard provides a full-featured admin panel with 100+ route views, 419 components, and a multi-section layout.
 
 ## Key Paths
 - Dashboard components: `storage/framework/defaults/resources/components/Dashboard/`
@@ -715,6 +715,32 @@ These writes go through the dashboard's own guarded endpoints
 API. Creating still needs a form that can supply every required field: a
 model with a required hidden field, like `User.password`, is not creatable
 here even when `store` is named.
+
+### What the forms ask for, and how
+
+The create and edit forms offer a model's `fillable` attributes, less the
+`hidden` ones and the protected columns (`password`, tokens, secrets, `id`,
+`uuid`, the timestamps), plus the foreign key of each `belongsTo`. The server
+applies the same list, so a request naming anything else is ignored.
+
+Each field's control follows its validation rule (`modelFieldType`), and both
+forms draw them with one component, `Dashboard/Models/ModelFieldInputs`:
+
+| Rule | Control | Stored as |
+|---|---|---|
+| `enum` | select of its allowed values | the value |
+| `boolean` | checkbox | true or false |
+| `number`, `integer`, `float`, `unix` | number box | a number |
+| `date` | date picker | the calendar day |
+| `timestamp`, `timestampTz`, `datetime` | date and time, in the visitor's zone | UTC `YYYY-MM-DD HH:MM:SS` (ISO for `timestampTz`) |
+| `json` | tall fixed-width box, checked on save | JSON text |
+| `string` with `type: 'text'` | tall box | text |
+| any other `string` | one line (`email` when the name says so) | text |
+
+A foreign key is still a number box: picking the related record by name is not
+built yet. An edit sends only the fields that were changed. Labels, and the
+model's own name in titles, come from `humanizeIdentifier` ("Social Post",
+"Image URL").
 
 The edit form never writes `password`, tokens, secrets, `id`, `uuid` or the
 timestamps. A refused save comes back as a message under its field (a rule
