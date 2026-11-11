@@ -342,13 +342,19 @@ attributes: {
 - `subject` is derived when left out: `id` on `User`, the `belongsTo: ['User']`
   foreign key elsewhere. A `via` parent must itself declare a subject.
 - Anonymization writes NULL to nullable columns and a typed placeholder to
-  `NOT NULL` ones (`erased-<id>` when unique). A `NOT NULL` enum or timestamp
-  needs `personal: { anonymize: <value> }`, or every request refuses to run.
+  `NOT NULL` ones (`erased-<id>` when unique). A column is `NOT NULL` when its
+  validation rule is `.required()`, which is what the migrations read, or
+  when it sets `required: true`; `nullable: true` overrides both. A `NOT NULL`
+  enum or timestamp needs `personal: { anonymize: <value> }`, or every
+  request refuses to run.
 - A model that `belongsTo: ['User']` and declares nothing is **unclassified**:
   erasure does not reach it and `buddy gdpr:register` lists it. Classify it, even
   as `erasure: 'keep'`. `core/orm/tests/gdpr.test.ts` fails if a built-in one is.
 - Engine: `exportSubjectData`, `eraseSubject({ dryRun })`, `pruneRetainedData`,
-  `resolveGdprPlan`, `renderProcessingRegister`, all from `@stacksjs/orm`.
+  `resolveGdprPlan`, `renderProcessingRegister`, and `anonymizedRows(model,
+  rows)` (which rows already hold what erasure writes, for labelling an erased
+  account in a list), all from `@stacksjs/orm`. The dashboard's delete runs
+  `eraseSubject` for a user the database will not delete: see `stacks-dashboard`.
   Commands: `buddy gdpr:export|erase|prune|register|register:check`. Every
   request writes a `gdpr_requests` row (the `GdprRequest` model).
 

@@ -4,6 +4,7 @@
  * the vocabulary a model declares.
  */
 export {
+  anonymizedRows,
   eraseSubject,
   exportSubjectData,
   GDPR_AUDIT_TABLE,

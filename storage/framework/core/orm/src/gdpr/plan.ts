@@ -111,7 +111,7 @@ interface AttributeShape {
   unique?: boolean
   type?: string
   personal?: unknown
-  validation?: { rule?: { name?: string } }
+  validation?: { rule?: { name?: string, isRequired?: boolean } }
 }
 
 /**
@@ -125,7 +125,13 @@ function anonymizedValue(attribute: AttributeShape, options: PersonalAttributeOp
   if (options.anonymize !== undefined)
     return { perRow: false, value: options.anonymize }
 
-  const notNull = attribute.required === true && attribute.nullable !== true
+  // The column is NOT NULL when the migrations made it so, and they read the
+  // validation rule (`schema.string().required()`), which is how almost every
+  // model says it. Reading only the bare `required` flag made `User.name`
+  // look nullable: erasure wrote NULL into it, and the database refused the
+  // whole erasure for every user.
+  const required = attribute.required === true || attribute.validation?.rule?.isRequired === true
+  const notNull = required && attribute.nullable !== true
   if (!notNull)
     return { perRow: false, value: null }
 

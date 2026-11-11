@@ -273,6 +273,30 @@ function needsAnonymizing(model: GdprModelPlan, row: Row): boolean {
   return Object.entries(target).some(([column, value]) => !same(row[column], value))
 }
 
+/**
+ * Which of these rows are in their anonymized state: every personal column
+ * the row carries already holds what erasure writes there.
+ *
+ * For telling an erased account apart from a live one where both are listed.
+ * It asks the plan, not the audit log, on purpose: an erased account somebody
+ * has since given a real name and address is an account again, and a row a
+ * model override anonymizes to its own placeholder is still recognised.
+ *
+ * Judged on the columns present, so a projection that leaves out a hidden
+ * column (a password) can still be answered. A row carrying none of the
+ * model's personal columns says nothing either way, and is not anonymized.
+ */
+export async function anonymizedRows(modelName: string, rows: Row[], options: GdprRunOptions = {}): Promise<boolean[]> {
+  const plan = await loadPlan(options.models)
+  const model = plan.models.find(candidate => candidate.model === modelName)
+  if (!model || model.personal.length === 0)
+    return rows.map(() => false)
+  return rows.map((row) => {
+    const carried = Object.entries(targetValues(model, row)).filter(([column]) => column in row)
+    return carried.length > 0 && carried.every(([column, value]) => same(row[column], value))
+  })
+}
+
 async function anonymizeRows(handle: Handle, model: GdprModelPlan, rows: Row[]): Promise<void> {
   if (!rows.length)
     return

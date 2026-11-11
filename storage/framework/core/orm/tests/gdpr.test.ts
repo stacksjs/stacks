@@ -20,6 +20,7 @@ process.env.APP_ENV = 'test'
 
 const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
 const {
+  anonymizedRows,
   buildProcessingRegister,
   eraseSubject,
   exportSubjectData,
@@ -235,6 +236,48 @@ describe('declarations', () => {
     expect(plan.problems.find(p => p.model === 'Ticket')!.message).toContain('NOT NULL enum')
   })
 
+  test('a column the migrations made NOT NULL through its rule is never anonymized to NULL', () => {
+    // How almost every model says "required": on the validation rule, which is
+    // what the migrations read. The plan read only the bare `required` flag,
+    // so `User.name` looked nullable, erasure wrote NULL into it, and the
+    // database refused the erasure of every user (stacksjs/stacks#3253).
+    const required = { name: 'string', isRequired: true }
+    const plan = resolveGdprPlan({
+      User: {
+        name: 'User',
+        traits: { gdpr: { erasure: 'anonymize' } },
+        attributes: {
+          name: { personal: true, validation: { rule: required } },
+          email: { personal: true, unique: true, validation: { rule: required } },
+          avatar: { personal: true, validation: { rule: string } },
+          bio: { personal: true, nullable: true, validation: { rule: required } },
+        },
+      },
+    })
+
+    expect(plan.problems).toEqual([])
+    const personal = Object.fromEntries(plan.models[0]!.personal.map(field => [field.column, field]))
+    expect(personal.name).toMatchObject({ perRow: false, anonymizeTo: '[erased]' })
+    // Unique as well: a placeholder of the row's own.
+    expect(personal.email).toMatchObject({ perRow: true })
+    // Not required, or declared nullable whatever the rule says: NULL.
+    expect(personal.avatar).toMatchObject({ perRow: false, anonymizeTo: null })
+    expect(personal.bio).toMatchObject({ perRow: false, anonymizeTo: null })
+  })
+
+  test('the shipped User is erasable: its required columns get placeholders', async () => {
+    const defaults = await loadModelRegistry({
+      defaultsRoot: join(import.meta.dir, '../../../defaults/app/Models'),
+      userRoot: join(tmpdir(), 'stacks-gdpr-no-user-models'),
+    })
+    const user = resolveGdprPlan(defaults).models.find(model => model.model === 'User')!
+    const personal = Object.fromEntries(user.personal.map(field => [field.column, field]))
+    expect(personal.name).toMatchObject({ perRow: false, anonymizeTo: '[erased]' })
+    expect(personal.email).toMatchObject({ perRow: true })
+    expect(personal.password).toMatchObject({ perRow: false, anonymizeTo: '[erased]' })
+    expect(personal.avatar).toMatchObject({ anonymizeTo: null })
+  })
+
   test('every built-in model declaration resolves, and nothing that belongs to a user is unclassified', async () => {
     const defaults = await loadModelRegistry({
       defaultsRoot: join(import.meta.dir, '../../../defaults/app/Models'),
@@ -381,6 +424,20 @@ describe('erasure', () => {
 
     expect((await rows('leads')).map(row => row.email)).toEqual(['erased-1', 'erased-2'])
     await (db as any).deleteFrom('leads').execute()
+  })
+
+  test('says which rows are anonymized, from whatever personal columns a row carries', async () => {
+    await eraseSubject('ada@example.com', { models, revokeCredentials: false })
+    const [ada, bob] = await rows('users')
+
+    expect(await anonymizedRows('User', [ada!, bob!], { models })).toEqual([true, false])
+    // A list's projection, without the password: still answerable.
+    expect(await anonymizedRows('User', [{ id: 1, name: ada!.name, email: ada!.email }], { models })).toEqual([true])
+    // One personal column that still holds a value is not an anonymized row.
+    expect(await anonymizedRows('User', [{ ...ada!, name: 'Ada' }], { models })).toEqual([false])
+    // No personal column at all says nothing either way.
+    expect(await anonymizedRows('User', [{ id: 1 }], { models })).toEqual([false])
+    expect(await anonymizedRows('Nobody', [ada!], { models })).toEqual([false])
   })
 
   test('rolls back every change, audit row included, when one write fails', async () => {
