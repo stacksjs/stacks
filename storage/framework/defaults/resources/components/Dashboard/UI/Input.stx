@@ -82,6 +82,7 @@ function handleBlur(event: Event): void {
       x-model="liveValue"
       :placeholder="livePlaceholder()"
       :aria-label="liveAriaLabel() || liveLabel() || null"
+      :aria-invalid="liveError() ? 'true' : null"
       :autocomplete="liveAutocomplete() || null"
       :name="liveName() || null"
       class="{{ $slots.iconLeft ? 'pl-8' : '' }}"
@@ -95,6 +96,6 @@ function handleBlur(event: Event): void {
     >
   </div>
 
-  <p :if="liveError()" class="mt-1.5 text-red-600 text-sm dark:text-red-400" :text="liveError()"></p>
-  <p :if="!liveError() && liveHint()" class="mt-1.5 text-sm text-stone-500 dark:text-neutral-400" :text="liveHint()"></p>
+  <p :if="liveError()" class="mt-1.5 text-[12px] text-red-600 dark:text-red-400" :text="liveError()"></p>
+  <p :if="!liveError() && liveHint()" class="mt-1.5 text-[12px] text-stone-500 dark:text-neutral-400" :text="liveHint()"></p>
 </div>
