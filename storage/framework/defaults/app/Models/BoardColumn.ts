@@ -86,5 +86,8 @@ export default defineModel({
     },
   },
 
-  dashboard: { enabled: false },
+  dashboard: {
+    columns: ['name', 'board', 'position', 'cardLimit'],
+    enabled: false,
+  },
 } as const)

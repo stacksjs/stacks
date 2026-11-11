@@ -126,4 +126,8 @@ export default defineModel({
       factory: () => null,
     },
   },
+
+  dashboard: {
+    columns: ['label', 'board', 'expiresAt', 'lastUsedAt', 'revokedAt'],
+  },
 } as const)

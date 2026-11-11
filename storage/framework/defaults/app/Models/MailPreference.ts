@@ -215,4 +215,8 @@ export default defineModel({
       },
     },
   },
+
+  dashboard: {
+    columns: ['mailbox', 'accountName', 'theme', 'language', 'displayDensity'],
+  },
 } as const)

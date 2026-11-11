@@ -136,5 +136,8 @@ export default defineModel({
     },
   },
 
-  dashboard: { enabled: false },
+  dashboard: {
+    columns: ['path', 'disk', 'kind', 'state', 'attempts', 'finishedAt'],
+    enabled: false,
+  },
 } as const)

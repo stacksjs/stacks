@@ -23,4 +23,8 @@ export default defineModel({
     finishedAt: { required: false, fillable: true, validation: { rule: schema.timestamp() }, factory: () => null },
     error: { type: 'text', required: false, fillable: true, validation: { rule: schema.string() }, factory: () => null },
   },
+
+  dashboard: {
+    columns: ['automation', 'status', 'subjectType', 'startedAt', 'finishedAt'],
+  },
 } as const)

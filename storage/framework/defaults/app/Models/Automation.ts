@@ -20,4 +20,8 @@ export default defineModel({
     graph: { required: true, fillable: true, validation: { rule: schema.json() }, factory: () => JSON.stringify({ nodes: [], edges: [] }) },
     publishedAt: { required: false, fillable: true, validation: { rule: schema.timestamp() }, factory: () => null },
   },
+
+  dashboard: {
+    columns: ['name', 'status', 'version', 'team', 'publishedAt'],
+  },
 } as const)

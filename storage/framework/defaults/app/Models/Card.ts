@@ -114,5 +114,8 @@ export default defineModel({
     },
   },
 
-  dashboard: { enabled: false },
+  dashboard: {
+    columns: ['title', 'board', 'boardColumn', 'user', 'dueDate', 'archived'],
+    enabled: false,
+  },
 } as const)

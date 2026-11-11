@@ -107,6 +107,7 @@ export default defineModel({
   },
 
   dashboard: {
+    columns: ['name', 'subdomain', 'status', 'timezone', 'team'],
     highlight: true,
   },
 })

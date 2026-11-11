@@ -75,4 +75,8 @@ export default defineModel({
       factory: () => 'pending',
     },
   },
+
+  dashboard: {
+    columns: ['domain', 'site', 'isPrimary', 'sslStatus', 'verifiedAt'],
+  },
 })

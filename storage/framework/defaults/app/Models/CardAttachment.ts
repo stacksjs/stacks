@@ -107,4 +107,8 @@ export default defineModel({
       factory: faker => faker.number.int({ min: 1000, max: 500_000 }),
     },
   },
+
+  dashboard: {
+    columns: ['path', 'card', 'mimeType', 'sizeBytes', 'createdAt'],
+  },
 } as const)

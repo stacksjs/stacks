@@ -113,5 +113,8 @@ export default defineModel({
   // not the auto-derived `/models/board` viewer — the sidebar entry is
   // hand-added in `dashboard-utils.ts` / `sidebar.ts` and points at
   // the real page. Hiding the auto-row keeps it from double-listing.
-  dashboard: { enabled: false },
+  dashboard: {
+    columns: ['name', 'team', 'archived', 'createdAt'],
+    enabled: false,
+  },
 } as const)
