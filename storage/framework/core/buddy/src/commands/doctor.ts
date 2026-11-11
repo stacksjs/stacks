@@ -149,6 +149,15 @@ export function doctor(buddy: CLI): void {
         })
       }
 
+      // More than one copy of STX (stacksjs/stacks#3260). Installs cleanly and
+      // runs, with pages that find no routes or components.
+      {
+        const { describeStxCopies, findStxCopies } = await import('../stx-copies')
+        const report = describeStxCopies(findStxCopies(resolve(process.cwd())))
+        if (report)
+          checks.push({ name: 'STX packages', ...report })
+      }
+
       // System dependencies the registry cannot install (stacksjs/stacks#2919).
       const depsPath = resolve(process.cwd(), 'config/deps.ts')
       if (existsSync(depsPath)) {
