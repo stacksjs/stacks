@@ -19,7 +19,7 @@ When the task is how a page should *look* (not just how stx renders), pair this 
 - STX plugin: `bun-plugin-stx` (loaded via bunfig.toml)
 - STX build cache + route manifest: `storage/framework/stx/` (stx's `stateDir`, set in `config/ui.ts`)
 - Components: `resources/components/`
-- Layouts: `resources/layouts/`
+- Layouts: `resources/views/layouts/` (the one folder scanned when it exists; `resources/layouts/` only in an app without it)
 - Partials: `resources/partials/`
 - Views: `resources/views/`
 - Package: `@stacksjs/stx`
@@ -153,7 +153,7 @@ import type { StxOptions } from '@stacksjs/stx'
 
 export default {
   componentsDir: 'components',
-  layoutsDir: 'layouts',
+  layoutsDir: 'views/layouts',
   partialsDir: 'partials',
 } satisfies StxOptions
 ```
@@ -335,4 +335,8 @@ await addLayout('admin', { nav: true, footer: true })
 - **Pre-paint state** - use `@appearanceBootstrap`, never a raw browser script in the template
 - **Components go in `resources/`** - not in `app/` or `storage/`
 - **SEO directives take expressions** - `@seo(seo)`, `@meta('author', post.author)` and `@structuredData(product)` are evaluated; a failure shows up as an inline `<!-- [... Error] -->` comment plus a `[stx]` console warning naming the file, never as silent emptiness. Keep `@seo` inside `<head>`
+- **Dynamic bracket access renders empty** - `{{ labels[item.key] }}` prints an empty string, because the safe evaluator rejects a bracket whose key is a member expression. A bare identifier key (`{{ labels[key] }}`) and dot access (`{{ labels.a }}`) work. The dev log says `stx warning: {{ labels[item.key] }} rendered as an empty string` and names the layout file, not the page. Compute the value in `<script server>` (`items.map(item => ({ ...item, label: labels[item.key] }))`) and interpolate the result. Verified on stx 0.2.842
+- **`{{ value }}` inside `<script client>` is already serialized** - `const tags = {{ tags }}` arrives as `const tags = ["draft", "published"];`. Wrapping it, `{{ JSON.stringify(tags) }}`, hands the client the string `'["draft","published"]'`, which half-works: `.includes('draft')` matches a substring and `.length` counts characters. Interpolate the server value bare. Verified on stx 0.2.842
+- **A layout comment is not inert** (stx 0.2.853 and earlier) - layout source is read for `@extends` and `@layout` before `{{-- --}}` comments are stripped, so a layout whose comment spells out its own extends line extends itself, and the first request spins the dev server at full CPU without answering. Describe directives in a comment without the at sign
+- **A new view needs a dev-server restart** - routes are generated at boot, so a `.stx` file added under `resources/views` answers 404 until `./buddy dev` is restarted. Edits to an existing view reload
 - **118+ modules** - STX is a comprehensive framework covering rendering, routing, forms, i18n, SEO, PWA, and more

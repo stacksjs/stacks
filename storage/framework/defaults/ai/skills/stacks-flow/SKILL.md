@@ -72,6 +72,13 @@ A starting situation that generates work, then merges onto the main flow.
   red on *this* bug, then fixes with a regression test. When the real finding is
   that there is no good seam to lock the bug down, it hands off to
   `stacks-codebase-design`.
+- **There is no app yet, or a fresh one has no shape** goes to
+  **`/stacks-new-app`**: scaffold, ports, the layout, partial, component and
+  data structure, theme tokens, and the first verification loop. It merges onto
+  the main flow at `stacks-domain-modeling`.
+- **The problem is in a dependency** goes to **`/stacks-upstream`**. Name the
+  owning repository, reproduce and fix it there, release, and prove the fix
+  from an installed version. The app carries a version bump, never a shim.
 - **A visual surface needs to be built or lifted** goes to
   **`/stacks-design-taste`**, or `/stacks-redesign` when the UI already exists
   and needs auditing first. Those two carry their own flow, including the

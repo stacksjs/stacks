@@ -142,6 +142,7 @@ it when you cannot remember which one fits.
 | Situation | Skill |
 |---|---|
 | Which skill or flow fits this situation, and where to cut a session | `stacks-flow` |
+| Starting an app with `buddy new`, or giving a fresh one its structure | `stacks-new-app` |
 | An idea needs stress-testing before anything is built | `stacks-office-hours`, `stacks-grilling` |
 | A design question needs a runnable answer, not an argument | `stacks-prototype` |
 | Scope, data flow, interfaces, test matrix, implementation plan | `stacks-plan-review` |
@@ -149,6 +150,7 @@ it when you cannot remember which one fits.
 | The project's domain language, `CONTEXT.md`, ADRs | `stacks-domain-modeling` |
 | Build it test-first, one vertical slice at a time | `stacks-tdd`, `stacks-new-feature` |
 | Something is broken, flaky or slow | `stacks-investigate` |
+| The problem is in a dependency: fix it in the owning repository | `stacks-upstream` |
 | Review a diff on standards and spec | `stacks-review` |
 | QA it in a real browser | `stacks-browse` |
 | Security analysis (OWASP, STRIDE, attack surface) | `stacks-security-audit` |

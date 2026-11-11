@@ -25,6 +25,7 @@ the other sections answer "which package", these answer "what do I do now".
 | [Humanizer](/skills/craft/humanizer) | Broad editorial rewrites using 26 contextual AI-writing patterns while preserving claims and the writer's voice. |
 | [Investigate](/skills/craft/investigate) | Root-cause debugging, structured so the hard part comes first. |
 | [New feature](/skills/craft/new-feature) | The end-to-end build. Slice the work into tracer bullets first, each cutting a narrow but complete path through model, migration, action, route and test, then build them one at a time off the frontier. |
+| [New app](/skills/craft/new-app) | From `buddy new` to a running app with a shape worth building on: feature bundles, free dev ports, layouts, partials, components and page data, theme tokens, and the verification loop. |
 | [Office hours](/skills/craft/office-hours) | A product thinking partner that produces design documents and never code. |
 | [Plan review](/skills/craft/plan-review) | Architecture review at two levels: are we building the right thing, and are we building it right. |
 | [Prototype](/skills/craft/prototype) | Throwaway code that answers exactly one design question. Two branches: a single shareable HTML file that lets a non-developer drive a state model by clicking buttons, or several radically different stx variants of one view. |
@@ -48,6 +49,7 @@ the other sections answer "which package", these answer "what do I do now".
 | [To Spec](/skills/craft/to-spec) | Turn the current conversation into a spec and publish it to the project issue tracker - no interview, just synthesis of what you've already discussed. |
 | [To Tickets](/skills/craft/to-tickets) | Break a plan, spec, or the current conversation into a set of tracer-bullet tickets, each declaring its blocking edges, published to the configured tracker (edges as text in one file per ticket locally, or native blocking links on a real tracker). |
 | [Triage](/skills/craft/triage) | Move issues and external PRs through a state machine of triage roles, categorise, verify, grill if needed, and write agent-ready briefs. |
+| [Upstream](/skills/craft/upstream) | The fix-at-source loop for a problem found in a dependency: name the owning repository, reproduce and fix it there, release, and prove the fix from an installed version. |
 | [Wayfinder](/skills/craft/wayfinder) | Plan a huge chunk of work (more than one agent session can hold) as a shared map of decision tickets on your issue tracker, and resolve them one at a time until the way to the destination is clear. |
 
 Every page here describes one `SKILL.md` under
