@@ -107,4 +107,8 @@ export default defineModel({
       },
     },
   },
+
+  dashboard: {
+    columns: ['recipient', 'channel', 'subject', 'status', 'sentAt'],
+  },
 } as const)

@@ -1,9 +1,13 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { schema } from '@stacksjs/validation'
+import { loadModelRegistry } from '../../storage/framework/core/orm/src/model-registry'
+import { hiddenModelColumns } from '../../storage/framework/defaults/resources/functions/dashboard/model-columns'
 import { relatedSummaryColumns } from '../../storage/framework/defaults/app/Actions/Dashboard/Models/model-related'
-import { modelListColumns } from '../../storage/framework/defaults/app/Actions/Dashboard/Models/model-write'
+import { modelListColumns, modelSchemaColumns } from '../../storage/framework/defaults/app/Actions/Dashboard/Models/model-write'
 
 /**
  * A model chooses the columns its list shows (stacksjs/stacks#3259).
@@ -105,5 +109,55 @@ describe('a link to another record is shown by that record\'s name', () => {
   test('the list endpoint names them, one lookup per related model for the rows on the page', () => {
     expect(show).toContain('response.relationNames[column] = Object.fromEntries(await recordNames(relation.model, ids))')
     expect(show).toContain('label: response.relations[name]?.label ?? humanizeIdentifier(name),')
+  })
+})
+
+describe('the choices the shipped models make', () => {
+  // Columns a trait adds to the table that the model's own definition does
+  // not list. Anything else a model names has to be one of its own.
+  const TRAIT_COLUMNS: Record<string, string[]> = { User: ['email_verified_at'] }
+
+  async function chosen() {
+    const models = await loadModelRegistry({
+      defaultsRoot: resolve('storage/framework/defaults/app/Models'),
+      userRoot: join(tmpdir(), 'stacks-no-user-models'),
+    }) as Record<string, any>
+    return Object.entries(models).filter(([, model]) => Array.isArray(model?.dashboard?.columns))
+  }
+
+  test('every name is a column the model has, and may show', async () => {
+    const wrong: string[] = []
+    for (const [name, model] of await chosen()) {
+      const hidden = hiddenModelColumns(model)
+      const available = [...modelSchemaColumns(model), ...(TRAIT_COLUMNS[name] ?? [])].filter(column => !hidden.has(column))
+      const { columns, unknown } = modelListColumns(model, available)
+      for (const missing of unknown)
+        wrong.push(`${name}: '${missing}' is not a column it has (or it is hidden)`)
+      if (columns.length !== new Set(model.dashboard.columns).size)
+        wrong.push(`${name}: names a column twice, or by two spellings`)
+    }
+    expect(wrong).toEqual([])
+  })
+
+  test('a list is for telling records apart: a handful of columns, never a secret or the row\'s own bookkeeping', async () => {
+    const wrong: string[] = []
+    for (const [name, model] of await chosen()) {
+      const columns: string[] = model.dashboard.columns
+      if (columns.length < 3 || columns.length > 7)
+        wrong.push(`${name}: ${columns.length} columns`)
+      for (const column of columns) {
+        if (/token|secret|password|hash|idempotency|uuid|^id$|updatedat/i.test(column))
+          wrong.push(`${name}: '${column}' does not belong in a list`)
+      }
+    }
+    expect(wrong).toEqual([])
+  })
+
+  test('the models people browse have chosen, the wide ones among them', async () => {
+    const names = (await chosen()).map(([name]) => name)
+    expect(names.length).toBeGreaterThanOrEqual(43)
+    // Each of these showed ten or more columns, up to 34.
+    for (const wide of ['Campaign', 'MailPreference', 'CampaignSend', 'QueryLog', 'PersonalAccessToken', 'SocialPost', 'TeamInvitation', 'EmailList', 'Deployment', 'User', 'Request', 'Activity'])
+      expect(names).toContain(wide)
   })
 })

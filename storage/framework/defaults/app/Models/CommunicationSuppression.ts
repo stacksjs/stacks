@@ -20,4 +20,8 @@ export default defineModel({
     suppressedAt: { required: true, fillable: true, validation: { rule: schema.timestamp() }, factory: () => new Date().toISOString() },
     liftedAt: { required: false, fillable: false, validation: { rule: schema.timestamp() }, factory: () => null },
   },
+
+  dashboard: {
+    columns: ['recipient', 'channel', 'reason', 'suppressedAt', 'liftedAt'],
+  },
 } as const)

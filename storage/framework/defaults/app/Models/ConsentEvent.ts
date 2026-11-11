@@ -28,4 +28,8 @@ export default defineModel({
     ipAddress: { personal: true, required: false, fillable: true, validation: { rule: schema.string().max(45) }, factory: faker => faker.internet.ip() },
     occurredAt: { required: true, fillable: true, validation: { rule: schema.timestamp() }, factory: () => new Date().toISOString() },
   },
+
+  dashboard: {
+    columns: ['recipient', 'channel', 'action', 'purpose', 'occurredAt'],
+  },
 } as const)

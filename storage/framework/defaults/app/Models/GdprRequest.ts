@@ -74,4 +74,8 @@ export default defineModel({
       factory: () => new Date().toISOString(),
     },
   },
+
+  dashboard: {
+    columns: ['type', 'subjectId', 'actor', 'status', 'occurredAt'],
+  },
 } as const)

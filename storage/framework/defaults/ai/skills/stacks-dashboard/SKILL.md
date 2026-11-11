@@ -787,6 +787,12 @@ out and logged once (`[dashboard] User names 'nickname' in
 dashboard.columns...`); a list of nothing but such names falls back to every
 column.
 
+The shipped models that people browse name theirs (43 of them, the widest
+going from 34 columns to 6): what the record is called, the records it links
+to, its status, and its most useful number or date. A model you add shows
+every column until you choose. `tests/unit/dashboard-model-columns.test.ts`
+checks that every shipped choice names real, showable columns.
+
 In any list, a column that holds another model's id shows that record's name
 as a link to it ("PrimeSoft Ltd", not `3`), under the model's name ("Team",
 not "Team ID"). The list endpoint returns the names with the rows

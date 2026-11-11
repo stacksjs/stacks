@@ -69,4 +69,8 @@ export default defineModel({
     },
 
   },
+
+  dashboard: {
+    columns: ['type', 'user', 'readAt', 'createdAt'],
+  },
 } as const)
