@@ -155,7 +155,7 @@ onMount(() => {
   <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div>
       <div class="flex gap-2 items-center">
-        <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">Mailboxes</h1>
+        <h1 class="font-bold text-2xl text-neutral-900 tracking-tight dark:text-white">Mailboxes</h1>
         <CloudStatusBadge :status="server().enabled ? 'configured' : 'inactive'" />
       </div>
       <p class="mt-1 max-w-2xl text-neutral-500 text-sm dark:text-neutral-400">The mailboxes and mail server set up in config/email.ts. This page shows your settings, not whether mail is being delivered.</p>

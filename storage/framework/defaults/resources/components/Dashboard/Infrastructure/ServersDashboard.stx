@@ -214,7 +214,7 @@ onMount(() => {
   <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div>
       <div class="flex gap-2 items-center">
-        <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">Servers</h1>
+        <h1 class="font-bold text-2xl text-neutral-900 tracking-tight dark:text-white">Servers</h1>
         <CloudStatusBadge :status="project().mode === 'server' ? 'configured' : 'inactive'" />
       </div>
       <p class="mt-1 max-w-2xl text-neutral-500 text-sm dark:text-neutral-400">Compute declarations from config/cloud.ts and deployment state recorded by ts-cloud.</p>

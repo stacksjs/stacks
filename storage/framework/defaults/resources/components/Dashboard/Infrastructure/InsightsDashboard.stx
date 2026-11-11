@@ -275,7 +275,7 @@ onMount(() => {
   <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div>
       <div class="flex gap-2 items-center">
-        <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">System insights</h1>
+        <h1 class="font-bold text-2xl text-neutral-900 tracking-tight dark:text-white">System insights</h1>
         <span class="inline-flex gap-1.5 items-center px-2 py-1 font-semibold text-[11px] text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 rounded-full">
           <span class="h-1.5 w-1.5 bg-blue-500 rounded-full"></span>
           current snapshot
