@@ -134,7 +134,8 @@ Those APIs require their own route selection, middleware, ownership and policies
 the model's rows from the dashboard (`store`, `update`, `destroy`). Left out,
 the dashboard offers the writes the `useApi` routes declare. Name it when the
 two should differ: `User` is editable and deletable in the dashboard while its
-API offers neither. It opens nothing on the generated API. See
+API offers neither, and `store` for it means an emailed invitation, since no
+form can supply a password. It opens nothing on the generated API. See
 `stacks-dashboard`.
 
 `useApi` is an API capability, not a dashboard-view generator. Its generated

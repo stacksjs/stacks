@@ -1,6 +1,6 @@
 ---
 name: stacks-dashboard
-description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 417 built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
+description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 418 built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,7 +8,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Dashboard
 
-The Stacks admin dashboard provides a full-featured admin panel with 100+ route views, 417 components, and a multi-section layout.
+The Stacks admin dashboard provides a full-featured admin panel with 100+ route views, 418 components, and a multi-section layout.
 
 ## Key Paths
 - Dashboard components: `storage/framework/defaults/resources/components/Dashboard/`
@@ -697,10 +697,11 @@ Which of those a model gets comes from one of two places:
   declare (`store`, `update`, `destroy`).
 - `dashboard: { writes: [...] }` names them instead, wider or narrower. Use it
   when an operator should be able to do what the API should not offer. `User`
-  declares `writes: ['update', 'destroy']` and keeps both off its API, where a
-  generated PATCH would let a caller change their own email and password
-  outside the flows that verify them. `writes: []` makes a model read-only in
-  the dashboard whatever its API allows.
+  declares `writes: ['store', 'update', 'destroy']` and keeps `update` and
+  `destroy` off its API, where a generated PATCH would let a caller change
+  their own email and password outside the flows that verify them.
+  `writes: []` makes a model read-only in the dashboard whatever its API
+  allows.
 
 These writes go through the dashboard's own guarded endpoints
 (`/api/dashboard/models/{slug}`), so naming one opens nothing on the public
@@ -713,6 +714,24 @@ timestamps. A refused save comes back as a message under its field (a rule
 the value breaks, or a `unique` value another row holds). A delete the
 database refuses because other records point at the row is reported as that,
 and an account cannot delete itself.
+
+### Users are invited, not typed in
+
+`User.password` is required and hidden, so no form can supply it, and a
+password typed by an operator would have to reach the person some other way.
+When `User` allows `store`, its capability is `invite` instead of `create`:
+the Users page and the model browser show "Invite user", which opens
+`/data/users/invite` (name and email). `POST /api/dashboard/users/invitations`
+creates the account with a random password nobody is shown and mails the
+framework's account-setup link (`passwordResets(email).sendEmail({ purpose:
+'setup' })`), valid for 7 days (`USER_INVITATION_DAYS`). The holder chooses
+their password from that link; "Forgot password" works too if it expires.
+
+An invitation whose mail could not be sent removes the account it created, so
+a mail outage leaves no accounts whose holders were never told, and the retry
+is not refused as a duplicate. An address that already has an account is
+refused on the email field. Drop `store` from `dashboard.writes` to turn
+inviting off.
 
 ## Application observability
 
