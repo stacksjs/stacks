@@ -307,3 +307,74 @@ describe('isNotNullViolation', () => {
     expect(isNotNullViolation({ code: 'SQLITE_CONSTRAINT_UNIQUE', message: 'UNIQUE constraint failed: notes.title' })).toBe(false)
   })
 })
+
+describe('isForeignKeyViolation', () => {
+  it('recognises a real SQLite refusal to delete a row others point at', async () => {
+    const { isForeignKeyViolation, isUniqueViolation } = await import('../src')
+    const { Database } = await import('bun:sqlite')
+    const db = new Database(':memory:')
+    db.run('PRAGMA foreign_keys = ON')
+    db.run('CREATE TABLE owners (id INTEGER PRIMARY KEY, email TEXT UNIQUE)')
+    db.run('CREATE TABLE pets (id INTEGER PRIMARY KEY, owner_id INTEGER REFERENCES owners(id))')
+    db.run(`INSERT INTO owners VALUES (1, 'ada@example.com'), (2, 'bob@example.com')`)
+    db.run('INSERT INTO pets VALUES (1, 1)')
+
+    let refused: unknown
+    try {
+      db.run('DELETE FROM owners WHERE id = 1')
+    }
+    catch (error) {
+      refused = error
+    }
+    expect(isForeignKeyViolation(refused)).toBe(true)
+    // SQLite files both under SQLITE_CONSTRAINT; the two must not be confused.
+    expect(isUniqueViolation(refused)).toBe(false)
+
+    let duplicate: unknown
+    try {
+      db.run(`UPDATE owners SET email = 'ada@example.com' WHERE id = 2`)
+    }
+    catch (error) {
+      duplicate = error
+    }
+    expect(isUniqueViolation(duplicate)).toBe(true)
+    expect(isForeignKeyViolation(duplicate)).toBe(false)
+    db.close()
+  })
+
+  it('recognises the MySQL and Postgres signals', async () => {
+    const { isForeignKeyViolation } = await import('../src')
+    expect(isForeignKeyViolation({ errno: 1451 })).toBe(true)
+    expect(isForeignKeyViolation({ errno: 1452 })).toBe(true)
+    expect(isForeignKeyViolation({ code: '23503' })).toBe(true)
+    expect(isForeignKeyViolation({ code: '23001' })).toBe(true)
+  })
+
+  it('does not claim other failures', async () => {
+    const { isForeignKeyViolation } = await import('../src')
+    expect(isForeignKeyViolation(undefined)).toBe(false)
+    expect(isForeignKeyViolation(new Error('database is locked'))).toBe(false)
+    expect(isForeignKeyViolation({ code: '23505', message: 'duplicate key value violates unique constraint' })).toBe(false)
+    expect(isForeignKeyViolation({ errno: 1062 })).toBe(false)
+  })
+})
+
+// What Bun's Postgres client throws, captured from a real server: the SQLSTATE
+// is in `errno`, as a string, and `code` is the same for every server error.
+// The message is in the server's language, so a German server says none of
+// the English words these checks used to depend on.
+describe('constraint violations from Bun\'s Postgres client', () => {
+  const bun = (state: string) => ({ code: 'ERR_POSTGRES_SERVER_ERROR', errno: state, message: 'FEHLER: Bedingung verletzt' })
+
+  it('are told apart by the SQLSTATE, not the wording', async () => {
+    const { isForeignKeyViolation, isNotNullViolation, isUniqueViolation } = await import('../src')
+    expect(isUniqueViolation(bun('23505'))).toBe(true)
+    expect(isNotNullViolation(bun('23502'))).toBe(true)
+    expect(isForeignKeyViolation(bun('23503'))).toBe(true)
+
+    expect(isUniqueViolation(bun('23503'))).toBe(false)
+    expect(isNotNullViolation(bun('23505'))).toBe(false)
+    expect(isForeignKeyViolation(bun('23505'))).toBe(false)
+    expect(isUniqueViolation(bun('42P01'))).toBe(false)
+  })
+})
