@@ -129,6 +129,8 @@
     "@stacksjs/stx": "0.2.842",
     "bun-plugin-stx": "0.2.842",
     "@stacksjs/components": "0.2.842",
+    "@stacksjs/desktop": "0.2.842",
+    "@stacksjs/sanitizer": "0.2.842",
     "ts-images": "https://registry.pantry.dev/ts-images@22073a9",
     "@stacksjs/ts-svg": "https://registry.pantry.dev/@stacksjs/ts-svg@367a010"
   }

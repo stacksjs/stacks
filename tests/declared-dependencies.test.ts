@@ -89,13 +89,43 @@ describe('published package dependencies', () => {
     for (const manifest of [root, umbrella, ...packages.map(pkg => pkg.json)]) {
       for (const field of ['dependencies', 'devDependencies', 'optionalDependencies']) {
         for (const [name, declaredVersion] of Object.entries(manifest[field] ?? {})) {
-          const required = commit && artifacts.has(name) ? `https://registry.pantry.dev/${name}@${commit}` : producerVersion
+          // This repository runs one exact cohort: its root names the release
+          // and its overrides hold every workspace to it. What it publishes
+          // names that release as the floor of a range. Published exact, an
+          // app on a newer STX patch got two copies of STX, the framework's
+          // and its own, and had to override the framework's to get one
+          // (stacksjs/stacks#3260). A commit artifact has no range, so it is
+          // the same URL everywhere.
+          const required = commit && artifacts.has(name)
+            ? `https://registry.pantry.dev/${name}@${commit}`
+            : manifest === root ? producerVersion : `^${producerVersion}`
           if (runtimePackages.has(name) && declaredVersion !== required)
             mismatched.push(`${manifest.name}: ${field}.${name} is ${declaredVersion}; expected ${required}`)
         }
       }
     }
     expect(mismatched.sort()).toEqual([])
+
+    // A range floats, and this repository is a workspace: on a fresh install
+    // each package resolves its own range, so the ones the root does not name
+    // exactly (the desktop shell, the sanitizer) took the newest release while
+    // STX stayed put. The root's overrides hold every package that is ranged
+    // anywhere to the one release. Measured in a throwaway workspace; an app,
+    // which gets these packages from the registry, does not need them.
+    if (!commit) {
+      const ranged = new Set<string>()
+      for (const manifest of [umbrella, ...packages.map(pkg => pkg.json)]) {
+        for (const field of ['dependencies', 'devDependencies', 'optionalDependencies']) {
+          for (const name of Object.keys(manifest[field] ?? {})) {
+            if (runtimePackages.has(name))
+              ranged.add(name)
+          }
+        }
+      }
+      expect([...ranged].sort()).toEqual(['@stacksjs/components', '@stacksjs/desktop', '@stacksjs/sanitizer', '@stacksjs/stx', 'bun-plugin-stx'])
+      for (const name of ranged)
+        expect(root.overrides?.[name], `the root must hold ${name} to the cohort`).toBe(producerVersion)
+    }
 
     // Commit artifacts retain their producer's release version. Check the
     // installed versions too, and reject nested registry copies of the same
