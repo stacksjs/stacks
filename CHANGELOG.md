@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.537...v0.75.538)
+
+## 🐛 Bug Fixes
+
+- **docs**: allow isolated local form events in previews ([7d4407a](https://github.com/stacksjs/stacks/commit/7d4407a)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.536...v0.75.537)
 
 ## 🐛 Bug Fixes
