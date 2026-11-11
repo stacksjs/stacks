@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.538...v0.75.539)
+
+## 🐛 Bug Fixes
+
+- **testing**: settle CDP operations with opaque transport errors ([ebc785b](https://github.com/stacksjs/stacks/commit/ebc785b)) _(by Chris Breuer)_
+- **testing**: preserve CDP transport errors when sockets close ([d0d9c5d](https://github.com/stacksjs/stacks/commit/d0d9c5d)) _(by Chris Breuer)_ ([#3222](https://github.com/stacksjs/stacks/issues/3222))
+
+## ✅ Tests
+
+- **testing**: declare the maintained declaration emitter ([632f0ac](https://github.com/stacksjs/stacks/commit/632f0ac)) _(by Chris Breuer)_
+
+## 🔧 Chores
+
+- adopt verified Dtsx 0.11.43 and Craft 0.0.492 ([be76e8d](https://github.com/stacksjs/stacks/commit/be76e8d)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.537...v0.75.538)
 
 ## 🐛 Bug Fixes
