@@ -297,7 +297,7 @@ async function saveSettings(): Promise<void> {
 onMount(() => void loadSettings())
 </script>
 
-<div class="space-y-6">
+<div class="flex flex-col gap-6">
   <PageHeader
     title="Mail Settings"
     description="Configure the framework mail driver and its environment-backed credentials."

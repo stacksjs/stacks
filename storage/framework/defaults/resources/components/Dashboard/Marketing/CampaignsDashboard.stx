@@ -262,7 +262,7 @@ onMount(() => {
 })
 </script>
 
-<div class="space-y-6">
+<div class="flex flex-col gap-6">
   <PageHeader title="Campaigns" description="Manage Campaign records with real audience and delivery aggregates.">
   <div class="flex gap-2">
     <Button :loading="loading()" variant="secondary" @click="loadCampaigns()"><span :if="!loading()" aria-hidden="true" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button>

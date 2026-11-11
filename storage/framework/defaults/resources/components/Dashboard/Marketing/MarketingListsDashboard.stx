@@ -185,7 +185,7 @@ onMount(() => {
 })
 </script>
 
-<div class="space-y-6">
+<div class="flex flex-col gap-6">
   <PageHeader title="Email lists" description="Manage EmailList records, signup policy, and real membership totals.">
   <div class="flex gap-2">
     <Button :loading="loading()" variant="secondary" @click="loadLists()">

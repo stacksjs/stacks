@@ -98,7 +98,7 @@ onMount(() => {
 })
 </script>
 
-<div class="space-y-6">
+<div class="flex flex-col gap-6">
   <PageHeader title="Releases" description="Release model records and recorded download totals.">
   <Button variant="secondary" :loading="isLoading()" @click="loadReleases">
     <span :if="!isLoading()" class="h-4 w-4 i-hugeicons-refresh"></span>

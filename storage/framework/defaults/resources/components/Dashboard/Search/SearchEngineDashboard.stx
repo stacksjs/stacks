@@ -34,7 +34,7 @@ async function refresh() {
 onMount(() => { void refresh() })
 </script>
 
-<div class="space-y-6">
+<div class="flex flex-col gap-6">
   <PageHeader title="Search Engine" description="Configured search service and model indexing conventions.">
     <Button variant="secondary" :loading="loading" @click="refresh">Refresh</Button>
   </PageHeader>

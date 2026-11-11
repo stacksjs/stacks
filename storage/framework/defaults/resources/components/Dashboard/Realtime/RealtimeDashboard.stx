@@ -137,7 +137,7 @@ onDestroy(() => {
 })
 </script>
 
-<div class="space-y-6">
+<div class="flex flex-col gap-6">
   <PageHeader title="Realtime" description="Recorded Websocket model events and a native connection inspector.">
   <Button variant="secondary" :loading="isLoading()" @click="loadRealtime">
     <span :if="!isLoading()" class="h-4 w-4 i-hugeicons-refresh"></span>
