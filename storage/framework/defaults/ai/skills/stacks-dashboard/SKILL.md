@@ -766,6 +766,33 @@ A record's page shows each relation as a link to the related record, by name.
 A write naming a record that has since been deleted comes back on that field
 ("That team no longer exists. Choose another.").
 
+### A model chooses its list columns
+
+A model's list (`/models/{slug}`) shows every column its table has unless the
+model names the ones it wants, in order:
+
+```ts
+dashboard: { columns: ['name', 'email', 'team', 'createdAt'] }
+```
+
+A name is an attribute (`createdAt`), its column (`created_at`), or a
+`belongsTo` (`team` for `team_id`). The same choice shapes the model's panel
+on another record's page. The record's own page still shows every field.
+
+It narrows what is drawn, not what is reachable: every column can still be
+sorted and filtered on, a `hidden` attribute stays hidden if it is named, and
+a column the list is filtered on is drawn even when the model left it out, so
+the filter can be seen and cleared. A name the table does not have is left
+out and logged once (`[dashboard] User names 'nickname' in
+dashboard.columns...`); a list of nothing but such names falls back to every
+column.
+
+In any list, a column that holds another model's id shows that record's name
+as a link to it ("PrimeSoft Ltd", not `3`), under the model's name ("Team",
+not "Team ID"). The list endpoint returns the names with the rows
+(`relationNames`), one lookup per related model per page, and a record's page
+uses the same ones.
+
 ### A record's page lists who points at it
 
 For each `hasMany` and `hasOne` a model declares, its record page shows a
@@ -773,10 +800,11 @@ panel (`Dashboard/Models/ModelRelatedPanels`): a team's members and
 invitations, a user's team memberships. Nothing is declared for the
 dashboard; `GET /api/dashboard/models/{slug}/{id}/related` reads the model.
 
-A panel is the newest five with the total. Its columns are chosen for telling
-rows apart, not for completeness: what the related record is called, the
-other records it points at (by name), its `enum` fields as badges, and when
-it was created. The link back to the page's own record is left out.
+A panel is the newest five with the total. Its columns are the related
+model's `dashboard.columns` when it names any. Otherwise they are chosen for
+telling rows apart: what the related record is called, the other records it
+points at (by name), its `enum` fields as badges, and when it was created.
+Either way the link back to the page's own record is left out.
 
 - The eye opens the related record.
 - "View all" opens the related model's list narrowed to this record

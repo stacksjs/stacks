@@ -130,6 +130,10 @@ model-browser CRUD Actions before database work. Its default is `true`;
 direct ORM calls, named domain Actions and generated `useApi` routes available.
 Those APIs require their own route selection, middleware, ownership and policies.
 
+`dashboard: { columns: ['name', 'email', 'team', 'createdAt'] }` names the
+columns the model's dashboard list shows, in order, by attribute, column or
+`belongsTo`. Left out, the list shows every column. See `stacks-dashboard`.
+
 `dashboard: { writes: ['update', 'destroy'] }` names what an operator may do to
 the model's rows from the dashboard (`store`, `update`, `destroy`). Left out,
 the dashboard offers the writes the `useApi` routes declare. Name it when the
