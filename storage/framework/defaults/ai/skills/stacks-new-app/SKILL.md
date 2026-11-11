@@ -108,7 +108,7 @@ folder scanned.
   keyed by plan. The pricing page, the upgrade prompt and the action that
   enforces the limit all import it, so a displayed limit and an enforced limit
   cannot disagree. Amounts are integer minor units. `stacks-payments` covers
-  the plans themselves.
+  the plans themselves and `stacks-hq` the usage counters that meter them.
 
 Done when each of layouts, partials, components and data has one real file and
 no page carries a literal the data modules own.
