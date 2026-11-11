@@ -15,15 +15,19 @@ step names.
 ## 1. Scaffold
 
 ```bash
-buddy new my-app            # every feature bundle
+buddy new my-app            # dashboard, marketing, monitoring, queue, realtime on
 buddy new my-app --minimal  # none of them; add back with ./buddy <feature>:install
 ```
 
 `buddy new --help` lists the flags, and every one of them does something.
-`./buddy list` shows the `<feature>:install` commands (cms, commerce, dashboard,
-forms, marketing, monitoring, queue, realtime). Start `--minimal` when the app is
-not a store or a CMS: a bundle brings models, migrations and dashboard pages
-you would otherwise carry and seed for nothing.
+`./buddy list` shows the `<feature>:install` commands. Commerce, cms and forms
+are off in every new app until you install them; `--minimal` turns the rest
+off too. Start `--minimal` when the app needs no admin dashboard or queue yet:
+a bundle brings models, migrations and dashboard pages you would otherwise
+carry and seed for nothing.
+
+A feature that is off has no tables. That is by design: `./buddy migrate` skips
+its migrations and says so (`Skipping N migration(s) for disabled features`).
 
 What you get: the framework from npm (no `storage/framework/core`), a
 gitignored `storage/framework/defaults` link, `.env` with a generated `APP_KEY`,
@@ -144,6 +148,24 @@ record for every hostname the app answers exists (`./buddy dns <domain>` shows
 what resolves), and `ANALYTICSHQ_SITE_ID` is set if you want analytics.
 
 ## Gotchas
+
+- **A view has exactly one layout.** An `@if` around two `@extends` lines does
+  not choose between them. Extend one layout and let it branch on a variable
+  the page declares.
+- **A public route never resolves the signed-in user.** No auth middleware runs
+  on it, so `request.user()` is empty there even with a valid session. A page
+  that shows signed-in state asks an endpoint of its own that carries the auth
+  middleware. `stacks-auth` and `stacks-middleware` cover both sides.
+- **`hidden` loses to a display utility.** `<div hidden class="flex">` stays
+  visible, because `flex` sets `display` and the attribute's rule is weaker. Put
+  `[hidden] { display: none !important; }` in the app stylesheet once.
+- **Your own `app/Models` turns the built-in models off.** Once the app has a
+  model of its own, migrations are generated from `app/Models` alone. Set
+  `database.models.includeFrameworkDefaults` in `config/database.ts` to keep
+  generating the built-in ones the app still uses (`User`, `Team`, ...).
+- **Run `./buddy generate:db-types` after migrating.** It refreshes
+  `database/types.d.ts`; without it rows from `db.selectFrom` on a new table
+  come back untyped.
 
 - **A new view answers 404 until the dev server restarts.** Routes are generated
   at boot.
