@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
-import { enterRequestScope, installRequestScope } from '@stacksjs/config'
+import { enterRequestScope, feature, installRequestScope } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { siteConfigPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
@@ -574,7 +574,10 @@ export async function startProductionServer(options?: { port?: string | number, 
           // otherwise the original, which already carries them.
           const baseline = secured ?? response
           let current = baseline
-          if (current.status === 404 && (config as { sites?: { enabled?: boolean } }).sites?.enabled) {
+          // Only where the CMS tree can exist: `sites` on and the cms bundle on.
+          // The cms migrations are gated on the feature, so with it off there
+          // is no `pages` table, and every 404 queried one anyway.
+          if (current.status === 404 && (config as { sites?: { enabled?: boolean } }).sites?.enabled && feature('cms')) {
             try {
               const { cmsNotFoundFallback } = await import('@stacksjs/cms')
               const cmsResponse = await cmsNotFoundFallback(req)
