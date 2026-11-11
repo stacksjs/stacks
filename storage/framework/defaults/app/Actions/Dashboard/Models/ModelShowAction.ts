@@ -7,8 +7,12 @@ import { safeGet } from '../../../../resources/functions/dashboard/data'
 import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
 import { dashboardOperationalError } from '../dashboard-response'
 import { isUnmigratedTable } from './model-migration'
+import { recordNames } from './model-options'
 import { belongsToRelations } from './model-relations'
-import { humanizeIdentifier, isErasureSubject, isValidModelSlug, type ModelCreateField, type ModelWriteCapabilities, modelCreateFields, modelSchemaColumns, modelWritableColumns, modelWriteCapabilities, slugToPascal } from './model-write'
+import { humanizeIdentifier, isErasureSubject, isValidModelSlug, type ModelCreateField, type ModelWriteCapabilities, modelCreateFields, modelListColumns, modelSchemaColumns, modelWritableColumns, modelWriteCapabilities, slugToPascal } from './model-write'
+
+/** Models already told, this process, that `dashboard.columns` names a column they lack. */
+const warnedColumns = new Set<string>()
 
 /**
  * `GET /api/dashboard/models/{slug}` (stacksjs/stacks#1838).
@@ -64,6 +68,10 @@ interface ResponseShape {
   updateFields: ModelCreateField[]
   /** The columns that hold another model's id, and whose: `team_id` is a Team. */
   relations: Record<string, { model: string, slug: string, label: string }>
+  /** The columns the list draws, in order: the model's `dashboard.columns`, or all of them. */
+  listColumns: string[]
+  /** What the records these rows point at are called, by column and then id. */
+  relationNames: Record<string, Record<string, string>>
   updateColumns: string[]
   /** Rows whose personal details erasure has replaced with placeholders (the subject model only). */
   anonymizedIds?: Array<number | string>
@@ -221,6 +229,8 @@ export default new Action({
       createFields: [],
       updateFields: [],
       relations: {},
+      listColumns: [],
+      relationNames: {},
       updateColumns: [],
       migrated: true,
       error: null,
@@ -348,9 +358,28 @@ export default new Action({
     response.displayColumns = response.columns.filter(col => !col.startsWith('_'))
     response.columnMeta = response.displayColumns.map(name => ({
       name,
-      label: humanizeIdentifier(name),
+      // "Team", not "Team ID": the column shows which team.
+      label: response.relations[name]?.label ?? humanizeIdentifier(name),
       type: typeForColumn(name, response.rows.map(r => r[name])),
     }))
+
+    const list = modelListColumns(Model, response.displayColumns)
+    response.listColumns = list.columns
+    // Only with a real row to judge by: an empty table's columns come from the
+    // model alone, which does not know the ones its traits add.
+    if (list.unknown.length > 0 && response.rows.length > 0 && !warnedColumns.has(modelName)) {
+      warnedColumns.add(modelName)
+      console.warn(`[dashboard] ${modelName} names ${list.unknown.map(name => `'${name}'`).join(', ')} in dashboard.columns, which its table does not have (or hides). ${list.unknown.length === 1 ? 'It is' : 'They are'} left out of the list.`)
+    }
+
+    // The records these rows point at, named: one lookup per related model,
+    // for the rows on this page. A list then reads "PrimeSoft Ltd" where it
+    // read "3", and a record's page has its names without asking again.
+    for (const [column, relation] of Object.entries(response.relations)) {
+      const ids = response.rows.map(row => row[column]).filter(id => id !== null && id !== undefined && id !== '') as Array<number | string>
+      if (ids.length > 0)
+        response.relationNames[column] = Object.fromEntries(await recordNames(relation.model, ids))
+    }
     response.searchable = response.columnMeta.filter(c => c.type === 'text').map(c => c.name)
     response.lastPage = Math.max(1, Math.ceil(response.totalCount / perPage))
 

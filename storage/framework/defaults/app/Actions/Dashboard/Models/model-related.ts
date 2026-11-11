@@ -13,7 +13,7 @@ import { resolveDashboardModel } from '../../../../resources/functions/dashboard
 import { hiddenModelColumns } from '../../../../resources/functions/dashboard/model-columns'
 import { recordNames } from './model-options'
 import { belongsToRelations, hasRelations, modelLabelColumn, pluralizeLabel, relatedForeignKey } from './model-relations'
-import { humanizeIdentifier, modelCreateFields, modelSchemaColumns, modelWriteCapabilities } from './model-write'
+import { humanizeIdentifier, modelCreateFields, modelListColumns, modelSchemaColumns, modelWriteCapabilities } from './model-write'
 
 /** How many of a panel's records the page shows before "View all". */
 export const RELATED_PREVIEW = 5
@@ -68,6 +68,26 @@ const SUMMARY_LIMIT = 5
  */
 export function relatedSummaryColumns(Related: any, foreignKey: string, reachable: ReadonlySet<string>): SummaryColumn[] {
   const hidden = hiddenModelColumns(Related)
+
+  // The model's own choice of list columns, when it made one: the panel is
+  // that list, less the column every row here shares.
+  const chosen = modelListColumns(Related, modelSchemaColumns(Related).filter(column => !hidden.has(column)))
+  if (chosen.declared) {
+    const relations = belongsToRelations(Related)
+    const attributes = Object.fromEntries(Object.entries((Related?.attributes ?? {}) as Record<string, any>).map(([name, definition]) => [snakeCase(name), definition]))
+    return chosen.columns.filter(column => column !== foreignKey).map((column) => {
+      const relation = relations.find(candidate => candidate.column === column)
+      if (relation)
+        return reachable.has(relation.model) ? { key: column, label: humanizeIdentifier(relation.model), type: 'text' as const, relation: relation.model } : { key: column, label: humanizeIdentifier(column), type: 'text' as const }
+      const allowed = attributes[column]?.validation?.rule?.allowedValues
+      if (Array.isArray(allowed) && allowed.length > 0)
+        return { key: column, label: humanizeIdentifier(column), type: 'badge' as const }
+      if (/_(?:at|on)$/.test(column))
+        return { key: column, label: humanizeIdentifier(column).replace(/\s+(?:At|On)$/, ''), type: 'datetime' as const }
+      return { key: column, label: humanizeIdentifier(column), type: 'text' as const }
+    })
+  }
+
   const columns: SummaryColumn[] = []
   const label = modelLabelColumn(Related)
   if (label && !hidden.has(label))

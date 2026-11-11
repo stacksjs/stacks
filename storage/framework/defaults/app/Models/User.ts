@@ -160,6 +160,9 @@ export default defineModel({
   },
   dashboard: {
     highlight: true,
+    // The list is for telling accounts apart. The two-factor step, the
+    // billing id and the rest are on the account's own page.
+    columns: ['name', 'email', 'emailVerifiedAt', 'createdAt'],
     // Operators add, edit and remove accounts from the dashboard. Not through
     // `useApi` above: a generated PATCH would let any signed-in caller change
     // their own email and password outside the flows that verify them.

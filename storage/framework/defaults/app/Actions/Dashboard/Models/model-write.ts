@@ -176,6 +176,37 @@ export function modelSchemaColumns(Model: any): string[] {
   return columns
 }
 
+/**
+ * The columns a model's list shows, from the ones its table has.
+ *
+ * `dashboard.columns` when the model names them, in its order; every column
+ * otherwise. A name may be the attribute, the column, or a `belongsTo`
+ * (`team` for `team_id`). Anything the table does not have is reported back
+ * instead of drawn as an empty column, and a list of nothing but such names
+ * falls back to every column: a typo should not empty the page.
+ */
+export function modelListColumns(Model: any, available: string[]): { columns: string[], unknown: string[], declared: boolean } {
+  const names = Model?.dashboard?.columns
+  if (!Array.isArray(names) || names.length === 0)
+    return { columns: available, unknown: [], declared: false }
+
+  const relations = belongsToRelations(Model)
+  const columns: string[] = []
+  const unknown: string[] = []
+  for (const name of names) {
+    if (typeof name !== 'string' || !name.trim())
+      continue
+    const column = snakeCase(name.trim())
+    const relation = relations.find(candidate => candidate.column === `${column}_id` || snakeCase(candidate.model) === column)
+    const resolved = available.includes(column) ? column : relation && available.includes(relation.column) ? relation.column : null
+    if (!resolved)
+      unknown.push(name)
+    else if (!columns.includes(resolved))
+      columns.push(resolved)
+  }
+  return columns.length > 0 ? { columns, unknown, declared: true } : { columns: available, unknown, declared: false }
+}
+
 function isProtectedField(name: string): boolean {
   const column = name
     .replace(/([a-z\d])([A-Z])/g, '$1_$2')

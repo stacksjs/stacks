@@ -431,6 +431,29 @@ export interface DashboardModelOptions {
     | 'app'
 
   /**
+   * The columns this model's list shows in the dashboard, in this order.
+   *
+   * Left out, the list shows every column the table has, which for a model
+   * with twenty of them is a table that scrolls sideways past the three that
+   * matter. Name those:
+   *
+   * ```ts
+   * dashboard: { columns: ['name', 'email', 'team', 'createdAt'] }
+   * ```
+   *
+   * A name is an attribute (`createdAt`), its column (`created_at`), or a
+   * `belongsTo` (`team` for `team_id`), which is shown as that record's name.
+   * The same choice shapes the model's panel on another record's page. The
+   * record's own page still shows every field: the list is for telling
+   * records apart, the page is the record.
+   *
+   * It narrows what is drawn, not what is reachable: a `hidden` attribute
+   * stays hidden if it is named here, and every column can still be sorted
+   * and filtered on. A name the table does not have is ignored and logged.
+   */
+  columns?: string[]
+
+  /**
    * What an operator may do to this model's rows from the dashboard: create
    * them (`store`), edit them (`update`), delete them (`destroy`).
    *
