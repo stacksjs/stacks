@@ -58,6 +58,11 @@ describe('native style guide generation', () => {
     expect(preview).not.toContain('<Action')
     expect(preview).not.toContain(root)
     expect(preview).toContain("connect-src 'none'")
+    expect(preview).toContain("form-action 'none'")
+    const patternPath = Object.keys(manifest.files).find(path => path.includes('/patterns/') && path.endsWith('.md'))!
+    const pattern = await readFile(join(root, patternPath), 'utf8')
+    expect(pattern).toContain('sandbox="allow-scripts allow-forms"')
+    expect(pattern).not.toContain('allow-same-origin')
     expect(await readFile(join(root, 'docs/style-guide/index.md'), 'utf8')).toBe('An authored brand guide.\n')
     expect((await generateStyleGuide(config, { root, check: true })).checked).toBe(true)
   })
