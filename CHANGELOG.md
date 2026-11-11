@@ -1,5 +1,82 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.539...v0.75.540)
+
+## ✨ Features
+
+- **tinker**: evaluate in a booted session that keeps state and reports frames ([71ed364](https://github.com/stacksjs/stacks/commit/71ed364)) _(by Chris Breuer)_
+- **hq**: add @stacksjs/hq with meter, service contract and readers ([3a67d40](https://github.com/stacksjs/stacks/commit/3a67d40)) _(by Chris Breuer)_
+- **buddy**: photograph a page with buddy screenshot ([7b426a1](https://github.com/stacksjs/stacks/commit/7b426a1)) _(by Chris Breuer)_
+- **dashboard**: notification and compliance models choose their list columns, and every choice is checked ([bd68232](https://github.com/stacksjs/stacks/commit/bd68232)) _(by glennmichael123)_ ([#3261](https://github.com/stacksjs/stacks/issues/3261))
+- **dashboard**: operations models choose their list columns ([c790df2](https://github.com/stacksjs/stacks/commit/c790df2)) _(by glennmichael123)_ ([#3261](https://github.com/stacksjs/stacks/issues/3261))
+- **dashboard**: automation, board, site and file models choose their list columns ([bf28732](https://github.com/stacksjs/stacks/commit/bf28732)) _(by glennmichael123)_ ([#3261](https://github.com/stacksjs/stacks/issues/3261))
+- **dashboard**: email and marketing models choose their list columns ([9dfab13](https://github.com/stacksjs/stacks/commit/9dfab13)) _(by glennmichael123)_ ([#3261](https://github.com/stacksjs/stacks/issues/3261))
+- **dashboard**: people, team and access models choose their list columns ([52b140e](https://github.com/stacksjs/stacks/commit/52b140e)) _(by glennmichael123)_ ([#3261](https://github.com/stacksjs/stacks/issues/3261))
+- **doctor**: say whether an app has one copy of STX ([781446c](https://github.com/stacksjs/stacks/commit/781446c)) _(by glennmichael123)_ ([#3260](https://github.com/stacksjs/stacks/issues/3260))
+- **dashboard**: a list draws the model's chosen columns, and links to other records by name ([07065bf](https://github.com/stacksjs/stacks/commit/07065bf)) _(by glennmichael123)_ ([#3259](https://github.com/stacksjs/stacks/issues/3259))
+- **dashboard**: a model names the columns its list shows, and a list names the records it links to ([b3795ba](https://github.com/stacksjs/stacks/commit/b3795ba)) _(by glennmichael123)_ ([#3259](https://github.com/stacksjs/stacks/issues/3259))
+- **dashboard**: a record's page lists the records that belong to it ([8b7d4df](https://github.com/stacksjs/stacks/commit/8b7d4df)) _(by glennmichael123)_ ([#3258](https://github.com/stacksjs/stacks/issues/3258))
+- **dashboard**: an endpoint that lists the records pointing at a record ([94cb262](https://github.com/stacksjs/stacks/commit/94cb262)) _(by glennmichael123)_ ([#3258](https://github.com/stacksjs/stacks/issues/3258))
+- **dashboard**: forms ask for a related record by name, and a record's page says which it is ([e824bb3](https://github.com/stacksjs/stacks/commit/e824bb3)) _(by glennmichael123)_ ([#3257](https://github.com/stacksjs/stacks/issues/3257), [#3](https://github.com/stacksjs/stacks/issues/3))
+- **dashboard**: an endpoint that lists a model's records by name ([f28bceb](https://github.com/stacksjs/stacks/commit/f28bceb)) _(by glennmichael123)_ ([#3257](https://github.com/stacksjs/stacks/issues/3257), [#12](https://github.com/stacksjs/stacks/issues/12))
+- **dashboard**: a belongsTo is a relation field, and a record that is gone is refused on it ([4cbcffc](https://github.com/stacksjs/stacks/commit/4cbcffc)) _(by glennmichael123)_ ([#3257](https://github.com/stacksjs/stacks/issues/3257))
+- **dashboard**: the edit form asks for each field the way the create form does ([8acfeee](https://github.com/stacksjs/stacks/commit/8acfeee)) _(by glennmichael123)_ ([#3256](https://github.com/stacksjs/stacks/issues/3256))
+- **dashboard**: the pages say when a delete anonymizes, before and after ([613246d](https://github.com/stacksjs/stacks/commit/613246d)) _(by glennmichael123)_ ([#3253](https://github.com/stacksjs/stacks/issues/3253))
+- **dashboard**: a user other records refer to is anonymized, not refused ([2b1e2fd](https://github.com/stacksjs/stacks/commit/2b1e2fd)) _(by glennmichael123)_ ([#3253](https://github.com/stacksjs/stacks/issues/3253))
+- **dashboard**: the Users page has an Invite user button and a page to send the invitation from ([f370b91](https://github.com/stacksjs/stacks/commit/f370b91)) _(by glennmichael123)_ ([#3252](https://github.com/stacksjs/stacks/issues/3252))
+- **dashboard**: an endpoint that adds a user by invitation ([880650f](https://github.com/stacksjs/stacks/commit/880650f)) _(by glennmichael123)_ ([#3252](https://github.com/stacksjs/stacks/issues/3252))
+- **dashboard**: the write capabilities gain invite, which is how a User is added ([1135687](https://github.com/stacksjs/stacks/commit/1135687)) _(by glennmichael123)_ ([#3252](https://github.com/stacksjs/stacks/issues/3252))
+- **auth**: a setup or reset link says whether it was sent, and its mail states the lifetime in words ([7d09a5d](https://github.com/stacksjs/stacks/commit/7d09a5d)) _(by glennmichael123)_ ([#3252](https://github.com/stacksjs/stacks/issues/3252))
+- **dashboard**: users can be edited and deleted, through a write list the model names for the dashboard ([dcbfe2a](https://github.com/stacksjs/stacks/commit/dcbfe2a)) _(by glennmichael123)_ ([#3251](https://github.com/stacksjs/stacks/issues/3251))
+- **dashboard**: the eye on Activity and Jobs, and a badge that keeps its space ([ba92028](https://github.com/stacksjs/stacks/commit/ba92028)) _(by glennmichael123)_ ([#3250](https://github.com/stacksjs/stacks/issues/3250))
+
+## 🐛 Bug Fixes
+
+- **new**: an app does not inherit the framework's overrides for STX ([ef8d55a](https://github.com/stacksjs/stacks/commit/ef8d55a)) _(by glennmichael123)_ ([#3260](https://github.com/stacksjs/stacks/issues/3260))
+- **deps**: published packages ask for the STX release they were tested against, or newer ([9bc14c6](https://github.com/stacksjs/stacks/commit/9bc14c6)) _(by glennmichael123)_ ([#3260](https://github.com/stacksjs/stacks/issues/3260))
+- **upgrade**: read the floor of an STX range as the release the framework was tested against ([11beb02](https://github.com/stacksjs/stacks/commit/11beb02)) _(by glennmichael123)_ ([#3260](https://github.com/stacksjs/stacks/issues/3260))
+- **dashboard**: a model's form fields are the kind their rule says, so moments, decimals and JSON can be saved ([002d6fb](https://github.com/stacksjs/stacks/commit/002d6fb)) _(by glennmichael123)_ ([#3256](https://github.com/stacksjs/stacks/issues/3256))
+- **dashboard**: dialogs are centred over the content, however the page was reached ([5bff372](https://github.com/stacksjs/stacks/commit/5bff372)) _(by glennmichael123)_ ([#3255](https://github.com/stacksjs/stacks/issues/3255))
+- **dashboard**: an anonymized account can be viewed and nothing else ([c9f2e1d](https://github.com/stacksjs/stacks/commit/c9f2e1d)) _(by glennmichael123)_ ([#3254](https://github.com/stacksjs/stacks/issues/3254))
+- **orm**: erasing a user no longer writes NULL into required columns ([a2a538b](https://github.com/stacksjs/stacks/commit/a2a538b)) _(by glennmichael123)_ ([#3253](https://github.com/stacksjs/stacks/issues/3253))
+- **dashboard**: a refused save says which field and why, and the delete confirmation is in plain words ([31085a4](https://github.com/stacksjs/stacks/commit/31085a4)) _(by glennmichael123)_ ([#3251](https://github.com/stacksjs/stacks/issues/3251))
+- **error-handling**: tell a foreign key refusal apart, and read Postgres states where Bun reports them ([d63b672](https://github.com/stacksjs/stacks/commit/d63b672)) _(by glennmichael123)_ ([#3251](https://github.com/stacksjs/stacks/issues/3251))
+- **dashboard**: Home and Settings stop showing features that are off ([42df525](https://github.com/stacksjs/stacks/commit/42df525)) _(by glennmichael123)_ ([#3250](https://github.com/stacksjs/stacks/issues/3250))
+
+## ♻️ Code Refactoring
+
+- **dashboard**: marketing, queue, realtime and settings stacks space with a gap ([c46d5a2](https://github.com/stacksjs/stacks/commit/c46d5a2)) _(by glennmichael123)_ ([#3250](https://github.com/stacksjs/stacks/issues/3250))
+- **dashboard**: analytics, buddy, commerce and mail stacks space with a gap ([6ee369e](https://github.com/stacksjs/stacks/commit/6ee369e)) _(by glennmichael123)_ ([#3250](https://github.com/stacksjs/stacks/issues/3250))
+
+## 📝 Documentation
+
+- **tinker**: describe the session, the frame protocol and the real flags ([2a08489](https://github.com/stacksjs/stacks/commit/2a08489)) _(by Chris Breuer)_
+- **deps**: how an app chooses its STX version, without overrides ([b59e0f9](https://github.com/stacksjs/stacks/commit/b59e0f9)) _(by glennmichael123)_ ([#3260](https://github.com/stacksjs/stacks/issues/3260))
+- **dashboard**: how a model chooses its list columns ([d891bdb](https://github.com/stacksjs/stacks/commit/d891bdb)) _(by glennmichael123)_ ([#3259](https://github.com/stacksjs/stacks/issues/3259))
+- **dashboard**: how a record's page lists who points at it, and the action and component counts ([f2c7de9](https://github.com/stacksjs/stacks/commit/f2c7de9)) _(by glennmichael123)_ ([#3258](https://github.com/stacksjs/stacks/issues/3258))
+- **dashboard**: how relations are picked by name, and the action and component counts ([dfeae0f](https://github.com/stacksjs/stacks/commit/dfeae0f)) _(by glennmichael123)_ ([#3257](https://github.com/stacksjs/stacks/issues/3257))
+- **dashboard**: what the model forms ask for and how, and the component count ([9ae4132](https://github.com/stacksjs/stacks/commit/9ae4132)) _(by glennmichael123)_ ([#3256](https://github.com/stacksjs/stacks/issues/3256))
+- **dashboard**: how a user other records refer to is anonymized, and the action count ([2097f2c](https://github.com/stacksjs/stacks/commit/2097f2c)) _(by glennmichael123)_ ([#3253](https://github.com/stacksjs/stacks/issues/3253))
+- **dashboard**: how users are invited, and the action and component counts ([fb228bb](https://github.com/stacksjs/stacks/commit/fb228bb)) _(by glennmichael123)_ ([#3252](https://github.com/stacksjs/stacks/issues/3252))
+
+## 💄 Styles
+
+- **dashboard**: input, select and textarea are one family ([73d3155](https://github.com/stacksjs/stacks/commit/73d3155)) _(by glennmichael123)_ ([#3256](https://github.com/stacksjs/stacks/issues/3256))
+- **dashboard**: kanban, permissions, models, notifications and queries page titles share one weight and size ([26daf3e](https://github.com/stacksjs/stacks/commit/26daf3e)) _(by glennmichael123)_ ([#3250](https://github.com/stacksjs/stacks/issues/3250))
+- **dashboard**: infrastructure and job detail page titles share one weight and size ([a30a737](https://github.com/stacksjs/stacks/commit/a30a737)) _(by glennmichael123)_ ([#3250](https://github.com/stacksjs/stacks/issues/3250))
+- **dashboard**: analytics, app, auth, CI, content, layout and mail page titles share one weight and size ([1ddd278](https://github.com/stacksjs/stacks/commit/1ddd278)) _(by glennmichael123)_ ([#3250](https://github.com/stacksjs/stacks/issues/3250))
+
+## 🔧 Chores
+
+- adopt verified DTSX 0.11.45 and Craft 0.0.497 ([a079492](https://github.com/stacksjs/stacks/commit/a079492)) _(by Chris)_ ([#3247](https://github.com/stacksjs/stacks/issues/3247), [#3248](https://github.com/stacksjs/stacks/issues/3248))
+- **deps**: require verified Craft 0.0.496 ([b62688c](https://github.com/stacksjs/stacks/commit/b62688c)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.538...v0.75.539)
 
 ## 🐛 Bug Fixes
