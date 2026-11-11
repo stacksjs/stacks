@@ -121,7 +121,7 @@ describe('which models are added by invitation', () => {
   const user = { name: 'User', traits: { useAuth: true }, attributes: { password }, dashboard: { writes: ['store', 'update', 'destroy'] } }
 
   it('User, when the dashboard may create one', () => {
-    expect(modelWriteCapabilities(user)).toEqual({ create: false, update: true, destroy: true, invite: true })
+    expect(modelWriteCapabilities(user)).toEqual({ create: false, update: true, destroy: true, invite: true, anonymize: true })
   })
 
   it('not a User the dashboard may not create', () => {
@@ -133,7 +133,7 @@ describe('which models are added by invitation', () => {
     // The setup link is the users table's.
     expect(modelWriteCapabilities({ ...user, name: 'Admin' }).invite).toBe(false)
     expect(modelWriteCapabilities({ name: 'User', traits: { useApi: true } }).invite).toBe(false)
-    expect(modelWriteCapabilities({ name: 'Team', traits: { useApi: true } })).toEqual({ create: true, update: true, destroy: true, invite: false })
+    expect(modelWriteCapabilities({ name: 'Team', traits: { useApi: true } })).toEqual({ create: true, update: true, destroy: true, invite: false, anonymize: false })
   })
 
   it('the User model allows it, and still keeps every write off its API', () => {

@@ -1,12 +1,13 @@
 import { hiddenModelColumns } from '../../../../resources/functions/dashboard/model-columns'
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
+import { anonymizedRows } from '@stacksjs/orm'
 import { response as routerResponse } from '@stacksjs/router'
 import { safeGet } from '../../../../resources/functions/dashboard/data'
 import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
 import { dashboardOperationalError } from '../dashboard-response'
 import { isUnmigratedTable } from './model-migration'
-import { isValidModelSlug, type ModelCreateField, type ModelWriteCapabilities, modelCreateFields, modelSchemaColumns, modelWritableColumns, modelWriteCapabilities, slugToPascal } from './model-write'
+import { isErasureSubject, isValidModelSlug, type ModelCreateField, type ModelWriteCapabilities, modelCreateFields, modelSchemaColumns, modelWritableColumns, modelWriteCapabilities, slugToPascal } from './model-write'
 
 /**
  * `GET /api/dashboard/models/{slug}` (stacksjs/stacks#1838).
@@ -57,6 +58,8 @@ interface ResponseShape {
   writeCapabilities: ModelWriteCapabilities
   createFields: ModelCreateField[]
   updateColumns: string[]
+  /** Rows whose personal details erasure has replaced with placeholders (the subject model only). */
+  anonymizedIds?: Array<number | string>
   /** False when the model's table does not exist yet: `./buddy migrate` creates it. */
   migrated: boolean
   error: string | null
@@ -214,7 +217,7 @@ export default new Action({
       q,
       filters,
       writable: false,
-      writeCapabilities: { create: false, update: false, destroy: false, invite: false },
+      writeCapabilities: { create: false, update: false, destroy: false, invite: false, anonymize: false },
       createFields: [],
       updateColumns: [],
       migrated: true,
@@ -298,6 +301,17 @@ export default new Action({
           flat[col] = safeGet(row, col, null)
         return flat
       })
+
+      // An account erased under the app's data-subject rules is stored as
+      // placeholders ("[erased]", "erased-13"). The page says which rows those
+      // are, so it can explain them and not show what looks like corrupt data.
+      if (isErasureSubject(Model) && response.rows.length > 0) {
+        const erased = await anonymizedRows(modelName, response.rows).catch((error) => {
+          console.warn(`[dashboard/api] ModelShowAction: could not tell which ${modelName} rows are anonymized:`, error)
+          return [] as boolean[]
+        })
+        response.anonymizedIds = response.rows.filter((_row, index) => erased[index] === true).map(row => row.id as number | string)
+      }
     }
     catch (error) {
       // Not an error to report: the table simply has not been created yet, and

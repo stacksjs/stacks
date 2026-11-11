@@ -91,7 +91,7 @@ describe('what the dashboard may write is the model\'s to say', () => {
 
   it('takes dashboard.writes over the routes, wider or narrower', () => {
     expect(modelDashboardWrites(account)).toEqual(['update', 'destroy'])
-    expect(modelWriteCapabilities(account)).toEqual({ create: false, update: true, destroy: true, invite: false })
+    expect(modelWriteCapabilities(account)).toEqual({ create: false, update: true, destroy: true, invite: false, anonymize: false })
     // Read-only in the dashboard whatever the API allows.
     expect(modelDashboardWrites({ traits: { useApi: true }, dashboard: { writes: [] } })).toEqual([])
   })
@@ -206,8 +206,8 @@ describe('refusals a person can act on', () => {
     expect(Member.deleted).toEqual([])
 
     // Someone else's account, and the local dashboard that has no session.
-    expect(await answer(await ModelDestroyAction.handle(request({ slug: 'member', id: '8' }, {}, { id: 7 })))).toEqual({ status: 200, body: { ok: true, id: 8 } })
-    expect(await answer(await ModelDestroyAction.handle(request({ slug: 'member', id: '7' })))).toEqual({ status: 200, body: { ok: true, id: 7 } })
+    expect(await answer(await ModelDestroyAction.handle(request({ slug: 'member', id: '8' }, {}, { id: 7 })))).toEqual({ status: 200, body: { ok: true, id: 8, anonymized: false } })
+    expect(await answer(await ModelDestroyAction.handle(request({ slug: 'member', id: '7' })))).toEqual({ status: 200, body: { ok: true, id: 7, anonymized: false } })
     expect(Member.deleted).toEqual([8, 7])
   })
 

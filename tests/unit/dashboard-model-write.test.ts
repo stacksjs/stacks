@@ -39,12 +39,14 @@ describe('dashboard generic model writes', () => {
       update: false,
       destroy: false,
       invite: false,
+      anonymize: false,
     })
     expect(modelWriteCapabilities({ traits: { useApi: true } })).toEqual({
       create: true,
       update: true,
       destroy: true,
       invite: false,
+      anonymize: false,
     })
     expect(modelWriteCapabilities({
       traits: { useApi: { routes: ['index', 'store', 'show'] } },
@@ -53,6 +55,7 @@ describe('dashboard generic model writes', () => {
       update: false,
       destroy: false,
       invite: false,
+      anonymize: false,
     })
   })
 
@@ -82,7 +85,7 @@ describe('dashboard generic model writes', () => {
       expect(modelWriteCapabilities(model).create).toBe(true)
     }
     // Updating and deleting are not affected.
-    expect(modelWriteCapabilities({ ...user, traits: { useApi: true } })).toEqual({ create: false, update: true, destroy: true, invite: false })
+    expect(modelWriteCapabilities({ ...user, traits: { useApi: true } })).toEqual({ create: false, update: true, destroy: true, invite: false, anonymize: false })
   })
 
   test('create fields come only from safe fillable model metadata', () => {

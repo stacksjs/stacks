@@ -135,7 +135,9 @@ describe('dashboard operational error contract', () => {
     const show = readAction('Models/ModelShowAction.ts')
     const resolver = readAction('Models/model-write.ts')
 
-    expect(writes.match(/dashboardOperationalError\(/g)?.length).toBe(3)
+    // One per write, and a second in destroy: an erasure that did not finish
+    // is reported apart from a delete that failed (stacksjs/stacks#3253).
+    expect(writes.match(/dashboardOperationalError\(/g)?.length).toBe(4)
     expect(writes).not.toMatch(/return \{ ok: false, error:/)
     expect(show.match(/dashboardOperationalError\(/g)?.length).toBe(2)
     expect(show).not.toContain('e instanceof Error ? e.message')

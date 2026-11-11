@@ -6,6 +6,7 @@
  * casts and no observers; writing to it from a generic admin screen would
  * bypass every guarantee the ORM makes. Those rows stay read-only.
  */
+import { GDPR_SUBJECT_MODEL } from '@stacksjs/orm'
 import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
 import { dashboardOperationalIssue } from '../dashboard-response'
 import { modelApiConfiguration } from './model-api'
@@ -60,6 +61,13 @@ export interface ModelWriteCapabilities {
    * dashboard may create one, since no form can supply a password for it.
    */
   invite: boolean
+  /**
+   * A delete the database refuses, because other records still point at the
+   * row, anonymizes it instead: its personal details are removed and the
+   * records are kept. True for the model the app's erasure rules are about
+   * (`User`), so the confirmation can say so before anything is pressed.
+   */
+  anonymize: boolean
 }
 
 export interface ModelCreateField {
@@ -195,7 +203,17 @@ export function modelWriteCapabilities(Model: any): ModelWriteCapabilities {
     // The invitation mails the framework's account-setup link, which is the
     // `users` table's, so this is `User` and not every model with `useAuth`.
     invite: writes.includes('store') && Model?.name === 'User' && isAccountModel(Model),
+    anonymize: writes.includes('destroy') && isErasureSubject(Model),
   }
+}
+
+/**
+ * Whether this is the model the app's erasure rules are about: the person a
+ * data-subject request names, whose rows every other model's `gdpr` trait
+ * says to delete, anonymize or keep. `User`, by `GDPR_SUBJECT_MODEL`.
+ */
+export function isErasureSubject(Model: any): boolean {
+  return Model?.name === GDPR_SUBJECT_MODEL
 }
 
 /**
