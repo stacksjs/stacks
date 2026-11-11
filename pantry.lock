@@ -394,7 +394,7 @@
       "name": "@stacksjs/build",
       "version": "0.75.540",
       "dependencies": {
-        "@dtsx/bun": "^0.11.45",
+        "@dtsx/bun": "^0.11.50",
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/storage": "workspace:*"
@@ -1339,7 +1339,7 @@
         "very-happy-dom": "^0.4.1"
       },
       "devDependencies": {
-        "@dtsx/dtsx": "^0.11.45",
+        "@dtsx/dtsx": "^0.11.50",
         "better-dx": "^0.2.24"
       }
     },
