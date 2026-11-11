@@ -31,17 +31,6 @@ export function create(buddy: CLI): void {
   const descriptions = {
     name: 'The name of the project',
     command: 'Create a new Stacks project',
-    ui: 'Are you building a UI?',
-    components: 'Are you building UI components?',
-    webComponents: 'Automagically built optimized custom elements/web components?',
-    views: 'How about views?',
-    functions: 'Are you developing functions/composables?',
-    api: 'Are you building an API?',
-    database: 'Do you need a database?',
-    notifications: 'Do you need notifications? e.g. email, SMS, push or chat notifications',
-    cache: 'Do you need caching?',
-    email: 'Do you need email?',
-    project: 'Target a specific project',
     minimal: 'Skip optional feature bundles (cms, commerce, dashboard, marketing, monitoring, realtime, queue) - bare-bones API/SPA starter that can re-add them later via `./buddy <feature>:install`.',
     withCore: 'Keep the framework vendored in `storage/framework/core` as a Bun workspace, for working ON Stacks. Apps that only work WITH Stacks want the default, which resolves every @stacksjs/* package from npm.',
     vendorDefaults: 'Commit a copy of the framework defaults in `storage/framework/defaults` instead of linking it to node_modules/@stacksjs/defaults. Implied by --with-core.',
@@ -52,16 +41,6 @@ export function create(buddy: CLI): void {
     .command('new [name]', descriptions.command)
     .alias('create')
     .option('-n, --name [name]', descriptions.name, { default: false })
-    .option('-u, --ui', descriptions.ui, { default: true }) // if no, disregard remainder of questions wrt UI
-    .option('-c, --components', descriptions.components, { default: true })
-    .option('-w, --web-components', descriptions.webComponents, { default: true })
-    .option('-p, --views', descriptions.views, { default: true }) // i.e. `buddy dev`
-    .option('-f, --functions', descriptions.functions, { default: true }) // if no, API would be false
-    .option('-a, --api', descriptions.api, { default: true }) // APIs need an HTTP server & assumes functions is true
-    .option('-d, --database', descriptions.database, { default: true })
-    .option('-ca, --cache', descriptions.cache, { default: false })
-    .option('-e, --email', descriptions.email, { default: false })
-    .option('-P, --project [project]', descriptions.project, { default: false })
     .option('-m, --minimal', descriptions.minimal, { default: false })
     .option('--native', 'Create a minimal offline Craft desktop app', { default: false })
     .option('--desktop', 'Also make it a native Mac app: stx screens drawn by AppKit, with the API running inside the app (config/desktop.ts, macos.agent)', { default: false })
@@ -70,7 +49,6 @@ export function create(buddy: CLI): void {
     .option('--vendor-defaults', descriptions.vendorDefaults, { default: false })
     .option('--no-provision', 'Install JavaScript dependencies without provisioning system packages')
     .option('--verbose', descriptions.verbose, { default: false })
-    // .option('--auth', 'Scaffold an authentication?', { default: true })
     .action(async (name, options: NewOptions) => {
       log.debug('Running `buddy new <name>` ...', options)
 

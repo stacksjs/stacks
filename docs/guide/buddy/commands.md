@@ -4177,16 +4177,6 @@ Create a new Stacks project
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `-n`, `--name` | The name of the project | value, optional | `false` |
-| `-u`, `--ui` | Are you building a UI? | boolean, optional | `true` |
-| `-c`, `--components` | Are you building UI components? | boolean, optional | `true` |
-| `-w`, `--web-components` | Automagically built optimized custom elements/web components? | boolean, optional | `true` |
-| `-p`, `--views` | How about views? | boolean, optional | `true` |
-| `-f`, `--functions` | Are you developing functions/composables? | boolean, optional | `true` |
-| `-a`, `--api` | Are you building an API? | boolean, optional | `true` |
-| `-d`, `--database` | Do you need a database? | boolean, optional | `true` |
-| `--ca`, `--cache` | Do you need caching? | boolean, optional | `false` |
-| `-e`, `--email` | Do you need email? | boolean, optional | `false` |
-| `-P`, `--project` | Target a specific project | value, optional | `false` |
 | `-m`, `--minimal` | Skip optional feature bundles (cms, commerce, dashboard, marketing, monitoring, realtime, queue) - bare-bones API/SPA starter that can re-add them later via `./buddy <feature>:install`. | boolean, optional | `false` |
 | `--native` | Create a minimal offline Craft desktop app | boolean, optional | `false` |
 | `--desktop` | Also make it a native Mac app: stx screens drawn by AppKit, with the API running inside the app (config/desktop.ts, macos.agent) | boolean, optional | `false` |

@@ -281,15 +281,7 @@ export type AddOptions = {
 } & CliOptions
 
 export type CreateStringOption = 'name'
-export type CreateBooleanOption =
-  | 'ui'
-  | 'components'
-  | 'web-components'
-  | 'views'
-  | 'functions'
-  | 'api'
-  | 'database'
-  | 'minimal'
+export type CreateBooleanOption = 'minimal'
 export type CreateOptions = {
   [key in CreateBooleanOption]: boolean
 } & {
