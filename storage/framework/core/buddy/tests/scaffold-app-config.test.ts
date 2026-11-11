@@ -65,7 +65,10 @@ describe('the generated app config template', () => {
     const team = readFileSync(join(APP_CONFIG, 'team.ts'), 'utf8')
 
     expect(analytics).toContain("driver: 'analyticshq'")
-    expect(analytics).toContain("siteId: ''")
+    // From the environment, so a deploy sets the id without a code change, and
+    // empty when it is unset: an empty site id emits no tracking tags.
+    expect(analytics).toContain("siteId: env.ANALYTICSHQ_SITE_ID || ''")
+    expect(analytics).not.toMatch(/siteId: '[^']+'/)
     expect(cloud).toContain('APP_DOMAIN = env.APP_DOMAIN || undefined')
     expect(cloud).not.toContain('hostedZoneId')
     expect(dns).toContain('a: []')
@@ -77,6 +80,22 @@ describe('the generated app config template', () => {
     expect(email).not.toContain('enabled: true')
     expect(email).toContain('mailboxes: []')
     expect(team).toContain('members: {}')
+  })
+})
+
+describe('the analytics site id comes from the environment', () => {
+  const repo = join(import.meta.dir, '../../../../..')
+
+  test('the key is declared, with an empty default', () => {
+    const env = readFileSync(join(repo, 'config/env.ts'), 'utf8')
+
+    expect(/ANALYTICSHQ_SITE_ID: \{\s+validation: schema\.string\(\),\s+default: '',/.test(env)).toBe(true)
+  })
+
+  test('the example lists it unset', () => {
+    const example = readFileSync(join(repo, '.env.example'), 'utf8')
+
+    expect(example.split('\n')).toContain('ANALYTICSHQ_SITE_ID=')
   })
 })
 

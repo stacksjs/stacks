@@ -30,6 +30,11 @@ const envSchema = defineEnv({
     default: 'base64:1234567890',
   },
 
+  ANALYTICSHQ_SITE_ID: {
+    validation: schema.string(),
+    default: '',
+  },
+
   LOGHQ_KEY: {
     validation: schema.string(),
     default: '',
