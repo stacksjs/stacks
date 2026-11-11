@@ -2388,7 +2388,12 @@ export async function missingRecordedTables(): Promise<string[]> {
   const dir = migrationDirectory(dialect)
   const ledgerDialect = dialect === 'vitess' ? 'mysql' : dialect
 
-  const { supported, missing, live } = await auditMissingTables({ dir, dialect: ledgerDialect })
+  // The gate is passed, not left to be resolved: naming `dir` tells the audit
+  // the caller chose the corpus, so it applies no gate of its own. Without it
+  // every table of a disabled feature that a recorded file mentions (the
+  // `carts` and `authors` of a new app with commerce and cms off) was reported
+  // as missing, on a database that was exactly as it should be.
+  const { supported, missing, live } = await auditMissingTables({ dir, dialect: ledgerDialect, gate: await featureGateForLedger(dir) })
   if (!supported || missing.length === 0)
     return []
 
