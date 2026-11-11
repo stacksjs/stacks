@@ -284,7 +284,7 @@ void load()
       `:text` bindings here stay reactive. -->
   <div class="flex flex-wrap gap-4 items-start justify-between">
     <div class="min-w-0">
-      <h1 class="font-semibold text-2xl text-neutral-900 truncate dark:text-white" :text="modelName()"></h1>
+      <h1 class="font-bold text-2xl text-neutral-900 truncate dark:text-white" :text="modelName()"></h1>
       <p class="mt-1 text-[13px] text-neutral-500 dark:text-neutral-400" :text="subtitle()"></p>
     </div>
     <div class="flex gap-2 items-center">

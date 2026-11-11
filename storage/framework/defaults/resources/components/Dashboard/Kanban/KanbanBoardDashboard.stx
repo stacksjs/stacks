@@ -374,7 +374,7 @@
     <div :if="board && !loading">
       <header class="flex items-start justify-between mb-6">
         <div>
-          <h1 class="font-semibold text-2xl text-zinc-900 dark:text-zinc-100" :text="board.name"></h1>
+          <h1 class="font-bold text-2xl text-zinc-900 dark:text-zinc-100" :text="board.name"></h1>
           <p :if="board.description" class="mt-1 text-sm text-zinc-500" :text="board.description"></p>
           <p class="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
             <span :text="columns.length + ' columns'"></span>

@@ -116,7 +116,8 @@ describe('dashboard row actions', () => {
   })
 
   test('the Users, Teams and Subscribers tables offer actions their model allows', () => {
-    expect(records).toContain(`MODEL_SLUGS: Partial<Record<DataMode, string>> = { users: 'user', teams: 'team', subscribers: 'subscriber' }`)
+    // Activity too: its model declares no write routes, so its rows get the eye alone.
+    expect(records).toContain(`MODEL_SLUGS: Record<DataMode, string> = { activity: 'activity', users: 'user', teams: 'team', subscribers: 'subscriber' }`)
     expect(records).toContain(`...(capabilities().update ? [{ action: 'edit', label: 'Edit' }] : [])`)
     expect(records).toContain(`...(capabilities().destroy ? [{ action: 'delete', label: 'Delete' }] : [])`)
     expect(records.match(/:row-actions="rowActions\(\)"/g)?.length).toBe(2)
@@ -239,5 +240,41 @@ describe('table loops', () => {
     expect(table).toContain('<span :for="action in rowActions()" class="contents">')
     expect(table).not.toContain('<template :for="(row, rowIndex) in visibleRows()">')
     expect(table).not.toContain('<template :for="action in rowActions()">')
+  })
+})
+
+describe('dashboard consistency', () => {
+  test('every page title is the same weight and size', () => {
+    // 32 pages said font-bold text-2xl and 25 said something else: semibold,
+    // text-xl, or a text-base heading that read as a section label. The
+    // record pages (view, edit, create) are larger on purpose.
+    const larger = new Set(['Models/ModelRecordCreate.stx', 'Models/ModelRecordDetail.stx', 'Models/ModelRecordEdit.stx'])
+    const notPages = ['Auth/', 'Feedback/', 'Transaction/', 'Teams/TeamInvitationDashboard.stx', 'NotFoundDashboard.stx']
+    const root = resolve('storage/framework/defaults/resources/components/Dashboard')
+    const odd: string[] = []
+    for (const file of templates(root)) {
+      const name = file.slice(root.length + 1)
+      // Access Tokens lives beside the sign-in components but is a dashboard page.
+      if (larger.has(name) || (name !== 'Auth/AccessTokens.stx' && notPages.some(prefix => name.startsWith(prefix))))
+        continue
+      for (const [, classes] of readFileSync(file, 'utf8').matchAll(/<h1 class="([^"]*)"/g)) {
+        const tokens = classes!.split(/\s+/)
+        if (!tokens.includes('font-bold') || !tokens.includes('text-2xl'))
+          odd.push(`${name}: ${classes}`)
+      }
+    }
+    expect(odd).toEqual([])
+  })
+
+  test('the jobs table opens a job with the eye, like every other table', () => {
+    const jobs = read('Jobs/JobTable.stx')
+    expect(jobs).toContain(`:aria-label="'View job ' + job.name" :title="'View job ' + job.name"`)
+    expect(jobs).toContain('i-hugeicons-view')
+    expect(jobs).not.toMatch(/>\s*View\s*<\/StxLink>/)
+  })
+
+  test('a badge keeps the space between its number and its word', () => {
+    // "{{ n }} editable" inside a Badge rendered "1editable".
+    expect(read('Settings/SettingsDashboard.stx')).toContain(`{{ editableCount() + ' editable' }}`)
   })
 })

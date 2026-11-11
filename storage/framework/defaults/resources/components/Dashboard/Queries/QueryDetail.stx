@@ -66,7 +66,7 @@ onMount(() => {
     </StxLink>
     <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
       <div>
-        <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">Query Details</h1>
+        <h1 class="font-bold text-2xl text-neutral-900 tracking-tight dark:text-white">Query Details</h1>
         <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">A safe projection of one native database log record.</p>
       </div>
       <span :if="record()" :class="'inline-flex px-2.5 py-1 font-medium text-xs rounded-md ' + statusClass(record()?.status || 'completed')">{{ record()?.status }}</span>

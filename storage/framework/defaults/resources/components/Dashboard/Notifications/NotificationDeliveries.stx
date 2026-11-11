@@ -104,7 +104,7 @@ onMount(loadDeliveries)
     </div>
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
-        <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">{{ title }}</h1>
+        <h1 class="font-bold text-2xl text-gray-900 dark:text-neutral-100">{{ title }}</h1>
         <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">{{ description }}</p>
       </div>
       <div class="sm:flex-none mt-4 sm:ml-16 sm:mt-0">

@@ -77,7 +77,7 @@ onMount(loadOverview)
     </div>
     <div class="flex gap-4 items-start justify-between">
       <div>
-        <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Notifications Overview</h1>
+        <h1 class="font-bold text-2xl text-gray-900 dark:text-neutral-100">Notifications Overview</h1>
         <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">Live transport health across every notification channel.</p>
       </div>
       <Button href="/notifications/history" variant="secondary">

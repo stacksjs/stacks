@@ -112,7 +112,7 @@ onMount(load)
     </div>
     <div class="sm:flex sm:items-start sm:justify-between">
       <div>
-        <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Notification History</h1>
+        <h1 class="font-bold text-2xl text-gray-900 dark:text-neutral-100">Notification History</h1>
         <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">Search and inspect persisted notification transport attempts.</p>
       </div>
       <StxLink to="/notifications/dashboard" class="inline-flex gap-2 items-center mt-4 px-3 py-2 sm:mt-0 font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">
