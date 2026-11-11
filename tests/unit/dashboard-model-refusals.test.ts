@@ -231,8 +231,12 @@ describe('the pages show it', () => {
   it('the edit form puts each refusal under its field', () => {
     const edit = source('storage/framework/defaults/resources/components/Dashboard/Models/ModelRecordEdit.stx')
     expect(edit).toContain('saveErrors.set(result.errors)')
-    expect(edit).toContain('<p :if="fieldError(field.name)" role="alert"')
-    expect(edit).toContain(':aria-invalid="fieldError(field.name) ? \'true\' : \'false\'"')
+    // Handed to the inputs both forms share, which give each control its message.
+    expect(edit).toContain(':errors="saveErrors()"')
+    const components = 'storage/framework/defaults/resources/components/Dashboard'
+    expect(source(`${components}/Models/ModelFieldInputs.stx`)).toContain(':error="error(field)"')
+    for (const control of ['Input', 'Select', 'Textarea'])
+      expect(source(`${components}/UI/${control}.stx`)).toContain(':aria-invalid="liveError() ? \'true\' : null"')
   })
 
   it('the delete confirmation is in plain words, in all three places', () => {

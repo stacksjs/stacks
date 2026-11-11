@@ -20,6 +20,7 @@ interface ColumnMeta {
 
 interface ResponseShape {
   modelName: string
+  modelLabel?: string
   tableName: string
   rows: Array<Record<string, unknown>>
   displayColumns: string[]
@@ -43,6 +44,8 @@ const PER_PAGE_OPTIONS = [25, 50, 100, 200]
 const navigation = useNavigation()
 
 const modelName = state('')
+// The class name, for the one message that tells a developer what was looked for.
+const modelClass = state('')
 const tableName = state('')
 const rows = state<Array<Record<string, unknown>>>([])
 const anonymizedIds = state<string[]>([])
@@ -166,7 +169,8 @@ async function load() {
 
     const data = await dashboardApi<ResponseShape>(`/api/dashboard/models/${encodeURIComponent(slug())}?${params}`)
 
-    modelName.set(data.modelName ?? '')
+    modelName.set(data.modelLabel ?? data.modelName ?? '')
+    modelClass.set(data.modelName ?? '')
     tableName.set(data.tableName ?? '')
     rows.set(data.rows ?? [])
     anonymizedIds.set((data.anonymizedIds ?? []).map(String))
@@ -363,7 +367,7 @@ void load()
         <h3 class="font-medium text-[13px] text-red-800 dark:text-red-200">Couldn't load <span :text="modelName()"></span></h3>
         <p class="mt-1 text-[13px] text-red-600 dark:text-red-300" :text="error()"></p>
         <p class="mt-2 text-[12px] text-red-500 dark:text-red-400">
-          Looked for an ORM model named <code :text="modelName()"></code> and a table named <code :text="tableName()"></code>.
+          Looked for an ORM model named <code :text="modelClass()"></code> and a table named <code :text="tableName()"></code>.
         </p>
       </div>
     </div>

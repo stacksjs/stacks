@@ -1,0 +1,113 @@
+<script client>
+// The inputs of a model's form, one per field, each in the control its kind
+// calls for: a select for a choice, a checkbox for yes or no, a date or a
+// date-and-time picker, a number box, a tall box for prose and for JSON, and
+// a line of text for the rest.
+//
+// The create page and the edit page both render this, so a kind of field is
+// drawn once. The page owns the values: this reports each change upward as
+// `{ name, value }` and shows the message a refused save came back with.
+import type { ModelCreateField, ModelFormValues } from '../../../../functions/dashboard-model-record'
+import { modelFieldError } from '../../../../functions/dashboard-model-record'
+
+const fields = useReactiveProp<ModelCreateField[]>('fields', [])
+const values = useReactiveProp<ModelFormValues>('values', {})
+const errors = useReactiveProp<Record<string, string[]>>('errors', {})
+const disabled = useReactiveProp('disabled', false)
+const emit = defineEmits(['change'])
+
+function text(field: ModelCreateField): string {
+  const value = values()[field.name]
+  return typeof value === 'string' ? value : ''
+}
+
+function error(field: ModelCreateField): string {
+  return modelFieldError(errors(), field.name)
+}
+
+function inputType(field: ModelCreateField): 'date' | 'datetime-local' | 'email' | 'number' | 'text' {
+  if (field.type === 'datetime')
+    return 'datetime-local'
+  if (field.type === 'date' || field.type === 'email' || field.type === 'number')
+    return field.type
+  return 'text'
+}
+
+/** Everything that is one line: text, email, number, date, date and time. */
+function isLine(field: ModelCreateField): boolean {
+  return field.type !== 'boolean' && field.type !== 'enum' && field.type !== 'longtext' && field.type !== 'json'
+}
+
+function hint(field: ModelCreateField): string {
+  if (field.type === 'json')
+    return 'JSON. Checked when you save.'
+  if (field.type === 'datetime')
+    return 'In your own time zone.'
+  return ''
+}
+
+function change(field: ModelCreateField, value: string | boolean): void {
+  emit('change', { name: field.name, value })
+}
+</script>
+
+<div class="flex flex-col gap-5">
+  <div :for="field in fields()" class="contents">
+    <label :if="field.type === 'boolean'" class="flex gap-3 items-start p-3 border border-neutral-200 rounded-lg dark:border-neutral-700">
+      <input
+        :name="field.name"
+        type="checkbox"
+        :checked="values()[field.name] === true"
+        :disabled="disabled()"
+        class="mt-0.5 h-4 w-4 text-blue-600 border-neutral-300 rounded"
+        @change="change(field, $event.target.checked)"
+      />
+      <span>
+        <span class="block font-medium text-neutral-900 text-sm dark:text-white">{{ field.label }}</span>
+        <span :if="error(field)" role="alert" class="block mt-0.5 text-red-600 text-xs dark:text-red-400">{{ error(field) }}</span>
+      </span>
+    </label>
+
+    <Select
+      :if="field.type === 'enum'"
+      :name="field.name"
+      :value="text(field)"
+      :options="field.options"
+      :label="field.label"
+      :ariaLabel="field.label"
+      :required="field.required"
+      :disabled="disabled()"
+      :error="error(field)"
+      @update:value="change(field, $event)"
+    />
+
+    <Textarea
+      :if="field.type === 'longtext' || field.type === 'json'"
+      :name="field.name"
+      :value="text(field)"
+      :label="field.label"
+      :ariaLabel="field.label"
+      :rows="field.type === 'json' ? 8 : 4"
+      :monospace="field.type === 'json'"
+      :hint="hint(field)"
+      :required="field.required"
+      :disabled="disabled()"
+      :error="error(field)"
+      @update:value="change(field, $event)"
+    />
+
+    <Input
+      :if="isLine(field)"
+      :name="field.name"
+      :value="text(field)"
+      :type="inputType(field)"
+      :label="field.label"
+      :ariaLabel="field.label"
+      :hint="hint(field)"
+      :required="field.required"
+      :disabled="disabled()"
+      :error="error(field)"
+      @update:value="change(field, $event)"
+    />
+  </div>
+</div>

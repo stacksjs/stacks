@@ -6,13 +6,13 @@
 // each field's message under its field. A created record opens on its own
 // page.
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
-import type { ModelCreateField, ModelCreateForm } from '../../../../functions/dashboard-model-record'
-import { createModelRecord, fetchModelCreateForm, modelRecordBackHref, modelRecordHref, modelRecordListLabel, userInviteHref } from '../../../../functions/dashboard-model-record'
+import type { ModelCreateForm, ModelFormValues } from '../../../../functions/dashboard-model-record'
+import { createModelRecord, fetchModelCreateForm, modelFormPayload, modelFormValues, modelRecordBackHref, modelRecordHref, modelRecordListLabel, userInviteHref } from '../../../../functions/dashboard-model-record'
 import { pushToast } from '../../../../functions/toasts'
 
 const navigation = useNavigation()
 const form = state<ModelCreateForm | null>(null)
-const values = state<Record<string, unknown>>({})
+const values = state<ModelFormValues>({})
 const loading = state(true)
 const loadError = state('')
 const creating = state(false)
@@ -37,25 +37,8 @@ function openInvite(): void {
   navigate(userInviteHref(listHref()))
 }
 
-function setValue(field: string, value: unknown): void {
-  values.set({ ...values(), [field]: value })
-}
-
-function fieldValue(field: string): string {
-  const value = values()[field]
-  return value === null || value === undefined ? '' : String(value)
-}
-
-function fieldError(field: string): string {
-  return createErrors()[field]?.[0] || ''
-}
-
-function inputType(field: ModelCreateField): 'date' | 'datetime-local' | 'email' | 'number' | 'text' {
-  if (field.type === 'datetime')
-    return 'datetime-local'
-  if (field.type === 'date' || field.type === 'email' || field.type === 'number')
-    return field.type
-  return 'text'
+function setValue(change: { name: string, value: string | boolean }): void {
+  values.set({ ...values(), [change.name]: change.value })
 }
 
 async function loadForm(): Promise<void> {
@@ -64,7 +47,7 @@ async function loadForm(): Promise<void> {
   try {
     const loaded = await fetchModelCreateForm(slug())
     form.set(loaded)
-    values.set(Object.fromEntries(loaded.fields.map(field => [field.name, field.defaultValue])))
+    values.set(modelFormValues(loaded.fields))
   }
   catch (error) {
     form.set(null)
@@ -82,7 +65,7 @@ async function create(): Promise<void> {
   createError.set('')
   createErrors.set({})
   try {
-    const result = await createModelRecord(slug(), { ...values() })
+    const result = await createModelRecord(slug(), modelFormPayload(fields(), values()))
     if (!result.ok) {
       createError.set(result.error)
       createErrors.set(result.errors)
@@ -153,49 +136,8 @@ onMount(() => {
           <h2 class="font-semibold text-base text-neutral-900 dark:text-white">{{ modelName() }} Details</h2>
           <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">The fields a new {{ modelName().toLowerCase() }} can be given. Anything else is set by the application.</p>
         </div>
-        <div class="flex flex-col gap-5 p-6">
-          <div :for="field in fields()" class="contents">
-            <label :if="field.type === 'boolean'" class="flex gap-3 items-start p-3 border border-neutral-200 rounded-lg dark:border-neutral-700">
-              <input
-                :name="field.name"
-                type="checkbox"
-                :checked="Boolean(values()[field.name])"
-                :disabled="creating()"
-                class="mt-0.5 h-4 w-4 text-blue-600 border-neutral-300 rounded"
-                @change="setValue(field.name, $event.target.checked)"
-              />
-              <span>
-                <span class="block font-medium text-neutral-900 text-sm dark:text-white">{{ field.label }}</span>
-                <span :if="fieldError(field.name)" class="block mt-0.5 text-red-600 text-xs dark:text-red-400">{{ fieldError(field.name) }}</span>
-              </span>
-            </label>
-
-            <Select
-              :if="field.type === 'enum'"
-              :name="field.name"
-              :value="fieldValue(field.name)"
-              :options="field.options"
-              :label="field.label"
-              :ariaLabel="field.label"
-              :required="field.required"
-              :disabled="creating()"
-              :error="fieldError(field.name)"
-              @update:value="setValue(field.name, $event)"
-            />
-
-            <Input
-              :if="field.type !== 'boolean' && field.type !== 'enum'"
-              :name="field.name"
-              :value="fieldValue(field.name)"
-              :type="inputType(field)"
-              :label="field.label"
-              :ariaLabel="field.label"
-              :required="field.required"
-              :disabled="creating()"
-              :error="fieldError(field.name)"
-              @update:value="setValue(field.name, $event)"
-            />
-          </div>
+        <div class="p-6">
+          <ModelFieldInputs :fields="fields()" :values="values()" :errors="createErrors()" :disabled="creating()" @change="setValue" />
         </div>
       </Card>
     </div>

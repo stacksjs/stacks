@@ -5,13 +5,15 @@
 // them, read only, as context. Saving sends only what changed, then returns
 // to where the visitor came from: the record's page, or the list.
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
-import type { ModelRecord } from '../../../../functions/dashboard-model-record'
-import { changedModelFields, fetchModelRecord, modelFieldError, modelRecordBackHref, modelRecordFields, modelRecordHref, modelRecordListLabel, modelRecordSections, updateModelRecord } from '../../../../functions/dashboard-model-record'
+import type { ModelFormValues, ModelRecord } from '../../../../functions/dashboard-model-record'
+import { fetchModelRecord, modelFormPayload, modelFormValues, modelRecordBackHref, modelRecordHref, modelRecordListLabel, modelRecordSections, updateModelRecord } from '../../../../functions/dashboard-model-record'
 import { pushToast } from '../../../../functions/toasts'
 
 const navigation = useNavigation()
 const record = state<ModelRecord | null>(null)
-const values = state<Record<string, string>>({})
+const values = state<ModelFormValues>({})
+/** What the form started with, so a save sends only what was changed. */
+const initial = state<ModelFormValues>({})
 const loading = state(true)
 const loadError = state('')
 const saving = state(false)
@@ -36,7 +38,7 @@ const returnHref = derived(() => cameFromView ? viewHref() : listHref())
 const listLabel = derived(() => modelRecordListLabel(record(), listHref()))
 const modelName = derived(() => record()?.modelName || 'Record')
 
-const writable = derived(() => record() ? modelRecordFields(record()!).filter(field => !field.readonly) : [])
+const writable = derived(() => record()?.fields ?? [])
 /** What cannot be changed here, formatted as the record's page shows it. */
 const context = derived(() => {
   const current = record()
@@ -49,12 +51,8 @@ const context = derived(() => {
 const anonymized = derived(() => Boolean(record()?.anonymized))
 const canEdit = derived(() => Boolean(record()?.writeCapabilities.update) && writable().length > 0 && !anonymized())
 
-function fieldError(field: string): string {
-  return modelFieldError(saveErrors(), field)
-}
-
-function updateValue(field: string, event: Event): void {
-  values.set({ ...values(), [field]: (event.target as HTMLInputElement).value })
+function setValue(change: { name: string, value: string | boolean }): void {
+  values.set({ ...values(), [change.name]: change.value })
 }
 
 async function loadRecord(): Promise<void> {
@@ -63,7 +61,9 @@ async function loadRecord(): Promise<void> {
   try {
     const loaded = await fetchModelRecord(slug(), recordId())
     record.set(loaded)
-    values.set(Object.fromEntries(modelRecordFields(loaded).filter(field => !field.readonly).map(field => [field.name, field.value])))
+    const start = modelFormValues(loaded.fields, loaded.row)
+    initial.set(start)
+    values.set({ ...start })
   }
   catch (error) {
     record.set(null)
@@ -78,7 +78,7 @@ async function save(): Promise<void> {
   const current = record()
   if (!current || saving())
     return
-  const fields = changedModelFields(current.row, values())
+  const fields = modelFormPayload(current.fields, values(), initial())
   if (Object.keys(fields).length === 0) {
     navigate(returnHref())
     return
@@ -153,20 +153,8 @@ onMount(() => {
     <div class="grid gap-6 grid-cols-1 items-start lg:grid-cols-2">
       <Card padding="none">
         <h2 class="px-6 py-4 font-semibold text-base text-neutral-900 dark:text-white border-b border-neutral-200 dark:border-neutral-700">{{ modelName() }} Details</h2>
-        <div class="flex flex-col gap-5 p-6">
-          <div :for="field in writable()" class="flex flex-col gap-1.5">
-            <label :for="'model-edit-' + field.name" class="font-medium text-neutral-900 text-sm dark:text-white">{{ field.label }}</label>
-            <input
-              :id="'model-edit-' + field.name"
-              :name="field.name"
-              type="text"
-              :value="values()[field.name] ?? field.value"
-              :aria-invalid="fieldError(field.name) ? 'true' : 'false'"
-              class="px-3 py-2 text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-white/10 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-              @input="updateValue(field.name, $event)"
-            >
-            <p :if="fieldError(field.name)" role="alert" class="text-red-600 text-xs dark:text-red-400">{{ fieldError(field.name) }}</p>
-          </div>
+        <div class="p-6">
+          <ModelFieldInputs :fields="writable()" :values="values()" :errors="saveErrors()" :disabled="saving()" @change="setValue" />
         </div>
       </Card>
 

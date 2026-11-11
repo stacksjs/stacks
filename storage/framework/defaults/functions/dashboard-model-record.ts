@@ -12,6 +12,7 @@
  * the eye and nothing else.
  */
 import { DashboardApiError, dashboardApi } from './dashboard-api'
+import { parseDashboardDate } from './dashboard-dates'
 
 export interface ModelWriteCapabilities {
   create: boolean
@@ -37,39 +38,42 @@ export interface ModelRecord {
   columns: ModelColumn[]
   /** The columns an edit may change: fillable attributes and declared keys. */
   updateColumns: string[]
+  /** The fields an edit may change, with how each is asked for. */
+  fields: ModelCreateField[]
   writeCapabilities: ModelWriteCapabilities
   /** Erased under the app's data-subject rules: its personal details are placeholders. */
   anonymized: boolean
 }
 
-export interface ModelRecordField {
-  name: string
-  label: string
-  value: string
-  readonly: boolean
-}
-
 interface ModelShowResponse {
   modelName?: string
+  modelLabel?: string
   tableName?: string
   createFields?: ModelCreateField[]
   rows?: Array<Record<string, unknown>>
   columnMeta?: ModelColumn[]
   updateColumns?: string[]
+  updateFields?: ModelCreateField[]
   writeCapabilities?: ModelWriteCapabilities
   anonymizedIds?: Array<number | string>
   error?: string | null
 }
 
 /** A field of the create form, from the model's fillable attributes. */
+/** How a field is asked for: see `modelFieldType` on the server. */
+export type ModelFieldType = 'boolean' | 'date' | 'datetime' | 'email' | 'enum' | 'json' | 'longtext' | 'number' | 'text'
+
 export interface ModelCreateField {
   name: string
   label: string
-  type: 'boolean' | 'date' | 'datetime' | 'email' | 'enum' | 'number' | 'text'
+  type: ModelFieldType
   required: boolean
   defaultValue: unknown
   options: string[]
 }
+
+/** What a form holds for each field: a checkbox's state, or an input's text. */
+export type ModelFormValues = Record<string, string | boolean>
 
 export interface ModelCreateForm {
   modelName: string
@@ -100,7 +104,8 @@ export async function fetchModelCreateForm(slug: string): Promise<ModelCreateFor
   if (data.error)
     throw new Error(data.error)
   return {
-    modelName: data.modelName || 'Record',
+    // What the pages call the model: "Social Post", not the class name.
+    modelName: data.modelLabel || data.modelName || 'Record',
     tableName: data.tableName,
     fields: data.createFields ?? [],
     canCreate: Boolean(data.writeCapabilities?.create),
@@ -118,11 +123,13 @@ export async function fetchModelRecord(slug: string, id: string | number): Promi
   if (!row)
     throw new Error(`${data.modelName || 'Record'} ${id} was not found.`)
   return {
-    modelName: data.modelName || 'Record',
+    // What the pages call the model: "Social Post", not the class name.
+    modelName: data.modelLabel || data.modelName || 'Record',
     tableName: data.tableName,
     row,
     columns: data.columnMeta ?? [],
     updateColumns: data.updateColumns ?? [],
+    fields: data.updateFields ?? [],
     writeCapabilities: { ...NO_WRITES, ...data.writeCapabilities },
     anonymized: (data.anonymizedIds ?? []).some(candidate => String(candidate) === String(id)),
   }
@@ -130,19 +137,6 @@ export async function fetchModelRecord(slug: string, id: string | number): Promi
 
 function text(value: unknown): string {
   return value === null || value === undefined ? '' : String(value)
-}
-
-/**
- * The edit dialog's fields for a record: the writable columns can change, and
- * the rest stay visible, read-only, as context.
- */
-export function modelRecordFields(record: ModelRecord): ModelRecordField[] {
-  return record.columns.map(column => ({
-    name: column.name,
-    label: column.label,
-    value: text(record.row[column.name]),
-    readonly: !record.updateColumns.includes(column.name),
-  }))
 }
 
 export interface ModelRecordDetail {
@@ -310,17 +304,97 @@ export function modelRecordBackHref(slug: string, from: string | null | undefine
   return from && /^\/(?!\/)[\w\-/]*$/.test(from) ? from : `/models/${encodeURIComponent(slug)}`
 }
 
+/** The column a field is stored in: `firstName` is `first_name`. */
+export function modelFieldColumn(name: string): string {
+  return name.replace(/([a-z\d])([A-Z])/g, '$1_$2').replace(/[\s-]+/g, '_').toLowerCase()
+}
+
+function pad(value: number): string {
+  return String(value).padStart(2, '0')
+}
+
+/** A moment as a `datetime-local` input takes it: the visitor's own clock, to the minute. */
+function localMoment(stored: unknown): string {
+  // A number is a unix time, in seconds unless it is too large to be.
+  const date = typeof stored === 'number'
+    ? new Date(stored < 1e12 ? stored * 1000 : stored)
+    : parseDashboardDate(stored)
+  if (Number.isNaN(date.getTime()))
+    return ''
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
 /**
- * The fields an edit actually changed, as the model API takes them: a value
- * the editor merely displayed is never sent, and an emptied field is null.
+ * A stored value as its input holds it.
+ *
+ * Each kind of input wants its own spelling: a checkbox a boolean, a date
+ * input `2026-10-01`, a date-and-time input the visitor's local time, JSON
+ * indented so it can be read. Handing them the stored text instead is how an
+ * edit form came to show `true`, `2026-10-01T00:00:00.000Z` and one long line
+ * of braces in plain text boxes.
  */
-export function changedModelFields(row: Record<string, unknown>, values: Record<string, string>): Record<string, unknown> {
-  const fields: Record<string, unknown> = {}
-  for (const [column, value] of Object.entries(values)) {
-    if (value !== text(row[column]))
-      fields[column] = value === '' ? null : value
+export function modelFieldInputValue(field: ModelCreateField, stored: unknown): string | boolean {
+  if (field.type === 'boolean')
+    return stored === true || stored === 1 || stored === '1' || stored === 'true'
+  if (stored === null || stored === undefined || stored === '')
+    return ''
+  if (field.type === 'date') {
+    // A calendar day, however the driver returned it. Never through `Date`:
+    // midnight UTC is the day before for everyone west of it.
+    const day = /^\d{4}-\d{2}-\d{2}/.exec(stored instanceof Date ? stored.toISOString() : String(stored))
+    return day ? day[0] : ''
   }
-  return fields
+  if (field.type === 'datetime')
+    return localMoment(stored)
+  if (field.type === 'json') {
+    try {
+      return JSON.stringify(typeof stored === 'string' ? JSON.parse(stored) : stored, null, 2)
+    }
+    catch {
+      return String(stored)
+    }
+  }
+  return typeof stored === 'object' ? JSON.stringify(stored) : String(stored)
+}
+
+/** What an input holds, as the model API takes it. An emptied field is null. */
+export function modelFieldPayloadValue(field: ModelCreateField, value: string | boolean | undefined): unknown {
+  if (field.type === 'boolean')
+    return value === true
+  if (value === undefined || value === '' || value === false || value === true)
+    return null
+  if (field.type === 'datetime') {
+    // With its offset, so the moment is the one the visitor picked whatever
+    // zone the server runs in.
+    const moment = new Date(value)
+    return Number.isNaN(moment.getTime()) ? value : moment.toISOString()
+  }
+  return value
+}
+
+/**
+ * What a form starts with. An edit starts from the record's stored values, a
+ * create from each field's default.
+ */
+export function modelFormValues(fields: ModelCreateField[], row?: Record<string, unknown>): ModelFormValues {
+  return Object.fromEntries(fields.map(field => [
+    field.name,
+    modelFieldInputValue(field, row ? row[modelFieldColumn(field.name)] ?? row[field.name] : field.defaultValue),
+  ]))
+}
+
+/**
+ * What a form sends. Given what it started with, only the fields that were
+ * changed: a value the editor merely displayed is never written back.
+ */
+export function modelFormPayload(fields: ModelCreateField[], values: ModelFormValues, initial?: ModelFormValues): Record<string, unknown> {
+  const payload: Record<string, unknown> = {}
+  for (const field of fields) {
+    if (initial && values[field.name] === initial[field.name])
+      continue
+    payload[field.name] = modelFieldPayloadValue(field, values[field.name])
+  }
+  return payload
 }
 
 export type ModelWriteFailure = { ok: false, error: string, errors: Record<string, string[]> }

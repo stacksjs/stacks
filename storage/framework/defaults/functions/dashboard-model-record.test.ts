@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { DashboardApiError } from './dashboard-api'
-import { changedModelFields, modelDeleteNotice, modelDeleteWarning, modelFieldError, modelWriteFailure, userInviteHref, modelRecordBackHref, modelRecordCreateHref, modelRecordEditHref, modelRecordFields, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRecordTitle } from './dashboard-model-record'
-import type { ModelRecord } from './dashboard-model-record'
+import { modelDeleteNotice, modelDeleteWarning, modelFieldColumn, modelFieldError, modelFieldInputValue, modelFieldPayloadValue, modelFormPayload, modelFormValues, modelRecordBackHref, modelRecordCreateHref, modelRecordEditHref, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRecordTitle, modelWriteFailure, userInviteHref } from './dashboard-model-record'
+import type { ModelCreateField, ModelRecord } from './dashboard-model-record'
 
 const record: ModelRecord = {
   modelName: 'Team',
@@ -14,22 +14,84 @@ const record: ModelRecord = {
     { name: 'created_at', label: 'Created At', type: 'date' },
   ],
   updateColumns: ['name', 'description', 'status'],
+  fields: [],
   writeCapabilities: { create: true, update: true, destroy: true, invite: false, anonymize: false },
   anonymized: false,
 }
 
-describe('a model record in the dashboard dialog', () => {
-  it('lets the pencil change only the writable columns', () => {
-    const fields = modelRecordFields(record)
-    expect(fields.map(field => field.name)).toEqual(['id', 'name', 'description', 'status', 'created_at'])
-    expect(fields.filter(field => !field.readonly).map(field => field.name)).toEqual(['name', 'description', 'status'])
-    expect(fields.find(field => field.name === 'description')?.value).toBe('')
+const field = (name: string, type: ModelCreateField['type'], extra: Partial<ModelCreateField> = {}): ModelCreateField => ({ name, label: name, type, required: false, defaultValue: type === 'boolean' ? false : '', options: [], ...extra })
+
+describe('what a form holds for a stored value', () => {
+  it('finds a field in its column', () => {
+    expect(modelFieldColumn('firstName')).toBe('first_name')
+    expect(modelFieldColumn('published_at')).toBe('published_at')
+    const values = modelFormValues([field('firstName', 'text'), field('status', 'enum')], { first_name: 'Ada', status: 'active' })
+    expect(values).toEqual({ firstName: 'Ada', status: 'active' })
   })
 
-  it('sends only what an edit changed, an emptied field as null', () => {
-    expect(changedModelFields(record.row, { name: 'PrimeSoft Ltd', description: '', status: 'inactive' })).toEqual({ status: 'inactive' })
-    expect(changedModelFields(record.row, { name: '', description: 'Cloud', status: 'active' })).toEqual({ name: null, description: 'Cloud' })
-    expect(changedModelFields(record.row, { name: 'PrimeSoft Ltd' })).toEqual({})
+  it('a checkbox is on or off, however the driver spelled yes', () => {
+    for (const yes of [true, 1, '1', 'true'])
+      expect(modelFieldInputValue(field('archived', 'boolean'), yes)).toBe(true)
+    for (const no of [false, 0, '0', null, undefined, ''])
+      expect(modelFieldInputValue(field('archived', 'boolean'), no)).toBe(false)
+  })
+
+  it('a date is its calendar day, never shifted by a time zone', () => {
+    // A driver hands a DATE back as midnight UTC, which is the day before
+    // for everyone west of it if it goes through `Date`.
+    expect(modelFieldInputValue(field('opensAt', 'date'), '2026-10-01')).toBe('2026-10-01')
+    expect(modelFieldInputValue(field('opensAt', 'date'), '2026-10-01T00:00:00.000Z')).toBe('2026-10-01')
+    expect(modelFieldInputValue(field('opensAt', 'date'), new Date('2026-10-01T00:00:00.000Z'))).toBe('2026-10-01')
+  })
+
+  it('a moment is shown on the visitor\'s own clock, and comes back as the same instant', () => {
+    const moment = field('scheduledAt', 'datetime')
+    // Stored without an offset is UTC, as the framework writes it.
+    for (const stored of ['2026-08-14 07:33:04', '2026-08-14T07:33:04.000Z', 1786692784]) {
+      const shown = modelFieldInputValue(moment, stored) as string
+      expect(shown).toMatch(/^2026-08-1[34]T\d{2}:33$/)
+      // Whatever zone this runs in: the input's local time is that instant, to the minute.
+      expect(new Date(shown).toISOString()).toBe('2026-08-14T07:33:00.000Z')
+      expect(modelFieldPayloadValue(moment, shown)).toBe('2026-08-14T07:33:00.000Z')
+    }
+    expect(modelFieldInputValue(moment, null)).toBe('')
+    expect(modelFieldInputValue(moment, 'not a date')).toBe('')
+  })
+
+  it('JSON is indented so it can be read, whether stored as text or as a value', () => {
+    const json = field('settings', 'json')
+    expect(modelFieldInputValue(json, '{"theme":"dark"}')).toBe('{\n  "theme": "dark"\n}')
+    expect(modelFieldInputValue(json, { theme: 'dark' })).toBe('{\n  "theme": "dark"\n}')
+    // Not JSON at all: shown as it is, for the visitor to repair.
+    expect(modelFieldInputValue(json, '{theme')).toBe('{theme')
+  })
+
+  it('a create starts from each field\'s default', () => {
+    expect(modelFormValues([field('status', 'enum', { defaultValue: 'draft' }), field('featured', 'boolean', { defaultValue: true }), field('title', 'text')]))
+      .toEqual({ status: 'draft', featured: true, title: '' })
+  })
+})
+
+describe('what a form sends', () => {
+  const fields = [field('name', 'text'), field('description', 'longtext'), field('status', 'enum'), field('archived', 'boolean'), field('scheduledAt', 'datetime')]
+  const row = { name: 'PrimeSoft Ltd', description: null, status: 'active', archived: 0, scheduled_at: '2026-08-14 07:33:04' }
+
+  it('an edit sends only what was changed, an emptied field as null', () => {
+    const initial = modelFormValues(fields, row)
+    expect(modelFormPayload(fields, { ...initial }, initial)).toEqual({})
+    expect(modelFormPayload(fields, { ...initial, status: 'inactive' }, initial)).toEqual({ status: 'inactive' })
+    expect(modelFormPayload(fields, { ...initial, name: '', description: 'Cloud' }, initial)).toEqual({ name: null, description: 'Cloud' })
+    expect(modelFormPayload(fields, { ...initial, archived: true }, initial)).toEqual({ archived: true })
+    expect(modelFormPayload(fields, { ...initial, scheduledAt: '' }, initial)).toEqual({ scheduledAt: null })
+  })
+
+  it('a create sends every field, with no and empty said plainly', () => {
+    expect(modelFormPayload(fields, modelFormValues(fields))).toEqual({ name: null, description: null, status: null, archived: false, scheduledAt: null })
+  })
+
+  it('a moment goes with its offset, so it is the one the visitor picked', () => {
+    const picked = '2026-12-24T09:30'
+    expect(modelFieldPayloadValue(field('scheduledAt', 'datetime'), picked)).toBe(new Date(picked).toISOString())
   })
 })
 
@@ -54,6 +116,7 @@ describe('a model record on its own page', () => {
       { name: 'email_verified_at', label: 'Email Verified At', type: 'text' },
     ],
     updateColumns: [],
+    fields: [],
     writeCapabilities: { create: true, update: false, destroy: false, invite: false, anonymize: false },
     anonymized: false,
   }

@@ -158,7 +158,7 @@ describe('dashboard generic model writes', () => {
     expect(page).not.toContain('<script')
     expect(view).toContain('writeCapabilities.set({ ...NO_WRITES, ...data.writeCapabilities })')
     // Which columns an edit may change is the edit page's business now.
-    expect(record).toContain('readonly: !record.updateColumns.includes(column.name)')
+    expect(record).toContain('fields: data.updateFields ?? [],')
     // Creating is a page of its own; the browser only links to it.
     expect(view).not.toContain('<CreateRecordModal')
     expect(view).toContain('navigate(modelRecordCreateHref(slug()))')
@@ -175,9 +175,8 @@ describe('dashboard generic model writes', () => {
     expect(view).not.toContain('bg-blue-600 hover:bg-blue-500')
     expect(create).toContain('fetchModelCreateForm(slug())')
     expect(create).toContain('<Button')
-    expect(create).toContain('<Select')
-    expect(create).toContain('<Input')
-    expect(create.match(/:name="field\.name"/g)).toHaveLength(3)
+    // The fields themselves are drawn by the inputs both forms share.
+    expect(create).toContain('<ModelFieldInputs :fields="fields()" :values="values()" :errors="createErrors()"')
     expect(create).toContain('@submit.prevent="create"')
     expect(create).toContain('createErrors.set(result.errors)')
     expect(create).not.toContain('<Modal')
@@ -188,10 +187,9 @@ describe('dashboard generic model writes', () => {
     // Only the writable columns are inputs, and only what changed is sent.
     expect(editor).toContain('id="model-edit-form"')
     expect(editor).toContain('@submit.prevent="save"')
-    expect(editor).toContain('modelRecordFields(record()!).filter(field => !field.readonly)')
-    expect(editor).toContain('<div :for="field in writable()"')
-    expect(editor).toContain(':name="field.name"')
-    expect(editor).toContain('changedModelFields(current.row, values())')
+    expect(editor).toContain('const writable = derived(() => record()?.fields ?? [])')
+    expect(editor).toContain('<ModelFieldInputs :fields="writable()"')
+    expect(editor).toContain('modelFormPayload(current.fields, values(), initial())')
     expect(editor).toContain('record()?.writeCapabilities.update')
     expect(editor).not.toMatch(/\b(?:document|window)\./)
     expect(actions).toContain("const record = useReactiveProp('record'")
