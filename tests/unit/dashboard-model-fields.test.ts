@@ -71,7 +71,9 @@ describe('the kind of input a field gets', () => {
       for (const [attribute, definition] of Object.entries((model.attributes ?? {}) as Record<string, any>)) {
         const rule = definition?.validation?.rule
         const want = Array.isArray(rule?.allowedValues) && rule.allowedValues.length > 0 ? 'enum' : expected[rule?.name]
-        if (!want || !(attribute in fields))
+        // A key the model also declares a belongsTo for is asked for as the
+        // record it points at, whatever its own rule says (stacksjs/stacks#3257).
+        if (!want || !(attribute in fields) || fields[attribute] === 'relation')
           continue
         checked += 1
         if (fields[attribute] !== want)
@@ -159,6 +161,6 @@ describe('labels read as words', () => {
     const show = source('storage/framework/defaults/app/Actions/Dashboard/Models/ModelShowAction.ts')
     expect(show).not.toContain('function humanize(')
     expect(show).toContain('modelLabel: humanizeIdentifier(modelName),')
-    expect(show).toContain('response.updateFields = response.writeCapabilities.update ? modelCreateFields(Model) : []')
+    expect(show).toContain('response.updateFields = response.writeCapabilities.update ? formFields() : []')
   })
 })

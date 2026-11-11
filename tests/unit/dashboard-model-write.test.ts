@@ -122,7 +122,8 @@ describe('dashboard generic model writes', () => {
       defaultValue: 'draft',
       options: ['draft', 'live'],
     })
-    expect(fields[3]).toMatchObject({ label: 'Team ID', type: 'number' })
+    // A belongsTo is asked for as the record, by name: "Team", not "Team ID".
+    expect(fields[3]).toMatchObject({ label: 'Team', type: 'relation', relation: { model: 'Team', slug: 'team', label: 'Team' } })
     expect(modelWritableColumns({
       attributes: {
         displayName: { fillable: true },

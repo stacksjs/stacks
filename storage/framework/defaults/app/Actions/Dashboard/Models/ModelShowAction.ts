@@ -7,6 +7,7 @@ import { safeGet } from '../../../../resources/functions/dashboard/data'
 import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
 import { dashboardOperationalError } from '../dashboard-response'
 import { isUnmigratedTable } from './model-migration'
+import { belongsToRelations } from './model-relations'
 import { humanizeIdentifier, isErasureSubject, isValidModelSlug, type ModelCreateField, type ModelWriteCapabilities, modelCreateFields, modelSchemaColumns, modelWritableColumns, modelWriteCapabilities, slugToPascal } from './model-write'
 
 /**
@@ -61,6 +62,8 @@ interface ResponseShape {
   createFields: ModelCreateField[]
   /** The fields an edit may change, described the way the create form's are. */
   updateFields: ModelCreateField[]
+  /** The columns that hold another model's id, and whose: `team_id` is a Team. */
+  relations: Record<string, { model: string, slug: string, label: string }>
   updateColumns: string[]
   /** Rows whose personal details erasure has replaced with placeholders (the subject model only). */
   anonymizedIds?: Array<number | string>
@@ -217,6 +220,7 @@ export default new Action({
       writeCapabilities: { create: false, update: false, destroy: false, invite: false, anonymize: false },
       createFields: [],
       updateFields: [],
+      relations: {},
       updateColumns: [],
       migrated: true,
       error: null,
@@ -321,9 +325,26 @@ export default new Action({
 
     response.writeCapabilities = modelWriteCapabilities(Model)
     response.writable = Object.values(response.writeCapabilities).some(Boolean)
-    response.createFields = response.writeCapabilities.create ? modelCreateFields(Model) : []
+    // A relation is only worth a picker when the dashboard can list the model
+    // it points at. One whose feature is off, or that is kept out of the
+    // dashboard, stays the plain id it was.
+    const reachable = new Set<string>()
+    for (const relation of belongsToRelations(Model)) {
+      const related = await resolveDashboardModel(relation.model).catch(() => null)
+      if (related && typeof related.where === 'function') {
+        reachable.add(relation.model)
+        response.relations[relation.column] = { model: relation.model, slug: relation.slug, label: humanizeIdentifier(relation.model) }
+      }
+    }
+    const formFields = (): ModelCreateField[] => modelCreateFields(Model).map((field) => {
+      if (field.type !== 'relation' || reachable.has(field.relation?.model ?? ''))
+        return field
+      const { relation: _unreachable, ...plain } = field
+      return { ...plain, type: 'number', label: humanizeIdentifier(field.name) }
+    })
+    response.createFields = response.writeCapabilities.create ? formFields() : []
     response.updateColumns = response.writeCapabilities.update ? modelWritableColumns(Model) : []
-    response.updateFields = response.writeCapabilities.update ? modelCreateFields(Model) : []
+    response.updateFields = response.writeCapabilities.update ? formFields() : []
     response.displayColumns = response.columns.filter(col => !col.startsWith('_'))
     response.columnMeta = response.displayColumns.map(name => ({
       name,

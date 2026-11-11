@@ -10,6 +10,7 @@ import { GDPR_SUBJECT_MODEL } from '@stacksjs/orm'
 import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
 import { dashboardOperationalIssue } from '../dashboard-response'
 import { modelApiConfiguration } from './model-api'
+import { belongsToRelations } from './model-relations'
 
 /** Never writable from a generic admin table, whatever the model declares. */
 export const PROTECTED_COLUMNS: ReadonlySet<string> = new Set([
@@ -76,9 +77,10 @@ export interface ModelWriteCapabilities {
  * `longtext` is prose (a description, a message body) and gets a multi-line
  * box; `json` is a structured value the app reads back, edited as text and
  * checked before it is stored; `datetime` is a moment, picked in the visitor's
- * own time zone.
+ * own time zone; `relation` is another model's record, picked by name and
+ * stored as its id.
  */
-export type ModelFieldType = 'boolean' | 'date' | 'datetime' | 'email' | 'enum' | 'json' | 'longtext' | 'number' | 'text'
+export type ModelFieldType = 'boolean' | 'date' | 'datetime' | 'email' | 'enum' | 'json' | 'longtext' | 'number' | 'relation' | 'text'
 
 export interface ModelCreateField {
   name: string
@@ -87,6 +89,8 @@ export interface ModelCreateField {
   required: boolean
   defaultValue: unknown
   options: string[]
+  /** For a `relation`: the model whose records the picker lists. */
+  relation?: { model: string, slug: string, label: string }
 }
 
 export interface PreparedModelFields {
@@ -272,16 +276,6 @@ export function duplicateFieldErrors(Model: any, columns: string[]): Record<stri
   return errors
 }
 
-function relationFieldName(relation: string): string {
-  const words = relation
-    .trim()
-    .replace(/([a-z\d])([A-Z])/g, '$1_$2')
-    .toLowerCase()
-    .split('_')
-    .filter(Boolean)
-  return `${words[0]}${words.slice(1).map(word => `${word[0]?.toUpperCase()}${word.slice(1)}`).join('')}Id`
-}
-
 /** Rule names the migrations store as a moment: a `timestamp` or `datetime` column. */
 const MOMENT_RULES: ReadonlySet<string> = new Set(['timestamp', 'timestampTz', 'datetime'])
 
@@ -343,20 +337,19 @@ export function modelCreateFields(Model: any): ModelCreateField[] {
     })
   }
 
-  for (const relation of Model?.belongsTo ?? []) {
-    if (typeof relation !== 'string' || !relation.trim())
+  // A `belongsTo` is asked for as the record it points at, by name. Whether
+  // the model also spells the key out as an attribute (`userId`) or leaves it
+  // to the relation, it is one field, and it is the picker.
+  for (const relation of belongsToRelations(Model)) {
+    if (isProtectedField(relation.field))
       continue
-    const name = relationFieldName(relation)
-    if (fields.some(field => field.name === name) || isProtectedField(name))
+    const asRelation = { type: 'relation' as const, label: humanize(relation.model), relation: { model: relation.model, slug: relation.slug, label: humanize(relation.model) } }
+    const declared = fields.find(field => field.name === relation.field)
+    if (declared) {
+      Object.assign(declared, asRelation, { options: [] })
       continue
-    fields.push({
-      name,
-      label: humanize(name),
-      type: 'number',
-      required: false,
-      defaultValue: '',
-      options: [],
-    })
+    }
+    fields.push({ name: relation.field, required: false, defaultValue: '', options: [], ...asRelation })
   }
 
   return fields.sort((left, right) => {
@@ -377,7 +370,7 @@ function storedMoment(date: Date): string {
 }
 
 function normalizeModelValue(type: ModelCreateField['type'], value: unknown, rule?: any): unknown {
-  if (type === 'number') {
+  if (type === 'number' || type === 'relation') {
     if (value === '' || value === null || value === undefined)
       return null
     const number = Number(value)
@@ -451,6 +444,13 @@ export function prepareModelFields(
     if ((value === '' || value === null || value === undefined) && !field.required) {
       if (partial)
         data[field.name] = null
+      continue
+    }
+
+    // An id is a whole number above zero, whatever else the field's own rule
+    // allows. Whether that record exists is the database's to say.
+    if (field.type === 'relation' && !(typeof value === 'number' && Number.isSafeInteger(value) && value > 0)) {
+      errors[field.name] = [`${field.label} must be chosen from the list.`]
       continue
     }
 
