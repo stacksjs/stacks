@@ -1,0 +1,99 @@
+<script client>
+// The records that point at the record on this page, one panel per model: a
+// team's members and its invitations, a user's team memberships. From the
+// model's own `hasMany` and `hasOne`, so nothing is set up per model.
+//
+// Each panel is the newest few with a count. The eye opens one, "View all"
+// opens that model's list narrowed to this record, and "Add" opens its create
+// form with this record already chosen.
+import type { ModelRelatedPanel } from '../../../../functions/dashboard-model-record'
+import { modelRecordHref, modelRelatedCreateHref, modelRelatedListHref } from '../../../../functions/dashboard-model-record'
+
+const panels = useReactiveProp<ModelRelatedPanel[]>('panels', [])
+const parentId = useReactiveProp('parentId', '')
+/** This page, for a create form to come back to. */
+const from = useReactiveProp('from', '')
+
+/** Beside the heading. Nothing when the panel is empty: the line below already says so. */
+function countLabel(panel: ModelRelatedPanel): string {
+  if (panel.kind === 'one' || panel.total === 0)
+    return ''
+  return panel.total > panel.rows.length ? `Newest ${panel.rows.length} of ${panel.total}` : String(panel.total)
+}
+
+/**
+ * The eye, named for what it opens. A row is often called by a record it
+ * points at (a membership by its list), and "View Enterprise Leads" would
+ * promise the list, not the membership.
+ */
+function viewAction(panel: ModelRelatedPanel) {
+  return [{ action: 'view', label: `View ${panel.label.toLowerCase()}` }]
+}
+
+function emptyTitle(panel: ModelRelatedPanel): string {
+  return panel.kind === 'one' ? `No ${panel.label.toLowerCase()}` : `No ${panel.title.toLowerCase()} yet`
+}
+
+/** A second of a `hasOne` would break the "one": only offered while there is none. */
+function canAdd(panel: ModelRelatedPanel): boolean {
+  return panel.canCreate && (panel.kind === 'many' || panel.total === 0)
+}
+
+function tableColumns(panel: ModelRelatedPanel) {
+  return panel.columns.map((column, index) => ({
+    key: column.key,
+    label: column.label,
+    type: column.type,
+    align: column.type === 'datetime' ? 'right' : 'left',
+    sortable: false,
+    emptyText: '-',
+    class: index === 0
+      ? 'font-medium text-neutral-900 dark:text-white'
+      : column.type === 'datetime' ? 'text-neutral-500 text-xs whitespace-nowrap dark:text-neutral-400' : 'text-neutral-600 dark:text-neutral-300',
+  }))
+}
+
+function open(panel: ModelRelatedPanel, payload: { row: Record<string, unknown> }): void {
+  navigate(modelRecordHref(panel.slug, payload.row.id as number | string))
+}
+
+function viewAll(panel: ModelRelatedPanel): void {
+  navigate(modelRelatedListHref(panel, parentId()))
+}
+
+function add(panel: ModelRelatedPanel): void {
+  navigate(modelRelatedCreateHref(panel, parentId(), from()))
+}
+</script>
+
+<div class="flex flex-col gap-6" data-related-panels>
+  <div :for="panel in panels()" class="min-w-0" data-related-panel>
+    <Card padding="none">
+      <div class="flex flex-wrap gap-3 items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
+        <div class="flex gap-3 items-baseline min-w-0">
+          <h2 class="font-semibold text-base text-neutral-900 truncate dark:text-white">{{ panel.title }}</h2>
+          <span :if="countLabel(panel)" class="text-neutral-500 text-xs whitespace-nowrap dark:text-neutral-400">{{ countLabel(panel) }}</span>
+        </div>
+        <div class="flex flex-none gap-2 items-center">
+          <Button :if="panel.kind === 'many' && panel.total > 0" variant="secondary" size="sm" @click="viewAll(panel)">View all</Button>
+          <Button :if="canAdd(panel)" variant="secondary" size="sm" @click="add(panel)">
+            <span aria-hidden="true" class="h-3.5 w-3.5 i-hugeicons-add-01"></span>
+            {{ 'Add ' + panel.label.toLowerCase() }}
+          </Button>
+        </div>
+      </div>
+
+      <Table
+        :if="panel.rows.length > 0"
+        :columns="tableColumns(panel)"
+        :data="panel.rows"
+        :framed="false"
+        :row-actions="viewAction(panel)"
+        :action-label-key="panel.columns[0] ? panel.columns[0].key : 'id'"
+        @row-action="open(panel, $event)"
+      />
+
+      <p :if="panel.rows.length === 0" class="px-6 py-5 text-neutral-500 text-sm dark:text-neutral-400">{{ emptyTitle(panel) }}</p>
+    </Card>
+  </div>
+</div>

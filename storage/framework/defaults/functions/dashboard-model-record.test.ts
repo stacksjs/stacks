@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { DashboardApiError } from './dashboard-api'
-import { modelDeleteNotice, modelDeleteWarning, modelFieldColumn, modelFieldError, modelFieldInputValue, modelFieldPayloadValue, modelFormPayload, modelFormValues, modelRecordBackHref, modelRecordCreateHref, modelRecordEditHref, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRecordTitle, modelWriteFailure, userInviteHref } from './dashboard-model-record'
-import type { ModelCreateField, ModelRecord } from './dashboard-model-record'
+import { modelDeleteNotice, modelDeleteWarning, modelFieldColumn, modelFieldError, modelFieldInputValue, modelFieldPayloadValue, modelFormPayload, modelFormPrefill, modelFormValues, modelListFilters, modelRecordBackHref, modelRecordCreateHref, modelRecordEditHref, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRecordTitle, modelRelatedCreateHref, modelRelatedListHref, modelWriteFailure, userInviteHref } from './dashboard-model-record'
+import type { ModelCreateField, ModelRecord, ModelRelatedPanel } from './dashboard-model-record'
 
 const record: ModelRecord = {
   modelName: 'Team',
@@ -298,5 +298,59 @@ describe('a record\'s page names the records it points at', () => {
 
   it('leaves the record\'s own id alone', () => {
     expect(identifiers().find(detail => detail.name === 'id')).toMatchObject({ label: 'ID', value: '9', kind: 'text' })
+  })
+})
+
+describe('a panel of the records that point at a record', () => {
+  const members: ModelRelatedPanel = {
+    kind: 'many',
+    model: 'TeamMember',
+    slug: 'team-member',
+    title: 'Team Members',
+    label: 'Team Member',
+    foreignKey: 'team_id',
+    field: 'teamId',
+    total: 7,
+    columns: [],
+    rows: [],
+    canCreate: true,
+  }
+
+  it('"View all" is the related model\'s list, narrowed to this record', () => {
+    const href = modelRelatedListHref(members, 3)
+    expect(href).toBe('/models/team-member?filters=%7B%22team_id%22%3A%223%22%7D')
+    // What the list reads back from that address.
+    expect(modelListFilters(new URL(href, 'http://dashboard.test').searchParams.get('filters'))).toEqual({ team_id: '3' })
+  })
+
+  it('"Add" is its create form with this record chosen, coming back here', () => {
+    const href = modelRelatedCreateHref(members, 3, '/models/team/3')
+    expect(href).toBe('/models/team-member/create?from=%2Fmodels%2Fteam%2F3&teamId=3')
+    const query = new URL(href, 'http://dashboard.test').searchParams
+    const fields = [field('teamId', 'relation'), field('userId', 'relation'), field('role', 'enum'), field('featured', 'boolean')]
+    expect(modelFormPrefill(fields, name => query.get(name))).toEqual({ teamId: '3' })
+  })
+
+  it('a form opened from a record names that record as the way back', () => {
+    expect(modelRecordListLabel({ tableName: 'team_members' }, '/models/team/3')).toBe('Team 3')
+    expect(modelRecordListLabel({ tableName: 'team_members' }, '/models/board-column/12')).toBe('Board Column 12')
+    // Its own list is still called by its table.
+    expect(modelRecordListLabel({ tableName: 'team_members' }, '/models/team-member')).toBe('Team Members')
+  })
+})
+
+describe('what an address may set', () => {
+  it('a list\'s filters: a flat object of text, and nothing else', () => {
+    expect(modelListFilters('{"team_id":"3","status":"active"}')).toEqual({ team_id: '3', status: 'active' })
+    expect(modelListFilters('{"team_id":3}')).toEqual({ team_id: '3' })
+    for (const bad of [null, '', 'not json', '[1,2]', '"text"', '{"team_id":{"$gt":0}}', '{"a b":"1"}', '{"team_id":""}', '{"id; drop":"1"}'])
+      expect(modelListFilters(bad)).toEqual({})
+  })
+
+  it('a form\'s starting values: only fields the form has, and never a checkbox', () => {
+    const fields = [field('teamId', 'relation'), field('name', 'text'), field('archived', 'boolean')]
+    const query = (values: Record<string, string>) => (name: string) => values[name] ?? null
+    expect(modelFormPrefill(fields, query({ teamId: '3', name: 'Red', archived: 'true', password: 'x', from: '/models/team/3' }))).toEqual({ teamId: '3', name: 'Red' })
+    expect(modelFormPrefill(fields, query({ teamId: '' }))).toEqual({})
   })
 })

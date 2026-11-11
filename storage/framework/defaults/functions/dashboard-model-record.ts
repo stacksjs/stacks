@@ -299,6 +299,11 @@ export function modelRecordListLabel(record: { tableName?: string } | null, back
   const last = backHref.split('/').filter(Boolean).pop() || ''
   if (backHref.startsWith('/data/') && last)
     return titleCase(last)
+  // Opened from a record's page (a panel's "Add"): the way back is that
+  // record, and calling it by this model's list would name the wrong place.
+  const opener = /^\/models\/([\w-]+)\/(\d+)$/.exec(backHref)
+  if (opener)
+    return `${titleCase(opener[1]!)} ${opener[2]}`
   return record?.tableName ? titleCase(record.tableName) : 'Records'
 }
 
@@ -599,4 +604,87 @@ export async function fetchModelRelationNames(record: ModelRecord): Promise<Mode
     catch {}
   }))
   return names
+}
+
+/** A column of a related-records panel. */
+export interface ModelRelatedColumn {
+  key: string
+  label: string
+  type: 'text' | 'badge' | 'datetime'
+}
+
+/**
+ * The records of one model that point at a record: a team's members. From the
+ * model's own `hasMany` or `hasOne`.
+ */
+export interface ModelRelatedPanel {
+  kind: 'many' | 'one'
+  model: string
+  slug: string
+  /** The panel's heading: "Team Members", or "Subscriber" for a `hasOne`. */
+  title: string
+  /** One of them, in words: "Team Member". */
+  label: string
+  /** The column on the related model that holds this record's id. */
+  foreignKey: string
+  /** That column as the related model's form field. */
+  field: string
+  total: number
+  columns: ModelRelatedColumn[]
+  /** The newest few, each with its `id` and a value per column. */
+  rows: Array<Record<string, unknown>>
+  canCreate: boolean
+}
+
+/** The panels of a record's page: who points at it. None when it cannot be asked. */
+export async function fetchModelRelated(slug: string, id: string | number): Promise<ModelRelatedPanel[]> {
+  const data = await dashboardApi<{ panels?: ModelRelatedPanel[] }>(`${modelPath(slug)}/${encodeURIComponent(String(id))}/related`)
+  return data.panels ?? []
+}
+
+/** The related model's own list, narrowed to the records that point at this one. */
+export function modelRelatedListHref(panel: ModelRelatedPanel, parentId: string | number): string {
+  return `/models/${encodeURIComponent(panel.slug)}?filters=${encodeURIComponent(JSON.stringify({ [panel.foreignKey]: String(parentId) }))}`
+}
+
+/** The related model's create page, with this record already chosen, coming back here. */
+export function modelRelatedCreateHref(panel: ModelRelatedPanel, parentId: string | number, from: string): string {
+  return `${modelRecordCreateHref(panel.slug, from)}&${encodeURIComponent(panel.field)}=${encodeURIComponent(String(parentId))}`
+}
+
+/**
+ * The filters a list starts with, from its address: `?filters={"team_id":"3"}`.
+ * Anything that is not a flat object of text is ignored, never trusted.
+ */
+export function modelListFilters(raw: string | null): Record<string, string> {
+  if (!raw)
+    return {}
+  try {
+    const parsed = JSON.parse(raw) as unknown
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
+      return {}
+    return Object.fromEntries(Object.entries(parsed as Record<string, unknown>)
+      .filter(([column, value]) => /^[a-z_][a-z0-9_]*$/i.test(column) && (typeof value === 'string' || typeof value === 'number') && String(value) !== '')
+      .map(([column, value]) => [column, String(value)]))
+  }
+  catch {
+    return {}
+  }
+}
+
+/**
+ * What a create form is given to start with, from its address: the record it
+ * was opened from (`?teamId=3`). Only fields the form has, and never a
+ * checkbox, so an address cannot set what the form does not show.
+ */
+export function modelFormPrefill(fields: ModelCreateField[], query: (name: string) => string | null): ModelFormValues {
+  const values: ModelFormValues = {}
+  for (const field of fields) {
+    if (field.type === 'boolean')
+      continue
+    const given = query(field.name)
+    if (given !== null && given !== '')
+      values[field.name] = given
+  }
+  return values
 }

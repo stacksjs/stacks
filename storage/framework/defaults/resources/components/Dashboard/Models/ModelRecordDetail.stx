@@ -6,8 +6,8 @@
 // record's edit page) and Delete appear where the model's API allows them. A page rather than a dialog, so a record
 // has an address to share, open in a tab and come back to.
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
-import type { ModelRecord } from '../../../../functions/dashboard-model-record'
-import { deleteModelRecord, fetchModelRecord, fetchModelRelationNames, modelDeleteNotice, modelDeleteWarning, modelRecordBackHref, modelRecordEditHref, modelRecordListLabel, modelRecordSections, modelRecordTitle } from '../../../../functions/dashboard-model-record'
+import type { ModelRecord, ModelRelatedPanel } from '../../../../functions/dashboard-model-record'
+import { deleteModelRecord, fetchModelRecord, fetchModelRelated, fetchModelRelationNames, modelDeleteNotice, modelDeleteWarning, modelRecordBackHref, modelRecordEditHref, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRecordTitle } from '../../../../functions/dashboard-model-record'
 import { pushToast } from '../../../../functions/toasts'
 
 const navigation = useNavigation()
@@ -28,6 +28,8 @@ function recordId(): string {
 
 const from = navigation.urlQuery('from')
 const backHref = derived(() => modelRecordBackHref(slug(), from))
+/** This page, for a form opened from one of its panels to come back to. */
+const selfHref = derived(() => modelRecordHref(slug(), recordId()))
 /** The list in the breadcrumb: "Users" for /data/users, else the model's table. */
 const listLabel = derived(() => modelRecordListLabel(record(), backHref()))
 
@@ -36,6 +38,8 @@ const title = derived(() => record() ? modelRecordTitle(record()!) : '')
 // What the records this one points at are called. They arrive after the
 // record does; until then, and for one that is gone, a link reads "Team #3".
 const relationNames = state<Record<string, string>>({})
+// Who points at this record: its panels. Also after the record itself.
+const related = state<ModelRelatedPanel[]>([])
 const sections = derived(() => record() ? modelRecordSections(record()!, relationNames()) : [])
 // An anonymized account has nothing left to edit, and deleting it again
 // would only anonymize what already is. The note below says what it is.
@@ -48,9 +52,12 @@ async function loadRecord(): Promise<void> {
   try {
     const loaded = await fetchModelRecord(slug(), recordId())
     relationNames.set({})
+    related.set([])
     record.set(loaded)
     // Not awaited: the page is complete without the names, only less helpful.
     void fetchModelRelationNames(loaded).then(names => relationNames.set(names))
+    // A page whose panels cannot be read is still the record's page.
+    void fetchModelRelated(slug(), recordId()).then(panels => related.set(panels)).catch(() => related.set([]))
   }
   catch (error) {
     record.set(null)
@@ -150,6 +157,13 @@ onMount(() => {
       </Card>
     </div>
   </div>
+
+  <ModelRelatedPanels
+    :if="!loading() && record() && related().length > 0"
+    :panels="related()"
+    :parentId="recordId()"
+    :from="selfHref()"
+  />
 
   <ConfirmDialog
     :isOpen="confirmingDelete()"

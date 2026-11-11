@@ -9,7 +9,7 @@
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
 import { dashboardApi } from '@stacksjs/defaults/functions/dashboard-api'
 import type { ModelWriteCapabilities } from '@stacksjs/defaults/functions/dashboard-model-record'
-import { deleteModelRecord, modelDeleteNotice, modelDeleteWarning, modelRecordCreateHref, modelRecordEditHref, modelRecordHref, NO_WRITES, userInviteHref } from '@stacksjs/defaults/functions/dashboard-model-record'
+import { deleteModelRecord, modelDeleteNotice, modelDeleteWarning, modelListFilters, modelRecordCreateHref, modelRecordEditHref, modelRecordHref, NO_WRITES, userInviteHref } from '@stacksjs/defaults/functions/dashboard-model-record'
 import { pushToast } from '@stacksjs/defaults/functions/toasts'
 
 interface ColumnMeta {
@@ -57,14 +57,16 @@ const lastPage = state(1)
 const sort = state('')
 const dir = state<'asc' | 'desc'>('desc')
 const search = state(navigation.urlQuery('q') || '')
-const filters = state<Record<string, string>>({})
+// A list opened from a record's panel arrives narrowed to that record.
+const filters = state<Record<string, string>>(modelListFilters(navigation.urlQuery('filters')))
 const writeCapabilities = state<ModelWriteCapabilities>(NO_WRITES)
 const error = state<string | null>(null)
 // False when the model's table has not been created yet: the server checked the
 // catalog after the query failed, so this is never a guess from an error.
 const migrated = state(true)
 const loading = state(true)
-const showFilters = state(false)
+// Open when it arrives filtered, so what narrowed the list can be seen and cleared.
+const showFilters = state(Object.keys(filters()).length > 0)
 
 const saving = state(false)
 const confirmingDelete = state<Record<string, unknown> | null>(null)

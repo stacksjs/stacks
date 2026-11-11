@@ -7,7 +7,7 @@
 // page.
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
 import type { ModelCreateForm, ModelFormValues } from '../../../../functions/dashboard-model-record'
-import { createModelRecord, fetchModelCreateForm, modelFormPayload, modelFormValues, modelRecordBackHref, modelRecordHref, modelRecordListLabel, userInviteHref } from '../../../../functions/dashboard-model-record'
+import { createModelRecord, fetchModelCreateForm, modelFormPayload, modelFormPrefill, modelFormValues, modelRecordBackHref, modelRecordHref, modelRecordListLabel, userInviteHref } from '../../../../functions/dashboard-model-record'
 import { pushToast } from '../../../../functions/toasts'
 
 const navigation = useNavigation()
@@ -47,7 +47,8 @@ async function loadForm(): Promise<void> {
   try {
     const loaded = await fetchModelCreateForm(slug())
     form.set(loaded)
-    values.set(modelFormValues(loaded.fields))
+    // Opened from a record's panel, the form starts with that record chosen.
+    values.set({ ...modelFormValues(loaded.fields), ...modelFormPrefill(loaded.fields, name => navigation.urlQuery(name)) })
   }
   catch (error) {
     form.set(null)
