@@ -21,4 +21,8 @@ export default defineModel({
     verifiedAt: { required: false, fillable: true, validation: { rule: schema.timestamp() }, factory: () => null },
     lastCheckedAt: { required: false, fillable: true, validation: { rule: schema.timestamp() }, factory: () => null },
   },
+
+  dashboard: {
+    columns: ['domain', 'status', 'team', 'verifiedAt', 'lastCheckedAt'],
+  },
 } as const)

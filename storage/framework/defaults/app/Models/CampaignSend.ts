@@ -190,4 +190,8 @@ export default defineModel({
       factory: () => JSON.stringify({}),
     },
   },
+
+  dashboard: {
+    columns: ['recipient', 'campaign', 'channel', 'status', 'sentAt', 'openedAt'],
+  },
 } as const)

@@ -137,4 +137,8 @@ export default defineModel({
       factory: () => 1,
     },
   },
+
+  dashboard: {
+    columns: ['name', 'status', 'subscriberCount', 'activeCount', 'isPublic', 'createdAt'],
+  },
 } as const)

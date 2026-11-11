@@ -21,4 +21,8 @@ export default defineModel({
     metadata: { required: false, fillable: true, validation: { rule: schema.json() }, factory: () => JSON.stringify({}) },
     occurredAt: { required: true, fillable: true, validation: { rule: schema.timestamp() }, factory: () => new Date().toISOString() },
   },
+
+  dashboard: {
+    columns: ['meter', 'quantity', 'team', 'occurredAt'],
+  },
 } as const)

@@ -22,4 +22,8 @@ export default defineModel({
     conversionCount: { required: true, fillable: true, default: 0, validation: { rule: schema.number().min(0) }, factory: () => 0 },
     isWinner: { required: true, fillable: true, default: false, validation: { rule: schema.boolean() }, factory: () => false },
   },
+
+  dashboard: {
+    columns: ['name', 'campaign', 'allocation', 'sentCount', 'openCount', 'clickCount', 'isWinner'],
+  },
 } as const)

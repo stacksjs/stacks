@@ -323,4 +323,8 @@ export default defineModel({
       },
     },
   },
+
+  dashboard: {
+    columns: ['name', 'type', 'status', 'emailList', 'scheduledAt', 'sentCount'],
+  },
 } as const)

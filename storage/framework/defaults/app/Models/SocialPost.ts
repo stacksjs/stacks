@@ -143,4 +143,8 @@ export default defineModel({
       factory: faker => faker.string.alphanumeric(20),
     },
   },
+
+  dashboard: {
+    columns: ['content', 'platform', 'status', 'scheduledAt', 'publishedAt', 'likes'],
+  },
 } as const)
