@@ -16,6 +16,7 @@ import { adoptPackagedDefaults, applyAppPackageOverrides, applyAppPackageScripts
 import { fetchPublishedVersions } from '../registry'
 import { ensureAuthRoutesEnv } from '../minimal-routes'
 import { scaffoldDesktopApp } from '../scaffold-desktop'
+import { commitScaffold } from '../scaffold-git'
 import { bunExecutable, failureReason, installScaffoldDependencies } from '../scaffold-dependencies'
 
 interface NewOptions extends CreateOptions {
@@ -113,7 +114,7 @@ export function create(buddy: CLI): void {
   if (options.minimal)
     await stripFeatures(path)
 
-  await install(path, options)
+  const createdRepository = await install(path, options)
 
   if (!options.withCore) {
     trimFrameworkOnlyFiles(path)
@@ -137,6 +138,9 @@ export function create(buddy: CLI): void {
     const written = scaffoldDesktopApp(path, appIdentity(path))
     log.success(`Added the Mac app (${written.join(', ')}). Run ${cyan('bun run dev:desktop')} to open it.`)
   }
+
+  if (createdRepository)
+    recordScaffold(path)
 
       if (missingSystemDependencies !== null) {
         // Everything but the system dependencies is in place, so say exactly
@@ -534,6 +538,26 @@ function removeFrameworkTests(path: string) {
   log.success('App starts with a clean test suite')
 }
 
+/**
+ * End on one commit holding the generated app.
+ *
+ * `git init` used to be the last thing done to the repository, so a new app
+ * started as a few hundred untracked files: the first change someone made had
+ * nothing to be compared with, and the first commit mixed their work with the
+ * scaffold. Only for a repository this run created. A cloned one has a history
+ * and an owner, and what goes into it is theirs to decide.
+ *
+ * Never fatal: the app is complete either way, and a machine with no git
+ * identity is the ordinary reason this cannot be done.
+ */
+function recordScaffold(path: string) {
+  const reason = commitScaffold(path, appIdentity(path).displayName)
+  if (reason === null)
+    log.success('Committed the generated app')
+  else
+    log.warn(`Left the generated app uncommitted (${reason}). Make the first commit yourself.`)
+}
+
 function ensureExecutableScripts(path: string) {
   for (const script of ['buddy', 'bootstrap']) {
     try {
@@ -598,7 +622,8 @@ async function ensureEnv(path: string, options: NewOptions): Promise<string | nu
   process.exit(ExitCode.FatalError)
 }
 
-async function install(path: string, options: CreateOptions) {
+/** Resolves to whether it ran `git init`, which is what decides the first commit. */
+async function install(path: string, options: CreateOptions): Promise<boolean> {
   log.info('Installing & setting up Stacks')
 
   log.info('Copying .env.example → .env')
@@ -628,7 +653,8 @@ async function install(path: string, options: CreateOptions) {
 
   // Scaffolding into a cloned repository is supported (see isFolderCheck), and
   // re-running `git init` there would be pointless noise at best.
-  if (existsSync(resolve(path, '.git'))) {
+  const createdRepository = !existsSync(resolve(path, '.git'))
+  if (!createdRepository) {
     log.info('Existing git repository detected, skipping git init')
   }
   else {
@@ -641,6 +667,7 @@ async function install(path: string, options: CreateOptions) {
   }
 
   log.success('Installed & set-up 🚀')
+  return createdRepository
 }
 
 /**
