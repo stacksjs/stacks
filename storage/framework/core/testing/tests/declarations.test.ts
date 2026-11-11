@@ -18,8 +18,14 @@ const unknowns = (declarations: string) => declarations.split('\n')
   .filter(line => !line.trim().startsWith('*') && /:\s*unknown\b/.test(line.replace(/Record<string, unknown>/g, '')))
 
 describe('published declarations', () => {
-  test('the emitter still needs annotations (control)', () => {
-    expect(processSource('export class A { m = new Map<string, string>() }', 'a.ts')).toContain('m: unknown')
+  // This was the control: until dtsx 0.11.50 an unannotated `new Map<K, V>()`
+  // field published as `m: unknown`, which is why the sources below annotate.
+  // The emitter now types it, so the control asserts that instead, and a
+  // regression to `unknown` still fails here first.
+  test('the emitter types a constructed field (control)', () => {
+    const declarations = processSource('export class A { m = new Map<string, string>() }', 'a.ts')
+    expect(declarations).toContain('m: InstanceType<typeof Map<string, string>>')
+    expect(declarations).not.toContain('m: unknown')
   })
 
   test('browser.d.ts types the Cdp session and every default', async () => {

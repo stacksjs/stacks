@@ -60,7 +60,7 @@ buddy tinker --preload ./setup.ts,pkg     # import modules as globals first
 buddy tinker --verbose                    # also show queries and log lines
 ```
 
-There is no `--load` flag and no `buddy repl` command.
+There is no `--load` flag, and tinker is the only command: nothing is registered under the name repl.
 
 ## How a session works
 

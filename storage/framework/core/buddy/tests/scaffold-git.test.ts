@@ -22,7 +22,7 @@ const IDENTITY = {
 }
 
 function git(cwd: string, ...args: string[]): string {
-  const result = Bun.spawnSync(['git', ...args], { cwd, stdout: 'pipe', stderr: 'pipe' })
+  const result = Bun.spawnSync(['git', ...args], { cwd, env: process.env, stdout: 'pipe', stderr: 'pipe' })
   return result.stdout.toString().trim()
 }
 

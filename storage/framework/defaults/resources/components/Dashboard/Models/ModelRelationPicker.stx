@@ -180,8 +180,8 @@ effect(() => {
 
   <div :if="chosen()" :class="boxClass()" data-relation-chosen>
     <span class="flex-1 min-w-0 truncate">
-      <span class="font-medium" :text="chosen().label"></span>
-      <span :if="chosen().hint" class="ml-2 text-stone-500 dark:text-neutral-400" :text="chosen().hint"></span>
+      <span class="font-medium" :text="chosen()?.label"></span>
+      <span :if="chosen()?.hint" class="ml-2 text-stone-500 dark:text-neutral-400" :text="chosen()?.hint"></span>
     </span>
     <button
       type="button"

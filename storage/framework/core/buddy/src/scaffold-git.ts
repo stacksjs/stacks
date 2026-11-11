@@ -5,13 +5,18 @@
  * against a temporary repository in tests.
  */
 
+import process from 'node:process'
+
 /** The subject of the commit `buddy new` leaves behind. Conventional, since the app's own gitlint hook expects it. */
 export function scaffoldCommitMessage(appName: string): string {
   return `chore: scaffold ${appName} with buddy new`
 }
 
+// The environment is passed explicitly: without it the child sees the
+// process's starting environment, so an identity set at runtime
+// (GIT_AUTHOR_NAME and friends) never reaches git.
 function git(cwd: string, args: string[]): { ok: boolean, output: string } {
-  const result = Bun.spawnSync(['git', ...args], { cwd, stdout: 'pipe', stderr: 'pipe' })
+  const result = Bun.spawnSync(['git', ...args], { cwd, env: process.env, stdout: 'pipe', stderr: 'pipe' })
   return {
     ok: result.exitCode === 0,
     output: `${result.stdout.toString()}${result.stderr.toString()}`.trim(),
