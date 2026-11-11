@@ -715,6 +715,32 @@ the value breaks, or a `unique` value another row holds). A delete the
 database refuses because other records point at the row is reported as that,
 and an account cannot delete itself.
 
+### A user other records refer to is anonymized, not refused
+
+Many tables point at `users`, so anyone who has signed in, joined a team or
+placed an order cannot be deleted, and deleting through all of those tables
+from one trash icon would destroy far more than the operator sees. When the
+database refuses to delete a `User`, the dashboard applies the app's erasure
+rules instead (`eraseSubject`, the same thing `buddy gdpr:erase` runs): each
+model's `gdpr` trait says whether that person's rows are deleted, anonymized
+or kept, in one transaction with a `gdpr_requests` audit row recorded against
+the admin who asked. With the shipped rules the account stays, its name,
+email, avatar and password are replaced with placeholders, its tokens and
+sessions are revoked, and the records that refer to it are kept.
+
+The capability is `anonymize` (true for a deletable `User`), so the delete
+confirmation says this before the button is pressed; the response carries
+`anonymized: true` and the toast says "anonymized", not "deleted". A user
+nothing refers to is still simply deleted. Every other model is still refused
+with the reason.
+
+An anonymized account is stored as `[erased]` / `erased-<id>`. The Users list
+shows it as "Anonymized user" with an "Anonymized" badge, and its own page
+carries a note, using `anonymizedRows('User', rows)` from `@stacksjs/orm`,
+which asks the erasure plan whether a row's personal columns hold what
+erasure writes. Give the account a real name and email again and it is an
+account again.
+
 ### Users are invited, not typed in
 
 `User.password` is required and hidden, so no form can supply it, and a
