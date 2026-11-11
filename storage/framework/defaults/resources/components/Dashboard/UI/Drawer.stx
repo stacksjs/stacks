@@ -77,7 +77,7 @@ effect(() => {
   role="dialog"
   aria-modal="true"
   :aria-label="liveTitle() || 'Drawer'"
-  class="fixed inset-0 z-[55] m-0 p-0 h-dvh max-h-none max-w-none w-screen bg-transparent dashboard-drawer-dialog dashboard-modal-layer"
+  class="fixed inset-0 z-[55] m-0 p-0 h-dvh max-h-none max-w-none bg-transparent dashboard-drawer-dialog dashboard-modal-layer"
   @cancel="handleCancel"
 >
   <div class="flex justify-end min-h-full" @click="handleBackdropClick">

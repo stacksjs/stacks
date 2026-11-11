@@ -606,7 +606,14 @@ The desktop sidebar is fixed and publishes its current width through
 `--stx-sidebar-width` on the dashboard content shell. Fixed dialogs and
 drawers must use the shared `dashboard-modal-layer` class so their interactive
 surface starts beside that sidebar and returns to `left: 0` on mobile and in
-the Craft native-sidebar shell.
+the Craft native-sidebar shell. The class owns the layer's whole horizontal
+box (`left`, `right` and `width`), so a dialog is centred over the content and
+a drawer ends at the window's edge. Do not put a width utility (`w-screen`,
+`w-full`) on an element that carries it: beside `left: 250px` that runs the
+layer a sidebar's width past the window. The rule's selector is
+`html .dashboard-modal-layer`, so it outweighs `inset-0` whichever stylesheet
+loads last; a bare class did not, and dialogs moved depending on how the page
+was reached.
 
 Use `Dashboard/UI/Modal`, `Dashboard/UI/Drawer`, and
 `Dashboard/UI/ConfirmDialog` for page dialogs, inspectors, forms, and

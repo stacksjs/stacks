@@ -134,8 +134,27 @@ select:not([multiple]):not([size]):not([data-ui-select]) {
   background: #f4f4f5;
   transition: margin-left 0.3s ease-out;
 }
-.dashboard-modal-layer {
+/*
+ * A dialog or drawer covers the content pane: from the sidebar's edge to the
+ * window's, so a dialog is centred over the page and a drawer ends where the
+ * window does.
+ *
+ * `html` is in the selector for its weight, not its meaning. The dialogs also
+ * carry `inset-0`, a utility of the same weight as a bare class, and the
+ * utilities' stylesheet lands after this one on a fresh load and before it
+ * after navigating between pages. So which `left` applied depended on how the
+ * visitor had arrived: centred on the whole window one time, 250px to the
+ * right the next.
+ *
+ * The width is set here for the same reason, and because a `dialog` is as
+ * wide as its content unless told otherwise. It was told `100vw`, which with
+ * this `left` ran the layer a sidebar's width past the window: a dialog sat
+ * half that far right of centre, and a drawer's edge was off the screen.
+ */
+html .dashboard-modal-layer {
+  right: 0;
   left: var(--stx-sidebar-width, 250px);
+  width: auto;
   transition: left 0.3s ease-out;
 }
 /*
@@ -159,7 +178,7 @@ select:not([multiple]):not([size]):not([data-ui-select]) {
   [data-dashboard-web-sidebar] {
     display: none;
   }
-  .dashboard-modal-layer {
+  html .dashboard-modal-layer {
     left: 0;
   }
 }

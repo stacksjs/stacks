@@ -111,7 +111,7 @@ effect(() => {
     :role="liveRole()"
     aria-modal="true"
     :aria-label="liveAriaLabel() || liveTitle() || 'Dialog'"
-    class="fixed inset-0 overflow-y-auto z-[55] m-0 p-0 h-dvh max-h-none max-w-none w-screen bg-transparent dashboard-modal-dialog dashboard-modal-layer"
+    class="fixed inset-0 overflow-y-auto z-[55] m-0 p-0 h-dvh max-h-none max-w-none bg-transparent dashboard-modal-dialog dashboard-modal-layer"
     @cancel="handleCancel"
   >
     <!-- Modal container -->
