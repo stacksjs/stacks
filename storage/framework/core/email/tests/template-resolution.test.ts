@@ -67,6 +67,29 @@ describe('email template resolution (#1944)', () => {
     expect(html).toContain('Reset Password')
   })
 
+  test('an invitation says what it is and how long its link lasts, in words', async () => {
+    const resetUrl = 'https://acme.test/reset/tok456'
+    const { html, text } = await template('password-reset', {
+      variables: { resetUrl, expireMinutes: 10080, expiresIn: '7 days', purpose: 'setup' },
+    })
+
+    expect(html).toContain(resetUrl)
+    expect(html).toContain('Choose your password')
+    expect(html).toContain('An account has been created for you')
+    expect(html).toContain('Set Password')
+    expect(html).toContain('<strong>7 days</strong>')
+    // Not the sum the reader used to be left to do.
+    expect(html).not.toContain('10080')
+    expect(text).not.toContain('10080')
+  })
+
+  test('a reset without a worded lifetime still says its minutes', async () => {
+    const { html } = await template('password-reset', {
+      variables: { resetUrl: 'https://acme.test/reset/tok789', expireMinutes: 30 },
+    })
+    expect(html).toContain('<strong>30 minutes</strong>')
+  })
+
   test('userland template wins over the defaults copy', async () => {
     const overridePath = join(tempRoot, 'resources/emails/password-reset.stx')
     fs.writeFileSync(overridePath, '<p>USERLAND-OVERRIDE</p>\n')

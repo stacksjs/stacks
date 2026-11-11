@@ -55,8 +55,15 @@ export interface SendPasswordResetOptions {
 }
 
 export interface PasswordResetActions {
-  /** Issue a link and deliver it. A no-op for an unknown or throttled address (anti-enumeration). */
-  sendEmail: (options?: SendPasswordResetOptions) => Promise<void>
+  /**
+   * Issue a link and deliver it. A no-op for an unknown or throttled address
+   * (anti-enumeration), and the result says which: `true` when a link was
+   * issued and delivered (or queued behind the caller's transaction), `false`
+   * when nothing was sent. That answer is for the server. A public endpoint
+   * must go on giving every caller the same response; an operator inviting
+   * someone has to know the mail did not go.
+   */
+  sendEmail: (options?: SendPasswordResetOptions) => Promise<boolean>
   verifyToken: (token: string) => Promise<boolean>
   resetPassword: (token: string, newPassword: string) => Promise<PasswordResetResult>
 }
@@ -96,6 +103,25 @@ function isWithinExpiry(row: Record<string, unknown>): boolean {
   const expireMinutes = getTokenExpireMinutes()
   return created != null && Number.isFinite(expireMinutes) && expireMinutes > 0
     && created.getTime() + expireMinutes * 60_000 > Date.now()
+}
+
+/**
+ * How long a link lasts, as a person would say it.
+ *
+ * The mail said "expires in 60 minutes", which reads fine for a reset. An
+ * invitation's link lasts days, and "expires in 10080 minutes" is a sum the
+ * reader has to do. Whole days from two days up, whole hours from two hours
+ * up, minutes below that; a lifetime that is not a whole number of the larger
+ * unit stays in the smaller one, so the mail never promises longer than the
+ * link lasts.
+ */
+export function describeLinkLifetime(minutes: number): string {
+  const whole = Math.max(1, Math.round(minutes))
+  if (whole >= 2880 && whole % 1440 === 0)
+    return `${whole / 1440} days`
+  if (whole >= 120 && whole % 60 === 0)
+    return `${whole / 60} hours`
+  return whole === 1 ? '1 minute' : `${whole} minutes`
 }
 
 export function passwordResets(value: string): PasswordResetActions {
@@ -169,7 +195,7 @@ export function passwordResets(value: string): PasswordResetActions {
     return { token, expiresAt: expiresAtOverride ?? new Date(Date.now() + expireMinutes * 60_000) }
   }
 
-  async function sendEmail(options: SendPasswordResetOptions = {}): Promise<void> {
+  async function sendEmail(options: SendPasswordResetOptions = {}): Promise<boolean> {
     const purpose: PasswordResetPurpose = options.purpose === 'setup' ? 'setup' : 'reset'
     if (options.expiresAt !== undefined && (!(options.expiresAt instanceof Date) || !Number.isFinite(options.expiresAt.getTime()) || options.expiresAt.getTime() <= Date.now()))
       throw new TypeError('[PasswordReset] expiresAt must be a future Date.')
@@ -182,13 +208,13 @@ export function passwordResets(value: string): PasswordResetActions {
     // a reset to an address that no longer belongs to one.
     const user = await findAuthUserRowByEmail(email)
     if (!user)
-      return
+      return false
 
     const userId = Number(user.id)
     if (!Number.isSafeInteger(userId) || userId <= 0)
-      return
+      return false
     const issued = await createResetToken(userId, options.expiresAt)
-    if (!issued) return
+    if (!issued) return false
     const delivery: PasswordResetDelivery = {
       purpose,
       userId,
@@ -203,6 +229,7 @@ export function passwordResets(value: string): PasswordResetActions {
       ? async () => { await options.deliver!(delivery) }
       : () => deliverResetEmail(delivery)
     if (!enqueueAfterCommit(deliver)) await deliver()
+    return true
   }
 
   async function resetUrlFor(token: string): Promise<string> {
@@ -237,6 +264,7 @@ export function passwordResets(value: string): PasswordResetActions {
         variables: {
           resetUrl,
           expireMinutes,
+          expiresIn: describeLinkLifetime(expireMinutes),
           purpose: delivery.purpose,
         },
       })
@@ -260,9 +288,10 @@ export function passwordResets(value: string): PasswordResetActions {
       const msg = templateError instanceof Error ? templateError.message : String(templateError)
       console.warn(`[PasswordReset] template render failed, sending plain-text fallback: ${msg}`)
       html = undefined
+      const expiresIn = describeLinkLifetime(expireMinutes)
       text = setup
-        ? `Choose your password by visiting: ${resetUrl}\n\nThis link expires in ${expireMinutes} minutes.`
-        : `Reset your password by visiting: ${resetUrl}\n\nThis link expires in ${expireMinutes} minutes. If you didn't request this, you can safely ignore this email.`
+        ? `Choose your password by visiting: ${resetUrl}\n\nThis link expires in ${expiresIn}.`
+        : `Reset your password by visiting: ${resetUrl}\n\nThis link expires in ${expiresIn}. If you didn't request this, you can safely ignore this email.`
     }
 
     await mail.sendOrFail({

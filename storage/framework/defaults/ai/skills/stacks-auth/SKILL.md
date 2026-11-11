@@ -450,7 +450,14 @@ const result = await actions.resetPassword(token, newPassword)
 
 `deliver` runs after the token commits, instead of the framework mail; the
 `token`/`url` are the live credential, never log them. `sendEmail` stays a
-silent no-op for unknown or throttled addresses (anti-enumeration).
+no-op for unknown or throttled addresses (anti-enumeration) and resolves
+`false` for them, `true` when a link was issued and delivered. That result is
+for the server: a public endpoint keeps answering every caller the same way,
+while an operator-facing one (the dashboard's user invitation) has to know the
+mail did not go. The mail states the link's lifetime in words ("7 days", "2
+hours", "60 minutes") through the `expiresIn` template variable
+(`describeLinkLifetime`); `expireMinutes` is still passed for templates an app
+overrides.
 
 ### One credential sweep (password/credentials.ts)
 

@@ -208,7 +208,8 @@ async function resetRowCount(email: string): Promise<number> {
 
 describe('password reset anti-enumeration (#1944)', () => {
   test('unknown email is a silent no-op - no row, no send', async () => {
-    await expect(passwordResets('ghost-1944@example.com').sendEmail()).resolves.toBeUndefined()
+    // Nothing went, and the result says so: for the server, never for the caller's response.
+    await expect(passwordResets('ghost-1944@example.com').sendEmail()).resolves.toBe(false)
     expect(await resetRowCount('ghost-1944@example.com')).toBe(0)
     expect(sent.length).toBe(0)
   })
@@ -344,7 +345,7 @@ describe('password reset URL template (#1944)', () => {
 describe('password reset plain-text fallback (#1944)', () => {
   test('template render throwing → plain-text fallback send', async () => {
     templateMode = 'throw'
-    await expect(passwordResets(KNOWN_EMAIL).sendEmail()).resolves.toBeUndefined()
+    await expect(passwordResets(KNOWN_EMAIL).sendEmail()).resolves.toBe(true)
     expect(sent.length).toBe(1)
     expect(sent[0].html).toBeUndefined()
     expect(sent[0].text).toContain('https://example.test/password/reset/')
@@ -353,7 +354,7 @@ describe('password reset plain-text fallback (#1944)', () => {
 
   test('missing template (empty render) → plain-text fallback (regression for the fix)', async () => {
     templateMode = 'empty'
-    await expect(passwordResets(KNOWN_EMAIL).sendEmail()).resolves.toBeUndefined()
+    await expect(passwordResets(KNOWN_EMAIL).sendEmail()).resolves.toBe(true)
     expect(sent.length).toBe(1)
     expect(sent[0].html).toBeUndefined()
     expect(sent[0].text).toContain('https://example.test/password/reset/')
