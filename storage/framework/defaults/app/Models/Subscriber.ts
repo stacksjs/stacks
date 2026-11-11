@@ -88,4 +88,8 @@ export default defineModel({
       factory: () => null,
     },
   },
+
+  dashboard: {
+    columns: ['email', 'status', 'source', 'user', 'createdAt'],
+  },
 } as const)

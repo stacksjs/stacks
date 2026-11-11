@@ -84,6 +84,7 @@ export default defineModel({
   },
 
   dashboard: {
+    columns: ['user', 'team', 'role', 'status', 'createdAt'],
     enabled: false,
   },
 } as const)

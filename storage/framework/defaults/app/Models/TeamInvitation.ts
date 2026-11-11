@@ -156,6 +156,7 @@ export default defineModel({
   },
 
   dashboard: {
+    columns: ['email', 'team', 'role', 'status', 'deliveryStatus', 'expiresAt'],
     enabled: false,
   },
 } as const)

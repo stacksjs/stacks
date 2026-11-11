@@ -75,6 +75,7 @@ export default defineModel({
   },
 
   dashboard: {
+    columns: ['name', 'memberCount', 'status', 'createdAt'],
     highlight: true,
   },
 } as const)

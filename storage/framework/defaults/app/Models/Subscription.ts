@@ -153,4 +153,8 @@ export default defineModel({
       },
     },
   },
+
+  dashboard: {
+    columns: ['plan', 'type', 'providerStatus', 'quantity', 'user', 'endsAt'],
+  },
 } as const)

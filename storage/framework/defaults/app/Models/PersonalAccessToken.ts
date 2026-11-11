@@ -220,4 +220,8 @@ export default defineModel({
       },
     },
   },
+
+  dashboard: {
+    columns: ['name', 'userId', 'scopes', 'revoked', 'expiresAt', 'createdAt'],
+  },
 } as const)

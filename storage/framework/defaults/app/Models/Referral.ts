@@ -16,4 +16,8 @@ export default defineModel({
     status: { required: true, default: 'registered', validation: { rule: schema.enum(['registered', 'qualified']) } },
     qualifiedAt: { nullable: true, validation: { rule: schema.date() } },
   },
+
+  dashboard: {
+    columns: ['code', 'status', 'referrerId', 'referredUserId', 'qualifiedAt'],
+  },
 } as const)
