@@ -11,7 +11,7 @@ import type {
 } from '../../../../functions/data'
 import { fetchDashboardData } from '../../../../functions/data'
 import type { ModelWriteCapabilities } from '../../../../functions/dashboard-model-record'
-import { deleteModelRecord, fetchModelCapabilities, modelDeleteWarning, modelRecordCreateHref, modelRecordEditHref, modelRecordHref } from '../../../../functions/dashboard-model-record'
+import { deleteModelRecord, fetchModelCapabilities, modelDeleteWarning, modelRecordCreateHref, modelRecordEditHref, modelRecordHref, NO_WRITES, userInviteHref } from '../../../../functions/dashboard-model-record'
 import { pushToast } from '../../../../functions/toasts'
 
 type DataRecord = DashboardActivity | DashboardSubscriber | DashboardTeam | DashboardUser
@@ -74,7 +74,7 @@ const MODEL_SLUGS: Record<DataMode, string> = { activity: 'activity', users: 'us
 const ACTION_LABEL_KEYS: Record<DataMode, string> = { activity: 'description', users: 'name', teams: 'name', subscribers: 'email' }
 
 const modelSlug = derived(() => MODEL_SLUGS[mode()] ?? '')
-const capabilities = state<ModelWriteCapabilities>({ create: false, update: false, destroy: false })
+const capabilities = state<ModelWriteCapabilities>(NO_WRITES)
 const confirmingDelete = state<Record<string, any> | null>(null)
 const working = state(false)
 
@@ -98,7 +98,7 @@ const deleteDescription = derived(() => {
 
 async function loadCapabilities(): Promise<void> {
   if (!modelSlug()) {
-    capabilities.set({ create: false, update: false, destroy: false })
+    capabilities.set(NO_WRITES)
     return
   }
   try {
@@ -106,17 +106,22 @@ async function loadCapabilities(): Promise<void> {
   }
   catch {
     // Without them the page still lists and views; it offers no writes.
-    capabilities.set({ create: false, update: false, destroy: false })
+    capabilities.set(NO_WRITES)
   }
 }
 
-/** Offered where the model can be created from the dashboard at all. */
-const canCreate = derived(() => Boolean(modelSlug()) && capabilities().create)
-const createLabel = derived(() => `Create ${page().one}`)
+/**
+ * Offered where the model can be added to from the dashboard at all. A user
+ * is invited, not typed in, and the button says so: pressing it leads to an
+ * email being sent, which "Create" would not have told anyone.
+ */
+const canInvite = derived(() => Boolean(modelSlug()) && capabilities().invite)
+const canCreate = derived(() => Boolean(modelSlug()) && (capabilities().create || capabilities().invite))
+const createLabel = derived(() => canInvite() ? `Invite ${page().one}` : `Create ${page().one}`)
 
-// The create page comes back here, like the record's own pages.
+// The create and invite pages come back here, like the record's own pages.
 function createRecord(): void {
-  navigate(modelRecordCreateHref(modelSlug(), `/data/${mode()}`))
+  navigate(canInvite() ? userInviteHref(`/data/${mode()}`) : modelRecordCreateHref(modelSlug(), `/data/${mode()}`))
 }
 
 /** The eye and the pencil each open a page of the record's own, which comes back here. */
@@ -304,7 +309,7 @@ onMount(() => {
         Refresh
       </Button>
       <Button :if="canCreate()" variant="primary" @click="createRecord">
-        <span aria-hidden="true" class="h-4 w-4 i-hugeicons-add-01"></span>
+        <span aria-hidden="true" :class="canInvite() ? 'h-4 w-4 i-hugeicons-mail-send-01' : 'h-4 w-4 i-hugeicons-add-01'"></span>
         {{ createLabel() }}
       </Button>
     </div>

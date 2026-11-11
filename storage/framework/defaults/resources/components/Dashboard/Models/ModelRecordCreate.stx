@@ -7,7 +7,7 @@
 // page.
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
 import type { ModelCreateField, ModelCreateForm } from '../../../../functions/dashboard-model-record'
-import { createModelRecord, fetchModelCreateForm, modelRecordBackHref, modelRecordHref, modelRecordListLabel } from '../../../../functions/dashboard-model-record'
+import { createModelRecord, fetchModelCreateForm, modelRecordBackHref, modelRecordHref, modelRecordListLabel, userInviteHref } from '../../../../functions/dashboard-model-record'
 import { pushToast } from '../../../../functions/toasts'
 
 const navigation = useNavigation()
@@ -30,6 +30,12 @@ const listLabel = derived(() => modelRecordListLabel(form(), listHref()))
 const modelName = derived(() => form()?.modelName || 'Record')
 const fields = derived(() => form()?.fields ?? [])
 const canCreate = derived(() => Boolean(form()?.canCreate) && fields().length > 0)
+/** A model added by invitation has no form here; the page points at the one that does. */
+const canInvite = derived(() => !canCreate() && Boolean(form()?.canInvite))
+
+function openInvite(): void {
+  navigate(userInviteHref(listHref()))
+}
 
 function setValue(field: string, value: unknown): void {
   values.set({ ...values(), [field]: value })
@@ -121,11 +127,20 @@ onMount(() => {
   </div>
 
   <EmptyState
-    :if="!loading() && form() && !canCreate()"
+    :if="!loading() && form() && !canCreate() && !canInvite()"
     icon="i-hugeicons-square-lock-02"
     :title="modelName() + ' records cannot be created here'"
     description="This model does not accept new records through the dashboard."
   />
+
+  <div :if="!loading() && canInvite()" class="flex flex-col gap-4 items-start">
+    <EmptyState
+      icon="i-hugeicons-mail-send-01"
+      :title="modelName() + ' records are added by invitation'"
+      description="The account is created and the person is emailed a link to choose their own password."
+    />
+    <Button variant="primary" @click="openInvite">{{ 'Invite ' + modelName().toLowerCase() }}</Button>
+  </div>
 
   <form :if="!loading() && canCreate()" id="model-create-form" class="flex flex-col gap-6" @submit.prevent="create">
     <div :if="createError()" role="alert" class="px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg dark:border-red-900">

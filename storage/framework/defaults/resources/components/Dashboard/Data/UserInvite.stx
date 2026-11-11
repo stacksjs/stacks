@@ -1,0 +1,107 @@
+<script client>
+// The page that adds a user (`/data/users/invite`), where the Invite user
+// button on the Users list leads. A user is invited, not typed in: the
+// account is created and its holder is mailed a link to choose their own
+// password, so nobody else ever knows it. Laid out like the other record
+// pages: a breadcrumb back to the list, the title, one card.
+import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
+import { inviteUser, modelRecordBackHref, modelRecordHref } from '../../../../functions/dashboard-model-record'
+import { pushToast } from '../../../../functions/toasts'
+
+const navigation = useNavigation()
+const name = state('')
+const email = state('')
+const sending = state(false)
+const sendError = state('')
+const sendErrors = state<Record<string, string[]>>({})
+
+const from = navigation.urlQuery('from')
+const listHref = derived(() => from && modelRecordBackHref('user', from) === from ? from : '/data/users')
+
+function fieldError(field: string): string {
+  return sendErrors()[field]?.[0] || ''
+}
+
+async function send(): Promise<void> {
+  if (sending())
+    return
+  sending.set(true)
+  sendError.set('')
+  sendErrors.set({})
+  try {
+    const result = await inviteUser(name(), email())
+    if (!result.ok) {
+      sendError.set(result.error)
+      sendErrors.set(result.errors)
+      return
+    }
+    pushToast('success', 'Invitation sent', { detail: `${result.email} has ${result.expiresInDays} days to choose a password.` })
+    navigate(modelRecordHref('user', result.id, listHref()))
+  }
+  finally {
+    sending.set(false)
+  }
+}
+
+function cancel(): void {
+  if (!sending())
+    navigate(listHref())
+}
+</script>
+
+<div class="flex flex-col gap-6">
+  <header class="min-w-0">
+    <nav aria-label="Breadcrumb" class="flex gap-2 items-center mb-2 text-neutral-500 text-sm dark:text-neutral-400">
+      <StxLink :to="listHref()" class="font-medium hover:text-blue-600 dark:hover:text-blue-400">Users</StxLink>
+      <span aria-hidden="true" class="h-4 w-4 i-hugeicons-arrow-right-01"></span>
+      <span aria-current="page">Invite</span>
+    </nav>
+    <h1 class="font-bold text-3xl text-neutral-900 tracking-tight truncate dark:text-white">Invite User</h1>
+  </header>
+
+  <form id="user-invite-form" class="flex flex-col gap-6" @submit.prevent="send">
+    <div :if="sendError()" role="alert" class="px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg dark:border-red-900">
+      {{ sendError() }}
+    </div>
+
+    <div class="max-w-3xl">
+      <Card padding="none">
+        <div class="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
+          <h2 class="font-semibold text-base text-neutral-900 dark:text-white">User Details</h2>
+          <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">We create the account and email this person a link to choose their own password. The link works for 7 days.</p>
+        </div>
+        <div class="flex flex-col gap-5 p-6">
+          <Input
+            name="name"
+            :value="name()"
+            type="text"
+            label="Name"
+            ariaLabel="Name"
+            autocomplete="off"
+            :required="true"
+            :disabled="sending()"
+            :error="fieldError('name')"
+            @update:value="name.set($event)"
+          />
+          <Input
+            name="email"
+            :value="email()"
+            type="email"
+            label="Email"
+            ariaLabel="Email"
+            autocomplete="off"
+            :required="true"
+            :disabled="sending()"
+            :error="fieldError('email')"
+            @update:value="email.set($event)"
+          />
+        </div>
+      </Card>
+    </div>
+
+    <div class="flex gap-3 items-center">
+      <Button type="submit" variant="primary" :loading="sending()">Send invitation</Button>
+      <Button variant="secondary" :disabled="sending()" @click="cancel">Cancel</Button>
+    </div>
+  </form>
+</div>

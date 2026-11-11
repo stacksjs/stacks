@@ -17,6 +17,8 @@ export interface ModelWriteCapabilities {
   create: boolean
   update: boolean
   destroy: boolean
+  /** New records are added by invitation (users): see {@link inviteUser}. */
+  invite: boolean
 }
 
 export interface ModelColumn {
@@ -70,9 +72,12 @@ export interface ModelCreateForm {
   fields: ModelCreateField[]
   /** Whether the model's API has a store route at all. */
   canCreate: boolean
+  /** New records are added by invitation instead (users). */
+  canInvite: boolean
 }
 
-const NO_WRITES: ModelWriteCapabilities = { create: false, update: false, destroy: false }
+/** What a model offers before its capabilities are known, or when it has none. */
+export const NO_WRITES: ModelWriteCapabilities = { create: false, update: false, destroy: false, invite: false }
 
 function modelPath(slug: string): string {
   return `/api/dashboard/models/${encodeURIComponent(slug)}`
@@ -81,7 +86,7 @@ function modelPath(slug: string): string {
 /** What the model lets the dashboard do, without loading any rows of note. */
 export async function fetchModelCapabilities(slug: string): Promise<ModelWriteCapabilities> {
   const data = await dashboardApi<ModelShowResponse>(`${modelPath(slug)}?perPage=1`)
-  return data.writeCapabilities ?? NO_WRITES
+  return { ...NO_WRITES, ...data.writeCapabilities }
 }
 
 /** What the create page needs: the model's name and the fields a new record takes. */
@@ -94,6 +99,7 @@ export async function fetchModelCreateForm(slug: string): Promise<ModelCreateFor
     tableName: data.tableName,
     fields: data.createFields ?? [],
     canCreate: Boolean(data.writeCapabilities?.create),
+    canInvite: Boolean(data.writeCapabilities?.invite),
   }
 }
 
@@ -112,7 +118,7 @@ export async function fetchModelRecord(slug: string, id: string | number): Promi
     row,
     columns: data.columnMeta ?? [],
     updateColumns: data.updateColumns ?? [],
-    writeCapabilities: data.writeCapabilities ?? NO_WRITES,
+    writeCapabilities: { ...NO_WRITES, ...data.writeCapabilities },
   }
 }
 
@@ -386,4 +392,28 @@ export async function deleteModelRecord(slug: string, id: string | number): Prom
   const result = await dashboardApi<{ ok: boolean, error?: string }>(`${modelPath(slug)}/${encodeURIComponent(String(id))}`, { method: 'DELETE' })
   if (!result?.ok)
     throw new Error(result?.error || 'The delete was rejected.')
+}
+
+/** Where the invite page lives, remembering the list to return to. */
+export function userInviteHref(from?: string): string {
+  return from ? `/data/users/invite?from=${encodeURIComponent(from)}` : '/data/users/invite'
+}
+
+export type UserInviteResult = { ok: true, id: string | number, email: string, expiresInDays: number } | ModelWriteFailure
+
+/**
+ * Add a user by invitation: the account is created and its holder is mailed
+ * a link to choose their password. A refusal comes back in the same shape as
+ * a refused create, so the form shows it the same way.
+ */
+export async function inviteUser(name: string, email: string): Promise<UserInviteResult> {
+  try {
+    const result = await dashboardApi<{ ok: boolean, id?: number | string, email?: string, expiresInDays?: number, error?: string, errors?: Record<string, string[]> }>('/api/dashboard/users/invitations', { method: 'POST', body: { name, email } })
+    if (!result?.ok || result.id === undefined)
+      return { ok: false, error: result?.error || 'The invitation was rejected.', errors: result?.errors ?? {} }
+    return { ok: true, id: result.id, email: result.email || email, expiresInDays: result.expiresInDays ?? 7 }
+  }
+  catch (reason) {
+    return modelWriteFailure(reason)
+  }
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { DashboardApiError } from './dashboard-api'
-import { changedModelFields, modelDeleteWarning, modelFieldError, modelWriteFailure, modelRecordBackHref, modelRecordCreateHref, modelRecordEditHref, modelRecordFields, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRecordTitle } from './dashboard-model-record'
+import { changedModelFields, modelDeleteWarning, modelFieldError, modelWriteFailure, userInviteHref, modelRecordBackHref, modelRecordCreateHref, modelRecordEditHref, modelRecordFields, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRecordTitle } from './dashboard-model-record'
 import type { ModelRecord } from './dashboard-model-record'
 
 const record: ModelRecord = {
@@ -14,7 +14,7 @@ const record: ModelRecord = {
     { name: 'created_at', label: 'Created At', type: 'date' },
   ],
   updateColumns: ['name', 'description', 'status'],
-  writeCapabilities: { create: true, update: true, destroy: true },
+  writeCapabilities: { create: true, update: true, destroy: true, invite: false },
 }
 
 describe('a model record in the dashboard dialog', () => {
@@ -53,7 +53,7 @@ describe('a model record on its own page', () => {
       { name: 'email_verified_at', label: 'Email Verified At', type: 'text' },
     ],
     updateColumns: [],
-    writeCapabilities: { create: true, update: false, destroy: false },
+    writeCapabilities: { create: true, update: false, destroy: false, invite: false },
   }
 
   it('groups the fields into the cards of the page', () => {
@@ -155,5 +155,13 @@ describe('a refused edit', () => {
 describe('the delete confirmation', () => {
   it('says what happens in plain words', () => {
     expect(modelDeleteWarning('Ava')).toBe('Ava will be deleted. This cannot be undone from the dashboard.')
+  })
+})
+
+describe('inviting a user', () => {
+  it('links to the invite page, remembering the list to return to', () => {
+    expect(userInviteHref()).toBe('/data/users/invite')
+    expect(userInviteHref('/data/users')).toBe('/data/users/invite?from=%2Fdata%2Fusers')
+    expect(userInviteHref('/models/user')).toBe('/data/users/invite?from=%2Fmodels%2Fuser')
   })
 })

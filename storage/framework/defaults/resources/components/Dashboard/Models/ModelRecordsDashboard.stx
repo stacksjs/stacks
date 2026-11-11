@@ -8,19 +8,14 @@
 // writes go through the model, so scopes, casts and observers apply.
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
 import { dashboardApi } from '@stacksjs/defaults/functions/dashboard-api'
-import { modelDeleteWarning, modelRecordCreateHref, modelRecordEditHref, modelRecordHref } from '@stacksjs/defaults/functions/dashboard-model-record'
+import type { ModelWriteCapabilities } from '@stacksjs/defaults/functions/dashboard-model-record'
+import { modelDeleteWarning, modelRecordCreateHref, modelRecordEditHref, modelRecordHref, NO_WRITES, userInviteHref } from '@stacksjs/defaults/functions/dashboard-model-record'
 import { pushToast } from '@stacksjs/defaults/functions/toasts'
 
 interface ColumnMeta {
   name: string
   label: string
   type: 'number' | 'boolean' | 'date' | 'json' | 'text'
-}
-
-interface WriteCapabilities {
-  create: boolean
-  update: boolean
-  destroy: boolean
 }
 
 interface ResponseShape {
@@ -36,7 +31,7 @@ interface ResponseShape {
   sort: string
   dir: 'asc' | 'desc'
   writable: boolean
-  writeCapabilities: WriteCapabilities
+  writeCapabilities: ModelWriteCapabilities
   updateColumns: string[]
   migrated?: boolean
   error: string | null
@@ -57,7 +52,7 @@ const sort = state('')
 const dir = state<'asc' | 'desc'>('desc')
 const search = state(navigation.urlQuery('q') || '')
 const filters = state<Record<string, string>>({})
-const writeCapabilities = state<WriteCapabilities>({ create: false, update: false, destroy: false })
+const writeCapabilities = state<ModelWriteCapabilities>(NO_WRITES)
 const error = state<string | null>(null)
 // False when the model's table has not been created yet: the server checked the
 // catalog after the query failed, so this is never a guess from an error.
@@ -182,7 +177,7 @@ async function load() {
     totalCount.set(data.totalCount ?? 0)
     lastPage.set(data.lastPage ?? 1)
     sort.set(data.sort ?? '')
-    writeCapabilities.set(data.writeCapabilities ?? { create: false, update: false, destroy: false })
+    writeCapabilities.set({ ...NO_WRITES, ...data.writeCapabilities })
     migrated.set(data.migrated !== false)
     error.set(data.error ?? null)
   }
@@ -247,6 +242,11 @@ function openCreate(): void {
   navigate(modelRecordCreateHref(slug()))
 }
 
+// A user is invited, not typed in: the account's holder chooses the password.
+function openInvite(): void {
+  navigate(userInviteHref(`/models/${slug()}`))
+}
+
 async function confirmDelete() {
   const row = confirmingDelete()
   if (!row) return
@@ -289,11 +289,18 @@ void load()
     </div>
     <div class="flex gap-2 items-center">
       <Button
-        :if="writeCapabilities().create"
+        :if="writeCapabilities().create && !writeCapabilities().invite"
         @click="openCreate"
       >
         <span aria-hidden="true" class="h-4 w-4 i-hugeicons-add-01"></span>
         Create
+      </Button>
+      <Button
+        :if="writeCapabilities().invite"
+        @click="openInvite"
+      >
+        <span aria-hidden="true" class="h-4 w-4 i-hugeicons-mail-send-01"></span>
+        Invite
       </Button>
       <Button
         :if="migrated()"

@@ -153,7 +153,7 @@ describe('dashboard generic model writes', () => {
 
     expect(page).toContain('<ModelRecordsDashboard />')
     expect(page).not.toContain('<script')
-    expect(view).toContain('writeCapabilities.set(data.writeCapabilities')
+    expect(view).toContain('writeCapabilities.set({ ...NO_WRITES, ...data.writeCapabilities })')
     // Which columns an edit may change is the edit page's business now.
     expect(record).toContain('readonly: !record.updateColumns.includes(column.name)')
     // Creating is a page of its own; the browser only links to it.

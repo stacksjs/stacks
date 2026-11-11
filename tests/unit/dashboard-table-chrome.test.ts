@@ -158,14 +158,15 @@ describe('dashboard row actions', () => {
     expect(edit).toContain(`:title="modelName() + ' records cannot be edited here'"`)
   })
 
-  test('the Users, Teams and Subscribers pages offer Create where the model can be created', () => {
-    // Teams and Subscribers get the button. Users does not: a new user needs
-    // a password the generic form does not collect, so the model reports that
-    // it cannot be created here and no button leads to a form that must fail.
-    expect(records).toContain('const canCreate = derived(() => Boolean(modelSlug()) && capabilities().create)')
+  test('the Users, Teams and Subscribers pages offer a way to add one where the model allows it', () => {
+    // Teams and Subscribers get "Create", which opens the model's form. Users
+    // gets "Invite user": a new user needs a password no form can collect, so
+    // the account is created and its holder is mailed a link to choose one.
+    expect(records).toContain('const canCreate = derived(() => Boolean(modelSlug()) && (capabilities().create || capabilities().invite))')
+    expect(records).toContain('const createLabel = derived(() => canInvite() ? `Invite ${page().one}` : `Create ${page().one}`)')
     expect(records).toContain('<Button :if="canCreate()" variant="primary" @click="createRecord">')
     expect(records).toContain('{{ createLabel() }}')
-    expect(records).toContain('navigate(modelRecordCreateHref(modelSlug(), `/data/${mode()}`))')
+    expect(records).toContain('navigate(canInvite() ? userInviteHref(`/data/${mode()}`) : modelRecordCreateHref(modelSlug(), `/data/${mode()}`))')
   })
 
   test('creating a record is a page too, opened from the model browser', () => {
@@ -247,8 +248,8 @@ describe('dashboard consistency', () => {
   test('every page title is the same weight and size', () => {
     // 32 pages said font-bold text-2xl and 25 said something else: semibold,
     // text-xl, or a text-base heading that read as a section label. The
-    // record pages (view, edit, create) are larger on purpose.
-    const larger = new Set(['Models/ModelRecordCreate.stx', 'Models/ModelRecordDetail.stx', 'Models/ModelRecordEdit.stx'])
+    // record pages (view, edit, create, invite) are larger on purpose.
+    const larger = new Set(['Data/UserInvite.stx', 'Models/ModelRecordCreate.stx', 'Models/ModelRecordDetail.stx', 'Models/ModelRecordEdit.stx'])
     const notPages = ['Auth/', 'Feedback/', 'Transaction/', 'Teams/TeamInvitationDashboard.stx', 'NotFoundDashboard.stx']
     const root = resolve('storage/framework/defaults/resources/components/Dashboard')
     const odd: string[] = []
