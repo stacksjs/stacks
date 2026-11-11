@@ -138,7 +138,7 @@ describe('dashboard row actions', () => {
     expect(detail).toContain(`via: 'view'`)
     expect(readFileSync(resolve('storage/framework/defaults/views/dashboard/models/[model]/[id].stx'), 'utf8')).toContain('<ModelRecordDetail />')
     expect(readFileSync(resolve('storage/framework/defaults/views/dashboard/models/[model]/[id]/edit.stx'), 'utf8')).toContain('<ModelRecordEdit />')
-    expect(detail).toContain('modelRecordSections(record()!)')
+    expect(detail).toContain('modelRecordSections(record()!, relationNames())')
     expect(detail).toContain('modelRecordBackHref(slug(), from)')
     // No dialog is left for either.
     for (const source of [records, browser, detail, edit]) {

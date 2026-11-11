@@ -1,0 +1,247 @@
+<script client>
+// Choosing a record of another model, for a `belongsTo` field: a team for a
+// member, a board for a card. The field stores an id, and this asks for the
+// record by name instead, so nobody has to find a number on another page and
+// type it here.
+//
+// Two states. With a record chosen it shows which, with a way to clear it.
+// Without one it is a search box: typing lists the records whose name (or, for
+// people, email) matches, and the arrow keys and Enter pick one.
+import type { ModelOption } from '../../../../functions/dashboard-model-record'
+import { fetchModelOptions } from '../../../../functions/dashboard-model-record'
+
+const slug = useReactiveProp('slug', '')
+const value = useReactiveProp('value', '')
+const label = useReactiveProp('label', '')
+const name = useReactiveProp('name', '')
+const required = useReactiveProp('required', false)
+const disabled = useReactiveProp('disabled', false)
+const error = useReactiveProp('error', '')
+const emit = defineEmits(['update:value'])
+const generatedId = useId('relation')
+
+const chosen = state<ModelOption | null>(null)
+const query = state('')
+const options = state<ModelOption[]>([])
+const open = state(false)
+const searching = state(false)
+const failed = state('')
+const active = state(0)
+// Answers can arrive out of order; only the latest search may fill the list.
+let asked = 0
+
+const inputId = derived(() => `${generatedId}-input`)
+const listId = derived(() => `${generatedId}-list`)
+const what = derived(() => (label() || 'record').toLowerCase())
+// No article to get wrong: the label above already says what is being chosen.
+const placeholder = derived(() => 'Search by name')
+const emptyText = derived(() => query().trim() ? `No ${what()} matches "${query().trim()}".` : `There are no ${what()} records yet.`)
+const boxClass = derived(() => [
+  'flex gap-2 items-center px-3 h-8 w-full text-[13px] rounded-lg border transition-all duration-150',
+  'bg-white dark:bg-white/10 text-stone-900 dark:text-neutral-100',
+  error()
+    ? 'border-red-400/60 dark:border-red-500/60'
+    : 'border-stone-200/80 dark:border-white/15',
+  disabled() ? 'opacity-40 cursor-not-allowed' : '',
+].join(' '))
+const inputClass = derived(() => [
+  'block pl-8 pr-3 h-8 w-full text-[13px] rounded-lg border transition-all duration-150',
+  'bg-white dark:bg-white/10 text-stone-900 dark:text-neutral-100',
+  'placeholder:text-stone-400 dark:placeholder:text-neutral-500',
+  'focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-0',
+  error()
+    ? 'border-red-400/60 dark:border-red-500/60 focus:border-red-500'
+    : 'border-stone-200/80 dark:border-white/15 focus:border-blue-400 hover:border-stone-300 dark:hover:border-white/25',
+  disabled() ? 'opacity-40 cursor-not-allowed' : '',
+].join(' '))
+
+function optionClass(index: number): string {
+  return index === active()
+    ? 'flex flex-col px-3 py-2 w-full text-left bg-blue-50 dark:bg-blue-500/20'
+    : 'flex flex-col px-3 py-2 w-full text-left hover:bg-neutral-50 dark:hover:bg-white/5'
+}
+
+/** Name the record the field already points at. */
+async function describeValue(): Promise<void> {
+  const id = String(value() ?? '')
+  if (!id) {
+    chosen.set(null)
+    return
+  }
+  if (chosen() && String(chosen()!.id) === id)
+    return
+  try {
+    const [option] = await fetchModelOptions(slug(), { ids: [id] })
+    // A record that is gone still shows as what the field holds, by its id.
+    chosen.set(option ?? { id, label: `${label() || 'Record'} #${id}`, hint: 'This record no longer exists.' })
+  }
+  catch {
+    chosen.set({ id, label: `${label() || 'Record'} #${id}`, hint: '' })
+  }
+}
+
+async function search(): Promise<void> {
+  const mine = ++asked
+  searching.set(true)
+  failed.set('')
+  try {
+    const found = await fetchModelOptions(slug(), { q: query().trim() })
+    if (mine !== asked)
+      return
+    options.set(found)
+    active.set(0)
+  }
+  catch (reason) {
+    if (mine !== asked)
+      return
+    options.set([])
+    failed.set(reason instanceof Error ? reason.message : 'The list could not be loaded.')
+  }
+  finally {
+    if (mine === asked)
+      searching.set(false)
+  }
+}
+
+const searchSoon = useDebounce(() => {
+  void search()
+}, 200)
+
+function onInput(event: Event): void {
+  query.set((event.target as HTMLInputElement).value)
+  open.set(true)
+  searchSoon()
+}
+
+function onFocus(): void {
+  if (disabled())
+    return
+  open.set(true)
+  void search()
+}
+
+// Options keep the input focused while they are pressed (see the template),
+// so losing focus means the visitor has moved on.
+function onBlur(): void {
+  open.set(false)
+}
+
+function choose(option: ModelOption): void {
+  chosen.set(option)
+  open.set(false)
+  query.set('')
+  emit('update:value', String(option.id))
+}
+
+function clear(): void {
+  if (disabled())
+    return
+  chosen.set(null)
+  options.set([])
+  emit('update:value', '')
+}
+
+function onKeydown(event: KeyboardEvent): void {
+  if (event.key === 'ArrowDown') {
+    event.preventDefault()
+    open.set(true)
+    active.set(Math.min(active() + 1, Math.max(0, options().length - 1)))
+  }
+  else if (event.key === 'ArrowUp') {
+    event.preventDefault()
+    active.set(Math.max(active() - 1, 0))
+  }
+  else if (event.key === 'Enter') {
+    // Never the form's submit: Enter in a search box picks from its list.
+    event.preventDefault()
+    const option = options()[active()]
+    if (open() && option)
+      choose(option)
+  }
+  else if (event.key === 'Escape') {
+    open.set(false)
+  }
+}
+
+effect(() => {
+  // Also when the page sets the value after this mounts, as an edit form does.
+  value()
+  void describeValue()
+})
+</script>
+
+<div class="relative w-full" data-relation-picker>
+  <label :if="label()" :for="inputId()" class="block mb-1.5 font-medium text-[13px] tracking-tight" :class="error() ? 'text-red-600 dark:text-red-400' : 'text-stone-600 dark:text-neutral-400'">
+    <span :text="label()"></span>
+    <span :if="required()" class="ml-0.5 text-red-500">*</span>
+  </label>
+
+  <input type="hidden" :name="name() || null" :value="value()">
+
+  <div :if="chosen()" :class="boxClass()" data-relation-chosen>
+    <span class="flex-1 min-w-0 truncate">
+      <span class="font-medium" :text="chosen().label"></span>
+      <span :if="chosen().hint" class="ml-2 text-stone-500 dark:text-neutral-400" :text="chosen().hint"></span>
+    </span>
+    <button
+      type="button"
+      class="flex flex-none items-center justify-center h-5 w-5 text-stone-400 dark:text-neutral-400 hover:text-stone-700 dark:hover:text-neutral-100 rounded"
+      :disabled="disabled()"
+      :aria-label="'Choose a different ' + what()"
+      :title="'Choose a different ' + what()"
+      @click="clear"
+    >
+      <span aria-hidden="true" class="h-3.5 w-3.5 i-hugeicons-cancel-01"></span>
+    </button>
+  </div>
+
+  <div :if="!chosen()" class="relative">
+    <div class="flex absolute inset-y-0 left-0 items-center pl-2.5 text-neutral-400 pointer-events-none">
+      <span aria-hidden="true" class="h-3.5 w-3.5 i-hugeicons-search-01"></span>
+    </div>
+    <input
+      :id="inputId()"
+      type="text"
+      role="combobox"
+      autocomplete="off"
+      aria-autocomplete="list"
+      :aria-expanded="open() ? 'true' : 'false'"
+      :aria-controls="listId()"
+      :aria-invalid="error() ? 'true' : null"
+      :aria-label="label() || null"
+      :placeholder="placeholder()"
+      :value="query()"
+      :disabled="disabled()"
+      :class="inputClass()"
+      @input="onInput"
+      @focus="onFocus"
+      @blur="onBlur"
+      @keydown="onKeydown"
+    >
+
+    <div
+      :if="open()"
+      :id="listId()"
+      role="listbox"
+      :aria-label="label() || 'Records'"
+      class="absolute left-0 overflow-y-auto right-0 top-full z-30 mt-1 max-h-64 bg-white dark:bg-neutral-900 border border-stone-200 rounded-lg dark:border-white/15 shadow-lg"
+    >
+      <button
+        :for="(option, index) in options()"
+        type="button"
+        role="option"
+        :aria-selected="index === active() ? 'true' : 'false'"
+        :class="optionClass(index)"
+        @mousedown.prevent="choose(option)"
+      >
+        <span class="font-medium text-[13px] text-stone-900 truncate dark:text-neutral-100" :text="option.label"></span>
+        <span :if="option.hint" class="text-[12px] text-stone-500 truncate dark:text-neutral-400" :text="option.hint"></span>
+      </button>
+      <p :if="searching() && options().length === 0" class="px-3 py-2 text-[12px] text-stone-500 dark:text-neutral-400">Searching</p>
+      <p :if="!searching() && !failed() && options().length === 0" class="px-3 py-2 text-[12px] text-stone-500 dark:text-neutral-400" :text="emptyText()"></p>
+      <p :if="failed()" role="alert" class="px-3 py-2 text-[12px] text-red-600 dark:text-red-400" :text="failed()"></p>
+    </div>
+  </div>
+
+  <p :if="error()" class="mt-1.5 text-[12px] text-red-600 dark:text-red-400" :text="error()"></p>
+</div>

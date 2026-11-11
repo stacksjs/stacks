@@ -1,8 +1,8 @@
 <script client>
 // The inputs of a model's form, one per field, each in the control its kind
 // calls for: a select for a choice, a checkbox for yes or no, a date or a
-// date-and-time picker, a number box, a tall box for prose and for JSON, and
-// a line of text for the rest.
+// date-and-time picker, a number box, a tall box for prose and for JSON, a
+// search for another model's record, and a line of text for the rest.
 //
 // The create page and the edit page both render this, so a kind of field is
 // drawn once. The page owns the values: this reports each change upward as
@@ -35,7 +35,7 @@ function inputType(field: ModelCreateField): 'date' | 'datetime-local' | 'email'
 
 /** Everything that is one line: text, email, number, date, date and time. */
 function isLine(field: ModelCreateField): boolean {
-  return field.type !== 'boolean' && field.type !== 'enum' && field.type !== 'longtext' && field.type !== 'json'
+  return field.type !== 'boolean' && field.type !== 'enum' && field.type !== 'longtext' && field.type !== 'json' && field.type !== 'relation'
 }
 
 function hint(field: ModelCreateField): string {
@@ -75,6 +75,18 @@ function change(field: ModelCreateField, value: string | boolean): void {
       :options="field.options"
       :label="field.label"
       :ariaLabel="field.label"
+      :required="field.required"
+      :disabled="disabled()"
+      :error="error(field)"
+      @update:value="change(field, $event)"
+    />
+
+    <ModelRelationPicker
+      :if="field.type === 'relation'"
+      :slug="field.relation ? field.relation.slug : ''"
+      :name="field.name"
+      :value="text(field)"
+      :label="field.label"
       :required="field.required"
       :disabled="disabled()"
       :error="error(field)"

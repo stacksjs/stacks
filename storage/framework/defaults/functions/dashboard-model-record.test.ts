@@ -15,6 +15,7 @@ const record: ModelRecord = {
   ],
   updateColumns: ['name', 'description', 'status'],
   fields: [],
+  relations: {},
   writeCapabilities: { create: true, update: true, destroy: true, invite: false, anonymize: false },
   anonymized: false,
 }
@@ -117,6 +118,7 @@ describe('a model record on its own page', () => {
     ],
     updateColumns: [],
     fields: [],
+    relations: {},
     writeCapabilities: { create: true, update: false, destroy: false, invite: false, anonymize: false },
     anonymized: false,
   }
@@ -242,5 +244,59 @@ describe('inviting a user', () => {
     expect(userInviteHref()).toBe('/data/users/invite')
     expect(userInviteHref('/data/users')).toBe('/data/users/invite?from=%2Fdata%2Fusers')
     expect(userInviteHref('/models/user')).toBe('/data/users/invite?from=%2Fmodels%2Fuser')
+  })
+})
+
+describe('a field that points at another model\'s record', () => {
+  const team = field('teamId', 'relation', { relation: { model: 'Team', slug: 'team', label: 'Team' } })
+
+  it('holds its id as text in the form and sends it as a number', () => {
+    expect(modelFormValues([team], { team_id: 5 })).toEqual({ teamId: '5' })
+    expect(modelFieldPayloadValue(team, '5')).toBe(5)
+    expect(modelFieldPayloadValue(team, '')).toBeNull()
+  })
+
+  it('a cleared choice is sent as null, an untouched one not at all', () => {
+    const initial = modelFormValues([team], { team_id: 5 })
+    expect(modelFormPayload([team], { teamId: '' }, initial)).toEqual({ teamId: null })
+    expect(modelFormPayload([team], { teamId: '5' }, initial)).toEqual({})
+    expect(modelFormPayload([team], { teamId: '8' }, initial)).toEqual({ teamId: 8 })
+  })
+})
+
+describe('a record\'s page names the records it points at', () => {
+  const member: ModelRecord = {
+    modelName: 'Team Member',
+    row: { id: 9, team_id: 3, user_id: null, role: 'member' },
+    columns: [
+      { name: 'id', label: 'ID', type: 'number' },
+      { name: 'team_id', label: 'Team ID', type: 'number' },
+      { name: 'user_id', label: 'User ID', type: 'number' },
+      { name: 'role', label: 'Role', type: 'text' },
+    ],
+    updateColumns: [],
+    fields: [],
+    relations: { team_id: { model: 'Team', slug: 'team', label: 'Team' }, user_id: { model: 'User', slug: 'user', label: 'User' } },
+    writeCapabilities: { create: true, update: true, destroy: true, invite: false, anonymize: false },
+    anonymized: false,
+  }
+  const identifiers = (names?: Record<string, string>) => modelRecordSections(member, names).find(section => section.id === 'identifiers')!.details
+
+  it('as a link to it, called by its name', () => {
+    const team = identifiers({ team_id: 'PrimeSoft Ltd' }).find(detail => detail.name === 'team_id')!
+    // "Team", not "Team ID": the page says which team.
+    expect(team).toMatchObject({ label: 'Team', value: 'PrimeSoft Ltd', kind: 'link', href: '/models/team/3', empty: false })
+  })
+
+  it('by its id until the name arrives, and for a record that is gone', () => {
+    expect(identifiers().find(detail => detail.name === 'team_id')).toMatchObject({ value: 'Team #3', kind: 'link', href: '/models/team/3' })
+  })
+
+  it('says so when it points at nothing', () => {
+    expect(identifiers().find(detail => detail.name === 'user_id')).toMatchObject({ label: 'User', value: 'No user', kind: 'text', empty: true })
+  })
+
+  it('leaves the record\'s own id alone', () => {
+    expect(identifiers().find(detail => detail.name === 'id')).toMatchObject({ label: 'ID', value: '9', kind: 'text' })
   })
 })

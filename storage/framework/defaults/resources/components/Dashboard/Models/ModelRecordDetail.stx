@@ -7,7 +7,7 @@
 // has an address to share, open in a tab and come back to.
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
 import type { ModelRecord } from '../../../../functions/dashboard-model-record'
-import { deleteModelRecord, fetchModelRecord, modelDeleteNotice, modelDeleteWarning, modelRecordBackHref, modelRecordEditHref, modelRecordListLabel, modelRecordSections, modelRecordTitle } from '../../../../functions/dashboard-model-record'
+import { deleteModelRecord, fetchModelRecord, fetchModelRelationNames, modelDeleteNotice, modelDeleteWarning, modelRecordBackHref, modelRecordEditHref, modelRecordListLabel, modelRecordSections, modelRecordTitle } from '../../../../functions/dashboard-model-record'
 import { pushToast } from '../../../../functions/toasts'
 
 const navigation = useNavigation()
@@ -33,7 +33,10 @@ const listLabel = derived(() => modelRecordListLabel(record(), backHref()))
 
 const modelName = derived(() => record()?.modelName || 'Record')
 const title = derived(() => record() ? modelRecordTitle(record()!) : '')
-const sections = derived(() => record() ? modelRecordSections(record()!) : [])
+// What the records this one points at are called. They arrive after the
+// record does; until then, and for one that is gone, a link reads "Team #3".
+const relationNames = state<Record<string, string>>({})
+const sections = derived(() => record() ? modelRecordSections(record()!, relationNames()) : [])
 // An anonymized account has nothing left to edit, and deleting it again
 // would only anonymize what already is. The note below says what it is.
 const canEdit = derived(() => Boolean(record()?.writeCapabilities.update) && !record()?.anonymized)
@@ -43,7 +46,11 @@ async function loadRecord(): Promise<void> {
   loading.set(true)
   loadError.set('')
   try {
-    record.set(await fetchModelRecord(slug(), recordId()))
+    const loaded = await fetchModelRecord(slug(), recordId())
+    relationNames.set({})
+    record.set(loaded)
+    // Not awaited: the page is complete without the names, only less helpful.
+    void fetchModelRelationNames(loaded).then(names => relationNames.set(names))
   }
   catch (error) {
     record.set(null)
@@ -132,6 +139,10 @@ onMount(() => {
               </span>
               <span :if="detail.kind === 'badge'" class="inline-flex px-2 py-0.5 font-medium text-neutral-800 text-xs dark:text-neutral-100 border border-neutral-400 rounded-md dark:border-neutral-500">{{ detail.value }}</span>
               <pre :if="detail.kind === 'json'" class="overflow-x-auto p-3 font-mono text-neutral-800 text-xs dark:text-neutral-200 bg-neutral-50 dark:bg-neutral-900 rounded-lg">{{ detail.value }}</pre>
+              <StxLink :if="detail.kind === 'link'" :to="detail.href" class="inline-flex gap-1.5 items-center font-medium text-blue-600 dark:text-blue-400 hover:underline">
+                {{ detail.value }}
+                <span aria-hidden="true" class="h-3.5 w-3.5 i-hugeicons-arrow-right-01"></span>
+              </StxLink>
               <span :if="detail.kind === 'text'" :class="detail.empty ? 'text-neutral-400 dark:text-neutral-500' : 'break-words text-neutral-700 dark:text-neutral-200'">{{ detail.value }}</span>
             </dd>
           </div>

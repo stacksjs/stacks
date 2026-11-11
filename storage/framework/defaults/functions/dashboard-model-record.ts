@@ -40,6 +40,8 @@ export interface ModelRecord {
   updateColumns: string[]
   /** The fields an edit may change, with how each is asked for. */
   fields: ModelCreateField[]
+  /** The columns that hold another model's id, and whose. */
+  relations: Record<string, ModelRelationTarget>
   writeCapabilities: ModelWriteCapabilities
   /** Erased under the app's data-subject rules: its personal details are placeholders. */
   anonymized: boolean
@@ -54,6 +56,7 @@ interface ModelShowResponse {
   columnMeta?: ModelColumn[]
   updateColumns?: string[]
   updateFields?: ModelCreateField[]
+  relations?: Record<string, ModelRelationTarget>
   writeCapabilities?: ModelWriteCapabilities
   anonymizedIds?: Array<number | string>
   error?: string | null
@@ -61,7 +64,25 @@ interface ModelShowResponse {
 
 /** A field of the create form, from the model's fillable attributes. */
 /** How a field is asked for: see `modelFieldType` on the server. */
-export type ModelFieldType = 'boolean' | 'date' | 'datetime' | 'email' | 'enum' | 'json' | 'longtext' | 'number' | 'text'
+export type ModelFieldType = 'boolean' | 'date' | 'datetime' | 'email' | 'enum' | 'json' | 'longtext' | 'number' | 'relation' | 'text'
+
+/** The model a field or column points at: `team_id` is a Team. */
+export interface ModelRelationTarget {
+  model: string
+  /** Its place in dashboard URLs: `team`, `board-column`. */
+  slug: string
+  /** Its name in words: "Board Column". */
+  label: string
+}
+
+/** One record of a related model, as a picker lists it. */
+export interface ModelOption {
+  id: number | string
+  /** What the record is called: its name, title or address. */
+  label: string
+  /** A second line that tells two of the same name apart: a user's email. */
+  hint: string
+}
 
 export interface ModelCreateField {
   name: string
@@ -70,6 +91,8 @@ export interface ModelCreateField {
   required: boolean
   defaultValue: unknown
   options: string[]
+  /** For a `relation`: the model whose records the picker lists. */
+  relation?: ModelRelationTarget
 }
 
 /** What a form holds for each field: a checkbox's state, or an input's text. */
@@ -130,6 +153,7 @@ export async function fetchModelRecord(slug: string, id: string | number): Promi
     columns: data.columnMeta ?? [],
     updateColumns: data.updateColumns ?? [],
     fields: data.updateFields ?? [],
+    relations: data.relations ?? {},
     writeCapabilities: { ...NO_WRITES, ...data.writeCapabilities },
     anonymized: (data.anonymizedIds ?? []).some(candidate => String(candidate) === String(id)),
   }
@@ -148,9 +172,12 @@ export interface ModelRecordDetail {
   empty: boolean
   /**
    * How the value is drawn: plain text, an outlined badge for a status-like
-   * word, a check or cross for a boolean, a preformatted block for JSON.
+   * word, a check or cross for a boolean, a preformatted block for JSON, a
+   * link to the record another model's id points at.
    */
-  kind: 'text' | 'badge' | 'boolean' | 'json'
+  kind: 'text' | 'badge' | 'boolean' | 'json' | 'link'
+  /** For a link: the page of the record this one points at. */
+  href?: string
   /** A boolean's answer, for the icon. */
   yes: boolean
   /** Takes the card's full width: long text and JSON. */
@@ -196,10 +223,25 @@ function titleCase(words: string): string {
   return words.replace(/[_-]+/g, ' ').replace(/\b[a-z]/g, letter => letter.toUpperCase())
 }
 
-function detail(record: ModelRecord, column: ModelColumn): ModelRecordDetail {
+/** The names of the records a record points at, by column: `{ team_id: 'PrimeSoft Ltd' }`. */
+export type ModelRelationNames = Record<string, string>
+
+function detail(record: ModelRecord, column: ModelColumn, names: ModelRelationNames = {}): ModelRecordDetail {
   const stored = record.row[column.name]
-  const label = detailLabel(column)
+  const relation = record.relations?.[column.name]
+  // "Team", not "Team ID": the page says which team, and the id is its link.
+  const label = relation ? relation.label : detailLabel(column)
   const base = { name: column.name, label, yes: false, wide: false }
+  if (relation && stored !== null && stored !== undefined && stored !== '') {
+    return {
+      ...base,
+      // Until the name arrives, and for a record that is gone, the id says which.
+      value: names[column.name] || `${relation.label} #${String(stored)}`,
+      empty: false,
+      kind: 'link',
+      href: modelRecordHref(relation.slug, stored as number | string),
+    }
+  }
   if (column.type === 'boolean') {
     const yes = stored === true || stored === 1 || stored === '1'
     return { ...base, value: yes ? 'Yes' : 'No', empty: false, kind: 'boolean', yes }
@@ -230,10 +272,10 @@ function detail(record: ModelRecord, column: ModelColumn): ModelRecordDetail {
  * ids that tie it to other records, and when things happened to it. A card
  * with nothing in it is left out.
  */
-export function modelRecordSections(record: ModelRecord): ModelRecordSection[] {
+export function modelRecordSections(record: ModelRecord, names: ModelRelationNames = {}): ModelRecordSection[] {
   const groups: Record<ModelRecordSection['id'], ModelRecordDetail[]> = { information: [], details: [], identifiers: [], timestamps: [] }
   for (const column of record.columns) {
-    const entry = detail(record, column)
+    const entry = detail(record, column, names)
     if (isIdentifier(column.name))
       groups.identifiers.push(entry)
     else if (isDate(column))
@@ -363,6 +405,11 @@ export function modelFieldPayloadValue(field: ModelCreateField, value: string | 
     return value === true
   if (value === undefined || value === '' || value === false || value === true)
     return null
+  if (field.type === 'relation') {
+    // The picker holds the id as text; the API takes the number.
+    const id = Number(value)
+    return Number.isSafeInteger(id) && id > 0 ? id : value
+  }
   if (field.type === 'datetime') {
     // With its offset, so the moment is the one the visitor picked whatever
     // zone the server runs in.
@@ -515,4 +562,41 @@ export async function inviteUser(name: string, email: string): Promise<UserInvit
   catch (reason) {
     return modelWriteFailure(reason)
   }
+}
+
+/**
+ * A model's records by name, for choosing one in a form. `q` searches by
+ * what a record is called; `ids` asks what exactly those are called, which is
+ * how a form and a record's page name the record a field already points at.
+ */
+export async function fetchModelOptions(slug: string, search: { q?: string, ids?: Array<number | string> } = {}): Promise<ModelOption[]> {
+  const params = new URLSearchParams()
+  if (search.ids && search.ids.length > 0)
+    params.set('ids', search.ids.map(String).join(','))
+  else if (search.q)
+    params.set('q', search.q)
+  const query = params.toString()
+  const data = await dashboardApi<{ options?: ModelOption[] }>(`${modelPath(slug)}/options${query ? `?${query}` : ''}`)
+  return data.options ?? []
+}
+
+/**
+ * What the records a record points at are called, for its page. One request
+ * per related model, and a model that cannot be asked leaves its ids as they
+ * are: the page is still right, only less helpful.
+ */
+export async function fetchModelRelationNames(record: ModelRecord): Promise<ModelRelationNames> {
+  const wanted = Object.entries(record.relations)
+    .map(([column, relation]) => ({ column, relation, id: record.row[column] }))
+    .filter(entry => entry.id !== null && entry.id !== undefined && entry.id !== '')
+  const names: ModelRelationNames = {}
+  await Promise.all(wanted.map(async ({ column, relation, id }) => {
+    try {
+      const [option] = await fetchModelOptions(relation.slug, { ids: [id as number | string] })
+      if (option)
+        names[column] = option.label
+    }
+    catch {}
+  }))
+  return names
 }
