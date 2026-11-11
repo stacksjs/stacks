@@ -528,6 +528,10 @@ export interface TinkerOptions extends CliOptions {
   /** `false` with `--no-banner`. cac names a negated flag by its positive key. */
   banner?: boolean
   preload?: string
+  /** Speak the frame protocol on stdio. */
+  serve?: boolean
+  /** Skip booting the app. */
+  bare?: boolean
 }
 export interface TypesOptions extends CliOptions {}
 

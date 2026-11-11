@@ -10,7 +10,9 @@ export function tinker(buddy: CLI): void {
     print: 'Evaluate, print, and exit',
     noBanner: 'Skip the welcome banner',
     preload: 'Additional modules to preload (comma-separated)',
-    project: 'Target a specific project',
+    project: 'Run in this project directory instead of the current one',
+    serve: 'Speak the frame protocol on stdio (JSON requests in, frames out) for tools that drive a session',
+    bare: 'Do not boot the app: a plain Bun session',
     verbose: 'Enable verbose output',
   }
 
@@ -20,8 +22,28 @@ export function tinker(buddy: CLI): void {
     .option('--print [expression]', descriptions.print, { default: '' })
     .option('--no-banner', descriptions.noBanner)
     .option('--preload [modules]', descriptions.preload, { default: '' })
+    .option('--project [path]', descriptions.project, { default: '' })
+    .option('--serve', descriptions.serve, { default: false })
+    .option('--bare', descriptions.bare, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: TinkerOptions) => {
+      // A served session owns stdout: every line on it is a frame. The
+      // command's own intro and outro would corrupt the stream, so it stays
+      // silent and reports through the exit code.
+      if (options.serve === true) {
+        const { startTinker } = await import('@stacksjs/tinker')
+        const once = typeof options.print === 'string' && options.print
+          ? options.print
+          : typeof options.eval === 'string' && options.eval ? options.eval : undefined
+        const result = await startTinker({
+          serve: true,
+          eval: once,
+          cwd: typeof options.project === 'string' && options.project ? options.project : undefined,
+          stacksPreload: options.bare !== true,
+        })
+        process.exit(result.exitCode === 0 ? ExitCode.Success : ExitCode.FatalError)
+      }
+
       log.debug('Running `buddy tinker` ...', options)
 
       const perf = await intro('buddy tinker')
@@ -40,6 +62,8 @@ export function tinker(buddy: CLI): void {
           banner: options.banner !== false,
           preload: preloadModules,
           verbose: options.verbose === true,
+          cwd: typeof options.project === 'string' && options.project ? options.project : undefined,
+          stacksPreload: options.bare !== true,
         })
 
         if (result.exitCode !== 0) {

@@ -1,8 +1,15 @@
-import type { Subprocess } from 'bun'
-import { existsSync, readFileSync, writeFileSync, appendFileSync, chmodSync } from 'node:fs'
+import type { TinkerValue } from './serialize'
+import type { TinkerEvaluation, TinkerFrame, TinkerSessionInfo } from './session'
+import { appendFileSync, chmodSync, existsSync, readFileSync, writeFileSync, writeSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import process from 'node:process'
+import { serveTinker } from './protocol'
+import { compileSnippet, createTinkerSession } from './session'
+
+export * from './protocol'
+export * from './serialize'
+export * from './session'
 
 export interface TinkerConfig {
   /** Additional modules to preload into the REPL session */
@@ -15,163 +22,19 @@ export interface TinkerConfig {
   cwd?: string
   /** Whether to show the welcome banner (default: true) */
   banner?: boolean
-  /** Whether to preload Stacks framework modules (default: true) */
+  /** Boot the Stacks app into the session: config, models, jobs, framework helpers (default: true) */
   stacksPreload?: boolean
+  /**
+   * Speak the frame protocol on stdio instead of a prompt: requests in as JSON
+   * lines, frames out. With `eval` or `print`, evaluate that once and exit.
+   */
+  serve?: boolean
   /** Evaluate a single expression and exit */
   eval?: string
   /** Evaluate and print a single expression, then exit */
   print?: string
-  /** Enable verbose/debug output */
+  /** Also show the queries and log lines each line produced */
   verbose?: boolean
-}
-
-/**
- * Generate the preload script that makes all Stacks framework
- * modules available in the REPL session.
- */
-function generatePreloadScript(config: TinkerConfig): string {
-  const lines: string[] = []
-
-  if (config.stacksPreload !== false) {
-    lines.push(`
-// ---- Stacks Framework Preload ----
-// ORM & Database
-try {
-  const { db } = await import('@stacksjs/database')
-  globalThis.db = db
-} catch {}
-
-try {
-  const orm = await import('@stacksjs/orm')
-  // Expose all ORM exports globally (User, Post, etc.)
-  for (const [key, value] of Object.entries(orm)) {
-    if (key !== 'default' && key !== 'db') {
-      globalThis[key] = value
-    }
-  }
-} catch {}
-
-// Config
-try {
-  const config = await import('@stacksjs/config')
-  globalThis.config = config
-} catch {}
-
-// Path utilities
-try {
-  const path = await import('@stacksjs/path')
-  globalThis.path = path
-} catch {}
-
-// Storage
-try {
-  const storage = await import('@stacksjs/storage')
-  globalThis.storage = storage
-} catch {}
-
-// Validation
-try {
-  const validation = await import('@stacksjs/validation')
-  globalThis.validation = validation
-} catch {}
-
-// Logging
-try {
-  const { log } = await import('@stacksjs/cli')
-  globalThis.log = log
-} catch {}
-
-// Collections
-try {
-  const collections = await import('@stacksjs/collections')
-  globalThis.collect = collections.collect ?? collections.default
-} catch {}
-
-// Strings
-try {
-  const strings = await import('@stacksjs/strings')
-  globalThis.Str = strings
-} catch {}
-
-// Cache
-try {
-  const cache = await import('@stacksjs/cache')
-  globalThis.cache = cache
-} catch {}
-
-// Queue / Jobs
-try {
-  const queue = await import('@stacksjs/queue')
-  globalThis.queue = queue
-} catch {}
-
-// Events
-try {
-  const events = await import('@stacksjs/events')
-  globalThis.events = events
-} catch {}
-
-// Router
-try {
-  const router = await import('@stacksjs/router')
-  globalThis.router = router
-} catch {}
-
-// Auth
-try {
-  const auth = await import('@stacksjs/auth')
-  globalThis.auth = auth
-} catch {}
-
-// Notifications
-try {
-  const notifications = await import('@stacksjs/notifications')
-  globalThis.notifications = notifications
-} catch {}
-
-// Env / environment helpers
-try {
-  const env = await import('@stacksjs/env')
-  globalThis.env = env
-} catch {}
-
-// validate() shortcut — paired with schema for fluent validation in REPL.
-try {
-  const { validate } = await import('@stacksjs/validation')
-  globalThis.validate = validate
-} catch {}
-
-// Jobs facade — lets you fire jobs without remembering the dispatch builder.
-try {
-  const { Jobs } = await import('@stacksjs/queue')
-  globalThis.Jobs = Jobs
-} catch {}
-
-// Request introspection — only useful inside an active request, but
-// the proxy is safe to expose: outside a request scope every property
-// returns a typed default (see request-context.ts).
-try {
-  const { request, listRegisteredRoutes } = await import('@stacksjs/router')
-  globalThis.request = request
-  globalThis.routes = listRegisteredRoutes
-} catch {}
-
-// dump/dd helpers for quick inspection — a Laravel-ism that's always
-// nice to have at the REPL when investigating a value.
-globalThis.dump = (...args) => { console.dir(args.length === 1 ? args[0] : args, { depth: 6, colors: true }) }
-globalThis.dd = (...args) => { console.dir(args.length === 1 ? args[0] : args, { depth: 6, colors: true }); process.exit(0) }
-`)
-  }
-
-  // Add custom preload modules
-  if (config.preload?.length) {
-    for (const mod of config.preload) {
-      const varName = mod.replace(/[@/\-\.]/g, '_').replace(/^_+/, '')
-      lines.push(`try { globalThis.${varName} = await import('${mod}') } catch {}`)
-    }
-  }
-
-  return lines.join('\n')
 }
 
 /**
@@ -231,124 +94,258 @@ export function clearHistory(config?: TinkerConfig): void {
   writeFileSync(historyPath, '')
 }
 
-/**
- * Build the welcome banner string.
- */
-function buildBanner(): string {
-  const bunVersion = typeof Bun !== 'undefined' ? Bun.version : 'unknown'
+function buildBanner(info: TinkerSessionInfo): string {
+  const lines = [
+    '',
+    `  \x1B[36mStacks Tinker\x1B[0m (Bun v${info.bun})`,
+    info.booted
+      ? '  Your app is booted: models, jobs, config and framework helpers are globals.'
+      : '  Bare session: the app context is not booted.',
+  ]
+  for (const warning of info.warnings)
+    lines.push(`  \x1B[33m${warning}\x1B[0m`)
+  lines.push(
+    '',
+    '  \x1B[2mDeclarations persist between lines. dump(value) inspects, dd(value) inspects and stops.',
+    '  .help for commands, .exit or Ctrl+D to leave.\x1B[0m',
+    '',
+    '',
+  )
+  return lines.join('\n')
+}
 
-  return [
-    '',
-    `  \x1b[36mStacks Tinker\x1b[0m (Bun v${bunVersion})`,
-    '  Interactive REPL with Stacks framework preloaded.',
-    '',
-    '  \x1b[2mAvailable globals: db, config, path, storage, log, Str,',
-    '  cache, queue, events, router, auth, collect, env, request,',
-    '  validate, Jobs, routes, dump, dd',
-    '  + all ORM models (User, Post, etc.)\x1b[0m',
-    '',
-    '  \x1b[2mType .help for REPL commands. Press Ctrl+D to exit.\x1b[0m',
-    '',
-  ].join('\n')
+/** Write to the terminal directly. The session captures `process.stdout`, so the REPL's own output must not go through it. */
+function terminal(text: string, fd: 1 | 2 = 1): void {
+  writeSync(fd, text)
+}
+
+/** Print a described value for a terminal. The inverse of `serialize`, lossy on purpose. */
+export function renderValue(value: TinkerValue, indent = ''): string {
+  const inner = `${indent}  `
+  switch (value.t) {
+    case 'undefined': return 'undefined'
+    case 'null': return 'null'
+    case 'boolean': return String(value.v)
+    case 'number': return String(value.v)
+    case 'bigint': return `${value.v}n`
+    case 'string': return JSON.stringify(value.v) + (value.truncated ? ` ... ${value.truncated} more characters` : '')
+    case 'symbol': return `Symbol(${value.v})`
+    case 'function': return `[${value.kind === 'class' ? 'class' : 'Function'}: ${value.name}]`
+    case 'date': return value.v ?? 'Invalid Date'
+    case 'regexp': return value.v
+    case 'url': return value.v
+    case 'promise': return 'Promise {}'
+    case 'bytes': return `${value.ctor}(${value.length}) <${value.hex}${value.length > 64 ? ' ...' : ''}>`
+    case 'ref': return `[Circular *${value.id}]`
+    case 'cut': return `[${value.ctor ?? 'Object'}]`
+    case 'error': return value.stack ?? `${value.name}: ${value.message}`
+    case 'array': {
+      if (!value.items.length && !value.more)
+        return `${value.ctor ? `${value.ctor} ` : ''}[]`
+      const items = value.items.map(item => `${inner}${renderValue(item, inner)}`)
+      if (value.more)
+        items.push(`${inner}... ${value.more} more`)
+      return `${value.ctor ? `${value.ctor} ` : ''}[\n${items.join(',\n')}\n${indent}]`
+    }
+    case 'set': {
+      const items = value.items.map(item => `${inner}${renderValue(item, inner)}`)
+      if (value.more)
+        items.push(`${inner}... ${value.more} more`)
+      return items.length ? `Set(${value.size}) {\n${items.join(',\n')}\n${indent}}` : 'Set(0) {}'
+    }
+    case 'map': {
+      const entries = value.entries.map(([key, item]) => `${inner}${renderValue(key, inner)} => ${renderValue(item, inner)}`)
+      if (value.more)
+        entries.push(`${inner}... ${value.more} more`)
+      return entries.length ? `Map(${value.size}) {\n${entries.join(',\n')}\n${indent}}` : 'Map(0) {}'
+    }
+    case 'object': {
+      if (!value.entries.length && !value.more)
+        return `${value.ctor ? `${value.ctor} ` : ''}{}`
+      const entries = value.entries.map(([key, item]) => `${inner}${key}: ${renderValue(item, inner)}`)
+      if (value.more)
+        entries.push(`${inner}... ${value.more} more`)
+      return `${value.ctor ? `${value.ctor} ` : ''}{\n${entries.join(',\n')}\n${indent}}`
+    }
+  }
+}
+
+function printFrame(frame: TinkerFrame, verbose: boolean): void {
+  switch (frame.type) {
+    case 'stdout':
+      terminal(frame.text)
+      break
+    case 'stderr':
+      terminal(frame.text, 2)
+      break
+    case 'dump':
+      terminal(`${renderValue(frame.value)}\n`)
+      break
+    case 'query':
+      if (verbose)
+        terminal(`\x1B[2m  ${frame.durationMs ?? '?'}ms  ${frame.sql}\x1B[0m\n`, 2)
+      break
+    case 'log':
+      if (verbose)
+        terminal(`\x1B[2m  [${frame.level}] ${frame.message}\x1B[0m\n`, 2)
+      break
+  }
+}
+
+async function loadPreloads(modules: string[] | undefined, cwd: string): Promise<string[]> {
+  const failed: string[] = []
+  for (const mod of modules ?? []) {
+    const name = mod.replace(/[@/\-.]/g, '_').replace(/^_+/, '')
+    try {
+      const specifier = mod.startsWith('.') ? resolve(cwd, mod) : mod
+      ;(globalThis as Record<string, unknown>)[name] = await import(specifier)
+    }
+    catch (error) {
+      failed.push(`${mod}: ${error instanceof Error ? error.message : String(error)}`)
+    }
+  }
+  return failed
+}
+
+const INCOMPLETE = /Unexpected end of file|Unterminated|Expected "\}" but found end of file|Expected "\)" but found end of file|Expected "\]" but found end of file/
+
+/** Whether a parse failure means "keep typing" rather than "this is wrong". */
+export function isIncompleteSnippet(code: string, cwd: string): boolean {
+  try {
+    compileSnippet(code, cwd)
+    return false
+  }
+  catch (error) {
+    const messages = error instanceof AggregateError
+      ? error.errors.map(item => String((item as { message?: unknown })?.message ?? item))
+      : [String((error as { message?: unknown })?.message ?? error)]
+    return messages.some(message => INCOMPLETE.test(message))
+  }
 }
 
 /**
- * Start an interactive Stacks tinker session.
+ * Start a Stacks tinker session.
  *
- * Launches Bun's built-in REPL with all Stacks framework modules
- * preloaded into the global scope. ORM models, database, config,
- * logging, and other framework utilities are immediately available.
+ * Boots the app in this process (config overrides, then models, jobs and
+ * framework helpers as globals) and evaluates TypeScript against it. Without
+ * `eval`, `print` or `serve` it is an interactive prompt whose declarations
+ * persist from line to line.
  *
  * @example
  * ```ts
  * import { startTinker } from '@stacksjs/tinker'
  *
- * await startTinker()
- * ```
- *
- * @example
- * ```ts
- * // Evaluate a single expression
- * await startTinker({ eval: 'await User.count()' })
- * ```
- *
- * @example
- * ```ts
- * // Evaluate and print
- * await startTinker({ print: 'await User.all()' })
+ * await startTinker()                                  // interactive
+ * await startTinker({ print: 'await User.count()' })   // evaluate, print, exit
+ * await startTinker({ serve: true })                   // speak the frame protocol on stdio
  * ```
  */
 export async function startTinker(config: TinkerConfig = {}): Promise<{ exitCode: number }> {
   const cwd = config.cwd ?? process.cwd()
+  const boot = config.stacksPreload !== false
 
-  // Handle --eval / --print (non-interactive) mode
-  if (config.eval || config.print) {
-    return runNonInteractive(config, cwd)
+  if (config.serve) {
+    const once = config.eval ?? config.print
+    const { ok } = await serveTinker({ cwd, boot, ...(once !== undefined ? { once } : {}) })
+    return { exitCode: ok ? 0 : 1 }
   }
 
-  // Interactive mode — show banner
-  if (config.banner !== false) {
-    process.stdout.write(buildBanner())
+  const verbose = config.verbose === true
+  const session = await createTinkerSession({ cwd, boot, onFrame: frame => printFrame(frame, verbose) })
+  for (const failure of await loadPreloads(config.preload, session.info.cwd))
+    terminal(`\x1B[33mpreload failed: ${failure}\x1B[0m\n`, 2)
+
+  const report = (evaluation: TinkerEvaluation, print: boolean): void => {
+    if (!evaluation.ok) {
+      const thrown = evaluation.thrown
+      terminal(`${thrown instanceof Error ? Bun.inspect(thrown, { colors: Boolean(process.stderr.isTTY) }) : `Uncaught ${Bun.inspect(thrown)}`}\n`, 2)
+      return
+    }
+    if (print && evaluation.value !== undefined)
+      terminal(`${Bun.inspect(evaluation.value, { colors: Boolean(process.stdout.isTTY), depth: 6 })}\n`)
   }
 
-  // Write a temporary preload script
-  const preloadScript = generatePreloadScript(config)
-  const preloadPath = join(cwd, '.tinker-preload.ts')
-  writeFileSync(preloadPath, preloadScript)
+  if (config.eval !== undefined || config.print !== undefined) {
+    for (const warning of session.info.warnings)
+      terminal(`\x1B[33m${warning}\x1B[0m\n`, 2)
+    const evaluation = await session.evaluate(config.print ?? config.eval ?? '')
+    report(evaluation, config.print !== undefined)
+    session.dispose()
+    return { exitCode: evaluation.ok ? 0 : 1 }
+  }
 
-  const args = ['repl']
+  if (config.banner !== false)
+    terminal(buildBanner(session.info))
 
-  const proc: Subprocess = Bun.spawn(['bun', ...args], {
-    cwd,
-    stdin: 'inherit',
-    stdout: 'inherit',
-    stderr: 'inherit',
-    env: {
-      ...process.env,
-      BUN_PRELOAD: preloadPath,
+  const { createInterface } = await import('node:readline')
+  const { Writable } = await import('node:stream')
+  const output = new Writable({
+    write(chunk, _encoding, callback) {
+      terminal(typeof chunk === 'string' ? chunk : Buffer.from(chunk).toString('utf8'))
+      callback()
     },
   })
-
-  const exitCode = await proc.exited
-
-  // Cleanup temp preload file
-  try {
-    const { unlinkSync } = await import('node:fs')
-    unlinkSync(preloadPath)
-  }
-  catch {}
-
-  return { exitCode }
-}
-
-/**
- * Run tinker in non-interactive mode (eval/print).
- */
-async function runNonInteractive(config: TinkerConfig, cwd: string): Promise<{ exitCode: number }> {
-  const preloadScript = generatePreloadScript(config)
-  const expression = config.print ?? config.eval ?? ''
-
-  // Build a script that preloads modules then evaluates the expression
-  const script = `${preloadScript}\n\nconst __result__ = await (async () => { return ${expression} })()\n${config.print ? 'console.log(__result__)' : ''}`
-
-  const tmpPath = join(cwd, '.tinker-eval.ts')
-  writeFileSync(tmpPath, script)
-
-  const proc = Bun.spawn(['bun', 'run', tmpPath], {
-    cwd,
-    stdin: 'inherit',
-    stdout: 'inherit',
-    stderr: 'inherit',
-    env: process.env,
+  const historySize = config.historySize ?? 5000
+  const reader = createInterface({
+    input: process.stdin,
+    output,
+    terminal: Boolean(process.stdin.isTTY),
+    // readline wants newest first; the file is oldest first.
+    history: readHistory(config).slice(-historySize).reverse(),
+    historySize,
+    prompt: '> ',
   })
 
-  const exitCode = await proc.exited
-
+  let buffer = ''
+  let exitCode = 0
+  reader.prompt()
   try {
-    const { unlinkSync } = await import('node:fs')
-    unlinkSync(tmpPath)
+    for await (const line of reader) {
+      const trimmed = line.trim()
+      if (!buffer && trimmed.startsWith('.')) {
+        if (trimmed === '.exit')
+          break
+        if (trimmed === '.help')
+          terminal('  .exit           leave\n  .clear          forget the history file\n  .help           this list\n  dump(v), dd(v)  inspect a value; dd also stops the line\n')
+        else if (trimmed === '.clear')
+          clearHistory(config)
+        else
+          terminal(`  unknown command ${trimmed}\n`)
+        reader.prompt()
+        continue
+      }
+
+      buffer = buffer ? `${buffer}\n${line}` : line
+      if (!buffer.trim()) {
+        buffer = ''
+        reader.prompt()
+        continue
+      }
+      if (isIncompleteSnippet(buffer, session.info.cwd)) {
+        reader.setPrompt('... ')
+        reader.prompt()
+        continue
+      }
+
+      const code = buffer
+      buffer = ''
+      try {
+        appendHistory(code.replace(/\n/g, ' '), config)
+      }
+      catch {
+        // An unwritable history file is not a reason to refuse the line.
+      }
+      const evaluation = await session.evaluate(code)
+      report(evaluation, true)
+      exitCode = evaluation.ok ? 0 : exitCode
+      reader.setPrompt('> ')
+      reader.prompt()
+    }
   }
-  catch {}
+  finally {
+    reader.close()
+    session.dispose()
+  }
 
   return { exitCode }
 }
@@ -367,5 +364,3 @@ export async function tinkerEval(expression: string, config: TinkerConfig = {}):
 export async function tinkerPrint(expression: string, config: TinkerConfig = {}): Promise<{ exitCode: number }> {
   return startTinker({ ...config, print: expression })
 }
-
-export type { Subprocess }
