@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **374 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **375 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -38,7 +38,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `format` | 1 |
 | `forms` | 2 |
 | `gdpr` | 5 |
-| `general` | 51 |
+| `general` | 52 |
 | `generate` | 18 |
 | `inspire` | 1 |
 | `integrations` | 1 |
@@ -5088,6 +5088,34 @@ Show currently-held overlap locks (this-process only)
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--json` | Print machine-readable scheduler status | boolean, optional | `false` |
+
+### `screenshot`
+
+Photograph a page at one or more viewport sizes, with Bun's own browser view
+
+- Usage: `$ buddy screenshot <url>`
+- Namespace: none
+- Aliases: none
+- Arguments: `<url>`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--out` | Where the PNG goes. With several viewports, each name is added before the extension. | value, required | `"screenshot.png"` |
+| `--viewport` | mobile, tablet, desktop or WIDTHxHEIGHT, comma-separated | value, required | `"desktop"` |
+| `--wait` | How long to let the page settle after it loads | value, required | `1500` |
+| `--wait-for` | Wait until this CSS selector matches before photographing | value, required | `""` |
+| `--timeout` | How long --wait-for may take | value, required | `15000` |
+| `--scroll` | Scroll down this far before photographing | value, required | `0` |
+| `--eval` | Run this in the page before photographing, and print what it returns | value, required | `""` |
+| `--profile` | Keep cookies and storage here between runs, so a signed-in page can be photographed | value, required | `""` |
+| `--backend` | webkit or chrome. Defaults to webkit on a Mac and chrome elsewhere. | value, required | `""` |
+
+Examples:
+
+```bash
+buddy screenshot localhost:3000 --viewport mobile,desktop --out storage/screenshots/home.png
+buddy screenshot https://example.com/pricing --wait-for main --wait 500
+```
 
 ### `search-engine:settings`
 

@@ -192,6 +192,7 @@ const commandRegistry: Record<string, CommandLoader> = {
   // search.ts also registers the `search-engine` pair.
   'search-engine:update': { path: './commands/search.ts', load: () => import('./commands/search.ts'), exportName: 'search' },
   'search-engine:settings': { path: './commands/search.ts', load: () => import('./commands/search.ts'), exportName: 'search' },
+  'screenshot': { path: './commands/screenshot.ts', load: () => import('./commands/screenshot.ts'), exportName: 'screenshot' },
   'seed': { path: './commands/seed.ts', load: () => import('./commands/seed.ts'), exportName: 'seed' },
   // `seed:roles` alias also lazy-loads commands/seed.ts (which registers
   // both `seed` and `seed:roles` subcommands when its exported `seed()`
