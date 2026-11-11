@@ -86,6 +86,7 @@ describe('Cdp', () => {
   test('a caller disconnect retains the initiating stack after the socket closes', async () => {
     const { cdp } = session()
     const pending = cdp.send('Page.navigate').catch(error => error as Error)
+    const waiting = cdp.once('Page.loadEventFired').catch(error => error as Error)
     cdp.disconnect()
     const error = await pending
     expect(error.message).toBe('Chrome closed the connection: CDP session disconnected by caller')
@@ -94,6 +95,9 @@ describe('Cdp', () => {
     expect((error.cause as Error).stack).toContain('disconnect')
     const later = await cdp.send('Page.enable').catch(error => error as Error)
     expect(later.cause).toBe(error.cause)
+    expect((await waiting).cause).toBe(error.cause)
+    const laterWait = await cdp.once('Page.loadEventFired').catch(error => error as Error)
+    expect(laterWait.cause).toBe(error.cause)
   })
 
   test('a failed transport retains the underlying error when the socket closes', async () => {
@@ -104,12 +108,42 @@ describe('Cdp', () => {
     socket.dispatchEvent(Object.assign(new Event('close'), { code: 1006, reason: '', wasClean: false }))
     const error = await pending
     expect(error.message).toContain('Invalid compressed data')
-    expect(error.message).toContain('Z_DATA_ERROR')
+    expect(error.message).toBe('Chrome closed the connection: {"origin":"remote","code":1006,"reason":"","wasClean":false,"transportError":{"message":"Invalid compressed data"}}')
     expect(error.cause).toEqual({ origin: 'remote', code: 1006, reason: '', wasClean: false, transportError: { message: failure.message, error: failure } })
     expect((error.cause as { transportError: { error: unknown } }).transportError.error).toBe(failure)
     const later = await cdp.send('Page.enable').catch(error => error as Error)
     expect(later.cause).toBe(error.cause)
   })
+
+  for (const kind of ['circular', 'bigint', 'toJSON'] as const) {
+    test(`a ${kind} transport error settles every pending operation without serialization`, async () => {
+      const { socket, cdp } = session()
+      const circular: { context?: unknown } = {}
+      circular.context = circular
+      const failure = kind === 'circular' ? circular : kind === 'bigint' ? 1n : {
+        toJSON() { throw new Error('Transport diagnostics must not invoke toJSON') },
+      }
+      const pending = [cdp.send('Page.navigate'), cdp.send('Page.enable'), cdp.once('Page.loadEventFired')]
+        .map(operation => operation.catch(error => error as Error))
+      socket.dispatchEvent(Object.assign(new Event('error'), { message: 'transport failed', error: failure }))
+      socket.dispatchEvent(Object.assign(new Event('error'), { message: 'later error', error: new Error('later') }))
+      socket.dispatchEvent(Object.assign(new Event('close'), { code: 1006, reason: 'renderer ended', wasClean: false }))
+      const errors = await Promise.all(pending)
+      const cause = errors[0]!.cause
+      for (const error of errors) {
+        expect(error.message).toContain('transport failed')
+        expect(error.cause).toBe(cause)
+      }
+      expect((cause as { transportError: { error: unknown } }).transportError.error).toBe(failure)
+      cdp.disconnect()
+      cdp.disconnect()
+      socket.dispatchEvent(Object.assign(new Event('close'), { code: 1000, reason: 'later close', wasClean: true }))
+      const later = await cdp.send('Page.enable').catch(error => error as Error)
+      const waiting = await cdp.once('Page.loadEventFired').catch(error => error as Error)
+      expect(later.cause).toBe(cause)
+      expect(waiting.cause).toBe(cause)
+    })
+  }
 
   test('once waits for a matching event', async () => {
     const { socket, cdp } = session()

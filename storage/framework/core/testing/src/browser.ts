@@ -217,6 +217,19 @@ interface Pending {
   timer: ReturnType<typeof setTimeout>
 }
 
+interface CdpTransportFailure {
+  message: string
+  error: unknown
+}
+
+interface CdpRemoteCloseCause {
+  origin: 'remote'
+  code: number
+  reason: string
+  wasClean: boolean
+  transportError?: CdpTransportFailure
+}
+
 export interface CdpOptions {
   /** How long one command may take. Default 30 s: on a loaded machine `Page.navigate` alone has taken over 15. */
   commandTimeoutMs?: number
@@ -350,8 +363,8 @@ export class Cdp {
   }
   /** Chrome went away; every later command fails at once. */
   closed: boolean = false
-  private closeCause: unknown
-  private socketFailure: { message: string, error: unknown } | undefined
+  private closeCause: Error | CdpRemoteCloseCause | undefined
+  private socketFailure: CdpTransportFailure | undefined
 
   constructor(private socket: WebSocket, options: CdpOptions = {}) {
     this.commandTimeoutMs = options.commandTimeoutMs ?? 30_000
@@ -367,11 +380,22 @@ export class Cdp {
   }
 
   private closedError(): Error {
-    const detail = this.closeCause instanceof Error ? this.closeCause.message : JSON.stringify(this.closeCause)
-    return new Error(`Chrome closed the connection${detail ? `: ${detail}` : ''}`, { cause: this.closeCause })
+    const cause = this.closeCause
+    let detail: string | undefined
+    if (cause instanceof Error) {
+      detail = cause.message
+    }
+    else if (cause) {
+      // The transport's error is opaque and may be cyclic or run user code.
+      detail = JSON.stringify({
+        origin: cause.origin, code: cause.code, reason: cause.reason, wasClean: cause.wasClean,
+        transportError: cause.transportError ? { message: cause.transportError.message } : undefined,
+      })
+    }
+    return new Error(`Chrome closed the connection${detail ? `: ${detail}` : ''}`, { cause })
   }
 
-  private markClosed(cause: unknown): void {
+  private markClosed(cause: Error | CdpRemoteCloseCause): void {
     // A caller's disconnect is followed by a socket close event. Preserve the
     // initiating cause so a late transport event cannot erase its call stack.
     if (this.closed) return
