@@ -6,7 +6,7 @@ export const title = $props.title || ''
 export const path = $props.path || ''
 </script>
 
-<li class="flex gap-4 items-center py-4">
+<li class="flex gap-4 items-center py-4 border-b border-neutral-200 dark:border-neutral-800">
   <span class="{{ icon }} size-5 text-neutral-500 dark:text-neutral-400" aria-hidden="true"></span>
   <span class="font-medium">{{ title }}</span>
   <code class="ml-auto text-neutral-500 text-sm dark:text-neutral-400">{{ path }}</code>

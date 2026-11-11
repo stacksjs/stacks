@@ -28,7 +28,7 @@ const nextSteps = [
     Start with <code class="px-1.5 py-0.5 text-sm bg-neutral-200 dark:bg-neutral-800 rounded">./buddy dev</code>, then make it yours.
   </p>
 
-  <ul class="mt-10 border-neutral-200 border-y divide-neutral-200 divide-y dark:border-neutral-800 dark:divide-neutral-800">
+  <ul class="mt-10 border-neutral-200 border-t dark:border-neutral-800">
     @foreach(nextSteps as step)
       <NextStep :icon="step.icon" :title="step.title" :path="step.path" />
     @endforeach
