@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { DashboardApiError } from './dashboard-api'
-import { modelDeleteNotice, modelDeleteWarning, modelFieldColumn, modelFieldError, modelFieldInputValue, modelFieldPayloadValue, modelFormPayload, modelFormPrefill, modelFormValues, modelListFilters, modelRecordBackHref, modelRecordCreateHref, modelRecordEditHref, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRecordTitle, modelRelatedCreateHref, modelRelatedListHref, modelWriteFailure, userInviteHref } from './dashboard-model-record'
+import { modelDeleteNotice, modelDeleteWarning, modelFieldColumn, modelFieldError, modelFieldInputValue, modelFieldPayloadValue, modelFormPayload, modelFormPrefill, modelFormValues, modelListColumnNames, modelListFilters, modelRecordBackHref, modelRecordCreateHref, modelRecordEditHref, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRecordTitle, modelRelatedCreateHref, modelRelatedListHref, modelRelationCell, modelWriteFailure, userInviteHref } from './dashboard-model-record'
 import type { ModelCreateField, ModelRecord, ModelRelatedPanel } from './dashboard-model-record'
 
 const record: ModelRecord = {
@@ -16,6 +16,7 @@ const record: ModelRecord = {
   updateColumns: ['name', 'description', 'status'],
   fields: [],
   relations: {},
+  relationNames: {},
   writeCapabilities: { create: true, update: true, destroy: true, invite: false, anonymize: false },
   anonymized: false,
 }
@@ -119,6 +120,7 @@ describe('a model record on its own page', () => {
     updateColumns: [],
     fields: [],
     relations: {},
+    relationNames: {},
     writeCapabilities: { create: true, update: false, destroy: false, invite: false, anonymize: false },
     anonymized: false,
   }
@@ -277,6 +279,7 @@ describe('a record\'s page names the records it points at', () => {
     updateColumns: [],
     fields: [],
     relations: { team_id: { model: 'Team', slug: 'team', label: 'Team' }, user_id: { model: 'User', slug: 'user', label: 'User' } },
+    relationNames: {},
     writeCapabilities: { create: true, update: true, destroy: true, invite: false, anonymize: false },
     anonymized: false,
   }
@@ -352,5 +355,43 @@ describe('what an address may set', () => {
     const query = (values: Record<string, string>) => (name: string) => values[name] ?? null
     expect(modelFormPrefill(fields, query({ teamId: '3', name: 'Red', archived: 'true', password: 'x', from: '/models/team/3' }))).toEqual({ teamId: '3', name: 'Red' })
     expect(modelFormPrefill(fields, query({ teamId: '' }))).toEqual({})
+  })
+})
+
+describe('the columns a list draws', () => {
+  const all = ['id', 'name', 'email', 'team_id', 'created_at']
+
+  it('the ones the model chose, or every one', () => {
+    expect(modelListColumnNames(all, ['name', 'email'])).toEqual(['name', 'email'])
+    expect(modelListColumnNames(all, undefined)).toEqual(all)
+    expect(modelListColumnNames(all, [])).toEqual(all)
+    // A choice the table no longer has is not drawn.
+    expect(modelListColumnNames(all, ['name', 'gone'])).toEqual(['name'])
+  })
+
+  it('and a column the list is narrowed by, so what narrowed it can be seen and cleared', () => {
+    expect(modelListColumnNames(all, ['name', 'email'], { team_id: '3' })).toEqual(['name', 'email', 'team_id'])
+    // Already drawn, cleared, or not a column at all: nothing added.
+    expect(modelListColumnNames(all, ['name', 'email'], { email: 'a', team_id: '', nope: '1' })).toEqual(['name', 'email'])
+  })
+})
+
+describe('a cell that points at another model\'s record', () => {
+  const relations = { team_id: { model: 'Team', slug: 'team', label: 'Team' } }
+  const names = { team_id: { 3: 'PrimeSoft Ltd' } }
+
+  it('is that record\'s name, linked to its page', () => {
+    expect(modelRelationCell('team_id', 3, relations, names)).toEqual({ text: 'PrimeSoft Ltd', href: '/models/team/3' })
+    expect(modelRelationCell('team_id', '3', relations, names)).toEqual({ text: 'PrimeSoft Ltd', href: '/models/team/3' })
+  })
+
+  it('is called by its id when the name is not known', () => {
+    expect(modelRelationCell('team_id', 9, relations, names)).toEqual({ text: 'Team #9', href: '/models/team/9' })
+  })
+
+  it('is nothing for an empty cell, and for a column that is not a relation', () => {
+    expect(modelRelationCell('team_id', null, relations, names)).toBeNull()
+    expect(modelRelationCell('team_id', '', relations, names)).toBeNull()
+    expect(modelRelationCell('name', 'Ada', relations, names)).toBeNull()
   })
 })

@@ -42,6 +42,8 @@ export interface ModelRecord {
   fields: ModelCreateField[]
   /** The columns that hold another model's id, and whose. */
   relations: Record<string, ModelRelationTarget>
+  /** What the records this one points at are called, by column: `{ team_id: 'PrimeSoft Ltd' }`. */
+  relationNames: ModelRelationNames
   writeCapabilities: ModelWriteCapabilities
   /** Erased under the app's data-subject rules: its personal details are placeholders. */
   anonymized: boolean
@@ -57,6 +59,8 @@ interface ModelShowResponse {
   updateColumns?: string[]
   updateFields?: ModelCreateField[]
   relations?: Record<string, ModelRelationTarget>
+  listColumns?: string[]
+  relationNames?: Record<string, Record<string, string>>
   writeCapabilities?: ModelWriteCapabilities
   anonymizedIds?: Array<number | string>
   error?: string | null
@@ -154,6 +158,9 @@ export async function fetchModelRecord(slug: string, id: string | number): Promi
     updateColumns: data.updateColumns ?? [],
     fields: data.updateFields ?? [],
     relations: data.relations ?? {},
+    relationNames: Object.fromEntries(Object.entries(data.relationNames ?? {})
+      .map(([column, names]) => [column, names[String(row[column])]] as const)
+      .filter((entry): entry is readonly [string, string] => typeof entry[1] === 'string')),
     writeCapabilities: { ...NO_WRITES, ...data.writeCapabilities },
     anonymized: (data.anonymizedIds ?? []).some(candidate => String(candidate) === String(id)),
   }
@@ -272,7 +279,7 @@ function detail(record: ModelRecord, column: ModelColumn, names: ModelRelationNa
  * ids that tie it to other records, and when things happened to it. A card
  * with nothing in it is left out.
  */
-export function modelRecordSections(record: ModelRecord, names: ModelRelationNames = {}): ModelRecordSection[] {
+export function modelRecordSections(record: ModelRecord, names: ModelRelationNames = record.relationNames ?? {}): ModelRecordSection[] {
   const groups: Record<ModelRecordSection['id'], ModelRecordDetail[]> = { information: [], details: [], identifiers: [], timestamps: [] }
   for (const column of record.columns) {
     const entry = detail(record, column, names)
@@ -586,24 +593,37 @@ export async function fetchModelOptions(slug: string, search: { q?: string, ids?
 }
 
 /**
- * What the records a record points at are called, for its page. One request
- * per related model, and a model that cannot be asked leaves its ids as they
- * are: the page is still right, only less helpful.
+ * The columns a model's list draws, in order.
+ *
+ * The ones the model named in `dashboard.columns`, or every column when it
+ * named none. A column the list is being filtered on is drawn as well, even
+ * when the model left it out: a list opened from a record's panel arrives
+ * narrowed by that record, and what narrowed it has to be in view to clear.
  */
-export async function fetchModelRelationNames(record: ModelRecord): Promise<ModelRelationNames> {
-  const wanted = Object.entries(record.relations)
-    .map(([column, relation]) => ({ column, relation, id: record.row[column] }))
-    .filter(entry => entry.id !== null && entry.id !== undefined && entry.id !== '')
-  const names: ModelRelationNames = {}
-  await Promise.all(wanted.map(async ({ column, relation, id }) => {
-    try {
-      const [option] = await fetchModelOptions(relation.slug, { ids: [id as number | string] })
-      if (option)
-        names[column] = option.label
-    }
-    catch {}
-  }))
-  return names
+export function modelListColumnNames(all: string[], chosen: string[] | undefined, filters: Record<string, string> = {}): string[] {
+  const list = chosen && chosen.length > 0 ? chosen.filter(column => all.includes(column)) : all
+  const filtered = Object.entries(filters).filter(([column, value]) => value !== '' && all.includes(column) && !list.includes(column)).map(([column]) => column)
+  return [...list, ...filtered]
+}
+
+/**
+ * A cell that holds another model's id, as the list shows it: that record's
+ * name and the page it links to. Null for any other cell, and for an empty
+ * one. Named by its id when the name is not known, which is still true.
+ */
+export function modelRelationCell(
+  column: string,
+  value: unknown,
+  relations: Record<string, ModelRelationTarget>,
+  names: Record<string, Record<string, string>>,
+): { text: string, href: string } | null {
+  const relation = relations[column]
+  if (!relation || value === null || value === undefined || value === '')
+    return null
+  return {
+    text: names[column]?.[String(value)] || `${relation.label} #${String(value)}`,
+    href: modelRecordHref(relation.slug, value as number | string),
+  }
 }
 
 /** A column of a related-records panel. */

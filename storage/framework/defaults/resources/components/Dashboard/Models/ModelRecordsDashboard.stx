@@ -8,8 +8,8 @@
 // writes go through the model, so scopes, casts and observers apply.
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
 import { dashboardApi } from '@stacksjs/defaults/functions/dashboard-api'
-import type { ModelWriteCapabilities } from '@stacksjs/defaults/functions/dashboard-model-record'
-import { deleteModelRecord, modelDeleteNotice, modelDeleteWarning, modelListFilters, modelRecordCreateHref, modelRecordEditHref, modelRecordHref, NO_WRITES, userInviteHref } from '@stacksjs/defaults/functions/dashboard-model-record'
+import type { ModelRelationTarget, ModelWriteCapabilities } from '@stacksjs/defaults/functions/dashboard-model-record'
+import { deleteModelRecord, modelDeleteNotice, modelDeleteWarning, modelListColumnNames, modelListFilters, modelRecordCreateHref, modelRecordEditHref, modelRecordHref, modelRelationCell, NO_WRITES, userInviteHref } from '@stacksjs/defaults/functions/dashboard-model-record'
 import { pushToast } from '@stacksjs/defaults/functions/toasts'
 
 interface ColumnMeta {
@@ -35,6 +35,10 @@ interface ResponseShape {
   writeCapabilities: ModelWriteCapabilities
   /** Rows erased under the app's data-subject rules (users only). */
   anonymizedIds?: Array<number | string>
+  /** The columns the list draws: the model's own choice, or all of them. */
+  listColumns?: string[]
+  relations?: Record<string, ModelRelationTarget>
+  relationNames?: Record<string, Record<string, string>>
   updateColumns: string[]
   migrated?: boolean
   error: string | null
@@ -49,6 +53,9 @@ const modelClass = state('')
 const tableName = state('')
 const rows = state<Array<Record<string, unknown>>>([])
 const anonymizedIds = state<string[]>([])
+// Columns that hold another model's id, and what those records are called.
+const relations = state<Record<string, ModelRelationTarget>>({})
+const relationNames = state<Record<string, Record<string, string>>>({})
 const columnMeta = state<ColumnMeta[]>([])
 const totalCount = state(0)
 const page = state(1)
@@ -128,8 +135,17 @@ function formatCell(value: unknown, type: ColumnMeta['type']): string {
   return text.length > 120 ? `${text.slice(0, 120)}…` : text
 }
 
+/** A cell that points at another model's record: its name, and where it leads. */
+function relationCell(row: Record<string, unknown>, column: ColumnMeta) {
+  return modelRelationCell(column.name, row[column.name], relations(), relationNames())
+}
+
+function relationHref(row: Record<string, unknown>, column: ColumnMeta): string {
+  return relationCell(row, column)?.href ?? ''
+}
+
 function cellValue(row: Record<string, unknown>, column: ColumnMeta): string {
-  return formatCell(row[column.name], column.type)
+  return relationCell(row, column)?.text ?? formatCell(row[column.name], column.type)
 }
 
 // Returned as COMPLETE class strings and applied with `:class`, because a
@@ -180,7 +196,12 @@ async function load() {
     // every page and every sort of a given model, and re-rendering the
     // header `:for` on each query both wastes work and trips a reconciler
     // bug that leaves the columns rotated out of order.
-    const nextColumns = data.columnMeta ?? []
+    relations.set(data.relations ?? {})
+    relationNames.set(data.relationNames ?? {})
+    // The columns the model chose for its list, and any the list is filtered on.
+    const every = data.columnMeta ?? []
+    const shown = modelListColumnNames(every.map(column => column.name), data.listColumns, active)
+    const nextColumns = shown.map(name => every.find(column => column.name === name)!).filter(Boolean)
     const sameColumns = nextColumns.length === columnMeta().length
       && nextColumns.every((c, i) => c.name === columnMeta()[i]?.name)
     if (!sameColumns) columnMeta.set(nextColumns)
@@ -443,7 +464,10 @@ void load()
 
         <tbody :if="!loading()" class="divide-black/5 divide-y dark:divide-white/8">
           <tr :for="row in rows()" class="hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors group">
-            <td :for="column in columnMeta()" :class="cellClass(column)" :title="cellValue(row, column)">{{ cellValue(row, column) }}</td>
+            <td :for="column in columnMeta()" :class="cellClass(column)" :title="cellValue(row, column)">
+              <StxLink :if="relationHref(row, column)" :to="relationHref(row, column)" class="font-medium text-blue-600 dark:text-blue-400 hover:underline">{{ cellValue(row, column) }}</StxLink>
+              <span :if="!relationHref(row, column)">{{ cellValue(row, column) }}</span>
+            </td>
             <td class="right-0 sticky z-10 px-3 py-2 text-right bg-white dark:bg-neutral-900 group-hover:bg-neutral-50 dark:group-hover:bg-white/5 border-black/5 border-l dark:border-white/10 transition-colors">
               <ModelRecordActions
                 :record="row"

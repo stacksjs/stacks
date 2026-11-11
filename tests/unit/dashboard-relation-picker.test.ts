@@ -73,10 +73,11 @@ describe('a record\'s page', () => {
 
   test('links to each record it points at, by name', () => {
     expect(page).toContain('<StxLink :if="detail.kind === \'link\'" :to="detail.href"')
-    expect(page).toContain('modelRecordSections(record()!, relationNames())')
+    expect(page).toContain('modelRecordSections(record()!)')
   })
 
-  test('does not wait for the names to show the record', () => {
-    expect(page).toContain('void fetchModelRelationNames(loaded).then(names => relationNames.set(names))')
+  test('has the names with the record, so it waits for nothing', () => {
+    // They came from a request per relation; the record now carries them (stacksjs/stacks#3259).
+    expect(page).not.toContain('fetchModelRelationNames')
   })
 })
