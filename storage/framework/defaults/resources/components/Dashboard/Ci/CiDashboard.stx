@@ -154,7 +154,7 @@
 
   <div :if="canView">
   <header class="mb-6">
-    <h1 class="font-semibold text-2xl text-zinc-900 dark:text-zinc-100">CI Status</h1>
+    <h1 class="font-bold text-2xl text-zinc-900 dark:text-zinc-100">CI Status</h1>
     <p class="mt-1 text-sm text-zinc-500">GitHub Actions health across the configured orgs. Configure in <code class="text-xs">config/dashboard.ts</code>.</p>
   </header>
 

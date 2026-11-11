@@ -241,7 +241,7 @@ onMount(() => {
       <header class="px-4 py-3 bg-white dark:bg-neutral-700 border-b border-gray-200 dark:border-neutral-600">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div class="flex flex-col gap-2 sm:flex-row sm:gap-4 sm:items-center min-w-0">
-            <h1 class="font-bold text-gray-900 text-xl dark:text-white">Inbox</h1>
+            <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Inbox</h1>
             <EmailNavigation active="inbox" />
           </div>
           <div class="flex gap-2 items-center">

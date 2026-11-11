@@ -16,7 +16,7 @@ defineClientPayload({ blogUrl })
 
     <header class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between pb-5 border-b border-neutral-200 dark:border-neutral-800">
       <div>
-        <h1 class="font-semibold text-2xl tracking-tight">Blog</h1>
+        <h1 class="font-bold text-2xl tracking-tight">Blog</h1>
         <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">
           Posts are markdown files in <code class="px-1 py-0.5 text-xs bg-neutral-200 dark:bg-neutral-800 rounded">content/blog</code>. Saving writes the file. Commit and push to publish.
         </p>
