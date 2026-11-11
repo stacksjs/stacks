@@ -515,6 +515,9 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   // A model's records by name, for choosing one in a form: the picker behind
   // every `belongsTo` field. Light on purpose, since it answers each keystroke.
   guard(route.get('/models/{slug}/options', 'Actions/Dashboard/Models/ModelOptionsAction'))
+  // The records that point at one record: a team's members, a user's teams.
+  // From the model's own `hasMany` and `hasOne`, for the panels of its page.
+  guard(route.get('/models/{slug}/{id}/related', 'Actions/Dashboard/Models/ModelRelatedAction'))
 
   // Row writes from the same page. Guarded like every other mutating
   // dashboard endpoint; models with no ORM file stay read-only, which the

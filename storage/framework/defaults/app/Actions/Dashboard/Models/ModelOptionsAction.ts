@@ -1,13 +1,12 @@
 import type { RequestInstance } from '@stacksjs/types'
 import type { ModelOption } from './model-relations'
 import { Action } from '@stacksjs/actions/runtime'
-import { anonymizedRows } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
-import { safeGet } from '../../../../resources/functions/dashboard/data'
 import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
 import { dashboardOperationalError } from '../dashboard-response'
+import { optionsFromRows } from './model-options'
 import { modelHintColumn, modelLabelColumn } from './model-relations'
-import { humanizeIdentifier, isErasureSubject, isValidModelSlug, slugToPascal } from './model-write'
+import { humanizeIdentifier, isValidModelSlug, slugToPascal } from './model-write'
 
 /** How many records a search offers. A picker is for finding one, not browsing. */
 const OPTION_LIMIT = 20
@@ -93,19 +92,7 @@ export default new Action({
       const rows = await query.orderBy(labelColumn ?? 'id', 'asc').take(ids.length > 0 ? ID_LIMIT : OPTION_LIMIT).get() as any[]
       const list = Array.isArray(rows) ? rows : []
 
-      // An erased account is stored as placeholders; a picker names it for what it is.
-      const erased = isErasureSubject(Model)
-        ? await anonymizedRows(modelName, list.map(row => ({ id: safeGet(row, 'id', 0), name: safeGet(row, 'name', null), email: safeGet(row, 'email', null), avatar: safeGet(row, 'avatar', null) }))).catch(() => [] as boolean[])
-        : []
-
-      const options: ModelOption[] = list.map((row, index) => {
-        const id = safeGet(row, 'id', 0) as number | string
-        if (erased[index] === true)
-          return { id, label: `Anonymized ${modelLabel.toLowerCase()}`, hint: `#${id}` }
-        const named = labelColumn ? String(safeGet(row, labelColumn, '') ?? '').trim() : ''
-        const hint = hintColumn ? String(safeGet(row, hintColumn, '') ?? '').trim() : ''
-        return { id, label: named || `${modelLabel} #${id}`, hint: named ? (hint || `#${id}`) : hint }
-      })
+      const options: ModelOption[] = await optionsFromRows(Model, modelName, list)
 
       return { options, modelLabel, labelColumn }
     }

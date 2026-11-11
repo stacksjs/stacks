@@ -11466,6 +11466,48 @@
         }
       }
     },
+    "/api/dashboard/models/{slug}/{id}/related": {
+      "get": {
+        "summary": "/api/dashboard/models/{slug}/{id}/related",
+        "operationId": "get__api_dashboard_models__slug___id__related",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/dashboard/monitoring/errors": {
       "delete": {
         "summary": "/api/dashboard/monitoring/errors",

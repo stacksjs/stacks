@@ -3000,6 +3000,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /api/dashboard/models/{slug}/{id}/related
+   */
+  getDashboardModelsSlugIdRelated(input: { "slug": string; "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/models/{slug}/{id}/related", input ?? {}, [{"name":"slug","in":"path","required":true},{"name":"id","in":"path","required":true}], null, "application/json", [], options)
+  },
+
+  /**
    * GET /api/dashboard/monitoring/errors
    */
   getDashboardMonitoringErrors(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {

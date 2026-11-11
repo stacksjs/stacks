@@ -69,6 +69,66 @@ export function belongsToRelations(Model: any): ModelRelation[] {
   return relations
 }
 
+export interface ModelHasRelation {
+  /** Many records point at this one, or at most one does. */
+  kind: 'many' | 'one'
+  /** The model whose records point here, as declared: `TeamMember`. */
+  model: string
+  slug: string
+  /** The column the declaration names for the link, when it names one. */
+  foreignKey: string | null
+}
+
+/**
+ * The models whose records point at this one: its `hasMany` and `hasOne`.
+ * Declared as a name or as an object naming the model and, optionally, the
+ * foreign key on the other side.
+ */
+export function hasRelations(Model: any): ModelHasRelation[] {
+  const relations: ModelHasRelation[] = []
+  for (const [property, kind] of [['hasMany', 'many'], ['hasOne', 'one']] as const) {
+    for (const declared of Model?.[property] ?? []) {
+      const model = typeof declared === 'string' ? declared.trim() : String(declared?.model ?? '').trim()
+      if (!model || relations.some(relation => relation.model === model))
+        continue
+      const foreignKey = typeof declared === 'object' && typeof declared?.foreignKey === 'string' && declared.foreignKey.trim()
+        ? snakeCase(declared.foreignKey.trim())
+        : null
+      relations.push({ kind, model, slug: modelSlug(model), foreignKey })
+    }
+  }
+  return relations
+}
+
+/**
+ * The column on the related model that holds this model's id.
+ *
+ * What the declaration names, else what the related model says of its own
+ * `belongsTo`, else the conventional `<model>_id` when the related model has
+ * that column. With none of the three there is no knowing which rows are
+ * this record's, and the caller shows no panel instead of a wrong one.
+ */
+export function relatedForeignKey(parentName: string, Related: any, relation: ModelHasRelation, relatedColumns: string[]): string | null {
+  if (relation.foreignKey)
+    return relation.foreignKey
+  const declared = belongsToRelations(Related).find(candidate => candidate.model === parentName)
+  if (declared)
+    return declared.column
+  const conventional = `${snakeCase(parentName)}_id`
+  return relatedColumns.includes(conventional) ? conventional : null
+}
+
+/** "Team Members" for `Team Member`: the last word made plural. */
+export function pluralizeLabel(label: string): string {
+  const words = label.split(' ')
+  const last = words.pop() ?? ''
+  const lower = last.toLowerCase()
+  const plural = lower.endsWith('y') && !/[aeiou]y$/.test(lower)
+    ? `${last.slice(0, -1)}ies`
+    : /(?:s|x|ch|sh)$/.test(lower) ? `${last}es` : `${last}s`
+  return [...words, plural].join(' ')
+}
+
 /** The columns a record is called by, most telling first. */
 const LABEL_COLUMNS = ['name', 'title', 'label', 'subject', 'email', 'domain', 'code', 'slug'] as const
 
