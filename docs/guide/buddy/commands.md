@@ -5888,6 +5888,9 @@ Interactive REPL with Stacks framework preloaded
 | `--print` | Evaluate, print, and exit | value, optional | `""` |
 | `--no-banner` | Skip the welcome banner | boolean, optional, negated | `true` |
 | `--preload` | Additional modules to preload (comma-separated) | value, optional | `""` |
+| `--project` | Run in this project directory instead of the current one | value, optional | `""` |
+| `--serve` | Speak the frame protocol on stdio (JSON requests in, frames out) for tools that drive a session | boolean, optional | `false` |
+| `--bare` | Do not boot the app: a plain Bun session | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `types:fix`

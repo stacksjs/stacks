@@ -90,7 +90,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/storage` | [`stacks-storage`](../stacks-storage/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/storage/src/index.ts) | 50 |
 | `@stacksjs/strings` | [`stacks-strings`](../stacks-strings/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/strings/src/index.ts) | 12 |
 | `@stacksjs/testing` | [`stacks-testing`](../stacks-testing/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/testing/src/index.ts) | 24 |
-| `@stacksjs/tinker` | [`stacks-repl`](../stacks-repl/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/tinker/src/index.ts) | 1 |
+| `@stacksjs/tinker` | [`stacks-repl`](../stacks-repl/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/tinker/src/index.ts) | 2 |
 | `@stacksjs/tunnel` | [`stacks-tunnel`](../stacks-tunnel/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/tunnel/src/index.ts) | 1 |
 | `@stacksjs/types` | [`stacks-types`](../stacks-types/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/types/src/index.ts) | 2 |
 | `@stacksjs/ui` | [`stacks-ui`](../stacks-ui/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/ui/src/index.ts) | 6 |
@@ -880,9 +880,11 @@ Evidence directory: [24 retained tests](https://github.com/stacksjs/stacks/blob/
 
 Guidance: [`stacks-repl`](../stacks-repl/SKILL.md). Source: [storage/framework/core/tinker/src/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/tinker/src/index.ts).
 
-Declared runtime exports: `appendHistory`, `clearHistory`, `getHistoryPath`, `readHistory`, `startTinker`, `tinkerEval`, `tinkerPrint`.
+Declared runtime exports: `appendHistory`, `clearHistory`, `getHistoryPath`, `isIncompleteSnippet`, `readHistory`, `renderValue`, `startTinker`, `tinkerEval`, `tinkerPrint`.
 
-Evidence directory: [1 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/tinker/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Local source modules: [src/protocol.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/tinker/src/protocol.ts), [src/serialize.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/tinker/src/serialize.ts), [src/session.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/tinker/src/session.ts).
+
+Evidence directory: [2 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/tinker/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/tunnel
 
