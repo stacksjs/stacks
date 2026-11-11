@@ -24,6 +24,17 @@ export const FEATURE_DASHBOARD_VIEWS = {
 
 export type DashboardViewFeature = keyof typeof FEATURE_DASHBOARD_VIEWS
 
+/**
+ * The config files of the features that are off, by name (`cms` for
+ * `config/cms.ts`). Settings leaves them out, for the same reason the sidebar
+ * leaves out their sections: an app that never installed commerce has no
+ * commerce to configure, and the file is where `./buddy commerce:install`
+ * turns it on, not the dashboard.
+ */
+export function disabledFeatureConfigs(enabled: (feature: DashboardViewFeature) => boolean): Set<string> {
+  return new Set((Object.keys(FEATURE_DASHBOARD_VIEWS) as DashboardViewFeature[]).filter(feature => !enabled(feature)))
+}
+
 /** The page directories under `frameworkDashboard` to leave out of serving. */
 export function disabledFeatureViews(
   frameworkDashboard: string,

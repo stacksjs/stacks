@@ -47,10 +47,15 @@ const allQuickLinks = [
  * Cards without a `section` are always offered. A card with one waits for the
  * server to say that section exists, so the home page never links to a
  * section the sidebar has hidden and whose pages cannot load.
+ *
+ * Waits, as in `=== true`: until the answer arrives nothing is known, and
+ * "not false" showed the Blog and Commerce cards for a moment on every load -
+ * long enough for their links to be prefetched and answer 404 in an app with
+ * both features off.
  */
 function quickLinks() {
   const available = dashboard.sections.value
-  return allQuickLinks.filter(link => !link.section || available[link.section] !== false)
+  return allQuickLinks.filter(link => !link.section || available[link.section] === true)
 }
 
 /** Orders are part of the feed only with commerce on, so they are named only then. */

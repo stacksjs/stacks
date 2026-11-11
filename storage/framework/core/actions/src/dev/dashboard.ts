@@ -149,6 +149,15 @@ async function startStxServer(): Promise<void> {
   const { listConfigFiles, readConfig, updateConfigKeys } = await import(
     defaultsPath('resources/functions/dashboard/config-io.ts')
   )
+  // A feature that is off has no entry in Settings, and its file is not read
+  // or written through it: see `disabledFeatureConfigs`. Asked per request,
+  // so the answer follows the config as it is now.
+  const { disabledFeatureConfigs } = await import('./dashboard-feature-views')
+  async function hiddenConfigs(): Promise<Set<string>> {
+    const { feature } = await import('@stacksjs/config')
+    return disabledFeatureConfigs(feature)
+  }
+
   // Dashboard chart modules are loaded lazily from explicit dev-server URLs.
   // Package dist files are intentionally not served verbatim: they retain
   // package-internal bare imports, which browsers cannot resolve. Build each
@@ -282,7 +291,8 @@ async function startStxServer(): Promise<void> {
     },
     '/api/config/list': async () => {
       try {
-        return Response.json({ ok: true, files: listConfigFiles() })
+        const hidden = await hiddenConfigs()
+        return Response.json({ ok: true, files: listConfigFiles().filter((file: { name: string }) => !hidden.has(file.name.replace(/\.ts$/, ''))) })
       }
       catch (e) {
         return Response.json({ ok: false, error: (e as Error)?.message }, { status: 500 })
@@ -294,6 +304,8 @@ async function startStxServer(): Promise<void> {
         const name = url.searchParams.get('name') || ''
         if (!/^[\w-]+$/.test(name))
           return Response.json({ ok: false, error: 'Invalid config name' }, { status: 400 })
+        if ((await hiddenConfigs()).has(name))
+          return Response.json({ ok: false, error: 'Not found' }, { status: 404 })
         const result = await readConfig(name)
         if (!result)
           return Response.json({ ok: false, error: 'Not found' }, { status: 404 })
@@ -311,6 +323,8 @@ async function startStxServer(): Promise<void> {
         const name = url.searchParams.get('name') || ''
         if (!/^[\w-]+$/.test(name))
           return Response.json({ ok: false, error: 'Invalid config name' }, { status: 400 })
+        if ((await hiddenConfigs()).has(name))
+          return Response.json({ ok: false, error: 'Not found' }, { status: 404 })
         const result = await readConfig(name)
         if (!result)
           return Response.json({ ok: false, error: 'Not found' }, { status: 404 })
@@ -332,6 +346,8 @@ async function startStxServer(): Promise<void> {
         const file = body.file?.replace(/\.ts$/, '')
         if (!file || !/^[\w-]+$/.test(file))
           return Response.json({ ok: false, error: 'Invalid file' }, { status: 400 })
+        if ((await hiddenConfigs()).has(file))
+          return Response.json({ ok: false, error: 'Not found' }, { status: 404 })
 
         const updates: Array<{ key: string, value: unknown }> = []
         if (Array.isArray(body.updates)) {
