@@ -8,7 +8,7 @@
 // writes go through the model, so scopes, casts and observers apply.
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
 import { dashboardApi } from '@stacksjs/defaults/functions/dashboard-api'
-import { modelRecordCreateHref, modelRecordEditHref, modelRecordHref } from '@stacksjs/defaults/functions/dashboard-model-record'
+import { modelDeleteWarning, modelRecordCreateHref, modelRecordEditHref, modelRecordHref } from '@stacksjs/defaults/functions/dashboard-model-record'
 import { pushToast } from '@stacksjs/defaults/functions/toasts'
 
 interface ColumnMeta {
@@ -99,7 +99,7 @@ const deleteDescription = derived(() => {
   const row = confirmingDelete()
   if (!row)
     return ''
-  return `Row ${row.id} will be removed through the model, so soft deletes and observers apply.`
+  return modelDeleteWarning(`Row ${row.id}`)
 })
 
 // Skeleton rows while a query is in flight. Matching the real row count

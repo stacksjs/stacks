@@ -11,7 +11,7 @@ import type {
 } from '../../../../functions/data'
 import { fetchDashboardData } from '../../../../functions/data'
 import type { ModelWriteCapabilities } from '../../../../functions/dashboard-model-record'
-import { deleteModelRecord, fetchModelCapabilities, modelRecordCreateHref, modelRecordEditHref, modelRecordHref } from '../../../../functions/dashboard-model-record'
+import { deleteModelRecord, fetchModelCapabilities, modelDeleteWarning, modelRecordCreateHref, modelRecordEditHref, modelRecordHref } from '../../../../functions/dashboard-model-record'
 import { pushToast } from '../../../../functions/toasts'
 
 type DataRecord = DashboardActivity | DashboardSubscriber | DashboardTeam | DashboardUser
@@ -93,7 +93,7 @@ const deleteTitle = derived(() => `Delete this ${page().one}?`)
 const deleteDescription = derived(() => {
   const row = confirmingDelete()
   const name = row ? String(row[actionLabelKey()] ?? row.id) : ''
-  return `${name} will be removed through the model, so soft deletes and observers apply.`
+  return modelDeleteWarning(name)
 })
 
 async function loadCapabilities(): Promise<void> {

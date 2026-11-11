@@ -6,7 +6,7 @@
 // to where the visitor came from: the record's page, or the list.
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
 import type { ModelRecord } from '../../../../functions/dashboard-model-record'
-import { changedModelFields, fetchModelRecord, modelRecordBackHref, modelRecordFields, modelRecordHref, modelRecordListLabel, modelRecordSections, updateModelRecord } from '../../../../functions/dashboard-model-record'
+import { changedModelFields, fetchModelRecord, modelFieldError, modelRecordBackHref, modelRecordFields, modelRecordHref, modelRecordListLabel, modelRecordSections, updateModelRecord } from '../../../../functions/dashboard-model-record'
 import { pushToast } from '../../../../functions/toasts'
 
 const navigation = useNavigation()
@@ -16,6 +16,7 @@ const loading = state(true)
 const loadError = state('')
 const saving = state(false)
 const saveError = state('')
+const saveErrors = state<Record<string, string[]>>({})
 
 // `/models/{slug}/{id}/edit`
 function slug(): string {
@@ -46,6 +47,10 @@ const context = derived(() => {
     .filter(detail => !current.updateColumns.includes(detail.name))
 })
 const canEdit = derived(() => Boolean(record()?.writeCapabilities.update) && writable().length > 0)
+
+function fieldError(field: string): string {
+  return modelFieldError(saveErrors(), field)
+}
 
 function updateValue(field: string, event: Event): void {
   values.set({ ...values(), [field]: (event.target as HTMLInputElement).value })
@@ -79,17 +84,18 @@ async function save(): Promise<void> {
   }
   saving.set(true)
   saveError.set('')
-  try {
-    await updateModelRecord(slug(), recordId(), fields)
-    pushToast('success', `${current.modelName} ${recordId()} updated`)
-    navigate(returnHref())
+  saveErrors.set({})
+  const result = await updateModelRecord(slug(), recordId(), fields)
+  saving.set(false)
+  if (!result.ok) {
+    // A refusal says which field and why; "Validation failed" alone left the
+    // visitor to guess which of the inputs it meant.
+    saveError.set(result.error)
+    saveErrors.set(result.errors)
+    return
   }
-  catch (error) {
-    saveError.set(error instanceof Error ? error.message : 'The changes could not be saved.')
-  }
-  finally {
-    saving.set(false)
-  }
+  pushToast('success', `${current.modelName} ${recordId()} updated`)
+  navigate(returnHref())
 }
 
 function cancel(): void {
@@ -147,9 +153,11 @@ onMount(() => {
               :name="field.name"
               type="text"
               :value="values()[field.name] ?? field.value"
+              :aria-invalid="fieldError(field.name) ? 'true' : 'false'"
               class="px-3 py-2 text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-white/10 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               @input="updateValue(field.name, $event)"
             >
+            <p :if="fieldError(field.name)" role="alert" class="text-red-600 text-xs dark:text-red-400">{{ fieldError(field.name) }}</p>
           </div>
         </div>
       </Card>

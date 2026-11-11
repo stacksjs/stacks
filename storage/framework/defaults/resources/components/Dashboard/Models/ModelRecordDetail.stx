@@ -7,7 +7,7 @@
 // has an address to share, open in a tab and come back to.
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
 import type { ModelRecord } from '../../../../functions/dashboard-model-record'
-import { deleteModelRecord, fetchModelRecord, modelRecordBackHref, modelRecordEditHref, modelRecordListLabel, modelRecordSections, modelRecordTitle } from '../../../../functions/dashboard-model-record'
+import { deleteModelRecord, fetchModelRecord, modelDeleteWarning, modelRecordBackHref, modelRecordEditHref, modelRecordListLabel, modelRecordSections, modelRecordTitle } from '../../../../functions/dashboard-model-record'
 import { pushToast } from '../../../../functions/toasts'
 
 const navigation = useNavigation()
@@ -135,7 +135,7 @@ onMount(() => {
   <ConfirmDialog
     :isOpen="confirmingDelete()"
     :title="'Delete this ' + modelName().toLowerCase() + '?'"
-    :description="(title() || modelName()) + ' will be removed through the model, so soft deletes and observers apply.'"
+    :description="modelDeleteWarning(title() || modelName())"
     :busy="working()"
     :confirmLabel="working() ? 'Deleting' : 'Delete'"
     @close="confirmingDelete.set(false)"

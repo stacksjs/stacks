@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { DashboardApiError } from './dashboard-api'
-import { changedModelFields, modelCreateFailure, modelRecordBackHref, modelRecordCreateHref, modelRecordEditHref, modelRecordFields, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRecordTitle } from './dashboard-model-record'
+import { changedModelFields, modelDeleteWarning, modelFieldError, modelWriteFailure, modelRecordBackHref, modelRecordCreateHref, modelRecordEditHref, modelRecordFields, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRecordTitle } from './dashboard-model-record'
 import type { ModelRecord } from './dashboard-model-record'
 
 const record: ModelRecord = {
@@ -131,9 +131,29 @@ describe('creating a model record', () => {
   })
 
   it('reports a refusal in one shape, with each field\'s message under its field', () => {
-    expect(modelCreateFailure(new DashboardApiError('The name is required.', 422, { name: 'The name is required.' })))
-      .toEqual({ ok: false, error: 'The name is required.', errors: { name: ['The name is required.'] } })
-    expect(modelCreateFailure(new DashboardApiError('Server error', 500))).toEqual({ ok: false, error: 'Server error', errors: {} })
-    expect(modelCreateFailure(new Error('offline'))).toEqual({ ok: false, error: 'offline', errors: {} })
+    expect(modelWriteFailure(new DashboardApiError('Validation failed.', 422, { name: 'The name is required.' })))
+      .toEqual({ ok: false, error: 'Check the field marked below.', errors: { name: ['The name is required.'] } })
+    expect(modelWriteFailure(new DashboardApiError('Validation failed.', 422, { name: 'Too short.', email: 'Already in use.' })).error)
+      .toBe('Check the 2 fields marked below.')
+    expect(modelWriteFailure(new DashboardApiError('Server error', 500))).toEqual({ ok: false, error: 'Server error', errors: {} })
+    expect(modelWriteFailure(new Error('offline'))).toEqual({ ok: false, error: 'offline', errors: {} })
+  })
+})
+
+describe('a refused edit', () => {
+  it('finds a field\'s message whichever way the field is spelled', () => {
+    // The API names fields as the model does; an edit form's inputs are columns.
+    const errors = { firstName: ['Too short.'], email: ['Already in use.'] }
+    expect(modelFieldError(errors, 'first_name')).toBe('Too short.')
+    expect(modelFieldError(errors, 'firstName')).toBe('Too short.')
+    expect(modelFieldError(errors, 'email')).toBe('Already in use.')
+    expect(modelFieldError(errors, 'avatar')).toBe('')
+    expect(modelFieldError({}, 'email')).toBe('')
+  })
+})
+
+describe('the delete confirmation', () => {
+  it('says what happens in plain words', () => {
+    expect(modelDeleteWarning('Ava')).toBe('Ava will be deleted. This cannot be undone from the dashboard.')
   })
 })

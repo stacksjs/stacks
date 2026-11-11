@@ -311,27 +311,53 @@ export function changedModelFields(row: Record<string, unknown>, values: Record<
   return fields
 }
 
-export async function updateModelRecord(slug: string, id: string | number, fields: Record<string, unknown>): Promise<void> {
-  const result = await dashboardApi<{ ok: boolean, error?: string }>(`${modelPath(slug)}/${encodeURIComponent(String(id))}`, { method: 'PATCH', body: { fields } })
-  if (!result?.ok)
-    throw new Error(result?.error || 'The update was rejected.')
-}
+export type ModelWriteFailure = { ok: false, error: string, errors: Record<string, string[]> }
 
-export type ModelCreateResult
-  = | { ok: true, id: string | number | null }
-    | { ok: false, error: string, errors: Record<string, string[]> }
+export type ModelUpdateResult = { ok: true } | ModelWriteFailure
+
+export type ModelCreateResult = { ok: true, id: string | number | null } | ModelWriteFailure
 
 /**
- * Why a create was refused, in one shape: the message for the top of the form
- * and the messages under each field. The API answers a refusal two ways, as a
- * body with `ok: false` or as an error status carrying `fields`.
+ * Why a create or an edit was refused, in one shape: the message for the top
+ * of the form and the messages under each field. The API answers a refusal
+ * two ways, as a body with `ok: false` or as an error status carrying
+ * `fields`.
  */
-export function modelCreateFailure(reason: unknown): { ok: false, error: string, errors: Record<string, string[]> } {
+export function modelWriteFailure(reason: unknown): ModelWriteFailure {
   if (reason instanceof DashboardApiError) {
     const errors = Object.fromEntries(Object.entries(reason.fields ?? {}).map(([field, message]) => [field, [message]]))
-    return { ok: false, error: reason.message, errors }
+    // With field messages to show, the top of the form points at them. The
+    // server's own summary for these is "Validation failed", which names
+    // nothing the visitor can look for.
+    const marked = Object.keys(errors).length
+    const summary = marked === 1 ? 'Check the field marked below.' : `Check the ${marked} fields marked below.`
+    return { ok: false, error: marked > 0 ? summary : reason.message, errors }
   }
   return { ok: false, error: reason instanceof Error ? reason.message : String(reason), errors: {} }
+}
+
+/**
+ * The message for one input, from the errors a refused write came back with.
+ *
+ * The API names fields as the model does (`firstName`); an edit form's inputs
+ * are the row's columns (`first_name`). Either spelling finds its message.
+ */
+export function modelFieldError(errors: Record<string, string[]>, field: string): string {
+  const column = (name: string) => name.replace(/([a-z\d])([A-Z])/g, '$1_$2').toLowerCase()
+  const key = Object.keys(errors).find(name => name === field || column(name) === column(field))
+  return key ? errors[key]?.[0] || '' : ''
+}
+
+export async function updateModelRecord(slug: string, id: string | number, fields: Record<string, unknown>): Promise<ModelUpdateResult> {
+  try {
+    const result = await dashboardApi<{ ok: boolean, error?: string, errors?: Record<string, string[]> }>(`${modelPath(slug)}/${encodeURIComponent(String(id))}`, { method: 'PATCH', body: { fields } })
+    if (!result?.ok)
+      return { ok: false, error: result?.error || 'The update was rejected.', errors: result?.errors ?? {} }
+    return { ok: true }
+  }
+  catch (reason) {
+    return modelWriteFailure(reason)
+  }
 }
 
 export async function createModelRecord(slug: string, fields: Record<string, unknown>): Promise<ModelCreateResult> {
@@ -342,8 +368,18 @@ export async function createModelRecord(slug: string, fields: Record<string, unk
     return { ok: true, id: result.id ?? null }
   }
   catch (reason) {
-    return modelCreateFailure(reason)
+    return modelWriteFailure(reason)
   }
+}
+
+/**
+ * What the confirmation says before a record is deleted.
+ *
+ * True whichever way the model deletes: a soft-deleted row stays in the
+ * database, and the dashboard still has no way to bring it back.
+ */
+export function modelDeleteWarning(name: string): string {
+  return `${name} will be deleted. This cannot be undone from the dashboard.`
 }
 
 export async function deleteModelRecord(slug: string, id: string | number): Promise<void> {
