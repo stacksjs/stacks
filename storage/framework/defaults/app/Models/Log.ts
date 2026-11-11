@@ -133,4 +133,8 @@ export default defineModel({
       factory: faker => faker.system.filePath().substring(0, 255),
     },
   },
+
+  dashboard: {
+    columns: ['timestamp', 'type', 'source', 'message'],
+  },
 } as const)

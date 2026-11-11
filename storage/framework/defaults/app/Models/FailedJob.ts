@@ -86,4 +86,8 @@ export default defineModel({
       factory: () => '2024-12-23 13:32:19',
     },
   },
+
+  dashboard: {
+    columns: ['queue', 'connection', 'exception', 'attempts', 'failedAt'],
+  },
 } as const)

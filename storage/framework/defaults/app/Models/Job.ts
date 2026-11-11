@@ -71,4 +71,8 @@ export default defineModel({
       factory: () => null,
     },
   },
+
+  dashboard: {
+    columns: ['queue', 'attempts', 'availableAt', 'reservedAt', 'createdAt'],
+  },
 } as const)

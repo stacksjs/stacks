@@ -95,4 +95,8 @@ export default defineModel({
       factory: faker => faker.internet.ip(),
     },
   },
+
+  dashboard: {
+    columns: ['description', 'type', 'subjectType', 'causer', 'createdAt'],
+  },
 } as const)

@@ -112,6 +112,7 @@ export default defineModel({
   },
 
   dashboard: {
+    columns: ['commitMessage', 'branch', 'environment', 'status', 'duration', 'createdAt'],
     highlight: true,
   },
 } as const)

@@ -189,4 +189,8 @@ export default defineModel({
       },
     },
   },
+
+  dashboard: {
+    columns: ['query', 'duration', 'status', 'connection', 'model', 'executedAt'],
+  },
 } as const)

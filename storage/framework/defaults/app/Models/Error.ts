@@ -100,4 +100,8 @@ export default defineModel({
       factory: faker => faker.lorem.paragraph(),
     },
   },
+
+  dashboard: {
+    columns: ['type', 'message', 'status', 'createdAt'],
+  },
 } as const)

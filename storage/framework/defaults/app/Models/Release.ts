@@ -88,6 +88,7 @@ export default defineModel({
   },
 
   dashboard: {
+    columns: ['version', 'type', 'status', 'downloads', 'author', 'createdAt'],
     highlight: true,
   },
 } as const)

@@ -144,4 +144,8 @@ export default defineModel({
       factory: faker => faker.helpers.maybe(() => faker.lorem.sentence(), { probability: 0.2 }),
     },
   },
+
+  dashboard: {
+    columns: ['method', 'path', 'statusCode', 'durationMs', 'ipAddress', 'createdAt'],
+  },
 } as const)
