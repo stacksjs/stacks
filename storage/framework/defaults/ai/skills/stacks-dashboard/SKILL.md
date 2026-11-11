@@ -1,6 +1,6 @@
 ---
 name: stacks-dashboard
-description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 420 built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
+description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 421 built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,7 +8,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Dashboard
 
-The Stacks admin dashboard provides a full-featured admin panel with 100+ route views, 420 components, and a multi-section layout.
+The Stacks admin dashboard provides a full-featured admin panel with 100+ route views, 421 components, and a multi-section layout.
 
 ## Key Paths
 - Dashboard components: `storage/framework/defaults/resources/components/Dashboard/`
@@ -765,6 +765,31 @@ it has none of them (such a model is searchable by id only).
 A record's page shows each relation as a link to the related record, by name.
 A write naming a record that has since been deleted comes back on that field
 ("That team no longer exists. Choose another.").
+
+### A record's page lists who points at it
+
+For each `hasMany` and `hasOne` a model declares, its record page shows a
+panel (`Dashboard/Models/ModelRelatedPanels`): a team's members and
+invitations, a user's team memberships. Nothing is declared for the
+dashboard; `GET /api/dashboard/models/{slug}/{id}/related` reads the model.
+
+A panel is the newest five with the total. Its columns are chosen for telling
+rows apart, not for completeness: what the related record is called, the
+other records it points at (by name), its `enum` fields as badges, and when
+it was created. The link back to the page's own record is left out.
+
+- The eye opens the related record.
+- "View all" opens the related model's list narrowed to this record
+  (`/models/team-member?filters={"team_id":"3"}`); the list arrives with its
+  filter row open.
+- "Add" opens the related model's create form with this record already
+  chosen (`?teamId=3`) and returns here. It is offered when that model can be
+  created from the dashboard, and for a `hasOne` only while there is none.
+
+The link between the two models is the foreign key the declaration names,
+else the related model's own `belongsTo`, else the conventional
+`<model>_id` column. With none of those the relation gets no panel; so does a
+related model the dashboard cannot reach.
 
 The edit form never writes `password`, tokens, secrets, `id`, `uuid` or the
 timestamps. A refused save comes back as a message under its field (a rule
