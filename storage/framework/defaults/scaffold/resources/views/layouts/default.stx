@@ -1,0 +1,23 @@
+{{-- The document shell every page extends.
+
+  A page names this layout on its first line and puts its markup in a section
+  called content, the way views/index.stx does. Scripts a page pushes onto the
+  scripts stack land before the closing body tag. Add the navigation and footer
+  every page shares here, as components from resources/components.
+
+  Directive names are spelled without their at sign in this comment on
+  purpose: stx reads directives inside comments too, and a layout whose
+  comment names its own extends line extends itself forever. --}}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    @include('head')
+  </head>
+  <body class="min-h-screen antialiased text-neutral-900 dark:text-neutral-100 bg-neutral-50 dark:bg-neutral-950">
+    <a href="#main" class="focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:px-4 focus:py-2 focus:text-neutral-900 focus:bg-white focus:rounded sr-only focus:not-sr-only">Skip to content</a>
+    <main id="main" tabindex="-1">
+      @yield('content')
+    </main>
+    @stack('scripts')
+  </body>
+</html>

@@ -32,11 +32,12 @@ export default {
   // resolves through this. See the plugin file for the lookup order.
   plugins: ['./storage/framework/defaults/stx-components-plugin.ts'],
 
-  // One layouts directory is scanned, not two: `resources/views/layouts` when it
-  // exists (the scaffold ships it), otherwise `resources/layouts`. A layout kept
-  // in the other folder is never found, and "Layout not found" lists the
-  // directories that were searched. Put app layouts beside the scaffold's.
-  layoutsDir: 'layouts',
+  // `resources/views/layouts`, beside the pages that extend them, which is
+  // where the scaffold puts `default.stx`. One directory is scanned, not two: a
+  // layout kept in `resources/layouts` is found only by an app that has no
+  // `resources/views/layouts` at all, and "Layout not found" lists the
+  // directories that were searched.
+  layoutsDir: 'views/layouts',
 
   partialsDir: 'partials',
 

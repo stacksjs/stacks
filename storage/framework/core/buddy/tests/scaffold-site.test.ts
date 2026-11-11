@@ -15,7 +15,8 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { cpSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, relative } from 'node:path'
-import { APP_SITE_TEMPLATE, SITE_ONLY_PATHS, applyAppSiteTemplate } from '../src/scaffold-site'
+import { FRAMEWORK_ONLY_PATHS } from '../src/scaffold-package-app'
+import { APP_SITE_TEMPLATE, APP_TOP_LEVEL, REMOVED_BY_OTHER_STEPS, SITE_ONLY_PATHS, applyAppSiteTemplate } from '../src/scaffold-site'
 
 const REPO = join(import.meta.dir, '../../../../..')
 const CREATE_COMMAND = join(import.meta.dir, '../src/commands/create.ts')
@@ -38,7 +39,7 @@ let removed: string[]
 
 beforeAll(() => {
   app = mkdtempSync(join(tmpdir(), 'stacks-scaffold-site-'))
-  for (const dir of ['resources', 'public', 'docs', 'content', APP_SITE_TEMPLATE])
+  for (const dir of ['resources', 'public', 'docs', 'content', 'ops', '.reviewos', APP_SITE_TEMPLATE])
     cpSync(join(REPO, dir), join(app, dir), { recursive: true })
 
   removed = applyAppSiteTemplate(app)
@@ -94,13 +95,79 @@ describe('a scaffolded app does not inherit stacksjs.com', () => {
     expect(leftovers).toEqual([])
   })
 
-  test('the starter page names the app from its own config', () => {
-    const index = readFileSync(join(app, 'resources/views/index.stx'), 'utf8')
+  test('the starter names the app from its own config', () => {
+    // In the head partial every page shares, so a second page gets it too.
+    const head = readFileSync(join(app, 'resources/partials/head.stx'), 'utf8')
 
-    expect(index).toContain('config.app.name')
-    expect(index).toContain('config.app.url')
-    expect(index).toContain('rel="canonical" href="{{ canonicalUrl }}"')
-    expect(index).not.toContain('application/ld+json')
+    expect(head).toContain('config.app.name')
+    expect(head).toContain('config.app.url')
+    expect(head).toContain('rel="canonical" href="{{ canonicalUrl }}"')
+    expect(head).not.toContain('application/ld+json')
+  })
+
+  test('the starter page is a page in a layout, not a whole document', () => {
+    // Every app used to start from one `@nolayout` page and a layout that was
+    // three `@yield` lines, so there was no example of a document shell.
+    const index = readFileSync(join(app, 'resources/views/index.stx'), 'utf8')
+    const layout = readFileSync(join(app, 'resources/views/layouts/default.stx'), 'utf8')
+
+    expect(index.startsWith('@extends(\'default\')')).toBe(true)
+    expect(index).toContain('@section(\'content\')')
+    expect(index).not.toContain('@nolayout')
+    expect(index).not.toContain('<html')
+
+    expect(layout).toContain('<!DOCTYPE html>')
+    expect(layout).toContain('@include(\'head\')')
+    expect(layout).toContain('href="#main"')
+    expect(layout).toContain('<main id="main"')
+    expect(layout).toContain('@yield(\'content\')')
+  })
+
+  test('every component the starter uses is one it ships', () => {
+    const tags = walk(join(app, 'resources/views'))
+      .flatMap(file => [...readFileSync(file, 'utf8').matchAll(/<([A-Z][A-Za-z]+)[\s/>]/g)].map(match => match[1]))
+
+    expect(tags.length).toBeGreaterThan(0)
+    for (const tag of new Set(tags))
+      expect(existsSync(join(app, `resources/components/${tag}.stx`))).toBe(true)
+  })
+
+  test('no starter comment names a directive', () => {
+    // stx reads directives inside `{{-- --}}` comments. A layout whose comment
+    // spelled out its own extends line extended itself, and the first request
+    // for `/` took the dev server to 150% CPU for good.
+    const offenders = walk(join(REPO, APP_SITE_TEMPLATE))
+      .filter(file => file.endsWith('.stx'))
+      .filter(file => [...readFileSync(file, 'utf8').matchAll(/\{\{--[\s\S]*?--\}\}/g)]
+        .some(comment => /@(?:extends|section|endsection|include|yield|push|stack|layout|nolayout|if|foreach)\b/.test(comment[0])))
+      .map(file => relative(join(REPO, APP_SITE_TEMPLATE), file))
+
+    expect(offenders).toEqual([])
+  })
+
+  test('every directory config/ui.ts points stx at exists', () => {
+    // stx warns once per configured directory that is missing. `config/ui.ts`
+    // said `layoutsDir: 'layouts'`, which is `resources/layouts`: the folder
+    // that holds only the desktop demo's layout and is gone from an app, while
+    // the dev and production servers scan `resources/views/layouts`. Stripping
+    // the demo emptied `resources/components` and `resources/partials` too, so
+    // a new app's first `./buddy dev` opened on three warnings.
+    const ui = readFileSync(join(REPO, 'config/ui.ts'), 'utf8')
+    const value = (key: string): string => {
+      const found = new RegExp(`^  ${key}: '([^']+)',$`, 'm').exec(ui)?.[1]
+      if (!found)
+        throw new Error(`config/ui.ts sets no ${key}`)
+      return found
+    }
+
+    const root = value('root')
+    const missing = ['componentsDir', 'layoutsDir', 'partialsDir']
+      .map(key => `${key}: ${join(root, value(key))}`)
+      .filter(entry => !existsSync(join(app, entry.slice(entry.indexOf(': ') + 2))))
+
+    expect(missing).toEqual([])
+    // The same folder the servers pass to stx (`dev/views.ts`, `production-server.ts`).
+    expect(join(root, value('layoutsDir'))).toBe('resources/views/layouts')
   })
 
   test('what the app needs survives', () => {
@@ -161,6 +228,51 @@ describe('the site-only list', () => {
     // It runs on the download, never on this checkout.
     expect(readFileSync(join(REPO, 'resources/views/index.stx'), 'utf8'))
       .toContain('https://stacksjs.com')
+  })
+})
+
+describe('the template\'s top level', () => {
+  test('every committed path is kept on purpose or removed by a named step', () => {
+    // `ops/production` (the stacksjs.com host's backup operators) and
+    // `.reviewos/` (the framework's release gate) shipped in every new app,
+    // found scaffolding cursio: nothing listed what an app is meant to keep.
+    const listed = Bun.spawnSync(['git', 'ls-tree', '--name-only', 'HEAD'], { cwd: REPO, stdout: 'pipe', stderr: 'pipe' })
+    // A tarball of the repository has no history to ask.
+    if (listed.exitCode !== 0)
+      return
+
+    const removed = new Set<string>([
+      ...SITE_ONLY_PATHS,
+      ...FRAMEWORK_ONLY_PATHS,
+      ...Object.keys(REMOVED_BY_OTHER_STEPS),
+    ])
+    const unaccounted = listed.stdout.toString().split('\n')
+      .filter(entry => entry.length > 0)
+      .filter(entry => !APP_TOP_LEVEL.includes(entry) && !removed.has(entry))
+      // `content/` is listed by what is in it and goes once that is gone.
+      .filter(entry => !SITE_ONLY_PATHS.some(path => path.startsWith(`${entry}/`)) || APP_TOP_LEVEL.includes(entry))
+
+    expect(unaccounted).toEqual([])
+  })
+
+  test('nothing is both kept and removed', () => {
+    const removed = new Set<string>([...SITE_ONLY_PATHS, ...FRAMEWORK_ONLY_PATHS, ...Object.keys(REMOVED_BY_OTHER_STEPS)])
+
+    expect(APP_TOP_LEVEL.filter(entry => removed.has(entry))).toEqual([])
+  })
+
+  test('the steps named for the other removals are in buddy new', () => {
+    const source = readFileSync(CREATE_COMMAND, 'utf8')
+    const missing = Object.entries(REMOVED_BY_OTHER_STEPS)
+      .filter(([, step]) => !source.includes(`${step}(`))
+      .map(([path, step]) => `${path}: ${step}`)
+
+    expect(missing).toEqual([])
+  })
+
+  test('the framework host\'s operations and release gate do not ship', () => {
+    expect(existsSync(join(app, 'ops'))).toBe(false)
+    expect(existsSync(join(app, '.reviewos'))).toBe(false)
   })
 })
 

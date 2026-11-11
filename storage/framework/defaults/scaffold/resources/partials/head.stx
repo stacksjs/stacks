@@ -1,0 +1,31 @@
+{{-- The head every page shares, included by layouts/default.stx.
+
+  Everything that names the site comes from the app's own config: the title
+  from APP_NAME and the canonical URL from APP_URL (via config/app.ts), so a
+  deploy of an untouched app describes itself rather than anyone else.
+
+  A page names itself by declaring `pageTitle`, `pageDescription` or
+  `canonicalPath` in its own server script. A page that declares none of
+  them describes the site. --}}
+<script server>
+import { config } from '@stacksjs/config'
+
+const appName = config.app.name || 'My App'
+
+// APP_URL is often a bare host (`my-app.localhost`), which is not a valid
+// canonical href on its own.
+const rawUrl = String(config.app.url || '').replace(/\/+$/, '')
+const siteUrl = rawUrl && !/^https?:\/\//.test(rawUrl) ? `https://${rawUrl}` : rawUrl
+
+const headTitle = typeof pageTitle !== 'undefined' && pageTitle ? `${pageTitle} - ${appName}` : appName
+const headDescription = typeof pageDescription !== 'undefined' && pageDescription ? pageDescription : `${appName} is up and running.`
+const headPath = typeof canonicalPath !== 'undefined' && canonicalPath ? canonicalPath : '/'
+const canonicalUrl = siteUrl ? `${siteUrl}${headPath}` : ''
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ headTitle }}</title>
+<meta name="description" content="{{ headDescription }}">
+@if(canonicalUrl)
+  <link rel="canonical" href="{{ canonicalUrl }}">
+@endif

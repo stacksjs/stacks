@@ -103,6 +103,14 @@ export const SITE_ONLY_PATHS: readonly string[] = [
   'public/images/logos/visa.png',
   'public/images/logos/visa.svgz',
 
+  // The operations of the machine stacksjs.com runs on, and the framework's
+  // own release gate. `ops/production` backs up and restores that one host by
+  // name. `.reviewos/workflows` runs `.github/scripts/source-release-evidence.ts`
+  // on a self-hosted `stacks-release` runner, and `buddy new` replaces
+  // `.github` with the app's own workflows, so the script is not even there.
+  'ops',
+  '.reviewos',
+
   // The desktop-OS demo.
   'resources/assets/scripts/main.ts',
   'resources/assets/styles/main.css',
@@ -170,6 +178,65 @@ export function applyAppSiteTemplate(root: string): string[] {
 }
 
 const KEPT_ROOTS = new Set(['resources', 'public'])
+
+/**
+ * What a new app keeps of the template's top level, with the reason for the
+ * entries that look like the framework's own.
+ *
+ * `scaffold-site.test.ts` holds this against the repository: a top-level path
+ * committed here later is either added to this list, because an app wants it,
+ * or to one of the lists that remove it. `ops/` and `.reviewos/` reached every
+ * new app because nothing asked that question.
+ */
+export const APP_TOP_LEVEL: readonly string[] = [
+  // Opening the app in a Codespace installs Pantry and runs `./buddy setup`,
+  // which is as true of an app as of the framework.
+  '.devcontainer',
+  '.dockerignore',
+  '.editorconfig',
+  '.env.example',
+  '.gitattributes',
+  // Replaced with the app's own workflows from `defaults/vcs/github`.
+  '.github',
+  '.gitignore',
+  '.security-ignore.json',
+  'AGENTS.md',
+  'CHANGELOG.md',
+  'README.md',
+  'app',
+  'bootstrap',
+  'buddy',
+  'bun.lock',
+  'bunfig.toml',
+  'cloud',
+  'config',
+  'database',
+  'locales',
+  'package.json',
+  'pantry.lock',
+  'public',
+  'resources',
+  'routes',
+  'storage',
+  // Emptied to `tests/setup.ts`.
+  'tests',
+  'tsconfig.json',
+]
+
+/**
+ * Top-level paths `buddy new` deletes outside this module and
+ * `FRAMEWORK_ONLY_PATHS`, each named by the step in `commands/create.ts` that
+ * does it.
+ */
+export const REMOVED_BY_OTHER_STEPS: Readonly<Record<string, string>> = {
+  // Encrypted with this repository's keys, which no app has.
+  '.env.development': 'install',
+  '.env.production': 'install',
+  '.env.staging': 'install',
+  'LICENSE.md': 'removeFrameworkLicense',
+  // Regenerated as `deps.yaml` from `config/deps.ts`.
+  'deps.yml': 'generatePantryDeps',
+}
 
 function parentOf(relative: string): string {
   return relative.includes('/') ? relative.slice(0, relative.lastIndexOf('/')) : ''
