@@ -23,12 +23,50 @@ export interface ModelFieldDisplay {
   unit?: 'ms' | 's'
 }
 
+/** What a status-like word says: settled, ended, under way, or neither. */
+export type ModelBadgeTone = 'positive' | 'negative' | 'pending' | 'neutral'
+
 export interface ModelFormattedValue {
   /** How it is drawn: words, a pill, a link out, a thumbnail, a code font. */
   kind: 'text' | 'badge' | 'link' | 'image' | 'code'
   text: string
   /** Where a link leads, or what an image draws. */
   href?: string
+  /** For a pill: what its word says, for its colour. */
+  tone?: ModelBadgeTone
+}
+
+/** Columns whose value is one word out of a few: drawn as a pill. */
+export const MODEL_BADGE_COLUMNS: ReadonlySet<string> = new Set(['status', 'state', 'type', 'role', 'source', 'plan', 'category', 'kind', 'channel', 'driver', 'priority', 'visibility', 'guard_name', 'provider', 'locale', 'currency'])
+
+const POSITIVE: ReadonlySet<string> = new Set(['active', 'approved', 'completed', 'delivered', 'done', 'enabled', 'healthy', 'live', 'paid', 'published', 'resolved', 'subscribed', 'succeeded', 'success', 'verified'])
+const NEGATIVE: ReadonlySet<string> = new Set(['banned', 'blocked', 'bounced', 'canceled', 'cancelled', 'declined', 'disabled', 'error', 'expired', 'failed', 'inactive', 'rejected', 'revoked', 'suspended', 'unsubscribed'])
+const PENDING: ReadonlySet<string> = new Set(['draft', 'in_progress', 'invited', 'pending', 'processing', 'queued', 'review', 'scheduled', 'trialing', 'unverified'])
+
+/**
+ * What a status-like word says. Only the words that say it: a role or a
+ * plan is a word out of a few too, and "admin" is neither good news nor bad.
+ */
+export function modelBadgeTone(word: unknown): ModelBadgeTone {
+  const said = String(word ?? '').trim().toLowerCase().replace(/[\s-]+/g, '_')
+  if (POSITIVE.has(said))
+    return 'positive'
+  if (NEGATIVE.has(said))
+    return 'negative'
+  return PENDING.has(said) ? 'pending' : 'neutral'
+}
+
+/**
+ * How a cell reads when the model says (`format`), or when its column is one
+ * the dashboard knows as a status-like word. Null when neither, or when
+ * nothing is stored: the caller words those itself.
+ */
+export function modelCellDisplay(column: { name: string, format?: ModelFieldDisplay }, value: unknown, row: Record<string, unknown> = {}): ModelFormattedValue | null {
+  if (column.format)
+    return modelFormattedValue(value, column.format, row)
+  if (MODEL_BADGE_COLUMNS.has(column.name) && typeof value === 'string' && value !== '' && value.length <= 32)
+    return { kind: 'badge', text: titleCase(value), tone: modelBadgeTone(value) }
+  return null
 }
 
 const NUMERIC: ReadonlySet<ModelFieldFormat> = new Set(['bytes', 'duration', 'money', 'number', 'percent'])
@@ -145,7 +183,7 @@ export function modelFormattedValue(value: unknown, display: ModelFieldDisplay, 
       return { kind: 'text', text: new Intl.DateTimeFormat(undefined, options).format(at) }
     }
     case 'badge':
-      return { kind: 'badge', text: titleCase(stored) }
+      return { kind: 'badge', text: titleCase(stored), tone: modelBadgeTone(stored) }
     case 'link': {
       const href = linkTarget(stored.trim())
       // Without the scheme: it is the same on every row and says nothing.

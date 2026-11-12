@@ -1,0 +1,22 @@
+<script client>
+// A status-like word as a pill, coloured by what it says: settled (active,
+// subscribed, paid), ended (inactive, bounced, failed), under way (pending,
+// draft), or neither. One place for the colours, so a status reads the same
+// in a list and on a record's page.
+const text = useReactiveProp('text', '')
+const tone = useReactiveProp('tone', 'neutral')
+
+const TONES: Record<string, string> = {
+  positive: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40 border-green-200 dark:border-green-900',
+  negative: 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-900',
+  pending: 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900',
+  muted: 'text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-white/10 border-transparent',
+  neutral: 'text-neutral-800 dark:text-neutral-100 border-neutral-400 dark:border-neutral-500',
+}
+
+function toneClass(): string {
+  return `inline-flex px-2 py-0.5 font-medium text-xs border rounded-md ${TONES[tone()] ?? TONES.neutral}`
+}
+</script>
+
+<span :class="toneClass()" :data-tone="tone()">{{ text() }}</span>

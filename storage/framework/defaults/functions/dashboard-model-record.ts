@@ -14,7 +14,8 @@
 import { DashboardApiError, dashboardApi } from './dashboard-api'
 import { parseDashboardDate } from './dashboard-dates'
 import type { ModelFieldDisplay } from './dashboard-model-format'
-import { modelColumnIsDate, modelFormattedValue } from './dashboard-model-format'
+import type { ModelBadgeTone } from './dashboard-model-format'
+import { MODEL_BADGE_COLUMNS, modelBadgeTone, modelColumnIsDate, modelFormattedValue } from './dashboard-model-format'
 
 export interface ModelWriteCapabilities {
   create: boolean
@@ -225,6 +226,8 @@ export interface ModelRecordDetail {
   kind: 'text' | 'badge' | 'boolean' | 'json' | 'link' | 'external' | 'image' | 'code'
   /** For a link: the page of the record this one points at, or the address it opens. For an image: what it draws. */
   href?: string
+  /** For a badge: what its word says, for its colour. */
+  tone?: ModelBadgeTone
   /** A boolean's answer, for the icon. */
   yes: boolean
   /** Takes the card's full width: long text and JSON. */
@@ -240,7 +243,7 @@ export interface ModelRecordSection {
 }
 
 /** Columns whose value is one word out of a few: drawn as a badge. */
-const BADGE_COLUMNS = new Set(['status', 'state', 'type', 'role', 'source', 'plan', 'category', 'kind', 'channel', 'driver', 'priority', 'visibility', 'guard_name', 'provider', 'locale', 'currency'])
+const BADGE_COLUMNS = MODEL_BADGE_COLUMNS
 
 function isIdentifier(name: string): boolean {
   return name === 'id' || name === 'uuid' || name.endsWith('_id') || name.endsWith('_uuid')
@@ -287,7 +290,7 @@ function detail(record: ModelRecord, column: ModelColumn, names: ModelRelationNa
     if (!shown)
       return { ...base, value: emptyText(column, label), empty: true, kind: 'text' }
     const kind = shown.kind === 'link' ? 'external' : shown.kind
-    return { ...base, value: shown.text, empty: false, kind, href: shown.href, wide: shown.kind === 'text' && shown.text.length > 80 }
+    return { ...base, value: shown.text, empty: false, kind, href: shown.href, ...(shown.tone ? { tone: shown.tone } : {}), wide: shown.kind === 'text' && shown.text.length > 80 }
   }
   if (column.type === 'boolean') {
     const yes = stored === true || stored === 1 || stored === '1'
@@ -310,7 +313,7 @@ function detail(record: ModelRecord, column: ModelColumn, names: ModelRelationNa
   }
   const value = String(stored)
   if (BADGE_COLUMNS.has(column.name) && value.length <= 32)
-    return { ...base, value: titleCase(value), empty: false, kind: 'badge' }
+    return { ...base, value: titleCase(value), empty: false, kind: 'badge', tone: modelBadgeTone(value) }
   return { ...base, value, empty: false, kind: 'text', wide: value.length > 80 }
 }
 

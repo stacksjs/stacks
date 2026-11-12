@@ -217,7 +217,7 @@ onMount(() => {
                 <span aria-hidden="true" :class="detail.yes ? 'h-5 w-5 text-green-600 dark:text-green-400 i-hugeicons-checkmark-circle-02' : 'h-5 w-5 text-neutral-400 dark:text-neutral-500 i-hugeicons-cancel-circle'"></span>
                 {{ detail.value }}
               </span>
-              <span :if="detail.kind === 'badge'" class="inline-flex px-2 py-0.5 font-medium text-neutral-800 text-xs dark:text-neutral-100 border border-neutral-400 rounded-md dark:border-neutral-500">{{ detail.value }}</span>
+              <ModelBadge :if="detail.kind === 'badge'" :text="detail.value" :tone="detail.tone || 'neutral'" />
               <pre :if="detail.kind === 'json'" class="overflow-x-auto p-3 font-mono text-neutral-800 text-xs dark:text-neutral-200 bg-neutral-50 dark:bg-neutral-900 rounded-lg">{{ detail.value }}</pre>
               <StxLink :if="detail.kind === 'link'" :to="detail.href" class="inline-flex gap-1.5 items-center font-medium text-blue-600 dark:text-blue-400 hover:underline">
                 {{ detail.value }}

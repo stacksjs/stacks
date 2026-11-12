@@ -76,6 +76,10 @@ export default defineModel({
 
   dashboard: {
     columns: ['name', 'memberCount', 'status', 'createdAt'],
+    // A count of members is called what it counts.
+    fields: {
+      memberCount: { label: 'Members' },
+    },
     highlight: true,
   },
 } as const)
