@@ -7,11 +7,11 @@ import { safeGet } from '../../../../resources/functions/dashboard/data'
 import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
 import { dashboardOperationalError } from '../dashboard-response'
 import { type ModelCustomAction, modelActionApplies, modelActions, publicModelAction } from './model-actions'
+import { modelFormFields, reachableRelations } from './model-forms'
 import { isUnmigratedTable } from './model-migration'
 import { recordNames } from './model-options'
-import { belongsToRelations } from './model-relations'
 import type { ModelFieldDisplay } from './model-fields'
-import { humanizeIdentifier, isErasureSubject, isValidModelSlug, type ModelCreateField, type ModelWriteCapabilities, modelColumnDisplay, modelColumnLabel, modelCreateFields, modelFieldProblems, modelListColumns, modelSchemaColumns, modelWritableColumns, modelWriteCapabilities, slugToPascal } from './model-write'
+import { humanizeIdentifier, isErasureSubject, isValidModelSlug, type ModelCreateField, type ModelWriteCapabilities, modelColumnDisplay, modelColumnLabel, modelFieldProblems, modelListColumns, modelSchemaColumns, modelWritableColumns, modelWriteCapabilities, slugToPascal } from './model-write'
 
 /** Models already told, this process, that `dashboard.columns` names a column they lack. */
 const warnedColumns = new Set<string>()
@@ -356,19 +356,11 @@ export default new Action({
     // it points at. One whose feature is off, or that is kept out of the
     // dashboard, stays the plain id it was.
     const reachable = new Set<string>()
-    for (const relation of belongsToRelations(Model)) {
-      const related = await resolveDashboardModel(relation.model).catch(() => null)
-      if (related && typeof related.where === 'function') {
-        reachable.add(relation.model)
-        response.relations[relation.column] = { model: relation.model, slug: relation.slug, label: humanizeIdentifier(relation.model) }
-      }
+    for (const relation of await reachableRelations(Model)) {
+      reachable.add(relation.model)
+      response.relations[relation.column] = { model: relation.model, slug: relation.slug, label: humanizeIdentifier(relation.model) }
     }
-    const formFields = (): ModelCreateField[] => modelCreateFields(Model).map((field) => {
-      if (field.type !== 'relation' || reachable.has(field.relation?.model ?? ''))
-        return field
-      const { relation: _unreachable, ...plain } = field
-      return { ...plain, type: 'number', label: modelColumnLabel(Model, field.name) }
-    })
+    const formFields = (): ModelCreateField[] => modelFormFields(Model, reachable)
     response.createFields = response.writeCapabilities.create ? formFields() : []
     response.updateColumns = response.writeCapabilities.update ? modelWritableColumns(Model) : []
     response.updateFields = response.writeCapabilities.update ? formFields() : []

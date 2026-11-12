@@ -586,6 +586,7 @@ export const actions = {
   'Actions/Dashboard/Models/model-api': '../defaults/app/Actions/Dashboard/Models/model-api.ts',
   'Actions/Dashboard/Models/model-destroy': '../defaults/app/Actions/Dashboard/Models/model-destroy.ts',
   'Actions/Dashboard/Models/model-fields': '../defaults/app/Actions/Dashboard/Models/model-fields.ts',
+  'Actions/Dashboard/Models/model-forms': '../defaults/app/Actions/Dashboard/Models/model-forms.ts',
   'Actions/Dashboard/Models/model-migration': '../defaults/app/Actions/Dashboard/Models/model-migration.ts',
   'Actions/Dashboard/Models/model-options': '../defaults/app/Actions/Dashboard/Models/model-options.ts',
   'Actions/Dashboard/Models/model-related': '../defaults/app/Actions/Dashboard/Models/model-related.ts',

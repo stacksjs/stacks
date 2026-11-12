@@ -6,6 +6,14 @@
  * is all a panel needs: nothing is declared for the dashboard. Each panel is
  * a short table of the newest few with a count, so the page answers "what
  * belongs to this?" without a trip to another list and a filter.
+ *
+ * Where the related model lets the dashboard write its rows, the panel is
+ * also where they are managed: it carries that model's form fields and each
+ * listed row's values, so a row is added, edited and deleted from this page.
+ * Each of those is a write of its own through the related model's own
+ * endpoints. Saving a record and its rows together, all or nothing, is not
+ * offered: a write through a model takes no part in a transaction
+ * (stacksjs/stacks#3269).
  */
 import type { ModelHasRelation } from './model-relations'
 import { safeGet } from '../../../../resources/functions/dashboard/data'
@@ -14,7 +22,8 @@ import { hiddenModelColumns } from '../../../../resources/functions/dashboard/mo
 import { recordNames } from './model-options'
 import { belongsToRelations, hasRelations, modelLabelColumn, pluralizeLabel, relatedForeignKey } from './model-relations'
 import type { ModelFieldDisplay } from './model-fields'
-import { humanizeIdentifier, modelColumnDisplay, modelColumnLabel, modelCreateFields, modelListColumns, modelSchemaColumns, modelWriteCapabilities } from './model-write'
+import { modelFormFields } from './model-forms'
+import { humanizeIdentifier, type ModelCreateField, modelColumnDisplay, modelColumnLabel, modelListColumns, modelSchemaColumns, modelWriteCapabilities } from './model-write'
 
 /** How many of a panel's records the page shows before "View all". */
 export const RELATED_PREVIEW = 5
@@ -47,6 +56,18 @@ export interface RelatedPanel {
   rows: Array<Record<string, unknown>>
   /** A new one can be added from the dashboard, already pointing at this record. */
   canCreate: boolean
+  /** The related model lets the dashboard edit its rows. */
+  canUpdate: boolean
+  /** The related model lets the dashboard delete its rows. */
+  canDestroy: boolean
+  /**
+   * What "Add" and the pencil ask for: the related model's own form fields,
+   * without the link back to this record, which is not a choice here. Empty
+   * when the panel offers neither.
+   */
+  fields: ModelCreateField[]
+  /** What an edit starts from: each listed row's stored values for those fields, by row id. */
+  values: Record<string, Record<string, unknown>>
 }
 
 interface SummaryColumn extends RelatedPanelColumn {
@@ -181,6 +202,18 @@ export async function relatedPanel(parentName: string, parentId: number, relatio
 
   const label = humanizeIdentifier(relation.model)
   const field = belongsToRelations(Related).find(candidate => candidate.column === foreignKey)?.field ?? null
+  const capabilities = modelWriteCapabilities(Related)
+  const form = modelFormFields(Related, reachable)
+  // Only when the form can be told which record it starts from.
+  const canCreate = Boolean(field) && capabilities.create && form.some(entry => entry.name === field)
+  // The link back to this record is every row's, and moving a row to another
+  // record is not what a panel on this one is for.
+  const fields = canCreate || capabilities.update ? form.filter(entry => entry.name !== field && snakeCase(entry.name) !== foreignKey) : []
+  const values: Record<string, Record<string, unknown>> = {}
+  if (capabilities.update) {
+    for (const row of list)
+      values[String(safeGet(row, 'id', ''))] = Object.fromEntries(fields.map(entry => [snakeCase(entry.name), safeGet(row, snakeCase(entry.name), null)]))
+  }
   return {
     kind: relation.kind,
     model: relation.model,
@@ -193,8 +226,11 @@ export async function relatedPanel(parentName: string, parentId: number, relatio
     // The id column shows "#12", not a bare number in a text cell.
     columns: columns.map(({ relation: _named, ...column }) => column.key === 'id' ? { ...column, key: 'id_label' } : column),
     rows,
-    // Only when the form can be told which record it starts from.
-    canCreate: Boolean(field) && modelWriteCapabilities(Related).create && modelCreateFields(Related).some(entry => entry.name === field),
+    canCreate,
+    canUpdate: capabilities.update && fields.length > 0,
+    canDestroy: capabilities.destroy,
+    fields,
+    values,
   }
 }
 
