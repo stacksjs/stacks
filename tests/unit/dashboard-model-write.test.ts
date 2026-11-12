@@ -162,11 +162,11 @@ describe('dashboard generic model writes', () => {
     expect(record).toContain('fields: data.updateFields ?? [],')
     // Creating is a page of its own; the browser only links to it.
     expect(view).not.toContain('<CreateRecordModal')
-    expect(view).toContain('navigate(modelRecordCreateHref(slug()))')
+    expect(view).toContain('navigate(modelRecordCreateHref(slug(), home() || undefined))')
     expect(record).toContain('if (reason instanceof DashboardApiError)')
     expect(record).toContain('fields: data.createFields ?? []')
     expect(view).not.toContain('<EditRecordModal')
-    expect(view).toContain('navigate(modelRecordEditHref(slug(), String(row.id)))')
+    expect(view).toContain('navigate(modelRecordEditHref(slug(), String(row.id), { from: home() || undefined }))')
     expect(view).toContain('<ModelRecordActions')
     expect(view).toContain('right-0 sticky z-20')
     expect(view).toContain('right-0 sticky z-10')

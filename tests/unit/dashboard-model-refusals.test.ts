@@ -239,9 +239,9 @@ describe('the pages show it', () => {
       expect(source(`${components}/UI/${control}.stx`)).toContain(':aria-invalid="liveError() ? \'true\' : null"')
   })
 
-  it('the delete confirmation is in plain words, in all three places', () => {
+  it('the delete confirmation is in plain words, in every place', () => {
     const components = 'storage/framework/defaults/resources/components/Dashboard'
-    for (const path of ['Data/DataRecords.stx', 'Models/ModelRecordDetail.stx', 'Models/ModelRecordsDashboard.stx']) {
+    for (const path of ['Data/ActivityLog.stx', 'Models/ModelRecordDetail.stx', 'Models/ModelRecordsDashboard.stx']) {
       const page = source(`${components}/${path}`)
       expect(page).toContain('modelDeleteWarning(')
       expect(page).not.toContain('soft deletes and observers')

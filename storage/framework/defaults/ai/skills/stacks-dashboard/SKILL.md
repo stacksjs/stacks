@@ -1,6 +1,6 @@
 ---
 name: stacks-dashboard
-description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 424 built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
+description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 426 built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,7 +8,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Dashboard
 
-The Stacks admin dashboard provides a full-featured admin panel with 100+ route views, 424 components, and a multi-section layout.
+The Stacks admin dashboard provides a full-featured admin panel with 100+ route views, 426 components, and a multi-section layout.
 
 ## Key Paths
 - Dashboard components: `storage/framework/defaults/resources/components/Dashboard/`
@@ -210,10 +210,10 @@ against `taggables`, which is a different table from `tags`.
 
 ### Data Management
 - `/data/dashboard` - data overview
-- `/data/users` - user management
-- `/data/subscribers` - subscriber management
-- `/data/teams` - team management
-- `/data/activity` - persisted activity
+- `/data/users`, `/data/subscribers`, `/data/teams` - the model's own list
+  under the page's title and stats (see "Users, Teams and Subscribers are the
+  model's list")
+- `/data/activity` - persisted activity, read-only (`Data/ActivityLog.stx`)
 - `/models`, `/models/{model}` - generic model registry and explorer
 - `/notifications/dashboard`, `/notifications/history` - notification operations
 
@@ -1138,16 +1138,61 @@ confirmation says this before the button is pressed; the response carries
 nothing refers to is still simply deleted. Every other model is still refused
 with the reason.
 
-An anonymized account is stored as `[erased]` / `erased-<id>`. The Users list
-shows it as "Anonymized user" with an "Anonymized" badge, and its own page
-carries a note, using `anonymizedRows('User', rows)` from `@stacksjs/orm`,
-which asks the erasure plan whether a row's personal columns hold what
-erasure writes. An anonymized account can be viewed and nothing else: its row
+An anonymized account is stored as `[erased]` / `erased-<id>`. A list never
+shows those placeholders: the first erased column of the row reads
+"Anonymized user" and the others "Removed", and its own page carries a note.
+The list endpoint sends `anonymizedIds` (from `anonymizedRows('User', rows)`
+in `@stacksjs/orm`, which asks the erasure plan whether a row's personal
+columns hold what erasure writes) and, when there are any, `anonymizedColumns`
+(from `personalColumns('User')`, narrowed to the columns the list is sent, so
+a hidden password is never named). An anonymized account can be viewed and nothing else: its row
 loses the pencil and trash (the table's per-row `when`), its page has no Edit
 or Delete, and its edit address explains why there is no form. That is the
 dashboard's choice of what to offer, not a rule of the endpoints: deleting
 one again changes nothing, and a row given a real name and email again is an
 account again.
+
+### Users, Teams and Subscribers are the model's list
+
+`/data/users`, `/data/teams` and `/data/subscribers` used to be a second,
+hand-built list of a model that already had one, and the two drifted: row
+actions, selection, bulk actions, action forms, column choice and filters
+existed on `/models/{model}` and not where the sidebar leads, and the
+hand-built pages read only the newest 100 rows. They are now
+`Data/DataModelRecords.stx` (`mode="users|teams|subscribers"`), which hosts
+`Models/ModelRecordsDashboard.stx` (stacksjs/stacks#3277). Change the columns,
+labels, formats and actions on the model's `dashboard` block, not on the page.
+
+The list takes four props when it is hosted: `model` (the slug, instead of the
+last part of the address), `heading`, `description`, and `home` (where its
+create, invite, view and edit links lead, so `/data/users/7` and not
+`/models/user/7`). It has a `summary` slot above the search, where the page
+puts its stat cards, and it emits `changed` after a delete, a bulk run that
+did something, or one of the model's actions, so the page reads its numbers
+again. The numbers come from the page's old endpoint asked for them alone:
+`GET /api/dashboard/users?only=stats` reads no rows (`statsOnly(request)` in
+`Data/data-records.ts`; `fetchDashboardStats(mode)` on the client).
+
+Two stx behaviours shape this, and both fail silently:
+
+- A prop bound by a parent client component is empty while the child is being
+  set up and bound by the time it is mounted. The list's first load is in
+  `onMount`; loaded sooner, it asked for a model named after the host's own
+  address ("No ORM model named Users").
+- What a page puts in another component's slot is read against that
+  component's names first. A `page` in the hosting page was the list's page
+  number and the first card read "Total undefined". The hosting page's names
+  are deliberately its own (`recordsPage`, `pageStats`, `loadPageStats`);
+  `tests/unit/dashboard-data-pages.test.ts` fails if one collides.
+
+A status-like column (`status`, `role`, `state`, ... : `MODEL_BADGE_COLUMNS`)
+is a pill in a list as it is on a record's page, both drawn by
+`Models/ModelBadge.stx`. `modelBadgeTone(word)` colours it only when the word
+says so: active, paid, published are positive; inactive, failed, cancelled
+negative; pending, draft, queued pending; anything else (a role, a plan)
+neutral. A field's own `format` still comes first (`modelCellDisplay`).
+
+The Activity log is not a list of editable records and stays its own page.
 
 ### Users are invited, not typed in
 

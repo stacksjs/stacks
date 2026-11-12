@@ -15,15 +15,19 @@ describe('the invitation in the dashboard', () => {
   const components = 'storage/framework/defaults/resources/components/Dashboard'
 
   it('the Users page offers "Invite user", not "Create user"', () => {
-    const list = source(`${components}/Data/DataRecords.stx`)
-    expect(list).toContain('const createLabel = derived(() => canInvite() ? `Invite ${page().one}` : `Create ${page().one}`)')
-    expect(list).toContain('navigate(canInvite() ? userInviteHref(`/data/${mode()}`) : modelRecordCreateHref(modelSlug(), `/data/${mode()}`))')
+    // The Users page is the model's own list (stacksjs/stacks#3277): one
+    // button, which says what it adds, and comes back to wherever the list is.
+    const list = source(`${components}/Models/ModelRecordsDashboard.stx`)
+    expect(list).toContain(':if="writeCapabilities().create && !writeCapabilities().invite"')
+    expect(list).toContain(':if="writeCapabilities().invite"')
+    expect(list).toContain('<span :text="\'Invite \' + oneRecord()"></span>')
+    expect(list).toContain('<span :text="\'Create \' + oneRecord()"></span>')
+    expect(list).toContain('navigate(userInviteHref(listHref()))')
+    expect(list).toContain('const listHref = derived(() => home() || `/models/${slug()}`)')
+    expect(source(`${components}/Data/DataModelRecords.stx`)).toContain(':home="\'/data/\' + pageMode()"')
   })
 
-  it('the model browser and the create page lead to it too', () => {
-    const browser = source(`${components}/Models/ModelRecordsDashboard.stx`)
-    expect(browser).toContain(':if="writeCapabilities().invite"')
-    expect(browser).toContain('navigate(userInviteHref(`/models/${slug()}`))')
+  it('the create page leads to it too', () => {
     const create = source(`${components}/Models/ModelRecordCreate.stx`)
     expect(create).toContain(':title="modelName() + \' records are added by invitation\'"')
   })

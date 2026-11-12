@@ -12,11 +12,10 @@ function source(path: string): string {
 }
 
 describe('a delete that may anonymize says so', () => {
-  it('all three delete confirmations pass it on, and report the outcome', () => {
+  it('both delete confirmations pass it on, and report the outcome', () => {
     const components = 'storage/framework/defaults/resources/components/Dashboard'
-    const list = source(`${components}/Data/DataRecords.stx`)
-    expect(list).toContain('return modelDeleteWarning(name, capabilities().anonymize)')
-    expect(list).toContain('const outcome = await deleteModelRecord(modelSlug(), row.id)')
+    // The Users page is the model's own list now (stacksjs/stacks#3277), so
+    // there are two places a user is deleted from, not three.
     const page = source(`${components}/Models/ModelRecordDetail.stx`)
     expect(page).toContain(':description="modelDeleteWarning(title() || modelName(), Boolean(record()?.writeCapabilities.anonymize))"')
     expect(page).toContain('const outcome = await deleteModelRecord(slug(), recordId())')
@@ -29,10 +28,16 @@ describe('a delete that may anonymize says so', () => {
 describe('an anonymized account is named for what it is', () => {
   const components = 'storage/framework/defaults/resources/components/Dashboard'
 
-  it('in the Users list, not shown as its stored placeholders', () => {
-    const list = source(`${components}/Data/DataRecords.stx`)
-    expect(list).toContain('...(anonymized && { name: \'Anonymized user\', email: \'Name and email removed\' }),')
-    expect(list).toContain('verificationLabel: anonymized ? \'Anonymized\' : row.emailVerifiedAt ? \'Verified\' : \'Unverified\',')
+  it('in the list, not shown as its stored placeholders', () => {
+    // The first column erasure emptied names the row; the rest say removed.
+    const list = source(`${components}/Models/ModelRecordsDashboard.stx`)
+    expect(list).toContain('if (!isAnonymized(row) || !anonymizedColumns().includes(column.name))')
+    expect(list).toContain('return first?.name === column.name ? `Anonymized ${oneRecord()}` : \'Removed\'')
+    expect(list).toContain('anonymizedColumns.set(data.anonymizedColumns ?? [])')
+    // Which columns those are is the erasure rules' to say, not the page's.
+    const show = source('storage/framework/defaults/app/Actions/Dashboard/Models/ModelShowAction.ts')
+    expect(show).toContain('const personal = await personalColumns(modelName).catch(() => [] as string[])')
+    expect(show).toContain('response.anonymizedColumns = personal.filter(column => response.columns.includes(column))')
   })
 
   it('on its own page, with a note saying what happened', () => {
@@ -47,20 +52,7 @@ describe('an anonymized account can be viewed and nothing else', () => {
   // again would only anonymize what already is (stacksjs/stacks#3254).
   const components = 'storage/framework/defaults/resources/components/Dashboard'
 
-  it('its row in the Users list keeps the eye and loses the pencil and trash', () => {
-    const list = source(`${components}/Data/DataRecords.stx`)
-    expect(list).toContain('const NOT_ANONYMIZED = { key: \'anonymized\', equals: false }')
-    // The table shows such an action only where the row holds exactly false, so
-    // every row of every mode has to carry the flag or it would lose its actions.
-    const rows = list.slice(list.indexOf('const recordRows = derived('), list.indexOf('async function loadRecords()'))
-    expect(rows).toContain('const anonymized = mode() === \'users\' && row.anonymized === true')
-    expect(rows).toMatch(/\n {4}anonymized,\n/)
-    const table = source(`${components}/UI/Table.stx`)
-    expect(table).toContain('return !action.when || rawValue(row, action.when.key) === action.when.equals')
-    expect(table).toContain(':if="showsRowAction(row, action)"')
-  })
-
-  it('its row in the model browser does too', () => {
+  it('its row in the list keeps the eye and loses the pencil and trash', () => {
     const browser = source(`${components}/Models/ModelRecordsDashboard.stx`)
     expect(browser).toContain('anonymizedIds.set((data.anonymizedIds ?? []).map(String))')
     expect(browser).toContain(':canUpdate="writeCapabilities().update && !isAnonymized(row)"')

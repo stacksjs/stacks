@@ -281,7 +281,9 @@ describe('how a stored value reads', () => {
   })
 
   it('a pill, a link out, a picture, a code font', () => {
-    expect(modelFormattedValue('in_review', { format: 'badge' })).toEqual({ kind: 'badge', text: 'In Review' })
+    // A pill carries what its word says, for its colour: this one says nothing either way.
+    expect(modelFormattedValue('in_review', { format: 'badge' })).toEqual({ kind: 'badge', text: 'In Review', tone: 'neutral' })
+    expect(modelFormattedValue('active', { format: 'badge' })).toEqual({ kind: 'badge', text: 'Active', tone: 'positive' })
     expect(modelFormattedValue('https://example.com/pricing/', { format: 'link' })).toEqual({ kind: 'link', text: 'example.com/pricing', href: 'https://example.com/pricing/' })
     expect(modelFormattedValue('ava@example.com', { format: 'link' })).toEqual({ kind: 'link', text: 'ava@example.com', href: 'mailto:ava@example.com' })
     expect(modelFormattedValue('https://example.com/a.png', { format: 'image' })).toEqual({ kind: 'image', text: 'https://example.com/a.png', href: 'https://example.com/a.png' })
@@ -362,7 +364,7 @@ describe('the fields the shipped models describe', () => {
     expect(wrong).toEqual([])
     // The ones whose stored unit is certain. A model added here by mistake
     // with nothing declared would pass the check above without being read.
-    expect(described.map(([name]) => name).sort()).toEqual(['CardAttachment', 'Deployment', 'QueryLog', 'Request', 'User'])
+    expect(described.map(([name]) => name).sort()).toEqual(['CardAttachment', 'Deployment', 'QueryLog', 'Request', 'Team', 'User'])
     expect(modelColumnDisplay(models.Deployment, 'duration')).toEqual({ format: 'duration', unit: 's' })
     expect(modelColumnDisplay(models.Request, 'duration_ms')).toEqual({ format: 'duration' })
     expect(modelColumnLabel(models.Request, 'duration_ms')).toBe('Duration')
@@ -378,7 +380,7 @@ describe('the pages', () => {
 
   it('the list draws a cell as its format says, and lines amounts up on the right', async () => {
     const list = await read(`${components}/ModelRecordsDashboard.stx`)
-    expect(list).toContain('return column.format ? modelFormattedValue(row[column.name], column.format, row) : null')
+    expect(list).toContain('return modelCellDisplay(column, row[column.name], row)')
     expect(list).toContain('const align = modelColumnIsNumeric(column) ? \'text-right tabular-nums\' : \'text-left\'')
     expect(list).toContain('<a :if="cellKind(row, column) === \'link\'" :href="cellHref(row, column)" target="_blank" rel="noopener noreferrer"')
     expect(list).toContain('<img :if="cellKind(row, column) === \'image\'" :src="cellHref(row, column)" alt="" loading="lazy"')

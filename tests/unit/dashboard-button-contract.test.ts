@@ -302,7 +302,7 @@ describe('dashboard button contract', () => {
       'Buddy/BuddyAssistant.stx',
       'Models/ModelsOverview.stx',
       'Management/AssignmentDrawer.stx',
-      'Data/DataRecords.stx',
+      'Data/ActivityLog.stx',
       'Releases/ReleaseDashboard.stx',
       'Teams/TeamPeopleDashboard.stx',
     ]

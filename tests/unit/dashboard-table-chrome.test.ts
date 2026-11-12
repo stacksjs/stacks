@@ -6,11 +6,16 @@ import { join, resolve } from 'node:path'
  * The chrome around a dashboard table, as the Users and Teams pages showed it:
  * a header in its column's code font, a table framed inside a card that was
  * already framed, a pager for five rows, and stats that left a hole.
+ *
+ * Those two pages are the model's own list now (stacksjs/stacks#3277). What
+ * is left of the shared table on a data page is the Activity log; the stats
+ * row is the hosting page's.
  */
 
 const read = (file: string) => readFileSync(resolve('storage/framework/defaults/resources/components/Dashboard', file), 'utf8')
 const table = read('UI/Table.stx')
-const records = read('Data/DataRecords.stx')
+const records = read('Data/ActivityLog.stx')
+const hosted = read('Data/DataModelRecords.stx')
 
 /** The body of a function in a component's script, up to its closing brace. */
 function body(source: string, name: string): string {
@@ -28,7 +33,7 @@ describe('dashboard table chrome', () => {
   test('a table can leave the frame to the card it sits in', () => {
     expect(table).toContain(`const framed = useReactiveProp('framed', true)`)
     expect(table).toMatch(/:class="framed\(\) \? 'border border-stone-200\/80 rounded-xl/)
-    for (const file of ['Data/DataRecords.stx', 'Content/SeoDashboard.stx', 'Auth/AccessTokens.stx', 'App/SourceInventory.stx', 'App/RequestsOverview.stx'])
+    for (const file of ['Data/ActivityLog.stx', 'Content/SeoDashboard.stx', 'Auth/AccessTokens.stx', 'App/SourceInventory.stx', 'App/RequestsOverview.stx'])
       expect(read(file), file).toContain(':framed="false"')
   })
 
@@ -40,8 +45,9 @@ describe('dashboard table chrome', () => {
   test('the records page counts in plain words and fills its stats row', () => {
     expect(records).not.toContain('loaded records')
     expect(records).toContain('{{ countLabel() }}')
-    expect(records).toContain(`page().cards === 3 ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-2 lg:grid-cols-4'`)
-    expect(records).toContain(`recorded('updatedAt', 'Updated', 'Not since registering')`)
+    // Three cards fill three columns, four fill four: no hole either way.
+    expect(records).toContain('<div class="grid gap-4 grid-cols-1 sm:grid-cols-3">')
+    expect(hosted).toContain(`recordsPage().cards === 3 ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-2 lg:grid-cols-4'`)
   })
 })
 
@@ -115,25 +121,34 @@ describe('dashboard row actions', () => {
     expect(drifted).toEqual([])
   })
 
-  test('the Users, Teams and Subscribers tables offer actions their model allows', () => {
-    // Activity too: its model declares no write routes, so its rows get the eye alone.
-    expect(records).toContain(`MODEL_SLUGS: Record<DataMode, string> = { activity: 'activity', users: 'user', teams: 'team', subscribers: 'subscriber' }`)
-    // The pencil and trash also leave an anonymized account's row (stacksjs/stacks#3254).
-    expect(records).toContain(`...(capabilities().update ? [{ action: 'edit', label: 'Edit', when: NOT_ANONYMIZED }] : [])`)
-    expect(records).toContain(`...(capabilities().destroy ? [{ action: 'delete', label: 'Delete', when: NOT_ANONYMIZED }] : [])`)
-    expect(records.match(/:row-actions="rowActions\(\)"/g)?.length).toBe(2)
+  test('the Users, Teams and Subscribers pages are the model\'s own list, with its actions', () => {
+    // Three hand-built lists became one (stacksjs/stacks#3277): each page says
+    // which model, and every row action, selection and form is the list's.
+    for (const page of ['users', 'teams', 'subscribers'])
+      expect(readFileSync(resolve(`storage/framework/defaults/views/dashboard/data/${page}.stx`), 'utf8')).toContain(`<DataModelRecords mode="${page}" />`)
+    expect(hosted).toContain('users: { model: \'user\',')
+    expect(hosted).toContain('teams: { model: \'team\',')
+    expect(hosted).toContain('subscribers: { model: \'subscriber\',')
+    expect(hosted).toContain(':model="recordsPage().model"')
+    expect(hosted).not.toContain('<Table')
+    // The Activity log is not a list of editable records: its model declares
+    // no write routes, so its rows get the eye alone unless the model says more.
+    expect(records).toContain(`...(capabilities().update ? [{ action: 'edit', label: 'Edit' }] : [])`)
+    expect(records).toContain(`...(capabilities().destroy ? [{ action: 'delete', label: 'Delete' }] : [])`)
+    expect(records.match(/:row-actions="rowActions\(\)"/g)?.length).toBe(1)
   })
 
   test('the eye and the pencil each open a page of the record\'s own, not a dialog', () => {
     const detail = read('Models/ModelRecordDetail.stx')
     const edit = read('Models/ModelRecordEdit.stx')
     const browser = read('Models/ModelRecordsDashboard.stx')
-    // From a list page, with the way back to it.
-    expect(records).toContain('navigate(modelRecordHref(modelSlug(), payload.row.id, `/data/${mode()}`))')
-    expect(records).toContain('navigate(modelRecordEditHref(modelSlug(), payload.row.id, { from: `/data/${mode()}` }))')
-    // From the model browser, to the same two pages.
-    expect(browser).toContain('navigate(modelRecordHref(slug(), String(row.id)))')
-    expect(browser).toContain('navigate(modelRecordEditHref(slug(), String(row.id)))')
+    // From the Activity log, with the way back to it.
+    expect(records).toContain('navigate(modelRecordHref(MODEL, payload.row.id, HOME))')
+    expect(records).toContain('navigate(modelRecordEditHref(MODEL, payload.row.id, { from: HOME }))')
+    // From the model's list, to the same two pages, back to wherever it is hosted.
+    expect(browser).toContain('navigate(modelRecordHref(slug(), String(row.id), home() || undefined))')
+    expect(browser).toContain('navigate(modelRecordEditHref(slug(), String(row.id), { from: home() || undefined }))')
+    expect(hosted).toContain(':home="\'/data/\' + pageMode()"')
     // From the record page, Edit comes back to it.
     expect(detail).toContain(`via: 'view'`)
     expect(readFileSync(resolve('storage/framework/defaults/views/dashboard/models/[model]/[id].stx'), 'utf8')).toContain('<ModelRecordDetail />')
@@ -160,20 +175,22 @@ describe('dashboard row actions', () => {
   })
 
   test('the Users, Teams and Subscribers pages offer a way to add one where the model allows it', () => {
-    // Teams and Subscribers get "Create", which opens the model's form. Users
-    // gets "Invite user": a new user needs a password no form can collect, so
-    // the account is created and its holder is mailed a link to choose one.
-    expect(records).toContain('const canCreate = derived(() => Boolean(modelSlug()) && (capabilities().create || capabilities().invite))')
-    expect(records).toContain('const createLabel = derived(() => canInvite() ? `Invite ${page().one}` : `Create ${page().one}`)')
-    expect(records).toContain('<Button :if="canCreate()" variant="primary" @click="createRecord">')
-    expect(records).toContain('{{ createLabel() }}')
-    expect(records).toContain('navigate(canInvite() ? userInviteHref(`/data/${mode()}`) : modelRecordCreateHref(modelSlug(), `/data/${mode()}`))')
+    // Teams and Subscribers get "Create team", which opens the model's form.
+    // Users gets "Invite user": a new user needs a password no form can
+    // collect, so the account is created and its holder is mailed a link to
+    // choose one. Both are the list's own buttons, named for the model.
+    const browser = read('Models/ModelRecordsDashboard.stx')
+    expect(browser).toContain(':if="writeCapabilities().create && !writeCapabilities().invite"')
+    expect(browser).toContain('<span :text="\'Create \' + oneRecord()"></span>')
+    expect(browser).toContain(':if="writeCapabilities().invite"')
+    expect(browser).toContain('<span :text="\'Invite \' + oneRecord()"></span>')
+    expect(browser).toContain('navigate(userInviteHref(listHref()))')
   })
 
   test('creating a record is a page too, opened from the model browser', () => {
     const create = read('Models/ModelRecordCreate.stx')
     const browser = read('Models/ModelRecordsDashboard.stx')
-    expect(browser).toContain('navigate(modelRecordCreateHref(slug()))')
+    expect(browser).toContain('navigate(modelRecordCreateHref(slug(), home() || undefined))')
     expect(browser).not.toContain('CreateRecordModal')
     expect(readFileSync(resolve('storage/framework/defaults/views/dashboard/models/[model]/create.stx'), 'utf8')).toContain('<ModelRecordCreate />')
     expect(create).toContain('<nav aria-label="Breadcrumb"')
