@@ -3189,6 +3189,34 @@ export async function resolveActionHandler(handlerPath: string): Promise<(reques
   return request => handler(request as unknown as EnhancedRequest)
 }
 
+/**
+ * The action behind each handler string that has been resolved, for
+ * {@link resolveActionValidations}. Resolving hands back only the function a
+ * route runs, which is right for running one and says nothing about what it
+ * takes.
+ */
+const namedActions = new Map<string, RouterAction>()
+
+/**
+ * What an action named by its handler string takes as input: its own
+ * `validations`, or nothing when it declares none.
+ *
+ * For code that has to ask a person for an action's input before running it.
+ * The dashboard does, for a model's `dashboard.actions`: an action that
+ * validates a `reason` is given a form with a reason in it. The rules are
+ * the action's own objects, the ones {@link resolveActionHandler} checks the
+ * request against, so what is asked for and what is enforced cannot differ.
+ *
+ * Route parameters are part of an action's input too. Which of these are
+ * parameters depends on the route that runs it, so that is the caller's to
+ * leave out.
+ */
+export async function resolveActionValidations(handlerPath: string): Promise<ActionValidations | undefined> {
+  // Resolving loads the action, and refuses anything that is not one.
+  await resolveActionHandler(handlerPath)
+  return namedActions.get(handlerPath)?.validations
+}
+
 async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteHandlerFn> {
   assertSafeHandlerPath(handlerPath)
   let modulePath = handlerPath
@@ -3201,6 +3229,7 @@ async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteH
     const action = (await provided()).default as RouterAction | undefined
     if (!action || typeof action.handle !== 'function')
       throw new Error(`Action '${handlerPath}' has no default export with a handle() method`)
+    namedActions.set(handlerPath, action)
     return wrapAction(action, handlerPath)
   }
 
@@ -3294,6 +3323,7 @@ async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteH
       throw new Error(`Action '${handlerPath}' has no handle() method. Got: ${typeof action.handle}`)
     }
 
+    namedActions.set(handlerPath, action)
     return wrapAction(action, handlerPath)
   }
   catch (importError) {

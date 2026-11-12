@@ -113,6 +113,22 @@ describe('resolveActionHandler', () => {
     expect(JSON.stringify(await answer.json())).toContain('Already shipped.')
   })
 
+  it('says what a named action takes: its own validations', async () => {
+    const { resolveActionValidations } = await import('../src')
+
+    const validations = await resolveActionValidations('Actions/ResolveTest/Validated')
+    expect(Object.keys(validations ?? {})).toEqual(['reason'])
+    // The action's own rule, the one the request is checked against.
+    expect(validations!.reason!.rule.validate('no').valid).toBe(false)
+    expect(validations!.reason!.rule.validate('damaged in transit').valid).toBe(true)
+    expect(validations!.reason!.message).toBe('A reason is required.')
+
+    // Nothing, for an action that declares none.
+    expect(await resolveActionValidations('Actions/ResolveTest/Plain')).toBeUndefined()
+    // And the same refusals as running one.
+    await expect(resolveActionValidations('Jobs/ShipOrder')).rejects.toThrow('does not name an action')
+  })
+
   it('refuses anything that is not an action', async () => {
     const { resolveActionHandler } = await import('../src')
 
