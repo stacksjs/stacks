@@ -492,6 +492,25 @@ The server side is one default action, `Actions/Desktop/UpdateFeedAction`, mount
 (204 when `?current=` is already that version, 404 when nothing was published). Override the action in
 `app/Actions/Desktop/UpdateFeedAction.ts`, or mount it elsewhere in `routes/api.ts`.
 
+The artifacts are served by a second default action beside it, `Actions/Desktop/UpdateArtifactAction`, at
+`/api/updates/files/{channel}/{target}/{version}/{file}` (`target` is `<platform>-<arch>`). A release writes
+that URL into the manifest and release.json, derived from `feedUrl`:
+
+```
+https://fettler.org/api/updates/files/stable/darwin-arm64/0.4.0/Fettler-0.4.0-arm64.zip
+```
+
+So a release on any disk can be downloaded with no further config, the default private local disk included
+(nothing else serves `storage/app` over HTTP). The action streams from the disk with `content-length` and byte
+ranges, and only ever reads a key of the artifact shape under `updates.prefix`. Set `updates.artifactBaseUrl`
+only when a bucket or CDN serves the disk itself: artifacts are then downloaded from
+`<artifactBaseUrl>/<prefix>/<channel>/<platform>-<arch>/<version>/<file>` and the route is not used.
+
+The released artifacts must be on the disk the deployed server reads. With the local disk that means
+releasing on the server, or copying `storage/app/<prefix>` to it. `release:desktop` refuses an artifact URL on
+a loopback, `.localhost`, `.test` or `.local` host, since no installed app could download it;
+`DESKTOP_RELEASE_ALLOW_LOCAL_URL=1` lets one through to rehearse against a local server.
+
 In the app, the launcher checks once the window is up and every `updates.checkEveryHours` (default 24). The page
 drives it at `/__desktop/update` (cookie required): `GET` is the status, `POST { action: 'check' }` asks the feed,
 and `POST { action: 'install', acknowledge? }` installs. Installing verifies the manifest signature, the size and

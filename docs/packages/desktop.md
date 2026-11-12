@@ -70,6 +70,13 @@ verifies the manifest's signature and the download's SHA-256 before installing: 
 macOS after checking the new bundle is signed by the same team, the MSI on Windows, a replaced
 AppImage on Linux, and a notice for deb and rpm installs.
 
+The artifacts themselves are served by the route beside the feed,
+`/api/updates/files/{channel}/{target}/{version}/{file}` (`Actions/Desktop/UpdateArtifactAction`),
+and a release writes that URL into the manifest, derived from `feedUrl`. It streams from the
+updates disk with byte ranges, so a release on the default local disk can be downloaded with no
+bucket. Set `webview.updates.artifactBaseUrl` when a bucket or CDN serves the disk itself.
+`release:desktop` refuses an artifact URL on a loopback or development host.
+
 The support matrix below is about the older framework desktop driver. Web view apps were built,
 launched and exercised on macOS arm64; the Windows and Linux agents are cross-compiled but have
 not been run on those systems by the framework's own checks. The `stacks-desktop` skill has the

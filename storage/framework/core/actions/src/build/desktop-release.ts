@@ -6,12 +6,14 @@ import { basename, join, resolve } from 'node:path'
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
 import {
+  artifactUrlProblem,
   compareVersions,
   DEFAULT_UPDATE_PREFIX,
   describeArtifact,
   developerIdProblem,
   loadWebviewDesktop,
   publishDesktopUpdate,
+  publishedArtifactUrl,
   releaseArtifactNames,
   releaseVersionProblem,
   resolveDmgPackaging,
@@ -42,6 +44,13 @@ import { imageDmg, notarizeAndStaple, notaryArguments } from './notarize'
  * - linux: the AppImage (what an installed app updates from), and the deb and
  *   rpm beside it.
  *
+ * Artifact URLs go into a signed manifest, so they are settled first: under
+ * `webview.updates.artifactBaseUrl` when a bucket or CDN serves the disk, else
+ * through the route beside the feed (`<feedUrl>/files/...`), which streams
+ * from any disk. A URL on this machine is refused: no installed app could
+ * download from it. `DESKTOP_RELEASE_ALLOW_LOCAL_URL=1` lets one through, for
+ * rehearsing a release against a local server.
+ *
  * `DESKTOP_RELEASE_DRY_RUN=1` does all of it except notarizing and uploading,
  * and writes the signed manifests to the release folder instead.
  */
@@ -54,6 +63,7 @@ if (!config) throw new Error('config/desktop.ts has no webview section.')
 if (!config.updates) throw new Error('config/desktop.ts has no webview.updates: a release needs the feed URL and the public keys the app trusts.')
 
 const dryRun = process.env.DESKTOP_RELEASE_DRY_RUN === '1'
+const updates = config.updates
 const channel = process.env.DESKTOP_RELEASE_CHANNEL || config.updates.channel || 'stable'
 const prefix = config.updates.prefix ?? DEFAULT_UPDATE_PREFIX
 const output = resolve(root, config.output)
@@ -92,6 +102,9 @@ const store: UpdateStore = dryRun
   ? { read: async () => null, write: async () => {}, publicUrl: async key => `https://dry-run.invalid/${key}` }
   : await storageUpdateStore(config.updates.disk)
 
+const artifactUrl = (location: { platform: string, architecture: string, channel: string, prefix: string }, file: string): Promise<string> =>
+  publishedArtifactUrl({ store, artifactBaseUrl: updates.artifactBaseUrl, feedUrl: updates.feedUrl, ...location }, config.version, basename(file))
+
 interface Planned {
   target: DesktopTargetName
   directory: string
@@ -111,6 +124,11 @@ for (const item of build.targets) {
 
   // A feed never goes backwards and never serves two builds under one number.
   const existing = await store.read(updateManifestKey(location))
+  const unreachable = artifactUrlProblem(await artifactUrl(location, names.update))
+  if (unreachable && process.env.DESKTOP_RELEASE_ALLOW_LOCAL_URL !== '1') {
+    throw new Error(`${item.target}: ${unreachable}. Set webview.updates.${updates.artifactBaseUrl ? 'artifactBaseUrl' : 'feedUrl'} to the address the app is served from.`)
+  }
+
   const problem = releaseVersionProblem(config.version, existing ? validateUpdateManifest(JSON.parse(existing)).version : null, compareVersions)
   if (problem) throw new Error(`${item.target}: ${problem}`)
 
@@ -204,7 +222,7 @@ for (const item of planned) {
     const key = updateArtifactKey(location, config.version, basename(file))
     await store.write(key, readFileSync(file))
     const { sha256, size } = await describeArtifact(file)
-    downloads.push({ name: basename(file), url: config.updates.artifactBaseUrl ? `${config.updates.artifactBaseUrl.replace(/\/+$/, '')}/${key}` : await store.publicUrl(key), sha256, bytes: size })
+    downloads.push({ name: basename(file), url: await artifactUrl(location, file), sha256, bytes: size })
   }
   const manifest = await publishDesktopUpdate({
     store,
@@ -214,7 +232,8 @@ for (const item of planned) {
     privateKey,
     keyId,
     notes,
-    artifactBaseUrl: config.updates.artifactBaseUrl,
+    artifactBaseUrl: updates.artifactBaseUrl,
+    feedUrl: updates.feedUrl,
     ...location,
   })
   // Kept beside the artifacts, so a dry run shows exactly what the feed would serve.

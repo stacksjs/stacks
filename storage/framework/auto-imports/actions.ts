@@ -696,6 +696,7 @@ export const actions = {
   'Actions/Dashboard/dashboard-response': '../defaults/app/Actions/Dashboard/dashboard-response.ts',
   'Actions/Dashboard/hq-read': '../defaults/app/Actions/Dashboard/hq-read.ts',
   'Actions/Dashboard/named-search': '../defaults/app/Actions/Dashboard/named-search.ts',
+  'Actions/Desktop/UpdateArtifactAction': '../defaults/app/Actions/Desktop/UpdateArtifactAction.ts',
   'Actions/Desktop/UpdateFeedAction': '../defaults/app/Actions/Desktop/UpdateFeedAction.ts',
   'Actions/HealthAction': '../defaults/app/Actions/HealthAction.ts',
   'Actions/InstallAction': '../defaults/app/Actions/InstallAction.ts',

@@ -115,7 +115,13 @@ export interface WebviewUpdatesConfig {
   disk?: string
   /** The folder on that disk. Default `desktop-updates`. */
   prefix?: string
-  /** The public base URL artifacts are downloaded from, when the disk's own public URL is not it. */
+  /**
+   * The public base URL of a bucket or CDN that serves the disk: artifacts are
+   * downloaded from `<artifactBaseUrl>/<prefix>/<channel>/<platform>-<arch>/<version>/<file>`.
+   * Unset, they are downloaded through the app's own server, from the route
+   * beside the feed (`<feedUrl>/files/<channel>/<platform>-<arch>/<version>/<file>`),
+   * which streams from any disk, the private local one included.
+   */
   artifactBaseUrl?: string
   /** Check on launch and then this often, in hours. Default 24; 0 turns the automatic check off. */
   checkEveryHours?: number
