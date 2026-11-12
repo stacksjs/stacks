@@ -671,6 +671,8 @@ buddy telemetry              # telemetry management
 buddy list                   # list all available commands
 buddy version                # display version (flags: --version, -v)
 buddy saas                   # SaaS management
+buddy hq:connect [services]  # connect to HQ services, write keys to .env (--no-open, --no-verify)
+buddy hq:status              # usage against each connected HQ service's allowance
 buddy sms                    # SMS commands
 buddy phone                  # phone commands
 buddy http                   # HTTP commands

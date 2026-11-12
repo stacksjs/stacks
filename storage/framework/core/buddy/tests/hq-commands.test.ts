@@ -1,0 +1,360 @@
+import type { FakeHqService } from '@stacksjs/testing/hq'
+import type { HqConfig } from '@stacksjs/types'
+import type { HqCliDeps } from '../src/hq'
+import { afterEach, describe, expect, it } from 'bun:test'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { createFakeHqService, fakeHqFetch } from '@stacksjs/testing/hq'
+import { writeEnvEntries } from '../src/commands/hq'
+import { resolveHqServices, runHqConnect, runHqStatus } from '../src/hq'
+import { getCommandNames } from '../src/lazy-commands'
+
+/**
+ * `buddy hq:connect` and `buddy hq:status`, against fake services.
+ *
+ * The property that matters most is the one a person cannot see by running
+ * the command: a key reaches `.env` and never the terminal. Every connect
+ * test below checks the captured output for the keys the service issued.
+ */
+
+interface Harness {
+  deps: HqCliDeps
+  lines: string[]
+  opened: string[]
+  env: Record<string, string>
+  output: () => string
+}
+
+function harness(services: FakeHqService[], overrides: Partial<HqCliDeps> = {}): Harness {
+  const lines: string[] = []
+  const opened: string[] = []
+  const env: Record<string, string> = {}
+  let clock = Date.parse('2026-01-15T12:00:00.000Z')
+  return {
+    lines,
+    opened,
+    env,
+    output: () => lines.join('\n'),
+    deps: {
+      fetch: fakeHqFetch(...services) as HqCliDeps['fetch'],
+      print: line => lines.push(line),
+      open: (url) => {
+        opened.push(url)
+      },
+      // The clock only moves when the command waits, so a timeout is exact.
+      sleep: async (ms) => {
+        clock += ms
+      },
+      now: () => clock,
+      writeEnv: async (entries) => {
+        Object.assign(env, entries)
+      },
+      ...overrides,
+    },
+  }
+}
+
+function configFor(...services: FakeHqService[]): HqConfig {
+  return Object.fromEntries(services.map(service => [service.service, { url: service.origin }]))
+}
+
+function keysOf(...services: FakeHqService[]): string[] {
+  return services.flatMap(service => service.grants().flatMap(grant => [grant.ingestKey, grant.readKey]))
+}
+
+function expectNoKeyPrinted(output: string, ...services: FakeHqService[]): void {
+  const keys = keysOf(...services)
+  expect(keys.length).toBeGreaterThan(0)
+  for (const key of keys)
+    expect(output).not.toContain(key)
+}
+
+const OPTIONS = { app: 'my-app', pollIntervalMs: 2000, timeoutMs: 60_000, readAttempts: 2 }
+
+describe('buddy hq:connect', () => {
+  it('connects each service once it is approved, writes its keys and verifies them', async () => {
+    const bughq = createFakeHqService({ service: 'bughq', approveOnPoll: 1 })
+    const loghq = createFakeHqService({ service: 'loghq', approveOnPoll: 3, confirmCode: true })
+    const h = harness([bughq, loghq])
+
+    const result = await runHqConnect(['bughq', 'loghq'], configFor(bughq, loghq), OPTIONS, h.deps)
+
+    expect(result.ok).toBe(true)
+    expect(result.outcomes.map(outcome => [outcome.service, outcome.status, outcome.send, outcome.read])).toEqual([
+      ['bughq', 'connected', 'pass', 'pass'],
+      ['loghq', 'connected', 'pass', 'pass'],
+    ])
+
+    const [bug] = bughq.grants()
+    const [log] = loghq.grants()
+    expect(bug!.project.name).toBe('my-app')
+    expect(h.env).toEqual({
+      BUGHQ_KEY: bug!.ingestKey,
+      BUGHQ_READ_KEY: bug!.readKey,
+      BUGHQ_PROJECT_ID: bug!.project.id,
+      LOGHQ_KEY: log!.ingestKey,
+      LOGHQ_READ_KEY: log!.readKey,
+      LOGHQ_PROJECT_ID: log!.project.id,
+    })
+
+    // The person is shown where to approve, and LogHQ's confirmation code.
+    expect(h.opened).toEqual([`${bughq.origin}/cli/connect?code=${bughq.codes()[0]}`, `${loghq.origin}/cli/connect?code=${loghq.codes()[0]}`])
+    expect(h.output()).toContain(h.opened[1]!)
+    expect(h.output()).toContain(`Confirmation code: ${loghq.confirmCodeFor(loghq.codes()[0]!)} (type it on that page)`)
+    expect(h.output()).toContain('Press Ctrl+C to cancel')
+    expect(h.output()).toMatch(/BugHQ\s+pass\s+pass\s+pass/)
+    expect(h.output()).toMatch(/LogHQ\s+pass\s+pass\s+pass/)
+
+    // One test record each, sent with the ingest key and found with the read key.
+    expect(bughq.issues()).toHaveLength(1)
+    expect(loghq.logs()).toHaveLength(1)
+    expect(loghq.logs()[0]!.message).toContain('buddy hq:connect test')
+
+    expectNoKeyPrinted(h.output(), bughq, loghq)
+  })
+
+  it('--no-open prints the link without opening it, and --no-verify sends nothing', async () => {
+    const loghq = createFakeHqService({ service: 'loghq', approveOnPoll: 1 })
+    const h = harness([loghq])
+
+    const result = await runHqConnect(['loghq'], configFor(loghq), { ...OPTIONS, open: false, verify: false }, h.deps)
+
+    expect(result.ok).toBe(true)
+    expect(result.outcomes[0]).toMatchObject({ status: 'connected', send: 'skipped', read: 'skipped' })
+    expect(h.opened).toEqual([])
+    expect(h.output()).toContain(`${loghq.origin}/cli/connect?code=`)
+    expect(loghq.logs()).toEqual([])
+    expect(loghq.requests()).not.toContain('POST /logs')
+    expect(h.env.LOGHQ_KEY).toBe(loghq.grants()[0]!.ingestKey)
+    expectNoKeyPrinted(h.output(), loghq)
+  })
+
+  it('gives up when nobody approves in time, writes nothing for it, and still connects the next', async () => {
+    const bughq = createFakeHqService({ service: 'bughq' })
+    const loghq = createFakeHqService({ service: 'loghq', approveOnPoll: 1 })
+    const h = harness([bughq, loghq])
+
+    const result = await runHqConnect(['bughq', 'loghq'], configFor(bughq, loghq), { ...OPTIONS, timeoutMs: 10_000 }, h.deps)
+
+    expect(result.ok).toBe(false)
+    expect(result.outcomes[0]).toMatchObject({ service: 'bughq', status: 'timeout' })
+    expect(result.outcomes[1]).toMatchObject({ service: 'loghq', status: 'connected', read: 'pass' })
+    // Ten seconds at one poll every two.
+    expect(bughq.requests().filter(request => request.startsWith('GET /api/cli/connect/'))).toHaveLength(5)
+    expect(Object.keys(h.env).sort()).toEqual(['LOGHQ_KEY', 'LOGHQ_PROJECT_ID', 'LOGHQ_READ_KEY'])
+    expect(h.output()).toContain('BugHQ: not connected (nobody approved it in time)')
+  })
+
+  it('reports a service without the connect route as not available yet, without failing the others', async () => {
+    const statushq = createFakeHqService({ service: 'statushq', contract: false })
+    const loghq = createFakeHqService({ service: 'loghq', approveOnPoll: 1 })
+    const h = harness([statushq, loghq])
+
+    const result = await runHqConnect(['statushq', 'loghq'], configFor(statushq, loghq), OPTIONS, h.deps)
+
+    expect(result.ok).toBe(true)
+    expect(result.outcomes[0]).toMatchObject({ service: 'statushq', status: 'unavailable' })
+    expect(result.outcomes[1]).toMatchObject({ service: 'loghq', status: 'connected' })
+    expect(h.output()).toContain('StatusHQ: not available yet')
+    expect(h.output()).toMatch(/StatusHQ\s+not available yet/)
+    expect(statushq.requests()).toEqual(['POST /api/cli/connect'])
+  })
+
+  it('reports a service that cannot be reached and one whose code expired', async () => {
+    const loghq = createFakeHqService({ service: 'loghq' })
+    const h = harness([loghq], {
+      // The code is consumed behind the command's back, so the next poll finds it gone.
+      sleep: async () => {
+        const code = loghq.codes()[0]!
+        await loghq.approve(code)
+        await loghq.fetch(`${loghq.origin}/api/cli/connect/${code}`)
+      },
+    })
+
+    const result = await runHqConnect(['bughq', 'loghq'], { bughq: { url: 'https://down.test' }, ...configFor(loghq) }, OPTIONS, h.deps)
+
+    expect(result.ok).toBe(false)
+    expect(result.outcomes[0]).toMatchObject({ service: 'bughq', status: 'unreachable' })
+    expect(result.outcomes[1]).toMatchObject({ service: 'loghq', status: 'expired' })
+    expect(h.env).toEqual({})
+  })
+
+  it('stops cleanly on Ctrl+C and writes nothing for the pending service', async () => {
+    const bughq = createFakeHqService({ service: 'bughq' })
+    const loghq = createFakeHqService({ service: 'loghq', approveOnPoll: 1 })
+    const controller = new AbortController()
+    const h = harness([bughq, loghq], { signal: controller.signal, sleep: async () => controller.abort() })
+
+    const result = await runHqConnect(['bughq', 'loghq'], configFor(bughq, loghq), OPTIONS, h.deps)
+
+    expect(result.ok).toBe(false)
+    expect(result.outcomes.map(outcome => outcome.status)).toEqual(['cancelled', 'cancelled'])
+    expect(h.env).toEqual({})
+    // The second service is never asked once the person has cancelled.
+    expect(loghq.requests()).toEqual([])
+    expect(h.output()).toContain('Cancelled.')
+  })
+
+  it('does not count a service past its allowance as broken', async () => {
+    const bughq = createFakeHqService({ service: 'bughq', approveOnPoll: 1, storeIngest: false })
+    const loghq = createFakeHqService({ service: 'loghq', approveOnPoll: 1, storeIngest: false })
+    const h = harness([bughq, loghq])
+
+    const result = await runHqConnect(['bughq', 'loghq'], configFor(bughq, loghq), OPTIONS, h.deps)
+
+    // Both answered 2xx and kept nothing, each in its own words.
+    expect(result.ok).toBe(true)
+    expect(result.outcomes.map(outcome => [outcome.send, outcome.read])).toEqual([['pass', 'skipped'], ['pass', 'skipped']])
+    expect(h.output()).toContain('the plan allowance is used up, so the test error was not kept')
+    expect(h.output()).toContain('the plan allowance is used up, so the test log was not kept')
+  })
+
+  it('resolves a dashboard link the service spells as a path', async () => {
+    const loghq = createFakeHqService({ service: 'loghq', approveOnPoll: 1, relativeDashboardUrl: true })
+    const h = harness([loghq])
+
+    const result = await runHqConnect(['loghq'], configFor(loghq), { ...OPTIONS, verify: false }, h.deps)
+
+    const dashboardUrl = `${loghq.origin}/projects/${loghq.grants()[0]!.project.id}`
+    expect(result.outcomes[0]!.dashboardUrl).toBe(dashboardUrl)
+    expect(h.output()).toContain(`Dashboard: ${dashboardUrl}`)
+  })
+
+  it('fails the read-back when the test record never shows up', async () => {
+    const loghq = createFakeHqService({ service: 'loghq', approveOnPoll: 1 })
+    const services = fakeHqFetch(loghq)
+    const h = harness([loghq], {
+      // Stored, by the service's own account, and then not there to read.
+      fetch: async (input, init) => new URL(input).pathname.endsWith('/logs') && init?.method !== 'POST'
+        ? Response.json({ logs: [], nextCursor: null })
+        : services(input, init),
+    })
+
+    const result = await runHqConnect(['loghq'], configFor(loghq), OPTIONS, h.deps)
+
+    expect(result.ok).toBe(false)
+    expect(result.outcomes[0]).toMatchObject({ status: 'connected', send: 'pass', read: 'fail' })
+    expect(h.output()).toMatch(/LogHQ\s+pass\s+pass\s+fail\s+the test log was accepted but did not show up/)
+    // The keys are good even though the check failed, so they are kept.
+    expect(h.env.LOGHQ_KEY).toBe(loghq.grants()[0]!.ingestKey)
+    expectNoKeyPrinted(h.output(), loghq)
+  })
+
+  it('names the services it knows when asked for one it does not', () => {
+    expect(resolveHqServices([])).toEqual({ services: ['bughq', 'loghq'] })
+    expect(resolveHqServices(['LogHQ', 'loghq'])).toEqual({ services: ['loghq'] })
+    expect(resolveHqServices(['sentry'])).toEqual({ error: 'Unknown service: sentry. Choose from bughq, loghq, analyticshq, statushq, commshq.' })
+  })
+
+  describe('writing .env', () => {
+    let directory = ''
+    afterEach(() => {
+      if (directory)
+        rmSync(directory, { recursive: true, force: true })
+    })
+
+    it('puts the keys in the app\'s .env, keeps what was there, and prints none of them', async () => {
+      directory = mkdtempSync(join(tmpdir(), 'hq-connect-'))
+      writeFileSync(join(directory, '.env'), 'APP_NAME=my-app\nLOGHQ_KEY=old\n')
+      const loghq = createFakeHqService({ service: 'loghq', approveOnPoll: 1 })
+      const h = harness([loghq], { writeEnv: entries => writeEnvEntries(entries, directory) })
+
+      // Anything the writer itself might print lands here too.
+      const printed: string[] = []
+      const original = { log: console.log, info: console.info, error: console.error }
+      console.log = console.info = console.error = (...args: unknown[]) => void printed.push(args.join(' '))
+      let result
+      try {
+        result = await runHqConnect(['loghq'], configFor(loghq), OPTIONS, h.deps)
+      }
+      finally {
+        Object.assign(console, original)
+      }
+
+      expect(result.ok).toBe(true)
+      const grant = loghq.grants()[0]!
+      const file = readFileSync(join(directory, '.env'), 'utf8')
+      expect(file).toContain('APP_NAME=my-app')
+      expect(file).toContain(`LOGHQ_KEY="${grant.ingestKey}"`)
+      expect(file).toContain(`LOGHQ_READ_KEY="${grant.readKey}"`)
+      expect(file).toContain(`LOGHQ_PROJECT_ID="${grant.project.id}"`)
+      expect(file).not.toContain('LOGHQ_KEY=old')
+      // A plain file stays plain: no keypair is started for it.
+      expect(file).not.toContain('DOTENV_PUBLIC_KEY')
+      expectNoKeyPrinted([...h.lines, ...printed].join('\n'), loghq)
+    })
+
+    it('creates .env when the app has none', async () => {
+      directory = mkdtempSync(join(tmpdir(), 'hq-connect-'))
+      await writeEnvEntries({ BUGHQ_KEY: 'value-one' }, directory)
+      expect(readFileSync(join(directory, '.env'), 'utf8')).toContain('BUGHQ_KEY="value-one"')
+    })
+  })
+})
+
+describe('buddy hq:status', () => {
+  function connected(service: FakeHqService): HqConfig[keyof HqConfig] {
+    const grant = service.project('my-app')
+    return { url: service.origin, readKey: grant.readKey, project: grant.project.id }
+  }
+
+  it('prints used, limit, period and state, with the upgrade link from 80 percent', async () => {
+    const bughq = createFakeHqService({ service: 'bughq', meters: [{ meter: 'errors', used: 400, limit: 500 }] })
+    const loghq = createFakeHqService({ service: 'loghq', meters: [{ meter: 'logs', used: 1200, limit: 10_000 }] })
+    const h = harness([bughq, loghq])
+
+    const rows = await runHqStatus({ bughq: connected(bughq), loghq: connected(loghq) }, h.deps)
+
+    expect(rows).toEqual([
+      { service: 'bughq', meter: 'errors', used: 400, limit: 500, period: expect.stringMatching(/^\d{4}-\d{2}$/), state: 'warn', upgradeUrl: `${bughq.origin}/pricing` },
+      { service: 'loghq', meter: 'logs', used: 1200, limit: 10_000, period: expect.stringMatching(/^\d{4}-\d{2}$/), state: 'ok' },
+    ])
+    expect(h.output()).toMatch(/BugHQ\s+errors\s+400\s+500\s+\d{4}-\d{2}\s+warn/)
+    expect(h.output()).toMatch(/LogHQ\s+logs\s+1,200\s+10,000\s+\d{4}-\d{2}\s+ok/)
+    expect(h.output()).toContain(`BugHQ errors is at 80% of its allowance. Upgrade: ${bughq.origin}/pricing`)
+    expect(h.output()).not.toContain(`${loghq.origin}/pricing`)
+    expectNoKeyPrinted(h.output(), bughq, loghq)
+  })
+
+  it('shows an unlimited meter and stays quiet about upgrading just under 80 percent', async () => {
+    const bughq = createFakeHqService({ service: 'bughq', meters: [{ meter: 'errors', used: 399, limit: 500 }, { meter: 'sessions', used: 7, limit: null }] })
+    const h = harness([bughq])
+
+    await runHqStatus({ bughq: connected(bughq) }, h.deps)
+
+    expect(h.output()).toMatch(/BugHQ\s+sessions\s+7\s+unlimited/)
+    expect(h.output()).not.toContain('Upgrade')
+  })
+
+  it('says why a connected service has no usage to show', async () => {
+    const bughq = createFakeHqService({ service: 'bughq' })
+    const statushq = createFakeHqService({ service: 'statushq', contract: false })
+    const h = harness([bughq, statushq])
+
+    const rows = await runHqStatus({
+      bughq: { url: bughq.origin, readKey: 'not-a-key' },
+      statushq: { url: statushq.origin, readKey: 'anything' },
+      loghq: { url: 'https://down.test', readKey: 'anything' },
+    }, h.deps)
+
+    expect(rows).toEqual([
+      { service: 'bughq', unavailable: 'the read key was refused' },
+      { service: 'loghq', unavailable: 'the service could not be reached' },
+      { service: 'statushq', unavailable: 'not available yet' },
+    ])
+    expect(h.output()).toMatch(/StatusHQ\s+not available yet/)
+  })
+
+  it('tells an app with nothing connected how to connect', async () => {
+    const h = harness([])
+    expect(await runHqStatus({ loghq: { url: 'https://loghq.org' } }, h.deps)).toEqual([])
+    expect(h.output()).toContain('Run `buddy hq:connect`')
+  })
+})
+
+describe('registration', () => {
+  it('lists both commands', () => {
+    expect(getCommandNames()).toEqual(expect.arrayContaining(['hq:connect', 'hq:status']))
+  })
+})
