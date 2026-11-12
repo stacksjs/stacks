@@ -19,6 +19,7 @@ import type {
   FilesystemsConfig,
   GitConfig,
   HashingConfig,
+  HqConfig,
   ImagesConfig,
   LibraryConfig,
   LoggingConfig,
@@ -215,6 +216,15 @@ export interface StacksOptions {
    * have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
   hashing: HashingConfig
+
+  /**
+   * **HQ Services**
+   *
+   * The hosted services this app is connected to (BugHQ, LogHQ, AnalyticsHQ,
+   * StatusHQ, CommsHQ), each with its own URL and keys. Written by
+   * `buddy hq:connect` and configured via `config/hq.ts`.
+   */
+  hq: HqConfig
 
   /**
    * **Images Options**

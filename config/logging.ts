@@ -2,10 +2,12 @@ import type { LogHqLoggingOptions, LoggingConfig } from '@stacksjs/types'
 import { env, initializeIntegration, REMOTE_TELEMETRY_ENVIRONMENTS } from '@stacksjs/env'
 import { createLogHqTransport } from '@stacksjs/logging/loghq'
 import { storagePath } from '@stacksjs/path'
+import hq from './hq'
 
 const loghq = {
-  key: env.LOGHQ_KEY,
-  baseUrl: env.LOGHQ_BASE_URL || undefined,
+  // The key and the origin live in config/hq.ts, with every other HQ service.
+  key: hq.loghq.key,
+  baseUrl: hq.loghq.url,
   project: env.LOGHQ_PROJECT || env.APP_NAME,
   level: 'info',
   environments: REMOTE_TELEMETRY_ENVIRONMENTS,
