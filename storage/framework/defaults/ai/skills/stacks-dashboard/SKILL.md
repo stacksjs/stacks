@@ -888,9 +888,36 @@ Either way the link back to the page's own record is left out.
 - "View all" opens the related model's list narrowed to this record
   (`/models/team-member?filters={"team_id":"3"}`); the list arrives with its
   filter row open.
-- "Add" opens the related model's create form with this record already
-  chosen (`?teamId=3`) and returns here. It is offered when that model can be
-  created from the dashboard, and for a `hasOne` only while there is none.
+
+Where the related model lets the dashboard write its rows (its
+`dashboard.writes`, else its `useApi` routes, as for its own pages), the
+panel is where they are managed. Nothing is declared for it.
+
+- "Add" opens a form over the page with this record already chosen, and the
+  new row appears in the panel. It is offered when that model can be created
+  from the dashboard, and for a `hasOne` only while there is none.
+- The pencil opens the same form with the row's values, and sends only what
+  changed.
+- The trash asks first, then deletes the row.
+
+The form asks for the related model's own fields the way its create and edit
+pages do (`modelFormFields`: labels, help and inputs from `dashboard.fields`,
+a picker for each relation the dashboard can reach), without the link back
+to this record. The panel carries them as `fields`, and each listed row's
+stored values as `values`; `canUpdate` and `canDestroy` say which buttons a
+row gets. A refused write is shown in the form, under its field.
+
+Each save is one write through the related model, on the endpoints its own
+pages use (`POST`, `PATCH` and `DELETE /api/dashboard/models/{slug}`), so
+casts, observers, validation and soft deletes apply and nothing new is
+opened. The panels are read again afterwards.
+
+There is no form that saves a record and its rows together, all or nothing.
+A write made through a model takes no part in `transaction()`
+(stacksjs/stacks#3269), so a combined save could leave the record changed
+and a row not. Until the model layer joins a transaction, an operation that
+must be atomic across models belongs in an action that writes through the
+transaction's own handle.
 
 The link between the two models is the foreign key the declaration names,
 else the related model's own `belongsTo`, else the conventional

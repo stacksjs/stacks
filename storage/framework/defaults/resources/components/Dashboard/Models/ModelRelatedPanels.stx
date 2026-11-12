@@ -3,17 +3,36 @@
 // team's members and its invitations, a user's team memberships. From the
 // model's own `hasMany` and `hasOne`, so nothing is set up per model.
 //
-// Each panel is the newest few with a count. The eye opens one, "View all"
-// opens that model's list narrowed to this record, and "Add" opens its create
-// form with this record already chosen.
+// Each panel is the newest few with a count. The eye opens one and "View
+// all" opens that model's list narrowed to this record.
+//
+// Where the related model lets the dashboard write its rows, they are managed
+// here: "Add" and the pencil open a form over the page, with this record
+// already chosen, and the trash asks first. Each save is one write through
+// the related model, on its own, and the panels are read again after it.
 import { modelFormattedValue } from '../../../../functions/dashboard-model-format'
-import type { ModelRelatedPanel } from '../../../../functions/dashboard-model-record'
-import { modelRecordHref, modelRelatedCreateHref, modelRelatedListHref } from '../../../../functions/dashboard-model-record'
+import type { ModelFormValues, ModelRelatedEditor, ModelRelatedPanel } from '../../../../functions/dashboard-model-record'
+import { deleteModelRecord, modelDeleteNotice, modelDeleteWarning, modelFormValues, modelRecordHref, modelRelatedAddsHere, modelRelatedCreateHref, modelRelatedListHref, modelRelatedRowActions, saveModelRelated } from '../../../../functions/dashboard-model-record'
+import { pushToast } from '../../../../functions/toasts'
 
 const panels = useReactiveProp<ModelRelatedPanel[]>('panels', [])
 const parentId = useReactiveProp('parentId', '')
 /** This page, for a create form to come back to. */
 const from = useReactiveProp('from', '')
+// Told when a row was added, changed or removed, so the page reads its panels again.
+const emit = defineEmits(['changed'])
+
+// The form over the page: a new row, or one being edited.
+const editor = state<ModelRelatedEditor | null>(null)
+const values = state<ModelFormValues>({})
+/** What the form started with, so an edit sends only what was changed. */
+const initial = state<ModelFormValues>({})
+const saving = state(false)
+const saveError = state('')
+const saveErrors = state<Record<string, string[]>>({})
+// The row waiting on its delete confirmation.
+const removing = state<{ panel: ModelRelatedPanel, row: Record<string, unknown> } | null>(null)
+const deleting = state(false)
 
 /** Beside the heading. Nothing when the panel is empty: the line below already says so. */
 function countLabel(panel: ModelRelatedPanel): string {
@@ -23,12 +42,12 @@ function countLabel(panel: ModelRelatedPanel): string {
 }
 
 /**
- * The eye, named for what it opens. A row is often called by a record it
- * points at (a membership by its list), and "View Enterprise Leads" would
- * promise the list, not the membership.
+ * The row's buttons, named for what they act on. A row is often called by a
+ * record it points at (a membership by its list), and "View Enterprise Leads"
+ * would promise the list, not the membership.
  */
-function viewAction(panel: ModelRelatedPanel) {
-  return [{ action: 'view', label: `View ${panel.label.toLowerCase()}` }]
+function rowActions(panel: ModelRelatedPanel) {
+  return modelRelatedRowActions(panel)
 }
 
 function emptyTitle(panel: ModelRelatedPanel): string {
@@ -81,16 +100,102 @@ function tableRows(panel: ModelRelatedPanel) {
   })
 }
 
-function open(panel: ModelRelatedPanel, payload: { row: Record<string, unknown> }): void {
-  navigate(modelRecordHref(panel.slug, payload.row.id as number | string))
+function act(panel: ModelRelatedPanel, payload: { action: string, row: Record<string, unknown> }): void {
+  if (payload.action === 'edit')
+    edit(panel, payload.row)
+  else if (payload.action === 'delete')
+    removing.set({ panel, row: payload.row })
+  else
+    navigate(modelRecordHref(panel.slug, payload.row.id as number | string))
 }
+
+function openEditor(next: ModelRelatedEditor, start: ModelFormValues): void {
+  initial.set(start)
+  values.set({ ...start })
+  saveError.set('')
+  saveErrors.set({})
+  editor.set(next)
+}
+
+function edit(panel: ModelRelatedPanel, row: Record<string, unknown>): void {
+  const id = row.id as number | string
+  openEditor({ panel, id }, modelFormValues(panel.fields ?? [], panel.values?.[String(id)] ?? {}))
+}
+
+function closeEditor(): void {
+  if (!saving())
+    editor.set(null)
+}
+
+function setValue(change: { name: string, value: string | boolean }): void {
+  values.set({ ...values(), [change.name]: change.value })
+}
+
+const editorTitle = derived(() => {
+  const current = editor()
+  if (!current)
+    return ''
+  return `${current.id === null ? 'Add' : 'Edit'} ${current.panel.label.toLowerCase()}`
+})
+
+async function save(): Promise<void> {
+  const current = editor()
+  if (!current || saving())
+    return
+  saving.set(true)
+  saveError.set('')
+  saveErrors.set({})
+  const result = await saveModelRelated(current, parentId(), values(), initial())
+  saving.set(false)
+  if (!result.ok) {
+    saveError.set(result.error)
+    saveErrors.set(result.errors)
+    return
+  }
+  editor.set(null)
+  if (!result.changed)
+    return
+  pushToast('success', current.id === null ? `${current.panel.label} added` : `${current.panel.label} ${current.id} updated`)
+  emit('changed')
+}
+
+async function remove(): Promise<void> {
+  const current = removing()
+  if (!current || deleting())
+    return
+  deleting.set(true)
+  try {
+    const outcome = await deleteModelRecord(current.panel.slug, current.row.id as number | string)
+    const notice = modelDeleteNotice(`${current.panel.label} ${current.row.id}`, outcome)
+    pushToast('success', notice.title, { detail: notice.detail })
+    removing.set(null)
+    emit('changed')
+  }
+  catch (error) {
+    pushToast('error', 'Could not delete', { detail: error instanceof Error ? error.message : String(error) })
+  }
+  finally {
+    deleting.set(false)
+  }
+}
+
+const removeTitle = derived(() => `Delete this ${removing()?.panel.label.toLowerCase() ?? 'record'}?`)
+const removeWarning = derived(() => {
+  const current = removing()
+  return current ? modelDeleteWarning(`${current.panel.label} ${current.row.id}`) : ''
+})
 
 function viewAll(panel: ModelRelatedPanel): void {
   navigate(modelRelatedListHref(panel, parentId()))
 }
 
+// Here when the panel carries the related model's fields; on that model's
+// create page, which comes back, when it does not.
 function add(panel: ModelRelatedPanel): void {
-  navigate(modelRelatedCreateHref(panel, parentId(), from()))
+  if (modelRelatedAddsHere(panel))
+    openEditor({ panel, id: null }, modelFormValues(panel.fields ?? []))
+  else
+    navigate(modelRelatedCreateHref(panel, parentId(), from()))
 }
 </script>
 
@@ -116,12 +221,48 @@ function add(panel: ModelRelatedPanel): void {
         :columns="tableColumns(panel)"
         :data="tableRows(panel)"
         :framed="false"
-        :row-actions="viewAction(panel)"
+        :row-actions="rowActions(panel)"
         :action-label-key="panel.columns[0] ? panel.columns[0].key : 'id'"
-        @row-action="open(panel, $event)"
+        @row-action="act(panel, $event)"
       />
 
       <p :if="panel.rows.length === 0" class="px-6 py-5 text-neutral-500 text-sm dark:text-neutral-400">{{ emptyTitle(panel) }}</p>
     </Card>
   </div>
+
+  <Modal
+    :isOpen="Boolean(editor())"
+    :title="editorTitle()"
+    :closable="!saving()"
+    size="lg"
+    @close="closeEditor"
+  >
+    <form id="related-row-form" class="flex flex-col gap-5" data-related-editor @submit.prevent="save">
+      <div :if="saveError()" role="alert" class="px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg dark:border-red-900">{{ saveError() }}</div>
+      <ModelFieldInputs
+        :fields="editor() ? (editor().panel.fields || []) : []"
+        :values="values()"
+        :errors="saveErrors()"
+        :disabled="saving()"
+        @change="setValue"
+      />
+    </form>
+
+    <template #footer>
+      <div class="flex gap-2 items-center justify-end w-full">
+        <Button variant="secondary" :disabled="saving()" @click="closeEditor">Cancel</Button>
+        <Button variant="primary" type="submit" form="related-row-form" :loading="saving()">{{ editor() && editor().id === null ? 'Add' : 'Save changes' }}</Button>
+      </div>
+    </template>
+  </Modal>
+
+  <ConfirmDialog
+    :isOpen="Boolean(removing())"
+    :title="removeTitle()"
+    :description="removeWarning()"
+    :busy="deleting()"
+    :confirmLabel="deleting() ? 'Deleting' : 'Delete'"
+    @close="removing.set(null)"
+    @confirm="remove"
+  />
 </div>

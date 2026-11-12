@@ -72,6 +72,12 @@ async function loadRecord(): Promise<void> {
   }
 }
 
+// A row was added, changed or removed in a panel: the panels are read again.
+// The record is left as it is on screen; only what points at it changed.
+function reloadRelated(): void {
+  void fetchModelRelated(slug(), recordId()).then(panels => related.set(panels)).catch(() => {})
+}
+
 // The edit page comes back here after saving or cancelling.
 function editRecord(): void {
   navigate(modelRecordEditHref(slug(), recordId(), { from: backHref() === from ? from : undefined, via: 'view' }))
@@ -212,6 +218,7 @@ onMount(() => {
     :panels="related()"
     :parentId="recordId()"
     :from="selfHref()"
+    @changed="reloadRelated"
   />
 
   <ConfirmDialog

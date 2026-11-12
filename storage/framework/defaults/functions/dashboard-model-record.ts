@@ -744,6 +744,64 @@ export interface ModelRelatedPanel {
   /** The newest few, each with its `id` and a value per column. */
   rows: Array<Record<string, unknown>>
   canCreate: boolean
+  /** The related model lets the dashboard edit its rows. */
+  canUpdate?: boolean
+  /** The related model lets the dashboard delete its rows. */
+  canDestroy?: boolean
+  /** What "Add" and the pencil ask for: the related model's fields, less the link back here. */
+  fields?: ModelCreateField[]
+  /** What an edit starts from: each listed row's stored values, by row id. */
+  values?: Record<string, Record<string, unknown>>
+}
+
+/** A panel's form: a new row for this record, or one of its rows being edited. */
+export interface ModelRelatedEditor {
+  panel: ModelRelatedPanel
+  /** The row being edited. Null for a new one. */
+  id: string | number | null
+}
+
+/** The panel's row actions: the eye always, the pencil and the trash where the related model allows. */
+export function modelRelatedRowActions(panel: ModelRelatedPanel): Array<{ action: 'view' | 'edit' | 'delete', label: string }> {
+  const one = panel.label.toLowerCase()
+  return [
+    { action: 'view', label: `View ${one}` },
+    ...(panel.canUpdate && (panel.fields?.length ?? 0) > 0 ? [{ action: 'edit' as const, label: `Edit ${one}` }] : []),
+    ...(panel.canDestroy ? [{ action: 'delete' as const, label: `Delete ${one}` }] : []),
+  ]
+}
+
+/** Whether "Add" opens its form on this page. Without fields to ask for, it leaves for the create page. */
+export function modelRelatedAddsHere(panel: ModelRelatedPanel): boolean {
+  return panel.canCreate && (panel.fields?.length ?? 0) > 0
+}
+
+/**
+ * Save a panel's form: a new row pointing at this record, or the changes to
+ * one of its rows. One write, through the related model's own endpoint.
+ * `changed` is false when an edit changed nothing and so sent nothing.
+ */
+export async function saveModelRelated(
+  editor: ModelRelatedEditor,
+  parentId: string | number,
+  values: ModelFormValues,
+  initial: ModelFormValues,
+): Promise<{ ok: true, changed: boolean } | ModelWriteFailure> {
+  const fields = editor.panel.fields ?? []
+  if (editor.id === null) {
+    const parent = Number(parentId)
+    const result = await createModelRecord(editor.panel.slug, {
+      ...modelFormPayload(fields, values),
+      // Which record the new row belongs to is this page's to say, not the form's.
+      [editor.panel.field]: Number.isSafeInteger(parent) && parent > 0 ? parent : parentId,
+    })
+    return result.ok ? { ok: true, changed: true } : result
+  }
+  const changes = modelFormPayload(fields, values, initial)
+  if (Object.keys(changes).length === 0)
+    return { ok: true, changed: false }
+  const result = await updateModelRecord(editor.panel.slug, editor.id, changes)
+  return result.ok ? { ok: true, changed: true } : result
 }
 
 /** The panels of a record's page: who points at it. None when it cannot be asked. */

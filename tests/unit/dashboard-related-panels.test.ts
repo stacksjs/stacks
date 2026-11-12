@@ -38,11 +38,14 @@ describe('a panel', () => {
   test('is drawn with the dashboard\'s own table, inside its card', () => {
     expect(panels).toContain('<Table')
     expect(panels).toContain(':framed="false"')
-    expect(panels).toContain('@row-action="open(panel, $event)"')
+    expect(panels).toContain('@row-action="act(panel, $event)"')
   })
 
   test('names its eye for the record it opens, not the record that row is called by', () => {
-    expect(panels).toContain('label: `View ${panel.label.toLowerCase()}`')
+    // The buttons are named in one place, with the pencil and the trash the
+    // related model allows (stacksjs/stacks#3270).
+    expect(panels).toContain('return modelRelatedRowActions(panel)')
+    expect(source('storage/framework/defaults/functions/dashboard-model-record.ts')).toContain('{ action: \'view\', label: `View ${one}` },')
   })
 
   test('says nothing beside its heading when it is empty, and how many it is showing when there are more', () => {
