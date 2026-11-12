@@ -138,7 +138,7 @@ onMount(() => {
           <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">The fields a new {{ modelName().toLowerCase() }} can be given. Anything else is set by the application.</p>
         </div>
         <div class="p-6">
-          <ModelFieldInputs :fields="fields()" :values="values()" :errors="createErrors()" :disabled="creating()" @change="setValue" />
+          <ModelFieldInputs :fields="fields()" :slug="slug()" :values="values()" :errors="createErrors()" :disabled="creating()" @change="setValue" />
         </div>
       </Card>
     </div>

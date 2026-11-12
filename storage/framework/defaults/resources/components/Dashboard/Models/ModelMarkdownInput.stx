@@ -1,0 +1,139 @@
+<script client>
+// A field asked for as Markdown (`dashboard.fields.<name>.input:
+// 'markdown'`): a box to write it in, a toolbar for the common marks, and a
+// preview of how it reads. What is stored is the Markdown itself.
+//
+// A button wraps what is selected (or the lines it touches) and puts the
+// selection back where typing would go on. The preview is rendered by the
+// server, with the parser Stacks content uses, and shown in a frame that
+// runs no script.
+import { isDark } from '../../../functions/dark'
+import type { MarkdownMark } from '../../../../functions/dashboard-markdown'
+import { applyMarkdown, fetchMarkdownPreview, MARKDOWN_MARKS, MARKDOWN_PREVIEW_POLICY, markdownPreviewDocument } from '../../../../functions/dashboard-markdown'
+
+const name = useReactiveProp('name', '')
+const value = useReactiveProp('value', '')
+const label = useReactiveProp('label', '')
+const required = useReactiveProp('required', false)
+const disabled = useReactiveProp('disabled', false)
+const error = useReactiveProp('error', '')
+const hint = useReactiveProp('hint', '')
+const emit = defineEmits(['update:value'])
+const generatedId = useId('markdown')
+
+const area = useRef<HTMLTextAreaElement>('modelMarkdownArea')
+const previewing = state(false)
+const rendered = state('')
+const rendering = state(false)
+const renderFailed = state('')
+// Answers can arrive out of order; only the latest preview may be shown.
+let asked = 0
+
+const inputId = derived(() => `${generatedId}-input`)
+const frame = derived(() => markdownPreviewDocument(rendered(), isDark()))
+const boxClass = derived(() => error() ? 'border-red-400/60 dark:border-red-500/60' : 'border-stone-200/80 dark:border-white/15')
+
+function press(mark: MarkdownMark): void {
+  const box = area.current
+  if (!box || disabled())
+    return
+  const edit = applyMarkdown(mark, box.value, box.selectionStart, box.selectionEnd)
+  // The box first, so the selection lands in the text it belongs to.
+  box.value = edit.text
+  box.focus()
+  box.setSelectionRange(edit.start, edit.end)
+  emit('update:value', edit.text)
+}
+
+async function show(preview: boolean): Promise<void> {
+  previewing.set(preview)
+  if (!preview)
+    return
+  const mine = ++asked
+  rendering.set(true)
+  renderFailed.set('')
+  try {
+    const html = await fetchMarkdownPreview(value())
+    if (mine === asked)
+      rendered.set(html)
+  }
+  catch (reason) {
+    if (mine === asked)
+      renderFailed.set(reason instanceof Error ? reason.message : 'The preview could not be made.')
+  }
+  finally {
+    if (mine === asked)
+      rendering.set(false)
+  }
+}
+
+function tabClass(active: boolean): string {
+  return active
+    ? 'px-2.5 h-7 font-medium text-[12px] text-neutral-900 dark:text-white bg-white dark:bg-white/15 rounded-md shadow-sm'
+    : 'px-2.5 h-7 font-medium text-[12px] text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 rounded-md'
+}
+</script>
+
+<div class="w-full" data-markdown-input>
+  <label :if="label()" :for="inputId()" class="block mb-1.5 font-medium text-[13px] tracking-tight" :class="error() ? 'text-red-600 dark:text-red-400' : 'text-stone-600 dark:text-neutral-400'">
+    {{ label() }}
+    <span :if="required()" aria-hidden="true" class="ml-0.5 text-red-500">*</span>
+  </label>
+
+  <div class="overflow-hidden bg-white dark:bg-white/10 border rounded-lg" :class="boxClass()">
+    <div class="flex flex-wrap gap-2 items-center justify-between px-2 py-1.5 bg-neutral-50 dark:bg-white/5 border-b border-stone-200/80 dark:border-white/10">
+      <div role="toolbar" :aria-label="'Formatting for ' + (label() || 'this field')" class="flex flex-wrap gap-0.5 items-center">
+        <span :for="item in MARKDOWN_MARKS" class="contents">
+          <Button
+            variant="ghost"
+            size="sm"
+            iconOnly
+            :disabled="disabled() || previewing()"
+            :ariaLabel="item.label"
+            :title="item.label"
+            @click="press(item.mark)"
+          >
+            <span aria-hidden="true" :class="'h-4 w-4 ' + item.icon"></span>
+          </Button>
+        </span>
+      </div>
+      <div role="tablist" aria-label="Write or preview" class="flex gap-0.5 items-center p-0.5 bg-neutral-200/70 dark:bg-white/10 rounded-lg">
+        <button type="button" role="tab" :aria-selected="String(!previewing())" :class="tabClass(!previewing())" @click="show(false)">Write</button>
+        <button type="button" role="tab" :aria-selected="String(previewing())" :class="tabClass(previewing())" @click="show(true)">Preview</button>
+      </div>
+    </div>
+
+    <textarea
+      :if="!previewing()"
+      ref="modelMarkdownArea"
+      :id="inputId()"
+      :name="name()"
+      :value="value()"
+      :required="required()"
+      :disabled="disabled()"
+      :aria-invalid="error() ? 'true' : null"
+      rows="10"
+      class="block px-3 py-2 w-full font-mono leading-relaxed text-[13px] text-stone-900 dark:text-neutral-100 placeholder:text-stone-400 dark:placeholder:text-neutral-500 bg-transparent border-0 focus:outline-none focus:ring-0 resize-y"
+      placeholder="Write in Markdown"
+      @input="emit('update:value', $event.target.value)"
+    ></textarea>
+
+    <div :if="previewing()" class="min-h-[15.5rem]" data-markdown-preview>
+      <p :if="rendering()" class="px-3 py-2 text-neutral-500 text-sm dark:text-neutral-400">Making the preview</p>
+      <p :if="!rendering() && renderFailed()" role="alert" class="px-3 py-2 text-red-600 text-sm dark:text-red-400">{{ renderFailed() }}</p>
+      <p :if="!rendering() && !renderFailed() && !rendered().trim()" class="px-3 py-2 text-neutral-500 text-sm dark:text-neutral-400">Nothing to preview yet.</p>
+      <iframe
+        :if="!rendering() && !renderFailed() && rendered().trim()"
+        :title="'Preview of ' + (label() || 'this field')"
+        :srcdoc="frame()"
+        sandbox=""
+        :csp="MARKDOWN_PREVIEW_POLICY"
+        referrerpolicy="no-referrer"
+        class="block h-[15.5rem] w-full bg-transparent border-0"
+      ></iframe>
+    </div>
+  </div>
+
+  <p :if="error()" class="mt-1.5 text-[12px] text-red-600 dark:text-red-400" :text="error()"></p>
+  <p :if="!error() && hint()" class="mt-1.5 text-[12px] text-stone-500 dark:text-neutral-400" :text="hint()"></p>
+</div>

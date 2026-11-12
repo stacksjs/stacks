@@ -2,8 +2,9 @@
 // The inputs of a model's form, one per field, each in the control its kind
 // calls for: a select for a choice, a checkbox for yes or no, a date or a
 // date-and-time picker, a number box, a tall box for prose and for JSON, a
-// search for another model's record, and a line of text for the rest. Under
-// each, the sentence the model wrote for it, when it wrote one.
+// search for another model's record, a file chooser, a Markdown editor, and a
+// line of text for the rest. Under each, the sentence the model wrote for it,
+// when it wrote one.
 //
 // The create page and the edit page both render this, so a kind of field is
 // drawn once. The page owns the values: this reports each change upward as
@@ -12,6 +13,8 @@ import type { ModelCreateField, ModelFormValues } from '../../../../functions/da
 import { modelFieldError } from '../../../../functions/dashboard-model-record'
 
 const fields = useReactiveProp<ModelCreateField[]>('fields', [])
+// The model these fields belong to, in a dashboard URL: where a chosen file is sent.
+const slug = useReactiveProp('slug', '')
 const values = useReactiveProp<ModelFormValues>('values', {})
 const errors = useReactiveProp<Record<string, string[]>>('errors', {})
 const disabled = useReactiveProp('disabled', false)
@@ -36,7 +39,7 @@ function inputType(field: ModelCreateField): 'date' | 'datetime-local' | 'email'
 
 /** Everything that is one line: text, email, number, date, date and time. */
 function isLine(field: ModelCreateField): boolean {
-  return field.type !== 'boolean' && field.type !== 'enum' && field.type !== 'longtext' && field.type !== 'json' && field.type !== 'relation'
+  return !['boolean', 'enum', 'json', 'longtext', 'markdown', 'relation', 'upload'].includes(field.type)
 }
 
 /**
@@ -88,6 +91,32 @@ function change(field: ModelCreateField, value: string | boolean): void {
     <ModelRelationPicker
       :if="field.type === 'relation'"
       :slug="field.relation ? field.relation.slug : ''"
+      :name="field.name"
+      :value="text(field)"
+      :label="field.label"
+      :hint="hint(field)"
+      :required="field.required"
+      :disabled="disabled()"
+      :error="error(field)"
+      @update:value="change(field, $event)"
+    />
+
+    <ModelUploadInput
+      :if="field.type === 'upload'"
+      :slug="slug()"
+      :name="field.name"
+      :value="text(field)"
+      :label="field.label"
+      :accept="field.accept || ''"
+      :hint="hint(field)"
+      :required="field.required"
+      :disabled="disabled()"
+      :error="error(field)"
+      @update:value="change(field, $event)"
+    />
+
+    <ModelMarkdownInput
+      :if="field.type === 'markdown'"
       :name="field.name"
       :value="text(field)"
       :label="field.label"

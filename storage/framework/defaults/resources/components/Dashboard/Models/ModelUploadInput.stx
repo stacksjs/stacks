@@ -1,0 +1,97 @@
+<script client>
+// A field asked for as a file (`dashboard.fields.<name>.input: 'upload'`):
+// a file chooser whose value is the address the chosen file was stored at.
+//
+// Choosing a file stores it straight away and puts its address in the form.
+// Nothing about the record changes until the form is saved, so a file chosen
+// and then abandoned costs nothing but its place in storage. What the field
+// holds is shown, as a picture when it is one, and can be replaced or removed.
+import { modelFileName, modelFileIsImage, uploadModelFile } from '../../../../functions/dashboard-model-record'
+
+// The model the field belongs to, in a dashboard URL: where the file is sent.
+const slug = useReactiveProp('slug', '')
+const name = useReactiveProp('name', '')
+const value = useReactiveProp('value', '')
+const label = useReactiveProp('label', '')
+// The kinds of file that may be chosen. The server holds to the same list.
+const accept = useReactiveProp('accept', '')
+const required = useReactiveProp('required', false)
+const disabled = useReactiveProp('disabled', false)
+const error = useReactiveProp('error', '')
+const hint = useReactiveProp('hint', '')
+const emit = defineEmits(['update:value'])
+const generatedId = useId('upload')
+
+const chooser = useRef<HTMLInputElement>('modelUploadChooser')
+const uploading = state(false)
+// Why the last file was not taken, in the server's words.
+const failed = state('')
+
+const inputId = derived(() => `${generatedId}-input`)
+const isImage = derived(() => modelFileIsImage(value()) || /^image\//i.test(accept()))
+const fileName = derived(() => modelFileName(value()))
+const chooseLabel = derived(() => uploading() ? 'Uploading' : value() ? 'Replace file' : 'Choose file')
+const problem = derived(() => failed() || error())
+
+async function choose(event: Event): Promise<void> {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  // The same file can be chosen again after a refusal.
+  if (chooser.current)
+    chooser.current.value = ''
+  if (!file || uploading() || disabled())
+    return
+  uploading.set(true)
+  failed.set('')
+  const stored = await uploadModelFile(slug(), name(), file)
+  uploading.set(false)
+  if (stored.ok)
+    emit('update:value', stored.url)
+  else
+    failed.set(stored.error)
+}
+
+function remove(): void {
+  if (disabled() || uploading())
+    return
+  failed.set('')
+  emit('update:value', '')
+}
+</script>
+
+<div class="w-full" data-upload-input>
+  <label :if="label()" :for="inputId()" class="block mb-1.5 font-medium text-[13px] tracking-tight" :class="problem() ? 'text-red-600 dark:text-red-400' : 'text-stone-600 dark:text-neutral-400'">
+    {{ label() }}
+    <span :if="required()" aria-hidden="true" class="ml-0.5 text-red-500">*</span>
+  </label>
+
+  <div class="flex gap-3 items-center p-2 border rounded-lg" :class="problem() ? 'border-red-400/60 dark:border-red-500/60' : 'border-stone-200/80 dark:border-white/15'">
+    <a :if="value() && isImage()" :href="value()" target="_blank" rel="noopener noreferrer" class="flex-none">
+      <img :src="value()" alt="" class="block object-cover h-12 w-12 bg-neutral-100 dark:bg-neutral-800 rounded" />
+    </a>
+    <span :if="value() && !isImage()" aria-hidden="true" class="flex-none h-6 w-6 text-neutral-400 i-hugeicons-file-01"></span>
+    <span :if="!value()" aria-hidden="true" class="flex-none h-6 w-6 text-neutral-400 i-hugeicons-upload-01"></span>
+
+    <div class="flex-1 min-w-0 text-[13px]">
+      <a :if="value()" :href="value()" target="_blank" rel="noopener noreferrer" class="block text-blue-600 truncate dark:text-blue-400 hover:underline" data-upload-current>{{ fileName() }}</a>
+      <span :if="!value()" class="text-neutral-500 dark:text-neutral-400">No file chosen</span>
+    </div>
+
+    <label class="inline-flex flex-none items-center px-2.5 h-7 font-medium text-[12px] text-neutral-700 dark:text-neutral-200 bg-white dark:bg-white/10 border border-black/10 rounded-md dark:border-white/15" :class="disabled() || uploading() ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:bg-neutral-50 dark:hover:bg-white/15'">
+      <span aria-live="polite">{{ chooseLabel() }}</span>
+      <input
+        ref="modelUploadChooser"
+        :id="inputId()"
+        type="file"
+        class="sr-only"
+        :accept="accept() || null"
+        :disabled="disabled() || uploading()"
+        :aria-invalid="problem() ? 'true' : null"
+        @change="choose($event)"
+      />
+    </label>
+    <Button :if="value()" variant="ghost" size="sm" :disabled="disabled() || uploading()" @click="remove">Remove</Button>
+  </div>
+
+  <p :if="problem()" role="alert" class="mt-1.5 text-[12px] text-red-600 dark:text-red-400" :text="problem()"></p>
+  <p :if="!problem() && hint()" class="mt-1.5 text-[12px] text-stone-500 dark:text-neutral-400" :text="hint()"></p>
+</div>

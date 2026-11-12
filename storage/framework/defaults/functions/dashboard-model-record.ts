@@ -102,7 +102,7 @@ interface ModelShowResponse {
 
 /** A field of the create form, from the model's fillable attributes. */
 /** How a field is asked for: see `modelFieldType` on the server. */
-export type ModelFieldType = 'boolean' | 'date' | 'datetime' | 'email' | 'enum' | 'json' | 'longtext' | 'number' | 'relation' | 'text' | 'url'
+export type ModelFieldType = 'boolean' | 'date' | 'datetime' | 'email' | 'enum' | 'json' | 'longtext' | 'markdown' | 'number' | 'relation' | 'text' | 'upload' | 'url'
 
 /** The model a field or column points at: `team_id` is a Team. */
 export interface ModelRelationTarget {
@@ -133,6 +133,8 @@ export interface ModelCreateField {
   relation?: ModelRelationTarget
   /** A sentence under the input, from the model's `dashboard.fields`. */
   help?: string
+  /** For an `upload`: the kinds of file that may be chosen, as a file input's `accept` spells them. */
+  accept?: string
 }
 
 /** What a form holds for each field: a checkbox's state, or an input's text. */
@@ -696,6 +698,43 @@ export function modelActionNotice(action: ModelCustomAction, result: ModelAction
   if (result.ok)
     return { tone: 'success', title: action.label, detail: result.message || 'Done.' }
   return { tone: 'error', title: `${action.label} did not run`, detail: result.error }
+}
+
+export type ModelUploadResult = { ok: true, url: string } | { ok: false, error: string }
+
+/**
+ * Store the file chosen for one of a model's upload fields. Answers with the
+ * address it was stored at, which the form then holds as the field's value:
+ * nothing about a record changes until the form itself is saved.
+ */
+export async function uploadModelFile(slug: string, field: string, file: File): Promise<ModelUploadResult> {
+  const formData = new FormData()
+  formData.set('field', field)
+  formData.set('file', file)
+  try {
+    const stored = await dashboardApi<{ url?: string }>(`${modelPath(slug)}/uploads`, { method: 'POST', formData })
+    return typeof stored?.url === 'string' && stored.url ? { ok: true, url: stored.url } : { ok: false, error: 'The file was stored, but no address came back for it.' }
+  }
+  catch (reason) {
+    return { ok: false, error: reason instanceof Error ? reason.message : String(reason) }
+  }
+}
+
+/** Whether an address ends like a picture's, so it can be shown as one. */
+export function modelFileIsImage(address: string): boolean {
+  return /\.(?:avif|gif|jpe?g|png|svg|webp)(?:[?#].*)?$/i.test(address)
+}
+
+/** The last part of an address: the file's name, for a link to it. */
+export function modelFileName(address: string): string {
+  const last = (address.split(/[?#]/)[0] ?? '').split('/').filter(Boolean).pop() ?? address
+  try {
+    return decodeURIComponent(last)
+  }
+  catch {
+    // Not percent-encoding after all: the name as it is written.
+    return last
+  }
 }
 
 /** Where the invite page lives, remembering the list to return to. */

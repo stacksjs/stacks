@@ -154,7 +154,7 @@ onMount(() => {
       <Card padding="none">
         <h2 class="px-6 py-4 font-semibold text-base text-neutral-900 dark:text-white border-b border-neutral-200 dark:border-neutral-700">{{ modelName() }} Details</h2>
         <div class="p-6">
-          <ModelFieldInputs :fields="writable()" :values="values()" :errors="saveErrors()" :disabled="saving()" @change="setValue" />
+          <ModelFieldInputs :fields="writable()" :slug="slug()" :values="values()" :errors="saveErrors()" :disabled="saving()" @change="setValue" />
         </div>
       </Card>
 

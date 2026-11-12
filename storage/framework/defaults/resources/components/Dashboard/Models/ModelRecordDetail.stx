@@ -231,7 +231,7 @@ onMount(() => {
                 <img :src="detail.href" :alt="detail.label" loading="lazy" class="object-contain max-h-40 max-w-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 rounded-lg dark:border-neutral-700" />
               </a>
               <code :if="detail.kind === 'code'" class="px-1.5 py-0.5 break-all font-mono text-[13px] text-neutral-800 dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-800 rounded">{{ detail.value }}</code>
-              <span :if="detail.kind === 'text'" :class="detail.empty ? 'text-neutral-400 dark:text-neutral-500' : 'break-words text-neutral-700 dark:text-neutral-200'">{{ detail.value }}</span>
+              <span :if="detail.kind === 'text'" :class="detail.empty ? 'text-neutral-400 dark:text-neutral-500' : 'break-words whitespace-pre-line text-neutral-700 dark:text-neutral-200'">{{ detail.value }}</span>
             </dd>
           </div>
         </dl>
