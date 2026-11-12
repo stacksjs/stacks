@@ -15,6 +15,54 @@ function fixture(): string {
   return realpathSync(root)
 }
 
+/** Probe actual directory aliasing rather than infer it from the OS name. */
+function supportsAlias(name: string, alias: string): boolean {
+  const root = fixture()
+  mkdirSync(join(root, name))
+  return existsSync(join(root, alias))
+}
+
+for (const [name, alias] of [['Bundle', 'bundle'], ['Caf\u00e9', 'Cafe\u0301']]) {
+  test.skipIf(!supportsAlias(name!, alias!))(`directory ancestor alias ${JSON.stringify(name)} to ${JSON.stringify(alias)} preserves both trees`, async () => {
+    const root = fixture(), destination = join(root, name!), source = join(destination, 'candidate')
+    mkdirSync(source, { recursive: true })
+    writeFileSync(join(destination, 'retained.txt'), 'previous complete bundle')
+    writeFileSync(join(source, 'new.txt'), 'new complete bundle')
+    const result = await rename(source, join(root, alias!), { overwrite: true })
+    expect(result.isErr).toBe(true)
+    expect(existsSync(join(destination, 'retained.txt'))).toBe(true)
+    expect(readFileSync(join(destination, 'retained.txt'), 'utf8')).toBe('previous complete bundle')
+    expect(readFileSync(join(source, 'new.txt'), 'utf8')).toBe('new complete bundle')
+    expect(readdirSync(root).map(entry => entry.normalize('NFC'))).toEqual([name!.normalize('NFC')])
+  })
+}
+
+test('a lock identity read failure retains both payloads and reports the owned lock', async () => {
+  const root = fixture(), source = join(root, 'candidate'), destination = join(root, 'bundle')
+  mkdirSync(source); mkdirSync(destination)
+  writeFileSync(join(source, 'new.txt'), 'new complete bundle')
+  writeFileSync(join(destination, 'retained.txt'), 'previous complete bundle')
+  const failure = Object.assign(new Error('Injected lock identity EIO'), { code: 'EIO' })
+  const native = fs.lstatSync
+  let injected = false
+  const fault = spyOn(fs, 'lstatSync').mockImplementation((...args) => {
+    if (!injected && String(args[0]).includes('/.stacks-rename-')) { injected = true; throw failure }
+    return Reflect.apply(native, fs, args)
+  })
+  try {
+    const result = await rename(source, destination, { overwrite: true })
+    expect(result.isErr).toBe(true)
+    if (!result.isErr) return
+    expect(result.error).toBeInstanceOf(StorageRenameRecoveryError)
+    const recovery = result.error as StorageRenameRecoveryError
+    expect(recovery).toMatchObject({ phase: 'lock', cause: failure, installed: false })
+    expect(existsSync(recovery.lock)).toBe(true)
+    expect(readFileSync(join(destination, 'retained.txt'), 'utf8')).toBe('previous complete bundle')
+    expect(readFileSync(join(source, 'new.txt'), 'utf8')).toBe('new complete bundle')
+  }
+  finally { fault.mockRestore() }
+})
+
 test('overwriting an ancestor of the source fails without deleting either tree', async () => {
   const root = fixture(), destination = join(root, 'bundle'), source = join(destination, 'candidate')
   mkdirSync(source, { recursive: true })

@@ -99,9 +99,11 @@ export async function rename(
       return err(new Error(`File or directory does not exist: ${from}`))
 
     const source = canonicalEntry(from), destination = canonicalEntry(to)
-    const sameEntry = source === destination || matches(identity(source), identity(destination))
+    const sourceIdentity = identity(source), destinationIdentity = identity(destination)
+    const sameEntry = source === destination || matches(sourceIdentity, destinationIdentity)
     if (!sameEntry) {
-      if (beneath(source, destination) || beneath(destination, source))
+      if (beneath(source, destination) || beneath(destination, source)
+        || directoryContainsEntry(sourceIdentity, destination) || directoryContainsEntry(destinationIdentity, source))
         return err(new Error('Source and destination must not overlap'))
     }
 
@@ -148,7 +150,14 @@ function replaceEntry(source: string, destination: string, overwrite: boolean): 
   const lock = path.join(parent, `.stacks-rename-${createHash('sha256').update(destination.normalize('NFC').toLowerCase()).digest('hex')}`)
   try { fs.mkdirSync(lock, { mode: 0o700 }) }
   catch (error) { throw new StorageRenameRecoveryError(source, destination, lock, undefined, 'lock', false, error) }
-  const lockIdentity = identity(lock), backup = path.join(lock, 'previous'), journal = path.join(lock, 'operation.json')
+  let lockIdentity: Identity
+  try {
+    const observed = identity(lock)
+    if (!observed?.directory) throw new Error('The acquired storage rename lock changed')
+    lockIdentity = observed
+  }
+  catch (error) { throw new StorageRenameRecoveryError(source, destination, lock, undefined, 'lock', false, error) }
+  const backup = path.join(lock, 'previous'), journal = path.join(lock, 'operation.json')
   let moved = false, installed = false, previous: Identity | undefined
   const unchanged = (): void => {
     if (!matches(parentIdentity, identity(parent)) || !matches(sourceParentIdentity, identity(sourceParent)) || !matches(lockIdentity, identity(lock)))
@@ -231,4 +240,16 @@ function canonicalEntry(file: string): string {
 function beneath(child: string, parent: string): boolean {
   const route = relative(parent, child)
   return route !== '' && route !== '..' && !route.startsWith(`..${sep}`) && !isAbsolute(route)
+}
+
+/** Compare real directory identities so filesystem case/Unicode aliases count. */
+function directoryContainsEntry(directory: Identity | undefined, entry: string): boolean {
+  if (!directory?.directory) return false
+  let parent = path.dirname(entry)
+  for (;;) {
+    if (matches(directory, identity(parent))) return true
+    const next = path.dirname(parent)
+    if (next === parent) return false
+    parent = next
+  }
 }
