@@ -128,6 +128,7 @@
     "@stacksjs/git": "0.75.557",
     "@stacksjs/gitit": "^0.2.5",
     "@stacksjs/health": "0.75.557",
+    "@stacksjs/hq": "0.75.557",
     "@stacksjs/httx": "^0.1.10",
     "@stacksjs/image": "0.75.557",
     "@stacksjs/lint": "0.75.557",
