@@ -104,6 +104,8 @@ COMMIT;`,
     'DELETE FROM existing; ALTER TABLE existing ADD COLUMN;',
     'BEGIN; CREATE TABLE broken (id INTEGER,); COMMIT;',
     'DELETE FROM existing; UNKNOWN_SCHEMA;',
+    'SELECT 1; ALTER TABLE missing ADD COLUMN x TEXT;',
+    'PRAGMA foreign_keys; ALTER TABLE missing ADD COLUMN x TEXT;',
   ])('successful data or control statements cannot hide schema failure: %s', (sql) => {
     const dir = corpus({ '001-existing.sql': 'CREATE TABLE existing (id INTEGER PRIMARY KEY);', '002-mixed.sql': sql })
     try {
@@ -111,6 +113,35 @@ COMMIT;`,
       expect(result.tables).toEqual([{ table: 'existing', columns: { id: 'number' } }])
       expect(result.errors).toHaveLength(1)
       expect(result.errors[0]!.file).toEndWith('002-mixed.sql')
+    }
+    finally { cleanup(dir) }
+  })
+
+  test.each(['no such table', 'duplicate column name'])('constraint diagnostics mentioning %s remain errors', (name) => {
+    const dir = corpus({
+      '001-create.sql': `CREATE TABLE checks (n INTEGER CONSTRAINT "${name}" CHECK (n > 0));`,
+      '002-data.sql': 'INSERT INTO checks VALUES (-1);',
+    })
+    try {
+      const result = deriveMigrationTables(dir)
+      expect(result.tables.map(table => table.table)).toEqual(['checks'])
+      expect(result.errors).toHaveLength(1)
+      expect(result.errors[0]!.error).toBe(`CHECK constraint failed: ${name}`)
+    }
+    finally { cleanup(dir) }
+  })
+
+  test.each(['no such table: fake', 'duplicate column name: fake'])('trigger failures cannot impersonate %s', (message) => {
+    const dir = corpus({
+      '001-create.sql': `CREATE TABLE checks (n INTEGER);
+CREATE TRIGGER reject_insert BEFORE INSERT ON checks BEGIN SELECT RAISE(ABORT, '${message}'); END;`,
+      '002-data.sql': 'INSERT INTO checks VALUES (1);',
+    })
+    try {
+      const result = deriveMigrationTables(dir)
+      expect(result.tables.map(table => table.table)).toEqual(['checks'])
+      expect(result.errors).toHaveLength(1)
+      expect(result.errors[0]!.error).toBe(message)
     }
     finally { cleanup(dir) }
   })

@@ -29,7 +29,7 @@
  * answer the query.
  */
 
-import { Database } from 'bun:sqlite'
+import { Database, SQLiteError } from 'bun:sqlite'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 
 export type MigrationDialect = 'sqlite' | 'mysql' | 'postgres'
@@ -182,18 +182,19 @@ function applyMigration(db: Database, sql: string): { ok: boolean, error?: strin
   let failure: string | undefined
   for (const statement of statements) {
     const data = /^(DELETE|INSERT|UPDATE|REPLACE)$/.test(statement.keyword ?? '')
-    const control = /^(BEGIN|COMMIT|END|ROLLBACK|SAVEPOINT|RELEASE)$/.test(statement.keyword ?? '')
+    const schema = /^(CREATE|ALTER|DROP)$/.test(statement.keyword ?? '')
     try {
       db.exec(statement.sql)
-      if (!data && !control) appliedSchema++
+      if (schema) appliedSchema++
     }
     catch (err) {
-      const message = (err as Error).message
+      const message = err instanceof Error ? err.message : String(err)
+      const schemaDiagnostic = err instanceof SQLiteError && err.code === 'SQLITE_ERROR' && err.errno === 1
       // Model-only tables may be absent here. Other data errors still signal a
       // broken migration or scratch database and must remain visible.
-      if (data && /no such table/i.test(message)) continue
-      if (/duplicate column name/i.test(message)) appliedSchema++
-      else if (/^(CREATE|ALTER|DROP)$/.test(statement.keyword ?? '') && /no such table/i.test(message)) missingTable ??= message
+      if (schemaDiagnostic && data && /^no such table:/i.test(message)) continue
+      if (schemaDiagnostic && statement.keyword === 'ALTER' && /^duplicate column name:/i.test(message)) appliedSchema++
+      else if (schemaDiagnostic && schema && /^no such table:/i.test(message)) missingTable ??= message
       else failure ??= message
     }
   }
