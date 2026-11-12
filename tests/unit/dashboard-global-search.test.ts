@@ -12,7 +12,8 @@ describe('dashboard global search', () => {
 
     expect(action).toContain('definition.traits?.useSearch')
     expect(action).toContain('Array.isArray(search.searchable)')
-    expect(action).toContain('resolveModelSources()')
+    // The app's schema, listed once and without the generator's staging (dashboard-model-sources.test.ts).
+    expect(action).toContain('dashboardModelSources()')
     expect(action).toContain('searchModelRows(model.model')
     expect(action).not.toContain("import('bun:sqlite')")
     expect(action).toContain('hiddenModelColumns(definition)')

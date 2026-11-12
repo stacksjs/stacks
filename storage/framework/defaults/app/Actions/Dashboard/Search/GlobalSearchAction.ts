@@ -2,9 +2,8 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
 import { getDatabaseDialect, sqlHelpers } from '@stacksjs/database/runtime'
 import { overridesReady } from '@stacksjs/config'
-import { resolveModelSources } from '@stacksjs/database/model-sources'
 import { hiddenModelColumns } from '../../../../resources/functions/dashboard/model-columns'
-import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
+import { dashboardModelSources, resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
 import { dashboardOperationalError, dashboardOperationalIssue } from '../dashboard-response'
 
 interface SearchableModel {
@@ -87,13 +86,13 @@ function iconForModel(name: string): string {
 
 async function loadSearchableModels(): Promise<SearchableModel[]> {
   await overridesReady
-  const sources = resolveModelSources()?.models ?? []
+  const sources = dashboardModelSources()
 
   const models: SearchableModel[] = []
   for (const { name: fallbackName, file } of sources) {
     try {
       const module = await import(file)
-      const definition = await resolveDashboardModel(fallbackName, module.default ?? module)
+      const definition = await resolveDashboardModel(fallbackName, module.default ?? module, sources)
       if (!definition) continue
       const name = String(definition.name || fallbackName)
       const search = definition.traits?.useSearch

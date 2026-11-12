@@ -1,8 +1,7 @@
 import { Action } from '@stacksjs/actions/runtime'
 import { overridesReady, searchEngine } from '@stacksjs/config'
-import { resolveModelSources } from '@stacksjs/database/model-sources'
 import { searchIndexName, settingsFromSearchTrait, useSearchEngine } from '@stacksjs/search-engine'
-import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
+import { dashboardModelSources, resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
 import { dashboardOperationalError, dashboardOperationalIssue } from '../dashboard-response'
 
 export default new Action({
@@ -13,9 +12,10 @@ export default new Action({
     try {
       await overridesReady
       const models = []
-      for (const source of resolveModelSources()?.models ?? []) {
+      const sources = dashboardModelSources()
+      for (const source of sources) {
         const module = await import(source.file)
-        const Model = await resolveDashboardModel(source.name, module.default ?? module)
+        const Model = await resolveDashboardModel(source.name, module.default ?? module, sources)
         const trait = Model?.traits?.useSearch
         if (!trait) continue
         const settings = settingsFromSearchTrait(typeof trait === 'object' ? trait : {})

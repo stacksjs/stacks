@@ -1,9 +1,8 @@
 import { Action } from '@stacksjs/actions/runtime'
 import { overridesReady } from '@stacksjs/config'
-import { resolveModelSources } from '@stacksjs/database/model-sources'
 import { countRows } from '../../../../resources/functions/dashboard/data'
 import { dashboardOperationalError, dashboardOperationalIssue } from '../dashboard-response'
-import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
+import { dashboardModelSources, resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
 import { resolveDashboardIcon } from '../../../../resources/functions/dashboard/sidebar'
 import { isUnmigratedTable } from './model-migration'
 import { modelApiConfiguration } from './model-api'
@@ -110,8 +109,11 @@ export default new Action({
   async handle() {
     await overridesReady
     let merged: DiscoveredModel[]
+    // Listed once, and handed to every resolve below.
+    let sources: ReturnType<typeof dashboardModelSources>
     try {
-      merged = (resolveModelSources()?.models ?? []).map(model => ({
+      sources = dashboardModelSources()
+      merged = sources.map(model => ({
         name: model.name,
         file: model.file,
         source: model.origin === 'framework' ? 'framework' : 'userland',
@@ -125,7 +127,7 @@ export default new Action({
       let Model: any
       try {
         const module = await import(m.file)
-        Model = await resolveDashboardModel(m.name, module.default ?? module)
+        Model = await resolveDashboardModel(m.name, module.default ?? module, sources)
         if (!Model) return null
       }
       catch (error) {

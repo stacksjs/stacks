@@ -3,7 +3,7 @@ import { Glob } from 'bun'
 import { Action } from '@stacksjs/actions/runtime'
 import { path } from '@stacksjs/path'
 import { countRows } from '../../../../resources/functions/dashboard/data'
-import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
+import { dashboardModelSources, resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
 import { dashboardOperationalError } from '../dashboard-response'
 
 export default new Action({
@@ -16,10 +16,11 @@ export default new Action({
       const glob = new Glob('**/*.ts')
       const scanOptions = { cwd: path.userModelsPath(), onlyFiles: true }
       const displayModels: Model[] = []
+      const sources = dashboardModelSources()
 
       for await (const file of glob.scan(scanOptions)) {
         const candidate = (await import(path.userModelsPath(file))).default as Model
-        const model = await resolveDashboardModel(candidate.name || '', candidate)
+        const model = await resolveDashboardModel(candidate.name || '', candidate, sources)
         if (!model) continue
         if (model.dashboard?.highlight !== undefined && model.dashboard?.highlight !== false)
           displayModels.push(model)
@@ -29,7 +30,7 @@ export default new Action({
         // If no models should be highlighted, return up to 8 accessible models.
         for await (const file of glob.scan(scanOptions)) {
           const candidate = (await import(path.userModelsPath(file))).default as Model
-          const model = await resolveDashboardModel(candidate.name || '', candidate)
+          const model = await resolveDashboardModel(candidate.name || '', candidate, sources)
           if (!model) continue
           displayModels.push(model)
         }
