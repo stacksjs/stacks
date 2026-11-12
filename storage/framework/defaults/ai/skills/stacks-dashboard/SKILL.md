@@ -952,7 +952,8 @@ dashboard: {
 ```
 
 - Each entry is a button on the record's page and an icon in its row of the
-  model's list. `on: ['record']` or `on: ['row']` keeps it to one.
+  model's list. `on: ['record']` or `on: ['row']` keeps it to one, and
+  `'bulk'` offers it for the rows selected in the list (below).
 - `when` names the records it is for: each field with the value, or list of
   values, a record must hold (`null` is "nothing stored"). A field may be one
   the dashboard hides. The server decides which rows are sent which action
@@ -986,10 +987,44 @@ list is drawn, not when someone presses the button.
 (`Actions/Dashboard/Users/UserPasswordResetAction`), which mails the account's
 holder the "Forgot password" link. Remove the entry to turn it off.
 
-Not offered yet: an action on several selected rows, a form for an action
-that takes input (one with `validations` refuses with its field messages),
-and the hand-built Users, Teams and Subscribers lists, whose rows lead to the
-record page where the buttons are.
+Not offered yet: a form for an action that takes input (one with
+`validations` refuses with its field messages), and the hand-built Users,
+Teams and Subscribers lists, whose rows lead to the record page where the
+buttons are.
+
+### Rows are selected and acted on together
+
+A model's list has a tick box on each row, and one in the heading for every
+row on the page, whenever there is something to do with a selection:
+
+- **Delete**, where the model lets the dashboard delete its rows. Nothing is
+  declared.
+- **The model's own actions** that name `'bulk'` under `on`, alone or beside
+  `record` and `row`. Acting on many records is asked for by name; left out,
+  an action is offered one record at a time.
+
+With rows ticked, a bar above the table says how many and offers each of
+those. Every one asks first, whatever a single press does, and the
+confirmation says how many of the selection it applies to: a row an action's
+`when` rules out, or an account already anonymized, is left alone and
+counted. An action that applies to none of the selection cannot be pressed.
+
+A selection is acted on **one record at a time**, each through the endpoint a
+single row uses (`functions/dashboard-model-bulk.ts`). So an action needs
+nothing changed to be offered in bulk, every guard a single press has
+applies to each record (`when`, `authorize`, `validations`, the self-delete
+guard, anonymizing a user others refer to), and the page shows how far it
+has got.
+
+It is not all or nothing, and does not claim to be: a write through a model
+takes no part in a transaction (stacksjs/stacks#3269). The toast says what
+happened: how many were done and, for the rest, which and why ("Order 8:
+Already shipped."). A refusal about the record (any 4xx) goes on to the
+next. A failure that is not (a 5xx, no answer at all) stops the run and says
+where, so a broken backend is not pressed once per row.
+
+A selection is the rows on the page; it is dropped when the list is read
+again. Selecting every match across pages is not offered.
 
 ### A user other records refer to is anonymized, not refused
 
