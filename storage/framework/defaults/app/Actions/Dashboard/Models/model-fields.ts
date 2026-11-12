@@ -15,8 +15,13 @@ import { belongsToRelations } from './model-relations'
 export const MODEL_FIELD_FORMATS = ['badge', 'bytes', 'code', 'date', 'datetime', 'duration', 'image', 'link', 'money', 'number', 'percent', 'text'] as const
 export type ModelFieldFormat = typeof MODEL_FIELD_FORMATS[number]
 
-/** The text inputs a field of text can be given instead of the one derived for it. */
-export const MODEL_FIELD_INPUTS = ['email', 'longtext', 'text', 'url'] as const
+/**
+ * The inputs a field of text can be given instead of the one derived for it.
+ * All of them type or produce text: a line, a tall box, an address, Markdown
+ * with a toolbar and a preview, and a file chooser whose value is the
+ * address the chosen file was stored at.
+ */
+export const MODEL_FIELD_INPUTS = ['email', 'longtext', 'markdown', 'text', 'upload', 'url'] as const
 export type ModelFieldInput = typeof MODEL_FIELD_INPUTS[number]
 
 /** A format, with what it needs to be read: the currency of an amount, the unit of a duration. */
@@ -37,6 +42,8 @@ export interface ModelFieldOverride {
   help?: string
   display?: ModelFieldDisplay
   input?: ModelFieldInput
+  /** For `upload`: the kinds of file that may be chosen. */
+  accept?: string
 }
 
 function snakeCase(name: string): string {
@@ -53,6 +60,17 @@ export interface FieldAsking {
   label?: string
   help?: string
   input?: ModelFieldInput
+  /** For `upload`: the kinds of file that may be chosen, as a file input's `accept` spells them. */
+  accept?: string
+}
+
+/** One entry of an `accept`: a type (`image/png`), a family (`image/*`) or an extension (`.pdf`). */
+const ACCEPT_ENTRY = /^(?:[a-z]+\/(?:\*|[\w.+-]+)|\.[a-z\d]+)$/i
+
+/** Whether every kind an `accept` names is an image. */
+export function acceptsOnlyImages(accept: string | undefined): boolean {
+  const entries = (accept ?? '').split(',').map(entry => entry.trim().toLowerCase()).filter(Boolean)
+  return entries.length > 0 && entries.every(entry => entry.startsWith('image/') || /^\.(?:avif|gif|jpe?g|png|svg|webp)$/.test(entry))
 }
 
 /**
@@ -61,7 +79,7 @@ export interface FieldAsking {
  * input (`dashboard.actions[].fields`), so they are spelled the same way in
  * both. One that cannot be read is dropped on its own and said so.
  */
-export function readFieldAsking(called: string, settings: Record<string, unknown>, problems: string[]): FieldAsking {
+export function readFieldAsking(called: string, settings: Record<string, unknown>, problems: string[], inputs: readonly ModelFieldInput[] = MODEL_FIELD_INPUTS): FieldAsking {
   const asking: FieldAsking = {}
   if (settings.label !== undefined) {
     if (typeof settings.label === 'string' && settings.label.trim())
@@ -76,10 +94,19 @@ export function readFieldAsking(called: string, settings: Record<string, unknown
       problems.push(`${called} has help that is not text`)
   }
   if (settings.input !== undefined) {
-    if (MODEL_FIELD_INPUTS.includes(settings.input as ModelFieldInput))
+    if (inputs.includes(settings.input as ModelFieldInput))
       asking.input = settings.input as ModelFieldInput
     else
-      problems.push(`${called} asks for an input the dashboard does not have: '${String(settings.input)}' (it has ${list(MODEL_FIELD_INPUTS)})`)
+      problems.push(`${called} asks for an input the dashboard does not have: '${String(settings.input)}' (it has ${list(inputs)})`)
+  }
+  if (settings.accept !== undefined) {
+    const entries = typeof settings.accept === 'string' ? settings.accept.split(',').map(entry => entry.trim()).filter(Boolean) : []
+    if (asking.input !== 'upload')
+      problems.push(`${called} names the files it accepts, which only \`input: 'upload'\` reads`)
+    else if (entries.length > 0 && entries.every(entry => ACCEPT_ENTRY.test(entry)))
+      asking.accept = entries.join(',')
+    else
+      problems.push(`${called} names the files it accepts in a way that cannot be read: a list such as 'image/*' or 'application/pdf,.csv'`)
   }
   return asking
 }
@@ -156,6 +183,11 @@ export function modelFieldOverrides(Model: any): { fields: Record<string, ModelF
       else
         problems.push(`${called} names a unit that is not 'ms' or 's': '${String(settings.unit)}'`)
     }
+
+    // An uploaded file's address is somewhere to look: shown as the picture
+    // it is when only images may be chosen, as a link otherwise.
+    if (override.input === 'upload' && !override.display && settings.format === undefined)
+      override.display = { format: acceptsOnlyImages(override.accept) ? 'image' : 'link' }
 
     fields[relation ? relation.column : own] = override
   }

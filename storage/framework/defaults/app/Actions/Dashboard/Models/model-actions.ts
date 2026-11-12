@@ -18,7 +18,7 @@
 import type { ResponseStatus } from '@stacksjs/bun-router'
 import { response } from '@stacksjs/router'
 import { safeGet } from '../../../../resources/functions/dashboard/data'
-import { type FieldAsking, readFieldAsking } from './model-fields'
+import { type FieldAsking, MODEL_FIELD_INPUTS, readFieldAsking } from './model-fields'
 import { humanizeIdentifier, type ModelCreateField, modelFieldType } from './model-write'
 
 /**
@@ -71,7 +71,13 @@ const ROUTE_PARAMETERS: ReadonlySet<string> = new Set(['id', 'dashboardModel', '
 const UNASKABLE: ReadonlySet<string> = new Set(['array', 'binary', 'blob', 'file', 'object', 'password'])
 
 /** The kinds that are text, and may be given another text input. */
-const TEXT_KINDS: ReadonlySet<string> = new Set(['email', 'longtext', 'text', 'url'])
+const TEXT_KINDS: ReadonlySet<string> = new Set(['email', 'longtext', 'markdown', 'text', 'url'])
+
+/**
+ * The inputs an action's field can be given. Not a file chooser: an upload
+ * is stored against a model's field, and an action's input is not one.
+ */
+const ACTION_INPUTS = MODEL_FIELD_INPUTS.filter(input => input !== 'upload')
 
 /**
  * The form an action's input is asked for in, from the action's own
@@ -222,7 +228,7 @@ export function modelActionDefinitions(Model: any): { actions: ModelActionDefini
       else {
         for (const [field, settings] of Object.entries(entry.fields as Record<string, unknown>)) {
           if (settings && typeof settings === 'object' && !Array.isArray(settings))
-            asking[field] = readFieldAsking(`${called} field '${field}'`, settings as Record<string, unknown>, problems)
+            asking[field] = readFieldAsking(`${called} field '${field}'`, settings as Record<string, unknown>, problems, ACTION_INPUTS)
           else
             problems.push(`${called} field '${field}' is not an object of settings`)
         }

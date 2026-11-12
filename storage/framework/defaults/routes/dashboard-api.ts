@@ -529,6 +529,11 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   // "Mark as shipped". The parameters other than `id` are named so that an
   // action validating a `slug` or a `name` of its own does not read these.
   guard(route.post('/models/{dashboardModel}/{id}/actions/{dashboardAction}', 'Actions/Dashboard/Models/ModelActionRunAction'))
+  // The file chosen for a field a model asks for as one (`input: 'upload'`):
+  // stored, and its address answered for the form to hold. And how a field's
+  // Markdown reads, for the preview beside its editor. Neither writes a record.
+  guard(route.post('/models/{slug}/uploads', 'Actions/Dashboard/Models/ModelUploadAction'))
+  guard(route.post('/markdown', 'Actions/Dashboard/Models/ModelMarkdownAction'))
 
   // Error monitoring - the same native Error model aggregation exposed by
   // the token-authenticated `/api/monitoring` routes, projected through the

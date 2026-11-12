@@ -2839,6 +2839,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * POST /api/dashboard/markdown
+   */
+  postDashboardMarkdown(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/markdown", {}, [], null, "application/json", [], options)
+  },
+
+  /**
    * GET /api/dashboard/marketing/abandoned-carts
    */
   getDashboardMarketingAbandonedCarts(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
@@ -2990,6 +2997,13 @@ export function createClient(config: ClientConfig) {
    */
   getDashboardModelsSlugOptions(input: { "slug": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "GET", "/api/dashboard/models/{slug}/options", input ?? {}, [{"name":"slug","in":"path","required":true}], null, "application/json", [], options)
+  },
+
+  /**
+   * POST /api/dashboard/models/{slug}/uploads
+   */
+  postDashboardModelsSlugUploads(input: { "slug": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/models/{slug}/uploads", input ?? {}, [{"name":"slug","in":"path","required":true}], null, "application/json", [], options)
   },
 
   /**

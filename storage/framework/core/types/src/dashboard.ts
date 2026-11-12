@@ -420,12 +420,34 @@ export interface DashboardModelField {
   unit?: 'ms' | 's'
 
   /**
-   * Which text input a field of text gets, in place of the one derived for
-   * it: one line (`text`), a tall box (`longtext`), an address (`email`,
-   * `url`). Only for fields that are text: what a value is stays the
-   * validation rule's to say, so a number cannot be asked for as prose.
+   * Which input a field of text gets, in place of the one derived for it:
+   *
+   * - `text`: one line
+   * - `longtext`: a tall box
+   * - `email`, `url`: an address
+   * - `markdown`: an editor for Markdown, with a toolbar for the common
+   *   marks and a preview. The stored value is the Markdown itself.
+   * - `upload`: a file chooser. The chosen file is stored on the public
+   *   disk under `uploads/<table>/<column>/` with a generated name, and its
+   *   address becomes the field's value when the form is saved. `accept`
+   *   limits what may be chosen.
+   *
+   * Only for fields that are text: what a value is stays the validation
+   * rule's to say, so a number cannot be asked for as prose.
    */
-  input?: 'email' | 'longtext' | 'text' | 'url'
+  input?: 'email' | 'longtext' | 'markdown' | 'text' | 'upload' | 'url'
+
+  /**
+   * For `upload`: the kinds of file that may be chosen, as a file input's
+   * `accept` spells them: a type (`image/png`), a family (`image/*`), an
+   * extension (`.pdf`), or several separated by commas.
+   *
+   * The file chooser offers these, and the server holds to them by what the
+   * file's bytes say it is, not what it was sent as. A field that only takes
+   * images is shown as a picture without `format` being set; any other
+   * upload is shown as a link.
+   */
+  accept?: string
 }
 
 /**
@@ -501,9 +523,11 @@ export interface DashboardModelAction {
    * ```
    *
    * The same `label`, `help` and `input` a model's own `dashboard.fields`
-   * takes. A name the action does not validate is ignored and logged.
+   * takes, but for `upload`: a file is stored against a model's field, and
+   * an action's input is not one. A name the action does not validate is
+   * ignored and logged.
    */
-  fields?: Record<string, Pick<DashboardModelField, 'label' | 'help' | 'input'>>
+  fields?: Record<string, Pick<DashboardModelField, 'label' | 'help'> & { input?: Exclude<DashboardModelField['input'], 'upload'> }>
 
   /**
    * The records the action is for: each field with the value, or list of

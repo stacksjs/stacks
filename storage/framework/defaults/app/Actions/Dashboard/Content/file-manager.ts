@@ -2,7 +2,7 @@ import type { ResponseStatus } from '@stacksjs/bun-router'
 import { statfs } from 'node:fs/promises'
 import { posix } from 'node:path'
 import type { JobName } from '@stacksjs/queue'
-import type { StorageAdapter, StorageManager, UploadedFileLike, Visibility } from '@stacksjs/storage'
+import type { FilenameStrategy, StorageAdapter, StorageManager, UploadedFileLike, Visibility } from '@stacksjs/storage'
 import { Storage } from '@stacksjs/storage'
 import type { StorageItemMetadata, StorageItemTask, StorageMetadataStore, StorageTaskKind, StorageTaskState } from './file-metadata'
 import {
@@ -1108,7 +1108,13 @@ export async function reprocessDashboardFile(
 }
 
 export async function uploadDashboardFiles(
-  input: { disk?: string, path?: string, files: UploadedFileLike[] },
+  /**
+   * `filename` is how each stored name is chosen. The Files page keeps the
+   * name a file arrived with, so a folder reads as it was uploaded, and
+   * refuses a duplicate. An upload that only ever needs an address (a model
+   * field's file) asks for a generated one, which cannot collide.
+   */
+  input: { disk?: string, path?: string, files: UploadedFileLike[], filename?: FilenameStrategy },
   manager: Manager = Storage,
   store: StorageMetadataStore = databaseMetadataStore,
   dispatch: TaskDispatcher = queueDispatcher,
@@ -1122,7 +1128,7 @@ export async function uploadDashboardFiles(
       const result = await manager.put(file, {
         disk: selected.name,
         dir: directory,
-        filename: 'original',
+        filename: input.filename ?? 'original',
         overwrite: false,
       })
       uploaded.push({ path: result.path, url: result.url, size: result.size, tasks: [] })

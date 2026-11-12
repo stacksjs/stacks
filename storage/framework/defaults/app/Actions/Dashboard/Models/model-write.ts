@@ -81,10 +81,10 @@ export interface ModelWriteCapabilities {
  * own time zone; `relation` is another model's record, picked by name and
  * stored as its id.
  */
-export type ModelFieldType = 'boolean' | 'date' | 'datetime' | 'email' | 'enum' | 'json' | 'longtext' | 'number' | 'relation' | 'text' | 'url'
+export type ModelFieldType = 'boolean' | 'date' | 'datetime' | 'email' | 'enum' | 'json' | 'longtext' | 'markdown' | 'number' | 'relation' | 'text' | 'upload' | 'url'
 
-/** The kinds that are a line or a box of text, and may be given another text input. */
-const TEXT_KINDS: ReadonlySet<ModelFieldType> = new Set(['email', 'longtext', 'text', 'url'])
+/** The kinds whose value is text, and may be given another input that produces text. */
+const TEXT_KINDS: ReadonlySet<ModelFieldType> = new Set(['email', 'longtext', 'markdown', 'text', 'upload', 'url'])
 
 export interface ModelCreateField {
   name: string
@@ -97,6 +97,8 @@ export interface ModelCreateField {
   relation?: { model: string, slug: string, label: string }
   /** What the model says under the input: its `dashboard.fields` help. */
   help?: string
+  /** For an `upload`: the kinds of file that may be chosen. */
+  accept?: string
 }
 
 export interface PreparedModelFields {
@@ -407,6 +409,7 @@ export function modelCreateFields(Model: any): ModelCreateField[] {
       defaultValue: definition.default ?? (type === 'boolean' ? false : ''),
       options,
       ...(override?.help ? { help: override.help } : {}),
+      ...(type === 'upload' && override?.accept ? { accept: override.accept } : {}),
     })
   }
 
