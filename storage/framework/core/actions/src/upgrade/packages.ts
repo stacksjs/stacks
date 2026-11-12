@@ -8,7 +8,7 @@
 import { existsSync, lstatSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import process from 'node:process'
-import { runCommand } from '@stacksjs/cli'
+import { buddyOptionArgs, runCommand } from '@stacksjs/cli'
 import { installedDefaultsVersion } from '@stacksjs/path'
 import { runPostSyncAiRefresh, runPostSyncDatabaseTypesRefresh } from './framework-hooks'
 import {
@@ -40,6 +40,10 @@ export interface PackageUpgradeOptions {
    * upgrade's output looking for smaller numbers (stacksjs/stacks#3011).
    */
   allowDowngrade?: boolean
+  /** Internal one-shot handoff, shared with the vendored upgrader's restart protocol. */
+  restarted?: boolean
+  /** The bootstrap installed or changed manifests before its one-shot handoff. */
+  changedBeforeRestart?: boolean
 }
 
 export interface PkgJson {
@@ -531,7 +535,12 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
   // package at the version the manifest now declares (a newer patch the app
   // kept, or the release's own pin).
   const installedPins = declaredPins(pkg, [...Object.keys(runtimePins), ...Object.keys(craftPins)])
-  const projectManifestChanges = migratePackageProjectManifest(pkg)
+  // Dependency declarations bootstrap installation. Normal runs leave script
+  // and workspace migrations to the installed target, which may be newer than
+  // this CLI. A preview or manifest-only run cannot load an uninstalled target.
+  const projectManifestChanges = options.restarted || options.dryRun || options.noPostinstall
+    ? migratePackageProjectManifest(pkg)
+    : []
 
   // The root manifest is not the whole story. An app that keeps parts of the
   // framework in its own tree has manifests under storage/framework that
@@ -647,7 +656,7 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
   // version, so the same command repairs even a partially completed install.
   const dependenciesNeedInstall = needsFrameworkInstall(projectRoot, target, installedPins)
 
-  if (changes.length > 0 || manifestChanges.length > 0 || projectManifestChanges.length > 0 || dependenciesNeedInstall || options.force) {
+  if (changes.length > 0 || manifestChanges.length > 0 || projectManifestChanges.length > 0 || dependenciesNeedInstall || (options.force && !options.restarted)) {
     console.log('  Installing…\n')
     const lockBefore = lockfileVersion(projectRoot)
     if (lockBefore !== null) {
@@ -674,6 +683,59 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
   if (installed !== target) {
     console.error(`\n✗ Requested stacks@${target}, but the installed package reports ${installed ?? 'no readable version'}. The installed files are retained for diagnosis; managed defaults were not synchronized.\n`)
     process.exit(1)
+  }
+
+  // Installation can replace the package that this process already imported.
+  // The installed target owns its scaffold migrations, not the bootstrap CLI
+  // or a pre-install module cache. Restart once before interpreting those files.
+  if (!options.restarted) {
+    const forwarded = { ...options }
+    delete forwarded.restarted
+    delete forwarded.changedBeforeRestart
+    const changed = changes.length > 0 || manifestChanges.length > 0 || projectManifestChanges.length > 0 || dependenciesNeedInstall
+    const args = [...buddyOptionArgs({ ...forwarded, version: target }), '--__restarted', ...(changed ? ['--__upgrade-changed'] : [])]
+    // Discovery belongs in the fresh process too: Bun can retain a host
+    // NODE_PATH resolution made before the target package was installed.
+    const entrypoint = `
+const { readFileSync, realpathSync } = await import('node:fs')
+const { dirname, isAbsolute, join, relative, sep } = await import('node:path')
+const target = ${JSON.stringify(target)}
+try {
+  const base = join(process.cwd(), 'node_modules/stacks')
+  const manifestPath = Bun.resolveSync('@stacksjs/actions/package.json', base)
+  const root = realpathSync(dirname(manifestPath))
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
+  if (manifest.name !== '@stacksjs/actions' || manifest.version !== target)
+    throw new Error('Requested stacks@' + target + ', but the installed @stacksjs/actions reports ' + String(manifest.version) + ' at ' + manifestPath + '.')
+  let entry
+  try { entry = realpathSync(Bun.resolveSync('@stacksjs/actions/upgrade/framework', base)) }
+  catch { throw new Error('The installed @stacksjs/actions@' + target + ' has no framework upgrade entry.') }
+  const path = relative(root, entry)
+  if (isAbsolute(path) || path.split(sep)[0] === '..')
+    throw new Error('The installed @stacksjs/actions@' + target + ' upgrade entry escapes its package.')
+  console.log('  Continuing with the installed upgrade actions at ' + target + '.\\n')
+  process.argv = [process.argv[0], entry, ...${JSON.stringify(args)}]
+  await import(entry)
+}
+catch (error) {
+  console.error('\\n✗ ' + (error instanceof Error ? error.message : String(error)) + ' The installed files are retained; target migrations were not completed.\\n')
+  process.exit(1)
+}
+`
+    try {
+      const child = Bun.spawn({
+        cmd: ['bun', '-e', entrypoint],
+        cwd: projectRoot,
+        stdin: 'inherit',
+        stdout: 'inherit',
+        stderr: 'inherit',
+      })
+      process.exit(await child.exited)
+    }
+    catch (error) {
+      console.error(`\n✗ ${error instanceof Error ? error.message : String(error)} The installed files are retained; target migrations were not completed.\n`)
+      process.exit(1)
+    }
   }
 
   const defaultsPackageRoot = join(projectRoot, 'node_modules/@stacksjs/defaults')
@@ -706,7 +768,7 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
   // new framework version can change them without the app touching a model.
   // Rewritten whenever the framework moved, in a child process for the same
   // reason as the auto-imports: this one may still hold the pre-install ORM.
-  if (changes.length > 0 || dependenciesNeedInstall || structureChanges.length > 0 || options.force)
+  if (changes.length > 0 || dependenciesNeedInstall || structureChanges.length > 0 || options.force || options.changedBeforeRestart)
     await regenerateDatabaseTypes(projectRoot)
 
   try {
@@ -722,6 +784,7 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
   }
 
   const didChange = changes.length > 0
+    || options.changedBeforeRestart
     || manifestChanges.length > 0
     || projectManifestChanges.length > 0
     || dependenciesNeedInstall

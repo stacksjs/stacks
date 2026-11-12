@@ -1,8 +1,11 @@
 import type { CLI, UpgradeOptions } from '@stacksjs/types'
+import { existsSync } from 'node:fs'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
+import { upgradeStacksPackages } from '@stacksjs/actions/upgrade/packages'
 import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
+import { projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { resultFailed } from '../result'
 
@@ -68,6 +71,12 @@ export function upgrade(buddy: CLI): void {
       }
 
       const perf = await intro('buddy upgrade')
+      // The compiled CLI must bootstrap package upgrades with its own code.
+      // runAction intentionally prefers project files, which may still be an
+      // older upgrader that cannot run the target release's migrations.
+      if (!existsSync(projectPath('storage/framework/core')))
+        await upgradeStacksPackages(projectPath(), opts)
+
       const result = await runAction(Action.UpgradeFramework, opts)
 
       if (resultFailed(result)) {

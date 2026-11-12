@@ -59,6 +59,14 @@ When `storage/framework/core` is absent, the upgrade selects a published
 and installs that exact target. It checks the installed version before syncing
 managed project files from `@stacksjs/defaults`.
 
+The invoking CLI bootstraps the install. Completion then runs once in a fresh
+Bun process using the installed target's matching actions package. This lets
+the target apply its own scaffold migrations even when the app started with
+older actions or the target is newer than the CLI. A failed target migration
+fails the upgrade and retains the installed files for diagnosis. A dry-run
+does not install or invoke the target; its scaffold preview uses the currently
+installed framework.
+
 The sync refreshes launch scripts, supported project configuration, and an
 existing vendored defaults copy. Apps using a link to `@stacksjs/defaults`
 continue to use that package. A copied defaults tree receives a version stamp

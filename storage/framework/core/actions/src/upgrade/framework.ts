@@ -67,6 +67,7 @@ interface UpgradeOptions {
 }
 
 const options = parseOptions() as UpgradeOptions
+const alreadyRestarted = process.argv.includes('--__restarted')
 
 const projectRoot = p.projectPath()
 
@@ -84,6 +85,8 @@ if (!existsSync(p.projectPath('storage/framework/core'))) {
     dryRun: options.dryRun,
     noPostinstall: options.noPostinstall ?? options.postinstall === false,
     allowDowngrade: options.allowDowngrade,
+    restarted: alreadyRestarted,
+    changedBeforeRestart: process.argv.includes('--__upgrade-changed'),
   })
 }
 
@@ -140,7 +143,6 @@ if (options.dryRun) {
 // hand edits inside framework code. The internal restart skips this duplicate
 // check because its parent already validated the tree before intentionally
 // syncing these managed paths.
-const alreadyRestarted = process.argv.includes('--__restarted')
 if (shouldCheckDirtyManagedPaths({ force: !!options.force, alreadyRestarted })) {
   const dirty = await detectDirtyManagedPaths(projectRoot)
   if (dirty.length > 0) {
