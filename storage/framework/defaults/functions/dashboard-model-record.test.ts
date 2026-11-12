@@ -1,18 +1,24 @@
 import { describe, expect, it } from 'bun:test'
+import { modelColumnLabel } from '../app/Actions/Dashboard/Models/model-write'
 import { DashboardApiError } from './dashboard-api'
 import { modelDeleteNotice, modelDeleteWarning, modelFieldColumn, modelFieldError, modelFieldInputValue, modelFieldPayloadValue, modelFormPayload, modelFormPrefill, modelFormValues, modelListColumnNames, modelListFilters, modelRecordBackHref, modelRecordCreateHref, modelRecordEditHref, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRecordTitle, modelRelatedCreateHref, modelRelatedListHref, modelRelationCell, modelWriteFailure, userInviteHref } from './dashboard-model-record'
-import type { ModelCreateField, ModelRecord, ModelRelatedPanel } from './dashboard-model-record'
+import type { ModelColumn, ModelCreateField, ModelRecord, ModelRelatedPanel } from './dashboard-model-record'
+
+// ModelShowAction resolves these labels before sending columns to the browser.
+function columnMetadata(columns: Array<Pick<ModelColumn, 'name' | 'type'>>, Model: object = {}, relations: ModelRecord['relations'] = {}): ModelColumn[] {
+  return columns.map(column => ({ ...column, label: modelColumnLabel(Model, column.name, relations[column.name]?.label) }))
+}
 
 const record: ModelRecord = {
   modelName: 'Team',
   row: { id: 4, name: 'PrimeSoft Ltd', description: null, status: 'active', created_at: '2026-08-08' },
-  columns: [
-    { name: 'id', label: 'Id', type: 'number' },
-    { name: 'name', label: 'Name', type: 'text' },
-    { name: 'description', label: 'Description', type: 'text' },
-    { name: 'status', label: 'Status', type: 'text' },
-    { name: 'created_at', label: 'Created At', type: 'date' },
-  ],
+  columns: columnMetadata([
+    { name: 'id', type: 'number' },
+    { name: 'name', type: 'text' },
+    { name: 'description', type: 'text' },
+    { name: 'status', type: 'text' },
+    { name: 'created_at', type: 'date' },
+  ]),
   updateColumns: ['name', 'description', 'status'],
   fields: [],
   relations: {},
@@ -102,22 +108,21 @@ describe('a model record on its own page', () => {
     modelName: 'User',
     tableName: 'users',
     row: { id: 13, uuid: null, name: 'Ava', email: 'ava@example.com', avatar: null, status: 'active', two_factor_enabled: 0, login_count: 4, team_id: 2, meta: { plan: 'pro' }, created_at: '2026-11-05T23:01:51.038Z', updated_at: null, email_verified_at: null },
-    // Labelled as the server labels them (modelColumnLabel): the page draws the label it is given.
-    columns: [
-      { name: 'id', label: 'ID', type: 'number' },
-      { name: 'uuid', label: 'UUID', type: 'text' },
-      { name: 'name', label: 'Name', type: 'text' },
-      { name: 'email', label: 'Email', type: 'text' },
-      { name: 'avatar', label: 'Avatar', type: 'text' },
-      { name: 'status', label: 'Status', type: 'text' },
-      { name: 'two_factor_enabled', label: 'Two Factor Enabled', type: 'boolean' },
-      { name: 'login_count', label: 'Login Count', type: 'number' },
-      { name: 'team_id', label: 'Team ID', type: 'number' },
-      { name: 'meta', label: 'Meta', type: 'json' },
-      { name: 'created_at', label: 'Created', type: 'date' },
-      { name: 'updated_at', label: 'Last Updated', type: 'date' },
-      { name: 'email_verified_at', label: 'Email Verified', type: 'text' },
-    ],
+    columns: columnMetadata([
+      { name: 'id', type: 'number' },
+      { name: 'uuid', type: 'text' },
+      { name: 'name', type: 'text' },
+      { name: 'email', type: 'text' },
+      { name: 'avatar', type: 'text' },
+      { name: 'status', type: 'text' },
+      { name: 'two_factor_enabled', type: 'boolean' },
+      { name: 'login_count', type: 'number' },
+      { name: 'team_id', type: 'number' },
+      { name: 'meta', type: 'json' },
+      { name: 'created_at', type: 'date' },
+      { name: 'updated_at', type: 'date' },
+      { name: 'email_verified_at', type: 'text' },
+    ]),
     updateColumns: [],
     fields: [],
     relations: {},
@@ -160,6 +165,14 @@ describe('a model record on its own page', () => {
   it('leaves out a card with nothing in it', () => {
     const sections = modelRecordSections({ ...user, columns: user.columns.filter(column => column.name === 'name') })
     expect(sections.map(section => section.id)).toEqual(['information'])
+  })
+
+  it('preserves the model\'s own identifier and timestamp headings', () => {
+    const Model = { dashboard: { fields: { uuid: { label: 'Uuid' }, updated_at: { label: 'Updated At' } } } }
+    const columns = columnMetadata([{ name: 'uuid', type: 'text' }, { name: 'updated_at', type: 'date' }], Model)
+    const by = Object.fromEntries(modelRecordSections({ ...user, columns }).flatMap(section => section.details).map(detail => [detail.name, detail]))
+    expect(by.uuid).toMatchObject({ label: 'Uuid', value: 'No uuid', empty: true })
+    expect(by.updated_at).toMatchObject({ label: 'Updated At', value: 'Not yet', empty: true })
   })
 
   it('names the list in the breadcrumb', () => {
@@ -268,18 +281,19 @@ describe('a field that points at another model\'s record', () => {
 })
 
 describe('a record\'s page names the records it points at', () => {
+  const relations: ModelRecord['relations'] = { team_id: { model: 'Team', slug: 'team', label: 'Team' }, user_id: { model: 'User', slug: 'user', label: 'User' } }
   const member: ModelRecord = {
     modelName: 'Team Member',
     row: { id: 9, team_id: 3, user_id: null, role: 'member' },
-    columns: [
-      { name: 'id', label: 'ID', type: 'number' },
-      { name: 'team_id', label: 'Team', type: 'number' },
-      { name: 'user_id', label: 'User', type: 'number' },
-      { name: 'role', label: 'Role', type: 'text' },
-    ],
+    columns: columnMetadata([
+      { name: 'id', type: 'number' },
+      { name: 'team_id', type: 'number' },
+      { name: 'user_id', type: 'number' },
+      { name: 'role', type: 'text' },
+    ], {}, relations),
     updateColumns: [],
     fields: [],
-    relations: { team_id: { model: 'Team', slug: 'team', label: 'Team' }, user_id: { model: 'User', slug: 'user', label: 'User' } },
+    relations,
     relationNames: {},
     writeCapabilities: { create: true, update: true, destroy: true, invite: false, anonymize: false },
     anonymized: false,
@@ -302,6 +316,14 @@ describe('a record\'s page names the records it points at', () => {
 
   it('leaves the record\'s own id alone', () => {
     expect(identifiers().find(detail => detail.name === 'id')).toMatchObject({ label: 'ID', value: '9', kind: 'text' })
+  })
+
+  it('preserves a model\'s relation heading instead of substituting the related model\'s name', () => {
+    const Model = { dashboard: { fields: { team: { label: 'Team ID' }, user: { label: 'Owner' } } }, belongsTo: ['Team', 'User'] }
+    const columns = columnMetadata([{ name: 'team_id', type: 'number' }, { name: 'user_id', type: 'number' }], Model, relations)
+    const by = Object.fromEntries(modelRecordSections({ ...member, columns }, { team_id: 'PrimeSoft Ltd' }).flatMap(section => section.details).map(detail => [detail.name, detail]))
+    expect(by.team_id).toMatchObject({ label: 'Team ID', value: 'PrimeSoft Ltd', kind: 'link', href: '/models/team/3' })
+    expect(by.user_id).toMatchObject({ label: 'Owner', value: 'No owner', empty: true })
   })
 })
 

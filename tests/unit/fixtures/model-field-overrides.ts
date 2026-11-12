@@ -8,6 +8,8 @@
  * Spawned by dashboard-model-field-overrides.test.ts.
  */
 import assert from 'node:assert/strict'
+import type { ModelColumn, ModelRecord } from '../../../storage/framework/defaults/functions/dashboard-model-record'
+import { modelRecordSections } from '../../../storage/framework/defaults/functions/dashboard-model-record'
 
 const database = process.env.DB_DATABASE_PATH
 assert(database)
@@ -71,7 +73,7 @@ const show = async () => await ModelShowAction.handle({
   get: (_key: string, fallback?: unknown) => fallback,
   all: () => ({}),
   query: {},
-} as any) as { columnMeta: Array<Record<string, any>>, updateFields: Array<Record<string, any>>, listColumns: string[] }
+} as any) as { columnMeta: ModelColumn[], rows: Array<Record<string, unknown>>, relations: ModelRecord['relations'], updateFields: Array<Record<string, any>>, listColumns: string[] }
 const listed = await show()
 await show()
 console.warn = warn
@@ -91,6 +93,22 @@ assert.equal(column('password_changed_at').label, 'Password Changed')
 assert.equal(column('updated_at').label, 'Last Updated')
 assert.equal(column('uuid').label, 'UUID')
 console.log('PASS the list is told each field\'s heading and format')
+
+// Feed the actual action response to the record page, preserving the server's
+// resolved defaults and the model's explicit headings without relabeling them.
+const shown = Object.fromEntries(modelRecordSections({
+  modelName: 'User', row: listed.rows.find(row => row.id === 1)!, columns: listed.columnMeta,
+  fields: [], updateColumns: [], relations: listed.relations, relationNames: {},
+  writeCapabilities: { create: false, update: false, destroy: false, invite: false, anonymize: false },
+  anonymized: false, actions: [],
+}).flatMap(section => section.details).map(detail => [detail.name, detail]))
+assert.equal(shown.uuid!.label, 'UUID')
+assert.equal(shown.uuid!.value, 'No UUID')
+assert.equal(shown.created_at!.label, 'Joined')
+assert.equal(shown.updated_at!.label, 'Last Updated')
+assert.equal(shown.email_verified_at!.label, 'Verified')
+assert.equal(shown.name!.label, 'Full name')
+console.log('PASS the record page preserves the actual server metadata')
 
 // 2. The edit form: the same label, the model's help, the input it asked for.
 const field = (name: string) => listed.updateFields.find(entry => entry.name === name)!
