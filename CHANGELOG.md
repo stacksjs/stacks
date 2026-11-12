@@ -1,5 +1,22 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.556...v0.75.557)
+
+## ✨ Features
+
+- **dashboard**: one timer and one quiet panel for a page that is loading ([b2ba008](https://github.com/stacksjs/stacks/commit/b2ba008)) _(by glennmichael123)_ ([#3283](https://github.com/stacksjs/stacks/issues/3283))
+
+## 🐛 Bug Fixes
+
+- **desktop**: build:desktop hands stx the app's component directories, as dev:desktop does ([ac4134c](https://github.com/stacksjs/stacks/commit/ac4134c)) _(by Chris)_
+- **dashboard**: the record, form and overview pages load like the list does ([96d714c](https://github.com/stacksjs/stacks/commit/96d714c)) _(by glennmichael123)_ ([#3283](https://github.com/stacksjs/stacks/issues/3283))
+- **dashboard**: the model list says nothing it does not know while it loads ([542a0a0](https://github.com/stacksjs/stacks/commit/542a0a0)) _(by glennmichael123)_ ([#3282](https://github.com/stacksjs/stacks/issues/3282))
+
+## Contributors
+
+- _Chris_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.555...v0.75.556)
 
 ## 🐛 Bug Fixes
