@@ -92,7 +92,7 @@ export function desktopRelease(buddy: CLI): void {
       const perf = await intro('buddy release:desktop')
       const { hasWebviewDesktop } = await import('@stacksjs/desktop-build')
       if (!(await hasWebviewDesktop(projectPath()))) {
-        log.error('config/desktop.ts has no webview section. `release:desktop` releases a web view desktop app; a Mac App Store app is `desktop:apple:publish`.')
+        await log.error('config/desktop.ts has no webview section. `release:desktop` releases a web view desktop app; a Mac App Store app is `desktop:apple:publish`.')
         process.exit(ExitCode.FatalError)
       }
       Object.assign(process.env, releaseDesktopEnvironment(options))
