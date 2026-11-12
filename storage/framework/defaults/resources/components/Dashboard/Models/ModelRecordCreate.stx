@@ -7,13 +7,16 @@
 // page.
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
 import type { ModelCreateForm, ModelFormValues } from '../../../../functions/dashboard-model-record'
-import { createModelRecord, fetchModelCreateForm, modelFormPayload, modelFormPrefill, modelFormValues, modelRecordBackHref, modelRecordHref, modelRecordListLabel, userInviteHref } from '../../../../functions/dashboard-model-record'
+import { createModelRecord, fetchModelCreateForm, modelNameFromSlug, modelFormPayload, modelFormPrefill, modelFormValues, modelRecordBackHref, modelRecordHref, modelRecordListLabel, userInviteHref } from '../../../../functions/dashboard-model-record'
+import { dashboardLoaderTimer } from '../../../../functions/dashboard-loading'
 import { pushToast } from '../../../../functions/toasts'
 
 const navigation = useNavigation()
 const form = state<ModelCreateForm | null>(null)
 const values = state<ModelFormValues>({})
 const loading = state(true)
+// Set once the request has taken long enough to say so (dashboard-loading.ts).
+const slow = state(false)
 const loadError = state('')
 const creating = state(false)
 const createError = state('')
@@ -27,7 +30,8 @@ function slug(): string {
 const from = navigation.urlQuery('from')
 const listHref = derived(() => modelRecordBackHref(slug(), from))
 const listLabel = derived(() => modelRecordListLabel(form(), listHref()))
-const modelName = derived(() => form()?.modelName || 'Record')
+// Known from the address before the form comes, so the heading does not change.
+const modelName = derived(() => form()?.modelName || modelNameFromSlug(slug()))
 const fields = derived(() => form()?.fields ?? [])
 const canCreate = derived(() => Boolean(form()?.canCreate) && fields().length > 0)
 /** A model added by invitation has no form here; the page points at the one that does. */
@@ -44,6 +48,7 @@ function setValue(change: { name: string, value: string | boolean }): void {
 async function loadForm(): Promise<void> {
   loading.set(true)
   loadError.set('')
+  const settle = dashboardLoaderTimer(slow)
   try {
     const loaded = await fetchModelCreateForm(slug())
     form.set(loaded)
@@ -55,6 +60,7 @@ async function loadForm(): Promise<void> {
     loadError.set(error instanceof Error ? error.message : 'This form could not be loaded.')
   }
   finally {
+    settle()
     loading.set(false)
   }
 }
@@ -100,10 +106,7 @@ onMount(() => {
     <h1 class="font-bold text-3xl text-neutral-900 tracking-tight truncate dark:text-white">Create {{ modelName() }}</h1>
   </header>
 
-  <div :if="loading()" class="flex items-center justify-center py-20 text-neutral-500 text-sm dark:text-neutral-400">
-    <span aria-hidden="true" class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>
-    Loading form
-  </div>
+  <QuietLoader :if="loading()" :slow="slow()" label="Loading form" />
 
   <div :if="!loading() && loadError()" role="alert" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg dark:border-red-900">
     <span>{{ loadError() }}</span>

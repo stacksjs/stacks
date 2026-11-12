@@ -2,7 +2,8 @@ import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { statsOnly } from '../../storage/framework/defaults/app/Actions/Dashboard/Data/data-records'
 import { MODEL_BADGE_COLUMNS, modelBadgeTone, modelCellDisplay } from '../../storage/framework/defaults/functions/dashboard-model-format'
-import { modelRecordSections } from '../../storage/framework/defaults/functions/dashboard-model-record'
+import { DASHBOARD_LOADER_DELAY, dashboardLoaderTimer, dashboardReloadingClass } from '../../storage/framework/defaults/functions/dashboard-loading'
+import { modelNameFromSlug, modelRecordSections } from '../../storage/framework/defaults/functions/dashboard-model-record'
 
 /**
  * The Users, Teams and Subscribers pages are the model's own list
@@ -95,52 +96,116 @@ describe('a page hosts the model\'s list', () => {
   })
 })
 
-describe('while a list is being asked for', () => {
-  const list = read(`${components}/Models/ModelRecordsDashboard.stx`)
+describe('while a page is being asked for', () => {
+  const models = `${components}/Models`
+  const list = read(`${models}/ModelRecordsDashboard.stx`)
   const script = list.slice(0, list.indexOf('</script>'))
   const template = list.slice(list.indexOf('</script>'))
   const hosted = read(`${components}/Data/DataModelRecords.stx`)
+  const loader = read(`${components}/UI/QuietLoader.stx`)
+  const pages = ['ModelRecordsDashboard', 'ModelRecordDetail', 'ModelRecordEdit', 'ModelRecordCreate', 'ModelsOverview']
 
-  it('there is no skeleton: not in the table, not in the page\'s cards', () => {
-    // Before a column is known the placeholder rows were a lone bar each under
-    // "Actions", over a footer that said "No records" and "1 / 1".
-    expect(list).not.toContain('animate-pulse')
-    expect(list).not.toMatch(/skeleton/i)
+  it('there is no skeleton on any of the model pages', () => {
+    // The list's placeholder rows were a lone bar each under "Actions", over a
+    // footer that said "No records"; the overview's were six grey blocks.
+    for (const page of [...pages, 'ModelRelatedPanels'])
+      expect(read(`${models}/${page}.stx`)).not.toMatch(/animate-pulse|skeleton/i)
     expect(hosted).not.toContain('animate-pulse')
     expect(hosted).not.toContain(':loading=')
+    expect(loader).not.toContain('animate-pulse')
   })
 
-  it('before the first answer it draws one quiet card and no table', () => {
+  it('a page says it is loading only when that takes long enough to notice', async () => {
+    expect(DASHBOARD_LOADER_DELAY).toBe(250)
+    const said: boolean[] = []
+    const slow = { set: (value: boolean) => { said.push(value) } }
+    // Answered before the wait is up: nothing was ever said.
+    const quick = dashboardLoaderTimer(slow, 30)
+    await Bun.sleep(5)
+    quick()
+    await Bun.sleep(45)
+    expect(said).toEqual([false])
+    // Still waiting when it is up: said, and unsaid when the answer comes.
+    said.length = 0
+    const long = dashboardLoaderTimer(slow, 10)
+    await Bun.sleep(40)
+    expect(said).toEqual([true])
+    long()
+    expect(said).toEqual([true, false])
+  })
+
+  it('every one of them waits through the one timer, and ends the wait whether it is answered or refused', () => {
+    for (const page of pages) {
+      const source = read(`${models}/${page}.stx`)
+      expect(source).toContain('const slow = state(false)')
+      expect(source).toContain('const settle = dashboardLoaderTimer(slow)')
+      expect(source).toMatch(/finally \{\n {4}settle\(\)\n {4}loading\.set\(false\)/)
+      // Never its own timer, and never an unconditional spinner.
+      expect(source).not.toContain('setTimeout(')
+      expect(source.slice(source.indexOf('</script>'))).toContain(':slow="slow()"')
+    }
+  })
+
+  it('before a first answer it is one quiet panel, which says nothing until it is slow', () => {
+    expect(loader).toContain('<div role="status" aria-live="polite" data-quiet-loader :class="panelClass()">')
+    expect(loader).toContain('<p :if="slow()"')
+    expect(loader).toContain('<span :text="label()"></span>')
+    expect(template).toContain('<QuietLoader :if="!loaded()" :slow="slow()" :label="loadingLabel()" />')
+    expect(read(`${models}/ModelRecordDetail.stx`)).toContain('<QuietLoader :if="loading() && !record()" :slow="slow()" label="Loading record" />')
+    expect(read(`${models}/ModelRecordEdit.stx`)).toContain('<QuietLoader :if="loading()" :slow="slow()" label="Loading record" />')
+    expect(read(`${models}/ModelRecordCreate.stx`)).toContain('<QuietLoader :if="loading()" :slow="slow()" label="Loading form" />')
+    expect(read(`${models}/ModelsOverview.stx`)).toContain('<QuietLoader :if="loading() && !known()" :slow="slow()" label="Loading models" :framed="false" />')
+  })
+
+  it('the list draws no table, footer, count or empty state before its first answer', () => {
     expect(script).toContain('const loaded = state(false)')
-    expect(template).toContain('<div :if="!loaded()" role="status" aria-live="polite" data-first-load')
-    // The table, its footer, the empty state and the count wait for an answer.
     expect(template).toContain('<div :if="loaded() && !error() && migrated() && rows().length > 0"')
     expect(script).toContain('const isEmpty = derived(() => loaded() && !error() && migrated() && rows().length === 0)')
     expect(script).toMatch(/if \(!loaded\(\)\)\n {4}return description\(\)/)
-    expect(script).toMatch(/finally \{\n {4}clearTimeout\(waiting\)\n {4}slow\.set\(false\)\n {4}loading\.set\(false\)\n {4}loaded\.set\(true\)\n {2}\}/)
+    expect(script).toMatch(/settle\(\)\n {4}loading\.set\(false\)\n {4}loaded\.set\(true\)/)
   })
 
-  it('it says it is loading only when that takes long enough to notice', () => {
-    expect(script).toContain('const SLOW_AFTER = 250')
-    expect(script).toContain('const waiting = setTimeout(() => slow.set(true), SLOW_AFTER)')
-    const card = template.slice(template.indexOf('data-first-load'), template.indexOf('<div :if="loaded() && !error() && migrated() && rows().length > 0"'))
-    expect(card).toContain('<p :if="slow()"')
-    expect(card).toContain(':text="loadingLabel()"')
-  })
-
-  it('asking again keeps the rows that are there, dimmed, until the answer swaps them', () => {
-    // One body, never hidden: nothing collapses and jumps back on a keystroke.
+  it('asked again, what is on the page stays, dimmed, until the answer swaps it', () => {
+    expect(dashboardReloadingClass(true, 'grid')).toBe('grid opacity-50 pointer-events-none transition-opacity duration-150')
+    expect(dashboardReloadingClass(false, 'grid')).toBe('grid transition-opacity duration-150')
+    expect(dashboardReloadingClass(true)).toBe('opacity-50 pointer-events-none transition-opacity duration-150')
+    // The list: one body, never hidden, so nothing collapses on a keystroke.
     expect((template.match(/<tbody/g) || []).length).toBe(1)
     expect(template).toContain('<tbody :class="bodyClass()" :aria-busy="loading() ? \'true\' : null">')
-    expect(script).toMatch(/const bodyClass = derived\(\(\) => loading\(\)\n {2}\? '[^']*opacity-50 pointer-events-none[^']*'/)
+    expect(script).toContain('const bodyClass = derived(() => dashboardReloadingClass(loading(), \'divide-black/5 divide-y dark:divide-white/8\'))')
+    // The record, read again after one of its actions: its cards and its
+    // panels stay where they are.
+    const record = read(`${models}/ModelRecordDetail.stx`)
+    expect(record).toContain('<div :if="record()" :class="contentClass()" :aria-busy="loading() ? \'true\' : null" data-record-content>')
+    expect(record).toContain(':if="record() && related().length > 0"')
+    const load = record.slice(record.indexOf('async function loadRecord()'), record.indexOf('function reloadRelated'))
+    expect(load.slice(0, load.indexOf('catch'))).not.toContain('related.set([])')
+    // The overview, refreshed.
+    const overview = read(`${models}/ModelsOverview.stx`)
+    expect(overview).toContain('<div :if="known() && visibleModelCount() > 0" :class="groupsClass()" :aria-busy="loading() ? \'true\' : null" data-model-groups>')
+    expect(overview).toContain('<Button variant="secondary" :loading="refreshing()" :disabled="loading()" @click="loadModels">')
   })
 
-  it('a card says nothing until its number has come: a 0 is a count', () => {
+  it('a number is not given until it is known: a 0 is a count', () => {
     expect(hosted).toContain('const pageStats = state<DataStats | null>(null)')
     expect(hosted).toContain('return numbers ? Number(numbers[key] || 0).toLocaleString() : \'-\'')
+    const overview = read(`${models}/ModelsOverview.stx`)
+    expect(overview).toContain('return known() ? value.toLocaleString() : \'-\'')
+    expect((overview.match(/\{\{ registryCount\(/g) || []).length).toBe(3)
+    // Nor a count of matches, nor "no models", while it is still asking or after it failed.
+    expect(overview).toContain('const matchingLabel = derived(() => known() ? `${visibleModelCount()} matching ${visibleModelCount() === 1 ? \'model\' : \'models\'}` : \'\')')
+    expect(overview).toContain('<div :if="known() && visibleModelCount() === 0">')
+    expect(overview).toMatch(/catch \(error\) \{\n {4}known\.set\(false\)/)
   })
 
-  it('the search box is worded once, from the page\'s heading', () => {
+  it('a heading does not change when the answer comes', () => {
+    expect(modelNameFromSlug('user')).toBe('User')
+    expect(modelNameFromSlug('social-post')).toBe('Social Post')
+    expect(modelNameFromSlug('')).toBe('Record')
+    for (const page of ['ModelRecordDetail', 'ModelRecordEdit'])
+      expect(read(`${models}/${page}.stx`)).toContain('const modelName = derived(() => record()?.modelName || modelNameFromSlug(slug()))')
+    expect(read(`${models}/ModelRecordCreate.stx`)).toContain('const modelName = derived(() => form()?.modelName || modelNameFromSlug(slug()))')
+    // The list's search box is worded once, from the page's heading.
     expect(script).toContain('const searchPlaceholder = derived(() => `Search ${(heading() || modelName() || \'records\').toLowerCase()}`)')
   })
 })

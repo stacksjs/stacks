@@ -42,7 +42,7 @@ describe('an anonymized account is named for what it is', () => {
 
   it('on its own page, with a note saying what happened', () => {
     const page = source(`${components}/Models/ModelRecordDetail.stx`)
-    expect(page).toContain(':if="!loading() && record()?.anonymized" role="note"')
+    expect(page).toContain(':if="record()?.anonymized" role="note"')
     expect(page).toContain('This account was anonymized. Its name and email were removed and it can no longer sign in. Records that refer to it were kept.')
   })
 })

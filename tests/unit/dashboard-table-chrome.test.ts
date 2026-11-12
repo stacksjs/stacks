@@ -211,7 +211,9 @@ describe('dashboard row actions', () => {
     expect(detail).toContain('View {{ modelName() }}</h1>')
     expect(detail).toContain('<Button :if="canEdit()" variant="primary"')
     // One card per group of fields, each field a label over its value.
-    expect(detail).toContain('class="grid gap-6 grid-cols-1 items-start lg:grid-cols-2"')
+    // The grid is in the class the cards keep while the record is read again.
+    expect(detail).toContain('dashboardReloadingClass(loading(), \'grid gap-6 grid-cols-1 items-start lg:grid-cols-2\')')
+    expect(detail).toContain('<div :if="record()" :class="contentClass()"')
     expect(detail).toContain('<div :for="section in sections()"')
     expect(detail).toContain('{{ section.title }}</h2>')
     expect(detail).toContain('<div :for="detail in section.details"')

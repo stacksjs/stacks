@@ -1,5 +1,6 @@
 <script client>
 import { dashboardApi } from '../../../../functions/dashboard-api'
+import { dashboardLoaderTimer, dashboardReloadingClass } from '../../../../functions/dashboard-loading'
 
 interface ModelRow {
   name: string
@@ -41,6 +42,12 @@ const unavailableModels = state(0)
 const unmigratedModels = state(0)
 const categoryGroups = state<ModelGroup[]>([])
 const loading = state(true)
+// Whether the registry has been read. Until it has (and after a read that
+// failed) nothing is known about it: the cards say "-" and not 0, and no
+// count of matching models is given.
+const known = state(false)
+// Set once a request has taken long enough to say so (dashboard-loading.ts).
+const slow = state(false)
 const loadError = state('')
 const search = state('')
 const selectedCategory = state('all')
@@ -73,9 +80,20 @@ const visibleGroups = derived(() => {
 
 const visibleModelCount = derived(() => visibleGroups().reduce((total, group) => total + group.models.length, 0))
 
+/** A card's number, or "-" while it is not known. */
+function registryCount(value: number): string {
+  return known() ? value.toLocaleString() : '-'
+}
+
+const matchingLabel = derived(() => known() ? `${visibleModelCount()} matching ${visibleModelCount() === 1 ? 'model' : 'models'}` : '')
+// Refreshing keeps the models that are there, dimmed, until the answer swaps them.
+const refreshing = derived(() => loading() && known())
+const groupsClass = derived(() => dashboardReloadingClass(loading(), 'p-5 space-y-7'))
+
 async function loadModels(): Promise<void> {
   loading.set(true)
   loadError.set('')
+  const settle = dashboardLoaderTimer(slow)
   try {
     const response = await dashboardApi<ModelsResponse>('/api/dashboard/models')
     totalModels.set(response.totalModels || 0)
@@ -84,8 +102,10 @@ async function loadModels(): Promise<void> {
     unavailableModels.set(response.unavailableModels || 0)
     unmigratedModels.set(response.unmigratedModels || 0)
     categoryGroups.set(response.categoryGroups || [])
+    known.set(true)
   }
   catch (error) {
+    known.set(false)
     totalModels.set(0)
     totalRecords.set(0)
     userlandCount.set(0)
@@ -95,6 +115,7 @@ async function loadModels(): Promise<void> {
     loadError.set(error instanceof Error ? error.message : 'Models could not be loaded.')
   }
   finally {
+    settle()
     loading.set(false)
   }
 }
@@ -110,21 +131,21 @@ onMount(() => {
       <h1 class="font-bold text-2xl text-neutral-900 tracking-tight dark:text-white">{{ title() }}</h1>
       <p class="mt-1 max-w-3xl text-neutral-500 text-sm dark:text-neutral-400">{{ description() }}</p>
     </div>
-    <Button variant="secondary" :loading="loading()" @click="loadModels">
-      <span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>
+    <Button variant="secondary" :loading="refreshing()" :disabled="loading()" @click="loadModels">
+      <span :if="!refreshing()" class="h-4 w-4 i-hugeicons-refresh"></span>
       Refresh
     </Button>
   </header>
 
   <div class="grid gap-4 grid-cols-1 sm:grid-cols-3">
     <StatsCard title="Total Models" icon="i-hugeicons-database" iconBg="primary">
-      <template #value>{{ totalModels() }}</template>
+      <template #value>{{ registryCount(totalModels()) }}</template>
     </StatsCard>
     <StatsCard title="Total Records" icon="i-hugeicons-table-rows-split" iconBg="success">
-      <template #value>{{ totalRecords().toLocaleString() }}</template>
+      <template #value>{{ registryCount(totalRecords()) }}</template>
     </StatsCard>
     <StatsCard title="App Overrides" icon="i-hugeicons-folder-02" iconBg="info">
-      <template #value>{{ userlandCount() }}</template>
+      <template #value>{{ registryCount(userlandCount()) }}</template>
     </StatsCard>
   </div>
 
@@ -147,7 +168,7 @@ onMount(() => {
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-5 border-b border-neutral-200 dark:border-neutral-700">
       <div>
         <h2 class="font-semibold text-neutral-900 dark:text-white">Model Registry</h2>
-        <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ visibleModelCount() }} matching models</p>
+        <p class="mt-1 min-h-4 text-neutral-500 text-xs dark:text-neutral-400" :text="matchingLabel()"></p>
       </div>
       <div class="flex flex-col gap-2 sm:flex-row w-full sm:w-auto">
         <label class="block relative w-full sm:w-64">
@@ -165,11 +186,9 @@ onMount(() => {
       </div>
     </div>
 
-    <div :if="loading()" class="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 p-5">
-      <div :for="index in [1, 2, 3, 4, 5, 6]" class="h-40 bg-neutral-100 dark:bg-neutral-800 rounded-xl animate-pulse"></div>
-    </div>
+    <QuietLoader :if="loading() && !known()" :slow="slow()" label="Loading models" :framed="false" />
 
-    <div :if="!loading() && !loadError() && visibleModelCount() === 0">
+    <div :if="known() && visibleModelCount() === 0">
       <EmptyState
         icon="i-hugeicons-database-01"
         :title="totalModels() === 0 ? 'No models were discovered' : 'No models match these filters'"
@@ -177,7 +196,7 @@ onMount(() => {
       />
     </div>
 
-    <div :if="!loading() && visibleModelCount() > 0" class="p-5 space-y-7">
+    <div :if="known() && visibleModelCount() > 0" :class="groupsClass()" :aria-busy="loading() ? 'true' : null" data-model-groups>
       <section :for="group in visibleGroups()" class="space-y-3">
         <div class="flex items-baseline justify-between">
           <h3 class="font-semibold text-neutral-900 dark:text-white">{{ group.label }}</h3>

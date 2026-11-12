@@ -20,7 +20,8 @@ describe('a record\'s page', () => {
 
   test('shows its panels below its own fields, when it has any', () => {
     expect(page).toContain('<ModelRelatedPanels')
-    expect(page).toContain(':if="!loading() && record() && related().length > 0"')
+    // Not hidden while the record is read again: the panels stay where they are.
+    expect(page).toContain(':if="record() && related().length > 0"')
     expect(page).toContain(':from="selfHref()"')
   })
 

@@ -1,6 +1,6 @@
 ---
 name: stacks-dashboard
-description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 426 built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
+description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 427 built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,7 +8,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Dashboard
 
-The Stacks admin dashboard provides a full-featured admin panel with 100+ route views, 426 components, and a multi-section layout.
+The Stacks admin dashboard provides a full-featured admin panel with 100+ route views, 427 components, and a multi-section layout.
 
 ## Key Paths
 - Dashboard components: `storage/framework/defaults/resources/components/Dashboard/`
@@ -1192,15 +1192,30 @@ says so: active, paid, published are positive; inactive, failed, cancelled
 negative; pending, draft, queued pending; anything else (a role, a plan)
 neutral. A field's own `format` still comes first (`modelCellDisplay`).
 
-The model list has no skeleton. Before its first answer nothing is known
-about the model, so it draws one quiet card where the table will be and no
-table, footer, count or empty state; the card says "Loading users" only after
-250ms (`SLOW_AFTER`), so a list that answers at once never flashes a loader.
-Asking again (sort, page, search, filter) keeps the rows that are there,
-dimmed and out of reach (`aria-busy`), and swaps them when the answer comes.
-A page's stat card shows `-` until its number has come, never 0. Do not bring
-back placeholder rows: before the columns are known they were a lone bar each
-under "Actions" over a footer that said "No records".
+### How a model page loads
+
+No model page draws a skeleton (the list, a record's page, its edit and create
+forms, and the models overview). Three rules, the same on each:
+
+- **It does not say it is loading at once.** `dashboardLoaderTimer(slow)` in
+  `functions/dashboard-loading.ts` sets `slow` only after 250ms
+  (`DASHBOARD_LOADER_DELAY`); call what it returns in `finally`. A page that
+  answers at once never flashes a loader.
+- **Before a first answer it is one quiet panel**, `UI/QuietLoader.stx`
+  (`:slow`, `label`, `:framed="false"` inside a card), where the content will
+  be. Nothing is known yet, so nothing is drawn that claims otherwise: no
+  table, footer, count or empty state, a stat card reads `-` and never 0, and
+  a heading is worded from the address (`modelNameFromSlug`) so "View User"
+  does not start as "View Record".
+- **Asked again, what is on the page stays**, dimmed and out of reach
+  (`dashboardReloadingClass(loading(), base)` with `aria-busy`), and is
+  swapped when the answer comes: a sort or a keystroke in the list, a record
+  read again after one of its actions (its related panels stay too), Refresh
+  on the overview.
+
+Do not bring back placeholder rows or blocks. Before the columns are known
+the list's were a lone bar each under "Actions" over a footer that said "No
+records".
 
 The Activity log is not a list of editable records and stays its own page.
 

@@ -9,12 +9,16 @@
 // address to share, open in a tab and come back to.
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
 import type { ModelCustomAction, ModelRecord, ModelRelatedPanel } from '../../../../functions/dashboard-model-record'
-import { deleteModelRecord, fetchModelRecord, fetchModelRelated, modelActionAsks, modelActionIconClass, modelActionNotice, modelDeleteNotice, modelDeleteWarning, modelRecordBackHref, modelRecordEditHref, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRecordTitle, runModelAction } from '../../../../functions/dashboard-model-record'
+import { deleteModelRecord, fetchModelRecord, fetchModelRelated, modelActionAsks, modelActionIconClass, modelActionNotice, modelDeleteNotice, modelDeleteWarning, modelNameFromSlug, modelRecordBackHref, modelRecordEditHref, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRecordTitle, runModelAction } from '../../../../functions/dashboard-model-record'
+import { dashboardLoaderTimer, dashboardReloadingClass } from '../../../../functions/dashboard-loading'
 import { pushToast } from '../../../../functions/toasts'
 
 const navigation = useNavigation()
 const record = state<ModelRecord | null>(null)
 const loading = state(true)
+// Set once a request has taken long enough to say so. The record's page
+// waits quietly before that (see dashboard-loading.ts).
+const slow = state(false)
 const loadError = state('')
 const confirmingDelete = state(false)
 const working = state(false)
@@ -43,7 +47,11 @@ const selfHref = derived(() => modelRecordHref(slug(), recordId()))
 /** The list in the breadcrumb: "Users" for /data/users, else the model's table. */
 const listLabel = derived(() => modelRecordListLabel(record(), backHref()))
 
-const modelName = derived(() => record()?.modelName || 'Record')
+// Known from the address before the record comes, so the heading does not change.
+const modelName = derived(() => record()?.modelName || modelNameFromSlug(slug()))
+// The record stays on the page while it is read again (after one of its
+// actions), dimmed, and is swapped when the answer comes.
+const contentClass = derived(() => dashboardReloadingClass(loading(), 'grid gap-6 grid-cols-1 items-start lg:grid-cols-2'))
 const title = derived(() => record() ? modelRecordTitle(record()!) : '')
 // Who points at this record: its panels. Also after the record itself.
 const related = state<ModelRelatedPanel[]>([])
@@ -60,18 +68,20 @@ const actions = derived(() => record()?.actions ?? [])
 async function loadRecord(): Promise<void> {
   loading.set(true)
   loadError.set('')
+  const settle = dashboardLoaderTimer(slow)
   try {
     const loaded = await fetchModelRecord(slug(), recordId())
-    related.set([])
     record.set(loaded)
     // Not awaited, and a page whose panels cannot be read is still the record's page.
     void fetchModelRelated(slug(), recordId()).then(panels => related.set(panels)).catch(() => related.set([]))
   }
   catch (error) {
     record.set(null)
+    related.set([])
     loadError.set(error instanceof Error ? error.message : 'This record could not be loaded.')
   }
   finally {
+    settle()
     loading.set(false)
   }
 }
@@ -190,22 +200,19 @@ onMount(() => {
     </div>
   </header>
 
-  <div :if="loading()" class="flex items-center justify-center py-20 text-neutral-500 text-sm dark:text-neutral-400">
-    <span aria-hidden="true" class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>
-    Loading record
-  </div>
+  <QuietLoader :if="loading() && !record()" :slow="slow()" label="Loading record" />
 
   <div :if="!loading() && loadError()" role="alert" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg dark:border-red-900">
     <span>{{ loadError() }}</span>
     <Button variant="secondary" size="sm" @click="loadRecord">Try again</Button>
   </div>
 
-  <div :if="!loading() && record()?.anonymized" role="note" class="flex gap-3 items-start px-4 py-3 text-neutral-700 text-sm dark:text-neutral-200 bg-neutral-100 dark:bg-white/5 border border-neutral-200 rounded-lg dark:border-neutral-700">
+  <div :if="record()?.anonymized" role="note" class="flex gap-3 items-start px-4 py-3 text-neutral-700 text-sm dark:text-neutral-200 bg-neutral-100 dark:bg-white/5 border border-neutral-200 rounded-lg dark:border-neutral-700">
     <span aria-hidden="true" class="flex-none mt-0.5 h-4 w-4 text-neutral-500 i-hugeicons-user-remove-01"></span>
     <span>This account was anonymized. Its name and email were removed and it can no longer sign in. Records that refer to it were kept.</span>
   </div>
 
-  <div :if="!loading() && record()" class="grid gap-6 grid-cols-1 items-start lg:grid-cols-2">
+  <div :if="record()" :class="contentClass()" :aria-busy="loading() ? 'true' : null" data-record-content>
     <div :for="section in sections()" class="min-w-0">
       <Card padding="none">
         <h2 class="px-6 py-4 font-semibold text-base text-neutral-900 dark:text-white border-b border-neutral-200 dark:border-neutral-700">{{ section.title }}</h2>
@@ -240,7 +247,7 @@ onMount(() => {
   </div>
 
   <ModelRelatedPanels
-    :if="!loading() && record() && related().length > 0"
+    :if="record() && related().length > 0"
     :panels="related()"
     :parentId="recordId()"
     :from="selfHref()"

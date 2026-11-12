@@ -18,6 +18,7 @@ import type { ModelBulkResult } from '@stacksjs/defaults/functions/dashboard-mod
 import { deleteModelRecords, modelBulkActionConfirm, modelBulkActionScope, modelBulkActions, modelBulkDeleteConfirm, modelBulkDeleteTargets, modelBulkNotice, modelBulkTargets, runModelActionOnEach } from '@stacksjs/defaults/functions/dashboard-model-bulk'
 import type { ModelFieldDisplay, ModelFormattedValue } from '@stacksjs/defaults/functions/dashboard-model-format'
 import { modelCellDisplay, modelColumnIsNumeric } from '@stacksjs/defaults/functions/dashboard-model-format'
+import { dashboardLoaderTimer, dashboardReloadingClass } from '@stacksjs/defaults/functions/dashboard-loading'
 import { pushToast } from '@stacksjs/defaults/functions/toasts'
 
 interface ColumnMeta {
@@ -102,9 +103,8 @@ const loading = state(true)
 // would say otherwise ("No records", a table of one column).
 const loaded = state(false)
 // Said only once a query has taken long enough to wonder about. A list that
-// answers at once never flashes a loader.
+// answers at once never flashes a loader (`dashboardLoaderTimer`).
 const slow = state(false)
-const SLOW_AFTER = 250
 // Open when it arrives filtered, so what narrowed the list can be seen and cleared.
 const showFilters = state(Object.keys(filters()).length > 0)
 
@@ -193,9 +193,7 @@ const deleteDescription = derived(() => {
 // While a query is in flight the rows already there stay, dimmed and out of
 // reach, and are swapped when the answer comes. Nothing collapses or jumps on
 // a keystroke, and there is no placeholder to draw.
-const bodyClass = derived(() => loading()
-  ? 'divide-black/5 divide-y dark:divide-white/8 opacity-50 pointer-events-none transition-opacity duration-150'
-  : 'divide-black/5 divide-y dark:divide-white/8 transition-opacity duration-150')
+const bodyClass = derived(() => dashboardReloadingClass(loading(), 'divide-black/5 divide-y dark:divide-white/8'))
 // A hosting page's heading is known from the first paint, so the box does not
 // change its wording when the answer comes.
 const searchPlaceholder = derived(() => `Search ${(heading() || modelName() || 'records').toLowerCase()}`)
@@ -305,7 +303,7 @@ async function load() {
   error.set(null)
   // The rows about to arrive may not be the ones that were ticked.
   selected.set([])
-  const waiting = setTimeout(() => slow.set(true), SLOW_AFTER)
+  const settle = dashboardLoaderTimer(slow)
   try {
     const params = new URLSearchParams({
       page: String(page()),
@@ -351,8 +349,7 @@ async function load() {
     error.set(e instanceof Error ? e.message : String(e))
   }
   finally {
-    clearTimeout(waiting)
-    slow.set(false)
+    settle()
     loading.set(false)
     loaded.set(true)
   }
@@ -749,12 +746,7 @@ onMount(() => {
   <!-- Before the first answer: one quiet card where the table will be. No
       column is known yet, so no table is drawn, and it says it is loading
       only if that takes long enough to notice. -->
-  <div :if="!loaded()" role="status" aria-live="polite" data-first-load class="flex items-center justify-center h-64 bg-white dark:bg-neutral-900 border border-black/8 rounded-xl dark:border-white/10">
-    <p :if="slow()" class="flex gap-2 items-center text-[13px] text-neutral-500 dark:text-neutral-400">
-      <span aria-hidden="true" class="h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
-      <span :text="loadingLabel()"></span>
-    </p>
-  </div>
+  <QuietLoader :if="!loaded()" :slow="slow()" :label="loadingLabel()" />
 
   <div :if="loaded() && !error() && migrated() && rows().length > 0" class="overflow-hidden bg-white dark:bg-neutral-900 border border-black/8 rounded-xl dark:border-white/10">
     <div class="overflow-x-auto">
