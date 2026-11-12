@@ -1,6 +1,6 @@
 ---
 name: stacks-models
-description: Use when defining or extending Stacks models, deriving migrations and CRUD, configuring attributes/relationships/traits/ownership, or preserving model inference. Covers defineModel, extendModel, model types, native data workflows, and the 108 built-in framework models.
+description: Use when defining or extending Stacks models, deriving migrations and CRUD, configuring attributes/relationships/traits/ownership, or preserving model inference. Covers defineModel, extendModel, model types, native data workflows, and the 110 built-in framework models.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript, SQLite >= 3.47.2
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -438,7 +438,7 @@ honoured: fewer rows are seeded rather than a duplicate combination.
 ## Built-in models by category
 
 The ones below are worth knowing by name. They are a selection, not the set:
-`storage/framework/defaults/app/Models/` holds 108, and that directory is the
+`storage/framework/defaults/app/Models/` holds 110, and that directory is the
 authority. This section said "All 62 built-in models by category" while
 listing fewer than that against 102 on disk, so an agent reading to the end
 had no way to tell it was short.

@@ -401,6 +401,18 @@ const envSchema = defineEnv({
     default: false,
   },
 
+  // Software licensing: the Ed25519 key that signs offline license tokens
+  // (`buddy license:keygen`), and the id apps look its public half up by.
+  LICENSE_SIGNING_KEY: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  LICENSE_SIGNING_KEY_ID: {
+    validation: schema.string(),
+    default: '',
+  },
+
   MEILISEARCH_HOST: {
     validation: schema.string(),
     default: '',

@@ -174,9 +174,11 @@ export const DEFAULT_ROUTE_BUNDLES = ['auth', 'dashboard', 'delivery', 'email', 
  * configured a provider (stacksjs/stacks#2276). Naming one in
  * `STACKS_DEFAULT_ROUTES` mounts it like any other; bootstrap additionally
  * mounts `social` on its own when a provider is actually configured, so the
- * env var is only needed to force it on or off.
+ * env var is only needed to force it on or off. `licensing` is the same
+ * shape: its routes answer nothing useful without a license signing key, so
+ * bootstrap mounts it when `LICENSE_SIGNING_KEY` is set.
  */
-export const OPT_IN_ROUTE_BUNDLES = ['social'] as const
+export const OPT_IN_ROUTE_BUNDLES = ['social', 'licensing'] as const
 
 export type DefaultRouteBundle = typeof DEFAULT_ROUTE_BUNDLES[number] | typeof OPT_IN_ROUTE_BUNDLES[number]
 

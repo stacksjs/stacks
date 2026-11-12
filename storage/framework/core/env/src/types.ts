@@ -223,6 +223,12 @@ export interface FrameworkEnv {
   LEMONSQUEEZY_VARIANT_ID: string | undefined
   LEMONSQUEEZY_TEST_MODE: boolean | undefined
 
+  // Software licensing (@stacksjs/commerce licensing)
+  /** `ed25519-private:<base64url>`, from `buddy license:keygen`. Signs offline license tokens. */
+  LICENSE_SIGNING_KEY: string | undefined
+  /** The id apps look the matching public key up by. */
+  LICENSE_SIGNING_KEY_ID: string | undefined
+
   // Frontend
   FRONTEND_APP_ENV: 'development' | 'staging' | 'production' | undefined
   FRONTEND_APP_URL: string | undefined

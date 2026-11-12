@@ -1,0 +1,52 @@
+<script server>
+// The email that carries license keys (app/Mail/LicenseEmail.ts), in two
+// variants of one design:
+//   - the purchase email, sent once when a purchase becomes a license.
+//   - `variant: 'resend'`, sent when someone asks for the keys bought with an
+//     address: every key still good for it, and no word on any other.
+const appName = props.appName || 'Stacks'
+const appUrl = props.appUrl || ''
+const accent = props.accent || '#3451b2'
+const resend = props.variant === 'resend'
+// One entry per key: its tier's name, the key, and what it includes.
+const keys = Array.isArray(props.keys) ? props.keys : []
+const several = keys.length > 1
+const subject = props.subject || `Your ${appName} license key`
+
+const heading = resend
+  ? (several ? `Here are your ${appName} keys again.` : `Here is your ${appName} key again.`)
+  : `Thank you for buying ${appName}.`
+const preheader = several
+  ? `Your ${keys.length} ${appName} license keys, as asked.`
+  : `Your license key is inside. ${appName} asks for it once per device.`
+const footer = resend
+  ? `You are getting this because someone asked for the ${appName} keys bought with this address. They are only ever sent here.`
+  : `You are getting this because you bought ${appName}. Keep it: it is how you find your key again.`
+</script>
+
+<EmailLayout
+  title="{{ subject }}"
+  preheader="{{ preheader }}"
+  brand="{{ appName }}"
+  brandUrl="{{ appUrl }}"
+  accent="{{ accent }}"
+  footer="{{ footer }}"
+>
+  <EmailText size="heading">{{ heading }}</EmailText>
+  @if(resend)
+    <EmailText>Someone asked for the license {{ several ? 'keys' : 'key' }} bought with this address. If that was not you, you can ignore this email. Nobody else can see {{ several ? 'them' : 'it' }}.</EmailText>
+  @else
+    <EmailText>Here is your license key. Open {{ appName }}, choose Enter License, and paste it in. It is asked for once per device.</EmailText>
+  @endif
+
+  @foreach(keys as entry)
+    <EmailText size="sm" spacing="8px"><strong>{{ appName }} {{ entry.name }}</strong></EmailText>
+    <EmailCode>{{ entry.key }}</EmailCode>
+    <EmailText size="sm">{{ entry.terms }}</EmailText>
+  @endforeach
+
+  <EmailDivider />
+
+  <EmailText size="sm">Moving to a new computer? Release the old one from {{ appName }}'s license settings, then activate the new one with the same key.</EmailText>
+  <EmailText size="sm" spacing="0">Keep this email. It is the record of your purchase and the quickest way back to your key.</EmailText>
+</EmailLayout>

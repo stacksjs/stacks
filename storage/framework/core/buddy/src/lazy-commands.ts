@@ -124,6 +124,8 @@ const commandRegistry: Record<string, CommandLoader> = {
   'http': { path: './commands/http.ts', load: () => import('./commands/http.ts'), exportName: 'http' },
   'install': { path: './commands/install.ts', load: () => import('./commands/install.ts'), exportName: 'install' },
   'key': { path: './commands/key.ts', load: () => import('./commands/key.ts'), exportName: 'key' },
+  'license': { path: './commands/license.ts', load: () => import('./commands/license.ts'), exportName: 'license' },
+  'license:keygen': { path: './commands/license.ts', load: () => import('./commands/license.ts'), exportName: 'license' },
   'lint': { path: './commands/lint.ts', load: () => import('./commands/lint.ts'), exportName: 'lint' },
   // lint.ts also registers the `format` pair (pickier formatter).
   'format': { path: './commands/lint.ts', load: () => import('./commands/lint.ts'), exportName: 'lint' },

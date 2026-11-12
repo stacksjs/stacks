@@ -430,6 +430,7 @@ const config: BunPressOptions = {
             { text: 'Forms', link: '/skills/domain/forms' },
             { text: 'Sites', link: '/skills/domain/sites' },
             { text: 'HQ', link: '/skills/domain/hq' },
+            { text: 'Licensing', link: '/skills/domain/licensing' },
           ],
         },
         {

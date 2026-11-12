@@ -47,6 +47,7 @@ import { db } from '@stacksjs/database/runtime'
 import { formatDate } from '@stacksjs/orm'
 import type { OrderStatus } from './events'
 import { canTransition, emitOrderCancelled, emitOrderPaid, emitOrderRefunded } from './events'
+import { handleLicensePaymentEvent } from '../licensing/service'
 
 /**
  * Look up an order by its associated payment's `transaction_id`
@@ -333,7 +334,8 @@ export async function handleCommercePaymentEvent(event: PaymentEvent): Promise<b
 
 /**
  * A provider's webhook delivery, start to finish: verified by the payment
- * driver, applied to orders, answered the way the provider expects. This is
+ * driver, applied to orders and to licenses, answered the way the provider
+ * expects. This is
  * what the framework mounts at `POST /webhooks/payments`.
  *
  * - No webhook secret configured: 401 `missing-config`, so nothing
@@ -361,8 +363,12 @@ export async function receivePaymentWebhook(request: Request, driver?: PaymentDr
     throw error
   }
 
-  for (const event of events)
+  for (const event of events) {
     await handleCommercePaymentEvent(event)
+    // A license purchase is recognised by its reference, so every other
+    // event passes through untouched (see `licensing/service.ts`).
+    await handleLicensePaymentEvent(event)
+  }
   return payments.acknowledgeWebhook()
 }
 

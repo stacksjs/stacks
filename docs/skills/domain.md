@@ -21,6 +21,7 @@ models, actions, routes and dashboard views.
 | [Forms](/skills/domain/forms) | building persisted form definitions, conditional fields, uploads, payments, submissions, or CSV exports.. |
 | [Sites](/skills/domain/sites) | resolving multi-site tenants by host, provisioning sites, scoping queries, or authorizing site-owned content.. |
 | [HQ](/skills/domain/hq) | metering usage against a plan allowance, answering the X-HQ-Usage header, mounting an HQ service's connect and usage endpoints, or reading an HQ service from an app. |
+| [Licensing](/skills/domain/licensing) | selling software licenses: issuing a key from a payment webhook, device activations, team seats, refund revocation, the signed offline token, and the desktop license client. |
 
 Every page here describes one `SKILL.md` under
 [`storage/framework/defaults/ai/skills`](https://github.com/stacksjs/stacks/tree/main/storage/framework/defaults/ai/skills).

@@ -558,6 +558,22 @@ const license = await commerce.shippings.licenseKeys.store({
 })
 ```
 
+## Software Licensing
+
+Sell license keys for an app: a paid checkout issues the key, devices activate against it, and a desktop app verifies a signed token offline.
+
+```typescript
+import { licensing } from '@stacksjs/commerce'
+
+// Start a checkout with this as its `reference`; the payment webhook issues the license.
+const reference = licensing.licensePurchaseReference({ tier: 'standard' })
+
+// On the thank-you page
+const license = await licensing.findLicenseByPurchase(reference)
+```
+
+See [Software Licensing](/guide/commerce/licensing) for tiers, routes, team seats and the desktop client.
+
 ## Tax
 
 ### Tax Configuration

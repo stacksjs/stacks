@@ -6,6 +6,8 @@ description: "The License Keys module in the Commerce package provides a compreh
 
 The License Keys module in the Commerce package provides a comprehensive set of functions to manage and interact with your software license keys. This module handles the generation, distribution, and management of license keys for your digital products.
 
+To sell licenses, activate them on devices and verify them offline in a desktop app, see [Software Licensing](/guide/commerce/licensing). This page covers the key records themselves.
+
 ## Getting Started
 
 First, import the license keys functionality from the Commerce package:

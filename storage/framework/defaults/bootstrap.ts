@@ -188,6 +188,18 @@ async function registerDefaultBundles(): Promise<void> {
     await route.register(frameworkPath('defaults/routes/paddle.ts'))
   }
 
+  // Software licensing: activate, check, release, resend, transfer and team
+  // seats (`@stacksjs/commerce` `licensing`). An opt-in bundle like `social`:
+  // an app that named its bundles decides outright, and an app that said
+  // nothing gets it exactly when it has a license signing key, since without
+  // one no token can be issued and the routes are surface for nothing.
+  const mountLicensing = selection?.explicit
+    ? selection.bundles.has('licensing')
+    : Boolean(process.env.LICENSE_SIGNING_KEY)
+  if (mountLicensing) {
+    await route.register(frameworkPath('defaults/routes/licensing.ts'))
+  }
+
   // Social sign-in: `/auth/{provider}` + `/auth/{provider}/callback`
   // (stacksjs/stacks#2276). An opt-in bundle, NOT part of the implicit default
   // set or `all` — OAuth callback URLs in an app that configured no provider

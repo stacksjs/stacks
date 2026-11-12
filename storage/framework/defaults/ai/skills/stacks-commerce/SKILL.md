@@ -8,7 +8,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Commerce
 
-Comprehensive e-commerce module with 15 sub-modules and 37 models.
+Comprehensive e-commerce module with 15 sub-modules and 39 models.
 
 ## Key Paths
 - Core package: `storage/framework/core/commerce/src/`
@@ -71,7 +71,7 @@ Each sub-module typically provides:
 - Delivery routes and their stops
 - Couriers
 - Digital deliveries
-- License keys
+- License keys (the delivery CRUD; selling and activating licenses is `commerce.licensing`, see `stacks-licensing`)
 - **Live tracking** (`commerce.shippings.tracking`) - see below
 
 ## Commerce Models (20+)
@@ -97,7 +97,7 @@ Each sub-module typically provides:
 | Courier | name, phone, vehicleNumber, status, latitude, longitude, heading, lastPingAt | hasMany: DeliveryRoute, CourierPing |
 | CourierPing | latitude, longitude, heading, speed, accuracy, recordedAt | belongsTo: Courier, DeliveryRoute |
 | TaxRate | name, rate(0-100), type(VAT/GST/Sales Tax) | |
-| LicenseKey | key(XXXX-XXXX-XXXX-XXXX-XXXX), template, status | belongsTo: Customer, Product, Order |
+| LicenseKey | key(XXXX-XXXX-XXXX-XXXX-XXXX), template, tier, status, updatesUntil, maxDevices, seats | belongsTo: Customer, Product, Order, Team; hasMany: LicenseActivation, LicenseSeat |
 | DigitalDelivery | downloadLimit, expiryDays, automaticDelivery | |
 | WaitlistProduct | product waitlist tracking | |
 | Receipt | receipt records | |
@@ -325,6 +325,9 @@ is the helper for when the count is genuinely what you want.
 - Coupon types: `fixed_amount` or `percentage`
 - Gift card codes are unique and auto-generated
 - License keys follow XXXX-XXXX-XXXX-XXXX-XXXX format
+- Software licensing (issue from a payment webhook, device activations, team
+  seats, signed offline tokens, the desktop client) is `commerce.licensing`:
+  read `stacks-licensing`
 - Product dashboard is highlighted (`dashboard: { highlight: true }`)
 - Default seeder counts: Product(10), Order(20), Review(50), Payment(50),
   GiftCard(20), Customer(20), Coupon(15)

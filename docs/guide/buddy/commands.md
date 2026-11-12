@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **376 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **377 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -44,6 +44,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `integrations` | 1 |
 | `key` | 1 |
 | `libs` | 2 |
+| `license` | 1 |
 | `link` | 1 |
 | `lint` | 1 |
 | `mail` | 32 |
@@ -3041,6 +3042,27 @@ Examples:
 
 ```bash
 buddy libs:publish --dry-run
+```
+
+### `license:keygen`
+
+Generate the Ed25519 keypair that signs software license tokens
+
+- Usage: `$ buddy license:keygen`
+- Namespace: `license`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--key-id` | The id apps look the public key up by (defaults to license-<today>) | value, required | - |
+| `--json` | Print the keypair as JSON | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy license:keygen
+buddy license:keygen --key-id license-2026
 ```
 
 ### `link:core`

@@ -205,7 +205,9 @@ export const FEATURE_TABLES: Record<FeatureName, readonly string[]> = {
     // foreign key.
     'couriers', 'courier_pings', 'delivery_routes', 'delivery_stops', 'digital_deliveries',
     'shipping_methods', 'shipping_rates', 'shipping_zones',
-    'license_keys', 'loyalty_points', 'loyalty_rewards',
+    // `license_activations` and `license_seats` key to `license_keys`, so the
+    // three gate together.
+    'license_keys', 'license_activations', 'license_seats', 'loyalty_points', 'loyalty_rewards',
     'print_devices', 'receipts', 'tax_rates',
     'waitlist_products', 'waitlist_restaurants',
     // Benefit auctions. `bids` and `pledges` key to `auctions`, so all four

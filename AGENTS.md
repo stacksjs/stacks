@@ -56,7 +56,7 @@ relevant `SKILL.md` before doing non-trivial work in that area rather than guess
 | `config/` | ~53 typed config files (`app.ts`, `database.ts`, `auth.ts`, `api` via `services.ts`, `queue.ts`, `cache.ts`, `email.ts`, `commerce.ts`, `cms.ts`, `payment.ts`, `ai.ts`, `cloud.ts`, `ui.ts`, `css.ts`, ...) |
 | `database/` | `migrations/`, seeders, and the local SQLite files |
 | `resources/` | stx frontend: `views/`, `components/`, `layouts/`, `partials/` |
-| `storage/framework/` | Framework internals + **defaults** (`defaults/app/` including the 108 built-in `Models/`, `defaults/ai/` with the agent skills, `core/` packages, `server/`, dashboard, and the auto-import manifests); read-only reference, do not edit unless working on the framework. In an app, `defaults/` is a gitignored link to `node_modules/@stacksjs/defaults` (`buddy publish:defaults` commits a copy instead) and `core/` is absent: the framework comes from `node_modules`. Import a default as `@stacksjs/defaults/<path>.ts` (no `.ts` in a `.stx` script) |
+| `storage/framework/` | Framework internals + **defaults** (`defaults/app/` including the 110 built-in `Models/`, `defaults/ai/` with the agent skills, `core/` packages, `server/`, dashboard, and the auto-import manifests); read-only reference, do not edit unless working on the framework. In an app, `defaults/` is a gitignored link to `node_modules/@stacksjs/defaults` (`buddy publish:defaults` commits a copy instead) and `core/` is absent: the framework comes from `node_modules`. Import a default as `@stacksjs/defaults/<path>.ts` (no `.ts` in a `.stx` script) |
 | `storage/` | Also holds all machine-local runtime state: `framework/stx/` (stx build cache), `framework/runtime/` (migration lock, temp bundles), `cloud/` (cloud driver state). All gitignored, all safe to delete |
 | `tests/` | Test suites (Bun test) |
 | `cloud/` | AWS infrastructure (CDK / CloudFormation) for deploys |
@@ -67,7 +67,7 @@ Stacks resolves files from `app/` first and falls back to `storage/framework/def
 customize a framework default (e.g. a CMS action), create the same path under `app/`
 (`app/Actions/Cms/PostIndexAction.ts`) and it wins. New files you add under `app/` are available to
 the app (e.g. `app/Actions/MyAction.ts` is referenced as `'Actions/MyAction'` in routes). There are
-736 default actions and 108 built-in models you can use or override.
+746 default actions and 110 built-in models you can use or override.
 
 ---
 
@@ -296,7 +296,7 @@ module imported by that script must explicitly import every function, store,
 and type it uses; entry bindings do not leak into bundled module scope.
 
 **Server** (routes, `app/Actions/`, `app/Jobs/`, models) - injected into `globalThis`:
-- All 108 models (`User`, `Product`, `Order`, ...), so `await User.find(1)` works with no import.
+- All 110 models (`User`, `Product`, `Order`, ...), so `await User.find(1)` works with no import.
 - Everything exported from `app/Jobs/`, `app/Controllers/` and `resources/functions/`.
 
 Models only - **not** their `Model` / `Request` / `RequestModel` "variants". This used to
@@ -339,7 +339,7 @@ schema once in the model; Stacks diffs it against the database and generates the
 
 ### Define a model
 Models live in `app/Models/` (your custom models and overrides) and
-`storage/framework/defaults/app/Models/` (108 built-ins, grouped into `commerce/`, `Content/`, etc.).
+`storage/framework/defaults/app/Models/` (110 built-ins, grouped into `commerce/`, `Content/`, etc.).
 Use `defineModel()`; the whole schema, validation, factory, relationships, and behavior traits are
 declared in one place.
 
@@ -406,7 +406,7 @@ buddy generate:migrations     # 2. diff models vs current schema, emit SQL into 
 buddy migrate                 # 4. apply pending migrations   (--diff to preview SQL, --auth for auth tables)
 buddy migrate:fresh --seed    #    (dev) drop everything, re-migrate, then seed
 ```
-`buddy make:migration <name>` still exists for hand-written migrations, and 249 migrations ship for
+`buddy make:migration <name>` still exists for hand-written migrations, and 252 migrations ship for
 the built-in models. `buddy migrate` verifies models exist before running.
 
 ### Query builder

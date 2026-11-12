@@ -35,6 +35,7 @@ Nothing throws at import, by design, so an app missing the SDK starts clean and 
 - The Stripe driver delegates to the existing billable modules, so idempotency keys and `stripe_id` handling are unchanged.
 - Webhook route: the `payments` default route bundle (mounted with the `commerce` feature) serves `POST /webhooks/payments` through `orders.receivePaymentWebhook(request)`: 401 `missing-config` while the driver's secret is unset (`WebhookNotConfiguredError`), 400 `invalid-signature` (`WebhookSignatureError`), otherwise applies the events and answers with `acknowledgeWebhook()`.
 - Commerce: `orders.handleCommercePaymentEvent(event)` from `@stacksjs/commerce` applies `payment.succeeded` / `payment.failed` (reason into `payments.failure_reason`) / `refund.succeeded` (added to `refund_amount`; `refunded` + order REFUNDED only when it covers the payment, else `partiallyRefunded`) to the order, deduplicated in `payment_webhook_events` (the `PaymentWebhookEvent` model) in the same transaction.
+- Licensing: the same webhook calls `licensing.handleLicensePaymentEvent(event)`. A checkout whose `reference` is `licensing.licensePurchaseReference({ tier })` is issued a license once when it is paid, on any driver, and a refund of that payment revokes it. See `stacks-licensing`.
 - The Payment facade's neutral functions go through this driver; its Stripe-only functions and everything Stripe-level below return Stripe objects.
 
 ## Key Paths

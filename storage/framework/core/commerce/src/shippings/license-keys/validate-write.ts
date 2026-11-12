@@ -3,7 +3,7 @@ import { db, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 type LicenseKeyWriteData = Record<string, unknown>
 
 const templates = ['Standard License', 'Premium License', 'Enterprise License'] as const
-const statuses = ['active', 'inactive', 'unassigned'] as const
+const statuses = ['active', 'inactive', 'unassigned', 'revoked', 'refunded'] as const
 
 export class LicenseKeyInputError extends TypeError {
   constructor(message: string) {
@@ -58,7 +58,9 @@ export async function validateLicenseKeyWrite(
   const key = String(mergedValue(input, current, 'key') || '').trim().toUpperCase()
   const template = String(mergedValue(input, current, 'template') || '')
   const status = String(mergedValue(input, current, 'status') || '')
-  const expiryDate = expiryTimestamp(mergedValue(input, current, 'expiry_date'))
+  // No expiry is a license that never ends (standard and lifetime tiers).
+  const rawExpiry = mergedValue(input, current, 'expiry_date')
+  const expiryDate = rawExpiry === null || rawExpiry === undefined || rawExpiry === '' ? null : expiryTimestamp(rawExpiry)
   const customerId = optionalId(input, current, 'customer_id', 'Customer')
   const productId = optionalId(input, current, 'product_id', 'Product')
   const orderId = optionalId(input, current, 'order_id', 'Order')
@@ -69,7 +71,7 @@ export async function validateLicenseKeyWrite(
     throw new LicenseKeyInputError(`Template must be one of: ${templates.join(', ')}.`)
   if (!statuses.includes(status as typeof statuses[number]))
     throw new LicenseKeyInputError(`Status must be one of: ${statuses.join(', ')}.`)
-  if (!Number.isSafeInteger(expiryDate) || expiryDate < 0 || expiryDate > 2147483647)
+  if (expiryDate !== null && (!Number.isSafeInteger(expiryDate) || expiryDate < 0 || expiryDate > 2147483647))
     throw new LicenseKeyInputError('Expiry date must be a Unix timestamp between 1970 and 2038.')
 
   const [customer, product, order] = await Promise.all([
@@ -102,7 +104,7 @@ export async function validateLicenseKeyWrite(
     // Checked as Unix seconds above, stored as the datetime the column is:
     // PostgreSQL refuses an integer there, and SQLite kept a bare number in a
     // text column (stacksjs/stacks#3006).
-    expiry_date: sqlDateTime(new Date(expiryDate * 1000)),
+    expiry_date: expiryDate === null ? null : sqlDateTime(new Date(expiryDate * 1000)),
     status,
     customer_id: customerId,
     product_id: productId,

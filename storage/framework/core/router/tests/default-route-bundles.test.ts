@@ -127,6 +127,12 @@ describe('resolveDefaultRouteBundles (#2229)', () => {
 
     expect(resolveDefaultRouteBundles({ STACKS_DEFAULT_ROUTES: 'auth,social' }))
       .toEqual(new Set(['auth', 'social']))
+    // `licensing` is opt-in the same way: named, or mounted by bootstrap when
+    // the app has a license signing key.
+    expect(resolveDefaultRouteBundles({ STACKS_DEFAULT_ROUTES: 'auth,licensing' }))
+      .toEqual(new Set(['auth', 'licensing']))
+    expect(resolveDefaultRouteBundles({}).has('licensing')).toBe(false)
+    expect(resolveDefaultRouteBundles({ STACKS_DEFAULT_ROUTES: 'all' }).has('licensing')).toBe(false)
   })
 
   test('the legacy STACKS_SKIP_DEFAULT_ROUTES=1 still means none', () => {

@@ -1,6 +1,6 @@
 ---
 name: stacks-auto-imports
-description: Use before adding imports in Stacks app code, checking available runtime functions, browser/server delivery, model globals, or registry generation. Covers Stacks auto-imports, the generated runtime inventory, stx client delivery and server boot (108 models).
+description: Use before adding imports in Stacks app code, checking available runtime functions, browser/server delivery, model globals, or registry generation. Covers Stacks auto-imports, the generated runtime inventory, stx client delivery and server boot (110 models).
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

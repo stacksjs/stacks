@@ -525,6 +525,8 @@ const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature:
   ['Coupon', ['commerce'], 'commerce'],
   ['GiftCard', ['commerce'], 'commerce'],
   ['LicenseKey', ['commerce'], 'commerce'],
+  ['LicenseActivation', ['commerce'], 'commerce'],
+  ['LicenseSeat', ['commerce'], 'commerce'],
   ['Review', ['commerce'], 'commerce'],
   ['Receipt', ['commerce'], 'commerce'],
   ['PrintDevice', ['commerce'], 'commerce'],
@@ -646,7 +648,9 @@ export const EmailWebhookEvent: typeof import('../../../defaults/app/Models/Emai
 export const ErrorModel: typeof import('../../../defaults/app/Models/Error').default = lazyModel('Error')
 export const GiftCard: typeof import('../../../defaults/app/Models/commerce/GiftCard').default = lazyModel('GiftCard')
 export const Label: typeof import('../../../defaults/app/Models/Label').default = lazyModel('Label')
+export const LicenseActivation: typeof import('../../../defaults/app/Models/commerce/LicenseActivation').default = lazyModel('LicenseActivation')
 export const LicenseKey: typeof import('../../../defaults/app/Models/commerce/LicenseKey').default = lazyModel('LicenseKey')
+export const LicenseSeat: typeof import('../../../defaults/app/Models/commerce/LicenseSeat').default = lazyModel('LicenseSeat')
 export const Log: typeof import('../../../defaults/app/Models/Log').default = lazyModel('Log')
 export const LoyaltyPoint: typeof import('../../../defaults/app/Models/commerce/LoyaltyPoint').default = lazyModel('LoyaltyPoint')
 export const LoyaltyReward: typeof import('../../../defaults/app/Models/commerce/LoyaltyReward').default = lazyModel('LoyaltyReward')
@@ -713,7 +717,7 @@ const _allExports: Record<string, any> = {
   DeliveryRoute, DeliveryStop, Deployment, DigitalDelivery, Courier, CourierPing,
   EmailList,
   EmailListSubscriber, EmailIdempotency, EmailSuppression, EmailWebhookEvent,
-  ErrorModel, Form, FormField, FormSubmission, GdprRequest, GiftCard, Label, LicenseKey,
+  ErrorModel, Form, FormField, FormSubmission, GdprRequest, GiftCard, Label, LicenseActivation, LicenseKey, LicenseSeat,
   Log, LoyaltyPoint, LoyaltyReward, MailPreference, Manufacturer, Notification,
   MagicLinkToken, Menu, MenuItem, NotificationDelivery, Order, OrderIdempotency,
   OrderItem, Page, PageRevision, Payment, PaymentMethod, PaymentProduct,

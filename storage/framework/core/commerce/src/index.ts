@@ -8,6 +8,7 @@ import * as customers from './customers'
 import * as devices from './devices'
 import * as errors from './errors'
 import * as giftCards from './gift-cards'
+import * as licensing from './licensing'
 import * as money from './money'
 import * as orders from './orders'
 import * as payments from './payments'
@@ -30,6 +31,7 @@ type CustomersModule = typeof customers
 type ErrorsModule = typeof errors
 type ShippingsModule = typeof shippings
 type GiftCardsModule = typeof giftCards
+type LicensingModule = typeof licensing
 type OrdersModule = typeof orders
 type PaymentsModule = typeof payments
 type ProductsModule = typeof products
@@ -50,6 +52,8 @@ export interface CommerceNamespace {
   customers: CustomersModule
   errors: ErrorsModule
   giftCards: GiftCardsModule
+  /** Software licenses: issuing from payments, device activations, team seats, signed offline tokens. */
+  licensing: LicensingModule
   orders: OrdersModule
   payments: PaymentsModule
   products: ProductsModule
@@ -74,6 +78,7 @@ export const commerce: CommerceNamespace = {
   devices,
   errors,
   giftCards,
+  licensing,
   orders,
   payments,
   products,
@@ -140,3 +145,19 @@ export { restockedQuantity } from './inventory'
 export { receiptLinesText, type ReceiptTextLine } from './receipt-text'
 export { parseSalesTaxSetup, parseTaxRateWriteData } from './tax-input'
 export type { SalesTaxSetup, SalesTaxInputOptions } from './tax-input'
+
+// Software licensing's shapes, for code that takes a license as an argument.
+// The functions are `licensing.*`; a desktop app's agent imports the client
+// half from `@stacksjs/commerce/licensing/client`, which pulls in none of this.
+export { licensing }
+export type {
+  ActivateLicenseResult,
+  CheckLicenseResult,
+  License,
+  LicenseDeviceSummary,
+  LicenseSeatSummary,
+  LicenseStandingSummary,
+  LicenseStatus,
+  LicensingOptions,
+} from './licensing/service'
+export type { LicensePublicKeys, LicenseSigningKey, LicenseSigningKeypair, LicenseTier, LicenseTokenPayload } from './licensing/token'
