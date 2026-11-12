@@ -1,5 +1,31 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.557...v0.75.558)
+
+## ✨ Features
+
+- **dashboard**: retry a failed job, resend a failed notification, send or cancel a campaign ([5e6e0b2](https://github.com/stacksjs/stacks/commit/5e6e0b2)) _(by glennmichael123)_ ([#3286](https://github.com/stacksjs/stacks/issues/3286))
+- **dashboard**: commerce notes, descriptions and reviews are asked for in a box with room ([8e7087e](https://github.com/stacksjs/stacks/commit/8e7087e)) _(by glennmichael123)_ ([#3286](https://github.com/stacksjs/stacks/issues/3286))
+- **dashboard**: descriptions, comments and messages are asked for in a box with room ([637e0c2](https://github.com/stacksjs/stacks/commit/637e0c2)) _(by glennmichael123)_ ([#3286](https://github.com/stacksjs/stacks/issues/3286))
+- **dashboard**: avatars and post posters are chosen as files, and pictures are shown as pictures ([a3a49c6](https://github.com/stacksjs/stacks/commit/a3a49c6)) _(by glennmichael123)_ ([#3286](https://github.com/stacksjs/stacks/issues/3286))
+- **database**: list the models in scope without staging them ([bb1a1d0](https://github.com/stacksjs/stacks/commit/bb1a1d0)) _(by glennmichael123)_ ([#3284](https://github.com/stacksjs/stacks/issues/3284))
+
+## 🐛 Bug Fixes
+
+- **events**: preserve native validator receivers in payload diagnostics ([7ac4280](https://github.com/stacksjs/stacks/commit/7ac4280)) _(by Chris)_ ([#3281](https://github.com/stacksjs/stacks/issues/3281))
+- **scaffold**: the welcome mail a new app sends is in the app's own name ([94fa38b](https://github.com/stacksjs/stacks/commit/94fa38b)) _(by Chris)_
+- **desktop**: a release made in several runs keeps every platform, and a cross-build fetches its own runtimes ([758d6e3](https://github.com/stacksjs/stacks/commit/758d6e3)) _(by Chris)_
+- **database**: only the migration generator rebuilds the model staging directory ([2ab0b9a](https://github.com/stacksjs/stacks/commit/2ab0b9a)) _(by glennmichael123)_ ([#3285](https://github.com/stacksjs/stacks/issues/3285))
+
+## ⚡ Performance Improvements
+
+- **dashboard**: the models overview answers in 6ms, not 1.6s ([cebdd5a](https://github.com/stacksjs/stacks/commit/cebdd5a)) _(by glennmichael123)_ ([#3284](https://github.com/stacksjs/stacks/issues/3284))
+
+## Contributors
+
+- _Chris_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.556...v0.75.557)
 
 ## ✨ Features

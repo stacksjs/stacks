@@ -1,7 +1,7 @@
 {
   "name": "stacks-docs",
   "type": "module",
-  "version": "0.75.557",
+  "version": "0.75.558",
   "scripts": {
     "dev": "bunpress dev",
     "build": "bunpress build",
