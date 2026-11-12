@@ -97,6 +97,14 @@ const error = state<string | null>(null)
 // catalog after the query failed, so this is never a guess from an error.
 const migrated = state(true)
 const loading = state(true)
+// Whether a first answer has come. Until it has, nothing is known about the
+// model: not its columns, not how many rows it has. Nothing is drawn that
+// would say otherwise ("No records", a table of one column).
+const loaded = state(false)
+// Said only once a query has taken long enough to wonder about. A list that
+// answers at once never flashes a loader.
+const slow = state(false)
+const SLOW_AFTER = 250
 // Open when it arrives filtered, so what narrowed the list can be seen and cleared.
 const showFilters = state(Object.keys(filters()).length > 0)
 
@@ -162,9 +170,14 @@ const filterLabel = derived(() => {
   return n === 0 ? 'Filter' : `Filter (${n})`
 })
 
-const isEmpty = derived(() => !loading() && !error() && migrated() && rows().length === 0)
+// Not hidden while a query is in flight: what is on the page stays until the
+// answer replaces it.
+const isEmpty = derived(() => loaded() && !error() && migrated() && rows().length === 0)
 
 const subtitle = derived(() => {
+  // A page's own description is known from the start; a count is not.
+  if (!loaded())
+    return description()
   if (!migrated())
     return `The ${tableName()} table has not been created yet`
   return description() || `${recordLabel()} in the ${tableName()} table`
@@ -177,9 +190,16 @@ const deleteDescription = derived(() => {
   return modelDeleteWarning(`Row ${row.id}`, writeCapabilities().anonymize)
 })
 
-// Skeleton rows while a query is in flight. Matching the real row count
-// keeps the table from collapsing and jumping back on every keystroke.
-const skeletonRows = derived(() => Array.from({ length: Math.min(8, Math.max(3, rows().length || 6)) }, (_, i) => i))
+// While a query is in flight the rows already there stay, dimmed and out of
+// reach, and are swapped when the answer comes. Nothing collapses or jumps on
+// a keystroke, and there is no placeholder to draw.
+const bodyClass = derived(() => loading()
+  ? 'divide-black/5 divide-y dark:divide-white/8 opacity-50 pointer-events-none transition-opacity duration-150'
+  : 'divide-black/5 divide-y dark:divide-white/8 transition-opacity duration-150')
+// A hosting page's heading is known from the first paint, so the box does not
+// change its wording when the answer comes.
+const searchPlaceholder = derived(() => `Search ${(heading() || modelName() || 'records').toLowerCase()}`)
+const loadingLabel = derived(() => `Loading ${(title() || 'records').toLowerCase()}`)
 
 function formatDate(value: unknown): string {
   const date = new Date(value as string | number)
@@ -285,6 +305,7 @@ async function load() {
   error.set(null)
   // The rows about to arrive may not be the ones that were ticked.
   selected.set([])
+  const waiting = setTimeout(() => slow.set(true), SLOW_AFTER)
   try {
     const params = new URLSearchParams({
       page: String(page()),
@@ -330,7 +351,10 @@ async function load() {
     error.set(e instanceof Error ? e.message : String(e))
   }
   finally {
+    clearTimeout(waiting)
+    slow.set(false)
     loading.set(false)
+    loaded.set(true)
   }
 }
 
@@ -631,7 +655,7 @@ onMount(() => {
         type="search"
         x-model="search"
         @input="onSearchInput"
-        :placeholder="'Search ' + (modelName() || 'records')"
+        :placeholder="searchPlaceholder()"
         class="block pl-9 pr-3 py-1.5 w-full text-[13px] text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 bg-white dark:bg-white/10 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
       >
     </div>
@@ -700,7 +724,7 @@ onMount(() => {
     </div>
   </div>
 
-  <div :if="!loading() && !error() && !migrated()" role="status" class="p-12 text-center bg-white dark:bg-neutral-900 border border-black/8 rounded-xl dark:border-white/10">
+  <div :if="loaded() && !loading() && !error() && !migrated()" role="status" class="p-12 text-center bg-white dark:bg-neutral-900 border border-black/8 rounded-xl dark:border-white/10">
     <span aria-hidden="true" class="mx-auto h-10 w-10 text-neutral-300 dark:text-neutral-600 i-hugeicons-database-sync-01"></span>
     <h3 class="mt-3 font-medium text-[15px] text-neutral-900 dark:text-white">
       The <code :text="tableName()"></code> table has not been created yet
@@ -722,7 +746,17 @@ onMount(() => {
     </p>
   </div>
 
-  <div :if="!error() && migrated() && (rows().length > 0 || loading())" class="overflow-hidden bg-white dark:bg-neutral-900 border border-black/8 rounded-xl dark:border-white/10">
+  <!-- Before the first answer: one quiet card where the table will be. No
+      column is known yet, so no table is drawn, and it says it is loading
+      only if that takes long enough to notice. -->
+  <div :if="!loaded()" role="status" aria-live="polite" data-first-load class="flex items-center justify-center h-64 bg-white dark:bg-neutral-900 border border-black/8 rounded-xl dark:border-white/10">
+    <p :if="slow()" class="flex gap-2 items-center text-[13px] text-neutral-500 dark:text-neutral-400">
+      <span aria-hidden="true" class="h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
+      <span :text="loadingLabel()"></span>
+    </p>
+  </div>
+
+  <div :if="loaded() && !error() && migrated() && rows().length > 0" class="overflow-hidden bg-white dark:bg-neutral-900 border border-black/8 rounded-xl dark:border-white/10">
     <div class="overflow-x-auto">
       <table class="min-w-full">
         <thead class="bg-neutral-50 dark:bg-white/5">
@@ -762,23 +796,7 @@ onMount(() => {
           </tr>
         </thead>
 
-        <!-- Loading skeleton, shaped like the real rows so the table does not
-            collapse and jump back on every keystroke. Two <tbody> elements
-            rather than one: `:if` and `:for` on the same <template> do not
-            compose, and a table may legally carry several bodies. -->
-        <tbody :if="loading()" class="divide-black/5 divide-y dark:divide-white/8">
-          <tr :for="i in skeletonRows()">
-            <td :if="selectable()" class="pl-3 pr-1 py-2 w-8"></td>
-            <td :for="column in columnMeta()" class="px-3 py-2">
-              <div class="h-3 bg-neutral-200 dark:bg-white/10 rounded animate-pulse"></div>
-            </td>
-            <td class="right-0 sticky z-10 px-3 py-2 bg-white dark:bg-neutral-900 border-black/5 border-l dark:border-white/10">
-              <div class="ml-auto h-3 w-16 bg-neutral-200 dark:bg-white/10 rounded animate-pulse"></div>
-            </td>
-          </tr>
-        </tbody>
-
-        <tbody :if="!loading()" class="divide-black/5 divide-y dark:divide-white/8">
+        <tbody :class="bodyClass()" :aria-busy="loading() ? 'true' : null">
           <tr :for="row in rows()" class="hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors group">
             <td :if="selectable()" class="pl-3 pr-1 py-2 w-8">
               <input
@@ -819,7 +837,10 @@ onMount(() => {
     </div>
 
     <div class="flex flex-wrap gap-3 items-center justify-between px-3 py-2 bg-neutral-50 dark:bg-white/5 border-black/5 border-t dark:border-white/10">
-      <p class="text-[12px] text-neutral-500 dark:text-neutral-400" :text="rangeLabel()"></p>
+      <p class="flex gap-2 items-center text-[12px] text-neutral-500 dark:text-neutral-400">
+        <span :text="rangeLabel()"></span>
+        <span :if="slow()" role="status" aria-label="Loading" class="h-3.5 w-3.5 animate-spin i-hugeicons-loading-03"></span>
+      </p>
       <div class="flex gap-1 items-center">
         <Button variant="secondary" size="xs" :disabled="page() === 1" @click="goToPage(1)">First</Button>
         <Button variant="secondary" size="xs" :disabled="page() === 1" @click="goToPage(page() - 1)">Previous</Button>

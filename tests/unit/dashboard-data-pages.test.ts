@@ -95,6 +95,56 @@ describe('a page hosts the model\'s list', () => {
   })
 })
 
+describe('while a list is being asked for', () => {
+  const list = read(`${components}/Models/ModelRecordsDashboard.stx`)
+  const script = list.slice(0, list.indexOf('</script>'))
+  const template = list.slice(list.indexOf('</script>'))
+  const hosted = read(`${components}/Data/DataModelRecords.stx`)
+
+  it('there is no skeleton: not in the table, not in the page\'s cards', () => {
+    // Before a column is known the placeholder rows were a lone bar each under
+    // "Actions", over a footer that said "No records" and "1 / 1".
+    expect(list).not.toContain('animate-pulse')
+    expect(list).not.toMatch(/skeleton/i)
+    expect(hosted).not.toContain('animate-pulse')
+    expect(hosted).not.toContain(':loading=')
+  })
+
+  it('before the first answer it draws one quiet card and no table', () => {
+    expect(script).toContain('const loaded = state(false)')
+    expect(template).toContain('<div :if="!loaded()" role="status" aria-live="polite" data-first-load')
+    // The table, its footer, the empty state and the count wait for an answer.
+    expect(template).toContain('<div :if="loaded() && !error() && migrated() && rows().length > 0"')
+    expect(script).toContain('const isEmpty = derived(() => loaded() && !error() && migrated() && rows().length === 0)')
+    expect(script).toMatch(/if \(!loaded\(\)\)\n {4}return description\(\)/)
+    expect(script).toMatch(/finally \{\n {4}clearTimeout\(waiting\)\n {4}slow\.set\(false\)\n {4}loading\.set\(false\)\n {4}loaded\.set\(true\)\n {2}\}/)
+  })
+
+  it('it says it is loading only when that takes long enough to notice', () => {
+    expect(script).toContain('const SLOW_AFTER = 250')
+    expect(script).toContain('const waiting = setTimeout(() => slow.set(true), SLOW_AFTER)')
+    const card = template.slice(template.indexOf('data-first-load'), template.indexOf('<div :if="loaded() && !error() && migrated() && rows().length > 0"'))
+    expect(card).toContain('<p :if="slow()"')
+    expect(card).toContain(':text="loadingLabel()"')
+  })
+
+  it('asking again keeps the rows that are there, dimmed, until the answer swaps them', () => {
+    // One body, never hidden: nothing collapses and jumps back on a keystroke.
+    expect((template.match(/<tbody/g) || []).length).toBe(1)
+    expect(template).toContain('<tbody :class="bodyClass()" :aria-busy="loading() ? \'true\' : null">')
+    expect(script).toMatch(/const bodyClass = derived\(\(\) => loading\(\)\n {2}\? '[^']*opacity-50 pointer-events-none[^']*'/)
+  })
+
+  it('a card says nothing until its number has come: a 0 is a count', () => {
+    expect(hosted).toContain('const pageStats = state<DataStats | null>(null)')
+    expect(hosted).toContain('return numbers ? Number(numbers[key] || 0).toLocaleString() : \'-\'')
+  })
+
+  it('the search box is worded once, from the page\'s heading', () => {
+    expect(script).toContain('const searchPlaceholder = derived(() => `Search ${(heading() || modelName() || \'records\').toLowerCase()}`)')
+  })
+})
+
 describe('a status reads as one in a list', () => {
   it('a status-like column is a pill, as it is on the record\'s page', () => {
     expect(modelCellDisplay({ name: 'status' }, 'active')).toEqual({ kind: 'badge', text: 'Active', tone: 'positive' })

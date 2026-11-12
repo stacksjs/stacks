@@ -1192,6 +1192,16 @@ says so: active, paid, published are positive; inactive, failed, cancelled
 negative; pending, draft, queued pending; anything else (a role, a plan)
 neutral. A field's own `format` still comes first (`modelCellDisplay`).
 
+The model list has no skeleton. Before its first answer nothing is known
+about the model, so it draws one quiet card where the table will be and no
+table, footer, count or empty state; the card says "Loading users" only after
+250ms (`SLOW_AFTER`), so a list that answers at once never flashes a loader.
+Asking again (sort, page, search, filter) keeps the rows that are there,
+dimmed and out of reach (`aria-busy`), and swaps them when the answer comes.
+A page's stat card shows `-` until its number has come, never 0. Do not bring
+back placeholder rows: before the columns are known they were a lone bar each
+under "Actions" over a footer that said "No records".
+
 The Activity log is not a list of editable records and stays its own page.
 
 ### Users are invited, not typed in

@@ -17,7 +17,9 @@ import { fetchDashboardStats } from '../../../../functions/data'
 type RecordsPage = 'users' | 'teams' | 'subscribers'
 
 const pageMode = useReactiveProp<RecordsPage>('mode', 'users')
-const pageStats = state<DataStats>({ total: 0 })
+// Null until the numbers have come. A card says nothing until then: a 0 is a
+// count, and "no users" is not what is known while the page is still asking.
+const pageStats = state<DataStats | null>(null)
 
 const PAGES: Record<RecordsPage, { model: string, title: string, description: string, icon: string, cards: 3 | 4 }> = {
   users: { model: 'user', title: 'Users', description: 'Review registered application users.', icon: 'i-hugeicons-user-group', cards: 3 },
@@ -29,8 +31,9 @@ const recordsPage = derived(() => PAGES[pageMode()] ?? PAGES.users)
 /** Each page's stats fill their row: three cards in a four-column grid left a hole. */
 const pageStatsGrid = derived(() => recordsPage().cards === 3 ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-2 lg:grid-cols-4')
 
-function pageStat(key: string): number {
-  return Number(pageStats()[key] || 0)
+function pageStat(key: string): string {
+  const numbers = pageStats()
+  return numbers ? Number(numbers[key] || 0).toLocaleString() : '-'
 }
 
 async function loadPageStats(): Promise<void> {
