@@ -11,8 +11,8 @@
  * So this file runs the same writer and reader under the 1.3 line itself: the
  * declared floor and the release that hung. `bun x bun@<version>` fetches that
  * Bun from npm; the fixture takes a dump and puts it back through both ways of
- * moving the bytes, and reports its peak memory. The dump and restore suite is
- * then run under each as well.
+ * moving the bytes at two sizes, and reports its peak memory. The dump and restore suite is
+ * then run under the release that hung.
  */
 import { describe, expect, it } from 'bun:test'
 import { join } from 'node:path'
@@ -24,15 +24,18 @@ const OLDEST_SUPPORTED = ['1.3.0', '1.3.14']
 const FIXTURE = join(import.meta.dir, 'fixtures', 'database-backup-under-bun.ts')
 const SUITE = join(import.meta.dir, 'database-backup.test.ts')
 
-/** Megabytes of dump. Large enough that holding it in memory cannot pass for flat. */
-const DUMP_MB = 512
+/** Megabytes of dump, small then large. Flat means the second costs no more memory than the first. */
+const SMALL_MB = 256
+const LARGE_MB = 1024
 
 /**
- * Peak resident memory allowed, in megabytes. Measured: 34 through the pipe and
- * about 110 in process on 1.3.14, the same at 256 MB and 1.2 GB of dump. A
- * writer with no backpressure holds two to three times the dump.
+ * How much more resident memory the large dump may take than the small one,
+ * in megabytes. The baseline differs by platform and Bun (35 to 115 MB on
+ * macOS, more on Linux), so it is the growth that is held, not the level. A
+ * writer with no backpressure holds two to three times the dump, which here
+ * is growth of 1.5 GB and more.
  */
-const PEAK_RSS_MB = 256
+const GROWTH_MB = 192
 
 interface Outcome {
   bun: string
@@ -67,7 +70,8 @@ function outcomes(stdout: string): Outcome[] {
   return stdout.split('\n').filter(line => line.startsWith('{')).map(line => JSON.parse(line) as Outcome)
 }
 
-function expectFlat(result: Awaited<ReturnType<typeof run>>, version: string): void {
+async function roundTrip(bun: string[], megabytes: number, version: string): Promise<Outcome[]> {
+  const result = await run([...bun, FIXTURE, String(megabytes)])
   expect(result.timedOut, `the dump did not finish under Bun ${version}\n${result.stderr}`).toBe(false)
   expect(result.code, result.stderr).toBe(0)
 
@@ -75,10 +79,22 @@ function expectFlat(result: Awaited<ReturnType<typeof run>>, version: string): v
   expect(reported.map(o => o.via)).toEqual(['pipe', 'process'])
   for (const outcome of reported) {
     expect(outcome.bun).toBe(version)
-    expect(outcome.dumpMB).toBe(DUMP_MB)
+    expect(outcome.dumpMB).toBe(megabytes)
     expect(outcome.roundTrip).toBe(true)
-    expect(outcome.peakRssMB).toBeLessThan(PEAK_RSS_MB)
   }
+  return reported
+}
+
+async function expectFlat(bun: string[], version: string): Promise<void> {
+  const small = await roundTrip(bun, SMALL_MB, version)
+  const large = await roundTrip(bun, LARGE_MB, version)
+
+  // Printed either way: these are the only numbers anyone has for a platform
+  // they are not sitting at.
+  console.log(JSON.stringify({ platform: process.platform, small, large }))
+
+  for (const [index, outcome] of large.entries())
+    expect(outcome.peakRssMB - small[index]!.peakRssMB, `${outcome.via} on Bun ${version}`).toBeLessThan(GROWTH_MB)
 }
 
 describe.skipIf(process.platform === 'win32')('a dump under the oldest supported Bun', () => {
@@ -93,14 +109,19 @@ describe.skipIf(process.platform === 'win32')('a dump under the oldest supported
       return
     }
 
-    expectFlat(await run([process.execPath, 'x', `bun@${version}`, FIXTURE, String(DUMP_MB)]), version)
+    await expectFlat([process.execPath, 'x', `bun@${version}`], version)
   }, 240_000)
 
   // The whole contract, not only the round trip: a failed tool, a failed gzip,
   // the deadline and a truncated dump all behave differently across Bun
   // versions (a write to a tool that had exited rejected outside its try on
   // 1.3 only, which this is what found).
-  it.each(OLDEST_SUPPORTED)('passes the dump and restore suite on Bun %s', async (version) => {
+  //
+  // Only on the release that hung. On Linux, Bun 1.3.0 cannot load a test file
+  // when its runner is started from inside another Bun's test run ("Export
+  // named 'afterEach' not found in module 'bun:test'"), so there the round
+  // trip above is what holds the floor.
+  it.each(['1.3.14'])('passes the dump and restore suite on Bun %s', async (version) => {
     const probe = await run([process.execPath, 'x', `bun@${version}`, '--version'])
     if (probe.code !== 0 && !process.env.CI)
       return
@@ -112,6 +133,6 @@ describe.skipIf(process.platform === 'win32')('a dump under the oldest supported
   }, 240_000)
 
   it('does the same under the Bun running these tests', async () => {
-    expectFlat(await run([process.execPath, FIXTURE, String(DUMP_MB)]), Bun.version)
+    await expectFlat([process.execPath], Bun.version)
   }, 240_000)
 })
