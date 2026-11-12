@@ -5,6 +5,7 @@ import { homedir } from 'node:os'
 import { join, resolve } from 'node:path'
 import process from 'node:process'
 import { serveTinker } from './protocol'
+import { serialize } from './serialize'
 import { compileSnippet, createTinkerSession } from './session'
 
 export * from './protocol'
@@ -159,6 +160,17 @@ export function renderValue(value: TinkerValue, indent = ''): string {
         entries.push(`${inner}... ${value.more} more`)
       return entries.length ? `Map(${value.size}) {\n${entries.join(',\n')}\n${indent}}` : 'Map(0) {}'
     }
+    case 'html': return `[${value.kind}${value.title ? ` ${value.title}` : ''}: ${value.html.length} characters of markup]`
+    case 'model': {
+      const entries = value.attributes.map(([key, item]) => `${inner}${key}: ${renderValue(item, inner)}`)
+      for (const name of value.hidden ?? [])
+        entries.push(`${inner}${name}: [hidden]`)
+      for (const [name, item] of value.loaded ?? [])
+        entries.push(`${inner}${name}: ${renderValue(item, inner)}`)
+      if (value.more)
+        entries.push(`${inner}... ${value.more} more`)
+      return `${value.model} {\n${entries.join(',\n')}\n${indent}}`
+    }
     case 'object': {
       if (!value.entries.length && !value.more)
         return `${value.ctor ? `${value.ctor} ` : ''}{}`
@@ -262,7 +274,9 @@ export async function startTinker(config: TinkerConfig = {}): Promise<{ exitCode
       return
     }
     if (print && evaluation.value !== undefined)
-      terminal(`${Bun.inspect(evaluation.value, { colors: Boolean(process.stdout.isTTY), depth: 6 })}\n`)
+      // Through the serializer, not Bun.inspect: a model then prints under its
+      // name with hidden attributes withheld, the same as every other surface.
+      terminal(`${renderValue(serialize(evaluation.value))}\n`)
   }
 
   if (config.eval !== undefined || config.print !== undefined) {

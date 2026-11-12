@@ -1,7 +1,7 @@
 import type { SerializeOptions, TinkerErrorValue, TinkerValue } from './serialize'
 import { isAbsolute, resolve } from 'node:path'
 import process from 'node:process'
-import { serialize, serializeThrown } from './serialize'
+import { relationsOf, serialize, serializeThrown, TinkerPreview } from './serialize'
 
 /**
  * A tinker session: one booted app, many evaluations, state kept between them.
@@ -67,8 +67,82 @@ export interface TinkerEvaluation {
   durationMs: number
 }
 
+/** One model the app knows, as a relation graph and a completion list need it. */
+export interface TinkerModelSummary {
+  name: string
+  table?: string
+  primaryKey?: string
+  attributes: string[]
+  relations: Array<{ kind: string, model: string, name?: string }>
+}
+
+/**
+ * The models reachable as globals in this process. After a Stacks boot that
+ * is every model the app loaded; in a bare session it is none.
+ */
+export function listModels(): TinkerModelSummary[] {
+  const models: TinkerModelSummary[] = []
+  const seen = new Set<string>()
+  for (const name of Object.getOwnPropertyNames(globalThis)) {
+    let candidate: unknown
+    try {
+      candidate = (globalThis as Record<string, unknown>)[name]
+    }
+    catch {
+      continue
+    }
+    if (!candidate || (typeof candidate !== 'object' && typeof candidate !== 'function'))
+      continue
+    const getDefinition = (candidate as { getDefinition?: unknown }).getDefinition
+    if (typeof getDefinition !== 'function')
+      continue
+    let definition: Record<string, unknown> | undefined
+    try {
+      definition = getDefinition.call(candidate) as Record<string, unknown>
+    }
+    catch {
+      continue
+    }
+    if (!definition || typeof definition.name !== 'string' || seen.has(definition.name))
+      continue
+    seen.add(definition.name)
+    models.push({
+      name: definition.name,
+      ...(typeof definition.table === 'string' ? { table: definition.table } : {}),
+      ...(typeof definition.primaryKey === 'string' ? { primaryKey: definition.primaryKey } : {}),
+      attributes: definition.attributes && typeof definition.attributes === 'object' ? Object.keys(definition.attributes) : [],
+      relations: relationsOf(definition),
+    })
+  }
+  return models.sort((left, right) => left.name.localeCompare(right.name))
+}
+
+/**
+ * The `preview` global: turn a mail or markup into a value the result panel
+ * shows as a rendered page.
+ */
+function previewHelpers(): Record<string, (...args: never[]) => unknown> {
+  return {
+    /** Show a string of HTML as a page. */
+    html(html: string, title?: string): TinkerPreview {
+      return new TinkerPreview('html', String(html), title)
+    },
+    /** Render a mail template from resources/emails by name, with its variables. */
+    async mail(name: string, variables: Record<string, unknown> = {}): Promise<TinkerPreview> {
+      const emailModule = '@stacksjs/email'
+      const { templateByName } = await import(emailModule)
+      const rendered = await templateByName(name, { variables }) as { html?: string, text?: string }
+      if (!rendered?.html)
+        throw new Error(`No mail template named "${name}" rendered. Templates live in resources/emails.`)
+      return new TinkerPreview('mail', rendered.html, name, rendered.text)
+    },
+  } as Record<string, (...args: never[]) => unknown>
+}
+
 export interface TinkerSession {
   info: TinkerSessionInfo
+  /** The models this session can see. */
+  models: () => TinkerModelSummary[]
   evaluate: (code: string, options?: { id?: string }) => Promise<TinkerEvaluation>
   /** Detach the console, log and query capture. Globals the snippets declared stay. */
   dispose: () => void
@@ -207,6 +281,7 @@ export async function createTinkerSession(options: TinkerSessionOptions = {}): P
     (globals.dump as (...inner: unknown[]) => void)(...args)
     throw new TinkerHalt()
   }
+  globals.preview = previewHelpers()
   if (options.globals)
     Object.assign(globals, options.globals)
 
@@ -342,6 +417,7 @@ export async function createTinkerSession(options: TinkerSessionOptions = {}): P
 
   return {
     info: { cwd, booted, bun: Bun.version, warnings },
+    models: listModels,
     evaluate(code, evaluateOptions = {}) {
       const id = evaluateOptions.id ?? String(++counter)
       // One at a time: runs share globals and the capture's notion of "current".

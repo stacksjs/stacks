@@ -101,11 +101,26 @@ not a frame. Use `createFrameReader()` to split a stream. `--serve` with
 `--eval` or `--print` evaluates once and exits, which suits `ssh -T`,
 `docker exec -i` and `kubectl exec -i`.
 
+## Previews and the model list
+
+`preview.mail('welcome', { name: 'Ada' })` renders a template from
+`resources/emails` and returns a value the result is shown as a page for
+(`{ t: 'html', kind: 'mail', html, text }`). `preview.html(markup, title)` does
+the same for any markup. Rendering one stx view to a string is not offered
+yet: stx does not export it.
+
+`session.models()`, or the request `{ "op": "models" }`, lists every model the
+booted app loaded with its table, attribute names and declared relations. It is
+what a relation graph and a completion list are built from.
+
 ## Gotchas
 
 - **The database is real.** Mutations are not isolated or rolled back.
-- **A returned model is described by its own fields**, hidden ones included.
-  Do not paste results from production data without looking.
+- **A model is described as a model.** A result that is a model instance is a
+  `model` node: its name, table, key, the attributes its `toJSON()` exposes, the
+  relations it declares and the ones already loaded. Hidden attributes (a
+  password hash) are named under `hidden` and their values never leave the
+  process, in frames and in `--print` alike.
 - **Error positions refer to the compiled snippet**, not the typed source.
 - **One evaluation at a time.** Calls queue; they share globals.
 - **A session captures `console` and `process.stdout`/`stderr`** for its whole

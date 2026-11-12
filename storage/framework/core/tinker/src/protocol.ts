@@ -1,4 +1,4 @@
-import type { TinkerFrame, TinkerSession, TinkerSessionInfo, TinkerSessionOptions } from './session'
+import type { TinkerFrame, TinkerModelSummary, TinkerSession, TinkerSessionInfo, TinkerSessionOptions } from './session'
 import { writeSync } from 'node:fs'
 import { createTinkerSession } from './session'
 
@@ -22,16 +22,18 @@ export const FRAME_MARKER = '\x1E'
 export type TinkerRequest =
   | { op: 'eval', id?: string, code: string }
   | { op: 'ping', id?: string }
+  | { op: 'models', id?: string }
   | { op: 'exit' }
 
 export type TinkerWireFrame =
   | TinkerFrame
   | { type: 'ready', session: TinkerSessionInfo, protocol: number }
   | { type: 'pong', id?: string }
+  | { type: 'models', id?: string, models: TinkerModelSummary[] }
   | { type: 'protocol-error', message: string }
 
 /** Bumped when a frame changes shape in a way an older reader would misread. */
-export const PROTOCOL_VERSION = 1
+export const PROTOCOL_VERSION = 2
 
 export function encodeFrame(frame: TinkerWireFrame): string {
   return `${FRAME_MARKER}${JSON.stringify(frame)}\n`
@@ -132,6 +134,10 @@ export async function serveTinker(options: ServeOptions = {}): Promise<{ ok: boo
       return false
     if (request.op === 'ping') {
       send({ type: 'pong', ...(request.id ? { id: request.id } : {}) })
+      return true
+    }
+    if (request.op === 'models') {
+      send({ type: 'models', ...(request.id ? { id: request.id } : {}), models: session.models() })
       return true
     }
     if (request.op === 'eval' && typeof request.code === 'string') {

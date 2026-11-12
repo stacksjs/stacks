@@ -51,6 +51,38 @@ export interface TinkerErrorValue {
   entries?: Array<[string, TinkerValue]>
 }
 
+/** An ORM model instance: what it is, its visible attributes, and what it relates to. */
+export interface TinkerModelValue {
+  t: 'model'
+  id: number
+  /** The model's name, as the app writes it: `User`. */
+  model: string
+  table?: string
+  primaryKey?: string
+  /** The primary key's value, when the row has one. */
+  key?: TinkerValue
+  /** The attributes the model serializes. Hidden ones are left out and named in `hidden`. */
+  attributes: Array<[string, TinkerValue]>
+  /** Attributes the model holds but does not serialize, such as a password hash. Names only. */
+  hidden?: string[]
+  /** Relations already loaded on this instance. */
+  loaded?: Array<[string, TinkerValue]>
+  /** Every relation the model declares, loaded or not. */
+  relations?: Array<{ kind: string, model: string, name?: string }>
+  more?: number
+}
+
+/** Rendered markup to show as a page instead of as text: a mail, a view, any HTML. */
+export interface TinkerHtmlValue {
+  t: 'html'
+  kind: 'mail' | 'view' | 'html'
+  title?: string
+  html: string
+  /** The plain-text part, for a mail that has one. */
+  text?: string
+  truncated?: number
+}
+
 export type TinkerValue =
   | { t: 'undefined' }
   | { t: 'null' }
@@ -69,6 +101,8 @@ export type TinkerValue =
   | { t: 'object', id: number, ctor?: string, entries: Array<[string, TinkerValue]>, more?: number }
   | { t: 'map', id: number, size: number, entries: Array<[TinkerValue, TinkerValue]>, more?: number }
   | { t: 'set', id: number, size: number, items: TinkerValue[], more?: number }
+  | TinkerModelValue
+  | TinkerHtmlValue
   | { t: 'ref', id: number }
   | { t: 'cut', reason: 'depth' | 'nodes', ctor?: string }
   | TinkerErrorValue
@@ -127,6 +161,73 @@ function constructorName(value: object): string | undefined {
     return 'null prototype'
   const name = proto.constructor?.name
   return typeof name === 'string' && name && name !== 'Object' ? name : undefined
+}
+
+/** Markup larger than this is cut. A preview is for looking at, not for moving megabytes over a pipe. */
+const MAX_HTML = 2_000_000
+
+/**
+ * A value that says "show me as rendered markup". Returned by the session's
+ * `preview` helpers; a snippet can also construct one.
+ */
+export class TinkerPreview {
+  constructor(
+    readonly kind: TinkerHtmlValue['kind'],
+    readonly html: string,
+    readonly title?: string,
+    readonly text?: string,
+  ) {}
+}
+
+const RELATION_KINDS = ['hasOne', 'hasMany', 'belongsTo', 'belongsToMany', 'hasOneThrough', 'hasManyThrough', 'morphOne', 'morphMany', 'morphTo', 'morphToMany'] as const
+
+/** The relations a model definition declares, flattened. */
+export function relationsOf(definition: Record<string, unknown>): Array<{ kind: string, model: string, name?: string }> {
+  const relations: Array<{ kind: string, model: string, name?: string }> = []
+  for (const kind of RELATION_KINDS) {
+    const declared = definition[kind]
+    if (!declared)
+      continue
+    if (Array.isArray(declared)) {
+      for (const entry of declared) {
+        if (typeof entry === 'string')
+          relations.push({ kind, model: entry })
+        else if (entry && typeof entry === 'object' && typeof (entry as { model?: unknown }).model === 'string')
+          relations.push({ kind, model: (entry as { model: string }).model, ...(typeof (entry as { relationName?: unknown }).relationName === 'string' ? { name: (entry as { relationName: string }).relationName } : {}) })
+      }
+    }
+    else if (typeof declared === 'object') {
+      // The morph forms are written `{ relationName: 'Model' }`.
+      for (const [name, model] of Object.entries(declared as Record<string, unknown>)) {
+        if (typeof model === 'string')
+          relations.push({ kind, model, name })
+      }
+    }
+    else if (typeof declared === 'string') {
+      relations.push({ kind, model: declared })
+    }
+  }
+  return relations
+}
+
+interface ModelLike {
+  _definition: { name: string, table?: string, primaryKey?: string } & Record<string, unknown>
+  toJSON: () => unknown
+  getLoadedRelations?: () => Record<string, unknown>
+}
+
+/**
+ * Whether a value is a Stacks ORM model instance. Told by shape, not by
+ * class, so this package needs no dependency on the ORM and a model from any
+ * copy of it is recognised.
+ */
+export function isModelInstance(value: object): value is ModelLike {
+  const definition = (value as { _definition?: unknown })._definition
+  return typeof definition === 'object'
+    && definition !== null
+    && typeof (definition as { name?: unknown }).name === 'string'
+    && typeof (value as { toJSON?: unknown }).toJSON === 'function'
+    && typeof (value as { getAttributes?: unknown }).getAttributes === 'function'
 }
 
 export function serialize(root: unknown, options: SerializeOptions = {}): TinkerValue {
@@ -206,6 +307,21 @@ export function serialize(root: unknown, options: SerializeOptions = {}): Tinker
     if (object instanceof Error)
       return describeError(object, next)
 
+    if (object instanceof TinkerPreview) {
+      const cut = object.html.length - MAX_HTML
+      return {
+        t: 'html',
+        kind: object.kind,
+        ...(object.title ? { title: object.title } : {}),
+        html: cut > 0 ? object.html.slice(0, MAX_HTML) : object.html,
+        ...(object.text ? { text: object.text.slice(0, limits.maxString) } : {}),
+        ...(cut > 0 ? { truncated: cut } : {}),
+      }
+    }
+
+    if (isModelInstance(object))
+      return describeModel(object, id, next)
+
     for (const describer of describers) {
       let described: TinkerValue | undefined
       try {
@@ -251,6 +367,61 @@ export function serialize(root: unknown, options: SerializeOptions = {}): Tinker
     }
 
     return describeObject(object, id, next)
+  }
+
+  function describeModel(model: ModelLike, id: number, next: (inner: unknown) => TinkerValue): TinkerModelValue {
+    const definition = model._definition
+    // toJSON is the model's own answer to "what may be seen": it leaves out
+    // hidden attributes. Own keys the JSON lacks are the hidden ones.
+    let visible: Record<string, unknown> = {}
+    try {
+      const json = model.toJSON()
+      if (json && typeof json === 'object')
+        visible = json as Record<string, unknown>
+    }
+    catch {
+      // A model that cannot serialize itself shows no attributes rather than its raw row.
+    }
+
+    let loadedRelations: Record<string, unknown> = {}
+    try {
+      loadedRelations = model.getLoadedRelations?.() ?? {}
+    }
+    catch {
+      loadedRelations = {}
+    }
+
+    const keys = Object.keys(visible).filter(key => !(key in loadedRelations))
+    const attributes: Array<[string, TinkerValue]> = []
+    for (const key of keys) {
+      if (attributes.length >= limits.maxItems || nodes >= limits.maxNodes)
+        break
+      attributes.push([key, next(visible[key])])
+    }
+    const hidden = Object.keys(model).filter(key => !(key in visible))
+    const loaded: Array<[string, TinkerValue]> = []
+    for (const [name, related] of Object.entries(loadedRelations)) {
+      if (loaded.length >= limits.maxItems || nodes >= limits.maxNodes)
+        break
+      loaded.push([name, next(related)])
+    }
+    const relations = relationsOf(definition)
+    const primaryKey = typeof definition.primaryKey === 'string' ? definition.primaryKey : 'id'
+    const more = keys.length - attributes.length
+
+    return {
+      t: 'model',
+      id,
+      model: definition.name,
+      ...(typeof definition.table === 'string' ? { table: definition.table } : {}),
+      primaryKey,
+      ...(visible[primaryKey] !== undefined ? { key: next(visible[primaryKey]) } : {}),
+      attributes,
+      ...(hidden.length ? { hidden } : {}),
+      ...(loaded.length ? { loaded } : {}),
+      ...(relations.length ? { relations } : {}),
+      ...(more > 0 ? { more } : {}),
+    }
   }
 
   function describeObject(object: object, id: number, next: (inner: unknown) => TinkerValue): TinkerValue {
