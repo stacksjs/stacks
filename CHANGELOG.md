@@ -1,5 +1,31 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.553...v0.75.554)
+
+## ✨ Features
+
+- **dashboard**: a file chooser and a Markdown editor in the model forms ([d97b052](https://github.com/stacksjs/stacks/commit/d97b052)) _(by glennmichael123)_ ([#3275](https://github.com/stacksjs/stacks/issues/3275))
+- **dashboard**: a field can be asked for as an uploaded file or as Markdown ([7d4caa4](https://github.com/stacksjs/stacks/commit/7d4caa4)) _(by glennmichael123)_ ([#3275](https://github.com/stacksjs/stacks/issues/3275))
+
+## 🐛 Bug Fixes
+
+- **dashboard**: read the related upload target once ([d94d391](https://github.com/stacksjs/stacks/commit/d94d391)) _(by Chris)_ ([#3276](https://github.com/stacksjs/stacks/issues/3276))
+- **dashboard**: read nullable form state once ([6999cad](https://github.com/stacksjs/stacks/commit/6999cad)) _(by Chris)_ ([#3276](https://github.com/stacksjs/stacks/issues/3276))
+
+## ✅ Tests
+
+- **dashboard**: verify related upload target behavior ([efb336e](https://github.com/stacksjs/stacks/commit/efb336e)) _(by Chris)_ ([#3276](https://github.com/stacksjs/stacks/issues/3276))
+- **dashboard**: uploads and Markdown through a real server and a real disk ([c54d212](https://github.com/stacksjs/stacks/commit/c54d212)) _(by glennmichael123)_ ([#3275](https://github.com/stacksjs/stacks/issues/3275))
+
+## 🔧 Chores
+
+- **auto-imports**: refresh the source fingerprint for the upload and Markdown functions ([bb36fb0](https://github.com/stacksjs/stacks/commit/bb36fb0)) _(by glennmichael123)_ ([#3275](https://github.com/stacksjs/stacks/issues/3275))
+
+## Contributors
+
+- _Chris_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.552...v0.75.553)
 
 ## ✨ Features
