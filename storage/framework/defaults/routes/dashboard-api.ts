@@ -525,6 +525,10 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.post('/models/{slug}', 'Actions/Dashboard/Models/ModelStoreAction'))
   guard(route.patch('/models/{slug}/{id}', 'Actions/Dashboard/Models/ModelUpdateAction'))
   guard(route.delete('/models/{slug}/{id}', 'Actions/Dashboard/Models/ModelDestroyAction'))
+  // The actions a model lists under `dashboard.actions`, run on one record:
+  // "Mark as shipped". The parameters other than `id` are named so that an
+  // action validating a `slug` or a `name` of its own does not read these.
+  guard(route.post('/models/{dashboardModel}/{id}/actions/{dashboardAction}', 'Actions/Dashboard/Models/ModelActionRunAction'))
 
   // Error monitoring - the same native Error model aggregation exposed by
   // the token-authenticated `/api/monitoring` routes, projected through the

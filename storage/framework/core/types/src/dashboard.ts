@@ -372,6 +372,71 @@ export type DashboardConfig = Partial<DashboardOptions>
 /** A write the dashboard can make to a model's rows, in the `useApi` route vocabulary. */
 export type DashboardModelWrite = 'store' | 'update' | 'destroy'
 
+/**
+ * Something an operator can do to one record beyond creating, editing and
+ * deleting it, as a button the dashboard draws: "Mark as shipped".
+ *
+ * The model names it; an action under `app/Actions` does it.
+ */
+export interface DashboardModelAction {
+  /**
+   * What the action is called in the URL that runs it, unique within the
+   * model: `ship`, `markShipped`, `send-password-reset`.
+   */
+  name: string
+
+  /**
+   * The action to run, by its path under `app/`, as a route names one:
+   * `'Actions/Orders/ShipOrderAction'`.
+   *
+   * It runs as its own route would. The record's id arrives as the `id`
+   * route parameter (`request.getParam('id')`), so an action already served
+   * at `/orders/{id}/ship` needs nothing changed, and its `validations`,
+   * `authorize` and `before` all apply.
+   *
+   * What it answers with is what the operator is told. A refusal (any status
+   * from 400 up, returned or thrown) is shown with its `message`. A success
+   * may carry a `message`, shown as the confirmation, and a `redirect`, a
+   * dashboard path to open afterwards (`/models/order/31`).
+   */
+  action: string
+
+  /** What the button says. Left out, the name in words: `markShipped` is "Mark shipped". */
+  label?: string
+
+  /** An iconify class for the button, such as `i-hugeicons-truck-delivery`. */
+  icon?: string
+
+  /**
+   * Ask before running, with this sentence: say what will happen. Left out,
+   * the action runs when the button is pressed.
+   */
+  confirm?: string
+
+  /** Draw the button in red: the action removes or revokes something. */
+  destructive?: boolean
+
+  /**
+   * Where the button is drawn: on the record's own page (`record`), in its
+   * row of a list (`row`). Both when left out.
+   */
+  on?: Array<'record' | 'row'>
+
+  /**
+   * The records the action is for: each field with the value, or list of
+   * values, a record must hold. `null` means nothing is stored.
+   *
+   * ```ts
+   * when: { status: ['paid', 'packed'], shippedAt: null }
+   * ```
+   *
+   * A record that does not match has no button, and the action is refused
+   * for it if asked anyway. A field is an attribute or its column, and may
+   * be one the dashboard keeps hidden.
+   */
+  when?: Record<string, string | number | boolean | null | Array<string | number | boolean | null>>
+}
+
 export interface DashboardModelOptions {
   /**
    * Expose this model through generic dashboard catalogs, counts, global
@@ -477,6 +542,32 @@ export interface DashboardModelOptions {
    * dashboard's own guarded endpoints, never through the `useApi` routes.
    */
   writes?: DashboardModelWrite[]
+
+  /**
+   * What an operator can do to one record beyond creating, editing and
+   * deleting it. Each entry is a button on the record's page and in its row
+   * that runs an action of the app's:
+   *
+   * ```ts
+   * actions: [
+   *   {
+   *     name: 'ship',
+   *     label: 'Mark as shipped',
+   *     action: 'Actions/Orders/ShipOrderAction',
+   *     confirm: 'The customer is emailed a tracking link.',
+   *     when: { status: 'paid' },
+   *   },
+   * ]
+   * ```
+   *
+   * A model describes data and this is behaviour, so the model only names
+   * it; see {@link DashboardModelAction}. An entry that cannot be read, or
+   * whose action cannot be loaded, is left out and logged by name.
+   *
+   * Like `writes`, it widens nothing outside the dashboard: the buttons go
+   * through the dashboard's own guarded endpoint.
+   */
+  actions?: DashboardModelAction[]
 
   /**
    * Which roles this model is for.

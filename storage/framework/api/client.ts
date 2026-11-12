@@ -2965,6 +2965,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * POST /api/dashboard/models/{dashboardModel}/{id}/actions/{dashboardAction}
+   */
+  postDashboardModelsDashboardModelIdActionsDashboardAction(input: { "dashboardModel": string; "id": string; "dashboardAction": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/models/{dashboardModel}/{id}/actions/{dashboardAction}", input ?? {}, [{"name":"dashboardModel","in":"path","required":true},{"name":"id","in":"path","required":true},{"name":"dashboardAction","in":"path","required":true}], null, "application/json", [], options)
+  },
+
+  /**
    * GET /api/dashboard/models/{slug}
    */
   getDashboardModelsSlug(input: { "slug": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {

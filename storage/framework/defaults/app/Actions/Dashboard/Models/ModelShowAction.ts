@@ -6,6 +6,7 @@ import { response as routerResponse } from '@stacksjs/router'
 import { safeGet } from '../../../../resources/functions/dashboard/data'
 import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
 import { dashboardOperationalError } from '../dashboard-response'
+import { type ModelCustomAction, modelActionApplies, modelActions, publicModelAction } from './model-actions'
 import { isUnmigratedTable } from './model-migration'
 import { recordNames } from './model-options'
 import { belongsToRelations } from './model-relations'
@@ -75,6 +76,10 @@ interface ResponseShape {
   updateColumns: string[]
   /** Rows whose personal details erasure has replaced with placeholders (the subject model only). */
   anonymizedIds?: Array<number | string>
+  /** What the model lets an operator do to a record beyond editing it: its `dashboard.actions`. */
+  actions: ModelCustomAction[]
+  /** Which of those each row on this page is offered, by row id. A row with none is left out. */
+  rowActions: Record<string, string[]>
   /** False when the model's table does not exist yet: `./buddy migrate` creates it. */
   migrated: boolean
   error: string | null
@@ -232,6 +237,8 @@ export default new Action({
       listColumns: [],
       relationNames: {},
       updateColumns: [],
+      actions: [],
+      rowActions: {},
       migrated: true,
       error: null,
     }
@@ -245,6 +252,10 @@ export default new Action({
     }
     if (!Model || typeof Model.where !== 'function')
       return routerResponse.json({ message: `No ORM model named ${modelName}.` }, 404)
+
+    // The rows as the model returned them, hidden columns included: an
+    // action's `when` may be about a column the page is never sent.
+    let stored: unknown[] = []
 
     try {
       response.tableName = String(Model.table || tableName)
@@ -307,6 +318,7 @@ export default new Action({
             .take(perPage)
             .get() as Array<Record<string, unknown>>
 
+      stored = Array.isArray(rows) ? rows : []
       response.rows = (Array.isArray(rows) ? rows : []).map((row) => {
         const flat: Record<string, unknown> = {}
         for (const col of response.columns)
@@ -379,6 +391,19 @@ export default new Action({
       const ids = response.rows.map(row => row[column]).filter(id => id !== null && id !== undefined && id !== '') as Array<number | string>
       if (ids.length > 0)
         response.relationNames[column] = Object.fromEntries(await recordNames(relation.model, ids))
+    }
+
+    // The model's own actions, and the rows each is for. Decided here, where
+    // the whole row is, so the page never has to be sent the rule. An erased
+    // account is offered none: there is nobody left to act on.
+    const actions = await modelActions(Model, modelName)
+    response.actions = actions.map(publicModelAction)
+    const erased = new Set((response.anonymizedIds ?? []).map(String))
+    for (const [index, row] of stored.entries()) {
+      const id = String(response.rows[index]?.id ?? '')
+      const offered = id && !erased.has(id) ? actions.filter(action => modelActionApplies(action, row)).map(action => action.name) : []
+      if (offered.length > 0)
+        response.rowActions[id] = offered
     }
     response.searchable = response.columnMeta.filter(c => c.type === 'text').map(c => c.name)
     response.lastPage = Math.max(1, Math.ceil(response.totalCount / perPage))
