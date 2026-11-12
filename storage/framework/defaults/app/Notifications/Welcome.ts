@@ -5,7 +5,7 @@ import { log } from '@stacksjs/logging'
 export default new Email({
   // or Sms or Push or Webhook or Chat
   name: 'welcome', // optional, defaults to the file name
-  subject: 'Welcome to Stacks', // optional, but recommended
+  subject: `Welcome to ${config.app.name || 'our app'}`, // optional, but recommended
   to: 'some@email.com', // optional, has to be defined here or set when sending
   from: config.email.from, // optional, defaults to the config value
   template: 'Welcome', // resources/emails/Welcome.stx

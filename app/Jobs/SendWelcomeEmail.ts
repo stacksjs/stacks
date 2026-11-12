@@ -1,3 +1,4 @@
+import { config } from '@stacksjs/config'
 import { mail, template } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
 import { Job } from '@stacksjs/queue'
@@ -25,9 +26,13 @@ export default new Job({
       variables: { name: name || 'there', email },
     })
 
+    // The app's own name, read when the mail is sent, as in the action of the
+    // same name.
+    const appName = config.app.name || 'our app'
+
     await mail.send({
       to: email,
-      subject: 'Welcome to Stacks!',
+      subject: `Welcome to ${appName}!`,
       html,
       text,
     })

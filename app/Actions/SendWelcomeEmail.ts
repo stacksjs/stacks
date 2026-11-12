@@ -1,4 +1,5 @@
 import { Action } from '@stacksjs/actions/runtime'
+import { config } from '@stacksjs/config'
 import { mail, template } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
 import { schema } from '@stacksjs/validation/runtime'
@@ -46,9 +47,13 @@ export default new Action({
       variables: { name, email: user.to },
     })
 
+    // The app's own name, read when the mail is sent. This file is copied into
+    // every new app, so a name written here is the name every app would send.
+    const appName = config.app.name || 'our app'
+
     await mail.send({
       to: user.to,
-      subject: 'Welcome to Stacks!',
+      subject: `Welcome to ${appName}!`,
       html,
       text,
     })
