@@ -105,6 +105,16 @@ export interface DatabaseBackupOptions {
    * @default 7
    */
   retain?: number
+  /**
+   * How many seconds a dump may run before it is stopped and the backup fails.
+   * A deploy waits on its pre-migration dump, so this is what turns a dump
+   * that never finishes into an error instead of a deploy that never ends.
+   *
+   * `DB_BACKUP_TIMEOUT` overrides this, and the `--timeout` flag overrides both.
+   *
+   * @default 3600
+   */
+  timeout?: number
 }
 
 export interface DatabaseOptions {

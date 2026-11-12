@@ -17,8 +17,11 @@ import { Database } from 'bun:sqlite'
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import process from 'node:process'
+import { Buffer } from 'node:buffer'
 import {
   backupFileName,
+  DEFAULT_DUMP_TIMEOUT_SECONDS,
   DEFAULT_RETAIN,
   dumpCommand,
   dumpSqlite,
@@ -31,6 +34,7 @@ import {
   parseBackupDestination,
   resolveBackupDestination,
   resolveBackupRetain,
+  resolveBackupTimeout,
   restoreCommand,
   restoreSqlite,
   toolFailureDetail,
@@ -168,7 +172,13 @@ function tool(script: string): { bin: string, args: string[], env: Record<string
   return { bin: 'sh', args: ['-c', script], env: {} }
 }
 
-describe('a server dump, compressed and put back', () => {
+// Every promise the dump plumbing makes is held to both ways of moving the
+// bytes: the kernel pipe a box with bash and gzip gets, and the in-process
+// path every other box gets. Neither is the fallback as far as a restore is
+// concerned.
+const PLUMBING = (process.platform === 'win32' ? ['process'] : ['pipe', 'process']) as Array<'pipe' | 'process'>
+
+describe.each(PLUMBING)('a server dump, compressed and put back (%s)', (via) => {
   const sql = 'INSERT INTO t VALUES (1, \'row\');\n'.repeat(2000)
 
   it('gzips what the tool prints, and restores it byte for byte', async () => {
@@ -176,7 +186,7 @@ describe('a server dump, compressed and put back', () => {
     const source = join(dir, 'source.sql')
     writeFileSync(source, sql)
 
-    await writeDump(tool(`cat '${source}'`), destination)
+    await writeDump(tool(`cat '${source}'`), destination, undefined, { via })
 
     const written = await Bun.file(destination).bytes()
     expect([written[0], written[1]]).toEqual([0x1F, 0x8B]) // the gzip magic number
@@ -184,8 +194,152 @@ describe('a server dump, compressed and put back', () => {
     expect(new TextDecoder().decode(Bun.gunzipSync(written))).toBe(sql)
 
     const restored = join(dir, 'restored.sql')
+    await readDump(tool(`cat > '${restored}'`), destination, undefined, { via })
+    expect(await Bun.file(restored).text()).toBe(sql)
+  })
+
+  // The dump that hung every deploy was 1.36 GB (database-backup-min-bun.test.ts
+  // runs this under the Bun it hung on). 64 MB is thousands of pipe buffers,
+  // which is enough for a writer that stalls or loses a chunk to show it.
+  it('takes a dump far larger than any buffer and puts every byte back', async () => {
+    const megabytes = 64
+    const row = 'INSERT INTO events VALUES (424242, \'c0ffee\');'.padEnd(127, ' ')
+    const produce = `yes "${row}" | head -n ${megabytes * 8192}`
+    const destination = join(dir, '2026-08-13T09-00-00-000.postgres.sql.gz')
+    const sum = join(dir, 'restored.cksum')
+
+    await writeDump(tool(produce), destination, undefined, { via })
+    await readDump(tool(`cksum > '${sum}'`), destination, undefined, { via })
+
+    const expected = new TextDecoder().decode(Bun.spawnSync(['sh', '-c', `${produce} | cksum`]).stdout)
+    expect(expected).toContain(String(megabytes * 1024 * 1024))
+    expect(await Bun.file(sum).text()).toBe(expected)
+  }, 60_000)
+
+  it('writes a dump of nothing as a gzip file, not as an empty one', async () => {
+    const destination = join(dir, '2026-08-13T09-00-00-000.postgres.sql.gz')
+    await writeDump(tool('true'), destination, undefined, { via })
+
+    expect(Bun.gunzipSync(await Bun.file(destination).bytes()).length).toBe(0)
+  })
+
+  it('leaves nothing behind when the tool fails halfway, so a broken dump is never the newest', async () => {
+    const destination = join(dir, '2026-08-13T09-00-00-000.postgres.sql.gz')
+
+    await expect(writeDump(tool(`printf 'half a dump'; echo 'pg_dump: error: connection lost' >&2; exit 1`), destination, undefined, { via }))
+      .rejects.toThrow('connection lost')
+    expect(existsSync(destination)).toBe(false)
+    expect(existsSync(`${destination}.partial`)).toBe(false)
+  })
+
+  it('keeps the password out of a failed dump\'s message', async () => {
+    const destination = join(dir, '2026-08-13T09-00-00-000.postgres.sql.gz')
+    const failing = tool(`echo 'pg_dump: error: password "hunter2" rejected' >&2; exit 1`)
+
+    const error = await writeDump(failing, destination, 'hunter2', { via }).catch(e => e as Error)
+    expect(error.message).toContain('password "***" rejected')
+    expect(error.message).not.toContain('hunter2')
+  })
+
+  it('reports a dump that cannot be written, and leaves the tool nowhere to keep running', async () => {
+    const destination = join(dir, 'no-such-directory', '2026-08-13T09-00-00-000.postgres.sql.gz')
+
+    await expect(writeDump(tool(`yes 'INSERT' | head -n 200000`), destination, undefined, { via }))
+      .rejects.toThrow(/no such file or directory/i)
+  })
+
+  it('stops a dump that outlives its deadline, says so, and leaves no process and no file', async () => {
+    const destination = join(dir, '2026-08-13T09-00-00-000.postgres.sql.gz')
+    const pidFile = join(dir, 'tool.pid')
+    // exec, so the pid written is the process that would otherwise live on.
+    const stuck = tool(`echo $$ > '${pidFile}'; printf 'some of a dump'; exec sleep 300`)
+
+    const started = Date.now()
+    await expect(writeDump(stuck, destination, undefined, { via, timeoutMs: 500 }))
+      .rejects.toThrow(/sh had not finished after 0\.5s.*DB_BACKUP_TIMEOUT/)
+    expect(Date.now() - started).toBeLessThan(10_000)
+
+    expect(existsSync(destination)).toBe(false)
+    expect(existsSync(`${destination}.partial`)).toBe(false)
+
+    const pid = Number((await Bun.file(pidFile).text()).trim())
+    expect(pid).toBeGreaterThan(0)
+    let alive = true
+    for (let attempt = 0; attempt < 50 && alive; attempt++) {
+      try {
+        process.kill(pid, 0)
+        await Bun.sleep(100)
+      }
+      catch {
+        alive = false
+      }
+    }
+    expect(alive).toBe(false)
+  }, 30_000)
+
+  it('says why a restore failed', async () => {
+    const destination = join(dir, '2026-08-13T09-00-00-000.postgres.sql.gz')
+    writeFileSync(destination, Bun.gzipSync(new TextEncoder().encode(sql)))
+
+    await expect(readDump(tool(`cat > /dev/null; echo 'psql: error: relation exists' >&2; exit 3`), destination, undefined, { via }))
+      .rejects.toThrow('relation exists')
+  })
+
+  it('reports the tool, not gzip, when the tool stops reading early', async () => {
+    const destination = join(dir, '2026-08-13T09-00-00-000.postgres.sql.gz')
+    writeFileSync(destination, Bun.gzipSync(new TextEncoder().encode(sql.repeat(200))))
+
+    await expect(readDump(tool(`head -c 10 > /dev/null; echo 'psql: error: syntax error at line 1' >&2; exit 3`), destination, undefined, { via }))
+      .rejects.toThrow('psql: error: syntax error at line 1')
+  })
+
+  it('fails a restore from a truncated dump even though the tool exits 0', async () => {
+    const destination = join(dir, '2026-08-13T09-00-00-000.postgres.sql.gz')
+    const whole = Bun.gzipSync(new TextEncoder().encode(sql.repeat(50)))
+    writeFileSync(destination, whole.subarray(0, Math.floor(whole.length / 2)))
+
+    await expect(readDump(tool('cat > /dev/null'), destination, undefined, { via }))
+      .rejects.toThrow(/^gzip: /)
+  })
+
+  it('restores a dump written as several gzip members, which the in-process path writes', async () => {
+    const destination = join(dir, '2026-08-13T09-00-00-000.postgres.sql.gz')
+    const half = new TextEncoder().encode(sql)
+    writeFileSync(destination, Buffer.concat([Bun.gzipSync(half), Bun.gzipSync(half)]))
+    const restored = join(dir, 'restored.sql')
+
+    await readDump(tool(`cat > '${restored}'`), destination, undefined, { via })
+    expect(await Bun.file(restored).text()).toBe(sql + sql)
+  })
+})
+
+describe('a server dump, whichever way the box moves the bytes', () => {
+  const sql = 'INSERT INTO t VALUES (1, \'row\');\n'.repeat(2000)
+
+  it('takes and restores a dump with nothing said about plumbing, as the command does', async () => {
+    const destination = join(dir, '2026-08-13T09-00-00-000.postgres.sql.gz')
+    const source = join(dir, 'source.sql')
+    writeFileSync(source, sql)
+    const restored = join(dir, 'restored.sql')
+
+    await writeDump(tool(`cat '${source}'`), destination)
     await readDump(tool(`cat > '${restored}'`), destination)
     expect(await Bun.file(restored).text()).toBe(sql)
+  })
+
+  it('reports gzip when gzip is what failed', async () => {
+    if (process.platform === 'win32')
+      return
+    const bin = join(dir, 'bin')
+    mkdirSync(bin)
+    writeFileSync(join(bin, 'gzip'), '#!/bin/sh\ncat > /dev/null\necho \'gzip: stdout: No space left on device\' >&2\nexit 1\n', { mode: 0o755 })
+    const destination = join(dir, '2026-08-13T09-00-00-000.postgres.sql.gz')
+    const command = { ...tool(`printf 'a dump'`), env: { PATH: `${bin}:${process.env.PATH}` } }
+
+    await expect(writeDump(command, destination, undefined, { via: 'pipe' }))
+      .rejects.toThrow('gzip: stdout: No space left on device')
+    expect(existsSync(destination)).toBe(false)
+    expect(existsSync(`${destination}.partial`)).toBe(false)
   })
 
   it('still restores an uncompressed dump taken before dumps were compressed', async () => {
@@ -197,21 +351,33 @@ describe('a server dump, compressed and put back', () => {
     expect(await Bun.file(restored).text()).toBe(sql)
   })
 
-  it('leaves nothing behind when the tool fails halfway, so a broken dump is never the newest', async () => {
-    const destination = join(dir, '2026-08-13T09-00-00-000.postgres.sql.gz')
-
-    await expect(writeDump(tool(`printf 'half a dump'; echo 'pg_dump: error: connection lost' >&2; exit 1`), destination))
-      .rejects.toThrow('connection lost')
-    expect(existsSync(destination)).toBe(false)
-    expect(existsSync(`${destination}.partial`)).toBe(false)
-  })
-
-  it('says why a restore failed', async () => {
+  it('says why a restore of an uncompressed dump failed', async () => {
     const old = join(dir, '2026-08-13T09-00-00-000.postgres.sql')
     writeFileSync(old, sql)
 
     await expect(readDump(tool(`cat > /dev/null; echo 'psql: error: relation exists' >&2; exit 3`), old))
       .rejects.toThrow('relation exists')
+  })
+})
+
+describe('resolveBackupTimeout', () => {
+  it('is an hour when nothing says otherwise', () => {
+    expect(resolveBackupTimeout({}, {})).toBe(DEFAULT_DUMP_TIMEOUT_SECONDS * 1000)
+    expect(DEFAULT_DUMP_TIMEOUT_SECONDS).toBe(3600)
+  })
+
+  it('takes the flag over the environment over the config, each in seconds', () => {
+    const config = { backups: { timeout: 60 } }
+    expect(resolveBackupTimeout(config, {})).toBe(60_000)
+    expect(resolveBackupTimeout(config, { DB_BACKUP_TIMEOUT: '120' })).toBe(120_000)
+    expect(resolveBackupTimeout(config, { DB_BACKUP_TIMEOUT: '120' }, '7200')).toBe(7_200_000)
+    expect(resolveBackupTimeout(config, { DB_BACKUP_TIMEOUT: '' })).toBe(60_000)
+  })
+
+  it('refuses a deadline it cannot read, and refuses to have none', () => {
+    expect(() => resolveBackupTimeout({}, { DB_BACKUP_TIMEOUT: 'soon' })).toThrow('DB_BACKUP_TIMEOUT must be a number of seconds')
+    expect(() => resolveBackupTimeout({}, {}, '0')).toThrow('--timeout must be a number of seconds')
+    expect(() => resolveBackupTimeout({ backups: { timeout: -5 } }, {})).toThrow('backups.timeout must be a number of seconds')
   })
 })
 

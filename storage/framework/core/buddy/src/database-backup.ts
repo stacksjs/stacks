@@ -38,7 +38,7 @@
  * database it owns. No superuser, so no copy of that rule to drift.
  */
 
-import type { Buffer } from 'node:buffer'
+import { Buffer } from 'node:buffer'
 import process from 'node:process'
 
 /** Engines a dump can be taken of. */
@@ -251,33 +251,130 @@ export function restoreCommand(target: BackupTarget): DumpCommand | null {
   }
 }
 
+/** How long a dump may run before it is stopped, when nothing says otherwise. */
+export const DEFAULT_DUMP_TIMEOUT_SECONDS = 3600
+
+/** How {@link writeDump} and {@link readDump} move the bytes. */
+export interface DumpStreamOptions {
+  /**
+   * Stop the dump and fail once it has run this long. A deploy waits on the
+   * pre-migration dump, so one that never finishes has to become an error
+   * somebody reads rather than a job that sits until CI cancels it.
+   * Defaults to {@link DEFAULT_DUMP_TIMEOUT_SECONDS}. Only dumps have one: a
+   * restore stopped halfway leaves a database that is neither old nor new.
+   */
+  timeoutMs?: number
+  /**
+   * Which plumbing to use. Left unset, the kernel pipe is used wherever bash
+   * and gzip are both on PATH and the in-process path everywhere else. Tests
+   * set it to hold each path to the same contract.
+   */
+  via?: 'pipe' | 'process'
+}
+
+const BASH = 'bash'
+const GZIP = 'gzip'
+
+/** The in-process path compresses the dump in batches of at least this much. */
+const GZIP_BATCH_BYTES = 1024 * 1024
+
+/** Bash for "the exit code of every member of the pipeline that just ran". */
+const PIPE_STATUS = ['echo "$', '{PIPESTATUS[*]}"'].join('')
+
+/**
+ * `tool | gzip > $DUMP_OUT`, with the two exit codes printed on stdout.
+ *
+ * The tool and its arguments arrive as positional parameters and the output
+ * path in the environment, so nothing is interpolated into the script and the
+ * password stays where {@link dumpCommand} put it. gzip's own complaints go to
+ * stdout, apart from the tool's stderr, so a failure is reported as whose it
+ * was.
+ *
+ * `set -m` puts the pipeline in a process group of its own. That is what lets
+ * the deadline stop pg_dump and gzip themselves: signalling only bash would
+ * leave both running, writing a dump nobody is waiting for.
+ */
+const DUMP_PIPELINE = [
+  'set -m',
+  `( "$0" "$@" | gzip -c 2>&1 > "$DUMP_OUT"; ${PIPE_STATUS} ) &`,
+  'job=$!',
+  'trap \'kill -TERM -- "-$job" 2>/dev/null\' TERM INT HUP',
+  'wait "$job"',
+].join('\n')
+
+/** `gzip -dc < $DUMP_IN | tool`, reported the same way as {@link DUMP_PIPELINE}. */
+const RESTORE_PIPELINE = [
+  'exec 3>&1',
+  'gzip -dc < "$DUMP_IN" 2>&3 | "$0" "$@" > /dev/null 3>&-',
+  PIPE_STATUS,
+].join('\n')
+
+/** A pipeline member killed for writing to a reader that had already gone. */
+const SIGPIPE_EXIT = 141
+
+function canPipe(): boolean {
+  return process.platform !== 'win32' && Boolean(Bun.which(BASH)) && Boolean(Bun.which(GZIP))
+}
+
+/** Split a pipeline's stdout into what gzip said and the trailing exit codes. */
+function pipelineOutcome(stdout: string): { said: string, codes: number[] | null } {
+  const lines = stdout.split('\n').map(l => l.trim()).filter(Boolean)
+  const last = lines[lines.length - 1] ?? ''
+  if (!/^\d+ \d+$/.test(last))
+    return { said: lines.join('\n'), codes: null }
+  return { said: lines.slice(0, -1).join('\n'), codes: last.split(' ').map(Number) }
+}
+
+function toolError(command: DumpCommand, stderr: string, code: number | null, password?: string): Error {
+  return new Error(withoutPassword(`${command.bin}: ${toolFailureDetail(stderr, command.bin) || `exit code ${code}`}`, password))
+}
+
+function gzipError(detail: string, code: number | string, password?: string): Error {
+  return new Error(withoutPassword(`${GZIP}: ${toolFailureDetail(detail, GZIP) || `exit code ${code}`}`, password))
+}
+
+function deadlineError(command: DumpCommand, timeoutMs: number): Error {
+  const seconds = Math.round(timeoutMs / 100) / 10
+  return new Error(
+    `${command.bin} had not finished after ${seconds}s, so it was stopped and no dump was written. `
+    + 'If this database needs longer, raise the limit (in seconds) with --timeout, DB_BACKUP_TIMEOUT or backups.timeout.',
+  )
+}
+
 /**
  * Run `command` and gzip what it prints into `destination`.
  *
  * Written beside the destination under a `.partial` name and renamed only once
  * the tool has exited cleanly, so a dump that fails halfway never takes the
  * place of the newest good one, which is the one a hurried restore picks.
- * Streamed, because a dump is the whole database and the box is sized for the
- * web process.
+ *
+ * The bytes do not pass through a web stream. This used to be
+ * `Bun.write(partial, new Response(proc.stdout.pipeThrough(new CompressionStream('gzip'))))`,
+ * which never resolves on Bun 1.3: every deploy of an app with a server
+ * database hung at its pre-migration backup, holding the whole dump in memory.
+ * So the kernel does the piping wherever bash and gzip exist, and this process
+ * only waits. Where they do not, the dump is read and compressed here with
+ * synchronous calls, which cannot outrun the disk. Both hold memory flat
+ * whatever the size of the dump, on Bun 1.3 and on current Bun;
+ * `tests/database-backup-min-bun.test.ts` runs them under the oldest Bun.
  */
-export async function writeDump(command: DumpCommand, destination: string, password?: string): Promise<void> {
+export async function writeDump(
+  command: DumpCommand,
+  destination: string,
+  password?: string,
+  options: DumpStreamOptions = {},
+): Promise<void> {
   const { renameSync, rmSync } = await import('node:fs')
 
   const partial = `${destination}.partial`
-  const proc = Bun.spawn([command.bin, ...command.args], {
-    env: { ...process.env, ...command.env },
-    stdout: 'pipe',
-    stderr: 'pipe',
-  })
+  const timeoutMs = options.timeoutMs ?? DEFAULT_DUMP_TIMEOUT_SECONDS * 1000
+  const piped = options.via ? options.via === 'pipe' : canPipe()
 
   try {
-    const [, code, stderr] = await Promise.all([
-      Bun.write(partial, new Response(proc.stdout.pipeThrough(new CompressionStream('gzip')))),
-      proc.exited,
-      new Response(proc.stderr).text(),
-    ])
-    if (code !== 0)
-      throw new Error(withoutPassword(`${command.bin}: ${toolFailureDetail(stderr, command.bin) || `exit code ${code}`}`, password))
+    if (piped)
+      await pipeDump(command, partial, timeoutMs, password)
+    else
+      await compressDump(command, partial, timeoutMs, password)
     renameSync(partial, destination)
   }
   finally {
@@ -285,22 +382,249 @@ export async function writeDump(command: DumpCommand, destination: string, passw
   }
 }
 
-/**
- * Feed the dump at `source` to `command`'s stdin, inflating it first when it
- * is gzipped, so dumps taken before #3079 restore exactly as they did.
- */
-export async function readDump(command: DumpCommand, source: string, password?: string): Promise<void> {
-  const dump = Bun.file(source).stream()
-  const proc = Bun.spawn([command.bin, ...command.args], {
-    env: { ...process.env, ...command.env },
-    stdin: isCompressedBackup(source) ? dump.pipeThrough(new DecompressionStream('gzip')) : dump,
+/** {@link writeDump} through a kernel pipe: this process is not in the data path. */
+async function pipeDump(command: DumpCommand, partial: string, timeoutMs: number, password?: string): Promise<void> {
+  const proc = Bun.spawn([BASH, '-c', DUMP_PIPELINE, command.bin, ...command.args], {
+    env: { ...process.env, ...command.env, DUMP_OUT: partial },
+    stdin: 'ignore',
     stdout: 'pipe',
     stderr: 'pipe',
   })
 
-  const [code, stderr] = await Promise.all([proc.exited, new Response(proc.stderr).text()])
+  let expired = false
+  let hardStop: ReturnType<typeof setTimeout> | undefined
+  const deadline = setTimeout(() => {
+    expired = true
+    // TERM reaches the trap, which stops the pipeline's own process group.
+    // KILL follows for a bash that cannot run its trap.
+    proc.kill('SIGTERM')
+    hardStop = setTimeout(() => proc.kill('SIGKILL'), 5000)
+  }, timeoutMs)
+
+  try {
+    const [stdout, stderr, code] = await Promise.all([
+      new Response(proc.stdout).text(),
+      new Response(proc.stderr).text(),
+      proc.exited,
+    ])
+    if (expired)
+      throw deadlineError(command, timeoutMs)
+
+    const { said, codes } = pipelineOutcome(stdout)
+    if (!codes)
+      throw toolError(command, stderr, code, password)
+
+    const [toolCode = 1, gzipCode = 1] = codes
+    // A tool killed by SIGPIPE died because gzip did, so gzip's failure is the
+    // one worth reading (a full disk, a directory that cannot be written).
+    if (gzipCode !== 0 && (toolCode === 0 || toolCode === SIGPIPE_EXIT))
+      throw gzipError(said || stderr, gzipCode, password)
+    if (toolCode !== 0)
+      throw toolError(command, stderr, toolCode, password)
+  }
+  finally {
+    clearTimeout(deadline)
+    clearTimeout(hardStop)
+  }
+}
+
+/**
+ * {@link writeDump} without bash or gzip on the box.
+ *
+ * Reads the tool's stdout and writes each batch with `Bun.gzipSync` and
+ * `writeSync`. Synchronous on purpose: nothing is queued between the pipe and
+ * the disk, so the tool is held back by the kernel pipe filling rather than by
+ * a stream's backpressure, which is the part that differs between Bun
+ * versions. Each batch is its own gzip member. A file of several members is a
+ * valid gzip file, and gzip, zlib and {@link readDump} all read it as one.
+ */
+async function compressDump(command: DumpCommand, partial: string, timeoutMs: number, password?: string): Promise<void> {
+  const { closeSync, openSync, writeSync } = await import('node:fs')
+
+  // Opened before the tool starts, so a directory that cannot be written
+  // fails here rather than leaving a dump running with nowhere to go.
+  const fd = openSync(partial, 'w')
+
+  const proc = Bun.spawn([command.bin, ...command.args], {
+    env: { ...process.env, ...command.env },
+    stdin: 'ignore',
+    stdout: 'pipe',
+    stderr: 'pipe',
+  })
+  const stderrText = new Response(proc.stderr).text()
+
+  let expired = false
+  const startedAt = Date.now()
+  const expire = (): void => {
+    expired = true
+    proc.kill('SIGKILL')
+  }
+  const deadline = setTimeout(expire, timeoutMs)
+
+  let failure: unknown
+  try {
+    const flush = (batch: Uint8Array[]): void => {
+      const packed = Bun.gzipSync(Buffer.concat(batch))
+      for (let offset = 0; offset < packed.length;)
+        offset += writeSync(fd, packed, offset)
+    }
+
+    const reader = proc.stdout.getReader()
+    let batch: Uint8Array[] = []
+    let batched = 0
+    let members = 0
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done)
+        break
+      batch.push(value)
+      batched += value.length
+      if (batched >= GZIP_BATCH_BYTES) {
+        flush(batch)
+        members++
+        batch = []
+        batched = 0
+      }
+      // A stream that never pauses never lets the timer run, so the deadline
+      // is read off the clock here as well.
+      if (!expired && Date.now() - startedAt > timeoutMs)
+        expire()
+    }
+    // An empty dump is still written as a gzip file, never as zero bytes.
+    if (batched > 0 || members === 0)
+      flush(batch)
+  }
+  catch (error) {
+    failure = error
+    proc.kill('SIGKILL')
+  }
+  finally {
+    clearTimeout(deadline)
+    closeSync(fd)
+  }
+
+  const [code, stderr] = await Promise.all([proc.exited, stderrText])
+  if (expired)
+    throw deadlineError(command, timeoutMs)
+  if (failure !== undefined)
+    throw gzipError(failure instanceof Error ? failure.message : String(failure), 'unknown', password)
   if (code !== 0)
-    throw new Error(withoutPassword(`${command.bin}: ${toolFailureDetail(stderr, command.bin) || `exit code ${code}`}`, password))
+    throw toolError(command, stderr, code, password)
+}
+
+/**
+ * Feed the dump at `source` to `command`'s stdin, inflating it first when it
+ * is gzipped, so dumps taken before #3079 restore exactly as they did.
+ *
+ * An uncompressed dump is handed over as a file, which the tool reads itself.
+ * A gzipped one is inflated by `gzip -dc` through a kernel pipe where bash and
+ * gzip exist, and by zlib here otherwise, one chunk at a time. It used to be
+ * `Bun.file(source).stream().pipeThrough(new DecompressionStream('gzip'))` as
+ * the tool's stdin. On Bun 1.3 that has no backpressure: a restore held the
+ * whole inflated dump in memory while psql worked through it.
+ *
+ * A dump that does not inflate is an error here even when the tool exits 0.
+ * The tool only sees its input end, and a restore that stopped at a truncated
+ * dump would otherwise report success.
+ */
+export async function readDump(
+  command: DumpCommand,
+  source: string,
+  password?: string,
+  options: Pick<DumpStreamOptions, 'via'> = {},
+): Promise<void> {
+  if (!isCompressedBackup(source)) {
+    const proc = Bun.spawn([command.bin, ...command.args], {
+      env: { ...process.env, ...command.env },
+      stdin: Bun.file(source),
+      stdout: 'ignore',
+      stderr: 'pipe',
+    })
+    const [code, stderr] = await Promise.all([proc.exited, new Response(proc.stderr).text()])
+    if (code !== 0)
+      throw toolError(command, stderr, code, password)
+    return
+  }
+
+  if (options.via ? options.via === 'pipe' : canPipe())
+    await pipeRestore(command, source, password)
+  else
+    await inflateRestore(command, source, password)
+}
+
+/** {@link readDump} through a kernel pipe. */
+async function pipeRestore(command: DumpCommand, source: string, password?: string): Promise<void> {
+  const proc = Bun.spawn([BASH, '-c', RESTORE_PIPELINE, command.bin, ...command.args], {
+    env: { ...process.env, ...command.env, DUMP_IN: source },
+    stdin: 'ignore',
+    stdout: 'pipe',
+    stderr: 'pipe',
+  })
+
+  const [stdout, stderr, code] = await Promise.all([
+    new Response(proc.stdout).text(),
+    new Response(proc.stderr).text(),
+    proc.exited,
+  ])
+
+  const { said, codes } = pipelineOutcome(stdout)
+  if (!codes)
+    throw toolError(command, stderr, code, password)
+
+  // The tool first: when it stops early gzip is killed by SIGPIPE, and that is
+  // a consequence rather than the cause.
+  const [gzipCode = 1, toolCode = 1] = codes
+  if (toolCode !== 0)
+    throw toolError(command, stderr, toolCode, password)
+  if (gzipCode !== 0)
+    throw gzipError(said || stderr, gzipCode, password)
+}
+
+/** {@link readDump} without bash or gzip on the box. */
+async function inflateRestore(command: DumpCommand, source: string, password?: string): Promise<void> {
+  const { createReadStream } = await import('node:fs')
+  const { createGunzip } = await import('node:zlib')
+
+  const proc = Bun.spawn([command.bin, ...command.args], {
+    env: { ...process.env, ...command.env },
+    stdin: 'pipe',
+    stdout: 'ignore',
+    stderr: 'pipe',
+  })
+  const stderrText = new Response(proc.stderr).text()
+
+  let inflating = true
+  let failure: unknown
+  try {
+    // Iterating takes one chunk at a time and the flush waits for the tool to
+    // have read it, so the inflated dump never accumulates here.
+    for await (const chunk of createReadStream(source).pipe(createGunzip())) {
+      inflating = false
+      // Awaited: on Bun 1.3 a write to a tool that has gone rejects later,
+      // outside this try, unless the promise it returns is the one waited on.
+      await proc.stdin.write(chunk as Uint8Array)
+      await proc.stdin.flush()
+      inflating = true
+    }
+  }
+  catch (error) {
+    failure = error
+  }
+
+  try {
+    await proc.stdin.end()
+  }
+  catch {
+    // The tool has gone; its exit code and stderr say why.
+  }
+
+  const [code, stderr] = await Promise.all([proc.exited, stderrText])
+  if (code !== 0)
+    throw toolError(command, stderr, code, password)
+  // Only a failure to inflate is gzip's. A failed write to a tool that still
+  // exited 0 means it stopped reading, which the tool is entitled to do.
+  if (failure !== undefined && inflating)
+    throw gzipError(failure instanceof Error ? failure.message : String(failure), 'unknown', password)
 }
 
 /**
@@ -511,6 +835,39 @@ export function resolveBackupRetain(
   }
 
   return DEFAULT_RETAIN
+}
+
+/**
+ * How long a dump may run, in milliseconds: the `--timeout` flag, then
+ * `DB_BACKUP_TIMEOUT`, then `config/database.ts`'s `backups.timeout`, then
+ * {@link DEFAULT_DUMP_TIMEOUT_SECONDS}. Each is given in seconds.
+ *
+ * There is no way to switch it off. A dump with no deadline is what held every
+ * deploy of an app until CI cancelled it six hours later, and a database that
+ * needs longer than the default can say how long.
+ */
+export function resolveBackupTimeout(
+  databaseConfig: unknown,
+  env: Record<string, string | undefined> = {},
+  flag?: string,
+): number {
+  const configured = (databaseConfig as { backups?: { timeout?: unknown } } | null | undefined)?.backups?.timeout
+  const sources: Array<[string, unknown]> = [
+    ['--timeout', flag],
+    ['DB_BACKUP_TIMEOUT', env.DB_BACKUP_TIMEOUT],
+    ['backups.timeout', configured],
+  ]
+
+  for (const [name, value] of sources) {
+    if (value === undefined || value === null || String(value).trim() === '')
+      continue
+    const seconds = Number(String(value).trim())
+    if (!Number.isFinite(seconds) || seconds <= 0)
+      throw new Error(`${name} must be a number of seconds greater than 0; got ${JSON.stringify(value)}.`)
+    return Math.round(seconds * 1000)
+  }
+
+  return DEFAULT_DUMP_TIMEOUT_SECONDS * 1000
 }
 
 /**

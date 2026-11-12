@@ -49,6 +49,7 @@ A first deploy has no database yet. `--before-migrations` makes that case succee
 | --- | --- |
 | `--out <dir>` | Where to write. Default `storage/backups/database`. |
 | `--retain <n>` | How many dumps to keep, oldest pruned first. Without it, `DB_BACKUP_RETAIN`, then `backups.retain` in `config/database.ts`, then 7. |
+| `--timeout <seconds>` | Stop a dump that runs longer than this and fail the backup. Without it, `DB_BACKUP_TIMEOUT`, then `backups.timeout` in `config/database.ts`, then 3600. |
 | `--before-migrations` | Deploy mode: succeed quietly when there is no database yet. |
 | `--verbose` | Print the dump command being run. |
 
@@ -57,6 +58,10 @@ Dumps are named so that sorting them by name sorts them by time: `2026-08-13T09-
 Postgres and MySQL dumps are gzipped as they are written, which usually makes them five to ten times smaller. Retention keeps several of them beside the live database, so the difference is real disk. A dump is written under a `.partial` name and only takes its real name once the tool exits cleanly, so a dump that fails halfway is never mistaken for the newest one. Dumps taken before compression (`.sql`) still count toward retention and still restore.
 
 SQLite dumps are not compressed: they stay a database file you can open directly.
+
+A Postgres or MySQL dump has a deadline, one hour unless you set another. A deploy waits on its pre-migration dump, so a dump that stalls is stopped and the deploy fails with a message saying so, instead of waiting until CI gives up. Raise it for a database that needs longer with `--timeout`, `DB_BACKUP_TIMEOUT` or `backups.timeout`, in seconds.
+
+The dump tool is piped to `gzip` by `bash` where both are installed, and compressed in process where they are not. Either way memory stays flat however large the database is.
 
 The deploy's own pre-migration dump passes no `--retain`, so set `DB_BACKUP_RETAIN` or `backups.retain` to change how many it keeps:
 

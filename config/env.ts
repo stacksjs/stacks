@@ -177,6 +177,12 @@ const envSchema = defineEnv({
     validation: schema.string(),
     default: '',
   },
+  // How many seconds a dump may run before `buddy db:backup` stops it and
+  // fails. Empty means `backups.timeout` in config/database.ts, or 3600.
+  DB_BACKUP_TIMEOUT: {
+    validation: schema.string(),
+    default: '',
+  },
 
   DB_VITESS_SHARDED: {
     validation: schema.boolean(),

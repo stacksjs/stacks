@@ -8,6 +8,7 @@ import { ExitCode } from '@stacksjs/types'
 import {
   backupFileName,
   backupObjectKey,
+  DEFAULT_DUMP_TIMEOUT_SECONDS,
   DEFAULT_RETAIN,
   describeCommand,
   dumpCommand,
@@ -19,6 +20,7 @@ import {
   parseBackupDestination,
   readDump,
   resolveBackupRetain,
+  resolveBackupTimeout,
   restoreCommand,
   restoreSqlite,
   writeDump,
@@ -117,6 +119,12 @@ export async function backupRetain(flag?: string): Promise<number> {
  * success after the upload failed would leave exactly the belief this feature
  * exists to correct.
  */
+export async function backupTimeout(flag?: string): Promise<number> {
+  const { config, overridesReady } = await import('@stacksjs/config')
+  await overridesReady.catch(() => {})
+  return resolveBackupTimeout((config)?.database, process.env, flag)
+}
+
 async function uploadBackup(destination: BackupDestination, file: string, fileName: string): Promise<string> {
   const { Storage } = await import('@stacksjs/storage')
   const key = backupObjectKey(destination, fileName)
@@ -186,13 +194,15 @@ export function db(buddy: CLI): void {
     // No default here: a default would always be "set" and shadow
     // DB_BACKUP_RETAIN and backups.retain, which the deploy relies on (#3079).
     .option('--retain [count]', `How many dumps to keep (default: DB_BACKUP_RETAIN, backups.retain, or ${DEFAULT_RETAIN})`)
+    // No default, for the reason --retain has none.
+    .option('--timeout [seconds]', `Stop a dump that runs longer than this and fail (default: DB_BACKUP_TIMEOUT, backups.timeout, or ${DEFAULT_DUMP_TIMEOUT_SECONDS})`)
     .option('--before-migrations', 'Deploy mode: succeed quietly when there is no database yet', { default: false })
     .option('--destination [uri]', 'Copy the dump offsite: s3://bucket/prefix or disk://name/prefix')
     .option('--verbose', 'Enable verbose output', { default: false })
     .example('buddy db:backup')
     .example('buddy db:backup --out /var/backups/app --retain 30')
     .example('buddy db:backup --destination disk://backups/daily')
-    .action(async (options: { out?: string, retain?: string, beforeMigrations?: boolean, destination?: string, verbose?: boolean }) => {
+    .action(async (options: { out?: string, retain?: string, timeout?: string, beforeMigrations?: boolean, destination?: string, verbose?: boolean }) => {
       const perf = await intro('buddy db:backup')
 
       try {
@@ -219,6 +229,7 @@ export function db(buddy: CLI): void {
         // Read before the dump, so a retention nobody can parse fails the
         // backup before it costs a dump's worth of time and disk.
         const retain = await backupRetain(options.retain)
+        const timeoutMs = await backupTimeout(options.timeout)
 
         const dir = backupDir(options.out)
         mkdirSync(dir, { recursive: true })
@@ -230,7 +241,7 @@ export function db(buddy: CLI): void {
         if (command) {
           if (options.verbose)
             log.info(describeCommand(command))
-          await writeDump(command, destination, target.password)
+          await writeDump(command, destination, target.password, { timeoutMs })
         }
         else {
           await dumpSqlite(sqliteFile(target), destination)
