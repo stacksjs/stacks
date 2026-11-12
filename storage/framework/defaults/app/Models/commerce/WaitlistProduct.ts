@@ -157,5 +157,9 @@ export default defineModel({
 
   dashboard: {
     highlight: true,
+    // Prose, asked for in a box with room for it.
+    fields: {
+      notes: { input: 'longtext' },
+    },
   },
 } as const)
