@@ -18,9 +18,12 @@ source and retained evidence; driver limits are explicit.
 - API
 - Re-exports from @stacksjs/tinker
 - CLI Commands
-- Usage
+- How a session works
+- No await at the top level
+- The frame protocol (`--serve`)
+- Magic comments
+- Previews and the model list
 - Gotchas
-- Native options and bootstrap limits
 
 ## Using it
 

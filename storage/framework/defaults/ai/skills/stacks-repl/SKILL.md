@@ -51,8 +51,8 @@ import type { TinkerConfig } from '@stacksjs/repl'
 
 ```bash
 buddy tinker                              # interactive prompt, app booted
-buddy tinker --print 'await User.count()' # evaluate, print the value, exit
-buddy tinker --eval 'await seed()'        # evaluate, exit, print nothing
+buddy tinker --print 'User.count()'       # evaluate, print the value, exit
+buddy tinker --eval 'seed()'              # evaluate, exit, print nothing
 buddy tinker --project ../other-app       # run in another project directory
 buddy tinker --bare                       # plain Bun session, app not booted
 buddy tinker --serve                      # frame protocol on stdio, for tools
@@ -77,7 +77,8 @@ evaluates it at global scope:
 - several statements work, and the last expression is the result;
 - `const`, `let`, functions, classes and imports persist to the next call, and
   a name can be declared again;
-- top-level `await` works;
+- a query needs no `await` at the top level (see "No await at the top level");
+  top-level `await` still works;
 - a relative `import('./x')` resolves against the session's directory;
 - nothing is written to the project.
 
@@ -90,6 +91,51 @@ Map, Set, class names, cycles and errors, and records every cut.
 
 `dump(value)` emits a frame. `dd(value)` dumps and stops the current run; it
 does not exit the process.
+
+## No await at the top level
+
+Outside a function, a snippet reads as if it ran in order. Both of these bind
+the row, and the line after can use it:
+
+```ts
+const user = await User.where('email', 'like', '%@example.com').orderByDesc('created_at').first()
+const user = User.where('email', 'like', '%@example.com').orderByDesc('created_at').first()
+
+user.email                                  // the email, not undefined
+User.first().email                          // mid-expression too
+if (User.where('active', true).exists()) dump(User.count())
+for (const post of Post.latest().limit(5).get()) dump(post.title)
+```
+
+The rule: outside a function, a call that returns a promise is waited for
+where it stands, and so is a promise a statement names (the value of a line,
+of a declaration, of an assignment). A rejection is thrown there, so
+`User.findOrFail(0)` fails the run it was written in.
+
+- **Inside a function nothing changes.** `await` there is yours to write:
+  `users.map(async user => await user.posts())`.
+- **Promise-handling code keeps its promise:** the receiver of `.then()`,
+  `.catch()` or `.finally()`, the arguments of `Promise.all()` and its
+  siblings (so they still run together), the operand of `void` (fire and
+  forget), and anything already under `await`.
+- **Only a real `Promise` is waited for.** A query builder is not, so
+  `const query = User.where('active', true)` keeps the builder and
+  `query.count()` and `query.first()` both work.
+- **A snippet with no promise in it is untouched at runtime:** same order,
+  same turn. Only a promise causes a wait.
+
+`createTinkerSession({ settle: false })` turns it off for a session,
+`session.evaluate(code, { settle: false })` and the request field
+`"settle": false` for one run. A promise is then a promise, as in plain
+JavaScript.
+
+The transform is `settleTopLevel(code)`. It reads the snippet with a real
+TypeScript parser and only inserts text, so no line moves; code it cannot
+parse comes back untouched for the runtime to report. An editor that wants
+the same answer from the type checker (`user` typed as the row, not as a
+promise) checks `settleTopLevel(code, { wrap: SETTLE_TYPE_WRAP })` with
+`SETTLE_TYPE_AMBIENT` in scope and maps positions with `settledOffset` and
+`originalOffset`.
 
 ## The frame protocol (`--serve`)
 
@@ -107,9 +153,9 @@ A comment that starts with a question mark shows a value where it is computed.
 The run's result is unchanged, and no line moves.
 
 ```ts
-const users = await User.all() //?                 the value of users
+const users = User.all() //?                       the value of users
 users.filter(u => u.active)/*?.length*/.map(u => u.name) //?
-await rebuildIndex() //?.                           ms since the run began
+rebuildIndex() //?.                                 ms since the run began
 ```
 
 - `//?` at the end of a line: the statement that ends there. A declaration
@@ -141,6 +187,9 @@ what a relation graph and a completion list are built from.
 ## Gotchas
 
 - **The database is real.** Mutations are not isolated or rolled back.
+- **A promise held on purpose needs a function or `void`.** At the top level
+  `const job = startJob()` waits for the job. `void startJob()` does not, and
+  neither does anything inside a function.
 - **A model is described as a model.** A result that is a model instance is a
   `model` node: its name, table, key, the attributes its `toJSON()` exposes, the
   relations it declares and the ones already loaded. Hidden attributes (a
@@ -158,5 +207,5 @@ what a relation graph and a completion list are built from.
 - `tinkerEval` and `tinkerPrint` resolve with an exit code, not the value. Use
   a session when the value is wanted.
 
-Source: `storage/framework/core/tinker/src/{index,session,serialize,protocol}.ts`
-and `core/repl/src/index.ts`. Tests: `core/tinker/tests/session.test.ts`.
+Source: `storage/framework/core/tinker/src/{index,session,settle,magic,serialize,protocol}.ts`
+and `core/repl/src/index.ts`. Tests: `core/tinker/tests/{session,settle,magic}.test.ts`.
