@@ -1,6 +1,7 @@
 import type { SerializeOptions, TinkerErrorValue, TinkerValue } from './serialize'
 import { isAbsolute, resolve } from 'node:path'
 import process from 'node:process'
+import { instrumentMagicComments } from './magic'
 import { relationsOf, serialize, serializeThrown, TinkerPreview } from './serialize'
 
 /**
@@ -20,6 +21,9 @@ export type TinkerFrame =
   | { type: 'log', id: string, level: string, message: string, timestamp: string, context?: TinkerValue }
   | { type: 'query', id: string, sql: string, params?: TinkerValue, kind?: string, durationMs?: number, rowCount?: number, error?: string }
   | { type: 'dump', id: string, value: TinkerValue }
+  /** A magic comment's answer: the value at that line, or the milliseconds the run had taken when it got there. */
+  | { type: 'probe', id: string, line: number, kind: 'value', value: TinkerValue }
+  | { type: 'probe', id: string, line: number, kind: 'time', ms: number }
   | { type: 'result', id: string, value: TinkerValue, durationMs: number }
   | { type: 'error', id: string, error: TinkerErrorValue, phase: 'parse' | 'run', diagnostics?: TinkerDiagnostic[], durationMs: number }
   | { type: 'done', id: string, ok: boolean }
@@ -52,6 +56,8 @@ export interface TinkerSessionOptions extends SerializeOptions {
   boot?: boolean | (() => Promise<void> | void)
   /** Extra names to put on `globalThis` for the session. */
   globals?: Record<string, unknown>
+  /** Turn magic comments into probe frames (see magic.ts). Default `true`. */
+  magic?: boolean
   /** Receives every frame as it happens, for streaming. `evaluate` also returns them. */
   onFrame?: (frame: TinkerFrame) => void
 }
@@ -282,6 +288,33 @@ export async function createTinkerSession(options: TinkerSessionOptions = {}): P
     throw new TinkerHalt()
   }
   globals.preview = previewHelpers()
+
+  // What magic comments are rewritten into. A probe hands its value straight
+  // back, so wrapping an expression in one changes nothing about the code.
+  let runStarted = performance.now()
+  globals.__tinkerProbe = (line: number, value: unknown, pick?: (value: unknown) => unknown): unknown => {
+    const id = currentId
+    const report = (shown: unknown): void => emit({ type: 'probe', id, line, kind: 'value', value: serialize(shown, serializeOptions) })
+    if (!pick) {
+      report(value)
+      return value
+    }
+    try {
+      const picked = pick(value)
+      if (picked instanceof Promise)
+        picked.then(report, error => report(error))
+      else
+        report(picked)
+    }
+    catch (error) {
+      report(error)
+    }
+    return value
+  }
+  globals.__tinkerTime = (line: number, value?: unknown): unknown => {
+    emit({ type: 'probe', id: currentId, line, kind: 'time', ms: Math.round((performance.now() - runStarted) * 100) / 100 })
+    return value
+  }
   if (options.globals)
     Object.assign(globals, options.globals)
 
@@ -377,11 +410,12 @@ export async function createTinkerSession(options: TinkerSessionOptions = {}): P
     sink = frames
     currentId = id
     const started = performance.now()
+    runStarted = started
     const elapsed = (): number => Math.round((performance.now() - started) * 100) / 100
 
     let compiled: string
     try {
-      compiled = compileSnippet(code, cwd, `tinker-${id}`)
+      compiled = compileSnippet(options.magic === false ? code : instrumentMagicComments(code).code, cwd, `tinker-${id}`)
     }
     catch (thrown) {
       const durationMs = elapsed()

@@ -8,6 +8,7 @@ import { serveTinker } from './protocol'
 import { serialize } from './serialize'
 import { compileSnippet, createTinkerSession } from './session'
 
+export * from './magic'
 export * from './protocol'
 export * from './serialize'
 export * from './session'
@@ -192,6 +193,9 @@ function printFrame(frame: TinkerFrame, verbose: boolean): void {
       break
     case 'dump':
       terminal(`${renderValue(frame.value)}\n`)
+      break
+    case 'probe':
+      terminal(`\x1B[2m  line ${frame.line + 1}:\x1B[0m ${frame.kind === 'time' ? `${frame.ms} ms` : renderValue(frame.value, '  ')}\n`)
       break
     case 'query':
       if (verbose)

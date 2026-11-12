@@ -271,3 +271,24 @@ say({ value: frame.value, models: s.models() })`)
     expect(lines(out)[0]).toEqual({ value: { t: 'html', kind: 'html', title: 'Title', html: '<h1>x</h1>' }, models: [] })
   })
 })
+
+describe('magic comments in a session', () => {
+  test('probes report values by line and leave the result unchanged', async () => {
+    const { out } = await runSession(`
+const s = await createTinkerSession({ boot: false })
+const r = await s.evaluate("const list = [1, 2, 3] //?\\nlist.filter(n => n > 1)/*?.length*/.map(n => n * 10) //?\\nlist.length //?.")
+say({ value: r.value, probes: r.frames.filter(f => f.type === 'probe').map((f: any) => [f.line, f.kind, f.kind === 'time' ? typeof f.ms : f.value.t, f.value?.v ?? f.value?.length]) })`)
+    expect(lines(out)[0]).toEqual({
+      value: 3,
+      probes: [[0, 'value', 'array', 3], [1, 'value', 'number', 2], [1, 'value', 'array', 2], [2, 'time', 'number', null]],
+    })
+  })
+
+  test('magic can be turned off, leaving the comments as comments', async () => {
+    const { out } = await runSession(`
+const s = await createTinkerSession({ boot: false, magic: false })
+const r = await s.evaluate("1 + 1 //?")
+say({ value: r.value, probes: r.frames.filter(f => f.type === 'probe').length })`)
+    expect(lines(out)[0]).toEqual({ value: 2, probes: 0 })
+  })
+})

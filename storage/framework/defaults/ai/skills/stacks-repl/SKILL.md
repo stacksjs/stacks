@@ -101,6 +101,31 @@ not a frame. Use `createFrameReader()` to split a stream. `--serve` with
 `--eval` or `--print` evaluates once and exits, which suits `ssh -T`,
 `docker exec -i` and `kubectl exec -i`.
 
+## Magic comments
+
+A comment that starts with a question mark shows a value where it is computed.
+The run's result is unchanged, and no line moves.
+
+```ts
+const users = await User.all() //?                 the value of users
+users.filter(u => u.active)/*?.length*/.map(u => u.name) //?
+await rebuildIndex() //?.                           ms since the run began
+```
+
+- `//?` at the end of a line: the statement that ends there. A declaration
+  shows the names it binds; anything else shows the expression.
+- A block form written hard against an expression (no space before it) shows
+  that expression mid-chain. Text after the question mark is read off the
+  value first: `.length`, `.count()`, `[0]`.
+- `//?.` shows elapsed milliseconds.
+
+Each one arrives as a `probe` frame carrying its zero-based line.
+`instrumentMagicComments(code)` is the transform, exported for a tool that
+wants to mark which lines have a probe. It works from tokens, not a syntax
+tree: a comment it cannot place with certainty (after an `if` block, a loop, a
+`throw`) stays an ordinary comment. `createTinkerSession({ magic: false })`
+turns the feature off.
+
 ## Previews and the model list
 
 `preview.mail('welcome', { name: 'Ada' })` renders a template from
