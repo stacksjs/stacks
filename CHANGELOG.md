@@ -1,5 +1,31 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.554...v0.75.555)
+
+## ✨ Features
+
+- **dashboard**: a status is a pill in a list, coloured by what it says ([0e0370f](https://github.com/stacksjs/stacks/commit/0e0370f)) _(by glennmichael123)_ ([#3277](https://github.com/stacksjs/stacks/issues/3277))
+- **dashboard**: name the columns erasure emptied, and answer a page's numbers alone ([b6ae75d](https://github.com/stacksjs/stacks/commit/b6ae75d)) _(by glennmichael123)_ ([#3277](https://github.com/stacksjs/stacks/issues/3277))
+
+## 🐛 Bug Fixes
+
+- **desktop**: serve released artifacts from the updates disk, so a local-disk release can be downloaded ([5c66d33](https://github.com/stacksjs/stacks/commit/5c66d33)) _(by Chris)_
+
+## ♻️ Code Refactoring
+
+- **dashboard**: the Users, Teams and Subscribers pages host the model's list ([c284791](https://github.com/stacksjs/stacks/commit/c284791)) _(by glennmichael123)_ ([#3277](https://github.com/stacksjs/stacks/issues/3277))
+
+## ✅ Tests
+
+- **dashboard**: derive record fixture labels from model metadata ([dbfc372](https://github.com/stacksjs/stacks/commit/dbfc372)) _(by Chris)_ ([#3278](https://github.com/stacksjs/stacks/issues/3278))
+- **dashboard**: give the record page the labels the server sends ([07be32c](https://github.com/stacksjs/stacks/commit/07be32c)) _(by Chris)_
+- **dashboard**: pin the hosted list, and document the three pages ([94bda7b](https://github.com/stacksjs/stacks/commit/94bda7b)) _(by glennmichael123)_ ([#3277](https://github.com/stacksjs/stacks/issues/3277))
+
+## Contributors
+
+- _Chris_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.553...v0.75.554)
 
 ## ✨ Features
