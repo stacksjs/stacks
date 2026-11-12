@@ -165,7 +165,8 @@ export default defineModel({
     columns: ['name', 'email', 'emailVerifiedAt', 'createdAt'],
     // An avatar is a picture, not the address of one.
     fields: {
-      avatar: { format: 'image' },
+      // Chosen as a file, and shown as the picture it is.
+      avatar: { format: 'image', input: 'upload', accept: 'image/*' },
     },
     // Operators add, edit and remove accounts from the dashboard. Not through
     // `useApi` above: a generated PATCH would let any signed-in caller change

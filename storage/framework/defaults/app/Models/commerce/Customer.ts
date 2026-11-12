@@ -134,5 +134,9 @@ export default defineModel({
 
   dashboard: {
     highlight: true,
+    // Chosen as a file. Its address is what is stored, as before.
+    fields: {
+      avatar: { input: 'upload', accept: 'image/*' },
+    },
   },
 } as const)

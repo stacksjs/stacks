@@ -235,4 +235,16 @@ export default defineModel({
       factory: faker => faker.number.int({ min: 0, max: 1 }),
     },
   },
+
+  dashboard: {
+    // Chosen as a file. Its address is what is stored, as before.
+    // Prose, asked for in a box with room for it.
+    fields: {
+      poster: { input: 'upload', accept: 'image/*' },
+      content: { input: 'longtext' },
+      excerpt: { input: 'longtext' },
+      metaDescription: { input: 'longtext' },
+      canonicalUrl: { input: 'url', format: 'link' },
+    },
+  },
 } as const)

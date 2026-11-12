@@ -122,5 +122,9 @@ export default defineModel({
 
   dashboard: {
     highlight: true,
+    // An address that leads to a picture: shown as one.
+    fields: {
+      imageUrl: { format: 'image' },
+    },
   },
 } as const)

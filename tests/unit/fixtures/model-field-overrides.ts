@@ -46,7 +46,7 @@ await db.insertInto('users').values([
 // The server injects models as globals; the dashboard resolves them there.
 ;(globalThis as Record<string, unknown>).User = User
 // What the model ships with, before anything here changes it.
-assert.deepEqual((User as any).dashboard.fields, { avatar: { format: 'image' } })
+assert.deepEqual((User as any).dashboard.fields, { avatar: { format: 'image', input: 'upload', accept: 'image/*' } })
 ;(User as any).dashboard.fields = {
   name: { label: 'Full name', help: 'As it appears on invoices.' },
   email: { label: 'Work email', input: 'text' },

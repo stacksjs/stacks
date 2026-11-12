@@ -113,5 +113,11 @@ export default defineModel({
   },
   dashboard: {
     highlight: true,
+    // Chosen as a file. Its address is what is stored, as before.
+    // Prose, asked for in a box with room for it.
+    fields: {
+      avatar: { input: 'upload', accept: 'image/*' },
+      bio: { input: 'longtext' },
+    },
   },
 } as const)

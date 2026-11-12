@@ -133,5 +133,11 @@ export default defineModel({
 
   dashboard: {
     highlight: true,
+    // Prose, asked for in a box with room for it.
+    // An address that leads to a picture: shown as one.
+    fields: {
+      imageUrl: { format: 'image' },
+      description: { input: 'longtext' },
+    },
   },
 } as const)

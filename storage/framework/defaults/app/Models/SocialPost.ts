@@ -146,5 +146,11 @@ export default defineModel({
 
   dashboard: {
     columns: ['content', 'platform', 'status', 'scheduledAt', 'publishedAt', 'likes'],
+    // Prose, asked for in a box with room for it.
+    // An address that leads to a picture: shown as one.
+    fields: {
+      content: { input: 'longtext' },
+      imageUrl: { input: 'url', format: 'image' },
+    },
   },
 } as const)
