@@ -3,6 +3,6 @@
 @section('content')
 @title('Dashboard - Activity Log')
 <PageLayout>
-  <DataRecords mode="activity" />
+  <ActivityLog />
 </PageLayout>
 @endsection

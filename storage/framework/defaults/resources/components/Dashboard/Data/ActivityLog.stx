@@ -1,0 +1,212 @@
+@import('../UI/Table')
+
+<script client>
+// The Activity log: the application's audit trail, newest first.
+//
+// Not a list of editable records, so not the model's list: an entry is
+// something that happened. It can be opened, and nothing more unless the
+// model says otherwise, which is the model's to say (`dashboard.writes`).
+//
+// This used to be one mode of a component that also drew Users, Teams and
+// Subscribers, each a second list of a model that already had one. Those are
+// the model's own list now (`DataModelRecords`).
+import type { DashboardActivity, DataStats } from '../../../../functions/data'
+import { fetchDashboardData } from '../../../../functions/data'
+import type { ModelWriteCapabilities } from '../../../../functions/dashboard-model-record'
+import { deleteModelRecord, fetchModelCapabilities, modelDeleteNotice, modelDeleteWarning, modelRecordEditHref, modelRecordHref, NO_WRITES } from '../../../../functions/dashboard-model-record'
+import { pushToast } from '../../../../functions/toasts'
+
+/** The model behind the rows, and this page, for a record's own page to come back to. */
+const MODEL = 'activity'
+const HOME = '/data/activity'
+
+const records = state<DashboardActivity[]>([])
+const stats = state<DataStats>({ total: 0 })
+const search = state('')
+const loading = state(true)
+const loadError = state('')
+const capabilities = state<ModelWriteCapabilities>(NO_WRITES)
+const confirmingDelete = state<Record<string, any> | null>(null)
+const working = state(false)
+
+/** View always; edit and delete only where the model allows them. */
+const rowActions = derived(() => [
+  { action: 'view', label: 'View' },
+  ...(capabilities().update ? [{ action: 'edit', label: 'Edit' }] : []),
+  ...(capabilities().destroy ? [{ action: 'delete', label: 'Delete' }] : []),
+])
+const deleteDescription = derived(() => {
+  const row = confirmingDelete()
+  return modelDeleteWarning(row ? String(row.description ?? row.id) : '', false)
+})
+
+async function loadCapabilities(): Promise<void> {
+  try {
+    capabilities.set(await fetchModelCapabilities(MODEL))
+  }
+  catch {
+    // Without them the page still lists and views; it offers no writes.
+    capabilities.set(NO_WRITES)
+  }
+}
+
+/** The eye and the pencil each open a page of the entry's own, which comes back here. */
+function handleRowAction(payload: { action: string, row: Record<string, any> }): void {
+  if (payload.action === 'delete')
+    confirmingDelete.set(payload.row)
+  else if (payload.action === 'edit')
+    navigate(modelRecordEditHref(MODEL, payload.row.id, { from: HOME }))
+  else
+    navigate(modelRecordHref(MODEL, payload.row.id, HOME))
+}
+
+async function confirmDelete(): Promise<void> {
+  const row = confirmingDelete()
+  if (!row)
+    return
+  working.set(true)
+  try {
+    const outcome = await deleteModelRecord(MODEL, row.id)
+    const notice = modelDeleteNotice(`Entry ${row.description ?? row.id}`, outcome)
+    pushToast('success', notice.title, { detail: notice.detail })
+    confirmingDelete.set(null)
+    await loadRecords()
+  }
+  catch (error) {
+    pushToast('error', 'Could not delete', { detail: error instanceof Error ? error.message : String(error) })
+  }
+  finally {
+    working.set(false)
+  }
+}
+
+const filteredRecords = derived(() => {
+  const query = search().trim().toLowerCase()
+  if (!query)
+    return records()
+  return records().filter(record => searchableText(record).includes(query))
+})
+
+/** "13 entries", or "2 of 13 entries" while a search narrows them. */
+const countLabel = derived(() => {
+  const total = records().length
+  const shown = filteredRecords().length
+  const noun = (count: number) => count === 1 ? 'entry' : 'entries'
+  return shown === total ? `${total} ${noun(total)}` : `${shown} of ${total} ${noun(total)}`
+})
+
+function searchableText(record: DashboardActivity): string {
+  return Object.values(record)
+    .filter(value => typeof value === 'string' || typeof value === 'number')
+    .join(' ')
+    .toLowerCase()
+}
+
+function statValue(key: string): number {
+  return Number(stats()[key] || 0)
+}
+
+function formatSubject(record: DashboardActivity): string {
+  if (!record.subjectType)
+    return 'Application'
+  return record.subjectId > 0 ? `${record.subjectType} #${record.subjectId}` : record.subjectType
+}
+
+const COLUMNS = [
+  { key: 'description', label: 'Activity', sortable: true, subtitleKey: 'type', class: 'font-medium text-neutral-900 dark:text-white' },
+  { key: 'subject', label: 'Subject', sortable: true, class: 'text-neutral-600 dark:text-neutral-300' },
+  { key: 'causer', label: 'Causer', sortable: true, class: 'text-neutral-600 dark:text-neutral-300' },
+  { key: 'createdAt', label: 'Recorded', type: 'datetime' as const, align: 'right' as const, sortable: true, emptyText: 'Never', class: 'text-neutral-500 text-xs whitespace-nowrap dark:text-neutral-400' },
+]
+
+const recordRows = derived(() => filteredRecords().map(record => ({ ...record, subject: formatSubject(record) })))
+
+async function loadRecords(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    const response = await fetchDashboardData<DashboardActivity>('activity')
+    records.set(response.activities || [])
+    stats.set(response.stats)
+  }
+  catch (error) {
+    records.set([])
+    stats.set({ total: 0 })
+    loadError.set(error instanceof Error ? error.message : 'Activity Log could not be loaded.')
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+onMount(() => {
+  void loadRecords()
+  void loadCapabilities()
+})
+</script>
+
+<div class="flex flex-col gap-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 class="font-bold text-2xl text-neutral-900 tracking-tight dark:text-white">Activity Log</h1>
+      <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Review the native application audit trail.</p>
+    </div>
+    <div class="flex flex-none gap-2 items-center">
+      <Button variant="secondary" :loading="loading()" @click="loadRecords">
+        <span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>
+        Refresh
+      </Button>
+    </div>
+  </header>
+
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-3">
+    <StatsCard title="Total Activity Log" icon="i-hugeicons-activity-03" iconBg="primary">
+      <template #value>{{ statValue('total') }}</template>
+    </StatsCard>
+    <StatsCard title="Last 24 Hours" icon="i-hugeicons-clock-01" iconBg="success">
+      <template #value>{{ statValue('last24Hours') }}</template>
+    </StatsCard>
+    <StatsCard title="Last 7 Days" icon="i-hugeicons-calendar-03" iconBg="info">
+      <template #value>{{ statValue('last7Days') }}</template>
+    </StatsCard>
+  </div>
+
+  <div :if="loadError()" role="alert" class="px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg dark:border-red-900">
+    {{ loadError() }}
+  </div>
+
+  <Card padding="none">
+    <div class="flex flex-col gap-3 items-start sm:flex-row sm:items-center sm:justify-between p-5 border-b border-neutral-200 dark:border-neutral-700">
+      <div>
+        <h2 class="font-semibold text-neutral-900 dark:text-white">Activity Log</h2>
+        <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ countLabel() }}</p>
+      </div>
+      <label class="block relative w-full sm:w-72">
+        <span class="sr-only">Search activity log</span>
+        <span aria-hidden="true" class="absolute left-3 top-1/2 h-4 w-4 text-neutral-400 pointer-events-none -translate-y-1/2 i-hugeicons-search-01"></span>
+        <input x-model="search" type="search" placeholder="Search activity log" class="block pl-9 pr-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-neutral-300 rounded-lg dark:border-neutral-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+      </label>
+    </div>
+
+    <div :if="loading()" class="flex items-center justify-center py-16 text-neutral-500 text-sm dark:text-neutral-400">
+      <span class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>
+      Loading activity log...
+    </div>
+
+    <EmptyState :if="!loading() && !loadError() && filteredRecords().length === 0" icon="i-hugeicons-activity-03" :title="search() ? 'No matching records' : 'No activity has been recorded.'" :description="search() ? 'Try a different search term.' : 'New records will appear here automatically.'" />
+
+    <div :if="!loading() && filteredRecords().length > 0">
+      <Table :columns="COLUMNS" :data="recordRows()" paginated :page-size="25" :framed="false" :row-actions="rowActions()" action-label-key="description" @row-action="handleRowAction" />
+    </div>
+  </Card>
+
+  <ConfirmDialog
+    :isOpen="Boolean(confirmingDelete())"
+    title="Delete this entry?"
+    :description="deleteDescription()"
+    :busy="working()"
+    :confirmLabel="working() ? 'Deleting' : 'Delete'"
+    @close="confirmingDelete.set(null)"
+    @confirm="confirmDelete"
+  />
+</div>

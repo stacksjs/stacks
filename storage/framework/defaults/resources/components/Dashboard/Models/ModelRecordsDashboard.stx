@@ -6,6 +6,10 @@
 // All querying is server-side (`GET /api/dashboard/models/{slug}`), so this
 // works the same on a table with 10 rows and one with a million. Rows and
 // writes go through the model, so scopes, casts and observers apply.
+//
+// It is the one list of a model's records. A page with a place of its own
+// (Users, Teams, Subscribers) hosts it: it says which model, what the page is
+// called and where it lives, and puts its own summary above the table.
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
 import { dashboardApi } from '@stacksjs/defaults/functions/dashboard-api'
 import type { ModelCustomAction, ModelRelationTarget, ModelWriteCapabilities } from '@stacksjs/defaults/functions/dashboard-model-record'
@@ -13,7 +17,7 @@ import { deleteModelRecord, modelActionAsks, modelActionIconClass, modelActionNo
 import type { ModelBulkResult } from '@stacksjs/defaults/functions/dashboard-model-bulk'
 import { deleteModelRecords, modelBulkActionConfirm, modelBulkActionScope, modelBulkActions, modelBulkDeleteConfirm, modelBulkDeleteTargets, modelBulkNotice, modelBulkTargets, runModelActionOnEach } from '@stacksjs/defaults/functions/dashboard-model-bulk'
 import type { ModelFieldDisplay, ModelFormattedValue } from '@stacksjs/defaults/functions/dashboard-model-format'
-import { modelColumnIsNumeric, modelFormattedValue } from '@stacksjs/defaults/functions/dashboard-model-format'
+import { modelCellDisplay, modelColumnIsNumeric } from '@stacksjs/defaults/functions/dashboard-model-format'
 import { pushToast } from '@stacksjs/defaults/functions/toasts'
 
 interface ColumnMeta {
@@ -41,6 +45,8 @@ interface ResponseShape {
   writeCapabilities: ModelWriteCapabilities
   /** Rows erased under the app's data-subject rules (users only). */
   anonymizedIds?: Array<number | string>
+  /** The columns erasure empties: placeholders in an anonymized row. */
+  anonymizedColumns?: string[]
   /** The columns the list draws: the model's own choice, or all of them. */
   listColumns?: string[]
   relations?: Record<string, ModelRelationTarget>
@@ -55,6 +61,16 @@ interface ResponseShape {
 
 const PER_PAGE_OPTIONS = [25, 50, 100, 200]
 const navigation = useNavigation()
+
+// For a page that hosts this list. The model to list, when it is not the last
+// part of the address; what the page calls itself; and the page's own path,
+// so a record opened from here comes back here.
+const hostedModel = useReactiveProp('model', '')
+const heading = useReactiveProp('heading', '')
+const description = useReactiveProp('description', '')
+const home = useReactiveProp('home', '')
+// Told when a record was deleted or acted on, so a host can read its summary again.
+const emit = defineEmits(['changed'])
 
 const modelName = state('')
 // The class name, for the one message that tells a developer what was looked for.
@@ -118,7 +134,14 @@ const bulkProgressLabel = derived(() => {
   return progress ? `Working: ${Math.min(progress.done + 1, progress.total)} of ${progress.total}` : ''
 })
 
-const slug = derived(() => navigation.urlSegment(-1) || '')
+const slug = derived(() => hostedModel() || navigation.urlSegment(-1) || '')
+/** Where this list lives, for the pages it opens to come back to. */
+const listHref = derived(() => home() || `/models/${slug()}`)
+const title = derived(() => heading() || modelName())
+/** "user", "social post": the model in a sentence or on a button. */
+const oneRecord = derived(() => (modelName() || 'record').toLowerCase())
+// The columns erasure empties, for a row that has been anonymized.
+const anonymizedColumns = state<string[]>([])
 
 const recordLabel = derived(() => {
   const n = totalCount()
@@ -141,9 +164,11 @@ const filterLabel = derived(() => {
 
 const isEmpty = derived(() => !loading() && !error() && migrated() && rows().length === 0)
 
-const subtitle = derived(() => migrated()
-  ? `${recordLabel()} in the ${tableName()} table`
-  : `The ${tableName()} table has not been created yet`)
+const subtitle = derived(() => {
+  if (!migrated())
+    return `The ${tableName()} table has not been created yet`
+  return description() || `${recordLabel()} in the ${tableName()} table`
+})
 
 const deleteDescription = derived(() => {
   const row = confirmingDelete()
@@ -189,11 +214,26 @@ function relationHref(row: Record<string, unknown>, column: ColumnMeta): string 
  * Null when the model does not say, or nothing is stored.
  */
 function formatted(row: Record<string, unknown>, column: ColumnMeta): ModelFormattedValue | null {
-  return column.format ? modelFormattedValue(row[column.name], column.format, row) : null
+  return modelCellDisplay(column, row[column.name], row)
+}
+
+/**
+ * What an anonymized row says in a column erasure emptied. The row stores
+ * placeholders there ("[erased]", "erased-13"), which read as corrupt data:
+ * the first such column names the row for what it is, the rest say removed.
+ * Null for every other cell.
+ */
+function removed(row: Record<string, unknown>, column: ColumnMeta): string | null {
+  if (!isAnonymized(row) || !anonymizedColumns().includes(column.name))
+    return null
+  const first = columnMeta().find(candidate => anonymizedColumns().includes(candidate.name))
+  return first?.name === column.name ? `Anonymized ${oneRecord()}` : 'Removed'
 }
 
 /** How a cell is drawn: a link to a record, or what its format calls for, or words. */
-function cellKind(row: Record<string, unknown>, column: ColumnMeta): 'relation' | ModelFormattedValue['kind'] {
+function cellKind(row: Record<string, unknown>, column: ColumnMeta): 'relation' | 'removed' | ModelFormattedValue['kind'] {
+  if (removed(row, column))
+    return 'removed'
   if (relationHref(row, column))
     return 'relation'
   return formatted(row, column)?.kind ?? 'text'
@@ -203,10 +243,18 @@ function cellHref(row: Record<string, unknown>, column: ColumnMeta): string {
   return formatted(row, column)?.href ?? ''
 }
 
+function cellTone(row: Record<string, unknown>, column: ColumnMeta): string {
+  return formatted(row, column)?.tone ?? 'neutral'
+}
+
 function cellValue(row: Record<string, unknown>, column: ColumnMeta): string {
-  if (column.format && !relationCell(row, column))
-    return formatted(row, column)?.text ?? '-'
-  return relationCell(row, column)?.text ?? formatCell(row[column.name], column.type)
+  const gone = removed(row, column)
+  if (gone)
+    return gone
+  if (relationCell(row, column))
+    return relationCell(row, column)!.text
+  // Words for what is stored: as the model says, as a status reads, or as it is.
+  return formatted(row, column)?.text ?? (column.format ? '-' : formatCell(row[column.name], column.type))
 }
 
 // Returned as COMPLETE class strings and applied with `:class`, because a
@@ -255,6 +303,7 @@ async function load() {
     tableName.set(data.tableName ?? '')
     rows.set(data.rows ?? [])
     anonymizedIds.set((data.anonymizedIds ?? []).map(String))
+    anonymizedColumns.set(data.anonymizedColumns ?? [])
     // Only reassign when the column set actually changes. It is the same for
     // every page and every sort of a given model, and re-rendering the
     // header `:for` on each query both wastes work and trips a reconciler
@@ -330,23 +379,24 @@ function isAnonymized(row: Record<string, unknown>): boolean {
   return anonymizedIds().includes(String(row.id))
 }
 
-// The eye and the pencil each open a page of the record's own.
+// The eye and the pencil each open a page of the record's own, which comes
+// back to this list wherever it is hosted.
 function startEdit(row: Record<string, unknown>) {
-  navigate(modelRecordEditHref(slug(), String(row.id)))
+  navigate(modelRecordEditHref(slug(), String(row.id), { from: home() || undefined }))
 }
 
 function startView(row: Record<string, unknown>) {
-  navigate(modelRecordHref(slug(), String(row.id)))
+  navigate(modelRecordHref(slug(), String(row.id), home() || undefined))
 }
 
 // Creating has a page of its own too.
 function openCreate(): void {
-  navigate(modelRecordCreateHref(slug()))
+  navigate(modelRecordCreateHref(slug(), home() || undefined))
 }
 
 // A user is invited, not typed in: the account's holder chooses the password.
 function openInvite(): void {
-  navigate(userInviteHref(`/models/${slug()}`))
+  navigate(userInviteHref(listHref()))
 }
 
 /** The model's own actions this row is offered in a list. */
@@ -395,6 +445,7 @@ async function runAction(action: ModelCustomAction, row: Record<string, unknown>
   pushToast(notice.tone, notice.title, { detail: notice.detail })
   if (!result.ok)
     return
+  emit('changed')
   if (result.redirect)
     navigate(result.redirect)
   else
@@ -490,6 +541,8 @@ async function runBulk(pending = confirmingBulk(), input: Record<string, unknown
   // Deleting every row of the final page would strand the viewer on an empty one.
   if (pending.kind === 'delete' && result.done >= rows().length && page() > 1)
     page.set(page() - 1)
+  if (result.done > 0)
+    emit('changed')
   await load()
 }
 
@@ -505,6 +558,7 @@ async function confirmDelete() {
     // Deleting the last row of the final page would strand the viewer on an
     // empty page, so step back one.
     if (rows().length === 1 && page() > 1) page.set(page() - 1)
+    emit('changed')
     await load()
   }
   catch (e) {
@@ -515,7 +569,12 @@ async function confirmDelete() {
   }
 }
 
-void load()
+// On mount, not while setting up: a page that hosts this list says which
+// model through a prop, and a prop is not bound until then. Loading sooner
+// asked for the model named by the last part of the host's own address.
+onMount(() => {
+  void load()
+})
 </script>
 
 <template>
@@ -527,7 +586,7 @@ void load()
       `:text` bindings here stay reactive. -->
   <div class="flex flex-wrap gap-4 items-start justify-between">
     <div class="min-w-0">
-      <h1 class="font-bold text-2xl text-neutral-900 truncate dark:text-white" :text="modelName()"></h1>
+      <h1 class="font-bold text-2xl text-neutral-900 truncate dark:text-white" :text="title()"></h1>
       <p class="mt-1 text-[13px] text-neutral-500 dark:text-neutral-400" :text="subtitle()"></p>
     </div>
     <div class="flex gap-2 items-center">
@@ -536,14 +595,14 @@ void load()
         @click="openCreate"
       >
         <span aria-hidden="true" class="h-4 w-4 i-hugeicons-add-01"></span>
-        Create
+        <span :text="'Create ' + oneRecord()"></span>
       </Button>
       <Button
         :if="writeCapabilities().invite"
         @click="openInvite"
       >
         <span aria-hidden="true" class="h-4 w-4 i-hugeicons-mail-send-01"></span>
-        Invite
+        <span :text="'Invite ' + oneRecord()"></span>
       </Button>
       <Button
         :if="migrated()"
@@ -558,6 +617,9 @@ void load()
       </Button>
     </div>
   </div>
+
+  <!-- What the page hosting this list puts above it: its row of stats. -->
+  <slot name="summary" />
 
   <!-- Search + page size -->
   <div :if="migrated()" class="flex flex-wrap gap-3 items-center">
@@ -731,7 +793,8 @@ void load()
             <td :for="column in columnMeta()" :class="cellClass(column)" :title="cellValue(row, column)">
               <StxLink :if="relationHref(row, column)" :to="relationHref(row, column)" class="font-medium text-blue-600 dark:text-blue-400 hover:underline">{{ cellValue(row, column) }}</StxLink>
               <span :if="cellKind(row, column) === 'text'">{{ cellValue(row, column) }}</span>
-              <span :if="cellKind(row, column) === 'badge'" class="inline-flex px-2 py-0.5 font-medium text-neutral-800 text-xs dark:text-neutral-100 border border-neutral-400 rounded-md dark:border-neutral-500">{{ cellValue(row, column) }}</span>
+              <ModelBadge :if="cellKind(row, column) === 'badge'" :text="cellValue(row, column)" :tone="cellTone(row, column)" />
+              <span :if="cellKind(row, column) === 'removed'" class="italic text-neutral-500 dark:text-neutral-400">{{ cellValue(row, column) }}</span>
               <a :if="cellKind(row, column) === 'link'" :href="cellHref(row, column)" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">{{ cellValue(row, column) }}</a>
               <img :if="cellKind(row, column) === 'image'" :src="cellHref(row, column)" alt="" loading="lazy" class="inline-block object-cover h-7 w-7 bg-neutral-100 dark:bg-neutral-800 rounded" />
               <code :if="cellKind(row, column) === 'code'" class="font-mono text-[12px]">{{ cellValue(row, column) }}</code>

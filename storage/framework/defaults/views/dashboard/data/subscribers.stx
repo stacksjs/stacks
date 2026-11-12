@@ -2,7 +2,5 @@
 
 @section('content')
 @title('Dashboard - Subscribers')
-<PageLayout>
-  <DataRecords mode="subscribers" />
-</PageLayout>
+<DataModelRecords mode="subscribers" />
 @endsection

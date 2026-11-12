@@ -2,7 +2,5 @@
 
 @section('content')
 @title('Dashboard - Teams')
-<PageLayout>
-  <DataRecords mode="teams" />
-</PageLayout>
+<DataModelRecords mode="teams" />
 @endsection

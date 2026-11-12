@@ -1,0 +1,89 @@
+<script client>
+// The Users, Teams and Subscribers pages. Each is the model's own list, the
+// one every model has, hosted under the page's name with its row of stats
+// above it. Nothing about the rows is this page's: paging, search, columns,
+// actions and selection are the list's, so they are built once.
+//
+// What is the page's own: what it is called, what it is for, and the numbers
+// at the top, which are read again whenever the list changes a record.
+//
+// Every name here that the summary below uses is the page's alone
+// (`recordsPage`, `pageStats`). What goes in the list's slot is read against
+// the list's own names first, and a `page` here was read as the list's page
+// number: the first card said "Total undefined".
+import type { DataStats } from '../../../../functions/data'
+import { fetchDashboardStats } from '../../../../functions/data'
+
+type RecordsPage = 'users' | 'teams' | 'subscribers'
+
+const pageMode = useReactiveProp<RecordsPage>('mode', 'users')
+const pageStats = state<DataStats>({ total: 0 })
+
+const PAGES: Record<RecordsPage, { model: string, title: string, description: string, icon: string, cards: 3 | 4 }> = {
+  users: { model: 'user', title: 'Users', description: 'Review registered application users.', icon: 'i-hugeicons-user-group', cards: 3 },
+  teams: { model: 'team', title: 'Teams', description: 'Review collaborative teams and membership totals.', icon: 'i-hugeicons-user-multiple-02', cards: 4 },
+  subscribers: { model: 'subscriber', title: 'Subscribers', description: 'Review subscription status and acquisition sources.', icon: 'i-hugeicons-mail-account-01', cards: 4 },
+}
+
+const recordsPage = derived(() => PAGES[pageMode()] ?? PAGES.users)
+/** Each page's stats fill their row: three cards in a four-column grid left a hole. */
+const pageStatsGrid = derived(() => recordsPage().cards === 3 ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-2 lg:grid-cols-4')
+
+function pageStat(key: string): number {
+  return Number(pageStats()[key] || 0)
+}
+
+async function loadPageStats(): Promise<void> {
+  try {
+    pageStats.set(await fetchDashboardStats(pageMode()))
+  }
+  catch {
+    // The list below says what is wrong when the model cannot be read; the
+    // numbers stay as they were.
+  }
+}
+
+onMount(() => {
+  void loadPageStats()
+})
+</script>
+
+<ModelRecordsDashboard
+  :model="recordsPage().model"
+  :heading="recordsPage().title"
+  :description="recordsPage().description"
+  :home="'/data/' + pageMode()"
+  @changed="loadPageStats"
+>
+  <template #summary>
+    <div class="grid gap-4" :class="pageStatsGrid()" data-page-stats>
+      <StatsCard :title="'Total ' + recordsPage().title" :icon="recordsPage().icon" iconBg="primary">
+        <template #value>{{ pageStat('total') }}</template>
+      </StatsCard>
+      <StatsCard :if="pageMode() === 'users'" title="New This Week" icon="i-hugeicons-user-add-01" iconBg="success">
+        <template #value>{{ pageStat('newThisWeek') }}</template>
+      </StatsCard>
+      <StatsCard :if="pageMode() === 'users'" title="Email Verified" icon="i-hugeicons-mail-validation-01" iconBg="info">
+        <template #value>{{ pageStat('verified') }}</template>
+      </StatsCard>
+      <StatsCard :if="pageMode() === 'teams'" title="Active Teams" icon="i-hugeicons-checkmark-circle-02" iconBg="success">
+        <template #value>{{ pageStat('active') }}</template>
+      </StatsCard>
+      <StatsCard :if="pageMode() === 'teams'" title="Members" icon="i-hugeicons-user-multiple" iconBg="info">
+        <template #value>{{ pageStat('members') }}</template>
+      </StatsCard>
+      <StatsCard :if="pageMode() === 'teams'" title="New This Month" icon="i-hugeicons-calendar-add-01" iconBg="warning">
+        <template #value>{{ pageStat('newThisMonth') }}</template>
+      </StatsCard>
+      <StatsCard :if="pageMode() === 'subscribers'" title="Subscribed" icon="i-hugeicons-mail-open-01" iconBg="success">
+        <template #value>{{ pageStat('subscribed') }}</template>
+      </StatsCard>
+      <StatsCard :if="pageMode() === 'subscribers'" title="Unsubscribed" icon="i-hugeicons-mail-remove-01" iconBg="warning">
+        <template #value>{{ pageStat('unsubscribed') }}</template>
+      </StatsCard>
+      <StatsCard :if="pageMode() === 'subscribers'" title="New This Month" icon="i-hugeicons-calendar-add-01" iconBg="info">
+        <template #value>{{ pageStat('newThisMonth') }}</template>
+      </StatsCard>
+    </div>
+  </template>
+</ModelRecordsDashboard>
