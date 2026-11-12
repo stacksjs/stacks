@@ -87,6 +87,34 @@ COMMIT;`,
     finally { cleanup(dir) }
   })
 
+  test('transaction-only files retain their effect on schema across the corpus', () => {
+    const dir = corpus({
+      '001-begin.sql': 'BEGIN;',
+      '002-create.sql': 'CREATE TABLE rolled_back (id INTEGER PRIMARY KEY);',
+      '003-rollback.sql': 'ROLLBACK;',
+    })
+    try {
+      expect(deriveMigrationTables(dir)).toEqual({ tables: [], errors: [] })
+    }
+    finally { cleanup(dir) }
+  })
+
+  test.each([
+    'DELETE FROM existing; CREATE TABLE broken (id INTEGER,);',
+    'DELETE FROM existing; ALTER TABLE existing ADD COLUMN;',
+    'BEGIN; CREATE TABLE broken (id INTEGER,); COMMIT;',
+    'DELETE FROM existing; UNKNOWN_SCHEMA;',
+  ])('successful data or control statements cannot hide schema failure: %s', (sql) => {
+    const dir = corpus({ '001-existing.sql': 'CREATE TABLE existing (id INTEGER PRIMARY KEY);', '002-mixed.sql': sql })
+    try {
+      const result = deriveMigrationTables(dir)
+      expect(result.tables).toEqual([{ table: 'existing', columns: { id: 'number' } }])
+      expect(result.errors).toHaveLength(1)
+      expect(result.errors[0]!.file).toEndWith('002-mixed.sql')
+    }
+    finally { cleanup(dir) }
+  })
+
   test.each([
     'CREATE TABLE broken (id INTEGER,);',
     'ALTER TABLE missing ADD COLUMN value TEXT;',
@@ -96,6 +124,7 @@ COMMIT;`,
     'unrecognized schema instruction;',
     'DELETE_TABLE;',
     'UPDATE1;',
+    'DELETE FROM;',
   ])('schema and unknown SQL failures remain visible: %s', (sql) => {
     const dir = corpus({ '001-broken.sql': sql })
     try {

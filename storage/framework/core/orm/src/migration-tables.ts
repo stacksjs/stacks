@@ -41,7 +41,7 @@ export interface MigrationTable {
 
 export interface DeriveMigrationTablesResult {
   tables: MigrationTable[]
-  /** Files that could not be applied at all, for the caller to surface. */
+  /** Files whose schema could not be derived completely, for the caller to surface. */
   errors: Array<{ file: string, error: string }>
 }
 
@@ -101,10 +101,10 @@ function sqliteTypeToTs(declared: string, dialect: MigrationDialect): string {
 }
 
 /** Track statement boundaries outside comments/quotes; SQLite still interprets all DDL. */
-function migrationStatements(sql: string): { statements: string[], dataOnly: boolean, trigger?: true } {
-  const statements: string[] = []
+function migrationStatements(sql: string): { statements: Array<{ sql: string, keyword?: string }>, trigger?: true } {
+  const statements: Array<{ sql: string, keyword?: string }> = []
   let from = 0
-  let dataOnly = true
+  let firstKeyword: string | undefined
   let createPrefix = 0
   let start = true
   let quote: string | undefined
@@ -123,21 +123,22 @@ function migrationStatements(sql: string): { statements: string[], dataOnly: boo
     }
     if (char === '/' && sql[i + 1] === '*') {
       const end = sql.indexOf('*/', i + 2)
-      if (end === -1) return { statements: [sql], dataOnly: false }
+      if (end === -1) return { statements: [{ sql }] }
       i = end + 1
       continue
     }
     if (char === ';') {
-      if (!start) statements.push(sql.slice(from, i))
+      if (!start) statements.push({ sql: sql.slice(from, i), keyword: firstKeyword })
       from = i + 1
       start = true
       createPrefix = 0
+      firstKeyword = undefined
       continue
     }
     if (start) {
       if (/\s/.test(char)) continue
       const keyword = /^[a-z_][a-z0-9_$\u0080-\uFFFF]*/i.exec(sql.slice(i))?.[0]
-      if (!keyword || !/^(DELETE|INSERT|UPDATE|REPLACE|BEGIN|COMMIT|END|ROLLBACK|SAVEPOINT|RELEASE)$/i.test(keyword)) dataOnly = false
+      firstKeyword = keyword?.toUpperCase()
       createPrefix = keyword?.toUpperCase() === 'CREATE' ? 1 : 0
       start = false
       if (keyword) { i += keyword.length - 1; continue }
@@ -147,7 +148,7 @@ function migrationStatements(sql: string): { statements: string[], dataOnly: boo
       const keyword = /^[a-z_][a-z0-9_$\u0080-\uFFFF]*/i.exec(sql.slice(i))?.[0].toUpperCase()
       // A real trigger body stays atomic. Quoted text mentioning CREATE
       // TRIGGER is data; TEMP and comments between its keywords are valid.
-      if (keyword === 'TRIGGER') return { statements: [sql], dataOnly: false, trigger: true }
+      if (keyword === 'TRIGGER') return { statements: [{ sql, keyword: 'CREATE' }], trigger: true }
       if (createPrefix === 1 && (keyword === 'TEMP' || keyword === 'TEMPORARY')) {
         createPrefix = 2
         i += keyword.length - 1
@@ -158,50 +159,46 @@ function migrationStatements(sql: string): { statements: string[], dataOnly: boo
     if (char === "'" || char === '"' || char === '`') quote = char
     else if (char === '[') quote = ']'
   }
-  if (quote) return { statements: [sql], dataOnly: false }
-  if (!start) statements.push(sql.slice(from))
-  return { statements, dataOnly }
+  if (quote) return { statements: [{ sql }] }
+  if (!start) statements.push({ sql: sql.slice(from), keyword: firstKeyword })
+  return { statements }
 }
 
 /**
- * Apply one migration file, falling back to statement-at-a-time when it fails.
- * Four framework files ALTER model-owned tables absent from this scratch
- * database; replaying the remaining statements recovers their migration-owned
+ * Replay top-level statements once, preserving transaction order and genuine
+ * schema errors. Missing model-owned tables must not cost later migration-owned
  * columns. Trigger files stay atomic because their bodies contain semicolons.
  */
 function applyMigration(db: Database, sql: string): { ok: boolean, error?: string } {
-  // Pure data cleanup cannot contribute columns. Skip the entire file, including
-  // transaction wrappers, rather than leave a failed BEGIN open in scratch.
-  const { statements, dataOnly, trigger } = migrationStatements(sql)
-  if (dataOnly) return { ok: true }
-  try {
-    db.exec(sql)
-    return { ok: true }
-  }
-  catch (err) {
-    if (trigger)
+  const { statements, trigger } = migrationStatements(sql)
+  if (trigger) {
+    try { db.exec(sql); return { ok: true } }
+    catch (err) {
       return { ok: false, error: (err as Error).message }
-
-    let applied = 0
-    for (const statement of statements) {
-      try {
-        db.exec(statement)
-        applied++
-      }
-      catch (statementError) {
-        // An ADD COLUMN for a column an earlier file already added leaves the
-        // table as this file wants it, which is how the migration runner
-        // treats it too. Counted as applied, a corpus that adds a column twice
-        // no longer reads as a file that failed.
-        if (/duplicate column name/i.test((statementError as Error).message))
-          applied++
-        // Otherwise expected: the statement that depends on a model-owned
-        // table. The model derivation types that table anyway.
-      }
     }
-
-    return applied > 0 ? { ok: true } : { ok: false, error: (err as Error).message }
   }
+  let appliedSchema = 0
+  let missingTable: string | undefined
+  let failure: string | undefined
+  for (const statement of statements) {
+    const data = /^(DELETE|INSERT|UPDATE|REPLACE)$/.test(statement.keyword ?? '')
+    const control = /^(BEGIN|COMMIT|END|ROLLBACK|SAVEPOINT|RELEASE)$/.test(statement.keyword ?? '')
+    try {
+      db.exec(statement.sql)
+      if (!data && !control) appliedSchema++
+    }
+    catch (err) {
+      const message = (err as Error).message
+      // Model-only tables may be absent here. Other data errors still signal a
+      // broken migration or scratch database and must remain visible.
+      if (data && /no such table/i.test(message)) continue
+      if (/duplicate column name/i.test(message)) appliedSchema++
+      else if (/^(CREATE|ALTER|DROP)$/.test(statement.keyword ?? '') && /no such table/i.test(message)) missingTable ??= message
+      else failure ??= message
+    }
+  }
+  if (failure) return { ok: false, error: failure }
+  return missingTable && appliedSchema === 0 ? { ok: false, error: missingTable } : { ok: true }
 }
 
 /**
