@@ -100,32 +100,90 @@ function sqliteTypeToTs(declared: string, dialect: MigrationDialect): string {
   return 'unknown'
 }
 
+/** Track statement boundaries outside comments/quotes; SQLite still interprets all DDL. */
+function migrationStatements(sql: string): { statements: string[], dataOnly: boolean, trigger?: true } {
+  const statements: string[] = []
+  let from = 0
+  let dataOnly = true
+  let createPrefix = 0
+  let start = true
+  let quote: string | undefined
+  for (let i = 0; i < sql.length; i++) {
+    const char = sql[i]!
+    if (quote) {
+      if (char === quote) {
+        if (sql[i + 1] === quote) i++
+        else quote = undefined
+      }
+      continue
+    }
+    if (char === '-' && sql[i + 1] === '-') {
+      while (i < sql.length && sql[i] !== '\n' && sql[i] !== '\r') i++
+      continue
+    }
+    if (char === '/' && sql[i + 1] === '*') {
+      const end = sql.indexOf('*/', i + 2)
+      if (end === -1) return { statements: [sql], dataOnly: false }
+      i = end + 1
+      continue
+    }
+    if (char === ';') {
+      if (!start) statements.push(sql.slice(from, i))
+      from = i + 1
+      start = true
+      createPrefix = 0
+      continue
+    }
+    if (start) {
+      if (/\s/.test(char)) continue
+      const keyword = /^[a-z]+/i.exec(sql.slice(i))?.[0]
+      if (!keyword || !/^(DELETE|INSERT|UPDATE|REPLACE|BEGIN|COMMIT|END|ROLLBACK|SAVEPOINT|RELEASE)$/i.test(keyword)) dataOnly = false
+      createPrefix = keyword?.toUpperCase() === 'CREATE' ? 1 : 0
+      start = false
+      if (keyword) { i += keyword.length - 1; continue }
+    }
+    if (createPrefix) {
+      if (/\s/.test(char)) continue
+      const keyword = /^[a-z]+/i.exec(sql.slice(i))?.[0].toUpperCase()
+      // A real trigger body stays atomic. Quoted text mentioning CREATE
+      // TRIGGER is data; TEMP and comments between its keywords are valid.
+      if (keyword === 'TRIGGER') return { statements: [sql], dataOnly: false, trigger: true }
+      if (createPrefix === 1 && (keyword === 'TEMP' || keyword === 'TEMPORARY')) {
+        createPrefix = 2
+        i += keyword.length - 1
+        continue
+      }
+      createPrefix = 0
+    }
+    if (char === "'" || char === '"' || char === '`') quote = char
+    else if (char === '[') quote = ']'
+  }
+  if (quote) return { statements: [sql], dataOnly: false }
+  if (!start) statements.push(sql.slice(from))
+  return { statements, dataOnly }
+}
+
 /**
- * Apply one migration file, falling back to statement-at-a-time when the file
- * as a whole fails.
- *
- * Four files in the framework's own corpus fail as a unit, because they `ALTER`
- * a table that a *model* creates rather than a migration - the corpus is not
- * self-sufficient. Aborting the file on the first such statement loses every
- * later statement in it, and one of those files carries 554 of them. Running
- * the rest individually recovers all but a handful.
- *
- * Splitting on `;` is only safe because a trigger body contains its own
- * statements, so files defining one are left atomic rather than shredded.
+ * Apply one migration file, falling back to statement-at-a-time when it fails.
+ * Four framework files ALTER model-owned tables absent from this scratch
+ * database; replaying the remaining statements recovers their migration-owned
+ * columns. Trigger files stay atomic because their bodies contain semicolons.
  */
 function applyMigration(db: Database, sql: string): { ok: boolean, error?: string } {
+  // Pure data cleanup cannot contribute columns. Skip the entire file, including
+  // transaction wrappers, rather than leave a failed BEGIN open in scratch.
+  const { statements, dataOnly, trigger } = migrationStatements(sql)
+  if (dataOnly) return { ok: true }
   try {
     db.exec(sql)
     return { ok: true }
   }
   catch (err) {
-    if (/CREATE\s+TRIGGER/i.test(sql))
+    if (trigger)
       return { ok: false, error: (err as Error).message }
 
     let applied = 0
-    for (const statement of sql.split(/;\s*$/m)) {
-      if (!statement.trim())
-        continue
+    for (const statement of statements) {
       try {
         db.exec(statement)
         applied++

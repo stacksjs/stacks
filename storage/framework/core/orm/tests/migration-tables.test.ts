@@ -21,6 +21,22 @@ function cleanup(dir: string): void {
 }
 
 describe('deriveMigrationTables', () => {
+  test('data-only cleanup of model-owned tables does not report schema failure', () => {
+    const dir = corpus({
+      '001-create.sql': 'CREATE TABLE survivors (id INTEGER PRIMARY KEY, label TEXT);',
+      '002-revoke-tokens.sql': `-- A data cleanup, not a table declaration.
+DELETE FROM oauth_refresh_tokens WHERE expires_at IS NULL;
+DELETE FROM oauth_access_tokens WHERE expires_at IS NULL;`,
+    })
+    try {
+      expect(deriveMigrationTables(dir)).toEqual({
+        tables: [{ table: 'survivors', columns: { id: 'number', label: 'string | null' } }],
+        errors: [],
+      })
+    }
+    finally { cleanup(dir) }
+  })
+
   test('types a table the corpus creates', () => {
     const dir = corpus({
       '001-create-roles.sql': `CREATE TABLE roles (
@@ -46,6 +62,47 @@ describe('deriveMigrationTables', () => {
     finally {
       cleanup(dir)
     }
+  })
+
+  test('data cleanup transaction wrappers and quoted SQL leave later schema transactions usable', () => {
+    const dir = corpus({
+      '001-cleanup.sql': `/* CREATE TABLE is a comment. */
+BEGIN;
+DELETE FROM missing_tokens WHERE note = 'CREATE TRIGGER fake; it''s data';
+UPDATE missing_tokens SET "value;name" = 'ALTER TABLE ignored;';
+COMMIT;`,
+      '002-schema.sql': 'BEGIN; CREATE TABLE later (id INTEGER PRIMARY KEY); COMMIT;',
+    })
+    try {
+      expect(deriveMigrationTables(dir)).toEqual({ tables: [{ table: 'later', columns: { id: 'number' } }], errors: [] })
+    }
+    finally { cleanup(dir) }
+  })
+
+  test('a data statement cannot hide same-line schema declarations', () => {
+    const dir = corpus({ '001-mixed.sql': "DELETE FROM missing_tokens WHERE note = 'CREATE TRIGGER fake; it''s data'; CREATE TABLE recovered (id INTEGER PRIMARY KEY);" })
+    try {
+      expect(deriveMigrationTables(dir).tables).toEqual([{ table: 'recovered', columns: { id: 'number' } }])
+    }
+    finally { cleanup(dir) }
+  })
+
+  test.each([
+    'CREATE TABLE broken (id INTEGER,);',
+    'ALTER TABLE missing ADD COLUMN value TEXT;',
+    'CREATE TRIGGER broken AFTER INSERT ON missing BEGIN DELETE FROM missing; END;',
+    'CREATE TEMP TRIGGER broken AFTER INSERT ON missing BEGIN SELECT 1; SELECT 2; END;',
+    'CREATE /* retained keyword boundary */ TRIGGER broken AFTER INSERT ON missing BEGIN SELECT 1; SELECT 2; END;',
+    'unrecognized schema instruction;',
+  ])('schema and unknown SQL failures remain visible: %s', (sql) => {
+    const dir = corpus({ '001-broken.sql': sql })
+    try {
+      const result = deriveMigrationTables(dir)
+      expect(result.tables).toEqual([])
+      expect(result.errors).toHaveLength(1)
+      expect(result.errors[0]!.file).toEndWith('001-broken.sql')
+    }
+    finally { cleanup(dir) }
   })
 
   test('applies ALTER TABLE, so a column added later is typed', () => {
