@@ -136,7 +136,7 @@ function migrationStatements(sql: string): { statements: string[], dataOnly: boo
     }
     if (start) {
       if (/\s/.test(char)) continue
-      const keyword = /^[a-z]+/i.exec(sql.slice(i))?.[0]
+      const keyword = /^[a-z_][a-z0-9_$\u0080-\uFFFF]*/i.exec(sql.slice(i))?.[0]
       if (!keyword || !/^(DELETE|INSERT|UPDATE|REPLACE|BEGIN|COMMIT|END|ROLLBACK|SAVEPOINT|RELEASE)$/i.test(keyword)) dataOnly = false
       createPrefix = keyword?.toUpperCase() === 'CREATE' ? 1 : 0
       start = false
@@ -144,7 +144,7 @@ function migrationStatements(sql: string): { statements: string[], dataOnly: boo
     }
     if (createPrefix) {
       if (/\s/.test(char)) continue
-      const keyword = /^[a-z]+/i.exec(sql.slice(i))?.[0].toUpperCase()
+      const keyword = /^[a-z_][a-z0-9_$\u0080-\uFFFF]*/i.exec(sql.slice(i))?.[0].toUpperCase()
       // A real trigger body stays atomic. Quoted text mentioning CREATE
       // TRIGGER is data; TEMP and comments between its keywords are valid.
       if (keyword === 'TRIGGER') return { statements: [sql], dataOnly: false, trigger: true }

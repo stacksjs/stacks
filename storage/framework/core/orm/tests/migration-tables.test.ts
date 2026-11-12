@@ -94,6 +94,8 @@ COMMIT;`,
     'CREATE TEMP TRIGGER broken AFTER INSERT ON missing BEGIN SELECT 1; SELECT 2; END;',
     'CREATE /* retained keyword boundary */ TRIGGER broken AFTER INSERT ON missing BEGIN SELECT 1; SELECT 2; END;',
     'unrecognized schema instruction;',
+    'DELETE_TABLE;',
+    'UPDATE1;',
   ])('schema and unknown SQL failures remain visible: %s', (sql) => {
     const dir = corpus({ '001-broken.sql': sql })
     try {
