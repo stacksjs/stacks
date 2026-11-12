@@ -831,6 +831,67 @@ the value breaks, or a `unique` value another row holds). A delete the
 database refuses because other records point at the row is reported as that,
 and an account cannot delete itself.
 
+### A model names its own actions
+
+Everything above is derived from what a model is. A button that does
+something ("Mark as shipped") is behaviour, so the model does not describe
+it: it names it, and an action under `app/Actions` does the work.
+
+```ts
+dashboard: {
+  actions: [
+    {
+      name: 'ship',                              // its place in the URL
+      label: 'Mark as shipped',                  // else the name in words
+      action: 'Actions/Orders/ShipOrderAction',  // as a route names one
+      icon: 'i-hugeicons-truck-delivery',        // else a bolt
+      confirm: 'The customer is emailed a tracking link.',
+      when: { status: ['paid', 'packed'], shippedAt: null },
+    },
+  ],
+}
+```
+
+- Each entry is a button on the record's page and an icon in its row of the
+  model's list. `on: ['record']` or `on: ['row']` keeps it to one.
+- `when` names the records it is for: each field with the value, or list of
+  values, a record must hold (`null` is "nothing stored"). A field may be one
+  the dashboard hides. The server decides which rows are sent which action
+  (`rowActions`, by row id) and checks again before running one, so asking
+  for a hidden button is refused with a 409.
+- `confirm` asks first, in the sentence given. `destructive: true` draws the
+  button and its confirmation in red.
+- An erased account is offered none.
+
+`POST /api/dashboard/models/{model}/{id}/actions/{name}` runs the action **as
+its own route would** (`resolveActionHandler` in `@stacksjs/router`): the
+record's id is the `id` route parameter, so an action already served at
+`/orders/{id}/ship` needs nothing changed, and its `validations`, `authorize`
+and `before` all apply. The action needs no route of its own.
+
+What it answers is what the operator is told:
+
+- a refusal, returned or thrown with any status from 400 up, is shown with
+  its `message`;
+- a success may carry `message`, shown as the confirmation, and `redirect`, a
+  dashboard path to open (`/models/order/31`). Without a redirect the page
+  reads the record again, since what it is offered may have changed.
+
+A declaration that cannot be read, or whose action cannot be loaded, is left
+out and logged once by name (`[dashboard] Order dashboard.actions: 'ship'
+names Actions/Orders/ShipOrderAction, which could not be loaded...`). A
+handler string is not checked by the compiler, so this is checked when the
+list is drawn, not when someone presses the button.
+
+`User` ships one, on its record page only: "Send password reset"
+(`Actions/Dashboard/Users/UserPasswordResetAction`), which mails the account's
+holder the "Forgot password" link. Remove the entry to turn it off.
+
+Not offered yet: an action on several selected rows, a form for an action
+that takes input (one with `validations` refuses with its field messages),
+and the hand-built Users, Teams and Subscribers lists, whose rows lead to the
+record page where the buttons are.
+
 ### A user other records refer to is anonymized, not refused
 
 Many tables point at `users`, so anyone who has signed in, joined a team or

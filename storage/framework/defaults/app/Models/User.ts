@@ -169,5 +169,19 @@ export default defineModel({
     // `store` is by invitation: no form can supply a password, so the account
     // is created and its holder is mailed a link to choose one.
     writes: ['store', 'update', 'destroy'],
+    // What support is asked for most: the person cannot sign in, or lost the
+    // invitation. The button runs an action; the model only names it.
+    actions: [
+      {
+        name: 'send-password-reset',
+        label: 'Send password reset',
+        action: 'Actions/Dashboard/Users/UserPasswordResetAction',
+        icon: 'i-hugeicons-reset-password',
+        confirm: 'They are emailed a link to choose a new password. Their current password keeps working until they use it.',
+        // On the account's own page, where who it is can be read first. Not
+        // one press away on every row of a list.
+        on: ['record'],
+      },
+    ],
   },
 } as const)

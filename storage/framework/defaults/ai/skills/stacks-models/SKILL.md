@@ -142,6 +142,13 @@ API offers neither, and `store` for it means an emailed invitation, since no
 form can supply a password. It opens nothing on the generated API. See
 `stacks-dashboard`.
 
+`dashboard: { actions: [{ name: 'ship', action: 'Actions/Orders/ShipOrderAction' }] }`
+names what an operator can do to a record beyond editing it: each entry is a
+button that runs an action of the app's on that record, with an optional
+`label`, `icon`, `confirm` sentence, `destructive` flag, `on` (`record`,
+`row`) and `when` (the field values a record must hold). The model names the
+behaviour and the action does it. See `stacks-dashboard`.
+
 `useApi` is an API capability, not a dashboard-view generator. Its generated
 routes are registered from the merged model registry. Framework defaults are
 loaded first, then recursive `app/Models/` definitions override matching model
