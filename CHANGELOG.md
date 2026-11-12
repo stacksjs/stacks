@@ -1,5 +1,42 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.552...v0.75.553)
+
+## ✨ Features
+
+- **dashboard**: an action that takes input is asked for it in a form ([8550375](https://github.com/stacksjs/stacks/commit/8550375)) _(by glennmichael123)_ ([#3273](https://github.com/stacksjs/stacks/issues/3273))
+- **dashboard**: an action's input is read from its own validations ([6c94098](https://github.com/stacksjs/stacks/commit/6c94098)) _(by glennmichael123)_ ([#3273](https://github.com/stacksjs/stacks/issues/3273))
+- **router**: say what an action named by its handler string takes ([2ef62ed](https://github.com/stacksjs/stacks/commit/2ef62ed)) _(by glennmichael123)_ ([#3273](https://github.com/stacksjs/stacks/issues/3273))
+- **dashboard**: rows in a model's list are selected and acted on together ([470f534](https://github.com/stacksjs/stacks/commit/470f534)) _(by glennmichael123)_ ([#3271](https://github.com/stacksjs/stacks/issues/3271))
+- **dashboard**: a model's action can be offered for a selection, and a selection is run one record at a time ([5ed1347](https://github.com/stacksjs/stacks/commit/5ed1347)) _(by glennmichael123)_ ([#3271](https://github.com/stacksjs/stacks/issues/3271), [#3269](https://github.com/stacksjs/stacks/issues/3269))
+- **dashboard**: a record's related rows are added, edited and deleted from its own page ([dd4ea93](https://github.com/stacksjs/stacks/commit/dd4ea93)) _(by glennmichael123)_ ([#3270](https://github.com/stacksjs/stacks/issues/3270), [#3269](https://github.com/stacksjs/stacks/issues/3269))
+- **dashboard**: a related panel says what can be done to its rows, and carries the form for it ([942a591](https://github.com/stacksjs/stacks/commit/942a591)) _(by glennmichael123)_ ([#3270](https://github.com/stacksjs/stacks/issues/3270))
+- **dashboard**: durations, sizes, addresses and avatars read as what they are ([fc619fc](https://github.com/stacksjs/stacks/commit/fc619fc)) _(by glennmichael123)_ ([#3266](https://github.com/stacksjs/stacks/issues/3266))
+- **dashboard**: lists, record pages, panels and forms follow a model's field settings ([f413bfc](https://github.com/stacksjs/stacks/commit/f413bfc)) _(by glennmichael123)_ ([#3266](https://github.com/stacksjs/stacks/issues/3266))
+- **dashboard**: a model says what a field is called and how its value reads ([ac974df](https://github.com/stacksjs/stacks/commit/ac974df)) _(by glennmichael123)_ ([#3266](https://github.com/stacksjs/stacks/issues/3266))
+- **dashboard**: send a password reset from a user's page ([525bfe9](https://github.com/stacksjs/stacks/commit/525bfe9)) _(by glennmichael123)_ ([#3265](https://github.com/stacksjs/stacks/issues/3265))
+- **dashboard**: a record's page and its row draw the model's own actions ([c26217b](https://github.com/stacksjs/stacks/commit/c26217b)) _(by glennmichael123)_ ([#3265](https://github.com/stacksjs/stacks/issues/3265))
+- **dashboard**: a model names actions the dashboard runs on its records ([d1fe4cb](https://github.com/stacksjs/stacks/commit/d1fe4cb)) _(by glennmichael123)_ ([#3265](https://github.com/stacksjs/stacks/issues/3265))
+- **router**: an action can be run by its handler string, without a route of its own ([ab07bdf](https://github.com/stacksjs/stacks/commit/ab07bdf)) _(by glennmichael123)_ ([#3265](https://github.com/stacksjs/stacks/issues/3265))
+
+## 🐛 Bug Fixes
+
+- **orm**: classify native SQLite failures before recovery ([69542e2](https://github.com/stacksjs/stacks/commit/69542e2)) _(by Chris)_ ([#3267](https://github.com/stacksjs/stacks/issues/3267))
+- **testing**: own SDK fixture install caches ([accbd15](https://github.com/stacksjs/stacks/commit/accbd15)) _(by Chris)_ ([#3274](https://github.com/stacksjs/stacks/issues/3274))
+- **orm**: retain schema errors and transaction effects during replay ([9b943f7](https://github.com/stacksjs/stacks/commit/9b943f7)) _(by Chris)_ ([#3267](https://github.com/stacksjs/stacks/issues/3267))
+- **orm**: preserve unknown SQL statement token boundaries ([6555132](https://github.com/stacksjs/stacks/commit/6555132)) _(by Chris)_ ([#3267](https://github.com/stacksjs/stacks/issues/3267))
+- **orm**: separate data cleanup from schema derivation ([0ae3837](https://github.com/stacksjs/stacks/commit/0ae3837)) _(by Chris)_ ([#3267](https://github.com/stacksjs/stacks/issues/3267))
+- **upgrade**: complete migrations in the installed target context ([6419db6](https://github.com/stacksjs/stacks/commit/6419db6)) _(by Chris)_ ([#3268](https://github.com/stacksjs/stacks/issues/3268))
+
+## 📝 Documentation
+
+- **native**: refresh retained Buddy test references ([668e0b0](https://github.com/stacksjs/stacks/commit/668e0b0)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.551...v0.75.552)
 
 ## 🐛 Bug Fixes
