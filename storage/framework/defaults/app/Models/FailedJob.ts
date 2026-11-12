@@ -89,5 +89,16 @@ export default defineModel({
 
   dashboard: {
     columns: ['queue', 'connection', 'exception', 'attempts', 'failedAt'],
+    // A failed job can be run again from its row or its page, one or many.
+    actions: [
+      {
+        name: 'retry',
+        label: 'Retry',
+        action: 'Actions/Dashboard/Jobs/JobRetryAction',
+        icon: 'i-hugeicons-refresh',
+        confirm: 'It is put back on its queue to run again.',
+        on: ['record', 'row', 'bulk'],
+      },
+    ],
   },
 } as const)

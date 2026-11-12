@@ -887,10 +887,31 @@ Formatting happens in the browser (`functions/dashboard-model-format.ts`),
 since it follows the viewer's locale and time zone; the list endpoint sends
 each column's `label` and `format` in `columnMeta`.
 
-The shipped models whose stored unit is certain describe theirs: request and
-query durations, a deployment's duration (seconds) and address, an
-attachment's size, a user's avatar. `tests/unit/dashboard-model-field-overrides.test.ts`
-checks that every shipped entry names a real field.
+The shipped models say so wherever the answer is certain
+(`tests/unit/dashboard-shipped-declarations.test.ts` holds each kind to its
+rule):
+
+- **Units and addresses**: request and query durations, a deployment's
+  duration (seconds) and address, an attachment's size.
+- **A picture chosen as a file** (`input: 'upload', accept: 'image/*'`): a
+  user's, an author's and a customer's `avatar`, a post's `poster`.
+- **A picture shown as one** (`format: 'image'`): the `imageUrl` of a
+  product, category, auction lot, loyalty reward and social post. These stay
+  an address that is typed or pasted. A chooser would take away pointing at
+  a picture kept elsewhere, so a field named for an address is not made an
+  upload.
+- **A web address box** (`input: 'url'`): a post's `canonicalUrl` and a social
+  post's `imageUrl`, the two whose own rule already refuses anything else.
+  The box refuses a path such as `/about` before the form is sent, so it is
+  never put on a field that may hold one (a menu item's `url`).
+- **Prose** (`input: 'longtext'`): descriptions, notes, bios, excerpts, meta
+  descriptions, comment and card bodies, a post's `content`: 23 fields that
+  were one line because their attribute is a plain string.
+
+Nothing shipped is asked for as Markdown yet. A post's `content` is written
+in Markdown, but the page the CMS builds from it renders only part of it (no
+italics, quotes or numbered lists), and the editor's preview would show what
+the published page does not.
 
 Not offered yet: wording for single enum values.
 
@@ -1056,12 +1077,20 @@ names Actions/Orders/ShipOrderAction, which could not be loaded...`). A
 handler string is not checked by the compiler, so this is checked when the
 list is drawn, not when someone presses the button.
 
-`User` ships one, on its record page only: "Send password reset"
-(`Actions/Dashboard/Users/UserPasswordResetAction`), which mails the account's
-holder the "Forgot password" link. Remove the entry to turn it off.
+Five ship, each an action the framework already had, and each asks first.
+Remove an entry to turn it off.
 
-Not offered on the hand-built Users, Teams and Subscribers lists, whose rows
-lead to the record page where the buttons are.
+| Model | Button | Offered to | Where |
+|---|---|---|---|
+| `User` | Send password reset | every account | its page |
+| `FailedJob` | Retry | every failed job | row, page, selection |
+| `NotificationDelivery` | Send again | a failed email or text message | row, page |
+| `Campaign` | Send now | an email campaign that is a draft, scheduled, paused or failed | its page |
+| `Campaign` | Cancel delivery | an email campaign that is scheduled or sending | its page |
+
+A campaign's two are on its own page only: sending reaches every subscriber
+on a list, so it is not an icon in a table row. What an action refuses is
+what the operator is told ("Email campaigns require an email list.").
 
 ### An action that takes input is asked for it
 
