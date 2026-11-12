@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.544...v0.75.545)
+
+## ✨ Features
+
+- **commerce**: software licensing with device activations, seats and offline tokens ([47baa3a](https://github.com/stacksjs/stacks/commit/47baa3a)) _(by Chris Breuer)_
+
+## 🔧 Chores
+
+- **database**: regenerate db types for the license tables ([ecdd8a9](https://github.com/stacksjs/stacks/commit/ecdd8a9)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.543...v0.75.544)
 
 ## ✨ Features
