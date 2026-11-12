@@ -8,8 +8,8 @@
 // writes go through the model, so scopes, casts and observers apply.
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
 import { dashboardApi } from '@stacksjs/defaults/functions/dashboard-api'
-import type { ModelRelationTarget, ModelWriteCapabilities } from '@stacksjs/defaults/functions/dashboard-model-record'
-import { deleteModelRecord, modelDeleteNotice, modelDeleteWarning, modelListColumnNames, modelListFilters, modelRecordCreateHref, modelRecordEditHref, modelRecordHref, modelRelationCell, NO_WRITES, userInviteHref } from '@stacksjs/defaults/functions/dashboard-model-record'
+import type { ModelCustomAction, ModelRelationTarget, ModelWriteCapabilities } from '@stacksjs/defaults/functions/dashboard-model-record'
+import { deleteModelRecord, modelActionNotice, modelActionsFor, modelDeleteNotice, modelDeleteWarning, modelListColumnNames, modelListFilters, modelRecordCreateHref, modelRecordEditHref, modelRecordHref, modelRelationCell, NO_WRITES, runModelAction, userInviteHref } from '@stacksjs/defaults/functions/dashboard-model-record'
 import { pushToast } from '@stacksjs/defaults/functions/toasts'
 
 interface ColumnMeta {
@@ -39,6 +39,9 @@ interface ResponseShape {
   listColumns?: string[]
   relations?: Record<string, ModelRelationTarget>
   relationNames?: Record<string, Record<string, string>>
+  /** The model's own actions (`dashboard.actions`), and which each row is offered. */
+  actions?: ModelCustomAction[]
+  rowActions?: Record<string, string[]>
   updateColumns: string[]
   migrated?: boolean
   error: string | null
@@ -77,6 +80,12 @@ const showFilters = state(Object.keys(filters()).length > 0)
 
 const saving = state(false)
 const confirmingDelete = state<Record<string, unknown> | null>(null)
+// The model's own actions, and the rows the server says each is for.
+const actions = state<ModelCustomAction[]>([])
+const rowActions = state<Record<string, string[]>>({})
+// One of them waiting on its confirmation, and the one that is running.
+const confirmingAction = state<{ action: ModelCustomAction, row: Record<string, unknown> } | null>(null)
+const runningAction = state<{ name: string, id: string } | null>(null)
 
 const slug = derived(() => navigation.urlSegment(-1) || '')
 
@@ -198,6 +207,8 @@ async function load() {
     // bug that leaves the columns rotated out of order.
     relations.set(data.relations ?? {})
     relationNames.set(data.relationNames ?? {})
+    actions.set(data.actions ?? [])
+    rowActions.set(data.rowActions ?? {})
     // The columns the model chose for its list, and any the list is filtered on.
     const every = data.columnMeta ?? []
     const shown = modelListColumnNames(every.map(column => column.name), data.listColumns, active)
@@ -282,6 +293,49 @@ function openCreate(): void {
 // A user is invited, not typed in: the account's holder chooses the password.
 function openInvite(): void {
   navigate(userInviteHref(`/models/${slug()}`))
+}
+
+/** The model's own actions this row is offered in a list. */
+function actionsFor(row: Record<string, unknown>): ModelCustomAction[] {
+  return modelActionsFor(actions(), rowActions(), String(row.id), 'row')
+}
+
+/** The name of the action running on this row, if one is. */
+function runningOn(row: Record<string, unknown>): string {
+  const current = runningAction()
+  return current && current.id === String(row.id) ? current.name : ''
+}
+
+// An action that asks first opens its confirmation; one that does not runs.
+function startAction(payload: { action: ModelCustomAction, record: Record<string, unknown> }): void {
+  if (payload.action.confirm)
+    confirmingAction.set({ action: payload.action, row: payload.record })
+  else
+    void runAction(payload.action, payload.record)
+}
+
+async function runAction(action: ModelCustomAction, row: Record<string, unknown>): Promise<void> {
+  if (runningAction())
+    return
+  runningAction.set({ name: action.name, id: String(row.id) })
+  const result = await runModelAction(slug(), String(row.id), action.name)
+  runningAction.set(null)
+  confirmingAction.set(null)
+  const notice = modelActionNotice(action, result)
+  pushToast(notice.tone, notice.title, { detail: notice.detail })
+  if (!result.ok)
+    return
+  if (result.redirect)
+    navigate(result.redirect)
+  else
+    // The row may read differently now, and be offered different actions.
+    await load()
+}
+
+function confirmAction(): void {
+  const pending = confirmingAction()
+  if (pending)
+    void runAction(pending.action, pending.row)
 }
 
 async function confirmDelete() {
@@ -474,6 +528,9 @@ void load()
                 :modelName="modelName()"
                 :canUpdate="writeCapabilities().update && !isAnonymized(row)"
                 :canDestroy="writeCapabilities().destroy && !isAnonymized(row)"
+                :actions="actionsFor(row)"
+                :running="runningOn(row)"
+                @action="startAction"
                 @view="startView"
                 @edit="startEdit"
                 @delete="confirmingDelete.set($event)"
@@ -504,6 +561,17 @@ void load()
     :confirmLabel="saving() ? 'Deleting' : 'Delete'"
     @close="confirmingDelete.set(null)"
     @confirm="confirmDelete"
+  />
+
+  <ConfirmDialog
+    :isOpen="Boolean(confirmingAction())"
+    :title="(confirmingAction()?.action.label || 'Run this action') + '?'"
+    :description="confirmingAction()?.action.confirm || ''"
+    :variant="confirmingAction()?.action.destructive ? 'danger' : 'warning'"
+    :busy="Boolean(runningAction())"
+    :confirmLabel="confirmingAction()?.action.label || 'Run'"
+    @close="confirmingAction.set(null)"
+    @confirm="confirmAction"
   />
 </div>
 </template>

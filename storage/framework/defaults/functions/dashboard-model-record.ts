@@ -24,6 +24,25 @@ export interface ModelWriteCapabilities {
   anonymize: boolean
 }
 
+/**
+ * Something the model lets an operator do to a record beyond editing it, as
+ * a button: "Mark as shipped". From the model's `dashboard.actions`.
+ */
+export interface ModelCustomAction {
+  /** Its place in the URL that runs it. */
+  name: string
+  /** What the button says. */
+  label: string
+  /** An iconify class, or empty for the default. */
+  icon: string
+  /** What the confirmation says before it runs. Empty runs it at once. */
+  confirm: string
+  /** It removes or revokes something: drawn in red. */
+  destructive: boolean
+  /** Where its button is drawn: the record's page, its row in a list. */
+  places: Array<'record' | 'row'>
+}
+
 export interface ModelColumn {
   name: string
   label: string
@@ -47,6 +66,8 @@ export interface ModelRecord {
   writeCapabilities: ModelWriteCapabilities
   /** Erased under the app's data-subject rules: its personal details are placeholders. */
   anonymized: boolean
+  /** The model's own actions this record is offered on its page. */
+  actions: ModelCustomAction[]
 }
 
 interface ModelShowResponse {
@@ -63,6 +84,8 @@ interface ModelShowResponse {
   relationNames?: Record<string, Record<string, string>>
   writeCapabilities?: ModelWriteCapabilities
   anonymizedIds?: Array<number | string>
+  actions?: ModelCustomAction[]
+  rowActions?: Record<string, string[]>
   error?: string | null
 }
 
@@ -163,6 +186,7 @@ export async function fetchModelRecord(slug: string, id: string | number): Promi
       .filter((entry): entry is readonly [string, string] => typeof entry[1] === 'string')),
     writeCapabilities: { ...NO_WRITES, ...data.writeCapabilities },
     anonymized: (data.anonymizedIds ?? []).some(candidate => String(candidate) === String(id)),
+    actions: modelActionsFor(data.actions, data.rowActions, id, 'record'),
   }
 }
 
@@ -550,6 +574,62 @@ export function modelDeleteNotice(name: string, outcome: ModelDeleteOutcome): { 
   if (outcome === 'anonymized')
     return { title: `${name} anonymized`, detail: 'Other records still refer to this account, so it was kept with its name and email removed. It can no longer sign in.' }
   return { title: `${name} deleted` }
+}
+
+/**
+ * The model's own actions one record is offered in one place.
+ *
+ * Which records an action is for is the server's to say: it sends, per row,
+ * the names of the actions that apply, and a row it does not list is offered
+ * none. The page only narrows that to where each button belongs.
+ */
+export function modelActionsFor(
+  actions: ModelCustomAction[] | undefined,
+  rowActions: Record<string, string[]> | undefined,
+  id: string | number,
+  place: 'record' | 'row',
+): ModelCustomAction[] {
+  const offered = rowActions?.[String(id)] ?? []
+  return (actions ?? []).filter(action => offered.includes(action.name) && action.places.includes(place))
+}
+
+/** The classes of an action's icon: its own, or a bolt for one that names none. */
+export function modelActionIconClass(action: ModelCustomAction): string {
+  const tone = action.destructive ? 'text-red-500' : 'text-neutral-500 dark:text-neutral-400'
+  return `h-4 w-4 ${tone} ${action.icon || 'i-hugeicons-flash'}`
+}
+
+export type ModelActionResult
+  = | { ok: true, message: string, redirect: string }
+    | { ok: false, error: string }
+
+/**
+ * Run one of a model's own actions on a record. A refusal comes back as its
+ * reason, in the action's words: "Already shipped."
+ */
+export async function runModelAction(slug: string, id: string | number, name: string): Promise<ModelActionResult> {
+  try {
+    const result = await dashboardApi<{ ok?: boolean, message?: string, redirect?: string }>(
+      `${modelPath(slug)}/${encodeURIComponent(String(id))}/actions/${encodeURIComponent(name)}`,
+      { method: 'POST', body: {} },
+    )
+    const redirect = typeof result?.redirect === 'string' && /^\/(?!\/)/.test(result.redirect) ? result.redirect : ''
+    return { ok: true, message: typeof result?.message === 'string' ? result.message : '', redirect }
+  }
+  catch (reason) {
+    return { ok: false, error: reason instanceof Error ? reason.message : String(reason) }
+  }
+}
+
+/**
+ * The toast after an action: its name, and what it said came of it. An
+ * action that says nothing is still confirmed, so a press is never met with
+ * silence.
+ */
+export function modelActionNotice(action: ModelCustomAction, result: ModelActionResult): { tone: 'success' | 'error', title: string, detail: string } {
+  if (result.ok)
+    return { tone: 'success', title: action.label, detail: result.message || 'Done.' }
+  return { tone: 'error', title: `${action.label} did not run`, detail: result.error }
 }
 
 /** Where the invite page lives, remembering the list to return to. */

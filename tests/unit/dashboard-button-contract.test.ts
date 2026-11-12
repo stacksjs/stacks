@@ -424,8 +424,9 @@ describe('dashboard button contract', () => {
 
     expect((source.match(/<Button/g) || []).length).toBeGreaterThanOrEqual(7)
     expect(source).toContain('<ModelRecordActions')
-    // View, edit and delete: the eye is offered on every row.
-    expect((actions.match(/<Button/g) || []).length).toBe(3)
+    // View, edit and delete, the eye offered on every row, and one more
+    // drawn per action the model lists under `dashboard.actions`.
+    expect((actions.match(/<Button/g) || []).length).toBe(4)
     // Editing is a page of the record's own, not a dialog over the table.
     expect(source).not.toContain('<EditRecordModal')
     expect(editor).not.toContain('<Modal')

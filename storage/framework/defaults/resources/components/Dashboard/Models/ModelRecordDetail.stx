@@ -3,11 +3,13 @@
 // leads. A breadcrumb back to the list, "View User", and the record's fields
 // as titled cards two across: what it is, its settings, its identifiers and
 // its timestamps, each field a label over its value. Edit (which opens the
-// record's edit page) and Delete appear where the model's API allows them. A page rather than a dialog, so a record
-// has an address to share, open in a tab and come back to.
+// record's edit page) and Delete appear where the model allows them, and so
+// do the model's own actions ("Mark as shipped"), each a button that runs an
+// action of the app's. A page rather than a dialog, so a record has an
+// address to share, open in a tab and come back to.
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
-import type { ModelRecord, ModelRelatedPanel } from '../../../../functions/dashboard-model-record'
-import { deleteModelRecord, fetchModelRecord, fetchModelRelated, modelDeleteNotice, modelDeleteWarning, modelRecordBackHref, modelRecordEditHref, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRecordTitle } from '../../../../functions/dashboard-model-record'
+import type { ModelCustomAction, ModelRecord, ModelRelatedPanel } from '../../../../functions/dashboard-model-record'
+import { deleteModelRecord, fetchModelRecord, fetchModelRelated, modelActionIconClass, modelActionNotice, modelDeleteNotice, modelDeleteWarning, modelRecordBackHref, modelRecordEditHref, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRecordTitle, runModelAction } from '../../../../functions/dashboard-model-record'
 import { pushToast } from '../../../../functions/toasts'
 
 const navigation = useNavigation()
@@ -16,6 +18,10 @@ const loading = state(true)
 const loadError = state('')
 const confirmingDelete = state(false)
 const working = state(false)
+// One of the model's own actions, waiting on its confirmation.
+const confirmingAction = state<ModelCustomAction | null>(null)
+// The action that is running, by name: its button waits, the others stay.
+const running = state('')
 
 // `/models/{slug}/{id}`: the last two segments of the address.
 function slug(): string {
@@ -43,6 +49,9 @@ const sections = derived(() => record() ? modelRecordSections(record()!) : [])
 // would only anonymize what already is. The note below says what it is.
 const canEdit = derived(() => Boolean(record()?.writeCapabilities.update) && !record()?.anonymized)
 const canDelete = derived(() => Boolean(record()?.writeCapabilities.destroy) && !record()?.anonymized)
+// The model's own actions this record is offered: the server has already
+// left out the ones its `when` rules out.
+const actions = derived(() => record()?.actions ?? [])
 
 async function loadRecord(): Promise<void> {
   loading.set(true)
@@ -88,6 +97,39 @@ async function deleteRecord(): Promise<void> {
   }
 }
 
+// An action that asks first opens its confirmation; one that does not runs.
+function startAction(action: ModelCustomAction): void {
+  if (action.confirm)
+    confirmingAction.set(action)
+  else
+    void runAction(action)
+}
+
+async function runAction(action: ModelCustomAction): Promise<void> {
+  if (running())
+    return
+  running.set(action.name)
+  const result = await runModelAction(slug(), recordId(), action.name)
+  running.set('')
+  confirmingAction.set(null)
+  const notice = modelActionNotice(action, result)
+  pushToast(notice.tone, notice.title, { detail: notice.detail })
+  if (!result.ok)
+    return
+  if (result.redirect)
+    navigate(result.redirect)
+  else
+    // What the action changed is what the page should now show, and which
+    // actions the record is still offered may have changed with it.
+    await loadRecord()
+}
+
+function confirmAction(): void {
+  const action = confirmingAction()
+  if (action)
+    void runAction(action)
+}
+
 onMount(() => {
   void loadRecord()
 })
@@ -103,7 +145,11 @@ onMount(() => {
       </nav>
       <h1 class="font-bold text-3xl text-neutral-900 tracking-tight truncate dark:text-white">View {{ modelName() }}</h1>
     </div>
-    <div :if="record()" class="flex flex-none gap-2 items-center">
+    <div :if="record()" class="flex flex-wrap gap-2 items-center sm:justify-end">
+      <Button :for="action in actions()" variant="outline" :disabled="running() !== ''" @click="startAction(action)">
+        <span aria-hidden="true" :class="running() === action.name ? 'h-4 w-4 animate-spin i-hugeicons-loading-03' : modelActionIconClass(action)"></span>
+        {{ action.label }}
+      </Button>
       <Button :if="canDelete()" variant="outline" @click="confirmingDelete.set(true)">
         <span aria-hidden="true" class="h-4 w-4 text-red-500 i-hugeicons-delete-02"></span>
         Delete
@@ -168,5 +214,16 @@ onMount(() => {
     :confirmLabel="working() ? 'Deleting' : 'Delete'"
     @close="confirmingDelete.set(false)"
     @confirm="deleteRecord"
+  />
+
+  <ConfirmDialog
+    :isOpen="Boolean(confirmingAction())"
+    :title="(confirmingAction()?.label || 'Run this action') + '?'"
+    :description="confirmingAction()?.confirm || ''"
+    :variant="confirmingAction()?.destructive ? 'danger' : 'warning'"
+    :busy="running() !== ''"
+    :confirmLabel="confirmingAction()?.label || 'Run'"
+    @close="confirmingAction.set(null)"
+    @confirm="confirmAction"
   />
 </div>

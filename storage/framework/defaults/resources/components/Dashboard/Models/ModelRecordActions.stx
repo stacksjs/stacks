@@ -1,12 +1,43 @@
 <script client>
+import type { ModelCustomAction } from '../../../../functions/dashboard-model-record'
+import { modelActionIconClass } from '../../../../functions/dashboard-model-record'
+
 const record = useReactiveProp('record', {} as Record<string, unknown>)
 const modelName = useReactiveProp('modelName', 'Record')
 const canUpdate = useReactiveProp('canUpdate', false)
 const canDestroy = useReactiveProp('canDestroy', false)
-const emit = defineEmits(['view', 'edit', 'delete'])
+// The model's own actions this row is offered: `dashboard.actions`, narrowed
+// by the server to the ones this record's values allow.
+const actions = useReactiveProp('actions', [] as ModelCustomAction[])
+// The one that is running, by name, on this row.
+const running = useReactiveProp('running', '')
+const emit = defineEmits(['view', 'edit', 'delete', 'action'])
+
+// The loop below is on a wrapper and not on the button itself, as the shared
+// table's row actions are. This component is drawn once per row of a list,
+// and a loop placed on a component inside one does not hand its item to what
+// the component wraps: the icon's class came out empty.
+function iconClass(action: ModelCustomAction): string {
+  return running() === action.name
+    ? 'h-4 w-4 text-neutral-400 animate-spin i-hugeicons-loading-03'
+    : modelActionIconClass(action)
+}
 </script>
 
 <div class="flex gap-1 items-center justify-end">
+  <span :for="action in actions()" class="contents">
+    <Button
+      variant="ghost"
+      size="sm"
+      iconOnly
+      :disabled="running() !== ''"
+      :ariaLabel="action.label + ': ' + modelName() + ' ' + record().id"
+      :title="action.label"
+      @click="emit('action', { action, record: record() })"
+    >
+      <span aria-hidden="true" :class="iconClass(action)"></span>
+    </Button>
+  </span>
   <Button
     variant="ghost"
     size="sm"
