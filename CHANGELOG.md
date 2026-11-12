@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.547...v0.75.548)
+
+## 🐛 Bug Fixes
+
+- **desktop**: await the refusal before release:desktop exits ([af675b4](https://github.com/stacksjs/stacks/commit/af675b4)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.546...v0.75.547)
 
 ## 🐛 Bug Fixes
