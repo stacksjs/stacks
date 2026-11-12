@@ -24,7 +24,7 @@ import type {
 } from '../types'
 import { createDirectoryListing } from '../types'
 import { createSignedStorageToken } from '../signed-url'
-import { publicUrlFor, resolveStoragePath, signedUrlBase, writeAtomically } from '../filesystem-common'
+import { publicUrlFor, resolveStoragePath, signedUrlBase, writeAtomically, writeStreamToFile } from '../filesystem-common'
 
 export class BunStorageAdapter implements StorageAdapter {
   private root: string
@@ -64,7 +64,7 @@ export class BunStorageAdapter implements StorageAdapter {
       if (typeof contents === 'string' || contents instanceof Uint8Array)
         await bunWrite(temporary, contents)
       else
-        await bunWrite(temporary, new Response(contents as ReadableStream<Uint8Array>))
+        await writeStreamToFile(temporary, contents as ReadableStream<Uint8Array>)
     })
 
     // Read back size + mtime via Bun.file — same shape as the local
@@ -101,14 +101,12 @@ export class BunStorageAdapter implements StorageAdapter {
   }
 
   /**
-   * Pipe a web stream to disk via `Bun.write` (stacksjs/stacks#1886),
-   * through a temporary file renamed into place, so an upload that fails or
-   * is aborted leaves the previous file whole.
+   * Write a web stream to disk (stacksjs/stacks#1886), through a temporary
+   * file renamed into place, so an upload that fails or is aborted leaves the
+   * previous file whole.
    *
-   * `options.signal` aborts the copy: the stream is piped through a
-   * pass-through with the signal, so the write sees the abort as a read
-   * error. The signal used to be handed to a listener that did nothing, so
-   * an aborted upload ran to completion.
+   * `options.signal` aborts the copy. The signal used to be handed to a
+   * listener that did nothing, so an aborted upload ran to completion.
    */
   async putStream(path: string, stream: ReadableStream<Uint8Array>, options?: PutStreamOptions): Promise<PutResult> {
     const fullPath = this.resolvePath(path)
@@ -116,10 +114,7 @@ export class BunStorageAdapter implements StorageAdapter {
     signal?.throwIfAborted()
 
     await writeAtomically(fullPath, async (temporary) => {
-      const source = signal
-        ? stream.pipeThrough(new TransformStream<Uint8Array, Uint8Array>(), { signal })
-        : stream
-      await bunWrite(temporary, new Response(source))
+      await writeStreamToFile(temporary, stream, signal)
     })
 
     const written = file(fullPath)

@@ -1,11 +1,10 @@
 import { localDirectoryPage } from '../directory-page'
 import type { DirectoryPage, DirectoryPageOptions } from '../types'
 import { Buffer } from 'node:buffer'
-import { createReadStream, createWriteStream } from 'node:fs'
+import { createReadStream } from 'node:fs'
 import { access, chmod, constants, copyFile, lstat, mkdir, readdir, readFile, rename, rm, stat, unlink, writeFile } from 'node:fs/promises'
 import { basename, dirname, join, relative } from 'node:path'
 import { Readable } from 'node:stream'
-import { pipeline } from 'node:stream/promises'
 import type {
   ChecksumOptions,
   DirectoryEntry,
@@ -26,7 +25,7 @@ import type {
 } from '../types'
 import { createDirectoryListing } from '../types'
 import { createSignedStorageToken } from '../signed-url'
-import { publicUrlFor, resolveStoragePath, signedUrlBase, writeAtomically } from '../filesystem-common'
+import { publicUrlFor, resolveStoragePath, signedUrlBase, writeAtomically, writeStreamToFile } from '../filesystem-common'
 
 /**
  * Local filesystem storage adapter using Node.js fs APIs
@@ -59,8 +58,7 @@ export class LocalStorageAdapter implements StorageAdapter {
       }
       else {
         // ReadableStream
-        const nodeReadable = Readable.fromWeb(contents as unknown as Parameters<typeof Readable.fromWeb>[0])
-        await pipeline(nodeReadable, createWriteStream(temporary))
+        await writeStreamToFile(temporary, contents as ReadableStream<Uint8Array>)
       }
     })
 
@@ -101,13 +99,10 @@ export class LocalStorageAdapter implements StorageAdapter {
   }
 
   /**
-   * Pipe a web stream into a file on disk
-   * (stacksjs/stacks#1886). Uses `Readable.fromWeb` to bridge
-   * back into Node's stream pipeline so backpressure flows
-   * correctly — the file write paces with the source.
+   * Write a web stream into a file on disk (stacksjs/stacks#1886),
+   * a chunk at a time, so the file write paces with the source.
    *
-   * Cancels via `options.signal` propagate to both the read and
-   * write sides. The stream lands in a temporary file renamed into
+   * `options.signal` aborts the copy. The stream lands in a temporary file renamed into
    * place on success (see `writeAtomically`), so an aborted upload
    * leaves whatever was at `path` before untouched.
    */
@@ -115,8 +110,7 @@ export class LocalStorageAdapter implements StorageAdapter {
     const fullPath = this.resolvePath(path)
 
     await writeAtomically(fullPath, async (temporary) => {
-      const nodeReadable = Readable.fromWeb(stream as unknown as Parameters<typeof Readable.fromWeb>[0])
-      await pipeline(nodeReadable, createWriteStream(temporary), { signal: options?.signal })
+      await writeStreamToFile(temporary, stream, options?.signal)
     })
 
     const st = await stat(fullPath)

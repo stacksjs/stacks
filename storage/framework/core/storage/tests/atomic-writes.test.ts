@@ -6,20 +6,27 @@
  * left the old contents gone and the new ones partial, and `putStream` then
  * deleted the partial file to tidy up - so a failed re-upload removed the
  * file. Writes now go through a temporary file renamed into place.
+ *
+ * Both filesystem adapters are held to it. The Bun adapter wrote a stream with
+ * `Bun.write(path, new Response(stream))`, which never resolves on Bun 1.3, and
+ * nothing here ran against it; `stream-writes-min-bun.test.ts` runs this file
+ * under that Bun.
  */
 
 import { mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
+import { BunStorageAdapter } from '../src/adapters/bun'
 import { LocalStorageAdapter } from '../src/adapters/local'
 
 let root: string
-let disk: LocalStorageAdapter
+let disk: LocalStorageAdapter | BunStorageAdapter
+
+const ADAPTERS = [['local', LocalStorageAdapter], ['bun', BunStorageAdapter]] as const
 
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'stacks-atomic-'))
-  disk = new LocalStorageAdapter({ root })
 })
 
 afterEach(() => {
@@ -58,7 +65,11 @@ function stallingStream(chunk: string): ReadableStream<Uint8Array> {
 
 const leftovers = (): string[] => readdirSync(root).filter(name => name.endsWith('.tmp'))
 
-describe('the local adapter', () => {
+describe.each(ADAPTERS)('the %s adapter', (_name, Adapter) => {
+  beforeEach(() => {
+    disk = new Adapter({ root })
+  })
+
   test('a putStream that fails keeps the file it was replacing', async () => {
     writeFileSync(join(root, 'avatar.png'), 'the original')
 
@@ -115,5 +126,24 @@ describe('the local adapter', () => {
     expect(readFileSync(join(root, 'a/b/stream.txt'), 'utf8')).toBe('streamed')
     expect(readFileSync(join(root, 'a/text.txt'), 'utf8')).toBe('text')
     expect([...readFileSync(join(root, 'a/bytes.bin'))]).toEqual([1, 2, 3])
+  })
+
+  test('a stream far larger than any buffer lands whole', async () => {
+    const chunk = new Uint8Array(64 * 1024).fill(0x41)
+    let left = 1024 // 64 MB
+    const stream = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        if (left-- > 0)
+          controller.enqueue(chunk)
+        else
+          controller.close()
+      },
+    })
+
+    const result = await disk.putStream('big.bin', stream)
+
+    expect(result.size).toBe(64 * 1024 * 1024)
+    expect(statSync(join(root, 'big.bin')).size).toBe(64 * 1024 * 1024)
+    expect(leftovers()).toEqual([])
   })
 })
