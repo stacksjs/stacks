@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.551...v0.75.552)
+
+## 🐛 Bug Fixes
+
+- **storage**: detect directory aliases before replacement ([81655d7](https://github.com/stacksjs/stacks/commit/81655d7)) _(by Chris)_ ([#3264](https://github.com/stacksjs/stacks/issues/3264))
+- **storage**: preserve overwritten entries on rename failure ([4da08cd](https://github.com/stacksjs/stacks/commit/4da08cd)) _(by Chris)_ ([#3264](https://github.com/stacksjs/stacks/issues/3264))
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.550...v0.75.551)
 
 ## 🐛 Bug Fixes
