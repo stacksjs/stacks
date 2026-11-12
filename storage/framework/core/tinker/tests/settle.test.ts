@@ -120,9 +120,20 @@ describe('settling leaves promise-handling code alone', () => {
   })
 
   test('the arguments of Promise.all and its siblings stay promises, so they still run together', async () => {
-    const started = performance.now()
-    expect(await run('const both = Promise.all([later("a", 40), later("b", 40)])\nboth')).toEqual(['a', 'b'])
-    expect(performance.now() - started).toBeLessThan(75)
+    // Told by order, not by the clock: both have started before either ends.
+    const log: string[] = []
+    scope.tracked = (name: string): Promise<string> => {
+      log.push(`start ${name}`)
+      return later(name, 5).then((value) => {
+        log.push(`end ${name}`)
+        return value
+      })
+    }
+    expect(await run('const both = Promise.all([tracked("a"), tracked("b")])\nboth')).toEqual(['a', 'b'])
+    expect(log).toEqual(['start a', 'start b', 'end a', 'end b'])
+    log.length = 0
+    expect(await run('const each = [tracked("a"), tracked("b")]\neach')).toEqual(['a', 'b'])
+    expect(log).toEqual(['start a', 'end a', 'start b', 'end b'])
     expect(await run('const outcome = Promise.allSettled([later(1).then(() => { throw new Error("x") })])\noutcome[0].status')).toBe('rejected')
     expect(marked('Promise.race([slow(), fast()])')).toBe(';«Promise.race([slow(), fast()])»')
   })
