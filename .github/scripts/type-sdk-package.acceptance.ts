@@ -162,6 +162,7 @@ const safeSchedule: false = null as unknown as IsAny<typeof timed>;`,
 ]
 const cohortOwners = [...new Map([
   ...fixtures,
+  ...fixtures.flatMap(fixture => (fixture.additional ?? []).map(name => ({ directory: name.slice('@stacksjs/'.length), name }))),
   ...['error-handling', 'config', 'router', 'cron', 'cloud', 'validation', 'testing'].map(directory => ({ directory, name: `@stacksjs/${directory}` })),
 ].map(owner => [owner.directory, owner])).values()]
 
