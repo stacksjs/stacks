@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.548...v0.75.549)
+
+## 🐛 Bug Fixes
+
+- **types**: model required integration peers and retry counts ([5471114](https://github.com/stacksjs/stacks/commit/5471114)) _(by Chris)_
+- **packages**: own SDK dependencies and verify installed contracts ([79e2e9e](https://github.com/stacksjs/stacks/commit/79e2e9e)) _(by Chris)_
+
+## 🔧 Chores
+
+- **deps**: adopt qualified dtsx and refresh provider locks ([64661b6](https://github.com/stacksjs/stacks/commit/64661b6)) _(by Chris)_ ([#3248](https://github.com/stacksjs/stacks/issues/3248))
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.547...v0.75.548)
 
 ## 🐛 Bug Fixes
