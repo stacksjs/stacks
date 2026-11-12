@@ -13,7 +13,9 @@ before any build starts.
 
 `dependencyLayers(packages)` supplies the same stable ordering to framework
 publication. Dependencies outside the selected set are resolved normally. Peer
-dependencies do not order builds because optional integrations can form cycles.
+dependencies describe host integrations and do not order builds. A peer used by
+public declarations must remain required and pass the installed SDK checks;
+type-only integrations can refer back to their host without a runtime build cycle.
 
 `buddy build:core` preserves the application's feature selection. The release
 workflow uses `.github/scripts/build-framework.ts` to select every buildable

@@ -1,5 +1,4 @@
 import type { DeepPartial } from './utils'
-import type { IntRange } from '@stacksjs/cron/types'
 
 export type Job = JobOptions
 export type Jobs = Job[]
@@ -111,9 +110,10 @@ export interface JobOptions<T = unknown> {
    */
   timezone?: string
   /**
-   * Number of retry attempts. Must be between 0 and 185
+   * Number of retry attempts. The worker uses positive integer counts.
+   * An omitted count follows the queue's default.
    */
-  tries?: IntRange<0, 185>
+  tries?: number
   /**
    * Simple backoff configuration using delay values
    * Can be a single number for fixed delay,

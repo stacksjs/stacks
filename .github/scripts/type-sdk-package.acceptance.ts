@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { expect, test } from 'bun:test'
 import { publicationEnvironment } from '../../storage/framework/core/actions/tests/helpers/publication-environment'
+import { frameworkBuildTargets } from './build-framework'
 
 // Build types/payments/orm explicitly before running this installed boundary.
 // This gate packs their real artifacts, or uses supplied publication archives.
@@ -13,7 +14,7 @@ const compilerOptions = { target: 'ESNext', module: 'ESNext', moduleResolution: 
 const hash = (bytes: Uint8Array): string => createHash('sha256').update(bytes).digest('hex')
 
 interface Candidate {
-  manifest: { name: string, version: string }
+  manifest: { name: string, version: string, dependencies?: Record<string, string>, peerDependencies?: Record<string, string> }
   bytes: Uint8Array<ArrayBuffer>
   files: Map<string, File>
 }
@@ -138,16 +139,19 @@ const response = cdp.evaluate<number>('1 + 1');
 const numeric: Promise<number> = response;
 const routeMethod: Route['method'] = 'GET';
 const job: JobOptions = { tries: 3 };
+const manyRetries: JobOptions = { tries: 999 };
 const timed = schedule.everyMinute();
 const safeRow: false = null as unknown as IsAny<typeof row.title>;
 const safeResponse: false = null as unknown as IsAny<Awaited<typeof response>>;
 const safeSchema: false = null as unknown as IsAny<typeof schema>;
+const safeRetryCount: false = null as unknown as IsAny<NonNullable<JobOptions['tries']>>;
 const safeSchedule: false = null as unknown as IsAny<typeof timed>;`,
     negatives: [
       { code: 2322, text: "const row = await Widget.create({ title: 'SDK' }); const wrong: number = row.title" },
       { code: 2345, text: 'cdp.evaluate<number>(42)' },
       { code: 2322, text: "const method: Route['method'] = 'not-an-http-method'" },
-      { code: 2322, text: 'const job: JobOptions = { tries: 999 }' },
+      { code: 2322, text: "const job: JobOptions = { tries: 'many' }" },
+      { code: 2322, text: 'const job: JobOptions = { tries: [1, 3] }' },
       { code: 2339, text: 'schedule.everyMinute().notAScheduleMethod()' },
     ],
   },
@@ -204,9 +208,13 @@ for (const fixture of fixtures) {
         const declaration = await readFile(join(source, 'dist', fixture.declaration))
         receipt.declarationSHA256 = hash(declaration)
         const cohort: Array<Record<string, unknown>> = []
-        for (const owner of cohortOwners) {
-          const candidateArchive = join(directory, `${owner.directory}.tgz`)
-          const packed = await run(`pack-${owner.directory}`, [process.execPath, '--no-env-file', 'pm', 'pack', '--filename', candidateArchive], join(checkout, 'storage/framework/core', owner.directory))
+        // Exact workspace dependencies are not public yet during publication.
+        // Serve the same full source cohort that the release builder selects,
+        // including providers outside the ten SDKs under direct inspection.
+        for (const [index, ownerDirectory] of (await frameworkBuildTargets(checkout)).entries()) {
+          const owner = JSON.parse(await readFile(join(ownerDirectory, 'package.json'), 'utf8')) as { name: string }
+          const candidateArchive = join(directory, `cohort-${index}.tgz`)
+          const packed = await run(`pack-cohort-${index}`, [process.execPath, '--no-env-file', 'pm', 'pack', '--filename', candidateArchive], ownerDirectory)
           expect(packed.code, packed.output).toBe(0)
           const bytes = new Uint8Array(await readFile(candidateArchive))
           const files = await new Bun.Archive(bytes).files()
@@ -217,6 +225,14 @@ for (const fixture of fixtures) {
           candidates.push({ manifest, bytes, files })
           cohort.push({ name: manifest.name, version: manifest.version, archive: candidateArchive, sha256: hash(bytes) })
           if (owner.name === fixture.name) await copyFile(candidateArchive, archive)
+        }
+        for (const candidate of candidates) {
+          for (const [name, version] of Object.entries({ ...candidate.manifest.dependencies, ...candidate.manifest.peerDependencies })) {
+            if (name.startsWith('@stacksjs/') && version === candidate.manifest.version) {
+              expect(candidates.some(provider => provider.manifest.name === name && provider.manifest.version === version),
+              `Prepublication provider must supply ${name}@${version}, required by ${candidate.manifest.name}`).toBe(true)
+            }
+          }
         }
         const requests: Array<Record<string, unknown>> = []
         registry = candidateRegistry(candidates, requests)
@@ -256,6 +272,14 @@ for (const fixture of fixtures) {
         for (const candidate of candidates) {
           const manifests = new Bun.Glob(`node_modules/**/${candidate.manifest.name}/package.json`)
           for await (const manifestPath of manifests.scan({ cwd: consumer, onlyFiles: true, dot: true, followSymlinks: false })) {
+            // An unscoped name also matches the tail of a scoped package
+            // (`stacks` matched `@loghq/stacks`). Preserve package boundaries.
+            const normalized = manifestPath.replaceAll('\\', '/')
+            const suffix = `node_modules/${candidate.manifest.name}/package.json`
+            if (normalized !== suffix && !normalized.endsWith(`/${suffix}`)) continue
+            const identity = JSON.parse(await readFile(join(consumer, manifestPath), 'utf8')) as { name: string, version: string }
+            expect(identity.name).toBe(candidate.manifest.name)
+            expect(identity.version).toBe(candidate.manifest.version)
             const root = dirname(join(consumer, manifestPath))
             const inventory = await Array.fromAsync(new Bun.Glob('**/*').scan({ cwd: root, onlyFiles: true, dot: true, followSymlinks: false }))
             // Bun adds its own tag and may nest dependency installations. Check

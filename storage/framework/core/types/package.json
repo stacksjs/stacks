@@ -69,9 +69,6 @@
     "@stacksjs/stx": "^0.2.853",
     "@stacksjs/ts-validation": "^0.5.7",
     "bun-query-builder": "^0.3.44",
-    "@stacksjs/actions": "workspace:*",
-    "@stacksjs/cron": "workspace:*",
-    "@stacksjs/scheduler": "workspace:*",
     "meilisearch": "^0.62.0",
     "stripe": "23.0.0"
   },
@@ -100,5 +97,9 @@
         "default": "./dist/*"
       }
     }
+  },
+  "peerDependencies": {
+    "@stacksjs/actions": "workspace:*",
+    "@stacksjs/scheduler": "workspace:*"
   }
 }
