@@ -799,6 +799,78 @@ not "Team ID"). The list endpoint returns the names with the rows
 (`relationNames`), one lookup per related model per page, and a record's page
 uses the same ones.
 
+### A model says how a field is called, shown and asked for
+
+An attribute says what a field is. It cannot say that `amount` is money and
+`sizeBytes` is a size (both are numbers), or that `created_at` is called
+"Joined" here. `dashboard.fields` is where the model says so, one field at a
+time; everything it leaves out stays derived.
+
+```ts
+dashboard: {
+  fields: {
+    createdAt: { label: 'Joined' },
+    amount: { format: 'money', currencyField: 'currency' },
+    sizeBytes: { label: 'Size', format: 'bytes' },
+    duration: { format: 'duration', unit: 's' },
+    notes: { input: 'longtext', help: 'Shown to the customer on their receipt.' },
+  },
+}
+```
+
+A name is an attribute (`createdAt`), its column (`created_at`), or a
+`belongsTo` (`team` for `team_id`), as in `dashboard.columns`.
+
+- `label` is what the field is called on every page that names it: the
+  list's heading, the record's label, the form's input, a panel's column and
+  the messages about it ("Order number is required."). One function,
+  `modelColumnLabel`, resolves it, so the pages cannot disagree. Left out, it
+  is the record a relation points at ("Team"), else the name in words, with a
+  moment read as what happened: "Created", "Email Verified", "Last Updated".
+- `format` is how the stored value reads in a list, on the record's page and
+  in a panel:
+
+  | Format | Stored | Reads as |
+  |---|---|---|
+  | `money` | minor units, in `currency` or the row's `currencyField` | `$12.00` |
+  | `number` | a number | `12,500` |
+  | `percent` | the share, 0 to 100 | `42.5%` |
+  | `bytes` | a byte count | `1.5 KB` |
+  | `duration` | milliseconds, or seconds with `unit: 's'` | `1 min 23 s` |
+  | `date`, `datetime` | a day, or a moment | in the viewer's locale and zone |
+  | `badge` | a status-like word | a pill |
+  | `link` | a web or mail address | a link in a new tab |
+  | `image` | a web address or a path on the site | a thumbnail |
+  | `code` | an identifier, a token, SQL | a code font |
+  | `text` | anything | as stored, undressed |
+
+  Amounts line up on the right. A value the format cannot read is shown as
+  stored, and a `link` or `image` only ever leads to an `http(s)` or mail
+  address, or a path on the site.
+- `help` is a sentence under the field's input in the create and edit forms.
+- `input` picks the text input a field of text gets: `text`, `longtext`,
+  `email`, `url`. Only for text: what a value is stays the validation rule's
+  to say, so a number cannot be asked for as prose.
+
+It changes how a field reads, never what may be read or written: a `hidden`
+attribute stays hidden, and a field that is not `fillable` stays out of the
+forms. A setting that cannot be read is dropped on its own (a misspelled
+format does not cost the field its heading) and logged once by name
+(`[dashboard] Order dashboard.fields: 'total' asks for a format the dashboard
+does not have: 'cash'...`).
+
+Formatting happens in the browser (`functions/dashboard-model-format.ts`),
+since it follows the viewer's locale and time zone; the list endpoint sends
+each column's `label` and `format` in `columnMeta`.
+
+The shipped models whose stored unit is certain describe theirs: request and
+query durations, a deployment's duration (seconds) and address, an
+attachment's size, a user's avatar. `tests/unit/dashboard-model-field-overrides.test.ts`
+checks that every shipped entry names a real field.
+
+Not offered yet: a rich text input, a file upload input (neither exists as a
+component), and wording for single enum values.
+
 ### A record's page lists who points at it
 
 For each `hasMany` and `hasOne` a model declares, its record page shows a

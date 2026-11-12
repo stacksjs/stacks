@@ -110,5 +110,10 @@ export default defineModel({
 
   dashboard: {
     columns: ['path', 'card', 'mimeType', 'sizeBytes', 'createdAt'],
+    // A count of bytes reads as a size: "1.5 MB".
+    fields: {
+      sizeBytes: { label: 'Size', format: 'bytes' },
+      mimeType: { label: 'Type' },
+    },
   },
 } as const)

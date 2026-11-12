@@ -147,5 +147,9 @@ export default defineModel({
 
   dashboard: {
     columns: ['method', 'path', 'statusCode', 'durationMs', 'ipAddress', 'createdAt'],
+    // Stored in milliseconds: "634 ms", "1.2 s".
+    fields: {
+      durationMs: { label: 'Duration', format: 'duration' },
+    },
   },
 } as const)

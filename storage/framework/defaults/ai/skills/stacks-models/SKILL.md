@@ -142,6 +142,14 @@ API offers neither, and `store` for it means an emailed invitation, since no
 form can supply a password. It opens nothing on the generated API. See
 `stacks-dashboard`.
 
+`dashboard: { fields: { amount: { label: 'Total', format: 'money' } } }` says
+how one field is called, shown and asked for where the attribute cannot: a
+`label`, a `format` (`money`, `number`, `percent`, `bytes`, `duration`, `date`,
+`datetime`, `badge`, `link`, `image`, `code`, `text`), `help` under its input,
+and for a field of text the `input` it gets (`text`, `longtext`, `email`,
+`url`). It changes how a field reads, never what may be read or written. See
+`stacks-dashboard`.
+
 `dashboard: { actions: [{ name: 'ship', action: 'Actions/Orders/ShipOrderAction' }] }`
 names what an operator can do to a record beyond editing it: each entry is a
 button that runs an action of the app's on that record, with an optional
