@@ -402,3 +402,42 @@ describe('completeStream()', () => {
     expect(seen[0]).toBe(' jumps')
   })
 })
+
+describe('code completion', () => {
+  test('keeps what prose would cut: quotes, full stops, and following lines', () => {
+    expect(postProcessCompletion('<completion>ter(user => user.active)</completion>', { before: 'const active = users.fil', kind: 'code' }))
+      .toBe('ter(user => user.active)')
+    // A quoted string is syntax, not the model quoting its answer.
+    expect(postProcessCompletion('<completion>\'admin\'</completion>', { before: 'const role = ', kind: 'code' })).toBe('\'admin\'')
+    // A full stop is a member access, not the end of a sentence.
+    expect(postProcessCompletion('<completion>user.posts.filter(post => post.published).length</completion>', { before: 'return ', kind: 'code' }))
+      .toBe('user.posts.filter(post => post.published).length')
+    expect(postProcessCompletion('<completion>\n  total += item.price\n}</completion>', { before: 'for (const item of items) {', kind: 'code' }))
+      .toBe('\n  total += item.price\n}')
+  })
+
+  test('still strips an echo, a fence and what follows the cursor', () => {
+    expect(postProcessCompletion('```ts\nconst n = items.length\n```', { before: 'const n = ', kind: 'code' })).toBe('items.length')
+    expect(postProcessCompletion('<completion>user.isAdmin) {</completion>', { before: 'if (', after: ') {\n  go()\n}', kind: 'code' })).toBe('user.isAdmin')
+    expect(postProcessCompletion('Sure, here is the code', { before: 'const x = ', kind: 'code' })).toBe('')
+  })
+
+  test('is bounded: a dozen lines, and a half-written last line is dropped when tokens ran out', () => {
+    const many = Array.from({ length: 30 }, (_, index) => `line${index}()`).join('\n')
+    expect(postProcessCompletion(`<completion>${many}</completion>`, { before: 'run()\n', kind: 'code', maxTokens: 256 }).split('\n').length).toBe(12)
+    // After a finished line the continuation starts on it, not a blank line down.
+    expect(postProcessCompletion('<completion>\n\nnext()</completion>', { before: 'run()\n', kind: 'code' })).toBe('next()')
+    expect(postProcessCompletion('<completion>first()\nsecond(', { before: 'x\n', kind: 'code', truncated: true })).toBe('first()')
+    expect(postProcessCompletion('<completion>first()\nsecond(', { before: 'x\n', kind: 'code', truncated: true, final: false })).toBe('first()\nsecond(')
+  })
+
+  test('complete() sends the code instruction and a larger budget', async () => {
+    const { calls, generate } = fake('<completion>sum + item.price, 0)</completion>')
+    const result = await complete({ before: 'const total = items.reduce((sum, item) => ', kind: 'code', context: 'Models: Item(price)' }, { config, generate })
+    expect(result).toEqual({ completion: 'sum + item.price, 0)' })
+    expect(calls[0]!.options.system).toContain('autocomplete engine of a code editor')
+    expect(calls[0]!.options.system).toContain('Do not invent an API')
+    expect(calls[0]!.options.maxTokens).toBe(128)
+    expect(String(calls[0]!.messages[0]!.content)).toContain('Context: Models: Item(price)')
+  })
+})

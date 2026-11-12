@@ -357,7 +357,7 @@ import { complete, completeStream } from '@stacksjs/ai'
 const { completion } = await complete({
   before: 'Remember to buy milk, eggs and ', // the last 2000 chars are sent
   after: '',                                 // the first 500 chars are sent
-  kind: 'todo',                              // 'note' | 'prompt' | 'todo' | 'text'
+  kind: 'todo',                              // 'note' | 'prompt' | 'todo' | 'text' | 'code'
   context: 'Groceries',                      // note title, library description
   maxTokens: 48,                             // default 48
   signal: controller.signal,                 // abort: rejects with an AbortError
@@ -376,6 +376,12 @@ for await (const { completion } of completeStream({ before })) paint(completion)
   OpenAI and Ollama it is the driver's configured model. Bedrock Claude needs the
   account's Anthropic use-case form submitted, otherwise list a Nova model in
   `ai.models` (or set `ai.completion.model`) and completions use that.
+- `kind: 'code'` is its own mode, not a wording change. The instruction is for
+  code (continue the statement, close only what the code after the cursor does
+  not, use no name that is not in the code or the context), the budget is 128
+  tokens, and the cleanup keeps what prose cleanup removes: quotes, full stops,
+  a leading newline with its indentation, and up to twelve lines. Pass what the
+  model cannot see as `context`, such as model and column names.
 - A small LRU keyed on the tail of `before` (plus kind, model and the head of
   `after`) makes retyping free; `completionCache.clear()` empties it.
 - Requests carry `maxRetries: 0` and the abort `signal` reaches the HTTP drivers

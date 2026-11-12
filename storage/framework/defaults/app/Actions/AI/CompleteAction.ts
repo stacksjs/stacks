@@ -12,7 +12,7 @@ import { COMPLETE_RATE_PER_MINUTE, handleCompleteRequest } from './complete-requ
 /**
  * `POST /ai/complete`: the ghost text behind an editor's Tab-to-accept.
  *
- * Body `{ before, after?, kind?: 'note' | 'prompt' | 'todo' | 'text', context? }`,
+ * Body `{ before, after?, kind?: 'note' | 'prompt' | 'todo' | 'text' | 'code', context? }`,
  * answer `{ completion }`. `''` means "no suggestion", including when the app
  * has no AI driver configured; a provider failure is a 502.
  *

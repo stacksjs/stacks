@@ -17,7 +17,7 @@ export const COMPLETE_MAX_CONTEXT = 2_000
 /** Suggestions per user per minute. The client debounces; this is the backstop. */
 export const COMPLETE_RATE_PER_MINUTE = 90
 
-const KINDS: readonly CompletionKind[] = ['note', 'prompt', 'todo', 'text']
+const KINDS: readonly CompletionKind[] = ['note', 'prompt', 'todo', 'text', 'code']
 
 export interface CompleteRequestBody {
   before?: unknown
