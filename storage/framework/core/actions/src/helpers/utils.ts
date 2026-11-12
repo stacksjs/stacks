@@ -360,7 +360,7 @@ export async function runActions(
 export async function runActionSequence(
   actions: Action[],
   options: ActionOptions | undefined,
-  runner: typeof runAction = runAction,
+  runner: typeof runAction | ((action: Action, options?: ActionOptions) => Promise<Result<void, CommandError>>) = runAction,
 ): Promise<any> {
   let result: any
 

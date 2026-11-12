@@ -6091,7 +6091,7 @@ Upgrade the Stacks framework to the latest version
 | `-V`, `--version` | Install a specific version (e.g., 0.70.23) | value, required | - |
 | `--canary` | Upgrade to the latest canary (bleeding-edge `main`) build | boolean, optional | `false` |
 | `--stable` | Switch to the latest vetted stable release | boolean, optional | `false` |
-| `--dry-run` | Preview the upgrade (which dependencies would change) without writing or installing | boolean, optional | `false` |
+| `--dry-run` | Preview the selected upgrades without writing, installing, or compiling | boolean, optional | `false` |
 | `--allow-downgrade` | Accept a release that moves a dependency this app declares to an older version (refused by default) | boolean, optional | `false` |
 | `-f`, `--force` | Force re-download, bypassing cache and version checks | boolean, optional | `false` |
 | `--from` | Sync from a local stacks checkout (e.g. ~/Code/stacks). Skips GitHub. | value, required | - |
@@ -6114,7 +6114,7 @@ buddy upgrade --force
 
 ### `upgrade:all`
 
-Upgrade framework, dependencies, Bun, and binary
+Upgrade framework, dependencies, Bun, shell integration, and binary
 
 - Usage: `$ buddy upgrade:all`
 - Namespace: `upgrade`
@@ -6123,6 +6123,8 @@ Upgrade framework, dependencies, Bun, and binary
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
+| `--from` | Sync from a local stacks checkout (e.g. ~/Code/stacks). Skips GitHub. | value, required | - |
+| `--dry-run` | Preview the selected upgrades without writing, installing, or compiling | boolean, optional | `false` |
 | `--canary` | Upgrade to the latest canary (bleeding-edge `main`) build | boolean, optional | `false` |
 | `-f`, `--force` | Force re-download, bypassing cache and version checks | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
@@ -6145,6 +6147,7 @@ Upgrade the `stacks` binary to the latest version
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
+| `--dry-run` | Preview the selected upgrades without writing, installing, or compiling | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 Examples:
@@ -6164,6 +6167,7 @@ Upgrade Bun to the latest version
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
+| `--dry-run` | Preview the selected upgrades without writing, installing, or compiling | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 Examples:
@@ -6183,6 +6187,7 @@ Upgrade your dependencies (pantry.yaml & package.json)
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
+| `--dry-run` | Preview the selected upgrades without writing, installing, or compiling | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
@@ -6203,6 +6208,7 @@ Upgrade the shell integration (currently only supports Oh My Zsh)
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
+| `--dry-run` | Preview the selected upgrades without writing, installing, or compiling | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 Examples:

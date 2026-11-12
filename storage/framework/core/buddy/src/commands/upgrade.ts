@@ -1,11 +1,7 @@
 import type { CLI, UpgradeOptions } from '@stacksjs/types'
-import { existsSync } from 'node:fs'
 import process from 'node:process'
-import { runAction } from '@stacksjs/actions'
-import { upgradeStacksPackages } from '@stacksjs/actions/upgrade/packages'
+import { runUpgrade } from '@stacksjs/actions/upgrade/run'
 import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
-import { Action } from '@stacksjs/enums'
-import { projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { resultFailed } from '../result'
 
@@ -15,7 +11,7 @@ export function upgrade(buddy: CLI): void {
     version: 'Install a specific version (e.g., 0.70.23)',
     canary: 'Upgrade to the latest canary (bleeding-edge `main`) build',
     stable: 'Switch to the latest vetted stable release',
-    dryRun: 'Preview the upgrade (which dependencies would change) without writing or installing',
+    dryRun: 'Preview the selected upgrades without writing, installing, or compiling',
     allowDowngrade: 'Accept a release that moves a dependency this app declares to an older version (refused by default)',
     force: 'Force re-download, bypassing cache and version checks',
     from: 'Sync from a local stacks checkout (e.g. ~/Code/stacks). Skips GitHub.',
@@ -26,7 +22,7 @@ export function upgrade(buddy: CLI): void {
     shell: 'Upgrade the shell integration (currently only supports Oh My Zsh)',
     binary: 'Upgrade the `stacks` binary to the latest version',
     project: 'Target a specific project',
-    all: 'Upgrade framework, dependencies, Bun, and binary',
+    all: 'Upgrade framework, dependencies, Bun, shell integration, and binary',
   }
 
   // Main command: `buddy upgrade` upgrades the framework by default
@@ -71,13 +67,7 @@ export function upgrade(buddy: CLI): void {
       }
 
       const perf = await intro('buddy upgrade')
-      // The compiled CLI must bootstrap package upgrades with its own code.
-      // runAction intentionally prefers project files, which may still be an
-      // older upgrader that cannot run the target release's migrations.
-      if (!existsSync(projectPath('storage/framework/core')))
-        await upgradeStacksPackages(projectPath(), opts)
-
-      const result = await runAction(Action.UpgradeFramework, opts)
+      const result = await runUpgrade({ ...opts, framework: true })
 
       if (resultFailed(result)) {
         await outro(
@@ -88,13 +78,15 @@ export function upgrade(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      await outro('Upgrade complete.', { startTime: perf, useSeconds: true })
+      await outro(options.dryRun ? 'Upgrade preview complete.' : 'Upgrade complete.', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 
-  // Upgrade everything: framework + deps + bun + binary
+  // Upgrade everything in the shared dispatcher's documented order.
   buddy
     .command('upgrade:all', descriptions.all)
+    .option('--from <path>', descriptions.from)
+    .option('--dry-run', descriptions.dryRun, { default: false })
     .option('--canary', descriptions.canary, { default: false })
     .option('-f, --force', descriptions.force, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
@@ -107,7 +99,7 @@ export function upgrade(buddy: CLI): void {
 
       // set all flag so the dispatcher runs everything
       options.all = true
-      const result = await runAction(Action.Upgrade, options)
+      const result = await runUpgrade(options)
 
       if (resultFailed(result)) {
         await outro(
@@ -118,12 +110,13 @@ export function upgrade(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      await outro('All upgrades complete.', { startTime: perf, useSeconds: true })
+      await outro(options.dryRun ? 'Upgrade preview complete.' : 'All upgrades complete.', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 
   buddy
     .command('upgrade:dependencies', descriptions.dependencies)
+    .option('--dry-run', descriptions.dryRun, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .alias('upgrade:deps')
@@ -133,7 +126,7 @@ export function upgrade(buddy: CLI): void {
 
       const perf = await intro('buddy upgrade:dependencies')
       options.dependencies = true
-      const result = await runAction(Action.Upgrade, options)
+      const result = await runUpgrade(options)
 
       if (resultFailed(result)) {
         await outro(
@@ -144,19 +137,20 @@ export function upgrade(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      await outro('Dependencies upgraded.', { startTime: perf, useSeconds: true })
+      await outro(options.dryRun ? 'Upgrade preview complete.' : 'Dependencies upgraded.', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 
   buddy
     .command('upgrade:bun', descriptions.bun)
+    .option('--dry-run', descriptions.dryRun, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .example('buddy upgrade:bun')
     .action(async (options: UpgradeOptions) => {
       log.debug('Running `buddy upgrade:bun` ...', options)
 
       const perf = await intro('buddy upgrade:bun')
-      const result = await runAction(Action.UpgradeBun, options)
+      const result = await runUpgrade({ ...options, bun: true })
 
       if (resultFailed(result)) {
         await outro(
@@ -167,19 +161,20 @@ export function upgrade(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      await outro('Bun upgraded.', { startTime: perf, useSeconds: true })
+      await outro(options.dryRun ? 'Upgrade preview complete.' : 'Bun upgraded.', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 
   buddy
     .command('upgrade:shell', descriptions.shell)
+    .option('--dry-run', descriptions.dryRun, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .example('buddy upgrade:shell')
     .action(async (options: UpgradeOptions) => {
       log.debug('Running `buddy upgrade:shell` ...', options)
 
       const perf = await intro('buddy upgrade:shell')
-      const result = await runAction(Action.UpgradeShell, options)
+      const result = await runUpgrade({ ...options, shell: true })
 
       if (resultFailed(result)) {
         await outro(
@@ -190,12 +185,13 @@ export function upgrade(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      await outro('Shell integration upgraded.', { startTime: perf, useSeconds: true })
+      await outro(options.dryRun ? 'Upgrade preview complete.' : 'Shell integration upgraded.', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 
   buddy
     .command('upgrade:binary', descriptions.binary)
+    .option('--dry-run', descriptions.dryRun, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .example('buddy upgrade:binary')
     .action(async (options: UpgradeOptions) => {
@@ -208,7 +204,7 @@ export function upgrade(buddy: CLI): void {
       log.debug('Running `buddy upgrade:binary` ...', options)
 
       const perf = await intro('buddy upgrade:binary')
-      const result = await runAction(Action.UpgradeBinary, options)
+      const result = await runUpgrade({ ...options, binary: true })
 
       if (resultFailed(result)) {
         await outro(
@@ -219,7 +215,7 @@ export function upgrade(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      await outro('Binary upgraded.', { startTime: perf, useSeconds: true })
+      await outro(options.dryRun ? 'Upgrade preview complete.' : 'Binary upgraded.', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 

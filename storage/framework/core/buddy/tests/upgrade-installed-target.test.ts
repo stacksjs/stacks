@@ -39,7 +39,7 @@ buddy.parse()
 
 afterAll(() => rmSync(root, { recursive: true, force: true }))
 
-async function campaign(options: { flags?: string[], exitCode?: number, actionVersion?: string, missingEntry?: boolean, vendoredOverride?: boolean } = {}) {
+async function campaign(options: { flags?: string[], exitCode?: number, actionVersion?: string, missingEntry?: boolean, vendoredOverride?: boolean, all?: boolean, failStage?: string } = {}) {
   const app = mkdtempSync(join(root, 'app-'))
   const archives = new Map<string, Uint8Array>()
   for (const version of [previous, target]) {
@@ -59,9 +59,17 @@ writeFileSync('package.json', JSON.stringify(project))
 unlinkSync('future-scaffold.txt')
 writeFileSync('target-finished', 'complete')
 `
+    const stages = Object.fromEntries(['dependencies', 'bun', 'shell', 'binary'].map(stage => [`package/dist/upgrade/${stage}.js`, `
+import { appendFileSync, existsSync } from 'node:fs'
+if (${version === target} && !existsSync('target-finished')) throw new Error('Tool stage preceded target migration completion')
+appendFileSync('tool-stages.jsonl', JSON.stringify({ stage: ${JSON.stringify(stage)}, version: ${JSON.stringify(version)}, cwd: process.cwd(), argv: process.argv.slice(2) }) + '\\n')
+process.exit(${version === previous ? 74 : options.failStage === stage ? 17 : 0})
+`]))
     archives.set(`@stacksjs/actions@${version}`, await new Bun.Archive({
-      'package/package.json': JSON.stringify({ name: '@stacksjs/actions', version: version === target ? options.actionVersion ?? version : version, exports: { './package.json': './package.json', './upgrade/framework': './dist/upgrade/framework.js' } }),
+      'package/package.json': JSON.stringify({ name: '@stacksjs/actions', version: version === target ? options.actionVersion ?? version : version, exports: { './package.json': './package.json', './upgrade/*': './dist/upgrade/*.js' } }),
       ...(options.missingEntry && version === target ? {} : { 'package/dist/upgrade/framework.js': action }),
+      // Task-owned stand-ins for external package/tool/shell upgrade commands.
+      ...stages,
     }, { compress: 'gzip' }).bytes())
     archives.set(`stacks@${version}`, await new Bun.Archive({
       'package/package.json': JSON.stringify({ name: 'stacks', version, dependencies: { '@stacksjs/actions': version } }),
@@ -111,7 +119,7 @@ writeFileSync('target-finished', 'complete')
     const installed = await run([process.execPath, 'install', '--ignore-scripts'], app, env)
     expect(installed.code, `${installed.stderr}\nRequests: ${JSON.stringify(requests)}`).toBe(0)
     const before = Object.fromEntries(['package.json', 'bun.lock', 'future-scaffold.txt'].map(path => [path, readFileSync(join(app, path), 'utf8')]))
-    const result = await run([binary, 'upgrade', '--version', target, ...options.flags ?? []], app, env)
+    const result = await run([binary, ...options.all ? ['upgrade:all'] : ['upgrade', '--version', target], ...options.flags ?? []], app, env)
     const after = Object.fromEntries(Object.keys(before).map(path => [path, existsSync(join(app, path)) ? readFileSync(join(app, path), 'utf8') : null]))
     return {
       ...result, before, after, requests,
@@ -120,6 +128,7 @@ writeFileSync('target-finished', 'complete')
       finished: existsSync(join(app, 'target-finished')),
       migrations: existsSync(join(app, 'target-migrations.jsonl')) ? readFileSync(join(app, 'target-migrations.jsonl'), 'utf8').trim().split('\n').map(line => JSON.parse(line) as { argv: string[], entry: string }) : [],
       installed: JSON.parse(readFileSync(join(app, 'node_modules/stacks/package.json'), 'utf8')).version,
+      toolStages: existsSync(join(app, 'tool-stages.jsonl')) ? readFileSync(join(app, 'tool-stages.jsonl'), 'utf8').trim().split('\n').map(line => JSON.parse(line) as { stage: string, version: string, cwd: string, argv: string[] }) : [],
     }
   }
   finally { registry.stop(true); rmSync(app, { recursive: true, force: true }) }
@@ -195,4 +204,32 @@ test('no-postinstall updates the manifest without installing or running target m
   expect(result.installed).toBe(previous)
   expect(result.oldRan).toBe(false)
   expect(result.migrations).toHaveLength(0)
+}, 30_000)
+
+test('a compiled upgrade:all completes the fresh target migration before continuing every tool stage', async () => {
+  const result = await campaign({ all: true })
+  expect(result.code, result.stdout + result.stderr).toBe(0)
+  expect(result.oldRan).toBe(false)
+  expect(result.finished).toBe(true)
+  expect(result.migrations).toHaveLength(1)
+  expect(result.toolStages.map(value => value.stage)).toEqual(['dependencies', 'bun', 'shell', 'binary'])
+  expect(result.toolStages.map(value => value.version)).toEqual([target, target, target, target])
+}, 30_000)
+
+test('a failed fresh target migration stops upgrade:all before any tool stage', async () => {
+  const result = await campaign({ all: true, exitCode: 17 })
+  expect(result.code, result.stdout + result.stderr).toBe(17)
+  expect(result.oldRan).toBe(false)
+  expect(result.migrations).toHaveLength(1)
+  expect(result.toolStages).toEqual([])
+  expect(result.stdout).not.toContain('All upgrades complete.')
+}, 30_000)
+
+test('a real installed tool failure stops upgrade:all without a success message', async () => {
+  const result = await campaign({ all: true, failStage: 'bun' })
+  expect(result.code, result.stdout + result.stderr).not.toBe(0)
+  expect(result.oldRan).toBe(false)
+  expect(result.finished).toBe(true)
+  expect(result.toolStages.map(value => value.stage)).toEqual(['dependencies', 'bun'])
+  expect(result.stdout).not.toContain('All upgrades complete.')
 }, 30_000)

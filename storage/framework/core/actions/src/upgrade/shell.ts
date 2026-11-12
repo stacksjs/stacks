@@ -1,10 +1,18 @@
 import { $ } from 'bun'
 import process from 'node:process'
-import { italic } from '@stacksjs/cli'
+import { italic, parseOptions, print } from '@stacksjs/cli'
+import { Action } from '@stacksjs/enums'
 import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { writeFile } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
+import { upgradeToolPreview } from './tool-preview'
+
+const options = parseOptions()
+if (options.dryRun) {
+  print(upgradeToolPreview(Action.UpgradeShell))
+  process.exit(ExitCode.Success)
+}
 
 const homePath = (await $`echo $HOME`.text()).trim()
 const zshrcPath = p.join(homePath, '.zshrc')

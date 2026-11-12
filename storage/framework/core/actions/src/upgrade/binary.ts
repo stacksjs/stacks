@@ -1,9 +1,17 @@
 import process from 'node:process'
-import { runCommand } from '@stacksjs/cli'
+import { parseOptions, print, runCommand } from '@stacksjs/cli'
+import { Action } from '@stacksjs/enums'
 import { log } from '@stacksjs/logging'
 import { path } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { fs, storage } from '@stacksjs/storage'
+import { upgradeToolPreview } from './tool-preview'
+
+const options = parseOptions()
+if (options.dryRun) {
+  print(upgradeToolPreview(Action.UpgradeBinary))
+  process.exit(ExitCode.Success)
+}
 
 /**
  * Move the `stacks` binary to the user's home directory.

@@ -32,6 +32,7 @@ async function campaign(options: { installed?: string, force?: boolean, archiveV
 const transport = globalThis.fetch
 globalThis.fetch = (input, init) => transport(input.replace('https://registry.npmjs.org', process.env.NPM_CONFIG_REGISTRY), init)
 await import(${JSON.stringify(join(import.meta.dir, '../src/upgrade/framework.ts'))})
+throw new Error('The framework script returned instead of terminating at its package boundary')
 `,
     }, { compress: 'gzip' }).bytes())
   }
@@ -124,6 +125,7 @@ globalThis.fetch = (input, init) => {
 }
 const { upgradeStacksPackages } = await import(${JSON.stringify(upgradeModule)})
 await upgradeStacksPackages(process.cwd(), { version: ${JSON.stringify(target)}, force: ${options.force ?? false} })
+console.log('PACKAGE_UPGRADE_RETURNED')
 `)
     const result = await run([process.execPath, entry], 'upgrade')
     const repeated = options.repeat ? await run([process.execPath, entry], 'repeat') : null
@@ -154,6 +156,7 @@ describe('native package upgrade release selection', () => {
     expect(result.declared.dependencies).toEqual({ stacks: `${'prefix' in options ? options.prefix : '^'}${target}` })
     expect(result.lock.packages.stacks[0]).toBe(`stacks@${target}`)
     expect(result.stdout).toContain(`Upgraded to stacks@${target}`)
+    expect(result.stdout.match(/PACKAGE_UPGRADE_RETURNED/g)).toHaveLength(1)
     expect(result.requests).toContain(`/stacks/-/stacks-${target}.tgz`)
     expect(result.requests.filter(path => path === `/stacks/-/stacks-${target}.tgz`)).toHaveLength(1)
   }, 30_000)

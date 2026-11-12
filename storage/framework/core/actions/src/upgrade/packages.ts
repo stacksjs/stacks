@@ -131,17 +131,17 @@ export function needsFrameworkInstall(projectRoot: string, target: string, runti
   }
 }
 
-async function updateStandalonePackage(projectRoot: string, options: PackageUpgradeOptions): Promise<never> {
+async function updateStandalonePackage(projectRoot: string, options: PackageUpgradeOptions): Promise<void> {
   console.log('\n  Standalone package detected. No Stacks framework source is installed.')
 
   if (options.dryRun) {
     console.log('  --dry-run: would refresh the package dependencies with `bun update`. No files were changed.\n')
-    process.exit(0)
+    return
   }
 
   if (options.noPostinstall) {
     console.log('  --no-postinstall: skipping the dependency refresh. Run `bun update` when ready.\n')
-    process.exit(0)
+    return
   }
 
   console.log('  Refreshing declared dependencies...\n')
@@ -152,7 +152,7 @@ async function updateStandalonePackage(projectRoot: string, options: PackageUpgr
   }
 
   console.log('\n✔ Standalone package dependencies are up to date.\n')
-  process.exit(0)
+  return
 }
 
 /** The plain versions the manifest declares for `names` (direct declarations only). */
@@ -499,9 +499,10 @@ export function applyBumps(pkg: PkgJson, target: string, lockstep: Set<string>):
 /**
  * Upgrade a node_modules app to a published framework version. Called by the
  * framework upgrade script when no vendored `storage/framework/core` exists.
- * Handles resolution, package.json rewrite, and reinstall; then `process.exit`s.
+ * Handles resolution, package.json rewrite, reinstall and target-owned migration.
+ * Returns after success so a native action sequence can continue its next stage.
  */
-export async function upgradeStacksPackages(projectRoot: string, options: PackageUpgradeOptions): Promise<never> {
+export async function upgradeStacksPackages(projectRoot: string, options: PackageUpgradeOptions): Promise<void> {
   const pkgPath = join(projectRoot, 'package.json')
   if (!existsSync(pkgPath)) {
     console.error('No package.json found - nothing to upgrade.')
@@ -632,7 +633,7 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
     reportRouteActions(projectRoot, true)
 
     console.log('  --dry-run: no files were written and nothing was installed.\n')
-    process.exit(0)
+    return
   }
 
   if (changes.length > 0 || projectManifestChanges.length > 0) {
@@ -645,7 +646,7 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
   if (options.noPostinstall) {
     console.log('  --no-postinstall: skipping install. Run this to pull the new versions:')
     console.log(`    ${frameworkPackageUpdateCommand(target)}\n`)
-    process.exit(0)
+    return
   }
 
   // The manifest is written before installation. If that install is
@@ -730,7 +731,10 @@ catch (error) {
         stdout: 'inherit',
         stderr: 'inherit',
       })
-      process.exit(await child.exited)
+      const code = await child.exited
+      if (code !== 0)
+        process.exit(code)
+      return
     }
     catch (error) {
       console.error(`\n✗ ${error instanceof Error ? error.message : String(error)} The installed files are retained; target migrations were not completed.\n`)
@@ -796,7 +800,7 @@ catch (error) {
     console.log('\n✔ Already up to date - dependencies and managed project files match the target.\n')
   else
     console.log(`\n✔ Upgraded to stacks@${target}. Review the changelog: https://github.com/stacksjs/stacks/releases/tag/v${target}\n`)
-  process.exit(0)
+  return
 }
 
 /**
