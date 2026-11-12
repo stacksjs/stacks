@@ -6,13 +6,7 @@ export interface OAuthProtectedResourceOptions {
 }
 
 /** RFC 9728 metadata for the exact protected audience, never the inbound Host. */
-export function oauthProtectedResourceMetadata(options: OAuthProtectedResourceOptions): {
-  resource: string
-  authorization_servers: string[]
-  bearer_methods_supported: string[]
-  scopes_supported?: string[]
-  resource_documentation?: string
-} {
+export function oauthProtectedResourceMetadata(options: OAuthProtectedResourceOptions) {
   for (const value of [options.resource, ...options.authorizationServers, ...(options.documentation ? [options.documentation] : [])]) {
     const url = new URL(value)
     const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)

@@ -420,7 +420,7 @@
       "name": "@stacksjs/build",
       "version": "0.75.559",
       "dependencies": {
-        "@dtsx/bun": "^0.11.52",
+        "@dtsx/bun": "^0.11.54",
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/storage": "workspace:*",
@@ -1433,7 +1433,7 @@
         "very-happy-dom": "^0.4.1",
       },
       "devDependencies": {
-        "@dtsx/dtsx": "^0.11.52",
+        "@dtsx/dtsx": "^0.11.54",
         "better-dx": "^0.2.24",
       },
     },
@@ -1610,9 +1610,9 @@
 
     "@cwcss/crosswind": ["@cwcss/crosswind@0.2.19", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "bunfig": "^0.15.17" }, "bin": { "crosswind": "./dist/cli.js" } }, "sha512-NswUZPNHbdkW4rxvmwjjIM7jyfQ/rr0X1J1uwjTUwixc3BXQs1Fk7pP5cC7MxkGGnmRTFs2O9J+U9tJ36ZJ7fQ=="],
 
-    "@dtsx/bun": ["@dtsx/bun@0.11.53", "", { "dependencies": { "@dtsx/dtsx": "0.11.53" } }, "sha512-Rhyd95oemUEG+0wGSUSPGcnt/rc6bwm38VADGxhPXlipaD9DQ5/CtSc3YWdILbcKsszeLSUrO8ENnFPyHu9Qaw=="],
+    "@dtsx/bun": ["@dtsx/bun@0.11.54", "", { "dependencies": { "@dtsx/dtsx": "0.11.54" } }, "sha512-pMdGrNJLO51WS6wLogEtghqxjh6Q5JDt70kbGMDgEVnpX69gF5pZXf+jWWFZPACO3VtKc/wUWhkLVbm+f2ftuQ=="],
 
-    "@dtsx/dtsx": ["@dtsx/dtsx@0.11.53", "", { "peerDependencies": { "prettier": "^3.10.1" }, "optionalPeers": ["prettier"], "bin": { "dtsx": "./dist/bin/cli.js" } }, "sha512-3wmGSeKRpi24GICfETin7cvxamnyjTOA1qwMBFVLP8GhnbLTgh3WfiQFdbKlPxGcnBDVUCj8Xh5yQbbVJ5PvNg=="],
+    "@dtsx/dtsx": ["@dtsx/dtsx@0.11.54", "", { "peerDependencies": { "prettier": "^3.10.1" }, "optionalPeers": ["prettier"], "bin": { "dtsx": "./dist/bin/cli.js" } }, "sha512-eAOBMAlUYd+LUdA2tHa2jyeBe7RC+vT5fTLmL7RtzaUPbNYM2/sdhGB0y9LeCJkHG63fp9qxTrOyLeEOtBBbAw=="],
 
     "@hono/node-server": ["@hono/node-server@2.1.8", "", { "peerDependencies": { "hono": "^4 || ^5.0.0-0" } }, "sha512-jdf7FHh6A1lzjpHHQUgxsg2GeER2vMetnAOfeActzcoli6jamlK+NAwL6Dsr5Fl3BS3tYUQzCdtZjU8Qxv7bEA=="],
 
