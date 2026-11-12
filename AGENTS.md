@@ -53,7 +53,7 @@ relevant `SKILL.md` before doing non-trivial work in that area rather than guess
 |---|---|
 | `app/` | Your application code (see the override model below): `Actions/`, `Jobs/`, `Listeners/`, `Middleware/`, `Mail/`, `Commands/`, `Models/`, `Skills/`, and top-level `Routes.ts`, `Events.ts`, `Gates.ts`, `Scheduler.ts`, `Middleware.ts`, `Listener.ts` |
 | `routes/` | Route files (`api.ts`, `web`, `v1.ts`, `users.ts`, ...), registered via `app/Routes.ts` |
-| `config/` | ~53 typed config files (`app.ts`, `database.ts`, `auth.ts`, `api` via `services.ts`, `queue.ts`, `cache.ts`, `email.ts`, `commerce.ts`, `cms.ts`, `payment.ts`, `ai.ts`, `cloud.ts`, `ui.ts`, `css.ts`, ...) |
+| `config/` | ~54 typed config files (`app.ts`, `database.ts`, `auth.ts`, `api` via `services.ts`, `queue.ts`, `cache.ts`, `email.ts`, `commerce.ts`, `cms.ts`, `payment.ts`, `ai.ts`, `cloud.ts`, `ui.ts`, `css.ts`, ...) |
 | `database/` | `migrations/`, seeders, and the local SQLite files |
 | `resources/` | stx frontend: `views/`, `components/`, `layouts/`, `partials/` |
 | `storage/framework/` | Framework internals + **defaults** (`defaults/app/` including the 110 built-in `Models/`, `defaults/ai/` with the agent skills, `core/` packages, `server/`, dashboard, and the auto-import manifests); read-only reference, do not edit unless working on the framework. In an app, `defaults/` is a gitignored link to `node_modules/@stacksjs/defaults` (`buddy publish:defaults` commits a copy instead) and `core/` is absent: the framework comes from `node_modules`. Import a default as `@stacksjs/defaults/<path>.ts` (no `.ts` in a `.stx` script) |

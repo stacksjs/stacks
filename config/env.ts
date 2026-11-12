@@ -35,7 +35,27 @@ const envSchema = defineEnv({
     default: '',
   },
 
+  ANALYTICSHQ_URL: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  ANALYTICSHQ_READ_KEY: {
+    validation: schema.string(),
+    default: '',
+  },
+
   LOGHQ_KEY: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  LOGHQ_READ_KEY: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  LOGHQ_PROJECT_ID: {
     validation: schema.string(),
     default: '',
   },
@@ -51,6 +71,16 @@ const envSchema = defineEnv({
   },
 
   BUGHQ_KEY: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  BUGHQ_READ_KEY: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  BUGHQ_PROJECT_ID: {
     validation: schema.string(),
     default: '',
   },
@@ -71,6 +101,36 @@ const envSchema = defineEnv({
   },
 
   BUGHQ_RELEASE: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  STATUSHQ_URL: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  STATUSHQ_KEY: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  STATUSHQ_READ_KEY: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  COMMSHQ_URL: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  COMMSHQ_KEY: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  COMMSHQ_READ_KEY: {
     validation: schema.string(),
     default: '',
   },

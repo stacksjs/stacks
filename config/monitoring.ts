@@ -2,12 +2,17 @@ import type { BugHqMonitoringOptions, MonitoringConfig } from '@stacksjs/types'
 import { createDatabaseErrorReporter } from '@stacksjs/database/error-reporter'
 import { createBugHqReporter } from '@stacksjs/error-handling/bughq'
 import { env, initializeIntegration, REMOTE_TELEMETRY_ENVIRONMENTS } from '@stacksjs/env'
+import hq from './hq'
 
 const bughq = {
-  key: env.BUGHQ_KEY,
+  // The key, the origin and the project id live in config/hq.ts, with every
+  // other HQ service.
+  key: hq.bughq.key,
   dsn: env.BUGHQ_DSN,
-  host: env.BUGHQ_HOST || undefined,
-  project: env.BUGHQ_PROJECT || env.APP_NAME,
+  host: hq.bughq.url,
+  // BugHQ looks this up as a project id and answers "unknown project" for
+  // anything else, so there is no default: a key alone identifies the project.
+  project: env.BUGHQ_PROJECT || hq.bughq.project,
   release: env.BUGHQ_RELEASE || undefined,
   environments: REMOTE_TELEMETRY_ENVIRONMENTS,
 } satisfies BugHqMonitoringOptions
