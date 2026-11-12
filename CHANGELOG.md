@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.542...v0.75.543)
+
+## ✨ Features
+
+- **ai**: complete code, not only prose ([0ff0b0f](https://github.com/stacksjs/stacks/commit/0ff0b0f)) _(by Chris Breuer)_
+- **tinker**: magic comments show a value where it is computed ([b8df09f](https://github.com/stacksjs/stacks/commit/b8df09f)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.541...v0.75.542)
 
 ## ✨ Features
