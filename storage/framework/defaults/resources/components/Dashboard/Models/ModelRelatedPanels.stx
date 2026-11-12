@@ -6,6 +6,7 @@
 // Each panel is the newest few with a count. The eye opens one, "View all"
 // opens that model's list narrowed to this record, and "Add" opens its create
 // form with this record already chosen.
+import { modelFormattedValue } from '../../../../functions/dashboard-model-format'
 import type { ModelRelatedPanel } from '../../../../functions/dashboard-model-record'
 import { modelRecordHref, modelRelatedCreateHref, modelRelatedListHref } from '../../../../functions/dashboard-model-record'
 
@@ -39,18 +40,45 @@ function canAdd(panel: ModelRelatedPanel): boolean {
   return panel.canCreate && (panel.kind === 'many' || panel.total === 0)
 }
 
+/** The formats the shared table draws itself, by the column type it knows them as. */
+const TABLE_TYPES: Record<string, 'badge' | 'currency' | 'date' | 'datetime' | 'number'> = { badge: 'badge', date: 'date', datetime: 'datetime', money: 'currency', number: 'number' }
+
+/** A column whose value this panel words before the table sees it: a size, a duration, a share. */
+function worded(column: ModelRelatedPanel['columns'][number]): boolean {
+  return Boolean(column.format) && !TABLE_TYPES[column.format!.format]
+}
+
 function tableColumns(panel: ModelRelatedPanel) {
-  return panel.columns.map((column, index) => ({
-    key: column.key,
-    label: column.label,
-    type: column.type,
-    align: column.type === 'datetime' ? 'right' : 'left',
-    sortable: false,
-    emptyText: '-',
-    class: index === 0
-      ? 'font-medium text-neutral-900 dark:text-white'
-      : column.type === 'datetime' ? 'text-neutral-500 text-xs whitespace-nowrap dark:text-neutral-400' : 'text-neutral-600 dark:text-neutral-300',
-  }))
+  return panel.columns.map((column, index) => {
+    // The related model's own say on how a value reads comes first.
+    const type = column.format ? TABLE_TYPES[column.format.format] ?? 'text' : column.type
+    const numeric = type === 'currency' || type === 'number' || ['bytes', 'duration', 'percent'].includes(column.format?.format ?? '')
+    return {
+      key: column.key,
+      label: column.label,
+      type,
+      ...(type === 'currency' ? { currency: column.format?.currency, currencyKey: column.format?.currencyColumn } : {}),
+      align: type === 'datetime' || type === 'date' || numeric ? 'right' : 'left',
+      sortable: false,
+      emptyText: '-',
+      class: index === 0
+        ? 'font-medium text-neutral-900 dark:text-white'
+        : type === 'datetime' || type === 'date' ? 'text-neutral-500 text-xs whitespace-nowrap dark:text-neutral-400' : 'text-neutral-600 dark:text-neutral-300',
+    }
+  })
+}
+
+/** The panel's rows, with the values the table cannot word itself already worded. */
+function tableRows(panel: ModelRelatedPanel) {
+  const columns = panel.columns.filter(worded)
+  if (columns.length === 0)
+    return panel.rows
+  return panel.rows.map((row) => {
+    const shown = { ...row }
+    for (const column of columns)
+      shown[column.key] = modelFormattedValue(row[column.key], column.format!, row)?.text ?? ''
+    return shown
+  })
 }
 
 function open(panel: ModelRelatedPanel, payload: { row: Record<string, unknown> }): void {
@@ -86,7 +114,7 @@ function add(panel: ModelRelatedPanel): void {
       <Table
         :if="panel.rows.length > 0"
         :columns="tableColumns(panel)"
-        :data="panel.rows"
+        :data="tableRows(panel)"
         :framed="false"
         :row-actions="viewAction(panel)"
         :action-label-key="panel.columns[0] ? panel.columns[0].key : 'id'"

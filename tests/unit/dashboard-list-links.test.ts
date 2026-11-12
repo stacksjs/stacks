@@ -18,7 +18,9 @@ describe('a model\'s list and its record\'s page', () => {
     const browser = source(`${components}/Models/ModelRecordsDashboard.stx`)
     expect(browser).toContain('return modelRelationCell(column.name, row[column.name], relations(), relationNames())')
     expect(browser).toContain('<StxLink :if="relationHref(row, column)" :to="relationHref(row, column)"')
-    expect(browser).toContain('<span :if="!relationHref(row, column)">{{ cellValue(row, column) }}</span>')
+    // Anything that is not a link to a record is drawn as its format says, words by default.
+    expect(browser).toContain('<span :if="cellKind(row, column) === \'text\'">{{ cellValue(row, column) }}</span>')
+    expect(browser).toContain('if (relationHref(row, column))\n    return \'relation\'')
     expect(browser).toContain('const shown = modelListColumnNames(every.map(column => column.name), data.listColumns, active)')
   })
 

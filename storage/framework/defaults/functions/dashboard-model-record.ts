@@ -13,6 +13,8 @@
  */
 import { DashboardApiError, dashboardApi } from './dashboard-api'
 import { parseDashboardDate } from './dashboard-dates'
+import type { ModelFieldDisplay } from './dashboard-model-format'
+import { modelColumnIsDate, modelFormattedValue } from './dashboard-model-format'
 
 export interface ModelWriteCapabilities {
   create: boolean
@@ -45,8 +47,11 @@ export interface ModelCustomAction {
 
 export interface ModelColumn {
   name: string
+  /** What the field is called: the model's own word for it, else its name in words. */
   label: string
   type?: 'number' | 'boolean' | 'date' | 'json' | 'text'
+  /** How the model says the value reads (`dashboard.fields`): money, a size, a link. */
+  format?: ModelFieldDisplay
 }
 
 export interface ModelRecord {
@@ -91,7 +96,7 @@ interface ModelShowResponse {
 
 /** A field of the create form, from the model's fillable attributes. */
 /** How a field is asked for: see `modelFieldType` on the server. */
-export type ModelFieldType = 'boolean' | 'date' | 'datetime' | 'email' | 'enum' | 'json' | 'longtext' | 'number' | 'relation' | 'text'
+export type ModelFieldType = 'boolean' | 'date' | 'datetime' | 'email' | 'enum' | 'json' | 'longtext' | 'number' | 'relation' | 'text' | 'url'
 
 /** The model a field or column points at: `team_id` is a Team. */
 export interface ModelRelationTarget {
@@ -120,6 +125,8 @@ export interface ModelCreateField {
   options: string[]
   /** For a `relation`: the model whose records the picker lists. */
   relation?: ModelRelationTarget
+  /** A sentence under the input, from the model's `dashboard.fields`. */
+  help?: string
 }
 
 /** What a form holds for each field: a checkbox's state, or an input's text. */
@@ -204,10 +211,11 @@ export interface ModelRecordDetail {
   /**
    * How the value is drawn: plain text, an outlined badge for a status-like
    * word, a check or cross for a boolean, a preformatted block for JSON, a
-   * link to the record another model's id points at.
+   * link to the record another model's id points at, and where the model
+   * says so a link out to a web address, a picture or a code font.
    */
-  kind: 'text' | 'badge' | 'boolean' | 'json' | 'link'
-  /** For a link: the page of the record this one points at. */
+  kind: 'text' | 'badge' | 'boolean' | 'json' | 'link' | 'external' | 'image' | 'code'
+  /** For a link: the page of the record this one points at, or the address it opens. For an image: what it draws. */
   href?: string
   /** A boolean's answer, for the icon. */
   yes: boolean
@@ -231,16 +239,7 @@ function isIdentifier(name: string): boolean {
 }
 
 function isDate(column: ModelColumn): boolean {
-  return column.type === 'date' || /_(?:at|on)$/.test(column.name)
-}
-
-/** "Created At" reads as "Created", and the update time as "Last Updated". */
-function detailLabel(column: ModelColumn): string {
-  if (column.name === 'updated_at')
-    return 'Last Updated'
-  if (column.name === 'uuid')
-    return 'UUID'
-  return isDate(column) ? column.label.replace(/\s+(?:At|On)$/i, '') : column.label
+  return modelColumnIsDate(column)
 }
 
 /** "No email", "No stripe ID": lower case, except a word that is an acronym. */
@@ -260,8 +259,9 @@ export type ModelRelationNames = Record<string, string>
 function detail(record: ModelRecord, column: ModelColumn, names: ModelRelationNames = {}): ModelRecordDetail {
   const stored = record.row[column.name]
   const relation = record.relations?.[column.name]
-  // "Team", not "Team ID": the page says which team, and the id is its link.
-  const label = relation ? relation.label : detailLabel(column)
+  // What the list calls it: the model's own word, "Team" and not "Team ID"
+  // for a record it points at, "Created" and not "Created At".
+  const label = column.label
   const base = { name: column.name, label, yes: false, wide: false }
   if (relation && stored !== null && stored !== undefined && stored !== '') {
     return {
@@ -272,6 +272,14 @@ function detail(record: ModelRecord, column: ModelColumn, names: ModelRelationNa
       kind: 'link',
       href: modelRecordHref(relation.slug, stored as number | string),
     }
+  }
+  // The model's own say on how the value reads comes before any guess.
+  if (column.format) {
+    const shown = modelFormattedValue(stored, column.format, record.row)
+    if (!shown)
+      return { ...base, value: emptyText(column, label), empty: true, kind: 'text' }
+    const kind = shown.kind === 'link' ? 'external' : shown.kind
+    return { ...base, value: shown.text, empty: false, kind, href: shown.href, wide: shown.kind === 'text' && shown.text.length > 80 }
   }
   if (column.type === 'boolean') {
     const yes = stored === true || stored === 1 || stored === '1'
@@ -311,7 +319,7 @@ export function modelRecordSections(record: ModelRecord, names: ModelRelationNam
       groups.identifiers.push(entry)
     else if (isDate(column))
       groups.timestamps.push(entry)
-    else if (column.type === 'boolean' || column.type === 'number' || BADGE_COLUMNS.has(column.name))
+    else if (column.type === 'boolean' || column.type === 'number' || BADGE_COLUMNS.has(column.name) || entry.kind === 'badge')
       groups.details.push(entry)
     else
       groups.information.push(entry)
@@ -711,6 +719,8 @@ export interface ModelRelatedColumn {
   key: string
   label: string
   type: 'text' | 'badge' | 'datetime'
+  /** How the related model says the value reads. Wins over `type`. */
+  format?: ModelFieldDisplay
 }
 
 /**

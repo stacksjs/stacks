@@ -17,6 +17,8 @@ const name = useReactiveProp('name', '')
 const required = useReactiveProp('required', false)
 const disabled = useReactiveProp('disabled', false)
 const error = useReactiveProp('error', '')
+// A sentence under the search, from the model's own help for the field.
+const hint = useReactiveProp('hint', '')
 const emit = defineEmits(['update:value'])
 const generatedId = useId('relation')
 
@@ -244,4 +246,5 @@ effect(() => {
   </div>
 
   <p :if="error()" class="mt-1.5 text-[12px] text-red-600 dark:text-red-400" :text="error()"></p>
+  <p :if="!error() && hint()" class="mt-1.5 text-[12px] text-stone-500 dark:text-neutral-400" :text="hint()"></p>
 </div>

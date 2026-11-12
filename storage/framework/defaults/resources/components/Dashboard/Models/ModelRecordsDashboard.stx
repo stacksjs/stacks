@@ -10,12 +10,16 @@ import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/us
 import { dashboardApi } from '@stacksjs/defaults/functions/dashboard-api'
 import type { ModelCustomAction, ModelRelationTarget, ModelWriteCapabilities } from '@stacksjs/defaults/functions/dashboard-model-record'
 import { deleteModelRecord, modelActionNotice, modelActionsFor, modelDeleteNotice, modelDeleteWarning, modelListColumnNames, modelListFilters, modelRecordCreateHref, modelRecordEditHref, modelRecordHref, modelRelationCell, NO_WRITES, runModelAction, userInviteHref } from '@stacksjs/defaults/functions/dashboard-model-record'
+import type { ModelFieldDisplay, ModelFormattedValue } from '@stacksjs/defaults/functions/dashboard-model-format'
+import { modelColumnIsNumeric, modelFormattedValue } from '@stacksjs/defaults/functions/dashboard-model-format'
 import { pushToast } from '@stacksjs/defaults/functions/toasts'
 
 interface ColumnMeta {
   name: string
   label: string
   type: 'number' | 'boolean' | 'date' | 'json' | 'text'
+  /** How the model says the value reads (`dashboard.fields`): money, a size, a link. */
+  format?: ModelFieldDisplay
 }
 
 interface ResponseShape {
@@ -153,20 +157,41 @@ function relationHref(row: Record<string, unknown>, column: ColumnMeta): string 
   return relationCell(row, column)?.href ?? ''
 }
 
+/**
+ * A cell as the model says it reads: "$12.00", "1.5 KB", a link, a picture.
+ * Null when the model does not say, or nothing is stored.
+ */
+function formatted(row: Record<string, unknown>, column: ColumnMeta): ModelFormattedValue | null {
+  return column.format ? modelFormattedValue(row[column.name], column.format, row) : null
+}
+
+/** How a cell is drawn: a link to a record, or what its format calls for, or words. */
+function cellKind(row: Record<string, unknown>, column: ColumnMeta): 'relation' | ModelFormattedValue['kind'] {
+  if (relationHref(row, column))
+    return 'relation'
+  return formatted(row, column)?.kind ?? 'text'
+}
+
+function cellHref(row: Record<string, unknown>, column: ColumnMeta): string {
+  return formatted(row, column)?.href ?? ''
+}
+
 function cellValue(row: Record<string, unknown>, column: ColumnMeta): string {
+  if (column.format && !relationCell(row, column))
+    return formatted(row, column)?.text ?? '-'
   return relationCell(row, column)?.text ?? formatCell(row[column.name], column.type)
 }
 
 // Returned as COMPLETE class strings and applied with `:class`, because a
 // `{{ }}` placeholder inside a class attribute is not reactively bound.
 function cellClass(column: ColumnMeta): string {
-  const align = column.type === 'number' ? 'text-right tabular-nums' : 'text-left'
-  const mono = column.type === 'json' ? ' font-mono text-[12px]' : ''
+  const align = modelColumnIsNumeric(column) ? 'text-right tabular-nums' : 'text-left'
+  const mono = column.type === 'json' && !column.format ? ' font-mono text-[12px]' : ''
   return `px-3 py-2 max-w-xs truncate whitespace-nowrap text-[13px] text-neutral-800 dark:text-neutral-200 ${align}${mono}`
 }
 
 function headerClass(column: ColumnMeta): string {
-  const align = column.type === 'number' ? 'justify-end' : 'justify-start'
+  const align = modelColumnIsNumeric(column) ? 'justify-end' : 'justify-start'
   return `flex items-center gap-1 w-full ${align} font-medium text-[11px] uppercase tracking-wide text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors`
 }
 
@@ -520,7 +545,11 @@ void load()
           <tr :for="row in rows()" class="hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors group">
             <td :for="column in columnMeta()" :class="cellClass(column)" :title="cellValue(row, column)">
               <StxLink :if="relationHref(row, column)" :to="relationHref(row, column)" class="font-medium text-blue-600 dark:text-blue-400 hover:underline">{{ cellValue(row, column) }}</StxLink>
-              <span :if="!relationHref(row, column)">{{ cellValue(row, column) }}</span>
+              <span :if="cellKind(row, column) === 'text'">{{ cellValue(row, column) }}</span>
+              <span :if="cellKind(row, column) === 'badge'" class="inline-flex px-2 py-0.5 font-medium text-neutral-800 text-xs dark:text-neutral-100 border border-neutral-400 rounded-md dark:border-neutral-500">{{ cellValue(row, column) }}</span>
+              <a :if="cellKind(row, column) === 'link'" :href="cellHref(row, column)" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">{{ cellValue(row, column) }}</a>
+              <img :if="cellKind(row, column) === 'image'" :src="cellHref(row, column)" alt="" loading="lazy" class="inline-block object-cover h-7 w-7 bg-neutral-100 dark:bg-neutral-800 rounded" />
+              <code :if="cellKind(row, column) === 'code'" class="font-mono text-[12px]">{{ cellValue(row, column) }}</code>
             </td>
             <td class="right-0 sticky z-10 px-3 py-2 text-right bg-white dark:bg-neutral-900 group-hover:bg-neutral-50 dark:group-hover:bg-white/5 border-black/5 border-l dark:border-white/10 transition-colors">
               <ModelRecordActions

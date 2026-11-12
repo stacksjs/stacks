@@ -2,7 +2,8 @@
 // The inputs of a model's form, one per field, each in the control its kind
 // calls for: a select for a choice, a checkbox for yes or no, a date or a
 // date-and-time picker, a number box, a tall box for prose and for JSON, a
-// search for another model's record, and a line of text for the rest.
+// search for another model's record, and a line of text for the rest. Under
+// each, the sentence the model wrote for it, when it wrote one.
 //
 // The create page and the edit page both render this, so a kind of field is
 // drawn once. The page owns the values: this reports each change upward as
@@ -25,10 +26,10 @@ function error(field: ModelCreateField): string {
   return modelFieldError(errors(), field.name)
 }
 
-function inputType(field: ModelCreateField): 'date' | 'datetime-local' | 'email' | 'number' | 'text' {
+function inputType(field: ModelCreateField): 'date' | 'datetime-local' | 'email' | 'number' | 'text' | 'url' {
   if (field.type === 'datetime')
     return 'datetime-local'
-  if (field.type === 'date' || field.type === 'email' || field.type === 'number')
+  if (field.type === 'date' || field.type === 'email' || field.type === 'number' || field.type === 'url')
     return field.type
   return 'text'
 }
@@ -38,12 +39,13 @@ function isLine(field: ModelCreateField): boolean {
   return field.type !== 'boolean' && field.type !== 'enum' && field.type !== 'longtext' && field.type !== 'json' && field.type !== 'relation'
 }
 
+/**
+ * The line under an input: what the model says about the field
+ * (`dashboard.fields.<name>.help`), then what its kind needs said.
+ */
 function hint(field: ModelCreateField): string {
-  if (field.type === 'json')
-    return 'JSON. Checked when you save.'
-  if (field.type === 'datetime')
-    return 'In your own time zone.'
-  return ''
+  const kind = field.type === 'json' ? 'JSON. Checked when you save.' : field.type === 'datetime' ? 'In your own time zone.' : ''
+  return [field.help, kind].filter(Boolean).join(' ')
 }
 
 function change(field: ModelCreateField, value: string | boolean): void {
@@ -64,6 +66,7 @@ function change(field: ModelCreateField, value: string | boolean): void {
       />
       <span>
         <span class="block font-medium text-neutral-900 text-sm dark:text-white">{{ field.label }}</span>
+        <span :if="hint(field) && !error(field)" class="block mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">{{ hint(field) }}</span>
         <span :if="error(field)" role="alert" class="block mt-0.5 text-red-600 text-xs dark:text-red-400">{{ error(field) }}</span>
       </span>
     </label>
@@ -75,6 +78,7 @@ function change(field: ModelCreateField, value: string | boolean): void {
       :options="field.options"
       :label="field.label"
       :ariaLabel="field.label"
+      :hint="hint(field)"
       :required="field.required"
       :disabled="disabled()"
       :error="error(field)"
@@ -87,6 +91,7 @@ function change(field: ModelCreateField, value: string | boolean): void {
       :name="field.name"
       :value="text(field)"
       :label="field.label"
+      :hint="hint(field)"
       :required="field.required"
       :disabled="disabled()"
       :error="error(field)"

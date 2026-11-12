@@ -191,6 +191,14 @@ onMount(() => {
                 {{ detail.value }}
                 <span aria-hidden="true" class="h-3.5 w-3.5 i-hugeicons-arrow-right-01"></span>
               </StxLink>
+              <a :if="detail.kind === 'external'" :href="detail.href" target="_blank" rel="noopener noreferrer" class="inline-flex gap-1.5 items-center max-w-full font-medium text-blue-600 dark:text-blue-400 hover:underline">
+                <span class="truncate">{{ detail.value }}</span>
+                <span aria-hidden="true" class="flex-none h-3.5 w-3.5 i-hugeicons-link-square-02"></span>
+              </a>
+              <a :if="detail.kind === 'image'" :href="detail.href" target="_blank" rel="noopener noreferrer" class="inline-block">
+                <img :src="detail.href" :alt="detail.label" loading="lazy" class="object-contain max-h-40 max-w-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 rounded-lg dark:border-neutral-700" />
+              </a>
+              <code :if="detail.kind === 'code'" class="px-1.5 py-0.5 break-all font-mono text-[13px] text-neutral-800 dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-800 rounded">{{ detail.value }}</code>
               <span :if="detail.kind === 'text'" :class="detail.empty ? 'text-neutral-400 dark:text-neutral-500' : 'break-words text-neutral-700 dark:text-neutral-200'">{{ detail.value }}</span>
             </dd>
           </div>
