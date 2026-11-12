@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.555...v0.75.556)
+
+## 🐛 Bug Fixes
+
+- **upgrade**: sequence selected stages and keep previews read-only ([d2bd0c2](https://github.com/stacksjs/stacks/commit/d2bd0c2)) _(by Chris)_ ([#3272](https://github.com/stacksjs/stacks/issues/3272))
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.554...v0.75.555)
 
 ## ✨ Features
