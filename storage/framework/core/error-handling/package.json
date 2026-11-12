@@ -60,7 +60,7 @@
     "@bughq/sdk": "^0.3.0",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/path": "workspace:*",
-    "@stacksjs/stx": "^0.2.853",
+    "@stacksjs/stx": "^0.2.859",
     "@stacksjs/types": "workspace:*",
     "ts-error-handling": "^0.1.4",
     "ts-syntax-highlighter": "^0.2.19"

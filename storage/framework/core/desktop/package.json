@@ -77,7 +77,7 @@
     "@stacksjs/router": "0.75.550",
     "@stacksjs/server": "0.75.550",
     "@stacksjs/storage": "0.75.550",
-    "craft-native": ">=0.0.497"
+    "craft-native": ">=0.0.499"
   },
   "peerDependencies": {
     "@stacksjs/config": "workspace:*",

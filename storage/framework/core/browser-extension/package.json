@@ -63,8 +63,8 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "bun-plugin-stx": "^0.2.853",
-    "ts-pantry": "^0.11.184"
+    "bun-plugin-stx": "^0.2.859",
+    "ts-pantry": "^0.11.198"
   },
   "peerDependencies": {
     "web-ext": ">=10.7.0"
