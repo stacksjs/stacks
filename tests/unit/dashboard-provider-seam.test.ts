@@ -101,9 +101,9 @@ describe('dashboard provider seam', () => {
     expect(payload).toBe(good)
   })
 
-  test('selecting hq today says why it is empty rather than pretending to be down', () => {
-    // Both published HQ SDKs are ingest clients. Neither exposes a read call,
-    // and an ingest key grants no read access, so there is nothing to fetch yet.
+  test('selecting hq for analytics says why it is empty rather than pretending to be down', () => {
+    // Logs and Errors read LogHQ and BugHQ with a read key (see
+    // dashboard-hq-readers.test.ts). AnalyticsHQ has no read-key endpoint yet.
     expect(HQ_READ_UNAVAILABLE).toContain('no read API')
   })
 

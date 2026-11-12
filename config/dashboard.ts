@@ -67,12 +67,9 @@ export default {
    * Where each dashboard section reads its data from.
    *
    * `local` is this application's own database, and it is the default for
-   * every domain. Point a domain at `hq` to read the matching hosted product
-   * instead, and give that driver a base URL and a READ token.
-   *
-   * A product's ingest key is not a read token. The key an app uses to send
-   * logs or errors identifies a project and grants no read access, so it
-   * cannot be reused here.
+   * every domain. Set `logs` or `errors` to `hq` to read LogHQ or BugHQ
+   * instead, with the read key and project in config/hq.ts, which
+   * `./buddy hq:connect` fills in. Analytics has no hosted read yet.
    *
    * Health is deliberately absent. That section reports the process serving
    * the request, and the same probe backs the framework's own liveness route,

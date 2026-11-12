@@ -1,8 +1,9 @@
+import type { HqClient, Issue } from '@stacksjs/hq/client'
 import type { DashboardProviderUnavailable } from '../Dashboard/dashboard-provider'
 import { errors } from '@stacksjs/commerce'
 import type { QueryReader } from '../Dashboard/Content/content-list'
 import { LIST_PAGE_SIZES, queryText } from '../Dashboard/Content/content-list'
-import { HQ_READ_UNAVAILABLE, readThroughProvider, resolveDashboardDriver } from '../Dashboard/dashboard-provider'
+import { dashboardHqClient, DashboardProviderUnavailableError, hqUnavailableReason, readThroughProvider, resolveDashboardDriver } from '../Dashboard/dashboard-provider'
 
 /**
  * Where the Errors section reads from.
@@ -230,9 +231,114 @@ const EMPTY_STATS: DashboardErrorStats = {
   trend: 0,
 }
 
-async function resolveErrorsProvider(): Promise<{ provider: DashboardErrorsProvider, remote: boolean }> {
-  const driver = await resolveDashboardDriver('errors')
-  return { provider: localErrorsProvider, remote: driver.name !== 'local' }
+/**
+ * BugHQ, read with the project's read key.
+ *
+ * BugHQ already groups occurrences into issues, so an issue is a group here.
+ * Its read API is the issue list (the hundred most recently seen), which is
+ * what every answer below is built from:
+ *
+ * - a group's `message` is the issue title and it has no stack, because the
+ *   list carries none
+ * - `stats` counts occurrences across those issues; `last_24h` is the number
+ *   of issues seen in the last day, since the list has no per-hour counts
+ * - there is no timeline to read, so that panel says so
+ *
+ * A read that comes back unavailable throws
+ * `DashboardProviderUnavailableError`, which `readErrors` turns into the empty
+ * value plus its reason.
+ */
+export function hqErrorsProvider(client: Pick<HqClient, 'issues'>, now: () => number = Date.now): DashboardErrorsProvider {
+  const issues = async (status?: string): Promise<Issue[]> => {
+    const result = await client.issues.list(status ? { status } : {})
+    if (!result.ok)
+      throw new DashboardProviderUnavailableError(hqUnavailableReason(result))
+    return result.data
+  }
+
+  const typeOf = (issue: Issue): string => issue.errorType || 'Error'
+  // BugHQ titles an issue `Type: message`.
+  const messageOf = (issue: Issue): string =>
+    issue.title.startsWith(`${typeOf(issue)}: `) ? issue.title.slice(typeOf(issue).length + 2) : issue.title
+
+  const toGroup = (issue: Issue): DashboardGroupedError => ({
+    id: issue.id,
+    type: typeOf(issue),
+    message: messageOf(issue),
+    stack: null,
+    status: toErrorStatus(issue.status),
+    count: issue.count,
+    first_seen: issue.firstSeen ?? '',
+    last_seen: issue.lastSeen ?? '',
+  })
+
+  const toRecord = (issue: Issue): DashboardErrorRecord => ({
+    id: issue.id,
+    type: typeOf(issue),
+    message: messageOf(issue),
+    stack: null,
+    status: null,
+    resolution: toErrorStatus(issue.status),
+    additional_info: issue.culprit,
+    created_at: issue.firstSeen ?? '',
+    updated_at: issue.lastSeen,
+  })
+
+  return {
+    async grouped(query) {
+      const all = await issues(query.status === 'all' ? undefined : query.status)
+      const search = query.search.toLowerCase()
+      const matching = all
+        .filter(issue => !query.type || typeOf(issue) === query.type)
+        .filter(issue => !search || `${issue.title} ${issue.culprit ?? ''}`.toLowerCase().includes(search))
+        .map(toGroup)
+
+      const direction = query.direction === 'asc' ? 1 : -1
+      const key = (group: DashboardGroupedError): string | number =>
+        query.sort === 'count' ? group.count : query.sort === 'type' ? group.type : query.sort === 'status' ? group.status : group.last_seen
+      matching.sort((a, b) => {
+        const left = key(a)
+        const right = key(b)
+        return (left < right ? -1 : left > right ? 1 : 0) * direction
+      })
+
+      const page = Math.min(query.page, Math.max(1, Math.ceil(matching.length / query.perPage)))
+      return {
+        groups: matching.slice((page - 1) * query.perPage, page * query.perPage),
+        total: matching.length,
+        page,
+        types: [...new Set(all.map(typeOf))].sort(),
+      }
+    },
+
+    async stats() {
+      const all = await issues()
+      const since = now() - 86400000
+      const sum = (status: DashboardErrorStatus): number =>
+        all.filter(issue => toErrorStatus(issue.status) === status).reduce((total, issue) => total + issue.count, 0)
+      return {
+        total: all.reduce((total, issue) => total + issue.count, 0),
+        unresolved: sum('unresolved'),
+        resolved: sum('resolved'),
+        ignored: sum('ignored'),
+        last_24h: all.filter(issue => issue.lastSeen && Date.parse(issue.lastSeen) >= since).length,
+        trend: 0,
+      }
+    },
+
+    async timeline() {
+      throw new DashboardProviderUnavailableError('BugHQ has no hourly timeline to read yet. Open BugHQ for the full history.')
+    },
+
+    async byGroup(type, message) {
+      return (await issues()).filter(issue => typeOf(issue) === type && messageOf(issue) === message).map(toRecord)
+    },
+
+    async byId(id) {
+      const issue = (await issues()).find(candidate => candidate.id === String(id))
+      return issue ? toRecord(issue) : undefined
+    },
+  }
 }
 
 /**
@@ -247,19 +353,26 @@ async function readErrors<T>(
   read: (provider: DashboardErrorsProvider) => Promise<T>,
   isValid: (payload: unknown) => boolean,
 ): Promise<DashboardErrorsEnvelope<T>> {
-  const { provider, remote } = await resolveErrorsProvider()
+  const driver = await resolveDashboardDriver('errors')
 
-  if (!remote)
-    return { data: await read(provider) }
+  if (driver.name === 'local')
+    return { data: await read(localErrorsProvider) }
 
-  const payload = await readThroughProvider<DashboardErrorsEnvelope<T>>(
+  return readThroughProvider<DashboardErrorsEnvelope<T>>(
     'errors',
     reason => ({ data: empty, unavailable: reason }),
-    async () => ({ data: empty, unavailable: HQ_READ_UNAVAILABLE }),
+    async () => {
+      try {
+        return { data: await read(hqErrorsProvider(await dashboardHqClient('errors', driver.options))) }
+      }
+      catch (error) {
+        if (error instanceof DashboardProviderUnavailableError)
+          return { data: empty, unavailable: error.reason }
+        throw error
+      }
+    },
     candidate => isValid((candidate as DashboardErrorsEnvelope<T>)?.data),
   )
-
-  return payload
 }
 
 const EMPTY_GROUP_PAGE: DashboardGroupedErrorPage = { groups: [], total: 0, page: 1, types: [] }

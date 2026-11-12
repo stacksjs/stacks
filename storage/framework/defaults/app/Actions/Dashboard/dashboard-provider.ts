@@ -1,4 +1,6 @@
-import type { DashboardHqDriverOptions, DashboardProviderName, DashboardProviderSelection } from '@stacksjs/types'
+import type { HqClient, HqUnavailable } from '@stacksjs/hq/client'
+import type { DashboardHqDriverOptions, DashboardProviderName, DashboardProviderSelection, HqServiceName, HqServiceOptions } from '@stacksjs/types'
+import { createHqClient } from '@stacksjs/hq/client'
 
 /**
  * The seam between a dashboard section and the data behind it.
@@ -155,16 +157,91 @@ export async function readThroughProvider<T>(
 }
 
 /**
- * The reason an `hq` provider has no data yet.
+ * The reason the Analytics section has no data from `hq` yet.
  *
- * Both published SDKs are ingest clients. `@loghq/stacks` and `@bughq/stacks`
- * send records and expose no function that reads any back, and a project's
- * ingest key grants no read access by design. The hosted read APIs do exist,
- * but they authenticate a person rather than a machine, so wiring one needs a
- * product decision about service credentials before any code here can help.
- *
- * Selecting `hq` today therefore yields an empty section that says so, which
- * is the honest answer and keeps the degrade path real rather than theoretical.
+ * Logs and Errors read from LogHQ and BugHQ with a project read key (see
+ * `dashboardHqClient` below). AnalyticsHQ has no read-key endpoint, so
+ * selecting `hq` for analytics still yields an empty section that says so.
  */
 export const HQ_READ_UNAVAILABLE
   = 'No data. The hosted provider has no read API yet, so this section cannot be filled from it.'
+
+/** The hosted service behind each domain that can be read today. */
+const HQ_DOMAIN_SERVICE = { logs: 'loghq', errors: 'bughq' } as const satisfies Partial<Record<DashboardProviderDomain, HqServiceName>>
+
+const HQ_LABELS: Record<HqServiceName, string> = {
+  bughq: 'BugHQ',
+  loghq: 'LogHQ',
+  analyticshq: 'AnalyticsHQ',
+  statushq: 'StatusHQ',
+  commshq: 'CommsHQ',
+}
+
+export type DashboardHqDomain = keyof typeof HQ_DOMAIN_SERVICE
+
+/**
+ * A hosted read that came back with nothing, and the sentence to show for it.
+ *
+ * Thrown by an `hq` provider so its methods keep the same signatures as the
+ * local one's; the section's reader turns it into an empty payload carrying
+ * `reason`.
+ */
+export class DashboardProviderUnavailableError extends Error {
+  constructor(public readonly reason: string) {
+    super(reason)
+    this.name = 'DashboardProviderUnavailableError'
+  }
+}
+
+/** Why a hosted read has no data, for whoever is looking at the dashboard. */
+export function hqUnavailableReason(result: HqUnavailable): string {
+  const label = HQ_LABELS[result.service]
+  const connect = `Run \`buddy hq:connect ${result.service}\``
+  switch (result.reason) {
+    case 'not_configured':
+      return `${label} is not connected. ${connect} to connect it.`
+    case 'unauthorized':
+      return `${label} refused the read key. ${connect} to get a new one.`
+    case 'timeout':
+    case 'network':
+      return `${label} could not be reached. This section will fill in once it answers again.`
+    case 'http':
+      // The services answer 404, not 401, for a key that does not open the project.
+      return result.status === 404
+        ? `${label} has no project that this read key opens. ${connect} to connect it again.`
+        : `${label} could not be read (it answered ${result.status}).`
+    default:
+      return `${label} answered something this section cannot show.`
+  }
+}
+
+/**
+ * The client a domain's `hq` provider reads with.
+ *
+ * Credentials come from `config/hq.ts`, where `buddy hq:connect` put them.
+ * The domain's own `drivers.hq` settings win where set, so one section can
+ * point at another project or a self-hosted instance.
+ */
+export async function dashboardHqClient(domain: DashboardHqDomain, options: DashboardHqDriverOptions = {}): Promise<HqClient> {
+  const service = HQ_DOMAIN_SERVICE[domain]
+  let configured: HqServiceOptions | undefined
+  try {
+    const { config, overridesReady } = await import('@stacksjs/config')
+    await overridesReady.catch(() => {})
+    configured = config.hq?.[service]
+  }
+  catch (error) {
+    console.warn(`[dashboard/api] config.hq could not be read for ${domain}:`, error)
+  }
+
+  return createHqClient({
+    services: {
+      [service]: {
+        url: options.baseUrl || configured?.url || '',
+        readKey: options.token || configured?.readKey || '',
+        project: options.project || configured?.project,
+      },
+    },
+    timeoutMs: options.timeoutMs ?? 5000,
+  })
+}
