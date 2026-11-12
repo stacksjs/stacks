@@ -153,8 +153,11 @@ export interface WebviewDesktopConfig {
   /**
    * The Craft web view binary for each target, relative to the project root.
    * The build machine's own target falls back to `CRAFT_BIN`, then `craft` on
-   * PATH; every other target needs a path here or in
-   * `CRAFT_BIN_<PLATFORM>_<ARCH>` (`CRAFT_BIN_LINUX_X64`).
+   * PATH. For any other target a path here or in
+   * `CRAFT_BIN_<PLATFORM>_<ARCH>` (`CRAFT_BIN_LINUX_X64`) wins; without one
+   * the build fetches the runtime Craft published for the installed
+   * `craft-native` version, verified against that release's checksum
+   * manifest, into `storage/framework/desktop/runtimes/<target>/`.
    */
   runtime?: Partial<Record<DesktopTargetName, string>>
   macos?: {
@@ -171,7 +174,10 @@ export interface WebviewDesktopConfig {
     infoPlist?: Record<string, unknown>
   }
   windows?: {
-    /** Extra files installed beside the executable (`WebView2Loader.dll`), relative to the project root. */
+    /**
+     * Extra files installed beside the executable, relative to the project root.
+     * `WebView2Loader.dll` needs no entry: it is taken from beside the Craft runtime.
+     */
     additionalFiles?: string[]
     /** A `.pfx` code-signing certificate; its password comes from `DESKTOP_WINDOWS_CERTIFICATE_PASSWORD`. Unsigned without it. */
     certificatePath?: string

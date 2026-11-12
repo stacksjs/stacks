@@ -452,9 +452,17 @@ Bun cross-compiles the agent for any target from any machine (`--target=bun-wind
 Windows and Linux executables. It does not produce their installers. `craft-package.json` is the input to Craft's
 `packageApp`, with paths relative to its own folder; `--package` runs it when the machine matches the target.
 
-Each target needs that platform's Craft web view binary: this machine's comes from `CRAFT_BIN` or `craft` on PATH,
-every other from `webview.runtime['<target>']` or `CRAFT_BIN_<PLATFORM>_<ARCH>` (Craft publishes
-`craft-<os>-<arch>.zip` with each release). On Linux the runtime is compiled into the agent and unpacked to the data
+Each target needs that platform's Craft web view binary. In order: `webview.runtime['<target>']` or
+`CRAFT_BIN_<PLATFORM>_<ARCH>` when one is set; this machine's own Craft (`CRAFT_BIN` or `craft` on PATH) for this
+machine's target; else the build fetches it. Craft publishes `craft-<os>-<arch>.zip` with each release, and
+`build:desktop --target ...` downloads the one for the installed `craft-native` version, checks its size and SHA-256
+against that release's `release-manifest.json`, and keeps it unpacked in `storage/framework/desktop/runtimes/<target>/`
+(gitignored; a later build reuses it and a new Craft version replaces it). An app needs no script of its own for
+this. Craft publishes runtimes for `darwin-arm64`, `darwin-x64`, `linux-x64` and `win32-x64`; the arm64 Linux and
+Windows targets still need a runtime named in the config. `DESKTOP_RUNTIME_FETCH=0` keeps a build off the network.
+
+On Windows, `WebView2Loader.dll` is copied into the app from beside the runtime (Craft's archive ships it there)
+unless `windows.additionalFiles` already names one. On Linux the runtime is compiled into the agent and unpacked to the data
 directory on first launch, because Craft's Linux packagers take one binary.
 
 ### Updates
@@ -485,7 +493,10 @@ serves. Then per target:
 
 Artifacts and manifests go through `@stacksjs/storage` to `updates.disk` under `updates.prefix`
 (`desktop-updates/<channel>/<platform>-<arch>/latest.json`, artifacts under `<version>/`), plus a `release.json`
-a download page can read.
+a download page can read. A release is often made in several runs, the Mac from a Mac and then
+`release:desktop --target linux-x64 --skip-build` for installers built elsewhere: a run for the same version and
+channel adds its targets to `release.json` and replaces only the ones it published again. A new version starts a
+new record.
 
 The server side is one default action, `Actions/Desktop/UpdateFeedAction`, mounted at
 `/api/updates/{platform}/{arch}` whenever `webview.updates` is configured. It serves the stored manifest as is

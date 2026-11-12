@@ -145,6 +145,18 @@ export function webviewCompileArgs(options: { entry: string, outfile: string, ta
  * somewhere and named here.
  */
 export function webviewRuntimeFor(config: Pick<WebviewDesktopConfig, 'runtime'>, target: DesktopTargetName, options: { root: string, env?: Record<string, string | undefined>, host?: DesktopTargetName, hostRuntime?: () => string }): string {
+  const configured = configuredWebviewRuntime(config, target, options)
+  if (configured) return configured
+  throw new Error(`No Craft runtime for ${target}. Unpack that platform's Craft release and name its binary in desktop.webview.runtime['${target}'] or CRAFT_BIN_${target.replace('-', '_').toUpperCase()}.`)
+}
+
+/**
+ * The runtime a project or this machine already has for a target, or null
+ * when neither does: the one named in the config or the environment, else the
+ * host's own Craft for the host's target. `buddy build:desktop` fetches the
+ * published runtime for a target this answers null for.
+ */
+export function configuredWebviewRuntime(config: Pick<WebviewDesktopConfig, 'runtime'>, target: DesktopTargetName, options: { root: string, env?: Record<string, string | undefined>, host?: DesktopTargetName, hostRuntime?: () => string }): string | null {
   const env = options.env ?? process.env
   const variable = `CRAFT_BIN_${target.replace('-', '_').toUpperCase()}`
   const named = config.runtime?.[target] ?? env[variable]
@@ -154,7 +166,7 @@ export function webviewRuntimeFor(config: Pick<WebviewDesktopConfig, 'runtime'>,
     return file
   }
   if (target === (options.host ?? hostDesktopTarget()) && options.hostRuntime) return options.hostRuntime()
-  throw new Error(`No Craft runtime for ${target}. Unpack that platform's Craft release and name its binary in desktop.webview.runtime['${target}'] or ${variable}.`)
+  return null
 }
 
 /**

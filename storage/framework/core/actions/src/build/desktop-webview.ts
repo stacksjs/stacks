@@ -7,8 +7,11 @@ import { log } from '@stacksjs/cli'
 import {
   assembleWebviewMacosApp,
   collectViewFiles,
+  configuredWebviewRuntime,
+  fetchCraftRuntime,
   findDevelopmentIdentity,
   hostDesktopTarget,
+  installedCraftVersion,
   loadWebviewDesktop,
   nativeBuildSteps,
   parseDesktopTargets,
@@ -25,6 +28,7 @@ import {
   webviewManifest,
   webviewPackageConfig,
   webviewRuntimeFor,
+  windowsRuntimeCompanions,
 } from '@stacksjs/desktop-build'
 import { projectPath } from '@stacksjs/path'
 
@@ -118,12 +122,35 @@ interface BuiltTarget {
 }
 const built: BuiltTarget[] = []
 
+/**
+ * A target's Craft runtime: the one the config or the environment names, the
+ * host's own for the host's target, else the one Craft published for the
+ * installed craft-native version, fetched once and kept under
+ * storage/framework/desktop/runtimes. DESKTOP_RUNTIME_FETCH=0 keeps a build
+ * off the network.
+ */
+async function runtimeFor(target: DesktopTargetName): Promise<string> {
+  const configured = configuredWebviewRuntime(config!, target, { root, hostRuntime })
+  if (configured) return configured
+  const version = installedCraftVersion(root)
+  // Says what to configure, as before, when there is nothing to fetch with.
+  if (process.env.DESKTOP_RUNTIME_FETCH === '0' || !version) return webviewRuntimeFor(config!, target, { root, hostRuntime })
+  const fetched = await fetchCraftRuntime({
+    target,
+    version,
+    directory: join(root, 'storage/framework/desktop/runtimes', target),
+    onFetch: (url) => { void log.info(`Fetching ${url}`) },
+  })
+  if (fetched.fetched) await log.info(`Craft ${fetched.version} runtime for ${target}: ${relative(root, fetched.binary)}`)
+  return fetched.binary
+}
+
 for (const target of targets) {
   const { platform } = splitDesktopTarget(target)
   const directory = join(output, target)
   rmSync(directory, { recursive: true, force: true })
   mkdirSync(directory, { recursive: true })
-  const runtime = webviewRuntimeFor(config, target, { root, hostRuntime })
+  const runtime = await runtimeFor(target)
   // Copied verbatim into the app, so it has to be the native binary: a dev wrapper script points outside the bundle.
   if (readFileSync(runtime).subarray(0, 2).toString() === '#!') throw new Error(`The Craft runtime for ${target} is a script, not a native binary: ${runtime}`)
 
@@ -166,6 +193,11 @@ for (const target of targets) {
     for (const file of config.windows?.additionalFiles ?? []) {
       const from = resolve(root, file)
       if (!existsSync(from)) throw new Error(`webview.windows.additionalFiles: ${from} does not exist`)
+      companions.push(join(directory, basename(from)))
+      copyFileSync(from, companions.at(-1)!)
+    }
+    // What the runtime needs beside it (WebView2Loader.dll), when it sits beside the runtime and the config does not name it.
+    for (const from of windowsRuntimeCompanions(runtime, config.windows?.additionalFiles)) {
       companions.push(join(directory, basename(from)))
       copyFileSync(from, companions.at(-1)!)
     }

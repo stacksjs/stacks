@@ -63,6 +63,14 @@ operating system: the macOS `.app` is signed, notarized and imaged on a Mac; the
 `signtool` on Windows; the AppImage, deb and rpm need their Linux tools. For those targets the
 build leaves the staged files and a `craft-package.json`, the input to Craft's packaging.
 
+A target other than this machine's needs that platform's Craft runtime. When the config names none
+(`webview.runtime` or `CRAFT_BIN_<PLATFORM>_<ARCH>`), the build downloads the one Craft published for
+the installed `craft-native` version, verifies it against that release's checksum manifest, and keeps
+it in `storage/framework/desktop/runtimes/<target>/`. On Windows `WebView2Loader.dll` comes with it.
+
+A release made in several runs (the Mac from a Mac, then the Linux and Windows installers) adds each
+run's platforms to the same `release.json`, so a download page keeps every platform of the version.
+
 An installed app asks `<feedUrl>/<platform>/<arch>` for a newer version. The framework mounts
 that route (`/api/updates/{platform}/{arch}`, `Actions/Desktop/UpdateFeedAction`) when
 `webview.updates` is configured, and it serves the manifest `release:desktop` published. The app

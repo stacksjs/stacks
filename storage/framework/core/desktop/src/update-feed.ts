@@ -387,3 +387,47 @@ export async function answerUpdateFeed(options: AnswerUpdateFeedOptions): Promis
     currentVersion: options.currentVersion,
   })
 }
+
+/** One platform and architecture of a release, as release.json lists it. */
+export interface ReleaseRecordTarget {
+  target: string
+  update: { url: string, sha256: string, bytes: number }
+  downloads: Array<{ name: string, url: string, sha256: string, bytes: number }>
+}
+
+/** release.json: every platform's installers for one version on one channel. What a download page reads. */
+export interface ReleaseRecord {
+  version: string
+  channel: string
+  sourceRevision: string
+  publishedAt: string
+  targets: ReleaseRecordTarget[]
+}
+
+/** The storage key of a channel's release.json. */
+export function releaseRecordKey(location: { channel?: string, prefix?: string }): string {
+  const channel = location.channel || 'stable'
+  if (!/^[a-z0-9][a-z0-9._-]*$/i.test(channel)) throw new Error(`Invalid release channel: ${channel}`)
+  return `${(location.prefix ?? DEFAULT_UPDATE_PREFIX).replace(/^\/+|\/+$/g, '')}/${channel}/release.json`
+}
+
+/**
+ * The record after a release run. A release is often made in several runs,
+ * the Mac from a Mac and the Linux and Windows installers from where they
+ * were built: a run for the same version and channel keeps the targets it did
+ * not publish and replaces the ones it did. A different version, a different
+ * channel, or a stored record that cannot be read starts a new one.
+ */
+export function mergeReleaseRecord(stored: string | null | undefined, next: ReleaseRecord): ReleaseRecord {
+  let previous: Partial<ReleaseRecord> | null = null
+  try {
+    previous = stored ? JSON.parse(stored) as Partial<ReleaseRecord> : null
+  }
+  catch {
+    previous = null
+  }
+  if (!previous || previous.version !== next.version || previous.channel !== next.channel || !Array.isArray(previous.targets)) return next
+  const published = new Set(next.targets.map(item => item.target))
+  const kept = previous.targets.filter(item => typeof item?.target === 'string' && item.update && Array.isArray(item.downloads) && !published.has(item.target))
+  return { ...next, targets: [...kept, ...next.targets].sort((a, b) => a.target.localeCompare(b.target)) }
+}

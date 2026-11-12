@@ -1,4 +1,4 @@
-import type { DesktopUpdateManifest, UpdateStore } from '@stacksjs/desktop-build'
+import type { DesktopUpdateManifest, ReleaseRecord, UpdateStore } from '@stacksjs/desktop-build'
 import type { DesktopTargetName } from '@stacksjs/types'
 import { copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -12,9 +12,11 @@ import {
   describeArtifact,
   developerIdProblem,
   loadWebviewDesktop,
+  mergeReleaseRecord,
   publishDesktopUpdate,
   publishedArtifactUrl,
   releaseArtifactNames,
+  releaseRecordKey,
   releaseVersionProblem,
   resolveDmgPackaging,
   splitDesktopTarget,
@@ -206,8 +208,9 @@ function run(command: string[]): void {
 
 // Every target's artifacts are made and verified before any is published, so a
 // failure on the last one does not leave the first already in the feed.
-rmSync(releaseDir, { recursive: true, force: true })
+// Only this run's targets are cleared: a release made in several runs keeps the artifacts of the others.
 for (const item of planned) {
+  rmSync(item.directory, { recursive: true, force: true })
   mkdirSync(item.directory, { recursive: true })
   await log.info(`Preparing ${item.target}`)
   await item.prepare()
@@ -242,16 +245,24 @@ for (const item of planned) {
   await log.success(`${item.target}: ${dryRun ? 'would publish' : 'published'} ${basename(item.update)} (${manifest.size} bytes, sha256 ${manifest.sha256})`)
 }
 
-// What a download page reads: every platform's installers for this version, in one file.
-const summary = {
+// What a download page reads: every platform's installers for this version, in one file. A release is often made
+// in several runs (the Mac here, the Linux and Windows installers from where they were built), so a run adds its
+// targets to the record of the same version and channel instead of replacing it.
+const thisRun: ReleaseRecord = {
   version: config.version,
   channel,
   sourceRevision,
   publishedAt: new Date().toISOString(),
   targets: published.map(item => ({ target: item.target, update: { url: item.manifest.url, sha256: item.manifest.sha256, bytes: item.manifest.size }, downloads: item.downloads })),
 }
-writeFileSync(join(releaseDir, 'release.json'), `${JSON.stringify(summary, null, 2)}\n`)
-if (!dryRun) await store.write(`${prefix}/${channel}/release.json`, `${JSON.stringify(summary, null, 2)}\n`)
+const recordKey = releaseRecordKey({ channel, prefix })
+const localRecord = join(releaseDir, 'release.json')
+// The published record is the one that counts; a dry run has only its own earlier one to add to.
+const stored = dryRun ? (existsSync(localRecord) ? readFileSync(localRecord, 'utf8') : null) : await store.read(recordKey)
+const summary = mergeReleaseRecord(stored, thisRun)
+mkdirSync(releaseDir, { recursive: true })
+writeFileSync(localRecord, `${JSON.stringify(summary, null, 2)}\n`)
+if (!dryRun) await store.write(recordKey, `${JSON.stringify(summary, null, 2)}\n`)
 
 await log.success(dryRun ? `Dry run: nothing was notarized or uploaded. See ${releaseDir}` : `Released ${config.appName} ${config.version} on ${channel} for ${published.map(item => item.target).join(', ')}`)
 process.exitCode = 0
