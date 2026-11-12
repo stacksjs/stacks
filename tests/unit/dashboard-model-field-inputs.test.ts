@@ -271,7 +271,20 @@ describe('the form', () => {
     expect(inputs).toContain('return ![\'boolean\', \'enum\', \'json\', \'longtext\', \'markdown\', \'relation\', \'upload\'].includes(field.type)')
     for (const page of ['ModelRecordCreate.stx', 'ModelRecordEdit.stx'])
       expect(read(page)).toContain(':slug="slug()"')
-    expect(read('ModelRelatedPanels.stx')).toContain(':slug="editor() ? editor().panel.slug : \'\'"')
+    const binding = read('ModelRelatedPanels.stx').match(/<ModelFieldInputs\b[^>]*\s:slug="([^"]+)"/)?.[1]
+    if (!binding)
+      throw new Error('The related form must tell its field inputs which model uploads belong to')
+    const uploadSlug = new Function('editor', `return (${binding})`)
+    expect(uploadSlug(() => null)).toBe('')
+    expect(uploadSlug(() => ({ id: null, panel: { slug: 'member' } }))).toBe('member')
+    expect(uploadSlug(() => ({ id: 7, panel: { slug: 'invitation' } }))).toBe('invitation')
+    // A binding reads one editor snapshot, including while the editor closes.
+    let current: { panel: { slug: string } } | null = { panel: { slug: 'member' } }
+    expect(uploadSlug(() => {
+      const snapshot = current
+      current = null
+      return snapshot
+    })).toBe('member')
   })
 
   it('an upload stores the file at once and holds its address', () => {
