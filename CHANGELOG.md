@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.541...v0.75.542)
+
+## ✨ Features
+
+- **tinker**: describe models as models, preview mail, list the app's models ([e67a3d4](https://github.com/stacksjs/stacks/commit/e67a3d4)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.540...v0.75.541)
 
 ## ✨ Features
