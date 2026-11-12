@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.543...v0.75.544)
+
+## ✨ Features
+
+- **cloud**: buddy cloud:targets lists where each site runs and how to reach it ([be93f21](https://github.com/stacksjs/stacks/commit/be93f21)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.542...v0.75.543)
 
 ## ✨ Features
