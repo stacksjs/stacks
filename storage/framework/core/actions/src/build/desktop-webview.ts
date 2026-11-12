@@ -13,9 +13,11 @@ import {
   nativeBuildSteps,
   parseDesktopTargets,
   probeCraftFlags,
+  renderViewsBuildScript,
   renderWebviewEntry,
-  signtoolArgs,
   resolveCraftExecutable,
+  resolveWebviewComponents,
+  signtoolArgs,
   splitDesktopTarget,
   validateWebviewDesktop,
   webviewAgentEntry,
@@ -66,7 +68,7 @@ if (process.env.STACKS_DESKTOP_LAUNCH === '1') {
   writeFileSync(entry, renderWebviewEntry({
     manifest: webviewManifest(config, { runtime: devRuntime, runtimeFlags: probeCraftFlags(devRuntime), development: true }),
     agentEntry,
-    ...(existsSync(viewsDir) ? { stxViews: { dir: viewsDir, root, ...(config.agent.components?.length ? { components: config.agent.components.map(directory => resolve(root, directory)) } : {}) } } : {}),
+    ...(existsSync(viewsDir) ? { stxViews: { dir: viewsDir, root, ...(config.agent.components?.length ? { components: resolveWebviewComponents(root, config.agent.components) } : {}) } } : {}),
   }))
   await log.info(`Starting ${config.appName} (Ctrl-C quits)`)
   const child = Bun.spawn(['bun', entry, ...process.argv.slice(2).filter(arg => !arg.startsWith('-'))], { cwd: root, stdio: ['inherit', 'inherit', 'inherit'] })
@@ -96,19 +98,7 @@ if (existsSync(viewsDir)) {
   }
   else {
     const script = join(work, 'build-views.ts')
-    writeFileSync(script, `// Written by buddy build:desktop. Do not edit.
-import { buildStaticSite } from '@stacksjs/stx'
-
-await buildStaticSite({
-  name: ${JSON.stringify(config.appName)},
-  url: 'http://127.0.0.1',
-  pagesDir: ${JSON.stringify(relative(root, viewsDir))},
-  outDir: ${JSON.stringify(builtViews)},
-  publicDir: ${JSON.stringify(join(relative(root, viewsDir), 'public'))},
-  sitemap: false,
-  robots: false,
-})
-`)
+    writeFileSync(script, renderViewsBuildScript({ appName: config.appName, root, viewsDir, outDir: builtViews, components: config.agent.components }))
     const built = Bun.spawnSync(['bun', script], { cwd: root, stdio: ['ignore', 'inherit', 'inherit'] })
     if (built.exitCode !== 0) throw new Error(`Building the views in ${config.agent.views} failed`)
   }

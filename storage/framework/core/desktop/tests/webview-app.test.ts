@@ -232,3 +232,26 @@ describe('building the fixture app', () => {
     expect(existsSync(join(home, 'Library/Application Support/Webview Fixture/agent.lock'))).toBe(false)
   }, 180_000)
 })
+
+describe('an app\'s own components', () => {
+  test('the build is handed the directories the dev server is, in the same order', async () => {
+    const { renderViewsBuildScript, resolveWebviewComponents, webviewComponentDirs } = await import('../src')
+    const root = '/projects/fettler'
+    const components = ['resources/desktop/components', 'node_modules/@stacksjs/components/src', '/shared/ui']
+    // What the dev server is started with (startWebviewAgent splits the same list the same way).
+    const dev = webviewComponentDirs(resolveWebviewComponents(root, components))
+    expect(dev).toEqual({ componentsDir: '/projects/fettler/resources/desktop/components', additionalComponentsDirs: ['/projects/fettler/node_modules/@stacksjs/components/src', '/shared/ui'] })
+
+    const script = renderViewsBuildScript({ appName: 'Fettler', root, viewsDir: '/projects/fettler/resources/desktop', outDir: '/out/views', components })
+    const site = JSON.parse(script.slice(script.indexOf('buildStaticSite(') + 'buildStaticSite('.length, script.lastIndexOf(')'))) as Record<string, unknown>
+    expect({ componentsDir: site.componentsDir, additionalComponentsDirs: site.additionalComponentsDirs }).toEqual(dev)
+    expect(site).toMatchObject({ name: 'Fettler', pagesDir: 'resources/desktop', publicDir: 'resources/desktop/public', outDir: '/out/views', sitemap: false, robots: false })
+  })
+
+  test('an app that names none leaves stx to its own defaults, in both', async () => {
+    const { renderViewsBuildScript, webviewComponentDirs } = await import('../src')
+    expect(webviewComponentDirs()).toEqual({})
+    const script = renderViewsBuildScript({ appName: 'A', root: '/a', viewsDir: '/a/resources/desktop', outDir: '/out' })
+    expect(script).not.toContain('omponentsDir')
+  })
+})

@@ -396,7 +396,7 @@ export async function startWebviewAgent(options: WebviewAgentOptions): Promise<W
     port = pickAgentPort({ port: options.port, portFile: options.portFile })
     const serve = views.serve ?? ((await import(Bun.resolveSync('bun-plugin-stx/serve', views.root))) as { serve: StxServe }).serve
     let stxServer: { stop: (force?: boolean) => unknown } | undefined
-    const [componentsDir, ...additionalComponentsDirs] = views.components ?? []
+    const { componentsDir, additionalComponentsDirs = [] } = webviewComponentDirs(views.components)
     // serve() keeps the process alive and does not resolve; it is not awaited.
     void serve({
       patterns: [views.dir],
@@ -445,4 +445,19 @@ export async function startWebviewAgent(options: WebviewAgentOptions): Promise<W
   port = server.port ?? 0
   rememberPort(options.portFile, port)
   return { port, origin: `http://127.0.0.1:${port}`, launchUrl, windowReady, stop: () => { server.stop(true) } }
+}
+
+/**
+ * How stx is told where an app's components are: the first directory is the
+ * one it looks in first, the rest follow in order. `buddy dev:desktop`
+ * (stx's server) and `buddy build:desktop` (stx's static build) both read
+ * the list through here, so a component name defined twice resolves to the
+ * same file in the window you develop in and the app you ship.
+ */
+export function webviewComponentDirs(components: readonly string[] = []): { componentsDir?: string, additionalComponentsDirs?: string[] } {
+  const [componentsDir, ...additionalComponentsDirs] = components
+  return {
+    ...(componentsDir ? { componentsDir } : {}),
+    ...(additionalComponentsDirs.length ? { additionalComponentsDirs } : {}),
+  }
 }

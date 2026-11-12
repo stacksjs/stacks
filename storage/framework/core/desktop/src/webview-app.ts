@@ -7,6 +7,7 @@ import process from 'node:process'
 import { codesignArgs, plistValue, renderInfoPlist } from './index'
 import { loadDesktopConfig } from './macos-app'
 import { makeIcns, runBundleCommand } from './macos-bundle'
+import { webviewComponentDirs } from './webview-agent'
 import { OPTIONAL_CRAFT_FLAGS, WEBVIEW_RUNTIME_NAME } from './webview-launcher'
 
 /**
@@ -403,4 +404,33 @@ export function releaseVersionProblem(version: string, published: string | null 
   if (order === 0) return `${version} is already published. Bump the version; a published build is never replaced under the same number.`
   if (order < 0) return `${published} is already published, which is newer than ${version}.`
   return undefined
+}
+
+/** `webview.agent.components`, as absolute directories, in the order the config lists them. */
+export function resolveWebviewComponents(root: string, components: readonly string[] | undefined): string[] {
+  return (components ?? []).map(directory => resolve(root, directory))
+}
+
+/**
+ * The script `buddy build:desktop` runs to render an app's views to static
+ * files. It hands stx the same component directories, in the same order, as
+ * the server `buddy dev:desktop` starts.
+ */
+export function renderViewsBuildScript(options: { appName: string, root: string, viewsDir: string, outDir: string, components?: readonly string[] }): string {
+  const pages = relative(options.root, options.viewsDir)
+  const site = {
+    name: options.appName,
+    url: 'http://127.0.0.1',
+    pagesDir: pages,
+    outDir: options.outDir,
+    publicDir: join(pages, 'public'),
+    ...webviewComponentDirs(resolveWebviewComponents(options.root, options.components)),
+    sitemap: false,
+    robots: false,
+  }
+  return `// Written by buddy build:desktop. Do not edit.
+import { buildStaticSite } from '@stacksjs/stx'
+
+await buildStaticSite(${JSON.stringify(site, null, 2)})
+`
 }
