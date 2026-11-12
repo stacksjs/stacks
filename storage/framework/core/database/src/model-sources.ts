@@ -353,6 +353,87 @@ export function excludedFrameworkModels(options: { userRoot?: string, frameworkR
   return collectModels(options.frameworkRoot ?? path.frameworkPath('defaults/app/Models'), 'framework')
 }
 
+interface ModelScope {
+  userRoot: string
+  frameworkRoot: string
+  user: ModelSource[]
+  framework: ModelSource[]
+  /** The framework defaults that are part of this app's schema. */
+  contributing: ModelSource[]
+  /** The framework defaults that are not. */
+  excluded: ModelSource[]
+  /** Every model in scope by name, userland winning, before `include` narrows it. */
+  allModels: ModelSource[]
+}
+
+/**
+ * Which models are in scope, from directory listings alone: the two roots,
+ * whether the framework defaults contribute, and userland winning on a name.
+ * No file is read and nothing is written.
+ */
+function collectScope(options: { userRoot?: string, frameworkRoot?: string, includeFrameworkDefaults?: boolean }): ModelScope {
+  const userRoot = options.userRoot ?? path.userModelsPath()
+  const frameworkRoot = options.frameworkRoot ?? path.frameworkPath('defaults/app/Models')
+
+  const user = collectModels(userRoot, 'user')
+  const framework = collectModels(frameworkRoot, 'framework')
+
+  const useFramework = frameworkDefaultsContribute(user.length, options.includeFrameworkDefaults)
+  const contributing = useFramework ? framework : []
+  const excluded = useFramework ? [] : framework
+
+  const byName = new Map<string, ModelSource>()
+  for (const model of contributing) byName.set(model.name, model)
+  for (const model of user) byName.set(model.name, model)
+
+  const allModels = [...byName.values()].sort((a, b) => a.name.localeCompare(b.name))
+  return { userRoot, frameworkRoot, user, framework, contributing, excluded, allModels }
+}
+
+/** Narrow the models in scope to `database.models.include`, when it is set. */
+function selectIncluded(allModels: ModelSource[], include: readonly string[] | undefined): { models: ModelSource[], left: ModelSource[] } {
+  if (include === undefined)
+    return { models: allModels, left: [] }
+  if (!Array.isArray(include) || include.length === 0 || include.some(name => typeof name !== 'string' || !name.trim()))
+    throw new Error('database.models.include must name at least one model')
+  const selected = new Set(include.map(name => name.trim().toLowerCase()))
+  const known = new Set(allModels.map(model => model.name.toLowerCase()))
+  const unknown = [...selected].filter(name => !known.has(name))
+  if (unknown.length) throw new Error(`database.models.include names unknown models: ${unknown.join(', ')}`)
+  return {
+    models: allModels.filter(model => selected.has(model.name.toLowerCase())),
+    left: allModels.filter(model => !selected.has(model.name.toLowerCase())),
+  }
+}
+
+/**
+ * The models in this app's schema: their names, files and where each comes
+ * from. The same list as {@link resolveModelSources}'s `models`, by the same
+ * rules, read from directory listings alone.
+ *
+ * For callers that ask which models exist while serving a request, such as
+ * the dashboard. {@link resolveModelSources} answers that too, but it is the
+ * migration generator's entry point: on the merge path it deletes and
+ * rebuilds the staging directory (a symlink per model) on every call, and
+ * reads model files to report what is out of scope. A page listing 110 models
+ * that asked it once per model spent over a second there, synchronously, and
+ * rewrote a directory the generator may be reading.
+ *
+ * Returns `null` when neither root holds a model. Installed packages' models
+ * are not listed, as they are not in `resolveModelSources().models`.
+ */
+export function listModelSources(options: {
+  include?: readonly string[]
+  userRoot?: string
+  frameworkRoot?: string
+  includeFrameworkDefaults?: boolean
+} = {}): ModelSource[] | null {
+  const { user, framework, allModels } = collectScope(options)
+  if (user.length === 0 && framework.length === 0)
+    return null
+  return selectIncluded(allModels, options.include ?? config?.database?.models?.include).models
+}
+
 /**
  * Resolve models from userland, falling back to the framework defaults.
  *
@@ -389,11 +470,7 @@ export function resolveModelSources(options: {
    */
   packageRoots?: PackageModelRoot[]
 } = {}): ResolvedModelSources | null {
-  const userRoot = options.userRoot ?? path.userModelsPath()
-  const frameworkRoot = options.frameworkRoot ?? path.frameworkPath('defaults/app/Models')
-
-  const user = collectModels(userRoot, 'user')
-  const framework = collectModels(frameworkRoot, 'framework')
+  const { userRoot, frameworkRoot, user, framework, contributing, excluded, allModels } = collectScope(options)
   const packaged = (options.packageRoots ?? packageModelRoots())
     .flatMap(root => collectModels(root.dir, 'package', root.package))
 
@@ -401,10 +478,6 @@ export function resolveModelSources(options: {
 
   if (user.length === 0 && framework.length === 0)
     return null
-
-  const useFramework = frameworkDefaultsContribute(user.length, options.includeFrameworkDefaults)
-  const contributing = useFramework ? framework : []
-  const excluded = useFramework ? [] : framework
 
   // Shadowing is detected against EVERY framework default, not just the ones
   // contributing models. The hazard it exists to report - a userland model
@@ -432,23 +505,10 @@ export function resolveModelSources(options: {
   // They are reported through `excludedTables` instead, so the generator knows
   // those tables exist and has no authority to drop them. Being a global is a
   // separate question, answered by the auto-import barrel rather than here.
-  const byName = new Map<string, ModelSource>()
-  for (const model of contributing) byName.set(model.name, model)
-  for (const model of user) byName.set(model.name, model)
-
-  const allModels = [...byName.values()].sort((a, b) => a.name.localeCompare(b.name))
   const include = options.include ?? config?.database?.models?.include
-  let models = allModels
-  if (include !== undefined) {
-    if (!Array.isArray(include) || include.length === 0 || include.some(name => typeof name !== 'string' || !name.trim()))
-      throw new Error('database.models.include must name at least one model')
-    const selected = new Set(include.map(name => name.trim().toLowerCase()))
-    const known = new Set(allModels.map(model => model.name.toLowerCase()))
-    const unknown = [...selected].filter(name => !known.has(name))
-    if (unknown.length) throw new Error(`database.models.include names unknown models: ${unknown.join(', ')}`)
-    models = allModels.filter(model => selected.has(model.name.toLowerCase()))
-    excluded.push(...allModels.filter(model => !selected.has(model.name.toLowerCase())))
-  }
+  const selection = selectIncluded(allModels, include)
+  const models = selection.models
+  excluded.push(...selection.left)
 
   const roots: string[] = []
   if (user.length > 0)

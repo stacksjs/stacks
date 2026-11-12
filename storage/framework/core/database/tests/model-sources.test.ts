@@ -14,10 +14,10 @@
 //     orders.
 
 import { afterEach, describe, expect, it } from 'bun:test'
-import { mkdirSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { withoutProtectedTableDropSql } from '../src/migrations'
-import { cleanupModelStaging, resolveModelSources } from '../src/model-sources'
+import { cleanupModelStaging, listModelSources, modelStagingDir, resolveModelSources } from '../src/model-sources'
 
 const TMP = join(import.meta.dir, '.tmp-model-sources')
 
@@ -283,5 +283,75 @@ describe('database model selection', () => {
     makeModel(user, 'Subscriber')
     expect(() => resolveModelSources({ userRoot: user, frameworkRoot: join(TMP, 'none'), include: [] })).toThrow('at least one')
     expect(() => resolveModelSources({ userRoot: user, frameworkRoot: join(TMP, 'none'), include: ['Subcriber'] })).toThrow('unknown models')
+  })
+})
+
+// A page that lists models asked `resolveModelSources` which ones exist, once
+// per model. That is the migration generator's entry point: on the merge path
+// it deletes and rebuilds the staging directory on every call. The dashboard's
+// models overview spent 1.6s there for 110 models, blocking the server, and
+// rewrote a directory a running generate may be reading. `listModelSources`
+// answers the same question from directory listings alone.
+describe('listModelSources', () => {
+  const none = join(TMP, 'none')
+
+  /** The cases the generator's own tests cover, each as the options that make it. */
+  function cases(): Array<{ name: string, options: Parameters<typeof resolveModelSources>[0] }> {
+    const user = join(TMP, 'user')
+    const framework = join(TMP, 'framework')
+    makeModel(user, 'User')
+    makeModel(user, 'LocalActivity')
+    makeModel(framework, 'User')
+    makeModel(framework, 'Post')
+    makeModel(join(framework, 'commerce'), 'PrintDevice')
+    return [
+      { name: 'userland only', options: { userRoot: user, frameworkRoot: framework, includeFrameworkDefaults: false, packageRoots: [] } },
+      { name: 'defaults merged in', options: { userRoot: user, frameworkRoot: framework, includeFrameworkDefaults: true, packageRoots: [] } },
+      { name: 'no app models', options: { userRoot: none, frameworkRoot: framework, packageRoots: [] } },
+      { name: 'a selection', options: { userRoot: user, frameworkRoot: framework, includeFrameworkDefaults: true, include: ['user', 'printdevice'], packageRoots: [] } },
+    ]
+  }
+
+  it('lists the models the generator has in scope, by the same rules', () => {
+    for (const { name, options } of cases()) {
+      const { packageRoots: _packages, forceStage: _stage, ...listOptions } = options!
+      const listed = listModelSources(listOptions)
+      expect(listed, name).toEqual(resolveModelSources(options)!.models)
+      expect(listed!.length, name).toBeGreaterThan(0)
+    }
+    // Userland wins a name, nested defaults are found, and the selection narrows.
+    const [, merged, , selected] = cases()
+    expect(listModelSources(merged!.options)!.map(model => `${model.name}:${model.origin}`)).toEqual(['LocalActivity:user', 'Post:framework', 'PrintDevice:framework', 'User:user'])
+    expect(listModelSources(selected!.options)!.map(model => model.name)).toEqual(['PrintDevice', 'User'])
+  })
+
+  it('writes nothing: the staging directory is the generator\'s alone', () => {
+    const [, merged] = cases()
+    cleanupModelStaging()
+    for (let i = 0; i < 3; i++) listModelSources(merged!.options)
+    expect(existsSync(modelStagingDir())).toBe(false)
+    // The control: the generator's entry point, asked the same thing, builds it.
+    expect(resolveModelSources(merged!.options)!.staged).toBe(true)
+    expect(existsSync(modelStagingDir())).toBe(true)
+    // ...and a list afterwards leaves what was staged as it is.
+    const staged = readdirSync(modelStagingDir()).sort()
+    listModelSources(merged!.options)
+    expect(readdirSync(modelStagingDir()).sort()).toEqual(staged)
+  })
+
+  it('is null when neither root holds a model, and refuses the selections the generator refuses', () => {
+    expect(listModelSources({ userRoot: none, frameworkRoot: join(TMP, 'missing') })).toBeNull()
+    const user = join(TMP, 'user')
+    makeModel(user, 'Subscriber')
+    expect(() => listModelSources({ userRoot: user, frameworkRoot: none, include: [] })).toThrow('at least one')
+    expect(() => listModelSources({ userRoot: user, frameworkRoot: none, include: ['Subcriber'] })).toThrow('unknown models')
+  })
+
+  it('agrees with the generator on the real framework defaults', () => {
+    // Named outright: the default root is resolved from the project, and this suite runs from the package.
+    const options = { userRoot: none, frameworkRoot: join(import.meta.dir, '../../../defaults/app/Models') }
+    const listed = listModelSources(options)!
+    expect(listed).toEqual(resolveModelSources({ ...options, packageRoots: [] })!.models)
+    expect(listed.length).toBeGreaterThan(50)
   })
 })
