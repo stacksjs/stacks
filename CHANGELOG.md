@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.546...v0.75.547)
+
+## 🐛 Bug Fixes
+
+- **test**: a customer-owned model may name a team without the team middleware ([c85d000](https://github.com/stacksjs/stacks/commit/c85d000)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.545...v0.75.546)
 
 ## ✨ Features
