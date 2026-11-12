@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.545...v0.75.546)
+
+## ✨ Features
+
+- **desktop**: web view apps on a local agent for macOS, Windows and Linux, with signed updates ([9e5dffe](https://github.com/stacksjs/stacks/commit/9e5dffe)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.544...v0.75.545)
 
 ## ✨ Features
