@@ -27,6 +27,7 @@ import { log, report } from '@stacksjs/logging/runtime'
 import { appPath, frameworkPath, projectPath, storagePath } from '@stacksjs/path/project'
 import { resolveModulePath } from '@stacksjs/path/module-resolution'
 import type { UploadedFile } from '@stacksjs/storage/uploaded-file'
+import type { RequestInstance } from '@stacksjs/types'
 
 type QueryTracker = typeof import('./query-tracking').trackQuery
 const DATABASE_QUERY_TRACKER_KEY = Symbol.for('stacks.database.queryTracker')
@@ -3157,6 +3158,35 @@ const providedActions = new Map<string, () => Promise<{ default?: unknown }>>()
 export function provideActions(loaders: Record<string, () => Promise<{ default?: unknown }>>): void {
   for (const [name, load] of Object.entries(loaders))
     providedActions.set(name.endsWith('.ts') ? name.slice(0, -3) : name, load)
+}
+
+/**
+ * The function a route would run for an action named by its handler string
+ * (`'Actions/Orders/ShipOrderAction'`), without a route being registered for
+ * it.
+ *
+ * For code that is given an action by name and has to run it as the router
+ * would: the dashboard does, for the actions a model lists under
+ * `dashboard.actions`. It is the route's own path, not a second one, so the
+ * app's file wins over the framework's, and the action's `validations`,
+ * `authorize` and `before` all run before `handle()` and its result comes
+ * back as the response the route would have sent. An error `handle()` throws
+ * is thrown from here; left alone, the route that called this answers it the
+ * way it answers its own.
+ *
+ * The function takes the request an action is handed, so one action can pass
+ * its own on.
+ *
+ * Only an action: a controller or a path outside `Actions/` is refused, since
+ * what names it may be declared a long way from a routes file.
+ */
+export async function resolveActionHandler(handlerPath: string): Promise<(request: RequestInstance<any, any>) => Response | Promise<Response>> {
+  if (typeof handlerPath !== 'string' || !/^Actions\/[\w/-]+(?:\.ts)?$/.test(handlerPath) || handlerPath.includes('Controller'))
+    throw new Error(`[Router] '${String(handlerPath)}' does not name an action. An action is named by its path under app/, as in 'Actions/Orders/ShipOrderAction'.`)
+  const handler = await resolveStringHandler(handlerPath)
+  // What an action is handed as `RequestInstance` is the router's own request
+  // object, so the one a caller holds is the one the named action is given.
+  return request => handler(request as unknown as EnhancedRequest)
 }
 
 async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteHandlerFn> {
