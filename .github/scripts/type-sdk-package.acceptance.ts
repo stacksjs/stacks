@@ -172,10 +172,11 @@ for (const fixture of fixtures) {
     await mkdir(evidenceBase, { recursive: true })
     const directory = await mkdtemp(join(evidenceBase, `stacks-type-sdk-${fixture.directory}-`))
     const consumer = join(directory, 'consumer')
+    const installCache = join(directory, 'install-cache')
     const source = join(checkout, 'storage/framework/core', fixture.directory)
     const archive = join(directory, 'package.tgz')
     const commands: Array<Record<string, unknown>> = []
-    const receipt: Record<string, unknown> = { package: fixture.name, source, directory, compilerOptions, commands, completed: false }
+    const receipt: Record<string, unknown> = { package: fixture.name, source, directory, installCache, compilerOptions, commands, completed: false }
     let registry: ReturnType<typeof candidateRegistry> | undefined
     const candidates: Candidate[] = []
 
@@ -258,6 +259,9 @@ for (const fixture of fixtures) {
       receipt.consumerManifest = manifest
       await writeFile(join(consumer, 'package.json'), JSON.stringify(manifest))
       await writeFile(join(consumer, 'tsconfig.json'), JSON.stringify({ compilerOptions, files: ['control.ts'] }))
+      // Both installations share a normal enabled cache owned by this case.
+      // Random registry origins must not accumulate copies in the user's cache.
+      await writeFile(join(consumer, 'bunfig.toml'), `[install.cache]\ndir = ${JSON.stringify(installCache)}\n`)
       if (registry) await writeFile(join(consumer, '.npmrc'), `registry=${registry.url}\n@stacksjs:registry=${registry.url}\nalways-auth=false\n`)
       const installations: Array<Record<string, unknown>> = []
       receipt.installations = installations
@@ -338,6 +342,7 @@ for (const fixture of fixtures) {
       await writeFile(join(directory, 'receipt.json'), JSON.stringify(receipt, null, 2))
       // Keep archives, locks, controls and logs as evidence; installation is reproducible.
       await rm(join(consumer, 'node_modules'), { recursive: true, force: true })
+      await rm(installCache, { recursive: true, force: true })
       if (!process.env.STACKS_TYPE_SDK_EVIDENCE) await rm(directory, { recursive: true, force: true })
     }
   }, 180_000)
