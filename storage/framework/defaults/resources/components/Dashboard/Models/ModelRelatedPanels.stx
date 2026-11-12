@@ -240,7 +240,7 @@ function add(panel: ModelRelatedPanel): void {
     <form id="related-row-form" class="flex flex-col gap-5" data-related-editor @submit.prevent="save">
       <div :if="saveError()" role="alert" class="px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg dark:border-red-900">{{ saveError() }}</div>
       <ModelFieldInputs
-        :fields="editor() ? (editor().panel.fields || []) : []"
+        :fields="editor()?.panel.fields ?? []"
         :slug="editor() ? editor().panel.slug : ''"
         :values="values()"
         :errors="saveErrors()"
@@ -252,7 +252,7 @@ function add(panel: ModelRelatedPanel): void {
     <template #footer>
       <div class="flex gap-2 items-center justify-end w-full">
         <Button variant="secondary" :disabled="saving()" @click="closeEditor">Cancel</Button>
-        <Button variant="primary" type="submit" form="related-row-form" :loading="saving()">{{ editor() && editor().id === null ? 'Add' : 'Save changes' }}</Button>
+        <Button variant="primary" type="submit" form="related-row-form" :loading="saving()">{{ editor()?.id === null ? 'Add' : 'Save changes' }}</Button>
       </div>
     </template>
   </Modal>

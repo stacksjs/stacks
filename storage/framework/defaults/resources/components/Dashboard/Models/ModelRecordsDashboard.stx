@@ -800,7 +800,7 @@ void load()
   />
 
   <ModelActionForm
-    :action="askingAction() ? askingAction().action : null"
+    :action="askingAction()?.action ?? null"
     :note="actionFormNote()"
     :busy="Boolean(runningAction()) || bulkBusy()"
     :busyLabel="bulkProgressLabel()"
