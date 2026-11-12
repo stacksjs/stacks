@@ -31,9 +31,15 @@ export interface ModelBulkResult {
   stopped: string
   /** The record the run stopped at. It was tried, and not done. */
   stoppedAt: string
+  /**
+   * The input itself was refused, by the first record tried: the messages
+   * for its fields. Nothing ran, and the form that asked can show them.
+   * Empty otherwise.
+   */
+  invalid: Record<string, string[]>
 }
 
-type Attempt = { ok: true, anonymized?: boolean } | { ok: false, error: string, status: number }
+type Attempt = { ok: true, anonymized?: boolean } | { ok: false, error: string, status: number, errors?: Record<string, string[]> }
 
 /** The model's actions offered for a selection. */
 export function modelBulkActions(actions: ModelCustomAction[] | undefined): ModelCustomAction[] {
@@ -69,7 +75,7 @@ function stopsTheRun(status: number): boolean {
  * pressed a hundred times.
  */
 export async function modelBulkRun(ids: string[], attempt: (id: string) => Promise<Attempt>, progress: (done: number, total: number) => void = () => {}): Promise<ModelBulkResult> {
-  const result: ModelBulkResult = { total: ids.length, done: 0, anonymized: 0, failed: [], stopped: '', stoppedAt: '' }
+  const result: ModelBulkResult = { total: ids.length, done: 0, anonymized: 0, failed: [], stopped: '', stoppedAt: '', invalid: {} }
   for (const [index, id] of ids.entries()) {
     progress(index, ids.length)
     const outcome = await attempt(id)
@@ -78,6 +84,12 @@ export async function modelBulkRun(ids: string[], attempt: (id: string) => Promi
       if (outcome.anonymized)
         result.anonymized += 1
       continue
+    }
+    // What was typed is the same for every record. If the first one says a
+    // field is wrong, so will the rest: back to the form, with nothing done.
+    if (index === 0 && outcome.errors && Object.keys(outcome.errors).length > 0) {
+      result.invalid = outcome.errors
+      break
     }
     if (stopsTheRun(outcome.status)) {
       result.stopped = outcome.error
@@ -90,18 +102,25 @@ export async function modelBulkRun(ids: string[], attempt: (id: string) => Promi
   return result
 }
 
-/** Run one of the model's own actions on each of these records. */
+/**
+ * Run one of the model's own actions on each of these records. `input` is
+ * what its form was told, asked once and given to every record.
+ */
 export function runModelActionOnEach(
   slug: string,
   ids: string[],
   name: string,
-  progress?: (done: number, total: number) => void,
-  run: (slug: string, id: string, name: string) => Promise<ModelActionResult> = runModelAction,
+  options: {
+    input?: Record<string, unknown>
+    progress?: (done: number, total: number) => void
+    run?: (slug: string, id: string, name: string, input: Record<string, unknown>) => Promise<ModelActionResult>
+  } = {},
 ): Promise<ModelBulkResult> {
+  const run = options.run ?? runModelAction
   return modelBulkRun(ids, async (id) => {
-    const outcome = await run(slug, id, name)
-    return outcome.ok ? { ok: true } : { ok: false, error: outcome.error, status: outcome.status ?? 0 }
-  }, progress)
+    const outcome = await run(slug, id, name, options.input ?? {})
+    return outcome.ok ? { ok: true } : { ok: false, error: outcome.error, status: outcome.status ?? 0, errors: outcome.errors }
+  }, options.progress)
 }
 
 /** Delete each of these records, as the trash on its row would. */
@@ -125,15 +144,23 @@ function records(count: number): string {
   return count === 1 ? 'record' : 'records'
 }
 
-/** What the confirmation says before one of the model's actions runs on a selection. */
-export function modelBulkActionConfirm(action: ModelCustomAction, targets: number, selected: number): { title: string, description: string } {
+/**
+ * How far an action on a selection reaches: how many of the selected records
+ * it will run on, and that each is done on its own.
+ */
+export function modelBulkActionScope(targets: number, selected: number): string {
   const scope = targets === selected
     ? `It will run on the ${selected === 1 ? 'selected record' : `${selected} selected records`}.`
     : `It will run on ${targets} of the ${selected} selected records. The other ${selected - targets === 1 ? 'one is not one' : `${selected - targets} are not ones`} it applies to.`
+  return [scope, targets > 1 ? 'Each record is done on its own: one that is refused does not stop the others.' : ''].filter(Boolean).join(' ')
+}
+
+/** What the confirmation says before one of the model's actions runs on a selection. */
+export function modelBulkActionConfirm(action: ModelCustomAction, targets: number, selected: number): { title: string, description: string } {
   return {
     title: `${action.label}?`,
     // The model's own sentence about what happens, then how far it reaches.
-    description: [action.confirm, scope, targets > 1 ? 'Each record is done on its own: one that is refused does not stop the others.' : ''].filter(Boolean).join(' '),
+    description: [action.confirm, modelBulkActionScope(targets, selected)].filter(Boolean).join(' '),
   }
 }
 

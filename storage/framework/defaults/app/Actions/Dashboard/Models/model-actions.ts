@@ -18,7 +18,8 @@
 import type { ResponseStatus } from '@stacksjs/bun-router'
 import { response } from '@stacksjs/router'
 import { safeGet } from '../../../../resources/functions/dashboard/data'
-import { humanizeIdentifier } from './model-write'
+import { type FieldAsking, readFieldAsking } from './model-fields'
+import { humanizeIdentifier, type ModelCreateField, modelFieldType } from './model-write'
 
 /**
  * Where an action is offered: on the record's own page, in its row of a
@@ -42,6 +43,12 @@ export interface ModelCustomAction {
   /** Drawn in red: it removes or revokes something. */
   destructive: boolean
   places: ModelActionPlace[]
+  /**
+   * What the action has to be told before it runs, from its own
+   * `validations`: a refund's reason. Empty for one that takes nothing. With
+   * any, pressing the button opens a form and not a confirmation.
+   */
+  fields: ModelCreateField[]
 }
 
 /** The same, with what only the server needs: which action runs, and for which records. */
@@ -49,6 +56,74 @@ export interface ModelActionDefinition extends ModelCustomAction {
   /** The handler string a route would take: `Actions/Orders/ShipOrderAction`. */
   handler: string
   when: Array<{ column: string, values: ModelActionValue[] }>
+  /** How the model says the action's input is asked for, by the input's name. */
+  asking: Record<string, FieldAsking>
+}
+
+/**
+ * The parameters of the route that runs an action. They are part of what an
+ * action can validate, and never something to ask a person: the record is
+ * the one whose button was pressed.
+ */
+const ROUTE_PARAMETERS: ReadonlySet<string> = new Set(['id', 'dashboardModel', 'dashboardAction'])
+
+/** Kinds of value no form input can supply: a list, a structure, a file's bytes, a secret. */
+const UNASKABLE: ReadonlySet<string> = new Set(['array', 'binary', 'blob', 'file', 'object', 'password'])
+
+/** The kinds that are text, and may be given another text input. */
+const TEXT_KINDS: ReadonlySet<string> = new Set(['email', 'longtext', 'text', 'url'])
+
+/**
+ * The form an action's input is asked for in, from the action's own
+ * `validations`: one field per rule, in the control the rule calls for,
+ * required where the rule is.
+ *
+ * `asking` is the model's say on how each is asked (`fields` on the
+ * declaration). `unaskable` names what the action requires that no form can
+ * give; with any, the action cannot be run from a form at all. `ignored`
+ * says which of the model's settings could not be applied, and why.
+ */
+export function modelActionFields(validations: unknown, asking: Record<string, FieldAsking> = {}): { fields: ModelCreateField[], unaskable: string[], ignored: string[] } {
+  const fields: ModelCreateField[] = []
+  const unaskable: string[] = []
+  // What the model asked for that cannot be done, in words that name the field.
+  const ignored: string[] = []
+  if (!validations || typeof validations !== 'object' || Array.isArray(validations))
+    return { fields, unaskable, ignored: Object.keys(asking).map(name => `describes a field '${name}' that the action does not take`) }
+
+  for (const [name, entry] of Object.entries(validations as Record<string, any>)) {
+    const rule = entry?.rule
+    if (ROUTE_PARAMETERS.has(name) || !rule || typeof rule.validate !== 'function')
+      continue
+    // A file rule carries no name at all.
+    const kind = rule.name === null || rule.name === undefined ? 'file' : String(rule.name)
+    if (UNASKABLE.has(kind)) {
+      // Optional: left out of the form. Required: there is no asking for it.
+      if (rule.isRequired === true)
+        unaskable.push(name)
+      continue
+    }
+    const said = asking[name]
+    const derived = modelFieldType(name, { validation: { rule } })
+    const type = said?.input && TEXT_KINDS.has(derived) ? said.input : derived
+    // What a value is stays the rule's to say: a number is not asked for as prose.
+    if (said?.input && !TEXT_KINDS.has(derived))
+      ignored.push(`field '${name}' asks for the '${said.input}' input, but it is not a field of text (it is asked for as ${derived})`)
+    fields.push({
+      name,
+      label: said?.label ?? modelActionLabel(name),
+      type,
+      required: rule.isRequired === true,
+      defaultValue: type === 'boolean' ? false : '',
+      options: Array.isArray(rule.allowedValues) ? rule.allowedValues.map(String) : [],
+      ...(said?.help ? { help: said.help } : {}),
+    })
+  }
+  for (const name of Object.keys(asking)) {
+    if (!fields.some(field => field.name === name))
+      ignored.push(`describes a field '${name}' that the action does not take`)
+  }
+  return { fields, unaskable, ignored }
 }
 
 const PLACES: readonly ModelActionPlace[] = ['record', 'row', 'bulk']
@@ -138,6 +213,21 @@ export function modelActionDefinitions(Model: any): { actions: ModelActionDefini
       problems.push(`${called} has a \`when\` that cannot be read: it maps a field to the value, or list of values, a record must hold`)
       continue
     }
+    // How the action's input is asked for, in the words `dashboard.fields` uses.
+    const asking: Record<string, FieldAsking> = {}
+    if (entry.fields !== undefined) {
+      if (!entry.fields || typeof entry.fields !== 'object' || Array.isArray(entry.fields)) {
+        problems.push(`${called} has \`fields\` that is not an object keyed by the input's name`)
+      }
+      else {
+        for (const [field, settings] of Object.entries(entry.fields as Record<string, unknown>)) {
+          if (settings && typeof settings === 'object' && !Array.isArray(settings))
+            asking[field] = readFieldAsking(`${called} field '${field}'`, settings as Record<string, unknown>, problems)
+          else
+            problems.push(`${called} field '${field}' is not an object of settings`)
+        }
+      }
+    }
     const on: unknown[] = entry.on === undefined ? [...DEFAULT_PLACES] : Array.isArray(entry.on) ? entry.on : [entry.on]
     const places = PLACES.filter(place => on.includes(place))
     if (places.length === 0 || places.length !== on.length) {
@@ -151,8 +241,10 @@ export function modelActionDefinitions(Model: any): { actions: ModelActionDefini
       confirm: typeof entry.confirm === 'string' ? entry.confirm.trim() : '',
       destructive: entry.destructive === true,
       places,
+      fields: [],
       handler,
       when,
+      asking,
     })
   }
   return { actions, problems }
@@ -173,23 +265,35 @@ export function modelActionApplies(action: ModelActionDefinition, row: unknown):
 
 /** What the page is told: the button, without the file it runs or the rule that narrows it. */
 export function publicModelAction(action: ModelActionDefinition): ModelCustomAction {
-  const { handler: _handler, when: _when, ...shown } = action
+  const { handler: _handler, when: _when, asking: _asking, ...shown } = action
   return shown
 }
 
 type ResolveHandler = (handler: string) => Promise<unknown>
 
-const loadable = new Map<string, Promise<string | null>>()
+/** What an action's input is called when the model does not say. */
+function describeUnaskable(names: string[]): string {
+  return names.map(name => `'${name}'`).join(', ')
+}
+
+/** What loading an action came to: what it takes, or why it could not be loaded. */
+type Loaded = { validations: unknown } | { failure: string }
+
+const loadable = new Map<string, Promise<Loaded>>()
 const warned = new Set<string>()
 
-async function resolveWithRouter(handler: string): Promise<unknown> {
-  const { resolveActionHandler } = await import('@stacksjs/router')
-  return resolveActionHandler(handler)
+/** Load the action as the router would, and say what it validates. */
+async function resolveWithRouter(handler: string): Promise<{ validations?: unknown }> {
+  const { resolveActionValidations } = await import('@stacksjs/router')
+  return { validations: await resolveActionValidations(handler) }
 }
 
 /**
  * The actions a model offers: the ones it declares that can be read and whose
  * action can be loaded. The rest are said once, by name, with what to change.
+ *
+ * Each comes back with the form its input is asked for in, read from the
+ * action's own `validations`.
  *
  * Loading is checked when the list is drawn, not when the button is pressed.
  * A handler string is not checked by the compiler, so a renamed or mistyped
@@ -203,14 +307,28 @@ export async function modelActions(Model: any, modelName: string, resolve: Resol
     const key = `${modelName}:${action.name}:${action.handler}`
     let checked = loadable.get(key)
     if (!checked) {
-      checked = resolve(action.handler).then(() => null, error => error instanceof Error ? error.message : String(error))
+      checked = resolve(action.handler).then(
+        resolved => ({ validations: (resolved as { validations?: unknown } | null | undefined)?.validations }),
+        error => ({ failure: error instanceof Error ? error.message : String(error) }),
+      )
       loadable.set(key, checked)
     }
-    const failure = await checked
-    if (failure === null)
-      offered.push(action)
-    else
-      problems.push(`'${action.name}' names ${action.handler}, which could not be loaded (${failure})`)
+    const loaded = await checked
+    if ('failure' in loaded) {
+      problems.push(`'${action.name}' names ${action.handler}, which could not be loaded (${loaded.failure})`)
+      continue
+    }
+    // What the action takes, as a form. One that requires what no form can
+    // give is a button that could only be refused.
+    const { fields, unaskable, ignored } = modelActionFields(loaded.validations, action.asking)
+    if (unaskable.length > 0) {
+      problems.push(`'${action.name}' runs ${action.handler}, which requires ${describeUnaskable(unaskable)}: ${unaskable.length === 1 ? 'a value' : 'values'} a form cannot give (a list, a structure, a file or a password)`)
+      continue
+    }
+    // The action is still offered; only that setting is.
+    for (const note of ignored)
+      problems.push(`'${action.name}' ${note}`)
+    offered.push({ ...action, fields })
   }
 
   for (const problem of problems) {

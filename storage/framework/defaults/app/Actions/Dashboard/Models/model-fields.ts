@@ -48,6 +48,42 @@ function snakeCase(name: string): string {
 
 const parsed = new WeakMap<object, { fields: Record<string, ModelFieldOverride>, problems: string[] }>()
 
+/** How a field is asked for in a form: what it is called, the help under it, the text input it gets. */
+export interface FieldAsking {
+  label?: string
+  help?: string
+  input?: ModelFieldInput
+}
+
+/**
+ * Read the settings that say how a field is asked for. The same three for a
+ * model's own field (`dashboard.fields`) and for a field of an action's
+ * input (`dashboard.actions[].fields`), so they are spelled the same way in
+ * both. One that cannot be read is dropped on its own and said so.
+ */
+export function readFieldAsking(called: string, settings: Record<string, unknown>, problems: string[]): FieldAsking {
+  const asking: FieldAsking = {}
+  if (settings.label !== undefined) {
+    if (typeof settings.label === 'string' && settings.label.trim())
+      asking.label = settings.label.trim()
+    else
+      problems.push(`${called} has a label that is not text`)
+  }
+  if (settings.help !== undefined) {
+    if (typeof settings.help === 'string' && settings.help.trim())
+      asking.help = settings.help.trim()
+    else
+      problems.push(`${called} has help that is not text`)
+  }
+  if (settings.input !== undefined) {
+    if (MODEL_FIELD_INPUTS.includes(settings.input as ModelFieldInput))
+      asking.input = settings.input as ModelFieldInput
+    else
+      problems.push(`${called} asks for an input the dashboard does not have: '${String(settings.input)}' (it has ${list(MODEL_FIELD_INPUTS)})`)
+  }
+  return asking
+}
+
 function list(values: readonly string[]): string {
   return values.join(', ')
 }
@@ -86,26 +122,8 @@ export function modelFieldOverrides(Model: any): { fields: Record<string, ModelF
     }
     const own = snakeCase(name)
     const relation = relations.find(candidate => candidate.column === own || candidate.column === `${own}_id` || snakeCase(candidate.model) === own)
-    const override: ModelFieldOverride = { declared: name }
+    const override: ModelFieldOverride = { declared: name, ...readFieldAsking(called, settings, problems) }
 
-    if (settings.label !== undefined) {
-      if (typeof settings.label === 'string' && settings.label.trim())
-        override.label = settings.label.trim()
-      else
-        problems.push(`${called} has a label that is not text`)
-    }
-    if (settings.help !== undefined) {
-      if (typeof settings.help === 'string' && settings.help.trim())
-        override.help = settings.help.trim()
-      else
-        problems.push(`${called} has help that is not text`)
-    }
-    if (settings.input !== undefined) {
-      if (MODEL_FIELD_INPUTS.includes(settings.input))
-        override.input = settings.input
-      else
-        problems.push(`${called} asks for an input the dashboard does not have: '${String(settings.input)}' (it has ${list(MODEL_FIELD_INPUTS)})`)
-    }
     if (settings.format !== undefined) {
       if (MODEL_FIELD_FORMATS.includes(settings.format))
         override.display = { format: settings.format }

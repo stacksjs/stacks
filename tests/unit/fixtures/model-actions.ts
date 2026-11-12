@@ -84,6 +84,7 @@ assert.deepEqual(shipped.actions, [{
   confirm: 'They are emailed a link to choose a new password. Their current password keeps working until they use it.',
   destructive: false,
   places: ['record'],
+  fields: [],
 }], 'the page is told how to draw the button, and not which file runs or for whom')
 assert.deepEqual(shipped.rowActions, { 1: ['send-password-reset'], 2: ['send-password-reset'] }, 'an erased account is offered nothing')
 
@@ -124,6 +125,24 @@ provideActions({
       handle: (request: any) => (ran.push(`reason:${request.get('reason')}`), undefined),
     },
   }),
+  // Takes input of every kind a form can ask for, and validates the record's id.
+  'Actions/Fixture/Refund': async () => ({
+    default: {
+      validations: {
+        id: { rule: schema.number().required() },
+        reason: { rule: schema.string().required().min(3), message: 'Say why.' },
+        amount: { rule: schema.number().min(1) },
+        restock: { rule: schema.boolean() },
+        method: { rule: schema.enum(['card', 'credit']).required() },
+        attachments: { rule: schema.array() },
+      },
+      handle: (request: any) => (ran.push(`refund:${request.getParam('id')}:${JSON.stringify({ reason: request.get('reason'), amount: request.get('amount'), restock: request.get('restock'), method: request.get('method') })}`), { message: 'Refunded.' }),
+    },
+  }),
+  // Requires what no form can give.
+  'Actions/Fixture/Import': async () => ({
+    default: { validations: { rows: { rule: schema.array().required() } }, handle: () => (ran.push('import'), {}) },
+  }),
   'Actions/Fixture/Elsewhere': async () => ({
     default: { handle: () => ({ redirect: 'https://example.com/phish' }) },
   }),
@@ -141,6 +160,8 @@ console.warn = (...parts: unknown[]) => void warnings.push(parts.map(String).joi
   // Offered for a selection only. It is still run one record at a time.
   { name: 'needs-reason', action: 'Actions/Fixture/NeedsReason', on: ['bulk'] },
   { name: 'elsewhere', action: 'Actions/Fixture/Elsewhere' },
+  { name: 'refund', action: 'Actions/Fixture/Refund', on: ['record'], fields: { reason: { label: 'Reason for the refund', input: 'longtext', help: 'Shown to the customer.' }, amount: { input: 'longtext' }, nonsense: { label: 'Nope' } } },
+  { name: 'import', action: 'Actions/Fixture/Import' },
   // Declared badly, each in its own way: none of these may become a button.
   { name: 'gone', action: 'Actions/Fixture/WasRenamed' },
   { name: 'no handler' },
@@ -159,13 +180,14 @@ assert.deepEqual(custom.actions.map(action => [action.name, action.label, action
   ['guarded', 'Guarded', ['record', 'row'], false],
   ['needs-reason', 'Needs reason', ['bulk'], false],
   ['elsewhere', 'Elsewhere', ['record', 'row'], false],
+  ['refund', 'Refund', ['record'], false],
 ])
-const always = ['refuses', 'guarded', 'needs-reason', 'elsewhere']
+const always = ['refuses', 'guarded', 'needs-reason', 'elsewhere', 'refund']
 assert.deepEqual(custom.rowActions, {
   1: always,
   2: ['requireTwoFactor', 'unverified-only', ...always],
 }, 'each row is offered what its own values allow')
-for (const name of ['gone', 'no handler', 'refuses', 'controller', 'unreadable', 'nowhere'])
+for (const name of ['gone', 'no handler', 'refuses', 'controller', 'unreadable', 'nowhere', 'import'])
   assert(warnings.some(line => line.includes('User dashboard.actions') && line.includes(`'${name}'`)), `${name} is said by name: ${warnings.join(' | ')}`)
 assert(warnings.some(line => line.includes('Actions/Fixture/WasRenamed') && line.includes('could not be loaded')))
 // Said once, not on every page load.
@@ -199,6 +221,33 @@ assert.deepEqual(await run('needs-reason', 1, { reason: 'requested by phone' }),
 assert(ran.includes('reason:requested by phone'))
 assert.deepEqual((await run('elsewhere', 1)).body, { ok: true, message: '', redirect: '' }, 'an address outside the dashboard is not followed')
 console.log('PASS the action runs as its own route would: authorize, validations, and its own refusals')
+
+// 4. An action that takes input is asked for it: the form is its own validations.
+const form = (name: string) => (custom.actions.find(action => action.name === name)!.fields as Array<Record<string, unknown>>)
+assert.deepEqual(form('refund'), [
+  // The model's own words for it, and the box it asked for.
+  { name: 'reason', label: 'Reason for the refund', type: 'longtext', required: true, defaultValue: '', options: [], help: 'Shown to the customer.' },
+  // A number stays a number: another input is only another way to type text.
+  { name: 'amount', label: 'Amount', type: 'number', required: false, defaultValue: '', options: [] },
+  { name: 'restock', label: 'Restock', type: 'boolean', required: false, defaultValue: false, options: [] },
+  { name: 'method', label: 'Method', type: 'enum', required: true, defaultValue: '', options: ['card', 'credit'] },
+], 'never the record\'s id, and never an optional list')
+assert.deepEqual(form('needs-reason').map(field => [field.name, field.type, field.required]), [['reason', 'text', true]])
+assert.deepEqual(form('elsewhere'), [], 'an action that takes nothing has no form')
+assert(warnings.some(line => line.includes('\'import\' runs Actions/Fixture/Import, which requires \'rows\': a value a form cannot give')), warnings.join(' | '))
+assert(warnings.some(line => line.includes('\'refund\' describes a field \'nonsense\' that the action does not take')), warnings.join(' | '))
+assert(warnings.some(line => line.includes('\'refund\' field \'amount\' asks for the \'longtext\' input, but it is not a field of text (it is asked for as number)')), warnings.join(' | '))
+assert.equal((await run('import', 1)).status, 404, 'what is left out cannot be run by asking')
+// What the form sends is what the action receives, as its own route would.
+assert.deepEqual(await run('refund', 2, { reason: 'Arrived damaged', amount: 1200, restock: true, method: 'credit' }), { status: 200, body: { ok: true, message: 'Refunded.', redirect: '' } })
+assert(ran.includes('refund:2:{"reason":"Arrived damaged","amount":1200,"restock":true,"method":"credit"}'), ran.join(' | '))
+// And a refusal names the field, in the action's own words.
+const unanswered = await run('refund', 2, { method: 'cash' })
+assert.equal(unanswered.status, 422)
+assert.deepEqual(Object.keys(unanswered.body.errors).sort(), ['method', 'reason'])
+assert.deepEqual(unanswered.body.errors.reason, ['Say why.'])
+assert.equal(ran.filter(entry => entry.startsWith('refund:')).length, 1)
+console.log('PASS an action that takes input is given a form of its own validations')
 
 ;(User as any).dashboard.actions = declared
 server?.stop?.()

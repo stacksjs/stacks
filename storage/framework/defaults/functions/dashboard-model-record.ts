@@ -43,6 +43,12 @@ export interface ModelCustomAction {
   destructive: boolean
   /** Where it is offered: the record's page, its row in a list, the rows selected in a list. */
   places: Array<'record' | 'row' | 'bulk'>
+  /**
+   * What the action has to be told before it runs, from its own
+   * `validations`. With any, pressing its button opens a form and not a
+   * confirmation.
+   */
+  fields?: ModelCreateField[]
 }
 
 export interface ModelColumn {
@@ -609,24 +615,75 @@ export function modelActionIconClass(action: ModelCustomAction): string {
 
 export type ModelActionResult
   = | { ok: true, message: string, redirect: string }
-    /** `status` is the refusal's HTTP status, or 0 when no answer came back at all. */
-    | { ok: false, error: string, status?: number }
+    /**
+     * `status` is the refusal's HTTP status, or 0 when no answer came back at
+     * all. `errors` are the messages for the input's own fields, when the
+     * refusal is about what was typed.
+     */
+    | { ok: false, error: string, status?: number, errors?: Record<string, string[]> }
+
+/** Whether pressing an action's button opens a form: it takes input. */
+export function modelActionAsks(action: ModelCustomAction | null | undefined): boolean {
+  return (action?.fields?.length ?? 0) > 0
+}
+
+/**
+ * What a form's values are sent as: the request body the action's own route
+ * would receive, each value the type its rule expects. Nothing here checks
+ * them; the action's `validations` do.
+ *
+ * A field left empty is left out, not sent as null: to a rule, an absent
+ * optional field and a null one are different things.
+ */
+export function modelActionInput(fields: ModelCreateField[], values: ModelFormValues): Record<string, unknown> {
+  const input: Record<string, unknown> = {}
+  for (const field of fields) {
+    const value = values[field.name]
+    if (field.type === 'boolean') {
+      input[field.name] = value === true
+      continue
+    }
+    if (typeof value !== 'string' || value === '')
+      continue
+    if (field.type === 'number') {
+      // A rule for a number refuses the digits as text.
+      const number = Number(value)
+      input[field.name] = Number.isFinite(number) ? number : value
+    }
+    else if (field.type === 'datetime') {
+      const moment = new Date(value)
+      input[field.name] = Number.isNaN(moment.getTime()) ? value : moment.toISOString()
+    }
+    else {
+      input[field.name] = value
+    }
+  }
+  return input
+}
 
 /**
  * Run one of a model's own actions on a record. A refusal comes back as its
  * reason, in the action's words: "Already shipped."
+ *
+ * `input` is what the action was told (see {@link modelActionInput}), sent
+ * as the body its own route would receive.
  */
-export async function runModelAction(slug: string, id: string | number, name: string): Promise<ModelActionResult> {
+export async function runModelAction(slug: string, id: string | number, name: string, input: Record<string, unknown> = {}): Promise<ModelActionResult> {
   try {
     const result = await dashboardApi<{ ok?: boolean, message?: string, redirect?: string }>(
       `${modelPath(slug)}/${encodeURIComponent(String(id))}/actions/${encodeURIComponent(name)}`,
-      { method: 'POST', body: {} },
+      { method: 'POST', body: input },
     )
     const redirect = typeof result?.redirect === 'string' && /^\/(?!\/)/.test(result.redirect) ? result.redirect : ''
     return { ok: true, message: typeof result?.message === 'string' ? result.message : '', redirect }
   }
   catch (reason) {
-    return { ok: false, error: reason instanceof Error ? reason.message : String(reason), status: reason instanceof DashboardApiError ? reason.status : 0 }
+    if (!(reason instanceof DashboardApiError))
+      return { ok: false, error: reason instanceof Error ? reason.message : String(reason), status: 0 }
+    // The same shape a refused save has: a line for the top of the form, and
+    // the action's own message under each field it is about.
+    const failure = modelWriteFailure(reason)
+    return { ok: false, error: failure.error, status: reason.status, ...(Object.keys(failure.errors).length > 0 ? { errors: failure.errors } : {}) }
   }
 }
 

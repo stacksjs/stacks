@@ -450,6 +450,10 @@ export interface DashboardModelAction {
    * at `/orders/{id}/ship` needs nothing changed, and its `validations`,
    * `authorize` and `before` all apply.
    *
+   * What it takes, it is asked for: an action with `validations` gets a form
+   * with a field for each, and the answers arrive as the request body, as
+   * they would on its own route (see `fields`).
+   *
    * What it answers with is what the operator is told. A refusal (any status
    * from 400 up, returned or thrown) is shown with its `message`. A success
    * may carry a `message`, shown as the confirmation, and a `redirect`, a
@@ -483,6 +487,23 @@ export interface DashboardModelAction {
    * which and why.
    */
   on?: Array<'record' | 'row' | 'bulk'>
+
+  /**
+   * How the action's input is asked for, by the input's name.
+   *
+   * An action that takes input says so in its own `validations`, and the
+   * dashboard asks for each in a form before running it: one input per rule,
+   * in the control the rule calls for, required where the rule is. Nothing
+   * is declared here for that. This only refines how a field is asked:
+   *
+   * ```ts
+   * fields: { reason: { label: 'Reason for the refund', input: 'longtext', help: 'Shown to the customer.' } }
+   * ```
+   *
+   * The same `label`, `help` and `input` a model's own `dashboard.fields`
+   * takes. A name the action does not validate is ignored and logged.
+   */
+  fields?: Record<string, Pick<DashboardModelField, 'label' | 'help' | 'input'>>
 
   /**
    * The records the action is for: each field with the value, or list of

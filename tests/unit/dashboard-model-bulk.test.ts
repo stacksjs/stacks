@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { DashboardApiError } from '../../storage/framework/defaults/functions/dashboard-api'
 import type { ModelBulkResult } from '../../storage/framework/defaults/functions/dashboard-model-bulk'
-import { deleteModelRecords, modelBulkActionConfirm, modelBulkActions, modelBulkDeleteConfirm, modelBulkDeleteTargets, modelBulkNotice, modelBulkTargets, runModelActionOnEach, modelBulkRun } from '../../storage/framework/defaults/functions/dashboard-model-bulk'
+import { deleteModelRecords, modelBulkActionConfirm, modelBulkActionScope, modelBulkActions, modelBulkDeleteConfirm, modelBulkDeleteTargets, modelBulkNotice, modelBulkTargets, runModelActionOnEach, modelBulkRun } from '../../storage/framework/defaults/functions/dashboard-model-bulk'
 import type { ModelActionResult, ModelCustomAction } from '../../storage/framework/defaults/functions/dashboard-model-record'
 
 /**
@@ -18,7 +18,7 @@ import type { ModelActionResult, ModelCustomAction } from '../../storage/framewo
  * exactly what happened.
  */
 const action = (name: string, places: ModelCustomAction['places'], extra: Partial<ModelCustomAction> = {}): ModelCustomAction => ({ name, label: 'Mark as shipped', icon: '', confirm: '', destructive: false, places, ...extra })
-const result = (partial: Partial<ModelBulkResult>): ModelBulkResult => ({ total: 0, done: 0, anonymized: 0, failed: [], stopped: '', stoppedAt: '', ...partial })
+const result = (partial: Partial<ModelBulkResult>): ModelBulkResult => ({ total: 0, done: 0, anonymized: 0, failed: [], stopped: '', stoppedAt: '', invalid: {}, ...partial })
 
 describe('what a selection can have done to it', () => {
   it('the actions the model offers for one, and no others', () => {
@@ -78,15 +78,46 @@ describe('running over a selection', () => {
   })
 
   it('an action runs once per record, by the single record\'s call', async () => {
-    const calls: Array<[string, string, string]> = []
-    const run = async (slug: string, id: string, name: string): Promise<ModelActionResult> => {
-      calls.push([slug, id, name])
+    const calls: Array<[string, string, string, unknown]> = []
+    const run = async (slug: string, id: string, name: string, input: Record<string, unknown>): Promise<ModelActionResult> => {
+      calls.push([slug, id, name, input])
       return id === '8' ? { ok: false, error: 'On hold.', status: 409 } : { ok: true, message: 'Shipped.', redirect: '/models/order/1' }
     }
-    expect(await runModelActionOnEach('order', ['7', '8'], 'ship', undefined, run)).toEqual(result({ total: 2, done: 1, failed: [{ id: '8', error: 'On hold.' }] }))
-    expect(calls).toEqual([['order', '7', 'ship'], ['order', '8', 'ship']])
+    expect(await runModelActionOnEach('order', ['7', '8'], 'ship', { run })).toEqual(result({ total: 2, done: 1, failed: [{ id: '8', error: 'On hold.' }] }))
+    expect(calls).toEqual([['order', '7', 'ship', {}], ['order', '8', 'ship', {}]])
     // A refusal that carries no status never arrived as an answer: that stops the run.
-    expect(await runModelActionOnEach('order', ['7', '8'], 'ship', undefined, async () => ({ ok: false, error: 'Could not reach the server.' }))).toMatchObject({ done: 0, stopped: 'Could not reach the server.', stoppedAt: '7' })
+    expect(await runModelActionOnEach('order', ['7', '8'], 'ship', { run: async () => ({ ok: false, error: 'Could not reach the server.' }) })).toMatchObject({ done: 0, stopped: 'Could not reach the server.', stoppedAt: '7' })
+  })
+
+  it('what the form was told is asked once and given to every record', async () => {
+    const given: unknown[] = []
+    const run = async (_slug: string, _id: string, _name: string, input: Record<string, unknown>): Promise<ModelActionResult> => {
+      given.push(input)
+      return { ok: true, message: '', redirect: '' }
+    }
+    const input = { reason: 'Recall', restock: true }
+    expect(await runModelActionOnEach('order', ['7', '8'], 'refund', { input, run })).toMatchObject({ done: 2 })
+    expect(given).toEqual([input, input])
+  })
+
+  it('input the first record refuses runs on none of them', async () => {
+    const tried: string[] = []
+    const refused = async (_slug: string, id: string): Promise<ModelActionResult> => {
+      tried.push(id)
+      return { ok: false, error: 'Check the field marked below.', status: 422, errors: { reason: ['Say why.'] } }
+    }
+    // What was typed is the same for every record: back to the form.
+    expect(await runModelActionOnEach('order', ['7', '8', '9'], 'refund', { input: { reason: 'x' }, run: refused })).toEqual(result({ total: 3, invalid: { reason: ['Say why.'] } }))
+    expect(tried).toEqual(['7'])
+
+    // Refused for its fields only further in: that record's own, and the run goes on.
+    const later = async (_slug: string, id: string): Promise<ModelActionResult> => id === '8'
+      ? { ok: false, error: 'Check the field marked below.', status: 422, errors: { amount: ['More than was paid.'] } }
+      : { ok: true, message: '', redirect: '' }
+    expect(await runModelActionOnEach('order', ['7', '8', '9'], 'refund', { run: later })).toEqual(result({ total: 3, done: 2, failed: [{ id: '8', error: 'Check the field marked below.' }] }))
+    // A first refusal that is not about the input is that record's own too.
+    const held = async (_slug: string, id: string): Promise<ModelActionResult> => id === '7' ? { ok: false, error: 'On hold.', status: 409 } : { ok: true, message: '', redirect: '' }
+    expect(await runModelActionOnEach('order', ['7', '8'], 'refund', { run: held })).toMatchObject({ done: 1, failed: [{ id: '7', error: 'On hold.' }], invalid: {} })
   })
 
   it('a delete counts what was removed and what was kept anonymized', async () => {
@@ -116,6 +147,8 @@ describe('what is said before', () => {
     // One record: nothing to say about the others.
     expect(modelBulkActionConfirm(action('ship', ['bulk']), 1, 1).description).toBe('It will run on the selected record.')
     expect(modelBulkActionConfirm(action('ship', ['bulk']), 1, 4).description).toBe('It will run on 1 of the 4 selected records. The other 3 are not ones it applies to.')
+    // The same reach, on its own, for a form that already shows the model's sentence.
+    expect(modelBulkActionScope(3, 5)).toBe('It will run on 3 of the 5 selected records. The other 2 are not ones it applies to. Each record is done on its own: one that is refused does not stop the others.')
   })
 
   it('a delete: that it cannot be undone, and what happens to an account others refer to', () => {
@@ -190,10 +223,12 @@ describe('the list', () => {
   })
 
   it('acting on a selection always asks first, and runs through the single record\'s calls', () => {
-    expect(list).toContain('@click="confirmingBulk.set({ kind: \'action\', action })"')
+    // In the action's form when it takes input, in a confirmation when it does not.
+    expect(list).toContain('@click="startBulkAction(action)"')
+    expect(list).toContain('if (modelActionAsks(action))\n    openActionForm(action, null)\n  else\n    confirmingBulk.set({ kind: \'action\', action })')
     expect(list).toContain('@click="confirmingBulk.set({ kind: \'delete\' })"')
     expect(list).toContain('result = await deleteModelRecords(slug(), bulkDeleteTargets(), track)')
-    expect(list).toContain('result = await runModelActionOnEach(slug(), bulkTargets(pending.action), pending.action.name, track)')
+    expect(list).toContain('result = await runModelActionOnEach(slug(), bulkTargets(pending.action), pending.action.name, { input, progress: track })')
     expect(list).toContain(':disabled="bulkBusy() || bulkTargets(action).length === 0"')
     // No button in the list runs a bulk action without the confirmation between.
     expect(list).not.toMatch(/@click="runBulk/)
