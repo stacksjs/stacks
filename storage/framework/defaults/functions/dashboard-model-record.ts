@@ -357,6 +357,17 @@ export function modelRecordListLabel(record: { tableName?: string } | null, back
   return record?.tableName ? titleCase(record.tableName) : 'Records'
 }
 
+/**
+ * What a model is called before its record has come, from the page's address:
+ * `social-post` is "Social Post". The heading says "View Social Post" from
+ * the first paint and does not change when the answer arrives. (The server's
+ * own word wins once it does; it differs only where it spells an initialism,
+ * "GDPR Request".)
+ */
+export function modelNameFromSlug(slug: string): string {
+  return titleCase(slug.trim()) || 'Record'
+}
+
 /** What to call a record in a heading: its name, title or email, else its id. */
 export function modelRecordTitle(record: ModelRecord): string {
   for (const key of ['name', 'title', 'email', 'subject']) {

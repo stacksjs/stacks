@@ -1,0 +1,24 @@
+<script client>
+// Where a page's content will be, before its first answer. An empty panel of
+// about the content's size, so the page does not jump twice, that says what
+// it is waiting for only once that has taken long enough to notice
+// (`dashboardLoaderTimer`). A page that answers at once never shows a loader.
+//
+// Not a skeleton: nothing is known yet, so there is nothing to draw the
+// shape of.
+const slow = useReactiveProp('slow', false)
+const label = useReactiveProp('label', 'Loading')
+// Off inside something that already has an edge, such as a card.
+const framed = useReactiveProp('framed', true)
+
+const panelClass = derived(() => framed()
+  ? 'flex items-center justify-center h-64 bg-white dark:bg-neutral-900 border border-black/8 rounded-xl dark:border-white/10'
+  : 'flex items-center justify-center h-64')
+</script>
+
+<div role="status" aria-live="polite" data-quiet-loader :class="panelClass()">
+  <p :if="slow()" class="flex gap-2 items-center text-[13px] text-neutral-500 dark:text-neutral-400">
+    <span aria-hidden="true" class="h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
+    <span :text="label()"></span>
+  </p>
+</div>
