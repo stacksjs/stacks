@@ -92,6 +92,16 @@ describe('reading what a model declares', () => {
     })
   })
 
+  it('acting on a selection is asked for by name, never assumed', () => {
+    const places = (on?: unknown) => modelActionDefinitions(model([{ ...ship, ...(on === undefined ? {} : { on }) }])).actions[0]?.places
+    // One record at a time unless the model says otherwise.
+    expect(places()).toEqual(['record', 'row'])
+    expect(places(['bulk'])).toEqual(['bulk'])
+    expect(places(['bulk', 'row'])).toEqual(['row', 'bulk'])
+    expect(places(['bulk', 'record', 'row'])).toEqual(['record', 'row', 'bulk'])
+    expect(places('bulk')).toEqual(['bulk'])
+  })
+
   it('a button\'s words come from its name, in sentence case', () => {
     expect(modelActionLabel('ship')).toBe('Ship')
     expect(modelActionLabel('markShipped')).toBe('Mark shipped')
@@ -115,7 +125,7 @@ describe('reading what a model declares', () => {
       { name: 'when-object', action: ship.action, when: { status: { not: 'paid' } } },
       { name: 'when-empty', action: ship.action, when: { status: [] } },
       { name: 'when-field', action: ship.action, when: { 'status; DROP': 'paid' } },
-      { name: 'on-bulk', action: ship.action, on: ['bulk'] },
+      { name: 'on-toolbar', action: ship.action, on: ['toolbar'] },
       { name: 'on-mixed', action: ship.action, on: ['row', 'toolbar'] },
       { name: 'on-none', action: ship.action, on: [] },
     ]))
@@ -135,9 +145,9 @@ describe('reading what a model declares', () => {
       '\'when-object\' has a `when` that cannot be read: it maps a field to the value, or list of values, a record must hold',
       '\'when-empty\' has a `when` that cannot be read: it maps a field to the value, or list of values, a record must hold',
       '\'when-field\' has a `when` that cannot be read: it maps a field to the value, or list of values, a record must hold',
-      '\'on-bulk\' lists a place under `on` that is not \'record\' or \'row\'',
-      '\'on-mixed\' lists a place under `on` that is not \'record\' or \'row\'',
-      '\'on-none\' lists a place under `on` that is not \'record\' or \'row\'',
+      '\'on-toolbar\' lists a place under `on` that is not \'record\', \'row\' or \'bulk\'',
+      '\'on-mixed\' lists a place under `on` that is not \'record\', \'row\' or \'bulk\'',
+      '\'on-none\' lists a place under `on` that is not \'record\', \'row\' or \'bulk\'',
     ])
   })
 

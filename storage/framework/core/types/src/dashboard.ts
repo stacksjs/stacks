@@ -473,10 +473,16 @@ export interface DashboardModelAction {
   destructive?: boolean
 
   /**
-   * Where the button is drawn: on the record's own page (`record`), in its
-   * row of a list (`row`). Both when left out.
+   * Where the action is offered: on the record's own page (`record`), in its
+   * row of a list (`row`), and for the rows selected in a list (`bulk`).
+   * `record` and `row` when left out.
+   *
+   * `bulk` runs the action once for each selected record it applies to,
+   * each exactly as a single press would, after asking. It is not all or
+   * nothing: the operator is told how many were done and, for the rest,
+   * which and why.
    */
-  on?: Array<'record' | 'row'>
+  on?: Array<'record' | 'row' | 'bulk'>
 
   /**
    * The records the action is for: each field with the value, or list of

@@ -138,7 +138,8 @@ console.warn = (...parts: unknown[]) => void warnings.push(parts.map(String).joi
   { name: 'unverified-only', action: 'Actions/Fixture/RequireTwoFactor', when: { emailVerifiedAt: null } },
   { name: 'refuses', action: 'Actions/Fixture/Refuses', destructive: true },
   { name: 'guarded', action: 'Actions/Fixture/Guarded' },
-  { name: 'needs-reason', action: 'Actions/Fixture/NeedsReason' },
+  // Offered for a selection only. It is still run one record at a time.
+  { name: 'needs-reason', action: 'Actions/Fixture/NeedsReason', on: ['bulk'] },
   { name: 'elsewhere', action: 'Actions/Fixture/Elsewhere' },
   // Declared badly, each in its own way: none of these may become a button.
   { name: 'gone', action: 'Actions/Fixture/WasRenamed' },
@@ -146,7 +147,7 @@ console.warn = (...parts: unknown[]) => void warnings.push(parts.map(String).joi
   { name: 'refuses', action: 'Actions/Fixture/Refuses' },
   { name: 'controller', action: 'Controllers/UserController@promote' },
   { name: 'unreadable', action: 'Actions/Fixture/Refuses', when: 'verified' },
-  { name: 'nowhere', action: 'Actions/Fixture/Refuses', on: ['bulk'] },
+  { name: 'nowhere', action: 'Actions/Fixture/Refuses', on: ['toolbar'] },
 ]
 
 const custom = await list()
@@ -156,7 +157,7 @@ assert.deepEqual(custom.actions.map(action => [action.name, action.label, action
   ['unverified-only', 'Unverified only', ['record', 'row'], false],
   ['refuses', 'Refuses', ['record', 'row'], true],
   ['guarded', 'Guarded', ['record', 'row'], false],
-  ['needs-reason', 'Needs reason', ['record', 'row'], false],
+  ['needs-reason', 'Needs reason', ['bulk'], false],
   ['elsewhere', 'Elsewhere', ['record', 'row'], false],
 ])
 const always = ['refuses', 'guarded', 'needs-reason', 'elsewhere']

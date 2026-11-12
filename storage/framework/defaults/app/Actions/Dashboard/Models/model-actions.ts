@@ -5,9 +5,11 @@
  * A model describes data, and these are operations, so the model does not
  * describe them. It names them: each entry of `dashboard.actions` points at an
  * action under `app/Actions`, which is where behaviour already lives, and the
- * dashboard offers it as a button on the record's page and in its row. One
- * guarded endpoint runs whichever was pressed, the way that action's own route
- * would: its `validations`, `authorize` and `before` all apply.
+ * dashboard offers it as a button on the record's page and in its row, and
+ * where the model asks, for the rows selected in a list. One guarded endpoint
+ * runs whichever was pressed, on one record, the way that action's own route
+ * would: its `validations`, `authorize` and `before` all apply. A selection is
+ * that endpoint once per record, so nothing about an action changes for it.
  *
  * `when` narrows an action to the records it makes sense for, and is checked
  * here both times: to decide which rows are sent a button, and again before
@@ -18,8 +20,11 @@ import { response } from '@stacksjs/router'
 import { safeGet } from '../../../../resources/functions/dashboard/data'
 import { humanizeIdentifier } from './model-write'
 
-/** Where an action's button is drawn: on the record's own page, in its row of a list. */
-export type ModelActionPlace = 'record' | 'row'
+/**
+ * Where an action is offered: on the record's own page, in its row of a
+ * list, and for the rows selected in a list.
+ */
+export type ModelActionPlace = 'record' | 'row' | 'bulk'
 
 /** A value a `when` compares a column to. `null` is "nothing stored". */
 export type ModelActionValue = string | number | boolean | null
@@ -46,7 +51,14 @@ export interface ModelActionDefinition extends ModelCustomAction {
   when: Array<{ column: string, values: ModelActionValue[] }>
 }
 
-const PLACES: readonly ModelActionPlace[] = ['record', 'row']
+const PLACES: readonly ModelActionPlace[] = ['record', 'row', 'bulk']
+
+/**
+ * Where an action is offered when the model does not say: one record at a
+ * time. Acting on a whole selection is asked for by name, since a press then
+ * runs on many records.
+ */
+const DEFAULT_PLACES: readonly ModelActionPlace[] = ['record', 'row']
 
 function column(name: string): string {
   return name
@@ -126,10 +138,10 @@ export function modelActionDefinitions(Model: any): { actions: ModelActionDefini
       problems.push(`${called} has a \`when\` that cannot be read: it maps a field to the value, or list of values, a record must hold`)
       continue
     }
-    const on: unknown[] = entry.on === undefined ? [...PLACES] : Array.isArray(entry.on) ? entry.on : [entry.on]
+    const on: unknown[] = entry.on === undefined ? [...DEFAULT_PLACES] : Array.isArray(entry.on) ? entry.on : [entry.on]
     const places = PLACES.filter(place => on.includes(place))
     if (places.length === 0 || places.length !== on.length) {
-      problems.push(`${called} lists a place under \`on\` that is not 'record' or 'row'`)
+      problems.push(`${called} lists a place under \`on\` that is not 'record', 'row' or 'bulk'`)
       continue
     }
     actions.push({

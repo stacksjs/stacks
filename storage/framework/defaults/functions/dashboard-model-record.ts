@@ -41,8 +41,8 @@ export interface ModelCustomAction {
   confirm: string
   /** It removes or revokes something: drawn in red. */
   destructive: boolean
-  /** Where its button is drawn: the record's page, its row in a list. */
-  places: Array<'record' | 'row'>
+  /** Where it is offered: the record's page, its row in a list, the rows selected in a list. */
+  places: Array<'record' | 'row' | 'bulk'>
 }
 
 export interface ModelColumn {
@@ -609,7 +609,8 @@ export function modelActionIconClass(action: ModelCustomAction): string {
 
 export type ModelActionResult
   = | { ok: true, message: string, redirect: string }
-    | { ok: false, error: string }
+    /** `status` is the refusal's HTTP status, or 0 when no answer came back at all. */
+    | { ok: false, error: string, status?: number }
 
 /**
  * Run one of a model's own actions on a record. A refusal comes back as its
@@ -625,7 +626,7 @@ export async function runModelAction(slug: string, id: string | number, name: st
     return { ok: true, message: typeof result?.message === 'string' ? result.message : '', redirect }
   }
   catch (reason) {
-    return { ok: false, error: reason instanceof Error ? reason.message : String(reason) }
+    return { ok: false, error: reason instanceof Error ? reason.message : String(reason), status: reason instanceof DashboardApiError ? reason.status : 0 }
   }
 }
 
