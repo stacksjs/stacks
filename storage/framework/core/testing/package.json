@@ -54,6 +54,12 @@
       "import": "./dist/dynamodb.js",
       "default": "./dist/dynamodb.js"
     },
+    "./hq": {
+      "types": "./dist/hq.d.ts",
+      "bun": "./dist/hq.js",
+      "import": "./dist/hq.js",
+      "default": "./dist/hq.js"
+    },
     "./time": {
       "types": "./dist/time.d.ts",
       "bun": "./dist/time.js",
@@ -92,6 +98,7 @@
     "@stacksjs/database": "workspace:*",
     "@stacksjs/email": "workspace:*",
     "@stacksjs/events": "workspace:*",
+    "@stacksjs/hq": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/router": "workspace:*",
     "@stacksjs/server": "workspace:*",
