@@ -98,6 +98,34 @@ export function rememberedPort(portFile: string | undefined): number {
   }
 }
 
+/**
+ * A file under `root` for a request path, or null: `/about` is `about.html`,
+ * then `about/index.html`, then the file itself. Never outside `root`. HTML is
+ * not cached, so a rebuilt page is the one the next launch shows.
+ */
+export function staticFileResponse(root: string, pathname: string): Response | null {
+  const base = normalize(root)
+  let clean: string
+  try { clean = decodeURIComponent(pathname).replace(/\/+$/, '') || '/index' }
+  catch { return null }
+  const candidates = clean === '/index' ? ['index.html'] : [`${clean}.html`, `${clean}/index.html`, clean]
+  for (const candidate of candidates) {
+    const file = normalize(join(base, candidate))
+    // `..` in a path is resolved before this check.
+    if (file !== base && !file.startsWith(`${base}${sep}`)) continue
+    if (!existsSync(file) || !statSync(file).isFile()) continue
+    const headers: Record<string, string> = { 'content-type': MIME[extname(file)] ?? 'application/octet-stream' }
+    if (extname(file) === '.html') headers['cache-control'] = 'no-store'
+    return new Response(Bun.file(file), { headers })
+  }
+  return null
+}
+
+/** The content type for a file name, by extension. */
+export function staticContentType(file: string): string {
+  return MIME[extname(file)] ?? 'application/octet-stream'
+}
+
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } })
 }
@@ -109,24 +137,10 @@ export async function startDesktopAgent(options: DesktopAgentOptions): Promise<D
 
   function serveStatic(pathname: string): Response | null {
     if (!options.staticDir) return null
-    const root = normalize(options.staticDir)
-    let clean: string
-    try { clean = decodeURIComponent(pathname).replace(/\/+$/, '') || '/index' }
-    catch { return null }
-    const candidates = clean === '/index' ? ['index.html'] : [`${clean}.html`, `${clean}/index.html`, clean]
-    for (const candidate of candidates) {
-      const file = normalize(join(root, candidate))
-      // Never outside the directory: `..` in a path is resolved before this check.
-      if (file !== root && !file.startsWith(`${root}${sep}`)) continue
-      if (!existsSync(file) || !statSync(file).isFile()) continue
-      const headers: Record<string, string> = { 'content-type': MIME[extname(file)] ?? 'application/octet-stream' }
-      if (extname(file) === '.html') {
-        headers['cache-control'] = 'no-store'
-        headers['set-cookie'] = sessionCookie(cookieName, token)
-      }
-      return new Response(Bun.file(file), { headers })
-    }
-    return null
+    const response = staticFileResponse(options.staticDir, pathname)
+    // An HTML page is where a web UI starts, so it carries the session, as `/native/session` does.
+    if (response?.headers.get('content-type')?.startsWith('text/html')) response.headers.set('set-cookie', sessionCookie(cookieName, token))
+    return response
   }
 
   async function fetch(request: Request): Promise<Response> {

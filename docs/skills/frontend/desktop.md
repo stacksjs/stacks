@@ -1,12 +1,12 @@
 ---
 title: "Desktop skill"
-description: "Use when building or publishing desktop applications with Stacks - Craft native windows, local launchers, helper processes, packaging, capability probes, or Mac App Store delivery. Covers @stacksjs/desktop-build and the browser bridge boundary."
+description: "Use when building or publishing desktop applications with Stacks - Craft native windows, web view apps on a local agent for macOS, Windows and Linux, local launchers, helper processes, packaging, signed auto-updates, capability probes, or Mac App Store delivery. Covers @stacksjs/desktop-build and the browser bridge boundary."
 ---
 # Desktop
 
 `stacks-desktop` · Native Stacks · model-invoked
 
-Use when building or publishing desktop applications with Stacks - Craft native windows, local launchers, helper processes, packaging, capability probes, or Mac App Store delivery. Covers @stacksjs/desktop-build and the browser bridge boundary.
+Use when building or publishing desktop applications with Stacks - Craft native windows, web view apps on a local agent for macOS, Windows and Linux, local launchers, helper processes, packaging, signed auto-updates, capability probes, or Mac App Store delivery. Covers @stacksjs/desktop-build and the browser bridge boundary.
 
 Read the skill for the implementation workflow and its current signatures. The
 [Native capabilities](/skills/platform/native) catalog maps the package to

@@ -47,6 +47,8 @@ export async function checkForDesktopUpdate(options: CheckDesktopUpdateOptions):
   const response = await (options.fetcher || fetch)(options.manifestUrl, {
     headers: { Accept: 'application/json' },
   })
+  // The feed's way of saying "nothing newer than what you told me you run".
+  if (response.status === 204) return null
   if (!response.ok)
     throw new Error(`Desktop update check failed with HTTP ${response.status}`)
 

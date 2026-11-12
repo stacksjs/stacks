@@ -581,14 +581,29 @@ export function dev(buddy: CLI): void {
 
   buddy
     .command('dev:desktop', descriptions.desktop)
+    .option('--native', 'Run the AppKit app (`macos`) when the config also declares a web view app', { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: DevOptions) => {
+    .action(async (options: DevOptions & { native?: boolean }) => {
       await checkFrameworkDefaults()
       const perf = await intro('buddy dev:desktop')
+      const { hasMacosDesktop, hasWebviewDesktop } = await import('@stacksjs/desktop-build')
+      // A web view app (`webview` in config/desktop.ts) runs from source: its
+      // agent serves the stx views live and opens a Craft window on itself.
+      if (!options.native && await hasWebviewDesktop(projectPath())) {
+        process.env.STACKS_DESKTOP_LAUNCH = '1'
+        const { runAction } = await import('@stacksjs/actions')
+        const { Action } = await import('@stacksjs/enums')
+        const result = await runAction(Action.BuildDesktopWebview, options)
+        if (resultFailed(result)) {
+          await outro('While running the desktop app, there was an issue', { startTime: perf, useSeconds: true }, result.error)
+          process.exit(ExitCode.FatalError)
+        }
+        await outro('The desktop app was closed', { startTime: perf, useSeconds: true })
+        process.exit(ExitCode.Success)
+      }
       // A native macOS app (config/desktop.ts) is built and opened; the server it
       // talks to is the app's `url`, which the project runs with `buddy dev:api`.
-      const { hasMacosDesktop } = await import('@stacksjs/desktop-build')
       if (await hasMacosDesktop(projectPath())) {
         process.env.STACKS_DESKTOP_LAUNCH = '1'
         const { runAction } = await import('@stacksjs/actions')

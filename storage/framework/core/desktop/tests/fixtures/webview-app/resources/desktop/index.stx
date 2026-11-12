@@ -1,0 +1,14 @@
+<script client>
+const greeting = state('loading')
+
+onMount(async () => {
+  const response = await fetch('/api/hello')
+  const body = await response.json()
+  greeting.set(`${body.app} ${body.version}`)
+})
+</script>
+
+<main class="p-8 font-sans">
+  <h1 class="text-2xl font-semibold">Webview Fixture</h1>
+  <p id="greeting">{{ greeting }}</p>
+</main>

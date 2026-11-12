@@ -300,16 +300,25 @@ export function build(buddy: CLI): void {
   buddy
     .command('build:desktop', descriptions.desktop)
     .alias('prod:desktop')
+    .option('--target <targets>', 'Web view app: comma-separated targets (darwin-arm64, linux-x64, win32-x64, ...) or all. Default: this machine')
+    .option('--package', 'Web view app: also make the installers this operating system can make (MSI on Windows; AppImage, deb, rpm on Linux)', { default: false })
+    .option('--native', 'Build the AppKit app (`macos`) when the config also declares a web view app', { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: BuildOptions) => {
+    .action(async (options: BuildOptions & { target?: string, package?: boolean, native?: boolean }) => {
       log.debug('Running `buddy build:desktop` ...', options)
 
       const perf = await intro('buddy build:desktop')
-      // A project that declares a native macOS app in config/desktop.ts builds
-      // that (AppKit, no web view); any other keeps the Craft web-view build.
-      const { hasMacosDesktop } = await import('@stacksjs/desktop-build')
-      const result = await runAction((await hasMacosDesktop(projectPath())) ? Action.BuildDesktopMacos : Action.BuildDesktop, options)
+      // `webview` in config/desktop.ts is a web view window on a local agent, on
+      // every platform; `macos` is the AppKit app (no web view); a project with
+      // neither keeps the older Craft web-view build.
+      const { hasMacosDesktop, hasWebviewDesktop } = await import('@stacksjs/desktop-build')
+      const webview = !options.native && await hasWebviewDesktop(projectPath())
+      if (webview) {
+        if (options.target) process.env.DESKTOP_TARGETS = options.target
+        if (options.package) process.env.DESKTOP_PACKAGE = '1'
+      }
+      const result = await runAction(webview ? Action.BuildDesktopWebview : (await hasMacosDesktop(projectPath())) ? Action.BuildDesktopMacos : Action.BuildDesktop, options)
 
       if (resultFailed(result)) {
         await outro(

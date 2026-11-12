@@ -76,12 +76,14 @@
     "@stacksjs/config": "0.75.545",
     "@stacksjs/router": "0.75.545",
     "@stacksjs/server": "0.75.545",
+    "@stacksjs/storage": "0.75.545",
     "craft-native": ">=0.0.497"
   },
   "peerDependencies": {
     "@stacksjs/config": "workspace:*",
     "@stacksjs/router": "workspace:*",
-    "@stacksjs/server": "workspace:*"
+    "@stacksjs/server": "workspace:*",
+    "@stacksjs/storage": "workspace:*"
   },
   "peerDependenciesMeta": {
     "@stacksjs/config": {
@@ -91,6 +93,9 @@
       "optional": true
     },
     "@stacksjs/server": {
+      "optional": true
+    },
+    "@stacksjs/storage": {
       "optional": true
     }
   },

@@ -19,6 +19,62 @@ Enable `native.macos.appStore` in `pantry.json` and provide `app-store.config.ts
 
 Review contact details can stay in encrypted `APP_STORE_REVIEW_CONTACT`, with public review instructions in `reviewNotes`. Keep certificates, profiles, API credentials and private environment keys out of source control. Every operation uses the same `ts-pantry/native` pipeline, including its signed bundle qualification and delivery receipts. Apple processing and review remain external gates; an upload does not establish approval.
 
+## Web view apps on a local agent
+
+`webview` in `config/desktop.ts` declares a desktop app that is the same on macOS, Windows and
+Linux: a compiled Bun agent on 127.0.0.1 that serves the project's stx views and its own request
+handling, with a Craft web view window as its only caller.
+
+```ts
+// config/desktop.ts
+import type { DesktopConfig } from '@stacksjs/types'
+
+export default {
+  webview: {
+    appName: 'Library',
+    appId: 'com.example.library',
+    window: { width: 1280, height: 800 },
+    agent: { entry: 'app/Desktop/Agent.ts', views: 'resources/desktop' },
+    updates: { feedUrl: 'https://example.com/api/updates', publicKeys: { main: 'ed25519-public:...' } },
+  },
+} satisfies DesktopConfig
+```
+
+`app/Desktop/Agent.ts` default-exports the app's request handling: a `fetch(request, context)`
+that returns a `Response`, or nothing to let the views answer, plus optional `start`,
+`secondInstance`, `beforeUpdate` and `stop` hooks. Anything process-shaped (child processes,
+files, secrets) belongs there, not in the page: the page talks to the agent over `fetch` and
+WebSocket.
+
+Only the app's own window can call the agent. The window opens on a URL with a one-time token,
+which is traded for an HttpOnly cookie; every request must carry the cookie and name
+`127.0.0.1:<port>` in its Host header. The port is remembered between launches. A second launch
+hands its arguments to the first and exits.
+
+| Command | What it does |
+|---|---|
+| `buddy dev:desktop` | Runs the app from source, with the views rendered live by stx |
+| `buddy build:desktop` | Builds this machine's target. `--target linux-x64,win32-x64` or `all` cross-compiles the agents; `--package` makes the installers this operating system can make |
+| `buddy desktop:update:keypair` | Prints the Ed25519 keypair that signs update manifests |
+| `buddy release:desktop` | Signs and notarizes (macOS), signs (Windows, with a certificate), writes a signed manifest per platform and architecture, and publishes through `@stacksjs/storage` |
+
+Bun cross-compiles the agent for every target from any machine. Installers are made on their own
+operating system: the macOS `.app` is signed, notarized and imaged on a Mac; the MSI needs WiX and
+`signtool` on Windows; the AppImage, deb and rpm need their Linux tools. For those targets the
+build leaves the staged files and a `craft-package.json`, the input to Craft's packaging.
+
+An installed app asks `<feedUrl>/<platform>/<arch>` for a newer version. The framework mounts
+that route (`/api/updates/{platform}/{arch}`, `Actions/Desktop/UpdateFeedAction`) when
+`webview.updates` is configured, and it serves the manifest `release:desktop` published. The app
+verifies the manifest's signature and the download's SHA-256 before installing: a bundle swap on
+macOS after checking the new bundle is signed by the same team, the MSI on Windows, a replaced
+AppImage on Linux, and a notice for deb and rpm installs.
+
+The support matrix below is about the older framework desktop driver. Web view apps were built,
+launched and exercised on macOS arm64; the Windows and Linux agents are cross-compiled but have
+not been run on those systems by the framework's own checks. The `stacks-desktop` skill has the
+full contract and the traps.
+
 ## Support status
 
 **Every desktop target is experimental.** Craft output is useful for development and for

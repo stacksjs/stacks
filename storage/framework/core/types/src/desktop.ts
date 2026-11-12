@@ -2,10 +2,11 @@ import type { MobilePrivacyManifest } from './mobile'
 
 /**
  * `config/desktop.ts`: the desktop apps a Stacks project builds, the way
- * `config/mobile.ts` declares its phone apps. Today the one target is a
- * native macOS app: the project's stx screens drawn by Craft's AppKit host
- * (no web view), signed and packaged by `buddy build:desktop` and
- * `buddy desktop:apple:package`.
+ * `config/mobile.ts` declares its phone apps. Two kinds: `macos`, a native
+ * macOS app whose stx screens are drawn by Craft's AppKit host (no web view),
+ * signed and packaged by `buddy build:desktop` and
+ * `buddy desktop:apple:package`; and `webview`, a web view window on a local
+ * agent that runs on macOS, Windows and Linux.
  *
  * ```ts
  * export default {
@@ -27,6 +28,156 @@ import type { MobilePrivacyManifest } from './mobile'
  */
 export interface DesktopConfig {
   macos?: MacosDesktopConfig
+  /**
+   * A web view window on a local agent, the same on macOS, Windows and Linux:
+   * the app's executable is a compiled Bun agent on 127.0.0.1 that serves the
+   * project's stx views and its own request handling, and opens a Craft web
+   * view window on itself. Everything process-shaped (child processes, files,
+   * secrets) lives in the agent; the page only talks to it over loopback.
+   *
+   * ```ts
+   * export default {
+   *   webview: {
+   *     appName: 'Fettler',
+   *     appId: 'org.fettler.app',
+   *     window: { width: 1280, height: 800 },
+   *     agent: { entry: 'app/Desktop/Agent.ts', views: 'resources/desktop' },
+   *     updates: { feedUrl: 'https://fettler.org/api/updates', publicKeys: { main: 'ed25519-public:...' } },
+   *   },
+   * } satisfies DesktopConfig
+   * ```
+   *
+   * When both `webview` and `macos` are declared, `buddy dev:desktop` and
+   * `buddy build:desktop` run the web view app; `--native` picks the AppKit one.
+   */
+  webview?: WebviewDesktopConfig
+}
+
+/** A build target: a Node platform id and architecture, as `process.platform`-`process.arch`. */
+export type DesktopTargetName = 'darwin-arm64' | 'darwin-x64' | 'linux-x64' | 'linux-arm64' | 'win32-x64' | 'win32-arm64'
+
+export interface WebviewWindowConfig {
+  /** The window's title. Default: the app's name. */
+  title?: string
+  /** The window's first size, in points. Default 1280 by 800. */
+  width?: number
+  height?: number
+  /** Start in dark (`true`) or light (`false`) appearance; unset follows the system. */
+  darkMode?: boolean
+  /** Allow the web inspector in a built app. Default `false`; `buddy dev:desktop` always allows it. */
+  devtools?: boolean
+  /** Hide the title bar and let the page draw under it. */
+  titlebarHidden?: boolean
+  /** Extra flags for the Craft binary, passed through as written (`['--frame-autosave', 'main']`). */
+  arguments?: string[]
+}
+
+export interface WebviewAgentConfig {
+  /**
+   * The module that handles the agent's own requests, relative to the project
+   * root. Its default export is `(request, context) => Response | undefined`
+   * (undefined falls through to the views), or an object with `fetch` and
+   * optional `start`, `secondInstance` and `stop` hooks. It is compiled into
+   * the built app. Default `app/Desktop/Agent.ts`, when it exists.
+   */
+  entry?: string
+  /** The port to try first; the last port used, then any free port, after it. */
+  port?: number
+  /**
+   * The stx views the window opens, relative to the project root. `buddy
+   * dev:desktop` serves them live through stx; `buddy build:desktop` builds
+   * them to static pages the compiled agent serves. Default `resources/desktop`.
+   */
+  views?: string
+  /** stx component directories for those views, searched in order. */
+  components?: string[]
+  /** The page the window opens. Default `/`. */
+  startPath?: string
+  /** Paths (prefixes ending in `/`, or exact) served without the session cookie: a bearer-token API for another tool. Default none. */
+  publicPaths?: string[]
+}
+
+export interface WebviewUpdatesConfig {
+  /**
+   * Where the app asks for updates. `/{platform}/{arch}` is appended, so
+   * `https://example.com/api/updates` is asked as `.../api/updates/darwin/arm64`.
+   */
+  feedUrl: string
+  /**
+   * The Ed25519 public keys the app trusts, by key id (`buddy
+   * desktop:update:keypair` prints one). Compiled into the app; the private
+   * half signs manifests in `buddy release:desktop` and never ships.
+   */
+  publicKeys: Record<string, string>
+  /** Release channel. Default `stable`. */
+  channel?: string
+  /** The `@stacksjs/storage` disk `buddy release:desktop` publishes to and the feed action reads from. Default: the default disk. */
+  disk?: string
+  /** The folder on that disk. Default `desktop-updates`. */
+  prefix?: string
+  /** The public base URL artifacts are downloaded from, when the disk's own public URL is not it. */
+  artifactBaseUrl?: string
+  /** Check on launch and then this often, in hours. Default 24; 0 turns the automatic check off. */
+  checkEveryHours?: number
+}
+
+export interface WebviewDesktopConfig {
+  /** The name people see: the window, the bundle, the installer. */
+  appName: string
+  /**
+   * Reverse-DNS identity (`org.example.app`): the bundle identifier on macOS,
+   * the desktop file and package id on Linux, and what makes a second launch
+   * find the first on every platform.
+   */
+  appId: string
+  /** Defaults to the project's package.json version. */
+  version?: string
+  /** One sentence, for installers and package metadata. */
+  description?: string
+  /** The person or company named as publisher (MSI manufacturer, package maintainer). */
+  publisher?: string
+  homepage?: string
+  /** A 1024 pixel square PNG; the build makes each platform's icon from it. */
+  icon?: string
+  window?: WebviewWindowConfig
+  agent?: WebviewAgentConfig
+  /** Schemes that open the app (`['fettler']` for `fettler://...`). A link is forwarded to the running instance. */
+  urlSchemes?: string[]
+  updates?: WebviewUpdatesConfig
+  /**
+   * The Craft web view binary for each target, relative to the project root.
+   * The build machine's own target falls back to `CRAFT_BIN`, then `craft` on
+   * PATH; every other target needs a path here or in
+   * `CRAFT_BIN_<PLATFORM>_<ARCH>` (`CRAFT_BIN_LINUX_X64`).
+   */
+  runtime?: Partial<Record<DesktopTargetName, string>>
+  macos?: {
+    /** Defaults to `appId`. */
+    bundleId?: string
+    /** `LSMinimumSystemVersion`. Default `13.0`. */
+    minimumSystemVersion?: string
+    /** `LSApplicationCategoryType`. Default `public.app-category.developer-tools`. */
+    category?: string
+    /** Entitlements added to the hardened-runtime defaults, by their full key. */
+    entitlements?: Record<string, boolean | string | string[]>
+    usageDescriptions?: Record<string, string>
+    /** Extra `Info.plist` keys. The keys the build owns are ignored. */
+    infoPlist?: Record<string, unknown>
+  }
+  windows?: {
+    /** Extra files installed beside the executable (`WebView2Loader.dll`), relative to the project root. */
+    additionalFiles?: string[]
+    /** A `.pfx` code-signing certificate; its password comes from `DESKTOP_WINDOWS_CERTIFICATE_PASSWORD`. Unsigned without it. */
+    certificatePath?: string
+  }
+  linux?: {
+    /** Freedesktop categories. Default `['Development']`. */
+    categories?: string[]
+    debDependencies?: string[]
+    rpmDependencies?: string[]
+  }
+  /** Where builds go, relative to the project root. Default `storage/framework/desktop/webview`. */
+  output?: string
 }
 
 export interface MacosWindowConfig {

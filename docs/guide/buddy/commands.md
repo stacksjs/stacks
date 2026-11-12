@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **377 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **379 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -26,7 +26,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `dashboard` | 2 |
 | `db` | 3 |
 | `deploy` | 3 |
-| `desktop` | 7 |
+| `desktop` | 8 |
 | `dev` | 8 |
 | `dns` | 3 |
 | `docs` | 18 |
@@ -59,7 +59,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `publish` | 8 |
 | `queue` | 21 |
 | `realtime` | 2 |
-| `release` | 5 |
+| `release` | 6 |
 | `route` | 1 |
 | `scaffold` | 1 |
 | `schedule` | 6 |
@@ -331,6 +331,9 @@ Build the Desktop Application
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
+| `--target` | Web view app: comma-separated targets (darwin-arm64, linux-x64, win32-x64, ...) or all. Default: this machine | value, required | - |
+| `--package` | Web view app: also make the installers this operating system can make (MSI on Windows; AppImage, deb, rpm on Linux) | boolean, optional | `false` |
+| `--native` | Build the AppKit app (`macos`) when the config also declares a web view app | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
@@ -1424,6 +1427,27 @@ buddy desktop:probe --record
 buddy desktop:probe --browser=Safari --record
 ```
 
+### `desktop:update:keypair`
+
+Generate the Ed25519 keypair that signs a desktop app's update manifests
+
+- Usage: `$ buddy desktop:update:keypair`
+- Namespace: `desktop`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--key-id` | The name the app knows the key by | value, required | `"main"` |
+| `--json` | Print the keypair as JSON | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy desktop:update:keypair
+buddy desktop:update:keypair --key-id release-2026
+```
+
 ### `dev`
 
 Start development server
@@ -1504,6 +1528,7 @@ Start the Desktop App development server
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
+| `--native` | Run the AppKit app (`macos`) when the config also declares a web view app | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
@@ -4931,6 +4956,34 @@ Release a new version of your libraries/packages
 | `--preid` | Prerelease channel, for example beta or rc | value, required | - |
 | `--skip-github-release` | Push the tag without creating its GitHub release | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `release:desktop`
+
+Build, sign and notarize the web view desktop app, and publish it with signed update manifests
+
+- Usage: `$ buddy release:desktop`
+- Namespace: `release`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--target` | Comma-separated targets (darwin-arm64, linux-x64, win32-x64, ...) or all. Default: this machine | value, required | - |
+| `--identity` | macOS: Developer ID Application certificate (or DESKTOP_SIGNING_IDENTITY) | value, required | - |
+| `--notary-profile` | macOS: notarytool keychain profile (or DESKTOP_NOTARY_PROFILE) | value, required | - |
+| `--channel` | Release channel (default: webview.updates.channel, else stable) | value, required | - |
+| `--notes` | Release notes, shown by the app before it updates | value, required | - |
+| `--skip-build` | Release what `buddy build:desktop` already made (installers built on another machine) | boolean, optional | `false` |
+| `--dry-run` | Do everything except notarize and upload; write the signed manifests locally | boolean, optional | `false` |
+| `--allow-dirty` | Release from a working tree with uncommitted changes | boolean, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy release:desktop --identity "Developer ID Application: Example (ABCDE12345)" --notary-profile example
+buddy release:desktop --target linux-x64 --skip-build
+```
 
 ### `release:github`
 
