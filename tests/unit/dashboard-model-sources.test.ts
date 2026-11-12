@@ -87,3 +87,54 @@ describe('which models exist, asked while serving a request', () => {
     }
   })
 })
+
+describe('the generator\'s staging directory is the generator\'s alone', () => {
+  // `resolveModelSources` deletes and rebuilds that directory whenever the
+  // framework defaults are merged in. Search indexing, starting the dashboard,
+  // `generate:erd` and `generate:vschema` each called it for its list of
+  // models and used nothing else of what it returns: they import the files
+  // where they are. Each now lists them, and nothing but generating
+  // migrations writes there.
+  const core = 'storage/framework/core'
+  const generator = `${core}/database/src`
+
+  it('nothing outside the migration generator asks its entry point', () => {
+    const packages = readdirSync(core, { withFileTypes: true }).filter(entry => entry.isDirectory()).map(entry => `${core}/${entry.name}/src`)
+    expect(packages.length).toBeGreaterThan(60)
+    const asking: string[] = []
+    let read = 0
+    for (const src of packages) {
+      if (src === generator)
+        continue
+      let files: string[]
+      try {
+        files = sourcesUnder(src)
+      }
+      catch {
+        continue
+      }
+      for (const file of files) {
+        read++
+        // Only a file that names it at all is parsed, to tell a call from a sentence.
+        if (readFileSync(file, 'utf8').includes('resolveModelSources') && /\bresolveModelSources\b/.test(code(file)))
+          asking.push(file)
+      }
+    }
+    expect(read).toBeGreaterThan(1000)
+    expect(asking).toEqual([])
+    // The control: the generator itself is seen to use it.
+    expect(/\bresolveModelSources\(/.test(code(`${generator}/migrations.ts`))).toBe(true)
+  })
+
+  it('the four that only wanted the list of models ask for the list', () => {
+    const listing: Array<[string, RegExp]> = [
+      ['search-engine/src/documents/models.ts', /\(listModelSources\(\) \?\? \[\]\)\.map\(\(?model\)? => model\.file\)/],
+      ['actions/src/dev/dashboard-utils.ts', /for \(const model of listModelSources\(\) \?\? \[\]\)/],
+      ['actions/src/dev/dashboard.ts', /schemaModels: \(listModelSources\(\) \?\? \[\]\)\.map/],
+      ['actions/src/generate/erd.ts', /const sources = listModelSources\(\)/],
+      ['actions/src/generate/vschema.ts', /const sources = listModelSources\(\)/],
+    ]
+    for (const [file, call] of listing)
+      expect(code(`${core}/${file}`), file).toMatch(call)
+  })
+})

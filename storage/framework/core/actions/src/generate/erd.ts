@@ -6,8 +6,8 @@
  * is the I/O half: find the models, import them, hand the definitions over,
  * and write the result.
  *
- * Models are collected through `resolveModelSources`, the same helper the
- * migration and VSchema generators use, so the diagram covers exactly the
+ * Models are listed by `listModelSources`, which applies the scope rules the
+ * migration generator does, so the diagram covers exactly the
  * tables the migrations create - the framework's own models included, and the
  * nested ones under `commerce/`, `Content/` and friends. Reading only
  * `app/Models` would draw a schema missing most of itself.
@@ -15,7 +15,7 @@
 
 import type { DiagrammableModel, ErdDetail } from '@stacksjs/database'
 import { dirname } from 'node:path'
-import { MERMAID_MAX_TEXT_SIZE, renderErd, resolveModelSources, toDiagrammableModel } from '@stacksjs/database'
+import { listModelSources, MERMAID_MAX_TEXT_SIZE, renderErd, toDiagrammableModel } from '@stacksjs/database'
 import { log } from '@stacksjs/logging'
 import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
@@ -108,14 +108,15 @@ export function wrapForTarget(diagram: string, outPath: string): string {
 }
 
 export async function generateErd(options: GenerateErdOptions = {}): Promise<GenerateErdResult> {
-  const sources = resolveModelSources()
-  if (!sources || sources.models.length === 0)
+  // The files are imported where they are: nothing here needs them staged.
+  const sources = listModelSources()
+  if (!sources || sources.length === 0)
     return { ok: false, error: 'No models found. The diagram is derived from your models, so there is nothing to generate.' }
 
   const models: DiagrammableModel[] = []
   const skipped: string[] = []
 
-  for (const source of sources.models) {
+  for (const source of sources) {
     try {
       const definition = (await import(source.file)).default
       if (!definition)

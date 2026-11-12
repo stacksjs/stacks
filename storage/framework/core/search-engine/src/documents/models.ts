@@ -1,12 +1,17 @@
 import { feature, overridesReady } from '@stacksjs/config'
-import { resolveModelSources } from '@stacksjs/database/model-sources'
+import { listModelSources } from '@stacksjs/database/model-sources'
 import { frameworkModelFeature, getModelName } from '@stacksjs/orm'
 import type { Model } from '@stacksjs/types'
 
-/** Search the same application model scope that owns the database schema. */
+/**
+ * Search the same application model scope that owns the database schema.
+ *
+ * Listed, not resolved for generation: indexing only needs the files, and the
+ * generator's own entry point rebuilds its staging directory on every call.
+ */
 export async function searchModelFiles(): Promise<string[]> {
   await overridesReady
-  return (resolveModelSources()?.models ?? []).map(model => model.file)
+  return (listModelSources() ?? []).map(model => model.file)
 }
 
 /** Resolve and validate an optional selector before any provider mutation. */

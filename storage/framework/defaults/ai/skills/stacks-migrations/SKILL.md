@@ -209,6 +209,16 @@ are excluded. Removing a feature from generation is not permission to drop its
 live data. MySQL/PostgreSQL/Vitess/Turso require their own SQL and evidence
 checks; never run SQLite SQL on a different provider because its filename exists.
 
+Two functions answer "which models are in this app's schema", by the same
+rules. `resolveModelSources()` is the generator's: it also stages the models
+into one flat directory, deleting and rebuilding it on every call when the
+framework defaults are merged in. Only generating migrations may call it.
+Anything that just needs the list (a dashboard request, search indexing,
+`generate:erd`, `generate:vschema`, starting the dev dashboard) calls
+`listModelSources()`, which reads directory listings and writes nothing.
+`tests/unit/dashboard-model-sources.test.ts` fails if another package calls
+the generator's.
+
 Source: `core/database/src/{migrations,model-sources,migration-ledger,
 safe-migrations,schema-drift,fk-audit,unique-audit}.ts`, `config/query-builder.ts`,
 and their retained database tests.

@@ -5,8 +5,8 @@
  * pure. This file is the I/O half: find the models, import them, hand the
  * definitions over, and write the result.
  *
- * Models are collected through `resolveModelSources`, the same helper the
- * migration generator uses, so a VSchema covers exactly the tables the
+ * Models are listed by `listModelSources`, which applies the scope rules the
+ * migration generator does, so a VSchema covers exactly the tables the
  * migrations create — including the framework's own models and the nested
  * ones under `commerce/`, `Content/`, etc. Reading only `app/Models` would
  * silently emit a VSchema missing most of the schema, and a table absent
@@ -15,7 +15,7 @@
  */
 
 import { dirname } from 'node:path'
-import { deriveVSchema, formatShardingReport, resolveModelSources, toShardableModel } from '@stacksjs/database'
+import { deriveVSchema, formatShardingReport, listModelSources, toShardableModel } from '@stacksjs/database'
 import type { ShardableModel, VSchema } from '@stacksjs/database'
 import { log } from '@stacksjs/logging'
 import { path } from '@stacksjs/path'
@@ -59,14 +59,15 @@ function tableNameFor(definition: any, fileName: string): string {
 }
 
 export async function generateVSchema(options: GenerateVSchemaOptions = {}): Promise<GenerateVSchemaResult> {
-  const sources = resolveModelSources()
-  if (!sources || sources.models.length === 0)
+  // The files are imported where they are: nothing here needs them staged.
+  const sources = listModelSources()
+  if (!sources || sources.length === 0)
     return { ok: false, error: 'No models found. A VSchema is derived from your models, so there is nothing to generate.' }
 
   const models: ShardableModel[] = []
   const failed: string[] = []
 
-  for (const source of sources.models) {
+  for (const source of sources) {
     try {
       const definition = (await import(source.file)).default
       if (!definition)

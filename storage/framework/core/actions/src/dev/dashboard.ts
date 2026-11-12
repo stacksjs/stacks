@@ -683,10 +683,10 @@ const manifestDir = storagePath('framework/runtime/dashboard')
 const manifestPath = storagePath('framework/runtime/dashboard/.discovered-models.json')
 mkdirSync(manifestDir, { recursive: true })
 // eslint-disable-next-line ts/no-top-level-await
-const { resolveModelSources } = await import('@stacksjs/database/model-sources')
+const { listModelSources } = await import('@stacksjs/database/model-sources')
 const manifestPayload = {
   models: buildManifest(discoveredModels),
-  schemaModels: (resolveModelSources()?.models ?? []).map(model => model.name),
+  schemaModels: (listModelSources() ?? []).map(model => model.name),
   sections: dashboardToggles,
   nav: dashboardNav,
 }

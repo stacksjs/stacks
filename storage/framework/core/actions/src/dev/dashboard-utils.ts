@@ -250,10 +250,13 @@ export async function discoverModels(userModelsPath: string, defaultModelsPath: 
 /** Discover the native application schema, including installed package models. */
 export async function discoverProjectModels(): Promise<DiscoveredModel[]> {
   const { overridesReady } = await import('@stacksjs/config')
-  const { resolveModelSources } = await import('@stacksjs/database/model-sources')
+  const { listModelSources } = await import('@stacksjs/database/model-sources')
   await overridesReady
   const models: DiscoveredModel[] = []
-  for (const model of resolveModelSources()?.models ?? []) {
+  // Listed from the directories alone. Starting the dashboard must not rebuild
+  // the migration generator's staging directory, which a generate running
+  // beside it may be reading.
+  for (const model of listModelSources() ?? []) {
     if (excludeModels.has(model.name.toLowerCase())) continue
     const dashboard = await readModelDashboardConfig(model.file)
     models.push({
