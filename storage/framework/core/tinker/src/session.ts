@@ -3,6 +3,7 @@ import { isAbsolute, resolve } from 'node:path'
 import process from 'node:process'
 import { instrumentMagicComments } from './magic'
 import { relationsOf, serialize, serializeThrown, TinkerPreview } from './serialize'
+import { settleTopLevel, unsettleText } from './settle'
 
 /**
  * A tinker session: one booted app, many evaluations, state kept between them.
@@ -14,6 +15,11 @@ import { relationsOf, serialize, serializeThrown, TinkerPreview } from './serial
  * globals by Bun's REPL transform, so `const user = await User.find(1)` in one
  * run is still `user` in the next, and each run reports what happened as
  * frames: output, logs, queries, dumps, then a typed result or an error.
+ *
+ * A promise at the top level of a snippet is waited for (see settle.ts), so
+ * `const user = User.find(1)` binds the row as well: a query reads the way it
+ * does in every other tinker tool, and `await` is only needed inside a
+ * function.
  */
 
 export type TinkerFrame =
@@ -58,6 +64,12 @@ export interface TinkerSessionOptions extends SerializeOptions {
   globals?: Record<string, unknown>
   /** Turn magic comments into probe frames (see magic.ts). Default `true`. */
   magic?: boolean
+  /**
+   * Wait for promises at the top level of a snippet (see settle.ts), so a
+   * query needs no `await` there. `false` leaves a promise a promise, as plain
+   * JavaScript would. Default `true`.
+   */
+  settle?: boolean
   /** Receives every frame as it happens, for streaming. `evaluate` also returns them. */
   onFrame?: (frame: TinkerFrame) => void
 }
@@ -145,11 +157,17 @@ function previewHelpers(): Record<string, (...args: never[]) => unknown> {
   } as Record<string, (...args: never[]) => unknown>
 }
 
+export interface TinkerEvaluateOptions {
+  id?: string
+  /** Overrides the session's `settle` for this run. */
+  settle?: boolean
+}
+
 export interface TinkerSession {
   info: TinkerSessionInfo
   /** The models this session can see. */
   models: () => TinkerModelSummary[]
-  evaluate: (code: string, options?: { id?: string }) => Promise<TinkerEvaluation>
+  evaluate: (code: string, options?: TinkerEvaluateOptions) => Promise<TinkerEvaluation>
   /** Detach the console, log and query capture. Globals the snippets declared stay. */
   dispose: () => void
 }
@@ -171,12 +189,44 @@ const RELATIVE_IMPORT = /\bimport\((["'])(\.{1,2}\/[^"']*)\1\)/g
  * Evaluated code has no file, so a relative `import('./app/Actions/Foo')`
  * would resolve against this package instead of the project. Those specifiers
  * are made absolute against the session's directory.
+ *
+ * With `settle`, promises at the snippet's top level are waited for. The
+ * compiled code then calls `__tinkerPending` and `__tinkerTake`, which a
+ * session provides.
  */
-export function compileSnippet(code: string, cwd: string, sourceName = 'tinker'): string {
+export function compileSnippet(code: string, cwd: string, sourceName = 'tinker', options: { settle?: boolean } = {}): string {
   const transpiler = new Bun.Transpiler({ loader: 'ts', replMode: true } as ConstructorParameters<typeof Bun.Transpiler>[0])
-  const compiled = transpiler.transformSync(code)
+  const transform = (source: string): string => transpiler.transformSync(source)
     .replace(RELATIVE_IMPORT, (_match, quote: string, specifier: string) => `import(${quote}${resolve(cwd, specifier)}${quote})`)
-  return `${compiled}\n//# sourceURL=${sourceName}.ts`
+
+  let compiled: string | undefined
+  if (options.settle) {
+    const settled = settleTopLevel(code)
+    if (settled.edits.length) {
+      try {
+        compiled = transform(settled.code)
+      }
+      catch {
+        // Whatever is wrong is reported against the code as it was written,
+        // which is what the compile below does.
+      }
+    }
+  }
+  return `${compiled ?? transform(code)}\n//# sourceURL=${sourceName}.ts`
+}
+
+/** An engine quotes the code it was running in its message. Show the code as it was written. */
+function restoreMessage(thrown: unknown): void {
+  if (!(thrown instanceof Error) || !thrown.message.includes('__tinkerPending('))
+    return
+  try {
+    thrown.message = unsettleText(thrown.message)
+    if (typeof thrown.stack === 'string')
+      thrown.stack = unsettleText(thrown.stack)
+  }
+  catch {
+    // A frozen error keeps its message.
+  }
 }
 
 function parseDiagnostics(thrown: unknown): TinkerDiagnostic[] {
@@ -311,6 +361,19 @@ export async function createTinkerSession(options: TinkerSessionOptions = {}): P
     }
     return value
   }
+  // What settle.ts rewrites a top-level expression into: keep the value, say
+  // whether it is a promise, hand it back. The value is held only between the
+  // two calls, which sit side by side in one expression.
+  let held: unknown
+  globals.__tinkerPending = (value: unknown): boolean => {
+    held = value
+    return value instanceof Promise
+  }
+  globals.__tinkerTake = (): unknown => {
+    const value = held
+    held = undefined
+    return value
+  }
   globals.__tinkerTime = (line: number, value?: unknown): unknown => {
     emit({ type: 'probe', id: currentId, line, kind: 'time', ms: Math.round((performance.now() - runStarted) * 100) / 100 })
     return value
@@ -405,7 +468,7 @@ export async function createTinkerSession(options: TinkerSessionOptions = {}): P
   let counter = 0
   let queue: Promise<unknown> = Promise.resolve()
 
-  async function run(code: string, id: string): Promise<TinkerEvaluation> {
+  async function run(code: string, id: string, settle: boolean): Promise<TinkerEvaluation> {
     const frames: TinkerFrame[] = []
     sink = frames
     currentId = id
@@ -415,7 +478,7 @@ export async function createTinkerSession(options: TinkerSessionOptions = {}): P
 
     let compiled: string
     try {
-      compiled = compileSnippet(options.magic === false ? code : instrumentMagicComments(code).code, cwd, `tinker-${id}`)
+      compiled = compileSnippet(options.magic === false ? code : instrumentMagicComments(code).code, cwd, `tinker-${id}`, { settle })
     }
     catch (thrown) {
       const durationMs = elapsed()
@@ -435,11 +498,13 @@ export async function createTinkerSession(options: TinkerSessionOptions = {}): P
     }
     catch (thrown) {
       const durationMs = elapsed()
+      held = undefined
       if (thrown instanceof TinkerHalt) {
         emit({ type: 'result', id, value: { t: 'undefined' }, durationMs })
         emit({ type: 'done', id, ok: true })
         return { id, ok: true, frames, durationMs }
       }
+      restoreMessage(thrown)
       emit({ type: 'error', id, phase: 'run', error: serializeThrown(thrown, serializeOptions), durationMs })
       emit({ type: 'done', id, ok: false })
       return { id, ok: false, thrown, frames, durationMs }
@@ -455,7 +520,7 @@ export async function createTinkerSession(options: TinkerSessionOptions = {}): P
     evaluate(code, evaluateOptions = {}) {
       const id = evaluateOptions.id ?? String(++counter)
       // One at a time: runs share globals and the capture's notion of "current".
-      const next = queue.then(() => run(code, id))
+      const next = queue.then(() => run(code, id, evaluateOptions.settle ?? options.settle !== false))
       queue = next.catch(() => {})
       return next
     },

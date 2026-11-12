@@ -2,9 +2,9 @@
  * Magic comments: see a value where it is computed, without changing the code.
  *
  * ```ts
- * const users = await User.all() //?            the value of users
+ * const users = User.all() //?                  the value of users
  * users.filter(u => u.active)/*?.length*\/.map(u => u.name) //?
- * await slowThing() //?.                         how long the run took to get here
+ * slowThing() //?.                               how long the run took to get here
  * ```
  *
  * - `//?` at the end of a line shows the value of the statement that ends

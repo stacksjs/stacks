@@ -20,7 +20,7 @@ import { createTinkerSession } from './session'
 export const FRAME_MARKER = '\x1E'
 
 export type TinkerRequest =
-  | { op: 'eval', id?: string, code: string }
+  | { op: 'eval', id?: string, code: string, settle?: boolean }
   | { op: 'ping', id?: string }
   | { op: 'models', id?: string }
   | { op: 'exit' }
@@ -141,7 +141,7 @@ export async function serveTinker(options: ServeOptions = {}): Promise<{ ok: boo
       return true
     }
     if (request.op === 'eval' && typeof request.code === 'string') {
-      const evaluation = await session.evaluate(request.code, { id: request.id })
+      const evaluation = await session.evaluate(request.code, { id: request.id, ...(typeof request.settle === 'boolean' ? { settle: request.settle } : {}) })
       if (!evaluation.ok)
         ok = false
       return true

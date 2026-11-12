@@ -58,6 +58,9 @@
     "test": "bun test",
     "typecheck": "bun tsc --noEmit"
   },
+  "dependencies": {
+    "@babel/parser": "^8.1.2"
+  },
   "devDependencies": {
     "better-dx": "^0.2.24"
   }

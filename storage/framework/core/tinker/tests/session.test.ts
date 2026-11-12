@@ -292,3 +292,81 @@ say({ value: r.value, probes: r.frames.filter(f => f.type === 'probe').length })
     expect(lines(out)[0]).toEqual({ value: 2, probes: 0 })
   })
 })
+
+describe('settling in a session', () => {
+  const later = 'globalThis.later = (value, ms = 1) => new Promise(resolve => setTimeout(() => resolve(value), ms))'
+
+  test('a promise declared without await is its value, in the run and after it', async () => {
+    const { out } = await runSession(`
+${later}
+const s = await createTinkerSession({ boot: false })
+const first = await s.evaluate("const user = later({ email: 'ada@example.com' })\\nuser.email")
+const second = await s.evaluate("user")
+const third = await s.evaluate("later(7)")
+say({ first: first.value, second: second.value, third: third.value, shown: third.frames.find(f => f.type === 'result').value })`)
+    expect(lines(out)[0]).toEqual({
+      first: 'ada@example.com',
+      second: { email: 'ada@example.com' },
+      third: 7,
+      shown: { t: 'number', v: 7 },
+    })
+  })
+
+  test('settle can be turned off for a session and for one run', async () => {
+    const { out } = await runSession(`
+${later}
+const off = await createTinkerSession({ boot: false, settle: false })
+const kept = await off.evaluate("const pending = later(1)\\npending instanceof Promise")
+const once = await off.evaluate("const settled = later(1)\\nsettled", { settle: true })
+const shown = await off.evaluate("later(1)")
+say({ kept: kept.value, once: once.value, shown: shown.frames.find(f => f.type === 'result').value })`)
+    expect(lines(out)[0]).toEqual({ kept: true, once: 1, shown: { t: 'promise' } })
+  })
+
+  test('a probe on a line without await shows the value', async () => {
+    const { out } = await runSession(`
+${later}
+const s = await createTinkerSession({ boot: false })
+const r = await s.evaluate("const count = later(5) //?\\nlater([1, 2]) //?")
+say({ value: r.value, probes: r.frames.filter(f => f.type === 'probe').map((f: any) => [f.line, f.value.t]) })`)
+    expect(lines(out)[0]).toEqual({ value: [1, 2], probes: [[0, 'number'], [1, 'array']] })
+  })
+
+  test('an error quotes the code as it was written', async () => {
+    const { out } = await runSession(`
+${later}
+const s = await createTinkerSession({ boot: false })
+const r = await s.evaluate("later({}).profile.name")
+const syntax = await s.evaluate("const = later(1")
+const frame: any = r.frames.find(f => f.type === 'error')
+say({ ok: r.ok, message: frame.error.message, leaked: JSON.stringify(r.frames).includes('__tinker'), parse: (syntax.frames.find(f => f.type === 'error') as any).phase })`)
+    const [result] = lines(out)
+    expect(result.ok).toBe(false)
+    expect(result.message).toContain('(later({})).profile.name')
+    expect(result.leaked).toBe(false)
+    expect(result.parse).toBe('parse')
+  })
+
+  test('a rejected promise fails the run it was written in', async () => {
+    const { out } = await runSession(`
+const s = await createTinkerSession({ boot: false })
+const r = await s.evaluate("const missing = Promise.reject(new Error('no such row'))\\n'not reached'")
+const next = await s.evaluate("1 + 1")
+say({ ok: r.ok, message: (r.frames.find(f => f.type === 'error') as any).error.message, next: next.value })`)
+    expect(lines(out)[0]).toEqual({ ok: false, message: 'no such row', next: 2 })
+  })
+
+  test('serve takes settle per request', async () => {
+    const { out } = await runSession(`
+${later}
+const requests = [
+  JSON.stringify({ op: 'eval', id: 'a', code: 'later(3)' }),
+  JSON.stringify({ op: 'eval', id: 'b', code: 'later(3)', settle: false }),
+  JSON.stringify({ op: 'exit' }),
+].join('\\n') + '\\n'
+const frames: any[] = []
+await serveTinker({ boot: false, input: (async function* () { yield new TextEncoder().encode(requests) })(), write: text => frames.push(JSON.parse(text.slice(1))) })
+say(frames.filter(f => f.type === 'result').map(f => [f.id, f.value.t]))`)
+    expect(lines(out)[0]).toEqual([['a', 'number'], ['b', 'promise']])
+  })
+})

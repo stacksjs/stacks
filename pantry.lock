@@ -1410,6 +1410,9 @@
     "storage/framework/core/tinker": {
       "name": "@stacksjs/tinker",
       "version": "0.75.559",
+      "dependencies": {
+        "@babel/parser": "^8.1.2"
+      },
       "devDependencies": {
         "better-dx": "^0.2.24"
       }
