@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **379 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **381 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -40,6 +40,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `gdpr` | 5 |
 | `general` | 52 |
 | `generate` | 18 |
+| `hq` | 2 |
 | `inspire` | 1 |
 | `integrations` | 1 |
 | `key` | 1 |
@@ -2919,6 +2920,44 @@ Generate web-types.json for IDEs
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `hq:connect`
+
+Connect this app to HQ services (BugHQ and LogHQ by default) and write their keys to .env
+
+- Usage: `$ buddy hq:connect [...services]`
+- Namespace: `hq`
+- Aliases: none
+- Arguments: `[services...]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--no-open` | Print the approve link without opening the browser | boolean, optional, negated | `true` |
+| `--no-verify` | Skip sending a test log and a test error and reading them back | boolean, optional, negated | `true` |
+| `--timeout` | How long to wait for each approval | value, required | `600` |
+
+Examples:
+
+```bash
+buddy hq:connect
+buddy hq:connect loghq
+buddy hq:connect bughq loghq --no-open
+```
+
+### `hq:status`
+
+Show usage against the allowance of each connected HQ service
+
+- Usage: `$ buddy hq:status`
+- Namespace: `hq`
+- Aliases: none
+- Arguments: none
+
+Examples:
+
+```bash
+buddy hq:status
+```
 
 ### `http`
 

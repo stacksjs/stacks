@@ -1,6 +1,6 @@
 ---
 name: stacks-hq
-description: Use when metering usage against a plan allowance, answering the X-HQ-Usage header, mounting an HQ service's connect and usage endpoints, or reading an HQ service from an app. Covers @stacksjs/hq (meter, service, client, testing).
+description: Use when metering usage against a plan allowance, answering the X-HQ-Usage header, mounting an HQ service's connect and usage endpoints, connecting an app with buddy hq:connect, or reading an HQ service from an app. Covers @stacksjs/hq (meter, service, client, testing), config/hq.ts and buddy hq:status.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -135,6 +135,31 @@ if (usage.ok)
 - `issues.list(query)` reads BugHQ's `GET /api/projects/{project}/issues`.
 - `AnalyticsReader`, `UptimeReader` and `CommsReader` are interfaces only; the
   package README lists the endpoint each service must expose first.
+
+## Connecting an app
+
+An app connects with `buddy hq:connect [service...]` (BugHQ and LogHQ when none
+is named). For each service the command starts a connect, prints the approve
+link and any confirmation code, opens the browser, waits for the approval, and
+writes that service's keys to `.env`: `BUGHQ_KEY`, `BUGHQ_READ_KEY`,
+`BUGHQ_PROJECT_ID`, `LOGHQ_KEY`, `LOGHQ_READ_KEY`, `LOGHQ_PROJECT_ID`. A key is
+never printed. It then sends one test error and one test log and reads each
+back with the read key. `--no-open` and `--no-verify` skip those steps, and a
+service that answers 404 on the connect route is reported as not available yet
+without failing the others.
+
+`config/hq.ts` is the one place that lists each service's URL, keys and
+project. `config/logging.ts` and `config/monitoring.ts` take their LogHQ and
+BugHQ settings from it. `buddy hq:status` prints used, limit, period and state
+for every connected service, with the upgrade link from 80% of an allowance.
+
+The dashboard's Logs and Errors sections read LogHQ and BugHQ when
+`config/dashboard.ts` sets `providers.logs` or `providers.errors` to
+`{ driver: 'hq' }`.
+
+In tests, `createFakeHqService()` and `fakeHqFetch()` from
+`@stacksjs/testing/hq` stand in for a service: the contract routes, ingest and
+the two project readers, with no port.
 
 ## Limits
 
