@@ -2,7 +2,7 @@
   "name": "@stacksjs/router",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.560",
+  "version": "0.75.561",
   "description": "The Stacks framework router.",
   "author": "Chris Breuer",
   "contributors": [

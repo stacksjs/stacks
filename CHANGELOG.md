@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.560...v0.75.561)
+
+## 🐛 Bug Fixes
+
+- **desktop**: a release takes targets built elsewhere, signs the Mac app it is given, and lists every installer ([5b90296](https://github.com/stacksjs/stacks/commit/5b90296)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.559...v0.75.560)
 
 ## ✨ Features
