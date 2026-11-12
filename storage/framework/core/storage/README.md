@@ -61,6 +61,53 @@ expiry has passed. A bare signature has no known expiry. When capacity is full,
 revocation throws explicitly and preserves existing revocations; rotate
 `APP_KEY` or supply a durable application revocation store before retrying.
 
+## Recoverable local rename
+
+`rename` and `move` return a Result. Inspect an error result before using the
+destination:
+
+```ts
+import { rename, StorageRenameRecoveryError } from '@stacksjs/storage/move'
+
+const result = await rename(preparedDirectory, outputDirectory, { overwrite: true })
+if (result.isErr) {
+  if (result.error instanceof StorageRenameRecoveryError)
+    console.error(result.error.phase, result.error.lock, result.error.backup)
+  throw result.error
+}
+```
+
+Overlapping source/destination trees are rejected, including existing parent
+aliases. Ordinary files and empty directories use native rename directly. If
+the OS refuses a directory/type replacement, the existing destination moves
+into an owned sibling backup before installation. Installation failure restores
+the previous entry and returns the original error. Successful replacement
+replaces the entire entry, so stale output files do not survive.
+
+An exclusive destination lock serializes cooperating callers. Existing locks
+fail closed, including those retained after interruption. Common case/Unicode
+aliases share a conservative lock; distinct case-sensitive names can therefore
+contend. `StorageRenameRecoveryError` has `code`, `source`, `destination`, `lock`,
+`backup`, `phase`, `installed`, `cause` and optional `recoveryError` fields. A
+rollback or cleanup failure preserves remaining backup/lock state for inspection.
+`installed: true` means installation completed before cleanup failed; it does
+not mean rollback occurred. A lock error may also mean that the lock could not
+be created, as identified by its original filesystem cause.
+
+The private lock's `operation.json` records planned paths and entry identities.
+After process interruption, stop the operation's owner and inspect those paths
+and actual payloads before recovery. The record is diagnostic state, not an
+authorization to delete a directory, and age alone never authorizes cleanup.
+The function does not automatically resume an interrupted operation.
+
+Callers authorize and control source/destination parents and validate their
+content before replacement. Operations are synchronous inside the async Result
+API. The two-step directory path has a temporary missing-destination window.
+The lock and identity checks coordinate this API's callers; they do not sandbox
+hostile same-user replacement, provide content authentication, or establish
+hardware power-loss durability. Prepared-artifact publication below retains its
+separate new-directory completion contract.
+
 ## Bounded local text reads
 
 Use the standalone entrypoint for local text supplied by a user or worker:

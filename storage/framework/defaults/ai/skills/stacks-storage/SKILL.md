@@ -480,6 +480,15 @@ Low-level storage.move/rename returns a Result; inspect an error result instead
 of assuming an awaited call succeeded. The facade Storage.move targets a disk
 and has a different void/error contract.
 
+Overwrite retains native file/empty-directory rename and uses a recoverable
+backup for directory/type replacements the OS refuses. Inspect
+`StorageRenameRecoveryError` from `@stacksjs/storage/move` for lock, backup,
+phase, original cause and recovery errors. An installed result can still report
+cleanup failure. Read the storage README's recoverable-rename contract before
+using this for complete generated bundles: callers validate content and control
+the parents; two-step directory visibility is not atomic, and interrupted locks
+are preserved for inspection rather than removed by age.
+
 ### Delete
 
 ```typescript
