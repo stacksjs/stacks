@@ -10,10 +10,13 @@ import { type ModelCustomAction, modelActionApplies, modelActions, publicModelAc
 import { isUnmigratedTable } from './model-migration'
 import { recordNames } from './model-options'
 import { belongsToRelations } from './model-relations'
-import { humanizeIdentifier, isErasureSubject, isValidModelSlug, type ModelCreateField, type ModelWriteCapabilities, modelCreateFields, modelListColumns, modelSchemaColumns, modelWritableColumns, modelWriteCapabilities, slugToPascal } from './model-write'
+import type { ModelFieldDisplay } from './model-fields'
+import { humanizeIdentifier, isErasureSubject, isValidModelSlug, type ModelCreateField, type ModelWriteCapabilities, modelColumnDisplay, modelColumnLabel, modelCreateFields, modelFieldProblems, modelListColumns, modelSchemaColumns, modelWritableColumns, modelWriteCapabilities, slugToPascal } from './model-write'
 
 /** Models already told, this process, that `dashboard.columns` names a column they lack. */
 const warnedColumns = new Set<string>()
+/** Models already told, this process, what is wrong with their `dashboard.fields`. */
+const warnedFields = new Set<string>()
 
 /**
  * `GET /api/dashboard/models/{slug}` (stacksjs/stacks#1838).
@@ -42,6 +45,8 @@ interface ColumnMeta {
   label: string
   /** Coarse kind used by the table to pick an alignment and a filter control. */
   type: 'number' | 'boolean' | 'date' | 'json' | 'text'
+  /** How the model says the value is shown (`dashboard.fields`): money, a size, a link. */
+  format?: ModelFieldDisplay
 }
 
 interface ResponseShape {
@@ -362,18 +367,28 @@ export default new Action({
       if (field.type !== 'relation' || reachable.has(field.relation?.model ?? ''))
         return field
       const { relation: _unreachable, ...plain } = field
-      return { ...plain, type: 'number', label: humanizeIdentifier(field.name) }
+      return { ...plain, type: 'number', label: modelColumnLabel(Model, field.name) }
     })
     response.createFields = response.writeCapabilities.create ? formFields() : []
     response.updateColumns = response.writeCapabilities.update ? modelWritableColumns(Model) : []
     response.updateFields = response.writeCapabilities.update ? formFields() : []
     response.displayColumns = response.columns.filter(col => !col.startsWith('_'))
-    response.columnMeta = response.displayColumns.map(name => ({
-      name,
-      // "Team", not "Team ID": the column shows which team.
-      label: response.relations[name]?.label ?? humanizeIdentifier(name),
-      type: typeForColumn(name, response.rows.map(r => r[name])),
-    }))
+    response.columnMeta = response.displayColumns.map((name) => {
+      const format = modelColumnDisplay(Model, name)
+      return {
+        name,
+        // The model's own word for it, else "Team" and not "Team ID" (the
+        // column shows which team), else the name in words.
+        label: modelColumnLabel(Model, name, response.relations[name]?.label),
+        type: typeForColumn(name, response.rows.map(r => r[name])),
+        ...(format ? { format } : {}),
+      }
+    })
+    if (!warnedFields.has(modelName)) {
+      warnedFields.add(modelName)
+      for (const problem of modelFieldProblems(Model, response.columns))
+        console.warn(`[dashboard] ${modelName} dashboard.fields: ${problem}. It is ignored.`)
+    }
 
     const list = modelListColumns(Model, response.displayColumns)
     response.listColumns = list.columns

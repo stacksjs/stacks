@@ -61,7 +61,7 @@ describe('the columns a list shows', () => {
     expect(show).toContain('const list = modelListColumns(Model, response.displayColumns)')
     expect(show).toContain('response.listColumns = list.columns')
     // Column metadata, which the record's page reads, is still every column.
-    expect(show).toContain('response.columnMeta = response.displayColumns.map(name => ({')
+    expect(show).toContain('response.columnMeta = response.displayColumns.map((name) => {')
     // And a wrong name is said once, where a developer will see it.
     expect(show).toContain('in dashboard.columns, which its table does not have (or hides)')
   })
@@ -108,7 +108,8 @@ describe('a link to another record is shown by that record\'s name', () => {
 
   test('the list endpoint names them, one lookup per related model for the rows on the page', () => {
     expect(show).toContain('response.relationNames[column] = Object.fromEntries(await recordNames(relation.model, ids))')
-    expect(show).toContain('label: response.relations[name]?.label ?? humanizeIdentifier(name),')
+    // Under the related model's name, unless the model has its own word for the field.
+    expect(show).toContain('label: modelColumnLabel(Model, name, response.relations[name]?.label),')
   })
 })
 

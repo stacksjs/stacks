@@ -373,6 +373,62 @@ export type DashboardConfig = Partial<DashboardOptions>
 export type DashboardModelWrite = 'store' | 'update' | 'destroy'
 
 /**
+ * How one field is shown and asked for in the dashboard, where the model's
+ * definition cannot say: that a number is money, that a field is called
+ * "Joined". Everything left out stays derived from the attribute.
+ */
+export interface DashboardModelField {
+  /**
+   * What the field is called, on every page that names it: the list's
+   * heading, the record's label, the form's input and its messages. Left
+   * out, the name in words ("Email Verified" for `emailVerifiedAt`).
+   */
+  label?: string
+
+  /** A sentence under the field's input in the create and edit forms. */
+  help?: string
+
+  /**
+   * How the stored value reads in a list, on the record's page and in a
+   * panel:
+   *
+   * - `money`: an amount in minor units (cents), in `currency` or in the
+   *   row's own `currencyField`: 1200 is "$12.00"
+   * - `number`: with separators: 12500 is "12,500"
+   * - `percent`: the number as stored, followed by %: 42.5 is "42.5%"
+   * - `bytes`: a size: 1536 is "1.5 KB"
+   * - `duration`: a length of time, stored in `unit`: 83000 is "1 min 23 s"
+   * - `date`, `datetime`: a day, or a moment in the viewer's time zone
+   * - `badge`: a status-like word, drawn as a pill
+   * - `link`: a web address, opened in a new tab
+   * - `image`: a web address or path, drawn as a thumbnail
+   * - `code`: an identifier or token, in a code font
+   * - `text`: as stored, for a field the dashboard would otherwise dress up
+   *
+   * Left out, the dashboard decides from the column: a `*_at` is a moment,
+   * `status` is a badge.
+   */
+  format?: 'badge' | 'bytes' | 'code' | 'date' | 'datetime' | 'duration' | 'image' | 'link' | 'money' | 'number' | 'percent' | 'text'
+
+  /** For `money`: the ISO code every amount is in (`'EUR'`). USD when neither this nor `currencyField` is given. */
+  currency?: string
+
+  /** For `money`: the field holding each row's own ISO code. Wins over `currency` for a row that has one. */
+  currencyField?: string
+
+  /** For `duration`: what the stored number counts, milliseconds (`'ms'`, the default) or seconds (`'s'`). */
+  unit?: 'ms' | 's'
+
+  /**
+   * Which text input a field of text gets, in place of the one derived for
+   * it: one line (`text`), a tall box (`longtext`), an address (`email`,
+   * `url`). Only for fields that are text: what a value is stays the
+   * validation rule's to say, so a number cannot be asked for as prose.
+   */
+  input?: 'email' | 'longtext' | 'text' | 'url'
+}
+
+/**
  * Something an operator can do to one record beyond creating, editing and
  * deleting it, as a button the dashboard draws: "Mark as shipped".
  *
@@ -542,6 +598,27 @@ export interface DashboardModelOptions {
    * dashboard's own guarded endpoints, never through the `useApi` routes.
    */
   writes?: DashboardModelWrite[]
+
+  /**
+   * How individual fields are shown and asked for, by field name, where the
+   * definition cannot say:
+   *
+   * ```ts
+   * fields: {
+   *   createdAt: { label: 'Joined' },
+   *   amount: { format: 'money', currencyField: 'currency' },
+   *   sizeBytes: { label: 'Size', format: 'bytes' },
+   *   notes: { input: 'longtext', help: 'Shown to the customer on their receipt.' },
+   * }
+   * ```
+   *
+   * A name is an attribute (`createdAt`), its column (`created_at`), or a
+   * `belongsTo` (`team` for `team_id`). See {@link DashboardModelField}.
+   * It changes how a field reads, never what may be read or written: a
+   * `hidden` attribute stays hidden and a field that is not `fillable` stays
+   * out of the forms. A setting that cannot be read is ignored and logged.
+   */
+  fields?: Record<string, DashboardModelField>
 
   /**
    * What an operator can do to one record beyond creating, editing and

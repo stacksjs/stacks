@@ -13,7 +13,8 @@ import { resolveDashboardModel } from '../../../../resources/functions/dashboard
 import { hiddenModelColumns } from '../../../../resources/functions/dashboard/model-columns'
 import { recordNames } from './model-options'
 import { belongsToRelations, hasRelations, modelLabelColumn, pluralizeLabel, relatedForeignKey } from './model-relations'
-import { humanizeIdentifier, modelCreateFields, modelListColumns, modelSchemaColumns, modelWriteCapabilities } from './model-write'
+import type { ModelFieldDisplay } from './model-fields'
+import { humanizeIdentifier, modelColumnDisplay, modelColumnLabel, modelCreateFields, modelListColumns, modelSchemaColumns, modelWriteCapabilities } from './model-write'
 
 /** How many of a panel's records the page shows before "View all". */
 export const RELATED_PREVIEW = 5
@@ -23,6 +24,8 @@ export interface RelatedPanelColumn {
   label: string
   /** A name or value, a status-like word, or a moment. */
   type: 'text' | 'badge' | 'datetime'
+  /** How the related model says the value is shown (`dashboard.fields`). Wins over `type`. */
+  format?: ModelFieldDisplay
 }
 
 export interface RelatedPanel {
@@ -68,6 +71,13 @@ const SUMMARY_LIMIT = 5
  */
 export function relatedSummaryColumns(Related: any, foreignKey: string, reachable: ReadonlySet<string>): SummaryColumn[] {
   const hidden = hiddenModelColumns(Related)
+  // Called what the related model calls it, and shown the way it says: its
+  // `dashboard.fields`, as its own list does. `label` going in is the name
+  // of the record a column points at, when it points at one.
+  const named = (column: SummaryColumn): SummaryColumn => {
+    const format = modelColumnDisplay(Related, column.key)
+    return { ...column, label: modelColumnLabel(Related, column.key, column.label || undefined), ...(format ? { format } : {}) }
+  }
 
   // The model's own choice of list columns, when it made one: the panel is
   // that list, less the column every row here shares.
@@ -78,25 +88,25 @@ export function relatedSummaryColumns(Related: any, foreignKey: string, reachabl
     return chosen.columns.filter(column => column !== foreignKey).map((column) => {
       const relation = relations.find(candidate => candidate.column === column)
       if (relation)
-        return reachable.has(relation.model) ? { key: column, label: humanizeIdentifier(relation.model), type: 'text' as const, relation: relation.model } : { key: column, label: humanizeIdentifier(column), type: 'text' as const }
+        return reachable.has(relation.model) ? named({ key: column, label: humanizeIdentifier(relation.model), type: 'text', relation: relation.model }) : named({ key: column, label: '', type: 'text' })
       const allowed = attributes[column]?.validation?.rule?.allowedValues
       if (Array.isArray(allowed) && allowed.length > 0)
-        return { key: column, label: humanizeIdentifier(column), type: 'badge' as const }
+        return named({ key: column, label: '', type: 'badge' })
       if (/_(?:at|on)$/.test(column))
-        return { key: column, label: humanizeIdentifier(column).replace(/\s+(?:At|On)$/, ''), type: 'datetime' as const }
-      return { key: column, label: humanizeIdentifier(column), type: 'text' as const }
+        return named({ key: column, label: '', type: 'datetime' })
+      return named({ key: column, label: '', type: 'text' })
     })
   }
 
   const columns: SummaryColumn[] = []
   const label = modelLabelColumn(Related)
   if (label && !hidden.has(label))
-    columns.push({ key: label, label: humanizeIdentifier(label), type: 'text' })
+    columns.push(named({ key: label, label: '', type: 'text' }))
 
   for (const relation of belongsToRelations(Related)) {
     if (relation.column === foreignKey || hidden.has(relation.column) || !reachable.has(relation.model))
       continue
-    columns.push({ key: relation.column, label: humanizeIdentifier(relation.model), type: 'text', relation: relation.model })
+    columns.push(named({ key: relation.column, label: humanizeIdentifier(relation.model), type: 'text', relation: relation.model }))
   }
 
   // Neither a name of its own nor a record it points at: the id is all there
@@ -109,13 +119,13 @@ export function relatedSummaryColumns(Related: any, foreignKey: string, reachabl
     const allowed = definition?.validation?.rule?.allowedValues
     if (!Array.isArray(allowed) || allowed.length === 0 || hidden.has(column) || columns.some(entry => entry.key === column))
       continue
-    columns.push({ key: column, label: humanizeIdentifier(name), type: 'badge' })
+    columns.push(named({ key: column, label: '', type: 'badge' }))
   }
 
   const traits = Related?.traits ?? {}
   const kept = columns.slice(0, SUMMARY_LIMIT - 1)
   if ((traits.useTimestamps ?? traits.timestampable) !== false)
-    kept.push({ key: 'created_at', label: 'Created', type: 'datetime' })
+    kept.push(named({ key: 'created_at', label: '', type: 'datetime' }))
   return kept
 }
 
@@ -136,6 +146,7 @@ export async function relatedPanel(parentName: string, parentId: number, relatio
       reachable.add(other.model)
   }
   const columns = relatedSummaryColumns(Related, foreignKey, reachable)
+  const hidden = hiddenModelColumns(Related)
 
   const total = Number(await Related.query().where(foreignKey, parentId).count()) || 0
   const found = total === 0
@@ -160,6 +171,10 @@ export async function relatedPanel(parentName: string, parentId: number, relatio
         shown[column.key] = stored === null ? '' : names.get(column.key)?.get(String(stored)) ?? `${column.label} #${String(stored)}`
       else
         shown[column.key] = stored ?? ''
+      // An amount is read in its row's own currency, so that travels too.
+      const currency = column.format?.currencyColumn
+      if (currency && !hidden.has(currency) && !(currency in shown))
+        shown[currency] = safeGet(row, currency, null) ?? ''
     }
     return shown
   })

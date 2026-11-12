@@ -10,6 +10,7 @@ import { GDPR_SUBJECT_MODEL } from '@stacksjs/orm'
 import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
 import { dashboardOperationalIssue } from '../dashboard-response'
 import { modelApiConfiguration } from './model-api'
+import { type ModelFieldDisplay, modelFieldOverrides } from './model-fields'
 import { belongsToRelations } from './model-relations'
 
 /** Never writable from a generic admin table, whatever the model declares. */
@@ -80,7 +81,10 @@ export interface ModelWriteCapabilities {
  * own time zone; `relation` is another model's record, picked by name and
  * stored as its id.
  */
-export type ModelFieldType = 'boolean' | 'date' | 'datetime' | 'email' | 'enum' | 'json' | 'longtext' | 'number' | 'relation' | 'text'
+export type ModelFieldType = 'boolean' | 'date' | 'datetime' | 'email' | 'enum' | 'json' | 'longtext' | 'number' | 'relation' | 'text' | 'url'
+
+/** The kinds that are a line or a box of text, and may be given another text input. */
+const TEXT_KINDS: ReadonlySet<ModelFieldType> = new Set(['email', 'longtext', 'text', 'url'])
 
 export interface ModelCreateField {
   name: string
@@ -91,6 +95,8 @@ export interface ModelCreateField {
   options: string[]
   /** For a `relation`: the model whose records the picker lists. */
   relation?: { model: string, slug: string, label: string }
+  /** What the model says under the input: its `dashboard.fields` help. */
+  help?: string
 }
 
 export interface PreparedModelFields {
@@ -139,6 +145,36 @@ export function humanizeIdentifier(name: string): string {
 }
 
 const humanize = humanizeIdentifier
+
+/**
+ * What a column is called when the model does not say: its name in words,
+ * with a moment read as what happened ("Created", not "Created At").
+ */
+function defaultColumnLabel(column: string): string {
+  if (column === 'updated_at')
+    return 'Last Updated'
+  const label = humanize(column)
+  return /_(?:at|on)$/.test(column) ? label.replace(/\s+(?:At|On)$/, '') : label
+}
+
+/**
+ * What a field is called, on every page that names it: a list's heading, a
+ * record's label, a form's input, the message under it.
+ *
+ * The model's own word for it (`dashboard.fields.<name>.label`), else the
+ * record it points at when it is a relation the page can name, else the
+ * name in words. One function, so a field is not "Joined" in the list and
+ * "Created At" in the form.
+ */
+export function modelColumnLabel(Model: any, name: string, relationLabel?: string): string {
+  const column = snakeCase(name)
+  return modelFieldOverrides(Model).fields[column]?.label ?? relationLabel ?? defaultColumnLabel(column)
+}
+
+/** How the model says a column's value is shown, when it says. */
+export function modelColumnDisplay(Model: any, name: string): ModelFieldDisplay | undefined {
+  return modelFieldOverrides(Model).fields[snakeCase(name)]?.display
+}
 
 /**
  * Derive the physical columns declared by a model when its table has no rows
@@ -302,7 +338,7 @@ export function duplicateFieldErrors(Model: any, columns: string[]): Record<stri
   const errors: Record<string, string[]> = {}
   for (const [name, definition] of Object.entries((Model?.attributes ?? {}) as Record<string, any>)) {
     if (definition?.unique === true && columns.includes(snakeCase(name)))
-      errors[name] = [`${humanize(name)} is already in use.`]
+      errors[name] = [`${modelColumnLabel(Model, name)} is already in use.`]
   }
   return errors
 }
@@ -350,21 +386,27 @@ export function modelFieldType(name: string, definition: any): ModelFieldType {
 export function modelCreateFields(Model: any): ModelCreateField[] {
   const fields: ModelCreateField[] = []
   const attributes = Model?.attributes ?? {}
+  const overrides = modelFieldOverrides(Model).fields
 
   for (const [name, definition] of Object.entries(attributes as Record<string, any>)) {
     if (!definition?.fillable || definition.hidden || isProtectedField(name))
       continue
     const rule = definition.validation?.rule
     const options = Array.isArray(rule?.allowedValues) ? rule.allowedValues.map(String) : []
-    const type = modelFieldType(name, definition)
+    const override = overrides[snakeCase(name)]
+    const derived = modelFieldType(name, definition)
+    // Another input is only ever another way to type text: what a value is
+    // stays the rule's to say, so a number is never asked for as prose.
+    const type = override?.input && TEXT_KINDS.has(derived) ? override.input : derived
 
     fields.push({
       name,
-      label: humanize(name),
+      label: modelColumnLabel(Model, name),
       type,
       required: definition.required === true || rule?.isRequired === true,
       defaultValue: definition.default ?? (type === 'boolean' ? false : ''),
       options,
+      ...(override?.help ? { help: override.help } : {}),
     })
   }
 
@@ -374,7 +416,13 @@ export function modelCreateFields(Model: any): ModelCreateField[] {
   for (const relation of belongsToRelations(Model)) {
     if (isProtectedField(relation.field))
       continue
-    const asRelation = { type: 'relation' as const, label: humanize(relation.model), relation: { model: relation.model, slug: relation.slug, label: humanize(relation.model) } }
+    const help = overrides[relation.column]?.help
+    const asRelation = {
+      type: 'relation' as const,
+      label: modelColumnLabel(Model, relation.column, humanize(relation.model)),
+      relation: { model: relation.model, slug: relation.slug, label: humanize(relation.model) },
+      ...(help ? { help } : {}),
+    }
     const declared = fields.find(field => field.name === relation.field)
     if (declared) {
       Object.assign(declared, asRelation, { options: [] })
@@ -388,6 +436,42 @@ export function modelCreateFields(Model: any): ModelCreateField[] {
     const rightOrder = attributes[right.name]?.order ?? Number.MAX_SAFE_INTEGER
     return leftOrder - rightOrder
   })
+}
+
+/**
+ * What is wrong with a model's `dashboard.fields`, in words that name the
+ * field: a setting that cannot be read, a name the model does not have, an
+ * input asked of a field that is not text. `tableColumns` are the columns a
+ * row of the table was seen to carry, when one was read.
+ */
+export function modelFieldProblems(Model: any, tableColumns: string[] = []): string[] {
+  const { fields, problems } = modelFieldOverrides(Model)
+  const found = [...problems]
+  // The model's own, and the ones its table is seen to have: a trait can add
+  // a column the definition does not list (`email_verified_at`).
+  const columns = new Set([...modelSchemaColumns(Model), ...tableColumns])
+  const attributes = Object.fromEntries(Object.entries((Model?.attributes ?? {}) as Record<string, any>).map(([name, definition]) => [snakeCase(name), [name, definition] as const]))
+  for (const [column, override] of Object.entries(fields)) {
+    const called = `'${override.declared}'`
+    if (!columns.has(column)) {
+      found.push(`${called} is not a field of the model`)
+      continue
+    }
+    if (override.input) {
+      const attribute = attributes[column]
+      const derived = attribute ? modelFieldType(attribute[0], attribute[1]) : null
+      // A column a trait or a relation adds is not one of the model's own
+      // attributes, so no form asks for it as text.
+      if (!derived)
+        found.push(`${called} asks for the '${override.input}' input, but it is not an attribute the forms ask for`)
+      else if (!TEXT_KINDS.has(derived))
+        found.push(`${called} asks for the '${override.input}' input, but it is not a field of text (it is asked for as ${derived})`)
+    }
+    const currency = override.display?.currencyColumn
+    if (currency && !columns.has(currency))
+      found.push(`${called} names '${currency}' as its currency field, which the model does not have`)
+  }
+  return found
 }
 
 /** Physical database columns accepted by the model's generic update API. */
