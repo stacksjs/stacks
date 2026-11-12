@@ -297,6 +297,20 @@ export async function anonymizedRows(modelName: string, rows: Row[], options: Gd
   })
 }
 
+/**
+ * The columns of a model that erasure empties or replaces: the ones the model
+ * marks `personal`. None for a model the plan does not know or that holds
+ * nothing personal.
+ *
+ * For saying, of a row {@link anonymizedRows} calls anonymized, which of its
+ * columns are placeholders and not what somebody typed: a list can then read
+ * "removed" where the row stores `[erased]`.
+ */
+export async function personalColumns(modelName: string, options: GdprRunOptions = {}): Promise<string[]> {
+  const plan = await loadPlan(options.models)
+  return plan.models.find(candidate => candidate.model === modelName)?.personal.map(field => field.column) ?? []
+}
+
 async function anonymizeRows(handle: Handle, model: GdprModelPlan, rows: Row[]): Promise<void> {
   if (!rows.length)
     return

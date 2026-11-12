@@ -19,7 +19,7 @@ await ensureDatabaseConfigLoaded()
 initializeDbConfig({ app: { env: 'test' }, database: { default: 'sqlite', connections: { sqlite: { database } }, queryLogging: { enabled: false } } })
 const { configureOrm } = await import('bun-query-builder')
 configureOrm({ database })
-const { anonymizedRows, ormReady, User } = await import('@stacksjs/orm')
+const { anonymizedRows, ormReady, personalColumns, User } = await import('@stacksjs/orm')
 await ormReady
 const { ensureFrameworkAuthTables } = await import('../../../storage/framework/core/auth/tests/helpers/auth-schema')
 
@@ -96,7 +96,7 @@ assert.deepEqual(await anonymizedRows('User', listed), [true, false])
 assert.deepEqual(await anonymizedRows('User', [{ id: 3 }]), [false], 'a row with no personal column says nothing')
 assert.deepEqual(await anonymizedRows('NoSuchModel', listed), [false, false])
 // ...and the Users page is told.
-const page = await UserIndexAction.handle() as { users: Array<Record<string, any>> }
+const page = await UserIndexAction.handle({ get: () => undefined } as any) as { users: Array<Record<string, any>> }
 assert.deepEqual(page.users.map(row => [row.id, row.anonymized]).sort(), [[2, true], [3, false]])
 // ...and so is the record's own page, through the generic model endpoint.
 const shown = await ModelShowAction.handle({
@@ -104,9 +104,21 @@ const shown = await ModelShowAction.handle({
   get: (_key: string, fallback?: unknown) => fallback,
   all: () => ({}),
   query: {},
-} as any) as { rows: Array<Record<string, any>>, anonymizedIds?: unknown[] }
+} as any) as { rows: Array<Record<string, any>>, anonymizedIds?: unknown[], anonymizedColumns?: string[] }
 assert.deepEqual(shown.rows.map(row => Number(row.id)).sort(), [2, 3])
 assert.deepEqual(shown.anonymizedIds?.map(Number), [2])
+// ...with the columns erasure emptied, so the list can say "removed" where
+// the row stores a placeholder (stacksjs/stacks#3277). Only ones it is sent:
+// the password is personal too, and hidden.
+assert.deepEqual(shown.anonymizedColumns?.sort(), ['avatar', 'email', 'name'])
+assert.deepEqual((await personalColumns('User')).sort(), ['avatar', 'email', 'name', 'password'])
+assert.deepEqual(await personalColumns('NoSuchModel'), [])
+// The Users page lists through that endpoint now, and asks its own for the
+// numbers alone: no rows are read for it.
+const numbers = await UserIndexAction.handle({ get: (key: string) => (key === 'only' ? 'stats' : undefined) } as any) as { users: unknown[], stats: Record<string, number> }
+assert.deepEqual(numbers.users, [])
+assert.equal(numbers.stats.total, 2)
+assert.equal(page.users.length, 2, 'asked without it, the rows still come')
 console.log('PASS the list knows an anonymized account from a live one')
 
 // 4. Pressing delete on him again changes nothing and fails nothing.

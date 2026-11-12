@@ -1,7 +1,7 @@
 import { hiddenModelColumns } from '../../../../resources/functions/dashboard/model-columns'
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
-import { anonymizedRows } from '@stacksjs/orm'
+import { anonymizedRows, personalColumns } from '@stacksjs/orm'
 import { response as routerResponse } from '@stacksjs/router'
 import { safeGet } from '../../../../resources/functions/dashboard/data'
 import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
@@ -81,6 +81,12 @@ interface ResponseShape {
   updateColumns: string[]
   /** Rows whose personal details erasure has replaced with placeholders (the subject model only). */
   anonymizedIds?: Array<number | string>
+  /**
+   * The columns erasure replaces, of the ones the page is sent: in an
+   * anonymized row they hold placeholders (`[erased]`), not a name anyone
+   * typed, and the page says so instead of showing them.
+   */
+  anonymizedColumns?: string[]
   /** What the model lets an operator do to a record beyond editing it: its `dashboard.actions`. */
   actions: ModelCustomAction[]
   /** Which of those each row on this page is offered, by row id. A row with none is left out. */
@@ -340,6 +346,10 @@ export default new Action({
           return [] as boolean[]
         })
         response.anonymizedIds = response.rows.filter((_row, index) => erased[index] === true).map(row => row.id as number | string)
+        if (response.anonymizedIds.length > 0) {
+          const personal = await personalColumns(modelName).catch(() => [] as string[])
+          response.anonymizedColumns = personal.filter(column => response.columns.includes(column))
+        }
       }
     }
     catch (error) {

@@ -26,3 +26,15 @@ export function createdWithinDays(value: string, days: number, now = Date.now())
 export function daysAgoIso(days: number, now = Date.now()): string {
   return new Date(now - days * 24 * 60 * 60 * 1000).toISOString()
 }
+
+/**
+ * Whether a data endpoint was asked for its numbers alone (`?only=stats`).
+ *
+ * Users, Teams and Subscribers are listed by the model browser, which pages
+ * and searches every row. Their pages still open with a row of stats, and
+ * those come from here: without this each page load would also read a
+ * hundred rows it never draws.
+ */
+export function statsOnly(request: { get?: (key: string) => unknown } | null | undefined): boolean {
+  return request?.get?.('only') === 'stats'
+}

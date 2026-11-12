@@ -1,17 +1,20 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
 import { anonymizedRows, GDPR_SUBJECT_MODEL, User } from '@stacksjs/orm'
 import { safeGet } from '../../../../resources/functions/dashboard/data'
 import { dashboardOperationalError } from '../dashboard-response'
-import { dateValue, daysAgoIso, numberValue, textValue } from './data-records'
+import { dateValue, daysAgoIso, numberValue, statsOnly, textValue } from './data-records'
 
 export default new Action({
   name: 'UserIndexAction',
   description: 'Returns a safe projection of users and native registration statistics.',
   method: 'GET',
   apiResponse: true,
-  async handle() {
+  async handle(request: RequestInstance) {
     try {
-      const rows = await User.orderByDesc('created_at').limit(100).get()
+      // The page that shows these numbers lists its rows through the model
+      // browser, and asks here for the numbers alone.
+      const rows = statsOnly(request) ? [] : await User.orderByDesc('created_at').limit(100).get()
       // An account erased under the app's data-subject rules stays in the
       // table with its personal details replaced. Listed as it is stored it
       // reads "[erased] / erased-13", which looks like corrupt data, so each

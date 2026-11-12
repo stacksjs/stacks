@@ -10,6 +10,7 @@ export {
   GDPR_AUDIT_TABLE,
   GdprSubjectNotFoundError,
   gdprTableExists,
+  personalColumns,
   pruneRetainedData,
   resolveGdprSubject,
 } from './engine'
