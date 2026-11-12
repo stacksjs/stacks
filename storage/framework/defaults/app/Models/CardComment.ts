@@ -63,5 +63,11 @@ export default defineModel({
     },
   },
 
-  dashboard: { enabled: false },
+  dashboard: {
+    enabled: false,
+    // Prose, asked for in a box with room for it.
+    fields: {
+      body: { input: 'longtext' },
+    },
+  },
 } as const)

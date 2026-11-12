@@ -108,4 +108,11 @@ export default defineModel({
       factory: faker => faker.helpers.arrayElement(['blue', 'green', 'red', 'purple', 'yellow', 'orange', 'pink', 'gray']),
     },
   },
+
+  dashboard: {
+    // Prose, asked for in a box with room for it.
+    fields: {
+      description: { input: 'longtext' },
+    },
+  },
 } as const)

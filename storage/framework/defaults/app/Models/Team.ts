@@ -79,6 +79,7 @@ export default defineModel({
     // A count of members is called what it counts.
     fields: {
       memberCount: { label: 'Members' },
+      description: { input: 'longtext' },
     },
     highlight: true,
   },

@@ -117,5 +117,9 @@ export default defineModel({
   dashboard: {
     columns: ['title', 'board', 'boardColumn', 'user', 'dueDate', 'archived'],
     enabled: false,
+    // Prose, asked for in a box with room for it.
+    fields: {
+      description: { input: 'longtext' },
+    },
   },
 } as const)

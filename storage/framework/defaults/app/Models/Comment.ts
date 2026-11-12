@@ -111,4 +111,12 @@ export default defineModel({
       factory: faker => faker.number.int({ min: 0, max: 1 }),
     },
   },
+
+  dashboard: {
+    // Prose, asked for in a box with room for it.
+    fields: {
+      content: { input: 'longtext' },
+      body: { input: 'longtext' },
+    },
+  },
 } as const)

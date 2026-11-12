@@ -140,5 +140,9 @@ export default defineModel({
 
   dashboard: {
     columns: ['name', 'status', 'subscriberCount', 'activeCount', 'isPublic', 'createdAt'],
+    // Prose, asked for in a box with room for it.
+    fields: {
+      description: { input: 'longtext' },
+    },
   },
 } as const)
