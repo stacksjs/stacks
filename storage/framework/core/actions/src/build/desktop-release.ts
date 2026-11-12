@@ -1,4 +1,4 @@
-import type { DesktopUpdateManifest, ReleaseRecord, UpdateStore } from '@stacksjs/desktop-build'
+import type { DesktopUpdateManifest, ReleaseRecord, ReleaseRecordDownload, UpdateStore } from '@stacksjs/desktop-build'
 import type { DesktopTargetName } from '@stacksjs/types'
 import { copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -15,9 +15,11 @@ import {
   mergeReleaseRecord,
   publishDesktopUpdate,
   publishedArtifactUrl,
+  releaseArtifactFormat,
   releaseArtifactNames,
   releaseRecordKey,
   releaseVersionProblem,
+  resignWebviewMacosApp,
   resolveDmgPackaging,
   splitDesktopTarget,
   storageUpdateStore,
@@ -140,9 +142,18 @@ for (const item of build.targets) {
     if (!dryRun) {
       // A release other Macs open without a warning needs both. Refuse rather than publish something Gatekeeper blocks.
       if (!signingIdentity || !notary) throw new Error(`${item.target}: a release needs a Developer ID identity and notary credentials: --identity and --notary-profile (or DESKTOP_SIGNING_IDENTITY / DESKTOP_NOTARY_PROFILE).`)
-      const signature = Bun.spawnSync(['codesign', '-dvv', app], { stderr: 'pipe' })
-      const unsigned = developerIdProblem(`${signature.stdout.toString()}${signature.stderr.toString()}`)
-      if (unsigned) throw new Error(`${item.target}: ${app} cannot be notarized: ${unsigned}`)
+      const signatureProblem = (): string | undefined => {
+        const signature = Bun.spawnSync(['codesign', '-dvv', app], { stderr: 'pipe' })
+        return developerIdProblem(`${signature.stdout.toString()}${signature.stderr.toString()}`)
+      }
+      // A build signs with the first identity it finds unless told, often a development one. The release was given
+      // the identity to ship with, so the bundle is signed again with it here, before anything is notarized.
+      if (signatureProblem()) {
+        await log.info(`${item.target}: signing ${config.appName}.app with ${signingIdentity}`)
+        resignWebviewMacosApp({ appPath: app, config, signingIdentity, entitlementsPath: join(directory, `${config.appName}.entitlements`) })
+      }
+      const unsigned = signatureProblem()
+      if (unsigned) throw new Error(`${item.target}: ${app} cannot be notarized: ${unsigned} It was signed with "${signingIdentity}": --identity (or DESKTOP_SIGNING_IDENTITY) must name a Developer ID Application certificate.`)
     }
     const dmg = join(staged, names.downloads[0]!)
     planned.push({
@@ -185,15 +196,19 @@ for (const item of build.targets) {
   if (!installer) {
     throw new Error(`${item.target}: there is no ${platform === 'win32' ? 'MSI' : 'AppImage'} in ${packages}. Run \`buddy build:desktop --target ${item.target} --package\` on ${platform === 'win32' ? 'Windows' : 'Linux'}, then release with --skip-build.`)
   }
-  const extras = platform === 'linux' ? ['.deb', '.rpm'].map(find).filter((file): file is string => Boolean(file)) : []
+  // What a person downloads, the usual choice first: the installer the app also updates from, then the other
+  // packages that were built. Each is staged under its release name, matched by its kind and not by its position.
+  const staging = names.downloads
+    .map(name => ({ name, from: name === names.update ? installer : find(name.slice(name.lastIndexOf('.')).toLowerCase()) }))
+    .filter((entry): entry is { name: string, from: string } => Boolean(entry.from))
   planned.push({
     target: item.target,
     directory: staged,
     update: join(staged, names.update),
-    downloads: extras.map((file, index) => join(staged, names.downloads[index] ?? basename(file))),
+    downloads: staging.map(entry => join(staged, entry.name)),
     prepare: async () => {
       copyFileSync(installer, join(staged, names.update))
-      extras.forEach((file, index) => copyFileSync(file, join(staged, names.downloads[index] ?? basename(file))))
+      for (const entry of staging) if (entry.name !== names.update) copyFileSync(entry.from, join(staged, entry.name))
     },
   })
 }
@@ -216,16 +231,19 @@ for (const item of planned) {
   await item.prepare()
 }
 
-const published: Array<{ target: DesktopTargetName, manifest: DesktopUpdateManifest, downloads: Array<{ name: string, url: string, sha256: string, bytes: number }> }> = []
+const published: Array<{ target: DesktopTargetName, manifest: DesktopUpdateManifest, downloads: ReleaseRecordDownload[] }> = []
 for (const item of planned) {
   const { platform, architecture } = splitDesktopTarget(item.target)
   const location = { platform, architecture, channel, prefix }
-  const downloads: Array<{ name: string, url: string, sha256: string, bytes: number }> = []
+  // Uploaded before the manifest that announces the version. The installer the app updates from is one of them on
+  // Linux and Windows; the manifest's own publish uploads that one.
+  const others = new Map<string, ReleaseRecordDownload>()
   for (const file of item.downloads) {
+    if (file === item.update) continue
     const key = updateArtifactKey(location, config.version, basename(file))
     await store.write(key, readFileSync(file))
     const { sha256, size } = await describeArtifact(file)
-    downloads.push({ name: basename(file), url: await artifactUrl(location, file), sha256, bytes: size })
+    others.set(file, { name: basename(file), format: releaseArtifactFormat(file), url: await artifactUrl(location, file), sha256, bytes: size })
   }
   const manifest = await publishDesktopUpdate({
     store,
@@ -241,6 +259,7 @@ for (const item of planned) {
   })
   // Kept beside the artifacts, so a dry run shows exactly what the feed would serve.
   writeFileSync(join(item.directory, 'latest.json'), `${JSON.stringify(manifest, null, 2)}\n`)
+  const downloads = item.downloads.map(file => others.get(file) ?? { name: basename(file), format: releaseArtifactFormat(file), url: manifest.url, sha256: manifest.sha256, bytes: manifest.size })
   published.push({ target: item.target, manifest, downloads })
   await log.success(`${item.target}: ${dryRun ? 'would publish' : 'published'} ${basename(item.update)} (${manifest.size} bytes, sha256 ${manifest.sha256})`)
 }
@@ -253,7 +272,7 @@ const thisRun: ReleaseRecord = {
   channel,
   sourceRevision,
   publishedAt: new Date().toISOString(),
-  targets: published.map(item => ({ target: item.target, update: { url: item.manifest.url, sha256: item.manifest.sha256, bytes: item.manifest.size }, downloads: item.downloads })),
+  targets: published.map(item => ({ target: item.target, update: { name: basename(item.manifest.url), format: releaseArtifactFormat(item.manifest.url), url: item.manifest.url, sha256: item.manifest.sha256, bytes: item.manifest.size }, downloads: item.downloads })),
 }
 const recordKey = releaseRecordKey({ channel, prefix })
 const localRecord = join(releaseDir, 'release.json')

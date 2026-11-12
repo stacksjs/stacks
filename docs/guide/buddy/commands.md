@@ -333,6 +333,8 @@ Build the Desktop Application
 | --- | --- | --- | --- |
 | `--target` | Web view app: comma-separated targets (darwin-arm64, linux-x64, win32-x64, ...) or all. Default: this machine | value, required | - |
 | `--package` | Web view app: also make the installers this operating system can make (MSI on Windows; AppImage, deb, rpm on Linux) | boolean, optional | `false` |
+| `--import` | Web view app: add targets built on another machine (their output folder, with its build.json) to this build, checked against their recorded hashes | value, required | - |
+| `--identity` | Web view app, macOS: the certificate to sign with (or DESKTOP_SIGNING_IDENTITY). A release needs a Developer ID Application certificate | value, required | - |
 | `--native` | Build the AppKit app (`macos`) when the config also declares a web view app | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
@@ -4970,11 +4972,11 @@ Build, sign and notarize the web view desktop app, and publish it with signed up
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--target` | Comma-separated targets (darwin-arm64, linux-x64, win32-x64, ...) or all. Default: this machine | value, required | - |
-| `--identity` | macOS: Developer ID Application certificate (or DESKTOP_SIGNING_IDENTITY) | value, required | - |
+| `--identity` | macOS: Developer ID Application certificate (or DESKTOP_SIGNING_IDENTITY). A bundle built with another identity is signed again with it | value, required | - |
 | `--notary-profile` | macOS: notarytool keychain profile (or DESKTOP_NOTARY_PROFILE) | value, required | - |
 | `--channel` | Release channel (default: webview.updates.channel, else stable) | value, required | - |
 | `--notes` | Release notes, shown by the app before it updates | value, required | - |
-| `--skip-build` | Release what `buddy build:desktop` already made (installers built on another machine) | boolean, optional | `false` |
+| `--skip-build` | Release what `buddy build:desktop` already made, including targets added with `build:desktop --import` | boolean, optional | `false` |
 | `--dry-run` | Do everything except notarize and upload; write the signed manifests locally | boolean, optional | `false` |
 | `--allow-dirty` | Release from a working tree with uncommitted changes | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |

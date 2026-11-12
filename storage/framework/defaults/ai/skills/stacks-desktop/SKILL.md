@@ -438,6 +438,8 @@ buddy dev:desktop                                  # run from source, stx views 
 buddy build:desktop                                # this machine's target
 buddy build:desktop --target linux-x64,win32-x64   # cross-compile the agents
 buddy build:desktop --target all --package         # also make the installers this OS can make
+buddy build:desktop --identity "Developer ID Application: Example (ABCDE12345)"   # macOS: sign with this certificate
+buddy build:desktop --import ./ci-output           # add targets built on another machine to this build
 ```
 
 Output goes to `storage/framework/desktop/webview/<target>/`, with `build.json` listing every artifact.
@@ -458,7 +460,8 @@ machine's target; else the build fetches it. Craft publishes `craft-<os>-<arch>.
 `build:desktop --target ...` downloads the one for the installed `craft-native` version, checks its size and SHA-256
 against that release's `release-manifest.json`, and keeps it unpacked in `storage/framework/desktop/runtimes/<target>/`
 (gitignored; a later build reuses it and a new Craft version replaces it). An app needs no script of its own for
-this. Craft publishes runtimes for `darwin-arm64`, `darwin-x64`, `linux-x64` and `win32-x64`; the arm64 Linux and
+this. A machine with no Craft of its own (a CI runner with no `CRAFT_BIN` and no `craft` on PATH) fetches its own
+target's runtime the same way. Craft publishes runtimes for `darwin-arm64`, `darwin-x64`, `linux-x64` and `win32-x64`; the arm64 Linux and
 Windows targets still need a runtime named in the config. `DESKTOP_RUNTIME_FETCH=0` keeps a build off the network.
 
 On Windows, `WebView2Loader.dll` is copied into the app from beside the runtime (Craft's archive ships it there)
@@ -493,10 +496,32 @@ serves. Then per target:
 
 Artifacts and manifests go through `@stacksjs/storage` to `updates.disk` under `updates.prefix`
 (`desktop-updates/<channel>/<platform>-<arch>/latest.json`, artifacts under `<version>/`), plus a `release.json`
-a download page can read. A release is often made in several runs, the Mac from a Mac and then
+a download page can read. Each target in it has `update` (what an installed app updates from) and `downloads` (what a
+person takes, the usual choice first: the DMG on macOS, the MSI on Windows, the AppImage and then the deb and rpm on
+Linux), every entry with `name`, `format` (`dmg`, `msi`, `appimage`, `deb`, `rpm`, `zip`), `url`, `sha256` and `bytes`,
+so a download page needs no rules of its own. A release is often made in several runs, the Mac from a Mac and then
 `release:desktop --target linux-x64 --skip-build` for installers built elsewhere: a run for the same version and
 channel adds its targets to `release.json` and replaces only the ones it published again. A new version starts a
 new record.
+
+**Targets built on another machine.** `build.json` in the output folder records every target and the SHA-256 of each
+file, and a release publishes from it. To bring in what CI built, carry its output folder (the target folders and its
+`build.json`) to the machine that releases and run `buddy build:desktop --import <folder>` (`--target` narrows it, and
+a single target's folder works too). The import refuses a build of another app, version or commit (it must be the
+commit this checkout is at) and any file that does not match its recorded hash, then copies the folders in and adds
+the targets to the local record beside what was built here. An installer found under a target's `packages/` that the
+record does not list (an MSI made by Craft's `packageApp` on its own) is recorded as found, with a warning that
+there was nothing to check it against. With `--package`, an imported target for this operating system that has no
+installer yet gets one made here: on a Windows runner, `buddy build:desktop --import <folder> --package` turns a
+folder cross-compiled on Linux into a recorded MSI. Then `release:desktop --skip-build` publishes them. A build also
+keeps the record's other targets when they are from the same version and commit.
+
+**The identity a Mac build is signed with.** `build:desktop` signs with `--identity` or `DESKTOP_SIGNING_IDENTITY`
+when one is given. Without one it uses the first Apple Development certificate it finds (which keeps Keychain items
+trusted across rebuilds), else signs ad hoc, and says so in its output: neither can be notarized.
+`release:desktop --identity` signs the bundle again with the identity it was given when the bundle is not already
+signed with a Developer ID, hardened runtime and timestamp, so `--skip-build` works on a development build. It
+refuses, before notarizing, when that identity is not a Developer ID Application certificate.
 
 The server side is one default action, `Actions/Desktop/UpdateFeedAction`, mounted at
 `/api/updates/{platform}/{arch}` whenever `webview.updates` is configured. It serves the stored manifest as is

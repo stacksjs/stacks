@@ -70,6 +70,14 @@ it in `storage/framework/desktop/runtimes/<target>/`. On Windows `WebView2Loader
 
 A release made in several runs (the Mac from a Mac, then the Linux and Windows installers) adds each
 run's platforms to the same `release.json`, so a download page keeps every platform of the version.
+Every target lists what a person downloads under `downloads`, each entry with a `format`.
+
+Installers built on another machine join a release through `buddy build:desktop --import <folder>`:
+it takes that machine's output folder and `build.json`, checks the commit and every recorded
+SHA-256, and adds the targets to the local build. On macOS, `build:desktop --identity` (or
+`DESKTOP_SIGNING_IDENTITY`) chooses the signing certificate; without one the build signs with a
+development certificate and says so, and `release:desktop --identity` signs it again before notarizing.
+A machine with no Craft installed fetches the runtime for its own platform as it does for the others.
 
 An installed app asks `<feedUrl>/<platform>/<arch>` for a newer version. The framework mounts
 that route (`/api/updates/{platform}/{arch}`, `Actions/Desktop/UpdateFeedAction`) when
