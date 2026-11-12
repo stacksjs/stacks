@@ -101,7 +101,7 @@
     "very-happy-dom": "^0.4.1"
   },
   "devDependencies": {
-    "@dtsx/dtsx": "^0.11.50",
+    "@dtsx/dtsx": "^0.11.52",
     "better-dx": "^0.2.24"
   }
 }
