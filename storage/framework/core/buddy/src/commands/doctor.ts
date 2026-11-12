@@ -158,7 +158,7 @@ export function doctor(buddy: CLI): void {
           checks.push({ name: 'STX packages', ...report })
       }
 
-      // System dependencies the registry cannot install (stacksjs/stacks#2919).
+      // Obsolete scaffold dependency declarations (stacksjs/stacks#2919).
       const depsPath = resolve(process.cwd(), 'config/deps.ts')
       if (existsSync(depsPath)) {
         const { describeSystemDependencies } = await import('../system-dependencies')
