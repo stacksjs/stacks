@@ -273,7 +273,7 @@ export interface DashboardOptions {
    *
    * @example
    * providers: {
-   *   logs: { driver: 'hq', drivers: { hq: { baseUrl: 'https://loghq.org', token: env.LOGHQ_READ_TOKEN } } },
+   *   logs: { driver: 'hq' }, // reads LogHQ with the keys `buddy hq:connect` wrote
    *   errors: { driver: 'local' },
    * },
    *
@@ -291,18 +291,20 @@ export interface DashboardOptions {
 export type DashboardProviderName = 'local' | 'hq'
 
 /**
- * Credentials and endpoint for a hosted HQ product.
+ * Per-section overrides for a hosted HQ product.
  *
- * `token` must be a READ token. A product's ingest key (the `loghq_...` value
- * an app uses to SEND logs) grants no read access at all, so pasting one here
- * produces an unauthorized response rather than data. The hosted read APIs
- * currently authenticate a user rather than a machine, which is why this is
- * separate from whatever ingest key `config/logging.ts` carries.
+ * All optional. A section set to `hq` reads with the URL, read key and
+ * project in `config/hq.ts`, which `buddy hq:connect` fills in. Set a field
+ * here only to point one section somewhere else.
+ *
+ * `token` must be a READ key. A product's ingest key (the value an app uses to
+ * SEND logs) grants no read access at all, so pasting one here produces an
+ * empty section rather than data.
  */
 export interface DashboardHqDriverOptions {
   /** Product API origin, e.g. `https://loghq.org`. */
   baseUrl?: string
-  /** Read token. Not an ingest key. See the note on this interface. */
+  /** Read key. Not an ingest key. See the note on this interface. */
   token?: string
   /** Project identifier within the product. */
   project?: string

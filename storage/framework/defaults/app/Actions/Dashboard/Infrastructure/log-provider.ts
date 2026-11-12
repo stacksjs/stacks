@@ -1,7 +1,8 @@
+import type { HqClient } from '@stacksjs/hq/client'
 import type { DashboardProviderUnavailable } from '../dashboard-provider'
 import type { DashboardLogRecord, DashboardLogSummary } from './log-dashboard'
 import { db } from '@stacksjs/database/runtime'
-import { HQ_READ_UNAVAILABLE, readThroughProvider, resolveDashboardDriver } from '../dashboard-provider'
+import { dashboardHqClient, hqUnavailableReason, readThroughProvider, resolveDashboardDriver } from '../dashboard-provider'
 import { DASHBOARD_LOG_TYPES, normalizeDashboardLog, summarizeDashboardLogTypes } from './log-dashboard'
 
 /**
@@ -173,6 +174,102 @@ export const localLogsProvider: DashboardLogsProvider = {
   },
 }
 
+/**
+ * LogHQ's levels, as the four types this section filters and counts by.
+ *
+ * LogHQ has no `success`: the framework's logger sends one as `info`, so that
+ * filter matches nothing here rather than guessing.
+ */
+const HQ_LEVELS_BY_TYPE: Record<string, string[]> = {
+  error: ['error', 'critical', 'alert', 'emergency'],
+  warning: ['warning'],
+  info: ['info', 'notice', 'debug'],
+  success: [],
+}
+
+function typeOfHqLevel(level: string): string {
+  const normalized = level.toLowerCase()
+  return Object.keys(HQ_LEVELS_BY_TYPE).find(type => HQ_LEVELS_BY_TYPE[type]!.includes(normalized)) ?? normalized
+}
+
+/** How many of LogHQ's pages a numbered page may walk to. It pages by cursor, not by number. */
+const HQ_MAX_PAGE_WALK = 10
+
+/**
+ * LogHQ, read with the project's read key.
+ *
+ * Two things differ from the local table and are answered honestly rather
+ * than faked. LogHQ pages by cursor and reports no total, so `total` is what
+ * has been seen so far plus one when there is more, which is enough for the
+ * pager to offer the next page. And the summary counts the page shown, not
+ * the whole stream.
+ */
+export function hqLogsProvider(client: Pick<HqClient, 'logs'>, now: () => number = Date.now): DashboardLogsProvider {
+  return {
+    async logs(query: DashboardLogQuery): Promise<DashboardLogPayload> {
+      const levels = query.type ? HQ_LEVELS_BY_TYPE[query.type] ?? [query.type] : undefined
+      if (levels && !levels.length)
+        return { ...emptyLogPayload('', query), unavailable: undefined }
+
+      const cutoff = query.range === 'all' ? 0 : now() - Number(query.range) * 86400000
+      let page = 1
+      let cursor: string | undefined
+      let entries: Awaited<ReturnType<HqClient['logs']['list']>> & { ok: true } | undefined
+
+      for (; page <= Math.min(query.page, HQ_MAX_PAGE_WALK); page++) {
+        const result = await client.logs.list({
+          level: levels,
+          channel: query.source || undefined,
+          search: query.search || undefined,
+          before: cursor,
+          limit: query.perPage,
+        })
+        if (!result.ok)
+          return emptyLogPayload(hqUnavailableReason(result), query)
+        entries = result
+        if (!result.data.nextCursor || page === Math.min(query.page, HQ_MAX_PAGE_WALK))
+          break
+        cursor = result.data.nextCursor
+      }
+
+      const all = entries?.data.logs ?? []
+      // Newest first, so everything after the first entry older than the range is older too.
+      const inRange = cutoff ? all.filter(log => !(Date.parse(log.timestamp) < cutoff)) : all
+      const hasMore = Boolean(entries?.data.nextCursor) && inRange.length === all.length
+      const offset = (page - 1) * query.perPage
+
+      const logs = inRange.map((log, index) => normalizeDashboardLog({
+        // LogHQ's ids are strings and this section keys rows by number.
+        id: offset + index + 1,
+        timestamp: log.timestamp,
+        type: typeOfHqLevel(log.level),
+        source: log.channel ?? '',
+        message: log.message,
+        // LogHQ's project is the one the read key opens; an entry carries no other.
+        project: '',
+        created_at: log.createdAt ?? log.timestamp,
+      }))
+      const total = offset + logs.length + (hasMore ? 1 : 0)
+      const typeCounts = new Map<string, number>()
+      for (const log of logs)
+        typeCounts.set(log.type, (typeCounts.get(log.type) ?? 0) + 1)
+
+      return {
+        logs,
+        summary: summarizeDashboardLogTypes([...typeCounts].map(([type, count]) => ({ type, count })), total),
+        pagination: { page, perPage: query.perPage, total, totalPages: page + (hasMore ? 1 : 0) },
+        options: {
+          sources: [...new Set(logs.map(log => log.source).filter(Boolean))].sort(),
+          projects: [],
+          types: [...DASHBOARD_LOG_TYPES],
+          ranges: [...DASHBOARD_LOG_RANGES],
+        },
+        generatedAt: new Date(now()).toISOString(),
+      }
+    },
+  }
+}
+
 /** Reads the Logs section through whichever provider config selects. */
 export async function readDashboardLogs(query: DashboardLogQuery): Promise<DashboardLogPayload> {
   const driver = await resolveDashboardDriver('logs')
@@ -183,7 +280,7 @@ export async function readDashboardLogs(query: DashboardLogQuery): Promise<Dashb
   return readThroughProvider(
     'logs',
     reason => emptyLogPayload(reason, query),
-    async () => emptyLogPayload(HQ_READ_UNAVAILABLE, query),
+    async () => hqLogsProvider(await dashboardHqClient('logs', driver.options)).logs(query),
     isLogPayload,
   )
 }

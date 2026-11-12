@@ -71,25 +71,37 @@ it is not something to opt into.
 
 ## Data providers
 
-Each section reads from this application's database by default. Point one at a
-hosted product instead:
+Each section reads from this application's database by default. Point Logs or
+Errors at its hosted product instead:
 
 ```typescript
 providers: {
-  logs: { driver: 'local' },
-  errors: {
-    driver: 'hq',
-    url: 'https://bughq.example.com',
-    token: env.BUGHQ_READ_TOKEN,
-  },
+  logs: { driver: 'hq' },
+  errors: { driver: 'hq' },
 },
 ```
 
-::: warning An ingest key is not a read token
+Logs reads LogHQ and Errors reads BugHQ, each with the read key and project in
+`config/hq.ts`. `./buddy hq:connect` fills those in and
+`./buddy hq:status` shows usage against each allowance. A section whose service
+is not connected, or cannot be reached, renders empty and says why.
+
+To point one section at another project or a self-hosted instance, override it
+in place:
+
+```typescript
+errors: {
+  driver: 'hq',
+  drivers: { hq: { baseUrl: 'https://bughq.example.com', token: env.BUGHQ_READ_KEY, project: 'project-id' } },
+},
+```
+
+::: warning An ingest key is not a read key
 The key an app uses to SEND logs or errors identifies a project and grants no
-read access. Reusing it here produces a section that authenticates and then
-returns nothing.
+read access. Reusing it here produces an empty section.
 :::
+
+Analytics has no hosted read yet and stays local.
 
 Health has no provider and cannot be pointed anywhere. It reports the process
 serving the request, and the same probe backs the framework's liveness route.
