@@ -920,6 +920,7 @@ export function cloud(buddy: CLI): void {
     diff: 'Show the diff of the current, undeployed cloud changes ',
     dashboard: 'Run the local Stacks Cloud management cockpit (servers, sites, deploys)',
     sites: 'List every server and what each one is hosting, across projects',
+    targets: 'List deployed sites with what a remote session needs: host, SSH user and key, app path and env file',
     attach: 'Attach this project to a server another project owns, after checking it is safe',
     rename: 'Rename a server in place, keeping the provider, state pin, hostname and inventory in step',
     renameTo: 'The new server name',
@@ -1550,6 +1551,65 @@ export function cloud(buddy: CLI): void {
         }
         return probes
       }
+    })
+
+  buddy
+    .command('cloud:targets', descriptions.targets)
+    .option('--env [env]', descriptions.sitesEnv)
+    .option('--no-remote', descriptions.remote)
+    .option('-J, --json', descriptions.json, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: CloudCliOptions & { env?: string, remote?: boolean, json?: boolean }) => {
+      log.debug('Running `buddy cloud:targets` ...', options)
+
+      // Where each deployed site lives and how to reach it, derived the way
+      // deploy derives it. Read-only: the stack's pinned state plus at most
+      // one provider listing. A tool that opens a session in a deployed app
+      // (a REPL, a log tail) starts from this instead of asking for a path.
+      const cloud = await import('@stacksjs/ts-cloud') as unknown as {
+        listDeployedSites?: (options: { config: unknown, environment: string, cwd: string, listServers?: false }) => Promise<{
+          slug: string
+          environment: string
+          provider: string
+          attachedTo?: string
+          sites: Array<{ name: string, kind: string, hosts: Array<{ address: string, name?: string, status: string }>, ssh: { user: string, port: number, identityFile: string }, appPath: string, appPathCandidates: string[], envFile?: string, runtime: unknown, hostnames?: string[] }>
+          skipped: Array<{ name: string, kind: string, reason: string }>
+          warnings: string[]
+        }>
+      }
+      if (typeof cloud.listDeployedSites !== 'function') {
+        await log.error('`buddy cloud:targets` needs @stacksjs/ts-cloud 0.16.126 or newer. Run `buddy upgrade`.')
+        process.exit(ExitCode.FatalError)
+      }
+
+      const { loadTsCloudConfig } = await import('./deploy')
+      const environment = String(options.env || process.env.APP_ENV || process.env.NODE_ENV || 'production')
+      const tsCloudConfig = await loadTsCloudConfig(options.env ? environment : undefined)
+      const inventory = await cloud.listDeployedSites({
+        config: tsCloudConfig,
+        environment,
+        cwd: process.cwd(),
+        ...(options.remote === false ? { listServers: false as const } : {}),
+      })
+
+      if (options.json) {
+        console.log(JSON.stringify(inventory, null, 2))
+      }
+      else {
+        if (inventory.sites.length === 0)
+          console.log(`No server-deployed sites for ${inventory.slug} (${environment}).`)
+        for (const site of inventory.sites) {
+          const host = site.hosts[0]
+          console.log(`${site.name}  ${site.ssh.user}@${host?.address ?? '(no host resolved)'}:${site.ssh.port}  ${site.appPath}`)
+          if (site.envFile)
+            console.log(`  env  ${site.envFile}`)
+        }
+        for (const skipped of inventory.skipped)
+          console.log(`${skipped.name}  (${skipped.kind}: ${skipped.reason})`)
+      }
+      for (const warning of inventory.warnings)
+        await log.warn(warning)
+      process.exit(ExitCode.Success)
     })
 
   buddy

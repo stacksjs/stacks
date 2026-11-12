@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **375 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **376 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -15,7 +15,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `ai` | 2 |
 | `auth` | 4 |
 | `build` | 16 |
-| `cloud` | 13 |
+| `cloud` | 14 |
 | `cms` | 2 |
 | `coming-soon` | 1 |
 | `comments` | 4 |
@@ -764,6 +764,22 @@ Rename a server in place, keeping the provider, state pin, hostname and inventor
 List every server and what each one is hosting, across projects
 
 - Usage: `$ buddy cloud:sites`
+- Namespace: `cloud`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--env` | Environment to take the inventory for | value, optional | - |
+| `--no-remote` | Skip the SSH read of each box's gateway registry (co-tenants are then not listed) | boolean, optional, negated | `true` |
+| `-J`, `--json` | Emit the inventory as JSON | boolean, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `cloud:targets`
+
+List deployed sites with what a remote session needs: host, SSH user and key, app path and env file
+
+- Usage: `$ buddy cloud:targets`
 - Namespace: `cloud`
 - Aliases: none
 - Arguments: none

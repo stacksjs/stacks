@@ -209,7 +209,14 @@ buddy cloud --diff            # preview infrastructure changes before deploying
 buddy cloud --ssh             # SSH into deployed server
 buddy cloud:remove            # tear down infrastructure (alias: undeploy)
 buddy cloud:cleanup           # clean retained resources
+buddy cloud:targets --json    # each deployed site: host, SSH user and key, app path, env file
 ```
+
+`cloud:targets` is read-only and answers "where does this app run, and how do I
+get a shell in it?" from the stack's pinned state plus at most one provider
+listing (`--no-remote` skips the listing). It is what a tool that opens a
+session in a deployed app starts from, instead of asking for a host and a path.
+It needs `@stacksjs/ts-cloud` 0.16.126 or newer and says so on an older one.
 
 ## Gotchas
 - The API reachability guard recognises `serve:api`, source `serve/api.js`

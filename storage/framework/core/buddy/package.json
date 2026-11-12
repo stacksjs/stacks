@@ -153,7 +153,7 @@
     "@stacksjs/testing": "0.75.543",
     "@stacksjs/tinker": "0.75.543",
     "@stacksjs/tlsx": "^0.13.19",
-    "@stacksjs/ts-cloud": "^0.16.109",
+    "@stacksjs/ts-cloud": "^0.16.126",
     "@stacksjs/tunnel": "0.75.543",
     "@stacksjs/types": "0.75.543",
     "@stacksjs/ui": "0.75.543",
