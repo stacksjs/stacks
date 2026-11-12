@@ -124,7 +124,11 @@ const safe: false = null as unknown as IsAny<Customer>;`,
   },
   {
     directory: 'orm', name: '@stacksjs/orm', sdks: ['stripe'], declaration: 'index.d.ts',
-    additional: ['@stacksjs/validation', '@stacksjs/testing', '@stacksjs/types'],
+    additional: ['@stacksjs/validation', '@stacksjs/testing', '@stacksjs/types', '@stacksjs/scheduler'],
+    runtime: `import { Schedule as root } from '@stacksjs/scheduler'
+import { Schedule as subpath } from '@stacksjs/scheduler/schedule'
+if (root !== subpath) throw new Error('Scheduler entrypoints must share their constructor')
+if (typeof subpath.prototype.everyMinute !== 'function') throw new Error('Scheduler subpath is not executable')`,
     prefix: `import { defineModel } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
 import type { Cdp } from '@stacksjs/testing/browser'
@@ -260,6 +264,11 @@ for (const fixture of fixtures) {
         if (flags.length) await rm(join(consumer, 'node_modules'), { recursive: true, force: true })
         const installed = await run(flags.length ? 'frozen-install' : 'install', [process.execPath, '--no-env-file', 'install', ...flags], consumer)
         expect(installed.code, installed.output).toBe(0)
+        if ('runtime' in fixture) {
+          await writeFile(join(consumer, 'runtime.ts'), fixture.runtime)
+          const runtime = await run(flags.length ? 'frozen-runtime' : 'normal-runtime', [process.execPath, '--no-env-file', 'runtime.ts'], consumer)
+          expect(runtime.code, runtime.output).toBe(0)
+        }
         const lock = hash(await readFile(join(consumer, 'bun.lock')))
         if (flags.length) {
           const previous = receipt.lockSHA256
