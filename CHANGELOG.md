@@ -1,5 +1,28 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.559...v0.75.560)
+
+## ✨ Features
+
+- **tinker**: a query needs no await at the top level of a snippet ([64dd2e8](https://github.com/stacksjs/stacks/commit/64dd2e8)) _(by Chris)_
+
+## 🐛 Bug Fixes
+
+- **types**: restore source inference with DTSX 0.11.54 ([4b2e997](https://github.com/stacksjs/stacks/commit/4b2e997)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **repl**: queries without await, and the headings the skill has now ([9d338cf](https://github.com/stacksjs/stacks/commit/9d338cf)) _(by Chris)_
+
+## ✅ Tests
+
+- **tinker**: tell that Promise.all still runs together by order, not by the clock ([2e23a86](https://github.com/stacksjs/stacks/commit/2e23a86)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+
 ## v0.75.559
 
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.557...v0.75.558)
