@@ -1,0 +1,85 @@
+<script client>
+// The form an action's input is asked for in, before it runs: a refund's
+// reason, a new owner. The fields are the action's own `validations`, read by
+// the server, so what is asked for is what the action checks.
+//
+// It is the confirmation too: the model's sentence about what the action does
+// sits above the inputs, and nothing runs until the form is submitted. A
+// refusal comes back here, under the field it is about, and the form stays
+// open. The page owns the running; this reports what was typed.
+import type { ModelCustomAction, ModelFormValues } from '../../../../functions/dashboard-model-record'
+import { modelActionInput, modelFormValues } from '../../../../functions/dashboard-model-record'
+
+// The action being asked about. Null closes the form.
+const action = useReactiveProp<ModelCustomAction | null>('action', null)
+// What the page adds to the model's sentence: how many records it will run on.
+const note = useReactiveProp('note', '')
+const busy = useReactiveProp('busy', false)
+// What the submit button says while it runs: how far a run over a selection has got.
+const busyLabel = useReactiveProp('busyLabel', '')
+const error = useReactiveProp('error', '')
+const errors = useReactiveProp<Record<string, string[]>>('errors', {})
+const emit = defineEmits(['submit', 'close'])
+
+const values = state<ModelFormValues>({})
+// Which action the values belong to, so each opening starts blank.
+let filledFor = ''
+
+effect(() => {
+  const current = action()
+  const name = current ? current.name : ''
+  if (name === filledFor)
+    return
+  filledFor = name
+  values.set(current ? modelFormValues(current.fields ?? []) : {})
+})
+
+const fields = derived(() => action()?.fields ?? [])
+const title = derived(() => action()?.label ?? '')
+const description = derived(() => [action()?.confirm ?? '', note()].filter(Boolean).join(' '))
+const destructive = derived(() => Boolean(action()?.destructive))
+const submitLabel = derived(() => (busy() && busyLabel()) || title())
+
+function setValue(change: { name: string, value: string | boolean }): void {
+  values.set({ ...values(), [change.name]: change.value })
+}
+
+function close(): void {
+  if (!busy())
+    emit('close')
+}
+
+function submit(): void {
+  const current = action()
+  if (current && !busy())
+    emit('submit', modelActionInput(current.fields ?? [], values()))
+}
+</script>
+
+<Modal
+  :isOpen="Boolean(action())"
+  :title="title()"
+  :description="description()"
+  :closable="!busy()"
+  size="lg"
+  @close="close"
+>
+  <form id="model-action-form" class="flex flex-col gap-5" data-action-form @submit.prevent="submit">
+    <div :if="error()" role="alert" class="px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg dark:border-red-900">{{ error() }}</div>
+    <ModelFieldInputs
+      :fields="fields()"
+      :values="values()"
+      :errors="errors()"
+      :disabled="busy()"
+      @change="setValue"
+    />
+  </form>
+
+  <template #footer>
+    <div class="flex gap-2 items-center justify-end w-full">
+      <Button variant="secondary" :disabled="busy()" @click="close">Cancel</Button>
+      <Button :if="!destructive()" variant="primary" type="submit" form="model-action-form" :loading="busy()">{{ submitLabel() }}</Button>
+      <Button :if="destructive()" variant="danger" type="submit" form="model-action-form" :loading="busy()">{{ submitLabel() }}</Button>
+    </div>
+  </template>
+</Modal>

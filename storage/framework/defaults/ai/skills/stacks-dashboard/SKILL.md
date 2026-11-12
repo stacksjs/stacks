@@ -1,6 +1,6 @@
 ---
 name: stacks-dashboard
-description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 421 built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
+description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 422 built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,7 +8,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Dashboard
 
-The Stacks admin dashboard provides a full-featured admin panel with 100+ route views, 421 components, and a multi-section layout.
+The Stacks admin dashboard provides a full-featured admin panel with 100+ route views, 422 components, and a multi-section layout.
 
 ## Key Paths
 - Dashboard components: `storage/framework/defaults/resources/components/Dashboard/`
@@ -987,10 +987,53 @@ list is drawn, not when someone presses the button.
 (`Actions/Dashboard/Users/UserPasswordResetAction`), which mails the account's
 holder the "Forgot password" link. Remove the entry to turn it off.
 
-Not offered yet: a form for an action that takes input (one with
-`validations` refuses with its field messages), and the hand-built Users,
-Teams and Subscribers lists, whose rows lead to the record page where the
-buttons are.
+Not offered on the hand-built Users, Teams and Subscribers lists, whose rows
+lead to the record page where the buttons are.
+
+### An action that takes input is asked for it
+
+An action says what it takes in its own `validations`, and the dashboard
+asks: pressing a button whose action validates anything opens a form over
+the page (`Dashboard/Models/ModelActionForm`), not a confirmation.
+
+```ts
+// app/Actions/Orders/RefundOrderAction.ts
+validations: {
+  reason: { rule: schema.string().required().min(3), message: 'Say why.' },
+  restock: { rule: schema.boolean() },
+  method: { rule: schema.enum(['card', 'credit']).required() },
+}
+```
+
+- One input per validation, in the control its rule calls for (text, a
+  number box, a select for an enum, a checkbox, a date), required where the
+  rule is. Route parameters such as `id` are never asked for.
+- The form is the confirmation: the model's `confirm` sentence sits above
+  the inputs, and nothing runs until it is submitted.
+- What was typed is sent as the JSON body, as the action's own route would
+  receive it, each value the type its rule expects. The action validates it
+  as it always does; nothing is checked twice in two places.
+- A refusal comes back in the form: under its field for a validation
+  message, at the top for anything else ("Already refunded.").
+- For a selection the form is asked once and its answers go to every
+  record. If the first record refuses the input itself, nothing has run and
+  the form says why.
+
+The model can say how a field is asked, in the vocabulary `dashboard.fields`
+uses (`label`, `help`, and `input` for a field of text):
+
+```ts
+actions: [{
+  name: 'refund',
+  action: 'Actions/Orders/RefundOrderAction',
+  fields: { reason: { label: 'Reason for the refund', input: 'longtext', help: 'Shown to the customer.' } },
+}]
+```
+
+An action that requires what a form cannot give (a list, a structure, a
+file, a password) is left out and logged by name; an optional one of those
+is simply not asked for. `resolveActionValidations()` in `@stacksjs/router`
+is how the dashboard reads what an action takes.
 
 ### Rows are selected and acted on together
 

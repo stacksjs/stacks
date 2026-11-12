@@ -9,9 +9,9 @@
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
 import { dashboardApi } from '@stacksjs/defaults/functions/dashboard-api'
 import type { ModelCustomAction, ModelRelationTarget, ModelWriteCapabilities } from '@stacksjs/defaults/functions/dashboard-model-record'
-import { deleteModelRecord, modelActionIconClass, modelActionNotice, modelActionsFor, modelDeleteNotice, modelDeleteWarning, modelListColumnNames, modelListFilters, modelRecordCreateHref, modelRecordEditHref, modelRecordHref, modelRelationCell, NO_WRITES, runModelAction, userInviteHref } from '@stacksjs/defaults/functions/dashboard-model-record'
+import { deleteModelRecord, modelActionAsks, modelActionIconClass, modelActionNotice, modelActionsFor, modelDeleteNotice, modelDeleteWarning, modelListColumnNames, modelListFilters, modelRecordCreateHref, modelRecordEditHref, modelRecordHref, modelRelationCell, NO_WRITES, runModelAction, userInviteHref } from '@stacksjs/defaults/functions/dashboard-model-record'
 import type { ModelBulkResult } from '@stacksjs/defaults/functions/dashboard-model-bulk'
-import { deleteModelRecords, modelBulkActionConfirm, modelBulkActions, modelBulkDeleteConfirm, modelBulkDeleteTargets, modelBulkNotice, modelBulkTargets, runModelActionOnEach } from '@stacksjs/defaults/functions/dashboard-model-bulk'
+import { deleteModelRecords, modelBulkActionConfirm, modelBulkActionScope, modelBulkActions, modelBulkDeleteConfirm, modelBulkDeleteTargets, modelBulkNotice, modelBulkTargets, runModelActionOnEach } from '@stacksjs/defaults/functions/dashboard-model-bulk'
 import type { ModelFieldDisplay, ModelFormattedValue } from '@stacksjs/defaults/functions/dashboard-model-format'
 import { modelColumnIsNumeric, modelFormattedValue } from '@stacksjs/defaults/functions/dashboard-model-format'
 import { pushToast } from '@stacksjs/defaults/functions/toasts'
@@ -100,6 +100,11 @@ const selected = state<string[]>([])
 const confirmingBulk = state<{ kind: 'action', action: ModelCustomAction } | { kind: 'delete' } | null>(null)
 // How far a run over the selection has got. Null when none is running.
 const bulkProgress = state<{ done: number, total: number } | null>(null)
+// An action that takes input, with its form open: for one row, or (no row)
+// for the selection. And what its last try was refused for.
+const askingAction = state<{ action: ModelCustomAction, row: Record<string, unknown> | null } | null>(null)
+const actionError = state('')
+const actionErrors = state<Record<string, string[]>>({})
 
 /** The model's own actions that may be run on a selection: `on: ['bulk']`. */
 const bulkActions = derived(() => modelBulkActions(actions()))
@@ -355,21 +360,37 @@ function runningOn(row: Record<string, unknown>): string {
   return current && current.id === String(row.id) ? current.name : ''
 }
 
-// An action that asks first opens its confirmation; one that does not runs.
+function openActionForm(action: ModelCustomAction, row: Record<string, unknown> | null): void {
+  actionError.set('')
+  actionErrors.set({})
+  askingAction.set({ action, row })
+}
+
+// An action that takes input opens its form, one that asks first its
+// confirmation, and any other runs.
 function startAction(payload: { action: ModelCustomAction, record: Record<string, unknown> }): void {
-  if (payload.action.confirm)
+  if (modelActionAsks(payload.action))
+    openActionForm(payload.action, payload.record)
+  else if (payload.action.confirm)
     confirmingAction.set({ action: payload.action, row: payload.record })
   else
     void runAction(payload.action, payload.record)
 }
 
-async function runAction(action: ModelCustomAction, row: Record<string, unknown>): Promise<void> {
+async function runAction(action: ModelCustomAction, row: Record<string, unknown>, input: Record<string, unknown> = {}): Promise<void> {
   if (runningAction())
     return
   runningAction.set({ name: action.name, id: String(row.id) })
-  const result = await runModelAction(slug(), String(row.id), action.name)
+  const result = await runModelAction(slug(), String(row.id), action.name, input)
   runningAction.set(null)
   confirmingAction.set(null)
+  // A refusal of what was typed is answered where it was typed.
+  if (!result.ok && askingAction()) {
+    actionError.set(result.error)
+    actionErrors.set(result.errors ?? {})
+    return
+  }
+  askingAction.set(null)
   const notice = modelActionNotice(action, result)
   pushToast(notice.tone, notice.title, { detail: notice.detail })
   if (!result.ok)
@@ -420,8 +441,32 @@ const bulkConfirm = derived(() => {
   return { ...modelBulkActionConfirm(pending.action, bulkTargets(pending.action).length, selected().length), label: pending.action.label, destructive: pending.action.destructive }
 })
 
-async function runBulk(): Promise<void> {
-  const pending = confirmingBulk()
+// Acting on a selection always asks first: in the action's form when it
+// takes input, in a confirmation when it does not.
+function startBulkAction(action: ModelCustomAction): void {
+  if (modelActionAsks(action))
+    openActionForm(action, null)
+  else
+    confirmingBulk.set({ kind: 'action', action })
+}
+
+/** What the form is told beside the model's own sentence: how far the action reaches. */
+const actionFormNote = derived(() => {
+  const asking = askingAction()
+  return asking && !asking.row ? modelBulkActionScope(bulkTargets(asking.action).length, selected().length) : ''
+})
+
+function submitAction(input: Record<string, unknown>): void {
+  const asking = askingAction()
+  if (!asking)
+    return
+  if (asking.row)
+    void runAction(asking.action, asking.row, input)
+  else
+    void runBulk({ kind: 'action', action: asking.action }, input)
+}
+
+async function runBulk(pending = confirmingBulk(), input: Record<string, unknown> = {}): Promise<void> {
   if (!pending || bulkBusy())
     return
   const track = (done: number, total: number) => bulkProgress.set({ done, total })
@@ -429,8 +474,16 @@ async function runBulk(): Promise<void> {
   if (pending.kind === 'delete')
     result = await deleteModelRecords(slug(), bulkDeleteTargets(), track)
   else
-    result = await runModelActionOnEach(slug(), bulkTargets(pending.action), pending.action.name, track)
+    result = await runModelActionOnEach(slug(), bulkTargets(pending.action), pending.action.name, { input, progress: track })
   bulkProgress.set(null)
+  // What was typed was refused by the first record: nothing ran, and the
+  // form says which field and why.
+  if (Object.keys(result.invalid).length > 0) {
+    actionError.set(Object.keys(result.invalid).length === 1 ? 'Check the field marked below.' : `Check the ${Object.keys(result.invalid).length} fields marked below.`)
+    actionErrors.set(result.invalid)
+    return
+  }
+  askingAction.set(null)
   confirmingBulk.set(null)
   const notice = modelBulkNotice(pending.kind === 'delete' ? { kind: 'delete' } : { kind: 'action', label: pending.action.label }, modelName(), result)
   pushToast(notice.tone, notice.title, { detail: notice.detail })
@@ -552,7 +605,7 @@ void load()
           size="sm"
           :disabled="bulkBusy() || bulkTargets(action).length === 0"
           :title="bulkTargets(action).length === 0 ? 'Does not apply to any of the selected rows' : action.label"
-          @click="confirmingBulk.set({ kind: 'action', action })"
+          @click="startBulkAction(action)"
         >
           <span aria-hidden="true" :class="modelActionIconClass(action)"></span>
           {{ action.label }}
@@ -743,7 +796,18 @@ void load()
     :busy="bulkBusy()"
     :confirmLabel="bulkBusy() ? bulkProgressLabel() : bulkConfirm().label"
     @close="confirmingBulk.set(null)"
-    @confirm="runBulk"
+    @confirm="runBulk()"
+  />
+
+  <ModelActionForm
+    :action="askingAction() ? askingAction().action : null"
+    :note="actionFormNote()"
+    :busy="Boolean(runningAction()) || bulkBusy()"
+    :busyLabel="bulkProgressLabel()"
+    :error="actionError()"
+    :errors="actionErrors()"
+    @close="askingAction.set(null)"
+    @submit="submitAction"
   />
 </div>
 </template>

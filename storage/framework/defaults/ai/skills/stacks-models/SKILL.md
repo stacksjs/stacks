@@ -154,7 +154,9 @@ and for a field of text the `input` it gets (`text`, `longtext`, `email`,
 names what an operator can do to a record beyond editing it: each entry is a
 button that runs an action of the app's on that record, with an optional
 `label`, `icon`, `confirm` sentence, `destructive` flag, `on` (`record`,
-`row`) and `when` (the field values a record must hold). The model names the
+`row`, `bulk` for a selection) and `when` (the field values a record must
+hold). An action that takes input is asked for it in a form built from its
+own `validations`; `fields` refines how each is asked. The model names the
 behaviour and the action does it. See `stacks-dashboard`.
 
 `useApi` is an API capability, not a dashboard-view generator. Its generated

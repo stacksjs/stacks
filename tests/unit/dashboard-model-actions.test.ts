@@ -59,8 +59,10 @@ describe('reading what a model declares', () => {
       confirm: '',
       destructive: false,
       places: ['record', 'row'],
+      fields: [],
       handler: 'Actions/Orders/ShipOrderAction',
       when: [],
+      asking: {},
     }])
   })
 
@@ -82,6 +84,8 @@ describe('reading what a model declares', () => {
       confirm: 'The customer is emailed a tracking link.',
       destructive: true,
       places: ['row'],
+      fields: [],
+      asking: {},
       handler: 'Actions/Orders/ShipOrderAction',
       when: [
         { column: 'status', values: ['paid', 'packed'] },
@@ -209,7 +213,7 @@ describe('what the page is told', () => {
   it('not the file an action runs, nor the rule that narrows it', () => {
     const [action] = modelActionDefinitions(model([{ ...ship, when: { status: 'paid' } }])).actions
     const shown = publicModelAction(action!)
-    expect(Object.keys(shown).sort()).toEqual(['confirm', 'destructive', 'icon', 'label', 'name', 'places'])
+    expect(Object.keys(shown).sort()).toEqual(['confirm', 'destructive', 'fields', 'icon', 'label', 'name', 'places'])
     expect(JSON.stringify(shown)).not.toContain('ShipOrderAction')
   })
 
@@ -312,14 +316,14 @@ describe('the pages', () => {
     const page = readFileSync(`${components}/ModelRecordDetail.stx`, 'utf8')
     expect(page).toContain('const actions = derived(() => record()?.actions ?? [])')
     expect(page).toContain('<Button :for="action in actions()" variant="outline" :disabled="running() !== \'\'" @click="startAction(action)">')
-    expect(page).toContain('const result = await runModelAction(slug(), recordId(), action.name)')
+    expect(page).toContain('const result = await runModelAction(slug(), recordId(), action.name, input)')
     expect(page).toContain(':description="confirmingAction()?.confirm || \'\'"')
 
     const list = readFileSync(`${components}/ModelRecordsDashboard.stx`, 'utf8')
     expect(list).toContain('return modelActionsFor(actions(), rowActions(), String(row.id), \'row\')')
     expect(list).toContain(':actions="actionsFor(row)"')
     expect(list).toContain('@action="startAction"')
-    expect(list).toContain('const result = await runModelAction(slug(), String(row.id), action.name)')
+    expect(list).toContain('const result = await runModelAction(slug(), String(row.id), action.name, input)')
 
     // The loop is on a wrapper: on the button itself, inside a component
     // drawn once per row, the icon's class came out empty.
@@ -338,5 +342,190 @@ describe('the pages', () => {
     const { readFileSync } = await import('node:fs')
     const routes = readFileSync('storage/framework/defaults/routes/dashboard-api.ts', 'utf8')
     expect(routes).toContain('guard(route.post(\'/models/{dashboardModel}/{id}/actions/{dashboardAction}\', \'Actions/Dashboard/Models/ModelActionRunAction\'))')
+  })
+})
+
+/**
+ * An action that takes input is asked for it in a form
+ * (stacksjs/stacks#3273). A button could not give an action anything, so one
+ * that validated a `reason` could be declared and could never succeed.
+ */
+describe('what an action has to be told', () => {
+  const { schema } = require('@stacksjs/validation') as typeof import('@stacksjs/validation')
+  const refund = () => ({
+    id: { rule: schema.number().required() },
+    reason: { rule: schema.string().required().min(3), message: 'Say why.' },
+    amount: { rule: schema.number().min(1) },
+    restock: { rule: schema.boolean() },
+    method: { rule: schema.enum(['card', 'credit']).required() },
+    notifyAt: { rule: schema.timestamp() },
+    attachments: { rule: schema.array() },
+  })
+
+  it('a field for each of its validations, in the control the rule calls for', async () => {
+    const { modelActionFields } = await import('../../storage/framework/defaults/app/Actions/Dashboard/Models/model-actions')
+    const { fields, unaskable, ignored } = modelActionFields(refund())
+    expect(fields).toEqual([
+      { name: 'reason', label: 'Reason', type: 'text', required: true, defaultValue: '', options: [] },
+      { name: 'amount', label: 'Amount', type: 'number', required: false, defaultValue: '', options: [] },
+      { name: 'restock', label: 'Restock', type: 'boolean', required: false, defaultValue: false, options: [] },
+      { name: 'method', label: 'Method', type: 'enum', required: true, defaultValue: '', options: ['card', 'credit'] },
+      { name: 'notifyAt', label: 'Notify at', type: 'datetime', required: false, defaultValue: '', options: [] },
+    ])
+    // Never the record's id: that is the row whose button was pressed. And an
+    // optional list is left out of the form, not asked for as text.
+    expect(fields.map(field => field.name)).not.toContain('id')
+    expect(fields.map(field => field.name)).not.toContain('attachments')
+    expect(unaskable).toEqual([])
+    expect(ignored).toEqual([])
+  })
+
+  it('nothing, for an action that validates nothing', async () => {
+    const { modelActionFields } = await import('../../storage/framework/defaults/app/Actions/Dashboard/Models/model-actions')
+    for (const validations of [undefined, null, {}, [], 'reason', { id: { rule: schema.number() }, dashboardModel: { rule: schema.string() }, dashboardAction: { rule: schema.string() } }])
+      expect(modelActionFields(validations).fields).toEqual([])
+  })
+
+  it('what no form can give is named, when the action requires it', async () => {
+    const { modelActionFields } = await import('../../storage/framework/defaults/app/Actions/Dashboard/Models/model-actions')
+    const { fields, unaskable } = modelActionFields({
+      rows: { rule: schema.array().required() },
+      options: { rule: schema.object() },
+      secret: { rule: schema.password().required() },
+      note: { rule: schema.string() },
+    })
+    // `object()` is required as it comes; a list and a password say so.
+    expect(unaskable).toEqual(['rows', 'options', 'secret'])
+    expect(fields.map(field => field.name)).toEqual(['note'])
+  })
+
+  it('the model says how a field is asked, in the words `dashboard.fields` uses', async () => {
+    const { modelActionFields } = await import('../../storage/framework/defaults/app/Actions/Dashboard/Models/model-actions')
+    const { fields, ignored } = modelActionFields(refund(), {
+      reason: { label: 'Reason for the refund', input: 'longtext', help: 'Shown to the customer.' },
+      amount: { input: 'longtext', label: 'How much' },
+      nonsense: { label: 'Nope' },
+    })
+    expect(fields[0]).toEqual({ name: 'reason', label: 'Reason for the refund', type: 'longtext', required: true, defaultValue: '', options: [], help: 'Shown to the customer.' })
+    // A number stays a number, under the model's name for it.
+    expect(fields[1]).toMatchObject({ name: 'amount', label: 'How much', type: 'number' })
+    expect(ignored).toEqual([
+      'field \'amount\' asks for the \'longtext\' input, but it is not a field of text (it is asked for as number)',
+      'describes a field \'nonsense\' that the action does not take',
+    ])
+  })
+
+  it('a declaration\'s `fields` are read like a model\'s, and a bad one is said by name', () => {
+    const declared = modelActionDefinitions(model([
+      { ...ship, fields: { reason: { label: ' Why ', input: 'longtext', help: 'Shown.' } } },
+      { name: 'refund', action: ship.action, fields: 'reason' },
+      { name: 'void', action: ship.action, fields: { reason: 'required', note: { input: 'richtext', label: 7 } } },
+    ]))
+    expect(declared.actions.map(action => action.asking)).toEqual([
+      { reason: { label: 'Why', input: 'longtext', help: 'Shown.' } },
+      {},
+      { note: {} },
+    ])
+    expect(declared.problems).toEqual([
+      '\'refund\' has `fields` that is not an object keyed by the input\'s name',
+      '\'void\' field \'reason\' is not an object of settings',
+      '\'void\' field \'note\' has a label that is not text',
+      '\'void\' field \'note\' asks for an input the dashboard does not have: \'richtext\' (it has email, longtext, text, url)',
+    ])
+  })
+
+  it('an action is offered with its form, or left out when it requires what a form cannot give', async () => {
+    const warnings: string[] = []
+    const warn = console.warn
+    console.warn = (...parts: unknown[]) => void warnings.push(parts.map(String).join(' '))
+    try {
+      const declared = model([
+        { name: 'refund', action: 'Actions/Orders/RefundOrderAction', fields: { reason: { label: 'Why' } } },
+        { name: 'import', action: 'Actions/Orders/ImportLinesAction' },
+        ship,
+      ])
+      const resolve = async (handler: string) => handler.includes('Refund')
+        ? { validations: refund() }
+        : handler.includes('Import') ? { validations: { rows: { rule: schema.array().required() } } } : {}
+      const offered = await modelActions(declared, 'OrderForms', resolve)
+      expect(offered.map(action => [action.name, action.fields.map(field => field.label)])).toEqual([
+        ['refund', ['Why', 'Amount', 'Restock', 'Method', 'Notify at']],
+        ['ship', []],
+      ])
+      // The page is told the form, and still not the file or the rule.
+      expect(Object.keys(publicModelAction(offered[0]!)).sort()).toEqual(['confirm', 'destructive', 'fields', 'icon', 'label', 'name', 'places'])
+      expect(warnings).toEqual(['[dashboard] OrderForms dashboard.actions: \'import\' runs Actions/Orders/ImportLinesAction, which requires \'rows\': a value a form cannot give (a list, a structure, a file or a password). It is left out.'])
+    }
+    finally {
+      console.warn = warn
+    }
+  })
+})
+
+describe('what a form sends', () => {
+  const fields = [
+    { name: 'reason', label: 'Reason', type: 'longtext' as const, required: true, defaultValue: '', options: [] },
+    { name: 'amount', label: 'Amount', type: 'number' as const, required: false, defaultValue: '', options: [] },
+    { name: 'restock', label: 'Restock', type: 'boolean' as const, required: false, defaultValue: false, options: [] },
+    { name: 'method', label: 'Method', type: 'enum' as const, required: true, defaultValue: '', options: ['card', 'credit'] },
+    { name: 'notifyAt', label: 'Notify at', type: 'datetime' as const, required: false, defaultValue: '', options: [] },
+    { name: 'day', label: 'Day', type: 'date' as const, required: false, defaultValue: '', options: [] },
+  ]
+  const record = () => import('../../storage/framework/defaults/functions/dashboard-model-record')
+
+  it('each value the type its rule expects', async () => {
+    const { modelActionInput } = await record()
+    expect(modelActionInput(fields, { reason: 'Arrived damaged', amount: '1200', restock: true, method: 'card', notifyAt: '2026-11-12T09:30', day: '2026-11-12' })).toEqual({
+      reason: 'Arrived damaged',
+      // A rule for a number refuses the digits as text.
+      amount: 1200,
+      restock: true,
+      method: 'card',
+      notifyAt: new Date('2026-11-12T09:30').toISOString(),
+      day: '2026-11-12',
+    })
+  })
+
+  it('a field left empty is left out, and a box left unticked is false', async () => {
+    const { modelActionInput } = await record()
+    expect(modelActionInput(fields, { reason: 'Recall', amount: '', restock: false, method: 'credit', notifyAt: '', day: '' })).toEqual({ reason: 'Recall', restock: false, method: 'credit' })
+    expect(modelActionInput(fields, {})).toEqual({ restock: false })
+    // Not a number: sent as typed, for the action's rule to refuse in its own words.
+    expect(modelActionInput(fields, { amount: 'lots' })).toMatchObject({ amount: 'lots' })
+  })
+
+  it('only an action with fields opens a form', async () => {
+    const { modelActionAsks } = await record()
+    const base = { name: 'ship', label: 'Ship', icon: '', confirm: '', destructive: false, places: ['row' as const] }
+    expect(modelActionAsks({ ...base, fields })).toBe(true)
+    expect(modelActionAsks({ ...base, fields: [] })).toBe(false)
+    expect(modelActionAsks(base)).toBe(false)
+    expect(modelActionAsks(null)).toBe(false)
+  })
+
+  // Driven in a browser against the running dashboard; these pin what that
+  // run relied on.
+  it('the record page, a row and a selection all ask through one form', async () => {
+    const { readFileSync } = await import('node:fs')
+    const components = 'storage/framework/defaults/resources/components/Dashboard/Models'
+    const form = readFileSync(`${components}/ModelActionForm.stx`, 'utf8')
+    expect(form).toContain('emit(\'submit\', modelActionInput(current.fields ?? [], values()))')
+    expect(form).toContain('const description = derived(() => [action()?.confirm ?? \'\', note()].filter(Boolean).join(\' \'))')
+    expect(form).toContain('<form id="model-action-form" class="flex flex-col gap-5" data-action-form @submit.prevent="submit">')
+
+    for (const file of ['ModelRecordDetail.stx', 'ModelRecordsDashboard.stx']) {
+      const page = readFileSync(`${components}/${file}`, 'utf8')
+      expect(page).toContain('<ModelActionForm')
+      expect(page).toContain('@submit="submitAction"')
+      // A refusal of what was typed is answered in the form, not in a toast.
+      expect(page).toContain('if (!result.ok && askingAction()) {')
+      expect(page).toContain('actionErrors.set(result.errors ?? {})')
+    }
+    const list = readFileSync(`${components}/ModelRecordsDashboard.stx`, 'utf8')
+    expect(list).toContain('if (Object.keys(result.invalid).length > 0) {')
+    expect(list).toContain(':note="actionFormNote()"')
+
+    const client = readFileSync('storage/framework/defaults/functions/dashboard-model-record.ts', 'utf8')
+    expect(client).toContain('{ method: \'POST\', body: input },')
   })
 })

@@ -9,7 +9,7 @@
 // address to share, open in a tab and come back to.
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
 import type { ModelCustomAction, ModelRecord, ModelRelatedPanel } from '../../../../functions/dashboard-model-record'
-import { deleteModelRecord, fetchModelRecord, fetchModelRelated, modelActionIconClass, modelActionNotice, modelDeleteNotice, modelDeleteWarning, modelRecordBackHref, modelRecordEditHref, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRecordTitle, runModelAction } from '../../../../functions/dashboard-model-record'
+import { deleteModelRecord, fetchModelRecord, fetchModelRelated, modelActionAsks, modelActionIconClass, modelActionNotice, modelDeleteNotice, modelDeleteWarning, modelRecordBackHref, modelRecordEditHref, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRecordTitle, runModelAction } from '../../../../functions/dashboard-model-record'
 import { pushToast } from '../../../../functions/toasts'
 
 const navigation = useNavigation()
@@ -22,6 +22,10 @@ const working = state(false)
 const confirmingAction = state<ModelCustomAction | null>(null)
 // The action that is running, by name: its button waits, the others stay.
 const running = state('')
+// One that takes input, with its form open, and what its last try was refused for.
+const askingAction = state<ModelCustomAction | null>(null)
+const actionError = state('')
+const actionErrors = state<Record<string, string[]>>({})
 
 // `/models/{slug}/{id}`: the last two segments of the address.
 function slug(): string {
@@ -103,21 +107,37 @@ async function deleteRecord(): Promise<void> {
   }
 }
 
-// An action that asks first opens its confirmation; one that does not runs.
+// An action that takes input opens its form, one that asks first its
+// confirmation, and any other runs.
 function startAction(action: ModelCustomAction): void {
-  if (action.confirm)
+  if (modelActionAsks(action)) {
+    actionError.set('')
+    actionErrors.set({})
+    askingAction.set(action)
+  }
+  else if (action.confirm) {
     confirmingAction.set(action)
-  else
+  }
+  else {
     void runAction(action)
+  }
 }
 
-async function runAction(action: ModelCustomAction): Promise<void> {
+async function runAction(action: ModelCustomAction, input: Record<string, unknown> = {}): Promise<void> {
   if (running())
     return
   running.set(action.name)
-  const result = await runModelAction(slug(), recordId(), action.name)
+  const result = await runModelAction(slug(), recordId(), action.name, input)
   running.set('')
   confirmingAction.set(null)
+  // A refusal of what was typed is answered where it was typed: the form
+  // stays open with the reason, under the field it is about.
+  if (!result.ok && askingAction()) {
+    actionError.set(result.error)
+    actionErrors.set(result.errors ?? {})
+    return
+  }
+  askingAction.set(null)
   const notice = modelActionNotice(action, result)
   pushToast(notice.tone, notice.title, { detail: notice.detail })
   if (!result.ok)
@@ -134,6 +154,12 @@ function confirmAction(): void {
   const action = confirmingAction()
   if (action)
     void runAction(action)
+}
+
+function submitAction(input: Record<string, unknown>): void {
+  const action = askingAction()
+  if (action)
+    void runAction(action, input)
 }
 
 onMount(() => {
@@ -240,5 +266,14 @@ onMount(() => {
     :confirmLabel="confirmingAction()?.label || 'Run'"
     @close="confirmingAction.set(null)"
     @confirm="confirmAction"
+  />
+
+  <ModelActionForm
+    :action="askingAction()"
+    :busy="running() !== ''"
+    :error="actionError()"
+    :errors="actionErrors()"
+    @close="askingAction.set(null)"
+    @submit="submitAction"
   />
 </div>
