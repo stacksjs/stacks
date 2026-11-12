@@ -147,7 +147,9 @@ how one field is called, shown and asked for where the attribute cannot: a
 `label`, a `format` (`money`, `number`, `percent`, `bytes`, `duration`, `date`,
 `datetime`, `badge`, `link`, `image`, `code`, `text`), `help` under its input,
 and for a field of text the `input` it gets (`text`, `longtext`, `email`,
-`url`). It changes how a field reads, never what may be read or written. See
+`url`, `markdown` for an editor with a preview, `upload` for a file chooser
+that stores the file and keeps its address, with `accept` for the kinds it
+takes). It changes how a field reads, never what may be read or written. See
 `stacks-dashboard`.
 
 `dashboard: { actions: [{ name: 'ship', action: 'Actions/Orders/ShipOrderAction' }] }`

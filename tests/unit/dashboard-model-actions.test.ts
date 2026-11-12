@@ -430,7 +430,7 @@ describe('what an action has to be told', () => {
       '\'refund\' has `fields` that is not an object keyed by the input\'s name',
       '\'void\' field \'reason\' is not an object of settings',
       '\'void\' field \'note\' has a label that is not text',
-      '\'void\' field \'note\' asks for an input the dashboard does not have: \'richtext\' (it has email, longtext, text, url)',
+      '\'void\' field \'note\' asks for an input the dashboard does not have: \'richtext\' (it has email, longtext, markdown, text, url)',
     ])
   })
 

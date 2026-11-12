@@ -126,7 +126,7 @@ describe('reading what a model declares', () => {
     expect(fields.status).toBeUndefined()
     expect(problems).toEqual([
       '\'price\' asks for a format the dashboard does not have: \'cash\' (it has badge, bytes, code, date, datetime, duration, image, link, money, number, percent, text)',
-      '\'body\' asks for an input the dashboard does not have: \'richtext\' (it has email, longtext, text, url)',
+      '\'body\' asks for an input the dashboard does not have: \'richtext\' (it has email, longtext, markdown, text, upload, url)',
       '\'total\' names a currency that is not a three-letter code: \'dollars\'',
       '\'weight\' names a currency, which only `format: \'money\'` reads',
       '\'weight\' names a currency field, which only `format: \'money\'` reads',
@@ -402,8 +402,9 @@ describe('the pages', () => {
   it('every kind of input can carry the model\'s help', async () => {
     const inputs = await read(`${components}/ModelFieldInputs.stx`)
     expect(inputs).toContain('return [field.help, kind].filter(Boolean).join(\' \')')
-    // The select, the relation picker, the text box, the line and the checkbox.
-    expect((inputs.match(/:hint="hint\(field\)"/g) || []).length).toBe(4)
+    // The select, the relation picker, the file chooser, the Markdown editor,
+    // the text box, the line and the checkbox.
+    expect((inputs.match(/:hint="hint\(field\)"/g) || []).length).toBe(6)
     expect(inputs).toContain('<span :if="hint(field) && !error(field)"')
     expect(inputs).toContain('field.type === \'url\'')
     expect(await read(`${components}/ModelRelationPicker.stx`)).toContain('<p :if="!error() && hint()"')

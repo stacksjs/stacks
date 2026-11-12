@@ -177,7 +177,7 @@ describe('dashboard generic model writes', () => {
     expect(create).toContain('fetchModelCreateForm(slug())')
     expect(create).toContain('<Button')
     // The fields themselves are drawn by the inputs both forms share.
-    expect(create).toContain('<ModelFieldInputs :fields="fields()" :values="values()" :errors="createErrors()"')
+    expect(create).toContain('<ModelFieldInputs :fields="fields()" :slug="slug()" :values="values()" :errors="createErrors()"')
     expect(create).toContain('@submit.prevent="create"')
     expect(create).toContain('createErrors.set(result.errors)')
     expect(create).not.toContain('<Modal')

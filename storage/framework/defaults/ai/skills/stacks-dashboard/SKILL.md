@@ -1,6 +1,6 @@
 ---
 name: stacks-dashboard
-description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 422 built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
+description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 424 built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,7 +8,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Dashboard
 
-The Stacks admin dashboard provides a full-featured admin panel with 100+ route views, 422 components, and a multi-section layout.
+The Stacks admin dashboard provides a full-featured admin panel with 100+ route views, 424 components, and a multi-section layout.
 
 ## Key Paths
 - Dashboard components: `storage/framework/defaults/resources/components/Dashboard/`
@@ -848,9 +848,10 @@ A name is an attribute (`createdAt`), its column (`created_at`), or a
   stored, and a `link` or `image` only ever leads to an `http(s)` or mail
   address, or a path on the site.
 - `help` is a sentence under the field's input in the create and edit forms.
-- `input` picks the text input a field of text gets: `text`, `longtext`,
-  `email`, `url`. Only for text: what a value is stays the validation rule's
-  to say, so a number cannot be asked for as prose.
+- `input` picks the input a field of text gets: `text`, `longtext`, `email`,
+  `url`, `markdown` or `upload` (both below). Only for text: what a value is
+  stays the validation rule's to say, so a number cannot be asked for as
+  prose.
 
 It changes how a field reads, never what may be read or written: a `hidden`
 attribute stays hidden, and a field that is not `fillable` stays out of the
@@ -868,8 +869,57 @@ query durations, a deployment's duration (seconds) and address, an
 attachment's size, a user's avatar. `tests/unit/dashboard-model-field-overrides.test.ts`
 checks that every shipped entry names a real field.
 
-Not offered yet: a rich text input, a file upload input (neither exists as a
-component), and wording for single enum values.
+Not offered yet: wording for single enum values.
+
+### A field asked for as an uploaded file
+
+```ts
+fields: { avatar: { input: 'upload', accept: 'image/*' } }
+```
+
+A file chooser (`Dashboard/Models/ModelUploadInput`) whose value is the
+address the chosen file was stored at. Choosing a file stores it at once;
+the address is saved with the rest of the form, so nothing about a record
+changes until then. What the field holds is shown (a thumbnail when it is a
+picture) and can be replaced or removed. Removing empties the field; it does
+not delete the file.
+
+- `POST /api/dashboard/models/{slug}/uploads` (multipart `file` and `field`)
+  only takes a file for a field the model asks for as `upload`, on a model
+  the dashboard may write, up to 10 MB.
+- It is kept on the `public` disk under `uploads/<table>/<column>/` with a
+  generated name, through the pipeline the Files page uses, so it is listed
+  there with its preview. That pipeline needs the `storage_items` and
+  `storage_item_tasks` tables.
+- `accept` is spelled as a file input spells it (`image/*`, `image/png`,
+  `.pdf`, or several). The chooser offers those, and the server holds to
+  them by what the file's bytes say it is (`uploadAccepts` in
+  `model-upload.ts`), not what it was sent as: a script sent as `photo.png`
+  is not an image. An SVG is taken only where it is named.
+- Without a `format`, a field that only takes images is shown as a picture
+  and any other upload as a link.
+
+### A field asked for as Markdown
+
+```ts
+fields: { body: { input: 'markdown' } }
+```
+
+An editor (`Dashboard/Models/ModelMarkdownInput`) with a toolbar for the
+common marks (bold, italic, heading, link, lists, quote, code) and a preview.
+A button wraps what is selected, or marks the lines it touches, and comes
+off again when pressed twice (`applyMarkdown` in
+`functions/dashboard-markdown.ts`). The stored value is the Markdown itself.
+
+The preview is rendered by the server (`POST /api/dashboard/markdown`: Bun's
+Markdown parser, the one Stacks content is rendered with, then
+`@stacksjs/sanitizer`) and shown in a sandboxed frame with a policy that
+forbids script, as captured email is. It is never bound into the page.
+
+This is Markdown, not a what-you-see-is-what-you-get HTML editor: there is no
+editing engine in the stack. A record's page shows the Markdown as written,
+with its line breaks; it is not rendered there. An action's input can be
+asked for as `markdown` too, and never as `upload`.
 
 ### A record's page lists who points at it
 

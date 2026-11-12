@@ -20,8 +20,8 @@ describe('the relation picker', () => {
     expect(inputs).toContain('<ModelRelationPicker')
     expect(inputs).toContain(':if="field.type === \'relation\'"')
     expect(inputs).toContain(':slug="field.relation ? field.relation.slug : \'\'"')
-    // And not a number box as well.
-    expect(inputs).toContain('&& field.type !== \'relation\'')
+    // And not a number box as well: it is one of the kinds a line is not.
+    expect(inputs).toContain('return ![\'boolean\', \'enum\', \'json\', \'longtext\', \'markdown\', \'relation\', \'upload\'].includes(field.type)')
   })
 
   test('asks the light endpoint, not the model browser\'s', () => {
