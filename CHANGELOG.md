@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.549...v0.75.550)
+
+## 🐛 Bug Fixes
+
+- **buddy**: take a database backup that finishes on Bun 1.3 ([df4cac5](https://github.com/stacksjs/stacks/commit/df4cac5)) _(by Chris)_
+- **storage**: finish stream writes on Bun 1.3 ([39a8a5f](https://github.com/stacksjs/stacks/commit/39a8a5f)) _(by Chris)_
+
+## 📝 Documentation
+
+- **skills**: count the minimum-Bun backup and stream-write tests ([76df9fb](https://github.com/stacksjs/stacks/commit/76df9fb)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.548...v0.75.549)
 
 ## 🐛 Bug Fixes
