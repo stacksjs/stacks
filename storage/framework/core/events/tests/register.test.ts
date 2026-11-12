@@ -14,6 +14,7 @@ import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { discoverListeners, registerAppListeners, resetListenerRegistry } from '../src/discover'
 import { dispatch } from '../src/index'
 
@@ -233,6 +234,23 @@ describe('discoverListeners with an array', () => {
  * should fail - so these assert the warning AND that the handler still runs.
  */
 describe('event payloads are checked against what the action declares', () => {
+  function writeSchemaAction(): void {
+    const runtime = pathToFileURL(join(import.meta.dir, '../../validation/src/runtime.ts')).href
+    writeFileSync(join(root, 'app', 'Actions', 'CheckedSchema.ts'), `
+      import { schema } from ${JSON.stringify(runtime)}
+      export default {
+        invocation: 'event',
+        validations: {
+          to: { rule: schema.string().email().required() },
+          name: { rule: schema.string().max(100).optional() },
+        },
+        handle: (payload, event) => {
+          globalThis.__register_test_fired.push({ event, payload })
+        },
+      }
+    `)
+  }
+
   function writeValidatedAction(name: string): void {
     writeFileSync(join(root, 'app', 'Actions', `${name}.ts`), `
       export default {
@@ -257,6 +275,97 @@ describe('event payloads are checked against what the action declares', () => {
 
     expect(warnings).toEqual([])
     expect(fired()).toHaveLength(1)
+  })
+
+  test('accepts valid event payloads with native schema rules', async () => {
+    const warnings: string[] = []
+    const errors: string[] = []
+    writeSchemaAction()
+    writeEventMap({ [topic]: ['CheckedSchema'] })
+
+    const registered = await registerAppListeners({ base: root, log: { ...quiet, warn: (m: string) => { warnings.push(m) }, error: (m: string) => { errors.push(m) } } })
+    expect(errors).toEqual([])
+    expect(registered).toBe(1)
+    const payload = { to: 'browser-acceptance@example.test', name: 'Browser Acceptance' }
+    dispatch(topic as never, payload as never)
+
+    expect(warnings).toEqual([])
+    expect(fired()).toEqual([{ event: topic, payload }])
+  })
+
+  test('accepts an omitted optional field with native schema rules', async () => {
+    const warnings: string[] = []
+    writeSchemaAction()
+    writeEventMap({ [topic]: ['CheckedSchema'] })
+
+    expect(await registerAppListeners({ base: root, log: { ...quiet, warn: (m: string) => { warnings.push(m) } } })).toBe(1)
+    const payload = { to: 'browser-acceptance@example.test' }
+    dispatch(topic as never, payload as never)
+
+    expect(warnings).toEqual([])
+    expect(fired()).toEqual([{ event: topic, payload }])
+  })
+
+  test.each([
+    { label: 'missing required email', payload: {}, fields: 'to' },
+    { label: 'invalid email and name', payload: { to: 'invalid', name: 12 }, fields: 'to, name' },
+    { label: 'name exceeding its bound', payload: { to: 'browser-acceptance@example.test', name: 'x'.repeat(101) }, fields: 'name' },
+  ])('warns for $label with native schema rules and still runs the handler', async ({ payload, fields }) => {
+    const warnings: string[] = []
+    writeSchemaAction()
+    writeEventMap({ [topic]: ['CheckedSchema'] })
+
+    expect(await registerAppListeners({ base: root, log: { ...quiet, warn: (m: string) => { warnings.push(m) } } })).toBe(1)
+    dispatch(topic as never, payload as never)
+
+    expect(warnings).toEqual([`[events] ${topic}: payload does not match what CheckedSchema declares (${fields})`])
+    expect(fired()).toEqual([{ event: topic, payload }])
+  })
+
+  test('invokes a custom validator with its rule as the receiver', async () => {
+    const warnings: string[] = []
+    writeFileSync(join(root, 'app', 'Actions', 'CheckedReceiver.ts'), `
+      const rule = {
+        expected: 7,
+        validate(value) { return { valid: this === rule && value === this.expected } },
+      }
+      export default {
+        invocation: 'event',
+        validations: { id: { rule } },
+        handle: (payload, event) => {
+          globalThis.__register_test_fired.push({ event, payload })
+        },
+      }
+    `)
+    writeEventMap({ [topic]: ['CheckedReceiver'] })
+
+    expect(await registerAppListeners({ base: root, log: { ...quiet, warn: (m: string) => { warnings.push(m) } } })).toBe(1)
+    const payload = { id: 7 }
+    dispatch(topic as never, payload as never)
+
+    expect(warnings).toEqual([])
+    expect(fired()).toEqual([{ event: topic, payload }])
+  })
+
+  test('warns when a validator throws and still runs the handler', async () => {
+    const warnings: string[] = []
+    writeFileSync(join(root, 'app', 'Actions', 'ThrowingRule.ts'), `
+      export default {
+        invocation: 'event',
+        validations: { id: { rule: { validate() { throw new TypeError('Unsupported value') } } } },
+        handle: (payload, event) => {
+          globalThis.__register_test_fired.push({ event, payload })
+        },
+      }
+    `)
+    writeEventMap({ [topic]: ['ThrowingRule'] })
+
+    expect(await registerAppListeners({ base: root, log: { ...quiet, warn: (m: string) => { warnings.push(m) } } })).toBe(1)
+    const payload = { id: 7 }
+    dispatch(topic as never, payload as never)
+
+    expect(warnings).toEqual([`[events] ${topic}: payload does not match what ThrowingRule declares (id)`])
+    expect(fired()).toEqual([{ event: topic, payload }])
   })
 
   test('warns when it does not, and still runs the handler', async () => {
