@@ -1,5 +1,26 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.550...v0.75.551)
+
+## 🐛 Bug Fixes
+
+- **doctor**: diagnose only the obsolete Craft scaffold constraint ([9867fa9](https://github.com/stacksjs/stacks/commit/9867fa9)) _(by Chris)_ ([#3263](https://github.com/stacksjs/stacks/issues/3263))
+- **bootstrap**: match the qualified Pantry CI version ([fdc5f1e](https://github.com/stacksjs/stacks/commit/fdc5f1e)) _(by Chris)_ ([#3248](https://github.com/stacksjs/stacks/issues/3248))
+- **scheduler**: preserve public subpaths and module identity ([7743dde](https://github.com/stacksjs/stacks/commit/7743dde)) _(by Chris)_ ([#3262](https://github.com/stacksjs/stacks/issues/3262))
+
+## ✅ Tests
+
+- **packages**: derive public archive providers from fixture dependencies ([14f8b62](https://github.com/stacksjs/stacks/commit/14f8b62)) _(by Chris)_ ([#3262](https://github.com/stacksjs/stacks/issues/3262))
+- **buddy**: hold a dump's memory growth, not its level, under old Bun ([e2c984d](https://github.com/stacksjs/stacks/commit/e2c984d)) _(by Chris)_
+
+## 🔧 Chores
+
+- **deps**: adopt qualified native and SDK releases ([52bc7e0](https://github.com/stacksjs/stacks/commit/52bc7e0)) _(by Chris)_ ([#3248](https://github.com/stacksjs/stacks/issues/3248), [#3262](https://github.com/stacksjs/stacks/issues/3262))
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.549...v0.75.550)
 
 ## 🐛 Bug Fixes
