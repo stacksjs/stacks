@@ -241,7 +241,7 @@ function add(panel: ModelRelatedPanel): void {
       <div :if="saveError()" role="alert" class="px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg dark:border-red-900">{{ saveError() }}</div>
       <ModelFieldInputs
         :fields="editor()?.panel.fields ?? []"
-        :slug="editor() ? editor().panel.slug : ''"
+        :slug="editor()?.panel.slug ?? ''"
         :values="values()"
         :errors="saveErrors()"
         :disabled="saving()"
