@@ -129,6 +129,16 @@ async function main(): Promise<void> {
       console.error('Could not link this commit\'s built core packages into the scaffolded app, so it was not typechecked.')
       process.exit(1)
     }
+    // The app's name registries were written while it still had the previous
+    // release's defaults. A release that adds a middleware class, a job or an
+    // action then typechecks the new alias map against the old list of names,
+    // and blocks itself on a name the app does have (v0.75.574, `Honeypot`).
+    // Write them again from the defaults that were just linked.
+    const registries = Bun.spawnSync(['./buddy', 'generate:auto-imports'], { cwd: appDir, stdout: 'inherit', stderr: 'inherit' })
+    if (registries.exitCode !== 0) {
+      console.error('Could not regenerate the scaffolded app\'s name registries from this commit\'s defaults, so it was not typechecked.')
+      process.exit(1)
+    }
   }
 
   if (!existsSync(join(appDir, 'tsconfig.json'))) {
