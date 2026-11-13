@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.565...v0.75.566)
+
+## 🐛 Bug Fixes
+
+- **test**: a validation failure on a write that answers in place is thrown, not rejected ([82196fa](https://github.com/stacksjs/stacks/commit/82196fa)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.564...v0.75.565)
 
 ## ✨ Features
