@@ -69,13 +69,9 @@ function submit(): void {
         <option value="contact">Contact</option>
       </select>
     </label>
-    <label class="flex gap-3 items-start p-3 bg-gray-50 dark:bg-neutral-900/50 border border-gray-200 rounded-lg dark:border-neutral-700">
-      <input x-model="published" name="published" type="checkbox" class="mt-0.5 h-4 w-4 rounded" />
-      <span>
-        <span class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Published</span>
-        <span class="block mt-1 text-gray-500 text-xs dark:text-neutral-400">Published pages receive a timestamp. Clearing this returns the page to draft.</span>
-      </span>
-    </label>
+    <div class="p-3 bg-gray-50 dark:bg-neutral-900/50 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <Toggle v-model:checked="published" name="published" label="Published" description="Published pages receive a timestamp. Clearing this returns the page to draft." labelPosition="left" />
+    </div>
   </form>
 
   <div :if="error()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">

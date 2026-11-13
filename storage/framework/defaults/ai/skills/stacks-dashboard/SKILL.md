@@ -600,6 +600,41 @@ Keep semantic controls such as tabs, switches, pagination state, window
 controls, dialog backdrops, and table row menus in their dedicated components.
 They are controls, not alternate action-button styles.
 
+### On/off settings are the switch
+
+An on/off setting is `Dashboard/UI/Toggle.stx`, in a model's form and in every
+hand-built page and dialog (stacksjs/stacks#3297, #3301). Do not write a
+checkbox for one.
+
+```html
+<div class="p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
+  <Toggle v-model:checked="isActive" label="Enabled for redemption" description="Availability is stored separately from lifecycle status." labelPosition="left" />
+</div>
+```
+
+- `v-model:checked` takes a signal or a key of a reactive object
+  (`v-model:checked="drafts[field.key]"`). Where the state is read through a
+  function (`isVisible(section.id)`), bind `:checked` and take
+  `@update:checked`, which carries the new boolean.
+- `labelPosition="left"` puts the name on the left and the switch on the
+  right, the settings-row look. Without it the switch leads, which suits a
+  short option in a row of options.
+- `error` shows a refused save's message in place of the description, and
+  `disabled` dims only the track, so a reason under a switch that cannot be
+  turned stays readable.
+- **Give it a box of its own inside a `space-y-*` stack.** That utility puts
+  its margin on the component's scope wrapper, which makes no box, so a
+  switch that is a direct child loses its spacing. Wrap it in a `div`, or use
+  `flex flex-col gap-*` on the parent. The dev server says so when it sees it.
+- A label that has quotation marks of its own goes in a constant and is bound
+  with `:label`.
+
+A native checkbox is still right for what is not an on/off setting: picking
+rows, several of many (a post's tags, a token's scopes), an instruction for
+this save only ("Clear stored password"), an acknowledgement, and "remember
+me" or the terms on the sign-in forms. `tests/unit/dashboard-switch-contract.test.ts`
+lists every one by file with its reason and fails on any other.
+
 ### Sidebar-aware overlays
 
 The desktop sidebar is fixed and publishes its current width through
