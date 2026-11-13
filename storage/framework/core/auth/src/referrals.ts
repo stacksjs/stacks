@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto'
 
 /** Minimal database contract, also accepted by transaction-scoped connections. */
 export interface ReferralDatabase {
-  unsafe: (sql: string, bindings?: unknown[]) => { execute: () => Promise<unknown> }
+  unsafe: (sql: string, bindings?: unknown[]) => { execute: () => unknown }
 }
 
 export interface ReferralCode {

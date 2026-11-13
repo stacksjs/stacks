@@ -62,19 +62,25 @@ for (const post of Post.where('published', true).get()) titles.push(post.title)
 - **How.** SQLite runs a query in place. MySQL and Postgres run on Bun's
   driver, held by a worker thread the caller waits on, so nothing else runs on
   the calling thread while a query is in flight (the cost `bun:sqlite` always
-  had). `models: { execution: 'async' }` in `config/qb.ts` makes MySQL and
+  had). `models: { execution: 'async' }` in `config/query-builder.ts` makes MySQL and
   Postgres calls promises again for an app that needs the event loop free
   during queries; every call then has to be awaited.
-- **Not covered.** The `db` query builder (`db.selectFrom(...)`) and
-  `transaction()` still return promises.
+- **The `db` query builder too.** `db.selectFrom(...).get()` is the rows and
+  `transaction(tx => ...)` is done when it returns, on the same rule (see
+  `stacks-database`, "Values, not promises").
 - **Inside `db.transaction()`, write through `tx`, not through a model.** A
-  model call runs on its own connection, and on MySQL and Postgres the thread
-  waits for it. One that needs a row the open transaction has locked can never
-  finish, because the transaction cannot commit while its thread is waiting.
-  It throws `StatementTimeoutError` after `models.timeoutMs` (30 seconds by
-  default, `0` for no limit) instead of stopping the process. Postgres cancels
-  the abandoned statement; MySQL cannot, so there it may still be applied once
-  the lock is gone.
+  model call runs on its own connection. One that needs a row the open
+  transaction has locked waits for that transaction to finish, and if the
+  transaction's own callback is what is waiting for the model call, neither
+  can: it fails with `StatementTimeoutError` after `models.timeoutMs` (30
+  seconds by default, `0` for no limit). Postgres cancels the abandoned
+  statement; MySQL cannot, so there it may still be applied once the lock is
+  gone.
+- **The one model call that is a promise.** While a transaction with an
+  `async` callback is open in the process, a model call that needs a lock it
+  holds answers with a promise instead of waiting on the thread the commit
+  needs (see `stacks-database`, "Values, not promises"). Any other call is
+  still a value.
 
 ### Writes: in place, with the work around them
 

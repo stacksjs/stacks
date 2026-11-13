@@ -33,7 +33,7 @@ async function notificationDeliveryOverview() {
     db
       .selectFrom('notification_deliveries')
       .select(db.fn.count('id').as('count'))
-      .executeTakeFirst() as Promise<CountRow | undefined>,
+      .executeTakeFirst() as unknown as CountRow | undefined,
     db
       .selectFrom('notification_deliveries')
       .select(['status', db.fn.count('id').as('count')])
