@@ -294,7 +294,7 @@ export type DashboardProviderName = 'local' | 'hq'
  * Per-section overrides for a hosted HQ product.
  *
  * All optional. A section set to `hq` reads with the URL, read key and
- * project in `config/hq.ts`, which `buddy hq:connect` fills in. Set a field
+ * project in `config/services.ts`, which `buddy hq:connect` fills in. Set a field
  * here only to point one section somewhere else.
  *
  * `token` must be a READ key. A product's ingest key (the value an app uses to

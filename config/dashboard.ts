@@ -68,7 +68,7 @@ export default {
    *
    * `local` is this application's own database, and it is the default for
    * every domain. Set `logs` or `errors` to `hq` to read LogHQ or BugHQ
-   * instead, with the read key and project in config/hq.ts, which
+   * instead, with the read key and project in config/services.ts, which
    * `./buddy hq:connect` fills in. Analytics has no hosted read yet.
    *
    * Health is deliberately absent. That section reports the process serving

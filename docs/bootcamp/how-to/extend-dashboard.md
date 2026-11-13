@@ -82,7 +82,7 @@ providers: {
 ```
 
 Logs reads LogHQ and Errors reads BugHQ, each with the read key and project in
-`config/hq.ts`. `./buddy hq:connect` fills those in and
+`config/services.ts`. `./buddy hq:connect` fills those in and
 `./buddy hq:status` shows usage against each allowance. A section whose service
 is not connected, or cannot be reached, renders empty and says why.
 

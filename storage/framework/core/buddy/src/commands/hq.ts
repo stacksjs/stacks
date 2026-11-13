@@ -1,4 +1,4 @@
-import type { CLI, HqConfig } from '@stacksjs/types'
+import type { CLI, HqServicesConfig } from '@stacksjs/types'
 import type { HqCliDeps } from '../hq'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -15,12 +15,13 @@ import { HQ_SERVICE_NAMES, resolveHqServices, runHqConnect, runHqStatus } from '
  * the logic in `../hq`.
  */
 
-async function hqConfig(): Promise<{ config: HqConfig, app: string }> {
+async function hqConfig(): Promise<{ config: HqServicesConfig, app: string }> {
   const { config, overridesReady } = await import('@stacksjs/config')
   // Before the app's own config files are layered in, a read answers the
   // framework defaults with no error at all.
   await overridesReady.catch(() => {})
-  return { config: config.hq ?? {}, app: String(config.app?.name || 'app') }
+  // The HQ entries sit beside every other service in config/services.ts.
+  return { config: config.services ?? {}, app: String(config.app?.name || 'app') }
 }
 
 function browserCommand(url: string): string[] {
