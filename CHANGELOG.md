@@ -1,5 +1,31 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.568...v0.75.569)
+
+## ✨ Features
+
+- **hq**: the confirmation code a connect is approved with lives in the package ([56846f0](https://github.com/stacksjs/stacks/commit/56846f0)) _(by Chris)_
+- **orm**: seeders and tinker snippets wait for the work a write left running ([d57c4dc](https://github.com/stacksjs/stacks/commit/d57c4dc)) _(by Chris)_
+- **orm**: a write with events, a search index or a broadcast answers in place ([c171dc7](https://github.com/stacksjs/stacks/commit/c171dc7)) _(by Chris)_
+- **security**: makeSync, a password hash made where it is called ([d0e61da](https://github.com/stacksjs/stacks/commit/d0e61da)) _(by Chris)_
+- **events**: collect a before-event's answers where it is dispatched ([4103dd1](https://github.com/stacksjs/stacks/commit/4103dd1)) _(by Chris)_
+
+## 📝 Documentation
+
+- **skills**: count the hq package's confirmation tests in the native catalog ([26fcd2e](https://github.com/stacksjs/stacks/commit/26fcd2e)) _(by Chris)_
+
+## ✅ Tests
+
+- **hq**: the contract suite runs against a licence-only service ([3348854](https://github.com/stacksjs/stacks/commit/3348854)) _(by Chris)_
+
+## 🔧 Chores
+
+- **deps**: bun-query-builder 0.4.2 ([5107147](https://github.com/stacksjs/stacks/commit/5107147)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.567...v0.75.568)
 
 ## 🔧 Chores
