@@ -242,6 +242,13 @@ export default {
     readKey: env.STATUSHQ_READ_KEY || undefined,
   },
 
+  supporthq: {
+    url: env.SUPPORTHQ_URL || 'https://hq.support',
+    key: env.SUPPORTHQ_KEY || undefined,
+    readKey: env.SUPPORTHQ_READ_KEY || undefined,
+    project: env.SUPPORTHQ_PROJECT_ID || undefined,
+  },
+
   commshq: {
     url: env.COMMSHQ_URL || 'https://commshq.org',
     key: env.COMMSHQ_KEY || undefined,

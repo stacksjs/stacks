@@ -60,6 +60,16 @@ export interface FakeHqIssue {
   last_seen: string
 }
 
+export interface FakeHqConversation {
+  id: string
+  project: string
+  subject: string
+  status: string
+  customer_id: string | null
+  updated_at: string
+  unread_count: number
+}
+
 export interface FakeHqService {
   service: string
   origin: string
@@ -78,6 +88,8 @@ export interface FakeHqService {
   licenses: () => LicenseGrant[]
   logs: () => FakeHqLog[]
   issues: () => FakeHqIssue[]
+  /** Seed support summaries explicitly. No customer conversation is created by a connect. */
+  seedConversation: (conversation: FakeHqConversation) => void
   /** Every request received, as `METHOD /path`. */
   requests: () => string[]
 }
@@ -112,6 +124,7 @@ export function createFakeHqService(options: FakeHqServiceOptions = {}): FakeHqS
   const polls = new Map<string, number>()
   const logs: FakeHqLog[] = []
   const issues: FakeHqIssue[] = []
+  const conversations: FakeHqConversation[] = []
   const requests: string[] = []
   const user = { id: 'fake-user' }
 
@@ -270,6 +283,24 @@ export function createFakeHqService(options: FakeHqServiceOptions = {}): FakeHqS
       return options.storeIngest === false ? json({ ok: true, sampled: true }) : json({ ok: true }, 201)
     }
 
+    const supportReader = /^\/api\/v1\/projects\/([^/]+)\/conversations$/.exec(path)
+    if (method === 'GET' && supportReader) {
+      const id = decodeURIComponent(supportReader[1]!)
+      if (!readable(request, id))
+        return json({ error: 'not found' }, 404)
+      const status = url.searchParams.get('status')
+      const before = url.searchParams.get('before')
+      const limit = Math.min(100, Math.max(1, Number(url.searchParams.get('limit')) || 100))
+      const matching = conversations
+        .filter(row => row.project === id && (!status || row.status === status) && (!before || row.updated_at < before))
+        .sort((a, b) => b.updated_at.localeCompare(a.updated_at))
+      const page = matching.slice(0, limit)
+      return json({
+        conversations: page.map(row => ({ id: row.id, subject: row.subject, status: row.status, customer_id: row.customer_id, updated_at: row.updated_at, unread_count: row.unread_count })),
+        nextCursor: matching.length > limit ? page[page.length - 1]!.updated_at : null,
+      })
+    }
+
     const reader = /^\/api\/projects\/([^/]+)\/(logs|issues)$/.exec(path)
     if (method === 'GET' && reader) {
       const id = decodeURIComponent(reader[1]!)
@@ -320,6 +351,7 @@ export function createFakeHqService(options: FakeHqServiceOptions = {}): FakeHqS
     licenses: () => [...licensed.values()].map(entry => entry.grant),
     logs: () => [...logs],
     issues: () => [...issues],
+    seedConversation: conversation => conversations.push({ ...conversation }),
     requests: () => [...requests],
   }
 }

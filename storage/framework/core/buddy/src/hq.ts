@@ -16,8 +16,8 @@ export interface HqServiceDescriptor {
   label: string
   /** The `.env` names `hq:connect` writes this service's grant to, and the one a licence is read from. */
   env: { key?: string, readKey?: string, project?: string, license?: string }
-  /** What `hq:connect` sends and reads back to prove the keys work. */
-  verify?: 'log' | 'error'
+  /** What `hq:connect` checks. SupportHQ only reads and never sends customer traffic. */
+  verify?: 'log' | 'error' | 'support'
 }
 
 export const HQ_SERVICES: Record<HqServiceName, HqServiceDescriptor> = {
@@ -25,6 +25,7 @@ export const HQ_SERVICES: Record<HqServiceName, HqServiceDescriptor> = {
   loghq: { label: 'LogHQ', env: { key: 'LOGHQ_KEY', readKey: 'LOGHQ_READ_KEY', project: 'LOGHQ_PROJECT_ID' }, verify: 'log' },
   analyticshq: { label: 'AnalyticsHQ', env: { readKey: 'ANALYTICSHQ_READ_KEY', project: 'ANALYTICSHQ_SITE_ID' } },
   statushq: { label: 'StatusHQ', env: { key: 'STATUSHQ_KEY', readKey: 'STATUSHQ_READ_KEY' } },
+  supporthq: { label: 'HQ.support', env: { key: 'SUPPORTHQ_KEY', readKey: 'SUPPORTHQ_READ_KEY', project: 'SUPPORTHQ_PROJECT_ID' }, verify: 'support' },
   commshq: { label: 'CommsHQ', env: { key: 'COMMSHQ_KEY', readKey: 'COMMSHQ_READ_KEY' } },
   // ReportsHQ runs inside the app and has no keys or meters. A connect hands
   // over a licence, which is checked offline, so there is nothing to send or
@@ -294,6 +295,13 @@ async function verify(service: HqServiceName, url: string, grant: Grant, options
     return { send: 'skipped', read: 'skipped' }
 
   const base = origin(url)
+  if (kind === 'support') {
+    const client = createHqClient({ services: { supporthq: { url: base, readKey: grant.readKey, project: grant.project.id } }, fetch: deps.fetch })
+    const result = await client.support.conversations({ limit: 1 })
+    return result.ok
+      ? { send: 'skipped', read: 'pass' }
+      : { send: 'skipped', read: 'fail', detail: describeUnavailable(result) }
+  }
   const marker = `hq-connect-${crypto.randomUUID().slice(0, 8)}`
   const message = `buddy hq:connect test ${marker}`
   const timestamp = new Date(deps.now()).toISOString()
@@ -556,4 +564,30 @@ export async function runHqStatus(config: HqServicesConfig, deps: Pick<HqCliDeps
     deps.print(`${HQ_SERVICES[row.service].label} ${row.meter} is at ${percent}% of its allowance. Upgrade: ${row.upgradeUrl}`)
   }
   return rows
+}
+
+export interface SupportDoctorResult {
+  ok: boolean
+  checks: { name: 'configuration' | 'usage' | 'conversations', ok: boolean, detail: string }[]
+}
+
+/** Read-only checks. A doctor never sends a test customer conversation. */
+export async function runSupportDoctor(config: HqServicesConfig, deps: Pick<HqCliDeps, 'fetch' | 'print'>): Promise<SupportDoctorResult> {
+  const service = config.supporthq
+  const configured = Boolean(service?.url && service.key && service.readKey && service.project)
+  const checks: SupportDoctorResult['checks'] = [{
+    name: 'configuration',
+    ok: configured,
+    detail: configured ? 'server key, read key and project configured' : 'missing configuration; run `buddy support:install`',
+  }]
+  if (configured) {
+    const client = createHqClient({ services: { supporthq: { url: service!.url, readKey: service!.readKey!, project: service!.project } }, fetch: deps.fetch })
+    const usage = await client.getUsage('supporthq')
+    checks.push({ name: 'usage', ok: usage.ok, detail: usage.ok ? `${usage.data.length} usage meters readable` : describeUnavailable(usage) })
+    const conversations = await client.support.conversations({ limit: 1 })
+    checks.push({ name: 'conversations', ok: conversations.ok, detail: conversations.ok ? 'project summaries readable' : describeUnavailable(conversations) })
+  }
+  for (const check of checks)
+    deps.print(`HQ.support ${check.name}: ${check.ok ? 'pass' : 'fail'} (${check.detail})`)
+  return { ok: checks.every(check => check.ok), checks }
 }

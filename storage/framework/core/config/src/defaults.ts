@@ -786,6 +786,13 @@ export const defaults: StacksOptions = {
       key: plainEnv('STATUSHQ_KEY') || undefined,
       readKey: plainEnv('STATUSHQ_READ_KEY') || undefined,
     },
+    supporthq: {
+      url: plainEnv('SUPPORTHQ_URL') || 'https://hq.support',
+      key: plainEnv('SUPPORTHQ_KEY') || undefined,
+      readKey: plainEnv('SUPPORTHQ_READ_KEY') || undefined,
+      project: plainEnv('SUPPORTHQ_PROJECT_ID') || undefined,
+    },
+
     commshq: {
       url: plainEnv('COMMSHQ_URL') || 'https://commshq.org',
       key: plainEnv('COMMSHQ_KEY') || undefined,

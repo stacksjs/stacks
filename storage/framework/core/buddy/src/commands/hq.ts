@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
 import { defineCommand } from '@stacksjs/cli'
-import { HQ_SERVICE_NAMES, resolveHqServices, runHqConnect, runHqStatus } from '../hq'
+import { HQ_SERVICE_NAMES, resolveHqServices, runHqConnect, runHqStatus, runSupportDoctor } from '../hq'
 
 /**
  * `buddy hq:connect` and `buddy hq:status`.
@@ -91,50 +91,65 @@ function deps(signal?: AbortSignal): HqCliDeps {
   }
 }
 
-const connect = defineCommand({
-  name: 'hq:connect [...services]',
-  description: 'Connect this app to HQ services (BugHQ and LogHQ by default) and write their keys to .env',
-  options: {
-    '--no-open': 'Print the approve link without opening the browser',
-    '--no-verify': 'Skip sending a test log and a test error and reading them back',
-    '--timeout <seconds>': { description: 'How long to wait for each approval', default: 600 },
-  },
-  examples: [
-    'buddy hq:connect',
-    'buddy hq:connect loghq',
-    'buddy hq:connect bughq loghq --no-open',
-  ],
-  handle: async (options, ...args) => {
-    // clapp hands a variadic argument over as one array.
-    const requested = (args as unknown[]).flat().filter((value): value is string => typeof value === 'string')
-    const resolved = resolveHqServices(requested)
-    if ('error' in resolved) {
-      console.error(resolved.error)
-      process.exit(1)
-    }
+function connectCommand(supportOnly = false) {
+  return defineCommand({
+    name: supportOnly ? 'support:install' : 'hq:connect [...services]',
+    description: supportOnly ? 'Connect HQ.support and write its server keys to .env' : 'Connect this app to HQ services (BugHQ and LogHQ by default) and write their keys to .env',
+    options: {
+      '--no-open': 'Print the approve link without opening the browser',
+      '--no-verify': 'Skip service read checks and test log/error delivery',
+      '--timeout <seconds>': { description: 'How long to wait for each approval', default: 600 },
+    },
+    examples: supportOnly ? ['buddy support:install', 'buddy support:install --no-open'] : [
+      'buddy hq:connect',
+      'buddy hq:connect loghq',
+      'buddy hq:connect bughq loghq --no-open',
+    ],
+    handle: async (options, ...args) => {
+      // clapp hands a variadic argument over as one array.
+      const requested = (args as unknown[]).flat().filter((value): value is string => typeof value === 'string')
+      const resolved = resolveHqServices(supportOnly ? ['supporthq'] : requested)
+      if ('error' in resolved) {
+        console.error(resolved.error)
+        process.exit(1)
+      }
 
-    const flags = options as { open?: boolean, verify?: boolean, timeout?: number | string }
-    const seconds = Number(flags.timeout)
-    const { config, app } = await hqConfig()
+      const flags = options as { open?: boolean, verify?: boolean, timeout?: number | string }
+      const seconds = Number(flags.timeout)
+      const { config, app } = await hqConfig()
 
-    // Ctrl+C stops the wait cleanly: nothing is written for the service that
-    // was still pending, and what was already connected is reported.
-    const controller = new AbortController()
-    const cancel = (): void => controller.abort()
-    process.once('SIGINT', cancel)
+      // Ctrl+C stops the wait cleanly: nothing is written for the service that
+      // was still pending, and what was already connected is reported.
+      const controller = new AbortController()
+      const cancel = (): void => controller.abort()
+      process.once('SIGINT', cancel)
 
-    try {
-      const result = await runHqConnect(resolved.services, config, {
-        app,
-        open: flags.open !== false,
-        verify: flags.verify !== false,
-        timeoutMs: (Number.isFinite(seconds) && seconds > 0 ? seconds : 600) * 1000,
-      }, deps(controller.signal))
-      process.exit(controller.signal.aborted ? 130 : result.ok ? 0 : 1)
-    }
-    finally {
-      process.off('SIGINT', cancel)
-    }
+      try {
+        const result = await runHqConnect(resolved.services, config, {
+          app,
+          open: flags.open !== false,
+          verify: flags.verify !== false,
+          timeoutMs: (Number.isFinite(seconds) && seconds > 0 ? seconds : 600) * 1000,
+        }, deps(controller.signal))
+        process.exit(controller.signal.aborted ? 130 : result.ok ? 0 : 1)
+      }
+      finally {
+        process.off('SIGINT', cancel)
+      }
+    },
+  })
+}
+
+const connect = connectCommand()
+const install = connectCommand(true)
+
+const doctor = defineCommand({
+  name: 'support:doctor',
+  description: 'Check HQ.support configuration and read access without creating a conversation',
+  handle: async () => {
+    const { config } = await hqConfig()
+    const result = await runSupportDoctor(config, deps())
+    process.exit(result.ok ? 0 : 1)
   },
 })
 
@@ -152,4 +167,6 @@ const status = defineCommand({
 export function hq(buddy: CLI): void {
   connect(buddy)
   status(buddy)
+  install(buddy)
+  doctor(buddy)
 }

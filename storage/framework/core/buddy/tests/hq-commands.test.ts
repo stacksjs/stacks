@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createFakeHqService, fakeHqFetch } from '@stacksjs/testing/hq'
 import { writeEnvEntries } from '../src/commands/hq'
-import { describeReportsHqLicense, resolveHqServices, runHqConnect, runHqStatus } from '../src/hq'
+import { describeReportsHqLicense, resolveHqServices, runHqConnect, runHqStatus, runSupportDoctor } from '../src/hq'
 import { getCommandNames } from '../src/lazy-commands'
 
 /**
@@ -112,6 +112,20 @@ describe('buddy hq:connect', () => {
     expect(loghq.logs()[0]!.message).toContain('buddy hq:connect test')
 
     expectNoKeyPrinted(h.output(), bughq, loghq)
+  })
+
+  it('connects HQ.support with server-only keys and no synthetic support traffic', async () => {
+    const support = createFakeHqService({ service: 'supporthq', approveOnPoll: 1, confirmCode: true })
+    const h = harness([support])
+    const result = await runHqConnect(['supporthq'], configFor(support), OPTIONS, h.deps)
+    const grant = support.grants()[0]!
+    expect(result.ok).toBe(true)
+    expect(result.outcomes[0]).toMatchObject({ send: 'skipped', read: 'pass' })
+    expect(h.env).toEqual({ SUPPORTHQ_KEY: grant.ingestKey, SUPPORTHQ_READ_KEY: grant.readKey, SUPPORTHQ_PROJECT_ID: grant.project.id })
+    expect(h.output()).toContain('Confirmation code:')
+    expect(support.requests().filter(request => request.startsWith('POST'))).toEqual(['POST /api/cli/connect'])
+    expect(support.requests()).toContain(`GET /api/v1/projects/${grant.project.id}/conversations`)
+    expectNoKeyPrinted(h.output(), support)
   })
 
   it('--no-open prints the link without opening it, and --no-verify sends nothing', async () => {
@@ -289,7 +303,7 @@ describe('buddy hq:connect', () => {
   it('names the services it knows when asked for one it does not', () => {
     expect(resolveHqServices([])).toEqual({ services: ['bughq', 'loghq'] })
     expect(resolveHqServices(['LogHQ', 'loghq'])).toEqual({ services: ['loghq'] })
-    expect(resolveHqServices(['sentry'])).toEqual({ error: 'Unknown service: sentry. Choose from bughq, loghq, analyticshq, statushq, commshq, reportshq.' })
+    expect(resolveHqServices(['sentry'])).toEqual({ error: 'Unknown service: sentry. Choose from bughq, loghq, analyticshq, statushq, supporthq, commshq, reportshq.' })
   })
 
   describe('writing .env', () => {
@@ -419,7 +433,35 @@ describe('buddy hq:status', () => {
 })
 
 describe('registration', () => {
-  it('lists both commands', () => {
-    expect(getCommandNames()).toEqual(expect.arrayContaining(['hq:connect', 'hq:status']))
+  it('lists HQ and support commands', () => {
+    expect(getCommandNames()).toEqual(expect.arrayContaining(['hq:connect', 'hq:status', 'support:install', 'support:doctor']))
+  })
+})
+
+describe('buddy support:doctor', () => {
+  it('checks usage and summaries with read credentials and sends nothing', async () => {
+    const support = createFakeHqService({ service: 'supporthq', meters: [{ meter: 'conversations', used: 80, limit: 100 }, { meter: 'ai_conversations', used: 10, limit: 10 }] })
+    const grant = support.project()
+    const h = harness([support])
+    const config = { supporthq: { url: support.origin, key: grant.ingestKey, readKey: grant.readKey, project: grant.project.id } }
+    const result = await runSupportDoctor(config, h.deps)
+    expect(result.ok).toBe(true)
+    expect(result.checks.map(check => check.name)).toEqual(['configuration', 'usage', 'conversations'])
+    expect(support.requests()).toEqual(['GET /api/v1/usage', `GET /api/v1/projects/${grant.project.id}/conversations`])
+    expectNoKeyPrinted(h.output(), support)
+    const rows = await runHqStatus(config, h.deps)
+    expect(rows.map(item => item.meter)).toEqual(['conversations', 'ai_conversations'])
+  })
+
+  it('reports missing config and refused read keys without exposing secrets', async () => {
+    const h = harness([])
+    expect((await runSupportDoctor({}, h.deps)).ok).toBe(false)
+    const support = createFakeHqService({ service: 'supporthq' })
+    const refused = harness([support])
+    const result = await runSupportDoctor({ supporthq: { url: support.origin, key: 'secret', readKey: 'invalid', project: 'p' } }, refused.deps)
+    expect(result.ok).toBe(false)
+    expect(refused.output()).not.toContain('secret')
+    expect(refused.output()).not.toContain('invalid')
+    expect(refused.output()).toContain('the read key was refused')
   })
 })

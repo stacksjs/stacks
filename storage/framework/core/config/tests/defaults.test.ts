@@ -91,7 +91,7 @@ describe('config defaults', () => {
       // here, which is how `buddy hq:status` finds the keys hq:connect wrote.
       expect(defaults.services.bughq?.url).toMatch(/^https?:\/\//)
       expect(defaults.services.loghq?.url).toMatch(/^https?:\/\//)
-      for (const name of ['analyticshq', 'statushq', 'commshq'] as const)
+      for (const name of ['analyticshq', 'statushq', 'commshq', 'supporthq'] as const)
         expect(defaults.services[name]?.url).toMatch(/^https:\/\//)
       // ReportsHQ is embedded: a licence checked offline, no keys.
       expect(defaults.services.reportshq?.url).toBe('https://reportshq.org')

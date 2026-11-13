@@ -5,13 +5,13 @@
  * subscription, so every service carries its own credentials and nothing is
  * shared between them.
  */
-export type HqServiceName = 'bughq' | 'loghq' | 'analyticshq' | 'statushq' | 'commshq' | 'reportshq'
+export type HqServiceName = 'bughq' | 'loghq' | 'analyticshq' | 'statushq' | 'commshq' | 'reportshq' | 'supporthq'
 
 /** One HQ service's entry in `config/services.ts`, written by `buddy hq:connect`. */
 export interface HqServiceOptions {
   /** The service's origin, e.g. `https://loghq.org`. */
   url: string
-  /** The key the app's SDK writes with. */
+  /** The key the app's SDK writes with. SupportHQ keys are server-side only. */
   key?: string
   /** The key the app's own dashboard and `buddy hq:status` read with. Server-side only. */
   readKey?: string
@@ -256,6 +256,7 @@ export interface ServicesOptions {
   analyticshq?: HqServiceOptions
   statushq?: HqServiceOptions
   commshq?: HqServiceOptions
+  supporthq?: HqServiceOptions
   reportshq?: HqServiceOptions
 
   // supabase?: {

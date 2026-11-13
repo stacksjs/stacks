@@ -175,6 +175,7 @@ const HQ_LABELS: Record<HqServiceName, string> = {
   analyticshq: 'AnalyticsHQ',
   statushq: 'StatusHQ',
   commshq: 'CommsHQ',
+  supporthq: 'HQ.support',
   reportshq: 'ReportsHQ',
 }
 

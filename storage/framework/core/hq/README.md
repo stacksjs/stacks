@@ -4,7 +4,7 @@ What every Stacks HQ service does the same way: counting usage against a plan
 allowance, the connect and usage endpoints, and the typed readers an app uses to
 call a service.
 
-The services stay separate. BugHQ, LogHQ, AnalyticsHQ, StatusHQ and CommsHQ each
+The services stay separate. BugHQ, LogHQ, AnalyticsHQ, StatusHQ, CommsHQ and HQ.support each
 keep their own accounts, keys, plans and billing; there is no central account
 and no shared login. This package shares code, never identity.
 
@@ -180,11 +180,40 @@ seconds by default) or not configured costs the page one panel.
 |---|---|---|
 | `getUsage(service)` | implemented | `GET /api/v1/usage`, mounted from `@stacksjs/hq/service` |
 | `logs.list(query)` | implemented | LogHQ `GET /api/projects/{project}/logs` with `level`, `channel`, `environment`, `trace`, `request`, `q`, `before`, `limit`; answers `{ logs, nextCursor }` |
+| `support.conversations(query)` | implemented | HQ.support `GET /api/v1/projects/{project}/conversations` with `status`, `before`, `limit`; answers `{ conversations, nextCursor }` |
 | `issues.list(query)` | implemented | BugHQ `GET /api/projects/{project}/issues` with `status`; answers `{ issues }` |
 | `AnalyticsReader.summary(query)` | interface only | AnalyticsHQ has no read-key endpoint. It needs `GET /api/v1/sites/{site}/summary?from&to` answering `{ pageviews, visitors, topPages: { path, pageviews }[] }` |
 | `UptimeReader.monitors()` | interface only | StatusHQ has no read-key endpoint. It needs `GET /api/v1/monitors` answering `{ monitors: { id, name, url, status, uptimePercent, lastCheckedAt }[] }` |
 | `CommsReader.summary()` | interface only | CommsHQ has no read-key endpoint. It needs `GET /api/v1/summary` answering `{ sent, delivered, bounced, contacts }` for the current period |
 
-Both implemented project readers accept the read key as a bearer token and
+The implemented project readers accept the read key as a bearer token and
 answer `404` (not `401`) for a key that does not open the project, which the
 client reports as `reason: 'http'` with `status: 404`.
+
+
+### HQ.support
+
+Connect with `buddy support:install` (or `buddy hq:connect supporthq`). It uses
+HQ.support's approval page and confirmation code, writes `SUPPORTHQ_KEY`,
+`SUPPORTHQ_READ_KEY` and `SUPPORTHQ_PROJECT_ID` to `.env`, then verifies summary
+access. It never creates a customer conversation. `buddy hq:connect` without
+arguments continues to select BugHQ and LogHQ.
+
+`config/services.ts` reads `SUPPORTHQ_URL` (default `https://hq.support`) and
+those credentials. Both keys stay on the server. The URL and project id are
+public configuration; use a server-issued customer session for the widget.
+`buddy support:doctor` checks that all settings exist and reads usage and one
+summary. It does not prove the write key works or that deployment ownership
+has been verified. That challenge belongs to HQ.support's approval flow.
+
+The support reader returns `{ conversations, nextCursor }`. Each summary has
+`id`, `subject`, `status`, `customerId`, `updatedAt` and `unreadCount`. The wire
+keys are `customer_id`, `updated_at` and `unread_count`; no message bodies or
+customer details are requested. The service scopes every read to the project
+and bearer read key. An unreadable project returns 404.
+
+`buddy hq:status` displays the service's usage meters, including conversation,
+AI and attachment meters when provided. Wallet balance and spending controls
+remain in HQ.support; the shared usage contract does not define a wallet API.
+Documentation synchronization and migration import commands are not registered
+until their service contracts exist.

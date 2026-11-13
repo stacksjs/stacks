@@ -15,7 +15,7 @@ export type { UsageHeader } from './usage-header'
  * failure is a typed `HqUnavailable` value.
  */
 
-export type HqServiceName = 'bughq' | 'loghq' | 'analyticshq' | 'statushq' | 'commshq' | 'reportshq'
+export type HqServiceName = 'bughq' | 'loghq' | 'analyticshq' | 'statushq' | 'commshq' | 'reportshq' | 'supporthq'
 
 export interface HqServiceConfig {
   /** The service's origin, e.g. `https://bughq.example`. */
@@ -163,11 +163,39 @@ export interface CommsReader {
   summary: () => Promise<HqResult<CommsSummary>>
 }
 
+/** HQ.support `GET /api/v1/projects/{project}/conversations`. */
+export interface SupportConversationQuery {
+  status?: string
+  before?: string
+  /** 1 to 100. */
+  limit?: number
+}
+
+/** A summary only. Message bodies and customer details stay in HQ.support. */
+export interface SupportConversationSummary {
+  id: string
+  subject: string
+  status: string
+  customerId: string | null
+  updatedAt: string
+  unreadCount: number
+}
+
+export interface SupportConversationPage {
+  conversations: SupportConversationSummary[]
+  nextCursor: string | null
+}
+
+export interface SupportReader {
+  conversations: (query?: SupportConversationQuery) => Promise<HqResult<SupportConversationPage>>
+}
+
 export interface HqClient {
   /** `GET /api/v1/usage` on one service. */
   getUsage: (service: HqServiceName) => Promise<HqResult<UsageReport[]>>
   logs: LogReader
   issues: IssueReader
+  support: SupportReader
 }
 
 const STATES: ReadonlySet<string> = new Set<UsageState>(['ok', 'warn', 'over', 'sampled'])
@@ -226,6 +254,22 @@ function toIssue(value: unknown): Issue | null {
     count: Number(value.count ?? 0) || 0,
     firstSeen: text(value.first_seen),
     lastSeen: text(value.last_seen),
+  }
+}
+
+function toSupportConversation(value: unknown): SupportConversationSummary | null {
+  if (!isRow(value) || typeof value.id !== 'string' || !value.id || typeof value.subject !== 'string'
+    || typeof value.status !== 'string' || !value.status || typeof value.updated_at !== 'string'
+    || !Number.isFinite(Date.parse(value.updated_at)) || !(value.customer_id === null || typeof value.customer_id === 'string')
+    || !Number.isSafeInteger(value.unread_count) || (value.unread_count as number) < 0)
+    return null
+  return {
+    id: value.id,
+    subject: value.subject,
+    status: value.status,
+    customerId: value.customer_id as string | null,
+    updatedAt: value.updated_at,
+    unreadCount: value.unread_count as number,
   }
 }
 
@@ -332,6 +376,26 @@ export function createHqClient(options: HqClientOptions): HqClient {
         return read('loghq', config => project(config, '/logs', params), (body) => {
           const logs = isRow(body) ? all(body.logs, toLogEntry) : null
           return logs === null ? null : { logs, nextCursor: text((body as Row).nextCursor) }
+        })
+      },
+    },
+
+    support: {
+      conversations: (query = {}) => {
+        const params = new URLSearchParams()
+        if (query.status)
+          params.set('status', query.status)
+        if (query.before)
+          params.set('before', query.before)
+        if (query.limit !== undefined)
+          params.set('limit', String(query.limit))
+        return read('supporthq', config => config.project
+          ? `/api/v1/projects/${encodeURIComponent(config.project)}/conversations${params.size ? `?${params}` : ''}`
+          : null, (body) => {
+          if (!isRow(body) || !(body.nextCursor === null || typeof body.nextCursor === 'string'))
+            return null
+          const conversations = all(body.conversations, toSupportConversation)
+          return conversations === null ? null : { conversations, nextCursor: body.nextCursor as string | null }
         })
       },
     },

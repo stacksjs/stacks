@@ -120,6 +120,26 @@ const envSchema = defineEnv({
     default: '',
   },
 
+  SUPPORTHQ_URL: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  SUPPORTHQ_KEY: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  SUPPORTHQ_READ_KEY: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  SUPPORTHQ_PROJECT_ID: {
+    validation: schema.string(),
+    default: '',
+  },
+
   COMMSHQ_URL: {
     validation: schema.string(),
     default: '',

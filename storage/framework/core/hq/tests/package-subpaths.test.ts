@@ -26,12 +26,14 @@ test('a built hq package ships the JavaScript behind every public subpath', asyn
       import { createHqService } from '@stacksjs/hq/service'
       import { createHqClient } from '@stacksjs/hq/client'
       import * as root from '@stacksjs/hq'
-      console.log([evaluate(601, 500).state, formatUsageHeader({ meter: 'm', used: 1, limit: 2, state: 'ok', upgradeUrl: null }), typeof reserveUsage, typeof createHqService, typeof createHqClient, typeof root.createCounter].join(' '))
+      const support = await createHqClient({ services: {} }).support.conversations()
+      if (support.ok) throw new Error('unconfigured support reader should be unavailable')
+      console.log([support.service, support.reason, evaluate(601, 500).state, formatUsageHeader({ meter: 'm', used: 1, limit: 2, state: 'ok', upgradeUrl: null }), typeof reserveUsage, typeof createHqService, typeof createHqClient, typeof root.createCounter].join(' '))
     `)
     const child = Bun.spawn([process.execPath, '--no-env-file', join(consumer, 'probe.ts')], { cwd: consumer, stdout: 'pipe', stderr: 'pipe' })
     const [result, output, error] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
     expect(result, error).toBe(0)
-    expect(output.trim()).toBe('sampled m;1;2;ok function function function function')
+    expect(output.trim()).toBe('supporthq not_configured sampled m;1;2;ok function function function function')
   }
   finally {
     rmSync(consumer, { recursive: true, force: true })

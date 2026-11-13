@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **382 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **384 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -77,6 +77,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `stack` | 3 |
 | `storage` | 3 |
 | `stripe` | 1 |
+| `support` | 2 |
 | `test` | 5 |
 | `types` | 2 |
 | `unlink` | 1 |
@@ -2935,7 +2936,7 @@ Connect this app to HQ services (BugHQ and LogHQ by default) and write their key
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--no-open` | Print the approve link without opening the browser | boolean, optional, negated | `true` |
-| `--no-verify` | Skip sending a test log and a test error and reading them back | boolean, optional, negated | `true` |
+| `--no-verify` | Skip service read checks and test log/error delivery | boolean, optional, negated | `true` |
 | `--timeout` | How long to wait for each approval | value, required | `600` |
 
 Examples:
@@ -5857,6 +5858,37 @@ Sets up stripe products in the dashboard
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--dry-run` | Report the products that would be created or updated, and write nothing to Stripe | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `support:doctor`
+
+Check HQ.support configuration and read access without creating a conversation
+
+- Usage: `$ buddy support:doctor`
+- Namespace: `support`
+- Aliases: none
+- Arguments: none
+
+### `support:install`
+
+Connect HQ.support and write its server keys to .env
+
+- Usage: `$ buddy support:install`
+- Namespace: `support`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--no-open` | Print the approve link without opening the browser | boolean, optional, negated | `true` |
+| `--no-verify` | Skip service read checks and test log/error delivery | boolean, optional, negated | `true` |
+| `--timeout` | How long to wait for each approval | value, required | `600` |
+
+Examples:
+
+```bash
+buddy support:install
+buddy support:install --no-open
+```
 
 ### `telemetry`
 
