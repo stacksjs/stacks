@@ -80,6 +80,9 @@ evaluates it at global scope:
 - a query needs no `await` at the top level (see "No await at the top level");
   top-level `await` still works;
 - a relative `import('./x')` resolves against the session's directory;
+- a snippet is done when the work its model writes left running is done: the
+  search-index update and the broadcast, for up to five seconds. What they
+  print lands in that snippet's frames, and `durationMs` does not count them;
 - nothing is written to the project.
 
 It resolves with `{ ok, value, thrown, frames, durationMs }` and never rejects

@@ -148,6 +148,16 @@ function applicationSeederFiles(directory: string): string[] {
  * Each module must default-export a class extending {@link Seeder}. Failures
  * are recorded and remaining seeders continue, matching model-factory seeding.
  */
+/**
+ * Wait for work that model writes left running. The ORM publishes this under a
+ * well-known symbol so the seeder needs no import of a package that imports it;
+ * with no model loaded there is nothing to wait for.
+ */
+function modelWorkSettled(): Promise<void> {
+  const settled = (globalThis as unknown as Record<symbol, unknown>)[Symbol.for('stacks.orm.modelWorkSettled')]
+  return typeof settled === 'function' ? (settled as () => Promise<void>)() : Promise.resolve()
+}
+
 export async function runApplicationSeeders(config: ApplicationSeederConfig = {}): Promise<ApplicationSeederSummary> {
   const startTime = Date.now()
   const directory = config.directory || path.userDatabasePath('seeders')
@@ -234,6 +244,10 @@ export async function runApplicationSeeders(config: ApplicationSeederConfig = {}
         log.info(`Running application seeder ${seeder}...`)
 
       await instance.run()
+      // A model write answers before its search-index update and broadcast
+      // have finished. The seeder is done when they are: the command exits
+      // right after, and work still in flight then would simply be lost.
+      await modelWorkSettled()
       results.push({
         seeder,
         file: displayFile,

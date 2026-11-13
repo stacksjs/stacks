@@ -274,6 +274,8 @@ async function bootStacks(warnings: string[]): Promise<boolean> {
   return booted
 }
 
+/** How long a snippet waits for work its model writes left running. */
+const MODEL_WORK_LIMIT_MS = 5000
 const CONSOLE_STDOUT = ['log', 'info', 'debug', 'dir', 'table'] as const
 const CONSOLE_STDERR = ['warn', 'error', 'trace'] as const
 
@@ -468,6 +470,25 @@ export async function createTinkerSession(options: TinkerSessionOptions = {}): P
   let counter = 0
   let queue: Promise<unknown> = Promise.resolve()
 
+  /**
+   * A model write answers before its search-index update and broadcast have
+   * finished. A snippet is done when they are, so what they print belongs to
+   * the snippet that caused them and a one-shot run does not exit under them.
+   * The time is not the snippet's: `durationMs` is taken first. A failure was
+   * logged where it happened, and an index that never answers must not hold
+   * the session, hence the limit.
+   */
+  async function modelWorkSettled(): Promise<void> {
+    const settled = (globalThis as unknown as Record<symbol, unknown>)[Symbol.for('stacks.orm.modelWorkSettled')]
+    if (typeof settled !== 'function') return
+    let limit: ReturnType<typeof setTimeout> | undefined
+    await Promise.race([
+      (settled as () => Promise<void>)().catch(() => {}),
+      new Promise<void>((resolve) => { limit = setTimeout(resolve, MODEL_WORK_LIMIT_MS) }),
+    ])
+    clearTimeout(limit)
+  }
+
   async function run(code: string, id: string, settle: boolean): Promise<TinkerEvaluation> {
     const frames: TinkerFrame[] = []
     sink = frames
@@ -492,6 +513,7 @@ export async function createTinkerSession(options: TinkerSessionOptions = {}): P
       const outcome = await globalEval(compiled) as { value?: unknown } | undefined
       const value = outcome?.value
       const durationMs = elapsed()
+      await modelWorkSettled()
       emit({ type: 'result', id, value: serialize(value, serializeOptions), durationMs })
       emit({ type: 'done', id, ok: true })
       return { id, ok: true, value, frames, durationMs }
