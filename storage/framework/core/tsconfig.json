@@ -237,6 +237,7 @@
       "@stacksjs/testing/browser": ["./testing/src/browser.ts"],
       "@stacksjs/testing/database": ["./testing/src/database.ts"],
       "@stacksjs/testing/dynamodb": ["./testing/src/dynamodb.ts"],
+      "@stacksjs/testing/hq": ["./testing/src/hq.ts"],
       "@stacksjs/testing/time": ["./testing/src/time.ts"],
       "@stacksjs/tinker": ["./tinker/src/index.ts"],
       "@stacksjs/tinker/*": ["./tinker/src/*.ts"],

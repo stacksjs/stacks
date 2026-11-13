@@ -272,6 +272,7 @@
       "@stacksjs/testing/browser": ["./core/testing/src/browser.ts"],
       "@stacksjs/testing/database": ["./core/testing/src/database.ts"],
       "@stacksjs/testing/dynamodb": ["./core/testing/src/dynamodb.ts"],
+      "@stacksjs/testing/hq": ["./core/testing/src/hq.ts"],
       "@stacksjs/testing/time": ["./core/testing/src/time.ts"],
       "@stacksjs/tinker": ["./core/tinker/src/index.ts"],
       "@stacksjs/tinker/*": ["./core/tinker/src/*.ts"],
