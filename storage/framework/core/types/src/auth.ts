@@ -433,6 +433,23 @@ export interface AuthOptions {
      * @default true
      */
     preventEnumeration?: boolean
+
+    /**
+     * How many registrations one client address, and one email address, may
+     * attempt per hour, on top of the route's burst limit. Every attempt
+     * counts, refused ones included. `false` turns a limit off; both are
+     * multiplied by `config.security.rateLimit.scale` like every other limit.
+     *
+     * The address limit is deliberately loose: a classroom or an office signs
+     * up from one address. Raise it for an onboarding event rather than
+     * turning it off.
+     *
+     * @default { perIp: 20, perEmail: 5 }
+     */
+    rateLimit?: {
+      perIp?: number | false
+      perEmail?: number | false
+    }
   }
 
   /**

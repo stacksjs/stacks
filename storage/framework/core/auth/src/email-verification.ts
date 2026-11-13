@@ -18,6 +18,7 @@ import { db, enqueueAfterCommit, getDatabaseDialect, mutationCount, parseSqlDate
 import { mail, template } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
 import { normalizeAuthEmail } from './credential-user'
+import { greetingName } from './display-name'
 import { authLinkBase } from './link-url'
 
 export interface EmailVerificationResult {
@@ -185,7 +186,10 @@ async function deliverVerificationEmail(user: { id: number, email: string, name?
       variables: {
         verificationUrl,
         expiryMinutes,
-        userName: user.name || user.email,
+        // A first name or the template's own "there". It used to fall back
+        // to the stored name whole, and this mail goes to an address nobody
+        // has confirmed yet.
+        userName: greetingName(user.name),
       },
     })
     html = rendered.html

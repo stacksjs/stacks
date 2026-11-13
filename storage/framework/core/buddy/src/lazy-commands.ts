@@ -172,6 +172,7 @@ const commandRegistry: Record<string, CommandLoader> = {
   'comments:delete': { path: './commands/comments.ts', load: () => import('./commands/comments.ts'), exportName: 'commentsCommands' },
   'user:add': { path: './commands/user.ts', load: () => import('./commands/user.ts'), exportName: 'user' },
   'user:list': { path: './commands/user.ts', load: () => import('./commands/user.ts'), exportName: 'user' },
+  'user:audit': { path: './commands/user.ts', load: () => import('./commands/user.ts'), exportName: 'user' },
   'unlink:core': { path: './commands/link.ts', load: () => import('./commands/link.ts'), exportName: 'link' },
   'prepublish': { path: './commands/prepublish.ts', load: () => import('./commands/prepublish.ts'), exportName: 'prepublish' },
   'projects': { path: './commands/projects.ts', load: () => import('./commands/projects.ts'), exportName: 'projects' },

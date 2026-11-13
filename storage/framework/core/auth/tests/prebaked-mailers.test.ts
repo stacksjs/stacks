@@ -394,6 +394,24 @@ describe('email verification URL template + fallback (#1944)', () => {
     expect(sent[0].to).toBe(VERIFY_EMAIL)
   })
 
+  test('the greeting is a first name, and never a name that carries a link', async () => {
+    try {
+      await db.unsafe(`UPDATE users SET name = ? WHERE id = ?`, ['Ada Lovelace', verifyId]).execute()
+      await sendVerificationEmail({ id: verifyId, email: VERIFY_EMAIL })
+      expect(lastTemplateVars?.userName).toBe('Ada')
+
+      await db.unsafe(`UPDATE users SET name = ? WHERE id = ?`, ['KAZAN 70.000 TL bonus bit.ly/3xQ', verifyId]).execute()
+      await sendVerificationEmail({ id: verifyId, email: VERIFY_EMAIL })
+      // No name at all: the template says "Hi there". It used to fall back to
+      // the stored name whole.
+      expect(lastTemplateVars?.userName).toBeUndefined()
+      expect(JSON.stringify(lastTemplateVars)).not.toContain('bit.ly')
+    }
+    finally {
+      await db.unsafe(`UPDATE users SET name = NULL WHERE id = ?`, [verifyId]).execute()
+    }
+  })
+
   test('absolute template is used as-is', async () => {
     ;(overrides as any).auth = {
       ...realAuthCaptured,
