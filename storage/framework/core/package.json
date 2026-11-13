@@ -403,7 +403,7 @@
     "@stacksjs/i18n": "0.75.568",
     "@stacksjs/cron": "0.75.568",
     "@stacksjs/sites": "0.75.568",
-    "bun-query-builder": "^0.4.1",
+    "bun-query-builder": "^0.4.2",
     "@stacksjs/desktop-build": "0.75.568"
   },
   "devDependencies": {
