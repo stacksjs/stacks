@@ -1,5 +1,5 @@
 import type { FakeHqService } from '@stacksjs/testing/hq'
-import type { HqConfig } from '@stacksjs/types'
+import type { HqServicesConfig } from '@stacksjs/types'
 import type { HqCliDeps } from '../src/hq'
 import { afterEach, describe, expect, it } from 'bun:test'
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
@@ -55,7 +55,7 @@ function harness(services: FakeHqService[], overrides: Partial<HqCliDeps> = {}):
   }
 }
 
-function configFor(...services: FakeHqService[]): HqConfig {
+function configFor(...services: FakeHqService[]): HqServicesConfig {
   return Object.fromEntries(services.map(service => [service.service, { url: service.origin }]))
 }
 
@@ -294,7 +294,7 @@ describe('buddy hq:connect', () => {
 })
 
 describe('buddy hq:status', () => {
-  function connected(service: FakeHqService): HqConfig[keyof HqConfig] {
+  function connected(service: FakeHqService): HqServicesConfig[keyof HqServicesConfig] {
     const grant = service.project('my-app')
     return { url: service.origin, readKey: grant.readKey, project: grant.project.id }
   }

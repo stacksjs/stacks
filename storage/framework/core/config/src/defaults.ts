@@ -510,38 +510,6 @@ export const defaults: StacksOptions = {
     ],
   },
 
-  // Read straight from the environment so an app that predates `config/hq.ts`
-  // still resolves its keys after `buddy hq:connect` writes them.
-  hq: {
-    bughq: {
-      url: plainEnv('BUGHQ_HOST') || 'https://bughq.org',
-      key: plainEnv('BUGHQ_KEY') || undefined,
-      readKey: plainEnv('BUGHQ_READ_KEY') || undefined,
-      project: plainEnv('BUGHQ_PROJECT_ID') || undefined,
-    },
-    loghq: {
-      url: plainEnv('LOGHQ_BASE_URL') || 'https://loghq.org',
-      key: plainEnv('LOGHQ_KEY') || undefined,
-      readKey: plainEnv('LOGHQ_READ_KEY') || undefined,
-      project: plainEnv('LOGHQ_PROJECT_ID') || undefined,
-    },
-    analyticshq: {
-      url: plainEnv('ANALYTICSHQ_URL') || 'https://analyticshq.org',
-      readKey: plainEnv('ANALYTICSHQ_READ_KEY') || undefined,
-      project: plainEnv('ANALYTICSHQ_SITE_ID') || undefined,
-    },
-    statushq: {
-      url: plainEnv('STATUSHQ_URL') || 'https://statushq.org',
-      key: plainEnv('STATUSHQ_KEY') || undefined,
-      readKey: plainEnv('STATUSHQ_READ_KEY') || undefined,
-    },
-    commshq: {
-      url: plainEnv('COMMSHQ_URL') || 'https://commshq.org',
-      key: plainEnv('COMMSHQ_KEY') || undefined,
-      readKey: plainEnv('COMMSHQ_READ_KEY') || undefined,
-    },
-  },
-
   hashing: {
     driver: 'bcrypt', // Laravel default
     rehashOnLogin: true,
@@ -791,6 +759,37 @@ export const defaults: StacksOptions = {
     stripe: {
       appId: '',
       apiKey: '',
+    },
+
+    // The HQ services. Read straight from the environment so an app whose
+    // config/services.ts predates these entries still resolves its keys after
+    // `buddy hq:connect` writes them.
+    bughq: {
+      url: plainEnv('BUGHQ_HOST') || 'https://bughq.org',
+      key: plainEnv('BUGHQ_KEY') || undefined,
+      readKey: plainEnv('BUGHQ_READ_KEY') || undefined,
+      project: plainEnv('BUGHQ_PROJECT_ID') || undefined,
+    },
+    loghq: {
+      url: plainEnv('LOGHQ_BASE_URL') || 'https://loghq.org',
+      key: plainEnv('LOGHQ_KEY') || undefined,
+      readKey: plainEnv('LOGHQ_READ_KEY') || undefined,
+      project: plainEnv('LOGHQ_PROJECT_ID') || undefined,
+    },
+    analyticshq: {
+      url: plainEnv('ANALYTICSHQ_URL') || 'https://analyticshq.org',
+      readKey: plainEnv('ANALYTICSHQ_READ_KEY') || undefined,
+      project: plainEnv('ANALYTICSHQ_SITE_ID') || undefined,
+    },
+    statushq: {
+      url: plainEnv('STATUSHQ_URL') || 'https://statushq.org',
+      key: plainEnv('STATUSHQ_KEY') || undefined,
+      readKey: plainEnv('STATUSHQ_READ_KEY') || undefined,
+    },
+    commshq: {
+      url: plainEnv('COMMSHQ_URL') || 'https://commshq.org',
+      key: plainEnv('COMMSHQ_KEY') || undefined,
+      readKey: plainEnv('COMMSHQ_READ_KEY') || undefined,
     },
   },
 

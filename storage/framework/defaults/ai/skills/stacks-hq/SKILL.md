@@ -1,6 +1,6 @@
 ---
 name: stacks-hq
-description: Use when metering usage against a plan allowance, answering the X-HQ-Usage header, mounting an HQ service's connect and usage endpoints, connecting an app with buddy hq:connect, or reading an HQ service from an app. Covers @stacksjs/hq (meter, service, client, testing), config/hq.ts and buddy hq:status.
+description: Use when metering usage against a plan allowance, answering the X-HQ-Usage header, mounting an HQ service's connect and usage endpoints, connecting an app with buddy hq:connect, or reading an HQ service from an app. Covers @stacksjs/hq (meter, service, client, testing), the HQ entries in config/services.ts and buddy hq:status.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -148,9 +148,10 @@ back with the read key. `--no-open` and `--no-verify` skip those steps, and a
 service that answers 404 on the connect route is reported as not available yet
 without failing the others.
 
-`config/hq.ts` is the one place that lists each service's URL, keys and
-project. `config/logging.ts` and `config/monitoring.ts` take their LogHQ and
-BugHQ settings from it. `buddy hq:status` prints used, limit, period and state
+`config/services.ts` lists each service's URL, keys and project, as
+`services.bughq`, `services.loghq` and so on. `config/logging.ts` and
+`config/monitoring.ts` take their LogHQ and BugHQ settings from it.
+`buddy hq:status` prints used, limit, period and state
 for every connected service, with the upgrade link from 80% of an allowance.
 
 The dashboard's Logs and Errors sections read LogHQ and BugHQ when

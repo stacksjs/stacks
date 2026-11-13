@@ -1,12 +1,12 @@
 ---
 title: "HQ skill"
-description: "Use when metering usage against a plan allowance, answering the X-HQ-Usage header, mounting an HQ service's connect and usage endpoints, connecting an app with buddy hq:connect, or reading an HQ service from an app. Covers @stacksjs/hq (meter, service, client, testing), config/hq.ts and buddy hq:status."
+description: "Use when metering usage against a plan allowance, answering the X-HQ-Usage header, mounting an HQ service's connect and usage endpoints, connecting an app with buddy hq:connect, or reading an HQ service from an app. Covers @stacksjs/hq (meter, service, client, testing), the HQ entries in config/services.ts and buddy hq:status."
 ---
 # HQ
 
 `stacks-hq` · Native Stacks · model-invoked
 
-Use when metering usage against a plan allowance, answering the X-HQ-Usage header, mounting an HQ service's connect and usage endpoints, connecting an app with buddy hq:connect, or reading an HQ service from an app. Covers @stacksjs/hq (meter, service, client, testing), config/hq.ts and buddy hq:status.
+Use when metering usage against a plan allowance, answering the X-HQ-Usage header, mounting an HQ service's connect and usage endpoints, connecting an app with buddy hq:connect, or reading an HQ service from an app. Covers @stacksjs/hq (meter, service, client, testing), the HQ entries in config/services.ts and buddy hq:status.
 
 Read the skill for the implementation workflow and its current signatures. The
 [Native capabilities](/skills/platform/native) catalog maps the package to

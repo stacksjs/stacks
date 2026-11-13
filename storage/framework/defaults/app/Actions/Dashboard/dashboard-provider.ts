@@ -218,7 +218,7 @@ export function hqUnavailableReason(result: HqUnavailable): string {
 /**
  * The client a domain's `hq` provider reads with.
  *
- * Credentials come from `config/hq.ts`, where `buddy hq:connect` put them.
+ * Credentials come from `config/services.ts`, where `buddy hq:connect` put them.
  * The domain's own `drivers.hq` settings win where set, so one section can
  * point at another project or a self-hosted instance.
  */
@@ -228,10 +228,10 @@ export async function dashboardHqClient(domain: DashboardHqDomain, options: Dash
   try {
     const { config, overridesReady } = await import('@stacksjs/config')
     await overridesReady.catch(() => {})
-    configured = config.hq?.[service]
+    configured = config.services?.[service]
   }
   catch (error) {
-    console.warn(`[dashboard/api] config.hq could not be read for ${domain}:`, error)
+    console.warn(`[dashboard/api] config.services could not be read for ${domain}:`, error)
   }
 
   return createHqClient({

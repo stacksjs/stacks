@@ -85,6 +85,18 @@ describe('config defaults', () => {
     })
   })
 
+  describe('HQ service defaults', () => {
+    test('every HQ service is a services entry with its own origin', () => {
+      // An app whose config/services.ts predates these entries reads them from
+      // here, which is how `buddy hq:status` finds the keys hq:connect wrote.
+      expect(defaults.services.bughq?.url).toMatch(/^https?:\/\//)
+      expect(defaults.services.loghq?.url).toMatch(/^https?:\/\//)
+      for (const name of ['analyticshq', 'statushq', 'commshq'] as const)
+        expect(defaults.services[name]?.url).toMatch(/^https:\/\//)
+      expect('hq' in defaults).toBe(false)
+    })
+  })
+
   describe('security defaults', () => {
     test('has firewall config', () => {
       expect(defaults.security).toBeDefined()

@@ -1,3 +1,27 @@
+/**
+ * The HQ services an application can connect to.
+ *
+ * They are separate products. Each keeps its own account, keys, plan and
+ * subscription, so every service carries its own credentials and nothing is
+ * shared between them.
+ */
+export type HqServiceName = 'bughq' | 'loghq' | 'analyticshq' | 'statushq' | 'commshq'
+
+/** One HQ service's entry in `config/services.ts`, written by `buddy hq:connect`. */
+export interface HqServiceOptions {
+  /** The service's origin, e.g. `https://loghq.org`. */
+  url: string
+  /** The key the app's SDK writes with. */
+  key?: string
+  /** The key the app's own dashboard and `buddy hq:status` read with. Server-side only. */
+  readKey?: string
+  /** The id of the project (or site) the keys were issued for. */
+  project?: string
+}
+
+/** The HQ entries of `config/services.ts`, on their own. */
+export type HqServicesConfig = Partial<Record<HqServiceName, HqServiceOptions>>
+
 export interface ServicesOptions {
   algolia?: {
     appId: string
@@ -213,6 +237,19 @@ export interface ServicesOptions {
      */
     apiVersion?: string
   }
+
+  /**
+   * HQ services. Each is its own account with its own keys, which
+   * `buddy hq:connect` writes to `.env` and `buddy hq:status` reads usage with.
+   * `config/logging.ts` and `config/monitoring.ts` take their LogHQ and BugHQ
+   * settings from these entries, and the dashboard's `hq` provider reads with
+   * their read keys.
+   */
+  bughq?: HqServiceOptions
+  loghq?: HqServiceOptions
+  analyticshq?: HqServiceOptions
+  statushq?: HqServiceOptions
+  commshq?: HqServiceOptions
 
   // supabase?: {
   //   appId: string

@@ -1,5 +1,5 @@
 import type { HqUnavailable } from '@stacksjs/hq/client'
-import type { HqConfig, HqServiceName } from '@stacksjs/types'
+import type { HqServiceName, HqServicesConfig } from '@stacksjs/types'
 import { createHqClient } from '@stacksjs/hq/client'
 
 /**
@@ -370,7 +370,7 @@ export function connectTable(outcomes: HqConnectOutcome[]): string[] {
  * Connect each service in turn. A service that fails, or has not shipped the
  * contract, never stops the ones after it; only a cancel does.
  */
-export async function runHqConnect(services: HqServiceName[], config: HqConfig, options: HqConnectOptions, deps: HqCliDeps): Promise<HqConnectResult> {
+export async function runHqConnect(services: HqServiceName[], config: HqServicesConfig, options: HqConnectOptions, deps: HqCliDeps): Promise<HqConnectResult> {
   const outcomes: HqConnectOutcome[] = []
 
   for (const service of services) {
@@ -382,7 +382,7 @@ export async function runHqConnect(services: HqServiceName[], config: HqConfig, 
 
     const url = config[service]?.url
     if (!url) {
-      outcomes.push({ service, status: 'failed', detail: 'no URL is configured in config/hq.ts', send: 'skipped', read: 'skipped' })
+      outcomes.push({ service, status: 'failed', detail: 'no URL is configured in config/services.ts', send: 'skipped', read: 'skipped' })
       continue
     }
 
@@ -446,7 +446,7 @@ export interface HqStatusRow {
 const count = (value: number): string => value.toLocaleString('en-US')
 
 /** Usage against each connected service's allowance. A service with no read key is not connected and is left out. */
-export async function runHqStatus(config: HqConfig, deps: Pick<HqCliDeps, 'fetch' | 'print'>, services: HqServiceName[] = HQ_SERVICE_NAMES): Promise<HqStatusRow[]> {
+export async function runHqStatus(config: HqServicesConfig, deps: Pick<HqCliDeps, 'fetch' | 'print'>, services: HqServiceName[] = HQ_SERVICE_NAMES): Promise<HqStatusRow[]> {
   const connected = services.filter(service => config[service]?.url && config[service]?.readKey)
   if (!connected.length) {
     deps.print('No HQ service is connected yet. Run `buddy hq:connect` to connect one.')
