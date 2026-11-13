@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.573...v0.75.574)
+
+## 🐛 Bug Fixes
+
+- **auth**: a sign-up cannot put an advert in somebody else's inbox (#3294) ([5bd8236](https://github.com/stacksjs/stacks/commit/5bd8236)) _(by Chris)_ ([#3294](https://github.com/stacksjs/stacks/issues/3294))
+- **scaffold**: deploy and preview workflows set Pantry up as the CLI only ([6981b70](https://github.com/stacksjs/stacks/commit/6981b70)) _(by Chris Breuer)_
+- **buddy**: email:test names the mailer that sends and the app it is sent from ([9558128](https://github.com/stacksjs/stacks/commit/9558128)) _(by Chris Breuer)_
+- **sites**: a page reads the host its site was resolved from, not the proxy's upstream ([4bdea3e](https://github.com/stacksjs/stacks/commit/4bdea3e)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **skills**: refresh the native catalog's retained-test counts ([2d90bd1](https://github.com/stacksjs/stacks/commit/2d90bd1)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.572...v0.75.573)
 
 ## 🐛 Bug Fixes
