@@ -1,6 +1,6 @@
 ---
 name: stacks-dashboard
-description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 428 built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
+description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 430 built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,7 +8,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Dashboard
 
-The Stacks admin dashboard provides a full-featured admin panel with 100+ route views, 428 components, and a multi-section layout.
+The Stacks admin dashboard provides a full-featured admin panel with 100+ route views, 430 components, and a multi-section layout.
 
 ## Key Paths
 - Dashboard components: `storage/framework/defaults/resources/components/Dashboard/`
@@ -821,6 +821,102 @@ as a link to it ("PrimeSoft Ltd", not `3`), under the model's name ("Team",
 not "Team ID"). The list endpoint returns the names with the rows
 (`relationNames`), one lookup per related model per page, and a record's page
 uses the same ones.
+
+### Changing a page: declare, extend, replace
+
+Three ways, cheapest first. Reach for the next one only when the one before
+cannot say it.
+
+1. **Declare.** The model's `dashboard` block: `columns`, `fields`,
+   `filters`, `actions`, `writes`. The dashboard already knows how to draw
+   these, and they survive every upgrade.
+2. **Extend.** `dashboard.regions` places a component of the app's own at a
+   named place on the framework's page. The page stays the framework's.
+3. **Replace.** A file of the same name under the app's
+   `resources/views/dashboard/` or `resources/components/Dashboard/` wins
+   over the framework's. The app owns that file from then on and gets no
+   updates to it.
+
+### A model places its own component on a page
+
+```ts
+// app/Models/Order.ts
+dashboard: {
+  regions: { recordTop: 'OrderTimeline', listBottom: 'OrderTotals' },
+}
+```
+
+| Place | Where |
+|---|---|
+| `listTop` | on the model's list, under its title (and a hosting page's stats) and above its search |
+| `listBottom` | on the model's list, under its table |
+| `recordTop` | on a record's page, under its title and above its fields |
+| `recordBottom` | on a record's page, under the panels of who points at it |
+
+Each names one component by the name its file has, under the app's
+`resources/components/Dashboard/` (any folder inside it):
+`resources/components/Dashboard/Orders/OrderTimeline.stx`. No build step and
+no registration. One per place; a component that needs several things
+composes them. It applies on `/models/{model}` and its record pages, and on
+the Users, Teams and Subscribers pages that host the list.
+
+The component is handed `model` (the slug) and `region` as plain props.
+What the page loads it reads as signals:
+
+```html
+<script client>
+import { useModelRecord } from '@stacksjs/defaults/views/dashboard/composables/useModelRecord'
+
+const { record, reload } = useModelRecord()
+const shipped = derived(() => record()?.status === 'shipped')
+</script>
+
+<Card :if="record()">
+  <p :text="shipped() ? 'Shipped' : 'Not shipped yet'"></p>
+</Card>
+```
+
+- `useModelRecord()`: `record()` is the row's values by column, null until
+  it has loaded; `details()` is everything the page was told (column
+  labels, the records it points at by name, what may be done); `model()`,
+  `id()`; `reload()` asks the page to read the record again.
+- `useModelList()`: `rows()`, `total()`, `search()`, `filters()`,
+  `model()`, `reload()`. It follows the list as it is searched, narrowed and
+  paged.
+
+How it works, and what follows from it:
+
+- A dashboard page is the same document at every address: stx draws a view
+  that has no script of its own once and serves that to all of them, and the
+  page reads its address in the browser. So the server cannot draw "this
+  model's component". `Models/ModelRegion.stx` draws the component of
+  **every** model that places one at that place
+  (`dashboardRegionEntries(place)`), each inside a `ModelRegionFor`, and
+  that mounts only the one whose model the page is showing. A component
+  written for orders never runs on a team's page.
+- So do not read `params` in a view or a component to decide what to draw:
+  it holds the first address that was asked for.
+- The page says which model it is showing through `stores/model-page.ts`,
+  before it loads anything, and clears its own when it goes. That is also
+  what the composables read, so a component never shows the record of the
+  page before.
+- **Props are fixed when the page is drawn**: `model` and `region` only. The
+  record's id, like everything else that differs by address, comes from the
+  composables (`useModelRecord().id()`).
+- `ModelRegionFor` draws the component in its own template, in the open and
+  close form. stx leaves `<component :is>` undrawn inside another
+  component's slot, and hands the self-closing form no props.
+- What a model declared reaches the server through the manifest the
+  dashboard is started with. The dev server restarts itself when a model
+  changes.
+- A place or a name that cannot be used is left out and logged once
+  (`[dashboard] Order dashboard.regions: 'sidebar' is not a place...`). A
+  name is only ever a component's (`OrderTimeline`), never a path.
+
+`tests/unit/dashboard-model-regions.test.ts` renders the shipped wrapper
+through stx and holds stx to what this depends on, so a change there fails a
+test and not an app's page. No shipped model places a component: a region is
+the app's.
 
 ### A list's filters and sort are derived, not declared
 

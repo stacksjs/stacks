@@ -47,8 +47,11 @@ describe('a page hosts the model\'s list', () => {
     // Loading sooner asked for a model named by the last part of the host's
     // own address: "No ORM model named Users".
     const script = list.slice(0, list.indexOf('</script>'))
-    expect(script).toMatch(/onMount\(\(\) => \{\n {2}void load\(\)\n\}\)\n$/)
+    // In onMount, after saying which list this is (dashboard-model-regions.test.ts).
+    expect(script).toMatch(/onMount\(\(\) => \{\n(?: {2}[^\n]*\n)*? {2}void load\(\)\n\}\)\n/)
+    // And nowhere at the top level of the script, where the prop is still empty.
     expect(script).not.toMatch(/\nvoid load\(\)\n/)
+    expect(script).not.toMatch(/\nmodelPageStore\.openList\(/)
   })
 
   it('the page puts its stats above the table, and reads them again when a record changes', () => {

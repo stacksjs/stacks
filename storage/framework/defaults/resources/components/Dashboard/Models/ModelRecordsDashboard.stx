@@ -22,6 +22,7 @@ import { dashboardLoaderTimer, dashboardReloadingClass } from '@stacksjs/default
 import type { ModelListFilter, ModelListFilterValue, ModelListFilterValues } from '@stacksjs/defaults/functions/dashboard-model-filters'
 import { modelFilterSummary, modelFiltersSet, modelListAddress } from '@stacksjs/defaults/functions/dashboard-model-filters'
 import { pushToast } from '@stacksjs/defaults/functions/toasts'
+import { modelPageStore } from '@stacksjs/defaults/views/dashboard/stores/model-page'
 
 interface ColumnMeta {
   name: string
@@ -373,6 +374,8 @@ async function load() {
     if (!sameColumns) columnMeta.set(nextColumns)
     totalCount.set(data.totalCount ?? 0)
     lastPage.set(data.lastPage ?? 1)
+    // For a component the app placed on this page: it follows the list.
+    modelPageStore.showList({ slug: slug(), rows: data.rows ?? [], total: data.totalCount ?? 0, search: search(), filters: active })
     sort.set(data.sort ?? '')
     writeCapabilities.set({ ...NO_WRITES, ...data.writeCapabilities })
     migrated.set(data.migrated !== false)
@@ -641,7 +644,15 @@ async function confirmDelete() {
 // model through a prop, and a prop is not bound until then. Loading sooner
 // asked for the model named by the last part of the host's own address.
 onMount(() => {
+  // Which list this is, before it has loaded: a component the app placed
+  // here never shows the list of the page before. Here and not sooner,
+  // because a hosting page's `model` is not bound until now.
+  modelPageStore.openList(slug(), () => { void load() })
   void load()
+})
+
+onDestroy(() => {
+  modelPageStore.closeList(slug())
 })
 </script>
 
@@ -686,8 +697,10 @@ onMount(() => {
     </div>
   </div>
 
-  <!-- What the page hosting this list puts above it: its row of stats. -->
+  <!-- What goes above the list: a hosting page's row of stats, then what the
+      model places there (`dashboard.regions.listTop`). -->
   <slot name="summary" />
+  <ModelRegion place="listTop" />
 
   <!-- Search + page size -->
   <div :if="migrated()" class="flex flex-wrap gap-3 items-center">
@@ -895,6 +908,9 @@ onMount(() => {
       </div>
     </div>
   </div>
+
+  <!-- What the model places under its list: `dashboard.regions.listBottom`. -->
+  <ModelRegion place="listBottom" />
 
   <ConfirmDialog
     :isOpen="Boolean(confirmingDelete())"
