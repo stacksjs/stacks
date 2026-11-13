@@ -752,7 +752,7 @@ forms draw them with one component, `Dashboard/Models/ModelFieldInputs`:
 | Rule | Control | Stored as |
 |---|---|---|
 | `enum` | select of its allowed values | the value |
-| `boolean` | checkbox | true or false |
+| `boolean` | switch (`Dashboard/UI/Toggle`) | true or false |
 | `number`, `integer`, `float`, `unix` | number box | a number |
 | `date` | date picker | the calendar day |
 | `timestamp`, `timestampTz`, `datetime` | date and time, in the visitor's zone | UTC `YYYY-MM-DD HH:MM:SS` (ISO for `timestampTz`) |
@@ -1444,6 +1444,36 @@ a mail outage leaves no accounts whose holders were never told, and the retry
 is not refused as a duplicate. An address that already has an account is
 refused on the email field. Drop `store` from `dashboard.writes` to turn
 inviting off.
+
+### An account's confirmed email and two-factor are switches
+
+A form asks for a model's own attributes. Whether an account's email is
+confirmed and whether it signs in with two-factor are not attributes: the
+`useAuth` trait owns those columns. They used to sit in the edit form's
+read-only panel, so confirming an address or letting someone back in who lost
+their device took a database console (stacksjs/stacks#3298).
+
+On `User`'s edit form they are switches, saved with the rest of the form:
+
+| Switch | On | Off |
+|---|---|---|
+| Email Verified | `setEmailVerified(id, true)` stamps the address as confirmed now | clears it |
+| Two Factor Enabled | never from here: only the account holder can enroll an authenticator | `disableTwoFactor(id)` removes the secret, the recovery codes and any open challenge |
+
+The rules, all in `Actions/Dashboard/Models/model-switches.ts`:
+
+- A switch is changed by the auth package's function, never by writing its
+  column. That is the reason it is not a plain boolean field.
+- A switch that turns one way only is shown disabled while it cannot be
+  turned, with the reason under it, and the server refuses the direction too.
+  A refused switch refuses the whole save: nothing else is written.
+- A value that is not a yes or a no is refused, not read as "off".
+- They ride on the model's `update` permission, like every field of the form.
+- The create form has none: a new account has nothing to turn.
+
+They are derived from the trait, not declared. A model cannot yet add a
+switch of its own for a column its own code keeps; do not fake one with a
+fillable boolean when changing the value needs more than writing it.
 
 ## Application observability
 

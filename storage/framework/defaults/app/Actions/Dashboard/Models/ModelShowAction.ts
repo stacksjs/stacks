@@ -11,6 +11,7 @@ import { applyModelFilters, type ModelFilter, type ModelFilterValue, modelFilter
 import { modelFormFields, reachableRelations } from './model-forms'
 import { isUnmigratedTable } from './model-migration'
 import { recordNames } from './model-options'
+import { modelSwitchColumns, modelSwitchFields } from './model-switches'
 import type { ModelFieldDisplay } from './model-fields'
 import { humanizeIdentifier, isErasureSubject, isValidModelSlug, type ModelCreateField, type ModelWriteCapabilities, modelColumnDisplay, modelColumnLabel, modelFieldProblems, modelListColumns, modelSchemaColumns, modelWritableColumns, modelWriteCapabilities, slugToPascal } from './model-write'
 
@@ -361,8 +362,10 @@ export default new Action({
     }
     const formFields = (): ModelCreateField[] => modelFormFields(Model, reachable)
     response.createFields = response.writeCapabilities.create ? formFields() : []
-    response.updateColumns = response.writeCapabilities.update ? modelWritableColumns(Model) : []
-    response.updateFields = response.writeCapabilities.update ? formFields() : []
+    // An edit form also has the switches a trait keeps for itself: a
+    // confirmed email, two-factor. Asked for, so no longer shown as read only.
+    response.updateColumns = response.writeCapabilities.update ? [...modelWritableColumns(Model), ...modelSwitchColumns(Model)] : []
+    response.updateFields = response.writeCapabilities.update ? [...formFields(), ...modelSwitchFields(Model)] : []
     response.displayColumns = response.columns.filter(col => !col.startsWith('_'))
     response.columnMeta = response.displayColumns.map((name) => {
       const format = modelColumnDisplay(Model, name)

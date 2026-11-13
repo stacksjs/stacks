@@ -275,6 +275,21 @@ export async function verifyEmail(userId: number, token: string): Promise<EmailV
 }
 
 /**
+ * Say whether an account's email counts as confirmed, without the emailed
+ * link: for an operator answering someone whose link never arrived, or taking
+ * back a confirmation made in error. The link's own path is `verifyEmail`.
+ *
+ * Written here and not through the model: `email_verified_at` is the auth
+ * trait's column and is not mass-assignable.
+ */
+export async function setEmailVerified(userId: number, verified: boolean): Promise<void> {
+  await db.updateTable('users')
+    .set({ email_verified_at: verified ? sqlDateTime() : null } as never)
+    .where('id', '=', userId)
+    .execute()
+}
+
+/**
  * Resend verification email with rate limiting
  */
 export async function resendVerificationEmail(user: { id: number, email: string, name?: string, email_verified_at?: string | Date | null }): Promise<EmailVerificationResult> {

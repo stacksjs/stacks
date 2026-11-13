@@ -594,6 +594,7 @@ export const actions = {
   'Actions/Dashboard/Models/model-options': '../defaults/app/Actions/Dashboard/Models/model-options.ts',
   'Actions/Dashboard/Models/model-related': '../defaults/app/Actions/Dashboard/Models/model-related.ts',
   'Actions/Dashboard/Models/model-relations': '../defaults/app/Actions/Dashboard/Models/model-relations.ts',
+  'Actions/Dashboard/Models/model-switches': '../defaults/app/Actions/Dashboard/Models/model-switches.ts',
   'Actions/Dashboard/Models/model-upload': '../defaults/app/Actions/Dashboard/Models/model-upload.ts',
   'Actions/Dashboard/Models/model-write': '../defaults/app/Actions/Dashboard/Models/model-write.ts',
   'Actions/Dashboard/Notifications/NotificationDeliveryHistoryAction': '../defaults/app/Actions/Dashboard/Notifications/NotificationDeliveryHistoryAction.ts',

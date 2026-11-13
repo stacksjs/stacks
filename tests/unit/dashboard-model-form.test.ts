@@ -40,7 +40,8 @@ describe('one set of inputs for both forms', () => {
   test('the edit endpoint describes its fields the way the create form\'s are', () => {
     const show = source('storage/framework/defaults/app/Actions/Dashboard/Models/ModelShowAction.ts')
     expect(show).toContain('response.createFields = response.writeCapabilities.create ? formFields() : []')
-    expect(show).toContain('response.updateFields = response.writeCapabilities.update ? formFields() : []')
+    // The same fields, then the switches a trait keeps for itself (stacksjs/stacks#3298).
+    expect(show).toContain('response.updateFields = response.writeCapabilities.update ? [...formFields(), ...modelSwitchFields(Model)] : []')
     const edit = source(`${components}/Models/ModelRecordEdit.stx`)
     expect(edit).toContain('const start = modelFormValues(loaded.fields, loaded.row)')
     expect(edit).toContain('const fields = modelFormPayload(current.fields, values(), initial())')

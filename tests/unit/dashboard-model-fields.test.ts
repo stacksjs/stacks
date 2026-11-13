@@ -161,6 +161,6 @@ describe('labels read as words', () => {
     const show = source('storage/framework/defaults/app/Actions/Dashboard/Models/ModelShowAction.ts')
     expect(show).not.toContain('function humanize(')
     expect(show).toContain('modelLabel: humanizeIdentifier(modelName),')
-    expect(show).toContain('response.updateFields = response.writeCapabilities.update ? formFields() : []')
+    expect(show).toContain('response.updateFields = response.writeCapabilities.update ? [...formFields(), ...modelSwitchFields(Model)] : []')
   })
 })
