@@ -31,16 +31,17 @@ describe('one set of inputs for both forms', () => {
     expect(inputs).toContain(':if="field.type === \'longtext\' || field.type === \'json\'"')
     expect(inputs).toContain(':monospace="field.type === \'json\'"')
     expect(inputs).toContain('return \'datetime-local\'')
-    // Checkbox, select, relation picker, file chooser, Markdown editor,
-    // textarea, one-line input.
+    // Switch, select, relation picker, file chooser, Markdown editor,
+    // textarea, one-line input: each is named and each shows its refusal.
     expect(inputs.match(/:name="field\.name"/g)).toHaveLength(7)
-    expect(inputs.match(/:error="error\(field\)"/g)).toHaveLength(6)
+    expect(inputs.match(/:error="error\(field\)"/g)).toHaveLength(7)
   })
 
   test('the edit endpoint describes its fields the way the create form\'s are', () => {
     const show = source('storage/framework/defaults/app/Actions/Dashboard/Models/ModelShowAction.ts')
     expect(show).toContain('response.createFields = response.writeCapabilities.create ? formFields() : []')
-    expect(show).toContain('response.updateFields = response.writeCapabilities.update ? formFields() : []')
+    // The same fields, then the switches a trait keeps for itself (stacksjs/stacks#3298).
+    expect(show).toContain('response.updateFields = response.writeCapabilities.update ? [...formFields(), ...modelSwitchFields(Model)] : []')
     const edit = source(`${components}/Models/ModelRecordEdit.stx`)
     expect(edit).toContain('const start = modelFormValues(loaded.fields, loaded.row)')
     expect(edit).toContain('const fields = modelFormPayload(current.fields, values(), initial())')

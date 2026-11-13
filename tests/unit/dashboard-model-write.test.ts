@@ -188,7 +188,7 @@ describe('dashboard generic model writes', () => {
     // Only the writable columns are inputs, and only what changed is sent.
     expect(editor).toContain('id="model-edit-form"')
     expect(editor).toContain('@submit.prevent="save"')
-    expect(editor).toContain('const writable = derived(() => record()?.fields ?? [])')
+    expect(editor).toContain('const writable = derived(() => modelFormFieldsFor(record()?.fields ?? [], initial()))')
     expect(editor).toContain('<ModelFieldInputs :fields="writable()"')
     expect(editor).toContain('modelFormPayload(current.fields, values(), initial())')
     expect(editor).toContain('record()?.writeCapabilities.update')

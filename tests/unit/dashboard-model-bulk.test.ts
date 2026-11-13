@@ -211,8 +211,9 @@ describe('the list', () => {
 
   it('draws a tick box only when there is something to do with a tick', () => {
     expect(list).toContain('const selectable = derived(() => migrated() && (bulkActions().length > 0 || writeCapabilities().destroy))')
-    // The header, the filter row and each row. There is no placeholder row to keep in step.
-    expect((list.match(/:if="selectable\(\)"/g) || []).length).toBe(3)
+    // The header and each row. There is no placeholder row, and no row of
+    // filter boxes under the headings, to keep in step.
+    expect((list.match(/:if="selectable\(\)"/g) || []).length).toBe(2)
     expect(list).toContain('aria-label="Select every row on this page"')
     expect(list).toContain(':aria-label="\'Select \' + modelName() + \' \' + row.id"')
   })

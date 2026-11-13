@@ -6,7 +6,7 @@
 // to where the visitor came from: the record's page, or the list.
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
 import type { ModelFormValues, ModelRecord } from '../../../../functions/dashboard-model-record'
-import { fetchModelRecord, modelNameFromSlug, modelFormPayload, modelFormValues, modelRecordBackHref, modelRecordHref, modelRecordListLabel, modelRecordSections, updateModelRecord } from '../../../../functions/dashboard-model-record'
+import { fetchModelRecord, modelNameFromSlug, modelFormFieldsFor, modelFormPayload, modelFormValues, modelRecordBackHref, modelRecordHref, modelRecordListLabel, modelRecordSections, updateModelRecord } from '../../../../functions/dashboard-model-record'
 import { dashboardLoaderTimer } from '../../../../functions/dashboard-loading'
 import { pushToast } from '../../../../functions/toasts'
 
@@ -42,7 +42,8 @@ const listLabel = derived(() => modelRecordListLabel(record(), listHref()))
 // Known from the address before the record comes, so the heading does not change.
 const modelName = derived(() => record()?.modelName || modelNameFromSlug(slug()))
 
-const writable = derived(() => record()?.fields ?? [])
+// As the record is stored: a switch that cannot be turned from where it is stays shown, not offered.
+const writable = derived(() => modelFormFieldsFor(record()?.fields ?? [], initial()))
 /** What cannot be changed here, formatted as the record's page shows it. */
 const context = derived(() => {
   const current = record()

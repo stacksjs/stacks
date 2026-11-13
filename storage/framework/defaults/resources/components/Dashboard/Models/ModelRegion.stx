@@ -1,0 +1,25 @@
+<script server>
+// A place on a model's page where the app may put a component of its own
+// (`dashboard.regions`): the model names the component, and it is drawn here.
+//
+// A dashboard page is the same document at every address. It is drawn once
+// and reads its address in the browser, so the server does not know which
+// model the page will be showing. It draws the component of every model that
+// places one here, each inside a ModelRegionFor, and that mounts the one for
+// the model in front of the viewer. The others are never mounted. That holds
+// on a page that hosts the list too (the Users page): the list says which
+// model it is showing, wherever it is.
+import { dashboardRegionEntries } from '@stacksjs/defaults/resources/functions/dashboard/regions'
+
+interface ModelRegionProps {
+  /** `listTop`, `listBottom`, `recordTop` or `recordBottom`. */
+  place?: string
+}
+
+const { place = '' } = defineProps<ModelRegionProps>()
+const placed = dashboardRegionEntries(place)
+</script>
+
+@foreach(placed as entry)
+<ModelRegionFor model="{{ entry.model }}" component="{{ entry.component }}" place="{{ place }}" />
+@endforeach

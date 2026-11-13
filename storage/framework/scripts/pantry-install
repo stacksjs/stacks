@@ -6,7 +6,7 @@ set -eu
 # with no change in the app: one release turned a long-unresolvable `craft`
 # entry into a hard install failure and stopped an app deploying for three days
 # (stacksjs/stacks#2919). Set PANTRY_VERSION to choose another.
-PANTRY_VERSION="${PANTRY_VERSION:-0.11.198}"
+PANTRY_VERSION="${PANTRY_VERSION:-0.11.205}"
 
 verify_pantry() {
   if ! actual=$(pantry --version 2>&1); then

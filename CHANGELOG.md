@@ -1,5 +1,69 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.572...v0.75.573)
+
+## 🐛 Bug Fixes
+
+- **bootstrap**: align Pantry default with the qualified CI toolchain ([cf52e20](https://github.com/stacksjs/stacks/commit/cf52e20)) _(by Chris Breuer)_
+- **build**: verify SDK candidates with canonical publication archives ([7eddbb5](https://github.com/stacksjs/stacks/commit/7eddbb5)) _(by Chris)_ ([#3288](https://github.com/stacksjs/stacks/issues/3288), [#3293](https://github.com/stacksjs/stacks/issues/3293))
+- **testing**: a verified Chrome copy is reused without being read again ([fa0587c](https://github.com/stacksjs/stacks/commit/fa0587c)) _(by glennmichael123)_ ([#3302](https://github.com/stacksjs/stacks/issues/3302))
+
+## 🔧 Chores
+
+- **deps**: adopt qualified shared tools and native development cohort ([0e41907](https://github.com/stacksjs/stacks/commit/0e41907)) _(by Chris Breuer)_ ([#3288](https://github.com/stacksjs/stacks/issues/3288), [#3293](https://github.com/stacksjs/stacks/issues/3293), [pantry-pm/pantry#332](https://github.com/pantry-pm/pantry/issues/332))
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+- _glennmichael123_
+
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.571...v0.75.572)
+
+## ✨ Features
+
+- **database**: no worker thread on a Bun that can wait for a statement itself ([ec600cd](https://github.com/stacksjs/stacks/commit/ec600cd)) _(by Chris)_
+- **dashboard**: content editors use the shared switch, and a test lists every checkbox left ([5d715f2](https://github.com/stacksjs/stacks/commit/5d715f2)) _(by glennmichael123)_ ([#3301](https://github.com/stacksjs/stacks/issues/3301))
+- **dashboard**: commerce dialogs ask for on/off settings with the shared switch ([6e8a297](https://github.com/stacksjs/stacks/commit/6e8a297)) _(by glennmichael123)_ ([#3301](https://github.com/stacksjs/stacks/issues/3301))
+- **dashboard**: mail, settings and recovery on/off settings are the shared switch ([99fd1de](https://github.com/stacksjs/stacks/commit/99fd1de)) _(by glennmichael123)_ ([#3301](https://github.com/stacksjs/stacks/issues/3301))
+- **dashboard**: the Users, Teams and Subscribers numbers are placed by the model ([887cf5b](https://github.com/stacksjs/stacks/commit/887cf5b)) _(by glennmichael123)_ ([#3299](https://github.com/stacksjs/stacks/issues/3299), [stacksjs/stx#2189](https://github.com/stacksjs/stx/issues/2189))
+- **dashboard**: an account's confirmed email and two-factor are switches on its edit form ([a6ab0a2](https://github.com/stacksjs/stacks/commit/a6ab0a2)) _(by glennmichael123)_ ([#3298](https://github.com/stacksjs/stacks/issues/3298))
+- **dashboard**: a form can show a switch it does not offer, and read one from a moment ([735828a](https://github.com/stacksjs/stacks/commit/735828a)) _(by glennmichael123)_ ([#3298](https://github.com/stacksjs/stacks/issues/3298))
+- **dashboard**: a yes-or-no field in a model's form is a switch ([049bad7](https://github.com/stacksjs/stacks/commit/049bad7)) _(by glennmichael123)_ ([#3297](https://github.com/stacksjs/stacks/issues/3297))
+- **dashboard**: a model's own component is drawn on its list and its record's page ([3ec65b3](https://github.com/stacksjs/stacks/commit/3ec65b3)) _(by glennmichael123)_ ([#3295](https://github.com/stacksjs/stacks/issues/3295))
+- **dashboard**: a model can name a component for a place on its pages, and a page says what it shows ([2cd19c3](https://github.com/stacksjs/stacks/commit/2cd19c3)) _(by glennmichael123)_ ([#3295](https://github.com/stacksjs/stacks/issues/3295))
+- **dashboard**: a filter panel and chips replace the row of text boxes ([6762fcf](https://github.com/stacksjs/stacks/commit/6762fcf)) _(by glennmichael123)_ ([#3296](https://github.com/stacksjs/stacks/issues/3296))
+- **dashboard**: a list's filters and sortable columns are derived from the model's fields ([76c0b43](https://github.com/stacksjs/stacks/commit/76c0b43)) _(by glennmichael123)_ ([#3296](https://github.com/stacksjs/stacks/issues/3296))
+
+## 🐛 Bug Fixes
+
+- **dashboard**: the email list dialog uses the shared switch, and a switch that is on shows it ([5497f98](https://github.com/stacksjs/stacks/commit/5497f98)) _(by glennmichael123)_ ([#3300](https://github.com/stacksjs/stacks/issues/3300), [stacksjs/stacks#3300](https://github.com/stacksjs/stacks/issues/3300))
+- **models**: four yes-or-no fields are booleans, and their writers store one ([9cd16ee](https://github.com/stacksjs/stacks/commit/9cd16ee)) _(by glennmichael123)_ ([#3300](https://github.com/stacksjs/stacks/issues/3300))
+
+## Contributors
+
+- _Chris_
+- _glennmichael123_
+
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.570...v0.75.571)
+
+## ✨ Features
+
+- **database**: a db call returns its value where it is written ([cb23d9e](https://github.com/stacksjs/stacks/commit/cb23d9e)) _(by Chris)_
+- **database**: a db call returns its value where it is written ([04dca66](https://github.com/stacksjs/stacks/commit/04dca66)) _(by Chris)_
+
+## ✅ Tests
+
+- a rejection assertion holds whether the call throws in place or rejects ([78bca93](https://github.com/stacksjs/stacks/commit/78bca93)) _(by Chris)_
+
+## ⏪ Reverts
+
+- a db call returns its value where it is written ([d082ef5](https://github.com/stacksjs/stacks/commit/d082ef5)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.569...v0.75.570)
 
 ## ✨ Features

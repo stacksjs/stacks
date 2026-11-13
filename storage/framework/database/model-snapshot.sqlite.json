@@ -5175,21 +5175,21 @@
           },
           {
             "name": "is_public",
-            "type": "integer",
+            "type": "boolean",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
             "hasDefault": true,
-            "defaultValue": 1
+            "defaultValue": true
           },
           {
             "name": "double_opt_in",
-            "type": "integer",
+            "type": "boolean",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
             "hasDefault": true,
-            "defaultValue": 1
+            "defaultValue": true
           },
           {
             "name": "created_at",
@@ -7864,12 +7864,12 @@
           },
           {
             "name": "is_approved",
-            "type": "integer",
+            "type": "boolean",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
             "hasDefault": true,
-            "defaultValue": 0
+            "defaultValue": false
           },
           {
             "name": "post_id",
@@ -8861,7 +8861,7 @@
           },
           {
             "name": "is_featured",
-            "type": "integer",
+            "type": "boolean",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
@@ -14272,7 +14272,7 @@
       }
     ]
   },
-  "hash": "1ed1c57e5c513d3f4283534c6d09db8f32f32ba0009b3b0d373dbbe2691fa86e",
+  "hash": "1cc38c5c6bc2406680db1929c1c0d3d3c59e8bbe4eff30fa1897fcfcbe8645b7",
   "dialect": "sqlite",
-  "updatedAt": "2026-11-12T03:52:03.169Z"
+  "updatedAt": "2026-11-13T16:30:27.369Z"
 }

@@ -18,14 +18,16 @@ function slugify(input: string): string {
     .replace(/-+/g, '-')
 }
 
-export function emailListCreateData(input: CreateListInput): Record<string, string | number | null> {
+export function emailListCreateData(input: CreateListInput): Record<string, string | number | boolean | null> {
   return {
     name: input.name,
     slug: input.slug ?? slugify(input.name),
     description: input.description ?? null,
     status: 'active',
-    is_public: input.isPublic === false ? 0 : 1,
-    double_opt_in: input.doubleOptIn === false ? 0 : 1,
+    // Yes unless said otherwise. Booleans, as the columns are: PostgreSQL
+    // refuses a 1 or a 0 for one.
+    is_public: input.isPublic !== false,
+    double_opt_in: input.doubleOptIn !== false,
     subscriber_count: 0,
     active_count: 0,
     unsubscribed_count: 0,

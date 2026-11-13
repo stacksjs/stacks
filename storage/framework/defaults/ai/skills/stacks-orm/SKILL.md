@@ -62,7 +62,11 @@ for (const post of Post.where('published', true).get()) titles.push(post.title)
 - **How.** SQLite runs a query in place. MySQL and Postgres run on Bun's
   driver, held by a worker thread the caller waits on, so nothing else runs on
   the calling thread while a query is in flight (the cost `bun:sqlite` always
-  had). `models: { execution: 'async' }` in `config/query-builder.ts` makes MySQL and
+  had). On a Bun whose drivers can wait for a statement themselves
+  ([stacksjs/bun](https://github.com/stacksjs/bun)) there is no worker: the
+  connection stays on the calling thread. The runtime is looked at when the
+  connection opens, the rules are the same either way, and
+  `models: { transport: 'worker' }` keeps the worker. `models: { execution: 'async' }` in `config/query-builder.ts` makes MySQL and
   Postgres calls promises again for an app that needs the event loop free
   during queries; every call then has to be awaited.
 - **The `db` query builder too.** `db.selectFrom(...).get()` is the rows and

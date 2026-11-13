@@ -145,8 +145,8 @@ export function marketingListWriteData(input: Record<string, unknown>): {
   slug: string
   description: string
   status: MarketingListStatus
-  isPublic: number
-  doubleOptIn: number
+  isPublic: boolean
+  doubleOptIn: boolean
 } {
   const name = text(input.name).trim()
   const slug = slugifyMarketingList(text(input.slug).trim() || name)
@@ -155,8 +155,8 @@ export function marketingListWriteData(input: Record<string, unknown>): {
     slug,
     description: text(input.description).trim(),
     status: status(input.status),
-    isPublic: boolean(input.isPublic ?? input.is_public) ? 1 : 0,
-    doubleOptIn: boolean(input.doubleOptIn ?? input.double_opt_in) ? 1 : 0,
+    isPublic: boolean(input.isPublic ?? input.is_public),
+    doubleOptIn: boolean(input.doubleOptIn ?? input.double_opt_in),
   }
 }
 

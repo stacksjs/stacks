@@ -54,8 +54,8 @@ function isVisible(id: string) {
   return !hiddenSections().includes(id)
 }
 
-function toggleSection(id: string, event: Event) {
-  appearance.toggleSection(id, (event.target as HTMLInputElement).checked)
+function toggleSection(id: string, visible: boolean) {
+  appearance.toggleSection(id, visible)
 }
 
 function resetAll() {
@@ -302,19 +302,16 @@ const selected = (a: unknown, b: unknown) => String(a === b)
     </div>
 
     <div class="divide-neutral-200/60 divide-y dark:divide-white/5">
-      <label :for="section in sections" class="flex gap-4 items-center justify-between px-6 py-4 hover:bg-stone-50/60 dark:hover:bg-white/[0.02] cursor-pointer">
-        <span class="min-w-0">
-          <span class="block font-medium text-neutral-900 text-sm dark:text-white">{{ section.label }}</span>
-          <span class="block mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">{{ section.count }} items</span>
-        </span>
-        <input
-          type="checkbox"
+      <div :for="section in sections" class="px-6 py-4 hover:bg-stone-50/60 dark:hover:bg-white/[0.02]">
+        <Toggle
           :checked="isVisible(section.id)"
-          @change="toggleSection(section.id, $event)"
-          class="flex-none h-4 w-4 text-blue-600 border-neutral-300 rounded focus:ring-blue-500"
-          :aria-label="'Show ' + section.label + ' section'"
-        >
-      </label>
+          :label="section.label"
+          :description="section.count + ' items'"
+          :ariaLabel="'Show ' + section.label + ' section'"
+          labelPosition="left"
+          @update:checked="toggleSection(section.id, $event)"
+        />
+      </div>
     </div>
   </Card>
 

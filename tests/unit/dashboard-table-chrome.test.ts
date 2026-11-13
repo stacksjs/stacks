@@ -47,7 +47,8 @@ describe('dashboard table chrome', () => {
     expect(records).toContain('{{ countLabel() }}')
     // Three cards fill three columns, four fill four: no hole either way.
     expect(records).toContain('<div class="grid gap-4 grid-cols-1 sm:grid-cols-3">')
-    expect(hosted).toContain(`recordsPage().cards === 3 ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-2 lg:grid-cols-4'`)
+    // The Users, Teams and Subscribers numbers, which each model places above its own list.
+    expect(read('Data/DataStatCards.stx')).toContain(`statCards().length === 3 ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-2 lg:grid-cols-4'`)
   })
 })
 

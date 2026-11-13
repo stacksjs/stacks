@@ -1,5 +1,6 @@
 // Shared Chrome executable preparation for the standalone skill and testing package.
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, renameSync, rmSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, readlinkSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, join } from 'node:path'
 import process from 'node:process'
@@ -72,8 +73,98 @@ function frameworkVersions(directory: string): { path: string, identifier: strin
   return result
 }
 
+/**
+ * The framework versions a private copy has no use for: every one that
+ * `Versions/Current` does not point at.
+ *
+ * Chrome's updater keeps the version it replaced beside the new one, for the
+ * browser that is still running it, and keeps it until that browser is
+ * relaunched. Each is some 700 MB of code. A private copy is always started
+ * fresh and only ever loads `Current`, yet every one of them was signed when
+ * the copy was made and verified again before each reuse: with two updates
+ * pending that was 2.1 GB and 20 to 28 seconds before a browser could start,
+ * which is longer than a test waits. A framework with no `Current` link is
+ * left whole, since nothing says which of its versions is the one in use.
+ */
+function supersededFrameworkVersions(directory: string): string[] {
+  const result: string[] = []
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue
+    const child = join(directory, entry.name)
+    result.push(...supersededFrameworkVersions(child))
+    const versions = join(child, 'Versions')
+    if (!entry.name.endsWith('.framework') || !existsSync(versions)) continue
+    let current: string
+    try { current = basename(readlinkSync(join(versions, 'Current'))) }
+    catch { continue }
+    if (!existsSync(join(versions, current))) continue
+    for (const version of readdirSync(versions, { withFileTypes: true })) {
+      if (version.isDirectory() && version.name !== current)
+        result.push(join(versions, version.name))
+    }
+  }
+  return result
+}
+
 function validSignature(app: string): boolean {
   return Bun.spawnSync(['codesign', '--verify', '--deep', '--strict', app], { stdout: 'pipe', stderr: 'pipe' }).exitCode === 0
+}
+
+/**
+ * What a copy looked like when its signature was last verified: every file's
+ * path, size and modification time, and every link's target, as one digest.
+ *
+ * Strict verification reads the whole bundle, about 15 seconds for one Chrome
+ * version, and every test process that started a browser paid it again for a
+ * copy nothing had touched. A copy whose files are all where they were, the
+ * size they were and as old as they were is the copy that was verified, so
+ * it is reused without being read again. Anything else, a file rewritten,
+ * removed by the temp cleaner or added, changes the digest and the copy is
+ * verified in full before it is trusted.
+ */
+function bundleFingerprint(app: string): string {
+  const lines: string[] = []
+  const walk = (directory: string, prefix: string): void => {
+    for (const entry of readdirSync(directory, { withFileTypes: true }).sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))) {
+      const path = join(directory, entry.name), relative = `${prefix}${entry.name}`
+      if (entry.isSymbolicLink()) { lines.push(`${relative}\tlink\t${readlinkSync(path)}`); continue }
+      if (entry.isDirectory()) { walk(path, `${relative}/`); continue }
+      const stat = lstatSync(path, { bigint: true })
+      lines.push(`${relative}\tfile\t${stat.size}\t${stat.mtimeNs}`)
+    }
+  }
+  walk(app, '')
+  return createHash('sha256').update(lines.join('\n')).digest('hex')
+}
+
+/** Kept beside the copy, never inside it: a file added to a bundle breaks its seal. */
+const stampOf = (app: string): string => `${app}.verified`
+const STAMP_FORMAT = 'stacks-chrome-verified-1'
+
+function verifiedUnchanged(app: string): boolean {
+  try { return readFileSync(stampOf(app), 'utf8') === `${STAMP_FORMAT}\n${bundleFingerprint(app)}\n` }
+  catch { return false }
+}
+
+/** Record that `app`, as it is now, passed strict verification. Written whole or not at all. */
+function recordVerified(app: string): void {
+  const pending = `${stampOf(app)}.${process.pid}`
+  try {
+    writeFileSync(pending, `${STAMP_FORMAT}\n${bundleFingerprint(app)}\n`)
+    renameSync(pending, stampOf(app))
+  }
+  catch {
+    // The copy is still valid without its stamp; the next run verifies it again.
+    rmSync(pending, { force: true })
+  }
+}
+
+/** A cached copy that may be launched: unchanged since it was verified, or verified now. */
+function trustedCopy(app: string): boolean {
+  if (verifiedUnchanged(app)) return true
+  if (!validSignature(app)) return false
+  recordVerified(app)
+  return true
 }
 
 /**
@@ -81,8 +172,12 @@ function validSignature(app: string): boolean {
  * module docs): `cp -cR`, the `KS*` keys deleted from `Info.plist`, its own
  * `CFBundleIdentifier`, and a complete ad-hoc signature. Every framework
  * version shares an explicit designated requirement, as required for a
- * multi-version bundle (Apple TN2206). Kept in `directory` (default a
- * per-version temp folder) and reused only after strict signature validation.
+ * multi-version bundle (Apple TN2206). Framework versions the updater kept
+ * for a browser that is still running are left out of the copy, which only
+ * ever runs the current one. Kept in `directory` (default a per-version temp
+ * folder) and reused only when it is the copy that passed strict signature
+ * validation: unchanged since, by every file's size and age, or validated
+ * again now.
  */
 export function prepareMacChrome(options: { source?: string, directory?: string } = {}): PreparedChrome {
   if (process.platform !== 'darwin') throw new Error('prepareMacChrome is for macOS; elsewhere launch Chrome as installed')
@@ -99,8 +194,11 @@ export function prepareMacChrome(options: { source?: string, directory?: string 
     .map(entry => join(directory, entry.name)).sort() : []
   for (const candidate of candidates) {
     const executable = join(candidate, 'Contents/MacOS', executableName), info = join(candidate, 'Contents/Info.plist')
+    // A copy made before superseded versions were left out still verifies,
+    // slowly. It is passed over, not removed: a browser may be running it.
     if (existsSync(executable) && plist(info, 'Print :CFBundleIdentifier').out === PRIVATE_BUNDLE_ID
-      && plist(info, 'Print :CFBundleShortVersionString').out === version && validSignature(candidate))
+      && plist(info, 'Print :CFBundleShortVersionString').out === version
+      && supersededFrameworkVersions(candidate).length === 0 && trustedCopy(candidate))
       return { executable, app: candidate, reused: true }
   }
 
@@ -122,6 +220,9 @@ export function prepareMacChrome(options: { source?: string, directory?: string 
     const stagedInfo = join(staged, 'Contents/Info.plist')
     for (const key of UPDATER_KEYS) plist(stagedInfo, `Delete :${key}`)
     run(['/usr/libexec/PlistBuddy', '-c', `Set :CFBundleIdentifier ${PRIVATE_BUNDLE_ID}`, stagedInfo], 'Renaming the Chrome bundle')
+    // Before signing, so what is left out is neither signed nor sealed into
+    // the copy. Only the clone is touched: the installed app keeps them all.
+    for (const superseded of supersededFrameworkVersions(staged)) rmSync(superseded, { recursive: true, force: true })
     const versions = frameworkVersions(staged)
     // --deep only signs the current framework version. Prepare the code in
     // every version first, then seal nested frameworks and their parents.
@@ -138,6 +239,8 @@ export function prepareMacChrome(options: { source?: string, directory?: string 
       destination = join(directory, `Chrome-${basename(staging)}.app`)
       renameSync(staged, destination)
     }
+    // Verified a moment ago, as the staged copy. Moving it changed no file.
+    recordVerified(destination)
     return { executable: join(destination, 'Contents/MacOS', executableName), app: destination, reused: false }
   }
   finally {

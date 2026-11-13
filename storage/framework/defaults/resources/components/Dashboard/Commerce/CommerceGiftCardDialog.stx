@@ -180,9 +180,15 @@ function errorMessages(): string[] {
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Customer ID</span><input x-model="customerId" type="number" min="1" step="1" placeholder="Optional" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
           <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Template ID</span><input x-model="templateId" type="text" placeholder="Optional" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
           <div class="grid gap-3 grid-cols-1 sm:col-span-2 sm:grid-cols-3">
-            <label class="flex gap-3 items-center p-3 border border-gray-200 rounded-lg dark:border-neutral-700"><input x-model="isActive" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded" /><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Enabled</span></label>
-            <label class="flex gap-3 items-center p-3 border border-gray-200 rounded-lg dark:border-neutral-700"><input x-model="isDigital" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded" /><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Digital delivery</span></label>
-            <label class="flex gap-3 items-center p-3 border border-gray-200 rounded-lg dark:border-neutral-700"><input x-model="isReloadable" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded" /><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Reloadable</span></label>
+            <div class="p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
+              <Toggle v-model:checked="isActive" label="Enabled" labelPosition="left" />
+            </div>
+            <div class="p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
+              <Toggle v-model:checked="isDigital" label="Digital delivery" labelPosition="left" />
+            </div>
+            <div class="p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
+              <Toggle v-model:checked="isReloadable" label="Reloadable" labelPosition="left" />
+            </div>
           </div>
         </div>
     </form>

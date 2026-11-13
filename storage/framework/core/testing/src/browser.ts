@@ -35,6 +35,12 @@
  * cached signatures and retains invalid copies while publishing a replacement
  * generation, so a running browser's bundle is never removed.
  *
+ * Strict verification reads the whole bundle, so it is not repeated for a
+ * copy nothing has touched: the helper leaves the updater's superseded
+ * framework versions out of the copy, and remembers a verified copy by every
+ * file's size and modification time. Reuse is then a tenth of a second where
+ * it was 20 to 28 with two updates pending (stacksjs/stacks#3302).
+ *
  * Launch it with `--use-mock-keychain` (`launch()` always does): to the
  * Keychain the clone is a new app, so its first cookie read raises a "Chrome
  * Safe Storage" prompt nobody sees, and every http page hangs behind it.

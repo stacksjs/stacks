@@ -2,7 +2,7 @@
   "name": "@stacksjs/logging",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.570",
+  "version": "0.75.573",
   "description": "The Stacks logging system.",
   "author": "Chris Breuer",
   "contributors": [
@@ -75,6 +75,6 @@
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.39"
   }
 }

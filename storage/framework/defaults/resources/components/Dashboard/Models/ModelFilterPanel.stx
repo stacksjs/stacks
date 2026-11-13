@@ -1,0 +1,166 @@
+<script client>
+// What a list can be narrowed by, each asked for in the control its kind
+// calls for: a few allowed values are picked from, a yes-or-no is yes or no,
+// a field that points at another record is that record, a date is a range
+// of days, a number a minimum and a maximum.
+//
+// The list tells this which filters there are (the server derives them from
+// the model's fields) and what each is set to; this says what was changed.
+// It holds nothing of its own, so a filter cleared from its chip is cleared
+// here too.
+//
+// Each loop is on a wrapper and not on the button itself: a loop placed on a
+// component does not hand its item to what the component wraps.
+import type { ModelFilterPreset, ModelListFilter, ModelListFilterValue, ModelListFilterValues } from '../../../../functions/dashboard-model-filters'
+import { MODEL_FILTER_PRESETS, modelFilterChosen, modelFilterDays, modelFilterPresetDays, modelFilterRange, modelFilterToggle } from '../../../../functions/dashboard-model-filters'
+
+const filters = useReactiveProp<ModelListFilter[]>('filters', [])
+const values = useReactiveProp<ModelListFilterValues>('values', {})
+const emit = defineEmits(['change'])
+
+const YES_NO = [{ value: 'true', label: 'Yes' }, { value: 'false', label: 'No' }]
+const presets = MODEL_FILTER_PRESETS
+
+const boxClass = 'block px-2 h-8 w-full min-w-0 text-[13px] text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 bg-white dark:bg-white/10 border border-black/10 rounded-md dark:border-white/15 focus:border-blue-400 focus:outline-none'
+
+function set(filter: ModelListFilter, value: ModelListFilterValue): void {
+  emit('change', { name: filter.name, value })
+}
+
+function current(filter: ModelListFilter): ModelListFilterValue | undefined {
+  return values()[filter.name]
+}
+
+function chosen(filter: ModelListFilter, option: string): boolean {
+  return modelFilterChosen(current(filter)).includes(option)
+}
+
+function toggle(filter: ModelListFilter, option: string): void {
+  set(filter, modelFilterToggle(current(filter), option))
+}
+
+/** Yes, no, or neither: pressing the one that is on turns the filter off. */
+function isAnswer(filter: ModelListFilter, answer: string): boolean {
+  return current(filter) === answer
+}
+
+function answer(filter: ModelListFilter, value: string): void {
+  set(filter, isAnswer(filter, value) ? '' : value)
+}
+
+/** The one record a relation filter is set to. */
+function record(filter: ModelListFilter): string {
+  return modelFilterChosen(current(filter))[0] ?? ''
+}
+
+function rangeKind(filter: ModelListFilter): 'date' | 'datetime' {
+  return filter.kind === 'date' ? 'date' : 'datetime'
+}
+
+function day(filter: ModelListFilter, edge: 'from' | 'to'): string {
+  return modelFilterDays(rangeKind(filter), current(filter))[edge]
+}
+
+function setDay(filter: ModelListFilter, edge: 'from' | 'to', event: Event): void {
+  const days = modelFilterDays(rangeKind(filter), current(filter))
+  days[edge] = (event.target as HTMLInputElement).value
+  set(filter, modelFilterRange(rangeKind(filter), days.from, days.to))
+}
+
+function isPreset(filter: ModelListFilter, preset: ModelFilterPreset): boolean {
+  const days = modelFilterDays(rangeKind(filter), current(filter))
+  const wanted = modelFilterPresetDays(preset)
+  return days.from === wanted.from && days.to === wanted.to
+}
+
+function usePreset(filter: ModelListFilter, preset: ModelFilterPreset): void {
+  if (isPreset(filter, preset)) {
+    set(filter, '')
+    return
+  }
+  const days = modelFilterPresetDays(preset)
+  set(filter, modelFilterRange(rangeKind(filter), days.from, days.to))
+}
+
+function amount(filter: ModelListFilter, edge: 'min' | 'max'): string {
+  const value = current(filter)
+  const number = value && typeof value !== 'string' && edge in value ? (value as { min?: number, max?: number })[edge] : undefined
+  return number === undefined ? '' : String(number)
+}
+
+function setAmount(filter: ModelListFilter, edge: 'min' | 'max', event: Event): void {
+  const typed = (event.target as HTMLInputElement).value.trim()
+  const range = { min: amount(filter, 'min'), max: amount(filter, 'max'), [edge]: typed }
+  const next: { min?: number, max?: number } = {}
+  if (range.min !== '' && Number.isFinite(Number(range.min)))
+    next.min = Number(range.min)
+  if (range.max !== '' && Number.isFinite(Number(range.max)))
+    next.max = Number(range.max)
+  set(filter, next.min === undefined && next.max === undefined ? '' : next)
+}
+
+function exact(filter: ModelListFilter): string {
+  const value = current(filter)
+  return typeof value === 'string' ? value : ''
+}
+
+function setExact(filter: ModelListFilter, event: Event): void {
+  set(filter, (event.target as HTMLInputElement).value)
+}
+</script>
+
+<div role="group" aria-label="Filters" data-filter-panel class="grid gap-x-6 gap-y-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 p-4 bg-white dark:bg-neutral-900 border border-black/8 rounded-xl dark:border-white/10">
+  <div :for="filter in filters()" class="min-w-0" :data-filter="filter.name" :data-filter-kind="filter.kind">
+    <!-- The record picker draws its own label, tied to its search box. -->
+    <p :if="filter.kind !== 'relation'" class="mb-1.5 font-medium text-[12px] text-neutral-600 dark:text-neutral-400" :text="filter.label"></p>
+
+    <div :if="filter.kind === 'choice'" class="flex flex-wrap gap-1.5">
+      <span :for="option in filter.options" class="contents">
+        <Button variant="secondary" size="xs" interaction="toggle" :pressed="chosen(filter, option.value)" @click="toggle(filter, option.value)">{{ option.label }}</Button>
+      </span>
+    </div>
+
+    <div :if="filter.kind === 'boolean'" class="flex flex-wrap gap-1.5">
+      <span :for="choice in YES_NO" class="contents">
+        <Button variant="secondary" size="xs" interaction="toggle" :pressed="isAnswer(filter, choice.value)" @click="answer(filter, choice.value)">{{ choice.label }}</Button>
+      </span>
+    </div>
+
+    <ModelRelationPicker
+      :if="filter.kind === 'relation'"
+      :slug="filter.relation ? filter.relation.slug : ''"
+      :value="record(filter)"
+      :label="filter.label"
+      @update:value="set(filter, $event)"
+    />
+
+    <div :if="filter.kind === 'date' || filter.kind === 'datetime'" class="flex flex-col gap-1.5">
+      <div class="flex gap-1.5 items-center">
+        <input type="date" :value="day(filter, 'from')" :aria-label="filter.label + ' from'" :class="boxClass" @change="setDay(filter, 'from', $event)">
+        <span class="flex-none text-[12px] text-neutral-500 dark:text-neutral-400">to</span>
+        <input type="date" :value="day(filter, 'to')" :aria-label="filter.label + ' to'" :class="boxClass" @change="setDay(filter, 'to', $event)">
+      </div>
+      <div class="flex flex-wrap gap-1.5">
+        <span :for="preset in presets" class="contents">
+          <Button variant="secondary" size="xs" interaction="toggle" :pressed="isPreset(filter, preset.name)" @click="usePreset(filter, preset.name)">{{ preset.label }}</Button>
+        </span>
+      </div>
+    </div>
+
+    <div :if="filter.kind === 'number'" class="flex gap-1.5 items-center">
+      <input type="number" inputmode="decimal" placeholder="At least" :value="amount(filter, 'min')" :aria-label="filter.label + ' at least'" :class="boxClass" @input="setAmount(filter, 'min', $event)">
+      <span class="flex-none text-[12px] text-neutral-500 dark:text-neutral-400">to</span>
+      <input type="number" inputmode="decimal" placeholder="At most" :value="amount(filter, 'max')" :aria-label="filter.label + ' at most'" :class="boxClass" @input="setAmount(filter, 'max', $event)">
+    </div>
+
+    <input
+      :if="filter.kind === 'text'"
+      type="text"
+      placeholder="Exactly"
+      :value="exact(filter)"
+      :aria-label="filter.label + ' is exactly'"
+      :class="boxClass"
+      @input="setExact(filter, $event)"
+    >
+  </div>
+</div>

@@ -37,7 +37,9 @@ export async function store(data: NewPost & { body?: string, category?: string }
       poster: data.poster,
       content,
       excerpt: data.excerpt,
-      is_featured: d.is_featured ? Date.now() : undefined,
+      // Yes or no. This stored the current time for a featured post, which
+      // read as featured by accident and is not a boolean any database takes.
+      is_featured: d.is_featured === undefined || d.is_featured === null ? undefined : Boolean(d.is_featured),
       views: data.views || 0,
       // Only published posts carry a publish date; a draft must not be stamped.
       published_at: d.published_at ?? (status === POST_STATUS_PUBLISHED ? Date.now() : undefined),

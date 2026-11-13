@@ -715,6 +715,11 @@ codesign --force --deep --sign - /tmp/chrome/Chrome.app
 `launch()` does this itself when `CHROME_PATH` is not set and the Chrome it
 found carries the updater's keys (`prepareMacChrome()`, cached per Chrome
 version in the temporary directory; `stableMacChrome: false` turns it off).
+Its copy leaves out the framework versions an updater keeps beside the
+current one, signs every version that is left, and is verified strictly once.
+After that it is reused for as long as every file in it has the size and
+modification time it was verified with, which takes about a tenth of a
+second; a copy that has changed is verified again in full before it is used.
 Run the clone with `--use-mock-keychain`, as `launch()` does: to the Keychain it
 is a new app, and its first cookie read raises a "Chrome Safe Storage" prompt
 that nobody sees, behind which every http page hangs.

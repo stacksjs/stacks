@@ -408,10 +408,22 @@ describe('the pages', () => {
     const inputs = await read(`${components}/ModelFieldInputs.stx`)
     expect(inputs).toContain('return [field.help, kind].filter(Boolean).join(\' \')')
     // The select, the relation picker, the file chooser, the Markdown editor,
-    // the text box, the line and the checkbox.
+    // the text box and the line take it as their hint.
     expect((inputs.match(/:hint="hint\(field\)"/g) || []).length).toBe(6)
-    expect(inputs).toContain('<span :if="hint(field) && !error(field)"')
+    // The switch takes it as its description, and a refused save's message with it.
+    expect(inputs).toContain(':description="hint(field)"')
+    expect(inputs).toContain(':error="error(field)"')
     expect(inputs).toContain('field.type === \'url\'')
     expect(await read(`${components}/ModelRelationPicker.stx`)).toContain('<p :if="!error() && hint()"')
+  })
+
+  // stacksjs/stacks#3297: yes or no was the one control the form wrote by hand.
+  it('yes or no is the shared switch, never a checkbox of the form\'s own', async () => {
+    const inputs = await read(`${components}/ModelFieldInputs.stx`)
+    expect(inputs).toContain('<Toggle')
+    expect(inputs).toContain(':checked="values()[field.name] === true"')
+    expect(inputs).toContain('@update:checked="change(field, $event)"')
+    expect(inputs).not.toContain('type="checkbox"')
+    expect(inputs).not.toContain('<input')
   })
 })

@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { expect, test } from 'bun:test'
@@ -265,6 +265,11 @@ for (const fixture of fixtures) {
         }
       }
       else {
+        const packer = Bun.which('pantry')
+        if (!packer) throw new Error('The canonical publication packer must be installed through Pantry setup')
+        const packerVersion = await run('canonical-packer-version', [packer, '--version'], checkout)
+        expect(packerVersion.code, packerVersion.output).toBe(0)
+        receipt.packer = { executable: await realpath(packer), sha256: hash(await readFile(packer)), version: packerVersion.output.trim() }
         const declaration = await readFile(join(source, 'dist', fixture.declaration))
         receipt.declarationSHA256 = hash(declaration)
         const cohort: Array<Record<string, unknown>> = []
@@ -274,7 +279,7 @@ for (const fixture of fixtures) {
         for (const [index, ownerDirectory] of (await frameworkBuildTargets(checkout)).entries()) {
           const owner = JSON.parse(await readFile(join(ownerDirectory, 'package.json'), 'utf8')) as { name: string }
           const candidateArchive = join(directory, `cohort-${index}.tgz`)
-          const packed = await run(`pack-cohort-${index}`, [process.execPath, '--no-env-file', 'pm', 'pack', '--filename', candidateArchive], ownerDirectory)
+          const packed = await run(`pack-cohort-${index}`, [packer, 'pack', ownerDirectory, '--ignore-scripts', '--filename', candidateArchive], checkout)
           expect(packed.code, packed.output).toBe(0)
           const bytes = new Uint8Array(await readFile(candidateArchive))
           const files = await new Bun.Archive(bytes).files()

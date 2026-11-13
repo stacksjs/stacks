@@ -2,7 +2,7 @@
   "name": "@stacksjs/testing",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.570",
+  "version": "0.75.573",
   "description": "The Stacks way of testing.",
   "author": "Chris Breuer",
   "contributors": [
@@ -109,6 +109,6 @@
   },
   "devDependencies": {
     "@dtsx/dtsx": "^0.11.54",
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.39"
   }
 }

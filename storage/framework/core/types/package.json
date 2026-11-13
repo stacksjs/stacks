@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/types",
   "type": "module",
-  "version": "0.75.570",
+  "version": "0.75.573",
   "description": "The Stacks framework types.",
   "author": "Chris Breuer",
   "contributors": [
@@ -68,13 +68,13 @@
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/stx": "^0.2.864",
     "@stacksjs/ts-validation": "^0.5.7",
-    "bun-query-builder": "^0.5.2",
+    "bun-query-builder": "^0.6.0",
     "meilisearch": "^0.62.0",
     "stripe": "23.0.0"
   },
   "devDependencies": {
     "@stacksjs/validation": "workspace:*",
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.39"
   },
   "sideEffects": false,
   "publishConfig": {

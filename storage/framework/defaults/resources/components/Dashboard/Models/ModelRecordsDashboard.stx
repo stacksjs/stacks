@@ -19,7 +19,10 @@ import { deleteModelRecords, modelBulkActionConfirm, modelBulkActionScope, model
 import type { ModelFieldDisplay, ModelFormattedValue } from '@stacksjs/defaults/functions/dashboard-model-format'
 import { modelCellDisplay, modelColumnIsNumeric } from '@stacksjs/defaults/functions/dashboard-model-format'
 import { dashboardLoaderTimer, dashboardReloadingClass } from '@stacksjs/defaults/functions/dashboard-loading'
+import type { ModelListFilter, ModelListFilterValue, ModelListFilterValues } from '@stacksjs/defaults/functions/dashboard-model-filters'
+import { modelFilterSummary, modelFiltersSet, modelListAddress } from '@stacksjs/defaults/functions/dashboard-model-filters'
 import { pushToast } from '@stacksjs/defaults/functions/toasts'
+import { modelPageStore } from '@stacksjs/defaults/views/dashboard/stores/model-page'
 
 interface ColumnMeta {
   name: string
@@ -42,6 +45,9 @@ interface ResponseShape {
   lastPage: number
   sort: string
   dir: 'asc' | 'desc'
+  /** What the list can be narrowed by, and the columns it can be ordered by. */
+  filterable?: ModelListFilter[]
+  sortable?: string[]
   writable: boolean
   writeCapabilities: ModelWriteCapabilities
   /** Rows erased under the app's data-subject rules (users only). */
@@ -71,7 +77,6 @@ const heading = useReactiveProp('heading', '')
 const description = useReactiveProp('description', '')
 const home = useReactiveProp('home', '')
 // Told when a record was deleted or acted on, so a host can read its summary again.
-const emit = defineEmits(['changed'])
 
 const modelName = state('')
 // The class name, for the one message that tells a developer what was looked for.
@@ -91,7 +96,11 @@ const sort = state('')
 const dir = state<'asc' | 'desc'>('desc')
 const search = state(navigation.urlQuery('q') || '')
 // A list opened from a record's panel arrives narrowed to that record.
-const filters = state<Record<string, string>>(modelListFilters(navigation.urlQuery('filters')))
+const filters = state<ModelListFilterValues>(modelListFilters(navigation.urlQuery('filters')))
+// What the list can be narrowed and ordered by. The server derives both from
+// the model's fields; nothing declares a filter.
+const filterable = state<ModelListFilter[]>([])
+const sortable = state<string[]>([])
 const writeCapabilities = state<ModelWriteCapabilities>(NO_WRITES)
 const error = state<string | null>(null)
 // False when the model's table has not been created yet: the server checked the
@@ -163,7 +172,20 @@ const rangeLabel = derived(() => {
   return `${from.toLocaleString()} to ${to.toLocaleString()} of ${totalCount().toLocaleString()}`
 })
 
-const activeFilterCount = derived(() => Object.values(filters()).filter(v => v !== '').length)
+const activeFilters = derived(() => modelFiltersSet(filters()))
+const activeFilterCount = derived(() => Object.keys(activeFilters()).length)
+
+/**
+ * The filters that are narrowing the list, each as a chip that says what it
+ * is set to and clears it. One the list does not offer still gets a chip (a
+ * list opened from a record's panel is narrowed by that record), so nothing
+ * narrows the list out of sight.
+ */
+const filterChips = derived(() => Object.entries(activeFilters()).map(([column, value]) => {
+  const filter = filterable().find(candidate => candidate.name === column)
+  const label = filter?.label ?? columnMeta().find(candidate => candidate.name === column)?.label ?? column
+  return { column, label, text: modelFilterSummary(filter, value, relationNames()[column] ?? {}) }
+}))
 
 const filterLabel = derived(() => {
   const n = activeFilterCount()
@@ -288,6 +310,12 @@ function headerClass(column: ColumnMeta): string {
   return `flex items-center gap-1 w-full ${align} font-medium text-[11px] uppercase tracking-wide text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors`
 }
 
+/** A heading that is not pressed: the same line of text, without the button's hover. */
+function plainHeaderClass(column: ColumnMeta): string {
+  const align = modelColumnIsNumeric(column) ? 'justify-end' : 'justify-start'
+  return `flex items-center w-full ${align} font-medium text-[11px] uppercase tracking-wide text-neutral-500 dark:text-neutral-400`
+}
+
 function sortIconClass(column: ColumnMeta): string {
   if (sort() !== column.name) return 'h-3 w-3 opacity-0 group-hover:opacity-40 i-hugeicons-arrow-up-down'
   return dir() === 'asc' ? 'h-3 w-3 i-hugeicons-arrow-up-01' : 'h-3 w-3 i-hugeicons-arrow-down-01'
@@ -312,8 +340,11 @@ async function load() {
     })
     if (sort()) params.set('sort', sort())
     if (search()) params.set('q', search())
-    const active = Object.fromEntries(Object.entries(filters()).filter(([, v]) => v !== ''))
+    const active = activeFilters()
     if (Object.keys(active).length > 0) params.set('filters', JSON.stringify(active))
+    // The address says what the list is narrowed by, so it can be sent to
+    // someone or come back to.
+    navigation.replacePath(modelListAddress(navigation.path(), search(), active))
 
     const data = await dashboardApi<ResponseShape>(`/api/dashboard/models/${encodeURIComponent(slug())}?${params}`)
 
@@ -331,6 +362,8 @@ async function load() {
     relationNames.set(data.relationNames ?? {})
     actions.set(data.actions ?? [])
     rowActions.set(data.rowActions ?? {})
+    filterable.set(data.filterable ?? [])
+    sortable.set(data.sortable ?? [])
     // The columns the model chose for its list, and any the list is filtered on.
     const every = data.columnMeta ?? []
     const shown = modelListColumnNames(every.map(column => column.name), data.listColumns, active)
@@ -340,6 +373,8 @@ async function load() {
     if (!sameColumns) columnMeta.set(nextColumns)
     totalCount.set(data.totalCount ?? 0)
     lastPage.set(data.lastPage ?? 1)
+    // For a component the app placed on this page: it follows the list.
+    modelPageStore.showList({ slug: slug(), rows: data.rows ?? [], total: data.totalCount ?? 0, search: search(), filters: active })
     sort.set(data.sort ?? '')
     writeCapabilities.set({ ...NO_WRITES, ...data.writeCapabilities })
     migrated.set(data.migrated !== false)
@@ -356,6 +391,7 @@ async function load() {
 }
 
 function toggleSort(column: ColumnMeta) {
+  if (!canSort(column)) return
   if (sort() === column.name) dir.set(dir() === 'asc' ? 'desc' : 'asc')
   else { sort.set(column.name); dir.set('asc') }
   page.set(1)
@@ -370,9 +406,22 @@ const onSearchInput = useDebounce(() => {
   void load()
 }, 250)
 
-function onFilterInput(column: string, event: Event) {
-  filters.set({ ...filters(), [column]: (event.target as HTMLInputElement).value })
+function setFilter(change: { name: string, value: ModelListFilterValue }) {
+  filters.set({ ...filters(), [change.name]: change.value })
+  // Typing a number or a value is not a query per keystroke.
   onSearchInput()
+}
+
+function clearFilter(column: string) {
+  const { [column]: _cleared, ...rest } = filters()
+  filters.set(rest)
+  page.set(1)
+  void load()
+}
+
+/** Whether pressing a column's heading orders the list by it. */
+function canSort(column: ColumnMeta): boolean {
+  return sortable().includes(column.name)
 }
 
 function clearFilters() {
@@ -466,7 +515,7 @@ async function runAction(action: ModelCustomAction, row: Record<string, unknown>
   pushToast(notice.tone, notice.title, { detail: notice.detail })
   if (!result.ok)
     return
-  emit('changed')
+  modelPageStore.listChanged(slug())
   if (result.redirect)
     navigate(result.redirect)
   else
@@ -563,7 +612,7 @@ async function runBulk(pending = confirmingBulk(), input: Record<string, unknown
   if (pending.kind === 'delete' && result.done >= rows().length && page() > 1)
     page.set(page() - 1)
   if (result.done > 0)
-    emit('changed')
+    modelPageStore.listChanged(slug())
   await load()
 }
 
@@ -579,7 +628,7 @@ async function confirmDelete() {
     // Deleting the last row of the final page would strand the viewer on an
     // empty page, so step back one.
     if (rows().length === 1 && page() > 1) page.set(page() - 1)
-    emit('changed')
+    modelPageStore.listChanged(slug())
     await load()
   }
   catch (e) {
@@ -594,7 +643,15 @@ async function confirmDelete() {
 // model through a prop, and a prop is not bound until then. Loading sooner
 // asked for the model named by the last part of the host's own address.
 onMount(() => {
+  // Which list this is, before it has loaded: a component the app placed
+  // here never shows the list of the page before. Here and not sooner,
+  // because a hosting page's `model` is not bound until now.
+  modelPageStore.openList(slug(), () => { void load() })
   void load()
+})
+
+onDestroy(() => {
+  modelPageStore.closeList(slug())
 })
 </script>
 
@@ -626,7 +683,7 @@ onMount(() => {
         <span :text="'Invite ' + oneRecord()"></span>
       </Button>
       <Button
-        :if="migrated()"
+        :if="migrated() && (filterable().length > 0 || activeFilterCount() > 0)"
         variant="secondary"
         size="sm"
         interaction="toggle"
@@ -639,8 +696,9 @@ onMount(() => {
     </div>
   </div>
 
-  <!-- What the page hosting this list puts above it: its row of stats. -->
-  <slot name="summary" />
+  <!-- What the model places above its list (`dashboard.regions.listTop`):
+      the row of stats over Users, Teams and Subscribers is one. -->
+  <ModelRegion place="listTop" />
 
   <!-- Search + page size -->
   <div :if="migrated()" class="flex flex-wrap gap-3 items-center">
@@ -673,6 +731,25 @@ onMount(() => {
         <option :for="option in PER_PAGE_OPTIONS" :value="option" :selected="option === perPage()">{{ option }}</option>
       </select>
     </div>
+  </div>
+
+  <!-- What the list can be narrowed by. -->
+  <ModelFilterPanel
+    :if="migrated() && showFilters() && filterable().length > 0"
+    :filters="filterable()"
+    :values="filters()"
+    @change="setFilter"
+  />
+
+  <!-- What is narrowing it now. Always in view, so a filtered list never looks like the whole of it. -->
+  <div :if="filterChips().length > 0" data-filter-chips class="flex flex-wrap gap-2 items-center">
+    <span :for="chip in filterChips()" class="inline-flex gap-1.5 items-center pl-2.5 pr-1 h-7 text-[12px] text-neutral-700 dark:text-neutral-200 bg-neutral-100 dark:bg-white/10 rounded-full" :data-filter-chip="chip.column">
+      <span class="font-medium" :text="chip.label + ':'"></span>
+      <span class="max-w-[16rem] truncate" :text="chip.text"></span>
+      <Button variant="ghost" size="xs" iconOnly :ariaLabel="'Clear ' + chip.label + ' filter'" @click="clearFilter(chip.column)">
+        <span aria-hidden="true" class="h-3 w-3 i-hugeicons-cancel-01"></span>
+      </Button>
+    </span>
   </div>
 
   <!-- What can be done to the ticked rows. Only there when some are ticked. -->
@@ -763,28 +840,15 @@ onMount(() => {
                 @change="toggleAllSelected()"
               />
             </th>
-            <th :for="column in columnMeta()" scope="col" class="px-3 py-2 whitespace-nowrap group">
-              <button type="button" @click="toggleSort(column)" :class="headerClass(column)">
+            <th :for="column in columnMeta()" scope="col" class="px-3 py-2 whitespace-nowrap group" :aria-sort="sort() === column.name ? (dir() === 'asc' ? 'ascending' : 'descending') : null">
+              <button :if="canSort(column)" type="button" @click="toggleSort(column)" :class="headerClass(column)">
                 <span>{{ column.label }}</span>
                 <span :class="sortIconClass(column)"></span>
               </button>
+              <!-- Prose, a structure, or another record's name: nothing a list is ordered by. -->
+              <span :if="!canSort(column)" :class="plainHeaderClass(column)">{{ column.label }}</span>
             </th>
             <th scope="col" class="right-0 sticky z-20 px-3 py-2 w-28 font-medium text-[11px] text-neutral-500 text-right tracking-wide uppercase dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-800 border-black/5 border-l dark:border-white/10">Actions</th>
-          </tr>
-
-          <!-- Per-column filter row -->
-          <tr :if="showFilters()" class="bg-white dark:bg-neutral-900">
-            <th :if="selectable()"></th>
-            <th :for="column in columnMeta()" scope="col" class="pb-2 px-2">
-              <input
-                type="text"
-                :value="filters()[column.name] || ''"
-                @input="onFilterInput(column.name, $event)"
-                :placeholder="column.label"
-                class="block px-2 py-1 w-full font-normal text-[12px] text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 bg-white dark:bg-white/10 border border-black/10 rounded-md dark:border-white/15 focus:border-blue-400 focus:outline-none"
-              >
-            </th>
-            <th class="right-0 sticky z-20 bg-white dark:bg-neutral-900 border-black/5 border-l dark:border-white/10"></th>
           </tr>
         </thead>
 
@@ -842,6 +906,9 @@ onMount(() => {
       </div>
     </div>
   </div>
+
+  <!-- What the model places under its list: `dashboard.regions.listBottom`. -->
+  <ModelRegion place="listBottom" />
 
   <ConfirmDialog
     :isOpen="Boolean(confirmingDelete())"

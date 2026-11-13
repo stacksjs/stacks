@@ -80,14 +80,12 @@
                   </select>
                 </div>
 
-                <div class="flex items-center">
-                  <input id="sendAndArchive" type="checkbox" x-model="sendAndArchive" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
-                  <label for="sendAndArchive" class="block ml-2 text-gray-700 text-sm dark:text-neutral-300">Show "Send & Archive" button in reply</label>
+                <div>
+                  <Toggle id="sendAndArchive" v-model:checked="sendAndArchive" :label="sendAndArchiveLabel" labelPosition="left" />
                 </div>
 
-                <div class="flex items-center">
-                  <input id="desktopNotifications" type="checkbox" x-model="desktopNotifications" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
-                  <label for="desktopNotifications" class="block ml-2 text-gray-700 text-sm dark:text-neutral-300">Enable desktop notifications</label>
+                <div>
+                  <Toggle id="desktopNotifications" v-model:checked="desktopNotifications" label="Enable desktop notifications" labelPosition="left" />
                 </div>
               </div>
             </div>
@@ -164,21 +162,13 @@
               <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Choose how new mailbox activity is announced on this device.</p>
 
               <div class="mt-5 space-y-4">
-                <label class="flex items-start">
-                  <input id="desktopNotificationsDelivery" type="checkbox" x-model="desktopNotifications" class="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
-                  <span class="ml-3">
-                    <span class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Desktop notifications</span>
-                    <span class="block text-gray-500 text-xs dark:text-neutral-400">Show a system notification when new mail arrives.</span>
-                  </span>
-                </label>
+                <div>
+                  <Toggle id="desktopNotificationsDelivery" v-model:checked="desktopNotifications" label="Desktop notifications" description="Show a system notification when new mail arrives." labelPosition="left" />
+                </div>
 
-                <label class="flex items-start">
-                  <input id="notificationPreview" type="checkbox" x-model="notificationPreview" class="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
-                  <span class="ml-3">
-                    <span class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Message previews</span>
-                    <span class="block text-gray-500 text-xs dark:text-neutral-400">Include sender and subject in notifications.</span>
-                  </span>
-                </label>
+                <div>
+                  <Toggle id="notificationPreview" v-model:checked="notificationPreview" label="Message previews" description="Include sender and subject in notifications." labelPosition="left" />
+                </div>
 
                 <div>
                   <label for="notificationSound" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Notification sound</label>
@@ -228,21 +218,13 @@
               <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Remote content stays blocked by default to reduce tracking and untrusted requests.</p>
 
               <div class="mt-5 space-y-4">
-                <label class="flex items-start">
-                  <input id="loadRemoteImages" type="checkbox" x-model="loadRemoteImages" class="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
-                  <span class="ml-3">
-                    <span class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Load remote images</span>
-                    <span class="block text-gray-500 text-xs dark:text-neutral-400">Allow message images hosted outside your application.</span>
-                  </span>
-                </label>
+                <div>
+                  <Toggle id="loadRemoteImages" v-model:checked="loadRemoteImages" label="Load remote images" description="Allow message images hosted outside your application." labelPosition="left" />
+                </div>
 
-                <label class="flex items-start">
-                  <input id="showExternalContent" type="checkbox" x-model="showExternalContent" class="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
-                  <span class="ml-3">
-                    <span class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Show external content</span>
-                    <span class="block text-gray-500 text-xs dark:text-neutral-400">Permit embedded content from message authors.</span>
-                  </span>
-                </label>
+                <div>
+                  <Toggle id="showExternalContent" v-model:checked="showExternalContent" label="Show external content" description="Permit embedded content from message authors." labelPosition="left" />
+                </div>
               </div>
             </div>
           </div>
@@ -309,6 +291,8 @@ const isLoading = state(true)
 const displayDensity = state<DisplayDensity>('default')
 const defaultReplyBehavior = state<ReplyBehavior>('replyAll')
 const sendAndArchive = state(true)
+// Said here because it has quotation marks of its own, which an attribute cannot hold.
+const sendAndArchiveLabel = 'Show "Send & Archive" button in reply'
 const autoAdvance = state<AutoAdvance>('newer')
 const desktopNotifications = state(true)
 const notificationSound = state<NotificationSound>('default')

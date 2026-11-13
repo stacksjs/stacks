@@ -1,0 +1,31 @@
+<script server>
+// One model's component for a place on a page (see ModelRegion). Drawn on
+// the server, where a component can be chosen by name.
+interface ModelRegionForProps {
+  /** The model that placed it, as an address has it: `social-post`. */
+  model?: string
+  /** The component's name, as its file is called: `OrderTimeline`. */
+  component?: string
+  place?: string
+}
+
+const { model = '', component = '', place = '' } = defineProps<ModelRegionForProps>()
+</script>
+
+<script client>
+// Mounted only while the page is showing its model, so a component written
+// for orders never runs on a team's page. The page says which model it is
+// showing before it loads anything (`modelPageStore`), on a record's page
+// and on a list alike.
+import { modelPageStore } from '@stacksjs/defaults/views/dashboard/stores/model-page'
+
+const forModel = useReactiveProp('model', '')
+const atPlace = useReactiveProp('place', '')
+
+const showing = derived(() => atPlace().startsWith('record') ? modelPageStore.record()?.slug ?? '' : modelPageStore.list()?.slug ?? '')
+const mounted = derived(() => forModel() !== '' && showing() === forModel())
+</script>
+
+<div :if="mounted()" data-model-region :data-region="atPlace()" :data-region-model="forModel()">
+  <component :is="component" :model="model" :region="place"></component>
+</div>

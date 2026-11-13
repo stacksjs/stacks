@@ -7,9 +7,11 @@ import { safeGet } from '../../../../resources/functions/dashboard/data'
 import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
 import { dashboardOperationalError } from '../dashboard-response'
 import { type ModelCustomAction, modelActionApplies, modelActions, publicModelAction } from './model-actions'
+import { applyModelFilters, type ModelFilter, type ModelFilterValue, modelFilters, modelSortableColumns, parseFilters, withStoredChoices } from './model-filters'
 import { modelFormFields, reachableRelations } from './model-forms'
 import { isUnmigratedTable } from './model-migration'
 import { recordNames } from './model-options'
+import { modelSwitchColumns, modelSwitchFields } from './model-switches'
 import type { ModelFieldDisplay } from './model-fields'
 import { humanizeIdentifier, isErasureSubject, isValidModelSlug, type ModelCreateField, type ModelWriteCapabilities, modelColumnDisplay, modelColumnLabel, modelFieldProblems, modelListColumns, modelSchemaColumns, modelWritableColumns, modelWriteCapabilities, slugToPascal } from './model-write'
 
@@ -17,6 +19,7 @@ import { humanizeIdentifier, isErasureSubject, isValidModelSlug, type ModelCreat
 const warnedColumns = new Set<string>()
 /** Models already told, this process, what is wrong with their `dashboard.fields`. */
 const warnedFields = new Set<string>()
+const warnedFilters = new Set<string>()
 
 /**
  * `GET /api/dashboard/models/{slug}` (stacksjs/stacks#1838).
@@ -66,7 +69,11 @@ interface ResponseShape {
   sort: string
   dir: 'asc' | 'desc'
   q: string
-  filters: Record<string, string>
+  filters: Record<string, ModelFilterValue>
+  /** What the list can be narrowed by, derived from the model's fields: see `./model-filters`. */
+  filterable: ModelFilter[]
+  /** The columns the list can be ordered by. */
+  sortable: string[]
   writable: boolean
   writeCapabilities: ModelWriteCapabilities
   createFields: ModelCreateField[]
@@ -160,40 +167,8 @@ function queryValue(request: RequestInstance, key: string, fallback = ''): strin
   return value == null ? fallback : String(value)
 }
 
-/** `filters` arrives as a JSON object so column names stay unambiguous. */
-export function parseFilters(raw: string | null): Record<string, string> {
-  if (!raw) return {}
-
-  if (raw.length > 8192)
-    throw new TypeError('Model filters must be 8 KB or smaller')
-
-  let parsed: unknown
-  try {
-    parsed = JSON.parse(raw)
-  }
-  catch (error) {
-    throw new Error(`Could not parse model filters: ${error instanceof Error ? error.message : String(error)}`)
-  }
-
-  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
-    throw new TypeError('Model filters must be a JSON object')
-
-  const entries = Object.entries(parsed)
-  if (entries.length > 50)
-    throw new TypeError('Model filters may contain at most 50 columns')
-
-  const out: Record<string, string> = {}
-  for (const [key, value] of entries) {
-    if (!/^\w+$/.test(key))
-      throw new TypeError(`Invalid model filter column "${key}"`)
-    if (value === null || value === undefined || value === '')
-      continue
-    if (typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean')
-      throw new TypeError(`Model filter "${key}" must be a scalar value`)
-    out[key] = String(value)
-  }
-  return out
-}
+// Where it used to live, and where its callers still look for it.
+export { parseFilters }
 
 export default new Action({
   name: 'Dashboard Model Show',
@@ -213,7 +188,7 @@ export default new Action({
     const requestedSort = queryValue(request, 'sort').trim()
     const dir: 'asc' | 'desc' = queryValue(request, 'dir') === 'asc' ? 'asc' : 'desc'
     const q = queryValue(request, 'q').trim()
-    let filters: Record<string, string>
+    let filters: Record<string, ModelFilterValue>
     try {
       filters = parseFilters(queryValue(request, 'filters') || null)
     }
@@ -240,6 +215,8 @@ export default new Action({
       dir,
       q,
       filters,
+      filterable: [],
+      sortable: [],
       writable: false,
       writeCapabilities: { create: false, update: false, destroy: false, invite: false, anonymize: false },
       createFields: [],
@@ -293,12 +270,25 @@ export default new Action({
       response.sort = sort
       const searchColumns = searchColumnsFor(allowed, first)
 
+      // What the list offers to be narrowed and ordered by, from the model's
+      // own fields. Read before the query: a comparison that does not suit a
+      // field (a range of days on a name) is refused, not sent to the database.
+      const offered = modelFilters(Model, response.columns)
+      offered.filters = await withStoredChoices(response.tableName, offered.filters)
+      response.filterable = offered.filters
+      response.sortable = modelSortableColumns(Model, response.columns)
+      if (offered.problems.length > 0 && !warnedFilters.has(modelName)) {
+        warnedFilters.add(modelName)
+        for (const problem of offered.problems)
+          console.warn(`[dashboard] ${modelName} dashboard.filters: ${problem}. It is left out.`)
+      }
+      const called = (column: string) => modelColumnLabel(Model, column)
+      const narrowed = applyModelFilters(Model.query() as any, filters, offered.filters, called)
+      if (narrowed.error)
+        return routerResponse.json({ message: narrowed.error }, 422)
+
       const build = () => {
-        let chain = Model.query() as any
-        for (const [column, value] of Object.entries(filters)) {
-          if (!isSafeColumn(column, allowed)) continue
-          chain = chain.where(column, value)
-        }
+        let chain = applyModelFilters(Model.query() as any, filters, offered.filters).query as any
         if (q && searchColumns.length > 0) {
           // Lowercased on both sides, so the search ignores case on every
           // dialect. A model query's whereLike is a plain LIKE, which is
@@ -372,8 +362,10 @@ export default new Action({
     }
     const formFields = (): ModelCreateField[] => modelFormFields(Model, reachable)
     response.createFields = response.writeCapabilities.create ? formFields() : []
-    response.updateColumns = response.writeCapabilities.update ? modelWritableColumns(Model) : []
-    response.updateFields = response.writeCapabilities.update ? formFields() : []
+    // An edit form also has the switches a trait keeps for itself: a
+    // confirmed email, two-factor. Asked for, so no longer shown as read only.
+    response.updateColumns = response.writeCapabilities.update ? [...modelWritableColumns(Model), ...modelSwitchColumns(Model)] : []
+    response.updateFields = response.writeCapabilities.update ? [...formFields(), ...modelSwitchFields(Model)] : []
     response.displayColumns = response.columns.filter(col => !col.startsWith('_'))
     response.columnMeta = response.displayColumns.map((name) => {
       const format = modelColumnDisplay(Model, name)
@@ -406,6 +398,13 @@ export default new Action({
     // read "3", and a record's page has its names without asking again.
     for (const [column, relation] of Object.entries(response.relations)) {
       const ids = response.rows.map(row => row[column]).filter(id => id !== null && id !== undefined && id !== '') as Array<number | string>
+      // And the records the list is narrowed by, which a list with no rows
+      // has none of: "Team: PrimeSoft Ltd" in the filter's chip, not "#1".
+      const narrowedBy = filters[column]
+      if (typeof narrowedBy === 'string')
+        ids.push(narrowedBy)
+      else if (narrowedBy && 'in' in narrowedBy)
+        ids.push(...narrowedBy.in)
       if (ids.length > 0)
         response.relationNames[column] = Object.fromEntries(await recordNames(relation.model, ids))
     }

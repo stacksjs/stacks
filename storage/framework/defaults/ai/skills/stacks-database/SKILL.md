@@ -132,7 +132,9 @@ const orderId = db.transaction((tx) => {
   behind it and is a promise whatever its own callback does. With only
   synchronous callbacks that cannot happen.
 - MySQL and Postgres run on a worker thread the caller waits on, sharing one
-  pool with the models. `models: { execution: 'async' }` in `config/query-builder.ts`
+  pool with the models. On [stacksjs/bun](https://github.com/stacksjs/bun),
+  whose drivers can wait for a statement themselves, the pool is on the calling
+  thread and there is no worker; nothing else differs. `models: { execution: 'async' }` in `config/query-builder.ts`
   gives promises back for both; every call then has to be awaited.
 
 For reads which cannot tolerate replication lag, use `db.primary.selectFrom(...)`.

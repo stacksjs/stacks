@@ -137,10 +137,9 @@ function submit(): void {
           <option :for="author in authors()" :value="author.id">{{ author.name }} ({{ author.email }})</option>
         </select>
       </label>
-      <label class="flex gap-3 items-center self-end px-3 py-2 min-h-10 bg-gray-50 dark:bg-neutral-900/60 border border-gray-200 rounded-md dark:border-neutral-700">
-        <input x-model="featured" name="featured" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded" />
-        <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Featured post</span>
-      </label>
+      <div class="self-end px-3 py-2 min-h-10 bg-gray-50 dark:bg-neutral-900/60 border border-gray-200 rounded-md dark:border-neutral-700">
+        <Toggle v-model:checked="featured" name="featured" label="Featured post" labelPosition="left" />
+      </div>
     </div>
     <label>
       <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Poster URL</span>

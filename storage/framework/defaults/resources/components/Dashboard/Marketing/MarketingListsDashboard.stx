@@ -128,10 +128,11 @@ async function saveList(payload: MarketingListPayload): Promise<void> {
       editing ? `/api/dashboard/marketing/lists/${current.id}` : '/api/dashboard/marketing/lists',
       {
         method: editing ? 'PATCH' : 'POST',
+        // Yes or no go as they are: the columns are booleans.
         body: {
           ...payload,
-          isPublic: payload.isPublic ? 1 : 0,
-          doubleOptIn: payload.doubleOptIn ? 1 : 0,
+          isPublic: Boolean(payload.isPublic),
+          doubleOptIn: Boolean(payload.doubleOptIn),
         },
       },
     )

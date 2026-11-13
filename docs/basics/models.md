@@ -368,7 +368,11 @@ A call that fails in place, such as `findOrFail` on a missing row, throws where
 it stands, so use `try`/`catch` and not `.catch()`.
 
 SQLite runs a query in place. MySQL and Postgres run it on a worker thread that
-the caller waits on, so a server process handles one query at a time. An app
+the caller waits on, so a server process handles one query at a time. On
+[stacksjs/bun](https://github.com/stacksjs/bun), a Bun whose MySQL and Postgres
+drivers can wait for a statement themselves, the connection stays on the calling
+thread and there is no worker; the framework looks at the runtime and uses what
+it has. An app
 that needs the event loop free during queries can set
 `models: { execution: 'async' }` in `config/query-builder.ts` and await every model call.
 

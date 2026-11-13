@@ -1,6 +1,6 @@
 ---
 name: stacks-dashboard
-description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 427 built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
+description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 431 built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,7 +8,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Dashboard
 
-The Stacks admin dashboard provides a full-featured admin panel with 100+ route views, 427 components, and a multi-section layout.
+The Stacks admin dashboard provides a full-featured admin panel with 100+ route views, 431 components, and a multi-section layout.
 
 ## Key Paths
 - Dashboard components: `storage/framework/defaults/resources/components/Dashboard/`
@@ -600,6 +600,41 @@ Keep semantic controls such as tabs, switches, pagination state, window
 controls, dialog backdrops, and table row menus in their dedicated components.
 They are controls, not alternate action-button styles.
 
+### On/off settings are the switch
+
+An on/off setting is `Dashboard/UI/Toggle.stx`, in a model's form and in every
+hand-built page and dialog (stacksjs/stacks#3297, #3301). Do not write a
+checkbox for one.
+
+```html
+<div class="p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
+  <Toggle v-model:checked="isActive" label="Enabled for redemption" description="Availability is stored separately from lifecycle status." labelPosition="left" />
+</div>
+```
+
+- `v-model:checked` takes a signal or a key of a reactive object
+  (`v-model:checked="drafts[field.key]"`). Where the state is read through a
+  function (`isVisible(section.id)`), bind `:checked` and take
+  `@update:checked`, which carries the new boolean.
+- `labelPosition="left"` puts the name on the left and the switch on the
+  right, the settings-row look. Without it the switch leads, which suits a
+  short option in a row of options.
+- `error` shows a refused save's message in place of the description, and
+  `disabled` dims only the track, so a reason under a switch that cannot be
+  turned stays readable.
+- **Give it a box of its own inside a `space-y-*` stack.** That utility puts
+  its margin on the component's scope wrapper, which makes no box, so a
+  switch that is a direct child loses its spacing. Wrap it in a `div`, or use
+  `flex flex-col gap-*` on the parent. The dev server says so when it sees it.
+- A label that has quotation marks of its own goes in a constant and is bound
+  with `:label`.
+
+A native checkbox is still right for what is not an on/off setting: picking
+rows, several of many (a post's tags, a token's scopes), an instruction for
+this save only ("Clear stored password"), an acknowledgement, and "remember
+me" or the terms on the sign-in forms. `tests/unit/dashboard-switch-contract.test.ts`
+lists every one by file with its reason and fails on any other.
+
 ### Sidebar-aware overlays
 
 The desktop sidebar is fixed and publishes its current width through
@@ -752,7 +787,7 @@ forms draw them with one component, `Dashboard/Models/ModelFieldInputs`:
 | Rule | Control | Stored as |
 |---|---|---|
 | `enum` | select of its allowed values | the value |
-| `boolean` | checkbox | true or false |
+| `boolean` | switch (`Dashboard/UI/Toggle`) | true or false |
 | `number`, `integer`, `float`, `unix` | number box | a number |
 | `date` | date picker | the calendar day |
 | `timestamp`, `timestampTz`, `datetime` | date and time, in the visitor's zone | UTC `YYYY-MM-DD HH:MM:SS` (ISO for `timestampTz`) |
@@ -821,6 +856,205 @@ as a link to it ("PrimeSoft Ltd", not `3`), under the model's name ("Team",
 not "Team ID"). The list endpoint returns the names with the rows
 (`relationNames`), one lookup per related model per page, and a record's page
 uses the same ones.
+
+### Changing a page: declare, extend, replace
+
+Three ways, cheapest first. Reach for the next one only when the one before
+cannot say it.
+
+1. **Declare.** The model's `dashboard` block: `columns`, `fields`,
+   `filters`, `actions`, `writes`. The dashboard already knows how to draw
+   these, and they survive every upgrade.
+2. **Extend.** `dashboard.regions` places a component of the app's own at a
+   named place on the framework's page. The page stays the framework's.
+3. **Replace.** A file of the same name under the app's
+   `resources/views/dashboard/` or `resources/components/Dashboard/` wins
+   over the framework's. The app owns that file from then on and gets no
+   updates to it.
+
+### A model places its own component on a page
+
+```ts
+// app/Models/Order.ts
+dashboard: {
+  regions: { recordTop: 'OrderTimeline', listBottom: 'OrderTotals' },
+}
+```
+
+| Place | Where |
+|---|---|
+| `listTop` | on the model's list, under its title and above its search |
+| `listBottom` | on the model's list, under its table |
+| `recordTop` | on a record's page, under its title and above its fields |
+| `recordBottom` | on a record's page, under the panels of who points at it |
+
+Each names one component by the name its file has, under the app's
+`resources/components/Dashboard/` (any folder inside it):
+`resources/components/Dashboard/Orders/OrderTimeline.stx`. No build step and
+no registration. One per place; a component that needs several things
+composes them. It applies on `/models/{model}` and its record pages, and on
+the Users, Teams and Subscribers pages that host the list.
+
+A shipped model does the same with a shipped component, which is the one
+place this framework uses a region of its own: `User`, `Team` and
+`Subscriber` each put `Data/DataStatCards.stx`, their row of numbers, at
+`listTop` (stacksjs/stacks#3299). In this repository a region's component
+lives under `storage/framework/defaults/resources/components/Dashboard/`,
+never in the root `resources/`.
+
+The component is handed `model` (the slug) and `region` as plain props.
+What the page loads it reads as signals:
+
+```html
+<script client>
+import { useModelRecord } from '@stacksjs/defaults/views/dashboard/composables/useModelRecord'
+
+const { record, reload } = useModelRecord()
+const shipped = derived(() => record()?.status === 'shipped')
+</script>
+
+<Card :if="record()">
+  <p :text="shipped() ? 'Shipped' : 'Not shipped yet'"></p>
+</Card>
+```
+
+- `useModelRecord()`: `record()` is the row's values by column, null until
+  it has loaded; `details()` is everything the page was told (column
+  labels, the records it points at by name, what may be done); `model()`,
+  `id()`; `reload()` asks the page to read the record again.
+- `useModelList()`: `rows()`, `total()`, `search()`, `filters()`,
+  `model()`, `reload()`. It follows the list as it is searched, narrowed and
+  paged. `changes()` goes up each time the list changes a record (a delete,
+  a bulk run that did something, one of the model's actions) and not when it
+  is searched or paged: watch it to read numbers of your own again.
+
+**Start in `onMount`, stop in `onDestroy`.** A placed component's script
+runs on every model page that has its place, whether or not the component is
+put on that page. Only `onMount` and `onDestroy` belong to the page it is
+actually on. So:
+
+```html
+<script client>
+import { useModelList } from '@stacksjs/defaults/views/dashboard/composables/useModelList'
+
+const { changes } = useModelList()
+let stop: (() => void) | null = null
+
+onMount(() => {
+  void load()
+  let seen = changes()
+  stop = effect(() => {
+    if (changes() === seen)
+      return
+    seen = changes()
+    void load()
+  })
+})
+onDestroy(() => stop?.())
+</script>
+```
+
+An `effect` or a request at the top of the script runs for other models'
+pages too and is never stopped: the stat cards, written that way, asked for
+users' and subscribers' numbers each time a team was deleted, once more for
+every page visited (stacksjs/stx#2189). `state`, `derived` and functions at
+the top are fine; they do nothing until read.
+
+How it works, and what follows from it:
+
+- A dashboard page is the same document at every address: stx draws a view
+  that has no script of its own once and serves that to all of them, and the
+  page reads its address in the browser. So the server cannot draw "this
+  model's component". `Models/ModelRegion.stx` draws the component of
+  **every** model that places one at that place
+  (`dashboardRegionEntries(place)`), each inside a `ModelRegionFor`, and
+  that puts on the page only the one whose model the page is showing. A
+  component written for orders is never shown or mounted on a team's page.
+  Its script is still set up there, which is why its work starts in
+  `onMount` (above).
+- So do not read `params` in a view or a component to decide what to draw:
+  it holds the first address that was asked for.
+- The page says which model it is showing through `stores/model-page.ts`,
+  before it loads anything, and clears its own when it goes. That is also
+  what the composables read, so a component never shows the record of the
+  page before.
+- **Props are fixed when the page is drawn**: `model` and `region` only. The
+  record's id, like everything else that differs by address, comes from the
+  composables (`useModelRecord().id()`).
+- `ModelRegionFor` draws the component in its own template, in the open and
+  close form. stx leaves `<component :is>` undrawn inside another
+  component's slot, and hands the self-closing form no props.
+- What a model declared reaches the server through the manifest the
+  dashboard is started with. The dev server restarts itself when a model
+  changes.
+- A place or a name that cannot be used is left out and logged once
+  (`[dashboard] Order dashboard.regions: 'sidebar' is not a place...`). A
+  name is only ever a component's (`OrderTimeline`), never a path.
+
+`tests/unit/dashboard-model-regions.test.ts` renders the shipped wrapper
+through stx and holds stx to what this depends on, so a change there fails a
+test and not an app's page. It also holds every shipped model's region to a
+shipped component that exists and starts its work in `onMount`.
+
+### A list's filters and sort are derived, not declared
+
+Nothing declares a filter. `Models/model-filters.ts` reads which filters a
+list offers from what the model already says:
+
+| Signal | Where | Decides |
+|---|---|---|
+| What the field is | its validation rule | whether it is a filter, and its control |
+| What results are narrowed by | `traits.useSearch.filterable` | offered first; a number or a line of text is only a filter when named here |
+| What is private | `hidden` | never offered, and never sortable |
+
+| Field | Asked for as |
+|---|---|
+| A few allowed values (`schema.enum`) | pick any of them |
+| Yes or no (`schema.boolean`) | Yes / No |
+| `belongsTo` | the record picker the forms use |
+| A date or a moment | two days, and Today / Last 7 days / This month |
+| A number the model names | at least / at most |
+| Text the model names | chosen from the values the table holds when there are 20 or fewer (`withStoredChoices`, remembered for 30 seconds), else an exact value |
+
+Prose and structures are searched, not filtered. A filter is what the model
+says the field is, never a guess from its name: a yes-or-no declared
+`schema.number()` is a number range until the model says `schema.boolean()`.
+
+```ts
+dashboard: { filters: ['status', 'team', 'createdAt'] }
+```
+
+names and orders them instead, in the vocabulary `dashboard.columns` uses (an
+attribute, a column, or a `belongsTo`). An empty list means no filters. A
+name that cannot be used is left out and logged once.
+
+On the page (`Models/ModelFilterPanel.stx`) the Filter button opens a panel
+of those controls. What narrows the list is always shown as chips ("Channel:
+Email, SMS"), each with a clear button, and is written to the address
+(`modelListAddress`), so a narrowed list can be sent to someone.
+
+On the wire, `filters` is a JSON object by column:
+
+| Value | Means | For |
+|---|---|---|
+| `"3"` | exactly this | any column the page is sent (what a record's panel links with) |
+| `{ "in": ["a", "b"] }` | any of these | a choice, a relation, named text |
+| `{ "from": "...", "to": "..." }` | from, up to | a date (days, both included) or a moment (instants, end not included) |
+| `{ "min": 1, "max": 9 }` | between | a number the model names |
+
+Each is checked against the field's kind and refused with a 422 in words
+before the database is asked ("Channel is not a date, so it has no range of
+days."). For a moment the page sends where the viewer's first day starts and
+where the day after their last one does (`modelFilterRange`), so "the 5th" is
+the viewer's 5th.
+
+The response carries `filterable` (the filters) and `sortable` (the columns a
+heading orders by). Any stored value can be sorted. Prose, structures and
+columns that point at another record cannot: the cell shows that record's
+name, and ordering by its id would look random. Their headings are plain.
+
+Not built: filters that are not one column ("Overdue"), saved views, and
+ordering a relation column by the related record's name.
 
 ### A model says how a field is called, shown and asked for
 
@@ -1218,12 +1452,19 @@ labels, formats and actions on the model's `dashboard` block, not on the page.
 The list takes four props when it is hosted: `model` (the slug, instead of the
 last part of the address), `heading`, `description`, and `home` (where its
 create, invite, view and edit links lead, so `/data/users/7` and not
-`/models/user/7`). It has a `summary` slot above the search, where the page
-puts its stat cards, and it emits `changed` after a delete, a bulk run that
-did something, or one of the model's actions, so the page reads its numbers
-again. The numbers come from the page's old endpoint asked for them alone:
-`GET /api/dashboard/users?only=stats` reads no rows (`statsOnly(request)` in
-`Data/data-records.ts`; `fetchDashboardStats(mode)` on the client).
+`/models/user/7`). The hosting page adds nothing else.
+
+The row of numbers above each list is the model's, not the page's: `User`,
+`Team` and `Subscriber` place `Data/DataStatCards.stx` at
+`dashboard.regions.listTop`, so the numbers are on `/data/users` and on
+`/models/user` alike (stacksjs/stacks#3299). They used to be written into
+the hosting page and handed to the list through a `summary` slot, which is
+gone. After a delete, a bulk run that did something, or one of the model's
+actions, the list tells the page store (`modelPageStore.listChanged`) and the
+cards read their numbers again. The numbers come from the page's old endpoint
+asked for them alone: `GET /api/dashboard/users?only=stats` reads no rows
+(`statsOnly(request)` in `Data/data-records.ts`; `fetchDashboardStats(mode)`
+on the client).
 
 Two stx behaviours shape this, and both fail silently:
 
@@ -1233,9 +1474,9 @@ Two stx behaviours shape this, and both fail silently:
   address ("No ORM model named Users").
 - What a page puts in another component's slot is read against that
   component's names first. A `page` in the hosting page was the list's page
-  number and the first card read "Total undefined". The hosting page's names
-  are deliberately its own (`recordsPage`, `pageStats`, `loadPageStats`);
-  `tests/unit/dashboard-data-pages.test.ts` fails if one collides.
+  number and the first stat card read "Total undefined". The hosting page
+  now puts nothing in a slot of the list, and
+  `tests/unit/dashboard-data-pages.test.ts` fails if it does again.
 
 A status-like column (`status`, `role`, `state`, ... : `MODEL_BADGE_COLUMNS`)
 is a pill in a list as it is on a record's page, both drawn by
@@ -1288,6 +1529,36 @@ a mail outage leaves no accounts whose holders were never told, and the retry
 is not refused as a duplicate. An address that already has an account is
 refused on the email field. Drop `store` from `dashboard.writes` to turn
 inviting off.
+
+### An account's confirmed email and two-factor are switches
+
+A form asks for a model's own attributes. Whether an account's email is
+confirmed and whether it signs in with two-factor are not attributes: the
+`useAuth` trait owns those columns. They used to sit in the edit form's
+read-only panel, so confirming an address or letting someone back in who lost
+their device took a database console (stacksjs/stacks#3298).
+
+On `User`'s edit form they are switches, saved with the rest of the form:
+
+| Switch | On | Off |
+|---|---|---|
+| Email Verified | `setEmailVerified(id, true)` stamps the address as confirmed now | clears it |
+| Two Factor Enabled | never from here: only the account holder can enroll an authenticator | `disableTwoFactor(id)` removes the secret, the recovery codes and any open challenge |
+
+The rules, all in `Actions/Dashboard/Models/model-switches.ts`:
+
+- A switch is changed by the auth package's function, never by writing its
+  column. That is the reason it is not a plain boolean field.
+- A switch that turns one way only is shown disabled while it cannot be
+  turned, with the reason under it, and the server refuses the direction too.
+  A refused switch refuses the whole save: nothing else is written.
+- A value that is not a yes or a no is refused, not read as "off".
+- They ride on the model's `update` permission, like every field of the form.
+- The create form has none: a new account has nothing to turn.
+
+They are derived from the trait, not declared. A model cannot yet add a
+switch of its own for a column its own code keeps; do not fake one with a
+fillable boolean when changing the value needs more than writing it.
 
 ## Application observability
 

@@ -2,7 +2,7 @@
   "name": "@stacksjs/feature-flags",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.570",
+  "version": "0.75.573",
   "description": "Typed, scoped feature flags for Stacks applications.",
   "author": "Chris Breuer",
   "contributors": [
@@ -63,6 +63,6 @@
   },
   "devDependencies": {
     "@stacksjs/query-builder": "workspace:*",
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.39"
   }
 }

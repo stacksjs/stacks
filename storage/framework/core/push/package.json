@@ -2,7 +2,7 @@
   "name": "@stacksjs/push",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.570",
+  "version": "0.75.573",
   "description": "The Stacks Push integration",
   "author": "Chris Breuer",
   "contributors": [
@@ -61,6 +61,6 @@
   },
   "devDependencies": {
     "@stacksjs/error-handling": "workspace:*",
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.39"
   }
 }

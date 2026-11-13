@@ -453,6 +453,20 @@ export interface DashboardModelField {
 }
 
 /**
+ * Where on a model's pages an app component can be placed
+ * (`dashboard.regions`):
+ *
+ * - `listTop`: on the model's list, under its title and above its search.
+ * - `listBottom`: on the model's list, under its table.
+ * - `recordTop`: on a record's page, under its title and above its fields.
+ * - `recordBottom`: on a record's page, under everything else.
+ */
+export type DashboardModelRegionName = 'listTop' | 'listBottom' | 'recordTop' | 'recordBottom'
+
+/** The component drawn at each place, by its name: `OrderTimeline`. */
+export type DashboardModelRegions = Partial<Record<DashboardModelRegionName, string>>
+
+/**
  * Something an operator can do to one record beyond creating, editing and
  * deleting it, as a button the dashboard draws: "Mark as shipped".
  *
@@ -626,6 +640,38 @@ export interface DashboardModelOptions {
    * and filtered on. A name the table does not have is ignored and logged.
    */
   columns?: string[]
+
+  /**
+   * The fields this model's list can be narrowed by, in order.
+   *
+   * Left out, the list derives them: a field with a few allowed values, a
+   * yes-or-no, a `belongsTo` and a date are each a filter, and so is anything
+   * `useSearch.filterable` names. Name them here to choose and order them
+   * instead, as `columns` names columns: an attribute (`createdAt`), a column
+   * (`created_at`), or a `belongsTo` (`team` for `team_id`). An empty list
+   * means the list has no filters.
+   *
+   * How each is asked for follows what the field is and is not said here. A
+   * name that is not a field, or is prose or a structure, is left out and
+   * logged.
+   */
+  filters?: string[]
+
+  /**
+   * Components of the app's own to draw on this model's pages, by where.
+   *
+   * ```ts
+   * regions: { recordTop: 'OrderTimeline', listBottom: 'OrderTotals' }
+   * ```
+   *
+   * Each names a component under the app's `resources/components/Dashboard/`
+   * (`OrderTimeline.stx`), which is placed on the framework's page without
+   * the app copying the page. See {@link DashboardModelRegions} for the
+   * places, and `useModelRecord()` / `useModelList()` for what the component
+   * can read. It is mounted only on this model's pages. A name that is not a
+   * component's is left out and logged.
+   */
+  regions?: DashboardModelRegions
 
   /**
    * What an operator may do to this model's rows from the dashboard: create

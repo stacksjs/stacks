@@ -12,6 +12,7 @@ import type { ModelCustomAction, ModelRecord, ModelRelatedPanel } from '../../..
 import { deleteModelRecord, fetchModelRecord, fetchModelRelated, modelActionAsks, modelActionIconClass, modelActionNotice, modelDeleteNotice, modelDeleteWarning, modelNameFromSlug, modelRecordBackHref, modelRecordEditHref, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRecordTitle, runModelAction } from '../../../../functions/dashboard-model-record'
 import { dashboardLoaderTimer, dashboardReloadingClass } from '../../../../functions/dashboard-loading'
 import { pushToast } from '../../../../functions/toasts'
+import { modelPageStore } from '@stacksjs/defaults/views/dashboard/stores/model-page'
 
 const navigation = useNavigation()
 const record = state<ModelRecord | null>(null)
@@ -72,11 +73,14 @@ async function loadRecord(): Promise<void> {
   try {
     const loaded = await fetchModelRecord(slug(), recordId())
     record.set(loaded)
+    // For a component the app placed on this page: it follows the record.
+    modelPageStore.showRecord(slug(), recordId(), loaded)
     // Not awaited, and a page whose panels cannot be read is still the record's page.
     void fetchModelRelated(slug(), recordId()).then(panels => related.set(panels)).catch(() => related.set([]))
   }
   catch (error) {
     record.set(null)
+    modelPageStore.showRecord(slug(), recordId(), null)
     related.set([])
     loadError.set(error instanceof Error ? error.message : 'This record could not be loaded.')
   }
@@ -172,8 +176,16 @@ function submitAction(input: Record<string, unknown>): void {
     void runAction(action, input)
 }
 
+// Said before anything is loaded: which record this page is for, so a
+// component the app placed here never shows the record of the page before.
+modelPageStore.openRecord(slug(), recordId(), () => { void loadRecord() })
+
 onMount(() => {
   void loadRecord()
+})
+
+onDestroy(() => {
+  modelPageStore.closeRecord(slug(), recordId())
 })
 </script>
 
@@ -199,6 +211,9 @@ onMount(() => {
       <Button :if="canEdit()" variant="primary" @click="editRecord">Edit</Button>
     </div>
   </header>
+
+  <!-- What the model places above its record: `dashboard.regions.recordTop`. -->
+  <ModelRegion place="recordTop" />
 
   <QuietLoader :if="loading() && !record()" :slow="slow()" label="Loading record" />
 
@@ -253,6 +268,9 @@ onMount(() => {
     :from="selfHref()"
     @changed="reloadRelated"
   />
+
+  <!-- What the model places under its record: `dashboard.regions.recordBottom`. -->
+  <ModelRegion place="recordBottom" />
 
   <ConfirmDialog
     :isOpen="confirmingDelete()"

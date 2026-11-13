@@ -11,6 +11,8 @@ const liveLabelPosition = useReactiveProp('labelPosition', 'right' as ToggleLabe
 const liveName = useReactiveProp('name', '')
 const liveId = useReactiveProp('id', '')
 const liveAriaLabel = useReactiveProp('ariaLabel', '')
+// What a refused save said about this switch. Shown in place of the description.
+const liveError = useReactiveProp('error', '')
 const emit = defineEmits(['update:checked', 'change'])
 const generatedId = useId('toggle')
 
@@ -31,31 +33,31 @@ const checkedTranslations: Record<ToggleSize, string> = {
 }
 
 const toggleId = derived(() => liveId() || generatedId)
-const hasCopy = derived(() => Boolean(liveLabel() || liveDescription()))
+const hasCopy = derived(() => Boolean(liveLabel() || liveDescription() || liveError()))
 const wrapperClass = derived(() => [
   'flex items-center gap-3',
   liveLabelPosition() === 'left' ? 'flex-row-reverse justify-end' : '',
-  liveDisabled() ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
+  // Only the track dims: what a switch that cannot be turned says under it still has to be read.
+  liveDisabled() ? 'cursor-not-allowed' : 'cursor-pointer',
 ].join(' '))
 const trackClass = derived(() => [
   trackSizes[liveSize()] || trackSizes.md,
   'relative inline-flex shrink-0 rounded-full transition-colors duration-150',
-  'focus-within:ring-2 focus-within:ring-blue-500/40',
+  'peer-focus-visible:ring-2 peer-focus-visible:ring-blue-500/40',
   liveChecked() ? 'bg-green-500' : 'bg-black/15 dark:bg-white/20',
   liveDisabled() ? 'opacity-40' : '',
 ].join(' '))
 const thumbClass = derived(() => [
   thumbSizes[liveSize()] || thumbSizes.md,
-  'pointer-events-none inline-block translate-x-0.5 rounded-full bg-white shadow-sm transition-transform duration-150 ease-in-out',
-  liveChecked() ? checkedTranslations[liveSize()] || checkedTranslations.md : '',
+  'pointer-events-none inline-block rounded-full bg-white shadow-sm transition-transform duration-150 ease-in-out',
+  // One position or the other, never both: with both on the thumb, which won
+  // was the order the page's stylesheet happened to list them in, and on
+  // some pages a switch that was on kept its thumb on the left.
+  liveChecked() ? checkedTranslations[liveSize()] || checkedTranslations.md : 'translate-x-0.5',
 ].join(' '))
 const labelClass = derived(() => [
   'text-[13px] font-medium tracking-tight',
-  liveDisabled() ? 'text-neutral-500 dark:text-neutral-600' : 'text-neutral-700 dark:text-neutral-200',
-].join(' '))
-const descriptionClass = derived(() => [
-  'mt-0.5 text-[12px]',
-  liveDisabled() ? 'text-neutral-300 dark:text-neutral-600' : 'text-neutral-500 dark:text-neutral-400',
+  liveDisabled() ? 'text-neutral-500 dark:text-neutral-400' : 'text-neutral-700 dark:text-neutral-200',
 ].join(' '))
 
 function handleChange(event: Event): void {
@@ -72,7 +74,8 @@ function handleChange(event: Event): void {
     role="switch"
     :name="liveName() || null"
     :aria-label="liveAriaLabel() || liveLabel() || 'Toggle'"
-    class="sr-only"
+    :aria-invalid="liveError() ? 'true' : null"
+    class="sr-only peer"
     x-model="liveChecked"
     :disabled="liveDisabled()"
     @change="handleChange"
@@ -84,6 +87,7 @@ function handleChange(event: Event): void {
 
   <span :if="hasCopy()" class="flex-1 min-w-0">
     <span :if="liveLabel()" class="block" :class="labelClass()" :text="liveLabel()"></span>
-    <span :if="liveDescription()" class="block" :class="descriptionClass()" :text="liveDescription()"></span>
+    <span :if="liveDescription() && !liveError()" class="block mt-0.5 text-[12px] text-neutral-500 dark:text-neutral-400" :text="liveDescription()"></span>
+    <span :if="liveError()" role="alert" class="block mt-0.5 text-[12px] text-red-600 dark:text-red-400" :text="liveError()"></span>
   </span>
 </label>

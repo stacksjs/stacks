@@ -27,6 +27,8 @@ interface DashboardModelOptionsLite {
   section?: string
   roles?: string[]
   description?: string
+  /** The app components the model places on its pages; read by `./regions`. */
+  regions?: unknown
 }
 
 export interface DiscoveredModel {

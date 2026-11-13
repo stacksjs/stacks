@@ -477,6 +477,20 @@ describe('dashboard native STX bindings', () => {
     expect(toggle).toContain('role="switch"')
     expect(toggle).toContain("emit('update:checked', checked)")
     expect(toggle).toContain("useId('toggle')")
+    // The input sits beside the track, not inside it: a ring asked for with
+    // `focus-within` on the track could never show (stacksjs/stacks#3297).
+    expect(toggle).toContain('class="sr-only peer"')
+    expect(toggle).toContain('peer-focus-visible:ring-2')
+    expect(toggle).not.toContain('focus-within')
+    // A refused save's message takes the description's place.
+    expect(toggle).toContain('<span :if="liveDescription() && !liveError()"')
+    expect(toggle).toContain('<span :if="liveError()" role="alert"')
+    expect(toggle).toContain(':aria-invalid="liveError() ? \'true\' : null"')
+    // The thumb is given one position, never both: with both, which one won was
+    // the order of the page's stylesheet, and a switch that was on could keep
+    // its thumb on the left (stacksjs/stacks#3300).
+    expect(toggle).toContain('liveChecked() ? checkedTranslations[liveSize()] || checkedTranslations.md : \'translate-x-0.5\'')
+    expect(toggle).not.toContain('inline-block translate-x-0.5')
     expect(toggle).not.toContain('Math.random')
 
     const textarea = componentSource('UI/Textarea.stx')
@@ -1138,6 +1152,9 @@ describe('dashboard native STX bindings', () => {
     expect(page).toContain('x-model="query"')
     expect(page).toContain('x-model="drafts[field.key]"')
     expect(page).toContain('x-model.number="drafts[field.key]"')
+    // A yes or no is the shared switch, bound to its draft the same way.
+    expect(page).toContain('v-model:checked="drafts[field.key]"')
+    expect(page).not.toContain('type="checkbox"')
     expect(page).toContain('<div :for="field in fields"')
     expect(page).toContain("@if(field.type === 'boolean' && field.editable)")
     expect(page).toContain('@elseif(field.editable)')

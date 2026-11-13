@@ -99,6 +99,12 @@ export interface ModelCreateField {
   help?: string
   /** For an `upload`: the kinds of file that may be chosen. */
   accept?: string
+  /**
+   * A yes or no a trait keeps for itself, changed by a function of its own
+   * and not by writing its column (`./model-switches`): the one way it can
+   * be turned, when it has only one, and what is said while it cannot be.
+   */
+  switch?: { only?: 'off' | 'on', lockedHelp?: string }
 }
 
 export interface PreparedModelFields {

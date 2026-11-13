@@ -1,7 +1,7 @@
 {
   "name": "stacks-server",
   "type": "module",
-  "version": "0.75.570",
+  "version": "0.75.573",
   "description": "The Stacks server.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -47,7 +47,7 @@
     "build": "bun build.ts"
   },
   "devDependencies": {
-    "better-dx": "^0.2.24",
+    "better-dx": "^0.2.39",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/router": "workspace:*",

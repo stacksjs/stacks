@@ -54,7 +54,7 @@ export default new Action({
             poster: payload.poster,
             status: payload.status,
             author_id: payload.authorId,
-            is_featured: payload.featured ? 1 : 0,
+            is_featured: Boolean(payload.featured),
             published_at: publishedAtFor(payload.status, existing.published_at, timestamp()),
             updated_at: timestamp(),
           } as any)
