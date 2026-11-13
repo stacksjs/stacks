@@ -138,9 +138,17 @@ export interface ModelCreateField {
   help?: string
   /** For an `upload`: the kinds of file that may be chosen, as a file input's `accept` spells them. */
   accept?: string
+  /**
+   * A yes or no the application keeps for itself (a confirmed email,
+   * two-factor), offered as a switch: the one way it can be turned, when it
+   * has only one, and what is said under it while it cannot be.
+   */
+  switch?: { only?: 'off' | 'on', lockedHelp?: string }
+  /** Shown but not to be changed: a switch that cannot be turned from where it is. */
+  disabled?: boolean
 }
 
-/** What a form holds for each field: a checkbox's state, or an input's text. */
+/** What a form holds for each field: a switch's state, or an input's text. */
 export type ModelFormValues = Record<string, string | boolean>
 
 export interface ModelCreateForm {
@@ -444,6 +452,9 @@ function localMoment(stored: unknown): string {
  * of braces in plain text boxes.
  */
 export function modelFieldInputValue(field: ModelCreateField, stored: unknown): string | boolean {
+  // A switch reads yes from whatever marks it: a moment that is set, a true, a one.
+  if (field.switch)
+    return !(stored === null || stored === undefined || stored === false || stored === 0 || stored === '' || stored === '0' || stored === 'false')
   if (field.type === 'boolean')
     return stored === true || stored === 1 || stored === '1' || stored === 'true'
   if (stored === null || stored === undefined || stored === '')
@@ -496,6 +507,21 @@ export function modelFormValues(fields: ModelCreateField[], row?: Record<string,
     field.name,
     modelFieldInputValue(field, row ? row[modelFieldColumn(field.name)] ?? row[field.name] : field.defaultValue),
   ]))
+}
+
+/**
+ * The form's fields for a record as it is stored. A switch that can only be
+ * turned one way is shown but not offered once it is already there:
+ * two-factor can be turned off for someone, never on. It then says why
+ * instead of what turning it would do.
+ */
+export function modelFormFieldsFor(fields: ModelCreateField[], stored: ModelFormValues): ModelCreateField[] {
+  return fields.map((field) => {
+    const only = field.switch?.only
+    if (!only || (stored[field.name] === true) === (only === 'off'))
+      return field
+    return { ...field, disabled: true, ...(field.switch?.lockedHelp ? { help: field.switch.lockedHelp } : {}) }
+  })
 }
 
 /**

@@ -65,7 +65,7 @@ function change(field: ModelCreateField, value: string | boolean): void {
         :label="field.label"
         :description="hint(field)"
         :error="error(field)"
-        :disabled="disabled()"
+        :disabled="disabled() || field.disabled === true"
         labelPosition="left"
         @update:checked="change(field, $event)"
       />

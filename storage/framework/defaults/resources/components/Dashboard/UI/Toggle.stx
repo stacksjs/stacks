@@ -37,7 +37,8 @@ const hasCopy = derived(() => Boolean(liveLabel() || liveDescription() || liveEr
 const wrapperClass = derived(() => [
   'flex items-center gap-3',
   liveLabelPosition() === 'left' ? 'flex-row-reverse justify-end' : '',
-  liveDisabled() ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
+  // Only the track dims: what a switch that cannot be turned says under it still has to be read.
+  liveDisabled() ? 'cursor-not-allowed' : 'cursor-pointer',
 ].join(' '))
 const trackClass = derived(() => [
   trackSizes[liveSize()] || trackSizes.md,
@@ -53,11 +54,7 @@ const thumbClass = derived(() => [
 ].join(' '))
 const labelClass = derived(() => [
   'text-[13px] font-medium tracking-tight',
-  liveDisabled() ? 'text-neutral-500 dark:text-neutral-600' : 'text-neutral-700 dark:text-neutral-200',
-].join(' '))
-const descriptionClass = derived(() => [
-  'mt-0.5 text-[12px]',
-  liveDisabled() ? 'text-neutral-300 dark:text-neutral-600' : 'text-neutral-500 dark:text-neutral-400',
+  liveDisabled() ? 'text-neutral-500 dark:text-neutral-400' : 'text-neutral-700 dark:text-neutral-200',
 ].join(' '))
 
 function handleChange(event: Event): void {
@@ -87,7 +84,7 @@ function handleChange(event: Event): void {
 
   <span :if="hasCopy()" class="flex-1 min-w-0">
     <span :if="liveLabel()" class="block" :class="labelClass()" :text="liveLabel()"></span>
-    <span :if="liveDescription() && !liveError()" class="block" :class="descriptionClass()" :text="liveDescription()"></span>
+    <span :if="liveDescription() && !liveError()" class="block mt-0.5 text-[12px] text-neutral-500 dark:text-neutral-400" :text="liveDescription()"></span>
     <span :if="liveError()" role="alert" class="block mt-0.5 text-[12px] text-red-600 dark:text-red-400" :text="liveError()"></span>
   </span>
 </label>
