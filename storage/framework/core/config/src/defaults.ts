@@ -791,6 +791,10 @@ export const defaults: StacksOptions = {
       key: plainEnv('COMMSHQ_KEY') || undefined,
       readKey: plainEnv('COMMSHQ_READ_KEY') || undefined,
     },
+    reportshq: {
+      url: plainEnv('REPORTSHQ_URL') || 'https://reportshq.org',
+      license: plainEnv('REPORTSHQ_LICENSE') || undefined,
+    },
   },
 
   filesystems: {

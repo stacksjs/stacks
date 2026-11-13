@@ -93,6 +93,9 @@ describe('config defaults', () => {
       expect(defaults.services.loghq?.url).toMatch(/^https?:\/\//)
       for (const name of ['analyticshq', 'statushq', 'commshq'] as const)
         expect(defaults.services[name]?.url).toMatch(/^https:\/\//)
+      // ReportsHQ is embedded: a licence checked offline, no keys.
+      expect(defaults.services.reportshq?.url).toBe('https://reportshq.org')
+      expect(defaults.services.reportshq?.readKey).toBeUndefined()
       expect('hq' in defaults).toBe(false)
     })
   })

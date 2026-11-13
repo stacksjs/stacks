@@ -14,8 +14,8 @@ import { createHqClient } from '@stacksjs/hq/client'
 
 export interface HqServiceDescriptor {
   label: string
-  /** The `.env` names `hq:connect` writes this service's grant to. */
-  env: { key?: string, readKey?: string, project?: string }
+  /** The `.env` names `hq:connect` writes this service's grant to, and the one a licence is read from. */
+  env: { key?: string, readKey?: string, project?: string, license?: string }
   /** What `hq:connect` sends and reads back to prove the keys work. */
   verify?: 'log' | 'error'
 }
@@ -26,6 +26,9 @@ export const HQ_SERVICES: Record<HqServiceName, HqServiceDescriptor> = {
   analyticshq: { label: 'AnalyticsHQ', env: { readKey: 'ANALYTICSHQ_READ_KEY', project: 'ANALYTICSHQ_SITE_ID' } },
   statushq: { label: 'StatusHQ', env: { key: 'STATUSHQ_KEY', readKey: 'STATUSHQ_READ_KEY' } },
   commshq: { label: 'CommsHQ', env: { key: 'COMMSHQ_KEY', readKey: 'COMMSHQ_READ_KEY' } },
+  // ReportsHQ runs inside the app and has no keys or meters. Its licence is
+  // checked offline, so `hq:status` reads it from config and calls nothing.
+  reportshq: { label: 'ReportsHQ', env: { license: 'REPORTSHQ_LICENSE' } },
 }
 
 export const HQ_SERVICE_NAMES = Object.keys(HQ_SERVICES) as HqServiceName[]
@@ -445,10 +448,27 @@ export interface HqStatusRow {
 
 const count = (value: number): string => value.toLocaleString('en-US')
 
+/** ReportsHQ's own key shape: `rhq_lic_` and 32 hex characters. The same check its package makes. */
+const REPORTSHQ_LICENSE = /^rhq_lic_[0-9a-f]{32}$/
+
+/**
+ * Where a ReportsHQ licence stands, without a network call and without
+ * showing the key. Shape only: whether a licence is current is a question
+ * ReportsHQ deliberately never asks a server.
+ */
+export function describeReportsHqLicense(license: string | undefined): string {
+  if (!license)
+    return 'unlicensed. Reports work in full; set REPORTSHQ_LICENSE to remove the notice'
+  return REPORTSHQ_LICENSE.test(license)
+    ? 'licensed (checked offline, nothing is metered)'
+    : 'the licence key is not in the expected format. Reports are unaffected'
+}
+
 /** Usage against each connected service's allowance. A service with no read key is not connected and is left out. */
 export async function runHqStatus(config: HqServicesConfig, deps: Pick<HqCliDeps, 'fetch' | 'print'>, services: HqServiceName[] = HQ_SERVICE_NAMES): Promise<HqStatusRow[]> {
   const connected = services.filter(service => config[service]?.url && config[service]?.readKey)
-  if (!connected.length) {
+  const license = services.includes('reportshq') ? config.reportshq?.license : undefined
+  if (!connected.length && !license) {
     deps.print('No HQ service is connected yet. Run `buddy hq:connect` to connect one.')
     return []
   }
@@ -481,6 +501,9 @@ export async function runHqStatus(config: HqServicesConfig, deps: Pick<HqCliDeps
       })
     }
   }
+
+  if (license)
+    rows.push({ service: 'reportshq', unavailable: describeReportsHqLicense(license) })
 
   const table = renderTable(
     ['Service', 'Meter', 'Used', 'Limit', 'Period', 'State'],

@@ -154,6 +154,12 @@ without failing the others.
 `buddy hq:status` prints used, limit, period and state
 for every connected service, with the upgrade link from 80% of an allowance.
 
+ReportsHQ is the odd one out: it runs inside the app against the app's own
+database, so it has no ingest or read key and meters nothing. Its entry is
+`services.reportshq` with a `license` from `REPORTSHQ_LICENSE`, which
+`buddy hq:status` checks offline (shape only) and never prints. It has no
+connect route, so `buddy hq:connect reportshq` reports it as not available yet.
+
 The dashboard's Logs and Errors sections read LogHQ and BugHQ when
 `config/dashboard.ts` sets `providers.logs` or `providers.errors` to
 `{ driver: 'hq' }`.

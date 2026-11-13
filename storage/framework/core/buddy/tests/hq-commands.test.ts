@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createFakeHqService, fakeHqFetch } from '@stacksjs/testing/hq'
 import { writeEnvEntries } from '../src/commands/hq'
-import { resolveHqServices, runHqConnect, runHqStatus } from '../src/hq'
+import { describeReportsHqLicense, resolveHqServices, runHqConnect, runHqStatus } from '../src/hq'
 import { getCommandNames } from '../src/lazy-commands'
 
 /**
@@ -161,6 +161,18 @@ describe('buddy hq:connect', () => {
     expect(statushq.requests()).toEqual(['POST /api/cli/connect'])
   })
 
+  it('treats ReportsHQ, which has no connect route, like any service that is not available yet', async () => {
+    const reportshq = createFakeHqService({ service: 'reportshq', contract: false })
+    const h = harness([reportshq])
+
+    const result = await runHqConnect(['reportshq'], configFor(reportshq), OPTIONS, h.deps)
+
+    expect(result.ok).toBe(true)
+    expect(result.outcomes[0]).toMatchObject({ service: 'reportshq', status: 'unavailable' })
+    expect(h.output()).toContain('ReportsHQ: not available yet')
+    expect(h.env).toEqual({})
+  })
+
   it('reports a service that cannot be reached and one whose code expired', async () => {
     const loghq = createFakeHqService({ service: 'loghq' })
     const h = harness([loghq], {
@@ -244,7 +256,7 @@ describe('buddy hq:connect', () => {
   it('names the services it knows when asked for one it does not', () => {
     expect(resolveHqServices([])).toEqual({ services: ['bughq', 'loghq'] })
     expect(resolveHqServices(['LogHQ', 'loghq'])).toEqual({ services: ['loghq'] })
-    expect(resolveHqServices(['sentry'])).toEqual({ error: 'Unknown service: sentry. Choose from bughq, loghq, analyticshq, statushq, commshq.' })
+    expect(resolveHqServices(['sentry'])).toEqual({ error: 'Unknown service: sentry. Choose from bughq, loghq, analyticshq, statushq, commshq, reportshq.' })
   })
 
   describe('writing .env', () => {
@@ -344,6 +356,26 @@ describe('buddy hq:status', () => {
       { service: 'statushq', unavailable: 'not available yet' },
     ])
     expect(h.output()).toMatch(/StatusHQ\s+not available yet/)
+  })
+
+  it('reports a ReportsHQ licence offline, without a request and without showing the key', async () => {
+    // ReportsHQ runs inside the app. It has no keys to read usage with and
+    // meters nothing, so its line comes from config alone.
+    const license = `rhq_lic_${'0123456789abcdef'.repeat(2)}`
+    const h = harness([])
+
+    const rows = await runHqStatus({ reportshq: { url: 'https://down.test', license } }, h.deps)
+
+    expect(rows).toEqual([{ service: 'reportshq', unavailable: 'licensed (checked offline, nothing is metered)' }])
+    expect(h.output()).toMatch(/ReportsHQ\s+licensed \(checked offline, nothing is metered\)/)
+    expect(h.output()).not.toContain(license)
+
+    const malformed = harness([])
+    await runHqStatus({ reportshq: { url: 'https://reportshq.org', license: 'pasted-the-wrong-thing' } }, malformed.deps)
+    expect(malformed.output()).toContain('the licence key is not in the expected format')
+    expect(malformed.output()).not.toContain('pasted-the-wrong-thing')
+
+    expect(describeReportsHqLicense(undefined)).toContain('unlicensed. Reports work in full')
   })
 
   it('tells an app with nothing connected how to connect', async () => {

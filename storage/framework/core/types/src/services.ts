@@ -5,7 +5,7 @@
  * subscription, so every service carries its own credentials and nothing is
  * shared between them.
  */
-export type HqServiceName = 'bughq' | 'loghq' | 'analyticshq' | 'statushq' | 'commshq'
+export type HqServiceName = 'bughq' | 'loghq' | 'analyticshq' | 'statushq' | 'commshq' | 'reportshq'
 
 /** One HQ service's entry in `config/services.ts`, written by `buddy hq:connect`. */
 export interface HqServiceOptions {
@@ -17,6 +17,12 @@ export interface HqServiceOptions {
   readKey?: string
   /** The id of the project (or site) the keys were issued for. */
   project?: string
+  /**
+   * ReportsHQ only. It runs inside the app against the app's own database, so
+   * it has no ingest or read key: its one credential is a licence key, checked
+   * offline and never sent anywhere.
+   */
+  license?: string
 }
 
 /** The HQ entries of `config/services.ts`, on their own. */
@@ -250,6 +256,7 @@ export interface ServicesOptions {
   analyticshq?: HqServiceOptions
   statushq?: HqServiceOptions
   commshq?: HqServiceOptions
+  reportshq?: HqServiceOptions
 
   // supabase?: {
   //   appId: string
