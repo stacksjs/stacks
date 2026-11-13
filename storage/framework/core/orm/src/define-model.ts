@@ -1,4 +1,4 @@
-import { createModel, type OrmModelDefinition as BQBModelDefinition, type OrmModelStatic, registerModel, settle, wait } from '@stacksjs/query-builder'
+import { createModel, type OrmModelDefinition as BQBModelDefinition, type OrmModelStatic, registerModel, settle, wait, waitAll } from '@stacksjs/query-builder'
 import type { InferRelationNames } from '@stacksjs/query-builder'
 import type { Faker } from '@stacksjs/faker'
 import type { ApiMiddleware, DashboardModelOptions, SearchEngineSearchParams, SearchFilter, SearchOptions } from '@stacksjs/types'
@@ -47,7 +47,14 @@ function eventsAreSuppressed(): boolean {
  * ```
  */
 export function withoutEvents<T>(fn: () => T | Promise<T>): Promise<T> {
-  return Promise.resolve(eventSuppression.run({ suppressed: true }, fn as () => Promise<T>))
+  // A promise whatever `fn` does: a write inside may answer in place and may
+  // throw in place, and the caller of this was promised a promise.
+  try {
+    return Promise.resolve(eventSuppression.run({ suppressed: true }, fn as () => Promise<T>))
+  }
+  catch (error) {
+    return Promise.reject(error)
+  }
 }
 
 /**
@@ -76,7 +83,14 @@ function validationIsSuppressed(): boolean {
  * ```
  */
 export function withoutValidation<T>(fn: () => T | Promise<T>): Promise<T> {
-  return Promise.resolve(validationSuppression.run({ suppressed: true }, fn as () => Promise<T>))
+  // A promise whatever `fn` does: a write inside may answer in place and may
+  // throw in place, and the caller of this was promised a promise.
+  try {
+    return Promise.resolve(validationSuppression.run({ suppressed: true }, fn as () => Promise<T>))
+  }
+  catch (error) {
+    return Promise.reject(error)
+  }
 }
 
 /**
@@ -474,6 +488,8 @@ type MutableModelDefinition = Omit<ModelDefinition, 'set'> & {
   set?: ModelDefinition['set']
   /** Trait method bags, attached by the trait installers. */
   __traitMethods?: unknown
+  /** Stamped by `defineModel`: whether this model's writes wait (see `modelWritesWait`). */
+  __writesWait?: boolean
 }
 
 interface WrappedModelInstance {
@@ -489,16 +505,50 @@ interface WrappedModelInstance {
   set?: (_key: string, _value: unknown) => unknown
 }
 
+/** Whether a model declares `set:` hooks. */
+function hasSetters(definition: object): boolean {
+  const set = (definition as { set?: unknown }).set
+  return Boolean(set) && typeof set === 'object' && Object.keys(set as object).length > 0
+}
+
+/** The traits whose work a write has to wait for: events, the search index, broadcasts, the soft-delete, audit and activity rows. */
+const WAITING_TRAITS = ['observe', 'useSearch', 'broadcastOn', 'useSoftDeletes', 'softDeletable', 'useAudit', 'useActivityLog'] as const
+
 /**
- * A write, as the promise a Stacks write has always been.
+ * Whether a model's writes have something to wait for.
  *
- * A read returns its value where it is written. A write does not, on any
- * model: it runs setters, validation, encryption and lifecycle events, and
- * whether one of those waits depends on the model and on what is listening.
- * The query builder underneath returns a plain value when none of them did,
- * so without this a write would be a promise on one model and a row on the
- * next, and `Model.create(data).then(...)` would work or throw accordingly.
- * Here it is one thing: a promise, with a failure as its rejection.
+ * A read returns its value where it is written, on every model. A write does
+ * too, unless the model asks for work around it that can take a turn: a
+ * lifecycle event or a search index update (listeners and the index are
+ * reached asynchronously), a broadcast, an audit or activity row, a soft
+ * delete (each goes through the query builder, which answers with a promise),
+ * a `set:` hook (which may hash a password), or a hook of the model's own.
+ *
+ * It is decided from what the model declares, not from what happens to run,
+ * so the answer is the same for every write on the model and the types can
+ * give it too: `ModelWritesWait<TDef>` reads the same declarations. A model
+ * that declares none of these writes in place, `const post =
+ * Post.create(data)`, and one that declares any of them returns a promise
+ * from every write, whether or not this one had to wait.
+ */
+export function modelWritesWait(definition: object): boolean {
+  const traits = (definition as { traits?: Record<string, unknown> }).traits
+  if (traits) {
+    for (const trait of WAITING_TRAITS) {
+      const value = traits[trait]
+      if (value !== undefined && value !== null && value !== false) return true
+    }
+  }
+  if (hasSetters(definition)) return true
+  const hooks = (definition as { hooks?: unknown }).hooks
+  return Boolean(hooks) && typeof hooks === 'object'
+}
+
+/**
+ * A write on a model whose writes wait (see {@link modelWritesWait}): always
+ * a promise, with a failure as its rejection, so `Model.create(data).then(...)`
+ * means the same thing on every such model whether or not a listener happened
+ * to be registered.
  */
 function promisedWrite<R>(run: () => R): Promise<Awaited<R>> {
   try {
@@ -509,7 +559,12 @@ function promisedWrite<R>(run: () => R): Promise<Awaited<R>> {
   }
 }
 
-/** Instance methods that write, and so answer with a promise (see {@link promisedWrite}). */
+/** A write as its model returns it: a promise where the model's writes wait, the value where they do not. */
+function writeResult<R>(waits: boolean, run: () => R): R | Promise<Awaited<R>> {
+  return waits ? promisedWrite(run) : run()
+}
+
+/** Instance methods that write (see {@link writeResult}). */
 const INSTANCE_WRITES: Record<string, true> = Object.assign(Object.create(null), { update: true, delete: true, forceDelete: true })
 
 /**
@@ -594,13 +649,13 @@ function wrapModelInstance<T extends object>(
             const original = def.set
             def.set = {}
             try {
-              return promisedWrite(() => keepWrapped(target.save(), rawTarget, recv))
+              return writeResult(Boolean(target._definition?.__writesWait), () => keepWrapped(target.save(), rawTarget, recv))
             }
             finally {
               def.set = original
             }
           }
-          return promisedWrite(() => keepWrapped(target.save(), rawTarget, recv))
+          return writeResult(Boolean(target._definition?.__writesWait), () => keepWrapped(target.save(), rawTarget, recv))
         }
       }
 
@@ -631,13 +686,13 @@ function wrapModelInstance<T extends object>(
             const original = def.set
             def.set = {}
             try {
-              return promisedWrite(() => keepWrapped(target.save(), rawTarget, recv))
+              return writeResult(Boolean(target._definition?.__writesWait), () => keepWrapped(target.save(), rawTarget, recv))
             }
             finally {
               def.set = original
             }
           }
-          return promisedWrite(() => keepWrapped(target.save(), rawTarget, recv))
+          return writeResult(Boolean(target._definition?.__writesWait), () => keepWrapped(target.save(), rawTarget, recv))
         }
       }
 
@@ -769,7 +824,7 @@ function wrapModelInstance<T extends object>(
       const v = Reflect.get(target, prop, target)
       if (typeof v === 'function' && typeof prop === 'string' && INSTANCE_WRITES[prop]) {
         return function (...args: unknown[]) {
-          return promisedWrite(() => keepWrapped((v as (...inner: unknown[]) => unknown).apply(target, args), rawTarget, recv))
+          return writeResult(Boolean(target._definition?.__writesWait), () => keepWrapped((v as (...inner: unknown[]) => unknown).apply(target, args), rawTarget, recv))
         }
       }
       return typeof v === 'function' ? v.bind(target) : v
@@ -905,7 +960,7 @@ const PAGINATE_ADAPTERS: Record<string, (r: any) => any> = {
 }
 const STACKS_QB_PROXY_TAG = Symbol.for('stacks.queryBuilderProxy')
 
-function finalizeQueryResult(result: any, propName: string, casts?: Record<string, CastType | CasterInterface>): any {
+function finalizeQueryResult(result: any, propName: string, casts?: Record<string, CastType | CasterInterface>, waits = false): any {
   if (QB_TERMINATORS[propName]) {
     if (Array.isArray(result)) return result.map(item => wrapModelInstance(item, casts))
     // Convert bun-query-builder's pagination shape after wrapping its rows.
@@ -922,11 +977,11 @@ function finalizeQueryResult(result: any, propName: string, casts?: Record<strin
     return wrapModelInstance(result, casts)
   }
   if (result && typeof result === 'object' && typeof result.get === 'function')
-    return wrapQueryBuilder(result, casts)
+    return wrapQueryBuilder(result, casts, waits)
   return result
 }
 
-function wrapQueryBuilder(qb: any, casts?: Record<string, CastType | CasterInterface>): any {
+function wrapQueryBuilder(qb: any, casts?: Record<string, CastType | CasterInterface>, waits = false): any {
   if (!qb || typeof qb !== 'object') return qb
   // Skip re-wrapping. Without this guard, chains like
   // `Model.query().where().with().orderBy().first()` build O(N) nested
@@ -966,20 +1021,20 @@ function wrapQueryBuilder(qb: any, casts?: Record<string, CastType | CasterInter
 
         // A query delete runs the model's delete hooks for each row: a write.
         if (propName === 'delete' || propName === 'forceDelete')
-          return promisedWrite(() => v.apply(target, callArgs))
+          return writeResult(waits, () => v.apply(target, callArgs))
         const result = v.apply(target, callArgs)
         if (!QB_TERMINATORS[propName] && result === target)
           return recv
         if (result && typeof (result).then === 'function') {
-          return (result as Promise<any>).then(resolved => finalizeQueryResult(resolved, propName, casts))
+          return (result as Promise<any>).then(resolved => finalizeQueryResult(resolved, propName, casts, waits))
         }
-        return finalizeQueryResult(result, propName, casts)
+        return finalizeQueryResult(result, propName, casts, waits)
       }
     },
   })
 }
 
-function wrapReadsWithProxy(baseModel: Record<string, unknown>, casts?: Record<string, CastType | CasterInterface>) {
+function wrapReadsWithProxy(baseModel: Record<string, unknown>, casts?: Record<string, CastType | CasterInterface>, waits = false) {
   const applyReadResult = (result: any) => Array.isArray(result)
     ? result.map(item => wrapModelInstance(item, casts))
     : wrapModelInstance(result, casts)
@@ -1003,7 +1058,9 @@ function wrapReadsWithProxy(baseModel: Record<string, unknown>, casts?: Record<s
     const original = baseModel[method]
     if (typeof original !== 'function') continue
     baseModel[method] = function (...args: any[]) {
-      return promisedWrite(() => (original as Function).apply(this, args)).then(applyReadResult)
+      const result = (original as Function).apply(this, args)
+      if (result && typeof (result).then === 'function') return (result as Promise<any>).then(applyReadResult)
+      return applyReadResult(result)
     }
   }
   // `make()` builds an unsaved instance. Nothing is written, so nothing waits.
@@ -1024,7 +1081,7 @@ function wrapReadsWithProxy(baseModel: Record<string, unknown>, casts?: Record<s
     if (typeof original !== 'function') continue
     baseModel[method] = function (...args: any[]) {
       const qb = (original as Function).apply(this, args)
-      return wrapQueryBuilder(qb, casts)
+      return wrapQueryBuilder(qb, casts, waits)
     }
   }
 
@@ -1214,23 +1271,25 @@ function applyMassAssignmentRules(
  * is called with the merged-attribute view so it can read sibling fields
  * if needed (e.g. password setter that wants the user's email for salting).
  */
-async function applyDefinedSetters(
+function applyDefinedSetters(
   definition: BQBModelDefinition,
   data: Record<string, unknown>,
-): Promise<Record<string, unknown>> {
-  const setters = (definition).set as Record<string, (attrs: Record<string, unknown>) => unknown> | undefined
-  if (!setters || typeof setters !== 'object') return data
-  const out: Record<string, unknown> = { ...data }
-  for (const [key, fn] of Object.entries(setters)) {
-    if (typeof fn !== 'function' || !(key in out)) continue
-    try {
-      out[key] = await fn(out)
+): Record<string, unknown> {
+  return settle(function* (): Generator<unknown, Record<string, unknown>, unknown> {
+    const setters = (definition).set as Record<string, (attrs: Record<string, unknown>) => unknown> | undefined
+    if (!setters || typeof setters !== 'object') return data
+    const out: Record<string, unknown> = { ...data }
+    for (const [key, fn] of Object.entries(setters)) {
+      if (typeof fn !== 'function' || !(key in out)) continue
+      try {
+        out[key] = (yield* wait(fn(out)))
+      }
+      catch (err) {
+        log.error(`[orm] ${definition.name}.set.${key} threw - skipping setter`, err)
+      }
     }
-    catch (err) {
-      log.error(`[orm] ${definition.name}.set.${key} threw - skipping setter`, err)
-    }
-  }
-  return out
+    return out
+})
 }
 
 /**
@@ -1302,22 +1361,24 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
   // tests/static-helper-precedence.test.ts pins it, with a tripwire on the
   // builder's other natives.
   {
-    baseModel.update = async function (id: number | string, data: Record<string, unknown>) {
-      if (id == null) throw new Error(`[ORM] ${definition.name}.update requires an id as the first argument`)
-      if (!data || typeof data !== 'object' || Array.isArray(data))
-        throw new Error(`[ORM] ${definition.name}.update requires a data object as the second argument`)
-      if (Object.keys(data).length === 0) {
-        log.debug(`[orm] ${definition.name}.update called with empty data - short-circuiting and returning current row`)
+    baseModel.update = function (id: number | string, data: Record<string, unknown>) {
+      return settle(function* () {
+        if (id == null) throw new Error(`[ORM] ${definition.name}.update requires an id as the first argument`)
+        if (!data || typeof data !== 'object' || Array.isArray(data))
+          throw new Error(`[ORM] ${definition.name}.update requires a data object as the second argument`)
+        if (Object.keys(data).length === 0) {
+          log.debug(`[orm] ${definition.name}.update called with empty data - short-circuiting and returning current row`)
+          const f = baseModel.find as Function | undefined
+          return typeof f === 'function' ? (yield* wait(f.call(baseModel, id))) : null
+        }
+
+        applyMassAssignmentRules(definition, data)
+        const finalData = (yield* wait(applyDefinedSetters(definition, data)))
+
+        yield* wait(getWhere('update').call(baseModel, pk, id).update(finalData))
         const f = baseModel.find as Function | undefined
-        return typeof f === 'function' ? await f.call(baseModel, id) : null
-      }
-
-      applyMassAssignmentRules(definition, data)
-      const finalData = await applyDefinedSetters(definition, data)
-
-      await getWhere('update').call(baseModel, pk, id).update(finalData)
-      const f = baseModel.find as Function | undefined
-      return typeof f === 'function' ? await f.call(baseModel, id) : null
+        return typeof f === 'function' ? (yield* wait(f.call(baseModel, id))) : null
+      })
     }
   }
 
@@ -1325,14 +1386,16 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
   // internal pathways (background jobs, console commands) that need to
   // touch guarded columns intentionally.
   if (typeof baseModel.forceUpdate !== 'function') {
-    baseModel.forceUpdate = async function (id: number | string, data: Record<string, unknown>) {
-      if (id == null) throw new Error(`[ORM] ${definition.name}.forceUpdate requires an id as the first argument`)
-      if (!data || typeof data !== 'object' || Array.isArray(data))
-        throw new Error(`[ORM] ${definition.name}.forceUpdate requires a data object as the second argument`)
-      const finalData = await applyDefinedSetters(definition, data)
-      await getWhere('forceUpdate').call(baseModel, pk, id).update(finalData)
-      const f = baseModel.find as Function | undefined
-      return typeof f === 'function' ? await f.call(baseModel, id) : null
+    baseModel.forceUpdate = function (id: number | string, data: Record<string, unknown>) {
+      return settle(function* () {
+        if (id == null) throw new Error(`[ORM] ${definition.name}.forceUpdate requires an id as the first argument`)
+        if (!data || typeof data !== 'object' || Array.isArray(data))
+          throw new Error(`[ORM] ${definition.name}.forceUpdate requires a data object as the second argument`)
+        const finalData = (yield* wait(applyDefinedSetters(definition, data)))
+        yield* wait(getWhere('forceUpdate').call(baseModel, pk, id).update(finalData))
+        const f = baseModel.find as Function | undefined
+        return typeof f === 'function' ? (yield* wait(f.call(baseModel, id))) : null
+      })
     }
   }
 
@@ -1351,35 +1414,40 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
   // Falls back to the un-wrapped `create` when the builder predates
   // `forceFill`, so an older query-builder still creates rows.
   if (typeof baseModel.forceCreate !== 'function') {
-    baseModel.forceCreate = async function (data: Record<string, unknown>) {
-      if (!data || typeof data !== 'object' || Array.isArray(data))
-        throw new Error(`[ORM] ${definition.name}.forceCreate requires a data object`)
+    baseModel.forceCreate = function (data: Record<string, unknown>) {
+      return settle(function* () {
+        if (!data || typeof data !== 'object' || Array.isArray(data))
+          throw new Error(`[ORM] ${definition.name}.forceCreate requires a data object`)
 
-      const make = baseModel.make
-      if (typeof make === 'function') {
-        // Awaited because `make()` is not always synchronous: on a model with
-        // encrypted attributes the read wrappers hand back a promise, and an
-        // un-awaited promise has no forceFill/save, so this silently fell
-        // through to the un-forced path.
-        const instance = await (make as Function).call(baseModel) as {
-          forceFill?: (data: Record<string, unknown>) => unknown
-          save?: () => Promise<unknown>
-          saveAsync?: () => Promise<unknown>
-        } | null
-        if (instance && typeof instance.forceFill === 'function' && typeof instance.save === 'function') {
-          instance.forceFill(data)
-          const saved = await (typeof instance.saveAsync === 'function' ? instance.saveAsync() : instance.save())
-          // The wrapped instance, never the builder's raw `this`: that one
-          // reads every column as undefined (see keepWrapped).
-          return saved && typeof saved === 'object' && saved !== instance && !(saved as { [STACKS_PROXY_TAG]?: boolean })[STACKS_PROXY_TAG]
-            ? instance
-            : (saved ?? instance)
+        const make = baseModel.make
+        if (typeof make === 'function') {
+          // Awaited because `make()` is not always synchronous: on a model with
+          // encrypted attributes the read wrappers hand back a promise, and an
+          // un-awaited promise has no forceFill/save, so this silently fell
+          // through to the un-forced path.
+          const instance = (yield* wait((make as Function).call(baseModel))) as {
+            forceFill?: (data: Record<string, unknown>) => unknown
+            save?: () => Promise<unknown>
+            saveAsync?: () => Promise<unknown>
+          } | null
+          if (instance && typeof instance.forceFill === 'function' && typeof instance.save === 'function') {
+            instance.forceFill(data)
+            // `saveAsync` exists to wait for a setter that returns a promise.
+            // A model with no setters has nothing of the kind, and its save
+            // answers in place.
+            const saved = (yield* wait(hasSetters(definition) && typeof instance.saveAsync === 'function' ? instance.saveAsync() : instance.save()))
+            // The wrapped instance, never the builder's raw `this`: that one
+            // reads every column as undefined (see keepWrapped).
+            return saved && typeof saved === 'object' && saved !== instance && !(saved as { [STACKS_PROXY_TAG]?: boolean })[STACKS_PROXY_TAG]
+              ? instance
+              : (saved ?? instance)
+          }
         }
-      }
 
-      if (typeof unwrappedCreate !== 'function')
-        throw new Error(`[ORM] ${definition.name}.forceCreate cannot create: the underlying query builder did not expose create()`)
-      return await (unwrappedCreate as Function).call(baseModel, data)
+        if (typeof unwrappedCreate !== 'function')
+          throw new Error(`[ORM] ${definition.name}.forceCreate cannot create: the underlying query builder did not expose create()`)
+        return (yield* wait((unwrappedCreate as Function).call(baseModel, data)))
+      })
     }
   }
 
@@ -1388,35 +1456,41 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
   // Unconditional for the same reason as `update`: 0.2.70 also ships a native
   // static `delete(id)`, which would otherwise replace this one unannounced.
   {
-    baseModel.delete = async function (id: number | string): Promise<boolean> {
-      if (id == null) throw new Error(`[ORM] ${definition.name}.delete requires an id as the first argument`)
-      const existed = await getFind('delete').call(baseModel, id)
-      if (!existed) return false
-      await getWhere('delete').call(baseModel, pk, id).delete()
-      return true
+    baseModel.delete = function (id: number | string): boolean {
+      return settle(function* (): Generator<unknown, boolean, unknown> {
+        if (id == null) throw new Error(`[ORM] ${definition.name}.delete requires an id as the first argument`)
+        const existed = (yield* wait(getFind('delete').call(baseModel, id)))
+        if (!existed) return false
+        yield* wait(getWhere('delete').call(baseModel, pk, id).delete())
+        return true
+      })
     }
   }
 
   // Model.findOrFail(id) — strict variant that throws ModelNotFoundError.
   if (typeof baseModel.findOrFail !== 'function') {
-    baseModel.findOrFail = async function (id: number | string) {
-      const row = await getFind('findOrFail').call(baseModel, id)
-      if (row == null) throw new ModelNotFoundError(definition.name, id)
-      return row
+    baseModel.findOrFail = function (id: number | string) {
+      return settle(function* () {
+        const row = (yield* wait(getFind('findOrFail').call(baseModel, id)))
+        if (row == null) throw new ModelNotFoundError(definition.name, id)
+        return row
+      })
     }
   }
 
   // Model.exists(id) — efficient `where(pk, id).count() > 0` check.
   if (typeof baseModel.exists !== 'function') {
-    baseModel.exists = async function (id: number | string): Promise<boolean> {
-      if (id == null) return false
-      const q: any = getWhere('exists').call(baseModel, pk, id)
-      if (typeof q.count === 'function') {
-        const n = await q.count()
-        return Number(n) > 0
-      }
-      const f = baseModel.find as Function | undefined
-      return typeof f === 'function' ? (await f.call(baseModel, id)) != null : false
+    baseModel.exists = function (id: number | string): boolean {
+      return settle(function* (): Generator<unknown, boolean, unknown> {
+        if (id == null) return false
+        const q: any = getWhere('exists').call(baseModel, pk, id)
+        if (typeof q.count === 'function') {
+          const n = (yield* wait(q.count()))
+          return Number(n) > 0
+        }
+        const f = baseModel.find as Function | undefined
+        return typeof f === 'function' ? ((yield* wait(f.call(baseModel, id)))) != null : false
+      })
     }
   }
 
@@ -1425,94 +1499,104 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
   // clause: looking up by `email` is fine on a guarded `email`, but
   // *writing* a new row with a guarded field still needs the escape hatch.
   if (typeof baseModel.firstOrCreate !== 'function') {
-    baseModel.firstOrCreate = async function (
+    baseModel.firstOrCreate = function (
       attrs: Record<string, unknown>,
       defaults: Record<string, unknown> = {},
     ) {
-      if (!attrs || typeof attrs !== 'object' || Array.isArray(attrs))
-        throw new Error(`[ORM] ${definition.name}.firstOrCreate requires a where-attrs object`)
+      return settle(function* () {
+        if (!attrs || typeof attrs !== 'object' || Array.isArray(attrs))
+          throw new Error(`[ORM] ${definition.name}.firstOrCreate requires a where-attrs object`)
 
-      const q: any = getWhere('firstOrCreate').call(baseModel, attrs)
-      const existing = typeof q.first === 'function' ? await q.first() : await q
-      if (existing) return existing
+        const q: any = getWhere('firstOrCreate').call(baseModel, attrs)
+        const existing = typeof q.first === 'function' ? (yield* wait(q.first())) : (yield* wait(q))
+        if (existing) return existing
 
-      const payload = { ...attrs, ...defaults }
-      applyMassAssignmentRules(definition, payload)
-      return await getCreate('firstOrCreate').call(baseModel, payload)
+        const payload = { ...attrs, ...defaults }
+        applyMassAssignmentRules(definition, payload)
+        return (yield* wait(getCreate('firstOrCreate').call(baseModel, payload)))
+      })
     }
   }
 
   // Model.updateOrCreate(where, attrs) — update if found, else create.
   if (typeof baseModel.updateOrCreate !== 'function') {
-    baseModel.updateOrCreate = async function (
+    baseModel.updateOrCreate = function (
       attrs: Record<string, unknown>,
       values: Record<string, unknown>,
     ) {
-      if (!attrs || typeof attrs !== 'object' || Array.isArray(attrs))
-        throw new Error(`[ORM] ${definition.name}.updateOrCreate requires a where-attrs object`)
-      if (!values || typeof values !== 'object' || Array.isArray(values))
-        throw new Error(`[ORM] ${definition.name}.updateOrCreate requires a values object`)
+      return settle(function* () {
+        if (!attrs || typeof attrs !== 'object' || Array.isArray(attrs))
+          throw new Error(`[ORM] ${definition.name}.updateOrCreate requires a where-attrs object`)
+        if (!values || typeof values !== 'object' || Array.isArray(values))
+          throw new Error(`[ORM] ${definition.name}.updateOrCreate requires a values object`)
 
-      const q: any = getWhere('updateOrCreate').call(baseModel, attrs)
-      const existing = typeof q.first === 'function' ? await q.first() : await q
-      if (existing) {
-        applyMassAssignmentRules(definition, values)
-        const id = (existing as Record<string, unknown>)[pk]
-        await getWhere('updateOrCreate').call(baseModel, pk, id).update(values)
-        const f = baseModel.find as Function | undefined
-        return typeof f === 'function' ? await f.call(baseModel, id) : { ...existing, ...values }
-      }
+        const q: any = getWhere('updateOrCreate').call(baseModel, attrs)
+        const existing = typeof q.first === 'function' ? (yield* wait(q.first())) : (yield* wait(q))
+        if (existing) {
+          applyMassAssignmentRules(definition, values)
+          const id = (existing as Record<string, unknown>)[pk]
+          yield* wait(getWhere('updateOrCreate').call(baseModel, pk, id).update(values))
+          const f = baseModel.find as Function | undefined
+          return typeof f === 'function' ? (yield* wait(f.call(baseModel, id))) : { ...existing, ...values }
+        }
 
-      const payload = { ...attrs, ...values }
-      applyMassAssignmentRules(definition, payload)
-      return await getCreate('updateOrCreate').call(baseModel, payload)
+        const payload = { ...attrs, ...values }
+        applyMassAssignmentRules(definition, payload)
+        return (yield* wait(getCreate('updateOrCreate').call(baseModel, payload)))
+      })
     }
   }
 
   // Model.count() — total row count.
   if (typeof baseModel.count !== 'function') {
-    baseModel.count = async function (): Promise<number> {
-      const q: any = baseModel
-      if (typeof q.query === 'function') {
-        const builder = q.query()
-        if (typeof builder?.count === 'function') {
-          const n = await builder.count()
-          return Number(n) || 0
+    baseModel.count = function (): number {
+      return settle(function* (): Generator<unknown, number, unknown> {
+        const q: any = baseModel
+        if (typeof q.query === 'function') {
+          const builder = q.query()
+          if (typeof builder?.count === 'function') {
+            const n = (yield* wait(builder.count()))
+            return Number(n) || 0
+          }
         }
-      }
-      const all = baseModel.all as Function | undefined
-      const get = baseModel.get as Function | undefined
-      if (typeof all === 'function') return ((await all.call(baseModel)) || []).length
-      if (typeof get === 'function') return ((await get.call(baseModel)) || []).length
-      return 0
+        const all = baseModel.all as Function | undefined
+        const get = baseModel.get as Function | undefined
+        if (typeof all === 'function') return (((yield* wait(all.call(baseModel)))) || []).length
+        if (typeof get === 'function') return (((yield* wait(get.call(baseModel)))) || []).length
+        return 0
+      })
     }
   }
 
   // Model.pluck('column') — flat array of one column's values across all rows.
   if (typeof baseModel.pluck !== 'function') {
-    baseModel.pluck = async function <T = unknown>(column: string): Promise<T[]> {
-      if (!column || typeof column !== 'string')
-        throw new Error(`[ORM] ${definition.name}.pluck requires a column name`)
-      const all = baseModel.all as Function | undefined
-      const rows = typeof all === 'function' ? await all.call(baseModel) : []
-      return (rows || []).map((r: any) => r?.[column])
+    baseModel.pluck = function <T = unknown>(column: string): T[] {
+      return settle(function* (): Generator<unknown, T[], unknown> {
+        if (!column || typeof column !== 'string')
+          throw new Error(`[ORM] ${definition.name}.pluck requires a column name`)
+        const all = baseModel.all as Function | undefined
+        const rows = typeof all === 'function' ? (yield* wait(all.call(baseModel))) : []
+        return (rows || []).map((r: any) => r?.[column])
+      })
     }
   }
 
   // Model.whereIn(column, values) — rows whose column matches any value in the list.
   if (typeof baseModel.whereIn !== 'function') {
-    baseModel.whereIn = async function (column: string, values: ReadonlyArray<number | string>) {
-      if (!column || typeof column !== 'string')
-        throw new Error(`[ORM] ${definition.name}.whereIn requires a column name`)
-      if (!Array.isArray(values))
-        throw new Error(`[ORM] ${definition.name}.whereIn requires an array of values`)
-      if (values.length === 0) return []
+    baseModel.whereIn = function (column: string, values: ReadonlyArray<number | string>) {
+      return settle(function* () {
+        if (!column || typeof column !== 'string')
+          throw new Error(`[ORM] ${definition.name}.whereIn requires a column name`)
+        if (!Array.isArray(values))
+          throw new Error(`[ORM] ${definition.name}.whereIn requires an array of values`)
+        if (values.length === 0) return []
 
-      const w = baseModel.where as Function | undefined
-      if (typeof w !== 'function') return []
-      const q: any = w.call(baseModel, column, 'in', values)
-      if (q && typeof q.get === 'function') return await q.get()
-      return await q
+        const w = baseModel.where as Function | undefined
+        if (typeof w !== 'function') return []
+        const q: any = w.call(baseModel, column, 'in', values)
+        if (q && typeof q.get === 'function') return (yield* wait(q.get()))
+        return (yield* wait(q))
+      })
     }
   }
 
@@ -1523,26 +1607,28 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
   ]
   for (const [name, dir] of orderHelpers) {
     if (typeof baseModel[name] !== 'function') {
-      baseModel[name] = async function (column: string = 'created_at') {
-        const q: any = baseModel
-        const builder = typeof q.query === 'function' ? q.query() : q
-        if (typeof builder?.orderBy === 'function') {
-          const ordered = builder.orderBy(column, dir)
-          if (typeof ordered.first === 'function') return await ordered.first()
-          if (typeof ordered.get === 'function') {
-            const rows = await ordered.get()
-            return rows?.[0] ?? null
+      baseModel[name] = function (column: string = 'created_at') {
+        return settle(function* () {
+          const q: any = baseModel
+          const builder = typeof q.query === 'function' ? q.query() : q
+          if (typeof builder?.orderBy === 'function') {
+            const ordered = builder.orderBy(column, dir)
+            if (typeof ordered.first === 'function') return (yield* wait(ordered.first()))
+            if (typeof ordered.get === 'function') {
+              const rows = (yield* wait(ordered.get()))
+              return rows?.[0] ?? null
+            }
           }
-        }
-        const all = baseModel.all as Function | undefined
-        if (typeof all !== 'function') return null
-        const rows = (await all.call(baseModel)) || []
-        const sorted = [...rows].sort((a: any, b: any) => {
-          const av = a?.[column], bv = b?.[column]
-          if (av === bv) return 0
-          return (av > bv ? 1 : -1) * (dir === 'desc' ? -1 : 1)
+          const all = baseModel.all as Function | undefined
+          if (typeof all !== 'function') return null
+          const rows = ((yield* wait(all.call(baseModel)))) || []
+          const sorted = [...rows].sort((a: any, b: any) => {
+            const av = a?.[column], bv = b?.[column]
+            if (av === bv) return 0
+            return (av > bv ? 1 : -1) * (dir === 'desc' ? -1 : 1)
+          })
+          return sorted[0] ?? null
         })
-        return sorted[0] ?? null
       }
     }
   }
@@ -2017,9 +2103,12 @@ function wrapReadsWithEncryption(baseModel: Record<string, unknown>, encryptedKe
   for (const method of writeReturningInstance) {
     const original = baseModel[method]
     if (typeof original !== 'function') continue
-    baseModel[method] = async function (...args: any[]) {
-      const result = await (original as Function).apply(this, args)
-      return await decryptResult(result)
+    baseModel[method] = function (...args: any[]) {
+      const self = this
+      return settle(function* () {
+        const result = (yield* wait((original as Function).apply(self, args)))
+        return (yield* wait(decryptResult(result)))
+      })
     }
   }
 
@@ -2027,9 +2116,12 @@ function wrapReadsWithEncryption(baseModel: Record<string, unknown>, encryptedKe
   for (const method of ['update', 'forceUpdate']) {
     const original = baseModel[method]
     if (typeof original !== 'function') continue
-    baseModel[method] = async function (id: number | string, data: Record<string, unknown>) {
-      const result = await (original as Function).call(this, id, data)
-      return await decryptResult(result)
+    baseModel[method] = function (id: number | string, data: Record<string, unknown>) {
+      const self = this
+      return settle(function* () {
+        const result = (yield* wait((original as Function).call(self, id, data)))
+        return (yield* wait(decryptResult(result)))
+      })
     }
   }
 
@@ -2086,16 +2178,18 @@ function wrapReadsWithEncryption(baseModel: Record<string, unknown>, encryptedKe
 function wrapWritesWithEncryption(baseModel: Record<string, unknown>, encryptedKeys: ReadonlyArray<string>) {
   if (encryptedKeys.length === 0) return
 
-  const encryptArg = async (data: unknown): Promise<unknown> => {
-    if (!data || typeof data !== 'object' || Array.isArray(data)) return data
-    const out = { ...(data as Record<string, unknown>) }
-    for (const key of encryptedKeys) {
-      // Callers write either spelling; both must reach the cipher.
-      for (const alias of encryptedAliases(key)) {
-        if (alias in out) out[alias] = await encryptValue(out[alias])
+  const encryptArg = (data: unknown): unknown => {
+    return settle(function* (): Generator<unknown, unknown, unknown> {
+      if (!data || typeof data !== 'object' || Array.isArray(data)) return data
+      const out = { ...(data as Record<string, unknown>) }
+      for (const key of encryptedKeys) {
+        // Callers write either spelling; both must reach the cipher.
+        for (const alias of encryptedAliases(key)) {
+          if (alias in out) out[alias] = (yield* wait(encryptValueInPlace(out[alias])))
+        }
       }
-    }
-    return out
+      return out
+    })
   }
 
   // `forceCreate` is in this list because the mass-assignment escape hatch is
@@ -2107,20 +2201,26 @@ function wrapWritesWithEncryption(baseModel: Record<string, unknown>, encryptedK
   const writeMethods = ['create', 'firstOrCreate', 'updateOrCreate', 'forceCreate']
   const originalCreateMany = baseModel.createMany
   if (typeof originalCreateMany === 'function') {
-    baseModel.createMany = async function (items: unknown[], ...rest: unknown[]) {
-      const encrypted = Array.isArray(items) ? await Promise.all(items.map(encryptArg)) : items
-      return await (originalCreateMany as Function).call(this, encrypted, ...rest)
+    baseModel.createMany = function (items: unknown[], ...rest: unknown[]) {
+      const self = this
+      return settle(function* () {
+        const encrypted = Array.isArray(items) ? (yield* wait(waitAll(items.map(encryptArg)))) : items
+        return (yield* wait((originalCreateMany as Function).call(self, encrypted, ...rest)))
+      })
     }
   }
   for (const method of writeMethods) {
     const original = baseModel[method]
     if (typeof original !== 'function') continue
-    baseModel[method] = async function (...args: any[]) {
-      args[0] = await encryptArg(args[0])
-      // updateOrCreate / firstOrCreate take a second arg with values; encrypt
-      // those too so backfilled defaults are safe.
-      if (args[1]) args[1] = await encryptArg(args[1])
-      return await (original as Function).apply(this, args)
+    baseModel[method] = function (...args: any[]) {
+      const self = this
+      return settle(function* () {
+        args[0] = (yield* wait(encryptArg(args[0])))
+        // updateOrCreate / firstOrCreate take a second arg with values; encrypt
+        // those too so backfilled defaults are safe.
+        if (args[1]) args[1] = (yield* wait(encryptArg(args[1])))
+        return (yield* wait((original as Function).apply(self, args)))
+      })
     }
   }
 
@@ -2128,9 +2228,12 @@ function wrapWritesWithEncryption(baseModel: Record<string, unknown>, encryptedK
   for (const method of ['update', 'forceUpdate']) {
     const original = baseModel[method]
     if (typeof original !== 'function') continue
-    baseModel[method] = async function (id: number | string, data: Record<string, unknown>) {
-      const enc = (await encryptArg(data)) as Record<string, unknown>
-      return await (original as Function).call(this, id, enc)
+    baseModel[method] = function (id: number | string, data: Record<string, unknown>) {
+      const self = this
+      return settle(function* () {
+        const enc = ((yield* wait(encryptArg(data)))) as Record<string, unknown>
+        return (yield* wait((original as Function).call(self, id, enc)))
+      })
     }
   }
 }
@@ -2159,10 +2262,13 @@ function wrapWritesWithEncryption(baseModel: Record<string, unknown>, encryptedK
 function wrapWritesWithMassAssignment(baseModel: Record<string, unknown>, definition: BQBModelDefinition): void {
   const origCreate = baseModel.create
   if (typeof origCreate === 'function') {
-    baseModel.create = async function (this: unknown, data: Record<string, unknown>, ...rest: unknown[]) {
-      applyMassAssignmentRules(definition, data)
-      const finalData = await applyDefinedSetters(definition, data)
-      return await (origCreate as Function).call(this, finalData, ...rest)
+    baseModel.create = function (this: unknown, data: Record<string, unknown>, ...rest: unknown[]) {
+      const self = this
+      return settle(function* () {
+        applyMassAssignmentRules(definition, data)
+        const finalData = (yield* wait(applyDefinedSetters(definition, data)))
+        return (yield* wait((origCreate as Function).call(self, finalData, ...rest)))
+      })
     }
   }
 
@@ -2171,13 +2277,16 @@ function wrapWritesWithMassAssignment(baseModel: Record<string, unknown>, defini
   // on every record here, before any of them is written.
   const origCreateMany = baseModel.createMany
   if (typeof origCreateMany === 'function') {
-    baseModel.createMany = async function (this: unknown, items: Record<string, unknown>[], ...rest: unknown[]) {
-      const finalItems: Record<string, unknown>[] = []
-      for (const data of items) {
-        applyMassAssignmentRules(definition, data)
-        finalItems.push(await applyDefinedSetters(definition, data))
-      }
-      return await (origCreateMany as Function).call(this, finalItems, ...rest)
+    baseModel.createMany = function (this: unknown, items: Record<string, unknown>[], ...rest: unknown[]) {
+      const self = this
+      return settle(function* () {
+        const finalItems: Record<string, unknown>[] = []
+        for (const data of items) {
+          applyMassAssignmentRules(definition, data)
+          finalItems.push((yield* wait(applyDefinedSetters(definition, data))))
+        }
+        return (yield* wait((origCreateMany as Function).call(self, finalItems, ...rest)))
+      })
     }
   }
 
@@ -2239,9 +2348,12 @@ function wrapWritesWithValidation(baseModel: Record<string, unknown>, definition
 
   const origCreate = baseModel.create
   if (typeof origCreate === 'function') {
-    baseModel.create = async function (this: unknown, data: Record<string, unknown>, ...rest: unknown[]) {
-      check(data, 'creating')
-      return await (origCreate as Function).call(this, normalizeTimestampWrites(data, definition), ...rest)
+    baseModel.create = function (this: unknown, data: Record<string, unknown>, ...rest: unknown[]) {
+      const self = this
+      return settle(function* () {
+        check(data, 'creating')
+        return (yield* wait((origCreate as Function).call(self, normalizeTimestampWrites(data, definition), ...rest)))
+      })
     }
   }
 
@@ -2249,22 +2361,28 @@ function wrapWritesWithValidation(baseModel: Record<string, unknown>, definition
   // rejects the batch rather than leaving half of it in the table.
   const origCreateMany = baseModel.createMany
   if (typeof origCreateMany === 'function') {
-    baseModel.createMany = async function (this: unknown, items: Record<string, unknown>[], ...rest: unknown[]) {
-      if (Array.isArray(items)) {
-        for (const data of items)
-          check(data, 'creating')
-      }
-      const normalized = Array.isArray(items) ? items.map(data => normalizeTimestampWrites(data, definition)) : items
-      return await (origCreateMany as Function).call(this, normalized, ...rest)
+    baseModel.createMany = function (this: unknown, items: Record<string, unknown>[], ...rest: unknown[]) {
+      const self = this
+      return settle(function* () {
+        if (Array.isArray(items)) {
+          for (const data of items)
+            check(data, 'creating')
+        }
+        const normalized = Array.isArray(items) ? items.map(data => normalizeTimestampWrites(data, definition)) : items
+        return (yield* wait((origCreateMany as Function).call(self, normalized, ...rest)))
+      })
     }
   }
 
   // `update(id, data)` — the id is the first argument here, unlike `create`.
   const origUpdate = baseModel.update
   if (typeof origUpdate === 'function') {
-    baseModel.update = async function (this: unknown, id: unknown, data: Record<string, unknown>, ...rest: unknown[]) {
-      check(data, 'updating')
-      return await (origUpdate as Function).call(this, id, normalizeTimestampWrites(data, definition), ...rest)
+    baseModel.update = function (this: unknown, id: unknown, data: Record<string, unknown>, ...rest: unknown[]) {
+      const self = this
+      return settle(function* () {
+        check(data, 'updating')
+        return (yield* wait((origUpdate as Function).call(self, id, normalizeTimestampWrites(data, definition), ...rest)))
+      })
     }
   }
 }
@@ -2278,24 +2396,30 @@ function wrapQueryMethodsWithCasts(baseModel: Record<string, unknown>, casts: Re
 
   const originalCreateMany = baseModel.createMany
   if (typeof originalCreateMany === 'function') {
-    baseModel.createMany = async function (items: unknown[], ...rest: unknown[]) {
-      const cast = Array.isArray(items)
-        ? items.map(item => item && typeof item === 'object' && !Array.isArray(item) ? castAttributes(item as Record<string, unknown>, casts, 'set') : item)
-        : items
-      return await (originalCreateMany as Function).call(this, cast, ...rest)
+    baseModel.createMany = function (items: unknown[], ...rest: unknown[]) {
+      const self = this
+      return settle(function* () {
+        const cast = Array.isArray(items)
+          ? items.map(item => item && typeof item === 'object' && !Array.isArray(item) ? castAttributes(item as Record<string, unknown>, casts, 'set') : item)
+          : items
+        return (yield* wait((originalCreateMany as Function).call(self, cast, ...rest)))
+      })
     }
   }
 
   for (const method of writeMethods) {
     const original = baseModel[method]
     if (typeof original === 'function') {
-      baseModel[method] = async function (...args: any[]) {
-        log.debug(`[orm] ${method.charAt(0).toUpperCase() + method.slice(1)} ${String(baseModel.name || 'unknown')}`, args[0])
-        // Cast the input data before writing (booleans → 0/1, dates → ISO, …)
-        if (args[0] && typeof args[0] === 'object' && !Array.isArray(args[0])) {
-          args[0] = castAttributes(args[0], casts, 'set')
-        }
-        return await (original as Function).apply(this, args)
+      baseModel[method] = function (...args: any[]) {
+        const self = this
+        return settle(function* () {
+          log.debug(`[orm] ${method.charAt(0).toUpperCase() + method.slice(1)} ${String(baseModel.name || 'unknown')}`, args[0])
+          // Cast the input data before writing (booleans → 0/1, dates → ISO, …)
+          if (args[0] && typeof args[0] === 'object' && !Array.isArray(args[0])) {
+            args[0] = castAttributes(args[0], casts, 'set')
+          }
+          return (yield* wait((original as Function).apply(self, args)))
+        })
       }
     }
   }
@@ -2305,11 +2429,14 @@ function wrapQueryMethodsWithCasts(baseModel: Record<string, unknown>, casts: Re
   // casts apply to its data argument.
   const origUpdate = baseModel.update
   if (typeof origUpdate === 'function') {
-    baseModel.update = async function (id: number | string, data: Record<string, unknown>) {
-      const cast = data && typeof data === 'object' && !Array.isArray(data)
-        ? castAttributes(data, casts, 'set')
-        : data
-      return await (origUpdate as Function).call(this, id, cast)
+    baseModel.update = function (id: number | string, data: Record<string, unknown>) {
+      const self = this
+      return settle(function* () {
+        const cast = data && typeof data === 'object' && !Array.isArray(data)
+          ? castAttributes(data, casts, 'set')
+          : data
+        return (yield* wait((origUpdate as Function).call(self, id, cast)))
+      })
     }
   }
 }
@@ -2477,18 +2604,40 @@ type QueryDefinition<TDef extends ModelDefinition> = TDef
     attributes: { [TKey in keyof TDef['attributes']]: QueryAttribute<TDef['attributes'][TKey]> }
   }
   & QueryTraits<TDef>
-  & AsynchronousWrites
+  & (ModelWritesWait<TDef> extends true ? AsynchronousWrites : unknown)
+
+/** Whether a trait is switched on in a definition's type: declared, and not `false`. */
+type TraitIsOn<TDef, TTrait extends string> = TDef extends { traits: infer TTraits }
+  ? TTrait extends keyof TTraits
+    ? [TTraits[TTrait]] extends [false | null | undefined] ? false : true
+    : false
+  : false
 
 /**
- * Tells the query builder's types that a Stacks model's writes are promises.
- *
- * A read returns its value where it is written: `const user =
- * User.where(...).first()` is the row. A write does more than run a
- * statement. It goes through setters, validation, encryption and lifecycle
- * events, and any of those may be asynchronous, so `create`, `update`, `save`
- * and `delete` return promises and are typed that way. The builder types a
- * write as a promise exactly when a lifecycle hook may return one, which is
- * what this declares.
+ * `modelWritesWait`, for the type checker: the same declarations, read from
+ * the definition's type. True when the model declares a lifecycle, search,
+ * broadcast, soft-delete, audit or activity trait, a `set:` hook, or hooks of
+ * its own. A write on such a model is a promise; on any other it is the value.
+ */
+export type ModelWritesWait<TDef> = true extends (
+  | TraitIsOn<TDef, 'observe'>
+  | TraitIsOn<TDef, 'useSearch'>
+  | TraitIsOn<TDef, 'broadcastOn'>
+  | TraitIsOn<TDef, 'useSoftDeletes'>
+  | TraitIsOn<TDef, 'softDeletable'>
+  | TraitIsOn<TDef, 'useAudit'>
+  | TraitIsOn<TDef, 'useActivityLog'>
+  | (TDef extends { set: infer TSetters } ? ([keyof TSetters] extends [never] ? false : true) : false)
+  | (TDef extends { hooks: object } ? true : false)
+) ? true : false
+
+/** What a write on a model returns: a promise where its writes wait, the value where they do not. */
+export type ModelWrite<TDef, TResult> = ModelWritesWait<TDef> extends true ? Promise<TResult> : TResult
+
+/**
+ * Tells the query builder's types that this model's writes are promises. The
+ * builder types a write as a promise exactly when a lifecycle hook may return
+ * one, which is what this declares for a model whose writes wait.
  */
 interface AsynchronousWrites {
   hooks: { beforeCreate: (data: Record<string, unknown>) => Promise<void> }
@@ -2507,7 +2656,7 @@ import { createTwoFactorMethods } from './traits/two-factor'
 import { createSoftDeleteMethods, resolveSoftDeleteOptions, cascadeSoftDelete } from './traits/soft-deletes'
 import { applyAudit, resolveAuditOptions } from './traits/audit'
 import { applyActivityLog, resolveActivityLogOptions } from './traits/activity-log'
-import { collectEncryptedAttributes, decryptValueInPlace, encryptValue, isEncrypted } from './utils/encrypted'
+import { collectEncryptedAttributes, decryptValueInPlace, encryptValueInPlace, isEncrypted } from './utils/encrypted'
 
 /**
  * Stacks-enhanced model definition.
@@ -2585,10 +2734,10 @@ export type StacksModelStatic<TDef extends ModelDefinition> = Omit<QueryModel<TD
    * `null` means there is no such page. Pass several columns to break ties (`['created_at', 'id']`).
    */
   cursorPaginate: (perPage?: number, cursor?: string | number | unknown[] | null, column?: string | string[], direction?: 'asc' | 'desc') => CursorPaginator<ReturnType<QueryModel<TDef>['paginate']>['data'][number]>
-  update: (id: number | string, data: ModelWriteData<TDef>) => Promise<ReturnType<QueryModel<TDef>['find']>>
-  forceUpdate: (id: number | string, data: ModelForceWriteData<TDef>) => Promise<ReturnType<QueryModel<TDef>['find']>>
+  update: (id: number | string, data: ModelWriteData<TDef>) => ModelWrite<TDef, ReturnType<QueryModel<TDef>['find']>>
+  forceUpdate: (id: number | string, data: ModelForceWriteData<TDef>) => ModelWrite<TDef, ReturnType<QueryModel<TDef>['find']>>
   forceCreate: (data: ModelForceWriteData<TDef>) => ReturnType<QueryModel<TDef>['create']>
-  delete: (id: number | string) => Promise<boolean>
+  delete: (id: number | string) => ModelWrite<TDef, boolean>
   withoutEvents: <T>(fn: () => T | Promise<T>) => Promise<T>
   /** Run `fn` with declared `validation.rule`s suppressed (bulk imports, backfills). */
   withoutValidation: <T>(fn: () => T | Promise<T>) => Promise<T>
@@ -2678,6 +2827,10 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
   // proxy `get` trap. See TRAIT_INSTANCE_METHOD_BINDINGS.
   const traitMethods = buildTraitMethods(definition as unknown as BQBModelDefinition)
   ;(definition as unknown as Record<string, unknown>).__traitMethods = traitMethods
+  // Decided once, from the declarations, before any hook is merged in: the
+  // instance proxy and the query wrappers read it from here.
+  const writesWait = modelWritesWait(definition)
+  ;(definition as unknown as Record<string, unknown>).__writesWait = writesWait
 
   // A model that declares `useAuth` can hold personal access tokens, so it gets
   // the relation rather than restating it. That is the whole point of the
@@ -2714,7 +2867,7 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
   // returning undefined / leaking private fields. Casts (when declared)
   // are applied at the same boundary so `chargesEnabled === true` instead
   // of `"0" === truthy`.
-  wrapReadsWithProxy(baseModel, definition.casts)
+  wrapReadsWithProxy(baseModel, definition.casts, writesWait)
 
   // Provide Laravel-style static CRUD sugar (update, delete, findOrFail,
   // exists, firstOrCreate, updateOrCreate). Must run before the cast
@@ -2839,14 +2992,17 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
     }
   }
 
-  // Whatever wrapped them above, a static write answers with a promise
-  // (see promisedWrite). `truncate` and the query builder's `update` run no
-  // hook and are left as the builder returns them.
-  for (const method of ['update', 'forceUpdate', 'forceCreate', 'delete', 'destroy', 'remove', 'forceDelete'] as const) {
-    const write = (baseModel as Record<string, unknown>)[method]
-    if (typeof write !== 'function') continue
-    ;(baseModel as Record<string, unknown>)[method] = function (this: unknown, ...args: unknown[]) {
-      return promisedWrite(() => (write as (...inner: unknown[]) => unknown).apply(this, args))
+  // On a model whose writes wait, every static write answers with a promise
+  // whatever wrapped it above (see modelWritesWait). On any other model the
+  // wrappers hand a value on as a value. `truncate` and the query builder's
+  // `update` run no hook and are left as the builder returns them.
+  if (writesWait) {
+    for (const method of ['create', 'createMany', 'firstOrCreate', 'updateOrCreate', 'update', 'forceUpdate', 'forceCreate', 'delete', 'destroy', 'remove', 'forceDelete'] as const) {
+      const write = (baseModel as Record<string, unknown>)[method]
+      if (typeof write !== 'function') continue
+      ;(baseModel as Record<string, unknown>)[method] = function (this: unknown, ...args: unknown[]) {
+        return promisedWrite(() => (write as (...inner: unknown[]) => unknown).apply(this, args))
+      }
     }
   }
 

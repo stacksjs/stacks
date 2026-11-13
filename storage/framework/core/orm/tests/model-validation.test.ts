@@ -16,6 +16,18 @@ import { schema } from '@stacksjs/validation/runtime'
 import { normalizeTimestampWrites, validateWriteBody } from '../src/auto-crud'
 import { defineModel } from '../src/define-model'
 
+/** What a write failed with, wherever it failed: thrown where the call stands, or as a rejection. */
+async function failureOf(run: () => unknown): Promise<any> {
+  try {
+    await run()
+    return null
+  }
+  catch (error) {
+    return error
+  }
+}
+
+
 const model = {
   name: 'PageView',
   attributes: {
@@ -115,7 +127,7 @@ describe('a real defineModel enforces its rules on create/update', () => {
   } as any)
 
   it('create() throws a 422-shaped ModelValidationError instead of reaching the driver', async () => {
-    const err = await Probe.create({ path: 'x'.repeat(50) }).then(() => null, (e: any) => e)
+    const err = await failureOf(() => Probe.create({ path: 'x'.repeat(50) }))
 
     expect(err).not.toBeNull()
     expect(err.name).toBe('ModelValidationError')
@@ -124,7 +136,7 @@ describe('a real defineModel enforces its rules on create/update', () => {
   })
 
   it('update() throws for a field the caller did send', async () => {
-    const err = await Probe.update(1, { path: 'x'.repeat(50) }).then(() => null, (e: any) => e)
+    const err = await failureOf(() => Probe.update(1, { path: 'x'.repeat(50) }))
 
     expect(err).not.toBeNull()
     expect(err.name).toBe('ModelValidationError')
@@ -138,8 +150,7 @@ describe('a real defineModel enforces its rules on create/update', () => {
     // Proves the wrapper consults the suppression scope, not merely that the
     // scope exists. It gets past validation and then fails at the driver (no
     // table here) — a DIFFERENT error, which is exactly the evidence wanted.
-    const err = await Probe.withoutValidation(() => Probe.create({ path: 'x'.repeat(50) }))
-      .then(() => null, (e: any) => e)
+    const err = await failureOf(() => Probe.withoutValidation(() => Probe.create({ path: 'x'.repeat(50) })))
 
     expect(err?.name).not.toBe('ModelValidationError')
   })
@@ -147,7 +158,7 @@ describe('a real defineModel enforces its rules on create/update', () => {
   it('createQuietly is validated too - quiet means no events, not no rules', async () => {
     // The `*Quietly` helpers capture whichever `create` exists when they are
     // installed, so this fails if the validation wrapper is applied after them.
-    const err = await Probe.createQuietly({ path: 'x'.repeat(50) }).then(() => null, (e: any) => e)
+    const err = await failureOf(() => Probe.createQuietly({ path: 'x'.repeat(50) }))
 
     expect(err).not.toBeNull()
     expect(err.name).toBe('ModelValidationError')

@@ -132,8 +132,23 @@ export async function encryptValue(value: unknown): Promise<unknown> {
   // through stringification. Callers who need to encrypt a JSON blob should
   // pre-stringify it themselves.
   if (typeof value !== 'string') return value
+  return encryptWith(value, await getKey())
+}
 
-  const key = await getKey()
+/**
+ * `encryptValue`, answering in place when the key is at hand (see
+ * `decryptValueInPlace`): a write to an encrypted column does not have to wait
+ * for a cipher that is synchronous.
+ */
+export function encryptValueInPlace(value: unknown): unknown | Promise<unknown> {
+  if (value == null) return value
+  if (isEncrypted(value)) return value
+  if (typeof value !== 'string') return value
+  const key = getKeyNow()
+  return key ? encryptWith(value, key) : encryptValue(value)
+}
+
+function encryptWith(value: string, key: Buffer | null): unknown {
   if (!key) {
     log.warn('[orm] encrypted attribute: APP_KEY not set - storing value in plaintext')
     return value
