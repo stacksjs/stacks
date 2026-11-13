@@ -157,8 +157,14 @@ for every connected service, with the upgrade link from 80% of an allowance.
 ReportsHQ is the odd one out: it runs inside the app against the app's own
 database, so it has no ingest or read key and meters nothing. Its entry is
 `services.reportshq` with a `license` from `REPORTSHQ_LICENSE`, which
-`buddy hq:status` checks offline (shape only) and never prints. It has no
-connect route, so `buddy hq:connect reportshq` reports it as not available yet.
+`buddy hq:status` checks offline (shape only) and never prints.
+`buddy hq:connect reportshq` runs the same approval and writes the licence to
+`REPORTSHQ_LICENSE`, with nothing to send or read back.
+
+A licence-only service answers a `LicenseGrant` (`{ project, licenseKey,
+dashboardUrl }`) from `provision` and leaves `authenticateReadKey` and `usage`
+off its adapter. `createHqService` then mounts the two connect routes and no
+usage route. `isLicenseGrant` tells the two kinds of approved answer apart.
 
 The dashboard's Logs and Errors sections read LogHQ and BugHQ when
 `config/dashboard.ts` sets `providers.logs` or `providers.errors` to

@@ -26,8 +26,9 @@ export const HQ_SERVICES: Record<HqServiceName, HqServiceDescriptor> = {
   analyticshq: { label: 'AnalyticsHQ', env: { readKey: 'ANALYTICSHQ_READ_KEY', project: 'ANALYTICSHQ_SITE_ID' } },
   statushq: { label: 'StatusHQ', env: { key: 'STATUSHQ_KEY', readKey: 'STATUSHQ_READ_KEY' } },
   commshq: { label: 'CommsHQ', env: { key: 'COMMSHQ_KEY', readKey: 'COMMSHQ_READ_KEY' } },
-  // ReportsHQ runs inside the app and has no keys or meters. Its licence is
-  // checked offline, so `hq:status` reads it from config and calls nothing.
+  // ReportsHQ runs inside the app and has no keys or meters. A connect hands
+  // over a licence, which is checked offline, so there is nothing to send or
+  // read back and `hq:status` reads it from config and calls nothing.
   reportshq: { label: 'ReportsHQ', env: { license: 'REPORTSHQ_LICENSE' } },
 }
 
@@ -94,8 +95,11 @@ export interface HqConnectResult {
 
 interface Grant {
   project: { id: string, name: string }
+  /** Empty on a licence grant. */
   ingestKey: string
   readKey: string
+  /** Set by a licence-only service, in place of the two keys. */
+  licenseKey?: string
   dashboardUrl: string
 }
 
@@ -122,9 +126,28 @@ function httpUrl(value: unknown, base?: string): string | null {
   }
 }
 
-function toGrant(body: Record<string, unknown>, base: string): Grant | null {
+/**
+ * The approved answer, as the kind of grant this service is known to give.
+ *
+ * A service that takes a licence must send one and a service that takes keys
+ * must send both, so a mismatched answer is refused rather than half written.
+ */
+function toGrant(body: Record<string, unknown>, base: string, licensed: boolean): Grant | null {
   const project = body.project
-  if (!isRecord(project) || project.id == null || typeof body.ingestKey !== 'string' || typeof body.readKey !== 'string')
+  if (!isRecord(project) || project.id == null)
+    return null
+  if (licensed) {
+    if (typeof body.licenseKey !== 'string' || !body.licenseKey)
+      return null
+    return {
+      project: { id: String(project.id), name: String(project.name ?? project.id) },
+      ingestKey: '',
+      readKey: '',
+      licenseKey: body.licenseKey,
+      dashboardUrl: httpUrl(body.dashboardUrl, base) ?? '',
+    }
+  }
+  if (typeof body.ingestKey !== 'string' || typeof body.readKey !== 'string')
     return null
   if (!body.ingestKey || !body.readKey)
     return null
@@ -240,7 +263,7 @@ async function connectOne(service: HqServiceName, url: string, options: HqConnec
     if (answer.status === 'expired')
       return outcome('expired', 'the request expired, run the command again')
 
-    const grant = toGrant(answer, base)
+    const grant = toGrant(answer, base, Boolean(HQ_SERVICES[service].env.license))
     if (!grant)
       return outcome('failed', 'the service approved the request without sending keys')
     return {
@@ -253,6 +276,8 @@ async function connectOne(service: HqServiceName, url: string, options: HqConnec
 function envEntries(service: HqServiceName, grant: Grant): Record<string, string> {
   const names = HQ_SERVICES[service].env
   const entries: Record<string, string> = {}
+  if (names.license && grant.licenseKey)
+    return { [names.license]: grant.licenseKey }
   if (names.key)
     entries[names.key] = grant.ingestKey
   if (names.readKey)
@@ -409,7 +434,9 @@ export async function runHqConnect(services: HqServiceName[], config: HqServices
       outcomes.push({ ...outcome, status: 'failed', detail: 'the keys could not be written to .env' })
       continue
     }
-    deps.print(`${label}: connected to project "${grant.project.name}". Keys written to .env.`)
+    deps.print(grant.licenseKey
+      ? `${label}: licensed "${grant.project.name}". Licence written to .env.`
+      : `${label}: connected to project "${grant.project.name}". Keys written to .env.`)
     if (grant.dashboardUrl)
       deps.print(`  Dashboard: ${grant.dashboardUrl}`)
 

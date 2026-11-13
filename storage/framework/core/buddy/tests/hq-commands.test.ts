@@ -161,7 +161,40 @@ describe('buddy hq:connect', () => {
     expect(statushq.requests()).toEqual(['POST /api/cli/connect'])
   })
 
-  it('treats ReportsHQ, which has no connect route, like any service that is not available yet', async () => {
+  it('writes a ReportsHQ licence to .env and prints none of it', async () => {
+    // ReportsHQ runs inside the app, so a connect hands over a licence and
+    // there is nothing to send or read back.
+    const reportshq = createFakeHqService({ service: 'reportshq', approveOnPoll: 1, license: true })
+    const h = harness([reportshq])
+
+    const result = await runHqConnect(['reportshq'], configFor(reportshq), OPTIONS, h.deps)
+
+    const [issued] = reportshq.licenses()
+    expect(issued!.licenseKey).toMatch(/^rhq_lic_[0-9a-f]{32}$/)
+    expect(result.ok).toBe(true)
+    expect(result.outcomes[0]).toMatchObject({ service: 'reportshq', status: 'connected', project: 'my-app', send: 'skipped', read: 'skipped' })
+    expect(h.env).toEqual({ REPORTSHQ_LICENSE: issued!.licenseKey })
+    expect(h.output()).toContain('ReportsHQ: licensed "my-app". Licence written to .env.')
+    expect(h.output()).toMatch(/ReportsHQ\s+pass\s+-\s+-/)
+    expect(h.output()).not.toContain(issued!.licenseKey)
+    // Only the two connect routes were ever called.
+    expect(reportshq.requests().every(request => request.includes('/api/cli/connect'))).toBe(true)
+  })
+
+  it('refuses an answer of the wrong kind rather than half writing it', async () => {
+    // Keys from a service that should send a licence, and a licence from one that should send keys.
+    const reportshq = createFakeHqService({ service: 'reportshq', approveOnPoll: 1 })
+    const loghq = createFakeHqService({ service: 'loghq', approveOnPoll: 1, license: true })
+    const h = harness([reportshq, loghq])
+
+    const result = await runHqConnect(['reportshq', 'loghq'], configFor(reportshq, loghq), OPTIONS, h.deps)
+
+    expect(result.ok).toBe(false)
+    expect(result.outcomes.map(outcome => outcome.status)).toEqual(['failed', 'failed'])
+    expect(h.env).toEqual({})
+  })
+
+  it('treats a ReportsHQ that has no connect route yet like any service that is not available', async () => {
     const reportshq = createFakeHqService({ service: 'reportshq', contract: false })
     const h = harness([reportshq])
 

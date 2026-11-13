@@ -1,4 +1,4 @@
-import type { ApproveResult, ConnectGrant, HqService, MeterReading } from '@stacksjs/hq/service'
+import type { ApproveResult, ConnectGrant, HqService, LicenseGrant, MeterReading } from '@stacksjs/hq/service'
 import { createHqService, createMemoryConnectCodeStore } from '@stacksjs/hq/service'
 
 /**
@@ -30,6 +30,11 @@ export interface FakeHqServiceOptions {
   approveOnPoll?: number
   /** `false` accepts ingest and stores nothing, as a service past its allowance does. */
   storeIngest?: boolean
+  /**
+   * A licence-only service, as ReportsHQ is: an approved connect carries a
+   * `licenseKey` and no keys, and there is no usage route. Default false.
+   */
+  license?: boolean
   /** Answer `dashboardUrl` as a path, as LogHQ does. Default false. */
   relativeDashboardUrl?: boolean
   now?: () => Date
@@ -69,6 +74,8 @@ export interface FakeHqService {
   /** The confirmation code a connect was started with. */
   confirmCodeFor: (code: string) => string | undefined
   grants: () => ConnectGrant[]
+  /** What a licence-only service has issued. */
+  licenses: () => LicenseGrant[]
   logs: () => FakeHqLog[]
   issues: () => FakeHqIssue[]
   /** Every request received, as `METHOD /path`. */
@@ -77,6 +84,11 @@ export interface FakeHqService {
 
 interface Project {
   grant: ConnectGrant
+  owner: string
+}
+
+interface Licensed {
+  grant: LicenseGrant
   owner: string
 }
 
@@ -95,6 +107,7 @@ export function createFakeHqService(options: FakeHqServiceOptions = {}): FakeHqS
   const now = options.now ?? (() => new Date())
 
   const projects = new Map<string, Project>()
+  const licensed = new Map<string, Licensed>()
   const codes: string[] = []
   const polls = new Map<string, number>()
   const logs: FakeHqLog[] = []
@@ -122,20 +135,44 @@ export function createFakeHqService(options: FakeHqServiceOptions = {}): FakeHqS
     return project.grant
   }
 
+  /** Issue, or reuse, the licence for the app. */
+  function license(owner: string, app: string): LicenseGrant {
+    const key = `${owner}/${app}`
+    let entry = licensed.get(key)
+    if (!entry) {
+      const id = crypto.randomUUID()
+      entry = {
+        owner,
+        grant: {
+          project: { id, name: app },
+          licenseKey: `rhq_lic_${crypto.randomUUID().replaceAll('-', '')}`,
+          dashboardUrl: `${origin}/account`,
+        },
+      }
+      licensed.set(key, entry)
+    }
+    return entry.grant
+  }
+
   const hq: HqService<{ id: string }> = createHqService({
     service,
     approveUrl: code => `${origin}/cli/connect?code=${encodeURIComponent(code)}`,
     upgradeUrl: `${origin}/pricing`,
     codes: createMemoryConnectCodeStore(),
-    provision: async (who, { app }) => provision(who.id, app),
-    async authenticateReadKey(readKey) {
-      for (const { grant, owner } of projects.values()) {
-        if (grant.readKey === readKey)
-          return { owner, project: grant.project.id }
-      }
-      return null
-    },
-    usage: async () => meters.map(reading => ({ ...reading })),
+    provision: async (who, { app }) => options.license ? license(who.id, app) : provision(who.id, app),
+    // A licence-only service has nothing to read usage with, so it has no usage route.
+    ...(options.license
+      ? {}
+      : {
+          async authenticateReadKey(readKey: string) {
+            for (const { grant, owner } of projects.values()) {
+              if (grant.readKey === readKey)
+                return { owner, project: grant.project.id }
+            }
+            return null
+          },
+          usage: async () => meters.map(reading => ({ ...reading })),
+        }),
   }, { now })
 
   const projectByIngestKey = (key: string | null): Project | undefined =>
@@ -280,6 +317,7 @@ export function createFakeHqService(options: FakeHqServiceOptions = {}): FakeHqS
     codes: () => [...codes],
     confirmCodeFor: code => (options.confirmCode && codes.includes(code) ? confirmCodeOf(code) : undefined),
     grants: () => [...projects.values()].map(project => project.grant),
+    licenses: () => [...licensed.values()].map(entry => entry.grant),
     logs: () => [...logs],
     issues: () => [...issues],
     requests: () => [...requests],
