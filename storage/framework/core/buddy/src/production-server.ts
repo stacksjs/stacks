@@ -535,9 +535,14 @@ export async function startProductionServer(options?: { port?: string | number, 
           // views server; gated on config so single-site apps skip the import.
           if ((config as { sites?: { enabled?: boolean } }).sites?.enabled) {
             const sites = await import('@stacksjs/sites')
-            const resolved = await sites.resolveSiteByHost(sites.requestHost(req.headers, sites.sitesOptions()))
+            // The host the site was resolved for is the one a page reads too:
+            // behind a proxy the Host header names the upstream, not the visitor's address.
+            const siteHost = sites.requestHost(req.headers, sites.sitesOptions())
+            const resolved = await sites.resolveSiteByHost(siteHost)
             sites.setCurrentSite(resolved)
             snapshot.site = sites.toSiteSnapshot(resolved)
+            if (siteHost)
+              snapshot.siteHost = siteHost
           }
 
           return undefined

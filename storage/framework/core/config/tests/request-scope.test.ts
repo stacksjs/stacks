@@ -178,6 +178,30 @@ describe('stx\'s __stxServeContext mirror', () => {
     }
   })
 
+  it('answers the host the site was resolved from, whatever stx published', async () => {
+    const server = Bun.serve({
+      port: 0,
+      async fetch(req) {
+        const snapshot = enterRequestScope(req)
+        const published = new URL(req.url).searchParams.has('published')
+        snapshot.site = { id: 7 }
+        snapshot.siteHost = 'harbor.example.com'
+        if (published)
+          scope.__stxServeContext = { cookies: {}, locale: null, host: '127.0.0.1:3000' }
+        return Response.json({ host: scopedRequestSnapshot()?.host })
+      },
+    })
+    try {
+      for (const path of ['/', '/?published']) {
+        const body = await (await fetch(`http://127.0.0.1:${server.port}${path}`)).json() as { host: string }
+        expect(body.host).toBe('harbor.example.com')
+      }
+    }
+    finally {
+      server.stop(true)
+    }
+  })
+
   it('prefers what stx published and keeps the server\'s site', async () => {
     const server = Bun.serve({
       port: 0,

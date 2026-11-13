@@ -54,6 +54,12 @@ export interface RequestContextSnapshot {
   params?: Record<string, string>
   ip?: string
   host?: string
+  /**
+   * The host a multi-site server resolved the site from. Set beside `site`,
+   * it is the `host` a page reads whatever stx published: behind a proxy the
+   * Host header names the upstream, not the address the visitor asked for.
+   */
+  siteHost?: string
   site?: SiteSnapshot | null
 }
 
@@ -96,7 +102,11 @@ export interface StacksRequestContext {
   locale: () => string
   /** Client IP, or '' when the server did not resolve one. */
   ip: () => string
-  /** Host header, or ''. */
+  /**
+   * The host the request was made for, or ''. On a multi-site app this is the
+   * host the site was resolved from, so behind a proxy it is the forwarded
+   * host and not the upstream address in the Host header.
+   */
   host: () => string
   /** The site resolved for this request's host, or null on a single-site app. */
   site: () => SiteSnapshot | null
@@ -299,9 +309,10 @@ export function scopedRequestSnapshot(): RequestContextSnapshot | undefined {
 
   const { own, published } = scope
   if (!published)
-    return own
+    return own.siteHost ? { ...own, host: own.siteHost } : own
 
-  return { ...own, ...published, site: own.site ?? published.site ?? null }
+  const merged = { ...own, ...published, site: own.site ?? published.site ?? null }
+  return own.siteHost ? { ...merged, host: own.siteHost } : merged
 }
 
 const STX_SERVE_CONTEXT = '__stxServeContext'
