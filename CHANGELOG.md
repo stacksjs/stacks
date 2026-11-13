@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.570...v0.75.571)
+
+## ✨ Features
+
+- **database**: a db call returns its value where it is written ([cb23d9e](https://github.com/stacksjs/stacks/commit/cb23d9e)) _(by Chris)_
+- **database**: a db call returns its value where it is written ([04dca66](https://github.com/stacksjs/stacks/commit/04dca66)) _(by Chris)_
+
+## ✅ Tests
+
+- a rejection assertion holds whether the call throws in place or rejects ([78bca93](https://github.com/stacksjs/stacks/commit/78bca93)) _(by Chris)_
+
+## ⏪ Reverts
+
+- a db call returns its value where it is written ([d082ef5](https://github.com/stacksjs/stacks/commit/d082ef5)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.569...v0.75.570)
 
 ## ✨ Features
