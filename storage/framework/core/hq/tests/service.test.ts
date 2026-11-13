@@ -23,6 +23,26 @@ hqServiceContract('memory adapter over the SQL code store', async () => {
   return { adapter: { ...createMemoryHqAdapter(), codes: sqlConnectCodeStore(client) }, user: { id: 'user_1' } }
 })
 
+// The same contract, for a service that hands over a licence and meters nothing.
+hqServiceContract('licence-only adapter', () => {
+  const licences = new Map<string, string>()
+  return {
+    user: { id: 'user_1' },
+    adapter: {
+      service: 'licensed',
+      approveUrl: (code: string) => `https://licensed.test/cli/connect?code=${encodeURIComponent(code)}`,
+      upgradeUrl: 'https://licensed.test/pricing',
+      codes: createMemoryConnectCodeStore(),
+      async provision(user: { id: string }, { app }: { app: string }) {
+        const id = `${user.id}/${app}`
+        if (!licences.has(id))
+          licences.set(id, `lic_${crypto.randomUUID()}`)
+        return { project: { id, name: app }, licenseKey: licences.get(id)!, dashboardUrl: 'https://licensed.test/account' }
+      },
+    },
+  }
+})
+
 describe('usage endpoint', () => {
   test('derives each meter\'s state from its own policy', async () => {
     const adapter = createMemoryHqAdapter({

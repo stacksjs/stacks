@@ -1,8 +1,8 @@
-import type { ConnectGrant, HqServiceAdapter, MeterReading, ReadPrincipal } from './service'
+import type { ConnectGrant, HqServiceAdapter, LicenseGrant, MeterReading, ReadPrincipal } from './service'
 import type { UsageReport } from './types'
 import { describe, expect, test } from 'bun:test'
 import { isPeriod } from './period'
-import { createHqService, createMemoryConnectCodeStore, hashConnectCode } from './service'
+import { createHqService, createMemoryConnectCodeStore, hashConnectCode, isLicenseGrant } from './service'
 
 /**
  * The contract every HQ service's adapter must pass, and an in-memory adapter
@@ -12,6 +12,10 @@ import { createHqService, createMemoryConnectCodeStore, hashConnectCode } from '
  *
  *   import { hqServiceContract } from '@stacksjs/hq/testing'
  *   hqServiceContract('bughq', async () => ({ adapter: bughqAdapter, user: await aSignedInUser() }))
+ *
+ * A licence-only service (no `usage` on its adapter) runs the same suite: the
+ * approved poll must carry a licence and no keys, and it must have no usage
+ * route.
  *
  * This module imports `bun:test`, so it is only for test files.
  */
@@ -47,7 +51,9 @@ export function hqServiceContract<User>(name: string, setup: () => HqContractHar
         const response = await service.handle(request(`/api/cli/connect/${code}`))
         return { status: response!.status, body: await response!.json() as Record<string, unknown> }
       }
-      return { ...harness, service, clock, start, poll }
+      // A service with nothing to meter hands over a licence and has no usage route.
+      const licensed = harness.adapter.usage === undefined
+      return { ...harness, service, clock, start, poll, licensed }
     }
 
     test('starting a connect answers a code and an approve URL that carries it', async () => {
@@ -80,8 +86,8 @@ export function hqServiceContract<User>(name: string, setup: () => HqContractHar
       expect(await poll(code)).toEqual({ status: 200, body: { status: 'pending' } })
     })
 
-    test('an approved code hands over the project and its keys, once', async () => {
-      const { start, poll, service, user, adapter } = await boot()
+    test('an approved code hands over the project and its keys or its licence, once', async () => {
+      const { start, poll, service, user, adapter, licensed } = await boot()
       const { code } = await start('my-app')
       const approval = await service.approveConnect(code, user)
       expect(approval.ok).toBe(true)
@@ -93,14 +99,24 @@ export function hqServiceContract<User>(name: string, setup: () => HqContractHar
       const first = await poll(code)
       expect(first.status).toBe(200)
       expect(first.body.status).toBe('approved')
-      const grant = first.body as unknown as ConnectGrant
+      const grant = first.body as unknown as ConnectGrant | LicenseGrant
       expect(typeof grant.project.id).toBe('string')
       expect(typeof grant.project.name).toBe('string')
-      expect(grant.ingestKey.length).toBeGreaterThan(0)
-      expect(grant.readKey.length).toBeGreaterThan(0)
-      expect(grant.readKey).not.toBe(grant.ingestKey)
       expect(() => new URL(grant.dashboardUrl)).not.toThrow()
-      expect(stored?.sealedGrant ?? '').not.toContain(grant.readKey)
+      expect(isLicenseGrant(grant)).toBe(licensed)
+      if (isLicenseGrant(grant)) {
+        // A licence and nothing else: a CLI must not be handed keys it would store.
+        expect(grant.licenseKey.length).toBeGreaterThan(0)
+        expect(first.body).not.toHaveProperty('ingestKey')
+        expect(first.body).not.toHaveProperty('readKey')
+        expect(stored?.sealedGrant ?? '').not.toContain(grant.licenseKey)
+      }
+      else {
+        expect(grant.ingestKey.length).toBeGreaterThan(0)
+        expect(grant.readKey.length).toBeGreaterThan(0)
+        expect(grant.readKey).not.toBe(grant.ingestKey)
+        expect(stored?.sealedGrant ?? '').not.toContain(grant.readKey)
+      }
 
       expect(await poll(code)).toEqual({ status: 404, body: { status: 'expired' } })
       expect(await service.approveConnect(code, user)).toEqual({ ok: false, reason: 'expired' })
@@ -151,8 +167,19 @@ export function hqServiceContract<User>(name: string, setup: () => HqContractHar
       expect(grants[1]!.project.id).toBe(grants[0]!.project.id)
     })
 
+    test('a licence-only service has no usage route', async () => {
+      const { service, licensed } = await boot()
+      if (!licensed)
+        return
+      expect(service.routes.map(route => `${route.method} ${route.path}`).sort()).toEqual(['GET /api/cli/connect/{code}', 'POST /api/cli/connect'])
+      expect(await service.handle(request('/api/v1/usage', { headers: { Authorization: 'Bearer anything' } }))).toBeNull()
+      expect((await service.usage(request('/api/v1/usage'))).status).toBe(404)
+    })
+
     test('usage refuses a missing, malformed or wrong read key', async () => {
-      const { service, start, poll, user } = await boot()
+      const { service, start, poll, user, licensed } = await boot()
+      if (licensed)
+        return
       const { code } = await start()
       await service.approveConnect(code, user)
       const grant = (await poll(code)).body as unknown as ConnectGrant
@@ -172,7 +199,9 @@ export function hqServiceContract<User>(name: string, setup: () => HqContractHar
     })
 
     test('usage answers every meter in the documented shape', async () => {
-      const { service, start, poll, user } = await boot()
+      const { service, start, poll, user, licensed } = await boot()
+      if (licensed)
+        return
       const { code } = await start()
       await service.approveConnect(code, user)
       const grant = (await poll(code)).body as unknown as ConnectGrant

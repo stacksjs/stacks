@@ -149,6 +149,9 @@ concurrent polls, expiry, project reuse, read-key refusal (including the ingest
 key) and the usage shape. `createMemoryHqAdapter()` passes it and doubles as a
 stand-in service for an app's tests.
 
+A licence-only adapter runs the same suite. There it checks that an approved
+poll carries a licence and no keys, and that the service has no usage route.
+
 ## Client
 
 ```ts
