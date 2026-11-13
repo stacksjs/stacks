@@ -71,12 +71,17 @@ const decrypted = await decrypt(encrypted, 'custom-passphrase')
 ## Password Hashing
 
 ```typescript
-import { make, check, needsRehash, info, detectAlgorithm } from '@stacksjs/security'
+import { make, makeSync, check, needsRehash, info, detectAlgorithm } from '@stacksjs/security'
 
 // Hash a password
 const hash = await make('password123')                          // bcrypt (default)
 const hash = await make('password123', { algorithm: 'argon2' })
 const hash = await make('password123', { rounds: 14 })          // bcrypt rounds
+
+// The same hash, answered in place. For a model `set:` hook, so the write it
+// belongs to stays in place. It holds the thread for the length of the hash
+// (about a quarter of a second for bcrypt at 12 rounds).
+const hashedNow = makeSync('password123')
 
 // Verify
 const valid = await check('password123', hash)  // true/false
@@ -95,6 +100,7 @@ const algo = detectAlgorithm(hash)  // 'bcrypt' | 'argon2' | 'argon2id' | ...
 - `hashNeedsRehash` = `needsRehash`
 - `hashInfo` = `info`
 - `makeHash` = `make`
+- `hashMakeSync` = `makeHashSync` = `makeSync`
 - `verifyHash` = `check`
 
 ### Algorithm-Specific Functions

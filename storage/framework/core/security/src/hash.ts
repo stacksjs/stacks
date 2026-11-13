@@ -207,6 +207,35 @@ export async function make(value: string, options?: HashMakeOptions): Promise<st
 }
 
 /**
+ * `make`, answering in place.
+ *
+ * A model write returns its row where it is written, and a `set:` hook that
+ * hashes a password is part of that write: if the hook is asynchronous the
+ * write has to wait for it and becomes a promise. This is the same hash,
+ * computed on the calling thread. That costs what the hash costs (about a
+ * quarter of a second for bcrypt at 12 rounds) and nothing else runs on the
+ * thread meanwhile, so use it where the row is wanted in place and `make`
+ * where the wait is the better trade.
+ */
+export function makeSync(value: string, options?: HashMakeOptions): string {
+  const config = getHashingConfig()
+  const algorithm = options?.algorithm || config.driver || 'bcrypt'
+
+  if (algorithm === 'bcrypt')
+    return Bun.password.hashSync(value, { algorithm: 'bcrypt', cost: options?.rounds || config.bcrypt?.rounds || 12 })
+
+  if (algorithm === 'argon2' || algorithm === 'argon2id' || algorithm === 'argon2i' || algorithm === 'argon2d') {
+    return Bun.password.hashSync(value, {
+      algorithm: algorithm === 'argon2' ? 'argon2id' : algorithm,
+      memoryCost: options?.memory || config.argon2?.memory || 65536,
+      timeCost: options?.time || config.argon2?.time || 2,
+    })
+  }
+
+  throw new Error(`Unsupported hashing algorithm: ${algorithm}`)
+}
+
+/**
  * Verify a value against a hash
  * Similar to Laravel's Hash::check()
  *
@@ -299,6 +328,7 @@ export function timingSafeEqualString(a: string, b: string): boolean {
 // Function-based exports (preferred API)
 export {
   make as hashMake,
+  makeSync as hashMakeSync,
   check as hashCheck,
   needsRehash as hashNeedsRehash,
   info as hashInfo,
@@ -306,4 +336,4 @@ export {
 }
 
 // Legacy exports for backwards compatibility
-export { make as makeHash, check as verifyHash, base64Encode }
+export { make as makeHash, makeSync as makeHashSync, check as verifyHash, base64Encode }

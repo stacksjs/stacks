@@ -4,6 +4,9 @@ import {
   info,
   needsRehash,
   make,
+  makeSync,
+  makeHashSync,
+  hashMakeSync,
   check,
   bcryptEncode,
   argon2Encode,
@@ -265,6 +268,36 @@ describe('make', () => {
 // ---------------------------------------------------------------------------
 // check
 // ---------------------------------------------------------------------------
+describe('makeSync', () => {
+  // A model setter runs inside a write that answers where it is written, so
+  // the hash it stores has to be made where it is written too.
+  test('answers in place with a hash that check accepts', async () => {
+    const hash = makeSync('password123', { algorithm: 'bcrypt', rounds: 4 })
+    expect(typeof hash).toBe('string')
+    expect(hash.startsWith('$2')).toBe(true)
+    expect(await check('password123', hash)).toBe(true)
+    expect(await check('not the password', hash)).toBe(false)
+  })
+
+  test('makes the same kind of hash as make for each algorithm', async () => {
+    expect(makeSync('password123', { algorithm: 'argon2id', memory: 1024, time: 1 }).startsWith('$argon2id$')).toBe(true)
+    expect(makeSync('password123', { algorithm: 'argon2' , memory: 1024, time: 1 }).startsWith('$argon2id$')).toBe(true)
+    const viaAsync = info(await make('password123', { algorithm: 'bcrypt', rounds: 5 }))
+    const viaSync = info(makeSync('password123', { algorithm: 'bcrypt', rounds: 5 }))
+    expect(viaSync.algorithm).toBe(viaAsync.algorithm)
+    expect(viaSync.options).toEqual(viaAsync.options)
+  })
+
+  test('refuses an algorithm it does not know', () => {
+    expect(() => makeSync('password123', { algorithm: 'md5' as never })).toThrow('Unsupported hashing algorithm')
+  })
+
+  test('is exported under the names its promise twin has', () => {
+    expect(makeHashSync).toBe(makeSync)
+    expect(hashMakeSync).toBe(makeSync)
+  })
+})
+
 describe('check', () => {
   test('returns true for correct bcrypt password', async () => {
     const hash = await bcryptEncode('my-secret')
