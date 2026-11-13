@@ -123,7 +123,7 @@ try {
   await check('revokeAccountCredentials joins the caller\'s transaction and rolls back with it', async () => {
     await resetUser('pw')
     const pair = await oldPair('a')
-    await assert.rejects(db.transaction(async (tx) => {
+    await assert.rejects(async () => db.transaction(async (tx) => {
       await revokeAccountCredentials(42, { tx })
       throw new Error('caller rolls back')
     }), /caller rolls back/)
@@ -189,7 +189,7 @@ try {
     const credential = mintPasswordResetToken()
     await db.deleteFrom('password_resets').execute()
     await db.insertInto('password_resets').values({ email: 'Ada@Example.com', token: credential.digest, created_at: sqlDateTime() } as never).execute()
-    await assert.rejects(() => consumePasswordResetToken(credential.token, async () => { throw new Error('valid before change') }), /valid before change/)
+    await assert.rejects(async () => consumePasswordResetToken(credential.token, async () => { throw new Error('valid before change') }), /valid before change/)
     assert.equal((await changePassword(42, 'old-password', 'chosen-password', { notify: false })).success, true)
     assert.deepEqual(await consumePasswordResetToken(credential.token, async () => 'old recovery still accepted'), { consumed: false })
   })
@@ -198,7 +198,7 @@ try {
     await resetUser('old-password')
     const credential = mintPasswordResetToken()
     await db.insertInto('password_resets').values({ email: 'ada@example.com', token: credential.digest, created_at: sqlDateTime() } as never).execute()
-    await assert.rejects(() => consumePasswordResetToken(credential.token, async claim => {
+    await assert.rejects(async () => consumePasswordResetToken(credential.token, async claim => {
       await revokeAccountCredentials(claim.userId)
       throw new Error('outer recovery failed')
     }), /outer recovery failed/)

@@ -32,7 +32,7 @@ try {
   assert.deepEqual([...(row.data as Uint8Array)], [1, 2, 255])
 
   // A failed statement mid-transaction rolls back the writes before it.
-  await assert.rejects(db.transaction(async (tx) => {
+  await assert.rejects(async () => db.transaction(async (tx) => {
     await tx.insertInto(table).values({ email: 'b@example.com' }).execute()
     await tx.insertInto(table).values({ email: 'a@example.com' }).execute()
   }), (error: { code?: string }) => error.code === 'SQLITE_CONSTRAINT_UNIQUE')

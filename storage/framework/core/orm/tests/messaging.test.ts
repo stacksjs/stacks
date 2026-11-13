@@ -33,10 +33,10 @@ describe('persistent direct messaging', () => {
     const delivered: number[] = []
     const messenger = createMessenger({ ...options, actorId: 1, onMessageSent: ({ message }) => { delivered.push(message.id) } })
     const thread = await messenger.direct(2)
-    await expect(db.transaction(async () => {
+    await expect((async () => db.transaction(async () => {
       await messenger.send(thread.id, 'Rolled back', 'rollback-notification')
       throw new Error('rollback')
-    })).rejects.toThrow('rollback')
+    }))()).rejects.toThrow('rollback')
     expect(delivered).toEqual([])
     const saved = await messenger.send(thread.id, 'Committed', 'committed-notification')
     await messenger.send(thread.id, 'Committed', 'committed-notification')

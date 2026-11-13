@@ -20,14 +20,14 @@ try {
     'INSERT INTO schema_child (id, parent_id) VALUES (1, 1)',
   ])
   assert.equal((await db.selectFrom('schema_parent').select(['label']).executeTakeFirstOrThrow()).label, 'semicolon; and -- comment text')
-  await assert.rejects(() => db.insertInto('schema_child').values({ id: 2, parent_id: 999 }).execute(), 'schema setup retains foreign-key enforcement')
-  await assert.rejects(() => applyTestSchema([
+  await assert.rejects(async () => db.insertInto('schema_child').values({ id: 2, parent_id: 999 }).execute(), 'schema setup retains foreign-key enforcement')
+  await assert.rejects(async () => applyTestSchema([
     'CREATE TABLE schema_rollback (id INTEGER PRIMARY KEY)',
     "INSERT INTO schema_parent (id, label) VALUES (2, 'must roll back')",
     'ALTER TABLE schema_missing ADD COLUMN impossible INTEGER',
   ]))
   assert.equal((await db.selectFrom('schema_parent').select(['id']).execute()).length, 1, 'a failed schema batch rolls back earlier data changes')
-  await assert.rejects(() => db.selectFrom('schema_rollback').selectAll().execute(), 'a failed schema batch rolls back its created tables')
+  await assert.rejects(async () => db.selectFrom('schema_rollback').selectAll().execute(), 'a failed schema batch rolls back its created tables')
   await applyTestSchema([])
   await applyTestSchema(['CREATE TABLE schema_after_failure (id INTEGER PRIMARY KEY)'])
   await db.insertInto('schema_after_failure').values({ id: 1 }).execute()

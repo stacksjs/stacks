@@ -25,12 +25,12 @@ describe('transaction-scoped unsafe queries', () => {
     const db = createQueryBuilder({ sql }) as any
     await db.unsafe('CREATE TABLE transaction_raw_writes (id INTEGER PRIMARY KEY, name TEXT)')
 
-    await expect(db.transaction(async (trx: any) => {
+    await expect((async () => db.transaction(async (trx: any) => {
       await trx.unsafe('INSERT INTO transaction_raw_writes (name) VALUES (?)', ['rollback me'])
       const inside = await trx.unsafe('SELECT name FROM transaction_raw_writes')
       expect(inside).toEqual([{ name: 'rollback me' }])
       throw new Error('rollback raw write')
-    })).rejects.toThrow('rollback raw write')
+    }))()).rejects.toThrow('rollback raw write')
 
     const after = await db.unsafe('SELECT name FROM transaction_raw_writes')
     expect(after).toEqual([])

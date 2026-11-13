@@ -90,7 +90,7 @@ try {
   })
   await check('outer rollback never delivers an invalid link', async () => {
     await seed()
-    await assert.rejects(db.transaction(async () => {
+    await assert.rejects(async () => db.transaction(async () => {
       await passwordResets(requestedEmail).sendEmail()
       throw new Error('fixture rollback')
     }), /fixture rollback/)

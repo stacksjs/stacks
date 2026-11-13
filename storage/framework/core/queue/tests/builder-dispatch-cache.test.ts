@@ -105,10 +105,10 @@ test('builder dispatch remains buffered until ORM transaction commit and discard
   })
   expect(await db.selectFrom('jobs').selectAll().execute()).toHaveLength(2)
   const failure = new Error('rollback dispatch')
-  await expect(transaction(async () => {
+  await expect((async () => transaction(async () => {
     await job('Inspire', { value: 2 }).dispatch()
     throw failure
-  })).rejects.toBe(failure)
+  }))()).rejects.toBe(failure)
   const rows = await db.selectFrom('jobs').orderBy('id', 'asc').selectAll().execute()
   expect(rows.map(row => JSON.parse(row.payload).payload.value)).toEqual([0, 1])
 })

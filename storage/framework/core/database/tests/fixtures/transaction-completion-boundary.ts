@@ -22,7 +22,7 @@ try {
   await db.unsafe('CREATE TABLE completion_probe (id INTEGER PRIMARY KEY)').execute()
   const events: string[] = []
   const failure = new Error('post-commit observer failed')
-  await assert.rejects(db.transaction(async (tx) => {
+  await assert.rejects(async () => db.transaction(async (tx) => {
     await tx.insertInto('completion_probe').values({ id: 1 }).execute()
     assert.equal(enqueueAfterCommit(() => { events.push('committed-side-effect') }), true)
   }, { retries: 0, afterCommit: () => { throw failure } }), error => error === failure)
@@ -31,7 +31,7 @@ try {
   events.length = 0
   db.setTransactionDefaults({ afterCommit: () => { throw failure } })
   try {
-    await assert.rejects(db.transaction(async (tx) => {
+    await assert.rejects(async () => db.transaction(async (tx) => {
       await tx.insertInto('completion_probe').values({ id: 2 }).execute()
       enqueueAfterCommit(() => { events.push('default-observer-effect') })
     }), error => error === failure)
@@ -42,7 +42,7 @@ try {
   events.length = 0
   db.setTransactionDefaults({ afterCommit: () => { throw failure } })
   try {
-    await assert.rejects(transaction(async (tx) => {
+    await assert.rejects(async () => transaction(async (tx) => {
       await tx.insertInto('completion_probe').values({ id: 3 }).execute()
       enqueueAfterCommit(() => { events.push('orm-committed-effect') })
     }), error => error === failure)
@@ -70,7 +70,7 @@ try {
       afterRollback: () => { rollbackCalls++ },
       onRetry: () => { retries++ },
     }
-    await assert.rejects(wrapped ? db.transactional(work, options)() : db.transaction(work, options), error => error === observerError)
+    await assert.rejects(async () => wrapped ? db.transactional(work, options)() : db.transaction(work, options), error => error === observerError)
     assert.deepEqual({ bodies, rollbackCalls, retries }, { bodies: 1, rollbackCalls: 0, retries: 0 })
     assert.deepEqual(events, ['async-observer-effect'])
   }
@@ -99,7 +99,7 @@ try {
     onRetry: () => { ormRetries++ },
   })
   try {
-    await assert.rejects(transaction(async (tx) => {
+    await assert.rejects(async () => transaction(async (tx) => {
       ormBodies++
       await tx.insertInto('completion_probe').values({ id: 13 }).execute()
       enqueueAfterCommit(() => { events.push('async-orm-effect') })
@@ -113,7 +113,7 @@ try {
   // the inner writes' effects if their outer transaction ultimately commits.
   events.length = 0
   await transaction(async (outer) => {
-    await assert.rejects(outer.transaction(async (inner) => {
+    await assert.rejects(async () => outer.transaction(async (inner) => {
       await inner.insertInto('completion_probe').values({ id: 6 }).execute()
       enqueueAfterCommit(() => { events.push('inner-survived') })
     }, { afterCommit: () => { throw failure } }), error => error === failure)
@@ -123,7 +123,7 @@ try {
   assert.deepEqual(events, ['inner-survived', 'outer-survived'])
 
   events.length = 0
-  await assert.rejects(transaction(async (outer) => {
+  await assert.rejects(async () => transaction(async (outer) => {
     enqueueAfterCommit(() => { events.push('outer-rolled-back') })
     await outer.transaction(async (inner) => {
       await inner.insertInto('completion_probe').values({ id: 7 }).execute()

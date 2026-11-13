@@ -43,7 +43,7 @@ router.get('/schedule', request => {
 const server = Bun.serve({ port: 0, hostname: '127.0.0.1', fetch: request => router.bunRouter.handleRequest(request) })
 const post = (path: string, body: unknown) => fetch(`http://127.0.0.1:${server.port}${path}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
 try {
-  await assert.rejects(() => validate({ paymentMethod: 'card' }, validations), { status: 422 })
+  await assert.rejects(async () => validate({ paymentMethod: 'card' }, validations), { status: 422 })
   for (const path of ['/conditional', '/write']) {
     const response = await post(path, { paymentMethod: 'card' })
     assert.equal(response.status, 422, path)

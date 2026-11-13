@@ -118,7 +118,7 @@ try {
   await check('rolling recovery back restores its token, password and pending link', async () => {
     await seed('synthetic-recovery-rollback')
     await seedRecovery()
-    await assert.rejects(db.transaction(async () => {
+    await assert.rejects(async () => db.transaction(async () => {
       assert.equal((await passwordResets(email(1)).resetPassword(resetToken, newPassword)).success, true)
       throw new Error('fixture recovery rollback')
     }), /fixture recovery rollback/)
@@ -176,7 +176,7 @@ try {
   await check('an enclosing rollback restores the grant and removes the issued credentials', async () => {
     await seed('synthetic-outer-rollback')
     let bearer = ''
-    await assert.rejects(db.transaction(async () => {
+    await assert.rejects(async () => db.transaction(async () => {
       const response = await consume('synthetic-outer-rollback')
       assert.equal(response.status, 200)
       bearer = (await response.json() as { access_token: string }).access_token

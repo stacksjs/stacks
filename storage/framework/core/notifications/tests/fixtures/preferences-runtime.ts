@@ -26,7 +26,7 @@ await setNotificationPreference(1, 'email', true, 'marketing')
 assert.deepEqual(await filterChannelsByPreferences(1, ['email'], 'marketing'), [], 'a global opt-out must remain a master switch')
 await Promise.all([setNotificationPreference(1, 'sms', false), setNotificationPreference(1, 'sms', true)])
 assert.equal((await db.selectFrom('notification_preferences').selectAll().where('channel', '=', 'sms').execute()).length, 1, 'nullable global categories must not permit duplicate rows')
-await assert.rejects(() => bulkSetPreferences(1, [{ channel: 'email', enabled: true }, { channel: 'sms', enabled: null as any }]))
+await assert.rejects(async () => bulkSetPreferences(1, [{ channel: 'email', enabled: true }, { channel: 'sms', enabled: null as any }]))
 assert.equal((await getNotificationPreferences(1)).get('email'), false, 'a failed bulk write must not partially save earlier preferences')
 process.env.APP_KEY = 'test-key-0123456789abcdef'
 await db.insertInto('users').values({ id: 2 }).execute()
@@ -61,7 +61,7 @@ assert.equal((await DatabaseNotificationDriver.getUserNotifications(1)).length, 
 assert.equal(events.length, 1, 'one private invalidation for a concurrently retried notification')
 assert.equal(events[0].event, 'notifications.created')
 assert(!JSON.stringify(events[0]).includes('Hello'), 'notification contents never appear in the broadcast')
-await assert.rejects(db.transaction(async () => {
+await assert.rejects(async () => db.transaction(async () => {
   await DatabaseNotificationDriver.send({ userId: 1, type: 'chat_message', idempotencyKey: 'rollback', data: { body: 'Rolled back' } })
   throw new Error('rollback')
 }))

@@ -120,7 +120,7 @@ try {
   await check('outer rollback discards the queued rehash', async () => {
     const email = 'rollback-rehash@example.invalid'
     await insertUser(5, email)
-    await assert.rejects(db.transaction(async () => {
+    await assert.rejects(async () => db.transaction(async () => {
       assert.equal(await Auth.withVerifiedCredentials({ email, password }, async () => true), true)
       throw new Error('fixture rollback')
     }), /fixture rollback/)

@@ -65,7 +65,7 @@ else {
 const runs = await db.unsafe(`SELECT server FROM runs WHERE task = '${task}'`).execute() as Array<{ server: string }>
 console.log(`runs ${task}: ${runs.map(row => row.server).sort().join(',')}`)
 // A scheduler that claims nothing has no table to count.
-const claims = await db.unsafe('SELECT COUNT(*) AS n FROM scheduler_claims').execute()
+const claims = await (async () => db.unsafe('SELECT COUNT(*) AS n FROM scheduler_claims').execute())()
   .then(rows => String(Number((rows as Array<{ n: number | string | bigint }>)[0]!.n)), () => 'no table')
 console.log(`claims: ${claims}`)
 console.log(`server ${server} done`)

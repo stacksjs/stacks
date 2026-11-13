@@ -117,7 +117,7 @@ try {
     await db.deleteFrom('users').execute()
     await db.insertInto('users').values({ id: 1, name: 'Fixture', email, password: oldHash }).execute()
     try {
-      await assert.rejects(() => db.transaction(async () => {
+      await assert.rejects(async () => db.transaction(async () => {
         const credentials = { email, password: 'old-synthetic-password' }
         const result = mode === 'session'
           ? await SessionAuth.login(email, credentials.password)
@@ -218,7 +218,7 @@ try {
   })
   try {
     let rolledBackToken = ''
-    await assert.rejects(db.transaction(async () => {
+    await assert.rejects(async () => db.transaction(async () => {
       await db.insertInto('users').values({ id: 99, name: 'Uncommitted principal', email: 'transaction@example.invalid', password: oldHash }).execute()
       const result = await Auth.loginUsingId(99)
       assert(result, 'direct login must read a user written on the held transaction')

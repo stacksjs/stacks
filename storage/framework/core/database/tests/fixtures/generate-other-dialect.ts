@@ -75,9 +75,9 @@ assert.equal(getDatabaseDialect(), 'sqlite')
 assert.deepEqual(readdirSync(snapshots).sort().map(file => [file, readFileSync(join(snapshots, file), 'utf8')]), beforePreview)
 assert.equal(sql(sqliteDir).length, 2)
 assert.equal(sql(postgresDir).length, 1)
-await assert.rejects(() => pendingMigrationOperations({ dialect: 'postgres', fromDb: true }), /attached sqlite database/)
+await assert.rejects(async () => pendingMigrationOperations({ dialect: 'postgres', fromDb: true }), /attached sqlite database/)
 // Intentionally invalid typed API input must fail before any database access.
-await assert.rejects(() => pendingMigrationOperations({ dialect: 'not-a-dialect' as never }), /Unknown migration dialect/)
+await assert.rejects(async () => pendingMigrationOperations({ dialect: 'not-a-dialect' as never }), /Unknown migration dialect/)
 assert.equal(getDatabaseDialect(), 'sqlite')
 
 // --dialect postgres brings it up to date, and the warning goes away.

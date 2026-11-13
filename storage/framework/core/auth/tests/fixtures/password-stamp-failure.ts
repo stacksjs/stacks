@@ -50,8 +50,8 @@ try {
   // An unrelated schema/query failure is not evidence that the optional
   // password stamp is absent. Test through public access and refresh paths.
   await db.unsafe('ALTER TABLE users RENAME COLUMN id TO hidden_id').execute()
-  await check('access lookup failure', () => assert.rejects(() => findToken(original.plainTextToken)))
-  await check('refresh lookup failure', () => assert.rejects(() => refreshToken(original.refreshToken!)))
+  await check('access lookup failure', () => assert.rejects(async () => findToken(original.plainTextToken)))
+  await check('refresh lookup failure', () => assert.rejects(async () => refreshToken(original.refreshToken!)))
   await db.unsafe('ALTER TABLE users RENAME COLUMN hidden_id TO id').execute()
   await check('failed verification must not rotate', async () => {
     assert.equal((await db.primary.selectFrom('oauth_access_tokens').selectAll().execute()).length, 1)
@@ -64,7 +64,7 @@ try {
   for (const message of ['connection reset', 'permission denied', 'query timed out', 'no such table: other_credentials', 'relation "other_credentials" does not exist']) {
     await check(message, async () => {
       const error = new Error(message)
-      await assert.rejects(() => getPasswordChangedAt(1, { unsafe() { throw error } }), candidate => candidate === error)
+      await assert.rejects(async () => getPasswordChangedAt(1, { unsafe() { throw error } }), candidate => candidate === error)
     })
   }
 

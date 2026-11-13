@@ -37,11 +37,11 @@ try {
     method, headers: { authorization: `Bearer ${bearer}`, ...(context ? { 'x-stacks-impersonation': context } : {}) },
   }))
   const issued = await runWithRequest(req(actor.plainTextToken), () => Auth.startImpersonation(2, 'Investigate missing workout'))
-  await assert.rejects(() => runWithRequest(req(restricted.plainTextToken), () => Auth.startImpersonation(2, 'Investigate missing workout')), /full administrator session/)
+  await assert.rejects(async () => runWithRequest(req(restricted.plainTextToken), () => Auth.startImpersonation(2, 'Investigate missing workout')), /full administrator session/)
   await runWithRequest(req(actor.plainTextToken, 'GET', issued.credential), async () => {
     assert.equal(Number((await Auth.getUserFromToken(actor.plainTextToken))?.id), 2)
     assert.equal(requestImpersonation()?.actorId, 1)
-    await assert.rejects(() => Auth.startImpersonation(2, 'Attempt a nested session'))
+    await assert.rejects(async () => Auth.startImpersonation(2, 'Attempt a nested session'))
   })
   assert.equal(await runWithRequest(req(actor.plainTextToken, 'POST', issued.credential), () => Auth.getUserFromToken(actor.plainTextToken)), undefined)
   assert.equal(await runWithRequest(req(actor.plainTextToken, 'HEAD', issued.credential), () => Auth.getUserFromToken(actor.plainTextToken)), undefined)
@@ -57,7 +57,7 @@ try {
   assert.equal(await runWithRequest(req(actor.plainTextToken, 'GET', issued.credential), () => Auth.getUserFromToken(actor.plainTextToken)), undefined)
   config.auth.impersonation.eligible = eligible
   await db.unsafe('ALTER TABLE auth_privileged_audits RENAME TO unavailable_audits').execute()
-  await assert.rejects(() => runWithRequest(req(actor.plainTextToken, 'GET', issued.credential), () => Auth.getUserFromToken(actor.plainTextToken)))
+  await assert.rejects(async () => runWithRequest(req(actor.plainTextToken, 'GET', issued.credential), () => Auth.getUserFromToken(actor.plainTextToken)))
   await db.unsafe('ALTER TABLE unavailable_audits RENAME TO auth_privileged_audits').execute()
   await db.deleteFrom('user_roles').where('user_id', '=', 1).execute()
   assert.equal(await runWithRequest(req(actor.plainTextToken, 'GET', issued.credential), () => Auth.getUserFromToken(actor.plainTextToken)), undefined)

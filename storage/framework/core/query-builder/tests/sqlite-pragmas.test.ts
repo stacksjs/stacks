@@ -63,8 +63,8 @@ describe('wrapped createQueryBuilder sqlite pragmas (stacksjs/stacks#1951)', () 
 
     // The exact store-handler path: insertInto(table).values(data).execute().
     // Pre-fix this orphan insert succeeded silently — FK enforcement was off.
-    await expect(
-      db.insertInto('c_1951qb').values({ id: 1, p_id: 999 }).execute(),
+    await expect((async () => 
+      db.insertInto('c_1951qb').values({ id: 1, p_id: 999 }).execute())(),
     ).rejects.toThrow(/FOREIGN KEY constraint failed/)
   })
 

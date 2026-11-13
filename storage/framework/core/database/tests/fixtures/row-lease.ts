@@ -33,7 +33,7 @@ else {
   assert.equal(await first.renew(), false)
   await first.release()
   await second.assertOwned()
-  await assert.rejects(first.commit(async () => { await db.updateTable('lease_subjects').set({ value: 99 }).where('id', '=', 1).execute() }), /ownership was lost/)
+  await assert.rejects(async () => first.commit(async () => { await db.updateTable('lease_subjects').set({ value: 99 }).where('id', '=', 1).execute() }), /ownership was lost/)
   assert.equal((await db.selectFrom('lease_subjects').select('value').where('id', '=', 1).executeTakeFirst())?.value, 1)
   await second.release()
   assert(await claimRowLease('lease_subjects', { id: 1, owner: 7 }, columns, 10000))

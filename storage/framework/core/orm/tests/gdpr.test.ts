@@ -416,7 +416,8 @@ describe('erasure', () => {
       ...models,
       Lead: { ...models.Lead, belongsTo: ['User'], traits: { gdpr: { erasure: 'anonymize' } } },
     }
-    await db.unsafe(`ALTER TABLE leads ADD COLUMN user_id INTEGER`).execute().catch(() => {})
+    try { await db.unsafe(`ALTER TABLE leads ADD COLUMN user_id INTEGER`).execute() }
+    catch {}
     await (db as any).insertInto('leads').values({ email: 'ada@lead.test', user_id: 1, source: 'ads' }).execute()
     await (db as any).insertInto('leads').values({ email: 'ada2@lead.test', user_id: 1, source: 'ads' }).execute()
 

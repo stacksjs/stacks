@@ -26,7 +26,7 @@ try {
   await assert.rejects(issuePasswordResetToken('claim@example.invalid', { expiresAt: new Date(Date.now() - 1) }), RangeError)
   const legacy = mintPasswordResetToken()
   await db.insertInto('password_resets').values({ email: 'Claim@Example.invalid', token: legacy.digest, created_at: new Date(Date.now() - 120_000).toISOString() }).execute()
-  await assert.rejects(() => consumePasswordResetToken(legacy.token, async () => { throw new Error('legacy credential valid before replacement') }), /legacy credential valid before replacement/)
+  await assert.rejects(async () => consumePasswordResetToken(legacy.token, async () => { throw new Error('legacy credential valid before replacement') }), /legacy credential valid before replacement/)
   const replacement = await issuePasswordResetToken('claim@example.invalid', { throttleMs: 60_000 })
   assert(replacement.issued)
   assert.deepEqual(await consumePasswordResetToken(legacy.token, async () => 'stale legacy credential'), { consumed: false }, 'replacement retires every case variant')
@@ -70,7 +70,7 @@ try {
   })))
   assert.equal(outcomes.filter(outcome => outcome.consumed).length, 1)
   const retryable = await mint()
-  await assert.rejects(() => consumePasswordResetToken(retryable, async () => {
+  await assert.rejects(async () => consumePasswordResetToken(retryable, async () => {
     await db.updateTable('users').set({ password: 'rolled-back' }).where('id', '=', 1).execute()
     throw new Error('revocation failed')
   }), /revocation failed/)

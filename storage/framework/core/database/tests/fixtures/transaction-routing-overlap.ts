@@ -42,7 +42,7 @@ try {
     assert.equal(request.getStore(), name)
     assert.equal(contextInTransaction(), false)
     const observers: Array<[string, string | undefined, boolean]> = []
-    await assert.rejects(db.transaction(async () => { throw new Error('fixture observer rollback') }, {
+    await assert.rejects(async () => db.transaction(async () => { throw new Error('fixture observer rollback') }, {
       onRollback() { observers.push(['onRollback', request.getStore(), contextInTransaction()]) },
       afterRollback() { observers.push(['afterRollback', request.getStore(), contextInTransaction()]) },
     }), /fixture observer rollback/)

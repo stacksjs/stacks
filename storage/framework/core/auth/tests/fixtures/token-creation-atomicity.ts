@@ -169,7 +169,7 @@ try {
   })
   await check('outer rollback removes both rows from nested creation', async () => {
     const before = await snapshot()
-    await assert.rejects(db.transaction(async () => {
+    await assert.rejects(async () => db.transaction(async () => {
       const pair = await createToken(42, 'nested session', ['read'])
       assert(await findToken(pair.plainTextToken), 'the caller must see its uncommitted token')
       assert.equal(await validateRefreshToken(pair.refreshToken!), true)

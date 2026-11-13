@@ -79,7 +79,7 @@ try {
   }
   await check('outer rollback retains the old login challenge', async () => {
     const before = await rows()
-    await assert.rejects(db.transaction(async () => {
+    await assert.rejects(async () => db.transaction(async () => {
       await createTwoFactorChallenge(1)
       throw new Error('fixture rollback')
     }), /fixture rollback/)

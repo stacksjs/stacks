@@ -177,7 +177,7 @@ async function matrix() {
   await db.unsafe('UPDATE membership_items SET value = 10 WHERE id = 5').execute()
   assert.deepEqual(await live.execute(), [])
   const rollback = new Error('membership rollback')
-  await assert.rejects(db.transaction(async () => {
+  await assert.rejects(async () => db.transaction(async () => {
     await db.unsafe('UPDATE membership_items SET value = 9 WHERE id = 5').execute()
     assert.deepEqual(await live.execute(), [{ id: 5 }])
     assert.deepEqual(await membership('value', 'in', [9]).executeTakeFirst(), { id: 5 })

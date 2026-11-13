@@ -45,7 +45,7 @@ async function check(name: string, user: Record<string, unknown> | undefined, pa
   req.params = { document: '17' }
   await runWithRequest(req, async () => {
     if (status) {
-      await assert.rejects(() => modules.get(name).handle(req), (error: { status?: number }) => error.status === status)
+      await assert.rejects(async () => modules.get(name).handle(req), (error: { status?: number }) => error.status === status)
     }
     else {
       assert.equal(await modules.get(name).handle(req), undefined)

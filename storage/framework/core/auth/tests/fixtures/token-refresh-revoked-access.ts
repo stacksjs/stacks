@@ -74,7 +74,7 @@ try {
   await check('rolling back access revocation restores refresh eligibility', async () => {
     const pair = await createToken(1, 'rollback', ['read'])
     const before = await snapshot()
-    await assert.rejects(db.transaction(async () => {
+    await assert.rejects(async () => db.transaction(async () => {
       await db.updateTable('oauth_access_tokens').set({ revoked: true }).where('id', '=', pair.accessToken.id).execute()
       assert.equal(await validateRefreshToken(pair.refreshToken!), false)
       await assert.rejects(refreshToken(pair.refreshToken!), /Invalid or expired refresh token/)

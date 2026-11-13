@@ -133,7 +133,7 @@ try {
   })
   await check('an outer rollback preserves the password, recovery link and pending challenge', async () => {
     const challenge = await createTwoFactorChallenge(1)
-    await assert.rejects(db.transaction(async () => {
+    await assert.rejects(async () => db.transaction(async () => {
       assert.equal((await passwordResets(email(1)).resetPassword(resetToken, newPassword)).success, true)
       throw new Error('fixture rollback')
     }), /fixture rollback/)
@@ -193,7 +193,7 @@ try {
   await check('a caller rollback restores the challenge and removes the issued token', async () => {
     const challenge = await createTwoFactorChallenge(1)
     let issued = ''
-    await assert.rejects(db.transaction(async () => {
+    await assert.rejects(async () => db.transaction(async () => {
       const response = await verify(challenge)
       assert.equal(response.status, 200)
       issued = (await response.json() as { access_token: string }).access_token

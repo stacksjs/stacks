@@ -56,7 +56,7 @@ try {
   assert.equal(await enableTwoFactor(1, newSecret, await generateTwoFactorToken(newSecret)), true)
   assert.equal(await verifyTwoFactorRecoveryCode(1, rotated[1]!), false, 'even reusing the same authenticator secret cannot revive a revoked backup code')
   await stashPendingTwoFactorSecret(3, secret)
-  await assert.rejects(db.transaction(async () => {
+  await assert.rejects(async () => db.transaction(async () => {
     assert.equal((await confirmTwoFactorSetup(3, await generateTwoFactorToken(secret))).enabled, true)
     throw new Error('synthetic rollback')
   }), /synthetic rollback/)

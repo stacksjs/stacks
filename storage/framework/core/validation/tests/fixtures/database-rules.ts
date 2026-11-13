@@ -13,7 +13,7 @@ assert.equal(await unique('validation_accounts', 'email', 1)('existing@example.t
 assert.equal(await unique('validation_accounts', 'email', 0)('zero@example.test', {}), true)
 assert.equal(await exists('validation_accounts', 'id')(1, {}), true)
 assert.equal(typeof await exists('validation_accounts', 'id')(99, {}), 'string')
-for (const rule of [exists('missing_validation_table', 'id'), unique('missing_validation_table', 'id')]) await assert.rejects(() => rule(1, {}))
+for (const rule of [exists('missing_validation_table', 'id'), unique('missing_validation_table', 'id')]) await assert.rejects(async () => rule(1, {}))
 const server = Bun.serve({ port: 0, hostname: '127.0.0.1', async fetch() {
   try { await exists('missing_validation_table', 'id')(1, {}); return Response.json({ approved: true }) }
   catch { return Response.json({ approved: false }, { status: 500 }) }

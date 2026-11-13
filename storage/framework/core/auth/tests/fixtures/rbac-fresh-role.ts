@@ -19,7 +19,7 @@ try {
   assert.equal(await hasRole(42, 'platform-admin'), true, 'the normal role cache still holds the previous grant')
   assert.equal(await hasFreshRole(42, 'platform-admin'), false)
   await db.unsafe('DROP TABLE user_roles').execute()
-  await assert.rejects(() => hasFreshRole(42, 'platform-admin'))
+  await assert.rejects(async () => hasFreshRole(42, 'platform-admin'))
   console.log('fresh role checks OK')
 }
 finally {

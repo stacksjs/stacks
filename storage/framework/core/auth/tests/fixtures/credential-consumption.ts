@@ -149,7 +149,7 @@ try {
   await resetTotp()
   await db.unsafe('ALTER TABLE users RENAME COLUMN two_factor_last_used_step TO hidden_totp_step').execute()
   try {
-    await assert.rejects(() => verifyTwoFactorLoginCode(1, code), /two_factor_last_used_step/i, 'TOTP: missing replay schema must fail closed')
+    await assert.rejects(async () => verifyTwoFactorLoginCode(1, code), /two_factor_last_used_step/i, 'TOTP: missing replay schema must fail closed')
   }
   catch (error) { failures.push(String(error)) }
   finally { await db.unsafe('ALTER TABLE users RENAME COLUMN hidden_totp_step TO two_factor_last_used_step').execute() }
@@ -182,7 +182,7 @@ try {
       await resetTotp()
       contender.exec("CREATE TRIGGER reject_totp_claim BEFORE UPDATE OF two_factor_last_used_step ON users BEGIN SELECT RAISE(ABORT, 'synthetic claim failure'); END")
       try {
-        await assert.rejects(() => verifyTwoFactorLoginCode(1, code), /synthetic claim failure/, 'TOTP: a failed persistence write must never authorize')
+        await assert.rejects(async () => verifyTwoFactorLoginCode(1, code), /synthetic claim failure/, 'TOTP: a failed persistence write must never authorize')
       }
       catch (error) { failures.push(String(error)) }
       finally { contender.exec('DROP TRIGGER reject_totp_claim') }
@@ -213,7 +213,7 @@ try {
     assert.equal(await updatePasskeyCounter(1, 'synthetic-key', 0), true, 'passkey: no-counter authenticators remain valid')
     assert.equal(await updatePasskeyCounter(1, 'synthetic-key', 0), true, 'passkey: unchanged MySQL timestamp must not reject no-counter authenticators')
     assert((await Promise.all(Array.from({ length: 8 }, () => updatePasskeyCounter(1, 'synthetic-key', 0)))).every(Boolean), 'passkey: counterless authenticators do not claim one-use counter values')
-    await assert.rejects(db.transaction(async () => {
+    await assert.rejects(async () => db.transaction(async () => {
       assert.equal(await updatePasskeyCounter(1, 'synthetic-key', 1), true)
       throw new Error('rollback passkey counter')
     }), /rollback passkey counter/)

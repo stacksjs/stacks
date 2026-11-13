@@ -112,10 +112,10 @@ describe('sqlite transaction serialization (stacksjs/stacks#1953)', () => {
   })
 
   it('releases the queue after a rolled-back transaction', async () => {
-    await expect(db.transaction(async (rawTrx: any) => {
+    await expect((async () => db.transaction(async (rawTrx: any) => {
       await rawTrx.insertInto('accounts_1953').values({ email: 'rollback-1953@example.com' }).execute()
       throw new Error('force rollback')
-    })).rejects.toThrow('force rollback')
+    }))()).rejects.toThrow('force rollback')
 
     // The rollback both undid the insert and left the mutex free.
     const next = await registerShaped('after-rollback-1953@example.com')

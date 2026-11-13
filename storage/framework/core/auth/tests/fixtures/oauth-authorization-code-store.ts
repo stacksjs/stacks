@@ -483,7 +483,7 @@ try {
   assert.equal((await db.selectFrom('oauth_auth_codes').where('client_id', '=', publicRegistration.client.id).select('code_hash').get()).length, codesBeforeDenial.length)
 
   const rollbackRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
-  await assert.rejects(withOAuthAuthorizationRequestSession(rollbackRequestId, browserSession, async () => {
+  await assert.rejects(async () => withOAuthAuthorizationRequestSession(rollbackRequestId, browserSession, async () => {
     await db.insertInto('issued_markers').values({ marker: 'authorization-request-must-roll-back' }).execute()
     throw new Error('synthetic consent failure')
   }), /synthetic consent failure/)
@@ -846,7 +846,7 @@ try {
   })).ok, true)
 
   const failedWorkspaceResolutionRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
-  await assert.rejects(approveOAuthAuthorizationRequestSession({
+  await assert.rejects(async () => approveOAuthAuthorizationRequestSession({
     provider,
     requestId: failedWorkspaceResolutionRequestId,
     browserSessionId: browserSession,
@@ -1052,7 +1052,7 @@ try {
     rotatedSecret,
     async client => client,
   ), loadedConfidential)
-  await assert.rejects(withAuthenticatedOAuthTokenClient(
+  await assert.rejects(async () => withAuthenticatedOAuthTokenClient(
     String(confidentialRegistration.client.id),
     rotatedSecret,
     async () => {
@@ -1814,7 +1814,7 @@ try {
   assert.equal(concurrent.filter(result => !result.ok).length, 7)
 
   const rollbackCode = await issueAuthorizationCode(base)
-  await assert.rejects(withAuthorizationCode(rollbackCode, expected, async () => {
+  await assert.rejects(async () => withAuthorizationCode(rollbackCode, expected, async () => {
     await db.insertInto('issued_markers').values({ marker: 'must-roll-back' }).execute()
     throw new Error('synthetic token mint failure')
   }), /synthetic token mint failure/)

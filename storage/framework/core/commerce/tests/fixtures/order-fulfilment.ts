@@ -8,7 +8,7 @@ initializeDbConfig({ app: { env: 'test' }, database: { default: 'sqlite', connec
 await db.unsafe('CREATE TABLE orders (id INTEGER PRIMARY KEY, status TEXT, updated_at TEXT)').execute()
 await db.unsafe('CREATE TABLE access_grants (id INTEGER PRIMARY KEY, order_id INTEGER UNIQUE)').execute()
 await db.insertInto('orders').values({ id: 1, status: 'PENDING' }).execute()
-await assert.rejects(() => transitionStatus(1, 'PENDING', 'PROCESSING', { apply: async () => {
+await assert.rejects(async () => transitionStatus(1, 'PENDING', 'PROCESSING', { apply: async () => {
   await db.insertInto('access_grants').values({ id: 1, order_id: 1 }).execute()
   throw new Error('delivery failed')
 } }), /delivery failed/)
@@ -18,8 +18,8 @@ const apply = async () => { await db.insertInto('access_grants').values({ id: 1,
 const results = await Promise.all([transitionStatus(1, 'PENDING', 'PROCESSING', { apply }), transitionStatus(1, 'PENDING', 'PROCESSING', { apply })])
 assert.equal(results.filter(Boolean).length, 1)
 assert.equal((await db.selectFrom('access_grants').selectAll().execute()).length, 1)
-await assert.rejects(() => lockRow(db, 'orders; DROP TABLE orders', { id: 1 }), /Invalid SQL identifier/)
-await assert.rejects(() => lockRow(db, 'orders', {}), /requires a scope/)
+await assert.rejects(async () => lockRow(db, 'orders; DROP TABLE orders', { id: 1 }), /Invalid SQL identifier/)
+await assert.rejects(async () => lockRow(db, 'orders', {}), /requires a scope/)
 await db.transaction(async (trx) => { assert.equal((await lockRow(trx, 'orders', { id: 1 }))?.status, 'PROCESSING') })
 await resetDatabaseConnection()
 console.log('order fulfilment OK')

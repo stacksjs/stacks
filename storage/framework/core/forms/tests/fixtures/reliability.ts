@@ -99,7 +99,7 @@ try {
     }
     else if (scenario === 'nested') {
       if (dialect === 'mysql') {
-        await assert.rejects(db.transaction(() => createForm(null, { name: 'Nested', handle: 'nested', fields: [field('name')] })), /outside an enclosing MySQL transaction/)
+        await assert.rejects(async () => db.transaction(() => createForm(null, { name: 'Nested', handle: 'nested', fields: [field('name')] })), /outside an enclosing MySQL transaction/)
         assert.equal(await loadFormByHandle(null, 'nested'), null)
       }
       else {
@@ -107,7 +107,7 @@ try {
           await createForm(null, { name: 'Nested', handle: 'nested', fields: [field('name')] })
           throw new Error('rollback nested provisioning')
         }
-        await assert.rejects(db.transaction(run, { isolation: 'serializable', ...(dialect === 'sqlite' ? { sqliteMode: 'immediate' as const } : {}) }), /rollback nested provisioning/)
+        await assert.rejects(async () => db.transaction(run, { isolation: 'serializable', ...(dialect === 'sqlite' ? { sqliteMode: 'immediate' as const } : {}) }), /rollback nested provisioning/)
         assert.equal(await loadFormByHandle(null, 'nested'), null)
         if (dialect === 'postgres') {
           const provisioned = await Promise.all(Array.from({ length: 10 }, (_, index) => db.transaction(
@@ -134,7 +134,7 @@ try {
           assert.equal(new Set(serializable.map(item => item.id)).size, 1)
           assert.equal(serializable.filter(item => item.created).length, 1)
           assert(attempts.reduce((sum, count) => sum + count, 0) > 2, 'the owner retries its stale serializable snapshot')
-          await assert.rejects(db.transaction(
+          await assert.rejects(async () => db.transaction(
             () => createForm(null, { name: 'Unsafe', handle: 'unsafe', fields: [field('name')] }), { isolation: 'repeatable read' },
           ), /requires read committed or serializable/)
           assert.equal(await loadFormByHandle(null, 'unsafe'), null)

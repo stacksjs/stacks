@@ -49,7 +49,7 @@ try {
     }
     if (process.env.DB_CONNECTION === 'postgres') {
       await db.updateTable('lease_contention').set({ lease_token: null, heartbeat: null }).where('id', '=', 1).execute()
-      await assert.rejects(db.transaction(async () => {
+      await assert.rejects(async () => db.transaction(async () => {
         assert(await claimRowLease('lease_contention', { id: 1 }, { token: 'lease_token', heartbeat: 'heartbeat' }, 60_000))
         const [isolation] = await db.unsafe('SHOW transaction_isolation').execute()
         assert.equal(isolation?.transaction_isolation, 'serializable', 'claiming cannot weaken its parent isolation')

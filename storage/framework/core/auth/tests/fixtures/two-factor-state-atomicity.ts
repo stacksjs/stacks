@@ -58,7 +58,7 @@ try {
     await check(`${enabling ? 'enable' : 'disable'} respects outer rollback`, async () => {
       await seed(!enabling)
       const before = await getTwoFactorState(1)
-      await assert.rejects(db.transaction(async () => {
+      await assert.rejects(async () => db.transaction(async () => {
         if (enabling) assert.equal(await enableTwoFactor(1, secret, await generateTwoFactorToken(secret)), true)
         else await disableTwoFactor(1)
         throw new Error('fixture rollback')

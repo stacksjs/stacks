@@ -88,7 +88,7 @@ try {
     }
   }
   assert.deepEqual(failures, [])
-  await assert.rejects(db.transaction(async () => {
+  await assert.rejects(async () => db.transaction(async () => {
     await SessionAuth.logout('fresh')
     assert.equal(await SessionAuth.check('fresh'), false, 'primary reads must see this transaction\'s revocation')
     throw new Error('rollback session fixture')

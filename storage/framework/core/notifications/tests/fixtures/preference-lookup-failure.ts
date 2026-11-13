@@ -31,7 +31,7 @@ assert.equal((await notify(recipient, { body: 'Sale' }, ['sms'], { category: 'ma
 
 // The opt-out row is still there; the lookup can no longer reach it.
 await db.unsafe('ALTER TABLE notification_preferences RENAME TO notification_preferences_offline').execute()
-await assert.rejects(() => filterChannelsByPreferences(1, ['sms'], 'marketing'), 'a failed lookup is not an empty preference list')
+await assert.rejects(async () => filterChannelsByPreferences(1, ['sms'], 'marketing'), 'a failed lookup is not an empty preference list')
 
 const marketing = await notify(recipient, { body: 'Sale' }, ['sms'], { category: 'marketing' })
 assert.equal(marketing.length, 1)

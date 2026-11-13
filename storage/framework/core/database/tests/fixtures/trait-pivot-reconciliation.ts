@@ -44,9 +44,9 @@ try {
       assert(column, 'native owner column exists')
       assert.equal(column.notnull, 1)
       assert.equal(column.dflt_value, null, 'no zero or guessed owner default')
-      await assert.rejects(db.unsafe(`INSERT INTO ${pivot} (id, ${tagColumn}, ${ownerType}) VALUES (1, 3, 'posts')`).execute())
+      await assert.rejects(async () => db.unsafe(`INSERT INTO ${pivot} (id, ${tagColumn}, ${ownerType}) VALUES (1, 3, 'posts')`).execute())
       await db.unsafe(`INSERT INTO ${pivot} (id, ${tagColumn}, ${ownerColumn}, ${ownerType}) VALUES (2, 3, 9, 'posts')`).execute()
-      await assert.rejects(db.unsafe(`INSERT INTO ${pivot} (id, ${tagColumn}, ${ownerColumn}, ${ownerType}) VALUES (3, 3, 9, 'posts')`).execute(), /unique/i)
+      await assert.rejects(async () => db.unsafe(`INSERT INTO ${pivot} (id, ${tagColumn}, ${ownerColumn}, ${ownerType}) VALUES (3, 3, 9, 'posts')`).execute(), /unique/i)
     }
     assert.equal((await migrateTraitTables()).success, true, 'replay remains native and idempotent')
     for (const pivot of ['taggable_models', 'categorizable_models'])

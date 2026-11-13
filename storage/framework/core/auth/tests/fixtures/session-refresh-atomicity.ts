@@ -190,7 +190,7 @@ try {
     assert.deepEqual(await db.primary.selectFrom('sessions').where('id', '=', 'target').selectAll().executeTakeFirstOrThrow(), before)
   })
   await check('caller rollback also rolls back a valid renewal', async () => {
-    await assert.rejects(db.transaction(async () => {
+    await assert.rejects(async () => db.transaction(async () => {
       assert.equal(await SessionAuth.refresh('target', 120_000), true)
       throw new Error('fixture rollback')
     }), /fixture rollback/)

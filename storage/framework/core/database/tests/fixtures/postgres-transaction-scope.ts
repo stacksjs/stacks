@@ -29,7 +29,7 @@ try {
     await db.transaction(async (outer) => {
       assert(isInTransaction())
       enqueueAfterCommit(() => { effects.push('outer') })
-      await assert.rejects(outer[method](async (inner) => {
+      await assert.rejects(async () => outer[method](async (inner) => {
         await inner.unsafe('INSERT INTO scope_probe (id) VALUES (1)').execute()
         enqueueAfterCommit(() => { effects.push('rolled-back') })
         throw new Error('fixture nested rollback')

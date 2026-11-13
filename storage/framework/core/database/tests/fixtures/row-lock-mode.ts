@@ -23,8 +23,8 @@ async function main() {
       assert.equal(await lockRow(tx, 'lock_parents', { id: 2 }), undefined)
       assert.equal((await lockRows(tx, 'lock_parents', [1], { mode: 'no_key_update' })).size, 1)
     })
-    await assert.rejects(() => lockRow(db, 'lock_parents', { id: 1 }, { mode: 'invalid' as never }), /Unsupported row lock mode/)
-    await assert.rejects(() => lockRow(db, 'lock_parents', {}), /requires a scope/)
+    await assert.rejects(async () => lockRow(db, 'lock_parents', { id: 1 }, { mode: 'invalid' as never }), /Unsupported row lock mode/)
+    await assert.rejects(async () => lockRow(db, 'lock_parents', {}), /requires a scope/)
     if (dialect === 'postgres') {
       let parentHeld!: () => void
       let childDone!: () => void

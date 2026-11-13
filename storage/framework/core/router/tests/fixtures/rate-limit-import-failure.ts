@@ -19,9 +19,9 @@ const unhandled: unknown[] = []
 process.on('unhandledRejection', reason => unhandled.push(reason))
 const request = new Request('http://localhost', { headers: { 'x-real-ip': '192.0.2.1' } }) as EnhancedRequest
 await runWithRequest(request, async () => {
-  await assert.rejects(() => rateLimit('failure', 1).per('minute'), /limiter import unavailable/)
-  await assert.rejects(() => rateLimitStatus('failure', 1, 60), /limiter import unavailable/)
-  await assert.rejects(() => clearRateLimit('failure', 1, 60), /limiter import unavailable/)
+  await assert.rejects(async () => rateLimit('failure', 1).per('minute'), /limiter import unavailable/)
+  await assert.rejects(async () => rateLimitStatus('failure', 1, 60), /limiter import unavailable/)
+  await assert.rejects(async () => clearRateLimit('failure', 1, 60), /limiter import unavailable/)
 })
 // Unhandled rejections are reported after promise callbacks finish.
 await Bun.sleep(10)

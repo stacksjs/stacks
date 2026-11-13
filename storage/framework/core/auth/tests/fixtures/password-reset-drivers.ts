@@ -126,7 +126,7 @@ try {
       else
         await db.unsafe(`CREATE TRIGGER reject_reset BEFORE ${operation} ON ${table} BEGIN SELECT RAISE(ABORT, 'synthetic reset failure'); END`).execute()
       try {
-        await assert.rejects(() => passwordResets('reset@example.invalid').resetPassword(token, 'unused-password'))
+        await assert.rejects(async () => passwordResets('reset@example.invalid').resetPassword(token, 'unused-password'))
         await assertUnchanged()
       }
       finally {
@@ -145,7 +145,7 @@ try {
         }
         else await db.unsafe(`CREATE TRIGGER ignore_reset BEFORE ${operation} ON ${table} BEGIN SELECT RAISE(IGNORE); END`).execute()
         try {
-          await assert.rejects(() => passwordResets('reset@example.invalid').resetPassword(token, 'unused-password'))
+          await assert.rejects(async () => passwordResets('reset@example.invalid').resetPassword(token, 'unused-password'))
           await assertUnchanged()
         }
         finally {
@@ -206,7 +206,7 @@ try {
   await check('outer rollback discards password-change notification', async () => {
     await seed()
     await db.insertInto('sessions').values({ id: 'synthetic-session', user_id: 1, expires_at: sqlDateTime(new Date(now.getTime() + 60_000)) } as never).execute()
-    await assert.rejects(() => db.transaction(async () => {
+    await assert.rejects(async () => db.transaction(async () => {
       assert.equal((await passwordResets('reset@example.invalid').resetPassword(token, 'nested-password')).success, true)
       await Promise.resolve()
       throw new Error('synthetic outer rollback')
@@ -234,7 +234,7 @@ try {
     else
       await db.unsafe('CREATE TRIGGER audit_session_delete BEFORE DELETE ON sessions BEGIN INSERT INTO audit_sessions (id) VALUES (OLD.id); END').execute()
     try {
-      await assert.rejects(() => sessionDestroyAll(1), 'a failed revocation must reach its caller')
+      await assert.rejects(async () => sessionDestroyAll(1), 'a failed revocation must reach its caller')
       assert(await db.primary.selectFrom('sessions').where('id', '=', 'must-not-survive-reported-success').selectAll().executeTakeFirst())
     }
     finally {
@@ -278,7 +278,7 @@ try {
         await db.unsafe('CREATE TRIGGER freeze_credential_stamp BEFORE UPDATE ON users FOR EACH ROW SET NEW.password_changed_at = OLD.password_changed_at').execute()
         try {
           setSystemTime(new Date(now.getTime() + 123))
-          await assert.rejects(() => passwordResets('reset@example.invalid').resetPassword(token, 'must-roll-back'), /could not stamp/)
+          await assert.rejects(async () => passwordResets('reset@example.invalid').resetPassword(token, 'must-roll-back'), /could not stamp/)
           await assertUnchanged()
           const rows = await db.primary.unsafe("SELECT DATE_FORMAT(password_changed_at, '%f') AS fraction FROM users WHERE id = 1").execute() as Array<{ fraction: string }>
           assert.equal(rows[0]!.fraction, '123456')

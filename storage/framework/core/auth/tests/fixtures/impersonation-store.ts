@@ -23,7 +23,7 @@ try {
   assert(events.every(row => Number(row.actor_id) === 1 && Number(row.subject_id) === 2))
   assert.equal(await store.acceptAccess(session.id, { method: 'GET', path: '/health' }, Date.now()), false)
   await db.unsafe('DROP TABLE auth_privileged_audits').execute()
-  await assert.rejects(() => service.start(3, 'Investigate a missing workout'))
+  await assert.rejects(async () => service.start(3, 'Investigate a missing workout'))
   const rows = await db.selectFrom('auth_impersonations').select('subject_id').execute()
   assert.deepEqual(rows.map(row => Number(row.subject_id)), [2], 'failed audit rolls back the entire new session')
   console.log('impersonation persistence OK')

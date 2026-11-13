@@ -96,7 +96,7 @@ try {
     }
   })
   await check('outer rollback never delivers an invalid link', async () => {
-    await assert.rejects(db.transaction(async () => {
+    await assert.rejects(async () => db.transaction(async () => {
       await sendMagicLink(email)
       throw new Error('fixture rollback')
     }), /fixture rollback/)

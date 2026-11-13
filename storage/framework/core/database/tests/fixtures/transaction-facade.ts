@@ -32,7 +32,7 @@ async function check(name: string, run: () => Promise<void>) {
 try {
   await db.unsafe('CREATE TABLE scope_probe (id INTEGER PRIMARY KEY)').execute()
   await check('facade writes and nested transactions roll back with their caller', async () => {
-    await assert.rejects(db.transaction(async () => {
+    await assert.rejects(async () => db.transaction(async () => {
       await db.insertInto('scope_probe').values({ id: 1 }).execute()
       await db.transaction(async () => { await db.unsafe('INSERT INTO scope_probe (id) VALUES (2)').execute() })
       assert.deepEqual(await ids(), [1, 2])
@@ -45,7 +45,7 @@ try {
     const createMany = db.createMany
     const decorated = db.transactional(async (tx, id: number) => { await tx.insertInto('scope_probe').values({ id }).execute() })
     const ormDecorated = transactional(async (tx, id: number) => { await tx.insertInto('scope_probe').values({ id }).execute() })
-    await assert.rejects(db.transaction(async () => {
+    await assert.rejects(async () => db.transaction(async () => {
       await retained(async () => { await db.insertInto('scope_probe').values({ id: 1 }).execute() })
       await decorated(2)
       await ormDecorated(3)
@@ -71,7 +71,7 @@ try {
       await db.transaction(async () => {
         await db.insertInto('scope_probe').values({ id: 1 }).execute()
         enqueueAfterCommit(() => { effects.push(1) })
-        await assert.rejects(db[method](async () => {
+        await assert.rejects(async () => db[method](async () => {
           await db.insertInto('scope_probe').values({ id: 2 }).execute()
           enqueueAfterCommit(() => { effects.push(2) })
           throw new Error('fixture inner rollback')
@@ -98,7 +98,7 @@ try {
     await db.transaction(async () => {
       await db.insertInto('scope_probe').values({ id: 1 }).execute()
       const observations: Promise<number[]>[] = []
-      await assert.rejects(db.transaction(async () => {
+      await assert.rejects(async () => db.transaction(async () => {
         await db.insertInto('scope_probe').values({ id: 2 }).execute()
         throw new Error('fixture rollback observers')
       }, { onRollback: () => { observations.push(ids()) }, afterRollback: () => { observations.push(ids()) } }), /fixture rollback observers/)
@@ -159,7 +159,7 @@ try {
     const release = Promise.withResolvers<void>()
     let delayed: Promise<void> | undefined
     await db.transaction(async () => {
-      await assert.rejects(db.transaction(async () => {
+      await assert.rejects(async () => db.transaction(async () => {
         delayed = release.promise.then(async () => { await db.insertInto('scope_probe').values({ id: 2 }).execute() })
         throw new Error('fixture child rollback')
       }), /fixture child rollback/)

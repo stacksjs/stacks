@@ -304,7 +304,7 @@ describe('importCatalog into the database', () => {
       sku: 'TEE-S-BLK',
     }).execute()
 
-    await expect(insert(first.product_id)).rejects.toThrow()
+    await expect((async () => insert(first.product_id))()).rejects.toThrow()
     await insert(first.product_id + 1)
     expect((await rows('product_variants')).filter(variant => variant.sku === 'TEE-S-BLK')).toHaveLength(2)
   })

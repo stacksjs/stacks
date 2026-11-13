@@ -164,7 +164,7 @@ try {
   })
   await check('outer rollback does not send or consume the cooldown', async () => {
     await seed(true)
-    await assert.rejects(db.transaction(async () => {
+    await assert.rejects(async () => db.transaction(async () => {
       assert.equal((await resendVerificationEmail(user)).success, true)
       assert.equal(sent.length, 0)
       throw new Error('fixture resend rollback')

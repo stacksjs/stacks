@@ -54,7 +54,7 @@ try {
   ]) {
     const req = enhanceRequest(new Request('https://example.test/protected', { headers }) as EnhancedRequest)
     await runWithRequest(req, async () => {
-      await assert.rejects(() => middleware.handle(req), (error: { status?: number }) => error.status === 401)
+      await assert.rejects(async () => middleware.handle(req), (error: { status?: number }) => error.status === 401)
       assert.equal(req._authenticatedUser, undefined)
     })
   }

@@ -125,7 +125,7 @@ try {
     const second = (async () => { await ready; return refreshToken(secondPair.refreshToken!) })()
     void second.catch(() => {})
     try {
-      await assert.rejects(db.transaction(async () => {
+      await assert.rejects(async () => db.transaction(async () => {
         const first = await refreshToken(firstPair.refreshToken!)
         assert(await findToken(first.plainTextToken))
         startSecond()

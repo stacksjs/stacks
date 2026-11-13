@@ -147,7 +147,7 @@ try {
   await check('outer rollback restores the pair and discards its replacement', async () => {
     const original = await createToken(42, 'outer rollback', ['read'])
     let replacement: string | null = null
-    await assert.rejects(db.transaction(async () => {
+    await assert.rejects(async () => db.transaction(async () => {
       replacement = await Auth.rotateToken(original.plainTextToken)
       assert(replacement)
       throw new Error('fixture outer rollback')

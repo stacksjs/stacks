@@ -270,9 +270,9 @@ try {
     assert.equal((await client.emptyText()).data, '')
     assert.equal((await client.head()).data, null)
     assert.equal((await client.remove()).data, null)
-    await assert.rejects(() => client.alternate({body:{}}, {contentType:'application/xml'}), /media type/)
-    await assert.rejects(() => client.override({id:'.'}), /Dot-only/)
-    await assert.rejects(() => client.override({}), /Missing required/)
+    await assert.rejects(async () => client.alternate({body:{}}, {contentType:'application/xml'}), /media type/)
+    await assert.rejects(async () => client.override({id:'.'}), /Dot-only/)
+    await assert.rejects(async () => client.override({}), /Missing required/)
   })
 
 }

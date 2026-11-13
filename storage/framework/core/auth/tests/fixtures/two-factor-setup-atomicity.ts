@@ -99,7 +99,7 @@ try {
     })
   }
   await check('outer rollback preserves the previous setup', async () => {
-    await assert.rejects(db.transaction(async () => {
+    await assert.rejects(async () => db.transaction(async () => {
       await stashPendingTwoFactorSecret(1, 'synthetic-next')
       throw new Error('fixture rollback')
     }), /fixture rollback/)

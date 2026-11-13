@@ -83,7 +83,7 @@ try {
   })
   await check('an outer rollback restores both user and token', async () => {
     await seed()
-    await assert.rejects(db.transaction(async () => {
+    await assert.rejects(async () => db.transaction(async () => {
       assert.equal((await verifyEmail(1, token)).success, true)
       throw new Error('synthetic outer rollback')
     }), /synthetic outer rollback/)
@@ -101,7 +101,7 @@ try {
     else
       await db.unsafe("CREATE TRIGGER reject_email_mark BEFORE UPDATE ON users BEGIN SELECT RAISE(ABORT, 'synthetic email mark failure'); END").execute()
     try {
-      await assert.rejects(() => verifyEmail(1, token), /synthetic email mark failure/)
+      await assert.rejects(async () => verifyEmail(1, token), /synthetic email mark failure/)
       assert.equal((await db.primary.selectFrom('email_verifications').selectAll().execute()).length, 1)
     }
     finally {
@@ -121,7 +121,7 @@ try {
     else
       await db.unsafe("CREATE TRIGGER reject_email_delete BEFORE DELETE ON email_verifications BEGIN SELECT RAISE(ABORT, 'synthetic email delete failure'); END").execute()
     try {
-      await assert.rejects(() => verifyEmail(1, token), /synthetic email delete failure/)
+      await assert.rejects(async () => verifyEmail(1, token), /synthetic email delete failure/)
       assert.equal((await db.primary.selectFrom('users').where('id', '=', 1).selectAll().executeTakeFirst())?.email_verified_at, null)
     }
     finally {
@@ -139,7 +139,7 @@ try {
       else
         await db.unsafe('CREATE TRIGGER ignore_email_mark BEFORE UPDATE ON users BEGIN SELECT RAISE(IGNORE); END').execute()
       try {
-        await assert.rejects(() => verifyEmail(1, token), /could not update the user/)
+        await assert.rejects(async () => verifyEmail(1, token), /could not update the user/)
         assert.equal((await db.primary.selectFrom('email_verifications').selectAll().execute()).length, 1)
         assert.equal((await db.primary.selectFrom('users').where('id', '=', 1).selectAll().executeTakeFirst())?.email_verified_at, null)
       }

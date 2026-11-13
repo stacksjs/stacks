@@ -92,8 +92,8 @@ describe('sqlite bootstrap pragmas (stacksjs/stacks#1951)', () => {
     await db.unsafe('CREATE TABLE c_1951 (id INTEGER PRIMARY KEY, p_id INTEGER REFERENCES p_1951(id) ON DELETE CASCADE)').execute()
 
     // Pre-#1951 this insert succeeded silently — the core regression.
-    await expect(
-      db.unsafe('INSERT INTO c_1951 (id, p_id) VALUES (1, 999)').execute(),
+    await expect((async () => 
+      db.unsafe('INSERT INTO c_1951 (id, p_id) VALUES (1, 999)').execute())(),
     ).rejects.toThrow(/FOREIGN KEY constraint failed/)
   })
 

@@ -68,7 +68,7 @@ try {
     })
     await check(`${bulk ? 'bulk' : 'individual'} outer rollback restores the selected sessions`, async () => {
       await seed()
-      await assert.rejects(db.transaction(async () => {
+      await assert.rejects(async () => db.transaction(async () => {
         await revoke()
         throw new Error('fixture outer rollback')
       }), /fixture outer rollback/)

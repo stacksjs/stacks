@@ -73,7 +73,7 @@ try {
     }
     await check(`legacy=${legacy}: outer rollback restores the prior challenge`, async () => {
       const before = await rows()
-      await assert.rejects(db.transaction(async () => {
+      await assert.rejects(async () => db.transaction(async () => {
         await storeWebAuthnChallenge(1, next, 'authentication')
         throw new Error('fixture rollback')
       }), /fixture rollback/)

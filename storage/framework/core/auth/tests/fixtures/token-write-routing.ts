@@ -140,7 +140,7 @@ try {
     await assert.rejects(refreshToken(original.refreshToken!), { status: 401 })
     assert.equal(contextHasWritten(), false, 'a rejected refresh must not mark the request as a writer')
     if (replica)
-      await assert.rejects(db.selectFrom('oauth_access_tokens').selectAll().get())
+      await assert.rejects(async () => db.selectFrom('oauth_access_tokens').selectAll().get())
   })
   if (replica) assert(replicaConnections > 0, 'the read-only control must actually attempt the configured replica')
   // Both halves roll back if the access delete fails. The attempted write

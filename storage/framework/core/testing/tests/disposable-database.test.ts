@@ -26,10 +26,10 @@ describe('withDisposableDatabase (sqlite)', () => {
 
   test('removes it when the test throws, and keeps the test error', async () => {
     let seen = ''
-    await expect(withDisposableDatabase('sqlite', (database) => {
+    await expect((async () => withDisposableDatabase('sqlite', (database) => {
       seen = database.directory
       throw new Error('the test failed')
-    })).rejects.toThrow('the test failed')
+    }))()).rejects.toThrow('the test failed')
     expect(existsSync(seen)).toBe(false)
   })
 
@@ -59,7 +59,7 @@ describe('the local-server guard', () => {
   })
 
   test('a remote or missing server is refused before anything is created', async () => {
-    await expect(createDisposableDatabase('postgres', { url: 'postgres://u@db.example.com/db' })).rejects.toThrow(/local PostgreSQL/)
+    await expect((async () => createDisposableDatabase('postgres', { url: 'postgres://u@db.example.com/db' }))()).rejects.toThrow(/local PostgreSQL/)
     const saved = process.env.STACKS_TEST_POSTGRES_URL
     delete process.env.STACKS_TEST_POSTGRES_URL
     try {
@@ -128,10 +128,10 @@ describe.skipIf(!disposablePostgresUrl())('withDisposableDatabase (postgres)', (
 
   test('drops it when the test throws', async () => {
     let name = ''
-    await expect(withDisposableDatabase('postgres', (database) => {
+    await expect((async () => withDisposableDatabase('postgres', (database) => {
       name = database.name
       throw new Error('boom')
-    })).rejects.toThrow('boom')
+    }))()).rejects.toThrow('boom')
     expect(await exists(name)).toBe(false)
   })
 })

@@ -184,10 +184,10 @@ async function verifySetup(): Promise<void> {
   assert.equal(user.password_changed_at, null)
   const reset = { email: 'fixture@example.invalid', token: 'synthetic-reset', expires_at: '2030-01-01 00:00:00' }
   await db.insertInto('password_resets').values(reset).execute()
-  await assert.rejects(db.insertInto('password_resets').values({ ...reset, token: 'synthetic-duplicate-reset' }).execute(), /unique|duplicate/i)
+  await assert.rejects(async () => db.insertInto('password_resets').values({ ...reset, token: 'synthetic-duplicate-reset' }).execute(), /unique|duplicate/i)
   const verification = { user_id: 42, token: 'synthetic-verification', expires_at: '2030-01-01 00:00:00' }
   await db.insertInto('email_verifications').values(verification).execute()
-  await assert.rejects(db.insertInto('email_verifications').values({ ...verification, token: 'synthetic-duplicate-verification' }).execute(), /unique|duplicate/i)
+  await assert.rejects(async () => db.insertInto('email_verifications').values({ ...verification, token: 'synthetic-duplicate-verification' }).execute(), /unique|duplicate/i)
 }
 try { await verifySetup(); console.log('auth setup schema OK') }
 finally { resetDatabaseConnection() }
