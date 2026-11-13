@@ -34,9 +34,9 @@ const open = WorkItem.where('done', false).orderBy('id', 'desc').get()
 load lazily; server boot waits for model initialization. A feature-disabled
 model is not made usable merely by an ambient declaration.
 
-## Reads answer in place, writes are promises
+## Model calls answer in place
 
-A model read returns its value where it is written, on SQLite, MySQL and
+A model call returns its value where it is written, on SQLite, MySQL and
 Postgres:
 
 ```ts
@@ -48,7 +48,7 @@ if (User.where('email', email).exists()) return response.badRequest('Taken')
 for (const post of Post.where('published', true).get()) titles.push(post.title)
 ```
 
-- **Which calls:** every read. `find`, `findOrFail`, `findMany`, `first`,
+- **Every read, on every model.** `find`, `findOrFail`, `findMany`, `first`,
   `firstOrFail`, `last`, `all`, `get`, `count`, `exists`, `pluck`, `sum`,
   `avg`, `min`, `max`, `paginate`, `simplePaginate`, `cursorPaginate`, eager
   loading through `with()`, and reads of encrypted attributes.
@@ -59,18 +59,51 @@ for (const post of Post.where('published', true).get()) titles.push(post.title)
   row throws; wrap it in `try`/`catch`. `.catch()` and `.then()` do not exist
   on a row. In a test, `expect(() => User.findOrFail(0)).toThrow()`, not
   `await expect(...).rejects`.
-- **A write is a promise, on every model.** `create`, `createMany`,
-  `firstOrCreate`, `updateOrCreate`, `update`, `save`, `delete`, `forceDelete`
-  and a query's `delete()` run setters, validation, encryption and lifecycle
-  events, any of which may wait. Keep their `await`.
 - **How.** SQLite runs a query in place. MySQL and Postgres run on Bun's
   driver, held by a worker thread the caller waits on, so nothing else runs on
   the calling thread while a query is in flight (the cost `bun:sqlite` always
   had). `models: { execution: 'async' }` in the query-builder config makes
-  MySQL and Postgres reads promises again for an app that needs the event loop
-  free during queries; every read then has to be awaited.
+  MySQL and Postgres calls promises again for an app that needs the event loop
+  free during queries; every call then has to be awaited.
 - **Not covered.** The `db` query builder (`db.selectFrom(...)`) and
   `transaction()` still return promises.
+
+### Writes: in place unless the model asks for work around them
+
+```ts
+// Declares nothing to wait for: the write is the row.
+const note = Note.create({ title: 'Draft' })
+note.update({ title: 'Final' })
+Note.delete(note.id)
+
+// Declares `observe`: every write is a promise.
+const order = await Order.create({ total: 1200 })
+```
+
+A model's writes wait, and are typed as promises, when its definition
+declares any of:
+
+| Declaration | What the write waits for |
+|---|---|
+| `traits.observe` | lifecycle event listeners |
+| `traits.useSearch` | the search index update |
+| `traits.broadcastOn` | the broadcast |
+| `traits.useSoftDeletes` / `softDeletable` | the soft-delete transaction |
+| `traits.useAudit`, `traits.useActivityLog` | the audit or activity row |
+| `set: { ... }` | a setter, which may hash or call out |
+| `hooks: { ... }` | the model's own hooks |
+
+It is decided from the declaration, not from what happens to run: on such a
+model `create`, `createMany`, `firstOrCreate`, `updateOrCreate`, `update`,
+`save`, `delete`, `forceDelete` and a query's `delete()` are promises every
+time, and a failure is a rejection. On a model with none of these they return
+the value, and a failure (a guarded column, a validation rule) throws where
+the call stands. `modelWritesWait(definition)` answers it at runtime and
+`ModelWritesWait<typeof Model>` in the types. Reads never wait on either kind.
+
+When in doubt, `await` the write: it is correct on every model. An instance
+write on a model with an async setter still goes through `saveAsync()` /
+`updateAsync()`.
 
 ## Write behavior
 

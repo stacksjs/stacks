@@ -16,6 +16,18 @@ import { acquireDbConfigLock } from '@stacksjs/database'
 import { schema } from '@stacksjs/validation/runtime'
 import { defineModel } from '../src/define-model'
 
+/** What a write failed with, wherever it failed: thrown where the call stands, or as a rejection. */
+async function failureOf(run: () => unknown): Promise<any> {
+  try {
+    await run()
+    return null
+  }
+  catch (error) {
+    return error
+  }
+}
+
+
 describe('createMany goes through the create pipeline', () => {
   let db: Database
   let releaseDbConfigLock: () => void
@@ -76,17 +88,17 @@ describe('createMany goes through the create pipeline', () => {
   })
 
   it('refuses a guarded column, like create()', async () => {
-    const err = await Member.createMany([{ name: 'Eve', email: 'e@x.co', role: 'admin' }]).then(() => null, (e: any) => e)
+    const err = await failureOf(() => Member.createMany([{ name: 'Eve', email: 'e@x.co', role: 'admin' }]))
     expect(err?.name).toBe('MassAssignmentException')
     expect(rows().some(r => r.name === 'Eve')).toBe(false)
   })
 
   it('validates every record before writing any', async () => {
     const before = rows().length
-    const err = await Member.createMany([
+    const err = await failureOf(() => Member.createMany([
       { name: 'Fine', email: 'f@x.co' },
       { name: 'x'.repeat(50), email: 'long@x.co' },
-    ]).then(() => null, (e: any) => e)
+    ]))
     expect(err?.name).toBe('ModelValidationError')
     // The valid first record was not written either: the batch is all or nothing.
     expect(rows().length).toBe(before)

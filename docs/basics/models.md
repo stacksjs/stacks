@@ -327,10 +327,19 @@ user?.email // the row is already here
 const same = await User.where('email', 'like', '%@example.com').orderByDesc('created_at').first()
 ```
 
-A write (`create`, `update`, `save`, `delete`) is a promise, because it runs
-setters, validation and lifecycle events. Keep its `await`. A read that fails,
-such as `findOrFail` on a missing row, throws where the call stands, so use
-`try`/`catch` and not `.catch()`.
+A write (`create`, `update`, `save`, `delete`) answers in place too, unless the
+model declares work around it: `observe`, `useSearch`, `broadcastOn`,
+`useSoftDeletes`, `useAudit`, `useActivityLog`, a `set:` hook or `hooks`. Every
+write on such a model is a promise, and is typed as one. When in doubt, `await`
+the write: that is correct on every model.
+
+```typescript
+const note = Note.create({ title: 'Draft' }) // Note declares none of those
+const order = await Order.create({ total: 1200 }) // Order declares observe
+```
+
+A call that fails in place, such as `findOrFail` on a missing row, throws where
+it stands, so use `try`/`catch` and not `.catch()`.
 
 SQLite runs a query in place. MySQL and Postgres run it on a worker thread that
 the caller waits on, so a server process handles one query at a time. An app

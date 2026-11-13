@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.562...v0.75.563)
+
+## ✨ Features
+
+- **orm**: a model write returns its value too, unless the model asks for work around it ([307de7e](https://github.com/stacksjs/stacks/commit/307de7e)) _(by Chris)_
+
+## 📝 Documentation
+
+- **orm**: which writes answer in place and which wait ([bcffd03](https://github.com/stacksjs/stacks/commit/bcffd03)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.561...v0.75.562)
 
 ## ✨ Features
