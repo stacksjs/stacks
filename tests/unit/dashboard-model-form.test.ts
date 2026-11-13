@@ -31,10 +31,10 @@ describe('one set of inputs for both forms', () => {
     expect(inputs).toContain(':if="field.type === \'longtext\' || field.type === \'json\'"')
     expect(inputs).toContain(':monospace="field.type === \'json\'"')
     expect(inputs).toContain('return \'datetime-local\'')
-    // Checkbox, select, relation picker, file chooser, Markdown editor,
-    // textarea, one-line input.
+    // Switch, select, relation picker, file chooser, Markdown editor,
+    // textarea, one-line input: each is named and each shows its refusal.
     expect(inputs.match(/:name="field\.name"/g)).toHaveLength(7)
-    expect(inputs.match(/:error="error\(field\)"/g)).toHaveLength(6)
+    expect(inputs.match(/:error="error\(field\)"/g)).toHaveLength(7)
   })
 
   test('the edit endpoint describes its fields the way the create form\'s are', () => {

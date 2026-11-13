@@ -1,6 +1,6 @@
 <script client>
 // The inputs of a model's form, one per field, each in the control its kind
-// calls for: a select for a choice, a checkbox for yes or no, a date or a
+// calls for: a select for a choice, a switch for yes or no, a date or a
 // date-and-time picker, a number box, a tall box for prose and for JSON, a
 // search for another model's record, a file chooser, a Markdown editor, and a
 // line of text for the rest. Under each, the sentence the model wrote for it,
@@ -58,21 +58,18 @@ function change(field: ModelCreateField, value: string | boolean): void {
 
 <div class="flex flex-col gap-5">
   <div :for="field in fields()" class="contents">
-    <label :if="field.type === 'boolean'" class="flex gap-3 items-start p-3 border border-neutral-200 rounded-lg dark:border-neutral-700">
-      <input
+    <div :if="field.type === 'boolean'" class="p-3 border border-neutral-200 rounded-lg dark:border-neutral-700">
+      <Toggle
         :name="field.name"
-        type="checkbox"
         :checked="values()[field.name] === true"
+        :label="field.label"
+        :description="hint(field)"
+        :error="error(field)"
         :disabled="disabled()"
-        class="mt-0.5 h-4 w-4 text-blue-600 border-neutral-300 rounded"
-        @change="change(field, $event.target.checked)"
+        labelPosition="left"
+        @update:checked="change(field, $event)"
       />
-      <span>
-        <span class="block font-medium text-neutral-900 text-sm dark:text-white">{{ field.label }}</span>
-        <span :if="hint(field) && !error(field)" class="block mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">{{ hint(field) }}</span>
-        <span :if="error(field)" role="alert" class="block mt-0.5 text-red-600 text-xs dark:text-red-400">{{ error(field) }}</span>
-      </span>
-    </label>
+    </div>
 
     <Select
       :if="field.type === 'enum'"

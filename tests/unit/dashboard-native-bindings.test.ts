@@ -477,6 +477,15 @@ describe('dashboard native STX bindings', () => {
     expect(toggle).toContain('role="switch"')
     expect(toggle).toContain("emit('update:checked', checked)")
     expect(toggle).toContain("useId('toggle')")
+    // The input sits beside the track, not inside it: a ring asked for with
+    // `focus-within` on the track could never show (stacksjs/stacks#3297).
+    expect(toggle).toContain('class="sr-only peer"')
+    expect(toggle).toContain('peer-focus-visible:ring-2')
+    expect(toggle).not.toContain('focus-within')
+    // A refused save's message takes the description's place.
+    expect(toggle).toContain('<span :if="liveDescription() && !liveError()"')
+    expect(toggle).toContain('<span :if="liveError()" role="alert"')
+    expect(toggle).toContain(':aria-invalid="liveError() ? \'true\' : null"')
     expect(toggle).not.toContain('Math.random')
 
     const textarea = componentSource('UI/Textarea.stx')
