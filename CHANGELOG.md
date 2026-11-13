@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.564...v0.75.565)
+
+## ✨ Features
+
+- **hq**: a licence-only service hands a licence over through hq:connect ([1319918](https://github.com/stacksjs/stacks/commit/1319918)) _(by Chris)_
+- **hq**: ReportsHQ is a services entry with a licence checked offline ([08cdaad](https://github.com/stacksjs/stacks/commit/08cdaad)) _(by Chris)_
+- **dashboard**: the hq provider reads logs from LogHQ and errors from BugHQ ([ed47881](https://github.com/stacksjs/stacks/commit/ed47881)) _(by Chris)_
+- **buddy**: hq:connect and hq:status ([415fe40](https://github.com/stacksjs/stacks/commit/415fe40)) _(by Chris)_
+- **testing**: a fake HQ service for tests ([fb29dd4](https://github.com/stacksjs/stacks/commit/fb29dd4)) _(by Chris)_
+- **config**: config/hq.ts lists every HQ service's URL and keys ([f77b96b](https://github.com/stacksjs/stacks/commit/f77b96b)) _(by Chris)_
+
+## ♻️ Code Refactoring
+
+- **config**: the HQ services live in config/services.ts ([f69ad3e](https://github.com/stacksjs/stacks/commit/f69ad3e)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.563...v0.75.564)
 
 ## 🐛 Bug Fixes
