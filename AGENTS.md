@@ -419,13 +419,16 @@ const product = Product.find(id)
 const created = await Product.create({ name: 'Widget', price: 1200 })
 await transaction(async () => { /_ ... atomic work ... _/ })
 ```
-**A read returns its value where it is written.** `Product.find(id)`, `first()`, `get()`, `all()`,
-`count()`, `exists()`, `paginate()` and the rest are the row, the list or the number, on SQLite,
-MySQL and Postgres, so `product.name` on the next line works with or without `await` (`await` on a
-value is that value). A missing row throws from `findOrFail` where the call stands: use
-`try`/`catch`, not `.catch()`. **A write is a promise** (`create`, `update`, `save`, `delete`): it
-runs setters, validation, encryption and lifecycle events, so keep its `await`. The `db` query
-builder (`db.selectFrom(...)`) still returns promises. See `stacks-orm`.
+**A model call returns its value where it is written.** `Product.find(id)`, `first()`, `get()`,
+`all()`, `count()`, `exists()`, `paginate()` and the rest are the row, the list or the number, on
+SQLite, MySQL and Postgres, so `product.name` on the next line works with or without `await`
+(`await` on a value is that value). A failure throws where the call stands: use `try`/`catch`, not
+`.catch()`. **A write (`create`, `update`, `save`, `delete`) does the same, unless the model
+declares work around it:** `observe`, `useSearch`, `broadcastOn`, `useSoftDeletes`, `useAudit`,
+`useActivityLog`, a `set:` hook or `hooks`. Every write on such a model is a promise, typed as
+one (the `Product` above declares `observe` and `useSearch`, hence its `await`). When unsure, keep
+`await` on writes: it is right on every model. The `db` query builder (`db.selectFrom(...)`) and
+`transaction()` still return promises. See `stacks-orm`.
 
 Eager loading, pagination, and the full method set are in `stacks-query-builder` / `stacks-orm`.
 
