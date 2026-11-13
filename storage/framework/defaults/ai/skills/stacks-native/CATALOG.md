@@ -55,7 +55,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/git` | [`stacks-git`](../stacks-git/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/git/src/index.ts) | 2 |
 | `@stacksjs/github` | [`stacks-git`](../stacks-git/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/github/src/index.ts) | 8 |
 | `@stacksjs/health` | [`stacks-health`](../stacks-health/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/health/src/index.ts) | 2 |
-| `@stacksjs/hq` | [`stacks-hq`](../stacks-hq/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/hq/src/index.ts) | 7 |
+| `@stacksjs/hq` | [`stacks-hq`](../stacks-hq/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/hq/src/index.ts) | 8 |
 | `@stacksjs/http` | [`stacks-http`](../stacks-http/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/http/src/index.ts) | 3 |
 | `@stacksjs/i18n` | [`stacks-i18n`](../stacks-i18n/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/i18n/src/index.ts) | 5 |
 | `@stacksjs/image` | [`stacks-image`](../stacks-image/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/image/src/index.ts) | 4 |
@@ -548,7 +548,7 @@ Read the entrypoint and package export map for re-exported or type-only surfaces
 
 Local source modules: [src/client.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/hq/src/client.ts), [src/meter.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/hq/src/meter.ts), [src/service.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/hq/src/service.ts).
 
-Evidence directory: [7 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/hq/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [8 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/hq/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/http
 
