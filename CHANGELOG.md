@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.569...v0.75.570)
+
+## ✨ Features
+
+- **http**: add bounded transfer observations ([41bc430](https://github.com/stacksjs/stacks/commit/41bc430)) _(by Chris)_ ([#3289](https://github.com/stacksjs/stacks/issues/3289))
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.568...v0.75.569)
 
 ## ✨ Features
