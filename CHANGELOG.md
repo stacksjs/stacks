@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.574...v0.75.575)
+
+## 🐛 Bug Fixes
+
+- **ci**: the scaffold smoke rewrites the app's name registries after linking this commit's defaults ([d8c2251](https://github.com/stacksjs/stacks/commit/d8c2251)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.573...v0.75.574)
 
 ## 🐛 Bug Fixes
