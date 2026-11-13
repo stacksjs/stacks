@@ -36,6 +36,14 @@ from `@stacksjs/forms/spam`: `honeypot` (answer as if it worked, store nothing),
 same check with `config.forms.spam`. No CAPTCHA, no third-party script; still
 rate-limit per address or IP.
 
+The same check is a route middleware: `.middleware('honeypot')` reads `_hp`
+and `_renderedMs` from the body, answers 422 for a filled trap and 429 for a
+form sent too fast, and passes a request that sends neither (so API clients
+keep working). `createHoneypot()` from `functions/honeypot` supplies the two
+fields on the form side: feed its `set()` from a hidden input and spread its
+`fields()` into the submission. `POST /register` carries it by default, and
+`components/Dashboard/Auth/Register.stx` is the worked example.
+
 ## Uploads, notifications, and paid forms
 
 Use resolveUploadLimits, checkUpload, fileFieldNamed, formUploadPrefix and

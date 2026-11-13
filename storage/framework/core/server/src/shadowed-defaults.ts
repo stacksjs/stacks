@@ -38,6 +38,7 @@ export const SECURITY_DEFAULT_FILES: readonly string[] = Object.freeze([
   'Middleware/Csrf.ts',
   'Middleware/Cors.ts',
   'Middleware/Throttle.ts',
+  'Middleware/Honeypot.ts',
   'Middleware/Signed.ts',
   'Middleware/Abilities.ts',
   'Middleware/Can.ts',

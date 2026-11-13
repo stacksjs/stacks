@@ -1,7 +1,11 @@
 @import('../UI/Input', '../UI/Button')
 
 <script client>
+import { createHoneypot } from '../../../../functions/honeypot'
+
 const emit = defineEmits(['submit'])
+// A hidden input and a clock, read by the `honeypot` middleware on /register.
+const honeypot = createHoneypot()
 const title = useReactiveProp<string>('title', 'Create an account')
 const subtitle = useReactiveProp<string>('subtitle', 'Get started with your free account')
 const icon = useReactiveProp<string>('icon', 'i-hugeicons-cube')
@@ -97,6 +101,7 @@ function handleSubmit(): void {
     email: email(),
     password: password(),
     password_confirmation: passwordConfirmation(),
+    ...honeypot.fields(),
   })
 }
 </script>
@@ -180,6 +185,9 @@ function handleSubmit(): void {
           :disabled="isLoading()"
         />
       </div>
+
+      <!-- Honeypot: hidden from people, filled by bots. See app/Middleware/Honeypot.ts. -->
+      <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="hidden" @input="honeypot.set($event.target.value)">
 
       <!-- Terms Checkbox -->
       <div class="mb-6">

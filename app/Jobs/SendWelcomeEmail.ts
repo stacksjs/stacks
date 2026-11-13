@@ -1,3 +1,4 @@
+import { greetingName } from '@stacksjs/auth'
 import { config } from '@stacksjs/config'
 import { mail, template } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
@@ -12,18 +13,20 @@ export default new Job({
   timeout: 30,
 
   async handle(payload: { email: string, name?: string }) {
-    const { email, name } = payload
+    const { email } = payload
+    // Untrusted, as in the action of the same name: a first name or nothing.
+    const name = greetingName(payload.name) || 'there'
 
     if (!email) {
       log.warn('[job] SendWelcomeEmail: no email provided')
       return
     }
 
-    log.debug(`[job] Sending welcome email to ${name || 'there'} <${email}>`)
+    log.debug(`[job] Sending welcome email to ${email}`)
 
     const { html, text } = await template('welcome', {
       subject: 'Welcome!',
-      variables: { name: name || 'there', email },
+      variables: { name, userName: name, email },
     })
 
     // The app's own name, read when the mail is sent, as in the action of the

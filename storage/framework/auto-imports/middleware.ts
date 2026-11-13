@@ -23,6 +23,7 @@ export const middleware = {
   'EnvProduction': '../defaults/app/Middleware/EnvProduction.ts',
   'EnvStaging': '../defaults/app/Middleware/EnvStaging.ts',
   'Guest': '../defaults/app/Middleware/Guest.ts',
+  'Honeypot': '../defaults/app/Middleware/Honeypot.ts',
   'Logger': '../defaults/app/Middleware/Logger.ts',
   'Maintenance': '../defaults/app/Middleware/Maintenance.ts',
   'Permission': '../defaults/app/Middleware/Permission.ts',

@@ -102,6 +102,54 @@ export async function ensureHashed(address: string, password: string, column: Pa
     throw new Error(`The password stored for ${address} does not verify; it was not changed safely.`)
 }
 
+/** One account an audit wants a person to look at. */
+export interface SuspectAccount {
+  id: unknown
+  email: string
+  name: string
+  /** Why the name would be refused at sign-up today. */
+  reason: string
+  verified: boolean
+}
+
+const AUDIT_REASONS: Record<string, string> = {
+  link: 'link in name',
+  markup: 'markup in name',
+  control: 'control characters in name',
+  characters: 'unusual characters in name',
+  too_long: 'name too long',
+}
+
+/**
+ * The accounts whose name registration would refuse today, most telling
+ * reason first. A missing or one-letter name is not listed: it is untidy, not
+ * an advert. Pure, so the rule is testable without a database.
+ */
+export async function suspectAccounts(rows: Array<Record<string, unknown>>): Promise<SuspectAccount[]> {
+  const { displayNameProblem } = await import('@stacksjs/auth/display-name')
+  const order = Object.keys(AUDIT_REASONS)
+  const found: Array<SuspectAccount & { rank: number }> = []
+
+  for (const row of rows) {
+    const problem = displayNameProblem(row.name)
+    const reason = problem ? AUDIT_REASONS[problem] : undefined
+    if (!problem || !reason)
+      continue
+    found.push({
+      id: row.id,
+      email: String(row.email ?? ''),
+      // One line each, whatever the name holds: this is printed to a terminal.
+      // eslint-disable-next-line no-control-regex
+      name: String(row.name ?? '').replace(/[\u0000-\u001F\u007F-\u009F\u2028\u2029]/g, ' ').slice(0, 120),
+      reason,
+      verified: row.email_verified_at != null,
+      rank: order.indexOf(problem),
+    })
+  }
+
+  return found.sort((a, b) => a.rank - b.rank).map(({ rank: _rank, ...account }) => account)
+}
+
 export function user(buddy: CLI): void {
   buddy
     .command('user:add <email>', 'Create a user account (optionally an admin)')
@@ -206,6 +254,36 @@ export function user(buddy: CLI): void {
 
       for (const row of rows)
         process.stdout.write(`  ${String(row.id).padStart(4)}  ${String(row.email).padEnd(34)} ${row.name ?? ''}\n`)
+
+      await log.flush()
+      process.exit(ExitCode.Success)
+    })
+
+  buddy
+    .command('user:audit', 'List accounts whose name looks like an advert (a link, markup, or far too long)')
+    .option('--json', 'Print the findings as JSON', { default: false })
+    .example('buddy user:audit')
+    .example('buddy user:audit --json')
+    .action(async (options: { json?: boolean }) => {
+      // Reads every account, straight from the table: the model hides
+      // columns and pages, and an audit that stops at 25 rows finds nothing.
+      // It lists. It never changes or removes an account; what to do with
+      // one is a person's decision.
+      const { db } = await import('@stacksjs/database')
+      const rows = await (db as any).selectFrom('users').selectAll().orderBy('id').execute() as Array<Record<string, unknown>>
+      const suspects = await suspectAccounts(rows)
+
+      if (options.json) {
+        process.stdout.write(`${JSON.stringify({ accounts: rows.length, suspects }, null, 2)}\n`)
+      }
+      else if (suspects.length === 0) {
+        log.success(`${rows.length} accounts, none with a name that looks like an advert.`)
+      }
+      else {
+        for (const account of suspects)
+          process.stdout.write(`  ${String(account.id).padStart(4)}  ${account.email.padEnd(34)} ${account.reason.padEnd(26)} ${account.verified ? 'verified  ' : 'unverified'}  ${account.name}\n`)
+        log.info(`${suspects.length} of ${rows.length} accounts to review. Nothing was changed.`)
+      }
 
       await log.flush()
       process.exit(ExitCode.Success)

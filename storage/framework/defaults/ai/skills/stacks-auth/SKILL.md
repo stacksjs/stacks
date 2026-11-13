@@ -480,6 +480,30 @@ overrides.
 
 - `register(credentials: NewUser): Promise<{ token: AuthToken }>`
 
+### Registration hardening
+
+`register()` refuses a display name that is not a name: no link or web address
+(`bit.ly/x`, `example.com`, `www.`, a scheme, `/`, `@`), no markup, no control
+characters, only letters, digits, spaces and `. , ' - ( )`, at most
+`DISPLAY_NAME_MAX_LENGTH` (80) characters. It answers 422 with a sentence for
+the person, and stores the name whitespace-tidied. The rule lives in
+`@stacksjs/auth/display-name` (`displayNameProblem`, `displayNameMessage`,
+`normalizeDisplayName`).
+
+Mail that greets someone reads the name through `greetingName(name)`: a first
+name, or `undefined` when the stored value would not pass registration. Use it
+in every mail of your own that goes to an address the recipient has not
+confirmed. `RegisterAction` already passes `user:registered` listeners the
+greeting name rather than the stored one.
+
+`POST /register` is limited three ways: the route's 3 a minute per client, and
+inside the action 20 an hour per client address and 5 an hour per email
+(`config.auth.registration.rateLimit: { perIp, perEmail }`, `false` to turn
+one off). It also carries the `honeypot` middleware (see `stacks-forms`).
+
+`buddy user:audit` lists accounts whose stored name would be refused today,
+with the reason and whether the address was ever verified. It only lists.
+
 ## User Helpers (user.ts)
 
 - `authUser(): Promise<UserModel | undefined>`

@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **381 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **382 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -82,7 +82,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `unlink` | 1 |
 | `unpublish` | 2 |
 | `upgrade` | 5 |
-| `user` | 2 |
+| `user` | 3 |
 
 ## Commands
 
@@ -6279,6 +6279,26 @@ Examples:
 ```bash
 buddy user:add chris@example.com --role admin
 buddy user:add support@example.com --name Support --password s3cret
+```
+
+### `user:audit`
+
+List accounts whose name looks like an advert (a link, markup, or far too long)
+
+- Usage: `$ buddy user:audit`
+- Namespace: `user`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--json` | Print the findings as JSON | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy user:audit
+buddy user:audit --json
 ```
 
 ### `user:list`

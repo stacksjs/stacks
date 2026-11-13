@@ -1,4 +1,5 @@
 import { Action } from '@stacksjs/actions/runtime'
+import { greetingName } from '@stacksjs/auth'
 import { config } from '@stacksjs/config'
 import { mail } from '@stacksjs/email'
 
@@ -15,13 +16,16 @@ export default new Action<string, undefined, '', WelcomeEmailParams>({
 
   async handle({ to, name }: WelcomeEmailParams) {
     const appName = config.app.name || 'our app'
+    // Untrusted: the address is unconfirmed and the name is whatever was
+    // typed at sign-up. A first name, or no name at all.
+    const greeting = greetingName(name) || 'there'
     const url = config.app.url || 'https://localhost:5173'
 
     await mail.sendOrFail({
       to,
       subject: `Welcome to ${appName}!`,
       text: `
-Hello ${name || 'there'},
+Hello ${greeting},
 
 Welcome to ${appName}! We're excited to have you on board.
 

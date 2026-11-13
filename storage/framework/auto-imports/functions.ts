@@ -72,6 +72,8 @@ export { fetchDashboardData, fetchDashboardStats } from '../defaults/functions/d
 export type { DataStats, DashboardActivity, DashboardUser, DashboardTeam, DashboardSubscriber, DashboardDataResponse, DataMode } from '../defaults/functions/data'
 export { fetchDeployments, fetchDeployment, fetchDeployScript, updateDeployScript, fetchDeploymentTerminal, normalizeDeployment, normalizeDeploymentList, normalizeDeploymentDetail, summarizeDeployments, previewDeploymentRollback, runDeploymentRollback } from '../defaults/functions/deployments'
 export type { DeploymentRecord, DeploymentSummary, DeployScript, DeploymentTerminal, DeploymentRollbackPlan, DeployScriptUpdate } from '../defaults/functions/deployments'
+export { createHoneypot } from '../defaults/functions/honeypot'
+export type { HoneypotFields, HoneypotTrap } from '../defaults/functions/honeypot'
 export { fetchDashboardInbox, fetchDashboardInboxBody, downloadDashboardInboxAttachment, fetchInboxActivity, sendInboxEmail, setInboxEmailReadState, deleteInboxEmail, parseInboxSender, normalizeInboxPreview, mapDashboardInboxEntry, useInbox } from '../defaults/functions/inbox'
 export type { InboxActivityRange, InboxActivity, InboxSendInput, DashboardInboxEmail, DashboardInboxAttachment, LoadedDashboardInbox, InboxEntry, InboxBody } from '../defaults/functions/inbox'
 export { fetchJobs, fetchJobStats, fetchJob, retryJob, retryFailedJobs, fetchJobDefinitions, useJobs } from '../defaults/functions/jobs'

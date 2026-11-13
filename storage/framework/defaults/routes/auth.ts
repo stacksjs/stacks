@@ -45,7 +45,11 @@ const oauthMetadataPath = oauthProvider
 // tokens until the row TTL. Userland that overrides any of these in
 // `routes/api.ts` (user routes win) gets to pick its own limits.
 route.post('/login', 'Actions/Auth/LoginAction').rateLimit(5, 'minute')
-route.post('/register', 'Actions/Auth/RegisterAction').rateLimit(3, 'minute')
+// Registration is the one route here an anonymous visitor writes through, so
+// it carries the honeypot (a no-op for clients that send neither field) and,
+// inside the action, hourly limits per address and per email on top of this
+// burst limit.
+route.post('/register', 'Actions/Auth/RegisterAction').middleware('honeypot').rateLimit(3, 'minute')
 // OAuth authorization-server token exchange. The action remains a 404 unless
 // config.auth.oauthProvider.enabled is explicitly true. PKCE or HTTP Basic is
 // the endpoint's credential boundary, so the action opts out of browser CSRF.

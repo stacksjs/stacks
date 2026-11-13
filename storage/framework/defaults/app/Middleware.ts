@@ -35,6 +35,7 @@ export default defineMiddleware({
   'abilities': 'Abilities',
   'can': 'Can',
   'throttle': 'Throttle',
+  'honeypot': 'Honeypot',
   'signed': 'Signed',
   'env': 'Env',
   'env:local': 'EnvLocal',

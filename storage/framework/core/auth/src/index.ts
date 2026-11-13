@@ -37,6 +37,7 @@ export * from './password/reset'
 export * from './password/reset-token'
 
 export * from './register'
+export * from './display-name'
 
 export * from './user'
 

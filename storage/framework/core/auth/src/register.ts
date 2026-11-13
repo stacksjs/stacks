@@ -8,6 +8,7 @@ import { User } from '@stacksjs/orm'
 import { makeHash } from '@stacksjs/security'
 import { Auth } from './authentication'
 import { normalizeAuthEmail } from './credential-user'
+import { displayNameMessage, displayNameProblem, normalizeDisplayName } from './display-name'
 import { isUniqueViolation } from './rbac-store-bqb'
 import { attributeReferral } from './referrals'
 
@@ -70,7 +71,7 @@ export interface RegistrationResult {
  * Additive, so `const { token } = await register(...)` is unaffected.
  */
 export async function register(credentials: NewUser & { referralCode?: string }, tokenOptions?: TokenCreateOptions): Promise<RegistrationResult> {
-  const { email: rawEmail, password, name } = credentials
+  const { email: rawEmail, password } = credentials
   const email = typeof rawEmail === 'string' ? normalizeAuthEmail(rawEmail) : rawEmail
 
   // Cheap structural validation before we hit the DB. Bad-email registration
@@ -81,6 +82,20 @@ export async function register(credentials: NewUser & { referralCode?: string },
   }
   if (typeof password !== 'string' || password.length < 8) {
     throw new HttpError(422, 'Password must be at least 8 characters')
+  }
+
+  // The name is checked here, not only in `RegisterAction`, so an app that
+  // registers through its own action is held to the same rule: no links, no
+  // markup, no control characters, at most DISPLAY_NAME_MAX_LENGTH characters
+  // (see ./display-name.ts for why). A caller that registers without a name
+  // at all is left alone; there is nothing in it to print. So is a very
+  // short one: the floor is `RegisterAction`'s validation, as it always was.
+  let name = credentials.name
+  if (name !== undefined && name !== null) {
+    const problem = displayNameProblem(name)
+    if (problem && problem !== 'too_short')
+      throw new HttpError(422, displayNameMessage(problem))
+    name = normalizeDisplayName(name)
   }
 
   // Hash before any DB query so duplicate and fresh registrations pay

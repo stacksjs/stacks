@@ -70,6 +70,10 @@ export interface AuthUser {
 export interface RegisterCredentials extends AuthUser {
   name: string
   password_confirmation: string
+  /** The hidden honeypot input's value (`createHoneypot().fields()`). */
+  _hp?: string
+  /** Milliseconds the form was open before it was sent. */
+  _renderedMs?: number
 }
 
 export interface ErrorResponse {
