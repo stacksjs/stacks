@@ -19,7 +19,7 @@ interface PostRow {
   status: string
   published_at?: string | null
   views?: number | null
-  is_featured?: number | null
+  is_featured?: boolean | number | null
   author_id?: number | null
   created_at?: string | null
   updated_at?: string | null

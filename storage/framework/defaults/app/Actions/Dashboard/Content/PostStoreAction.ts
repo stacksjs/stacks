@@ -44,7 +44,7 @@ export default new Action({
             poster: payload.poster,
             status: payload.status,
             author_id: payload.authorId,
-            is_featured: payload.featured ? 1 : 0,
+            is_featured: Boolean(payload.featured),
             views: 0,
             published_at: publishedAtFor(payload.status, null, now),
             created_at: now,

@@ -52,6 +52,10 @@ finally {
 // The server injects models as globals; the dashboard resolves them there.
 for (const name of ['Board', 'EmailList', 'NotificationDelivery', 'Team', 'User'])
   (globalThis as Record<string, unknown>)[name] = orm[name]
+// A number is a filter only where the model names it. No shipped model in
+// this fixture names one, so the email list names its count here, to ask for
+// a range through the endpoint.
+orm.EmailList.traits.useSearch.filterable = [...orm.EmailList.traits.useSearch.filterable, 'subscriberCount']
 
 await db.insertInto('users').values([
   { id: 1, name: 'Ava Stone', email: 'ava@example.com', password: 'h', created_at: '2026-03-01T09:00:00.000' },
@@ -71,9 +75,9 @@ await db.insertInto('teams').values([
   { id: 3, name: 'Initech', status: 'active', created_at: '2026-03-01T09:00:00.000' },
 ] as never).execute()
 await db.insertInto('email_lists').values([
-  { id: 1, name: 'Newsletter', slug: 'newsletter', status: 'active', is_public: 1, double_opt_in: 0, created_at: '2026-03-01T09:00:00.000' },
-  { id: 2, name: 'Staff', slug: 'staff', status: 'active', is_public: 0, double_opt_in: 1, created_at: '2026-03-01T09:00:00.000' },
-  { id: 3, name: 'Beta', slug: 'beta', status: 'archived', is_public: 0, double_opt_in: 0, created_at: '2026-03-01T09:00:00.000' },
+  { id: 1, name: 'Newsletter', slug: 'newsletter', status: 'active', is_public: 1, double_opt_in: 0, subscriber_count: 40, created_at: '2026-03-01T09:00:00.000' },
+  { id: 2, name: 'Staff', slug: 'staff', status: 'active', is_public: 0, double_opt_in: 1, subscriber_count: 0, created_at: '2026-03-01T09:00:00.000' },
+  { id: 3, name: 'Beta', slug: 'beta', status: 'archived', is_public: 0, double_opt_in: 0, subscriber_count: 3, created_at: '2026-03-01T09:00:00.000' },
 ] as never).execute()
 
 await db.insertInto('boards').values([
@@ -114,11 +118,12 @@ for (const never of ['body', 'subject', 'recipient', 'metadata', 'error'])
 // A board names the field its results are narrowed by: it comes first.
 const boards = await list('board')
 assert.deepEqual(kinds(boards), ['archived:boolean', 'team_id:relation', 'created_at:datetime', 'updated_at:datetime'])
-// The email list names three. Two of them the model stores as a number (0 or
-// 1) and says so; a filter is what the model says the field is, never a guess
-// from its name, so they are asked for as numbers.
+// The email list names three. Two are yes or no, and the model says so
+// (stacksjs/stacks#3300): declared as numbers, they were asked for as a range.
+// A filter is what the model says the field is, never a guess from its name.
 const lists = await list('email-list')
-assert.deepEqual(kinds(lists).slice(0, 3), ['status:choice', 'is_public:number', 'double_opt_in:number'])
+assert.deepEqual(kinds(lists).slice(0, 3), ['status:choice', 'is_public:boolean', 'double_opt_in:boolean'])
+assert.equal(kinds(lists)[3], 'subscriber_count:number', 'a count the model names is still asked for as a number')
 console.log('PASS each list offers the filters its model\'s fields call for')
 
 // 2. A field of text the model named: chosen from what the table holds.
@@ -137,8 +142,10 @@ assert.deepEqual((await list('notification-delivery', { status: 'failed' })).ids
 assert.deepEqual((await list('notification-delivery', { user_id: { in: ['2'] } })).ids, [3, 4], 'a record')
 assert.deepEqual((await list('board', { archived: 'true' })).ids, [2], 'yes')
 assert.deepEqual((await list('board', { archived: 'false' })).ids, [1, 3], 'no')
-assert.deepEqual((await list('email-list', { is_public: { min: 1 } })).ids, [1], 'at least')
-assert.deepEqual((await list('email-list', { is_public: { max: 0 } })).ids, [2, 3], 'at most')
+assert.deepEqual((await list('email-list', { is_public: 'true' })).ids, [1], 'yes, of a field that used to be a number')
+assert.deepEqual((await list('email-list', { double_opt_in: 'false' })).ids, [1, 3], 'no')
+assert.deepEqual((await list('email-list', { subscriber_count: { min: 3 } })).ids, [1, 3], 'at least')
+assert.deepEqual((await list('email-list', { subscriber_count: { max: 3 } })).ids, [2, 3], 'at most')
 assert.deepEqual((await list('board', { archived: 'false', team_id: '1' })).ids, [1])
 // A range of moments: from the start of a day to the start of the day after
 // the last one, as the page sends them for the viewer's days. Here the

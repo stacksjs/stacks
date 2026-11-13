@@ -89,7 +89,7 @@ export default new Action({
           .updateTable('comments')
           .set({
             status,
-            is_approved: status === 'approved' ? 1 : 0,
+            is_approved: status === 'approved',
             updated_at: timestamp(),
           } as any)
           .where('id', '=', id)

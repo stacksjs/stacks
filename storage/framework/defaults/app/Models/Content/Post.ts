@@ -227,12 +227,12 @@ export default defineModel({
       order: 13,
       fillable: true,
       validation: {
-        rule: schema.number(),
+        rule: schema.boolean(),
         message: {
-          number: 'Featured must be a number value',
+          boolean: 'Featured must be yes or no',
         },
       },
-      factory: faker => faker.number.int({ min: 0, max: 1 }),
+      factory: faker => faker.datatype.boolean(),
     },
   },
 

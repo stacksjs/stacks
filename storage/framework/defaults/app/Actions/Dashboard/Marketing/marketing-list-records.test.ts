@@ -65,8 +65,8 @@ describe('marketing list records', () => {
       slug: 'product-news',
       description: 'Weekly updates',
       status: 'active',
-      isPublic: 1,
-      doubleOptIn: 0,
+      isPublic: true,
+      doubleOptIn: false,
     })
   })
 
