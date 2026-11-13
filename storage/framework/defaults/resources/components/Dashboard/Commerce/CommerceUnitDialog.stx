@@ -152,13 +152,9 @@ function errorMessages(): string[] {
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Description</span>
             <textarea x-model="description" rows="3" maxlength="255" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea>
           </label>
-          <label class="flex gap-3 items-start p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
-            <input x-model="isDefault" type="checkbox" class="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded" />
-            <span>
-              <span class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Default for this type</span>
-              <span class="block mt-0.5 text-gray-500 text-xs dark:text-neutral-400">Selecting this clears any other default in the same unit type.</span>
-            </span>
-          </label>
+          <div class="p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
+            <Toggle v-model:checked="isDefault" label="Default for this type" description="Selecting this clears any other default in the same unit type." labelPosition="left" />
+          </div>
         </div>
     </form>
   <template #footer>

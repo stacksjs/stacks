@@ -81,14 +81,12 @@ function errorMessages(): string[] {
             </select>
           </label>
           <div class="grid gap-3 grid-cols-1 sm:grid-cols-2">
-            <label class="flex gap-3 items-center p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
-              <input x-model="approved" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded" />
-              <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Approved</span>
-            </label>
-            <label class="flex gap-3 items-center p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
-              <input x-model="featured" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded" />
-              <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Featured</span>
-            </label>
+            <div class="p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
+              <Toggle v-model:checked="approved" label="Approved" labelPosition="left" />
+            </div>
+            <div class="p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
+              <Toggle v-model:checked="featured" label="Featured" labelPosition="left" />
+            </div>
           </div>
         </div>
     </form>
