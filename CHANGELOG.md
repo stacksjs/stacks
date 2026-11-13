@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.572...v0.75.573)
+
+## 🐛 Bug Fixes
+
+- **bootstrap**: align Pantry default with the qualified CI toolchain ([cf52e20](https://github.com/stacksjs/stacks/commit/cf52e20)) _(by Chris Breuer)_
+- **build**: verify SDK candidates with canonical publication archives ([7eddbb5](https://github.com/stacksjs/stacks/commit/7eddbb5)) _(by Chris)_ ([#3288](https://github.com/stacksjs/stacks/issues/3288), [#3293](https://github.com/stacksjs/stacks/issues/3293))
+- **testing**: a verified Chrome copy is reused without being read again ([fa0587c](https://github.com/stacksjs/stacks/commit/fa0587c)) _(by glennmichael123)_ ([#3302](https://github.com/stacksjs/stacks/issues/3302))
+
+## 🔧 Chores
+
+- **deps**: adopt qualified shared tools and native development cohort ([0e41907](https://github.com/stacksjs/stacks/commit/0e41907)) _(by Chris Breuer)_ ([#3288](https://github.com/stacksjs/stacks/issues/3288), [#3293](https://github.com/stacksjs/stacks/issues/3293), [pantry-pm/pantry#332](https://github.com/pantry-pm/pantry/issues/332))
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.571...v0.75.572)
 
 ## ✨ Features
