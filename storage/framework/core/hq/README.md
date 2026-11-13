@@ -109,6 +109,13 @@ for (const { method, path, handler } of hq.routes)
 | `GET /api/cli/connect/{code}` | `200 { status: 'pending' }`; once approved `200 { status: 'approved', project, ingestKey, readKey, dashboardUrl }`, exactly once; otherwise `404 { status: 'expired' }` |
 | `GET /api/v1/usage` | `200 { meter, used, limit, period, state, upgradeUrl }[]`; `401` without a valid `Authorization: Bearer <read key>` |
 
+A service that takes no data from the app, because its product runs inside the
+app, has no keys to hand over. It answers a `LicenseGrant`
+(`{ project, licenseKey, dashboardUrl }`) from `provision` and leaves
+`authenticateReadKey` and `usage` off its adapter. An approved poll then
+carries `licenseKey` in place of the two keys, `routes` holds the two connect
+routes only, and the usage handler answers `404`.
+
 The approve page is the service's own. It calls `hq.describeConnect(code)` to
 show which app is asking and `hq.approveConnect(code, user)` when the signed-in
 user confirms.

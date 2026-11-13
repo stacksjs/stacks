@@ -12,6 +12,7 @@ export type { UsageReport } from './types'
  *
  *   POST /api/cli/connect          -> { code, approveUrl }
  *   GET  /api/cli/connect/{code}   -> pending | { project, ingestKey, readKey, dashboardUrl }
+ *                                     (or { project, licenseKey, dashboardUrl } from a licence-only service)
  *   GET  /api/v1/usage  (read key) -> { meter, used, limit, period, state, upgradeUrl }[]
  *
  * Nothing here knows a router or a database. A service implements
@@ -27,6 +28,26 @@ export interface ConnectGrant {
   /** The key the app's dashboard reads with. Server-side only. */
   readKey: string
   dashboardUrl: string
+}
+
+/**
+ * What a service with no keys hands over instead.
+ *
+ * Some services take no data from the app at all: the product runs inside the
+ * app, and the one thing an account gives it is a licence key. Such a service
+ * answers this from `provision`, leaves `authenticateReadKey` and `usage` off
+ * its adapter, and has no usage route.
+ */
+export interface LicenseGrant {
+  project: { id: string, name: string }
+  /** The licence the app stores. What it means, and whether anything checks it, is the service's own. */
+  licenseKey: string
+  dashboardUrl: string
+}
+
+/** Whether an approved connect carried a licence rather than keys. */
+export function isLicenseGrant(grant: ConnectGrant | LicenseGrant): grant is LicenseGrant {
+  return typeof (grant as LicenseGrant).licenseKey === 'string'
 }
 
 export interface ConnectRequest {
@@ -63,11 +84,11 @@ export interface HqServiceAdapter<User = unknown> {
    * Create, or reuse, the project named after the app for this user and
    * answer its keys. Called once per approval, and must be safe to repeat.
    */
-  provision: (user: User, request: ConnectRequest) => Promise<ConnectGrant>
-  /** Resolve a presented read key, or `null`. Compare in constant time. */
-  authenticateReadKey: (readKey: string) => Promise<ReadPrincipal | null>
+  provision: (user: User, request: ConnectRequest) => Promise<ConnectGrant | LicenseGrant>
+  /** Resolve a presented read key, or `null`. Compare in constant time. Omit, with `usage`, on a licence-only service. */
+  authenticateReadKey?: (readKey: string) => Promise<ReadPrincipal | null>
   /** The principal's standing on every meter this service has. */
-  usage: (principal: ReadPrincipal) => Promise<MeterReading[]>
+  usage?: (principal: ReadPrincipal) => Promise<MeterReading[]>
 }
 
 export interface HqServiceOptions {
@@ -89,6 +110,7 @@ export type ConnectPollResponse
   = | { status: 'pending' }
     | { status: 'expired' }
     | ({ status: 'approved' } & ConnectGrant)
+    | ({ status: 'approved' } & LicenseGrant)
 
 export type ApproveResult
   = | { ok: true, project: ConnectGrant['project'] }
@@ -110,9 +132,9 @@ export interface HqService<User = unknown> {
   describeConnect: (code: string) => Promise<{ app: string, expiresAt: number } | null>
   /** Call from the approve page's action, with the signed-in user, once they confirm. */
   approveConnect: (code: string, user: User) => Promise<ApproveResult>
-  /** `GET /api/v1/usage` */
+  /** `GET /api/v1/usage`. Answers 404 on a service whose adapter has no `usage`. */
   usage: (request: HqRequest) => Promise<Response>
-  /** The three routes, to register one by one. */
+  /** The routes, to register one by one: three, or the two connect routes on a licence-only service. */
   routes: HqRoute[]
   /** Dispatch a request to whichever route it matches; `null` when none does. */
   handle: (request: HqRequest) => Promise<Response | null>
@@ -150,19 +172,19 @@ async function grantKey(code: string): Promise<CryptoKey> {
   return crypto.subtle.importKey('raw', material, 'AES-GCM', false, ['encrypt', 'decrypt'])
 }
 
-async function sealGrant(code: string, grant: ConnectGrant): Promise<string> {
+async function sealGrant(code: string, grant: ConnectGrant | LicenseGrant): Promise<string> {
   const iv = crypto.getRandomValues(new Uint8Array(new ArrayBuffer(12)))
   const sealed = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, await grantKey(code), encoder.encode(JSON.stringify(grant))))
   return `${base64Url(iv)}.${base64Url(sealed)}`
 }
 
-async function openGrant(code: string, sealed: string): Promise<ConnectGrant | null> {
+async function openGrant(code: string, sealed: string): Promise<ConnectGrant | LicenseGrant | null> {
   try {
     const [iv, body] = sealed.split('.')
     if (!iv || !body)
       return null
     const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: fromBase64Url(iv) }, await grantKey(code), fromBase64Url(body))
-    return JSON.parse(new TextDecoder().decode(plain)) as ConnectGrant
+    return JSON.parse(new TextDecoder().decode(plain)) as ConnectGrant | LicenseGrant
   }
   catch {
     return null
@@ -264,7 +286,11 @@ export function createHqService<User = unknown>(adapter: HqServiceAdapter<User>,
     return json({ status: 'approved', ...grant } satisfies ConnectPollResponse)
   }
 
+  const metered = Boolean(adapter.authenticateReadKey && adapter.usage)
+
   async function usage(request: HqRequest): Promise<Response> {
+    if (!adapter.authenticateReadKey || !adapter.usage)
+      return json({ error: 'not found' }, 404)
     const key = bearer(request)
     const principal = key ? await adapter.authenticateReadKey(key) : null
     if (!principal)
@@ -289,7 +315,7 @@ export function createHqService<User = unknown>(adapter: HqServiceAdapter<User>,
   const routes: HqRoute[] = [
     { method: 'POST', path: CONNECT_PATH, handler: startConnect },
     { method: 'GET', path: `${CONNECT_PATH}/{code}`, handler: request => pollConnect(request) },
-    { method: 'GET', path: USAGE_PATH, handler: usage },
+    ...(metered ? [{ method: 'GET' as const, path: USAGE_PATH, handler: usage }] : []),
   ]
 
   async function handle(request: HqRequest): Promise<Response | null> {
@@ -299,7 +325,7 @@ export function createHqService<User = unknown>(adapter: HqServiceAdapter<User>,
       return startConnect(request)
     if (method === 'GET' && path.startsWith(`${CONNECT_PATH}/`) && !path.slice(CONNECT_PATH.length + 1).includes('/'))
       return pollConnect(request, decodeURIComponent(path.slice(CONNECT_PATH.length + 1)))
-    if (method === 'GET' && path === USAGE_PATH)
+    if (metered && method === 'GET' && path === USAGE_PATH)
       return usage(request)
     return null
   }

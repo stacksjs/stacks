@@ -1,7 +1,7 @@
 import type { SqlClient } from '../src/meter'
 import { Database } from 'bun:sqlite'
 import { describe, expect, test } from 'bun:test'
-import { connectCodesMigrationSql, createHqService, ensureConnectCodesTable, sqlConnectCodeStore } from '../src/service'
+import { connectCodesMigrationSql, createHqService, createMemoryConnectCodeStore, ensureConnectCodesTable, isLicenseGrant, sqlConnectCodeStore } from '../src/service'
 import { createMemoryHqAdapter, hqServiceContract } from '../src/testing'
 
 function sqlite(): SqlClient {
@@ -67,5 +67,55 @@ describe('connect', () => {
 
   test('ships the code table schema', () => {
     expect(connectCodesMigrationSql()[0]).toContain('CREATE TABLE IF NOT EXISTS hq_connect_codes')
+  })
+})
+
+describe('a licence-only service', () => {
+  // A service whose product runs inside the app takes no data and has no keys:
+  // an approved connect hands over a licence, and there is no usage to read.
+  function licensing() {
+    return createHqService<{ id: string }>({
+      service: 'reportshq',
+      approveUrl: code => `https://reportshq.test/cli/connect?code=${code}`,
+      upgradeUrl: 'https://reportshq.test/pricing',
+      codes: createMemoryConnectCodeStore(),
+      provision: async (user, { app }) => ({
+        project: { id: `${user.id}-${app}`, name: app },
+        licenseKey: `rhq_lic_${'ab'.repeat(16)}`,
+        dashboardUrl: 'https://reportshq.test/account',
+      }),
+    })
+  }
+  const request = (url: string, method = 'GET', body?: unknown): Request =>
+    new Request(`http://hq.test${url}`, { method, body: body === undefined ? undefined : JSON.stringify(body) })
+
+  test('an approved connect answers the licence, exactly once', async () => {
+    const service = licensing()
+    const started = await service.handle(request('/api/cli/connect', 'POST', { app: 'my-app' }))
+    const { code } = await started!.json() as { code: string }
+
+    expect(await service.approveConnect(code, { id: 'user_1' })).toEqual({ ok: true, project: { id: 'user_1-my-app', name: 'my-app' } })
+
+    const approved = await (await service.handle(request(`/api/cli/connect/${code}`)))!.json() as Record<string, unknown>
+    expect(approved).toEqual({
+      status: 'approved',
+      project: { id: 'user_1-my-app', name: 'my-app' },
+      licenseKey: `rhq_lic_${'ab'.repeat(16)}`,
+      dashboardUrl: 'https://reportshq.test/account',
+    })
+    expect(isLicenseGrant(approved as never)).toBe(true)
+    expect((await service.handle(request(`/api/cli/connect/${code}`)))!.status).toBe(404)
+  })
+
+  test('it has no usage route to mount, and the handler answers 404', async () => {
+    const service = licensing()
+    expect(service.routes.map(route => `${route.method} ${route.path}`)).toEqual(['POST /api/cli/connect', 'GET /api/cli/connect/{code}'])
+    // Left to the service's own router, like any path outside the contract.
+    expect(await service.handle(request('/api/v1/usage'))).toBeNull()
+    expect((await service.usage(request('/api/v1/usage'))).status).toBe(404)
+  })
+
+  test('a keyed grant is not mistaken for a licence', () => {
+    expect(isLicenseGrant({ project: { id: '1', name: 'a' }, ingestKey: 'i', readKey: 'r', dashboardUrl: 'https://x.test' })).toBe(false)
   })
 })
