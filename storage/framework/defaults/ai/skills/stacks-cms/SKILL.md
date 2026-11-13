@@ -75,7 +75,7 @@ interface CmsNamespace {
 | views | number | - | 0 |
 | publishedAt | timestamp | optional | - |
 | status | enum | published/draft/archived | draft |
-| isFeatured | number | 0 or 1 | - |
+| isFeatured | boolean | yes or no | - |
 
 ### Author
 - **Table**: `authors`, **Relationships**: `hasMany(['Post'])`, `belongsTo(['User'])`

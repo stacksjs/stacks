@@ -101,20 +101,13 @@ function submit(): void {
             </select>
           </label>
           <div class="grid gap-3 sm:grid-cols-2">
-            <label class="flex gap-3 items-start p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
-              <input x-model="isPublic" type="checkbox" class="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded" />
-              <span>
-                <span class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Public signup</span>
-                <span class="block mt-0.5 text-gray-500 text-xs dark:text-neutral-400">Allow signup forms to target this list.</span>
-              </span>
-            </label>
-            <label class="flex gap-3 items-start p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
-              <input x-model="doubleOptIn" type="checkbox" class="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded" />
-              <span>
-                <span class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Double opt-in</span>
-                <span class="block mt-0.5 text-gray-500 text-xs dark:text-neutral-400">Require confirmation before activation.</span>
-              </span>
-            </label>
+            <!-- Yes or no is the shared switch, as in every model form. -->
+            <div class="p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
+              <Toggle v-model:checked="isPublic" label="Public signup" description="Allow signup forms to target this list." labelPosition="left" />
+            </div>
+            <div class="p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
+              <Toggle v-model:checked="doubleOptIn" label="Double opt-in" description="Require confirmation before activation." labelPosition="left" />
+            </div>
           </div>
         </div>
     </form>

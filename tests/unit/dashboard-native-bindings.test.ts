@@ -486,6 +486,11 @@ describe('dashboard native STX bindings', () => {
     expect(toggle).toContain('<span :if="liveDescription() && !liveError()"')
     expect(toggle).toContain('<span :if="liveError()" role="alert"')
     expect(toggle).toContain(':aria-invalid="liveError() ? \'true\' : null"')
+    // The thumb is given one position, never both: with both, which one won was
+    // the order of the page's stylesheet, and a switch that was on could keep
+    // its thumb on the left (stacksjs/stacks#3300).
+    expect(toggle).toContain('liveChecked() ? checkedTranslations[liveSize()] || checkedTranslations.md : \'translate-x-0.5\'')
+    expect(toggle).not.toContain('inline-block translate-x-0.5')
     expect(toggle).not.toContain('Math.random')
 
     const textarea = componentSource('UI/Textarea.stx')

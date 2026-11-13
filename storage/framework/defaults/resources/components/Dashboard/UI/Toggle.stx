@@ -49,8 +49,11 @@ const trackClass = derived(() => [
 ].join(' '))
 const thumbClass = derived(() => [
   thumbSizes[liveSize()] || thumbSizes.md,
-  'pointer-events-none inline-block translate-x-0.5 rounded-full bg-white shadow-sm transition-transform duration-150 ease-in-out',
-  liveChecked() ? checkedTranslations[liveSize()] || checkedTranslations.md : '',
+  'pointer-events-none inline-block rounded-full bg-white shadow-sm transition-transform duration-150 ease-in-out',
+  // One position or the other, never both: with both on the thumb, which won
+  // was the order the page's stylesheet happened to list them in, and on
+  // some pages a switch that was on kept its thumb on the left.
+  liveChecked() ? checkedTranslations[liveSize()] || checkedTranslations.md : 'translate-x-0.5',
 ].join(' '))
 const labelClass = derived(() => [
   'text-[13px] font-medium tracking-tight',
