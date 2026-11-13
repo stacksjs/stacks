@@ -208,12 +208,13 @@ function writesAnswerInPlace(): void {
 type WritesAnswerInPlaceReturnsVoid = Expect<Equal<ReturnType<typeof writesAnswerInPlace>, void>>
 type ArticleWritesDoNotWait = Expect<Equal<ModelWritesWait<typeof Article>, false>>
 
-// A model that declares work around its writes returns a promise from every
-// one of them: lifecycle events, the search index, a soft delete, a setter.
-const Audited = defineModel({
-  name: 'AuditedArticle',
-  table: 'audited_articles',
-  traits: { observe: true },
+// A model that declares work its writes have to wait for returns a promise
+// from every one of them: a soft delete, an audit or activity trail, a setter
+// or a hook that is `async`.
+const Archived = defineModel({
+  name: 'ArchivedArticle',
+  table: 'archived_articles',
+  traits: { useSoftDeletes: true },
   attributes: { title: { fillable: true, validation: { rule: schema.string() } } },
 })
 const Hashed = defineModel({
@@ -222,26 +223,43 @@ const Hashed = defineModel({
   attributes: { title: { fillable: true, validation: { rule: schema.string() } } },
   set: { title: async (attributes: Record<string, unknown>) => String(attributes.title).trim() },
 })
+// Lifecycle events, the search index and a setter that answers in place are
+// not that: the events are heard in place and the index is updated after.
+const Observed = defineModel({
+  name: 'ObservedArticle',
+  table: 'observed_articles',
+  traits: { observe: true, useSearch: { searchable: ['title'] } },
+  attributes: { title: { fillable: true, validation: { rule: schema.string() } } },
+  set: { title: (attributes: Record<string, unknown>) => String(attributes.title).trim() },
+})
 
 async function writesThatWait(): Promise<void> {
-  const created = await Audited.create({ title: 'Typed' })
+  const created = await Archived.create({ title: 'Typed' })
   const title: string = created.title
-  const found = Audited.find(1)
+  const found = Archived.find(1)
   const readTitle: string | undefined = found?.title
-  // @ts-expect-error a write on a model with lifecycle events is a promise: the row is not here yet
-  Audited.create({ title: 'Typed' }).title
+  // @ts-expect-error a write on a model with soft deletes is a promise: the row is not here yet
+  Archived.create({ title: 'Typed' }).title
   void [title, readTitle]
 }
 
+function observedWritesAnswerInPlace(): void {
+  const title: string = Observed.create({ title: 'Typed' }).title
+  void title
+}
+
 type WritesThatWaitReturnsPromise = Expect<Equal<ReturnType<typeof writesThatWait>, Promise<void>>>
-type ObservedWritesWait = Expect<Equal<ModelWritesWait<typeof Audited>, true>>
+type ObservedWritesAnswerInPlaceReturnsVoid = Expect<Equal<ReturnType<typeof observedWritesAnswerInPlace>, void>>
+type SoftDeleteWritesWait = Expect<Equal<ModelWritesWait<typeof Archived>, true>>
 type SetterWritesWait = Expect<Equal<ModelWritesWait<typeof Hashed>, true>>
-type ObservedCreateIsAPromise = Expect<ReturnType<typeof Audited.create> extends Promise<unknown> ? true : false>
-type ObservedUpdateIsAPromise = Expect<ReturnType<typeof Audited.update> extends Promise<unknown> ? true : false>
-type ObservedDeleteIsAPromise = Expect<Equal<ReturnType<typeof Audited.delete>, Promise<boolean>>>
-type ObservedSaveIsAPromise = Expect<ReturnType<NonNullable<ReturnType<typeof Audited.find>>['save']> extends Promise<unknown> ? true : false>
+type ObservedWritesDoNotWait = Expect<Equal<ModelWritesWait<typeof Observed>, false>>
+type SoftDeleteCreateIsAPromise = Expect<ReturnType<typeof Archived.create> extends Promise<unknown> ? true : false>
+type SoftDeleteUpdateIsAPromise = Expect<ReturnType<typeof Archived.update> extends Promise<unknown> ? true : false>
+type SoftDeleteDeleteIsAPromise = Expect<Equal<ReturnType<typeof Archived.delete>, Promise<boolean>>>
+type SoftDeleteSaveIsAPromise = Expect<ReturnType<NonNullable<ReturnType<typeof Archived.find>>['save']> extends Promise<unknown> ? true : false>
 type SetterCreateIsAPromise = Expect<ReturnType<typeof Hashed.create> extends Promise<unknown> ? true : false>
+type ObservedDeleteIsABoolean = Expect<Equal<ReturnType<typeof Observed.delete>, boolean>>
 // Reads never wait, whatever the model declares.
-type ObservedCountIsANumber = Expect<Equal<ReturnType<typeof Audited.count>, number>>
+type SoftDeleteCountIsANumber = Expect<Equal<ReturnType<typeof Archived.count>, number>>
 
 void (0 as unknown as QueryContractReturnsVoid)

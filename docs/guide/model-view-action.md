@@ -113,7 +113,7 @@ is declared in one `defineModel()` call. Migrations are generated from it.
 ```typescript
 // app/Models/User.ts
 import { defineModel } from '@stacksjs/orm'
-import { makeHash } from '@stacksjs/security'
+import { makeHashSync } from '@stacksjs/security'
 import { schema } from '@stacksjs/validation'
 
 export default defineModel({
@@ -157,9 +157,9 @@ export default defineModel({
     isVerified: model => model.emailVerifiedAt !== null,
   },
 
-  // Transformed on write
+  // Transformed on write. Hashed in place, so `User.create(...)` is the row.
   set: {
-    password: value => makeHash(value),
+    password: attributes => makeHashSync(attributes.password),
   },
 
   // Reusable query constraints

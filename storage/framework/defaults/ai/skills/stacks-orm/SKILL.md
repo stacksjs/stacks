@@ -76,42 +76,76 @@ for (const post of Post.where('published', true).get()) titles.push(post.title)
   the abandoned statement; MySQL cannot, so there it may still be applied once
   the lock is gone.
 
-### Writes: in place unless the model asks for work around them
+### Writes: in place, with the work around them
 
 ```ts
-// Declares nothing to wait for: the write is the row.
-const note = Note.create({ title: 'Draft' })
-note.update({ title: 'Final' })
-Note.delete(note.id)
+// Lifecycle events, a search index, a broadcast: the write is still the row.
+const order = Order.create({ total: 1200 })
+order.update({ total: 1500 })
+Order.delete(order.id)
 
-// Declares `observe`: every write is a promise.
-const order = await Order.create({ total: 1200 })
+// Declares `useSoftDeletes`: every write is a promise.
+const note = await Note.create({ title: 'Draft' })
 ```
 
-A model's writes wait, and are typed as promises, when its definition
-declares any of:
+What a model declares around its writes happens like this:
+
+| Declaration | When it runs |
+|---|---|
+| `traits.observe` | listeners are called in place, in order; the row comes back after them |
+| `traits.useSearch` | the index update starts with the write and finishes after it |
+| `traits.broadcastOn` | the broadcast starts with the write and finishes after it |
+| `set: { ... }`, `hooks: { ... }` written without `async` | in place, as part of the write |
+
+A before-listener (`saving`, `creating`, `updating`, `deleting`) cancels the
+write by returning `false` or throwing, and the write throws where it stands.
+An after-listener that is `async` runs on after the row is back. A
+before-listener that is `async` still has to be waited for, since it may
+cancel: that one write becomes a promise, and the ORM warns once per event.
+Keep before-listeners synchronous.
+
+A model's writes wait, and are typed as promises, only when its definition
+declares something a write cannot do in place:
 
 | Declaration | What the write waits for |
 |---|---|
-| `traits.observe` | lifecycle event listeners |
-| `traits.useSearch` | the search index update |
-| `traits.broadcastOn` | the broadcast |
 | `traits.useSoftDeletes` / `softDeletable` | the soft-delete transaction |
 | `traits.useAudit`, `traits.useActivityLog` | the audit or activity row |
-| `set: { ... }` | a setter, which may hash or call out |
-| `hooks: { ... }` | the model's own hooks |
+| a `set:` member written `async` | the setter |
+| a `hooks:` member written `async` | the hook |
 
 It is decided from the declaration, not from what happens to run: on such a
 model `create`, `createMany`, `firstOrCreate`, `updateOrCreate`, `update`,
 `save`, `delete`, `forceDelete` and a query's `delete()` are promises every
-time, and a failure is a rejection. On a model with none of these they return
-the value, and a failure (a guarded column, a validation rule) throws where
-the call stands. `modelWritesWait(definition)` answers it at runtime and
-`ModelWritesWait<typeof Model>` in the types. Reads never wait on either kind.
+time, and a failure is a rejection. On any other model they return the value,
+and a failure (a guarded column, a validation rule, a listener that refuses)
+throws where the call stands. `modelWritesWait(definition)` answers it at
+runtime and `ModelWritesWait<typeof Model>` in the types. Reads never wait on
+either kind.
 
-When in doubt, `await` the write: it is correct on every model. An instance
-write on a model with an async setter still goes through `saveAsync()` /
+Write setters so they answer in place. A password setter uses `makeHashSync`
+from `@stacksjs/security`, as the default `User` does: it holds the thread for
+the length of the hash (about a quarter of a second for bcrypt at 12 rounds),
+and `User.create(...)` is the row. Where that pause is the worse trade, make
+the setter `async` with `makeHash` and `await` that model's writes. An
+instance write on a model with an async setter goes through `saveAsync()` /
 `updateAsync()`.
+
+Work that finishes after the write (the index update, the broadcast, an
+`async` after-listener) is logged if it fails and never fails the write. A
+server needs nothing more. A script that ends with `process.exit()` waits
+first:
+
+```ts
+import { modelWorkSettled } from '@stacksjs/orm'
+
+Product.create({ name: 'Widget' })
+await modelWorkSettled() // index updates and broadcasts are done; rejects if one failed
+process.exit(0)
+```
+
+Application seeders and tinker snippets already do this. When in doubt,
+`await` the write: it is correct on every model.
 
 ## Write behavior
 

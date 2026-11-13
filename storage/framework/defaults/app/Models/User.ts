@@ -1,6 +1,6 @@
 import type { Attributes } from '@stacksjs/types'
 import { defineModel, selfOwnership } from '@stacksjs/orm'
-import { makeHash } from '@stacksjs/security'
+import { makeHashSync } from '@stacksjs/security'
 // soon, these will be auto-imported
 import { schema } from '@stacksjs/validation/runtime'
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '../password-policy'
@@ -154,9 +154,11 @@ export default defineModel({
   },
 
   set: {
-    password: async (attributes: Attributes) => {
-      return await makeHash(attributes.password, { algorithm: 'bcrypt' })
-    },
+    // Hashed in place, so `User.create(...)` is the row and not a promise of
+    // one. That holds the thread for the length of the hash (about a quarter
+    // of a second at 12 rounds). An app that would rather wait for it without
+    // blocking makes this `async` with `makeHash`, and awaits its User writes.
+    password: (attributes: Attributes) => makeHashSync(attributes.password, { algorithm: 'bcrypt' }),
   },
   dashboard: {
     highlight: true,

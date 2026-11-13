@@ -423,10 +423,14 @@ await transaction(async () => { /_ ... atomic work ... _/ })
 `all()`, `count()`, `exists()`, `paginate()` and the rest are the row, the list or the number, on
 SQLite, MySQL and Postgres, so `product.name` on the next line works with or without `await`
 (`await` on a value is that value). A failure throws where the call stands: use `try`/`catch`, not
-`.catch()`. **A write (`create`, `update`, `save`, `delete`) does the same, unless the model
-declares work around it:** `observe`, `useSearch`, `broadcastOn`, `useSoftDeletes`, `useAudit`,
-`useActivityLog`, a `set:` hook or `hooks`. Every write on such a model is a promise, typed as
-one (the `Product` above declares `observe` and `useSearch`, hence its `await`). When unsure, keep
+`.catch()`. **A write (`create`, `update`, `save`, `delete`) does the same, lifecycle events and
+all:** listeners that answer in place have run by the time the row is back, and the search-index
+update and broadcast carry on after it (`await modelWorkSettled()` from `@stacksjs/orm` before a
+script calls `process.exit()`). The `Product` above declares `observe` and `useSearch` and its
+`create` is still the row; the `await` there is harmless. **A write is a promise, typed as one,
+only on a model that declares something it has to wait for:** `useSoftDeletes`, `useAudit`,
+`useActivityLog`, or a `set:` hook or `hooks` member written `async`. Keep a `set:` hook
+synchronous (`makeHashSync` for a password) so the model's writes stay in place. When unsure, keep
 `await` on writes: it is right on every model. The `db` query builder (`db.selectFrom(...)`) and
 `transaction()` still return promises. See `stacks-orm`.
 

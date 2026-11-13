@@ -105,20 +105,47 @@ describe('instance mutator pipeline', () => {
     expect(typeof (inst as any).updateAsync).toBe('function')
   })
 
-  it('sync save() throws a helpful error when a setter returns a Promise', async () => {
+  it('save() waits for a setter that returns a Promise, and writes what it resolves to', async () => {
     const inst = await (AsyncSetUser as any).create({ email: 'a@b.c', password: 'plain' })
     ;(inst as any).password = 'new-plaintext'
 
-    let thrown: unknown = null
-    try {
-      ;(inst as any).save()
-    }
-    catch (err) { thrown = err }
+    // It used to refuse with "use saveAsync()". The promise is the save now.
+    const saving = (inst as any).save()
+    expect(typeof saving?.then).toBe('function')
+    await saving
 
-    expect(thrown).toBeInstanceOf(Error)
-    const msg = (thrown as Error).message
-    expect(msg).toContain('returned a Promise')
-    expect(msg).toContain('saveAsync')
+    const row = db.query('SELECT password FROM async_set_users WHERE id = ?').get((inst as any).id) as any
+    expect(row.password).toBe('hashed:new-plaintext')
+  })
+
+  it('save() waits for a setter that is not declared async but answers with a Promise', async () => {
+    const Undeclared = defineModel({
+      name: 'UndeclaredAsyncSetUser',
+      table: 'async_set_users',
+      primaryKey: 'id',
+      autoIncrement: true,
+      attributes: { email: { type: 'string', fillable: true }, password: { type: 'string', fillable: true } },
+      set: { password: (attrs: Record<string, unknown>) => Promise.resolve(`hashed:${String(attrs.password)}`) },
+    } as const) as any
+
+    const inst = await Undeclared.create({ email: 'u@b.c', password: 'plain' })
+    const stored = (): unknown => (db.query('SELECT password FROM async_set_users WHERE id = ?').get(inst.id) as any).password
+    expect(stored()).toBe('hashed:plain')
+
+    inst.password = 'saved'
+    await inst.save()
+    expect(stored()).toBe('hashed:saved')
+
+    // The builder's own update runs the setter too, and used to bind the
+    // promise it answered with as the column's value.
+    await inst.update({ password: 'updated' })
+    expect(stored()).toBe('hashed:updated')
+
+    await Undeclared.update(inst.id, { password: 'static' })
+    expect(stored()).toBe('hashed:static')
+
+    const forced = await Undeclared.forceCreate({ email: 'f@b.c', password: 'forced' })
+    expect((db.query('SELECT password FROM async_set_users WHERE id = ?').get(forced.id) as any).password).toBe('hashed:forced')
   })
 
   it('saveAsync awaits an async setter and persists the resolved value', async () => {

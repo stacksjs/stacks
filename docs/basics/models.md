@@ -327,15 +327,41 @@ user?.email // the row is already here
 const same = await User.where('email', 'like', '%@example.com').orderByDesc('created_at').first()
 ```
 
-A write (`create`, `update`, `save`, `delete`) answers in place too, unless the
-model declares work around it: `observe`, `useSearch`, `broadcastOn`,
-`useSoftDeletes`, `useAudit`, `useActivityLog`, a `set:` hook or `hooks`. Every
-write on such a model is a promise, and is typed as one. When in doubt, `await`
-the write: that is correct on every model.
+A write (`create`, `update`, `save`, `delete`) answers in place too, with the
+model's lifecycle around it. Event listeners that answer in place have run by
+the time the row is back, and a `creating` listener that returns `false` makes
+the write throw where it stands. The search-index update and the broadcast
+start with the write and finish after it.
 
 ```typescript
-const note = Note.create({ title: 'Draft' }) // Note declares none of those
-const order = await Order.create({ total: 1200 }) // Order declares observe
+const order = Order.create({ total: 1200 }) // Order declares observe and useSearch
+order.update({ total: 1500 })
+```
+
+A write is a promise, and is typed as one, only on a model that declares
+something it has to wait for: `useSoftDeletes`, `useAudit`, `useActivityLog`,
+or a `set:` hook or `hooks` member written `async`. When in doubt, `await` the
+write: that is correct on every model.
+
+```typescript
+const note = await Note.create({ title: 'Draft' }) // Note declares useSoftDeletes
+```
+
+Keep setters synchronous so a model's writes stay in place. The default `User`
+hashes its password with `makeHashSync`, which holds the thread for the length
+of the hash (about a quarter of a second for bcrypt at 12 rounds). An app that
+would rather wait than pause writes the setter `async` with `makeHash` and
+awaits its `User` writes.
+
+A server needs nothing more. A script that calls `process.exit()` straight
+after a write waits for the index update and the broadcast first:
+
+```typescript
+import { modelWorkSettled } from '@stacksjs/orm'
+
+Product.create({ name: 'Widget' })
+await modelWorkSettled()
+process.exit(0)
 ```
 
 A call that fails in place, such as `findOrFail` on a missing row, throws where

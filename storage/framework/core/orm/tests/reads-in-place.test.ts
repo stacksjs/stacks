@@ -8,15 +8,18 @@
  * attribute proxy, the pagination envelope and the decryption of encrypted
  * columns all have to hand on a value when they are given one.
  *
- * Writes are different on purpose. They run setters, validation and lifecycle
- * events, any of which may be asynchronous, so they stay promises.
+ * A write answers in place too, with its lifecycle around it: listeners are
+ * heard in place, and the search index and the broadcast are brought up to
+ * date after the row is back. It is a promise only on a model that declares
+ * something a write has to wait for.
  */
-import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import process from 'node:process'
 import { configureOrm, getDatabase } from 'bun-query-builder'
 import { acquireDbConfigLock } from '@stacksjs/database'
-import { defineModel, modelWritesWait } from '../src/define-model'
+import { listen, off } from '@stacksjs/events'
+import { defineModel, modelWorkSettled, modelWritesWait } from '../src/define-model'
 import { _clearEncryptedKeyCache, encryptValue } from '../src/utils/encrypted'
 
 const isPromise = (value: unknown): boolean => Boolean(value) && typeof (value as { then?: unknown }).then === 'function'
@@ -199,18 +202,16 @@ describe('model reads answer in place', () => {
   })
 })
 
-describe('a write waits on a model that asks for work around it', () => {
+describe('a write waits on a model that asks for work it cannot do in place', () => {
   let releaseDbConfigLock: () => void
   const seen: string[] = []
 
-  // Every one of these declares something a write has to wait for.
   const base = { table: 'rip_waiting', primaryKey: 'id', autoIncrement: true, attributes: { name: { type: 'string', fillable: true } } } as const
-  const Observed = defineModel({ ...base, name: 'RipObserved', traits: { observe: true } } as const) as any
-  const Searchable = defineModel({ ...base, name: 'RipSearchable', traits: { useSearch: { searchable: ['name'] } } } as const) as any
+  // Each of these declares something a write has to wait for.
   const SoftDeleted = defineModel({ ...base, name: 'RipSoftDeleted', traits: { useSoftDeletes: true } } as const) as any
-  const WithSetter = defineModel({
+  const WithAsyncSetter = defineModel({
     ...base,
-    name: 'RipWithSetter',
+    name: 'RipWithAsyncSetter',
     set: {
       name: async (attributes: { name: string }) => {
         await Bun.sleep(1)
@@ -219,6 +220,10 @@ describe('a write waits on a model that asks for work around it', () => {
       },
     },
   } as const) as any
+  // And these do not: events are heard in place, the index is updated after,
+  // a setter that answers in place is part of the write.
+  const Observed = defineModel({ ...base, name: 'RipObserved', traits: { observe: true } } as const) as any
+  const WithSetter = defineModel({ ...base, name: 'RipWithSetter', set: { name: (attributes: { name: string }) => attributes.name.trim() } } as const) as any
   const Plain = defineModel({ ...base, name: 'RipPlain' } as const) as any
 
   beforeAll(async () => {
@@ -232,24 +237,28 @@ describe('a write waits on a model that asks for work around it', () => {
   })
 
   it('is decided from what the model declares', () => {
-    expect(modelWritesWait(Observed.getDefinition())).toBe(true)
-    expect(modelWritesWait(Searchable.getDefinition())).toBe(true)
     expect(modelWritesWait(SoftDeleted.getDefinition())).toBe(true)
-    expect(modelWritesWait(WithSetter.getDefinition())).toBe(true)
+    expect(modelWritesWait(WithAsyncSetter.getDefinition())).toBe(true)
+    expect(modelWritesWait({ traits: { useAudit: true } })).toBe(true)
+    expect(modelWritesWait({ traits: { useActivityLog: true } })).toBe(true)
+    expect(modelWritesWait({ hooks: { async afterCreate() {} } })).toBe(true)
+
+    expect(modelWritesWait(Observed.getDefinition())).toBe(false)
+    expect(modelWritesWait(WithSetter.getDefinition())).toBe(false)
     expect(modelWritesWait(Plain.getDefinition())).toBe(false)
-    expect(modelWritesWait({ traits: { observe: false, useSearch: undefined } })).toBe(false)
-    expect(modelWritesWait({ hooks: { afterCreate() {} } })).toBe(true)
+    expect(modelWritesWait({ traits: { observe: true, useSearch: { searchable: ['name'] }, broadcastOn: () => 'x', useSoftDeletes: false } })).toBe(false)
+    expect(modelWritesWait({ hooks: { afterCreate() {} } })).toBe(false)
   })
 
   it('every write on such a model is a promise, and its reads are still values', async () => {
-    for (const Model of [Observed, Searchable, SoftDeleted, WithSetter]) {
+    for (const Model of [SoftDeleted, WithAsyncSetter]) {
       const pending = Model.create({ name: 'row' })
       expect(isPromise(pending), `${Model.getDefinition().name}.create`).toBe(true)
       const created = await pending
       expect(isPromise(Model.find(created.id)), `${Model.getDefinition().name}.find`).toBe(false)
       // An instance write on a model with an async setter goes through
       // `updateAsync`, which is what waits for the setter.
-      const instanceWrite = Model === WithSetter ? created.updateAsync({ name: 'again' }) : created.update({ name: 'again' })
+      const instanceWrite = Model === WithAsyncSetter ? created.updateAsync({ name: 'again' }) : created.update({ name: 'again' })
       expect(isPromise(instanceWrite), `${Model.getDefinition().name} instance update`).toBe(true)
       await instanceWrite
       const staticWrite = Model.update(created.id, { name: 'static' })
@@ -263,20 +272,162 @@ describe('a write waits on a model that asks for work around it', () => {
 
   it('waits for an async setter before the row is written', async () => {
     seen.length = 0
-    const created = await WithSetter.create({ name: 'quiet' })
+    const created = await WithAsyncSetter.create({ name: 'quiet' })
     expect(seen).toEqual(['setter'])
     expect(created.name).toBe('QUIET')
   })
 
   it('a failure on such a model is a rejection, never thrown in place', async () => {
-    const pending = Observed.create({ name: 'x', nope: true })
+    const pending = SoftDeleted.create({ name: 'x', nope: true })
     expect(isPromise(pending)).toBe(true)
     await expect(pending).rejects.toThrow()
+  })
+
+  it('a setter that answers in place is part of a write in place', () => {
+    const created = WithSetter.create({ name: '  padded  ' })
+    expect(isPromise(created)).toBe(false)
+    expect(created.name).toBe('padded')
   })
 
   it('the model with none of that writes in place, on the same table', () => {
     const created = Plain.create({ name: 'plain' })
     expect(isPromise(created)).toBe(false)
     expect(created.name).toBe('plain')
+  })
+})
+
+describe('lifecycle work around a write that answers in place', () => {
+  let releaseDbConfigLock: () => void
+  const heard: string[] = []
+  const subscriptions: Array<() => void> = []
+  const on = (name: string, handler: (payload: any) => unknown): void => {
+    const key = `ripevented:${name}` as never
+    listen(key, handler as never)
+    subscriptions.push(() => off(key, handler as never))
+  }
+
+  const Evented = defineModel({
+    name: 'RipEvented',
+    table: 'rip_evented',
+    primaryKey: 'id',
+    autoIncrement: true,
+    traits: { observe: true },
+    attributes: { name: { type: 'string', fillable: true } },
+  } as const) as any
+
+  beforeAll(async () => {
+    releaseDbConfigLock = await acquireDbConfigLock()
+    configureOrm({ database: ':memory:' })
+    getDatabase().run('CREATE TABLE rip_evented (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, created_at TEXT, updated_at TEXT)')
+  })
+
+  afterEach(() => {
+    for (const unsubscribe of subscriptions.splice(0)) unsubscribe()
+    heard.length = 0
+  })
+
+  afterAll(() => {
+    releaseDbConfigLock()
+  })
+
+  it('listeners that answer in place have all run by the time the row is back', () => {
+    for (const name of ['saving', 'creating', 'created', 'saved'])
+      on(name, () => { heard.push(name) })
+    const created = Evented.create({ name: 'heard' })
+    expect(isPromise(created)).toBe(false)
+    expect(created.name).toBe('heard')
+    expect(heard).toEqual(['saving', 'creating', 'created', 'saved'])
+  })
+
+  it('a before-listener can cancel the write in place', () => {
+    on('creating', () => false)
+    expect(() => Evented.create({ name: 'refused' })).toThrow('event cancelled the operation')
+    expect(Evented.where('name', 'refused').exists()).toBe(false)
+  })
+
+  it('an asynchronous after-listener runs on after the row is back', async () => {
+    on('created', async () => {
+      await Bun.sleep(2)
+      heard.push('created, later')
+    })
+    const created = Evented.create({ name: 'detached' })
+    expect(isPromise(created)).toBe(false)
+    expect(heard).toEqual([])
+    await Bun.sleep(15)
+    expect(heard).toEqual(['created, later'])
+  })
+
+  it('an asynchronous before-listener is still waited for, so it can still cancel', async () => {
+    on('creating', async () => {
+      await Bun.sleep(1)
+      return false
+    })
+    const pending = Evented.create({ name: 'asked' })
+    expect(isPromise(pending)).toBe(true)
+    await expect(pending).rejects.toThrow('event cancelled the operation')
+    expect(Evented.where('name', 'asked').exists()).toBe(false)
+  })
+
+  it('work started by a write is waited for by modelWorkSettled', async () => {
+    const projected: string[] = []
+    const Indexed = defineModel({
+      name: 'RipIndexed',
+      table: 'rip_evented',
+      primaryKey: 'id',
+      autoIncrement: true,
+      traits: {
+        useSearch: {
+          searchable: ['name'],
+          shape: async () => {
+            await Bun.sleep(2)
+            projected.push('projected')
+            return null
+          },
+        },
+      },
+      attributes: { name: { type: 'string', fillable: true } },
+    } as const) as any
+
+    const created = Indexed.create({ name: 'indexed' })
+    expect(isPromise(created)).toBe(false)
+    expect(created.name).toBe('indexed')
+    // The row came back first: its document has not been projected yet.
+    expect(projected).toEqual([])
+    await modelWorkSettled()
+    expect(projected).toEqual(['projected'])
+  })
+
+  it('a failure in that work is logged, never thrown at the write, and reported by modelWorkSettled', async () => {
+    const Announced = defineModel({
+      name: 'RipAnnounced',
+      table: 'rip_evented',
+      primaryKey: 'id',
+      autoIncrement: true,
+      traits: {
+        // Broadcasting rides on the model's events, so it needs them on.
+        observe: true,
+        broadcastOn: () => { throw new Error('no channel to announce on') },
+        broadcastWith: () => ({}),
+      },
+      attributes: { name: { type: 'string', fillable: true } },
+    } as const) as any
+
+    const before = process.env.STACKS_ORM_BROADCAST_ERRORS
+    const error = console.error
+    process.env.STACKS_ORM_BROADCAST_ERRORS = 'throw'
+    console.error = () => {}
+    try {
+      const created = Announced.create({ name: 'announced' })
+      expect(isPromise(created)).toBe(false)
+      expect(created.name).toBe('announced')
+      await expect(modelWorkSettled()).rejects.toThrow('no channel to announce on')
+      // Reported once: the next call has nothing left to say.
+      await modelWorkSettled()
+    }
+    finally {
+      console.error = error
+      if (before === undefined) delete process.env.STACKS_ORM_BROADCAST_ERRORS
+      else process.env.STACKS_ORM_BROADCAST_ERRORS = before
+    }
   })
 })

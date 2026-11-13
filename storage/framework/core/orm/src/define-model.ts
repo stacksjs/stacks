@@ -7,6 +7,7 @@ import { log } from '@stacksjs/logging/runtime'
 import { parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { snakeCase } from '@stacksjs/strings'
 import { AsyncLocalStorage } from 'node:async_hooks'
+import * as modelEvents from '@stacksjs/events'
 import { type CursorPaginator, type Paginator, type SimplePaginator, toCursorPaginator, toPaginator, toSimplePaginator } from '@stacksjs/pagination'
 import { enrichPaginatorUrls, resolveCursorArgs, resolvePageArgs } from './paginator-request'
 import { dateTimeWriteKeys, hasWriteValidators, normalizeTimestampWrites, validateWriteBody } from './auto-crud'
@@ -14,7 +15,96 @@ import type { BelongsToForeignKeys } from './model-types'
 import type { GdprTraitOptions, PersonalAttribute } from './gdpr/types'
 
 // Cache only the loaded namespace; listener state stays in the live event bus.
-let modelEventsModule: typeof import('@stacksjs/events') | undefined
+/**
+ * Work a write started and did not wait for.
+ *
+ * A write returns its row where it is written. What follows from the write,
+ * and is not part of deciding whether it happens, runs after: the search
+ * index update and the broadcast. (Lifecycle listeners are called in place;
+ * one that is asynchronous was never waited for by `dispatch`.) That work is
+ * kept here so it is not lost track of: a failure is reported when it
+ * happens, and anything that is about to end the process, or wants to see the
+ * result, can wait for it with `modelWorkSettled()`.
+ *
+ * On `globalThis` under a registered symbol, because the ORM can be loaded
+ * more than once in a process (source and published copy) and because the
+ * tinker session and the CLI ask for it without importing the ORM.
+ */
+interface ModelWork {
+  pending: Set<Promise<unknown>>
+  failures: unknown[]
+}
+const MODEL_WORK = Symbol.for('stacks.orm.modelWork')
+const MODEL_WORK_SETTLED = Symbol.for('stacks.orm.modelWorkSettled')
+
+function modelWork(): ModelWork {
+  const host = globalThis as unknown as Record<symbol, ModelWork | undefined>
+  return host[MODEL_WORK] ??= { pending: new Set(), failures: [] }
+}
+
+/** Let `work` run on after the write that started it, and remember it until it ends. */
+/**
+ * A server never calls `modelWorkSettled()`, so the failures it would report
+ * must not pile up for the life of the process. Each was logged as it happened;
+ * only the most recent are kept for whoever does ask.
+ */
+const REMEMBERED_FAILURES = 32
+function rememberFailure(error: unknown): void {
+  const { failures } = modelWork()
+  failures.push(error)
+  if (failures.length > REMEMBERED_FAILURES)
+    failures.splice(0, failures.length - REMEMBERED_FAILURES)
+}
+
+function runAfterWrite(label: string, work: () => unknown): void {
+  let started: unknown
+  try {
+    started = work()
+  }
+  catch (error) {
+    console.error(`[ORM] ${label} failed:`, error)
+    rememberFailure(error)
+    return
+  }
+  if (!started || typeof (started as { then?: unknown }).then !== 'function') return
+  const registry = modelWork()
+  const tracked: Promise<unknown> = (started as Promise<unknown>).then(
+    () => { registry.pending.delete(tracked) },
+    (error) => {
+      registry.pending.delete(tracked)
+      rememberFailure(error)
+      console.error(`[ORM] ${label} failed:`, error)
+    },
+  )
+  registry.pending.add(tracked)
+}
+
+/**
+ * Wait for everything writes have started and not waited for: search index
+ * updates and broadcasts. Resolves when none is left, including work that
+ * was started while waiting.
+ *
+ * Rejects with the failures since the last call, when there were any, so a
+ * test or a script can see them; each was also logged when it happened. A
+ * server never needs this. A script that writes and then calls
+ * `process.exit()`, and a test that asserts on the index, do.
+ *
+ * @example
+ * ```ts
+ * const post = Post.create({ title: 'Indexed' })
+ * await modelWorkSettled()
+ * expect(await searchIndex.find(post.id)).toBeDefined()
+ * ```
+ */
+export async function modelWorkSettled(): Promise<void> {
+  const registry = modelWork()
+  while (registry.pending.size > 0)
+    await Promise.all([...registry.pending])
+  if (registry.failures.length === 0) return
+  const failures = registry.failures.splice(0)
+  throw new AggregateError(failures, `[ORM] ${failures.length} piece(s) of work started by a model write failed: ${failures.map(failure => failure instanceof Error ? failure.message : String(failure)).join('; ')}`)
+}
+;(globalThis as unknown as Record<symbol, unknown>)[MODEL_WORK_SETTLED] = modelWorkSettled
 
 /**
  * Event-suppression scope. When the current async context's store reports
@@ -505,31 +595,43 @@ interface WrappedModelInstance {
   set?: (_key: string, _value: unknown) => unknown
 }
 
-/** Whether a model declares `set:` hooks. */
-function hasSetters(definition: object): boolean {
-  const set = (definition as { set?: unknown }).set
-  return Boolean(set) && typeof set === 'object' && Object.keys(set as object).length > 0
+/** The traits whose work a write has to wait for: the soft-delete transaction, the audit row, the activity row. */
+const WAITING_TRAITS = ['useSoftDeletes', 'softDeletable', 'useAudit', 'useActivityLog'] as const
+
+function isAsyncFunction(value: unknown): boolean {
+  return typeof value === 'function' && value.constructor?.name === 'AsyncFunction'
 }
 
-/** The traits whose work a write has to wait for: events, the search index, broadcasts, the soft-delete, audit and activity rows. */
-const WAITING_TRAITS = ['observe', 'useSearch', 'broadcastOn', 'useSoftDeletes', 'softDeletable', 'useAudit', 'useActivityLog'] as const
+function hasAsyncMember(bag: unknown): boolean {
+  return Boolean(bag) && typeof bag === 'object' && Object.values(bag as object).some(isAsyncFunction)
+}
 
 /**
  * Whether a model's writes have something to wait for.
  *
- * A read returns its value where it is written, on every model. A write does
- * too, unless the model asks for work around it that can take a turn: a
- * lifecycle event or a search index update (listeners and the index are
- * reached asynchronously), a broadcast, an audit or activity row, a soft
- * delete (each goes through the query builder, which answers with a promise),
- * a `set:` hook (which may hash a password), or a hook of the model's own.
+ * A read returns its value where it is written, on every model, and so does
+ * a write: `const user = User.create(data)` is the row. Lifecycle listeners
+ * are called in place, and what merely follows from the write (the search
+ * index update, the broadcast) runs after it (see `modelWorkSettled`).
+ *
+ * What still makes a write wait is work that decides the write or belongs to
+ * it and cannot answer in place:
+ *
+ *  - a soft delete, an audit row, an activity row: each goes through the
+ *    query builder's own connection, which answers with a promise;
+ *  - an `async` `set:` hook, whose value is what gets written;
+ *  - an `async` hook of the model's own.
  *
  * It is decided from what the model declares, not from what happens to run,
  * so the answer is the same for every write on the model and the types can
- * give it too: `ModelWritesWait<TDef>` reads the same declarations. A model
- * that declares none of these writes in place, `const post =
- * Post.create(data)`, and one that declares any of them returns a promise
- * from every write, whether or not this one had to wait.
+ * give it too: `ModelWritesWait<TDef>` reads the same declarations. Such a
+ * model returns a promise from every write, whether or not this one had to
+ * wait.
+ *
+ * One thing is not in the declaration and can still make a write wait: an
+ * asynchronous listener on a before-event (`creating`, `saving`, `updating`,
+ * `deleting`). It can cancel the write, so it is waited for, and that write
+ * is then a promise. It is logged once when it first happens.
  */
 export function modelWritesWait(definition: object): boolean {
   const traits = (definition as { traits?: Record<string, unknown> }).traits
@@ -539,9 +641,7 @@ export function modelWritesWait(definition: object): boolean {
       if (value !== undefined && value !== null && value !== false) return true
     }
   }
-  if (hasSetters(definition)) return true
-  const hooks = (definition as { hooks?: unknown }).hooks
-  return Boolean(hooks) && typeof hooks === 'object'
+  return hasAsyncMember((definition as { set?: unknown }).set) || hasAsyncMember((definition as { hooks?: unknown }).hooks)
 }
 
 /**
@@ -619,81 +719,47 @@ function wrapModelInstance<T extends object>(
 
       if (prop === STACKS_PROXY_TAG) return true
 
-      // saveAsync()/updateAsync(): async-aware variants that resolve
-      // Promise-returning user setters before delegating to the sync
-      // `save()` underneath. Without these, `inst.password = 'plain';
-      // inst.save()` on a model with `set: { password: bcrypt }` either
-      // throws (post-fix) or silently writes a Promise (pre-fix). These
-      // synthetic methods are returned from the proxy `get` instead of
-      // being patched onto the instance so they don't interfere with
-      // type-aware model definitions.
-      if (prop === 'saveAsync') {
-        return async function () {
+      // save(): setters first, then the builder's save.
+      //
+      // A setter that answers in place is applied in place and the save
+      // answers in place. One that answers with a promise (a hash made off
+      // the thread) is waited for, and that save is a promise. Either way the
+      // value written is the setter's answer: the builder used to be handed
+      // the promise itself, which surfaced deep in the SQLite driver as
+      // "Binding expected string, TypedArray, boolean...", and a sync save()
+      // then had to refuse with "use saveAsync()".
+      //
+      // The setters run here and the builder's own pass is switched off for
+      // the length of its synchronous start, where it reads them: the
+      // definition is shared by every instance of the model, so it is put
+      // back before anything can wait.
+      //
+      // saveAsync() is the same save, always as a promise. It is kept for
+      // code written when it was the only one that waited.
+      if (prop === 'save' || prop === 'saveAsync') {
+        const save = (): unknown => writeResult(Boolean(target._definition?.__writesWait), () => settle(function* (): Generator<unknown, unknown, unknown> {
           const def = target._definition
           const setters = def?.set as Record<string, (attrs: Record<string, unknown>) => unknown> | undefined
-          if (setters && typeof target.isDirty === 'function') {
-            for (const [key, fn] of Object.entries(setters)) {
-              if (typeof fn !== 'function') continue
-              if (!target.isDirty(key)) continue
-              const result = fn(target._attributes as Record<string, unknown>)
-              const value = (result && typeof (result as { then?: unknown }).then === 'function')
-                ? await result
-                : result
-              ;target._attributes[key] = value
-            }
-            // Suppress the sync save's own setter pass — we already did
-            // it (and awaited it). Restore on a `finally` so a thrown
-            // save() doesn't leave the model definition in a wonky state
-            // (which would stick across other instances since the def
-            // is shared).
-            const original = def.set
-            def.set = {}
-            try {
-              return writeResult(Boolean(target._definition?.__writesWait), () => keepWrapped(target.save(), rawTarget, recv))
-            }
-            finally {
-              def.set = original
-            }
-          }
-          return writeResult(Boolean(target._definition?.__writesWait), () => keepWrapped(target.save(), rawTarget, recv))
-        }
-      }
+          if (!setters || Object.keys(setters).length === 0 || typeof target.isDirty !== 'function')
+            return yield* wait(keepWrapped(target.save(), rawTarget, recv))
 
-      // Sync `save()` guard. If a model has `set: { x: async (...) }` and
-      // the user does `inst.x = 'plain'; inst.save()` (no await), the
-      // underlying bqb save() would call the setter and persist its raw
-      // Promise — which surfaces deep in the SQLite driver as a cryptic
-      // "Binding expected string, TypedArray, boolean…" error. We pre-run
-      // each dirty setter, throw a helpful message if any is a Promise,
-      // and otherwise stash the resolved values + suppress the underlying
-      // setter pass so we don't double-apply.
-      if (prop === 'save') {
-        return function () {
-          const def = target._definition
-          const setters = def?.set as Record<string, (attrs: Record<string, unknown>) => unknown> | undefined
-          if (setters && Object.keys(setters).length > 0 && typeof target.isDirty === 'function') {
-            for (const [key, fn] of Object.entries(setters)) {
-              if (typeof fn !== 'function') continue
-              if (!target.isDirty(key)) continue
-              const result = fn(target._attributes as Record<string, unknown>)
-              if (result && typeof (result as { then?: unknown }).then === 'function') {
-                throw new Error(
-                  `Setter for "${key}" returned a Promise - use \`saveAsync()\` instead of \`save()\` when a model has async setters.`,
-                )
-              }
-              ;target._attributes[key] = result
-            }
-            const original = def.set
-            def.set = {}
-            try {
-              return writeResult(Boolean(target._definition?.__writesWait), () => keepWrapped(target.save(), rawTarget, recv))
-            }
-            finally {
-              def.set = original
-            }
+          for (const [key, fn] of Object.entries(setters)) {
+            if (typeof fn !== 'function') continue
+            if (!target.isDirty(key)) continue
+            ;target._attributes[key] = yield* wait(fn(target._attributes as Record<string, unknown>))
           }
-          return writeResult(Boolean(target._definition?.__writesWait), () => keepWrapped(target.save(), rawTarget, recv))
-        }
+          const original = def.set
+          def.set = {}
+          let saved: unknown
+          try {
+            saved = keepWrapped(target.save(), rawTarget, recv)
+          }
+          finally {
+            def.set = original
+          }
+          return yield* wait(saved)
+        }))
+        return prop === 'save' ? save : async () => save()
       }
 
       if (prop === 'updateAsync') {
@@ -1427,15 +1493,13 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
           // through to the un-forced path.
           const instance = (yield* wait((make as Function).call(baseModel))) as {
             forceFill?: (data: Record<string, unknown>) => unknown
-            save?: () => Promise<unknown>
-            saveAsync?: () => Promise<unknown>
+            save?: () => unknown
           } | null
           if (instance && typeof instance.forceFill === 'function' && typeof instance.save === 'function') {
             instance.forceFill(data)
-            // `saveAsync` exists to wait for a setter that returns a promise.
-            // A model with no setters has nothing of the kind, and its save
-            // answers in place.
-            const saved = (yield* wait(hasSetters(definition) && typeof instance.saveAsync === 'function' ? instance.saveAsync() : instance.save()))
+            // `save()` waits for a setter that answers with a promise and
+            // answers in place when none does.
+            const saved = (yield* wait(instance.save()))
             // The wrapped instance, never the builder's raw `this`: that one
             // reads every column as undefined (see keepWrapped).
             return saved && typeof saved === 'object' && saved !== instance && !(saved as { [STACKS_PROXY_TAG]?: boolean })[STACKS_PROXY_TAG]
@@ -2613,22 +2677,30 @@ type TraitIsOn<TDef, TTrait extends string> = TDef extends { traits: infer TTrai
     : false
   : false
 
+/** Whether a function type may answer with a promise. */
+// eslint-disable-next-line pickier/no-unused-vars
+type MayBePromise<TFunction> = TFunction extends (...args: never[]) => infer TReturn
+  ? [Extract<TReturn, PromiseLike<unknown>>] extends [never] ? false : true
+  : false
+
+/** Whether any member of a bag of functions (`set`, `hooks`) may answer with a promise. */
+type HasAsyncMember<TBag> = TBag extends object
+  ? true extends { [TKey in keyof TBag]-?: MayBePromise<NonNullable<TBag[TKey]>> }[keyof TBag] ? true : false
+  : false
+
 /**
  * `modelWritesWait`, for the type checker: the same declarations, read from
- * the definition's type. True when the model declares a lifecycle, search,
- * broadcast, soft-delete, audit or activity trait, a `set:` hook, or hooks of
- * its own. A write on such a model is a promise; on any other it is the value.
+ * the definition's type. True when the model declares a soft-delete, audit or
+ * activity trait, an `async` `set:` hook, or an `async` hook of its own. A
+ * write on such a model is a promise; on any other it is the value.
  */
 export type ModelWritesWait<TDef> = true extends (
-  | TraitIsOn<TDef, 'observe'>
-  | TraitIsOn<TDef, 'useSearch'>
-  | TraitIsOn<TDef, 'broadcastOn'>
   | TraitIsOn<TDef, 'useSoftDeletes'>
   | TraitIsOn<TDef, 'softDeletable'>
   | TraitIsOn<TDef, 'useAudit'>
   | TraitIsOn<TDef, 'useActivityLog'>
-  | (TDef extends { set: infer TSetters } ? ([keyof TSetters] extends [never] ? false : true) : false)
-  | (TDef extends { hooks: object } ? true : false)
+  | (TDef extends { set: infer TSetters } ? HasAsyncMember<TSetters> : false)
+  | (TDef extends { hooks: infer THooks } ? HasAsyncMember<THooks> : false)
 ) ? true : false
 
 /** What a write on a model returns: a promise where its writes wait, the value where they do not. */
@@ -3088,27 +3160,27 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
   // catch their own errors. Opt out globally via
   // `STACKS_ORM_EVENT_ERRORS=swallow` for legacy code that hasn't
   // audited its listeners yet.
-  const dispatchEvent = async (event: string, data: any) => {
+  const dispatchEvent = (event: string, data: any): void | Promise<void> => settle(function* () {
     if (eventsAreSuppressed()) return
     try {
-      const { dispatch } = modelEventsModule ??= await import('@stacksjs/events')
       /*
        * Composed at runtime - `${modelName}:created` - so it cannot be a
        * literal member of the event union here, though every name it produces
        * IS one: `types/model-events.d.ts` derives the union from the same
        * models. Asserted once, at the single point of composition.
+       *
+       * `dispatch` calls each listener and returns. A listener that answers
+       * in place has run by then; an asynchronous one runs on, as it always
+       * has. `wait` is for a dispatcher that does return a promise, which a
+       * test double may.
        */
-      await dispatch(event as Parameters<typeof dispatch>[0], data)
+      yield* wait(modelEvents.dispatch(event as Parameters<typeof modelEvents.dispatch>[0], data) as unknown)
     }
     catch (err) {
-      // MODULE_NOT_FOUND is the expected shape when the events package
-      // isn't installed (browser bundles, some test envs) — silence it.
-      if (err && typeof err === 'object' && 'code' in err && err.code === 'MODULE_NOT_FOUND')
-        return
       console.error(`[ORM] Event '${event}' handler error:`, err)
       if (process.env.STACKS_ORM_EVENT_ERRORS !== 'swallow') throw err
     }
-  }
+  })
 
   // Model-level broadcasting (stacksjs/stacks#1874 F-10).
   //
@@ -3155,30 +3227,33 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
   // `before*` listener used to silently allow the operation through
   // because the catch returned `true` (default-allow). Now: the save
   // fails on listener error unless STACKS_ORM_EVENT_ERRORS=swallow.
-  const dispatchBeforeEvent = async (event: string, data: any): Promise<boolean> => {
+  /** Said once per event: an asynchronous before-listener turns that model's writes into promises. */
+  const warnedAsyncBefore = new Set<string>()
+  const dispatchBeforeEvent = (event: string, data: any): boolean | Promise<boolean> => settle(function* () {
     if (eventsAreSuppressed()) return true
-    let eventsModule: typeof import('@stacksjs/events') | undefined
     try {
-      eventsModule = modelEventsModule ??= await import('@stacksjs/events')
-      const { dispatchAndCollect } = eventsModule
-      // Collect outcomes because dispatchAsync logs and swallows failures.
-      // Explicit cancellation still wins when the swallow opt-out is enabled.
-      // The event name is composed from the model at runtime.
-      const results = await dispatchAndCollect(event as Parameters<typeof dispatchAndCollect>[0], data)
+      // Collect outcomes because dispatch logs and swallows failures. Explicit
+      // cancellation still wins when the swallow opt-out is enabled. The event
+      // name is composed from the model at runtime.
+      const answer = modelEvents.dispatchAndCollectInPlace(event as Parameters<typeof modelEvents.dispatchAndCollectInPlace>[0], data)
+      if (answer && typeof (answer as { then?: unknown }).then === 'function' && !warnedAsyncBefore.has(event)) {
+        // A listener that can cancel the write has to be heard before the
+        // write. An asynchronous one is still waited for, so cancelling keeps
+        // working, but the write it belongs to is then a promise.
+        warnedAsyncBefore.add(event)
+        log.warn(`[orm] '${event}' has an asynchronous listener, so this write waits for it and returns a promise. A listener that answers in place keeps the write in place.`)
+      }
+      const results = yield* wait(answer)
       if (results.some(result => result.ok && result.value === false)) return false
       const failure = results.find(result => !result.ok)
       if (failure && !failure.ok) throw failure.error
     }
     catch (err) {
-      // Only a failed module load is optional. A listener's missing dependency
-      // is a real handler failure and must reach the configured error policy.
-      if (!eventsModule && err && typeof err === 'object' && 'code' in err && err.code === 'MODULE_NOT_FOUND')
-        return true
       console.error(`[ORM] Before-event '${event}' handler error:`, err)
       if (process.env.STACKS_ORM_EVENT_ERRORS !== 'swallow') throw err
     }
     return true
-  }
+  })
 
   const events = observe === true
     ? ['create', 'update', 'delete']
@@ -3186,54 +3261,57 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
 
   const hooks: { -readonly [K in keyof NonNullable<BQBModelDefinition['hooks']>]: NonNullable<BQBModelDefinition['hooks']>[K] } = {}
 
+  // Each hook is written with settle/wait, so it answers in place when its
+  // listeners did, and the write it belongs to stays in place with it. The
+  // broadcast is not part of the write: it runs after (see runAfterWrite).
   if (events.includes('create')) {
-    hooks.beforeCreate = async (model: any) => {
+    hooks.beforeCreate = (model: any) => settle(function* () {
       log.debug(`[orm] Create ${modelName}`, model)
       // `saving` fires for every persist (insert OR update), `creating`
       // for inserts only — Eloquent semantics. Either listener can
       // cancel the operation by returning `false`.
-      const savingOk = await dispatchBeforeEvent(`${modelName}:saving`, model)
+      const savingOk = yield* wait(dispatchBeforeEvent(`${modelName}:saving`, model))
       if (!savingOk) throw new Error(`[ORM] ${modelName}:saving event cancelled the operation`)
-      const creatingOk = await dispatchBeforeEvent(`${modelName}:creating`, model)
+      const creatingOk = yield* wait(dispatchBeforeEvent(`${modelName}:creating`, model))
       if (!creatingOk) throw new Error(`[ORM] ${modelName}:creating event cancelled the operation`)
-    }
-    hooks.afterCreate = async (model: any) => {
+    })
+    hooks.afterCreate = (model: any) => settle(function* () {
       // Order: `created` first (specific), then `saved` (general) — same
       // as Eloquent so a `saved` listener can rely on `created` having
       // already fired for the insert path.
       const payload = toEventPayload(model)
-      await dispatchEvent(`${modelName}:created`, payload)
-      await dispatchEvent(`${modelName}:saved`, payload)
+      yield* wait(dispatchEvent(`${modelName}:created`, payload))
+      yield* wait(dispatchEvent(`${modelName}:saved`, payload))
       // Broadcast AFTER the event dispatch so any event-listener-side
       // mutation of the model is reflected in the broadcast payload.
-      await dispatchBroadcast(`${modelName}:created`, model)
-    }
+      if (broadcastingEnabled) runAfterWrite(`Broadcast '${modelName}:created'`, () => dispatchBroadcast(`${modelName}:created`, model))
+    })
   }
   if (events.includes('update')) {
-    hooks.beforeUpdate = async (model: any) => {
+    hooks.beforeUpdate = (model: any) => settle(function* () {
       log.debug(`[orm] Update ${modelName}#${model?.id ?? 'unknown'}`, model)
-      const savingOk = await dispatchBeforeEvent(`${modelName}:saving`, model)
+      const savingOk = yield* wait(dispatchBeforeEvent(`${modelName}:saving`, model))
       if (!savingOk) throw new Error(`[ORM] ${modelName}:saving event cancelled the operation`)
-      const updatingOk = await dispatchBeforeEvent(`${modelName}:updating`, model)
+      const updatingOk = yield* wait(dispatchBeforeEvent(`${modelName}:updating`, model))
       if (!updatingOk) throw new Error(`[ORM] ${modelName}:updating event cancelled the operation`)
-    }
-    hooks.afterUpdate = async (model: any) => {
+    })
+    hooks.afterUpdate = (model: any) => settle(function* () {
       const payload = toEventPayload(model)
-      await dispatchEvent(`${modelName}:updated`, payload)
-      await dispatchEvent(`${modelName}:saved`, payload)
-      await dispatchBroadcast(`${modelName}:updated`, model)
-    }
+      yield* wait(dispatchEvent(`${modelName}:updated`, payload))
+      yield* wait(dispatchEvent(`${modelName}:saved`, payload))
+      if (broadcastingEnabled) runAfterWrite(`Broadcast '${modelName}:updated'`, () => dispatchBroadcast(`${modelName}:updated`, model))
+    })
   }
   if (events.includes('delete')) {
-    hooks.beforeDelete = async (model: any) => {
+    hooks.beforeDelete = (model: any) => settle(function* () {
       log.debug(`[orm] Delete ${modelName}#${model?.id ?? 'unknown'}`)
-      const shouldProceed = await dispatchBeforeEvent(`${modelName}:deleting`, model)
+      const shouldProceed = yield* wait(dispatchBeforeEvent(`${modelName}:deleting`, model))
       if (!shouldProceed) throw new Error(`[ORM] ${modelName}:deleting event cancelled the operation`)
-    }
-    hooks.afterDelete = async (model: any) => {
-      await dispatchEvent(`${modelName}:deleted`, toEventPayload(model))
-      await dispatchBroadcast(`${modelName}:deleted`, model)
-    }
+    })
+    hooks.afterDelete = (model: any) => settle(function* () {
+      yield* wait(dispatchEvent(`${modelName}:deleted`, toEventPayload(model)))
+      if (broadcastingEnabled) runAfterWrite(`Broadcast '${modelName}:deleted'`, () => dispatchBroadcast(`${modelName}:deleted`, model))
+    })
   }
 
   return hooks
@@ -3253,9 +3331,10 @@ function mergeModelHooks(
   for (const name of names) {
     const fns = sets.map(s => s?.[name as keyof NonNullable<BQBModelDefinition['hooks']>]).filter((fn): fn is (...args: any[]) => any => typeof fn === 'function')
     if (!fns.length) continue
-    ;(merged as Record<string, (...args: any[]) => any>)[name] = async (...args: any[]) => {
-      for (const fn of fns) await fn(...args)
-    }
+    // One after the other, in place while each answers in place.
+    ;(merged as Record<string, (...args: any[]) => any>)[name] = (...args: any[]) => settle(function* () {
+      for (const fn of fns) yield* wait(fn(...args))
+    })
   }
 
   return Object.keys(merged).length ? merged : undefined
@@ -3453,10 +3532,14 @@ function buildSearchHooks(definition: BQBModelDefinition): BQBModelDefinition['h
     await removeInline(indexName, Number(id), definition.name)
   }
 
+  // The index is brought up to date after the write, not as part of it: the
+  // row is written whether or not the search engine answers, and the caller
+  // has its row without waiting for a network call. `modelWorkSettled()`
+  // waits for it where the result matters.
   return {
-    afterCreate: syncDocument,
-    afterUpdate: syncDocument,
-    afterDelete: removeDocument,
+    afterCreate: (model: any) => runAfterWrite(`Search index update for ${definition.name}`, () => syncDocument(model)),
+    afterUpdate: (model: any) => runAfterWrite(`Search index update for ${definition.name}`, () => syncDocument(model)),
+    afterDelete: (model: any) => runAfterWrite(`Search index removal for ${definition.name}`, () => removeDocument(model)),
   }
 }
 
@@ -3581,7 +3664,7 @@ function applySoftDeletes(
   const fireRestoring = async (id: number | string): Promise<boolean> => {
     if (!observeOn || eventsAreSuppressed()) return true
     try {
-      const { dispatchAsync } = modelEventsModule ??= await import('@stacksjs/events')
+      const { dispatchAsync } = modelEvents
       const results = (await dispatchAsync(`${modelName}:restoring` as Parameters<typeof dispatchAsync>[0], { id })) as unknown[]
       if (Array.isArray(results) && results.some(r => r === false)) return false
     }
@@ -3594,7 +3677,7 @@ function applySoftDeletes(
   const fireRestored = async (id: number | string): Promise<void> => {
     if (!observeOn || eventsAreSuppressed()) return
     try {
-      const { dispatch } = modelEventsModule ??= await import('@stacksjs/events')
+      const { dispatch } = modelEvents
       await dispatch(`${modelName}:restored` as Parameters<typeof dispatch>[0], { id })
     }
     catch (err: any) {

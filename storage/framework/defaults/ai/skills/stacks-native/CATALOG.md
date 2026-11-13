@@ -466,7 +466,7 @@ Evidence directory: [10 retained tests](https://github.com/stacksjs/stacks/blob/
 
 Guidance: [`stacks-events`](../stacks-events/SKILL.md). Source: [storage/framework/core/events/src/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/events/src/index.ts).
 
-Declared runtime exports: `all`, `appListenersBooted`, `bootAppListeners`, `createEmitter`, `default`, `defineEvents`, `defineListener`, `discoverListeners`, `dispatch`, `dispatchAndCollect`, `dispatchAsync`, `emitter`, `events`, `listen`, `mitt`, `off`, `once`, `registerAppListeners`, `resetListenerRegistry`, `resetNameRegistries`, `scope`, `scopedEvents`, `useEvent`, `useEvents`, `useListen`.
+Declared runtime exports: `all`, `appListenersBooted`, `bootAppListeners`, `createEmitter`, `default`, `defineEvents`, `defineListener`, `discoverListeners`, `dispatch`, `dispatchAndCollect`, `dispatchAndCollectInPlace`, `dispatchAsync`, `emitter`, `events`, `listen`, `mitt`, `off`, `once`, `registerAppListeners`, `resetListenerRegistry`, `resetNameRegistries`, `scope`, `scopedEvents`, `useEvent`, `useEvents`, `useListen`.
 
 Local source modules: [src/discover.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/events/src/discover.ts).
 

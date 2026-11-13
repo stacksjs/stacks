@@ -67,7 +67,8 @@ describe('observed writes keep the event registry live', () => {
     on('creating', () => {
       throw Object.assign(new Error('listener dependency missing'), { code: 'MODULE_NOT_FOUND' })
     })
-    await expect(Model.create({ label: 'failed' })).rejects.toThrow('listener dependency missing')
+    // The listener answers in place, so the write does too: its failure is thrown here.
+    expect(() => Model.create({ label: 'failed' })).toThrow('listener dependency missing')
     expect(getDatabase().query('SELECT label FROM event_cache_probes').all()).toEqual([{ label: 'warm' }])
   })
 
@@ -102,7 +103,7 @@ describe('observed writes keep the event registry live', () => {
       on('creating', () => { throw new Error('optional listener failed') })
       await Model.create({ label: 'allowed' })
       on('creating', () => false)
-      await expect(Model.create({ label: 'cancelled' })).rejects.toThrow('event cancelled the operation')
+      expect(() => Model.create({ label: 'cancelled' })).toThrow('event cancelled the operation')
       expect(getDatabase().query('SELECT label FROM event_cache_probes').all()).toEqual([{ label: 'allowed' }])
     }
     finally {
