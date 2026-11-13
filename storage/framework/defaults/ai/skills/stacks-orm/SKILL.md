@@ -25,14 +25,52 @@ import type { ModelRow, ModelCreateData } from '@stacksjs/orm'
 type WorkItemRow = ModelRow<typeof WorkItem>
 type NewWorkItem = ModelCreateData<typeof WorkItem>
 
-const item = await WorkItem.find(id)
-const open = await WorkItem.where('done', false).orderBy('id', 'desc').get()
+const item = WorkItem.find(id)
+const open = WorkItem.where('done', false).orderBy('id', 'desc').get()
 ```
 
 `find` can return no row; `findOrFail` throws `ModelNotFoundError`. Do not invent
 `UserRequest` or a runtime `UserModel` global. The ORM barrel's model proxies
 load lazily; server boot waits for model initialization. A feature-disabled
 model is not made usable merely by an ambient declaration.
+
+## Reads answer in place, writes are promises
+
+A model read returns its value where it is written, on SQLite, MySQL and
+Postgres:
+
+```ts
+const user = User.where('email', 'like', '%@example.com').orderByDesc('created_at').first()
+user?.email                                   // the row is already here
+
+const total = User.count()
+if (User.where('email', email).exists()) return response.badRequest('Taken')
+for (const post of Post.where('published', true).get()) titles.push(post.title)
+```
+
+- **Which calls:** every read. `find`, `findOrFail`, `findMany`, `first`,
+  `firstOrFail`, `last`, `all`, `get`, `count`, `exists`, `pluck`, `sum`,
+  `avg`, `min`, `max`, `paginate`, `simplePaginate`, `cursorPaginate`, eager
+  loading through `with()`, and reads of encrypted attributes.
+- **`await` still works.** `await` on a value is that value, so existing code
+  and code written by habit run unchanged. The types say the same: a read is
+  typed as the row, not as a promise of it.
+- **A failure is thrown where the call stands.** `findOrFail` on a missing
+  row throws; wrap it in `try`/`catch`. `.catch()` and `.then()` do not exist
+  on a row. In a test, `expect(() => User.findOrFail(0)).toThrow()`, not
+  `await expect(...).rejects`.
+- **A write is a promise, on every model.** `create`, `createMany`,
+  `firstOrCreate`, `updateOrCreate`, `update`, `save`, `delete`, `forceDelete`
+  and a query's `delete()` run setters, validation, encryption and lifecycle
+  events, any of which may wait. Keep their `await`.
+- **How.** SQLite runs a query in place. MySQL and Postgres run on Bun's
+  driver, held by a worker thread the caller waits on, so nothing else runs on
+  the calling thread while a query is in flight (the cost `bun:sqlite` always
+  had). `models: { execution: 'async' }` in the query-builder config makes
+  MySQL and Postgres reads promises again for an app that needs the event loop
+  free during queries; every read then has to be awaited.
+- **Not covered.** The `db` query builder (`db.selectFrom(...)`) and
+  `transaction()` still return promises.
 
 ## Write behavior
 

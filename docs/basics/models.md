@@ -317,6 +317,27 @@ traits: {
 
 ## Querying Models
 
+A read returns its value where it is written, on SQLite, MySQL and Postgres.
+`await` is optional on a read, because `await` on a value is that value:
+
+```typescript
+const user = User.where('email', 'like', '%@example.com').orderByDesc('created_at').first()
+user?.email // the row is already here
+
+const same = await User.where('email', 'like', '%@example.com').orderByDesc('created_at').first()
+```
+
+A write (`create`, `update`, `save`, `delete`) is a promise, because it runs
+setters, validation and lifecycle events. Keep its `await`. A read that fails,
+such as `findOrFail` on a missing row, throws where the call stands, so use
+`try`/`catch` and not `.catch()`.
+
+SQLite runs a query in place. MySQL and Postgres run it on a worker thread that
+the caller waits on, so a server process handles one query at a time. An app
+that needs the event loop free during queries can set
+`models: { execution: 'async' }` in its query-builder config and await every
+read.
+
 ### Basic Queries
 
 ```typescript

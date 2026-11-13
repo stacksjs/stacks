@@ -107,10 +107,12 @@ if (User.where('active', true).exists()) dump(User.count())
 for (const post of Post.latest().limit(5).get()) dump(post.title)
 ```
 
-The rule: outside a function, a call that returns a promise is waited for
-where it stands, and so is a promise a statement names (the value of a line,
-of a declaration, of an assignment). A rejection is thrown there, so
-`User.findOrFail(0)` fails the run it was written in.
+A model read is a value everywhere, in app code as well as here (see
+`stacks-orm`). What a session adds is the rest: outside a function, a call
+that returns a promise is waited for where it stands, and so is a promise a
+statement names (the value of a line, of a declaration, of an assignment). So
+a write (`User.create(...)`), a `fetch` or a job dispatch reads the same way a
+query does. A rejection is thrown there.
 
 - **Inside a function nothing changes.** `await` there is yours to write:
   `users.map(async user => await user.posts())`.
