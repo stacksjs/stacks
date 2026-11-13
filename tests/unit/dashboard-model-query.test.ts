@@ -43,8 +43,9 @@ describe('dashboard model query input', () => {
   it('reports malformed or ambiguous filters', () => {
     expect(() => parseFilters('{')).toThrow('Could not parse model filters')
     expect(() => parseFilters('[]')).toThrow('Model filters must be a JSON object')
+    // A value, or one of the comparisons a filter has (dashboard-model-filters.test.ts).
     expect(() => parseFilters('{"status":{"value":"active"}}'))
-      .toThrow('Model filter "status" must be a scalar value')
+      .toThrow('Model filter "status" is not a comparison the list has')
     expect(() => parseFilters('{"bad-column":"active"}'))
       .toThrow('Invalid model filter column "bad-column"')
   })
