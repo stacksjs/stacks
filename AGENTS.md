@@ -296,7 +296,7 @@ module imported by that script must explicitly import every function, store,
 and type it uses; entry bindings do not leak into bundled module scope.
 
 **Server** (routes, `app/Actions/`, `app/Jobs/`, models) - injected into `globalThis`:
-- All 110 models (`User`, `Product`, `Order`, ...), so `await User.find(1)` works with no import.
+- All 110 models (`User`, `Product`, `Order`, ...), so `User.find(1)` works with no import.
 - Everything exported from `app/Jobs/`, `app/Controllers/` and `resources/functions/`.
 
 Models only - **not** their `Model` / `Request` / `RequestModel` "variants". This used to
@@ -414,11 +414,19 @@ Models expose a fluent, chainable query API (backed by `bun-query-builder`) plus
 and eager loading. Exact method surface is in `stacks-query-builder` / `stacks-orm`; typical shape:
 
 ```ts
-const published = await Product.where('status', 'published').orderByDesc('created_at').all()
-const product = await Product.find(id)
+const published = Product.where('status', 'published').orderByDesc('created_at').all()
+const product = Product.find(id)
 const created = await Product.create({ name: 'Widget', price: 1200 })
 await transaction(async () => { /_ ... atomic work ... _/ })
 ```
+**A read returns its value where it is written.** `Product.find(id)`, `first()`, `get()`, `all()`,
+`count()`, `exists()`, `paginate()` and the rest are the row, the list or the number, on SQLite,
+MySQL and Postgres, so `product.name` on the next line works with or without `await` (`await` on a
+value is that value). A missing row throws from `findOrFail` where the call stands: use
+`try`/`catch`, not `.catch()`. **A write is a promise** (`create`, `update`, `save`, `delete`): it
+runs setters, validation, encryption and lifecycle events, so keep its `await`. The `db` query
+builder (`db.selectFrom(...)`) still returns promises. See `stacks-orm`.
+
 Eager loading, pagination, and the full method set are in `stacks-query-builder` / `stacks-orm`.
 
 ---

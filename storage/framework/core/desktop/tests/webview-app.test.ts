@@ -185,8 +185,8 @@ describe('a release', () => {
   test('each platform publishes the file an installed app can replace itself with', () => {
     const config = { appName: 'Repro & Co', version: '0.3.0' }
     expect(releaseArtifactNames(config, 'darwin-arm64')).toEqual({ update: 'Repro-Co-0.3.0-arm64.zip', downloads: ['Repro-Co-0.3.0-arm64.dmg'] })
-    expect(releaseArtifactNames(config, 'win32-x64')).toEqual({ update: 'Repro-Co-0.3.0-x64.msi', downloads: [] })
-    expect(releaseArtifactNames(config, 'linux-x64')).toEqual({ update: 'Repro-Co-0.3.0-x64.AppImage', downloads: ['Repro-Co-0.3.0-x64.deb', 'Repro-Co-0.3.0-x64.rpm'] })
+    expect(releaseArtifactNames(config, 'win32-x64')).toEqual({ update: 'Repro-Co-0.3.0-x64.msi', downloads: ['Repro-Co-0.3.0-x64.msi'] })
+    expect(releaseArtifactNames(config, 'linux-x64')).toEqual({ update: 'Repro-Co-0.3.0-x64.AppImage', downloads: ['Repro-Co-0.3.0-x64.AppImage', 'Repro-Co-0.3.0-x64.deb', 'Repro-Co-0.3.0-x64.rpm'] })
   })
 
   test('a feed never goes backwards and never reuses a version', () => {

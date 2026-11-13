@@ -596,12 +596,13 @@ function warnOnPayloadMismatch(
   const bad: string[] = []
 
   for (const [key, entry] of Object.entries(validations)) {
-    const validate = entry?.rule?.validate
+    const rule = entry?.rule
+    const validate = rule?.validate
     if (typeof validate !== 'function')
       continue
 
     try {
-      if (!validate(bag[key]).valid)
+      if (!validate.call(rule, bag[key]).valid)
         bad.push(key)
     }
     catch {

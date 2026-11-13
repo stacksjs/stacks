@@ -2,7 +2,7 @@ import type { DesktopTargetName, WebviewDesktopConfig } from '@stacksjs/types'
 import type { BundleCommand } from './macos-bundle'
 import type { WebviewAppManifest } from './webview-launcher'
 import { chmodSync, copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
-import { isAbsolute, join, relative, resolve, sep } from 'node:path'
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import process from 'node:process'
 import { codesignArgs, plistValue, renderInfoPlist } from './index'
 import { loadDesktopConfig } from './macos-app'
@@ -399,9 +399,47 @@ export function signtoolArgs(options: { file: string, certificatePath: string, c
 export function releaseArtifactNames(config: Pick<ResolvedWebviewDesktop, 'appName' | 'version'>, target: DesktopTargetName): { update: string, downloads: string[] } {
   const { platform, architecture } = splitDesktopTarget(target)
   const base = `${config.appName.replace(/[^\w.-]+/g, '-')}-${config.version}-${architecture}`
+  // downloads: what a person takes, the usual choice first. On Linux and Windows the first is also what the app updates from.
   if (platform === 'darwin') return { update: `${base}.zip`, downloads: [`${base}.dmg`] }
-  if (platform === 'win32') return { update: `${base}.msi`, downloads: [] }
-  return { update: `${base}.AppImage`, downloads: [`${base}.deb`, `${base}.rpm`] }
+  if (platform === 'win32') return { update: `${base}.msi`, downloads: [`${base}.msi`] }
+  return { update: `${base}.AppImage`, downloads: [`${base}.AppImage`, `${base}.deb`, `${base}.rpm`] }
+}
+
+/** What kind of file a release artifact is, by its name: `dmg`, `zip`, `msi`, `appimage`, `deb`, `rpm`. */
+export function releaseArtifactFormat(name: string): string {
+  return name.slice(name.lastIndexOf('.') + 1).toLowerCase()
+}
+
+/**
+ * What to say about the identity a Mac build was signed with, when a release
+ * could not use it. A build signs with the first identity it finds unless
+ * told, and that is often an Apple Development certificate: fine on this Mac,
+ * refused by notarization. Nothing when the build was told which to use.
+ */
+export function signingIdentityNote(identity: string, chosen: boolean): string | undefined {
+  // An identity the build was told to use is the developer's call, whatever it is.
+  if (chosen) return undefined
+  const fix = 'Set DESKTOP_SIGNING_IDENTITY (or pass --identity) to a Developer ID Application certificate to build what a release can notarize; `buddy release:desktop --identity` signs it again otherwise.'
+  if (identity === '-') return `Signed ad hoc: it runs on this Mac only. ${fix}`
+  return `Signed with the Apple Development certificate found on this Mac: it runs here, and cannot be notarized. ${fix}`
+}
+
+/**
+ * Sign an assembled `<App>.app` again with another identity: the runtime
+ * first, then the bundle with the app's entitlements, as the build does. What
+ * a release does to a bundle that was built with a development identity.
+ */
+export function resignWebviewMacosApp(options: { appPath: string, config: Pick<ResolvedWebviewDesktop, 'macos'>, signingIdentity: string, entitlementsPath?: string, run?: BundleCommand }): void {
+  const run = options.run ?? runBundleCommand
+  const runtime = join(options.appPath, 'Contents', 'MacOS', WEBVIEW_RUNTIME_NAME)
+  if (!existsSync(runtime)) throw new Error(`${options.appPath} has no ${WEBVIEW_RUNTIME_NAME}: it is not a web view app this build made.`)
+  let entitlements = options.entitlementsPath
+  if (!entitlements || !existsSync(entitlements)) {
+    entitlements = join(dirname(options.appPath), `${basename(options.appPath, '.app')}.entitlements`)
+    writeFileSync(entitlements, renderWebviewEntitlements(options.config))
+  }
+  run(codesignArgs({ identity: options.signingIdentity, target: runtime }))
+  run(codesignArgs({ identity: options.signingIdentity, target: options.appPath, entitlements }))
 }
 
 /**

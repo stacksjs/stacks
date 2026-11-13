@@ -2,7 +2,7 @@
   "name": "@stacksjs/orm",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.557",
+  "version": "0.75.562",
   "description": "The Stacks ORM integration",
   "author": "Chris Breuer",
   "contributors": [
@@ -81,7 +81,7 @@
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/ts-validation": "^0.5.7",
     "@stacksjs/validation": "workspace:*",
-    "bun-query-builder": "^0.3.44",
+    "bun-query-builder": "^0.4.0",
     "stripe": "23.0.0"
   },
   "peerDependencies": {

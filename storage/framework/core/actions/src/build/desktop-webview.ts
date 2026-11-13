@@ -1,5 +1,5 @@
+import type { WebviewBuildRecord } from '@stacksjs/desktop-build'
 import type { DesktopTargetName } from '@stacksjs/types'
-import { createHash } from 'node:crypto'
 import { chmodSync, copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { basename, join, relative, resolve } from 'node:path'
 import process from 'node:process'
@@ -7,19 +7,25 @@ import { log } from '@stacksjs/cli'
 import {
   assembleWebviewMacosApp,
   collectViewFiles,
+  craftRuntimeAsset,
   configuredWebviewRuntime,
+  describeBuildArtifact,
   fetchCraftRuntime,
   findDevelopmentIdentity,
   hostDesktopTarget,
+  importWebviewBuild,
   installedCraftVersion,
   loadWebviewDesktop,
+  mergeBuildRecord,
   nativeBuildSteps,
   parseDesktopTargets,
   probeCraftFlags,
+  recordPackagedInstallers,
   renderViewsBuildScript,
   renderWebviewEntry,
   resolveCraftExecutable,
   resolveWebviewComponents,
+  signingIdentityNote,
   signtoolArgs,
   splitDesktopTarget,
   validateWebviewDesktop,
@@ -66,9 +72,46 @@ const agentEntry = webviewAgentEntry(root, config.agent.entry)
 const viewsDir = resolve(root, config.agent.views)
 const hostRuntime = (): string => resolveCraftExecutable()
 
+/**
+ * A target's Craft runtime: the one the config or the environment names, this
+ * machine's own Craft for this machine's target, else the one Craft published
+ * for the installed craft-native version, fetched once and kept under
+ * storage/framework/desktop/runtimes. A machine with no Craft of its own (a CI
+ * runner) fetches its own target's the same way. DESKTOP_RUNTIME_FETCH=0 keeps
+ * a build off the network.
+ */
+async function runtimeFor(target: DesktopTargetName): Promise<string> {
+  const named = configuredWebviewRuntime(config!, target, { root })
+  if (named) return named
+  let missing: unknown
+  if (target === host) {
+    try {
+      return hostRuntime()
+    }
+    catch (error) {
+      // No Craft installed here: the published one for this platform does the same job.
+      missing = error
+    }
+  }
+  const version = installedCraftVersion(root)
+  if (process.env.DESKTOP_RUNTIME_FETCH === '0' || !version || !craftRuntimeAsset(target)) {
+    if (missing) throw missing
+    // Says what to configure when there is nothing to fetch, or nothing to fetch with.
+    return webviewRuntimeFor(config!, target, { root, hostRuntime })
+  }
+  const fetched = await fetchCraftRuntime({
+    target,
+    version,
+    directory: join(root, 'storage/framework/desktop/runtimes', target),
+    onFetch: (url) => { void log.info(`Fetching ${url}`) },
+  })
+  if (fetched.fetched) await log.info(`Craft ${fetched.version} runtime for ${target}: ${relative(root, fetched.binary)}`)
+  return fetched.binary
+}
+
 if (process.env.STACKS_DESKTOP_LAUNCH === '1') {
   const entry = join(work, 'dev-entry.ts')
-  const devRuntime = webviewRuntimeFor(config, host, { root, hostRuntime })
+  const devRuntime = await runtimeFor(host)
   writeFileSync(entry, renderWebviewEntry({
     manifest: webviewManifest(config, { runtime: devRuntime, runtimeFlags: probeCraftFlags(devRuntime), development: true }),
     agentEntry,
@@ -88,6 +131,64 @@ const sourceRevision = revision.exitCode === 0 ? revision.stdout.toString().trim
 function run(command: string[], describe: string): void {
   const result = Bun.spawnSync(command, { cwd: root, stdout: 'pipe', stderr: 'pipe' })
   if (result.exitCode !== 0) throw new Error(`${describe} failed:\n${result.stderr.toString().trim() || result.stdout.toString().trim()}`)
+}
+
+/**
+ * Make a staged target's installers with Craft, from the craft-package.json
+ * beside it. Returns what it made, relative to the target's folder.
+ */
+async function packageStaged(target: DesktopTargetName, directory: string, packageConfig: Record<string, unknown>, executables: string[]): Promise<string[]> {
+  const { packageApp } = await import('craft-native')
+  const windows = packageConfig.windows as Record<string, unknown> | undefined
+  if (typeof windows?.certificatePath === 'string') {
+    // The certificate's password is read here and never written to craft-package.json.
+    const certificatePassword = process.env.DESKTOP_WINDOWS_CERTIFICATE_PASSWORD
+    if (certificatePassword) windows.certificatePassword = certificatePassword
+    // Craft signs the MSI it makes; the executables inside it are signed here first, so what is installed is signed too.
+    for (const name of executables)
+      run(signtoolArgs({ file: join(directory, name), certificatePath: resolve(root, windows.certificatePath), certificatePassword }), `Signing ${name}`)
+  }
+  const made: string[] = []
+  for (const result of await packageApp(packageConfig as unknown as Parameters<typeof packageApp>[0])) {
+    if (!result.success) throw new Error(`Packaging ${result.format} for ${target} failed: ${result.error}`)
+    if (result.outputPath) made.push(relative(directory, result.outputPath))
+  }
+  return made
+}
+
+// `--import <folder>`: targets built on another machine join this project's build record, so a release can publish
+// them. Nothing is built. With --package, a target for this operating system that came without installers gets them
+// made here (an MSI on Windows, from a folder cross-compiled elsewhere).
+if (process.env.DESKTOP_IMPORT) {
+  if (!sourceRevision) throw new Error('An import is checked against the commit this checkout is at, and this is not a Git checkout.')
+  const result = importWebviewBuild({
+    from: resolve(root, process.env.DESKTOP_IMPORT),
+    output,
+    appId: config.appId,
+    version: config.version,
+    sourceRevision,
+    host,
+    ...(process.env.DESKTOP_TARGETS ? { targets } : {}),
+  })
+  for (const target of result.skipped) await log.info(`${target} is in that build record, but its folder was not brought along: left out.`)
+  for (const target of result.dropped) await log.warn(`${target} was in the build record from another version or commit, and is no longer.`)
+  for (const item of result.imported) {
+    const { platform } = splitDesktopTarget(item.target)
+    const packageFile = join(item.directory, 'craft-package.json')
+    const entry = result.record.targets.find(candidate => candidate.target === item.target)!
+    const hasInstaller = entry.artifacts.some(artifact => artifact.name.startsWith('packages/'))
+    if (process.env.DESKTOP_PACKAGE === '1' && process.platform === platform && platform !== 'darwin' && !hasInstaller && existsSync(packageFile)) {
+      // Written with paths relative to itself, so it could be carried here.
+      const packageConfig = JSON.parse(readFileSync(packageFile, 'utf8'), (_key, value: unknown) => typeof value === 'string' && value.startsWith('./') ? join(item.directory, value) : value) as Record<string, unknown>
+      await packageStaged(item.target, item.directory, packageConfig, entry.artifacts.map(artifact => artifact.name).filter(name => name.endsWith('.exe')))
+      recordPackagedInstallers(output, item.target)
+    }
+    const now = (JSON.parse(readFileSync(join(output, 'build.json'), 'utf8')) as typeof result.record).targets.find(candidate => candidate.target === item.target)!
+    await log.success(`${item.target}: imported ${now.artifacts.map(artifact => artifact.name).join(', ')}`)
+    for (const name of item.unrecorded) await log.warn(`  ${name} was not in the build record: recorded as found, with nothing to check it against.`)
+  }
+  process.exitCode = 0
+  process.exit()
 }
 
 // The views, built once and compiled into every target's agent.
@@ -122,29 +223,6 @@ interface BuiltTarget {
 }
 const built: BuiltTarget[] = []
 
-/**
- * A target's Craft runtime: the one the config or the environment names, the
- * host's own for the host's target, else the one Craft published for the
- * installed craft-native version, fetched once and kept under
- * storage/framework/desktop/runtimes. DESKTOP_RUNTIME_FETCH=0 keeps a build
- * off the network.
- */
-async function runtimeFor(target: DesktopTargetName): Promise<string> {
-  const configured = configuredWebviewRuntime(config!, target, { root, hostRuntime })
-  if (configured) return configured
-  const version = installedCraftVersion(root)
-  // Says what to configure, as before, when there is nothing to fetch with.
-  if (process.env.DESKTOP_RUNTIME_FETCH === '0' || !version) return webviewRuntimeFor(config!, target, { root, hostRuntime })
-  const fetched = await fetchCraftRuntime({
-    target,
-    version,
-    directory: join(root, 'storage/framework/desktop/runtimes', target),
-    onFetch: (url) => { void log.info(`Fetching ${url}`) },
-  })
-  if (fetched.fetched) await log.info(`Craft ${fetched.version} runtime for ${target}: ${relative(root, fetched.binary)}`)
-  return fetched.binary
-}
-
 for (const target of targets) {
   const { platform } = splitDesktopTarget(target)
   const directory = join(output, target)
@@ -177,7 +255,9 @@ for (const target of targets) {
     const identity = process.env.DESKTOP_SIGNING_IDENTITY || findDevelopmentIdentity() || '-'
     const assembled = assembleWebviewMacosApp({ config, root, agent, runtime, output: directory, signingIdentity: identity })
     for (const key of assembled.ignoredPlistKeys) await log.warn(`webview.macos.infoPlist: ${key} is set by the build and was ignored`)
-    built.push({ target, directory, artifacts: [basename(assembled.appPath)], ...(identity === '-' ? { remaining: 'Signed ad hoc: it runs on this Mac only. `buddy release:desktop` signs with a Developer ID and notarizes.' } : {}) })
+    // Said now, not when notarization refuses it at the end of a release.
+    const note = signingIdentityNote(identity, Boolean(process.env.DESKTOP_SIGNING_IDENTITY))
+    built.push({ target, directory, artifacts: [basename(assembled.appPath)], ...(note ? { remaining: note } : {}) })
     continue
   }
 
@@ -218,20 +298,7 @@ for (const target of targets) {
 
   const canPackage = process.platform === platform
   if (process.env.DESKTOP_PACKAGE === '1' && canPackage) {
-    const { packageApp } = await import('craft-native')
-    const windows = packageConfig.windows as Record<string, unknown> | undefined
-    if (typeof windows?.certificatePath === 'string') {
-      // The certificate's password is read here and never written to craft-package.json.
-      const certificatePassword = process.env.DESKTOP_WINDOWS_CERTIFICATE_PASSWORD
-      if (certificatePassword) windows.certificatePassword = certificatePassword
-      // Craft signs the MSI it makes; the executables inside it are signed here first, so what is installed is signed too.
-      for (const name of artifacts.filter(file => file.endsWith('.exe')))
-        run(signtoolArgs({ file: join(directory, name), certificatePath: resolve(root, windows.certificatePath), certificatePassword }), `Signing ${name}`)
-    }
-    for (const result of await packageApp(packageConfig as unknown as Parameters<typeof packageApp>[0])) {
-      if (!result.success) throw new Error(`Packaging ${result.format} for ${target} failed: ${result.error}`)
-      if (result.outputPath) artifacts.push(relative(directory, result.outputPath))
-    }
+    artifacts.push(...await packageStaged(target, directory, packageConfig, artifacts.filter(file => file.endsWith('.exe'))))
     built.push({ target, directory, artifacts })
   }
   else {
@@ -239,23 +306,27 @@ for (const target of targets) {
   }
 }
 
-writeFileSync(join(output, 'build.json'), `${JSON.stringify({
-  appName: config.appName,
-  appId: config.appId,
-  version: config.version,
-  sourceRevision: sourceRevision ?? null,
-  builtOn: host,
-  bun: Bun.version,
-  targets: built.map(item => ({
+// Targets from an earlier run of the same version and commit stay in the record: a release is often built in several
+// runs, and on several machines (`--import`).
+const recordFile = join(output, 'build.json')
+let earlier: WebviewBuildRecord | null = null
+try {
+  earlier = existsSync(recordFile) ? JSON.parse(readFileSync(recordFile, 'utf8')) as WebviewBuildRecord : null
+}
+catch {
+  earlier = null
+}
+const { record } = mergeBuildRecord(
+  earlier && Array.isArray(earlier.targets) ? earlier : null,
+  { appName: config.appName, appId: config.appId, version: config.version, sourceRevision: sourceRevision ?? null, builtOn: host, bun: Bun.version },
+  built.map(item => ({
     target: item.target,
     directory: relative(output, item.directory),
-    artifacts: item.artifacts.map((name) => {
-      const file = join(item.directory, name)
-      return name.endsWith('.app') ? { name } : { name, bytes: readFileSync(file).byteLength, sha256: createHash('sha256').update(readFileSync(file)).digest('hex') }
-    }),
+    artifacts: item.artifacts.map(name => describeBuildArtifact(item.directory, name)),
     ...(item.remaining ? { remaining: item.remaining } : {}),
   })),
-}, null, 2)}\n`)
+)
+writeFileSync(recordFile, `${JSON.stringify(record, null, 2)}\n`)
 
 for (const item of built) {
   await log.success(`${item.target}: ${item.artifacts.map(name => join(relative(root, item.directory), name)).join(', ')}`)

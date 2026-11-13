@@ -80,6 +80,55 @@ return {
 }
 const fixtures = [
   {
+    directory: 'auth', name: '@stacksjs/auth', sdks: [], declaration: 'oauth-protected-resource.d.ts',
+    runtime: `import { oauthProtectedResourceMetadata } from '@stacksjs/auth/oauth-protected-resource.js'
+const result = oauthProtectedResourceMetadata({ resource: 'https://resource.example', authorizationServers: ['https://auth.example'], scopesSupported: ['profile'] })
+if (result.resource !== 'https://resource.example' || result.scopes_supported?.[0] !== 'profile') throw new Error('Published OAuth metadata is not executable')`,
+    prefix: `import { oauthProtectedResourceMetadata } from '@stacksjs/auth/oauth-protected-resource.js'
+const metadata = oauthProtectedResourceMetadata({ resource: 'https://resource.example', authorizationServers: ['https://auth.example'] })
+type IsAny<T> = 0 extends (1 & T) ? true : false;`,
+    positive: `const resource: string = metadata.resource;
+const servers: string[] = metadata.authorization_servers;
+const bearer: string[] = metadata.bearer_methods_supported;
+const scopes: string[] | undefined = metadata.scopes_supported;
+const documentation: string | undefined = metadata.resource_documentation;
+const safeResult: false = null as unknown as IsAny<typeof metadata>;
+const safeResource: false = null as unknown as IsAny<typeof metadata.resource>;
+const safeScopes: false = null as unknown as IsAny<typeof metadata.scopes_supported>;`,
+    negatives: [
+      { code: 2322, text: 'const wrong: number = metadata.resource' },
+      { code: 2322, text: 'const wrong: number[] | undefined = metadata.scopes_supported' },
+      { code: 2322, text: 'const wrong: string = metadata.resource_documentation' },
+    ],
+  },
+  {
+    directory: 'queue', name: '@stacksjs/queue', sdks: [], declaration: 'batch-payload.d.ts',
+    runtime: `import { batchMemberPayload, batchTerminalPayload, batchMembershipId } from '@stacksjs/queue/batch-payload.js'
+const member = batchMemberPayload({ _batchId: 'untrusted', _batchTerminalHandler: true }, 'batch', 2)
+const terminal = batchTerminalPayload(member, 'batch')
+if (member._batchId !== 'batch' || member._batchIndex !== 2 || member._batchTerminalHandler !== false || batchMembershipId(member) !== 'batch' || terminal._batchTerminalHandler !== true || batchMembershipId(terminal) !== undefined) throw new Error('Published batch metadata must preserve reserved fields')`,
+    prefix: `import { batchMemberPayload, batchTerminalPayload, batchMembershipId } from '@stacksjs/queue/batch-payload.js'
+const member = batchMemberPayload(undefined, 'batch', 2)
+const terminal = batchTerminalPayload({}, 'batch')
+type IsAny<T> = 0 extends (1 & T) ? true : false;`,
+    positive: `const id: string = member._batchId;
+const index: number = member._batchIndex;
+const flag: false = member._batchTerminalHandler;
+const terminalId: string = terminal._batchId;
+const terminalFlag: true = terminal._batchTerminalHandler;
+const membership: string | undefined = batchMembershipId(member);
+const extra: unknown = member.applicationPayload;
+const safeResult: false = null as unknown as IsAny<typeof member>;
+const safeId: false = null as unknown as IsAny<typeof member._batchId>;
+const safeIndex: false = null as unknown as IsAny<typeof member._batchIndex>;
+const safeTerminal: false = null as unknown as IsAny<typeof terminal._batchTerminalHandler>;`,
+    negatives: [
+      { code: 2322, text: 'const wrong: number = member._batchId' },
+      { code: 2322, text: 'const wrong: string = member._batchIndex' },
+      { code: 2322, text: 'const wrong: string = terminal._batchTerminalHandler' },
+    ],
+  },
+  {
     directory: 'types', name: '@stacksjs/types', sdks: ['stripe', 'meilisearch'], declaration: 'payments.d.ts',
     prefix: `import type { CheckoutOptions } from '@stacksjs/types/payments.js'
 import type { TableStore } from '@stacksjs/types/tables.js'
@@ -129,7 +178,7 @@ const safe: false = null as unknown as IsAny<Customer>;`,
 import { Schedule as subpath } from '@stacksjs/scheduler/schedule'
 if (root !== subpath) throw new Error('Scheduler entrypoints must share their constructor')
 if (typeof subpath.prototype.everyMinute !== 'function') throw new Error('Scheduler subpath is not executable')`,
-    prefix: `import { defineModel } from '@stacksjs/orm'
+    prefix: `import { defineModel, User } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
 import type { Cdp } from '@stacksjs/testing/browser'
 import type { Route, JobOptions, Schedule } from '@stacksjs/types'
@@ -149,7 +198,10 @@ const safeRow: false = null as unknown as IsAny<typeof row.title>;
 const safeResponse: false = null as unknown as IsAny<Awaited<typeof response>>;
 const safeSchema: false = null as unknown as IsAny<typeof schema>;
 const safeRetryCount: false = null as unknown as IsAny<NonNullable<JobOptions['tries']>>;
-const safeSchedule: false = null as unknown as IsAny<typeof timed>;`,
+const safeSchedule: false = null as unknown as IsAny<typeof timed>;
+const userQuery = User.where('id', 1);
+const safeUser: false = null as unknown as IsAny<typeof User>;
+const safeUserQuery: false = null as unknown as IsAny<typeof userQuery>;`,
     negatives: [
       { code: 2322, text: "const row = await Widget.create({ title: 'SDK' }); const wrong: number = row.title" },
       { code: 2345, text: 'cdp.evaluate<number>(42)' },
@@ -157,6 +209,8 @@ const safeSchedule: false = null as unknown as IsAny<typeof timed>;`,
       { code: 2322, text: "const job: JobOptions = { tries: 'many' }" },
       { code: 2322, text: 'const job: JobOptions = { tries: [1, 3] }' },
       { code: 2339, text: 'schedule.everyMinute().notAScheduleMethod()' },
+      { code: 2322, text: 'const wrong: boolean = User' },
+      { code: 2339, text: 'User.notAModelMethod()' },
     ],
   },
 ]

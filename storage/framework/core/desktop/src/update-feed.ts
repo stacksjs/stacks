@@ -391,8 +391,23 @@ export async function answerUpdateFeed(options: AnswerUpdateFeedOptions): Promis
 /** One platform and architecture of a release, as release.json lists it. */
 export interface ReleaseRecordTarget {
   target: string
-  update: { url: string, sha256: string, bytes: number }
-  downloads: Array<{ name: string, url: string, sha256: string, bytes: number }>
+  /** What an installed app updates from. */
+  update: { name?: string, format?: string, url: string, sha256: string, bytes: number }
+  /**
+   * What a person downloads, the usual choice first: the DMG on macOS, the
+   * MSI on Windows, the AppImage and then the deb and rpm on Linux.
+   */
+  downloads: ReleaseRecordDownload[]
+}
+
+/** One installer of a release. `format` is its kind: `dmg`, `msi`, `appimage`, `deb`, `rpm`. */
+export interface ReleaseRecordDownload {
+  name: string
+  /** Absent in a record written before formats were recorded. */
+  format?: string
+  url: string
+  sha256: string
+  bytes: number
 }
 
 /** release.json: every platform's installers for one version on one channel. What a download page reads. */

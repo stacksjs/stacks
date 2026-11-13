@@ -78,11 +78,11 @@ export function desktopRelease(buddy: CLI): void {
   buddy
     .command('release:desktop', 'Build, sign and notarize the web view desktop app, and publish it with signed update manifests')
     .option('--target <targets>', 'Comma-separated targets (darwin-arm64, linux-x64, win32-x64, ...) or all. Default: this machine')
-    .option('--identity <identity>', 'macOS: Developer ID Application certificate (or DESKTOP_SIGNING_IDENTITY)')
+    .option('--identity <identity>', 'macOS: Developer ID Application certificate (or DESKTOP_SIGNING_IDENTITY). A bundle built with another identity is signed again with it')
     .option('--notary-profile <profile>', 'macOS: notarytool keychain profile (or DESKTOP_NOTARY_PROFILE)')
     .option('--channel <channel>', 'Release channel (default: webview.updates.channel, else stable)')
     .option('--notes <file>', 'Release notes, shown by the app before it updates')
-    .option('--skip-build', 'Release what `buddy build:desktop` already made (installers built on another machine)', { default: false })
+    .option('--skip-build', 'Release what `buddy build:desktop` already made, including targets added with `build:desktop --import`', { default: false })
     .option('--dry-run', 'Do everything except notarize and upload; write the signed manifests locally', { default: false })
     .option('--allow-dirty', 'Release from a working tree with uncommitted changes', { default: false })
     .option('--verbose', 'Enable verbose output', { default: false })

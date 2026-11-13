@@ -12,6 +12,7 @@ export * from './magic'
 export * from './protocol'
 export * from './serialize'
 export * from './session'
+export * from './settle'
 
 export interface TinkerConfig {
   /** Additional modules to preload into the REPL session */
@@ -108,7 +109,8 @@ function buildBanner(info: TinkerSessionInfo): string {
     lines.push(`  \x1B[33m${warning}\x1B[0m`)
   lines.push(
     '',
-    '  \x1B[2mDeclarations persist between lines. dump(value) inspects, dd(value) inspects and stops.',
+    '  \x1B[2mDeclarations persist between lines. A query needs no await: User.first() is the row.',
+    '  dump(value) inspects, dd(value) inspects and stops.',
     '  .help for commands, .exit or Ctrl+D to leave.\x1B[0m',
     '',
     '',
@@ -252,7 +254,7 @@ export function isIncompleteSnippet(code: string, cwd: string): boolean {
  * import { startTinker } from '@stacksjs/tinker'
  *
  * await startTinker()                                  // interactive
- * await startTinker({ print: 'await User.count()' })   // evaluate, print, exit
+ * await startTinker({ print: 'User.count()' })         // evaluate, print, exit
  * await startTinker({ serve: true })                   // speak the frame protocol on stdio
  * ```
  */

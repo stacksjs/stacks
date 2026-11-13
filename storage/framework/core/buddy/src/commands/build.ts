@@ -302,10 +302,12 @@ export function build(buddy: CLI): void {
     .alias('prod:desktop')
     .option('--target <targets>', 'Web view app: comma-separated targets (darwin-arm64, linux-x64, win32-x64, ...) or all. Default: this machine')
     .option('--package', 'Web view app: also make the installers this operating system can make (MSI on Windows; AppImage, deb, rpm on Linux)', { default: false })
+    .option('--import <folder>', 'Web view app: add targets built on another machine (their output folder, with its build.json) to this build, checked against their recorded hashes')
+    .option('--identity <identity>', 'Web view app, macOS: the certificate to sign with (or DESKTOP_SIGNING_IDENTITY). A release needs a Developer ID Application certificate')
     .option('--native', 'Build the AppKit app (`macos`) when the config also declares a web view app', { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: BuildOptions & { target?: string, package?: boolean, native?: boolean }) => {
+    .action(async (options: BuildOptions & { target?: string, package?: boolean, native?: boolean, import?: string, identity?: string }) => {
       log.debug('Running `buddy build:desktop` ...', options)
 
       const perf = await intro('buddy build:desktop')
@@ -317,6 +319,8 @@ export function build(buddy: CLI): void {
       if (webview) {
         if (options.target) process.env.DESKTOP_TARGETS = options.target
         if (options.package) process.env.DESKTOP_PACKAGE = '1'
+        if (options.import) process.env.DESKTOP_IMPORT = options.import
+        if (options.identity) process.env.DESKTOP_SIGNING_IDENTITY = options.identity
       }
       const result = await runAction(webview ? Action.BuildDesktopWebview : (await hasMacosDesktop(projectPath())) ? Action.BuildDesktopMacos : Action.BuildDesktop, options)
 

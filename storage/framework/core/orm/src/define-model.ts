@@ -1,4 +1,4 @@
-import { createModel, type OrmModelDefinition as BQBModelDefinition, type OrmModelStatic, registerModel } from '@stacksjs/query-builder'
+import { createModel, type OrmModelDefinition as BQBModelDefinition, type OrmModelStatic, registerModel, settle, wait } from '@stacksjs/query-builder'
 import type { InferRelationNames } from '@stacksjs/query-builder'
 import type { Faker } from '@stacksjs/faker'
 import type { ApiMiddleware, DashboardModelOptions, SearchEngineSearchParams, SearchFilter, SearchOptions } from '@stacksjs/types'
@@ -490,6 +490,29 @@ interface WrappedModelInstance {
 }
 
 /**
+ * A write, as the promise a Stacks write has always been.
+ *
+ * A read returns its value where it is written. A write does not, on any
+ * model: it runs setters, validation, encryption and lifecycle events, and
+ * whether one of those waits depends on the model and on what is listening.
+ * The query builder underneath returns a plain value when none of them did,
+ * so without this a write would be a promise on one model and a row on the
+ * next, and `Model.create(data).then(...)` would work or throw accordingly.
+ * Here it is one thing: a promise, with a failure as its rejection.
+ */
+function promisedWrite<R>(run: () => R): Promise<Awaited<R>> {
+  try {
+    return Promise.resolve(run()) as Promise<Awaited<R>>
+  }
+  catch (error) {
+    return Promise.reject(error)
+  }
+}
+
+/** Instance methods that write, and so answer with a promise (see {@link promisedWrite}). */
+const INSTANCE_WRITES: Record<string, true> = Object.assign(Object.create(null), { update: true, delete: true, forceDelete: true })
+
+/**
  * A raw query-builder instance returned from the wrapped model's own
  * `save()` turned back into the wrapper. The builder's `save()` ends with
  * `return this` — the unwrapped object, whose columns sit in a private
@@ -571,13 +594,13 @@ function wrapModelInstance<T extends object>(
             const original = def.set
             def.set = {}
             try {
-              return keepWrapped(target.save(), rawTarget, recv)
+              return promisedWrite(() => keepWrapped(target.save(), rawTarget, recv))
             }
             finally {
               def.set = original
             }
           }
-          return keepWrapped(target.save(), rawTarget, recv)
+          return promisedWrite(() => keepWrapped(target.save(), rawTarget, recv))
         }
       }
 
@@ -608,13 +631,13 @@ function wrapModelInstance<T extends object>(
             const original = def.set
             def.set = {}
             try {
-              return keepWrapped(target.save(), rawTarget, recv)
+              return promisedWrite(() => keepWrapped(target.save(), rawTarget, recv))
             }
             finally {
               def.set = original
             }
           }
-          return keepWrapped(target.save(), rawTarget, recv)
+          return promisedWrite(() => keepWrapped(target.save(), rawTarget, recv))
         }
       }
 
@@ -744,6 +767,11 @@ function wrapModelInstance<T extends object>(
         }
       }
       const v = Reflect.get(target, prop, target)
+      if (typeof v === 'function' && typeof prop === 'string' && INSTANCE_WRITES[prop]) {
+        return function (...args: unknown[]) {
+          return promisedWrite(() => keepWrapped((v as (...inner: unknown[]) => unknown).apply(target, args), rawTarget, recv))
+        }
+      }
       return typeof v === 'function' ? v.bind(target) : v
     },
     set(rawTarget, prop, value, recv) {
@@ -936,6 +964,9 @@ function wrapQueryBuilder(qb: any, casts?: Record<string, CastType | CasterInter
           callArgs = [perPage, cursor, args[2], args[3]] // pass thru column + direction
         }
 
+        // A query delete runs the model's delete hooks for each row: a write.
+        if (propName === 'delete' || propName === 'forceDelete')
+          return promisedWrite(() => v.apply(target, callArgs))
         const result = v.apply(target, callArgs)
         if (!QB_TERMINATORS[propName] && result === target)
           return recv
@@ -967,14 +998,19 @@ function wrapReadsWithProxy(baseModel: Record<string, unknown>, casts?: Record<s
   // Writes also return ModelInstances. Wrapping them too means
   // `const car = await Car.create(...); car.slug` works without the
   // caller having to remember that create() comes back un-proxied.
-  const writeReturningInstance = ['create', 'createMany', 'firstOrCreate', 'updateOrCreate', 'make']
+  const writeReturningInstance = ['create', 'createMany', 'firstOrCreate', 'updateOrCreate']
   for (const method of writeReturningInstance) {
     const original = baseModel[method]
     if (typeof original !== 'function') continue
     baseModel[method] = function (...args: any[]) {
-      const result = (original as Function).apply(this, args)
-      if (result && typeof (result).then === 'function') return (result as Promise<any>).then(applyReadResult)
-      return applyReadResult(result)
+      return promisedWrite(() => (original as Function).apply(this, args)).then(applyReadResult)
+    }
+  }
+  // `make()` builds an unsaved instance. Nothing is written, so nothing waits.
+  const make = baseModel.make
+  if (typeof make === 'function') {
+    baseModel.make = function (...args: any[]) {
+      return applyReadResult((make as Function).apply(this, args))
     }
   }
 
@@ -1915,21 +1951,27 @@ function encryptedAliases(key: string): string[] {
   return snake === key ? [key] : [key, snake]
 }
 
-async function decryptAttrsInPlace(row: any, encryptedKeys: ReadonlyArray<string>): Promise<void> {
+/**
+ * Decrypt a row's encrypted columns where they sit. Returns nothing when the
+ * key was at hand, which it is in a running app, and a promise only when it
+ * had to be looked up (see `decryptValueInPlace`).
+ */
+function decryptAttrsInPlace(row: any, encryptedKeys: ReadonlyArray<string>): void | Promise<void> {
   if (!row || typeof row !== 'object') return
-  // Stacks model instances carry their values on `_attributes`; plain rows
-  // carry them at the top level. Try the proxy bag first.
-  const bag: Record<string, unknown> = (row as { _attributes?: Record<string, unknown> })._attributes
-    ?? (row as Record<string, unknown>)
-  for (const key of encryptedKeys) {
-    for (const alias of encryptedAliases(key)) {
-      if (!(alias in bag)) continue
-      const value = bag[alias]
-      if (!isEncrypted(value)) continue // plaintext or null — leave alone
-      // eslint-disable-next-line no-await-in-loop
-      bag[alias] = await decryptValue(value)
+  return settle(function* () {
+    // Stacks model instances carry their values on `_attributes`; plain rows
+    // carry them at the top level. Try the proxy bag first.
+    const bag: Record<string, unknown> = (row as { _attributes?: Record<string, unknown> })._attributes
+      ?? (row as Record<string, unknown>)
+    for (const key of encryptedKeys) {
+      for (const alias of encryptedAliases(key)) {
+        if (!(alias in bag)) continue
+        const value = bag[alias]
+        if (!isEncrypted(value)) continue // plaintext or null — leave alone
+        bag[alias] = yield* wait(decryptValueInPlace(value))
+      }
     }
-  }
+  })
 }
 
 /**
@@ -1941,27 +1983,30 @@ async function decryptAttrsInPlace(row: any, encryptedKeys: ReadonlyArray<string
 function wrapReadsWithEncryption(baseModel: Record<string, unknown>, encryptedKeys: ReadonlyArray<string>) {
   if (encryptedKeys.length === 0) return
 
-  const decryptResult = async (r: unknown): Promise<unknown> => {
+  // Takes the query's answer as it comes, a value or a promise of one, and
+  // hands back the same kind: a read stays in place when the query and the
+  // key both were.
+  const decryptResult = (answer: unknown): unknown => settle(function* () {
+    const r = yield* wait(answer)
     if (Array.isArray(r)) {
-      for (const item of r) await decryptAttrsInPlace(item, encryptedKeys)
+      for (const item of r) yield* wait(decryptAttrsInPlace(item, encryptedKeys))
       return r
     }
     // paginate-shaped results: { data: [...], meta }
     if (r && typeof r === 'object' && Array.isArray((r as { data?: unknown }).data)) {
-      for (const item of (r as { data: unknown[] }).data) await decryptAttrsInPlace(item, encryptedKeys)
+      for (const item of (r as { data: unknown[] }).data) yield* wait(decryptAttrsInPlace(item, encryptedKeys))
       return r
     }
-    if (r) await decryptAttrsInPlace(r, encryptedKeys)
+    if (r) yield* wait(decryptAttrsInPlace(r, encryptedKeys))
     return r
-  }
+  })
 
   const directReads = ['find', 'first', 'last', 'all', 'firstOrFail', 'findOrFail', 'findMany']
   for (const method of directReads) {
     const original = baseModel[method]
     if (typeof original !== 'function') continue
-    baseModel[method] = async function (...args: any[]) {
-      const result = await (original as Function).apply(this, args)
-      return await decryptResult(result)
+    baseModel[method] = function (...args: any[]) {
+      return decryptResult((original as Function).apply(this, args))
     }
   }
 
@@ -2006,8 +2051,8 @@ function wrapReadsWithEncryption(baseModel: Record<string, unknown>, encryptedKe
     for (const method of terminals) {
       const original = target[method]
       if (typeof original !== 'function') continue
-      target[method] = async function (...args: any[]) {
-        return await decryptResult(await (original as Function).apply(this, args))
+      target[method] = function (...args: any[]) {
+        return decryptResult((original as Function).apply(this, args))
       }
     }
     // Chainable methods hand back a builder (often `this`, sometimes a new
@@ -2432,6 +2477,22 @@ type QueryDefinition<TDef extends ModelDefinition> = TDef
     attributes: { [TKey in keyof TDef['attributes']]: QueryAttribute<TDef['attributes'][TKey]> }
   }
   & QueryTraits<TDef>
+  & AsynchronousWrites
+
+/**
+ * Tells the query builder's types that a Stacks model's writes are promises.
+ *
+ * A read returns its value where it is written: `const user =
+ * User.where(...).first()` is the row. A write does more than run a
+ * statement. It goes through setters, validation, encryption and lifecycle
+ * events, and any of those may be asynchronous, so `create`, `update`, `save`
+ * and `delete` return promises and are typed that way. The builder types a
+ * write as a promise exactly when a lifecycle hook may return one, which is
+ * what this declares.
+ */
+interface AsynchronousWrites {
+  hooks: { beforeCreate: (data: Record<string, unknown>) => Promise<void> }
+}
 type QueryModel<TDef extends ModelDefinition> = OrmModelStatic<QueryDefinition<TDef>>
 type ModelWriteData<TDef extends ModelDefinition> = Parameters<QueryModel<TDef>['create']>[0]
 type ModelForceWriteData<TDef extends ModelDefinition> = Parameters<ReturnType<QueryModel<TDef>['make']>['forceFill']>[0]
@@ -2446,7 +2507,7 @@ import { createTwoFactorMethods } from './traits/two-factor'
 import { createSoftDeleteMethods, resolveSoftDeleteOptions, cascadeSoftDelete } from './traits/soft-deletes'
 import { applyAudit, resolveAuditOptions } from './traits/audit'
 import { applyActivityLog, resolveActivityLogOptions } from './traits/activity-log'
-import { collectEncryptedAttributes, decryptValue, encryptValue, isEncrypted } from './utils/encrypted'
+import { collectEncryptedAttributes, decryptValueInPlace, encryptValue, isEncrypted } from './utils/encrypted'
 
 /**
  * Stacks-enhanced model definition.
@@ -2516,16 +2577,16 @@ export type ModelSoftDeleteStatics<TDef> = TDef extends
 
 export type StacksModelStatic<TDef extends ModelDefinition> = Omit<QueryModel<TDef>, 'update' | 'delete' | 'paginate' | 'simplePaginate' | 'cursorPaginate' | keyof ModelSoftDeleteStatics<TDef>> & TDef & TraitMethods & ModelSearchStatics<TDef> & ModelSoftDeleteStatics<TDef> & {
   readonly [MODEL_DEFINITION]: TDef
-  paginate: (perPage?: number, page?: number) => Promise<Paginator<Awaited<ReturnType<QueryModel<TDef>['paginate']>>['data'][number]>>
+  paginate: (perPage?: number, page?: number) => Paginator<ReturnType<QueryModel<TDef>['paginate']>['data'][number]>
   /** One page without the COUNT query; only knows whether another page follows. */
-  simplePaginate: (perPage?: number, page?: number) => Promise<SimplePaginator<Awaited<ReturnType<QueryModel<TDef>['paginate']>>['data'][number]>>
+  simplePaginate: (perPage?: number, page?: number) => SimplePaginator<ReturnType<QueryModel<TDef>['paginate']>['data'][number]>
   /**
    * Keyset pagination. `next_cursor` and `prev_cursor` are opaque strings to hand back as `cursor`;
    * `null` means there is no such page. Pass several columns to break ties (`['created_at', 'id']`).
    */
-  cursorPaginate: (perPage?: number, cursor?: string | number | unknown[] | null, column?: string | string[], direction?: 'asc' | 'desc') => Promise<CursorPaginator<Awaited<ReturnType<QueryModel<TDef>['paginate']>>['data'][number]>>
-  update: (id: number | string, data: ModelWriteData<TDef>) => ReturnType<QueryModel<TDef>['find']>
-  forceUpdate: (id: number | string, data: ModelForceWriteData<TDef>) => ReturnType<QueryModel<TDef>['find']>
+  cursorPaginate: (perPage?: number, cursor?: string | number | unknown[] | null, column?: string | string[], direction?: 'asc' | 'desc') => CursorPaginator<ReturnType<QueryModel<TDef>['paginate']>['data'][number]>
+  update: (id: number | string, data: ModelWriteData<TDef>) => Promise<ReturnType<QueryModel<TDef>['find']>>
+  forceUpdate: (id: number | string, data: ModelForceWriteData<TDef>) => Promise<ReturnType<QueryModel<TDef>['find']>>
   forceCreate: (data: ModelForceWriteData<TDef>) => ReturnType<QueryModel<TDef>['create']>
   delete: (id: number | string) => Promise<boolean>
   withoutEvents: <T>(fn: () => T | Promise<T>) => Promise<T>
@@ -2775,6 +2836,17 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
     if (typeof (baseModel)[quietName] === 'function') continue
     ;(baseModel as unknown as Record<string, unknown>)[quietName] = function (...args: unknown[]) {
       return withoutEvents(() => orig.apply(baseModel, args))
+    }
+  }
+
+  // Whatever wrapped them above, a static write answers with a promise
+  // (see promisedWrite). `truncate` and the query builder's `update` run no
+  // hook and are left as the builder returns them.
+  for (const method of ['update', 'forceUpdate', 'forceCreate', 'delete', 'destroy', 'remove', 'forceDelete'] as const) {
+    const write = (baseModel as Record<string, unknown>)[method]
+    if (typeof write !== 'function') continue
+    ;(baseModel as Record<string, unknown>)[method] = function (this: unknown, ...args: unknown[]) {
+      return promisedWrite(() => (write as (...inner: unknown[]) => unknown).apply(this, args))
     }
   }
 
