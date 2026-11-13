@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.561...v0.75.562)
+
+## ✨ Features
+
+- **orm**: a model read returns its value where it is written ([a194f02](https://github.com/stacksjs/stacks/commit/a194f02)) _(by Chris)_
+
+## 📝 Documentation
+
+- **orm**: reads answer in place, writes are promises ([5232fbf](https://github.com/stacksjs/stacks/commit/5232fbf)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.560...v0.75.561)
 
 ## 🐛 Bug Fixes
