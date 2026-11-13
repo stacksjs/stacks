@@ -46,7 +46,7 @@ try {
   assert.equal(invalidWrite.valid, false)
   assert.deepEqual('errors' in invalidWrite ? { ...invalidWrite.errors } : null, { profile: ['Profile invalid'] })
   const Probe = defineModel({ name: 'BoundaryProfile', table: 'boundary_profiles', attributes: nestedModel.attributes } as never)
-  await assert.rejects(() => Probe.create({ profile: { email: 'invalid' } } as never), { name: 'ModelValidationError', status: 422 })
+  await assert.rejects(async () => Probe.create({ profile: { email: 'invalid' } } as never), { name: 'ModelValidationError', status: 422 })
   for (const value of ['x', 'valid']) {
     const specialResponse = await fetch(`${base}/special`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(Object.fromEntries([['__proto__', value]])) })
     assert.equal(specialResponse.status, value === 'x' ? 422 : 200)

@@ -51,10 +51,10 @@ try {
     assert.equal((await post(path, { paymentMethod: 'card', token: 'x' })).status, 422)
     assert.equal((await post(path, { paymentMethod: 'cash' })).status, 200)
   }
-  for (const data of [{ payment_method: 'card' }, {}]) await assert.rejects(() => Contract.create(data), { name: 'ModelValidationError', status: 422 })
+  for (const data of [{ payment_method: 'card' }, {}]) await assert.rejects(async () => Contract.create(data), { name: 'ModelValidationError', status: 422 })
   const row = await Contract.create({ payment_method: 'card', token: 'valid' })
   assert.equal((await Contract.find(row.id))?.token, 'valid')
-  await assert.rejects(() => Contract.update(row.id, { payment_method: 'card', token: 'x' }), { name: 'ModelValidationError', status: 422 })
+  await assert.rejects(async () => Contract.update(row.id, { payment_method: 'card', token: 'x' }), { name: 'ModelValidationError', status: 422 })
   assert.equal((await Contract.find(row.id))?.token, 'valid')
   // Updates validate supplied fields only; absent siblings are not fetched implicitly.
   await Contract.update(row.id, { token: 'ok' })
