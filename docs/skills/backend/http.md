@@ -1,12 +1,12 @@
 ---
 title: "HTTP skill"
-description: "Use when choosing HTTP status constants, bounded fetch, outbound Httx requests, transport fakes, retry/circuit behavior, or the boundary with reactive browser fetching. Covers @stacksjs/http and @stacksjs/httx."
+description: "Use when choosing HTTP status constants, bounded fetch, sanitized transfer observations, caller-read progress diagnostics, outbound Httx requests, transport fakes, retry/circuit behavior, or the boundary with reactive browser fetching. Covers @stacksjs/http and @stacksjs/httx."
 ---
 # HTTP
 
 `stacks-http` · Native Stacks · model-invoked
 
-Use when choosing HTTP status constants, bounded fetch, outbound Httx requests, transport fakes, retry/circuit behavior, or the boundary with reactive browser fetching. Covers @stacksjs/http and @stacksjs/httx.
+Use when choosing HTTP status constants, bounded fetch, sanitized transfer observations, caller-read progress diagnostics, outbound Httx requests, transport fakes, retry/circuit behavior, or the boundary with reactive browser fetching. Covers @stacksjs/http and @stacksjs/httx.
 
 Read the skill for the implementation workflow and its current signatures. The
 [Native capabilities](/skills/platform/native) catalog maps the package to
@@ -15,6 +15,7 @@ source and retained evidence; driver limits are explicit.
 ## Inside the skill
 
 - Native package
+- Transfer observations
 - Httx client and fluent requests
 - Browser requests
 - CLI and evidence

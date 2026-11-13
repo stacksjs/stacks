@@ -1,4 +1,6 @@
 export { retryAfterMilliseconds } from './retry-after'
+export { createHttpTransferObservation } from './transfer-observation'
+export type { HttpTransferBucket, HttpTransferObservation, HttpTransferReason, HttpTransferReport } from './transfer-observation'
 import { retryAfterMilliseconds } from './retry-after'
 
 export enum Response {
@@ -71,6 +73,72 @@ export enum Response {
   HTTP_NETWORK_AUTHENTICATION_REQUIRED = 511,
 }
 
+export type HttpOriginOmission = 'invalid' | 'oversized' | 'unsupported' | null
+
+export interface HttpAttemptObservation {
+  readonly attempt: number
+  readonly requestedOrigin: string | null
+  readonly originOmitted: HttpOriginOmission
+}
+
+export interface HttpResponseObservation {
+  readonly attempt: number
+  readonly responseOrigin: string | null
+  readonly originOmitted: HttpOriginOmission
+  readonly status: number
+  readonly contentLength: number | null
+}
+
+export interface HttpTransferObserver {
+  onAttempt?: (value: Readonly<HttpAttemptObservation>) => void | Promise<void>
+  onResponse?: (value: Readonly<HttpResponseObservation>) => void | Promise<void>
+}
+
+function observationOrigin(value: string): { origin: string | null, omitted: HttpOriginOmission } {
+  if (value.length > 4096)
+    return { origin: null, omitted: 'oversized' }
+  try {
+    const url = new URL(value)
+    if (url.protocol !== 'http:' && url.protocol !== 'https:')
+      return { origin: null, omitted: 'unsupported' }
+    if (url.origin.length > 512)
+      return { origin: null, omitted: 'oversized' }
+    return { origin: url.origin, omitted: null }
+  }
+  catch {
+    return { origin: null, omitted: 'invalid' }
+  }
+}
+
+function observationLength(response: globalThis.Response): number | null {
+  const header = response.headers.get('content-length')
+  if (header === null || header.length > 32)
+    return null
+  const digits = header.trim()
+  if (!/^\d{1,16}$/.test(digits))
+    return null
+  const length = Number(digits)
+  return Number.isSafeInteger(length) ? length : null
+}
+
+function observe<T>(receiver: HttpTransferObserver | undefined, callback: () => ((value: T) => void | Promise<void>) | undefined, value: () => T): void {
+  try {
+    const notify = callback()
+    if (!notify)
+      return
+    const result = notify.call(receiver, value())
+    if (result) {
+      // Native promises may shadow then/catch. Consume through the intrinsic;
+      // ordinary foreign thenables still use protected native assimilation.
+      const promise = result instanceof Promise ? result : Promise.resolve(result)
+      void Promise.prototype.then.call(promise, undefined, () => {})
+    }
+  }
+  catch {
+    // Diagnostics, including callback getters, cannot change the request.
+  }
+}
+
 /**
  * `fetch` wrapper with one budget for requests and retry waits. Honors
  * numeric and HTTP-date `Retry-After` on 429/503 responses.
@@ -83,7 +151,7 @@ export enum Response {
  * budget so failure modes stay bounded.
  *
  * @param input  URL or Request, exactly like fetch
- * @param init   RequestInit + { timeoutMs?: number, retry?: number }
+ * @param init   RequestInit + { timeoutMs?: number, retry?: number, observer?: HttpTransferObserver }
  *               - timeoutMs (default 30_000): overall request budget
  *               - retry (default 0): retry count on 429/503
  *
@@ -91,6 +159,8 @@ export enum Response {
  * body consumption. Streaming request bodies are sent once, because replaying
  * a consumed stream cannot reproduce the upload. Use buffered bytes for an
  * idempotent upload that needs retries. A Request with a body is also one-shot.
+ * Observer callbacks receive immutable origin-only metadata. They add no body
+ * reader and are never awaited; their exceptions and rejections are ignored.
  *
  * @example
  * ```ts
@@ -104,9 +174,9 @@ export enum Response {
  */
 export async function fetchWithBudget(
   input: RequestInfo | URL,
-  init: RequestInit & { timeoutMs?: number, retry?: number } = {},
+  init: RequestInit & { timeoutMs?: number, retry?: number, observer?: HttpTransferObserver } = {},
 ): Promise<globalThis.Response> {
-  const { timeoutMs = 30_000, retry = 0, ...rest } = init
+  const { timeoutMs = 30_000, retry = 0, observer, ...rest } = init
   if (!Number.isFinite(timeoutMs) || timeoutMs <= 0 || timeoutMs > 2_147_483_647)
     throw new RangeError('timeoutMs must be positive and within the platform timer range')
   if (!Number.isSafeInteger(retry) || retry < 0)
@@ -121,7 +191,16 @@ export async function fetchWithBudget(
   try {
     for (let attempt = 0; ; attempt++) {
       signal.throwIfAborted()
+      observe<HttpAttemptObservation>(observer, () => observer?.onAttempt, () => {
+        const url = input instanceof Request ? input.url : input instanceof URL ? input.href : input
+        const origin = observationOrigin(url)
+        return Object.freeze({ attempt: Math.min(attempt + 1, Number.MAX_SAFE_INTEGER), requestedOrigin: origin.origin, originOmitted: origin.omitted })
+      })
       const response = await fetch(input, { ...rest, signal })
+      observe<HttpResponseObservation>(observer, () => observer?.onResponse, () => {
+        const origin = observationOrigin(response.url)
+        return Object.freeze({ attempt: Math.min(attempt + 1, Number.MAX_SAFE_INTEGER), responseOrigin: origin.origin, originOmitted: origin.omitted, status: response.status, contentLength: observationLength(response) })
+      })
       if (!replayable || ![429, 503].includes(response.status) || attempt >= retry)
         return response
 

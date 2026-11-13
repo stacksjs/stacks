@@ -56,7 +56,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/github` | [`stacks-git`](../stacks-git/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/github/src/index.ts) | 8 |
 | `@stacksjs/health` | [`stacks-health`](../stacks-health/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/health/src/index.ts) | 2 |
 | `@stacksjs/hq` | [`stacks-hq`](../stacks-hq/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/hq/src/index.ts) | 8 |
-| `@stacksjs/http` | [`stacks-http`](../stacks-http/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/http/src/index.ts) | 3 |
+| `@stacksjs/http` | [`stacks-http`](../stacks-http/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/http/src/index.ts) | 4 |
 | `@stacksjs/i18n` | [`stacks-i18n`](../stacks-i18n/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/i18n/src/index.ts) | 5 |
 | `@stacksjs/image` | [`stacks-image`](../stacks-image/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/image/src/index.ts) | 4 |
 | `@stacksjs/lint` | [`stacks-lint`](../stacks-lint/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/lint/src/index.ts) | 3 |
@@ -554,11 +554,11 @@ Evidence directory: [8 retained tests](https://github.com/stacksjs/stacks/blob/m
 
 Guidance: [`stacks-http`](../stacks-http/SKILL.md). Source: [storage/framework/core/http/src/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/http/src/index.ts).
 
-Declared runtime exports: `Response`, `fetchWithBudget`, `retryAfterMilliseconds`.
+Declared runtime exports: `Response`, `createHttpTransferObservation`, `fetchWithBudget`, `retryAfterMilliseconds`.
 
-Local source modules: [src/retry-after.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/http/src/retry-after.ts).
+Local source modules: [src/retry-after.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/http/src/retry-after.ts), [src/transfer-observation.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/http/src/transfer-observation.ts).
 
-Evidence directory: [3 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/http/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [4 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/http/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/i18n
 

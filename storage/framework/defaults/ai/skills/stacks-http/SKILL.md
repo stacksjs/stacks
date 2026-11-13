@@ -1,6 +1,6 @@
 ---
 name: stacks-http
-description: Use when choosing HTTP status constants, bounded fetch, outbound Httx requests, transport fakes, retry/circuit behavior, or the boundary with reactive browser fetching. Covers @stacksjs/http and @stacksjs/httx.
+description: Use when choosing HTTP status constants, bounded fetch, sanitized transfer observations, caller-read progress diagnostics, outbound Httx requests, transport fakes, retry/circuit behavior, or the boundary with reactive browser fetching. Covers @stacksjs/http and @stacksjs/httx.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -42,6 +42,35 @@ Retries need replayable buffered bodies and an idempotent operation. A streaming
 body or a Request with a body is sent once, returning its original response;
 use a URL plus buffered bytes for retryable uploads. The budget ends when final
 response headers arrive, so the caller still owns subsequent body consumption.
+
+## Transfer observations
+
+Use `fetchWithBudget`'s optional `observer.onAttempt` and `observer.onResponse`
+for actual request-attempt and selected-response metadata. Callbacks preserve
+their receiver, are never awaited, and isolate getter/call/promise failures.
+Their immutable records retain HTTP(S) origins, attempt, status and a strictly
+parsed optional Content-Length. They exclude URL credentials/path/query/fragment,
+arbitrary headers and body content. Oversized or invalid metadata is omitted.
+
+Use `createHttpTransferObservation()` for a fixed diagnostic report. Pass its
+`observer` to the native request, feed `received(byteLength)` from the caller's
+same existing nonempty-chunk read loop, then `finish(reason)` from the caller's
+actual terminal outcome. The native collector adds no request, timer or body
+reader and changes no transfer, retry, cancellation, hash or publication policy.
+Keep the caller's body deadline and inactivity controller active after headers.
+
+Reports contain copied metadata, byte/chunk totals and monotonic header/byte/gap
+timings. Retention is 12 ten-second buckets; observations after 120000 ms merge
+into the last bucket with `coalesced`. This boundary is not a download deadline.
+Invalid observations are flagged, counters saturate rather than wrap, and
+`finish` returns an idempotent deeply frozen snapshot. Counts describe what the
+caller reports, not an independent measurement of socket traffic.
+
+Read the [HTTP package README](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/http/README.md)
+for the complete caller-owned read example, metadata bounds, terminal reasons
+and evidence limits. Real loopback cases cover requests and caller reads;
+worked clock cases cover aggregation. Neither establishes remote throughput or
+an application's original-content acquisition acceptance.
 
 ## Httx client and fluent requests
 
@@ -86,4 +115,6 @@ buddy http makes an outbound diagnostic request; use its help for options.
 Source: `storage/framework/core/http/src/index.ts` and
 `core/buddy/src/commands/http.ts`. Httx's public contract is the installed
 dependency's package exports/declarations. Retained local status/helper tests
-are in `core/http/tests/http.test.ts`; they do not prove a remote provider SLA.
+are in `core/http/tests/http.test.ts`, `fetch-budget.test.ts`,
+`retry-after.test.ts` and `transfer-observation.test.ts`; they do not prove a
+remote provider SLA or published-package consumer acceptance.
