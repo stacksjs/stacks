@@ -65,7 +65,9 @@ describe('a panel', () => {
 describe('where a panel leads', () => {
   test('the list it opens arrives narrowed, with the filter in view to clear', () => {
     const browser = source(`${components}/Models/ModelRecordsDashboard.stx`)
-    expect(browser).toContain('state<Record<string, string>>(modelListFilters(navigation.urlQuery(\'filters\')))')
+    expect(browser).toContain('state<ModelListFilterValues>(modelListFilters(navigation.urlQuery(\'filters\')))')
+    // In view as a chip that names the record and clears it (dashboard-model-filters.test.ts).
+    expect(browser).toContain('<div :if="filterChips().length > 0" data-filter-chips')
     expect(browser).toContain('const showFilters = state(Object.keys(filters()).length > 0)')
   })
 

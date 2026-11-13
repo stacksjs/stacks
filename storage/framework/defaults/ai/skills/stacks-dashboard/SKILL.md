@@ -1,6 +1,6 @@
 ---
 name: stacks-dashboard
-description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 427 built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
+description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 428 built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,7 +8,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Dashboard
 
-The Stacks admin dashboard provides a full-featured admin panel with 100+ route views, 427 components, and a multi-section layout.
+The Stacks admin dashboard provides a full-featured admin panel with 100+ route views, 428 components, and a multi-section layout.
 
 ## Key Paths
 - Dashboard components: `storage/framework/defaults/resources/components/Dashboard/`
@@ -821,6 +821,66 @@ as a link to it ("PrimeSoft Ltd", not `3`), under the model's name ("Team",
 not "Team ID"). The list endpoint returns the names with the rows
 (`relationNames`), one lookup per related model per page, and a record's page
 uses the same ones.
+
+### A list's filters and sort are derived, not declared
+
+Nothing declares a filter. `Models/model-filters.ts` reads which filters a
+list offers from what the model already says:
+
+| Signal | Where | Decides |
+|---|---|---|
+| What the field is | its validation rule | whether it is a filter, and its control |
+| What results are narrowed by | `traits.useSearch.filterable` | offered first; a number or a line of text is only a filter when named here |
+| What is private | `hidden` | never offered, and never sortable |
+
+| Field | Asked for as |
+|---|---|
+| A few allowed values (`schema.enum`) | pick any of them |
+| Yes or no (`schema.boolean`) | Yes / No |
+| `belongsTo` | the record picker the forms use |
+| A date or a moment | two days, and Today / Last 7 days / This month |
+| A number the model names | at least / at most |
+| Text the model names | chosen from the values the table holds when there are 20 or fewer (`withStoredChoices`, remembered for 30 seconds), else an exact value |
+
+Prose and structures are searched, not filtered. A filter is what the model
+says the field is, never a guess from its name: a yes-or-no declared
+`schema.number()` is a number range until the model says `schema.boolean()`.
+
+```ts
+dashboard: { filters: ['status', 'team', 'createdAt'] }
+```
+
+names and orders them instead, in the vocabulary `dashboard.columns` uses (an
+attribute, a column, or a `belongsTo`). An empty list means no filters. A
+name that cannot be used is left out and logged once.
+
+On the page (`Models/ModelFilterPanel.stx`) the Filter button opens a panel
+of those controls. What narrows the list is always shown as chips ("Channel:
+Email, SMS"), each with a clear button, and is written to the address
+(`modelListAddress`), so a narrowed list can be sent to someone.
+
+On the wire, `filters` is a JSON object by column:
+
+| Value | Means | For |
+|---|---|---|
+| `"3"` | exactly this | any column the page is sent (what a record's panel links with) |
+| `{ "in": ["a", "b"] }` | any of these | a choice, a relation, named text |
+| `{ "from": "...", "to": "..." }` | from, up to | a date (days, both included) or a moment (instants, end not included) |
+| `{ "min": 1, "max": 9 }` | between | a number the model names |
+
+Each is checked against the field's kind and refused with a 422 in words
+before the database is asked ("Channel is not a date, so it has no range of
+days."). For a moment the page sends where the viewer's first day starts and
+where the day after their last one does (`modelFilterRange`), so "the 5th" is
+the viewer's 5th.
+
+The response carries `filterable` (the filters) and `sortable` (the columns a
+heading orders by). Any stored value can be sorted. Prose, structures and
+columns that point at another record cannot: the cell shows that record's
+name, and ordering by its id would look random. Their headings are plain.
+
+Not built: filters that are not one column ("Overdue"), saved views, and
+ordering a relation column by the related record's name.
 
 ### A model says how a field is called, shown and asked for
 

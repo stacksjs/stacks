@@ -15,6 +15,8 @@ import { DashboardApiError, dashboardApi } from './dashboard-api'
 import { parseDashboardDate } from './dashboard-dates'
 import type { ModelFieldDisplay } from './dashboard-model-format'
 import type { ModelBadgeTone } from './dashboard-model-format'
+import type { ModelListFilterValues } from './dashboard-model-filters'
+import { modelFilterValue } from './dashboard-model-filters'
 import { MODEL_BADGE_COLUMNS, modelBadgeTone, modelColumnIsDate, modelFormattedValue } from './dashboard-model-format'
 
 export interface ModelWriteCapabilities {
@@ -799,7 +801,7 @@ export async function fetchModelOptions(slug: string, search: { q?: string, ids?
  * when the model left it out: a list opened from a record's panel arrives
  * narrowed by that record, and what narrowed it has to be in view to clear.
  */
-export function modelListColumnNames(all: string[], chosen: string[] | undefined, filters: Record<string, string> = {}): string[] {
+export function modelListColumnNames(all: string[], chosen: string[] | undefined, filters: Record<string, unknown> = {}): string[] {
   const list = chosen && chosen.length > 0 ? chosen.filter(column => all.includes(column)) : all
   const filtered = Object.entries(filters).filter(([column, value]) => value !== '' && all.includes(column) && !list.includes(column)).map(([column]) => column)
   return [...list, ...filtered]
@@ -932,19 +934,25 @@ export function modelRelatedCreateHref(panel: ModelRelatedPanel, parentId: strin
 }
 
 /**
- * The filters a list starts with, from its address: `?filters={"team_id":"3"}`.
- * Anything that is not a flat object of text is ignored, never trusted.
+ * The filters a list starts with, from its address: `?filters={"team_id":"3"}`
+ * or `{"status":{"in":["active","pending"]}}`. A column or a value that is
+ * not a shape a filter has is ignored, never trusted.
  */
-export function modelListFilters(raw: string | null): Record<string, string> {
+export function modelListFilters(raw: string | null): ModelListFilterValues {
   if (!raw)
     return {}
   try {
     const parsed = JSON.parse(raw) as unknown
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
       return {}
-    return Object.fromEntries(Object.entries(parsed as Record<string, unknown>)
-      .filter(([column, value]) => /^[a-z_][a-z0-9_]*$/i.test(column) && (typeof value === 'string' || typeof value === 'number') && String(value) !== '')
-      .map(([column, value]) => [column, String(value)]))
+    const out: ModelListFilterValues = {}
+    for (const [column, value] of Object.entries(parsed as Record<string, unknown>)) {
+      // A yes-or-no is not something an address is trusted to carry as true.
+      const read = typeof value === 'boolean' ? null : modelFilterValue(value)
+      if (/^[a-z_][a-z0-9_]*$/i.test(column) && read !== null)
+        out[column] = read
+    }
+    return out
   }
   catch {
     return {}
