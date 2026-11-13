@@ -100,6 +100,14 @@ The adapter (`HqServiceAdapter`) is what the service implements: `approveUrl`,
 page calls `describeConnect(code)` to show the app name and
 `approveConnect(code, user)` once a signed-in user confirms.
 
+An approve link can be minted by anyone for any app name, so approving on the
+link alone would let a signed-in person be talked into handing over their keys.
+`confirmationCode(code)` is a six-character code derived from the connect code.
+Send it as `confirmCode` beside `code` and `approveUrl` (`buddy hq:connect`
+prints it), ask for it on the approve page without rendering it, and call
+`approveConnect` only once `confirmationMatches(code, typed)` holds. Limit the
+attempts per person.
+
 Codes are single-use and expire after ten minutes. A store holds only the
 SHA-256 of a code, and the approved keys wait encrypted under a key derived from
 the code, so the table never contains a pollable code or a readable key. Use

@@ -4,6 +4,7 @@ import type { UsageReport } from './types'
 import { isPeriod, periodOf } from './period'
 import { evaluate } from './policy'
 
+export * from './confirm'
 export * from './connect-codes'
 export type { UsageReport } from './types'
 

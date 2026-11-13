@@ -120,6 +120,14 @@ The approve page is the service's own. It calls `hq.describeConnect(code)` to
 show which app is asking and `hq.approveConnect(code, user)` when the signed-in
 user confirms.
 
+An approve link can be minted by anyone for any app name, so approving on the
+link alone would let a signed-in person be talked into handing over their keys.
+`confirmationCode(code)` is a six-character code derived from the connect code.
+Send it as `confirmCode` beside `code` and `approveUrl` (`buddy hq:connect`
+prints it), ask for it on the approve page without rendering it, and call
+`approveConnect` only once `confirmationMatches(code, typed)` holds. Limit the
+attempts per person.
+
 Codes are single-use and live ten minutes (`codeTtlMs`). A store only ever sees
 the SHA-256 of a code, and approved keys wait encrypted under a key derived from
 the code itself, so a copy of the table yields neither a code that can be polled
