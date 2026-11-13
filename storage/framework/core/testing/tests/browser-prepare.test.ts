@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
@@ -7,7 +7,7 @@ import { pathToFileURL } from 'node:url'
 import { runIsolated } from '../src/isolated'
 
 describe.skipIf(process.platform !== 'darwin')('macOS browser preparation', () => {
-  test('signs every real framework version and retains an invalid cached bundle while preparing its replacement', async () => {
+  test('leaves superseded framework versions out, signs what is left, and retains an invalid cached bundle while preparing its replacement', async () => {
     const root = mkdtempSync(join(tmpdir(), 'stacks-browser-signing-'))
     const run = (command: string[]): void => {
       const result = Bun.spawnSync(command, { stdout: 'pipe', stderr: 'pipe' })
@@ -54,6 +54,13 @@ describe.skipIf(process.platform !== 'darwin')('macOS browser preparation', () =
       const first = await prepare()
       expect(first.reused).toBe(false)
       run(['/usr/bin/codesign', '--verify', '--deep', '--strict', first.app])
+      // The copy carries the version in use and not the one the updater kept
+      // beside it: a private copy is started fresh and only loads `Current`.
+      // The installed app keeps both.
+      expect(readdirSync(join(first.app, 'Contents/Frameworks/Fixture.framework/Versions')).sort()).toEqual(['B', 'Current'])
+      expect(readdirSync(versions).sort()).toEqual(['A', 'B', 'Current'])
+      // Verified when it was made, and remembered beside it, not inside it.
+      expect(existsSync(`${first.app}.verified`)).toBe(true)
       expect(await prepare()).toEqual({ ...first, reused: true })
       writeFileSync(join(first.app, 'Contents/Resources/payload'), 'invalidated cached payload')
       const replacement = await prepare()
@@ -133,7 +140,8 @@ console.log(JSON.stringify({ first, second }))
         second: { executable, app: prepared, reused: true },
       })
       expect(existsSync(copyMarker)).toBe(false)
-      expect(readFileSync(signMarker, 'utf8')).toBe('called\ncalled\ncalled\n')
+      // Sealed and verified when it was made. Reused as it was verified: not read again.
+      expect(readFileSync(signMarker, 'utf8')).toBe('called\ncalled\n')
       expect(readFileSync(sourceInfo, 'utf8')).toBe(originalInfo)
       expect(readFileSync(executable)).toEqual(readFileSync(source))
       expect(readFileSync(join(prepared, 'Contents/payload'), 'utf8')).toBe('literal copy fixture\n')
@@ -141,10 +149,116 @@ console.log(JSON.stringify({ first, second }))
       expect(preparedInfo).toContain('<string>dev.stacks.testing.chrome</string>')
       expect(preparedInfo).toContain('<string>1.2.3-fixture</string>')
       for (const key of ['KSProductID', 'KSUpdateURL', 'KSChannelID', 'KSVersion']) expect(preparedInfo).not.toContain(`<key>${key}</key>`)
-      expect(readdirSync(directory)).toEqual(['Chrome.app'])
+      // The copy, and beside it the record that it was verified. Nothing left from staging.
+      expect(readdirSync(directory).sort()).toEqual(['Chrome.app', 'Chrome.app.verified'])
     }
     finally {
       rmSync(root, { recursive: true, force: true })
     }
   }, 15_000)
+
+  // Strict verification reads the whole bundle: about 15 seconds for one Chrome
+  // version, and 20 to 28 with the two more an updater had left beside it. It
+  // ran before every reuse, in every process that started a browser, so a
+  // test that waits 30 seconds for its page never got one.
+  test('reuses a verified copy without reading it again, and verifies again whatever has changed', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'stacks-browser-reuse-'))
+    try {
+      const bin = join(root, 'bin')
+      const contents = join(root, 'Source.app', 'Contents')
+      const source = join(contents, 'MacOS', 'FixtureBrowser')
+      const framework = join(contents, 'Frameworks/Fixture.framework'), versions = join(framework, 'Versions')
+      const directory = join(root, 'prepared')
+      const signMarker = join(root, 'signing-stub-called')
+      const info = (id: string, executable: string, version = '1.2.3-fixture') => `<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>CFBundleIdentifier</key><string>${id}</string><key>CFBundleExecutable</key><string>${executable}</string><key>CFBundleShortVersionString</key><string>${version}</string></dict></plist>`
+      mkdirSync(bin)
+      mkdirSync(join(contents, 'MacOS'), { recursive: true })
+      writeFileSync(join(contents, 'Info.plist'), info('example.fixture.browser', 'FixtureBrowser'))
+      writeFileSync(source, '#!/bin/sh\nexit 0\n', { mode: 0o755 })
+      // The version in use, and the one an updater kept for a browser still running it.
+      for (const version of ['A', 'B']) {
+        mkdirSync(join(versions, version, 'Resources'), { recursive: true })
+        writeFileSync(join(versions, version, 'Resources/Info.plist'), info('example.fixture.framework', 'Fixture'))
+        writeFileSync(join(versions, version, 'Fixture'), `code of version ${version}\n`)
+      }
+      symlinkSync('B', join(versions, 'Current'))
+      symlinkSync('Versions/Current/Resources', join(framework, 'Resources'))
+      // Signing and verification are counted, and pass. Everything else is the real tool.
+      writeFileSync(join(bin, 'codesign'), '#!/bin/sh\nprintf "%s\\n" "$1" >> "$NATIVE_SIGN_MARKER"\nexit 0\n')
+      chmodSync(join(bin, 'codesign'), 0o755)
+
+      const script = join(root, 'prepare.ts')
+      const browser = pathToFileURL(join(import.meta.dir, '../src/browser.ts')).href
+      writeFileSync(script, `import { prepareMacChrome } from ${JSON.stringify(browser)}\nconsole.log(JSON.stringify(prepareMacChrome(${JSON.stringify({ source, directory })})))\n`)
+      const calls = (): string[] => existsSync(signMarker) ? readFileSync(signMarker, 'utf8').trim().split('\n') : []
+      const prepare = async () => {
+        const result = await runIsolated(script, { cwd: root, inheritEnv: false, envFile: false, preload: [], env: { PATH: `${bin}:/usr/bin:/bin`, NATIVE_SIGN_MARKER: signMarker }, timeoutMs: 10_000 })
+        expect(result.timedOut).toBe(false)
+        expect(result.code, result.stderr).toBe(0)
+        return JSON.parse(result.stdout) as { app: string, executable: string, reused: boolean }
+      }
+
+      // Made: only the version in use is copied, so only it is signed. With
+      // both, this would be six calls: two to sign, two to seal, then the app.
+      const made = await prepare()
+      expect(made.reused).toBe(false)
+      expect(readdirSync(join(made.app, 'Contents/Frameworks/Fixture.framework/Versions')).sort()).toEqual(['B', 'Current'])
+      expect(readdirSync(versions).sort()).toEqual(['A', 'B', 'Current'])
+      expect(calls()).toEqual(['--force', '--force', '--force', '--verify'])
+      const stamp = `${made.app}.verified`
+      const verified = readFileSync(stamp, 'utf8')
+      expect(verified).toMatch(/^stacks-chrome-verified-1\n[0-9a-f]{64}\n$/)
+
+      // Reused, twice: nothing is signed and nothing is verified.
+      expect(await prepare()).toEqual({ ...made, reused: true })
+      expect(await prepare()).toEqual({ ...made, reused: true })
+      expect(calls()).toHaveLength(4)
+
+      // No record that it was verified: it is, once, and that is recorded.
+      rmSync(stamp)
+      expect(await prepare()).toEqual({ ...made, reused: true })
+      expect(calls().slice(4)).toEqual(['--verify'])
+      expect(readFileSync(stamp, 'utf8')).toBe(verified)
+      expect(await prepare()).toEqual({ ...made, reused: true })
+      expect(calls()).toHaveLength(5)
+
+      // A file as old as it was but not the size it was: verified again.
+      const payload = join(made.app, 'Contents/Frameworks/Fixture.framework/Versions/B/Fixture')
+      const before = statSync(payload)
+      writeFileSync(payload, 'code of version B, rewritten\n')
+      utimesSync(payload, before.atime, before.mtime)
+      expect(await prepare()).toEqual({ ...made, reused: true })
+      expect(calls().slice(5)).toEqual(['--verify'])
+      expect(readFileSync(stamp, 'utf8')).not.toBe(verified)
+
+      // The size it was but newer: verified again.
+      writeFileSync(payload, 'code of version B, rewritteN\n')
+      expect(await prepare()).toEqual({ ...made, reused: true })
+      expect(calls().slice(6)).toEqual(['--verify'])
+
+      // A file removed, as the temp cleaner does to what has not been read lately.
+      rmSync(join(made.app, 'Contents/Frameworks/Fixture.framework/Versions/B/Resources/Info.plist'))
+      writeFileSync(join(made.app, 'Contents/Frameworks/Fixture.framework/Versions/B/Resources/Info.plist'), info('example.fixture.framework', 'Fixture'))
+      rmSync(join(made.app, 'Contents/MacOS/FixtureBrowser'))
+      writeFileSync(join(made.app, 'Contents/MacOS/FixtureBrowser'), '#!/bin/sh\nexit 0\n', { mode: 0o755 })
+      expect(await prepare()).toEqual({ ...made, reused: true })
+      expect(calls().slice(7)).toEqual(['--verify'])
+      expect(calls()).toHaveLength(8)
+
+      // A copy that still carries a superseded version was made the old way.
+      // It is passed over without being verified, kept, and replaced.
+      mkdirSync(join(made.app, 'Contents/Frameworks/Fixture.framework/Versions/A'))
+      const replaced = await prepare()
+      expect(replaced.reused).toBe(false)
+      expect(replaced.app).not.toBe(made.app)
+      expect(existsSync(made.app)).toBe(true)
+      expect(readdirSync(join(replaced.app, 'Contents/Frameworks/Fixture.framework/Versions')).sort()).toEqual(['B', 'Current'])
+      expect(calls().slice(8)).toEqual(['--force', '--force', '--force', '--verify'])
+      expect(await prepare()).toEqual({ ...replaced, reused: true })
+      expect(calls()).toHaveLength(12)
+    }
+    finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  }, 60_000)
 })

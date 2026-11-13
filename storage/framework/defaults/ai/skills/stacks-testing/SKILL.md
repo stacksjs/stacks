@@ -320,9 +320,19 @@ expect(pageAuditClean(report)).toBe(true) // no duplicate /api/ requests, failed
   Chrome's bundle id while an update is pending; to a test that looks like a hung page. When
   `CHROME_PATH` is not set, `launch()` runs `prepareMacChrome()`: a `cp -cR` clone in the temp
   directory with the `KS*` updater keys deleted from `Info.plist`, its own `CFBundleIdentifier`,
-  and `codesign --force --deep --sign -`, reused per Chrome version. `--use-mock-keychain` is what
+  and a complete ad-hoc signature, reused per Chrome version. `--use-mock-keychain` is what
   keeps that clone from hanging on an invisible "Chrome Safe Storage" Keychain prompt at its first
   http page. Measured: the installed Chrome closed at 32 s, the clone kept navigating past 60 s.
+- **The clone is made once and then reused in about a tenth of a second** (stacksjs/stacks#3302).
+  It leaves out the framework versions the updater keeps for a browser that is still running
+  (each about 730 MB; only `Versions/Current` is ever loaded), and a copy that passed
+  `codesign --verify --deep --strict` is remembered by a digest of every file's path, size and
+  modification time in `Chrome.app.verified` beside it. Unchanged, it is not read again; changed
+  in any of those, it is verified in full, and an invalid one gets a replacement generation
+  while the old bundle is kept. Before this, strict verification ran before every reuse: 19 to
+  28 s with two updates pending, which a test that gives its page 30 s never survived. The first
+  browser test after a Chrome update still pays for the copy, about 15 to 30 s once; if that
+  test's own deadline is shorter, it fails once and the next browser test finishes the copy.
 - The package's own real-Chrome tests (`core/testing/tests/browser.test.ts`) run wherever a Chrome
   is found, except in CI unless `STACKS_BROWSER_TESTS=1`; `STACKS_BROWSER_TESTS=0` skips them locally.
 
