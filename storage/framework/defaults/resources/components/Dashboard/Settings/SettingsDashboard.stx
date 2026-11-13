@@ -277,15 +277,12 @@ void loadFiles()
 
             <div>
               @if(field.type === 'boolean' && field.editable)
-                <label class="inline-flex gap-3 items-center cursor-pointer">
-                  <input
-                    :id="'config-' + field.key"
-                    type="checkbox"
-                    x-model="drafts[field.key]"
-                    class="h-4 w-4 text-blue-600 border-neutral-300 rounded focus:ring-blue-500"
-                  >
-                  <span class="text-neutral-700 text-sm dark:text-neutral-300">{{ drafts[field.key] ? 'Enabled' : 'Disabled' }}</span>
-                </label>
+                <Toggle
+                  :id="'config-' + field.key"
+                  v-model:checked="drafts[field.key]"
+                  :label="drafts[field.key] ? 'Enabled' : 'Disabled'"
+                  :ariaLabel="field.key"
+                />
               @elseif(field.editable && field.type === 'number')
                 <input
                   :id="'config-' + field.key"

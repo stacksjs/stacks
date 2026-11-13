@@ -113,8 +113,8 @@ function submit(): void {
       <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">At least 32 characters. Keep an independent recovery copy outside this control plane.</p>
     </div>
     <div :if="provider() === 's3_compatible'" class="flex flex-wrap gap-4">
-      <label class="inline-flex gap-2 items-center text-gray-700 text-sm dark:text-neutral-200"><input x-model="forcePathStyle" type="checkbox" /> Force path-style URLs</label>
-      <label class="inline-flex gap-2 items-center text-gray-700 text-sm dark:text-neutral-200"><input x-model="allowPrivate" type="checkbox" /> Allow private endpoint</label>
+      <Toggle v-model:checked="forcePathStyle" label="Force path-style URLs" />
+      <Toggle v-model:checked="allowPrivate" label="Allow private endpoint" />
     </div>
   </form>
   <template #footer>

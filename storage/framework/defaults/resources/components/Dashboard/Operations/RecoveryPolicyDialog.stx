@@ -144,7 +144,9 @@ function submit(): void {
         </select>
       </div>
     </div>
-    <label class="inline-flex gap-2 items-center text-gray-700 text-sm dark:text-neutral-200"><input x-model="enabled" type="checkbox" /> Enable scheduled runs</label>
+    <div>
+      <Toggle v-model:checked="enabled" label="Enable scheduled runs" />
+    </div>
   </form>
   <template #footer>
     <div class="flex gap-2 justify-end w-full">

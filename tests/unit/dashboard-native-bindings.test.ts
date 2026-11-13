@@ -1152,6 +1152,9 @@ describe('dashboard native STX bindings', () => {
     expect(page).toContain('x-model="query"')
     expect(page).toContain('x-model="drafts[field.key]"')
     expect(page).toContain('x-model.number="drafts[field.key]"')
+    // A yes or no is the shared switch, bound to its draft the same way.
+    expect(page).toContain('v-model:checked="drafts[field.key]"')
+    expect(page).not.toContain('type="checkbox"')
     expect(page).toContain('<div :for="field in fields"')
     expect(page).toContain("@if(field.type === 'boolean' && field.editable)")
     expect(page).toContain('@elseif(field.editable)')
