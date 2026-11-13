@@ -11,13 +11,13 @@
       "devDependencies": {
         "@actions/expressions": "0.3.61",
         "@stacksjs/components": "0.2.864",
-        "better-dx": "^0.2.37",
+        "better-dx": "^0.2.39",
         "bun-plugin-stx": "0.2.864"
       },
       "system": {
         "bun.sh": "1.4.4",
-        "curl.se": "^8.22.0",
-        "git-scm.org": "^2.53.0",
+        "curl.se": "^8.23.0.2",
+        "git-scm.org": "^2.56.1",
         "gnu.org/readline": "8.3.0.1",
         "invisible-island.net/ncurses": "6.6.0.1",
         "libexpat.github.io": "2.10.0.1",
@@ -121,7 +121,7 @@
         "bun-query-builder": "^0.6.0"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/action-runner": {
@@ -190,7 +190,7 @@
       },
       "devDependencies": {
         "@stacksjs/validation": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       },
       "peerDependencies": {
         "craft-native": ">=0.0.499"
@@ -209,7 +209,7 @@
       },
       "devDependencies": {
         "@anthropic-ai/claude-agent-sdk": "^0.3.288",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       },
       "peerDependencies": {
         "@anthropic-ai/claude-agent-sdk": "^0.2.79"
@@ -223,7 +223,7 @@
         "@stacksjs/path": "workspace:*"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/analytics": {
@@ -235,7 +235,7 @@
         "@stacksjs/types": "workspace:*"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/api": {
@@ -249,7 +249,7 @@
       },
       "devDependencies": {
         "@stacksjs/utils": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       },
       "peerDependencies": {
         "@stacksjs/router": "workspace:*"
@@ -260,7 +260,7 @@
       "name": "@stacksjs/arrays",
       "version": "0.75.572",
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/audio": {
@@ -271,7 +271,7 @@
         "ts-video-player": "^0.1.6"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/auth": {
@@ -296,7 +296,7 @@
         "ts-qr-codes": "^0.1.8"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/browser": {
@@ -312,7 +312,7 @@
       "devDependencies": {
         "@stacksjs/utils": "workspace:*",
         "@stripe/stripe-js": "^10.0.0",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       },
       "peerDependencies": {
         "@stripe/stripe-js": "^10.0.0"
@@ -327,7 +327,7 @@
         "ts-pantry": "^0.11.198"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       },
       "peerDependencies": {
         "web-ext": ">=10.7.0"
@@ -406,10 +406,10 @@
         "ajv": "^8.20.0",
         "ajv-formats": "^3.0.1",
         "bun-plugin-stx": "^0.2.864",
-        "ts-pantry": "^0.11.198"
+        "ts-pantry": "^0.11.205"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/build": {
@@ -422,7 +422,7 @@
         "@stacksjs/storage": "workspace:*"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/cache": {
@@ -443,7 +443,7 @@
       "devDependencies": {
         "@stacksjs/browser": "workspace:*",
         "@stacksjs/security": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/charts": {
@@ -455,7 +455,7 @@
         "@ts-charts/shape": "^0.2.7"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/chat": {
@@ -470,7 +470,7 @@
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/error-handling": "workspace:*",
         "@stacksjs/types": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/cli": {
@@ -488,7 +488,7 @@
         "@stacksjs/path": "workspace:*",
         "@stacksjs/utils": "workspace:*",
         "@stacksjs/validation": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/cloud": {
@@ -511,7 +511,7 @@
         "@stacksjs/storage": "workspace:*",
         "@stacksjs/utils": "workspace:*",
         "@stacksjs/validation": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/cms": {
@@ -531,7 +531,7 @@
         "ts-spreadsheets": "^0.2.5"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/collections": {
@@ -541,7 +541,7 @@
         "ts-collect": "^0.4.3"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/commerce": {
@@ -564,7 +564,7 @@
         "ts-spreadsheets": "^0.2.0"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/composables": {
@@ -575,7 +575,7 @@
         "@stacksjs/stx": "^0.2.864"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/config": {
@@ -592,14 +592,14 @@
         "@stacksjs/alias": "workspace:*",
         "@stacksjs/env": "workspace:*",
         "@stacksjs/types": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/cron": {
       "name": "@stacksjs/cron",
       "version": "0.75.572",
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/database": {
@@ -626,7 +626,7 @@
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/router": "workspace:*",
         "@stacksjs/utils": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/datetime": {
@@ -634,7 +634,7 @@
       "version": "0.75.572",
       "devDependencies": {
         "@stacksjs/utils": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/defaults": {
@@ -671,7 +671,7 @@
       },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       },
       "peerDependencies": {
         "@stacksjs/config": "workspace:*",
@@ -702,7 +702,7 @@
       "devDependencies": {
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/whois": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/docs": {
@@ -717,7 +717,7 @@
       "devDependencies": {
         "@stacksjs/alias": "workspace:*",
         "@stacksjs/server": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/email": {
@@ -740,7 +740,7 @@
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/error-handling": "workspace:*",
         "@stacksjs/types": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       },
       "peerDependencies": {
         "@stacksjs/queue": "workspace:*"
@@ -751,7 +751,7 @@
       "name": "@stacksjs/enums",
       "version": "0.75.572",
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/env": {
@@ -763,7 +763,7 @@
       },
       "devDependencies": {
         "@stacksjs/validation": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/error-handling": {
@@ -781,7 +781,7 @@
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/validation": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/events": {
@@ -791,7 +791,7 @@
         "@stacksjs/path": "workspace:*"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/faker": {
@@ -803,7 +803,7 @@
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/feature-flags": {
@@ -815,7 +815,7 @@
       },
       "devDependencies": {
         "@stacksjs/query-builder": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/features": {
@@ -838,7 +838,7 @@
       "devDependencies": {
         "@stacksjs/storage": "workspace:*",
         "@stacksjs/validation": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/git": {
@@ -848,14 +848,14 @@
         "cz-git": "^1.14.0"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/github": {
       "name": "@stacksjs/github",
       "version": "0.75.572",
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/health": {
@@ -863,14 +863,14 @@
       "version": "0.75.572",
       "devDependencies": {
         "@stacksjs/notifications": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/hq": {
       "name": "@stacksjs/hq",
       "version": "0.75.572",
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/http": {
@@ -880,7 +880,7 @@
         "@stacksjs/httx": "^0.1.11"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/i18n": {
@@ -905,7 +905,7 @@
         "ts-images": "https://registry.pantry.dev/ts-images@22073a9"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/lint": {
@@ -915,7 +915,7 @@
         "pickier": "^0.1.92"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/logging": {
@@ -933,7 +933,7 @@
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/storage": "workspace:*",
         "@stacksjs/validation": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/mobile": {
@@ -946,7 +946,7 @@
       },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/model-meta": {
@@ -976,7 +976,7 @@
         "@stacksjs/config": "workspace:*",
         "@stacksjs/error-handling": "workspace:*",
         "@stacksjs/types": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/notifications": {
@@ -996,7 +996,7 @@
       "devDependencies": {
         "@stacksjs/error-handling": "workspace:*",
         "@stacksjs/types": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/objects": {
@@ -1009,7 +1009,7 @@
       "devDependencies": {
         "@stacksjs/collections": "workspace:*",
         "@stacksjs/types": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/orm": {
@@ -1039,7 +1039,7 @@
       },
       "devDependencies": {
         "@stacksjs/types": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       },
       "peerDependencies": {
         "@stacksjs/auth": "workspace:*",
@@ -1057,7 +1057,7 @@
       "name": "@stacksjs/path",
       "version": "0.75.572",
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/payments": {
@@ -1075,7 +1075,7 @@
       "devDependencies": {
         "@stacksjs/utils": "workspace:*",
         "@stripe/stripe-js": "^10.0.0",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       },
       "peerDependencies": {
         "@stripe/stripe-js": "^10.0.0"
@@ -1091,7 +1091,7 @@
       },
       "devDependencies": {
         "@stacksjs/error-handling": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/query-builder": {
@@ -1103,7 +1103,7 @@
       "devDependencies": {
         "@stacksjs/database": "workspace:*",
         "@stacksjs/types": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/queue": {
@@ -1122,7 +1122,7 @@
         "@stacksjs/path": "workspace:*"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       },
       "peerDependencies": {
         "@stacksjs/email": "workspace:*",
@@ -1139,7 +1139,7 @@
         "ts-broadcasting": "^0.0.12"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/registry": {
@@ -1149,7 +1149,7 @@
         "@stacksjs/types": "workspace:*"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/repl": {
@@ -1159,7 +1159,7 @@
         "@stacksjs/tinker": "workspace:*"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/router": {
@@ -1181,7 +1181,7 @@
       "devDependencies": {
         "@stacksjs/actions": "workspace:*",
         "@stacksjs/types": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       },
       "peerDependencies": {
         "@stacksjs/api": "workspace:*",
@@ -1210,7 +1210,7 @@
         "@stacksjs/types": "workspace:*"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/search-engine": {
@@ -1227,7 +1227,7 @@
         "@stacksjs/strings": "workspace:*"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24",
+        "better-dx": "^0.2.39",
         "meilisearch": "^0.62.0"
       },
       "peerDependencies": {
@@ -1246,7 +1246,7 @@
         "@stacksjs/env": "workspace:*",
         "@stacksjs/types": "workspace:*",
         "@stacksjs/validation": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/server": {
@@ -1269,14 +1269,14 @@
       },
       "devDependencies": {
         "@stacksjs/validation": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/shell": {
       "name": "@stacksjs/shell",
       "version": "0.75.572",
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/sites": {
@@ -1290,7 +1290,7 @@
       },
       "devDependencies": {
         "@stacksjs/error-handling": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       },
       "peerDependencies": {
         "@stacksjs/cms": "workspace:*"
@@ -1306,7 +1306,7 @@
       },
       "devDependencies": {
         "@stacksjs/types": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/slug": {
@@ -1321,7 +1321,7 @@
         "@stacksjs/path": "workspace:*",
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/utils": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/sms": {
@@ -1336,7 +1336,7 @@
         "@stacksjs/error-handling": "workspace:*",
         "@stacksjs/testing": "workspace:*",
         "@stacksjs/types": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/socials": {
@@ -1351,7 +1351,7 @@
       "devDependencies": {
         "@stacksjs/error-handling": "workspace:*",
         "@stacksjs/router": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/storage": {
@@ -1372,7 +1372,7 @@
       },
       "devDependencies": {
         "@stacksjs/types": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/strings": {
@@ -1381,7 +1381,7 @@
       "devDependencies": {
         "@stacksjs/alias": "workspace:*",
         "@stacksjs/types": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/testing": {
@@ -1406,7 +1406,7 @@
       },
       "devDependencies": {
         "@dtsx/dtsx": "^0.11.54",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/tinker": {
@@ -1416,7 +1416,7 @@
         "@babel/parser": "^8.1.2"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/tunnel": {
@@ -1426,7 +1426,7 @@
         "localtunnels": "^0.2.13"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/types": {
@@ -1445,7 +1445,7 @@
       },
       "devDependencies": {
         "@stacksjs/validation": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       },
       "peerDependencies": {
         "@stacksjs/actions": "workspace:*",
@@ -1463,7 +1463,7 @@
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
         "@stacksjs/router": "workspace:*",
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/utils": {
@@ -1484,7 +1484,7 @@
       "devDependencies": {
         "@stacksjs/arrays": "workspace:*",
         "@stacksjs/lint": "workspace:*",
-        "better-dx": "^0.2.24",
+        "better-dx": "^0.2.39",
         "filesize": "^11.0.25",
         "markdown-table": "^3.0.4"
       }
@@ -1501,7 +1501,7 @@
         "@stacksjs/utils": "workspace:*"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       },
       "peerDependencies": {
         "@stacksjs/database": "workspace:*"
@@ -1518,7 +1518,7 @@
         "ts-videos": "^0.1.2"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     },
     "storage/framework/core/whois": {
@@ -1528,7 +1528,7 @@
         "@stacksjs/logging": "workspace:*"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.39"
       }
     }
   },
@@ -1545,29 +1545,29 @@
       "source": "pantry",
       "resolved": "registry:curl.se/ca-certs@2026.3.19"
     },
-    "curl.se@8.23.0": {
+    "curl.se@8.23.0.2": {
       "name": "curl.se",
-      "version": "8.23.0",
+      "version": "8.23.0.2",
       "source": "pantry",
-      "resolved": "registry:curl.se@8.23.0"
+      "resolved": "registry:curl.se@8.23.0.2"
     },
-    "facebook.com/zstd@1.5.7": {
+    "facebook.com/zstd@1.5.7.2": {
       "name": "facebook.com/zstd",
-      "version": "1.5.7",
+      "version": "1.5.7.2",
       "source": "pantry",
-      "resolved": "registry:facebook.com/zstd@1.5.7"
+      "resolved": "registry:facebook.com/zstd@1.5.7.2"
     },
-    "git-scm.org@2.53.0": {
+    "git-scm.org@2.56.1": {
       "name": "git-scm.org",
-      "version": "2.53.0",
+      "version": "2.56.1",
       "source": "pantry",
-      "resolved": "registry:git-scm.org@2.53.0"
+      "resolved": "registry:git-scm.org@2.56.1"
     },
-    "github.com/google/brotli@1.2.0": {
+    "github.com/google/brotli@1.2.0.1": {
       "name": "github.com/google/brotli",
-      "version": "1.2.0",
+      "version": "1.2.0.1",
       "source": "pantry",
-      "resolved": "registry:github.com/google/brotli@1.2.0"
+      "resolved": "registry:github.com/google/brotli@1.2.0.1"
     },
     "gnome.org/libxml2@2.13.9": {
       "name": "gnome.org/libxml2",
@@ -1611,11 +1611,23 @@
       "source": "pantry",
       "resolved": "registry:gnu.org/libiconv@1.19.0"
     },
-    "gnu.org/libidn2@2.3.8": {
-      "name": "gnu.org/libidn2",
-      "version": "2.3.8",
+    "gnu.org/libiconv@1.19.0.2": {
+      "name": "gnu.org/libiconv",
+      "version": "1.19.0.2",
       "source": "pantry",
-      "resolved": "registry:gnu.org/libidn2@2.3.8"
+      "resolved": "registry:gnu.org/libiconv@1.19.0.2"
+    },
+    "gnu.org/libidn2@2.3.8.2": {
+      "name": "gnu.org/libidn2",
+      "version": "2.3.8.2",
+      "source": "pantry",
+      "resolved": "registry:gnu.org/libidn2@2.3.8.2"
+    },
+    "gnu.org/libunistring@1.4.2.2": {
+      "name": "gnu.org/libunistring",
+      "version": "1.4.2.2",
+      "source": "pantry",
+      "resolved": "registry:gnu.org/libunistring@1.4.2.2"
     },
     "gnu.org/mpc@1.3.1": {
       "name": "gnu.org/mpc",
@@ -1682,6 +1694,12 @@
       "version": "5.8.2",
       "source": "pantry",
       "resolved": "registry:tukaani.org/xz@5.8.2"
+    },
+    "tukaani.org/xz@5.8.2.1": {
+      "name": "tukaani.org/xz",
+      "version": "5.8.2.1",
+      "source": "pantry",
+      "resolved": "registry:tukaani.org/xz@5.8.2.1"
     },
     "zlib.net@1.3.2": {
       "name": "zlib.net",

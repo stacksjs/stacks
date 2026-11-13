@@ -24,8 +24,8 @@ export const config: PantryConfig = {
    */
   dependencies: {
     bun: '1.4.4',
-    curl: '^8.22.0',
-    git: '^2.47.0',
+    curl: '^8.23.0.2',
+    git: '^2.56.1',
     // The database engine is swapped for the one DB_CONNECTION names when
     // `buddy setup` regenerates deps.yaml, so only one ever gets installed.
     sqlite: '^3.47.2',

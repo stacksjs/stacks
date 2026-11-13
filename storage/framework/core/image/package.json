@@ -36,6 +36,6 @@
     "ts-images": "https://registry.pantry.dev/ts-images@22073a9"
   },
   "devDependencies": {
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.39"
   }
 }

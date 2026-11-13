@@ -82,7 +82,7 @@
     }
   },
   "devDependencies": {
-    "better-dx": "^0.2.24",
+    "better-dx": "^0.2.39",
     "meilisearch": "^0.62.0"
   }
 }

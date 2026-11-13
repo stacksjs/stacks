@@ -76,7 +76,7 @@
   "devDependencies": {
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/lint": "workspace:*",
-    "better-dx": "^0.2.24",
+    "better-dx": "^0.2.39",
     "filesize": "^11.0.25",
     "markdown-table": "^3.0.4"
   }

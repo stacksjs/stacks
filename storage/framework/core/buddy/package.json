@@ -163,10 +163,10 @@
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "bun-plugin-stx": "^0.2.864",
-    "ts-pantry": "^0.11.198"
+    "ts-pantry": "^0.11.205"
   },
   "devDependencies": {
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.39"
   },
   "web-types": "./web-types.json"
 }

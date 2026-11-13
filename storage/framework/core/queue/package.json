@@ -75,7 +75,7 @@
     "@stacksjs/path": "workspace:*"
   },
   "devDependencies": {
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.39"
   },
   "peerDependencies": {
     "@stacksjs/email": "workspace:*",

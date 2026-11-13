@@ -61,7 +61,7 @@
     "pickier": "^0.1.92"
   },
   "devDependencies": {
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.39"
   },
   "publishConfig": {
     "exports": {
