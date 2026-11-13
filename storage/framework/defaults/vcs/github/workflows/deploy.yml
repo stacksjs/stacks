@@ -115,6 +115,11 @@ jobs:
       - name: Setup Pantry
         if: steps.check.outputs.configured == 'true'
         uses: pantry-pm/pantry/packages/action@cdb82193cb344c2b881a88ea79f88243f5522e0f # v0.11.75
+        # The CLI only, as in ci.yml. Installing the app's system packages here
+        # pulls in the local mail catcher too, which has no Linux download, and
+        # a deploy needs none of them: Bun comes from the step above.
+        with:
+          install: 'false'
 
       - name: Install dependencies
         if: steps.check.outputs.configured == 'true'
