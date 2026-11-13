@@ -1,0 +1,55 @@
+{
+  "name": "@stacksjs/support",
+  "type": "module",
+  "version": "0.75.575",
+  "description": "Native HQ.support customer identity, conversations, events, and messenger lifecycle.",
+  "author": "Chris <chris@stacksjs.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "storage/framework/core/support"
+  },
+  "homepage": "https://hq.support/docs/stacks",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "bun": "./dist/index.js",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "bun": "./dist/server.js",
+      "import": "./dist/server.js",
+      "default": "./dist/server.js"
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "bun": "./dist/browser.js",
+      "import": "./dist/browser.js",
+      "default": "./dist/browser.js"
+    },
+    "./testing": {
+      "types": "./dist/testing.d.ts",
+      "bun": "./dist/testing.js",
+      "import": "./dist/testing.js",
+      "default": "./dist/testing.js"
+    }
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun build.ts",
+    "typecheck": "bun tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "devDependencies": {
+    "better-dx": "^0.2.37"
+  },
+  "sideEffects": false
+}

@@ -303,6 +303,10 @@
     "./skills": {
       "types": "./dist/skills.d.ts",
       "import": "./dist/skills.js"
+    },
+    "./support": {
+      "types": "./dist/support.d.ts",
+      "import": "./dist/support.js"
     }
   },
   "types": "./dist/buddy.d.ts",
@@ -404,7 +408,8 @@
     "@stacksjs/cron": "0.75.575",
     "@stacksjs/sites": "0.75.575",
     "bun-query-builder": "^0.6.0",
-    "@stacksjs/desktop-build": "0.75.575"
+    "@stacksjs/desktop-build": "0.75.575",
+    "@stacksjs/support": "0.75.575"
   },
   "devDependencies": {
     "better-dx": "^0.2.39"
