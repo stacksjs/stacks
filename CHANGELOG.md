@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.567...v0.75.568)
+
+## 🔧 Chores
+
+- **alias**: regenerate the workspace aliases for @stacksjs/testing/hq ([da075d3](https://github.com/stacksjs/stacks/commit/da075d3)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.566...v0.75.567)
 
 ## 🐛 Bug Fixes
