@@ -3,7 +3,8 @@ import type { ReadableRecord } from '@stacksjs/orm'
 export type KanbanModelRecord = ReadableRecord
 
 export interface RefreshableKanbanModelRecord extends KanbanModelRecord {
-  fresh: () => Promise<KanbanModelRecord | null>
+  /** A read answers in place; a caller's own record type may still hand back a promise. */
+  fresh: () => KanbanModelRecord | null | Promise<KanbanModelRecord | null>
 }
 
 export async function refreshModel(record: RefreshableKanbanModelRecord): Promise<KanbanModelRecord> {

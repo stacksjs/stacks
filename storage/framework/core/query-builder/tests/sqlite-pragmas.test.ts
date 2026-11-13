@@ -128,7 +128,8 @@ describe('model-executor sqlite pragmas (ORM writer connection)', () => {
     // Pre-fix this orphan insert succeeded silently — the executor's raw
     // Database had FK enforcement off no matter what the query-builder
     // connection was bootstrapped with.
-    await expect(Child.create({ p_id: 999 })).rejects.toThrow(/FOREIGN KEY constraint failed/)
+    // The raw query-builder model answers in place, so the failure is thrown here.
+    expect(() => Child.create({ p_id: 999 })).toThrow(/FOREIGN KEY constraint failed/)
 
     // And a valid child still inserts fine through the same path.
     raw.run('INSERT INTO p_exec (id) VALUES (1)')

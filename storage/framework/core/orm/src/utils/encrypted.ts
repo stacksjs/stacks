@@ -60,6 +60,19 @@ let _cachedKey: Buffer | null = null
  * read to use the new key and silently fail. Apps that genuinely rotate
  * keys at runtime should call `_clearEncryptedKeyCache()` themselves.
  */
+/**
+ * The key, when it can be had without waiting: already derived, or in the
+ * environment, which is where a running app has it. `undefined` means the
+ * config module has to be imported to find out, and that takes a turn.
+ */
+function getKeyNow(): Buffer | undefined {
+  if (_cachedKey) return _cachedKey
+  const raw = process.env.APP_KEY
+  if (!raw) return undefined
+  _cachedKey = createHash('sha256').update(raw).digest()
+  return _cachedKey
+}
+
 async function getKey(): Promise<Buffer | null> {
   if (_cachedKey) return _cachedKey
   let raw: string | undefined = process.env.APP_KEY
@@ -150,9 +163,29 @@ export async function decryptValue(value: unknown): Promise<unknown> {
   if (value == null) return value
   if (typeof value !== 'string') return value
   if (!isEncrypted(value)) return value // pre-encryption legacy rows
+  return decryptEnvelope(value, await getKey())
+}
 
+/**
+ * `decryptValue`, answering in place when it can.
+ *
+ * A model read returns its value where it is written, and a read of an
+ * encrypted column should not be the exception. The cipher is synchronous;
+ * only finding the key ever waited, and in a running app the key is in the
+ * environment. So this returns the plaintext directly whenever the key is at
+ * hand, and a promise of it only when the config module has to be loaded to
+ * find one.
+ */
+export function decryptValueInPlace(value: unknown): unknown | Promise<unknown> {
+  if (value == null) return value
+  if (typeof value !== 'string') return value
+  if (!isEncrypted(value)) return value
+  const key = getKeyNow()
+  return key ? decryptEnvelope(value, key) : decryptValue(value)
+}
+
+function decryptEnvelope(value: string, key: Buffer | null): unknown {
   try {
-    const key = await getKey()
     if (!key) {
       log.warn('[orm] encrypted attribute: APP_KEY not set - cannot decrypt')
       return null

@@ -167,4 +167,29 @@ async function queryResultContracts(): Promise<void> {
 }
 
 type QueryContractReturnsVoid = Expect<Equal<ReturnType<typeof queryResultContracts>, Promise<void>>>
+
+// A read answers where it is written, so the un-awaited form is typed as the
+// awaited one is.
+function readsAnswerInPlace(): void {
+  const user = Article.where('title', 'like', '%typed%').orderByDesc('created_at').first()
+  const title: string | undefined = user?.title
+  const required: string = Article.findOrFail(1).title
+  const count: number = Article.count()
+  const exists: boolean = Article.where('published', true).exists()
+  const titles: string[] = Article.all().map(article => article.title)
+  const page = Article.paginate(10)
+  const firstOnPage: string | undefined = page.data[0]?.title
+  const total: number = page.total
+  // @ts-expect-error a read is the value, not a promise of it
+  Article.count().then(() => {})
+  void [title, required, count, exists, titles, firstOnPage, total]
+}
+
+type ReadsAnswerInPlaceReturnsVoid = Expect<Equal<ReturnType<typeof readsAnswerInPlace>, void>>
+type CountIsANumber = Expect<Equal<ReturnType<typeof Article.count>, number>>
+// A write runs setters, validation and lifecycle events: it is a promise.
+type CreateIsAPromise = Expect<ReturnType<typeof Article.create> extends Promise<unknown> ? true : false>
+type UpdateIsAPromise = Expect<ReturnType<typeof Article.update> extends Promise<unknown> ? true : false>
+type DeleteIsAPromise = Expect<Equal<ReturnType<typeof Article.delete>, Promise<boolean>>>
+type SaveIsAPromise = Expect<ReturnType<NonNullable<ReturnType<typeof Article.find>>['save']> extends Promise<unknown> ? true : false>
 void (0 as unknown as QueryContractReturnsVoid)

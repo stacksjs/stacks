@@ -20,6 +20,7 @@ export type { PrunableOptions } from './utils/prunable'
 export {
   collectEncryptedAttributes,
   decryptValue,
+  decryptValueInPlace,
   encryptValue,
   isEncrypted,
 } from './utils/encrypted'

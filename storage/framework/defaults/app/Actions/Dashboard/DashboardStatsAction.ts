@@ -6,7 +6,7 @@ interface DashboardStatDefinition {
   title: string
   icon: string
   iconBg: string
-  count: () => Promise<number>
+  count: () => number | Promise<number>
   /** False when the model's feature is off, so the card is left out. */
   available?: () => boolean
 }
