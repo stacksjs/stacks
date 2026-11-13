@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.566...v0.75.567)
+
+## 🐛 Bug Fixes
+
+- **test**: an empty HQ key is no key, as config/services.ts reads it ([dfacf35](https://github.com/stacksjs/stacks/commit/dfacf35)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.565...v0.75.566)
 
 ## 🐛 Bug Fixes

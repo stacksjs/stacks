@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/hq",
   "type": "module",
-  "version": "0.75.566",
+  "version": "0.75.567",
   "description": "What every Stacks HQ service does the same way: usage metering, the connect and usage endpoints, and typed readers.",
   "author": "Chris Breuer",
   "contributors": [
