@@ -52,6 +52,9 @@ export type EventHandlerMap<Events extends EventMap> = Map<
   EventHandlerList<Events[keyof Events]> | WildCardEventHandlerList<Events>
 >
 
+/** What one handler made of an event: what it returned, or what it threw. */
+export type HandlerOutcome = { ok: true, value: unknown } | { ok: false, error: Error }
+
 export interface Emitter<Events extends EventMap> {
   /** Underlying handler map. Mutating it directly is supported but rarely needed. */
   all: EventHandlerMap<Events>
@@ -97,6 +100,16 @@ export interface Emitter<Events extends EventMap> {
    * but the call shouldn't throw (stacksjs/stacks#1878 E-1).
    */
   emitAndCollect: <Key extends keyof Events>(_type: Key, _event: Events[Key]) => Promise<Array<{ ok: true, value: unknown } | { ok: false, error: Error }>>
+
+  /**
+   * `emitAndCollect`, answering in place when it can: the outcomes themselves
+   * when every handler returned a value, and a promise of them from the first
+   * handler that returned a promise. Handlers run in the same order either
+   * way, one after the other. For a caller that is itself synchronous unless
+   * something makes it wait, such as a model write asking its `creating`
+   * listeners whether to go ahead.
+   */
+  emitAndCollectInPlace: <Key extends keyof Events>(_type: Key, _event: Events[Key]) => HandlerOutcome[] | Promise<HandlerOutcome[]>
 
   /** Drop every handler for a type (or every handler everywhere when omitted). */
   removeAllListeners: (_type?: keyof Events | '*') => void
@@ -383,7 +396,62 @@ export function createEmitter<Events extends EventMap>(
     return results
   }
 
-  return { all: map, on, once, off, emit, emitAsync, emitAndCollect, removeAllListeners, listenerCount } as Emitter<Events>
+  function emitAndCollectInPlace(type: any, evt?: any): HandlerOutcome[] | Promise<HandlerOutcome[]> {
+    // Every matching handler, in dispatch order: exact, then patterns, then '*'.
+    const calls: Array<() => unknown> = []
+    const queue = (handlers: Handler<any>[] | WildcardHandler<any>[] | undefined, isWildcard: boolean): void => {
+      if (!handlers) return
+      for (const handler of sortByPriority(priorities, handlers))
+        calls.push(isWildcard ? () => (handler as WildcardHandler<any>)(type, evt) : () => (handler as Handler<any>)(evt))
+    }
+    queue(map.get(type) as Handler<any>[] | undefined, false)
+    const typeStr = String(type)
+    map.forEach((patternHandlers, key) => {
+      const keyStr = String(key)
+      if (keyStr === typeStr || keyStr === '*' || !keyStr.includes('*')) return
+      if (matchPattern(keyStr, typeStr, patternHandlers)) queue(patternHandlers as WildcardHandler<any>[], true)
+    })
+    queue(map.get('*') as WildcardHandler<any>[] | undefined, true)
+
+    const outcomes: HandlerOutcome[] = []
+    const failed = (err: unknown): HandlerOutcome => ({ ok: false, error: err instanceof Error ? err : new Error(String(err)) })
+
+    // From the first handler that has to be waited for, the rest are waited
+    // for too, each after the one before it, as `emitAndCollect` does.
+    const later = async (from: number, pending: Promise<unknown>): Promise<HandlerOutcome[]> => {
+      try {
+        outcomes.push({ ok: true, value: await pending })
+      }
+      catch (err) {
+        outcomes.push(failed(err))
+      }
+      for (let index = from + 1; index < calls.length; index++) {
+        try {
+          const result = calls[index]!()
+          outcomes.push({ ok: true, value: isPromiseLike(result) ? await result : result })
+        }
+        catch (err) {
+          outcomes.push(failed(err))
+        }
+      }
+      return outcomes
+    }
+
+    for (let index = 0; index < calls.length; index++) {
+      try {
+        const result = calls[index]!()
+        if (isPromiseLike(result))
+          return later(index, result)
+        outcomes.push({ ok: true, value: result })
+      }
+      catch (err) {
+        outcomes.push(failed(err))
+      }
+    }
+    return outcomes
+  }
+
+  return { all: map, on, once, off, emit, emitAsync, emitAndCollect, emitAndCollectInPlace, removeAllListeners, listenerCount } as Emitter<Events>
 }
 
 /**
@@ -696,6 +764,7 @@ type Listen = <Key extends keyof StacksEvents>(_type: Key, _handler: Handler<Sta
 type Off = <Key extends keyof StacksEvents>(_type: Key, handler?: Handler<StacksEvents[Key]>) => void
 type DispatchAsync = <Key extends keyof StacksEvents>(_type: Key, _event: StacksEvents[Key]) => Promise<unknown[]>
 type DispatchAndCollect = <Key extends keyof StacksEvents>(_type: Key, _event: StacksEvents[Key]) => Promise<Array<{ ok: true, value: unknown } | { ok: false, error: Error }>>
+type DispatchAndCollectInPlace = <Key extends keyof StacksEvents>(_type: Key, _event: StacksEvents[Key]) => HandlerOutcome[] | Promise<HandlerOutcome[]>
 
 const emitter: Emitter<StacksEvents> = events
 const useEvents: Emitter<StacksEvents> = events
@@ -737,6 +806,11 @@ const dispatchAndCollect: DispatchAndCollect = (type, event) => {
   observe(type)
   return emitter.emitAndCollect(type, event)
 }
+/** `dispatchAndCollect`, answering in place when every listener did (see `emitAndCollectInPlace`). */
+const dispatchAndCollectInPlace: DispatchAndCollectInPlace = (type, event) => {
+  observe(type)
+  return emitter.emitAndCollectInPlace(type, event)
+}
 const useEvent: Dispatch = dispatch
 const all: EventHandlerMap<StacksEvents> = emitter.all
 const listen: Listen = emitter.on
@@ -748,6 +822,7 @@ export {
   all,
   dispatch,
   dispatchAndCollect,
+  dispatchAndCollectInPlace,
   dispatchAsync,
   emitter,
   events,

@@ -140,3 +140,71 @@ for (const method of ['emit', 'emitAsync', 'emitAndCollect'] as const) {
     if (method === 'emitAndCollect') expect(last).toEqual([{ ok: true, value: 'second' }])
   })
 }
+
+describe('emitAndCollectInPlace', () => {
+  test('answers in place when every handler did, in dispatch order', () => {
+    const emitter = createEmitter<Record<string, number>>()
+    const order: string[] = []
+    emitter.on('thing', (value) => { order.push(`exact ${value}`); return undefined })
+    emitter.on('thing', () => { order.push('refuses'); return false })
+    emitter.on('th*', () => { order.push('pattern') })
+    emitter.on('*', () => { order.push('wildcard') })
+
+    const outcomes = emitter.emitAndCollectInPlace('thing', 7)
+    expect(Array.isArray(outcomes)).toBe(true)
+    expect(order).toEqual(['exact 7', 'refuses', 'pattern', 'wildcard'])
+    expect(outcomes).toEqual([
+      { ok: true, value: undefined },
+      { ok: true, value: false },
+      { ok: true, value: undefined },
+      { ok: true, value: undefined },
+    ])
+  })
+
+  test('a handler that throws is an outcome, and the ones after it still run', () => {
+    const emitter = createEmitter<Record<string, number>>()
+    emitter.on('thing', () => { throw new Error('refused') })
+    emitter.on('thing', () => 'still here')
+
+    const outcomes = emitter.emitAndCollectInPlace('thing', 1) as Array<{ ok: boolean, value?: unknown, error?: Error }>
+    expect(outcomes.map(outcome => outcome.ok)).toEqual([false, true])
+    expect(outcomes[0]!.error?.message).toBe('refused')
+    expect(outcomes[1]!.value).toBe('still here')
+  })
+
+  test('becomes a promise from the first handler that returns one, and keeps the order', async () => {
+    const emitter = createEmitter<Record<string, number>>()
+    const order: string[] = []
+    emitter.on('thing', () => { order.push('first') })
+    emitter.on('thing', async () => {
+      await new Promise(resolve => setTimeout(resolve, 5))
+      order.push('second, late')
+      return false
+    })
+    emitter.on('thing', () => { order.push('third') })
+
+    const pending = emitter.emitAndCollectInPlace('thing', 1)
+    expect(pending).toBeInstanceOf(Promise)
+    // The third handler waits for the second, exactly as emitAndCollect has it.
+    expect(order).toEqual(['first'])
+    const outcomes = await pending
+    expect(order).toEqual(['first', 'second, late', 'third'])
+    expect(outcomes).toEqual([
+      { ok: true, value: undefined },
+      { ok: true, value: false },
+      { ok: true, value: undefined },
+    ])
+  })
+
+  test('a rejection is an outcome too', async () => {
+    const emitter = createEmitter<Record<string, number>>()
+    emitter.on('thing', async () => { throw new Error('later') })
+    const outcomes = await emitter.emitAndCollectInPlace('thing', 1) as Array<{ ok: boolean, error?: Error }>
+    expect(outcomes[0]!.ok).toBe(false)
+    expect(outcomes[0]!.error?.message).toBe('later')
+  })
+
+  test('no handlers is an empty answer in place', () => {
+    expect(createEmitter<Record<string, number>>().emitAndCollectInPlace('thing', 1)).toEqual([])
+  })
+})
