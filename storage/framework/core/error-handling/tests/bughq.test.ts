@@ -118,7 +118,8 @@ describe('default monitoring config', () => {
   })
 
   test('does not register BugHQ when the key is absent', async () => {
-    expect(await readConfig('production', '')).toEqual({ key: '', reporters: ['database'] })
+    // config/services.ts reads an empty BUGHQ_KEY as no key at all, so there is none to report.
+    expect(await readConfig('production', '')).toEqual({ reporters: ['database'] })
   })
 
   test('does not register BugHQ outside the shared telemetry environments', async () => {

@@ -192,8 +192,8 @@ describe('default logging config', () => {
   })
 
   test('does not register LogHQ when the key is absent', async () => {
+    // config/services.ts reads an empty LOGHQ_KEY as no key at all, so there is none to report.
     expect(await readConfig('production', '')).toEqual({
-      key: '',
       transports: [],
     })
   })
