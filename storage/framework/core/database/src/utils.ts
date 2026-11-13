@@ -8,7 +8,7 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { isPromise, isProxy } from 'node:util/types'
 import type { QueryHooks } from '@stacksjs/query-builder'
-import { config as queryBuilderConfig, createQueryBuilder, registerPersistentQueryHooks, resetConnection as resetQueryBuilderConnection, setConfig, settle, wait } from '@stacksjs/query-builder'
+import { config as queryBuilderConfig, createQueryBuilder, registerPersistentQueryHooks, resetConnection as resetQueryBuilderConnection, setConfig } from '@stacksjs/query-builder'
 
 // Use default values to avoid circular dependencies initially
 // These can be overridden later once config is fully loaded
@@ -685,38 +685,26 @@ interface SqliteTransactionOwner {
   parent?: SqliteTransactionOwner
   accepting: boolean
   transactions: number
-  /** The transactions its completion has enrolled and not yet finished. None when there are none. */
-  completionTail?: Promise<void>
+  completionTail: Promise<void>
 }
 
 const sqliteTxOwner = new AsyncLocalStorage<SqliteTransactionOwner>()
-/** The transaction that holds the shared connection, and those queued behind it. None when it is free. */
-let sqliteTxTail: Promise<void> | undefined
+let sqliteTxTail: Promise<void> = Promise.resolve()
 
-function runOwnedSqliteTransaction<T>(run: () => T, parent?: SqliteTransactionOwner): T {
-  const owner: SqliteTransactionOwner = { parent, accepting: true, transactions: 0 }
-  return sqliteTxOwner.run(owner, () => settle(function* (): Generator<unknown, T, unknown> {
-    try {
-      return (yield* wait(run())) as T
-    }
+function runOwnedSqliteTransaction<T>(run: () => Promise<T>, parent?: SqliteTransactionOwner): Promise<T> {
+  const owner: SqliteTransactionOwner = { parent, accepting: true, transactions: 0, completionTail: Promise.resolve() }
+  return sqliteTxOwner.run(owner, async () => {
+    try { return await run() }
     finally {
       // Lingering continuations must acquire a fresh lock. Already-enrolled
       // completion transactions finish before we release the shared connection.
       owner.accepting = false
-      if (owner.completionTail)
-        yield* wait(owner.completionTail)
+      await owner.completionTail
     }
-  }))
+  })
 }
 
-/**
- * A transaction on a free connection runs where it is called: nothing else
- * can touch the connection while it runs, because nothing else runs at all.
- * If its callback has to wait, the transaction is a promise and the connection
- * is held until it settles; a transaction that arrives meanwhile queues behind
- * it, and is a promise too, whatever its own callback does.
- */
-function serializeSqliteTransaction<T>(run: () => T): T {
+function serializeSqliteTransaction<T>(run: () => Promise<T>): Promise<T> {
   let owner = sqliteTxOwner.getStore()
   // A child's late continuation can still belong to an active ancestor's
   // completion. Queueing it globally would make that ancestor wait on itself.
@@ -729,44 +717,22 @@ function serializeSqliteTransaction<T>(run: () => T): T {
   // savepoints. Give siblings a local queue instead of bypassing serialization
   // or deadlocking behind their enclosing completion's global lock.
   const completionOwner = owner?.accepting ? owner : undefined
-  const tailNow = (): Promise<void> | undefined => completionOwner ? completionOwner.completionTail : sqliteTxTail
-  const setTail = (tail: Promise<void> | undefined): void => {
-    if (completionOwner) completionOwner.completionTail = tail
-    else sqliteTxTail = tail
-  }
-  // Keep the chain alive after a rollback: the rejection still surfaces to
-  // this transaction's caller. The connection is free again once the last one
-  // queued on it has settled, and it is marked free in the first reaction to
-  // that: this one, registered before the caller is handed the promise. So the
-  // caller's own next line already finds it free.
-  const hold = (pending: PromiseLike<unknown>): void => {
-    const release = (): void => {
-      if (tailNow() === tail)
-        setTail(undefined)
-    }
-    const tail: Promise<void> = Promise.resolve(pending).then(release, release)
-    setTail(tail)
-  }
-
-  const ahead = tailNow()
-  if (!ahead) {
-    const result = runOwnedSqliteTransaction(run, completionOwner)
-    if (isPromise(result))
-      hold(result)
-    return result
-  }
-  const result = ahead.then(() => runOwnedSqliteTransaction(run, completionOwner))
-  hold(result)
-  return result as T
+  const result = (completionOwner?.completionTail ?? sqliteTxTail).then(() => runOwnedSqliteTransaction(run, completionOwner))
+  // Keep the chain alive after a rollback — the rejection still surfaces
+  // to this transaction's caller via `result`.
+  const tail = result.then(() => undefined, () => undefined)
+  if (completionOwner) completionOwner.completionTail = tail
+  else sqliteTxTail = tail
+  return result
 }
 
 function applySqliteTransactionSerialization(instance: RawQueryBuilder): void {
   // Patch the instance's own property (not the proxy) so internal callers
   // like `transactional()` — which invokes `this.transaction(...)` — are
   // serialized too.
-  const original = (instance.transaction as (...args: any[]) => unknown).bind(instance)
-  ;(instance).transaction = ((...args: any[]) =>
-    serializeSqliteTransaction(() => original(...args))) as RawQueryBuilder['transaction']
+  const original = (instance.transaction as (...args: any[]) => Promise<any>).bind(instance)
+  ;(instance).transaction = (...args: any[]) =>
+    serializeSqliteTransaction(() => original(...args))
 }
 
 /**
@@ -878,12 +844,12 @@ function applyTransactionDispatchScope(instance: RawQueryBuilder): void {
 
   for (const method of ['transaction', 'savepoint'] as const) {
     const original = instance[method].bind(instance) as RawQueryBuilder['transaction']
-    instance[method] = ((callback: (tx: RawQueryBuilder) => unknown, options?: Parameters<RawQueryBuilder['transaction']>[1]) => {
+    instance[method] = async (callback, options?: Parameters<RawQueryBuilder['transaction']>[1]) => {
       const active = activeTransactionConnection()
       // Retained db.transaction functions and pre-created transactional()
       // helpers must resolve the connection at invocation, not capture root.
       if (active && active !== instance)
-        return (active[method] as (...args: unknown[]) => unknown)(callback, options)
+        return active[method](callback, options)
       const parent = transactionConnection.getStore()
       const effectiveOptions = { ...defaultOptions, ...options }
       const afterCommit = method === 'transaction' ? effectiveOptions.afterCommit : undefined
@@ -897,44 +863,39 @@ function applyTransactionDispatchScope(instance: RawQueryBuilder): void {
             finally { if (parent) parent.nested = nested! }
           }
         : undefined
-      // Written to answer where it is called: a callback that does commits in
-      // place, and its after-commit work has run by the next line. A callback
-      // that has to wait makes the whole of this a promise, as it always was.
-      return settle(function* (): Generator<unknown, unknown, unknown> {
-        const result = yield* wait(runInTransactionScope(runAttempt => settle(function* (): Generator<unknown, unknown, unknown> {
-          const owner = sqliteTxOwner.getStore()
-          if (owner) owner.transactions++
-          if (parent) parent.nested = true
-          try {
-            // Native SQL pool callbacks may enter from a connection's async
-            // context rather than this request's. Preserve routing and caller
-            // context explicitly, then establish the per-attempt scopes inside.
-            const runCallback = AsyncLocalStorage.bind((tx: RawQueryBuilder) => runAttempt(() => {
-              applyTransactionDispatchScope(tx)
-              const scope: TransactionConnectionScope = { connection: tx, parent, active: true, nested: false }
-              return transactionConnection.run(scope, () => settle(function* (): Generator<unknown, unknown, unknown> {
-                try { return yield* wait(callback(tx)) }
-                finally { scope.active = false }
-              }))
-            }))
-            return yield* wait((original as (...args: unknown[]) => unknown)(runCallback, method === 'transaction' ? {
-              ...options, afterCommit: undefined,
-              onRollback: parentObserver(effectiveOptions.onRollback),
-              afterRollback: parentObserver(effectiveOptions.afterRollback),
-              onRetry: parentObserver(effectiveOptions.onRetry),
-            } : options))
-          }
-          finally {
-            if (parent) parent.nested = false
-            if (owner) owner.transactions--
-          }
-        })))
-        // Observer failures happen after the real commit. They must not make
-        // the dispatch scope discard work or make the driver retry that commit.
-        yield* wait(afterCommit?.())
-        return result
+      const result = await runInTransactionScope(async (runAttempt) => {
+        const owner = sqliteTxOwner.getStore()
+        if (owner) owner.transactions++
+        if (parent) parent.nested = true
+        try {
+          // Native SQL pool callbacks may enter from a connection's async
+          // context rather than this request's. Preserve routing and caller
+          // context explicitly, then establish the per-attempt scopes inside.
+          const runCallback = AsyncLocalStorage.bind((tx: RawQueryBuilder) => runAttempt(async () => {
+            applyTransactionDispatchScope(tx)
+            const scope: TransactionConnectionScope = { connection: tx, parent, active: true, nested: false }
+            return transactionConnection.run(scope, async () => {
+              try { return await callback(tx) }
+              finally { scope.active = false }
+            })
+          }))
+          return await original(runCallback, method === 'transaction' ? {
+            ...options, afterCommit: undefined,
+            onRollback: parentObserver(effectiveOptions.onRollback),
+            afterRollback: parentObserver(effectiveOptions.afterRollback),
+            onRetry: parentObserver(effectiveOptions.onRetry),
+          } : options)
+        }
+        finally {
+          if (parent) parent.nested = false
+          if (owner) owner.transactions--
+        }
       })
-    }) as RawQueryBuilder['transaction']
+      // Observer failures happen after the real commit. They must not make
+      // the dispatch scope discard work or make the driver retry that commit.
+      await afterCommit?.()
+      return result
+    }
   }
 }
 
@@ -952,9 +913,9 @@ function applyTransactionDispatchScope(instance: RawQueryBuilder): void {
  * `this.transaction(...)`, which would bypass a wrapper.
  */
 function applyTransactionRoutingContext(instance: RawQueryBuilder): void {
-  const original = (instance.transaction as (...args: any[]) => unknown).bind(instance)
-  ;(instance).transaction = ((...args: any[]) =>
-    withTransactionContext(() => original(...args))) as RawQueryBuilder['transaction']
+  const original = (instance.transaction as (...args: any[]) => Promise<any>).bind(instance)
+  ;(instance).transaction = (...args: any[]) =>
+    withTransactionContext(() => original(...args))
 }
 
 function getDb(): ReturnType<typeof createQueryBuilder> {
@@ -1179,8 +1140,7 @@ ensureConfigLoaded()
  */
 type UnsafeRow = Record<string, unknown>
 type UnsafeReturn = Promise<UnsafeRow[]> & {
-  /** The rows, where the connection answers in place; a promise of them where it cannot. */
-  execute: () => UnsafeRow[]
+  execute: () => Promise<UnsafeRow[]>
   executeSync: () => UnsafeRow[]
 }
 
@@ -1468,21 +1428,21 @@ export interface BaseFluentChain<TRow = Record<string, unknown>, TKind extends C
    * framework and in applications on top of it read `numUpdatedRows` off a
    * value that might be a number - the type never told them which they had.
    */
-  execute: () => ResultOf<TRow, TKind>
-  /** SQLite fast path only. The same answer as `execute()`, kept for code written when that was a promise. */
+  execute: () => Promise<ResultOf<TRow, TKind>>
+  /** SQLite fast path only. Executes on the calling thread without a Promise. */
   executeSync?: () => ResultOf<TRow, TKind>
   /** SQLite fast path only. Executes and returns the first row without an array. */
   executeTakeFirstSync?: () => FirstOf<TRow, TKind>
-  executeTakeFirst: () => FirstOf<TRow, TKind>
-  executeTakeFirstOrThrow: () => NonNullable<FirstOf<TRow, TKind>>
-  pluck: (...args: unknown[]) => unknown[]
-  count: (...args: unknown[]) => number
-  sum: (...args: unknown[]) => number
-  avg: (...args: unknown[]) => number
-  min: (...args: unknown[]) => unknown
-  max: (...args: unknown[]) => unknown
-  exists: () => boolean
-  doesntExist: () => boolean
+  executeTakeFirst: () => Promise<FirstOf<TRow, TKind>>
+  executeTakeFirstOrThrow: () => Promise<NonNullable<FirstOf<TRow, TKind>>>
+  pluck: (...args: unknown[]) => Promise<unknown[]>
+  count: (...args: unknown[]) => Promise<number>
+  sum: (...args: unknown[]) => Promise<number>
+  avg: (...args: unknown[]) => Promise<number>
+  min: (...args: unknown[]) => Promise<unknown>
+  max: (...args: unknown[]) => Promise<unknown>
+  exists: () => Promise<boolean>
+  doesntExist: () => Promise<boolean>
   $call: (callback: (query: FluentChain<TRow, TKind>) => FluentChain<TRow, TKind>) => FluentChain<TRow, TKind>
 
   /*
@@ -1563,23 +1523,23 @@ export interface BaseFluentChain<TRow = Record<string, unknown>, TKind extends C
   withTrashed: (...args: unknown[]) => FluentChain<TRow, TKind>
 
   /* The terminals, which answer rows rather than a chain. */
-  get: () => TRow[]
-  first: () => TRow | undefined
-  firstOrFail: () => TRow
-  find: (id: number | string) => TRow | undefined
-  findMany: (ids: Array<number | string>) => TRow[]
-  findOrFail: (id: number | string) => TRow
-  value: <K extends keyof TRow & string>(column: K) => TRow[K]
+  get: () => Promise<TRow[]>
+  first: () => Promise<TRow | undefined>
+  firstOrFail: () => Promise<TRow>
+  find: (id: number | string) => Promise<TRow | undefined>
+  findMany: (ids: Array<number | string>) => Promise<TRow[]>
+  findOrFail: (id: number | string) => Promise<TRow>
+  value: <K extends keyof TRow & string>(column: K) => Promise<TRow[K]>
   lazy: () => AsyncIterable<TRow>
   lazyById: () => AsyncIterable<TRow>
-  chunk: <R extends void | Promise<void>>(size: number, handler: (rows: TRow[]) => R) => R
-  chunkById: <R extends void | Promise<void> = void>(size: number, column?: keyof TRow & string, handler?: (rows: TRow[]) => R) => R
-  eachById: <R extends void | Promise<void> = void>(size: number, column?: keyof TRow & string, handler?: (row: TRow) => R) => R
-  paginate: (perPage: number, page?: number, opts?: unknown) => { data: TRow[], meta: Record<string, unknown> }
-  simplePaginate: (perPage: number, page?: number) => { data: TRow[], meta: Record<string, unknown> }
-  cursorPaginate: (perPage: number, cursor?: string | number, column?: string, direction?: 'asc' | 'desc') => { data: TRow[], meta: Record<string, unknown> }
-  explain: () => Record<string, unknown>[]
-  raw: () => unknown[][]
+  chunk: (size: number, handler: (rows: TRow[]) => Promise<void> | void) => Promise<void>
+  chunkById: (size: number, column?: keyof TRow & string, handler?: (rows: TRow[]) => Promise<void> | void) => Promise<void>
+  eachById: (size: number, column?: keyof TRow & string, handler?: (row: TRow) => Promise<void> | void) => Promise<void>
+  paginate: (perPage: number, page?: number, opts?: unknown) => Promise<{ data: TRow[], meta: Record<string, unknown> }>
+  simplePaginate: (perPage: number, page?: number) => Promise<{ data: TRow[], meta: Record<string, unknown> }>
+  cursorPaginate: (perPage: number, cursor?: string | number, column?: string, direction?: 'asc' | 'desc') => Promise<{ data: TRow[], meta: Record<string, unknown> }>
+  explain: () => Promise<Record<string, unknown>[]>
+  raw: () => Promise<unknown[][]>
   toParams: () => unknown[]
   toText: () => string
   simple: () => unknown
@@ -1823,12 +1783,12 @@ function resolveDeferredSqliteTerminal(
     return selectAll
   }
   if (property === 'first') {
-    const first = () => executeFirstStatement()
+    const first = async () => executeFirstStatement()
     target.first = first
     return first
   }
   if (property === 'firstOrFail' || property === 'executeTakeFirstOrThrow') {
-    const firstOrFail = () => {
+    const firstOrFail = async () => {
       const row = executeFirstStatement()
       if (row === undefined)
         throw new Error('Record not found')
@@ -1840,12 +1800,12 @@ function resolveDeferredSqliteTerminal(
   }
   if (property === 'exists' || property === 'doesntExist') {
     const findsRow = property === 'exists'
-    const check = () => (executeFirstStatement() !== undefined) === findsRow
+    const check = async () => (executeFirstStatement() !== undefined) === findsRow
     target[property] = check
     return check
   }
   if (property === 'value') {
-    const value = (column: string) => executeFirstStatement()?.[column]
+    const value = async (column: string) => executeFirstStatement()?.[column]
     target.value = value
     return value
   }
@@ -1859,16 +1819,21 @@ function resolveDeferredSqliteTerminal(
     const pluck = (...args: unknown[]) => {
       if (args.length !== 1) {
         const builder = materialize()
-        const apply = builder.pluck as unknown as (...values: unknown[]) => unknown[]
+        const apply = builder.pluck as unknown as (...values: unknown[]) => Promise<unknown[]>
         return apply.call(builder, ...args)
       }
 
-      const column = args[0] as string
-      const rows = executeStatement()
-      const values = new Array<unknown>(rows.length)
-      for (let index = 0; index < rows.length; index++)
-        values[index] = rows[index]?.[column]
-      return values
+      try {
+        const column = args[0] as string
+        const rows = executeStatement()
+        const values = new Array<unknown>(rows.length)
+        for (let index = 0; index < rows.length; index++)
+          values[index] = rows[index]?.[column]
+        return Promise.resolve(values)
+      }
+      catch (error) {
+        return Promise.reject(error)
+      }
     }
     target.pluck = pluck
     return pluck
@@ -1881,17 +1846,22 @@ function runDeferredSqliteAggregate(
   emptyValue: unknown,
   materialize: () => ReturnType<RawQueryBuilder['selectFrom']>,
   executeStatement: (firstOnly?: boolean, selection?: string) => UnsafeRow[],
-): unknown {
+): Promise<unknown> {
   const column = args[0]
   const acceptsNoColumn = name === 'count' && args.length === 0
   if (!acceptsNoColumn && (args.length !== 1 || typeof column !== 'string' || !isSimpleSqliteColumn(column))) {
-    const builder = materialize() as unknown as Record<typeof name, (...values: unknown[]) => unknown>
+    const builder = materialize() as unknown as Record<typeof name, (...values: unknown[]) => Promise<unknown>>
     return builder[name].call(builder, ...args)
   }
 
-  const expression = `${name.toUpperCase()}(${acceptsNoColumn ? '*' : column}) AS aggregate`
-  const value = executeStatement(false, expression)[0]?.aggregate ?? emptyValue
-  return name === 'count' || name === 'sum' || name === 'avg' ? Number(value) : value
+  try {
+    const expression = `${name.toUpperCase()}(${acceptsNoColumn ? '*' : column}) AS aggregate`
+    const value = executeStatement(false, expression)[0]?.aggregate ?? emptyValue
+    return Promise.resolve(name === 'count' || name === 'sum' || name === 'avg' ? Number(value) : value)
+  }
+  catch (error) {
+    return Promise.reject(error)
+  }
 }
 
 interface FastSqliteStatement {
@@ -2695,7 +2665,12 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     execute() {
       if (materialized)
         return Reflect.apply(materialized.execute, materialized, arguments)
-      return executeStatement()
+      try {
+        return Promise.resolve(executeStatement())
+      }
+      catch (error) {
+        return Promise.reject(error)
+      }
     },
     executeSync() {
       if (materialized)
@@ -2721,7 +2696,12 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
         return target.executeTakeFirst ??= function () {
           if (materialized)
             return Reflect.apply(materialized.executeTakeFirst, materialized, arguments)
-          return executeFirstStatement()
+          try {
+            return Promise.resolve(executeFirstStatement())
+          }
+          catch (error) {
+            return Promise.reject(error)
+          }
         }
       }
       if (GUARDED_SQLITE_SELECT_METHODS.has(property))
@@ -2833,9 +2813,9 @@ function selectFromSubExplicitReadDatabase(subquery: unknown, alias: string): un
 
 /** A reusable decorator owns no connection until it is invoked. */
 function transactionalDatabase<TArgs extends unknown[], R>(
-  callback: (tx: RawQueryBuilder, ...args: TArgs) => R,
+  callback: (tx: RawQueryBuilder, ...args: TArgs) => Promise<R> | R,
   options?: Parameters<RawQueryBuilder['transaction']>[1],
-): (...args: TArgs) => R {
+): (...args: TArgs) => Promise<R> {
   return (...args) => getDb().transaction(tx => callback(tx, ...args), options)
 }
 

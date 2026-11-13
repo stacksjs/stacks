@@ -24,14 +24,9 @@ interface SourceResult<T> {
   error: string
 }
 
-/**
- * One source of the page, read on its own: a failure costs that source its
- * numbers and says why, and the others still answer. The work is handed over
- * unstarted, because a query answers (or fails) where it is written.
- */
-async function inspectSource<T>(work: () => T | Promise<T>, fallback: T, message: string, source: string): Promise<SourceResult<T>> {
+async function inspectSource<T>(work: Promise<T>, fallback: T, message: string, source: string): Promise<SourceResult<T>> {
   try {
-    return { value: await work(), error: '' }
+    return { value: await work, error: '' }
   }
   catch (error) {
     return {
@@ -54,7 +49,7 @@ export default new Action({
     const cpu = process.cpuUsage()
     const databaseDriver = String(config.database?.default || 'unknown')
 
-    const requestSummaryQuery = () => db
+    const requestSummaryQuery = db
       .selectFrom('requests')
       .select([
         db.fn.count('id').as('total'),
@@ -63,16 +58,16 @@ export default new Action({
         db.fn.max('created_at').as('latest'),
       ])
       .whereNull('deleted_at')
-      .executeTakeFirst() as unknown as NumericSummaryRow | undefined
+      .executeTakeFirst() as Promise<NumericSummaryRow | undefined>
 
-    const requestSuccessQuery = () => db
+    const requestSuccessQuery = db
       .selectFrom('requests')
       .select(db.fn.count('id').as('count'))
       .whereNull('deleted_at')
       .where('status_code', '<', 400)
-      .executeTakeFirst() as unknown as { count: number | string } | undefined
+      .executeTakeFirst() as Promise<{ count: number | string } | undefined>
 
-    const slowRequestsQuery = () => db
+    const slowRequestsQuery = db
       .selectFrom('requests')
       .select(['id', 'method', 'path', 'status_code', 'duration_ms', 'created_at'])
       .whereNull('deleted_at')
@@ -81,7 +76,7 @@ export default new Action({
       .limit(5)
       .execute()
 
-    const querySummaryQuery = () => db
+    const querySummaryQuery = db
       .selectFrom('query_logs')
       .select([
         db.fn.count('id').as('total'),
@@ -89,15 +84,15 @@ export default new Action({
         db.fn.max('duration').as('maximum'),
         db.fn.max('executed_at').as('latest'),
       ])
-      .executeTakeFirst() as unknown as NumericSummaryRow | undefined
+      .executeTakeFirst() as Promise<NumericSummaryRow | undefined>
 
-    const queryStatusesQuery = () => db
+    const queryStatusesQuery = db
       .selectFrom('query_logs')
       .select(['status', db.fn.count('id').as('count')])
       .groupBy('status')
-      .execute() as unknown as StatusCountRow[]
+      .execute() as Promise<StatusCountRow[]>
 
-    const slowQueriesQuery = () => db
+    const slowQueriesQuery = db
       .selectFrom('query_logs')
       .select(['id', 'query', 'duration', 'status', 'connection', 'executed_at'])
       .where('duration', '>=', slowThresholdMs)
@@ -106,15 +101,15 @@ export default new Action({
       .limit(5)
       .execute()
 
-    const errorSummaryQuery = () => db
+    const errorSummaryQuery = db
       .selectFrom('errors')
       .select([
         db.fn.count('id').as('total'),
         db.fn.max('created_at').as('latest'),
       ])
-      .executeTakeFirst() as unknown as NumericSummaryRow | undefined
+      .executeTakeFirst() as Promise<NumericSummaryRow | undefined>
 
-    const recentErrorsQuery = () => db
+    const recentErrorsQuery = db
       .selectFrom('errors')
       .select(['id', 'type', 'message', 'status', 'created_at'])
       .orderBy('created_at', 'desc')
@@ -149,10 +144,10 @@ export default new Action({
       inspectSource(slowQueriesQuery, [], 'Query telemetry is unavailable.', 'queries.slowest'),
       inspectSource(errorSummaryQuery, undefined, 'Error telemetry is unavailable.', 'errors.summary'),
       inspectSource(recentErrorsQuery, [], 'Error telemetry is unavailable.', 'errors.recent'),
-      inspectSource(() => checkQueueHealth(), null, 'Queue telemetry is unavailable.', 'queue'),
-      inspectSource(() => cache.getStats(), null, 'Cache telemetry is unavailable.', 'cache'),
-      inspectSource(() => filesystemQuery, null, 'Filesystem telemetry is unavailable.', 'filesystem'),
-      inspectSource(() => databaseFileQuery, null, 'Database file telemetry is unavailable.', 'database-file'),
+      inspectSource(checkQueueHealth(), null, 'Queue telemetry is unavailable.', 'queue'),
+      inspectSource(cache.getStats(), null, 'Cache telemetry is unavailable.', 'cache'),
+      inspectSource(filesystemQuery, null, 'Filesystem telemetry is unavailable.', 'filesystem'),
+      inspectSource(databaseFileQuery, null, 'Database file telemetry is unavailable.', 'database-file'),
     ])
 
     const requestTotal = countValue(requestSummary.value?.total)

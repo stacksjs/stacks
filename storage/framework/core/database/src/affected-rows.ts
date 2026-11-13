@@ -72,7 +72,7 @@ export function mutationCount(result: unknown): number {
  * with a locking read inside a transaction instead.
  */
 export async function matchedRows<T = { id: number }>(
-  update: { returning: (column: string) => { execute: () => unknown } },
+  update: { returning: (column: string) => { execute: () => Promise<unknown> } },
   key: string = 'id',
 ): Promise<T[]> {
   const rows = await update.returning(key).execute()

@@ -64,14 +64,13 @@ try {
   for (const length of [0, 1, '0', undefined, false, opaqueLength, 2, ...invalidLengths]) {
     const values = [10]
     values.slice = () => ({ length, *[Symbol.iterator]() { yield 10 } }) as unknown as number[]
-    // The read answers (or fails) where it is written, so it is held unstarted.
-    const read = () => db.selectFrom('statement_items').select('id').whereIn('value', values).execute()
+    const read = db.selectFrom('statement_items').select('id').whereIn('value', values).execute()
     if (invalidLengths.includes(length as number))
-      assert.throws(read, RangeError)
+      await assert.rejects(read, RangeError)
     else if (length === 2)
-      assert.throws(read)
+      await assert.rejects(read)
     else
-      assert.deepEqual(await read(), length === 0 ? [] : [{ id: 1 }])
+      assert.deepEqual(await read, length === 0 ? [] : [{ id: 1 }])
   }
   const retained = query([10])
   assert.deepEqual(await retained.execute(), [{ id: 1 }])
@@ -80,7 +79,7 @@ try {
   await db.unsafe('UPDATE statement_items SET value = 30 WHERE id = 1').execute()
   assert.deepEqual(await retained.execute(), [])
   const rollback = new Error('rollback statement check')
-  await assert.rejects(async () => db.transaction(async () => {
+  await assert.rejects(db.transaction(async () => {
     await db.unsafe('UPDATE statement_items SET value = 10 WHERE id = 1').execute()
     assert.deepEqual(await retained.execute(), [{ id: 1 }])
     throw rollback
@@ -90,10 +89,10 @@ try {
     await db.unsafe('UPDATE statement_items SET value = 10 WHERE id = 1').execute()
   })
   assert.deepEqual(await retained.execute(), [{ id: 1 }])
-  await assert.rejects(async () => db.selectFrom('missing_statement_items').where('id', 'in', [1]).execute())
+  await assert.rejects(db.selectFrom('missing_statement_items').where('id', 'in', [1]).execute())
   assert.deepEqual(await query([10]).execute(), [{ id: 1 }])
   await db.unsafe('DROP TABLE statement_items').execute()
-  await assert.rejects(async () => query([10]).execute())
+  await assert.rejects(query([10]).execute())
   await db.unsafe('CREATE TABLE statement_items (id INTEGER PRIMARY KEY, value INTEGER)').execute()
   await db.unsafe('INSERT INTO statement_items VALUES (3, 10)').execute()
   assert.deepEqual(await query([10]).execute(), [{ id: 3 }])

@@ -108,7 +108,7 @@ export async function signCardAttachmentUrl(
 
 /** What `removeCardAttachments` runs its two statements through: `db`, or a transaction. */
 export interface AttachmentStatementRunner {
-  unsafe: (sql: string, params?: unknown[]) => { execute: () => unknown }
+  unsafe: (sql: string, params?: unknown[]) => { execute: () => Promise<unknown> }
 }
 
 /**

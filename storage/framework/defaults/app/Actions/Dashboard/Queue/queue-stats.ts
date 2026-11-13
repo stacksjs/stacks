@@ -44,11 +44,11 @@ export async function readQueueCounts(database: typeof db = db): Promise<QueueCo
         database.fn.min('id').as('first_id'),
       ])
       .groupBy('queue')
-      .execute() as unknown as Array<{ queue: unknown, total: unknown, active: unknown, first_id: unknown }>,
+      .execute() as Promise<Array<{ queue: unknown, total: unknown, active: unknown, first_id: unknown }>>,
     database.selectFrom('failed_jobs')
       .select(['queue', database.fn.count('id').as('failed')])
       .groupBy('queue')
-      .execute() as unknown as Array<{ queue: unknown, failed: unknown }>,
+      .execute() as Promise<Array<{ queue: unknown, failed: unknown }>>,
   ])
 
   const failed = new Map<string, number>()

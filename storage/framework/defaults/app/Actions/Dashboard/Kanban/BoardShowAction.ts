@@ -122,14 +122,14 @@ export default new Action({
           WHERE cl.card_id IN (SELECT id FROM cards WHERE board_id = ${param(1)} AND archived = false)
           ORDER BY l.name ASC`,
           [id],
-        ).execute() as unknown as Array<{ card_id: number, id: number, name: string, color: string }>,
+        ).execute() as Promise<Array<{ card_id: number, id: number, name: string, color: string }>>,
         db.unsafe(
           `SELECT ca.card_id, ca.user_id, u.name, u.email
           FROM card_assignees ca
           LEFT JOIN users u ON u.id = ca.user_id
           WHERE ca.card_id IN (SELECT id FROM cards WHERE board_id = ${param(1)} AND archived = false)`,
           [id],
-        ).execute() as unknown as Array<{ card_id: number, user_id: number, name: string | null, email: string | null }>,
+        ).execute() as Promise<Array<{ card_id: number, user_id: number, name: string | null, email: string | null }>>,
       ])
 
       const labelsByCard = new Map<number, Array<{ id: number, name: string, color: string }>>()

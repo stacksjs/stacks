@@ -120,5 +120,5 @@ export async function fetchWithProductCount(options: FetchManufacturersOptions =
     .groupBy('m.id')
 
   // Return all manufacturers
-  return query.execute() as unknown as ManufacturerJsonResponse[]
+  return query.execute() as Promise<ManufacturerJsonResponse[]>
 }

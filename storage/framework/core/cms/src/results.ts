@@ -57,7 +57,7 @@ export async function resolveWrittenRow<T extends object>(
   db: {
     selectFrom: (table: string) => {
       where: (column: string, op: string, value: unknown) => {
-        selectAll: () => { executeTakeFirst: () => unknown }
+        selectAll: () => { executeTakeFirst: () => Promise<unknown> }
       }
     }
   },

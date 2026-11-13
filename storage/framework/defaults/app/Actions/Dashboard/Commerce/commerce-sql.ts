@@ -9,7 +9,7 @@ import { sqlHelpers } from '@stacksjs/database/runtime'
 
 /** What runs the queries: the configured `db`, or a test's own connection. */
 export interface CommerceSqlRunner {
-  unsafe: (sql: string, values?: unknown[]) => { execute: () => unknown }
+  unsafe: (sql: string, values?: unknown[]) => { execute: () => Promise<unknown> }
 }
 
 /** A result as rows, whatever the driver returned for an empty one. */

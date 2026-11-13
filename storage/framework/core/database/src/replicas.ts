@@ -117,7 +117,7 @@ export function markContextWrote(): void {
  * write pin. AsyncLocalStorage restores the caller without mutating a flag
  * shared by overlapping transactions or unrelated reads in the same request.
  */
-export function withTransactionContext<T>(fn: () => T): T {
+export async function withTransactionContext<T>(fn: () => Promise<T>): Promise<T> {
   const writes = routingContext.getStore()?.writes ?? { occurred: false }
   return routingContext.run({ writes, inTransaction: true }, fn)
 }

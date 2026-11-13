@@ -254,8 +254,8 @@ async function prepareCommentables(query: CommentListQuery): Promise<Commentable
   const columns = await ownerLabelColumns(types)
   const where = commentableWhere(query, columns, guestAuthors)
   const [[counted], statusRows] = await Promise.all([
-    db.unsafe(`SELECT COUNT(id) AS count FROM commentables ${where.sql}`, where.values).execute() as unknown as Array<{ count: unknown }>,
-    db.unsafe('SELECT status, COUNT(id) AS count FROM commentables GROUP BY status').execute() as unknown as Array<{ status: unknown, count: unknown }>,
+    db.unsafe(`SELECT COUNT(id) AS count FROM commentables ${where.sql}`, where.values).execute() as Promise<Array<{ count: unknown }>>,
+    db.unsafe('SELECT status, COUNT(id) AS count FROM commentables GROUP BY status').execute() as Promise<Array<{ status: unknown, count: unknown }>>,
   ])
 
   return { columns, guestAuthors, where, total: countOf(counted?.count), statusRows }

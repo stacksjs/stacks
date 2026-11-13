@@ -119,8 +119,8 @@ export async function readPostPage(query: PostListQuery, database: typeof db = d
         .execute() as PostListRow[]
 
   const [byStatus, views] = await Promise.all([
-    database.selectFrom('posts').select(['status', database.fn.count('id').as('count')]).groupBy('status').execute() as unknown as Array<{ status: string, count: unknown }>,
-    database.selectFrom('posts').select(database.fn.sum('views').as('views')).executeTakeFirst() as unknown as { views?: unknown } | undefined,
+    database.selectFrom('posts').select(['status', database.fn.count('id').as('count')]).groupBy('status').execute() as Promise<Array<{ status: string, count: unknown }>>,
+    database.selectFrom('posts').select(database.fn.sum('views').as('views')).executeTakeFirst() as Promise<{ views?: unknown } | undefined>,
   ])
 
   const statusCount = (status: PostStatus) => byStatus

@@ -251,8 +251,8 @@ export async function fetchGroupedPage(query: ErrorGroupQuery): Promise<GroupedE
         `SELECT id, type, message, resolution, occurrences, first_seen, created_at AS last_seen FROM ${ranked} ${where}
          ORDER BY ${groupOrder(query)} LIMIT ${Math.trunc(query.perPage)} OFFSET ${Math.trunc((page - 1) * query.perPage)}`,
         values,
-      ).execute() as unknown as RankedGroupRow[],
-    db.unsafe('SELECT DISTINCT type FROM errors ORDER BY type').execute() as unknown as Array<{ type: string }>,
+      ).execute() as unknown as Promise<RankedGroupRow[]>,
+    db.unsafe('SELECT DISTINCT type FROM errors ORDER BY type').execute() as Promise<Array<{ type: string }>>,
   ])
 
   const stacks = await fetchStacks(rows.map(row => Number(row.id)))

@@ -28,13 +28,6 @@ export { createQueryBuilder as QueryBuilder } from 'bun-query-builder'
 
 ## Usage
 
-A query answers where it is written: `get()`, `first()`, `execute()`, `count()`
-and the rest return the rows, the row or the number, and a transaction is done
-when it returns. The `await` in the examples below is optional (`await` on a
-value is that value); a failure is thrown where the call stands. The full rule,
-including what still returns a promise, is in `stacks-database` under "Values,
-not promises".
-
 ```typescript
 import { db } from '@stacksjs/database/runtime'
 

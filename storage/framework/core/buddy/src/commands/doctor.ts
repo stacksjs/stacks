@@ -416,7 +416,7 @@ export function doctor(buddy: CLI): void {
       // that executes but yields nothing is a genuine failure.
       await probe(checks, 'Database', async () => {
         const { db } = await import('@stacksjs/database')
-        type RawStatement = Promise<unknown> & { execute?: () => unknown }
+        type RawStatement = Promise<unknown> & { execute?: () => Promise<unknown> }
         const unsafe = (db as { unsafe?: (query: string) => RawStatement }).unsafe
         if (typeof unsafe !== 'function')
           throw new ProbeWarning('driver exposes no raw query method (skipped)')

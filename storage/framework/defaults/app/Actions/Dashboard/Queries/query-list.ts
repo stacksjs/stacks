@@ -131,7 +131,7 @@ export async function readQueryLogPage(query: QueryListQuery, now: number = Date
        FROM query_logs ${filter.all.sql}`,
       filter.all.values,
     ).execute(),
-    db.unsafe(`SELECT DISTINCT connection FROM query_logs ${filter.range.sql} ORDER BY connection`, filter.range.values).execute() as unknown as Array<{ connection: unknown }>,
+    db.unsafe(`SELECT DISTINCT connection FROM query_logs ${filter.range.sql} ORDER BY connection`, filter.range.values).execute() as Promise<Array<{ connection: unknown }>>,
   ])
 
   const counts: QueryCounts = {

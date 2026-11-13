@@ -28,9 +28,9 @@ export async function fetchById(id: number): Promise<ShippingZoneJsonResponse | 
  *
  * @returns Array of formatted shipping zone options with id, name, and status
  */
-export async function formatZoneOptions(): Promise<{ id: number, name: string, status: string | string[], countries: string | undefined }[]> {
+export function formatZoneOptions(): Promise<{ id: number, name: string, status: string | string[], countries: string | undefined }[]> {
   try {
-    return await db
+    return db
       .selectFrom('shipping_zones')
       .select(['id', 'name', 'status', 'countries'])
       .orderBy('name')

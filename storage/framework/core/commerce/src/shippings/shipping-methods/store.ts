@@ -81,9 +81,9 @@ export async function bulkStore(data: NewShippingMethod[]): Promise<number> {
  *
  * @returns Array of formatted shipping method options with id, name, and status
  */
-export async function formatShippingOptions(): Promise<{ id: number, name: string, status: string | string[], base_rate: number }[]> {
+export function formatShippingOptions(): Promise<{ id: number, name: string, status: string | string[], base_rate: number }[]> {
   try {
-    return await db
+    return db
       .selectFrom('shipping_methods')
       .select(['id', 'name', 'status', 'base_rate'])
       .orderBy('name')

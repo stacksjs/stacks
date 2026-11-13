@@ -368,12 +368,20 @@ async function retainedBuilderMatrix() {
   limited.whereRaw('id >= 2')
   limit(1)
   assert.deepEqual(await limited.execute(), [{ id: 2 }])
-  // Building the query is not running it: only the terminal reaches the table,
-  // and its failure is thrown where the terminal is called.
-  const missing = db.selectFrom('fast_missing_items').where('id', '=', 1)
-  assert.throws(() => missing.execute(), /fast_missing_items/)
-  for (const method of ['first', 'executeTakeFirst'] as const)
-    assert.throws(() => db.selectFrom('fast_missing_items').where('id', '=', 1)[method](), /fast_missing_items/)
+  let rejected: unknown
+  assert.doesNotThrow(() => {
+    rejected = db.selectFrom('fast_missing_items').where('id', '=', 1).execute()
+  })
+  assert.ok(rejected instanceof Promise)
+  await assert.rejects(rejected)
+  for (const method of ['first', 'executeTakeFirst'] as const) {
+    let failure: unknown
+    assert.doesNotThrow(() => {
+      failure = db.selectFrom('fast_missing_items').where('id', '=', 1)[method]()
+    })
+    assert.ok(failure instanceof Promise)
+    await assert.rejects(failure)
+  }
   return results
 }
 

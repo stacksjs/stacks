@@ -125,12 +125,12 @@ export const localLogsProvider: DashboardLogsProvider = {
 
     const [countRow, typeRows, sourceRows, projectRows] = await Promise.all([
       applyFilters(db.selectFrom('logs').select(db.fn.count('id').as('count')))
-        .executeTakeFirst() as unknown as { count: number | string } | undefined,
+        .executeTakeFirst() as Promise<{ count: number | string } | undefined>,
       applyFilters(db.selectFrom('logs').select(['type', db.fn.count('id').as('count')]))
         .groupBy('type')
-        .execute() as unknown as Array<{ type: string, count: number | string }>,
-      db.selectFrom('logs').select('source').distinct().orderBy('source', 'asc').limit(100).execute() as unknown as Array<{ source: string }>,
-      db.selectFrom('logs').select('project').distinct().orderBy('project', 'asc').limit(500).execute() as unknown as Array<{ project: string }>,
+        .execute() as Promise<Array<{ type: string, count: number | string }>>,
+      db.selectFrom('logs').select('source').distinct().orderBy('source', 'asc').limit(100).execute() as Promise<Array<{ source: string }>>,
+      db.selectFrom('logs').select('project').distinct().orderBy('project', 'asc').limit(500).execute() as Promise<Array<{ project: string }>>,
     ])
 
     const total = Number(countRow?.count || 0)

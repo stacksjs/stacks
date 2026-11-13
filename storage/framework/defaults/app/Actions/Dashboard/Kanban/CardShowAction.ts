@@ -69,14 +69,14 @@ export default new Action({
           WHERE cl.card_id = ${param(1)}
           ORDER BY l.name ASC`,
           [id],
-        ).execute() as unknown as Array<{ id: number, name: string, color: string }>,
+        ).execute() as Promise<Array<{ id: number, name: string, color: string }>>,
         db.unsafe(
           `SELECT ca.user_id, ca.assigned_by_user_id, ca.created_at, u.name, u.email
           FROM card_assignees ca
           LEFT JOIN users u ON u.id = ca.user_id
           WHERE ca.card_id = ${param(1)}`,
           [id],
-        ).execute() as unknown as Array<{ user_id: number, assigned_by_user_id: number | null, created_at: string | null, name: string | null, email: string | null }>,
+        ).execute() as Promise<Array<{ user_id: number, assigned_by_user_id: number | null, created_at: string | null, name: string | null, email: string | null }>>,
         db.unsafe(
           `SELECT cc.id, cc.uuid, cc.user_id, cc.body, cc.created_at, cc.updated_at, u.name, u.email
           FROM card_comments cc
@@ -84,7 +84,7 @@ export default new Action({
           WHERE cc.card_id = ${param(1)}
           ORDER BY cc.created_at ASC, cc.id ASC`,
           [id],
-        ).execute() as unknown as Array<{ id: number, uuid: string | null, user_id: number | null, body: string, created_at: string | null, updated_at: string | null, name: string | null, email: string | null }>,
+        ).execute() as Promise<Array<{ id: number, uuid: string | null, user_id: number | null, body: string, created_at: string | null, updated_at: string | null, name: string | null, email: string | null }>>,
         // Each one carries a freshly signed, expiring URL: the bytes are on a
         // private disk, so there is no path the browser could fetch.
         cardAttachments(id),

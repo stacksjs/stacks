@@ -31,7 +31,7 @@ export interface NamedRow {
 
 /** What runs the two queries: the configured `db`, or a test's own connection. */
 export interface NamedSearchRunner {
-  unsafe: (sql: string, values?: unknown[]) => { execute: () => unknown }
+  unsafe: (sql: string, values?: unknown[]) => { execute: () => Promise<unknown> }
 }
 
 export function parseNamedSearchQuery(read: QueryReader): NamedSearchQuery | { error: string } {

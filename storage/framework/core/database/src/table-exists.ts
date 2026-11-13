@@ -15,7 +15,7 @@ import { db, getDatabaseDialect } from './utils'
  * database, and SQLite in `sqlite_master`. The name is always a bound value.
  */
 export interface TableCatalogRunner {
-  unsafe: (sql: string, values?: unknown[]) => { execute: () => unknown }
+  unsafe: (sql: string, values?: unknown[]) => { execute: () => Promise<unknown> }
 }
 
 export function tableExistsSql(dialect: QueryBuilderDialect): string {

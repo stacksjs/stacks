@@ -87,54 +87,6 @@ const users = await db.selectFrom('users').where('active', '=', true).get()
 
 `initializeDbConfig(config)` can be called to update the backing config at runtime.
 
-### Values, not promises
-
-A `db` call answers where it is written, on SQLite, MySQL and Postgres:
-
-```typescript
-const users = db.selectFrom('users').where('active', '=', true).get() // the rows
-const newest = db.selectFrom('users').orderBy('created_at', 'desc').first() // the row, or undefined
-const changed = db.updateTable('users').set({ active: false }).where('id', '=', 7).execute() // 1
-
-const orderId = db.transaction((tx) => {
-  const order = tx.insertInto('orders').values({ customer_id: 7 }).returning('id').first()
-  tx.insertInto('order_lines').values({ order_id: order.id, sku: 'A-1' }).execute()
-  return order.id
-}) // committed by this line; a throw has rolled back and rethrown
-```
-
-- `await` in front of any of them still works (`await` on a value is that
-  value), so existing code is correct as it stands.
-- A failure is thrown where the call stands: `try`/`catch`, not `.catch()` or
-  `.then()`. In a test, `expect(() => db.selectFrom('missing').get()).toThrow()`,
-  not `await expect(...).rejects`.
-- A query runs where it is written. To start several and judge each on its own
-  later, hand them over unstarted: `inspect(() => db.selectFrom(...).get())`.
-- `db.unsafe(sql, params)` and `db.file(path)` build a statement. `.execute()`
-  runs it and returns its rows; awaiting the statement resolves to the same
-  rows. Nothing runs until one of the two happens.
-- A transaction callback that is `async` is waited for, and the transaction is
-  then a promise, as is the callback of `chunk()`. Write the callback without
-  `async` when everything in it is a query.
-- While a transaction with an `async` callback is open it holds its locks
-  across each `await`, and the code that commits it needs the thread. A
-  statement elsewhere in the process that needs one of those locks (or a
-  pooled connection, when they are all held) is therefore not waited for in
-  place: that one call answers with a promise, which resolves once the
-  transaction has finished. It is how `withLockedRow` and `rowToken` can
-  contend for one row. A statement that needs nothing held still answers in
-  place, and with synchronous callbacks nothing is ever held.
-- Inside a transaction callback `db.` is the transaction: a `db.selectFrom(...)`
-  there runs on the transaction's connection, as `tx.selectFrom(...)` does. A
-  model call does not (see Gotchas).
-- On SQLite there is one connection. A transaction whose callback is `async`
-  holds it until it settles, so a transaction that starts meanwhile queues
-  behind it and is a promise whatever its own callback does. With only
-  synchronous callbacks that cannot happen.
-- MySQL and Postgres run on a worker thread the caller waits on, sharing one
-  pool with the models. `models: { execution: 'async' }` in `config/query-builder.ts`
-  gives promises back for both; every call then has to be awaited.
-
 For reads which cannot tolerate replication lag, use `db.primary.selectFrom(...)`.
 It stays on the primary when automatic replica routing is enabled, and uses the
 active transaction connection inside a transaction. It does not mark the request
