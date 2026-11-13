@@ -62,11 +62,19 @@ for (const post of Post.where('published', true).get()) titles.push(post.title)
 - **How.** SQLite runs a query in place. MySQL and Postgres run on Bun's
   driver, held by a worker thread the caller waits on, so nothing else runs on
   the calling thread while a query is in flight (the cost `bun:sqlite` always
-  had). `models: { execution: 'async' }` in the query-builder config makes
-  MySQL and Postgres calls promises again for an app that needs the event loop
-  free during queries; every call then has to be awaited.
+  had). `models: { execution: 'async' }` in `config/qb.ts` makes MySQL and
+  Postgres calls promises again for an app that needs the event loop free
+  during queries; every call then has to be awaited.
 - **Not covered.** The `db` query builder (`db.selectFrom(...)`) and
   `transaction()` still return promises.
+- **Inside `db.transaction()`, write through `tx`, not through a model.** A
+  model call runs on its own connection, and on MySQL and Postgres the thread
+  waits for it. One that needs a row the open transaction has locked can never
+  finish, because the transaction cannot commit while its thread is waiting.
+  It throws `StatementTimeoutError` after `models.timeoutMs` (30 seconds by
+  default, `0` for no limit) instead of stopping the process. Postgres cancels
+  the abandoned statement; MySQL cannot, so there it may still be applied once
+  the lock is gone.
 
 ### Writes: in place unless the model asks for work around them
 

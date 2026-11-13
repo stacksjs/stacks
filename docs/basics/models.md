@@ -344,8 +344,12 @@ it stands, so use `try`/`catch` and not `.catch()`.
 SQLite runs a query in place. MySQL and Postgres run it on a worker thread that
 the caller waits on, so a server process handles one query at a time. An app
 that needs the event loop free during queries can set
-`models: { execution: 'async' }` in its query-builder config and await every
-read.
+`models: { execution: 'async' }` in `config/qb.ts` and await every model call.
+
+Inside `db.transaction()`, write through `tx` and not through a model. A model
+call runs on its own connection, and one that needs a row the open transaction
+has locked can never finish. It throws a `StatementTimeoutError` after
+`models.timeoutMs` (30 seconds by default) instead of stopping the process.
 
 ### Basic Queries
 
