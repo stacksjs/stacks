@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.563...v0.75.564)
+
+## 🐛 Bug Fixes
+
+- **orm**: a model query that cannot finish throws instead of stopping the process ([7472924](https://github.com/stacksjs/stacks/commit/7472924)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.562...v0.75.563)
 
 ## ✨ Features
