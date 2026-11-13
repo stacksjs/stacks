@@ -135,6 +135,16 @@ const envSchema = defineEnv({
     default: '',
   },
 
+  REPORTSHQ_URL: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  REPORTSHQ_LICENSE: {
+    validation: schema.string(),
+    default: '',
+  },
+
   PORT: {
     validation: schema.number(),
     default: 3000,

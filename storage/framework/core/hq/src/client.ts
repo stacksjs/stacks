@@ -15,7 +15,7 @@ export type { UsageHeader } from './usage-header'
  * failure is a typed `HqUnavailable` value.
  */
 
-export type HqServiceName = 'bughq' | 'loghq' | 'analyticshq' | 'statushq' | 'commshq'
+export type HqServiceName = 'bughq' | 'loghq' | 'analyticshq' | 'statushq' | 'commshq' | 'reportshq'
 
 export interface HqServiceConfig {
   /** The service's origin, e.g. `https://bughq.example`. */

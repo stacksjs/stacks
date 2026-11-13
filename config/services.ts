@@ -247,4 +247,12 @@ export default {
     key: env.COMMSHQ_KEY || undefined,
     readKey: env.COMMSHQ_READ_KEY || undefined,
   },
+
+  // ReportsHQ runs inside this app, against this app's own database. It has
+  // no ingest or read key and meters nothing: its one credential is a licence
+  // key, checked offline. Without one, reports work in full and say so.
+  reportshq: {
+    url: env.REPORTSHQ_URL || 'https://reportshq.org',
+    license: env.REPORTSHQ_LICENSE || undefined,
+  },
 } satisfies ServicesConfig

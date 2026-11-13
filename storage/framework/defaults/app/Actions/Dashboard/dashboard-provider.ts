@@ -175,6 +175,7 @@ const HQ_LABELS: Record<HqServiceName, string> = {
   analyticshq: 'AnalyticsHQ',
   statushq: 'StatusHQ',
   commshq: 'CommsHQ',
+  reportshq: 'ReportsHQ',
 }
 
 export type DashboardHqDomain = keyof typeof HQ_DOMAIN_SERVICE
