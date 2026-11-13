@@ -1,6 +1,6 @@
 ---
 name: stacks-dashboard
-description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 430 built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
+description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 431 built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,7 +8,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Dashboard
 
-The Stacks admin dashboard provides a full-featured admin panel with 100+ route views, 430 components, and a multi-section layout.
+The Stacks admin dashboard provides a full-featured admin panel with 100+ route views, 431 components, and a multi-section layout.
 
 ## Key Paths
 - Dashboard components: `storage/framework/defaults/resources/components/Dashboard/`
@@ -848,7 +848,7 @@ dashboard: {
 
 | Place | Where |
 |---|---|
-| `listTop` | on the model's list, under its title (and a hosting page's stats) and above its search |
+| `listTop` | on the model's list, under its title and above its search |
 | `listBottom` | on the model's list, under its table |
 | `recordTop` | on a record's page, under its title and above its fields |
 | `recordBottom` | on a record's page, under the panels of who points at it |
@@ -859,6 +859,13 @@ Each names one component by the name its file has, under the app's
 no registration. One per place; a component that needs several things
 composes them. It applies on `/models/{model}` and its record pages, and on
 the Users, Teams and Subscribers pages that host the list.
+
+A shipped model does the same with a shipped component, which is the one
+place this framework uses a region of its own: `User`, `Team` and
+`Subscriber` each put `Data/DataStatCards.stx`, their row of numbers, at
+`listTop` (stacksjs/stacks#3299). In this repository a region's component
+lives under `storage/framework/defaults/resources/components/Dashboard/`,
+never in the root `resources/`.
 
 The component is handed `model` (the slug) and `region` as plain props.
 What the page loads it reads as signals:
@@ -882,7 +889,41 @@ const shipped = derived(() => record()?.status === 'shipped')
   `id()`; `reload()` asks the page to read the record again.
 - `useModelList()`: `rows()`, `total()`, `search()`, `filters()`,
   `model()`, `reload()`. It follows the list as it is searched, narrowed and
-  paged.
+  paged. `changes()` goes up each time the list changes a record (a delete,
+  a bulk run that did something, one of the model's actions) and not when it
+  is searched or paged: watch it to read numbers of your own again.
+
+**Start in `onMount`, stop in `onDestroy`.** A placed component's script
+runs on every model page that has its place, whether or not the component is
+put on that page. Only `onMount` and `onDestroy` belong to the page it is
+actually on. So:
+
+```html
+<script client>
+import { useModelList } from '@stacksjs/defaults/views/dashboard/composables/useModelList'
+
+const { changes } = useModelList()
+let stop: (() => void) | null = null
+
+onMount(() => {
+  void load()
+  let seen = changes()
+  stop = effect(() => {
+    if (changes() === seen)
+      return
+    seen = changes()
+    void load()
+  })
+})
+onDestroy(() => stop?.())
+</script>
+```
+
+An `effect` or a request at the top of the script runs for other models'
+pages too and is never stopped: the stat cards, written that way, asked for
+users' and subscribers' numbers each time a team was deleted, once more for
+every page visited (stacksjs/stx#2189). `state`, `derived` and functions at
+the top are fine; they do nothing until read.
 
 How it works, and what follows from it:
 
@@ -892,8 +933,10 @@ How it works, and what follows from it:
   model's component". `Models/ModelRegion.stx` draws the component of
   **every** model that places one at that place
   (`dashboardRegionEntries(place)`), each inside a `ModelRegionFor`, and
-  that mounts only the one whose model the page is showing. A component
-  written for orders never runs on a team's page.
+  that puts on the page only the one whose model the page is showing. A
+  component written for orders is never shown or mounted on a team's page.
+  Its script is still set up there, which is why its work starts in
+  `onMount` (above).
 - So do not read `params` in a view or a component to decide what to draw:
   it holds the first address that was asked for.
 - The page says which model it is showing through `stores/model-page.ts`,
@@ -915,8 +958,8 @@ How it works, and what follows from it:
 
 `tests/unit/dashboard-model-regions.test.ts` renders the shipped wrapper
 through stx and holds stx to what this depends on, so a change there fails a
-test and not an app's page. No shipped model places a component: a region is
-the app's.
+test and not an app's page. It also holds every shipped model's region to a
+shipped component that exists and starts its work in `onMount`.
 
 ### A list's filters and sort are derived, not declared
 
@@ -1374,12 +1417,19 @@ labels, formats and actions on the model's `dashboard` block, not on the page.
 The list takes four props when it is hosted: `model` (the slug, instead of the
 last part of the address), `heading`, `description`, and `home` (where its
 create, invite, view and edit links lead, so `/data/users/7` and not
-`/models/user/7`). It has a `summary` slot above the search, where the page
-puts its stat cards, and it emits `changed` after a delete, a bulk run that
-did something, or one of the model's actions, so the page reads its numbers
-again. The numbers come from the page's old endpoint asked for them alone:
-`GET /api/dashboard/users?only=stats` reads no rows (`statsOnly(request)` in
-`Data/data-records.ts`; `fetchDashboardStats(mode)` on the client).
+`/models/user/7`). The hosting page adds nothing else.
+
+The row of numbers above each list is the model's, not the page's: `User`,
+`Team` and `Subscriber` place `Data/DataStatCards.stx` at
+`dashboard.regions.listTop`, so the numbers are on `/data/users` and on
+`/models/user` alike (stacksjs/stacks#3299). They used to be written into
+the hosting page and handed to the list through a `summary` slot, which is
+gone. After a delete, a bulk run that did something, or one of the model's
+actions, the list tells the page store (`modelPageStore.listChanged`) and the
+cards read their numbers again. The numbers come from the page's old endpoint
+asked for them alone: `GET /api/dashboard/users?only=stats` reads no rows
+(`statsOnly(request)` in `Data/data-records.ts`; `fetchDashboardStats(mode)`
+on the client).
 
 Two stx behaviours shape this, and both fail silently:
 
@@ -1389,9 +1439,9 @@ Two stx behaviours shape this, and both fail silently:
   address ("No ORM model named Users").
 - What a page puts in another component's slot is read against that
   component's names first. A `page` in the hosting page was the list's page
-  number and the first card read "Total undefined". The hosting page's names
-  are deliberately its own (`recordsPage`, `pageStats`, `loadPageStats`);
-  `tests/unit/dashboard-data-pages.test.ts` fails if one collides.
+  number and the first stat card read "Total undefined". The hosting page
+  now puts nothing in a slot of the list, and
+  `tests/unit/dashboard-data-pages.test.ts` fails if it does again.
 
 A status-like column (`status`, `role`, `state`, ... : `MODEL_BADGE_COLUMNS`)
 is a pill in a list as it is on a record's page, both drawn by

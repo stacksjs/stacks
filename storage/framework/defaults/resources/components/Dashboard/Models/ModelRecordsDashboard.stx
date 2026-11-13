@@ -77,7 +77,6 @@ const heading = useReactiveProp('heading', '')
 const description = useReactiveProp('description', '')
 const home = useReactiveProp('home', '')
 // Told when a record was deleted or acted on, so a host can read its summary again.
-const emit = defineEmits(['changed'])
 
 const modelName = state('')
 // The class name, for the one message that tells a developer what was looked for.
@@ -516,7 +515,7 @@ async function runAction(action: ModelCustomAction, row: Record<string, unknown>
   pushToast(notice.tone, notice.title, { detail: notice.detail })
   if (!result.ok)
     return
-  emit('changed')
+  modelPageStore.listChanged(slug())
   if (result.redirect)
     navigate(result.redirect)
   else
@@ -613,7 +612,7 @@ async function runBulk(pending = confirmingBulk(), input: Record<string, unknown
   if (pending.kind === 'delete' && result.done >= rows().length && page() > 1)
     page.set(page() - 1)
   if (result.done > 0)
-    emit('changed')
+    modelPageStore.listChanged(slug())
   await load()
 }
 
@@ -629,7 +628,7 @@ async function confirmDelete() {
     // Deleting the last row of the final page would strand the viewer on an
     // empty page, so step back one.
     if (rows().length === 1 && page() > 1) page.set(page() - 1)
-    emit('changed')
+    modelPageStore.listChanged(slug())
     await load()
   }
   catch (e) {
@@ -697,9 +696,8 @@ onDestroy(() => {
     </div>
   </div>
 
-  <!-- What goes above the list: a hosting page's row of stats, then what the
-      model places there (`dashboard.regions.listTop`). -->
-  <slot name="summary" />
+  <!-- What the model places above its list (`dashboard.regions.listTop`):
+      the row of stats over Users, Teams and Subscribers is one. -->
   <ModelRegion place="listTop" />
 
   <!-- Search + page size -->

@@ -54,26 +54,32 @@ describe('a page hosts the model\'s list', () => {
     expect(script).not.toMatch(/\nmodelPageStore\.openList\(/)
   })
 
-  it('the page puts its stats above the table, and reads them again when a record changes', () => {
-    expect(list).toContain('<slot name="summary" />')
-    expect(hosted).toContain('<template #summary>')
-    expect(hosted).toContain('@changed="loadPageStats"')
+  // stacksjs/stacks#3299: the numbers were the hosting page's, so `/models/user` had none.
+  it('the numbers above the list are the model\'s, read again when a record changes', () => {
+    const cards = read(`${components}/Data/DataStatCards.stx`)
+    for (const model of ['User', 'Team', 'Subscriber'])
+      expect(read(`storage/framework/defaults/app/Models/${model}.ts`)).toContain('regions: { listTop: \'DataStatCards\' },')
+    expect(cards).toContain('statNumbers.set(await fetchDashboardStats(shown.mode))')
+    // The same nine cards the hosting page drew, by model.
+    expect([...cards.matchAll(/title: '([^']+)'/g)].map(match => match[1])).toEqual([
+      'Total Users', 'New This Week', 'Email Verified',
+      'Total Teams', 'Active Teams', 'Members', 'New This Month',
+      'Total Subscribers', 'Subscribed', 'Unsubscribed', 'New This Month',
+    ])
     // After a delete, a bulk run that did something, and one of the model's actions.
-    expect((list.match(/emit\('changed'\)/g) || []).length).toBe(3)
-    expect(hosted).toContain('pageStats.set(await fetchDashboardStats(pageMode()))')
+    expect((list.match(/modelPageStore\.listChanged\(slug\(\)\)/g) || []).length).toBe(3)
+    expect(cards).toContain('const { changes } = useModelList()')
     expect(read('storage/framework/defaults/functions/data.ts')).toContain('`${endpointByMode[mode]}?only=stats`')
   })
 
-  it('nothing the page puts in the list\'s slot is named as the list names its own', () => {
-    // What goes in the slot is read against the list's names first: a `page`
-    // here was the list's page number, and the first card said "Total undefined".
-    const script = hosted.slice(0, hosted.indexOf('</script>'))
-    const template = hosted.slice(hosted.indexOf('</script>'))
-    const mine = [...script.matchAll(/^(?:const|function|async function) (\w+)/gm)].map(match => match[1]!)
-    const theirs = new Set([...list.slice(0, list.indexOf('</script>')).matchAll(/^(?:const|function|async function|let) (\w+)/gm)].map(match => match[1]!))
-    expect(mine.length).toBeGreaterThan(4)
-    expect(mine.filter(name => theirs.has(name))).toEqual([])
-    expect(template).not.toMatch(/\bpage\(\)|\bstats\(\)|\bmode\(\)/)
+  it('the hosting page says what the page is called, and puts nothing in the list', () => {
+    // What goes in a slot of the list is read against the list's names first:
+    // a `page` here was the list's page number, and the first card said
+    // "Total undefined". The page has no slot content to get that wrong.
+    expect(hosted).not.toContain('<template #')
+    expect(hosted).not.toMatch(/fetchDashboardStats|StatsCard|@changed/)
+    expect(list).not.toContain('<slot name="summary"')
+    expect(hosted.slice(hosted.indexOf('</script>'))).toMatch(/^<\/script>\n\n<ModelRecordsDashboard\n(?: {2}:\w+="[^"\n]+"\n){4}\/>\n$/)
   })
 
   it('the three endpoints can be asked for the numbers alone', () => {
@@ -190,8 +196,9 @@ describe('while a page is being asked for', () => {
   })
 
   it('a number is not given until it is known: a 0 is a count', () => {
-    expect(hosted).toContain('const pageStats = state<DataStats | null>(null)')
-    expect(hosted).toContain('return numbers ? Number(numbers[key] || 0).toLocaleString() : \'-\'')
+    const cards = read(`${components}/Data/DataStatCards.stx`)
+    expect(cards).toContain('const statNumbers = state<DataStats | null>(null)')
+    expect(cards).toContain('return numbers ? Number(numbers[key] || 0).toLocaleString() : \'-\'')
     const overview = read(`${models}/ModelsOverview.stx`)
     expect(overview).toContain('return known() ? value.toLocaleString() : \'-\'')
     expect((overview.match(/\{\{ registryCount\(/g) || []).length).toBe(3)

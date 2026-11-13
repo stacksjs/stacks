@@ -111,11 +111,51 @@ describe('what a page is told, from the model its address names', () => {
     expect(dashboardRegionEntries(undefined, models)).toEqual([])
   })
 
-  it('no shipped model places one: a region is the app\'s', () => {
+  // stacksjs/stacks#3299: the framework's own use of a region, and the only one.
+  it('a shipped model places a shipped component, and every one it names exists', () => {
     const shipped = readFileSync('storage/framework/defaults/resources/functions/dashboard/regions.ts', 'utf8')
     expect(shipped).toContain('loadDiscoveredModels()')
-    for (const model of ['User', 'Team', 'Subscriber', 'Campaign', 'FailedJob'])
+    for (const model of ['User', 'Team', 'Subscriber'])
+      expect(readFileSync(`storage/framework/defaults/app/Models/${model}.ts`, 'utf8')).toContain('regions: { listTop: \'DataStatCards\' },')
+    for (const model of ['Campaign', 'FailedJob'])
       expect(readFileSync(`storage/framework/defaults/app/Models/${model}.ts`, 'utf8')).not.toContain('regions:')
+
+    const models = 'storage/framework/defaults/app/Models'
+    const dashboard = 'storage/framework/defaults/resources/components/Dashboard'
+    const files = (readdirSync(dashboard, { recursive: true }) as string[]).filter(file => file.endsWith('.stx'))
+    const placed = new Set<string>()
+    for (const file of (readdirSync(models, { recursive: true }) as string[]).filter(file => file.endsWith('.ts'))) {
+      const declared = /regions: \{([^}]*)\}/.exec(readFileSync(join(models, file), 'utf8'))
+      for (const [, component] of (declared?.[1] ?? '').matchAll(/: '(\w+)'/g))
+        placed.add(component!)
+    }
+    expect([...placed]).toEqual(['DataStatCards'])
+    for (const component of placed) {
+      const found = files.filter(file => file.split('/').pop() === `${component}.stx`)
+      // One file of that name, in the shipped components and not an app's folder.
+      expect(found, component).toHaveLength(1)
+      const source = readFileSync(join(dashboard, found[0]!), 'utf8')
+      const script = source.slice(0, source.indexOf('</script>'))
+      // Its script is set up on every model page that has its place, whether
+      // or not it is put there. Nothing at the top of it may ask or watch.
+      expect(script, component).not.toMatch(/^(?:void |await )?(?:effect|fetch\w*|load\w*)\(/m)
+      expect(script, component).toContain('onMount(() => {')
+      expect(script, component).toContain('onDestroy(() => {')
+    }
+  })
+
+  it('the stat cards watch the list only while they are on the page', () => {
+    const cards = readFileSync('storage/framework/defaults/resources/components/Dashboard/Data/DataStatCards.stx', 'utf8')
+    const script = cards.slice(0, cards.indexOf('</script>'))
+    const mounted = script.slice(script.indexOf('onMount(() => {'), script.indexOf('onDestroy(() => {'))
+    expect(mounted).toContain('void loadStatNumbers()')
+    expect(mounted).toContain('stopWatchingList = effect(() => {')
+    expect(script.slice(script.indexOf('onDestroy(() => {'))).toContain('stopWatchingList?.()')
+    // Handed the model and nothing else; which numbers follows from it.
+    expect(script).toContain('const statModel = useReactiveProp(\'model\', \'\')')
+    expect(script).toContain('const shown = STAT_CARDS[statModel()]')
+    // Looped on a wrapper: on the card itself the loop loses its item (stacksjs/stx#2185).
+    expect(cards).toContain('<div :for="card in statCards()" class="contents">')
   })
 })
 
@@ -181,6 +221,27 @@ describe('what a placed component can read', () => {
     expect(list.model()).toBe('team')
     modelPageStore.closeList('team')
     expect([list.model(), list.rows()]).toEqual(['', []])
+  })
+
+  it('when the list changed a record, and not when it was only searched or paged', () => {
+    const list = useModelList()
+    const start = list.changes()
+    modelPageStore.openList('team', () => {})
+    modelPageStore.showList({ slug: 'team', rows: [{ id: 1 }], total: 1, search: 'north', filters: {} })
+    expect(list.changes()).toBe(start)
+    // A delete, a bulk run that did something, one of the model's actions.
+    modelPageStore.listChanged('team')
+    modelPageStore.listChanged('team')
+    expect(list.changes()).toBe(start + 2)
+    // Only the list in view says so: not one that is gone, nor another model's.
+    modelPageStore.listChanged('order')
+    modelPageStore.closeList('team')
+    modelPageStore.listChanged('team')
+    expect(list.changes()).toBe(start + 2)
+    // The list says so in the three places it changes a record, and tells no host.
+    const source = readFileSync('storage/framework/defaults/resources/components/Dashboard/Models/ModelRecordsDashboard.stx', 'utf8')
+    expect((source.match(/modelPageStore\.listChanged\(slug\(\)\)/g) || []).length).toBe(3)
+    expect(source).not.toContain('defineEmits')
   })
 })
 
@@ -262,8 +323,10 @@ describe('the pages', () => {
 
   it('a list has a place above its search and one under its table, wherever it is hosted', () => {
     const list = read(`${components}/Models/ModelRecordsDashboard.stx`)
-    // Under a hosting page's stats, which go in the slot before it.
-    expect(list).toContain('<slot name="summary" />\n  <ModelRegion place="listTop" />')
+    // The only thing between the title and the search. A hosting page's
+    // stats used to go in a slot before it; they are the model's now.
+    expect(list).toContain('<ModelRegion place="listTop" />')
+    expect(list).not.toContain('<slot name="summary"')
     expect(list.indexOf('<ModelRegion place="listTop" />')).toBeLessThan(list.indexOf('type="search"'))
     expect(list.indexOf('<ModelRegion place="listBottom" />')).toBeGreaterThan(list.indexOf('</table>'))
     // The page that hosts the list for Users, Teams and Subscribers adds

@@ -39,6 +39,10 @@ export interface ModelPageList {
 export const modelPageStore = defineStore('dashboard-model-page', () => {
   const record = state<ModelPageRecord | null>(null)
   const list = state<ModelPageList | null>(null)
+  // Goes up each time the list changes a record: a delete, a bulk run that
+  // did something, one of the model's actions. What a component counted from
+  // the table is out of date after that, whichever rows are in view.
+  const listChanges = state(0)
   // How to ask the page to read again. Set by the page, called by a component
   // that changed something the page shows.
   let reloadRecord: (() => void) | null = null
@@ -47,6 +51,7 @@ export const modelPageStore = defineStore('dashboard-model-page', () => {
   return {
     record,
     list,
+    listChanges,
 
     /** A record's page has opened. Nothing is known of the record yet. */
     openRecord(slug: string, id: string, reload: () => void): void {
@@ -90,6 +95,11 @@ export const modelPageStore = defineStore('dashboard-model-page', () => {
     },
     reloadList(): void {
       reloadList?.()
+    },
+    /** The list changed a record. Only the list in view says so. */
+    listChanged(slug: string): void {
+      if (list()?.slug === slug)
+        listChanges.set(listChanges() + 1)
     },
   }
 })

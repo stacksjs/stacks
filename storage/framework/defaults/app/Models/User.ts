@@ -165,6 +165,9 @@ export default defineModel({
     // The list is for telling accounts apart. The two-factor step, the
     // billing id and the rest are on the account's own page.
     columns: ['name', 'email', 'emailVerifiedAt', 'createdAt'],
+    // The row of numbers above the list: how many, how many are new, how
+    // many confirmed their email.
+    regions: { listTop: 'DataStatCards' },
     // An avatar is a picture, not the address of one.
     fields: {
       // Chosen as a file, and shown as the picture it is.

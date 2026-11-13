@@ -1,0 +1,110 @@
+<script client>
+// The row of numbers above the Users, Teams and Subscribers lists.
+//
+// Each of those models places this on its own list
+// (`dashboard.regions.listTop`), which is how a model puts anything of its
+// own on a page the dashboard draws. So the numbers are on `/data/users` and
+// on `/models/user` alike: they belong to the model, not to one of its pages.
+//
+// It is handed the model and nothing else. The numbers are its own to ask
+// for, and it asks again when the list says a record was changed.
+import type { DataMode, DataStats } from '../../../../functions/data'
+import { useModelList } from '@stacksjs/defaults/views/dashboard/composables/useModelList'
+import { fetchDashboardStats } from '../../../../functions/data'
+
+interface StatCard {
+  /** The number's name in the stats the model's endpoint answers. */
+  key: string
+  title: string
+  icon: string
+  tone: 'primary' | 'success' | 'info' | 'warning'
+}
+
+const STAT_CARDS: Record<string, { mode: DataMode, cards: StatCard[] }> = {
+  user: {
+    mode: 'users',
+    cards: [
+      { key: 'total', title: 'Total Users', icon: 'i-hugeicons-user-group', tone: 'primary' },
+      { key: 'newThisWeek', title: 'New This Week', icon: 'i-hugeicons-user-add-01', tone: 'success' },
+      { key: 'verified', title: 'Email Verified', icon: 'i-hugeicons-mail-validation-01', tone: 'info' },
+    ],
+  },
+  team: {
+    mode: 'teams',
+    cards: [
+      { key: 'total', title: 'Total Teams', icon: 'i-hugeicons-user-multiple-02', tone: 'primary' },
+      { key: 'active', title: 'Active Teams', icon: 'i-hugeicons-checkmark-circle-02', tone: 'success' },
+      { key: 'members', title: 'Members', icon: 'i-hugeicons-user-multiple', tone: 'info' },
+      { key: 'newThisMonth', title: 'New This Month', icon: 'i-hugeicons-calendar-add-01', tone: 'warning' },
+    ],
+  },
+  subscriber: {
+    mode: 'subscribers',
+    cards: [
+      { key: 'total', title: 'Total Subscribers', icon: 'i-hugeicons-mail-account-01', tone: 'primary' },
+      { key: 'subscribed', title: 'Subscribed', icon: 'i-hugeicons-mail-open-01', tone: 'success' },
+      { key: 'unsubscribed', title: 'Unsubscribed', icon: 'i-hugeicons-mail-remove-01', tone: 'warning' },
+      { key: 'newThisMonth', title: 'New This Month', icon: 'i-hugeicons-calendar-add-01', tone: 'info' },
+    ],
+  },
+}
+
+const statModel = useReactiveProp('model', '')
+// Null until the numbers have come. A card says nothing until then: a 0 is a
+// count, and "no users" is not what is known while the page is still asking.
+const statNumbers = state<DataStats | null>(null)
+const statCards = derived(() => STAT_CARDS[statModel()]?.cards ?? [])
+/** Each model's cards fill their row: three in a four-column grid left a hole. */
+const statGrid = derived(() => statCards().length === 3 ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-2 lg:grid-cols-4')
+const { changes } = useModelList()
+// Stops watching the list. Set while this is on the page, and only then.
+let stopWatchingList: (() => void) | null = null
+
+function statValue(key: string): string {
+  const numbers = statNumbers()
+  return numbers ? Number(numbers[key] || 0).toLocaleString() : '-'
+}
+
+async function loadStatNumbers(): Promise<void> {
+  const shown = STAT_CARDS[statModel()]
+  if (!shown)
+    return
+  try {
+    statNumbers.set(await fetchDashboardStats(shown.mode))
+  }
+  catch {
+    // The list below says what is wrong when the model cannot be read; the
+    // numbers stay as they were.
+  }
+}
+
+// Everything this does starts here and stops in onDestroy. A model's
+// component is drawn on every page that has its place, and its script runs
+// there whether or not it is put on the page: an `effect` at the top of the
+// script would ask for users' numbers every time a team was deleted, and
+// would never be stopped (stacksjs/stx#2189). The model is also a prop, which
+// is not bound sooner.
+onMount(() => {
+  void loadStatNumbers()
+  // What the list had changed before now is already in the numbers just asked for.
+  let seen = changes()
+  stopWatchingList = effect(() => {
+    const count = changes()
+    if (count === seen)
+      return
+    seen = count
+    void loadStatNumbers()
+  })
+})
+
+onDestroy(() => {
+  stopWatchingList?.()
+  stopWatchingList = null
+})
+</script>
+
+<div :if="statCards().length > 0" class="grid gap-4" :class="statGrid()" data-page-stats>
+  <div :for="card in statCards()" class="contents">
+    <StatsCard :title="card.title" :value="statValue(card.key)" :icon="card.icon" :iconBg="card.tone" />
+  </div>
+</div>

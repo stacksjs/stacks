@@ -30,6 +30,13 @@ export interface ModelListSnapshot {
   model: () => string
   /** Ask the list to read again, after changing something it shows. */
   reload: () => void
+  /**
+   * How many times the list has changed a record since the dashboard was
+   * opened: a delete, a bulk run, one of the model's actions. Read it in an
+   * `effect` to read numbers of your own again. Searching, narrowing and
+   * paging do not move it.
+   */
+  changes: () => number
 }
 
 export function useModelList(): ModelListSnapshot {
@@ -40,5 +47,6 @@ export function useModelList(): ModelListSnapshot {
     filters: () => modelPageStore.list()?.filters ?? {},
     model: () => modelPageStore.list()?.slug ?? '',
     reload: () => modelPageStore.reloadList(),
+    changes: () => modelPageStore.listChanges(),
   }
 }
