@@ -417,7 +417,8 @@ and eager loading. Exact method surface is in `stacks-query-builder` / `stacks-o
 const published = Product.where('status', 'published').orderByDesc('created_at').all()
 const product = Product.find(id)
 const created = await Product.create({ name: 'Widget', price: 1200 })
-await transaction(async () => { /_ ... atomic work ... _/ })
+const rows = db.selectFrom('products').where('status', '=', 'published').get()
+const total = transaction(tx => tx.selectFrom('orders').sum('total'))
 ```
 **A model call returns its value where it is written.** `Product.find(id)`, `first()`, `get()`,
 `all()`, `count()`, `exists()`, `paginate()` and the rest are the row, the list or the number, on
@@ -431,8 +432,17 @@ script calls `process.exit()`). The `Product` above declares `observe` and `useS
 only on a model that declares something it has to wait for:** `useSoftDeletes`, `useAudit`,
 `useActivityLog`, or a `set:` hook or `hooks` member written `async`. Keep a `set:` hook
 synchronous (`makeHashSync` for a password) so the model's writes stay in place. When unsure, keep
-`await` on writes: it is right on every model. The `db` query builder (`db.selectFrom(...)`) and
-`transaction()` still return promises. See `stacks-orm`.
+`await` on writes: it is right on every model. See `stacks-orm`.
+
+**The `db` query builder answers the same way.** `db.selectFrom(...).get()`, `first()`, `execute()`,
+`count()` and the rest are their value where they are written, and `transaction(tx => ...)` /
+`db.transaction(tx => ...)` is done when it returns: BEGIN, the callback and COMMIT have happened
+by the next line. A callback that is `async` is waited for, and the transaction is then a promise;
+while it is open, a statement elsewhere that needs a lock it holds is a promise too, and only that one.
+`db.unsafe(sql, params)` builds a statement; `.execute()` runs it and returns its rows, and awaiting
+the statement does the same. A query fails where it is written, so code that started several and
+checked each for failure later has to hand them over unstarted: `() => db.selectFrom(...).get()`.
+See `stacks-database`.
 
 Eager loading, pagination, and the full method set are in `stacks-query-builder` / `stacks-orm`.
 

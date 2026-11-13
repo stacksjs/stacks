@@ -105,7 +105,7 @@ export async function bulkStore(data: ProductUnitWriteData[]): Promise<number> {
  * @param type Optional filter by unit type
  * @returns Array of formatted unit options with id, name, and abbreviation
  */
-export function formatUnitOptions(
+export async function formatUnitOptions(
   type?: string,
 ): Promise<{ id: string, name: string, abbreviation: string, is_default: boolean | undefined }[] | []> {
   try {
@@ -120,14 +120,13 @@ export function formatUnitOptions(
     query = query.orderBy('name')
 
     // Convert db results to ensure id is string and handle potentially undefined is_default
-    return query.execute().then((results: any) =>
-      results.map((result: any) => ({
-        id: String(result.id), // Convert id to string
-        name: result.name,
-        abbreviation: result.abbreviation,
-        is_default: result.is_default,
-      })),
-    )
+    const results: any[] = await query.execute()
+    return results.map((result: any) => ({
+      id: String(result.id), // Convert id to string
+      name: result.name,
+      abbreviation: result.abbreviation,
+      is_default: result.is_default,
+    }))
   }
   catch (error) {
     if (error instanceof Error) {

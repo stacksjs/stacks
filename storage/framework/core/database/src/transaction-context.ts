@@ -32,6 +32,7 @@
  */
 
 import { AsyncLocalStorage } from 'node:async_hooks'
+import { settle, wait } from '@stacksjs/query-builder'
 
 /**
  * One buffered side-effect waiting for the surrounding transaction
@@ -107,10 +108,10 @@ export function enqueueAfterCommit(callback: AfterCommitCallback): boolean {
  * attempt discards the previous one's callbacks even if COMMIT, rather than
  * the callback, failed. Each attempt gets its own async-context owner.
  */
-export async function runInTransactionScope<T>(
-  fn: (runAttempt: <R>(callback: () => Promise<R>) => Promise<R>) => Promise<T>,
+export function runInTransactionScope<T>(
+  fn: (runAttempt: <R>(callback: () => R) => R) => T,
   options: { onError?: (err: unknown, index: number) => void } = {},
-): Promise<T> {
+): T {
   const parent = transactionStorage.getStore()
   const scope: TransactionScope = {
     pending: parent?.pending ?? [],
@@ -119,34 +120,41 @@ export async function runInTransactionScope<T>(
     onError: parent?.onError ?? options.onError,
   }
   let previousAttempt: TransactionScope | undefined
-  const runAttempt = async <R>(callback: () => Promise<R>): Promise<R> => {
+  const runAttempt = <R>(callback: () => R): R => {
     if (previousAttempt)
       discardScope(previousAttempt)
     const attempt: TransactionScope = { pending: scope.pending, parent: scope, accepting: true, onError: scope.onError }
     previousAttempt = attempt
     return runOwnedScope(attempt, callback)
   }
-  const result = await runOwnedScope(scope, () => fn(runAttempt))
-  // Commit path — fire each callback in order. Errors are swallowed
-  // by default (with onError if provided) because the commit
-  // already landed; throwing here would falsely tell the caller
-  // their write didn't happen.
-  if (!parent)
-    await flushScope(scope)
-  return result
+  // Done where it is called when the transaction is: a callback that answers
+  // in place commits in place, and its after-commit callbacks have run by the
+  // next line. Anything that has to wait makes this a promise instead.
+  return settle(function* (): Generator<unknown, T, unknown> {
+    const result = (yield* wait(runOwnedScope(scope, () => fn(runAttempt)))) as T
+    // Commit path — fire each callback in order. Errors are swallowed
+    // by default (with onError if provided) because the commit
+    // already landed; throwing here would falsely tell the caller
+    // their write didn't happen.
+    if (!parent)
+      yield* wait(flushScope(scope))
+    return result
+  })
 }
 
-async function runOwnedScope<T>(scope: TransactionScope, callback: () => Promise<T>): Promise<T> {
-  try {
-    return await transactionStorage.run(scope, callback)
-  }
-  catch (error) {
-    discardScope(scope)
-    throw error
-  }
-  finally {
-    scope.accepting = false
-  }
+function runOwnedScope<T>(scope: TransactionScope, callback: () => T): T {
+  return settle(function* (): Generator<unknown, T, unknown> {
+    try {
+      return (yield* wait(transactionStorage.run(scope, callback))) as T
+    }
+    catch (error) {
+      discardScope(scope)
+      throw error
+    }
+    finally {
+      scope.accepting = false
+    }
+  })
 }
 
 function discardScope(scope: TransactionScope): void {
@@ -162,23 +170,25 @@ function discardScope(scope: TransactionScope): void {
   }
 }
 
-async function flushScope(scope: TransactionScope): Promise<void> {
-  for (let i = 0; i < scope.pending.length; i++) {
-    try {
-      await scope.pending[i]!.callback()
-    }
-    catch (err) {
-      if (scope.onError) {
-        try { scope.onError(err, i) }
-        catch { /* swallow secondary failure */ }
+function flushScope(scope: TransactionScope): void | Promise<void> {
+  return settle(function* (): Generator<unknown, void, unknown> {
+    for (let i = 0; i < scope.pending.length; i++) {
+      try {
+        yield* wait(scope.pending[i]!.callback())
       }
-      else {
-        // eslint-disable-next-line no-console
-        console.error('[transaction-context] after-commit callback threw:', err)
+      catch (err) {
+        if (scope.onError) {
+          try { scope.onError(err, i) }
+          catch { /* swallow secondary failure */ }
+        }
+        else {
+          // eslint-disable-next-line no-console
+          console.error('[transaction-context] after-commit callback threw:', err)
+        }
       }
     }
-  }
-  scope.pending.length = 0
+    scope.pending.length = 0
+  })
 }
 
 /**

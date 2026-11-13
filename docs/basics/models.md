@@ -370,7 +370,25 @@ it stands, so use `try`/`catch` and not `.catch()`.
 SQLite runs a query in place. MySQL and Postgres run it on a worker thread that
 the caller waits on, so a server process handles one query at a time. An app
 that needs the event loop free during queries can set
-`models: { execution: 'async' }` in `config/qb.ts` and await every model call.
+`models: { execution: 'async' }` in `config/query-builder.ts` and await every model call.
+
+The `db` query builder answers the same way: `db.selectFrom('posts').get()` is
+the rows, and a transaction is done when it returns.
+
+```typescript
+const postId = transaction((tx) => {
+  const post = tx.insertInto('posts').values({ title: 'Hello' }).returning('id').first()
+  tx.insertInto('post_revisions').values({ post_id: post.id, body: '' }).execute()
+  return post.id
+})
+// Committed. A callback that throws has rolled everything back and rethrown.
+```
+
+A callback that is `async` is waited for, and the transaction is then a promise
+to `await`, as before. While such a transaction is open it holds its row locks,
+so a statement elsewhere in the process that needs one of them answers with a
+promise that resolves once the transaction has finished. Any statement that
+needs nothing held is still its value.
 
 Inside `db.transaction()`, write through `tx` and not through a model. A model
 call runs on its own connection, and one that needs a row the open transaction

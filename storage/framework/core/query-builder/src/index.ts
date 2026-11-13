@@ -184,7 +184,8 @@ function sqliteBootstrapPragmas(): readonly string[] {
   return [...SQLITE_BOOTSTRAP_PRAGMAS, ...(bunQbConfig.sqlite?.pragmas ?? [])]
 }
 
-type UnsafeReturn<TResult = unknown> = Promise<TResult> & { execute: () => Promise<TResult> }
+/** A raw statement: awaitable, and `execute()` is its rows where the connection answers in place. */
+type UnsafeReturn<TResult = unknown> = Promise<TResult> & { execute: () => TResult | Promise<TResult> }
 type SqlitePragmaExecutor = {
   unsafe: (query: string, params?: readonly unknown[]) => UnsafeReturn
 }
@@ -202,12 +203,15 @@ type SqlitePragmaExecutor = {
 export function applySqlitePragmas(instance: SqlitePragmaExecutor): void {
   for (const pragma of sqliteBootstrapPragmas()) {
     try {
-      // bun:sqlite executes synchronously inside `.execute()` (the returned
-      // promise is created already settled), so every pragma is in effect
-      // before this function returns — the first user query can never race
-      // ahead of `foreign_keys = ON`. `.catch` prevents an unhandled
-      // rejection if a pragma fails; failing open matches pre-#1951 behavior.
-      void (instance.unsafe(pragma) as UnsafeReturn).execute().catch(() => {})
+      // bun:sqlite executes inside `.execute()`, so every pragma is in effect
+      // before this function returns: the first user query can never race
+      // ahead of `foreign_keys = ON`. A failure is thrown here and caught
+      // below; failing open matches pre-#1951 behavior. A connection that
+      // answers later hands back a promise, whose rejection is swallowed for
+      // the same reason.
+      const applied: unknown = (instance.unsafe(pragma) as UnsafeReturn).execute()
+      if (applied && typeof (applied as PromiseLike<unknown>).then === 'function')
+        void (applied as Promise<unknown>).catch(() => {})
     }
     catch {
       // `unsafe()` itself threw — same fail-open rationale as above.

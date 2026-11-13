@@ -92,8 +92,8 @@ export async function readPageListPage(query: PageListQuery, database: typeof db
       database.fn.count('id').as('count'),
       database.fn.sum('views').as('views'),
       database.fn.sum('conversions').as('conversions'),
-    ]).executeTakeFirst() as Promise<{ count?: unknown, views?: unknown, conversions?: unknown } | undefined>,
-    database.selectFrom('pages').select(['title']).orderBy('created_at', 'desc').orderBy('id', 'desc').limit(1).executeTakeFirst() as Promise<{ title?: string | null } | undefined>,
+    ]).executeTakeFirst() as unknown as { count?: unknown, views?: unknown, conversions?: unknown } | undefined,
+    database.selectFrom('pages').select(['title']).orderBy('created_at', 'desc').orderBy('id', 'desc').limit(1).executeTakeFirst() as unknown as { title?: string | null } | undefined,
   ])
 
   return {

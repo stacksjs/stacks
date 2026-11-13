@@ -143,7 +143,7 @@ export async function readJobPage(query: JobListQuery): Promise<JobListPage> {
   const [activeTotal, failedTotal, queueRows] = await Promise.all([
     countOf(active),
     countOf(failed),
-    db.unsafe('SELECT DISTINCT queue FROM jobs UNION SELECT DISTINCT queue FROM failed_jobs').execute() as Promise<Array<{ queue: unknown }>>,
+    db.unsafe('SELECT DISTINCT queue FROM jobs UNION SELECT DISTINCT queue FROM failed_jobs').execute() as unknown as Array<{ queue: unknown }>,
   ])
 
   const total = activeTotal + failedTotal

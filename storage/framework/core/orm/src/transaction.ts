@@ -39,18 +39,29 @@ export interface TransactionOptions {
  * not rebound to this handle, so `User.find()` or an instance relation call
  * inside the callback cannot be assumed to observe uncommitted `tx` writes.
  *
+ * It is done when it returns: BEGIN, the callback and COMMIT have happened by
+ * the next line, and what the callback returned is the result. A callback that
+ * is `async` is waited for, and the transaction is then a promise.
+ *
  * @example
  * ```ts
+ * const userId = transaction((tx) => {
+ *   const user = tx.insertInto('users').values({ name: 'Alice' }).returning('id').first()
+ *   tx.insertInto('profiles').values({ user_id: user.id }).execute()
+ *   return user.id
+ * })
+ *
+ * // An async callback, awaited as before:
  * await transaction(async (tx) => {
  *   await tx.insertInto('users').values({ name: 'Alice' }).execute()
- *   await tx.insertInto('profiles').values({ user_id: 1 }).execute()
+ *   await notifyBilling()
  * })
  * ```
  */
-export async function transaction<T>(
-  callback: (tx: TransactionHandle) => Promise<T>,
+export function transaction<T>(
+  callback: (tx: TransactionHandle) => T,
   options?: TransactionOptions,
-): Promise<T> {
+): T {
   // The underlying bun-query-builder transaction() typings refer to its
   // internal QueryBuilder<DB> shape, while we expose the augmented `Db`
   // alias here. They're structurally compatible at runtime.
@@ -58,7 +69,7 @@ export async function transaction<T>(
   // The database wrapper owns the dispatch scope and knows when the driver
   // has committed. A second scope here would mistake a post-commit observer
   // failure for a rollback and discard effects for already-committed writes.
-  return await (db.transaction as unknown as (cb: (tx: TransactionHandle) => Promise<T>, opts?: TransactionOptions) => Promise<T>)(callback, options)
+  return (db.transaction as unknown as (cb: (tx: TransactionHandle) => T, opts?: TransactionOptions) => T)(callback, options)
 }
 
 /**
@@ -76,8 +87,8 @@ export async function transaction<T>(
  * })
  * ```
  */
-export async function savepoint<T>(callback: (sp: TransactionHandle) => Promise<T>): Promise<T> {
-  return await (db.savepoint as unknown as (cb: (sp: TransactionHandle) => Promise<T>) => Promise<T>)(callback)
+export function savepoint<T>(callback: (sp: TransactionHandle) => T): T {
+  return (db.savepoint as unknown as (cb: (sp: TransactionHandle) => T) => T)(callback)
 }
 
 /**
@@ -96,11 +107,11 @@ export async function savepoint<T>(callback: (sp: TransactionHandle) => Promise<
  * ```
  */
 export function transactional<TArgs extends unknown[], R>(
-  fn: (tx: TransactionHandle, ...args: TArgs) => Promise<R>,
+  fn: (tx: TransactionHandle, ...args: TArgs) => R,
   options?: TransactionOptions,
-): (...args: TArgs) => Promise<R> {
+): (...args: TArgs) => R {
   return (db.transactional as unknown as (
-    f: (tx: TransactionHandle, ...args: TArgs) => Promise<R>,
+    f: (tx: TransactionHandle, ...args: TArgs) => R,
     opts?: TransactionOptions,
-  ) => (...args: TArgs) => Promise<R>)(fn, options)
+  ) => (...args: TArgs) => R)(fn, options)
 }
