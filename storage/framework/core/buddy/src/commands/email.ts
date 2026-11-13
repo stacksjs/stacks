@@ -189,7 +189,10 @@ export function email(buddy: CLI): void {
       // provider — so `email:test` exercises the real send path (e.g. the
       // self-hosted SMTP server) instead of always hitting SES.
       const { config } = await import('@stacksjs/config')
-      const driver = (config)?.email?.default || 'ses'
+      // The same order @stacksjs/email resolves its mailer in, so the name
+      // printed here is the mailer that sends.
+      const driver = (config)?.email?.default || process.env.MAIL_MAILER || 'ses'
+      const appName = String((config)?.app?.name || emailConfig?.from?.name || 'Stacks')
       console.log(`\n📧 Sending Test Email to ${to} via the configured mailer ('${driver}')...\n`)
 
       try {
@@ -201,11 +204,11 @@ export function email(buddy: CLI): void {
         const result: any = await mail.send({
           to: [to],
           from,
-          subject: 'Test Email from Stacks',
-          text: 'This is a test email sent from your Stacks application. If you received this, your mail setup is working.',
+          subject: `Test Email from ${appName}`,
+          text: `This is a test email sent from ${appName}. If you received this, your mail setup is working.`,
           html: `<!doctype html><html><body style="font-family: sans-serif; padding: 20px;">
-            <h1>🚀 Test Email from Stacks</h1>
-            <p>This is a test email sent from your Stacks application.</p>
+            <h1>Test Email from ${appName}</h1>
+            <p>This is a test email sent from ${appName}.</p>
             <p>If you received this, your mail setup is working correctly!</p>
             <hr><p style="color:#666;font-size:12px;">Sent from ${from.address} via the '${driver}' mailer.</p>
           </body></html>`,
