@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/support",
   "type": "module",
-  "version": "0.75.588",
+  "version": "0.75.589",
   "description": "Native HQ.support customer identity, conversations, events, and messenger lifecycle.",
   "author": "Chris <chris@stacksjs.com>",
   "license": "MIT",
