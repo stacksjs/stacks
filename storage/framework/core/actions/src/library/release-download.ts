@@ -4,7 +4,7 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { inflateRawSync } from 'node:zlib'
 import { safeArchivePath } from './archive'
-import { librarySha256 } from './release-artifacts'
+import { librarySha256, validateLibraryReleaseSource } from './release-artifacts'
 import { createLibraryReleaseReader } from './release-network'
 
 /** Decode only bounded ordinary files, never extracting provider paths or links. */
@@ -55,7 +55,12 @@ export function libraryArtifactZipFiles(data: Uint8Array): Map<string, Uint8Arra
 
 /** Download only the accepted artifact ID, checking its actual provider digest. */
 export async function downloadLibraryReleaseSource(receipt: LibrarySourceReceipt, directory: string, options: LibraryNetworkOptions & { token?: string } = {}): Promise<void> {
-  if (!receipt.artifact.digest) throw new Error('Provider artifact has no SHA-256 digest; cannot accept its bytes')
+  validateLibraryReleaseSource(receipt.source)
+  const artifact = receipt.artifact
+  if (receipt.schemaVersion !== 1 || !Number.isSafeInteger(artifact?.id) || artifact.id <= 0 || !Number.isSafeInteger(artifact.bytes) || artifact.bytes <= 0 || artifact.bytes > 256 * 1024 * 1024
+    || !/^sha256:[a-f0-9]{64}$/.test(artifact.digest ?? '')
+    || artifact.downloadUrl !== `https://api.github.com/repos/${receipt.source.repository}/actions/artifacts/${artifact.id}/zip`)
+    throw new Error('Expected a bounded accepted artifact ID, SHA-256 digest and owned GitHub download URL')
   const reader = createLibraryReleaseReader(options)
   const request = options.fetch ?? fetch
   const controller = new AbortController()

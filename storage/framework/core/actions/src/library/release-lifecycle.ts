@@ -138,5 +138,7 @@ export async function publishNativeLibraryRelease(options: Omit<NativeLibraryAcc
 export async function readbackNativeLibraryRelease(options: Omit<NativeLibraryAcceptanceOptions, 'tag'> & LibraryRegistryOptions): Promise<LibraryRegistryReceipt> {
   const receipt = await verifyNativeLibraryAcceptance(options)
   const readbackOptions = { ...options, requireCurrentTag: false, source: { repository: receipt.source.repository, commit: receipt.source.commit }, verifierCommit: fullCommit(options.cwd, 'HEAD') }
-  return readbackLibraryRelease(options.directory, readbackOptions)
+  const result = await readbackLibraryRelease(options.directory, readbackOptions)
+  result.source = receipt.source
+  return result
 }

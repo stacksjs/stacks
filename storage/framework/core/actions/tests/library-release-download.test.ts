@@ -39,13 +39,14 @@ test('downloads only the accepted artifact, verifies provider digest and writes 
 }))
 
 test('rejects missing or mismatched provider digest and unauthorized redirects before file writes', async () => withZip(async (root, zip) => {
-  for (const mode of ['missing-digest', 'digest', 'length', 'redirect']) {
+  for (const mode of ['missing-digest', 'digest', 'length', 'redirect', 'origin']) {
     const accepted = receipt(zip)
     if (mode === 'missing-digest') delete accepted.artifact.digest
     if (mode === 'digest') accepted.artifact.digest = `sha256:${'b'.repeat(64)}`
     if (mode === 'length') accepted.artifact.bytes++
+    if (mode === 'origin') accepted.artifact.downloadUrl = 'https://untrusted.invalid/zip'
     const directory = join(root, mode)
-    await expect(downloadLibraryReleaseSource(accepted, directory, { fetch: async url => url.startsWith('https://api.github.com/')
+    await expect(downloadLibraryReleaseSource(accepted, directory, { token: 'read-only-fixture', fetch: async url => url.startsWith('https://api.github.com/')
       ? new Response(null, { status: 302, headers: { location: mode === 'redirect' ? 'https://untrusted.invalid/zip' : 'https://fixture.blob.core.windows.net/zip' } }) : new Response(zip) })).rejects.toThrow()
     expect(await Bun.file(join(directory, 'candidate.json')).exists()).toBe(false)
   }

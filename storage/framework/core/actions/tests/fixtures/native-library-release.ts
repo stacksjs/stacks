@@ -26,6 +26,7 @@ const originals = await Promise.all(candidate.packages.map(pkg => readFile(join(
 const published = new Map<string, Uint8Array>()
 let uploads = 0
 let corrupt = false
+let channelAdvanced = false
 const server = Bun.serve({ port: 0, hostname: '127.0.0.1', async fetch(request) {
   const url = new URL(request.url)
   const path = decodeURIComponent(url.pathname)
@@ -44,7 +45,7 @@ const server = Bun.serve({ port: 0, hostname: '127.0.0.1', async fetch(request) 
   if (!pkg || !published.has(pkg.name)) return new Response('missing', { status: 404 })
   if (path.endsWith('.tgz')) return new Response(corrupt ? new TextEncoder().encode('tampered public bytes') : published.get(pkg.name)!)
   if (path.endsWith(`/${pkg.version}`)) return Response.json({ name: pkg.name, version: pkg.version, dist: { integrity: libraryIntegrity(published.get(pkg.name)!), tarball: `${server.url.origin}/${pkg.name}.tgz` } })
-  return Response.json({ 'dist-tags': { alpha: pkg.version } })
+  return Response.json({ 'dist-tags': { alpha: channelAdvanced ? '9.0.0-alpha.1' : pkg.version } })
 } })
 try {
   await writeFile('.npmrc', `registry=${server.url.origin}\n//127.0.0.1:${server.port}/:_authToken=local-fixture-token\n`)
@@ -106,6 +107,12 @@ try {
   const readback = await readbackNativeLibraryRelease(options)
   assert.equal(readback.source.commit, source.commit)
   assert.equal(readback.verifierCommit, verifier)
+  assert.equal(readback.source.tag, 'v1.0.0')
+  channelAdvanced = true
+  const historicalTags = await readbackNativeLibraryRelease(options)
+  assert.equal(historicalTags.packages[0]!.tags.alpha, '9.0.0-alpha.1')
+  await assert.rejects(publishNativeLibraryRelease(options), /missing requested tag/)
+  assert.equal(uploads, 2)
   assert.equal(await readFile('build-count', 'utf8'), 'x')
   corrupt = true
   await assert.rejects(publishNativeLibraryRelease(options), /archive bytes differ/)
