@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.581...v0.75.582)
+
+## 🐛 Bug Fixes
+
+- **auth**: the OAuth consent page is a 404 when opened without an authorization request (#3304) ([9ed8a5e](https://github.com/stacksjs/stacks/commit/9ed8a5e)) _(by Chris)_ ([#3304](https://github.com/stacksjs/stacks/issues/3304))
+- **database**: the queue's own polling stays out of the query log unless it is slow or fails (#3303) ([980e843](https://github.com/stacksjs/stacks/commit/980e843)) _(by Chris)_ ([#3303](https://github.com/stacksjs/stacks/issues/3303))
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.580...v0.75.581)
 
 ## ✨ Features
