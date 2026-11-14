@@ -2,7 +2,7 @@
   "name": "@stacksjs/telephony",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.578",
+  "version": "0.75.579",
   "description": "Native telephony contracts, Twilio voice and number provisioning, and bounded Media Streams helpers.",
   "author": "Chris Breuer <chris@stacksjs.com>",
   "license": "MIT",

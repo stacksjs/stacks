@@ -1,5 +1,26 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.578...v0.75.579)
+
+## ✨ Features
+
+- **ai**: expose embedding batch token accounting ([f097e70](https://github.com/stacksjs/stacks/commit/f097e70)) _(by Chris)_
+- **ai**: rank scoped PostgreSQL lexical retrieval with native full text ([3024c59](https://github.com/stacksjs/stacks/commit/3024c59)) _(by Chris)_
+- **ai**: add durable scoped pgvector retrieval and model prerequisites ([c79116d](https://github.com/stacksjs/stacks/commit/c79116d)) _(by Chris)_
+
+## 🐛 Bug Fixes
+
+- **ai**: bound private embedding requests and order extension prerequisites ([4be2f7b](https://github.com/stacksjs/stacks/commit/4be2f7b)) _(by Chris)_
+- **buddy**: probe pinned Twilio messaging and content endpoints ([7a72d60](https://github.com/stacksjs/stacks/commit/7a72d60)) _(by Chris)_
+
+## 📝 Documentation
+
+- refresh native retrieval capability evidence ([c3a358e](https://github.com/stacksjs/stacks/commit/c3a358e)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.577...v0.75.578)
 
 ## ✅ Tests
