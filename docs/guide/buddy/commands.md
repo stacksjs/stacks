@@ -3106,12 +3106,14 @@ Publish the built library packages through pantry
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--dry-run` | Report what would be published without uploading anything | boolean, optional | `false` |
+| `--tag` | Publish under an explicit distribution tag such as alpha or next | value, required | - |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 Examples:
 
 ```bash
 buddy libs:publish --dry-run
+buddy libs:publish --tag alpha --dry-run
 ```
 
 ### `license:keygen`
