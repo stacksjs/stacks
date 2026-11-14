@@ -86,7 +86,7 @@ test('untagged main candidate reaches tag publication through exact source CI an
     await writeFile(join(root, 'package.json'), JSON.stringify({ name: 'generic-app', version: '1.0.0', type: 'module' }))
     await writeFile(join(root, 'config/library.ts'), `export default { repository: 'fixture/libraries', release: { distTag: 'alpha', publisher: 'bun' }, packages: [
       { name: '@fixture/math', registry: 'npm' },
-      { name: '@fixture/components', registry: 'npm', kind: 'components', prefix: 'fixture-view', version: '3.1.0-beta.2' },
+      { name: '@fixture/components', registry: 'npm', access: 'restricted', kind: 'components', prefix: 'fixture-view', version: '3.1.0-beta.2' },
       { name: '@fixture/elements', registry: 'npm', kind: 'web-components', prefix: 'fixture', version: '2.0.0-alpha.3', prebuild: "bun -e \\"require('node:fs').appendFileSync('build-count', 'x')\\"" }
     ] }`)
     await writeFile(join(root, 'resources/functions/add.ts'), 'export const add = (a: number, b: number): number => a + b')

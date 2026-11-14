@@ -25,6 +25,8 @@ const artifact = { id: 321, name: 'stacks-library-candidate', expired: false, si
 const originals = await Promise.all(candidate.packages.map(pkg => readFile(join(directory, pkg.archive.path))))
 const published = new Map<string, Uint8Array>()
 let uploads = 0
+let registryReads = 0
+let privateReads = 0
 let corrupt = false
 let channelAdvanced = false
 const server = Bun.serve({ port: 0, hostname: '127.0.0.1', async fetch(request) {
@@ -42,7 +44,13 @@ const server = Bun.serve({ port: 0, hostname: '127.0.0.1', async fetch(request) 
     return Response.json({ ok: true }, { status: 201 })
   }
   const pkg = candidate.packages.find(pkg => path === `/${pkg.name}` || path === `/${pkg.name}/${pkg.version}` || path === `/${pkg.name}.tgz`)
-  if (!pkg || !published.has(pkg.name)) return new Response('missing', { status: 404 })
+  registryReads++
+  if (!pkg) return new Response('missing', { status: 404 })
+  if (pkg.access === 'restricted') {
+    assert.equal(request.headers.get('authorization'), 'Bearer local-read-token')
+    privateReads++
+  }
+  if (!published.has(pkg.name)) return new Response('missing', { status: 404 })
   if (path.endsWith('.tgz')) return new Response(corrupt ? new TextEncoder().encode('tampered public bytes') : published.get(pkg.name)!)
   if (path.endsWith(`/${pkg.version}`)) return Response.json({ name: pkg.name, version: pkg.version, dist: { integrity: libraryIntegrity(published.get(pkg.name)!), tarball: `${server.url.origin}/${pkg.name}.tgz` } })
   return Response.json({ 'dist-tags': { alpha: channelAdvanced ? '9.0.0-alpha.1' : pkg.version } })
@@ -62,6 +70,8 @@ try {
       assert.equal((init?.headers as Record<string, string>)?.Authorization, undefined)
       return new Response(change.zip ?? zip)
     }
+    const githubAuth = (init?.headers as Record<string, string>)?.Authorization
+    assert.ok(githubAuth === undefined || githubAuth === 'Bearer read-only-fixture')
     if (url.endsWith('/321/zip')) return new Response(null, { status: 302, headers: { location: 'https://fixture.blob.core.windows.net/archive' } })
     if (url.includes('/jobs?')) return Response.json({ jobs: change.jobs ?? jobs })
     if (url.includes('/artifacts?')) return Response.json({ artifacts: change.artifacts ?? [artifact] })
@@ -87,7 +97,14 @@ try {
   assert.equal(receipt!.verifierCommit, verifier)
   // Neither publishing nor readback can rebuild from changed application sources.
   await writeFile('resources/functions/add.ts', 'this is deliberately invalid TypeScript')
-  const options = { cwd, directory: acceptedDir, token: 'read-only-fixture', fetch: provider(), npmRegistry: server.url.origin }
+  const anonymousOptions = { cwd, directory: acceptedDir, token: 'read-only-fixture', fetch: provider(), npmRegistry: server.url.origin }
+  // Ambient write credentials must not be adopted for an overridden registry.
+  await assert.rejects(publishNativeLibraryRelease(anonymousOptions), /Restricted packages require/)
+  assert.equal(uploads, 0)
+  assert.equal(registryReads, 0)
+  const options = { ...anonymousOptions, readAuth: { registry: server.url.origin, token: 'local-read-token' } }
+  await assert.rejects(publishNativeLibraryRelease({ ...options, readAuth: { registry: 'https://registry.npmjs.org', token: 'local-read-token' } }), /exact configured registry origin/)
+  assert.equal(uploads, 0)
   // A changed self-consistent local candidate must still match the original ZIP.
   const record = await readFile(join(acceptedDir, 'candidate.json'), 'utf8')
   await writeFile(join(acceptedDir, 'candidate.json'), record.replace('"bun":', '"extra": true, "bun":'))
@@ -100,6 +117,9 @@ try {
   assert.deepEqual(result.packages.map(pkg => pkg.status), ['existing-identical', 'published', 'published'])
   assert.equal(result.source.tag, 'v1.0.0')
   assert.equal(result.verifierCommit, verifier)
+  assert.ok(privateReads > 0)
+  assert.ok(!JSON.stringify(result).includes('local-read-token'))
+  assert.ok(!JSON.stringify(result).includes('local-fixture-token'))
   assert.equal(uploads, 2)
   const retry = await publishNativeLibraryRelease(options)
   assert.deepEqual(retry.packages.map(pkg => pkg.status), ['existing-identical', 'existing-identical', 'existing-identical'])
@@ -108,6 +128,25 @@ try {
   assert.equal(readback.source.commit, source.commit)
   assert.equal(readback.verifierCommit, verifier)
   assert.equal(readback.source.tag, 'v1.0.0')
+  // Exercise the native wrapper's canonical environment binding without ever
+  // contacting the public registry or giving readback a publisher capability.
+  process.env.NPM_READ_TOKEN = 'local-read-token'
+  let canonicalReads = 0
+  const canonical = await readbackNativeLibraryRelease({ ...anonymousOptions, npmRegistry: undefined, fetch: async (url, init) => {
+    if (!url.startsWith('https://registry.npmjs.org/')) return provider()(url, init)
+    assert.equal((init?.headers as Record<string, string>)?.Authorization, 'Bearer local-read-token')
+    assert.ok(!init?.method || init.method === 'GET')
+    canonicalReads++
+    const path = decodeURIComponent(new URL(url).pathname)
+    const pkg = candidate.packages.find(pkg => path === `/${pkg.name}` || path === `/${pkg.name}/${pkg.version}` || path === `/${pkg.name}.tgz`)!
+    assert.ok(pkg)
+    if (path.endsWith('.tgz')) return new Response(published.get(pkg.name)!)
+    if (path.endsWith(`/${pkg.version}`)) return Response.json({ name: pkg.name, version: pkg.version, dist: { integrity: libraryIntegrity(published.get(pkg.name)!), tarball: `https://registry.npmjs.org/${pkg.name}.tgz` } })
+    return Response.json({ 'dist-tags': { alpha: pkg.version } })
+  } })
+  assert.ok(canonicalReads > 0)
+  assert.equal(canonical.source.commit, source.commit)
+  assert.ok(!JSON.stringify(canonical).includes('local-read-token'))
   channelAdvanced = true
   const historicalTags = await readbackNativeLibraryRelease(options)
   assert.equal(historicalTags.packages[0]!.tags.alpha, '9.0.0-alpha.1')
