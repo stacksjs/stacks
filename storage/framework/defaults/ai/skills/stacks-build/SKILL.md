@@ -238,6 +238,27 @@ from the compiler's public exact component style metadata plus declared literal
 stylesheet text, rather than minified standalone CSS files. The hosted `bundle.js`
 is copied unchanged from package `dist/bundle.js`.
 
+The existing package `prebuild` runs once before the loader and literal styles
+are read, so generated inputs are current on both cold and incremental builds.
+Generation-only runs validate configuration and paths without requiring those
+generated files. Paths are rechecked after the hook.
+
+Explicit package `assets` also retain their dist-relative paths (including
+nested files) in the immutable hosted revision. A loader can fetch them with
+`new URL('./data/payload.json', import.meta.url)`. The native copy operation
+provides the output mapping; the builder does not sweep generated SSR, types or
+source maps into public output. Configure only public browser assets. Hidden
+destination segments, symlinks and collisions with native outputs reject.
+Asset hashes, SRI and gzip sizes participate in revision identity, and release
+retention binds each configured asset to the same bytes in the package archive.
+
+Browser validation inspects executable JavaScript/TypeScript syntax across the
+loader and compiler module graph. Literal component copy, strings, comments and
+regular expressions may mention environment keys; executable environment reads
+(including template-literal expressions) still reject. The parser loads only
+when validating hosted browser modules; CSP styles still come from compiler
+metadata and literal CSS, never parsed JavaScript.
+
 `buildLibraryPackages()` returns an optional `hosted` report for each such
 package. Its `files` include absolute paths, project-relative paths, hashes and
 an `immutable` flag for retaining all content and both manifest copies. Source

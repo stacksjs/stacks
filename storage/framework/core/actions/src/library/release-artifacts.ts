@@ -33,7 +33,7 @@ export interface RetainedHostedInput {
 export interface LibraryHostedRetentionReport {
   immutableDir: string
   manifestPath: string
-  files: Array<{ path: string, relativePath: string, sha256: string, bytes: number }>
+  files: Array<{ path: string, relativePath: string, sha256: string, bytes: number, packagePath?: string }>
 }
 
 /** Keep hosted aliases and immutable files, binding compiler assets to package bytes. */
@@ -44,8 +44,9 @@ export function hostedLibraryRetentionInput(report: LibraryHostedRetentionReport
     manifest: manifest.relativePath,
     files: report.files.map(file => ({
       path: file.relativePath, source: file.path, sha256: file.sha256, bytes: file.bytes,
-      ...(['bundle.js', 'bundle.css', 'custom-elements.json'].includes(basename(file.path)) && resolve(file.path) === resolve(report.immutableDir, basename(file.path))
-        ? { packagePath: `dist/${basename(file.path)}` } : {}),
+      ...(file.packagePath ? { packagePath: file.packagePath }
+        : ['bundle.js', 'bundle.css', 'custom-elements.json'].includes(basename(file.path)) && resolve(file.path) === resolve(report.immutableDir, basename(file.path))
+          ? { packagePath: `dist/${basename(file.path)}` } : {}),
     })),
   }
 }
@@ -165,8 +166,10 @@ function validateArchiveExports(manifest: Record<string, unknown>, files: Map<st
     const path = value.replace(/^\.\//, '')
     if (!safeArchivePath(path)) fail('Archive export escapes its package')
     if (path.includes('*')) {
-      const glob = new Bun.Glob(path)
-      if (![...files.keys()].some(file => glob.match(file))) fail(`Archive export ${value} has no files`)
+      // Node export-pattern substitutions may contain slashes; unlike a
+      // filesystem glob, a package's single * also covers nested asset paths.
+      const pattern = new RegExp(`^${path.split('*').map(part => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('.*')}$`)
+      if (![...files.keys()].some(file => pattern.test(file))) fail(`Archive export ${value} has no files`)
     }
     else if (!files.has(path)) fail(`Archive export ${value} is missing`)
   }
