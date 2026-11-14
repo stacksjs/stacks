@@ -140,10 +140,20 @@ is a driver you cannot select.
 | Driver | Status | Topology | Live service | Evidence |
 |---|---|---|---|---|
 | `websocket` | **supported** | single-process-websocket | - | `ws-auth.test.ts`<br>`websocket-options.test.ts` |
+| `sqlite-replay` | **supported** | worker-and-embedded-sqlite | - | `durable-replay-sql.test.ts`<br>`durable-replay-process.test.ts`<br>`durable-replay-http.test.ts` |
+| `postgres-replay` | **supported** | client-server | postgres 17.11 | `durable-replay-sql.test.ts`<br>`durable-replay-process.test.ts`<br>`durable-replay-http.test.ts` |
 
 **Limitations**
 
 - **`websocket`** - Scale-out requires an application-provided fan-out layer.
+- **`sqlite-replay`** - Selected explicitly with createSqlDurableReplayStore; this is finite history, not a live transport driver.
+- **`sqlite-replay`** - Idempotency expires with retained events; permanent domain deduplication remains application-owned.
+- **`sqlite-replay`** - Applications bound channel cardinality and prune inactive channels.
+- **`sqlite-replay`** - Nested savepoints cannot publish a committed cursor before the outer transaction commits.
+- **`postgres-replay`** - Selected explicitly with createSqlDurableReplayStore; this is finite history, not a live transport driver.
+- **`postgres-replay`** - Idempotency expires with retained events; permanent domain deduplication remains application-owned.
+- **`postgres-replay`** - Applications bound channel cardinality and prune inactive channels.
+- **`postgres-replay`** - Nested savepoints cannot publish a committed cursor before the outer transaction commits.
 
 ### Deploy
 
