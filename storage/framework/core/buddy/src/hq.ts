@@ -568,11 +568,11 @@ export async function runHqStatus(config: HqServicesConfig, deps: Pick<HqCliDeps
 
 export interface SupportDoctorResult {
   ok: boolean
-  checks: { name: 'configuration' | 'usage' | 'conversations', ok: boolean, detail: string }[]
+  checks: { name: 'configuration' | 'usage' | 'conversations' | 'installation' | 'widget', ok: boolean, detail: string }[]
 }
 
 /** Read-only checks. A doctor never sends a test customer conversation. */
-export async function runSupportDoctor(config: HqServicesConfig, deps: Pick<HqCliDeps, 'fetch' | 'print'>): Promise<SupportDoctorResult> {
+export async function runSupportDoctor(config: HqServicesConfig, deps: Pick<HqCliDeps, 'fetch' | 'print'>, options: { origin?: string } = {}): Promise<SupportDoctorResult> {
   const service = config.supporthq
   const configured = Boolean(service?.url && service.key && service.readKey && service.project)
   const checks: SupportDoctorResult['checks'] = [{
@@ -586,6 +586,30 @@ export async function runSupportDoctor(config: HqServicesConfig, deps: Pick<HqCl
     checks.push({ name: 'usage', ok: usage.ok, detail: usage.ok ? `${usage.data.length} usage meters readable` : describeUnavailable(usage) })
     const conversations = await client.support.conversations({ limit: 1 })
     checks.push({ name: 'conversations', ok: conversations.ok, detail: conversations.ok ? 'project summaries readable' : describeUnavailable(conversations) })
+    if (service?.enabled === true) {
+      try {
+        const target = new URL(service.url)
+        if (target.username || target.password || target.search || target.hash || target.pathname !== '/' || (target.protocol !== 'https:' && !(target.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(target.hostname)))) throw new Error('Invalid support origin')
+        const base = target.origin
+        const probe = await deps.fetch(`${base}/api/v1/projects/${encodeURIComponent(service.project!)}/installation`, { headers: { Authorization: `Bearer ${service.key}` }, redirect: 'error', signal: AbortSignal.timeout(10000) })
+        const body: unknown = probe.ok ? await probe.json() : null
+        const current = new URL(options.origin || '').origin
+        const accepted = isRecord(body) && body.service === 'supporthq' && body.protocol === 1 && body.project === service.project && body.buddyConnected === true && Array.isArray(body.allowedOrigins) && body.allowedOrigins.includes(current)
+        checks.push({ name: 'installation', ok: accepted, detail: accepted ? 'approved project and exact app origin; no customer probe was created' : 'native installation or app origin is not approved' })
+      }
+      catch { checks.push({ name: 'installation', ok: false, detail: 'native installation could not be read' }) }
+      if (service.messenger?.enabled) {
+        try {
+          const loader = new URL(service.messenger.loaderUrl || 'https://hq.support/support.js')
+          if (loader.username || loader.password || loader.search || loader.hash || (loader.protocol !== 'https:' && !(loader.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(loader.hostname)))) throw new Error('Invalid loader')
+          const response = await deps.fetch(new URL('/widgets/manifest.json', loader).href, { redirect: 'error', signal: AbortSignal.timeout(10000) })
+          const manifest: unknown = response.ok ? await response.json() : null
+          const published = isRecord(manifest) && manifest.schemaVersion === 1 && Array.isArray(manifest.files) && manifest.files.some((file: unknown) => isRecord(file) && typeof file.path === 'string' && file.path.endsWith('/bundle.js') && typeof file.sha256 === 'string' && /^[a-f0-9]{64}$/.test(file.sha256) && typeof file.gzipBytes === 'number' && file.gzipBytes > 0 && file.gzipBytes <= 100000)
+          checks.push({ name: 'widget', ok: published, detail: published ? 'published manifest reports a versioned widget within the initial code budget' : 'published widget manifest or size budget is unavailable' })
+        }
+        catch { checks.push({ name: 'widget', ok: false, detail: 'published widget could not be checked' }) }
+      }
+    }
   }
   for (const check of checks)
     deps.print(`HQ.support ${check.name}: ${check.ok ? 'pass' : 'fail'} (${check.detail})`)

@@ -26,7 +26,14 @@ export interface HqServiceOptions {
 }
 
 /** The HQ entries of `config/services.ts`, on their own. */
-export type HqServicesConfig = Partial<Record<HqServiceName, HqServiceOptions>>
+export interface SupportHqOptions extends HqServiceOptions {
+  /** Explicit opt-in for native authenticated customer sessions. */
+  enabled?: boolean
+  /** Authenticated attributes to send. No optional attributes are sent by default. */
+  expose?: readonly ('email' | 'name')[]
+  messenger?: { enabled?: boolean, loaderUrl?: string, locale?: string }
+}
+export type HqServicesConfig = Partial<Record<HqServiceName, HqServiceOptions>> & { supporthq?: SupportHqOptions }
 
 export interface ServicesOptions {
   algolia?: {
@@ -256,7 +263,7 @@ export interface ServicesOptions {
   analyticshq?: HqServiceOptions
   statushq?: HqServiceOptions
   commshq?: HqServiceOptions
-  supporthq?: HqServiceOptions
+  supporthq?: SupportHqOptions
   reportshq?: HqServiceOptions
 
   // supabase?: {

@@ -21,12 +21,12 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/auth` | [`stacks-auth`](../stacks-auth/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/auth/src/index.ts) | 136 |
 | `@stacksjs/browser` | [`stacks-browser`](../stacks-browser/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/browser/src/index.ts) | 10 |
 | `@stacksjs/browser-extension` | [`stacks-browser-extension`](../stacks-browser-extension/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/browser-extension/src/index.ts) | 9 |
-| `@stacksjs/buddy` | [`stacks-buddy`](../stacks-buddy/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/buddy/src/index.ts) | 197 |
+| `@stacksjs/buddy` | [`stacks-buddy`](../stacks-buddy/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/buddy/src/index.ts) | 200 |
 | `@stacksjs/build` | [`stacks-build`](../stacks-build/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/build/src/index.ts) | 7 |
 | `@stacksjs/cache` | [`stacks-cache`](../stacks-cache/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cache/src/index.ts) | 24 |
 | `@stacksjs/calendar-api` | [`stacks-calendar`](../stacks-calendar/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/calendar-api/src/index.ts) | 5 |
 | `@stacksjs/charts` | [`stacks-charts`](../stacks-charts/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/charts/src/index.ts) | 3 |
-| `@stacksjs/chat` | [`stacks-chat`](../stacks-chat/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/src/index.ts) | 6 |
+| `@stacksjs/chat` | [`stacks-chat`](../stacks-chat/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/src/index.ts) | 7 |
 | `@stacksjs/cli` | [`stacks-cli`](../stacks-cli/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cli/src/index.ts) | 14 |
 | `@stacksjs/cloud` | [`stacks-cloud`](../stacks-cloud/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cloud/src/index.ts) | 10 |
 | `@stacksjs/cms` | [`stacks-cms`](../stacks-cms/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cms/src/index.ts) | 5 |
@@ -85,11 +85,11 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/sites` | [`stacks-sites`](../stacks-sites/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sites/src/index.ts) | 3 |
 | `@stacksjs/skills` | [`stacks-skills`](../stacks-skills/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/skills/src/index.ts) | 1 |
 | `@stacksjs/slug` | [`stacks-slug`](../stacks-slug/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/slug/src/index.ts) | 5 |
-| `@stacksjs/sms` | [`stacks-sms`](../stacks-sms/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/index.ts) | 6 |
+| `@stacksjs/sms` | [`stacks-sms`](../stacks-sms/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/index.ts) | 7 |
 | `@stacksjs/socials` | [`stacks-socials`](../stacks-socials/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/socials/src/index.ts) | 18 |
 | `@stacksjs/storage` | [`stacks-storage`](../stacks-storage/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/storage/src/index.ts) | 52 |
 | `@stacksjs/strings` | [`stacks-strings`](../stacks-strings/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/strings/src/index.ts) | 12 |
-| `@stacksjs/support` | [`stacks-support`](../stacks-support/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/support/src/index.ts) | 4 |
+| `@stacksjs/support` | [`stacks-support`](../stacks-support/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/support/src/index.ts) | 6 |
 | `@stacksjs/telephony` | [`stacks-telephony`](../stacks-telephony/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/telephony/src/index.ts) | 5 |
 | `@stacksjs/testing` | [`stacks-testing`](../stacks-testing/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/testing/src/index.ts) | 24 |
 | `@stacksjs/tinker` | [`stacks-repl`](../stacks-repl/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/tinker/src/index.ts) | 4 |
@@ -222,7 +222,7 @@ Read the entrypoint and package export map for re-exported or type-only surfaces
 
 Local source modules: [src/commands/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/buddy/src/commands/index.ts).
 
-Evidence directory: [197 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/buddy/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [200 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/buddy/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/build
 
@@ -268,11 +268,11 @@ Evidence directory: [3 retained tests](https://github.com/stacksjs/stacks/blob/m
 
 Guidance: [`stacks-chat`](../stacks-chat/SKILL.md). Source: [storage/framework/core/chat/src/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/src/index.ts).
 
-Declared runtime exports: `MessagingError`, `configureDiscord`, `configureSlack`, `configureTeams`, `createMessenger`, `discord`, `inbox`, `messagingChannel`, `send`, `sendToDiscord`, `sendToSlack`, `sendToTeams`, `slack`, `teams`.
+Declared runtime exports: `ChatTransportError`, `MessagingError`, `MetaMessagingClient`, `configureDiscord`, `configureSlack`, `configureTeams`, `createMessenger`, `discord`, `inbox`, `messagingChannel`, `send`, `sendToDiscord`, `sendToSlack`, `sendToTeams`, `slack`, `teams`.
 
-Local source modules: [src/drivers/discord.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/src/drivers/discord.ts), [src/drivers/slack.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/src/drivers/slack.ts), [src/drivers/teams.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/src/drivers/teams.ts), [src/inbox/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/src/inbox/index.ts).
+Local source modules: [src/drivers/discord.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/src/drivers/discord.ts), [src/drivers/slack.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/src/drivers/slack.ts), [src/drivers/teams.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/src/drivers/teams.ts), [src/inbox/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/src/inbox/index.ts), [src/meta.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/src/meta.ts), [src/transport.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/src/transport.ts).
 
-Evidence directory: [6 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [7 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/cli
 
@@ -832,11 +832,11 @@ Evidence directory: [5 retained tests](https://github.com/stacksjs/stacks/blob/m
 
 Guidance: [`stacks-sms`](../stacks-sms/SKILL.md). Source: [storage/framework/core/sms/src/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/index.ts).
 
-Declared runtime exports: `SMS`, `TwilioDriver`, `VonageDriver`, `createTwilioDriver`, `createVonageDriver`.
+Declared runtime exports: `SMS`, `TwilioDriver`, `VonageDriver`, `WhatsAppCloudClient`, `createTwilioDriver`, `createVonageDriver`, `twilioPriceMicros`.
 
-Local source modules: [src/compliance.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/compliance.ts), [src/drivers/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/drivers/index.ts), [src/drivers/twilio.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/drivers/twilio.ts), [src/drivers/vonage.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/drivers/vonage.ts), [src/inbound.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/inbound.ts), [src/keywords.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/keywords.ts), [src/opt-out.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/opt-out.ts), [src/sms.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/sms.ts).
+Local source modules: [src/compliance.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/compliance.ts), [src/drivers/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/drivers/index.ts), [src/drivers/twilio.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/drivers/twilio.ts), [src/drivers/vonage.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/drivers/vonage.ts), [src/inbound.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/inbound.ts), [src/keywords.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/keywords.ts), [src/opt-out.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/opt-out.ts), [src/sms.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/sms.ts), [src/whatsapp-cloud.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/src/whatsapp-cloud.ts).
 
-Evidence directory: [6 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [7 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sms/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/socials
 
@@ -872,11 +872,11 @@ Evidence directory: [12 retained tests](https://github.com/stacksjs/stacks/blob/
 
 Guidance: [`stacks-support`](../stacks-support/SKILL.md). Source: [storage/framework/core/support/src/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/support/src/index.ts).
 
-Declared runtime exports: `SupportError`, `createSupportClient`.
+Declared runtime exports: `SupportError`, `createAuthenticatedSupportSession`, `createSupportClient`.
 
 Local source modules: [src/server.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/support/src/server.ts).
 
-Evidence directory: [4 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/support/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [6 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/support/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/telephony
 

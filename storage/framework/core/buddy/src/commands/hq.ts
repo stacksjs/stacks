@@ -6,6 +6,9 @@ import process from 'node:process'
 import { defineCommand } from '@stacksjs/cli'
 import { HQ_SERVICE_NAMES, resolveHqServices, runHqConnect, runHqStatus, runSupportDoctor } from '../hq'
 import { runSupportVerification } from '../support-verification'
+import { runSupportDocsSync, selectSupportDocuments } from '../support-documentation'
+import { runSupportImport } from '../support-import'
+import { installSupportMessenger } from '../support-installation'
 import { version as frameworkVersion } from '../../package.json'
 
 /**
@@ -101,6 +104,8 @@ function connectCommand(supportOnly = false) {
       '--no-open': 'Print the approve link without opening the browser',
       '--no-verify': 'Skip service read checks and test log/error delivery',
       '--timeout <seconds>': { description: 'How long to wait for each approval', default: 600 },
+      '--messenger': { description: 'Explicitly mount the identified HQ.support messenger in the app layout', default: false },
+      '--layout <path>': 'App-local stx layout to mount the opt-in messenger in',
     },
     examples: supportOnly ? ['buddy support:install', 'buddy support:install --no-open'] : [
       'buddy hq:connect',
@@ -116,7 +121,7 @@ function connectCommand(supportOnly = false) {
         process.exit(1)
       }
 
-      const flags = options as { open?: boolean, verify?: boolean, timeout?: number | string }
+      const flags = options as { open?: boolean, verify?: boolean, timeout?: number | string, messenger?: boolean, layout?: string }
       const seconds = Number(flags.timeout)
       const { config, app } = await hqConfig()
 
@@ -133,6 +138,15 @@ function connectCommand(supportOnly = false) {
           verify: flags.verify !== false,
           timeoutMs: (Number.isFinite(seconds) && seconds > 0 ? seconds : 600) * 1000,
         }, deps(controller.signal))
+        if (result.ok && flags.messenger && resolved.services.includes('supporthq')) {
+          const { projectPath, frameworkPath } = await import('@stacksjs/path')
+          const { config: fullConfig } = await import('@stacksjs/config')
+          const installed = await installSupportMessenger({ ...config, supporthq: { ...config.supporthq!, key: process.env.SUPPORTHQ_KEY || config.supporthq?.key, project: process.env.SUPPORTHQ_PROJECT_ID || config.supporthq?.project } }, {
+            directory: projectPath(), origin: String(fullConfig.app.url || ''), frameworkVersion,
+            componentSource: await Bun.file(frameworkPath('defaults/resources/components/HqSupport.stx')).text(), layout: flags.layout,
+          }, deps(controller.signal))
+          if (!installed) { process.exitCode = 1; return }
+        }
         process.exit(controller.signal.aborted ? 130 : result.ok ? 0 : 1)
       }
       finally {
@@ -150,19 +164,46 @@ const doctor = defineCommand({
   description: 'Check HQ.support configuration and read access without creating a conversation',
   handle: async () => {
     const { config } = await hqConfig()
-    const result = await runSupportDoctor(config, deps())
+    const { config: fullConfig } = await import('@stacksjs/config')
+    const result = await runSupportDoctor(config, deps(), { origin: fullConfig.app.url })
     process.exit(result.ok ? 0 : 1)
   },
 })
 
 const status = defineCommand({
-  name: 'hq:status',
+  name: 'hq:status [...services]',
   description: 'Show usage against the allowance of each connected HQ service',
   examples: ['buddy hq:status'],
-  handle: async () => {
+  handle: async (...args) => {
     const { config } = await hqConfig()
-    await runHqStatus(config, deps(), HQ_SERVICE_NAMES)
+    const requested = (args as unknown[]).flat().filter((value): value is string => typeof value === 'string')
+    const resolved = resolveHqServices(requested, HQ_SERVICE_NAMES)
+    if ('error' in resolved) { console.error(resolved.error); process.exitCode = 1; return }
+    await runHqStatus(config, deps(), resolved.services)
     process.exit(0)
+  },
+})
+
+const syncDocs = defineCommand({
+  name: 'support:sync-docs [...files]',
+  description: 'Synchronize explicitly selected Markdown documents as private draft support knowledge',
+  options: {
+    '--dry-run': { description: 'Show selected sources without sending content', default: false },
+    '--public': { description: 'Explicitly make selected articles customer-visible', default: false },
+    '--publish': { description: 'Publish selected articles instead of keeping drafts', default: false },
+    '--locale <locale>': { description: 'Knowledge locale', default: 'en' },
+  },
+  examples: ['buddy support:sync-docs docs/getting-started.md --dry-run', 'buddy support:sync-docs docs/getting-started.md --public --publish'],
+  async handle(options, ...args) {
+    try {
+      const { projectPath } = await import('@stacksjs/path')
+      const files = (args as unknown[]).flat().filter((value): value is string => typeof value === 'string')
+      const documents = await selectSupportDocuments(projectPath(), files, options)
+      const { config } = await hqConfig()
+      const ok = await runSupportDocsSync(config, documents, options, { fetch: (input, init) => fetch(input, init), print: line => console.log(line) })
+      process.exitCode = ok ? 0 : 1
+    }
+    catch { console.error('Select one to twenty Markdown files inside this app, each up to 100 KB. No data was sent.'); process.exitCode = 1 }
   },
 })
 
@@ -185,10 +226,29 @@ const verify = defineCommand({
   },
 })
 
+const importSupport = defineCommand({
+  name: 'support:import <provider> [file]',
+  description: 'Preview or resume a private Intercom migration using the connected support project',
+  options: {
+    '--dry-run': { description: 'Run the server compatibility rehearsal without importing data', default: false },
+    '--resume <id>': 'Resume a saved migration run',
+    '--status <id>': 'Read counts and status without reading customer transcripts',
+  },
+  examples: ['buddy support:import intercom export.json --dry-run', 'buddy support:import intercom export.json', 'buddy support:import intercom --resume 1'],
+  async handle(options, provider, file) {
+    if (provider !== 'intercom') { console.error('The supported migration provider is intercom.'); process.exitCode = 1; return }
+    const { config } = await hqConfig()
+    const ok = await runSupportImport(config, { file: typeof file === 'string' ? file : undefined, ...options }, { fetch: (input, init) => fetch(input, init), print: line => console.log(line) })
+    process.exitCode = ok ? 0 : 1
+  },
+})
+
 export function hq(buddy: CLI): void {
   connect(buddy)
   status(buddy)
   install(buddy)
   doctor(buddy)
   verify(buddy)
+  syncDocs(buddy)
+  importSupport(buddy)
 }

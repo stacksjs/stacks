@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **385 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **387 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -77,7 +77,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `stack` | 3 |
 | `storage` | 3 |
 | `stripe` | 1 |
-| `support` | 3 |
+| `support` | 5 |
 | `test` | 5 |
 | `types` | 2 |
 | `unlink` | 1 |
@@ -2938,6 +2938,8 @@ Connect this app to HQ services (BugHQ and LogHQ by default) and write their key
 | `--no-open` | Print the approve link without opening the browser | boolean, optional, negated | `true` |
 | `--no-verify` | Skip service read checks and test log/error delivery | boolean, optional, negated | `true` |
 | `--timeout` | How long to wait for each approval | value, required | `600` |
+| `--messenger` | Explicitly mount the identified HQ.support messenger in the app layout | boolean, optional | `false` |
+| `--layout` | App-local stx layout to mount the opt-in messenger in | value, required | - |
 
 Examples:
 
@@ -2951,10 +2953,10 @@ buddy hq:connect bughq loghq --no-open
 
 Show usage against the allowance of each connected HQ service
 
-- Usage: `$ buddy hq:status`
+- Usage: `$ buddy hq:status [...services]`
 - Namespace: `hq`
 - Aliases: none
-- Arguments: none
+- Arguments: `[services...]`
 
 Examples:
 
@@ -5868,6 +5870,29 @@ Check HQ.support configuration and read access without creating a conversation
 - Aliases: none
 - Arguments: none
 
+### `support:import`
+
+Preview or resume a private Intercom migration using the connected support project
+
+- Usage: `$ buddy support:import <provider> [file]`
+- Namespace: `support`
+- Aliases: none
+- Arguments: `<provider>`, `[file]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--dry-run` | Run the server compatibility rehearsal without importing data | boolean, optional | `false` |
+| `--resume` | Resume a saved migration run | value, required | - |
+| `--status` | Read counts and status without reading customer transcripts | value, required | - |
+
+Examples:
+
+```bash
+buddy support:import intercom export.json --dry-run
+buddy support:import intercom export.json
+buddy support:import intercom --resume 1
+```
+
 ### `support:install`
 
 Connect HQ.support and write its server keys to .env
@@ -5882,12 +5907,37 @@ Connect HQ.support and write its server keys to .env
 | `--no-open` | Print the approve link without opening the browser | boolean, optional, negated | `true` |
 | `--no-verify` | Skip service read checks and test log/error delivery | boolean, optional, negated | `true` |
 | `--timeout` | How long to wait for each approval | value, required | `600` |
+| `--messenger` | Explicitly mount the identified HQ.support messenger in the app layout | boolean, optional | `false` |
+| `--layout` | App-local stx layout to mount the opt-in messenger in | value, required | - |
 
 Examples:
 
 ```bash
 buddy support:install
 buddy support:install --no-open
+```
+
+### `support:sync-docs`
+
+Synchronize explicitly selected Markdown documents as private draft support knowledge
+
+- Usage: `$ buddy support:sync-docs [...files]`
+- Namespace: `support`
+- Aliases: none
+- Arguments: `[files...]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--dry-run` | Show selected sources without sending content | boolean, optional | `false` |
+| `--public` | Explicitly make selected articles customer-visible | boolean, optional | `false` |
+| `--publish` | Publish selected articles instead of keeping drafts | boolean, optional | `false` |
+| `--locale` | Knowledge locale | value, required | `"en"` |
+
+Examples:
+
+```bash
+buddy support:sync-docs docs/getting-started.md --dry-run
+buddy support:sync-docs docs/getting-started.md --public --publish
 ```
 
 ### `support:verify`

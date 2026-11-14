@@ -68,6 +68,13 @@ export type EnvConfig = Record<string, EnvValueConfig>
  * the interface it is augmenting and TypeScript would reject the cycle.
  */
 export interface FrameworkEnv {
+  // Opt-in HQ.support identity and messenger integration.
+  SUPPORTHQ_URL: string | undefined
+  SUPPORTHQ_KEY: string | undefined
+  SUPPORTHQ_READ_KEY: string | undefined
+  SUPPORTHQ_PROJECT_ID: string | undefined
+  SUPPORTHQ_ENABLED: boolean | undefined
+  SUPPORTHQ_MESSENGER: boolean | undefined
   // App
   APP_NAME: string | undefined
   // Must match `envEnum.APP_ENV` above, which is what the runtime validates

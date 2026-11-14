@@ -139,6 +139,8 @@ const envSchema = defineEnv({
     validation: schema.string(),
     default: '',
   },
+  SUPPORTHQ_ENABLED: { validation: schema.boolean(), default: false },
+  SUPPORTHQ_MESSENGER: { validation: schema.boolean(), default: false },
 
   COMMSHQ_URL: {
     validation: schema.string(),

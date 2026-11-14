@@ -822,3 +822,26 @@ describe('completeSocialLogin with a one-use code', () => {
     expect(replacedUrls).toEqual(['/welcome?from=github'])
   })
 })
+
+test('native integrations clear the old identity before replacing or dropping authentication', async () => {
+  seed('token', 'previous-user')
+  const { useAuth } = await load(), auth = useAuth()
+  const previous = globalThis.dispatchEvent
+  const changes: { name: string, token: string | null }[] = []
+  globalThis.dispatchEvent = (event) => { changes.push({ name: event.type, token: auth.getToken() }); return true }
+  try {
+    responders = [() => json({ token: 'next-user', user: { id: 2, email: 'next@example.test' } })]
+    await auth.login({ email: 'next@example.test', password: 'test' })
+    expect(changes[0]).toEqual({ name: 'stacks:auth-changing', token: 'previous-user' })
+    expect(changes.some(change => change.name === 'stacks:auth-changed' && change.token === 'next-user')).toBe(true)
+    responders = [() => json({ success: true })]
+    await auth.logout()
+    expect(changes.some(change => change.name === 'stacks:auth-changing' && change.token === 'next-user')).toBe(true)
+    expect(changes.at(-1)?.name).toBe('stacks:auth-changed')
+    expect(changes.at(-1)?.token).toBeFalsy()
+  }
+  finally {
+    if (previous) globalThis.dispatchEvent = previous
+    else delete (globalThis as Partial<typeof globalThis>).dispatchEvent
+  }
+})

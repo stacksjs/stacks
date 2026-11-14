@@ -757,6 +757,7 @@ export const actions = {
   'Actions/Storefront/UpdateCartItemAction': '../defaults/app/Actions/Storefront/UpdateCartItemAction.ts',
   'Actions/Storefront/_shipping': '../defaults/app/Actions/Storefront/_shipping.ts',
   'Actions/SubscriberEmailAction': '../defaults/app/Actions/SubscriberEmailAction.ts',
+  'Actions/Support/SessionAction': '../defaults/app/Actions/Support/SessionAction.ts',
   'Actions/Teams/AcceptInvitationAction': '../defaults/app/Actions/Teams/AcceptInvitationAction.ts',
   'Actions/Teams/ShowInvitationAction': '../defaults/app/Actions/Teams/ShowInvitationAction.ts',
   'Actions/Teams/team-response': '../defaults/app/Actions/Teams/team-response.ts',

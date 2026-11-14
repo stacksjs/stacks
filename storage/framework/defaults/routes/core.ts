@@ -76,3 +76,16 @@ route.get('/_stacks/mail/preview/{name}/raw', async (req: any) => {
     headers: { 'Content-Type': 'text/html; charset=utf-8' },
   })
 }).skipCsrf()
+
+// Configuration reads never contact HQ.support or expose either server key.
+{
+  const { config } = await import('@stacksjs/config')
+  if (config.services.supporthq?.enabled === true) {
+    route.get('/api/support/config', () => {
+      const service = config.services.supporthq!
+      return Response.json({ enabled: service.enabled === true && service.messenger?.enabled === true, project: service.project,
+        endpoint: service.url, loaderUrl: service.messenger?.loaderUrl ?? 'https://hq.support/support.js', locale: service.messenger?.locale ?? 'en', sessionEndpoint: '/api/support/session' }, { headers: { 'Cache-Control': 'no-store' } })
+    })
+    route.post('/api/support/session', 'Actions/Support/SessionAction').middleware('auth').rateLimit(60, 'minute')
+  }
+}

@@ -63,6 +63,10 @@ let inFlightRefresh: Promise<boolean> | null = null
  * one redirect. And a slow request sent before a sign-in cannot end the
  * session that sign-in started.
  */
+function notifyAuthSession(phase: 'changing' | 'changed'): void {
+  if (typeof globalThis.dispatchEvent === 'function') globalThis.dispatchEvent(new Event(`stacks:auth-${phase}`))
+}
+
 let sessionEpoch = 0
 
 /** The shared `/api/me` request, tagged with the epoch it belongs to. */
@@ -115,6 +119,7 @@ function applySessionHandoff(pack?: SessionHandoffPack | null): boolean {
   if (!resolved)
     return false
 
+  notifyAuthSession('changing')
   sessionEpoch++
   token.value = resolved.token
   // A token-only handoff represents a fixed-lifetime session. Remove a
@@ -126,6 +131,7 @@ function applySessionHandoff(pack?: SessionHandoffPack | null): boolean {
     applyUser(resolved.user as UserData)
 
   isAuthenticated.value = true
+  notifyAuthSession('changed')
 
   // Strip the fragment immediately. It is not sent to servers, so it stayed
   // out of logs and Referer on the way here, but it is in browser history —
@@ -193,11 +199,13 @@ async function redeemHandoffCode(code: string): Promise<SessionHandoffPack | nul
 }
 
 function clearSession(): void {
+  notifyAuthSession('changing')
   sessionEpoch++
   token.value = ''
   refreshToken.value = ''
   user.value = null
   isAuthenticated.value = false
+  notifyAuthSession('changed')
 }
 
 /** Whether the page holds anything that represents a session. */
@@ -577,12 +585,14 @@ export function useAuth(): AuthComposable {
   }
 
   function storeTokenPack(data: LoginResponse): void {
+    notifyAuthSession('changing')
     sessionEpoch++
     token.value = data.token
     // A fixed-lifetime browser policy deliberately returns no refresh token.
     // Clear any credential left by an earlier refresh-capable login so it
     // cannot silently turn the new fixed session back into a renewable one.
     refreshToken.value = data.refresh_token ?? ''
+    notifyAuthSession('changed')
   }
 
   async function fetchAuthUser(): Promise<UserData | null> {
@@ -622,6 +632,7 @@ export function useAuth(): AuthComposable {
     }
 
     if (isRegisterResponse(data)) {
+      notifyAuthSession('changing')
       sessionEpoch++
       token.value = data.token
       // RegisterAction returns the same OAuth2-shaped pack LoginAction does
@@ -629,6 +640,7 @@ export function useAuth(): AuthComposable {
       // the access token's one-hour lifetime.
       const refreshed = (data as { refresh_token?: string }).refresh_token
       refreshToken.value = refreshed ?? ''
+      notifyAuthSession('changed')
       return data
     }
 
@@ -701,6 +713,7 @@ export function useAuth(): AuthComposable {
   }
 
   async function logout() {
+    notifyAuthSession('changing')
     // Read via the same `useStorage`-backed ref the rest of the composable
     // uses. Reading localStorage directly here meant cross-tab logouts
     // (token cleared in another tab via useStorage) were invisible to the

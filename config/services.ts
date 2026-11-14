@@ -247,6 +247,9 @@ export default {
     key: env.SUPPORTHQ_KEY || undefined,
     readKey: env.SUPPORTHQ_READ_KEY || undefined,
     project: env.SUPPORTHQ_PROJECT_ID || undefined,
+    enabled: String(env.SUPPORTHQ_ENABLED) === 'true',
+    expose: [],
+    messenger: { enabled: String(env.SUPPORTHQ_MESSENGER) === 'true', loaderUrl: 'https://hq.support/support.js', locale: 'en' },
   },
 
   commshq: {

@@ -465,3 +465,26 @@ describe('buddy support:doctor', () => {
     expect(refused.output()).toContain('the read key was refused')
   })
 })
+
+it('native support doctor checks the approved origin and immutable widget without creating customer traffic', async () => {
+  const service = createFakeHqService({ service: 'supporthq' }), grant = service.project()
+  const h = harness([service]), original = h.deps.fetch, requests: string[] = []
+  h.deps.fetch = async (input, init) => {
+    if (input.endsWith('/installation')) {
+      requests.push(String(init?.method ?? 'GET'))
+      expect(new Headers(init?.headers).get('authorization')).toBe(`Bearer ${grant.ingestKey}`)
+      return Response.json({ service: 'supporthq', protocol: 1, project: grant.project.id, buddyConnected: true, allowedOrigins: ['https://app.example'] })
+    }
+    if (input.endsWith('/widgets/manifest.json')) {
+      requests.push(String(init?.method ?? 'GET'))
+      expect(new Headers(init?.headers).has('authorization')).toBe(false)
+      return Response.json({ schemaVersion: 1, files: [{ path: '/widgets/1-hash/bundle.js', sha256: 'a'.repeat(64), gzipBytes: 9000 }] })
+    }
+    return await original(input, init)
+  }
+  const config = { supporthq: { url: service.origin, key: grant.ingestKey, readKey: grant.readKey, project: grant.project.id, enabled: true, messenger: { enabled: true, loaderUrl: `${service.origin}/support.js` } } }
+  expect((await runSupportDoctor(config, h.deps, { origin: 'https://app.example' })).ok).toBe(true)
+  expect(requests).toEqual(['GET', 'GET'])
+  expect((await runSupportDoctor(config, h.deps, { origin: 'https://unapproved.example' })).ok).toBe(false)
+  expectNoKeyPrinted(h.output(), service)
+})

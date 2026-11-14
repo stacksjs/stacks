@@ -791,6 +791,9 @@ export const defaults: StacksOptions = {
       key: plainEnv('SUPPORTHQ_KEY') || undefined,
       readKey: plainEnv('SUPPORTHQ_READ_KEY') || undefined,
       project: plainEnv('SUPPORTHQ_PROJECT_ID') || undefined,
+      enabled: plainEnv('SUPPORTHQ_ENABLED') === 'true',
+      expose: [],
+      messenger: { enabled: plainEnv('SUPPORTHQ_MESSENGER') === 'true', loaderUrl: 'https://hq.support/support.js', locale: 'en' },
     },
 
     commshq: {

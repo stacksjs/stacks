@@ -141,3 +141,25 @@ export function createSupportClient(options: SupportClientOptions): SupportClien
     },
   }
 }
+
+export interface AuthenticatedSupportRequest {
+  user: () => Promise<{ id: number | string, email?: unknown, name?: unknown } | null | undefined>
+}
+
+/** Identity is read from the authenticated server request, never a submitted user ID. */
+export async function createAuthenticatedSupportSession(client: Pick<SupportClient, 'createSession'>, request: AuthenticatedSupportRequest, options: {
+  expose?: readonly ('email' | 'name')[]
+  /** Resolve a tenant from authorized server context, not an unchecked request parameter. */
+  resolveTenant?: (request: AuthenticatedSupportRequest) => string | number | Promise<string | number>
+} = {}): Promise<CustomerSession> {
+  const user = await request.user()
+  if (!user || !['string', 'number'].includes(typeof user.id) || (typeof user.id === 'number' && !Number.isSafeInteger(user.id)) || !String(user.id).trim()) throw new SupportError('unauthorized', 401)
+  let externalId = `user:${String(user.id)}`
+  if (options.resolveTenant) {
+    const tenant = await options.resolveTenant(request)
+    if (!['string', 'number'].includes(typeof tenant) || (typeof tenant === 'number' && !Number.isSafeInteger(tenant)) || !String(tenant).trim()) throw new SupportError('forbidden', 403)
+    externalId = `tenant:${encodeURIComponent(String(tenant))}:user:${encodeURIComponent(String(user.id))}`
+  }
+  const identity = { externalId, ...(options.expose?.includes('email') && typeof user.email === 'string' ? { email: user.email } : {}), ...(options.expose?.includes('name') && typeof user.name === 'string' ? { name: user.name } : {}) }
+  return await client.createSession(identity)
+}
