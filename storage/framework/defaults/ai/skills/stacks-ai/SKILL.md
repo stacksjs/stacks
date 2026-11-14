@@ -595,7 +595,9 @@ Use `createDurableRetrievalStore` from `@stacksjs/ai/durable-retrieval` when
 knowledge must survive process restarts. `VectorIndex` above remains memory only.
 The adapter takes the native application's parameterized SQL executor and its
 model-generated source/index/chunk table names. It performs exact pgvector cosine
-ranking on PostgreSQL and lexical matching on SQLite; it does not create tables,
+ranking on PostgreSQL. Explicit mode: 'lexical' uses native PostgreSQL
+`to_tsvector` / `plainto_tsquery` ranking, while SQLite uses bounded substring
+matching; it does not create tables,
 install extensions, maintain an ANN index, or authorize a caller for you.
 
 The source schema names workspace_id, project_id, source_key, language, audience,

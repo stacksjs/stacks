@@ -83,6 +83,11 @@ export function createDurableRetrievalStore(options: { dialect: 'sqlite' | 'post
         distance = `(p.embedding::vector <=> ${param(JSON.stringify(vector))}::vector) AS distance`
         ordering = 'distance ASC, p.id ASC'
       }
+      else if (options.dialect === 'postgres') {
+        const query = param(request.query)
+        predicates.push(`to_tsvector('simple', c.content) @@ plainto_tsquery('simple', ${query})`)
+        ordering = `ts_rank_cd(to_tsvector('simple', p.content), plainto_tsquery('simple', ${query})) DESC, p.id ASC`
+      }
       else {
         const terms = [...new Set(request.query.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [])].slice(0, 12)
         for (const term of terms) predicates.push(`LOWER(c.content) LIKE ${param(`%${term}%`)}`)
