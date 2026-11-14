@@ -1,4 +1,4 @@
-import type { LibraryConfig } from '@stacksjs/types'
+import type { LibraryConfig } from '@stacksjs/types/library'
 import type { ProjectScriptReceipt } from '../project-scripts'
 import type { LibraryPublishPlan } from './publish'
 import { createHash } from 'node:crypto'

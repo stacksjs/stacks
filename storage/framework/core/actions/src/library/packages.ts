@@ -1,4 +1,4 @@
-import type { LibraryConfig, LibraryPackageKind, LibraryPackageOptions } from '@stacksjs/types'
+import type { LibraryConfig, LibraryPackageKind, LibraryPackageOptions } from '@stacksjs/types/library'
 import { existsSync } from 'node:fs'
 import { relative, resolve } from 'node:path'
 import process from 'node:process'
