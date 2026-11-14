@@ -624,7 +624,11 @@ change, and swap active_index_id only when a complete new revision is ready.
 `createConfiguredEmbeddingClient` from `@stacksjs/ai/embedding-client` consumes
 server AI driver config and an optional explicit OpenAI/Ollama provider, model and
 dimensions. `embed(texts, { signal })` makes a bounded provider HTTP request and
-validates batch indexes, finite nonzero vectors and consistent dimensions. It
+validates batch indexes, finite nonzero vectors and consistent dimensions. Requests
+refuse redirects and combine a server deadline (at most 60 seconds) with caller
+cancellation. Endpoint URLs reject userinfo, query strings and fragments; OpenAI
+requires HTTPS except on loopback. An explicitly configured private Ollama host
+may use HTTP because it is a server-owned endpoint without provider credentials. It
 honors configured provider endpoints and never silently routes a chat-only
 provider's documents to another service. Provider secrets stay server-side.
 

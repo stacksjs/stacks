@@ -59,3 +59,36 @@ describe('durable scoped retrieval', () => {
     expect(() => createConfiguredEmbeddingClient({ default: 'anthropic' })).toThrow('not implemented')
   })
 })
+
+test('embedding HTTP refuses redirects before forwarding private documents', async () => {
+  let forwarded = 0
+  const target = Bun.serve({ port: 0, hostname: '127.0.0.1', fetch() { forwarded++; return Response.json({ data: [{ index: 0, embedding: [1, 0] }] }) } })
+  const redirect = Bun.serve({ port: 0, hostname: '127.0.0.1', fetch() { return new Response(null, { status: 307, headers: { location: `http://127.0.0.1:${target.port}/stolen` } }) } })
+  try {
+    const client = createConfiguredEmbeddingClient({ default: 'openai', drivers: { openai: { apiKey: 'private-test-key', baseUrl: `http://127.0.0.1:${redirect.port}/v1` } } })
+    await expect(client.embed(['private knowledge text'])).rejects.toThrow()
+    expect(forwarded).toBe(0)
+  }
+  finally { await target.stop(true); await redirect.stop(true) }
+})
+
+test('embedding HTTP enforces a server deadline and caller cancellation', async () => {
+  const server = Bun.serve({ port: 0, hostname: '127.0.0.1', fetch() { return new Promise<Response>(() => {}) } })
+  const configuration = { default: 'openai', drivers: { openai: { apiKey: 'private-test-key', baseUrl: `http://127.0.0.1:${server.port}/v1` } } }
+  try {
+    const deadline = createConfiguredEmbeddingClient(configuration, { timeoutMs: 20 })
+    await expect(deadline.embed(['private text'])).rejects.toThrow()
+    const client = createConfiguredEmbeddingClient(configuration)
+    const controller = new AbortController()
+    const pending = client.embed(['private text'], { signal: controller.signal })
+    controller.abort()
+    await expect(pending).rejects.toThrow()
+    expect(() => createConfiguredEmbeddingClient(configuration, { timeoutMs: 60_001 })).toThrow('timeout')
+  }
+  finally { await server.stop(true) }
+})
+
+test('embedding URL validation excludes credentials, fragments, queries and credential-bearing remote HTTP', () => {
+  for (const baseUrl of ['http://remote.example/v1', 'https://user:password@example.test/v1', 'https://example.test/v1?token=secret', 'https://example.test/v1#fragment']) expect(() => createConfiguredEmbeddingClient({ default: 'openai', drivers: { openai: { apiKey: 'private-test-key', baseUrl } } })).toThrow()
+  expect(createConfiguredEmbeddingClient({ default: 'ollama', drivers: { ollama: { host: 'http://192.168.1.2:11434' } } }).provider).toBe('ollama')
+})

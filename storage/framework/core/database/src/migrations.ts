@@ -4987,6 +4987,8 @@ export function groupGeneratedStatements(sqlStatements: string[], previousPlan?:
     const stmt = raw.trim()
     if (!stmt) continue
 
+    if (/^\s*CREATE\s+EXTENSION\b/i.test(stmt)) { push('create-database-extensions', stmt); continue }
+
     const create = stmt.match(/^\s*CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["`]?(\w+)["`]?/i)
     if (create) { push(`create-${create[1]}-table`, stmt); continue }
 
@@ -5040,9 +5042,9 @@ export function groupGeneratedStatements(sqlStatements: string[], previousPlan?:
     push('auto-misc', stmt)
   }
 
-  // Types first, then labels added to existing types, then everything else in
+  // Extensions first, then types, added enum labels, and everything else in
   // emission order (the sort is stable).
-  const priority = (label: string): number => label === 'create-database-types' ? 0 : label === 'add-enum-values' ? 1 : 2
+  const priority = (label: string): number => label === 'create-database-extensions' ? 0 : label === 'create-database-types' ? 1 : label === 'add-enum-values' ? 2 : 3
   const ordered = [...groups.entries()]
     .map(([label, statements]) => ({ label, statements }))
     .sort((a, b) => priority(a.label) - priority(b.label))
