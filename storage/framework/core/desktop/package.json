@@ -2,7 +2,7 @@
   "name": "@stacksjs/desktop-build",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.583",
+  "version": "0.75.584",
   "description": "Build and launch Craft desktop applications for Stacks",
   "author": "Chris Breuer",
   "contributors": [
@@ -73,10 +73,10 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/config": "0.75.583",
-    "@stacksjs/router": "0.75.583",
-    "@stacksjs/server": "0.75.583",
-    "@stacksjs/storage": "0.75.583",
+    "@stacksjs/config": "0.75.584",
+    "@stacksjs/router": "0.75.584",
+    "@stacksjs/server": "0.75.584",
+    "@stacksjs/storage": "0.75.584",
     "craft-native": ">=0.0.499"
   },
   "peerDependencies": {

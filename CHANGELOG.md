@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.583...v0.75.584)
+
+## 🐛 Bug Fixes
+
+- preserve eight-digit cryptographic slug entropy ([592401b](https://github.com/stacksjs/stacks/commit/592401b)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.582...v0.75.583)
 
 ## ✨ Features
