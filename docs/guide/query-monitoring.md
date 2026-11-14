@@ -50,6 +50,9 @@ export default {
     // Queries to exclude from logging
     excludedQueries: ['query_logs'],
 
+    // Record the queue's own polling too (off by default, see below)
+    logHousekeeping: false,
+
     // Query analysis options
     analysis: {
       enabled: true,
@@ -364,7 +367,7 @@ Logging is off by default in production (`APP_ENV=production`). Turn it on with 
 
 2. **Retention Period**: Set a reasonable retention period based on your storage capacity and monitoring needs.
 
-3. **Selective Logging**: Use `excludedQueries` to prevent logging frequent or unimportant queries.
+3. **Selective Logging**: Use `excludedQueries` to prevent logging frequent or unimportant queries. The framework's own polling is left out already: a queue worker asks for a job several times a second, and its reservation, reaping and heartbeat statements on `jobs`, `queue_workers` and `queue_circuit_state` are recorded only when one is slow or fails. Set `logHousekeeping: true` to record every one.
 
 4. **Database Impact**: Be aware that query logging itself adds some overhead. Monitor the performance impact and adjust settings accordingly.
 

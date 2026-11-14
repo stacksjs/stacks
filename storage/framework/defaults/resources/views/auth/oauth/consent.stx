@@ -16,9 +16,23 @@ declare const selectedWorkspace: string | null
 declare const consentAction: string
 declare const csrfToken: string
 
-const clientTypeLabel = consent.client.type === 'public' ? 'Public client' : 'Confidential client'
+/*
+ * This file is a page as well as the action's template, so `/auth/oauth/consent`
+ * can be asked for on its own: by a visitor, a crawler, or the server warming
+ * its pages at start. Nothing hands it a request then. Reading `consent`
+ * directly threw "consent is not defined", which left every variable in this
+ * script undefined and rendered an empty shell with a warning on each visit.
+ * `typeof` is the one read of an undeclared name that does not throw. Without
+ * an authorization request there is nothing to consent to, so it is a 404.
+ */
+const hasRequest = typeof consent !== 'undefined'
+if (!hasRequest)
+  notFound()
+
+const clientTypeLabel = hasRequest && consent.client.type === 'public' ? 'Public client' : 'Confidential client'
 </script>
 
+@if (hasRequest)
 <main class="flex items-center justify-center px-4 py-10 sm:px-6 min-h-dvh text-neutral-950 dark:text-white bg-neutral-50 dark:bg-neutral-950">
   <section class="max-w-xl w-full" aria-labelledby="oauth-consent-title">
     <div class="flex gap-2 items-center justify-center mb-5 text-neutral-500 text-sm dark:text-neutral-400">
@@ -132,3 +146,4 @@ const clientTypeLabel = consent.client.type === 'public' ? 'Public client' : 'Co
     </p>
   </section>
 </main>
+@endif

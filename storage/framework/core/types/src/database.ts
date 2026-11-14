@@ -325,6 +325,18 @@ export interface DatabaseOptions {
     retention: number // in days
     pruneFrequency: number // in hours
     excludedQueries?: string[] // patterns to exclude
+    /**
+     * Record the framework's own polling queries too: the queue reserving and
+     * reaping jobs, worker heartbeats, the circuit state read on every tick.
+     *
+     * Off by default. A worker polls several times a second for as long as it
+     * runs, so these rows crowd out the application's queries and grow the
+     * table by gigabytes a week. One that is slow or fails is recorded either
+     * way.
+     *
+     * @default false
+     */
+    logHousekeeping?: boolean
     analysis?: {
       enabled: boolean
       analyzeAll: boolean // analyze all queries, not just slow ones
