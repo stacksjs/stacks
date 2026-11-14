@@ -2,7 +2,7 @@
   "name": "@stacksjs/telephony",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.575",
+  "version": "0.75.576",
   "description": "Native telephony contracts, Twilio voice and number provisioning, and bounded Media Streams helpers.",
   "author": "Chris Breuer <chris@stacksjs.com>",
   "license": "MIT",
@@ -12,17 +12,30 @@
     "directory": "storage/framework/core/telephony"
   },
   "exports": {
-    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js", "default": "./dist/index.js" },
-    "./testing": { "types": "./dist/testing.d.ts", "import": "./dist/testing.js", "default": "./dist/testing.js" }
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./testing": {
+      "types": "./dist/testing.d.ts",
+      "import": "./dist/testing.js",
+      "default": "./dist/testing.js"
+    }
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["README.md", "dist"],
+  "files": [
+    "README.md",
+    "dist"
+  ],
   "scripts": {
     "build": "bun build.ts",
     "test": "bun run build && bun test ./tests",
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "devDependencies": { "better-dx": "^0.2.39" }
+  "devDependencies": {
+    "better-dx": "^0.2.39"
+  }
 }

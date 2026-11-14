@@ -1,5 +1,26 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.575...v0.75.576)
+
+## ✨ Features
+
+- **buddy**: verify Stacks deployments for permanent support allowances ([6f4cec9](https://github.com/stacksjs/stacks/commit/6f4cec9)) _(by Chris)_
+- **auth**: verify signed enterprise SAML assertions strictly ([1f50f97](https://github.com/stacksjs/stacks/commit/1f50f97)) _(by Chris)_
+- **auth**: verify enterprise OpenID Connect identity providers ([bb6c8f7](https://github.com/stacksjs/stacks/commit/bb6c8f7)) _(by Chris)_
+- integrate telephony and realtime support audio transport ([a396e64](https://github.com/stacksjs/stacks/commit/a396e64)) _(by Chris)_
+- add native telephony provider contracts and Twilio adapter ([d14f5b1](https://github.com/stacksjs/stacks/commit/d14f5b1)) _(by Chris Breuer)_
+- add native HQ.support SDK and messenger lifecycle ([5064232](https://github.com/stacksjs/stacks/commit/5064232)) _(by Chris)_
+- connect HQ.support through native HQ services ([82fdd69](https://github.com/stacksjs/stacks/commit/82fdd69)) _(by Chris Breuer)_
+
+## ✅ Tests
+
+- **auth**: reject corrupted enterprise OIDC signatures ([06f133f](https://github.com/stacksjs/stacks/commit/06f133f)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.574...v0.75.575)
 
 ## 🐛 Bug Fixes
