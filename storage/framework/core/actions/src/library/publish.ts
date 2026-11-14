@@ -5,6 +5,8 @@ import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
 import { configuredLibrary, LibraryConfigError, resolveLibraryPackages } from './packages'
 
+export type LibraryPublisher = 'pantry' | 'bun' | 'npm'
+
 export interface LibraryPublishPlan {
   name: string
   version: string
@@ -87,10 +89,17 @@ export async function planLibraryPublish(config?: LibraryConfig): Promise<Librar
  * Every publisher takes the flags the caller adds: `--access` and `--dry-run`
  * mean the same thing to all three.
  */
-export function publishCommand(registry: 'pantry' | 'npm' = 'pantry', which: (bin: string) => string | null = Bun.which, tag?: string): string[] {
+export function publishCommand(registry: 'pantry' | 'npm' = 'pantry', which: (bin: string) => string | null = Bun.which, tag?: string, publisher?: LibraryPublisher): string[] {
   if (tag !== undefined && (!/^[a-z][a-z0-9_-]{0,63}$/.test(tag) || /^v\d/.test(tag)))
     throw new LibraryConfigError('Use a lower-case distribution tag such as alpha, next or latest, not a version or range.')
   const tagged = (command: string[]) => tag === undefined ? command : [...command, '--tag', tag]
+  if (publisher !== undefined) {
+    if (!['pantry', 'bun', 'npm'].includes(publisher)) throw new LibraryConfigError('Choose publisher pantry, bun or npm.')
+    if (registry === 'pantry' && publisher !== 'pantry') throw new LibraryConfigError('Only pantry can publish to the Pantry registry.')
+    if (!which(publisher)) throw new LibraryConfigError(`Requested publisher ${publisher} is not available on PATH.`)
+    return tagged(publisher === 'pantry' && registry === 'npm' ? ['pantry', 'publish', '--npm'] : [publisher, 'publish'])
+  }
+
   if (which('pantry'))
     return tagged(registry === 'npm' ? ['pantry', 'publish', '--npm'] : ['pantry', 'publish'])
 
@@ -114,13 +123,13 @@ export function publishCommand(registry: 'pantry' | 'npm' = 'pantry', which: (bi
  * time means a failure names the package that failed instead of leaving the
  * set half-published with no record of where it stopped.
  */
-export async function publishLibraryPackages(options: { dryRun?: boolean, tag?: string, config?: LibraryConfig } = {}): Promise<LibraryPublishPlan[]> {
+export async function publishLibraryPackages(options: { dryRun?: boolean, tag?: string, publisher?: LibraryPublisher, config?: LibraryConfig } = {}): Promise<LibraryPublishPlan[]> {
   // Validate before config or publisher execution, including when the package set is empty.
-  if (options.tag !== undefined) publishCommand('npm', bin => bin === 'bun' ? 'bun' : null, options.tag)
+  if (options.tag !== undefined || options.publisher !== undefined) publishCommand('npm', bin => bin, options.tag, options.publisher)
   const plans = await planLibraryPublish(options.config)
 
   for (const plan of plans) {
-    const args = [...publishCommand(plan.registry, Bun.which, options.tag), '--access', plan.access]
+    const args = [...publishCommand(plan.registry, Bun.which, options.tag, options.publisher), '--access', plan.access]
 
     if (options.dryRun)
       args.push('--dry-run')

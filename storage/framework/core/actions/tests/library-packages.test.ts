@@ -533,6 +533,17 @@ describe('publishCommand', () => {
     expect(() => publishCommand('npm', on())).toThrow(/pantry/)
   })
 
+  it('selects an explicitly configured native publisher without falling back', () => {
+    expect(publishCommand('npm', bin => bin, 'alpha', 'bun')).toEqual(['bun', 'publish', '--tag', 'alpha'])
+    expect(publishCommand('npm', bin => bin, undefined, 'npm')).toEqual(['npm', 'publish'])
+    expect(publishCommand('npm', bin => bin, undefined, 'pantry')).toEqual(['pantry', 'publish', '--npm'])
+    expect(publishCommand('pantry', bin => bin, undefined, 'pantry')).toEqual(['pantry', 'publish'])
+    expect(() => publishCommand('npm', () => null, 'alpha', 'bun')).toThrow('not available')
+    expect(() => publishCommand('pantry', bin => bin, undefined, 'npm')).toThrow('Only pantry')
+    expect(() => publishCommand('pantry', bin => bin, undefined, 'bun')).toThrow('Only pantry')
+    expect(() => publishCommand('npm', bin => bin, undefined, 'other' as never)).toThrow('Choose publisher')
+  })
+
   it('forwards explicit distribution tags to every native publisher', () => {
     expect(publishCommand('npm', bin => bin === 'pantry' ? bin : null, 'alpha')).toEqual(['pantry', 'publish', '--npm', '--tag', 'alpha'])
     expect(publishCommand('pantry', bin => bin === 'pantry' ? bin : null, 'next')).toEqual(['pantry', 'publish', '--tag', 'next'])

@@ -14,6 +14,7 @@ interface LibsOptions extends CliOptions {
 interface PublishOptions extends CliOptions {
   dryRun?: boolean
   tag?: string
+  publisher?: 'pantry' | 'bun' | 'npm'
 }
 
 export function libs(buddy: CLI): void {
@@ -24,6 +25,7 @@ export function libs(buddy: CLI): void {
     json: 'Print the resolved packages as JSON',
     dryRun: 'Report what would be published without uploading anything',
     tag: 'Publish under an explicit distribution tag such as alpha or next',
+    publisher: 'Choose pantry, bun or npm explicitly; otherwise discover the installed publisher',
     verbose: 'Enable verbose output',
   }
 
@@ -94,9 +96,11 @@ export function libs(buddy: CLI): void {
     .command('libs:publish', descriptions.publish)
     .option('--dry-run', descriptions.dryRun, { default: false })
     .option('--tag <tag>', descriptions.tag)
+    .option('--publisher <publisher>', descriptions.publisher)
     .option('--verbose', descriptions.verbose, { default: false })
     .example('buddy libs:publish --dry-run')
     .example('buddy libs:publish --tag alpha --dry-run')
+    .example('buddy libs:publish --publisher bun --tag alpha --dry-run')
     .action(async (options: PublishOptions) => {
       const result = await runAction(Action.LibraryPublish, { ...options, verbose: true })
 

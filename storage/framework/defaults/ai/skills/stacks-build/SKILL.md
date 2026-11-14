@@ -147,6 +147,7 @@ buddy build:components     # just the `components` packages
 buddy build:web-components # just the `web-components` packages
 buddy libs:publish --dry-run
 buddy libs:publish --tag alpha --dry-run # validate an explicit pre-release channel
+buddy libs:publish --publisher bun --tag alpha --dry-run # select a native npm publisher
 buddy libs:publish         # after a build; refuses a package with no dist
 ```
 
@@ -158,6 +159,8 @@ generated and gitignored.
 and refuses when pantry is not on PATH. A package that apps install with Bun or
 npm sets `registry: 'npm'`, which publishes with `pantry publish --npm`, or with
 `bun publish` / `npm publish` where pantry is not installed.
+`--publisher bun|npm|pantry` explicitly selects an installed publisher without falling back. Bun and npm can only target npm; Pantry can target either configured registry. Omit the selector to preserve installed-publisher discovery.
+
 `--tag alpha` forwards an explicit lower-case distribution tag to Pantry, Bun or npm. Omit it to preserve the publisher's default tag. Tags must begin with a letter and contain lower-case letters, digits, underscores or hyphens; version-like tags are rejected. A package's first npm publication may also acquire the registry's initial `latest` tag, so verify actual registry tags after release.
 
 Each package publishes its own `readme` (a project-relative Markdown file) as

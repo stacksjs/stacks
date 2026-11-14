@@ -3,10 +3,10 @@ import { parseOptions } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import { publishLibraryPackages } from './library/publish'
 
-const options = parseOptions() as { dryRun?: boolean, tag?: string } | undefined
+const options = parseOptions() as { dryRun?: boolean, tag?: string, publisher?: 'pantry' | 'bun' | 'npm' } | undefined
 const dryRun = options?.dryRun === true || String(options?.dryRun) === 'true'
 
-const plans = await publishLibraryPackages({ dryRun, tag: options?.tag })
+const plans = await publishLibraryPackages({ dryRun, tag: options?.tag, publisher: options?.publisher })
 
 log.success(
   dryRun
