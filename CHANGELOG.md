@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.591...v0.75.592)
+
+## 🐛 Bug Fixes
+
+- **docs**: verify screenshot HTTP status and preserve retry ownership ([a2da175](https://github.com/stacksjs/stacks/commit/a2da175)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.590...v0.75.591)
 
 ## 🐛 Bug Fixes
