@@ -54,6 +54,65 @@ test('reads private metadata, archive and tags with only an explicitly origin-sc
   finally { server.stop(true) }
 })
 
+test('signed archive locations stay in memory while receipts retain only registry provenance', async () => {
+  const { root, directory, candidate, archive } = await fixture()
+  const headerToken = 'fixture-scoped-header-secret'
+  const pathToken = 'fixture-opaque-path-secret'
+  const queryToken = 'fixture-signed-query-secret'
+  const requests: string[] = []
+  let puts = 0, metadataReads = 0
+  const server = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch(request) {
+    if (request.method !== 'GET') { puts++; return new Response('', { status: 405 }) }
+    if (request.headers.get('authorization') !== `Bearer ${headerToken}`) return new Response('', { status: 401 })
+    const url = new URL(request.url)
+    requests.push(url.pathname)
+    if (url.pathname === `/download/${pathToken}/private.tgz`) {
+      if (url.searchParams.get('token') !== queryToken) return new Response('', { status: 403 })
+      return new Response(archive)
+    }
+    const pkg = candidate.packages[0]!
+    if (url.pathname.endsWith('/1.0.0')) return Response.json({ name: pkg.name, version: pkg.version, dist: { integrity: pkg.archive.integrity, tarball: ++metadataReads > 2 ? `https://[${pathToken}?token=${queryToken}` : `${server.url.origin}/download/${pathToken}/private.tgz?token=${queryToken}` } })
+    return Response.json({ 'dist-tags': { latest: pkg.version, stable: pkg.version } })
+  } })
+  const home = join(root, 'isolated-home')
+  await mkdir(home)
+  await writeFile(join(home, '.npmrc'), '')
+  const probe = join(root, 'readback.ts')
+  await writeFile(probe, `
+import assert from 'node:assert/strict';
+import {publishPreparedLibraryRelease,readbackLibraryRelease} from ${JSON.stringify(join(import.meta.dir, '../src/library/release-registry.ts'))};
+const origin=${JSON.stringify(server.url.origin)};
+assert.equal(new URL(origin).hostname,'127.0.0.1');
+const options={npmRegistry:origin,readAuth:{registry:origin,token:${JSON.stringify(headerToken)}},deadlineMs:3000,
+  publisher:'bun',which:()=>process.execPath,execute:async()=>{throw new Error('Existing archive must never invoke a publisher')}};
+const receipt=await readbackLibraryRelease(${JSON.stringify(directory)},options);
+const retry=await publishPreparedLibraryRelease(${JSON.stringify(directory)},options);
+const serialized=JSON.stringify({receipt,retry});
+for(const secret of ${JSON.stringify([headerToken, pathToken, queryToken])}) assert.ok(!serialized.includes(secret),'Receipt contains a credential');
+assert.ok(!serialized.includes('tarball'),'Receipt must not present an opaque download capability');
+assert.equal(receipt.packages[0].registryOrigin,origin);
+assert.equal(retry.packages[0].status,'existing-identical');
+await assert.rejects(readbackLibraryRelease(${JSON.stringify(directory)},options),error=>error.message==='Published tarball URL is invalid');
+await Bun.write(${JSON.stringify(join(root, 'receipt.json'))},serialized);
+`)
+  try {
+    const child = Bun.spawn([process.execPath, '--no-env-file', probe], { cwd: root,
+      env: { PATH: '/usr/bin:/bin', HOME: home, USERPROFILE: home, XDG_CONFIG_HOME: home, XDG_CACHE_HOME: join(home, 'cache'), NPM_CONFIG_CACHE: join(home, 'cache'), NPM_CONFIG_USERCONFIG: join(home, '.npmrc'), NPM_CONFIG_GLOBALCONFIG: join(home, 'global.npmrc'), NPM_TOKEN: '', NPM_READ_TOKEN: '', NODE_AUTH_TOKEN: '', BUN_AUTH_TOKEN: '', BUN_OPTIONS: '', NODE_OPTIONS: '' }, stdout: 'pipe', stderr: 'pipe' })
+    const [exit, output, error] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
+    // Do not echo child assertion values: a regression must not log signed URLs.
+    expect(exit, 'Hermetic signed-archive receipt probe failed').toBe(0)
+    expect(output).toBe('')
+    expect(error).toBe('')
+    const { receipt, retry } = await Bun.file(join(root, 'receipt.json')).json()
+    expect(receipt.source).toEqual(candidate.source)
+    expect(receipt.packages[0]).toEqual({ name: '@example/private', version: '1.0.0', registry: 'npm', registryOrigin: server.url.origin, integrity: candidate.packages[0]!.archive.integrity, archiveSha256: candidate.packages[0]!.archive.sha256, tags: { latest: '1.0.0', stable: '1.0.0' } })
+    expect(retry.packages[0].status).toBe('existing-identical')
+    expect(requests).toHaveLength(7)
+    expect(puts).toBe(0)
+  }
+  finally { server.stop(true) }
+})
+
 test('rejects missing restricted read credentials before invoking any publisher in a mixed public/private set', async () => {
   const { directory } = await fixture(true)
   let uploads = 0

@@ -134,6 +134,15 @@ local rebuild claiming the old run's identity. Candidate, source acceptance and
 registry receipts are attached to the standard GitHub release with immutable
 content-derived filenames, as well as retained in Actions.
 
+Registry receipts record `registryOrigin`, package name and version, verified
+archive SHA-256 and integrity, and actual distribution tags. Together these
+identify the registry and immutable package content. They deliberately omit
+opaque archive download URLs: private registries can return credential-bearing
+paths and signed queries. The verifier uses the complete same-origin URL only
+in memory to fetch and compare the archive bytes; a receipt is provenance,
+not a download credential. Dry-run receipts record the configured origin with
+`status: 'dry-run'` and do not claim registry verification.
+
 The workflow uses native Buddy phases internally. They are also available for
 inspection and recovery:
 

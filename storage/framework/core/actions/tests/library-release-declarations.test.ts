@@ -89,11 +89,14 @@ async function check() {
   }
   const receipt = await readbackNativeLibraryRelease({ cwd: '.', directory: 'retained' })
   const integrity: string | undefined = receipt.packages[0]?.integrity
+  const registryOrigin: string | undefined = receipt.packages[0]?.registryOrigin
+  // @ts-expect-error Receipts omit opaque download URLs, which may carry credentials.
+  const download = receipt.packages[0]?.tarball
   const published = await publishNativeLibraryRelease({ cwd: '.', directory: 'retained', dryRun: true, readAuth: auth })
   const publishedVersion: string | undefined = published.packages[0]?.version
   // @ts-expect-error Archive identities remain typed at the emitted interface.
   const invalidIntegrity: number = receipt.packages[0]!.integrity
-  return [version, integrity, publishedVersion, invalidIntegrity]
+  return [version, integrity, registryOrigin, download, publishedVersion, invalidIntegrity]
 }
 void [config, invalid, registry, check]
 `)

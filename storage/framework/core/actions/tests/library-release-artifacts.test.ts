@@ -55,6 +55,8 @@ test('publishes the retained tgz and skips only an identical existing version on
   const receipt = await publishPreparedLibraryRelease(directory, options)
   expect(commands).toEqual([['bun', 'publish', '--tag', 'alpha', join(directory, 'archives/0.tgz'), '--access', 'public', '--ignore-scripts', '--registry', 'https://registry.npmjs.org']])
   expect(receipt.packages[0]!.status).toBe('published')
+  expect(receipt.packages[0]!.registryOrigin).toBe('https://registry.npmjs.org')
+  expect(receipt.packages[0]).not.toHaveProperty('tarball')
   expect((await publishPreparedLibraryRelease(directory, options)).packages[0]!.status).toBe('existing-identical')
   expect(commands).toHaveLength(1)
 })
@@ -218,6 +220,8 @@ test('dry-run validates the retained artifact and publisher without any registry
   expect(commands[0]).toContain('--dry-run')
   expect(commands[0]).toContain('--ignore-scripts')
   expect(receipt.packages[0]!.status).toBe('dry-run')
+  expect(receipt.packages[0]!.registryOrigin).toBe('https://registry.npmjs.org')
+  expect(receipt.packages[0]).not.toHaveProperty('tarball')
 })
 
 test('refuses conflicting archive paths before retaining installable bytes', async () => {
