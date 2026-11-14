@@ -1,13 +1,17 @@
 import type { LibraryReleaseCandidate, LibraryReleaseLimits, LibraryReleasePackage, LibraryReleaseSource } from './release-artifacts'
 import type { LibraryNetworkOptions, LibraryReader } from './release-network'
 import type { LibraryPublisher } from './publish'
+import type { LibraryRegistryReadAuthOptions } from './release-registry-auth'
 import { spawnOwnedProcess } from '@stacksjs/cli/owned-process'
 import { resolve } from 'node:path'
 import { inspectLibraryRelease, libraryIntegrity, librarySha256 } from './release-artifacts'
 import { createLibraryReleaseReader } from './release-network'
 import { publishCommand } from './publish'
+import { libraryRegistryOrigin, libraryRegistryReadHeaders } from './release-registry-auth'
 
-export interface LibraryRegistryOptions extends LibraryNetworkOptions, LibraryReleaseLimits {
+export type { LibraryRegistryReadAuth } from './release-registry-auth'
+
+export interface LibraryRegistryOptions extends LibraryNetworkOptions, LibraryReleaseLimits, LibraryRegistryReadAuthOptions {
   /** Override for a private npm registry. HTTP is limited to loopback. */
   npmRegistry?: string
 }
@@ -33,22 +37,16 @@ export interface LibraryReadbackOptions extends LibraryRegistryOptions {
   /** Defaults to true. Historical audits can report moved tags without requiring their old target. */
   requireCurrentTag?: boolean
 }
-function registryOrigin(options: LibraryRegistryOptions): string {
-  const url = new URL(options.npmRegistry ?? 'https://registry.npmjs.org')
-  if (url.username || url.password || url.search || url.hash || url.pathname !== '/'
-    || url.protocol !== 'https:' && !(url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)))
-    throw new Error('Expected a plain HTTPS npm registry origin')
-  return url.origin
-}
 function requireNpm(pkg: LibraryReleasePackage): void {
   if (pkg.registry !== 'npm') throw new Error('Exact retained archive readback for the Pantry registry is not supported by this adapter')
 }
 
 async function publishedPackage(pkg: LibraryReleasePackage, options: LibraryRegistryOptions, reader: LibraryReader, missing: boolean, checkTag: boolean): Promise<LibraryRegistryPackageReceipt | undefined> {
   requireNpm(pkg)
-  const origin = registryOrigin(options)
+  const origin = libraryRegistryOrigin(options.npmRegistry)
+  const headers = libraryRegistryReadHeaders(options, pkg.access === 'restricted')
   const endpoint = `${origin}/${encodeURIComponent(pkg.name)}`
-  const raw = await reader.read(`${endpoint}/${encodeURIComponent(pkg.version)}`, { missing, processing: !missing })
+  const raw = await reader.read(`${endpoint}/${encodeURIComponent(pkg.version)}`, { missing, processing: !missing, headers })
   if (!raw) return undefined
   const metadata = JSON.parse(new TextDecoder().decode(raw)) as { name?: string, version?: string, dist?: { integrity?: string, tarball?: string } }
   if (metadata.name !== pkg.name || metadata.version !== pkg.version || metadata.dist?.integrity !== pkg.archive.integrity || typeof metadata.dist.tarball !== 'string')
@@ -56,10 +54,10 @@ async function publishedPackage(pkg: LibraryReleasePackage, options: LibraryRegi
   const tarball = new URL(metadata.dist.tarball)
   if (tarball.origin !== origin || tarball.username || tarball.password || tarball.hash)
     throw new Error('Published tarball is outside its actual registry origin')
-  const bytes = await reader.read(tarball.href, { maxBytes: options.maxArchiveBytes ?? 64 * 1024 * 1024, processing: !missing })
+  const bytes = await reader.read(tarball.href, { maxBytes: options.maxArchiveBytes ?? 64 * 1024 * 1024, processing: !missing, headers })
   if (!bytes || bytes.length !== pkg.archive.bytes || librarySha256(bytes) !== pkg.archive.sha256 || libraryIntegrity(bytes) !== pkg.archive.integrity)
     throw new Error(`Published ${pkg.name}@${pkg.version} archive bytes differ from the retained candidate`)
-  const tagsRaw = await reader.read(endpoint, { processing: !missing })
+  const tagsRaw = await reader.read(endpoint, { processing: !missing, headers })
   const packument = JSON.parse(new TextDecoder().decode(tagsRaw)) as { 'dist-tags'?: Record<string, string> }
   const tags = packument['dist-tags']
   if (!tags || typeof tags !== 'object' || Array.isArray(tags) || Object.values(tags).some(value => typeof value !== 'string'))
@@ -72,6 +70,7 @@ async function publishedPackage(pkg: LibraryReleasePackage, options: LibraryRegi
 export async function readbackLibraryRelease(directory: string, options: LibraryReadbackOptions = {}): Promise<LibraryRegistryReceipt> {
   const candidate = await inspectLibraryRelease(directory, options.source, options)
   if (options.verifierCommit !== undefined && !/^[a-f0-9]{40}$/.test(options.verifierCommit)) throw new Error('Expected full verifier commit SHA')
+  libraryRegistryReadHeaders(options, candidate.packages.some(pkg => pkg.access === 'restricted'))
   const reader = createLibraryReleaseReader(options)
   const packages: LibraryRegistryPackageReceipt[] = []
   for (const pkg of candidate.packages) packages.push((await publishedPackage(pkg, options, reader, false, options.requireCurrentTag !== false))!)
@@ -96,7 +95,7 @@ export function retainedArchivePublishCommand(pkg: LibraryReleasePackage, archiv
   const command = publishCommand(pkg.registry, archiveCapable, pkg.tag, options.publisher)
   if (command[0] === 'pantry')
     throw new Error('Unsupported publisher capability: Pantry publish accepts package directories, not an exact retained .tgz. Select bun or npm for an npm-bound package.')
-  return [...command, archive, '--access', pkg.access, '--ignore-scripts', '--registry', registryOrigin(options), ...(options.dryRun ? ['--dry-run'] : [])]
+  return [...command, archive, '--access', pkg.access, '--ignore-scripts', '--registry', libraryRegistryOrigin(options.npmRegistry), ...(options.dryRun ? ['--dry-run'] : [])]
 }
 
 /** Never repack restored content. Retry skips existing versions only after comparing actual bytes. */
@@ -104,6 +103,7 @@ export async function publishPreparedLibraryRelease(directory: string, options: 
   const candidate: LibraryReleaseCandidate = await inspectLibraryRelease(directory, options.source, options)
   // Validate every capability before publishing the first member of a set.
   const commands = candidate.packages.map(pkg => retainedArchivePublishCommand(pkg, resolve(directory, pkg.archive.path), options))
+  libraryRegistryReadHeaders(options, candidate.packages.some(pkg => pkg.access === 'restricted'))
   const reader = createLibraryReleaseReader(options)
   const original = JSON.stringify(candidate)
   const existingPackages: Array<LibraryRegistryPackageReceipt | undefined> = []

@@ -75,8 +75,14 @@ available. Set `releaseable: true` when enabling publication.
 New apps inherit native `.github/workflows/ci.yml` and `release.yml` templates.
 Existing apps should adopt those templates through their normal reviewed workflow
 update. Set the repository's `NPM_TOKEN` secret for the default publication job;
-the token is exposed only to the publisher step. Source acceptance and historical
-readback need only read access to repository Actions and contents.
+the token is exposed only to the publisher step. Source acceptance needs only read access to repository Actions and contents.
+Restricted npm packages additionally need scoped registry read credentials before
+any upload or readback. Native registry verification resolves `NPM_READ_TOKEN`
+(preferred) or `NODE_AUTH_TOKEN` only for the canonical npm registry. Historical
+readback can use a read-only `NPM_READ_TOKEN`; registry credentials never enter
+retained data or receipts. An overridden registry requires an explicitly bound
+`readAuth: { registry, token }` input through the native API, and credentials are
+never sent across origins or redirects.
 
 The default CI runs jobs named `Lint`, `Typecheck` and `Test`. Test waits for the
 first two, prepares the native libraries before tests which consume their built

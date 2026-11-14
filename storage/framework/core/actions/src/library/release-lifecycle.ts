@@ -11,6 +11,7 @@ import { downloadLibraryReleaseSource } from './release-download'
 import { createLibraryReleaseReader } from './release-network'
 import { DEFAULT_LIBRARY_SOURCE_CI, isLibraryPrereleaseVersion, planNativeLibraryRelease } from './release-plan'
 import { publishPreparedLibraryRelease, readbackLibraryRelease } from './release-registry'
+import { resolveLibraryRegistryReadAuth } from './release-registry-auth'
 import { acceptLibraryReleaseSource, latestLibrarySourceRun } from './release-source'
 import { configuredLibrary } from './packages'
 
@@ -127,7 +128,7 @@ export async function publishNativeLibraryRelease(options: Omit<NativeLibraryAcc
   const config = plan.config
   const candidate = await inspectLibraryRelease(options.directory, { repository: receipt.source.repository, commit: receipt.source.commit })
   if (candidate.packages.some(pkg => pkg.tag !== (config?.release?.distTag ?? 'latest') || isLibraryPrereleaseVersion(pkg.version) && pkg.tag === 'latest')) throw new Error('Candidate distribution channel differs from current release policy')
-  const result = await publishPreparedLibraryRelease(options.directory, { ...options, source: { repository: receipt.source.repository, commit: receipt.source.commit }, publisher: config?.release?.publisher })
+  const result = await publishPreparedLibraryRelease(options.directory, { ...options, readAuth: resolveLibraryRegistryReadAuth(options, process.env), source: { repository: receipt.source.repository, commit: receipt.source.commit }, publisher: config?.release?.publisher })
   result.source = receipt.source
   result.verifierCommit = fullCommit(options.cwd, 'HEAD')
   if (!options.dryRun) await writeFile(join(options.directory, 'registry-receipt.json'), `${JSON.stringify(result, null, 2)}\n`)
@@ -137,7 +138,7 @@ export async function publishNativeLibraryRelease(options: Omit<NativeLibraryAcc
 /** Historical readback runs only current native verifier code over retained data. */
 export async function readbackNativeLibraryRelease(options: Omit<NativeLibraryAcceptanceOptions, 'tag'> & LibraryRegistryOptions): Promise<LibraryRegistryReceipt> {
   const receipt = await verifyNativeLibraryAcceptance(options)
-  const readbackOptions = { ...options, requireCurrentTag: false, source: { repository: receipt.source.repository, commit: receipt.source.commit }, verifierCommit: fullCommit(options.cwd, 'HEAD') }
+  const readbackOptions = { ...options, readAuth: resolveLibraryRegistryReadAuth(options, process.env), requireCurrentTag: false, source: { repository: receipt.source.repository, commit: receipt.source.commit }, verifierCommit: fullCommit(options.cwd, 'HEAD') }
   const result = await readbackLibraryRelease(options.directory, readbackOptions)
   result.source = receipt.source
   return result

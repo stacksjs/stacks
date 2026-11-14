@@ -110,7 +110,7 @@ test('resumes a partially published package set, refusing different bytes withou
     if (url.endsWith(`/${pkg.version}`)) return Response.json({ name: pkg.name, version: pkg.version, dist: { tarball: `https://registry.npmjs.org/${i}.tgz`, integrity: pkg.archive.integrity } })
     return Response.json({ 'dist-tags': { alpha: pkg.version } })
   }
-  const options = { publisher: 'bun' as const, which: (bin: string) => bin, fetch: request, execute: async (args: string[]) => {
+  const options = { publisher: 'bun' as const, readAuth: { registry: 'https://registry.npmjs.org', token: 'fixture-read-only' }, which: (bin: string) => bin, fetch: request, execute: async (args: string[]) => {
     const i = args.some(arg => arg.endsWith('/1.tgz')) ? 1 : 0
     calls.push(i)
     if (i === 1 && failSecond) return 1
