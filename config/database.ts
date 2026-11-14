@@ -274,6 +274,12 @@ export default {
     ],
 
     /**
+     * Record the queue's own polling as well. A worker asks for a job several
+     * times a second, so this is off: only a poll that is slow or fails is kept.
+     */
+    logHousekeeping: false,
+
+    /**
      * Query analysis configuration
      */
     analysis: {

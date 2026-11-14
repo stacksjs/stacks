@@ -351,6 +351,7 @@ SQLite's SQL on a Turso or `sqld` server. Configure `TURSO_DATABASE_URL`
     retention: 7,        // days
     pruneFrequency: 24,  // hours
     excludedQueries: ['query_logs'],
+    logHousekeeping: false, // true also records the queue's own polling of jobs, queue_workers, queue_circuit_state
     analysis: { enabled: true, analyzeAll: false, explainPlan: true, suggestions: true }
   }
 }

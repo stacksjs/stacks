@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { join } from 'node:path'
 import { SQL } from 'bun'
-import { isExcludedQuery, logQuery, setQueryTracker } from '../src/query-logger'
+import { isExcludedQuery, isHousekeepingQuery, logQuery, setQueryTracker } from '../src/query-logger'
 import { createDatabaseQueryHooks } from '../src/utils'
 
 async function runInDisposableDatabase(dialect: 'mysql' | 'postgres', connection: string, fixture: string, marker: string): Promise<void> {
@@ -81,6 +81,33 @@ describe('database query logging', () => {
       clearTimeout(watchdog)
       child.kill()
     }
+  })
+
+  it('leaves the queue\'s own polling out of the log unless it is slow, fails, or is asked for', async () => {
+    const child = Bun.spawn([process.execPath, '--no-env-file', join(import.meta.dir, 'fixtures/query-log-housekeeping.ts')], {
+      cwd: join(import.meta.dir, '..'),
+      env: { ...process.env, APP_ENV: 'test', DB_CONNECTION: 'sqlite', DB_DATABASE_PATH: ':memory:', DB_QUERY_LOGGING_ENABLED: 'false' },
+      stdout: 'pipe', stderr: 'pipe',
+    })
+    const watchdog = setTimeout(() => child.kill(), 8000)
+    try {
+      const [exitCode, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
+      expect(exitCode, `${stdout}\n${stderr}`).toBe(0)
+      expect(stdout).toContain('query-log-housekeeping-ok')
+    }
+    finally {
+      clearTimeout(watchdog)
+      child.kill()
+    }
+  })
+
+  it('tells a statement on a polling table from one that only mentions it', () => {
+    expect(isHousekeepingQuery('select * from jobs where queue = ?')).toBe(true)
+    expect(isHousekeepingQuery('UPDATE `jobs` SET reserved_at = ?')).toBe(true)
+    expect(isHousekeepingQuery('DELETE FROM queue_workers WHERE heartbeat_at < $1')).toBe(true)
+    expect(isHousekeepingQuery('select * from jobs_archive')).toBe(false)
+    expect(isHousekeepingQuery('select * from "failed_jobs"')).toBe(false)
+    expect(isHousekeepingQuery('insert into audit (note) values (\'from jobsite\')')).toBe(false)
   })
 
   it('stops writing to a query_logs table that is not migrated yet, and resumes once it is', async () => {

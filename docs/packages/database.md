@@ -684,6 +684,7 @@ export default {
     retention: 7,
     // Patterns to skip. `query_logs` is here to avoid logging the log.
     excludedQueries: ['query_logs'],
+    logHousekeeping: false, // true also records the queue's own polling of jobs, queue_workers, queue_circuit_state
   },
 }
 ```
