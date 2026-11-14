@@ -1,4 +1,4 @@
-import type { LibraryHostedOptions } from '@stacksjs/types'
+import type { LibraryHostedOptions } from '@stacksjs/types/library'
 import type { ResolvedLibraryPackage } from './packages'
 import { createHash } from 'node:crypto'
 import { existsSync, realpathSync } from 'node:fs'
