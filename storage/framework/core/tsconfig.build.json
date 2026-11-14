@@ -152,6 +152,8 @@
       "@stacksjs/http/*": ["./http/src/*.ts"],
       "@stacksjs/http/*.js": ["./http/src/*.ts"],
       "@stacksjs/i18n": ["./i18n/src/index.ts"],
+      "@stacksjs/i18n/client": ["./i18n/src/client.ts"],
+      "@stacksjs/i18n/stx": ["./i18n/src/stx.ts"],
       "@stacksjs/image": ["./image/src/index.ts"],
       "@stacksjs/lint": ["./lint/src/index.ts"],
       "@stacksjs/lint/*": ["./lint/src/*.ts"],
