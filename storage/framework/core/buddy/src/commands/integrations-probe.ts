@@ -54,6 +54,8 @@ export const PROBE_TARGETS: ProbeTarget[] = [
   { name: 'Twilio', url: 'https://api.twilio.com/2010-04-01/Accounts', method: 'GET', observed: 401 },
   { name: 'Twilio Lookups v2', url: 'https://lookups.twilio.com/v2/PhoneNumbers/+15005550006', method: 'GET', observed: 401 },
   { name: 'Twilio Verify v2', url: 'https://verify.twilio.com/v2/Services', method: 'GET', observed: 401 },
+  { name: 'Twilio WhatsApp Senders v2', url: 'https://messaging.twilio.com/v2/Channels/Senders', method: 'GET', observed: 401 },
+  { name: 'Twilio Content v1', url: 'https://content.twilio.com/v1/Content', method: 'GET', observed: 401 },
   // The keys social sign-in verifies Apple and Google id_tokens against
   // (stacksjs/stacks#2907). Both are public, so a healthy answer is the
   // document itself rather than an auth error.
