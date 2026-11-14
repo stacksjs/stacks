@@ -55,10 +55,10 @@ test.skipIf(typeof Bun.WebView !== 'function' || (process.platform !== 'darwin' 
       viewports: [{name:'mobile',width:390,height:844}],
       pages: [{id:'home',title:'Home',path:'/',description:'The role-specific home.',waitFor:'main[data-ready="yes"]',
         ready: async ({view,profile}) => { const text=await view.evaluate('document.querySelector("#role").textContent'); if(profile==='visitor' && text!=='anonymous') throw new Error('role leaked'); return true }
-      }, {id:'project',title:'Project detail',path:'/projects/[id]',model:'Project',description:'Inspect a synthetic seeded project.',waitFor:'main'}]
+      }, {id:'project',title:'Project detail',path:'/projects/[id]',model:'Project',description:'Inspect a synthetic seeded project.',waitFor:'main'}, {id:'resolved',title:'Resolved project',route:'/projects/[id]',path:async ({fixtures})=>'/projects/'+fixtures.Project.id,description:'A legacy API supplies the concrete fixture.',waitFor:'main'}]
     }`)
     const report = await captureScreenshots({ root, config: 'screens.ts' })
-    expect(report.results.map(result => result.status)).toEqual(['captured', 'captured', 'captured', 'captured'])
+    expect(report.results.map(result => result.status)).toEqual(['captured', 'captured', 'captured', 'captured', 'captured', 'captured'])
     expect(report.results.filter(result => result.id === 'project').map(result => result.path)).toEqual(['/projects/7', '/projects/7'])
     for (const result of report.results) {
       const png = new Uint8Array(await Bun.file(join(root, 'pictures', result.file!)).arrayBuffer())
@@ -85,12 +85,14 @@ test.skipIf(typeof Bun.WebView !== 'function' || (process.platform !== 'darwin' 
       baseUrl:'http://127.0.0.1:${server.port}', outDir:'pictures', timeoutMs:5000,
       viewports:[{name:'mobile',width:390,height:844}], pages:[
         {id:'private',title:'Private',path:'/private',description:'Private account screen.',waitFor:'main'},
-        {id:'waiting',title:'Waiting',path:'/',description:'Data must arrive.',waitFor:'[data-never-ready]'}
+        {id:'waiting',title:'Waiting',path:'/',description:'Data must arrive.',waitFor:'[data-never-ready]'},
+        {id:'escape',title:'Invalid target',route:'/future',path:async ()=>'https://elsewhere.test/',description:'A resolver cannot leave this origin.',waitFor:'main'}
       ]
     }`)
     const report = await captureScreenshots({ root, config: 'screens.ts' })
-    expect(report.results.map(result => result.status)).toEqual(['failed', 'failed'])
+    expect(report.results.map(result => result.status)).toEqual(['failed', 'failed', 'failed'])
     expect(report.results[0]!.error).toContain('redirected')
+    expect(report.results[2]!.error).toContain('configured origin')
     expect(report.results[1]!.error).toMatch(/deadline|ready/)
     await expect(captureScreenshots({ root, config: 'screens.ts', check: true })).rejects.toThrow('failed')
   }

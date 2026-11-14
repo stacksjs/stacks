@@ -14,13 +14,16 @@ export interface ScreenshotContext {
   baseUrl: string
   profile: string
   viewport: ScreenshotViewport
-  page: ScreenshotPage
+  page: ScreenshotPage & { path: string }
 }
+export interface ScreenshotPathContext { fixtures: ScreenshotFixtures, models: ScreenshotModelPlan, profile: string }
 export interface ScreenshotPage {
   /** Stable filename, independent of route parameters and translated titles. */
   id: string
   title: string
-  path: string
+  path: string | ((context: ScreenshotPathContext) => string | Promise<string>)
+  /** Route pattern for an asynchronous fixture-resolved path, without record secrets. */
+  route?: string
   /** Explain what the reader sees and what decision this screen supports. */
   description: string
   reason?: string
@@ -117,7 +120,8 @@ export async function validateScreenshotConfig(config: ScreenshotConfig, root = 
     if (!safeName(page.id) || ids.has(page.id)) throw new Error(`Duplicate or invalid screen id: ${page.id}`)
     ids.add(page.id)
     if (!page.title.trim() || !page.description.trim() || !page.waitFor.trim()) throw new Error(`Screen ${page.id} needs title, description and waitFor`)
-    const target = new URL(page.path, base)
+    if (typeof page.path !== 'string' && (typeof page.path !== 'function' || !page.route)) throw new Error(`Screen ${page.id} needs a route pattern for its path resolver`)
+    const target = new URL(typeof page.path === 'string' ? page.path : page.route!, base)
     if (target.origin !== base.origin || target.username || target.password) throw new Error(`Screen ${page.id} must stay on baseUrl's origin`)
     if (page.profiles?.some(name => !profiles.includes(name)) || page.profiles?.length === 0) throw new Error(`Unknown or empty profiles for ${page.id}`)
     for (const source of page.sources ?? []) {
@@ -194,7 +198,7 @@ async function captureProfile(configFile: string, profile: string, options: Scre
     for (const page of config.pages) {
       if (options.only?.length && !options.only.includes(page.id)) continue
       if (!(page.profiles ?? Object.keys(config.profiles ?? { default: {} })).includes(profile)) continue
-      const result: ScreenshotResult = { id: page.id, profile, viewport, title: page.title, description: page.description, ...(page.reason ? { reason: page.reason } : {}), path: new URL(page.path, config.baseUrl).pathname, status: 'failed' }
+      const result: ScreenshotResult = { id: page.id, profile, viewport, title: page.title, description: page.description, ...(page.reason ? { reason: page.reason } : {}), path: new URL(typeof page.path === 'string' ? page.path : page.route!, config.baseUrl).pathname, status: 'failed' }
       results.push(result)
       if (page.skip) { result.status = 'skipped'; result.error = page.skip; process.send?.({ type: 'screenshot-result', result }); continue }
       let view: Bun.WebView | undefined
@@ -202,11 +206,14 @@ async function captureProfile(configFile: string, profile: string, options: Scre
       try {
         if (typeof Bun.WebView !== 'function') throw new Error('This Bun has no WebView. Upgrade Bun before capturing screens.')
         view = new Bun.WebView({ width: viewport.width, height: viewport.height, backend: backend === 'chrome' ? { type: 'chrome', url: false, argv: process.env.CI ? ['--no-sandbox', '--disable-dev-shm-usage'] : [] } : 'webkit' })
-        const concrete = { ...page, path: screenshotFixturePath(page.path, page.model, fixtures, models) }
-        const context: ScreenshotContext = { view, baseUrl: config.baseUrl, profile, viewport, page: concrete }
-        result.path = new URL(concrete.path, config.baseUrl).pathname
         await Promise.race([
           (async () => {
+            const path = typeof page.path === 'function' ? await page.path({ fixtures, models, profile }) : screenshotFixturePath(page.path, page.model, fixtures, models)
+            const target = new URL(path, config.baseUrl)
+            if (target.origin !== new URL(config.baseUrl).origin || target.username || target.password) throw new Error('Resolved screenshot path must stay on the configured origin')
+            const concrete = { ...page, path }
+            const context: ScreenshotContext = { view: view!, baseUrl: config.baseUrl, profile, viewport, page: concrete }
+            result.path = target.pathname
             await config.profiles?.[profile]?.prepare?.(context)
             await view!.navigate(new URL(concrete.path, config.baseUrl).href)
             await page.prepare?.(context)
@@ -255,7 +262,7 @@ export async function captureScreenshots(options: ScreenshotOptions = {}): Promi
   for (const name of options.viewports ?? []) if (!(config.viewports ?? defaults).some(viewport => viewport.name === name)) throw new Error(`Unknown viewport: ${name}`)
   const output = resolve(root, options.outDir ?? config.outDir)
   const inputs = [...new Set([...(config.inputs ?? []), ...config.pages.flatMap(page => page.sources ?? [])])].sort()
-  const report: ScreenshotReport = { format: 1, generator: '@stacksjs/docs/screenshots', models: await discoverScreenshotModels(root, config.models), configHash: hash(Buffer.concat([await readFile(configFile), ...await Promise.all(inputs.map(file => readFile(resolve(root, file))))])), inventory: config.pages.map(page => ({ id: page.id, title: page.title, path: new URL(page.path, config.baseUrl).pathname, sources: page.sources ?? [], ...(page.skip ? { skip: page.skip } : {}) })), backend: config.backend ?? (process.platform === 'darwin' ? 'webkit' : 'chrome'), bun: Bun.version, results: [] }
+  const report: ScreenshotReport = { format: 1, generator: '@stacksjs/docs/screenshots', models: await discoverScreenshotModels(root, config.models), configHash: hash(Buffer.concat([await readFile(configFile), ...await Promise.all(inputs.map(file => readFile(resolve(root, file))))])), inventory: config.pages.map(page => ({ id: page.id, title: page.title, path: new URL(typeof page.path === 'string' ? page.path : page.route!, config.baseUrl).pathname, sources: page.sources ?? [], ...(page.skip ? { skip: page.skip } : {}) })), backend: config.backend ?? (process.platform === 'darwin' ? 'webkit' : 'chrome'), bun: Bun.version, results: [] }
   if (options.list) return report
   if (options.check) {
     const existing = JSON.parse(await readFile(join(output, 'manifest.json'), 'utf8')) as ScreenshotReport
@@ -325,7 +332,7 @@ export async function captureScreenshots(options: ScreenshotOptions = {}): Promi
       catch (error) {
         for (const page of selected) for (const viewport of config.viewports ?? defaults) {
           if (options.viewports?.length && !options.viewports.includes(viewport.name)) continue
-          report.results.push({ id: page.id, profile, viewport, title: page.title, description: page.description, path: new URL(page.path, config.baseUrl).pathname, status: 'failed', error: redacted(error, config) })
+          report.results.push({ id: page.id, profile, viewport, title: page.title, description: page.description, path: new URL(typeof page.path === 'string' ? page.path : page.route!, config.baseUrl).pathname, status: 'failed', error: redacted(error, config) })
         }
       }
       finally { if (timer) clearTimeout(timer); await worker.stop() }

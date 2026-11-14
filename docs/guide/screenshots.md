@@ -178,3 +178,22 @@ The model's primary key supplies `[id]`; named fields such as `[slug]` or `:slug
 A trusted `data.prepare(plan)` hook can instead return those fixture bindings after looking up an existing synthetic record. It runs once per profile worker, only during capture; `data.cleanup()` runs afterward. Use the native seeder and `@stacksjs/testing/database` factories to prepare a disposable application environment, then point the running server and capture tool at that environment. Those factories preserve the framework's relationship, password, validation and uniqueness rules. Do not invent foreign keys or duplicate the factory implementation inside a screenshot script.
 
 If a hook creates records, both its database connection and the running application must use the intended disposable database. The tool does not automatically run migrations, reset databases or seed a production target. List/check modes do not invoke data hooks. Include the source/build pin and relevant imported fixture helpers in `inputs`; model source changes are fingerprinted automatically. Capture empty, populated, validation-error and permission-denied states as separate inventory entries, with the seeded context each one requires.
+
+For a legacy API or a fixture that needs a read before its URL is known, use a path resolver instead of inventing an ORM model. Declare the human-readable route pattern separately:
+
+```ts
+{
+  id: 'workout',
+  title: 'Workout details',
+  route: '/workouts/[id]',
+  path: ({ fixtures }) => {
+    const workout = fixtures.Workout
+    if (!workout?.id) throw new Error('A synthetic workout fixture is required')
+    return `/workouts/${encodeURIComponent(workout.id)}`
+  },
+  description: 'Inspect the actual synthetic workout returned by the fixture adapter.',
+  waitFor: '[data-workout-loaded]',
+}
+```
+
+A resolver may be asynchronous, runs within the capture deadline and must remain on the configured origin. Its returned URL is not written into the inventory pattern; reports retain only the final path, without query or fragment. Use `--list --json` for the complete machine-readable screen inventory and model plan.

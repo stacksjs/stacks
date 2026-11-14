@@ -28,7 +28,7 @@ export function docs(buddy: CLI): void {
     .example('buddy docs:screenshots --only welcome,calendar --viewport mobile')
     .action(async (options: { config?: string, out?: string, only?: string, viewport?: string, list?: boolean, check?: boolean, json?: boolean }) => {
       const { captureScreenshots } = await import('@stacksjs/docs/screenshots')
-      const report = await captureScreenshots({ config: options.config, outDir: options.out, only: options.only?.split(',').filter(Boolean), viewports: options.viewport?.split(',').filter(Boolean), list: options.list, check: options.check, onProgress: result => { if (!options.json) console.log(`${result.status} ${result.id}/${result.profile}/${result.viewport.name}`) } })
+      const report = await captureScreenshots({ config: options.config, outDir: options.out, only: options.only?.split(',').map(value => value.trim()).filter(Boolean), viewports: options.viewport?.split(',').map(value => value.trim()).filter(Boolean), list: options.list, check: options.check, onProgress: result => { if (!options.json) console.log(`${result.status} ${result.id}/${result.profile}/${result.viewport.name}`) } })
       if (options.json) {
         console.log(JSON.stringify(report, null, 2))
         if (report.results.some(result => result.status === 'failed')) process.exitCode = 1
