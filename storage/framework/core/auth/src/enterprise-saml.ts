@@ -1,6 +1,6 @@
 import { SAML, ValidateInResponseTo } from '@node-saml/node-saml'
 import type { CacheProvider } from '@node-saml/node-saml'
-import { getVerifiedXml, parseDomFromString, xpath } from '@node-saml/node-saml/lib/xml'
+import { parseEnterpriseSamlXml, verifiedEnterpriseSamlResponse } from './enterprise-saml-xml'
 
 export interface EnterpriseSamlConfig {
   issuer: string
@@ -58,12 +58,12 @@ export async function verifyEnterpriseSamlResponse(config: EnterpriseSamlConfig,
   if (!profile || loggedOut || profile.issuer !== config.issuer || profile.nameIDFormat !== PERSISTENT || !profile.nameID) throw new TypeError('SAML identity is missing or not persistent.')
   // Node-SAML currently warns about Destination/Recipient mismatch. This
   // adapter makes them hard failures and reads only verified signed bytes.
-  const received = await parseDomFromString(xml)
-  const verified = getVerifiedXml(xml, received.documentElement, [config.idpCert])
-  if (!verified) throw new TypeError('A signed SAML Response is required.')
-  const document = await parseDomFromString(verified), root = document.documentElement
+  const received = parseEnterpriseSamlXml(xml)
+  const verified = verifiedEnterpriseSamlResponse(xml, config.idpCert)
+  const document = parseEnterpriseSamlXml(verified), root = document.documentElement!;
+  if (!received.documentElement) throw new TypeError('SAML root is missing.')
   if (root.namespaceURI !== PROTOCOL_NS || root.localName !== 'Response' || root.getAttribute('Version') !== '2.0' || root.getAttribute('Destination') !== config.callbackUrl || root.getAttribute('InResponseTo') !== request.requestId) throw new TypeError('SAML response recipient or request does not match.')
-  const assertions = xpath.selectElements(document, "/*[local-name()='Response']/*[local-name()='Assertion']")
+  const assertions = Array.from(root.childNodes).filter(node => node.nodeType === 1 && (node as typeof root).localName === 'Assertion') as (typeof root)[]
   if (assertions.length !== 1 || assertions[0]!.namespaceURI !== SAML_NS || assertions[0]!.getAttribute('Version') !== '2.0') throw new TypeError('One SAML assertion is required.')
   const assertion = assertions[0]!
   const audience = assertion.getElementsByTagNameNS(SAML_NS, 'Audience')

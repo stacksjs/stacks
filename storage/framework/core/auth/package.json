@@ -75,7 +75,9 @@
     "@stacksjs/ts-auth": "^0.4.7",
     "ts-qr-codes": "^0.1.8",
     "oauth4webapi": "^3.8.8",
-    "@node-saml/node-saml": "^5.2.0"
+    "@node-saml/node-saml": "^5.2.0",
+    "@xmldom/xmldom": "^0.9.12",
+    "xml-crypto": "^6.4.0"
   },
   "devDependencies": {
     "better-dx": "^0.2.39"

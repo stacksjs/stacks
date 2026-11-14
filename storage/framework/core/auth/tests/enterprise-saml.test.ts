@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { signXml } from '@node-saml/node-saml/lib/xml'
+import { signSamlXml as signXml } from './fixtures/enterprise-saml-signature'
 import { inflateRawSync } from 'node:zlib'
 import { verify } from 'node:crypto'
 import { enterpriseSamlAuthorization, enterpriseSamlRequest, verifyEnterpriseSamlResponse } from '../src/enterprise-saml'
@@ -43,4 +43,17 @@ test('enterprise SAML rejects entity declarations and old native request state',
   const request = enterpriseSamlRequest()
   await expect(verifyEnterpriseSamlResponse(config, Buffer.from('<!DOCTYPE Response [<!ENTITY x "anything">]><Response/>').toString('base64'), request)).rejects.toThrow()
   await expect(verifyEnterpriseSamlResponse(config, signedSamlFixture(request.requestId), { ...request, createdAt: Date.now() - 300_001 })).rejects.toThrow()
+})
+
+test('enterprise SAML rejects wrapping references, duplicate IDs and untrusted embedded certificates', async () => {
+  const { verifiedEnterpriseSamlResponse } = await import('../src/enterprise-saml-xml')
+  const { generateKeyPairSync } = await import('node:crypto')
+  const request = enterpriseSamlRequest()
+  const xml = Buffer.from(signedSamlFixture(request.requestId), 'base64').toString()
+  const rootId = /<samlp:Response[^>]+ ID="([^"]+)"/.exec(xml)![1]!
+  const assertionId = /<saml:Assertion[^>]+ ID="([^"]+)"/.exec(xml)![1]!
+  expect(() => verifiedEnterpriseSamlResponse(xml.replace(`URI="#${rootId}"`, `URI="#${assertionId}"`), cert)).toThrow()
+  expect(() => verifiedEnterpriseSamlResponse(xml.replace(`ID="${assertionId}"`, `ID="${rootId}"`), cert)).toThrow()
+  const other = generateKeyPairSync('rsa', { modulusLength: 2048 }).publicKey.export({ type: 'spki', format: 'pem' }).toString()
+  expect(() => verifiedEnterpriseSamlResponse(xml, other)).toThrow()
 })
