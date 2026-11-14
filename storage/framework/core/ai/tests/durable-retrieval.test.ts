@@ -46,12 +46,13 @@ describe('durable scoped retrieval', () => {
       expect(new URL(request.url).pathname).toBe('/v1/embeddings')
       expect(request.headers.get('authorization')).toBe('Bearer fixture-key')
       seen.push(await request.json())
-      return Response.json({ data: [{ index: 1, embedding: [0, 1] }, { index: 0, embedding: [1, 0] }] })
+      return Response.json({ data: [{ index: 1, embedding: [0, 1] }, { index: 0, embedding: [1, 0] }], usage: { total_tokens: 7 } })
     } })
     try {
       const client = createConfiguredEmbeddingClient({ default: 'openai', drivers: { openai: { apiKey: 'fixture-key', baseUrl: `http://127.0.0.1:${server.port}/v1` } } }, { model: 'fixture-embedding', dimensions: 2 })
       expect(await client.embed(['password', 'shipping'])).toEqual([[1, 0], [0, 1]])
       expect(seen).toEqual([{ model: 'fixture-embedding', input: ['password', 'shipping'], dimensions: 2 }])
+      expect(await client.embedWithUsage(['password', 'shipping'])).toEqual({ vectors: [[1, 0], [0, 1]], inputTokens: 7 })
     }
     finally { await server.stop(true) }
   })
