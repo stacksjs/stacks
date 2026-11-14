@@ -217,3 +217,14 @@ test('dry-run validates the retained artifact and publisher without any registry
   expect(commands[0]).toContain('--ignore-scripts')
   expect(receipt.packages[0]!.status).toBe('dry-run')
 })
+
+test('refuses conflicting archive paths before retaining installable bytes', async () => {
+  const { root, dir } = await fixture()
+  const archivePath = join(root, 'unsafe.tgz')
+  await writeFile(archivePath, await new Bun.Archive({
+    'package/package.json': JSON.stringify({ name: '@example/math', version: '1.2.3-alpha.1' }),
+    'package/dist': 'file shadows directory',
+    'package/dist/index.js': 'export const value = 1',
+  }, { compress: 'gzip' }).bytes())
+  await expect(retainLibraryRelease({ directory: join(root, 'candidate'), source, tag: 'alpha', packages: [{ name: '@example/math', version: '1.2.3-alpha.1', dir, registry: 'npm', access: 'public', tarballFiles: 1, archivePath }] })).rejects.toThrow('conflicting')
+})

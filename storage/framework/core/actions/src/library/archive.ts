@@ -47,6 +47,11 @@ export function validateTarBounds(tar: Uint8Array): number {
     const end = offset + 512 + Math.ceil(size / 512) * 512
     if (!Number.isSafeInteger(end) || end > tar.byteLength) fail('Published archive declares bytes outside its tar bounds')
     const type = header[156] === 0 ? '0' : String.fromCharCode(header[156]!)
+    if (type === '0' || type === '5') {
+      const prefix = text(offset + 345, 155)
+      validatePackageTarPath(`${prefix ? `${prefix}/` : ''}${text(offset, 100)}`, type === '5')
+    }
+    if (type === 'L') validatePackageTarPath(text(offset + 512, size), true)
     if (type === '0') files++
     else if (type === 'x' || type === 'g') {
       const metadata = tar.subarray(offset + 512, offset + 512 + size)
@@ -62,6 +67,7 @@ export function validateTarBounds(tar: Uint8Array): number {
         const equals = metadata.indexOf(61, space + 1)
         const key = new TextDecoder().decode(metadata.subarray(space + 1, equals))
         if (equals < 0 || equals >= end - 1 || !allowed.has(key)) fail('Published archive has unsupported PAX allocation or link metadata')
+        if (key === 'path') validatePackageTarPath(new TextDecoder().decode(metadata.subarray(equals + 1, end - 1)), true)
         start = end
       }
     }
@@ -79,10 +85,18 @@ export async function libraryArchiveEntries(bytes: Uint8Array, limit = 256 * 102
   const files = await new Bun.Archive(tar).files()
   if (!count || files.size !== count) fail('Published archive has missing or duplicate file paths')
   const result = new Map<string, Uint8Array>()
+  const directories = new Set<string>()
   for (const [name, file] of files) {
     const path = name.slice('package/'.length)
     if (!name.startsWith('package/') || !safeArchivePath(path) || result.has(path))
       fail('Published archive contains an unsafe or duplicate package path')
+    if (directories.has(path)) fail('Published archive has conflicting file and directory paths')
+    const parts = path.split('/')
+    for (let i = 1; i < parts.length; i++) {
+      const parent = parts.slice(0, i).join('/')
+      if (result.has(parent)) fail('Published archive has conflicting file and directory paths')
+      directories.add(parent)
+    }
     result.set(path, new Uint8Array(await file.arrayBuffer()))
   }
   if (!result.has('package.json')) fail('Published archive has no package manifest')
@@ -92,4 +106,11 @@ export async function libraryArchiveEntries(bytes: Uint8Array, limit = 256 * 102
 export function safeArchivePath(path: string): boolean {
   return typeof path === 'string' && !!path && !path.includes('\\') && !path.includes(':')
     && !path.includes('\0') && !path.split('/').some(part => !part || part === '.' || part === '..')
+}
+
+function validatePackageTarPath(name: string, directory: boolean): void {
+  const clean = directory ? name.replace(/\/$/, '') : name
+  if (directory && clean === 'package') return
+  if (!clean.startsWith('package/') || !safeArchivePath(clean.slice('package/'.length)))
+    fail('Published archive contains an unsafe package path')
 }
