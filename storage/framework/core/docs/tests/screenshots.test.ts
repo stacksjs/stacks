@@ -17,6 +17,8 @@ describe('documentation screenshot inventory', () => {
       (value: ScreenshotConfig) => { value.pages[0]!.id = '../secret' },
       (value: ScreenshotConfig) => { value.pages[0]!.path = 'https://other.test/' },
       (value: ScreenshotConfig) => { value.baseUrl = 'https://user:secret@example.test' },
+      (value: ScreenshotConfig) => { value.pages[0]!.expectedStatus = 600 },
+      (value: ScreenshotConfig) => { value.pages[0]!.expectedStatus = 200.5 },
     ]) {
       const value = config(); modify(value)
       await expect(validateScreenshotConfig(value)).rejects.toBeInstanceOf(Error)
@@ -109,3 +111,70 @@ test('refuses unowned image and manifest collisions before opening a browser', a
   await Bun.write(join(root, 'pictures/manifest.json'), JSON.stringify({ format: 1 }))
   await expect(captureScreenshots({ root, config: 'screens.ts' })).rejects.toThrow('unowned manifest')
 })
+
+
+test.skipIf(typeof Bun.WebView !== 'function' || (process.platform !== 'darwin' && !process.env.STACKS_BROWSER_TESTS))('refuses HTTP error pages and captures explicitly expected error states', async () => {
+  const root = await fixture()
+  const server = Bun.serve({ port: 0, fetch(request) {
+    const status = new URL(request.url).pathname === '/missing' ? 404 : 503
+    return new Response('<title>Unavailable</title><main>This screen is deliberately unavailable.</main>', { status, headers: { 'Content-Type': 'text/html' } })
+  } })
+  try {
+    await Bun.write(join(root, 'screens.ts'), `export default {
+      baseUrl:'http://127.0.0.1:${server.port}', outDir:'pictures', backend:'chrome', requireHttpStatus:true,
+      viewports:[{name:'mobile',width:390,height:844}], pages:[
+        {id:'missing',title:'Missing route',path:'/missing',description:'A broken route is not a successful screen.',waitFor:'main'},
+        {id:'expected',title:'Reviewed missing state',path:'/missing',expectedStatus:404,description:'An intentional missing-state example.',waitFor:'main',ready:async ({httpStatus})=>httpStatus===404},
+        {id:'wrong',title:'Wrong status',path:'/missing',expectedStatus:200,description:'An expected success must be an HTTP success.',waitFor:'main'},
+        {id:'unavailable',title:'Unavailable service',path:'/unavailable',description:'An unavailable service must fail the capture.',waitFor:'main'}
+      ]
+    }`)
+    const report = await captureScreenshots({ root, config: 'screens.ts' })
+    expect(report.results.map(result => result.status)).toEqual(['failed', 'captured', 'failed', 'failed'])
+    expect(report.results.map(result => result.httpStatus)).toEqual([404, 404, 404, 503])
+    expect(report.results[0]!.error).toContain('HTTP 404')
+    expect(report.results[2]!.error).toContain('instead of 200')
+    expect(report.results[3]!.error).toContain('HTTP 503')
+    expect(await Bun.file(join(root, 'pictures', report.results[1]!.file!)).exists()).toBe(true)
+    const manifest = { ...report, generatorVersion: 'previous-sdk' }
+    await Bun.write(join(root, 'pictures/manifest.json'), JSON.stringify(manifest))
+    await expect(captureScreenshots({ root, config: 'screens.ts', check: true })).rejects.toThrow('capture again')
+  }
+  finally { server.stop(true) }
+}, 60_000)
+
+test('refuses a partial refresh with changed inputs before losing old image ownership', async () => {
+  const root = await fixture()
+  await Bun.write(join(root, 'screens.ts'), `export default {baseUrl:'https://example.test',outDir:'pictures',pages:[{id:'home',title:'Home',path:'/',description:'Home.',waitFor:'main'}]}`)
+  await mkdir(join(root, 'pictures/home'), { recursive: true })
+  await Bun.write(join(root, 'pictures/home/default-mobile.png'), 'owned image')
+  const original = { generator: '@stacksjs/docs/screenshots', configHash: 'old-inputs', results: [{ file: 'home/default-mobile.png' }] }
+  await Bun.write(join(root, 'pictures/manifest.json'), JSON.stringify(original))
+  await expect(captureScreenshots({ root, config: 'screens.ts', only: ['home'] })).rejects.toThrow('fresh output directory')
+  expect(await Bun.file(join(root, 'pictures/manifest.json')).json()).toEqual(original)
+  expect(await Bun.file(join(root, 'pictures/home/default-mobile.png')).text()).toBe('owned image')
+})
+
+
+test.skipIf(typeof Bun.WebView !== 'function' || (process.platform !== 'darwin' && !process.env.STACKS_BROWSER_TESTS))('a failed refresh retains owned image bytes and permits recovery', async () => {
+  const root = await fixture()
+  let status = 200
+  const server = Bun.serve({ port: 0, fetch: () => new Response('<title>Account</title><main>A fully loaded account screen.</main>', { status, headers: { 'Content-Type': 'text/html' } }) })
+  try {
+    await Bun.write(join(root, 'screens.ts'), `export default {baseUrl:'http://127.0.0.1:${server.port}',outDir:'pictures',backend:'chrome',requireHttpStatus:true,viewports:[{name:'mobile',width:390,height:844}],pages:[{id:'account',title:'Account',path:'/',description:'An owned account.',waitFor:'main'}]}`)
+    const initial = await captureScreenshots({ root, config: 'screens.ts' })
+    const image = join(root, 'pictures', initial.results[0]!.file!)
+    const bytes = await Bun.file(image).bytes()
+    status = 503
+    const failed = await captureScreenshots({ root, config: 'screens.ts', only: ['account'] })
+    expect(failed.results[0]!.status).toBe('failed')
+    expect(failed.results[0]!.file).toBe(initial.results[0]!.file)
+    expect(failed.results[0]!.sha256).toBe(initial.results[0]!.sha256)
+    expect(await Bun.file(image).bytes()).toEqual(bytes)
+    await expect(captureScreenshots({ root, config: 'screens.ts', check: true })).rejects.toThrow('failed')
+    status = 200
+    expect((await captureScreenshots({ root, config: 'screens.ts', only: ['account'] })).results[0]!.status).toBe('captured')
+    await captureScreenshots({ root, config: 'screens.ts', check: true })
+  }
+  finally { server.stop(true) }
+}, 60_000)
