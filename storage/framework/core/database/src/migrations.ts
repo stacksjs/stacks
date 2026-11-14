@@ -67,6 +67,7 @@ import { ensureUuidColumns } from './uuid-columns'
 import { sqlHelpers } from './sql-helpers'
 import { GENERATED_MIGRATION_MARKER, isGeneratedMigration } from './generated-migration-marker'
 import { trackIgnoredGeneratedMigrations } from './ignored-migrations'
+import { modelDatabaseExtensionStatements } from './model-extensions'
 
 export { enumTypesCreatedBy, sqlStatementsOf } from './sql-statements'
 
@@ -3168,7 +3169,8 @@ async function generateMigrationsForDialect(options: GenerateMigrationsOptions):
     // guaranteed by runtime ALTERs (ensureUsersAuthColumns / ensureUuidColumns),
     // not the model, so the differ re-proposes dropping them every run and a
     // stray `y` destroys auth/billing data (stacksjs/stacks#2075).
-    let sqlStatements = result.sqlStatements ?? []
+    const extensionStatements = await modelDatabaseExtensionStatements(resolveModelSources()?.models ?? [], dialect)
+    let sqlStatements = [...extensionStatements, ...(result.sqlStatements ?? [])]
     if (dialect === 'sqlite')
       sqlStatements = inlineSqliteAddedColumnReferences(sqlStatements, result.plan)
     {
@@ -3251,7 +3253,7 @@ async function generateMigrationsForDialect(options: GenerateMigrationsOptions):
         return err(new Error(shadowedDropMessage(drops)))
     }
 
-    if (result.hasChanges) {
+    if (result.hasChanges || extensionStatements.length > 0) {
       const written = persistGeneratedMigrations(sqlStatements, storedPlan, await claimedMigrationNames(migrationDirectory()))
       // Only announce when we actually wrote files. `hasChanges` can be
       // true while `written === 0` if the qb diff restated statements
@@ -4132,7 +4134,7 @@ export async function generateFullModelMigration(options: {
       }
     }
 
-    const statements = result.sqlStatements ?? []
+    const statements = [...await modelDatabaseExtensionStatements(sources.models, dialect), ...(result.sqlStatements ?? [])]
     if (statements.length === 0)
       return err(new Error(`The generator produced no SQL for dialect "${dialect}".`))
 

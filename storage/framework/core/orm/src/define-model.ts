@@ -2526,6 +2526,8 @@ export interface StacksModelDefinition extends Omit<BQBModelDefinition, 'attribu
   name: string
   table: string
   primaryKey?: string
+  /** Generated PostgreSQL prerequisites; SQLite keeps the portable model schema. */
+  databaseExtensions?: readonly 'vector'[]
   autoIncrement?: boolean
   /**
    * Generic dashboard exposure and sidebar presentation for this model.

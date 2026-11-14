@@ -321,6 +321,8 @@ export interface ModelOptions extends Base {
   table?: string // defaults to the lowercase, plural name of the model name (or the name of the model file)
   primaryKey?: string // defaults to `id`
   autoIncrement?: boolean // defaults to true
+  /** Reviewed model-owned PostgreSQL prerequisites, emitted by native migration generation. */
+  databaseExtensions?: readonly 'vector'[]
   indexes?: CompositeIndex[]
   /**
    * Generic dashboard exposure and sidebar presentation for this model.

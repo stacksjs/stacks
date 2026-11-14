@@ -30,6 +30,8 @@ export * from './speech'
 
 // Semantic search, embeddings & RAG
 export * from './search'
+export * from './embedding-client'
+export * from './durable-retrieval'
 export * from './documents'
 
 // Personalization, sentiment & classification

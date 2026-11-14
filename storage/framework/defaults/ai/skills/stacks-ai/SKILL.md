@@ -588,3 +588,45 @@ WebSocket handshake. Live OpenAI audio quality, account access, media bridging
 and production latency require separate provider qualification. Protocol sources:
 <https://developers.openai.com/api/docs/guides/voice-websockets> and
 <https://developers.openai.com/api/docs/guides/realtime-conversations>.
+
+## Durable SQL retrieval
+
+Use `createDurableRetrievalStore` from `@stacksjs/ai/durable-retrieval` when
+knowledge must survive process restarts. `VectorIndex` above remains memory only.
+The adapter takes the native application's parameterized SQL executor and its
+model-generated source/index/chunk table names. It performs exact pgvector cosine
+ranking on PostgreSQL and lexical matching on SQLite; it does not create tables,
+install extensions, maintain an ANN index, or authorize a caller for you.
+
+The source schema names workspace_id, project_id, source_key, language, audience,
+publication, permission_granted, deleted_at, current_revision and active_index_id.
+Indexes carry source_id, workspace_id, project_id, revision, status,
+embedding_model and dimensions. Chunks carry source_id, index_id, workspace_id,
+project_id, revision, content and embedding (JSON text). Keep these as app models.
+Declare `databaseExtensions: ['vector']` on the embedding-owning model: native
+migration generation emits `CREATE EXTENSION IF NOT EXISTS vector` only in the
+PostgreSQL corpus. Provision the pgvector server extension before migrating;
+missing server binaries or migration privileges fail explicitly. SQLite emits no
+PostgreSQL prerequisite and retains lexical retrieval.
+
+Every search requires a scope with numeric string workspaceId/projectId,
+language, audience ('public' or 'internal') and allowedSourceIds. Authorize these
+source ids through the application's live membership/source ACL before calling.
+An empty list denies all. The list is bounded to 10,000 ids. The SQL intersects
+that grant with ownership, audience, publication, permission state, deletion and
+active revision before ranking; PostgreSQL uses a materialized permitted relation
+so a vector expression cannot run on unauthorized rows. Applications must still
+invalidate sources atomically when their authoritative content or permissions
+change, and swap active_index_id only when a complete new revision is ready.
+
+`createConfiguredEmbeddingClient` from `@stacksjs/ai/embedding-client` consumes
+server AI driver config and an optional explicit OpenAI/Ollama provider, model and
+dimensions. `embed(texts, { signal })` makes a bounded provider HTTP request and
+validates batch indexes, finite nonzero vectors and consistent dimensions. It
+honors configured provider endpoints and never silently routes a chat-only
+provider's documents to another service. Provider secrets stay server-side.
+
+Evidence: `ai/tests/durable-retrieval.test.ts`,
+`ai/tests/durable-retrieval-postgres.test.ts` (set STACKS_TEST_PGVECTOR_URL to a
+local server with pgvector; the fixture owns its temporary database) and
+`database/tests/model-extensions.test.ts`.
