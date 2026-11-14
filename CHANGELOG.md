@@ -1,5 +1,33 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.582...v0.75.583)
+
+## ✨ Features
+
+- add opt-in Redis realtime invalidation hints ([ef133b6](https://github.com/stacksjs/stacks/commit/ef133b6)) _(by Chris)_
+- add opt-in durable SQL realtime replay ([4fb0b8c](https://github.com/stacksjs/stacks/commit/4fb0b8c)) _(by Chris)_
+
+## 🐛 Bug Fixes
+
+- bound replay array slots before traversal ([e39ad45](https://github.com/stacksjs/stacks/commit/e39ad45)) _(by Chris)_
+
+## 📝 Documentation
+
+- refresh durable replay capability reference ([d33d2ef](https://github.com/stacksjs/stacks/commit/d33d2ef)) _(by Chris)_
+- register qualified durable replay driver capabilities ([701783d](https://github.com/stacksjs/stacks/commit/701783d)) _(by Chris)_
+
+## ✅ Tests
+
+- isolate durable replay consumer configuration ([9814035](https://github.com/stacksjs/stacks/commit/9814035)) _(by Chris)_
+
+## 🔧 Chores
+
+- integrate current framework main ([64b5344](https://github.com/stacksjs/stacks/commit/64b5344)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.581...v0.75.582)
 
 ## 🐛 Bug Fixes
