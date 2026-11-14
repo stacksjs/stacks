@@ -32,6 +32,31 @@ describe('Twilio exact receipts and safe retry', () => {
       expect(twilioPriceMicros(invalid)).toBeUndefined()
   })
 
+  it('uses approved WhatsApp Content SID fields without mixing Body or MediaUrl', async () => {
+    const contentSid = `HX${'c'.repeat(32)}`, senderSid = `XE${'d'.repeat(32)}`
+    let posts = 0
+    const driver = new TwilioDriver({ ...account, from: 'whatsapp:+12065550100' }, undefined, { fetch: transport((url, init) => {
+      if (url.includes('/ApprovalRequests'))
+        return Response.json({ sid: contentSid, account_sid: account.accountSid, whatsapp: { status: 'approved', category: 'UTILITY' } })
+      if (url.includes('/Channels/Senders/'))
+        return Response.json({ sid: senderSid, sender_id: 'whatsapp:+12065550100', status: 'ONLINE', webhook: { callback_url: 'https://support.test/incoming' } })
+      posts++
+      const form = new URLSearchParams(String(init.body))
+      expect(form.get('To')).toBe('whatsapp:+12065550101')
+      expect(form.get('From')).toBe('whatsapp:+12065550100')
+      expect(form.get('ContentSid')).toBe(contentSid)
+      expect(form.get('ContentVariables')).toBe('{"1":"Chris"}')
+      expect(form.has('Body')).toBe(false)
+      expect(form.has('MediaUrl')).toBe(false)
+      return Response.json({ sid: SID, status: 'queued' }, { status: 201 })
+    }) })
+    expect((await driver.getWhatsAppSender(senderSid)).status).toBe('ONLINE')
+    expect((await driver.getContentApproval(contentSid)).status).toBe('approved')
+    expect((await driver.send({ to: 'whatsapp:+12065550101', body: 'local audit rendering', options: { contentSid, contentVariables: { 1: 'Chris' } } })).outcome).toBe('accepted')
+    expect((await driver.send({ to: 'whatsapp:+12065550101', body: '', mediaUrls: ['https://support.test/a.png'], options: { contentSid } })).outcome).toBe('rejected')
+    expect(posts).toBe(1)
+  })
+
   it('does not retry message creation after a 503, malformed success or lost acknowledgement', async () => {
     for (const response of [() => new Response(null, { status: 503 }), () => new Response('{'), () => { throw new Error('socket closed') }]) {
       let calls = 0

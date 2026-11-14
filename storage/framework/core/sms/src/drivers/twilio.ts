@@ -119,10 +119,27 @@ export class TwilioDriver implements SmsDriver, SmsVerificationDriver {
       }
     }
 
+    const contentSid = message.options?.contentSid
+    const variables = message.options?.contentVariables
+    if (contentSid !== undefined && (typeof contentSid !== 'string' || !/^HX[a-f0-9]{32}$/i.test(contentSid)))
+      return { success: false, to, provider: 'twilio', outcome: 'rejected', error: 'Invalid Twilio Content SID' }
+    if (contentSid && message.mediaUrls?.length)
+      return { success: false, to, provider: 'twilio', outcome: 'rejected', error: 'Content templates cannot include MediaUrl' }
+    if (variables !== undefined && (!contentSid || !variables || typeof variables !== 'object' || Array.isArray(variables)
+      || Object.entries(variables).some(([key, value]) => !/^\d+$/.test(key) || typeof value !== 'string' || value.length > 1600)))
+      return { success: false, to, provider: 'twilio', outcome: 'rejected', error: 'Content variables require a Content SID and numbered string values' }
+
     try {
       const body = new URLSearchParams()
       body.append('To', to)
-      body.append('Body', message.body)
+      if (contentSid) {
+        body.append('ContentSid', String(contentSid))
+        if (variables)
+          body.append('ContentVariables', JSON.stringify(variables))
+      }
+      else if (message.body) {
+        body.append('Body', message.body)
+      }
 
       if (this.config.messagingServiceSid) {
         body.append('MessagingServiceSid', this.config.messagingServiceSid)
@@ -233,6 +250,40 @@ export class TwilioDriver implements SmsDriver, SmsVerificationDriver {
       errorCode: data.error_code?.toString(),
       errorMessage: data.error_message,
     }
+  }
+
+  private async readMessagingResource(url: string): Promise<Record<string, unknown>> {
+    const response = await this.fetcher(url, {
+      headers: { Authorization: `Basic ${btoa(`${this.config.accountSid}:${this.config.authToken}`)}` },
+      redirect: 'error', signal: AbortSignal.timeout(15000),
+    })
+    if (!response.ok)
+      throw new Error(`Twilio messaging resource HTTP ${response.status}`)
+    return await response.json() as Record<string, unknown>
+  }
+
+  /** Read-only probe of a registered WhatsApp sender. Never registers or purchases a number. */
+  async getWhatsAppSender(senderSid: string): Promise<{ sid: string, senderId: string, status: string, callbackUrl?: string }> {
+    if (!/^XE[a-f0-9]{32}$/i.test(senderSid))
+      throw new Error('Invalid Twilio WhatsApp Sender SID')
+    const data = await this.readMessagingResource(`https://messaging.twilio.com/v2/Channels/Senders/${senderSid}`)
+    if (data.sid !== senderSid || typeof data.sender_id !== 'string' || typeof data.status !== 'string')
+      throw new Error('Twilio WhatsApp sender acknowledgement mismatch')
+    const webhook = data.webhook && typeof data.webhook === 'object' ? data.webhook as Record<string, unknown> : {}
+    return { sid: senderSid, senderId: data.sender_id, status: data.status, callbackUrl: typeof webhook.callback_url === 'string' ? webhook.callback_url : undefined }
+  }
+
+  /** Fresh approval must be checked before an out-of-window WhatsApp template send. */
+  async getContentApproval(contentSid: string): Promise<{ sid: string, status: string, category?: string }> {
+    if (!/^HX[a-f0-9]{32}$/i.test(contentSid))
+      throw new Error('Invalid Twilio Content SID')
+    const data = await this.readMessagingResource(`https://content.twilio.com/v1/Content/${contentSid}/ApprovalRequests`)
+    if (data.sid !== contentSid || data.account_sid !== this.config.accountSid)
+      throw new Error('Twilio content approval account mismatch')
+    const whatsapp = data.whatsapp && typeof data.whatsapp === 'object' ? data.whatsapp as Record<string, unknown> : {}
+    if (typeof whatsapp.status !== 'string')
+      throw new Error('Twilio content approval status unavailable')
+    return { sid: contentSid, status: whatsapp.status, category: typeof whatsapp.category === 'string' ? whatsapp.category : undefined }
   }
 
   /** Retrieve authoritative status and the exact quoted provider cost. */

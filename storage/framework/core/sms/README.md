@@ -175,3 +175,17 @@ and [Meta text-message object](https://whatsapp.github.io/WhatsApp-Nodejs-SDK/ap
 The latter SDK is archived; this package implements the HTTP client and does
 not depend on that SDK. Provider protocol fixtures are not live delivery
 qualification.
+
+For WhatsApp through Twilio, use channel addresses such as
+`whatsapp:+12065550101`. `getWhatsAppSender(XE...)` reads the registered
+sender and its routing configuration; `getContentApproval(HX...)` reads
+current account-bound template approval. `send` accepts
+`options: { contentSid, contentVariables: { '1': 'value' } }`. Template requests
+omit `Body` and refuse `MediaUrl`, avoiding incompatible content fields.
+Applications must check approval, consent and the 24-hour customer service
+window; these read-only probes never register or purchase a sender.
+
+References: [Twilio sender registration](https://www.twilio.com/docs/whatsapp/api/senders),
+[template approvals](https://www.twilio.com/docs/content/content-api-resources),
+[reply windows](https://www.twilio.com/docs/whatsapp/key-concepts), and
+[compatible template fields](https://www.twilio.com/docs/api/errors/63030).
