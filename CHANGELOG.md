@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.587...v0.75.588)
+
+## 🐛 Bug Fixes
+
+- **i18n**: generate source aliases for declared client exports ([ba6385b](https://github.com/stacksjs/stacks/commit/ba6385b)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.586...v0.75.587)
 
 ## ✨ Features
