@@ -372,7 +372,8 @@ the caller waits on, so a server process handles one query at a time. On
 [stacksjs/bun](https://github.com/stacksjs/bun), a Bun whose MySQL and Postgres
 drivers can wait for a statement themselves, the connection stays on the calling
 thread and there is no worker; the framework looks at the runtime and uses what
-it has. An app
+it has. With pantry that runtime is `stacksjs.com/bun: ^1.4.4` in `deps.yaml`,
+in place of `bun.com` (macOS arm64 and Linux x64). An app
 that needs the event loop free during queries can set
 `models: { execution: 'async' }` in `config/query-builder.ts` and await every model call.
 
