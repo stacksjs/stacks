@@ -199,41 +199,42 @@ an organization token lets the first deploy create the app.
 
 ## Preview deployments
 
-Every pull request can run as its own copy of the app at `pr-<number>.<preview domain>`, on the
-app's own Hetzner or `ssh` box, and disappear when the pull request closes.
+Previews currently support one self-contained server runtime with relative SQLite/local state on
+an application's Hetzner or SSH box. Multi-runtime applications (including a website plus API),
+managed/external databases, Redis-backed state and external writable storage require an explicit
+ownership policy that is not implemented yet.
 
 ```bash
 buddy deploy:preview pr-123
 buddy deploy:preview:remove pr-123
 ```
 
-A preview is its own project as far as the box is concerned: slug `<slug>-pr-123`, attached to the
-app's box like any tenant. That is what isolates it:
+Before publication scripts, host discovery and the attach deploy, the command checks the cloud
+configuration and actual final merged site env. It refuses known unsupported mutable state,
+absolute/traversing/symlinked configured paths, explicit shared targets, custom hooks/build/preStart
+commands and background workers. Selecting only one site cannot bypass the topology check.
+Accepted previews retain their own slug (`<slug>-pr-123`), gateway route, service and release paths;
+a relative SQLite file uses the existing preview-scoped shared target.
 
-- its gateway route, services and files carry the preview's slug, so deploying or removing it
-  never touches the app's
-- a relative SQLite path lands in the preview's own data directory, so each preview has its own
-  database without any setup
-- its secrets come from `.env.preview` alone, never layered over `.env.production`, so a pull
-  request cannot reach production data. The deploy refuses to run without that file.
+Set `cloud.previews.domain` (or `PREVIEW_DOMAIN`) and supply a completely readable/decryptable
+`.env.preview`. `--base staging` chooses the staging box. `cloud.previews.site` may name the sole
+self-contained runtime. The command rejects an incomplete environment file before its explicit
+preview cloud config reload. Shared CLI startup can already have evaluated app config.
 
-Set it up once:
+This is a bounded configuration guard for trusted application code. The native env reader can
+expand ambient variables and execute command substitutions, and cloud config itself is executable
+code. Ambient variables can still reach config/build evaluation; hardcoded app adapter settings
+are not inspected. Neither file existence, different credentials nor an env prefix proves
+isolation. Strict env provenance, isolated config/build evaluation and explicit multi-site and
+state ownership planning remain pending. Do not use previews for a managed PostgreSQL web/API app.
 
-1. Choose a domain for previews, with its DNS at a provider the deploy has keys for, and set
-   `cloud.previews.domain` in `config/cloud.ts` (or `PREVIEW_DOMAIN`).
-2. Create `.env.preview` with its own credentials: `buddy env:set --file .env.preview APP_KEY ...`
-3. `cloud.previews.site` picks which site to preview; the first one that runs a server is the
-   default. `--base staging` puts a preview on the staging box instead of production's.
+New apps ship `.github/workflows/preview.yml`, requiring `DEPLOY_SSH_KEY`,
+`DOTENV_PRIVATE_KEY_PREVIEW` and `vars.PREVIEW_DOMAIN`. Fork PRs are skipped. The workflow enforces
+the same constrained support and does not make arbitrary PR code safe to run with credentials.
 
-New apps ship `.github/workflows/preview.yml`. It deploys on every push to a pull request,
-keeps the URL in one comment on it, and removes the preview on close. Pull requests from forks
-are skipped, since deploying a fork's code with the app's secrets would hand those secrets over.
-It needs `DEPLOY_SSH_KEY` and `DOTENV_PRIVATE_KEY_PREVIEW` as secrets and `PREVIEW_DOMAIN` as a
-repository variable.
-
-Removing a preview stops and deletes its services, its gateway route and certificate units, its
-files and data directory, and its DNS records, by their exact names. Another preview whose name
-starts the same way, such as `pr-1-docs` beside `pr-1`, is left alone.
+Removal retains its existing exact-name behavior: services, gateway/certificate units, files and
+shared data directory, plus DNS records. It leaves sibling preview names alone. This change adds
+no new teardown or database-removal behavior.
 
 ## Deployment hooks
 

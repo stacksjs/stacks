@@ -147,6 +147,32 @@ APP_ENV=staging buddy deploy
 APP_ENV=production buddy deploy
 ```
 
+## Preview deployments
+
+`buddy deploy:preview pr-123` supports a constrained single server runtime with relative local
+SQLite/state paths, on the app's Hetzner or SSH box. `--base staging` chooses the staging box.
+A bounded preflight inspects the cloud configuration and final merged site environment before
+publication scripts, host discovery, deploy hooks, builds, state writes or provider/SSH mutations.
+
+It refuses multi-runtime/API dependencies, managed/external DB identities, Redis-backed state or
+credentials, unsupported state adapters, external writable storage, absolute/traversing/symlinked
+paths, explicit shared targets, and custom hooks/build/preStart/background-worker effects. A
+`cloud.previews.site` selection cannot make a multi-runtime project safe.
+
+The command requires `.env.preview` to be readable and decryptable before its explicit cloud
+config reload. Shared CLI startup can already have evaluated app config.
+The native env reader expands ambient variables and command substitutions. Ambient application
+variables can still influence config/build evaluation, and site env values
+still override the file. This guard does not establish strict secret provenance or prove arbitrary
+trusted application code and hardcoded adapter settings safe. Isolated env evaluation and explicit
+multi-site/database/Redis/storage ownership policies remain pending; a prefix or different password
+is not proof of ownership. Managed PostgreSQL web/API previews remain unsupported.
+
+Accepted previews retain their preview slug, host and relative SQLite persistent target.
+`buddy deploy:preview:remove pr-123` retains its existing exact-name teardown behavior, including
+deletion of the preview's shared data. Ordinary production and staging deployments use their
+existing paths and are unaffected by the preview preflight.
+
 ## What Gets Deployed
 
 Stacks deploys a complete cloud infrastructure:

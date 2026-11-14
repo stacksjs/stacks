@@ -27,7 +27,7 @@ import { resultFailed } from '../result'
 import { deploymentRetirements, explicitDeploymentEnvFile, validateDeploymentProviderInputs } from '../deployment-inputs'
 import { findUnbackedManagedServices, hasOffsiteBackupDestination, unbackedDataMessage } from '../unbacked-data'
 import { applyDeploymentDomainOverride, createDeploymentPreview, deploymentPreviewJsonPrefix, formatDeploymentPreview, resolveDeploymentEnvironment } from './deploy-preview'
-import { buildPreviewTeardownScript, derivePreviewConfig, previewDomain, previewPort, previewTarget } from './preview-deploy'
+import { buildPreviewTeardownScript, previewDomain, previewHasSymlinkPaths, previewTarget, runPreviewDeploy } from './preview-deploy'
 import type { SshTarget } from './deploy-ssh-target'
 import { deployTargetLabel, dnsPublishingAllowed, hetznerTarget, isSshPipelineProvider, lanUrls, mergeSshStatePin, remoteExecOptions, resolveSshTarget, sshCliArgs, sshStatePin, toSshTarget } from './deploy-ssh-target'
 
@@ -5499,19 +5499,21 @@ export async function reconcileHetznerDns(sites: Record<string, any>, ip: string
  */
 async function runPreviewCommand(name: string, options: { base?: string, verbose?: boolean }, action: 'deploy' | 'remove'): Promise<void> {
   const base = resolveDeploymentEnvironment({ option: options.base }) as 'production' | 'staging' | 'development'
-  if (action === 'deploy')
-    await assertPublicationAllowed({ cwd: p.projectPath(), channel: 'preview' })
-
-  // A preview's secrets are `.env.preview`'s alone. Loaded before the config
-  // is evaluated, so config/cloud.ts sees them, and never layered over the
-  // base environment's file: a pull request must not reach production data.
+  // Read the selected file completely before the explicit preview config
+  // reload. Shared CLI startup can already have evaluated app config, and
+  // ambient variables remain: strict provenance needs a separate boundary.
   const envFile = '.env.preview'
   if (action === 'deploy' && !existsSync(p.projectPath(envFile))) {
     log.error(`Previews read their secrets from ${envFile} only, and this project has none.`)
     log.info(`Create it with its own database, mail and API credentials (never production's): buddy env:set --file ${envFile} APP_KEY ...`)
     process.exit(ExitCode.FatalError)
   }
-  if (existsSync(p.projectPath(envFile))) {
+  let previewEnv: Record<string, string> = {}
+  if (action === 'deploy') {
+    previewEnv = await resolveDeployEnvValues(base, undefined, envFile)
+    Object.assign(process.env, previewEnv)
+  }
+  else if (existsSync(p.projectPath(envFile))) {
     const { loadEnv } = await import('@stacksjs/env')
     loadEnv({ path: envFile, env: 'preview', keysFile: '.env.keys', overload: true, quiet: true })
   }
@@ -5527,45 +5529,59 @@ async function runPreviewCommand(name: string, options: { base?: string, verbose
     process.exit(ExitCode.FatalError)
   }
 
-  let target: ReturnType<typeof previewTarget>
-  try {
-    target = previewTarget(appConfig, name, previewDomain(appConfig, process.env))
-  }
-  catch (error) {
-    log.error(getErrorMessage(error))
-    process.exit(ExitCode.InvalidArgument)
-  }
-
-  // The box: the operator's host for `ssh`, the owner's labelled server for Hetzner.
-  const sshTarget = provider === 'ssh' ? resolveSshTarget(appConfig) : null
-  const lookup = provider === 'ssh' ? null : await resolveAttachTargetBox(target.owner, base, appConfig)
-  const host = sshTarget?.host ?? lookup?.box?.publicIp
-  if (!host) {
-    log.error(provider === 'ssh' ? 'No SSH host configured for this project.' : describeAttachLookupFailure(target.owner, base, lookup?.failure))
-    process.exit(ExitCode.FatalError)
-  }
-  const remoteTarget: SshTarget = sshTarget ? { ...sshTarget, host } : hetznerTarget(host)
-  const { sshExecOrThrow } = await import('@stacksjs/ts-cloud')
-  const runRemote = (script: string): Promise<string> => {
-    const encoded = Buffer.from(script).toString('base64')
-    const privileged = remoteTarget.user === 'root' ? 'bash' : 'sudo -n bash'
-    return sshExecOrThrow(host, `echo ${encoded} | base64 -d | ${privileged}`, remoteExecOptions(remoteTarget, 15))
+  // Discovery is inside the guarded callback too: invalid configuration must
+  // stop before publication scripts, host access, builds, state pins or deploy.
+  const discoverRemote = async (target: ReturnType<typeof previewTarget>) => {
+    const sshTarget = provider === 'ssh' ? resolveSshTarget(appConfig) : null
+    const lookup = provider === 'ssh' ? null : await resolveAttachTargetBox(target.owner, base, appConfig)
+    const host = sshTarget?.host ?? lookup?.box?.publicIp
+    if (!host)
+      throw new Error(provider === 'ssh' ? 'No SSH host configured for this project.' : describeAttachLookupFailure(target.owner, base, lookup?.failure))
+    const remoteTarget: SshTarget = sshTarget ? { ...sshTarget, host } : hetznerTarget(host)
+    const { sshExecOrThrow } = await import('@stacksjs/ts-cloud')
+    const runRemote = (script: string): Promise<string> => {
+      const encoded = Buffer.from(script).toString('base64')
+      const privileged = remoteTarget.user === 'root' ? 'bash' : 'sudo -n bash'
+      return sshExecOrThrow(host, `echo ${encoded} | base64 -d | ${privileged}`, remoteExecOptions(remoteTarget, 15))
+    }
+    return { host, runRemote }
   }
 
   if (action === 'remove') {
-    await removePreview(target, base, runRemote)
+    const target = previewTarget(appConfig, name, previewDomain(appConfig, process.env))
+    const remote = await discoverRemote(target)
+    await removePreview(target, base, remote.runRemote)
     return
   }
 
-  const { buildHostSitePortsScript, occupiedHostPorts, parseHostSiteFragments } = await import('@stacksjs/ts-cloud')
-  const owners = occupiedHostPorts(parseHostSiteFragments(await runRemote(buildHostSitePortsScript())))
-  const port = previewPort(owners, target.slug, Number(appConfig.sites?.[target.site]?.port) || 3000)
-  log.info(`Deploying preview ${target.slug} to ${target.url} (port ${port} on ${host})`)
-
-  await deployOverSsh(derivePreviewConfig(appConfig, target, port), base, { verbose: options.verbose === true, yes: true } as DeployOptions, envFile)
+  // Validate exactly the merge used by the deployment pipeline. In particular,
+  // a hardcoded site.env DB identity wins over .env.preview and must be refused.
+  const config = { ...appConfig, sites: mergeSiteDeployEnv(appConfig.sites ?? {}, previewEnv) }
+  const hasDeployHooks = ['.ts', '.js', '.mts', '.mjs', '.cts', '.cjs'].some(extension => existsSync(p.projectPath(`cloud/deploy-script${extension}`)))
+  let remote: Awaited<ReturnType<typeof discoverRemote>>
+  const target = await runPreviewDeploy({
+    config, name, domain: previewDomain(appConfig, process.env),
+    context: {
+      hasDeployHooks,
+      hasSymlinkPaths: previewHasSymlinkPaths(config, p.projectPath()),
+      requiresApiRuntime: Boolean(apiDeploymentProblem(config.sites, existsSync(p.projectPath('routes/api.ts')))),
+    },
+  }, {
+    async discoverPorts(preview) {
+      // Publication policies may execute application scripts, so they belong
+      // after preflight, along with all other effects.
+      await assertPublicationAllowed({ cwd: p.projectPath(), channel: 'preview' })
+      remote = await discoverRemote(preview)
+      const { buildHostSitePortsScript, occupiedHostPorts, parseHostSiteFragments } = await import('@stacksjs/ts-cloud')
+      return occupiedHostPorts(parseHostSiteFragments(await remote.runRemote(buildHostSitePortsScript())))
+    },
+    async deploy(derived, preview, port) {
+      log.info(`Deploying preview ${preview.slug} to ${preview.url} (port ${port} on ${remote.host})`)
+      await deployOverSsh(derived, base, { verbose: options.verbose === true, yes: true } as DeployOptions, envFile)
+    },
+  })
 
   log.success(`Preview deployed: ${target.url}`)
-  // For the workflow that comments the URL on the pull request.
   if (process.env.GITHUB_OUTPUT)
     writeFileSync(process.env.GITHUB_OUTPUT, `url=${target.url}\n`, { flag: 'a' })
 }

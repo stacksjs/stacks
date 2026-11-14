@@ -25,6 +25,16 @@ function iosFixture(root: string) {
   git(root, 'commit', '-qm', 'fixture')
 }
 
+function previewFixture(root: string) {
+  mkdirSync(join(root, 'config'))
+  writeFileSync(join(root, '.env.preview'), 'DB_CONNECTION=sqlite\nDB_DATABASE_PATH=database/preview.sqlite\n')
+  writeFileSync(join(root, 'config/cloud.ts'), `export const tsCloud = {
+    project: { name: 'Fixture', slug: 'fixture' },
+    cloud: { provider: 'ssh', previews: { domain: 'preview.example.test' } },
+    sites: { main: { start: 'bun run start', port: 3340 } },
+  }`)
+}
+
 // Cold source imports on shared runners can exceed ten seconds. This is an
 // integration fixture; its policy and forbidden-module assertions remain the
 // contract, while dedicated startup benchmarks measure command performance.
@@ -75,7 +85,7 @@ await buddy.parse()
 }
 
 test.each(['deploy', 'deploy:preview'])('%s rejects policy before loading deployment machinery', async (name) => {
-  const result = await command(name === 'deploy' ? [name] : [name, 'policy-fixture'], undefined, true)
+  const result = await command(name === 'deploy' ? [name] : [name, 'policy-fixture'], name === 'deploy:preview' ? previewFixture : undefined, true)
   expect(result.output).not.toContain('Publication startup loaded deployment machinery:')
   expect(result.output).toContain('publication:check failed with exit code 9')
   expect(result.ran).toBe(true)
@@ -85,12 +95,45 @@ for (const args of [
   ['deploy'], ['deploy:preview', 'policy-fixture'], ['release:ios'], ['release:github', 'fixture-tag'],
 ]) {
   test(`the direct Buddy ${args[0]} command blocks publication policy failure`, async () => {
-    const result = await command(args)
+    const result = await command(args, args[0] === 'deploy:preview' ? previewFixture : undefined)
     expect(result.code, result.output).not.toBe(0)
     expect(result.output).toContain('publication:check failed with exit code 9')
     expect(result.ran).toBe(true)
   }, 45_000)
 }
+
+test('preview preflight refuses managed DB/API before the real publication script or deploy machinery', async () => {
+  const result = await command(['deploy:preview', 'policy-fixture'], (root) => {
+    previewFixture(root)
+    writeFileSync(join(root, 'config/cloud.ts'), `export const tsCloud = {
+      project: { name: 'Fixture', slug: 'fixture' },
+      cloud: { provider: 'ssh', previews: { domain: 'preview.example.test', site: 'main' } },
+      infrastructure: { appDatabase: { engine: 'postgres', name: 'synthetic-production', username: 'synthetic-production', password: 'synthetic-secret' } },
+      sites: {
+        main: { start: 'bun run start', port: 3340, env: { DB_CONNECTION: 'postgres', DB_USERNAME: 'synthetic-production', API_URL: 'http://127.0.0.1:3348' } },
+        api: { start: 'bun buddy serve:api', port: 3348 },
+      },
+    }`)
+  }, true)
+  expect(result.code, result.output).not.toBe(0)
+  expect(result.output).toContain('Preview preflight refused')
+  expect(result.output).not.toContain('synthetic-secret')
+  expect(result.output).not.toContain('synthetic-production')
+  expect(result.output).not.toContain('Publication startup loaded deployment machinery:')
+  expect(result.ran).toBe(false)
+}, 45_000)
+
+test('an unreadable encrypted preview env refuses before explicit cloud reload or publication', async () => {
+  const result = await command(['deploy:preview', 'policy-fixture'], (root) => {
+    previewFixture(root)
+    writeFileSync(join(root, '.env.preview'), 'DB_PASSWORD=encrypted:v2:synthetic-unreadable\n')
+    writeFileSync(join(root, 'config/cloud.ts'), 'if (import.meta.url.includes("?env=")) throw new Error("preview cloud reload reached"); export const tsCloud = {}')
+  })
+  expect(result.output).toContain('Cannot load deployment environment from .env.preview')
+  expect(result.output).not.toContain('synthetic-unreadable')
+  expect(result.output).not.toContain('preview cloud reload reached')
+  expect(result.ran).toBe(false)
+}, 45_000)
 
 test('iOS dry-run inspects local source without pulling, fetching, building or changing refs', async () => {
   const result = await command(['release:ios', '--dry-run', '--skip-github-release'], iosFixture)

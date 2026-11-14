@@ -91,12 +91,30 @@ keep their existing behavior; dry-run previews remain read-only.
 
 ## Preview deployments (Hetzner and `ssh`)
 
-`buddy deploy:preview pr-123` deploys the app as its own tenant (slug `<slug>-pr-123`, attached to
-the app's box) at `pr-123.<cloud.previews.domain | PREVIEW_DOMAIN>`; `deploy:preview:remove pr-123`
-removes its units, gateway route, cert units, files and DNS records by exact name. Secrets come
-from `.env.preview` only (the deploy refuses without it), and a relative SQLite path gets its own
-data dir. `--base staging` uses the staging box. New apps ship `.github/workflows/preview.yml`
-(same-repo PRs only; needs `DEPLOY_SSH_KEY`, `DOTENV_PRIVATE_KEY_PREVIEW`, `vars.PREVIEW_DOMAIN`).
+`buddy deploy:preview pr-123` is constrained to one self-contained server runtime with relative
+SQLite/local state. Before publication scripts, host discovery, hooks, builds, state writes or the
+attach deploy, a bounded preflight checks the cloud configuration and actual final merged site env.
+It refuses multiple runtimes/API dependencies, managed/external databases, Redis credentials or
+unsupported state adapters, external writable storage, absolute/traversing/symlinked source or
+state paths, explicit shared targets, custom hooks/build/preStart commands and background workers.
+Selecting `cloud.previews.site` does not bypass the topology check.
+
+Accepted configurations use their own tenant slug (`<slug>-pr-123`) on the app's box at
+`pr-123.<cloud.previews.domain | PREVIEW_DOMAIN>`; relative SQLite keeps the existing preview-scoped
+persistent target. `--base staging` selects the staging box. Removal retains the existing exact-name
+services/files/DNS behavior, including removal of preview shared data.
+
+The command requires a completely readable/decryptable `.env.preview` before cloud config
+reload. Shared CLI startup can already evaluate app config; the native env reader expands ambient
+variables and command substitutions. **This is not strict secret provenance:** ambient variables remain available
+to config/build code, and site env overrides file values. The guard catches known dangerous final
+settings; it cannot prove hardcoded adapter settings or arbitrary trusted application code safe.
+An isolated config/build environment and an explicit multi-site/database/Redis/storage ownership
+policy remain pending. Different passwords, env prefixes or file existence do not establish
+isolation. Never use this command to preview a managed PostgreSQL web/API application yet.
+
+New apps ship `.github/workflows/preview.yml` (same-repo PRs only; needs `DEPLOY_SSH_KEY`,
+`DOTENV_PRIVATE_KEY_PREVIEW`, `vars.PREVIEW_DOMAIN`); that workflow does not bypass these limits.
 
 ## Deployment Flow
 
