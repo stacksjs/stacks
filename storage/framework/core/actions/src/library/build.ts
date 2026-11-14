@@ -3,7 +3,7 @@ import type { LibraryHostedBuildReport, LibraryHostedInput } from './hosted'
 import type { LibraryManifest } from './manifest'
 import type { ResolvedLibraryPackage } from './packages'
 import { existsSync } from 'node:fs'
-import { cp, mkdir, rm } from 'node:fs/promises'
+import { cp, lstat, mkdir, rm } from 'node:fs/promises'
 import { dirname, relative, resolve } from 'node:path'
 import { transpilePackage, validateDeclarations, validateRuntimeExports } from '@stacksjs/build'
 import { log } from '@stacksjs/logging'
@@ -11,7 +11,7 @@ import { projectPath } from '@stacksjs/path'
 import { buildComponentLibrary } from '@stacksjs/stx'
 import { functionEntryData } from './entries'
 import { ambientGlobalsUsed, stxAmbientGlobals } from './globals'
-import { buildHostedOutput, prepareHostedInputs, validateHostedBrowser } from './hosted'
+import { assertHostedSourcePath, buildHostedOutput, materializeHostedInput, prepareHostedInputs, validateHostedBrowser } from './hosted'
 import { generatedReadme, libraryManifest, serializeManifest } from './manifest'
 import { configuredLibrary, LibraryConfigError, resolveLibraryPackages } from './packages'
 
@@ -82,17 +82,21 @@ export async function buildLibraryPackages(options: LibraryPackageBuildOptions =
     if (compile)
       runPrebuild(pkg)
 
+    // Generators may create or replace both loader dependencies and literal CSS.
+    // Revalidate every destination after the hook, before compiling or writing.
+    if (compile) await prepareHostedInputs(packages)
+    const prepared = hostedInputs.get(pkg.name)
+    const input = compile && prepared ? await materializeHostedInput(prepared) : undefined
+
     let componentStyles: string[] = []
     if (pkg.kind === 'functions')
       await buildFunctionPackage(pkg, config, version, compile)
     else
-      componentStyles = await buildComponentPackage(pkg, config, version, compile, hostedInputs.get(pkg.name))
+      componentStyles = await buildComponentPackage(pkg, config, version, compile, input)
 
-    if (compile)
-      await copyAssets(pkg)
+    const assets = compile ? await copyAssets(pkg) : []
 
-    const input = hostedInputs.get(pkg.name)
-    const hosted = compile && input ? await buildHostedOutput(input, pkg.version ?? version, componentStyles) : undefined
+    const hosted = compile && input ? await buildHostedOutput(input, pkg.version ?? version, componentStyles, assets) : undefined
     reports.push({ name: pkg.name, kind: pkg.kind, dir: pkg.dir, sources: pkg.sources.length, ...(hosted ? { hosted } : {}) })
 
     if (compile)
@@ -224,7 +228,8 @@ function runPrebuild(pkg: ResolvedLibraryPackage): void {
  * compiles from TypeScript, so without this a package's JSON and scripts were
  * silently missing from the tarball.
  */
-async function copyAssets(pkg: ResolvedLibraryPackage): Promise<void> {
+async function copyAssets(pkg: ResolvedLibraryPackage): Promise<Array<{ path: string, packagePath: string }>> {
+  const outputs: Array<{ path: string, packagePath: string }> = []
   for (const asset of pkg.assets) {
     const source = projectPath(asset.source)
     const destination = resolve(pkg.dir, 'dist', asset.dest)
@@ -240,8 +245,18 @@ async function copyAssets(pkg: ResolvedLibraryPackage): Promise<void> {
       throw new LibraryConfigError(`Package "${pkg.name}": asset ${asset.dest} collides with a file the build wrote to dist/${asset.dest}.`)
 
     await mkdir(dirname(destination), { recursive: true })
-    await cp(source, destination, { recursive: true })
+    // Capture the native copy operation's actual output mapping, including
+    // nested files. Hosted delivery consumes it instead of walking all dist/.
+    await cp(source, destination, { recursive: true, filter: async (from, to) => {
+      if (pkg.hosted) assertHostedSourcePath(pkg, from)
+      const stat = await lstat(from)
+      if (pkg.hosted && stat.isSymbolicLink())
+        throw new LibraryConfigError(`Package "${pkg.name}": hosted assets cannot contain symbolic links: ${from}`)
+      if (stat.isFile()) outputs.push({ path: to, packagePath: `dist/${relative(resolve(pkg.dir, 'dist'), to).replaceAll('\\', '/')}` })
+      return true
+    } })
   }
+  return outputs.sort((a, b) => a.packagePath.localeCompare(b.packagePath))
 }
 
 /**

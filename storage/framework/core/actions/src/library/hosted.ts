@@ -38,7 +38,7 @@ export interface LibraryHostedBuildReport {
   entryPath: string
   manifest: LibraryHostedManifest
   /** Includes both manifest copies and stable aliases for retention and verification. */
-  files: Array<LibraryHostedFile & { relativePath: string, immutable: boolean }>
+  files: Array<LibraryHostedFile & { relativePath: string, immutable: boolean, packagePath?: string }>
 }
 
 export interface LibraryHostedInput {
@@ -99,6 +99,14 @@ function describe(path: string, bytes: Uint8Array): LibraryHostedFile {
   return { path, bytes: bytes.byteLength, gzipBytes: gzipSync(bytes).byteLength, sha256: digest(bytes, 'sha256', 'hex'), integrity: `sha384-${digest(bytes, 'sha384', 'base64')}` }
 }
 
+/** Share the browser source policy with the native configured-asset copy. */
+export function assertHostedSourcePath(pkg: ResolvedLibraryPackage, path: string): void {
+  const canonical = existsSync(path) ? realpathSync(path) : path
+  const file = relative(projectPath(), canonical).replaceAll('\\', '/')
+  if (/^(?:app|config|routes|database|storage\/framework\/(?:server|defaults\/app))\//.test(file) || /(?:^|\/)\.env(?:[./]|$)/.test(file))
+    fail(pkg, `server source "${file}" cannot enter a hosted browser artifact.`)
+}
+
 /** Restrict browser artifacts before the normal runtime-export validator imports modules. */
 function browserBoundary(pkg: ResolvedLibraryPackage): Bun.BunPlugin {
   return {
@@ -108,15 +116,14 @@ function browserBoundary(pkg: ResolvedLibraryPackage): Bun.BunPlugin {
       build.onLoad({ filter: /.*/ }, async (args) => {
         const path = realpathSync(args.path)
         const file = relative(projectPath(), path).replaceAll('\\', '/')
-        if (/^(?:app|config|routes|database|storage\/framework\/(?:server|defaults\/app))\//.test(file) || /(?:^|\/)\.env(?:[./]|$)/.test(file))
-          fail(pkg, `server source "${file}" cannot enter a hosted browser artifact.`)
+        assertHostedSourcePath(pkg, path)
         if (!/\.[cm]?[jt]sx?$/.test(path)) return
         const contents = await Bun.file(path).text()
         // Environment values are build-machine state, never a browser-library input.
-        const clean = contents.replace(/process\.env\.NODE_ENV\b/g, '"production"')
-        if (/\b(?:process|Bun)\s*(?:\.\s*env|\[\s*['"]env['"]\s*\])|\bimport\.meta\.env\b/.test(clean))
+        const { readsEnvironment } = await import('./browser-syntax')
+        if (readsEnvironment(contents, path))
           fail(pkg, `environment access in "${file}" cannot enter a hosted browser artifact. Use explicit public define mappings.`)
-        return { contents, loader: /\.[cm]?tsx?$/.test(path) ? 'ts' : 'js' }
+        return { contents, loader: path.endsWith('.tsx') ? 'tsx' : path.endsWith('.jsx') ? 'jsx' : /\.[cm]?ts$/.test(path) ? 'ts' : 'js' }
       })
     },
   }
@@ -154,7 +161,7 @@ async function loaderInput(pkg: ResolvedLibraryPackage, loader: NonNullable<Libr
   return { bytes, exports: [...new Set(exports)] }
 }
 
-/** Validate all hosted destinations and authored loaders before a package build mutates dist/. */
+/** Pure config/path validation before writes; generated inputs need not exist yet. */
 export async function prepareHostedInputs(packages: ResolvedLibraryPackage[]): Promise<Map<string, LibraryHostedInput>> {
   const inputs = new Map<string, LibraryHostedInput>()
   const owners: Array<{ path: string, name: string }> = []
@@ -169,6 +176,13 @@ export async function prepareHostedInputs(packages: ResolvedLibraryPackage[]): P
       fail(pkg, 'hosted.entry must be outside outputDir or directly beneath it, away from immutable revision directories.')
     if (extname(entryPath) !== '.js') fail(pkg, 'hosted.entry must end in .js.')
     if (basename(entryPath) === 'bundle.js' && config.loader) fail(pkg, 'hosted loader entry collides with the native bundle.js.')
+    for (const asset of pkg.assets) {
+      plainPath(pkg, asset.dest, 'hosted asset destination')
+      if (asset.dest.split('/').some(part => part.startsWith('.'))) fail(pkg, 'hosted assets cannot contain hidden path segments.')
+      const reserved = ['manifest.json', 'bundle.js', 'bundle.css', 'custom-elements.json', ...(config.loader ? [basename(entryPath)] : [])]
+      if (reserved.some(name => asset.dest === name || asset.dest.startsWith(`${name}/`))) fail(pkg, `hosted asset ${asset.dest} collides with a native hosted output.`)
+      assertHostedSourcePath(pkg, assertInsideProject(pkg, projectPath(asset.source)))
+    }
     const canonicalPaths = [outputDir, entryPath].map(path => assertInsideProject(pkg, path))
     for (const owner of owners) {
       if (canonicalPaths.some(path => path === owner.path || path.startsWith(`${owner.path}${sep}`) || owner.path.startsWith(`${path}${sep}`)))
@@ -178,17 +192,35 @@ export async function prepareHostedInputs(packages: ResolvedLibraryPackage[]): P
     if (baseOwner) fail(pkg, `hosted public base collides with package "${baseOwner}".`)
     publicBases.set(config.base, pkg.name)
     owners.push(...canonicalPaths.map(path => ({ path, name: pkg.name })))
-    const styles: string[] = []
     for (const source of config.styles ?? []) {
       const path = plainPath(pkg, source, 'hosted.styles source')
       assertInsideProject(pkg, path)
-      if (extname(path) !== '.css' || !await Bun.file(path).exists())
-        fail(pkg, `hosted stylesheet must name an existing literal .css file: ${source}`)
-      styles.push(await Bun.file(path).text())
+      if (extname(path) !== '.css') fail(pkg, `hosted stylesheet must name a literal .css file: ${source}`)
     }
-    inputs.set(pkg.name, { pkg, config, outputDir, entryPath, styles, loader: config.loader ? await loaderInput(pkg, config.loader) : undefined })
+    if (config.loader) {
+      assertInsideProject(pkg, plainPath(pkg, config.loader.source, 'hosted.loader.source'))
+      for (const [key, value] of Object.entries(config.loader.define ?? {})) {
+        if (!/^[A-Za-z_$][\w$]*$/.test(key) || typeof value !== 'string') fail(pkg, 'hosted loader defines must map identifiers to explicit build expressions.')
+      }
+    }
+    inputs.set(pkg.name, { pkg, config, outputDir, entryPath, styles: [] })
   }
   return inputs
+}
+
+/** Read/compile only after the package's one native prebuild, rechecking paths. */
+export async function materializeHostedInput(input: LibraryHostedInput): Promise<LibraryHostedInput> {
+  const { pkg, config } = input
+  publicPath(pkg, config.outputDir, 'hosted.outputDir')
+  publicPath(pkg, config.entry, 'hosted.entry')
+  const styles: string[] = []
+  for (const source of config.styles ?? []) {
+    const path = plainPath(pkg, source, 'hosted.styles source')
+    assertInsideProject(pkg, path)
+    if (!await Bun.file(path).exists()) fail(pkg, `hosted stylesheet must name an existing literal .css file: ${source}`)
+    styles.push(await Bun.file(path).text())
+  }
+  return { ...input, styles, loader: config.loader ? await loaderInput(pkg, config.loader) : undefined }
 }
 
 /** Validate the compiler's full browser graph before retaining or publishing bytes. */
@@ -216,14 +248,27 @@ async function stableWrite(path: string, bytes: Uint8Array): Promise<void> {
 }
 
 /** Retain one immutable revision, then move stable aliases to it. */
-export async function buildHostedOutput(input: LibraryHostedInput, version: string, componentStyles: readonly string[]): Promise<LibraryHostedBuildReport> {
+export async function buildHostedOutput(input: LibraryHostedInput, version: string, componentStyles: readonly string[], packageAssets: readonly { path: string, packagePath: string }[] = []): Promise<LibraryHostedBuildReport> {
   const { pkg, config, outputDir, entryPath, loader } = input
   if (!/^[a-zA-Z0-9.+-]+$/.test(version) || version.startsWith('.')) fail(pkg, 'package version cannot be used in a hosted revision path.')
   const assets = new Map<string, Uint8Array>()
+  const packagePaths = new Map<string, string>()
   for (const file of ['bundle.js', 'custom-elements.json']) assets.set(file, await Bun.file(resolve(pkg.dir, 'dist', file)).bytes())
   if (await Bun.file(resolve(pkg.dir, 'dist/bundle.css')).exists()) assets.set('bundle.css', await Bun.file(resolve(pkg.dir, 'dist/bundle.css')).bytes())
+  for (const name of assets.keys()) packagePaths.set(name, `dist/${name}`)
   const entryName = loader ? basename(entryPath) : 'bundle.js'
   if (loader) assets.set(entryName, loader.bytes)
+  for (const asset of packageAssets) {
+    const name = relative(resolve(pkg.dir, 'dist'), asset.path).replaceAll('\\', '/')
+    plainPath(pkg, name, 'hosted asset destination')
+    if (name.split('/').some(part => part.startsWith('.'))) fail(pkg, 'hosted assets cannot contain hidden path segments.')
+    assertInsideProject(pkg, asset.path)
+    if (/\.[cm]?[jt]sx?$/.test(name)) await browserBuild(pkg, asset.path)
+    if (name === 'manifest.json' || [...assets.keys()].some(existing => name === existing || name.startsWith(`${existing}/`) || existing.startsWith(`${name}/`)))
+      fail(pkg, `hosted asset ${name} collides with a native hosted output.`)
+    assets.set(name, await Bun.file(asset.path).bytes())
+    packagePaths.set(name, asset.packagePath)
+  }
   const styles = [...componentStyles, ...input.styles]
   const csp = { styleSrc: [...new Set(styles.map(style => `'sha256-${digest(style, 'sha256', 'base64')}'`))].sort() }
   const identity = JSON.stringify({ schemaVersion: 1, name: pkg.name, version, csp, base: config.base, entry: config.entry, exports: loader?.exports, assets: [...assets].map(([name, bytes]) => [name, digest(bytes, 'sha256', 'hex')]) })
@@ -238,13 +283,13 @@ export async function buildHostedOutput(input: LibraryHostedInput, version: stri
   const manifest: LibraryHostedManifest = { schemaVersion: 1, name: pkg.name, version, revision, entrypoint, immutableEntrypoint, files: [...assets].map(([name, bytes]) => describe(`${config.base}/${revision}/${name}`, bytes)).concat(describe(entrypoint, stable)), csp }
   const manifestBytes = new TextEncoder().encode(`${JSON.stringify(manifest, null, 2)}\n`)
   const report: LibraryHostedBuildReport = { revision, outputDir, immutableDir, manifestPath: resolve(immutableDir, 'manifest.json'), entryPath, manifest, files: [] }
-  const retain = async (path: string, bytes: Uint8Array, immutable: boolean) => {
+  const retain = async (path: string, bytes: Uint8Array, immutable: boolean, packagePath?: string) => {
     assertInsideProject(pkg, path)
     if (immutable) await immutableWrite(pkg, path, bytes)
     else await stableWrite(path, bytes)
-    report.files.push({ ...describe(path, bytes), relativePath: relative(projectPath(), path).replaceAll('\\', '/'), immutable })
+    report.files.push({ ...describe(path, bytes), relativePath: relative(projectPath(), path).replaceAll('\\', '/'), immutable, ...(packagePath ? { packagePath } : {}) })
   }
-  for (const [name, bytes] of assets) await retain(resolve(immutableDir, name), bytes, true)
+  for (const [name, bytes] of assets) await retain(resolve(immutableDir, name), bytes, true, packagePaths.get(name))
   await retain(report.manifestPath, manifestBytes, true)
   await retain(resolve(outputDir, 'manifest.json'), manifestBytes, false)
   await retain(entryPath, stable, false)
