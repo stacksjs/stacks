@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.584...v0.75.585)
+
+## 🐛 Bug Fixes
+
+- expose native transaction ownership assertion for adapters ([8276dea](https://github.com/stacksjs/stacks/commit/8276dea)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.583...v0.75.584)
 
 ## 🐛 Bug Fixes
