@@ -31,6 +31,21 @@ async function render(overrides: Record<string, unknown> = {}): Promise<string> 
 }
 
 describe('OAuth consent view', () => {
+  it('renders nothing to consent to when no authorization request is handed in', async () => {
+    // Asked for as a page: no action, so no `consent`. It must not throw on the
+    // undeclared name, and must not print the form or its request handle.
+    let html = ''
+    try {
+      html = String(await renderTemplate(VIEW, {}))
+    }
+    catch (error) {
+      // notFound() may surface as a thrown 404 signal from a bare render.
+      expect(String((error as Error)?.message ?? error)).not.toContain('consent is not defined')
+    }
+    expect(html).not.toContain('name="request_id"')
+    expect(html).not.toContain('wants to connect')
+  })
+
   it('shows the requesting client, signed-in identity, permissions, resources, and workspace', async () => {
     const html = await render()
 
