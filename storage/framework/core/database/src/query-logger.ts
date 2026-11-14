@@ -186,6 +186,13 @@ export async function logQuery(event: LogEvent): Promise<void> {
     // Determine query status based on duration and error
     const status = determineQueryStatus(durationMs, error)
 
+    // The queue asks "is there a job?" several times a second, for ever. Those
+    // rows say nothing about the application and, written one per poll, were
+    // 99.5% of a 6 GB query_logs table on an app with three users. A poll that
+    // is slow or fails is still recorded: that one is worth reading.
+    if (status === 'completed' && !config.database?.queryLogging?.logHousekeeping && isHousekeepingQuery(query))
+      return
+
     // Create the base log record
     const logRecord = await createQueryLogRecord(query, durationMs, status, error, parameters)
 
@@ -214,6 +221,25 @@ export async function logQuery(event: LogEvent): Promise<void> {
     // Log error but don't throw - this is a background operation
     log.error('Failed to log query:', err)
   }
+}
+
+/**
+ * The tables the framework polls on a timer, whatever the application does:
+ * the queue's job reservation and reaping, its workers' heartbeats, and the
+ * circuit state it reads on every tick.
+ */
+const HOUSEKEEPING_TABLES = ['jobs', 'queue_workers', 'queue_circuit_state'] as const
+const HOUSEKEEPING_QUERY = new RegExp(`\\b(?:from|update|into|join)\\s+["\`]?(?:${HOUSEKEEPING_TABLES.join('|')})["\`]?(?![\\w"\`])`, 'i')
+
+/**
+ * True for a statement against one of the framework's own polling tables.
+ *
+ * Matched on the table a statement reads or writes, not on its text, so a
+ * query that merely mentions `jobs` in a value or names `user_jobs` is not
+ * taken for one.
+ */
+export function isHousekeepingQuery(query: string): boolean {
+  return HOUSEKEEPING_QUERY.test(query)
 }
 
 export function isExcludedQuery(query: string, excludedQueries: readonly string[]): boolean {
