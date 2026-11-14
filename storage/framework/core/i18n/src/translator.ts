@@ -73,42 +73,42 @@ export class I18n implements I18nInstance {
   /**
    * Translate a key
    */
-  t = (key: string, values?: InterpolationValues, locale?: string): string => {
+  t: I18nInstance['t'] = (key: string, values?: InterpolationValues, locale?: string): string => {
     return this.translate(key, values, locale)
   }
 
   /**
    * Translate with pluralization
    */
-  tc = (key: string, count: number, values?: InterpolationValues, locale?: string): string => {
+  tc: I18nInstance['tc'] = (key: string, count: number, values?: InterpolationValues, locale?: string): string => {
     return this.translatePlural(key, count, values, locale)
   }
 
   /**
    * Check if translation exists
    */
-  te = (key: string, locale?: string): boolean => {
+  te: I18nInstance['te'] = (key: string, locale?: string): boolean => {
     return this.hasTranslation(key, locale)
   }
 
   /**
    * Get translation message
    */
-  tm = (key: string, locale?: string): TranslationMessages | string | undefined => {
+  tm: I18nInstance['tm'] = (key: string, locale?: string): TranslationMessages | string | undefined => {
     return this.getMessage(key, locale ?? this.locale)
   }
 
   /**
    * Set the current locale
    */
-  setLocale = (locale: string): void => {
+  setLocale: I18nInstance['setLocale'] = (locale: string): void => {
     if (locale === this._locale) return
     this._locale = locale
     this.notify()
   }
 
   /** Subscribe to locale or catalog changes. Returns an unsubscribe function. */
-  subscribe = (listener: () => void): (() => void) => {
+  subscribe: I18nInstance['subscribe'] = (listener: () => void): (() => void) => {
     this.listeners.add(listener)
     return () => { this.listeners.delete(listener) }
   }
@@ -120,7 +120,7 @@ export class I18n implements I18nInstance {
   /**
    * Add translations for a locale
    */
-  addTranslations = (locale: string, messages: TranslationMessages): void => {
+  addTranslations: I18nInstance['addTranslations'] = (locale: string, messages: TranslationMessages): void => {
     if (!this._messages[locale]) {
       this._messages[locale] = {}
     }
@@ -131,7 +131,7 @@ export class I18n implements I18nInstance {
   /**
    * Format a date
    */
-  d = (value: Date | number, format?: string): string => {
+  d: I18nInstance['d'] = (value: Date | number, format?: string): string => {
     const date = typeof value === 'number' ? new Date(value) : value
     const options = this._config.dateTimeFormats?.[this.locale]?.[format || 'short'] || {}
     return new Intl.DateTimeFormat(this.locale, options).format(date)
@@ -140,7 +140,7 @@ export class I18n implements I18nInstance {
   /**
    * Format a number
    */
-  n = (value: number, format?: string): string => {
+  n: I18nInstance['n'] = (value: number, format?: string): string => {
     const options = this._config.numberFormats?.[this.locale]?.[format || 'decimal'] || {}
     return new Intl.NumberFormat(this.locale, options).format(value)
   }
