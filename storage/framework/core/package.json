@@ -307,6 +307,10 @@
     "./support": {
       "types": "./dist/support.d.ts",
       "import": "./dist/support.js"
+    },
+    "./telephony": {
+      "types": "./dist/telephony.d.ts",
+      "import": "./dist/telephony.js"
     }
   },
   "types": "./dist/buddy.d.ts",
@@ -409,7 +413,8 @@
     "@stacksjs/sites": "0.75.575",
     "bun-query-builder": "^0.6.0",
     "@stacksjs/desktop-build": "0.75.575",
-    "@stacksjs/support": "0.75.575"
+    "@stacksjs/support": "0.75.575",
+    "@stacksjs/telephony": "0.75.575"
   },
   "devDependencies": {
     "better-dx": "^0.2.39"

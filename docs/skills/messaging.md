@@ -26,3 +26,5 @@ behind it.
 Every page here describes one `SKILL.md` under
 [`storage/framework/defaults/ai/skills`](https://github.com/stacksjs/stacks/tree/main/storage/framework/defaults/ai/skills).
 See [Using skills](/skills/using) to wire them into your agent.
+
+| [Telephony](/skills/messaging/telephony) | Use when implementing telephone numbers or voice calls - US/Canada number search and provisioning, Twilio call control, authenticated voice callbacks, TwiML responses, or bounded Media Streams audio. Covers @stacksjs/telephony. |

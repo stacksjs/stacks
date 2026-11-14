@@ -98,6 +98,7 @@
         "@stacksjs/storage": "0.75.575",
         "@stacksjs/strings": "0.75.575",
         "@stacksjs/support": "0.75.575",
+        "@stacksjs/telephony": "0.75.575",
         "@stacksjs/testing": "0.75.575",
         "@stacksjs/tinker": "0.75.575",
         "@stacksjs/tlsx": "^0.13.19",
@@ -1422,6 +1423,13 @@
         "better-dx": "^0.2.37",
       },
     },
+    "storage/framework/core/telephony": {
+      "name": "@stacksjs/telephony",
+      "version": "0.75.575",
+      "devDependencies": {
+        "better-dx": "^0.2.39",
+      },
+    },
     "storage/framework/core/testing": {
       "name": "@stacksjs/testing",
       "version": "0.75.575",
@@ -1833,6 +1841,8 @@
     "@stacksjs/stx": ["@stacksjs/stx@0.2.864", "", { "dependencies": { "@stacksjs/clapp": "^0.2.17", "@stacksjs/desktop": "0.2.864", "@stacksjs/sanitizer": "0.2.864", "@stacksjs/ts-css": "^0.3.21", "@stacksjs/ts-i18n": "^0.1.11", "@types/dom-speech-recognition": "^0.0.12", "bun-plugin-stx": "0.2.864", "bunfig": "^0.15.21", "stx-router": "0.2.864", "ts-broadcasting": "^0.0.13", "ts-images": "^0.2.22", "ts-syntax-highlighter": "^0.2.1" }, "bin": { "stx": "./dist/cli.js" } }, "sha512-N6Eh+lU/sL27xhbw7D7pvtPTdDtSXRJTTsce1J8qKbM1MIkQXHpuNw0Nk2pUz6eN9DcY33SjYo5Dl2PkGGGYbQ=="],
 
     "@stacksjs/support": ["@stacksjs/support@workspace:storage/framework/core/support"],
+
+    "@stacksjs/telephony": ["@stacksjs/telephony@workspace:storage/framework/core/telephony"],
 
     "@stacksjs/testing": ["@stacksjs/testing@workspace:storage/framework/core/testing"],
 

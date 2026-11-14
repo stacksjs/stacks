@@ -1,10 +1,10 @@
 ---
 title: Skills
-description: "The 211 agent skills Stacks ships, what each one is for, and how to wire them into your AI coding agent."
+description: "The 213 agent skills Stacks ships, what each one is for, and how to wire them into your AI coding agent."
 ---
 # Skills
 
-Stacks ships **211 agent skills**. Each one is a `SKILL.md` that documents part
+Stacks ships **213 agent skills**. Each one is a `SKILL.md` that documents part
 of the framework, or part of the craft of working in it, authoritatively enough
 that an agent reads it instead of guessing at an API.
 

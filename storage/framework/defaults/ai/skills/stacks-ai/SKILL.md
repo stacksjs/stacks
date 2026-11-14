@@ -563,3 +563,28 @@ HTTP ranges, safely restarts when Range is ignored, and honors caller aborts.
 It defaults to four attempts with a 180,000 ms timeout per transfer. Keep model
 download handling in this package rather than copying a shell downloader into
 an application. The Whisper executable remains a managed Pantry dependency.
+
+## Realtime audio transport
+
+`connectRealtime` from `@stacksjs/ai/realtime` opens a server-only GA Realtime
+audio session with Bun's WebSocket client. Supply `apiKey`, an explicitly chosen
+`model`, bounded `instructions`, and `onEvent`. The default audio format is
+`audio/pcmu` for phone media; PCM uses mono 24 kHz. The API key travels only in
+server handshake headers. No connection is opened on import.
+
+Wait for the returned session before appending audio. The transport refuses
+oversized or invalid base64, bounds socket backpressure, and never reconnects
+or retries automatically. Set a maximum call duration and enforce wallet
+reservations outside the transport. `interrupt(itemId, playedMilliseconds)`
+cancels generation and truncates history to the audio actually played.
+
+Only declared completed tool calls are emitted, once per call ID. The caller
+authorizes and executes tools, then submits the result. No tool executes inside
+the transport. Deduplicate response usage by response ID and reconcile incomplete
+calls against provider billing. A closed socket is not proof of final usage.
+
+Retained tests: `core/ai/tests/realtime.test.ts`, including a real local Bun
+WebSocket handshake. Live OpenAI audio quality, account access, media bridging
+and production latency require separate provider qualification. Protocol sources:
+<https://developers.openai.com/api/docs/guides/voice-websockets> and
+<https://developers.openai.com/api/docs/guides/realtime-conversations>.

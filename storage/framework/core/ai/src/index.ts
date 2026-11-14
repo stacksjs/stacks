@@ -71,3 +71,7 @@ export { estimateMessageTokens, estimateTokens, sanitizePrompt } from './utils/t
 export type { SanitizeResult } from './utils/tokens'
 
 export * from './utils/model-access'
+
+// Server-side streaming audio, isolated from browser credentials and tools.
+export { connectRealtime, RealtimeError } from './realtime'
+export type { RealtimeEvent, RealtimeFailure, RealtimeOptions, RealtimeSession, RealtimeSocket } from './realtime'

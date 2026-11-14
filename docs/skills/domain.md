@@ -26,3 +26,5 @@ models, actions, routes and dashboard views.
 Every page here describes one `SKILL.md` under
 [`storage/framework/defaults/ai/skills`](https://github.com/stacksjs/stacks/tree/main/storage/framework/defaults/ai/skills).
 See [Using skills](/skills/using) to wire them into your agent.
+
+| [Support](/skills/domain/support) | Use when connecting an application to HQ.support, issuing customer sessions, creating support conversations, forwarding customer events, or controlling its stx messenger. Covers @stacksjs/support and services.supporthq. |

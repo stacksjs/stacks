@@ -3,7 +3,11 @@ import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 
-test('built public exports run and typecheck in an isolated consumer without workspace aliases', () => {
+test('built public exports run and typecheck in an isolated consumer without workspace aliases', async () => {
+  const root = resolve(import.meta.dir, '..')
+  const build = Bun.spawn([process.execPath, '--no-env-file', join(root, 'build.ts')], { cwd: tmpdir(), stdout: 'pipe', stderr: 'pipe' })
+  const [code, output, errors] = await Promise.all([build.exited, new Response(build.stdout).text(), new Response(build.stderr).text()])
+  expect(code, `${output}\n${errors}`).toBe(0)
   const dir = mkdtempSync(join(tmpdir(), 'stacks-telephony-consumer-'))
   try {
     const installed = join(dir, 'node_modules/@stacksjs/telephony')
@@ -37,4 +41,4 @@ test('built public exports run and typecheck in an isolated consumer without wor
     expect(types.exitCode).toBe(0)
   }
   finally { rmSync(dir, { recursive: true, force: true }) }
-})
+}, 60000)
