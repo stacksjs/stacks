@@ -201,6 +201,7 @@ async function captureProfile(configFile: string, profile: string, options: Scre
       const result: ScreenshotResult = { id: page.id, profile, viewport, title: page.title, description: page.description, ...(page.reason ? { reason: page.reason } : {}), path: new URL(typeof page.path === 'string' ? page.path : page.route!, config.baseUrl).pathname, status: 'failed' }
       results.push(result)
       if (page.skip) { result.status = 'skipped'; result.error = page.skip; process.send?.({ type: 'screenshot-result', result }); continue }
+      let phase = 'starting the browser'
       let view: Bun.WebView | undefined
       let timer: ReturnType<typeof setTimeout> | undefined
       try {
@@ -214,12 +215,17 @@ async function captureProfile(configFile: string, profile: string, options: Scre
             const concrete = { ...page, path }
             const context: ScreenshotContext = { view: view!, baseUrl: config.baseUrl, profile, viewport, page: concrete }
             result.path = target.pathname
+            phase = 'preparing the review profile'
             await config.profiles?.[profile]?.prepare?.(context)
+            phase = 'opening the screen'
             await view!.navigate(new URL(concrete.path, config.baseUrl).href)
+            phase = 'preparing the screen state'
             await page.prepare?.(context)
+            phase = 'waiting for screen readiness'
             await until(async () => Boolean(await view!.evaluate(`Boolean(document.querySelector(${JSON.stringify(page.waitFor)}))`)) && (!page.ready || await page.ready(context)), timeout)
             const actual = String(await view!.evaluate('location.href'))
             if (cleanPath(actual) !== cleanPath(new URL(concrete.path, config.baseUrl).href)) throw new Error('The screen redirected to a different route; check its login and fixture')
+            phase = 'loading fonts and visible images'
             await view!.evaluate(`(async () => {
               const style = document.createElement('style'); style.textContent = '*{animation:none!important;transition:none!important;scroll-behavior:auto!important;caret-color:transparent!important}'; document.head.append(style);
               for (const selector of ${JSON.stringify(['input[type="password"]', ...(page.masks ?? [])])}) for (const node of document.querySelectorAll(selector)) node.style.setProperty('visibility','hidden','important');
@@ -229,6 +235,7 @@ async function captureProfile(configFile: string, profile: string, options: Scre
             })()`)
             const broken = await view!.evaluate<boolean>('[...document.images].some(image=>{const r=image.getBoundingClientRect();return r.bottom>0&&r.top<innerHeight&&image.complete&&image.naturalWidth===0})')
             if (broken) throw new Error('A visible image failed to load')
+            phase = 'saving the screenshot'
             const picture = new Uint8Array(await (await view!.screenshot()).arrayBuffer())
             const file = `${page.id}/${profile}-${viewport.name}.png`
             const destination = join(output, file)
@@ -243,7 +250,7 @@ async function captureProfile(configFile: string, profile: string, options: Scre
           new Promise<never>((_, reject) => { timer = setTimeout(() => { view?.close(); reject(new Error('Screenshot deadline exceeded')) }, timeout) }),
         ])
       }
-      catch (error) { result.error = redacted(error, config) }
+      catch (error) { result.error = `${phase}: ${redacted(error, config)}` }
       finally { if (timer) clearTimeout(timer); view?.close(); process.send?.({ type: 'screenshot-result', result }) }
     }
   }
