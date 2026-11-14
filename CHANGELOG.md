@@ -1,5 +1,25 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.580...v0.75.581)
+
+## ✨ Features
+
+- allow explicit native library publisher selection ([3ec2b09](https://github.com/stacksjs/stacks/commit/3ec2b09)) _(by Chris)_
+- forward explicit library publication distribution tags ([d3d85c5](https://github.com/stacksjs/stacks/commit/d3d85c5)) _(by Chris)_
+
+## 🐛 Bug Fixes
+
+- derive component package exports from emitted artifacts ([340fdd2](https://github.com/stacksjs/stacks/commit/340fdd2)) _(by Chris)_
+
+## 📝 Documentation
+
+- document explicit native library publisher selection ([e733df7](https://github.com/stacksjs/stacks/commit/e733df7)) _(by Chris)_
+- document library publication distribution tags ([e2ffd50](https://github.com/stacksjs/stacks/commit/e2ffd50)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.579...v0.75.580)
 
 ## 🐛 Bug Fixes
