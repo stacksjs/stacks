@@ -63,15 +63,28 @@ export function planScreenshotModels(definitions: Record<string, Definition>): S
     for (const model of ready) { creationOrder.push(model.name); pending.delete(model.name) }
   }
   const cycleNames = new Set<string>()
-  const visited = new Set<string>()
-  function visit(name: string, stack: string[]): void {
-    const at = stack.indexOf(name)
-    if (at >= 0) { for (const member of stack.slice(at)) cycleNames.add(member); return }
-    if (visited.has(name)) return
-    for (const parent of pending.get(name)?.parents ?? []) if (pending.has(parent)) visit(parent, [...stack, name])
-    visited.add(name)
+  const indices = new Map<string, number>()
+  const low = new Map<string, number>()
+  const stack: string[] = []
+  const active = new Set<string>()
+  let index = 0
+  function visit(name: string): void {
+    indices.set(name, index)
+    low.set(name, index++)
+    stack.push(name)
+    active.add(name)
+    for (const parent of pending.get(name)?.parents ?? []) {
+      if (!pending.has(parent)) continue
+      if (!indices.has(parent)) { visit(parent); low.set(name, Math.min(low.get(name)!, low.get(parent)!)) }
+      else if (active.has(parent)) low.set(name, Math.min(low.get(name)!, indices.get(parent)!))
+    }
+    if (low.get(name) !== indices.get(name)) return
+    const component: string[] = []
+    let member: string
+    do { member = stack.pop()!; active.delete(member); component.push(member) } while (member !== name)
+    if (component.length > 1 || pending.get(name)?.parents.includes(name)) for (const member of component) cycleNames.add(member)
   }
-  for (const name of pending.keys()) visit(name, [])
+  for (const name of pending.keys()) if (!indices.has(name)) visit(name)
   return { models, creationOrder, cycles: [...cycleNames].sort(), blocked: [...pending.keys()].filter(name => !cycleNames.has(name)), externalParents: [...new Set(models.flatMap(model => model.parents).filter(parent => !names.has(parent)))].sort() }
 }
 

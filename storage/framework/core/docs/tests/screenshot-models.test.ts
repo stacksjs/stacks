@@ -28,3 +28,10 @@ test('keeps cycles and missing parent models explicit instead of inventing forei
   expect(plan.blocked).toEqual(['D'])
   expect(plan.externalParents).toEqual(['External'])
 })
+
+
+test('recognizes a cycle reached through an already visited parent and keeps only dependants blocked', () => {
+  const plan = planScreenshotModels({ A: { belongsTo: ['B', 'C'] }, B: { belongsTo: ['A'] }, C: { belongsTo: ['B'] }, D: { belongsTo: ['C'] } })
+  expect(plan.cycles).toEqual(['A', 'B', 'C'])
+  expect(plan.blocked).toEqual(['D'])
+})
