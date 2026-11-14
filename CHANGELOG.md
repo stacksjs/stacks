@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.579...v0.75.580)
+
+## 🐛 Bug Fixes
+
+- **database**: omit comment-only diffs after extension reconciliation ([e648736](https://github.com/stacksjs/stacks/commit/e648736)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.578...v0.75.579)
 
 ## ✨ Features
