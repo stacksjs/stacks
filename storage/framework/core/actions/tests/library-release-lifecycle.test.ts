@@ -15,7 +15,7 @@ async function app(config: string, args: string[], env: Record<string, string> =
     await writeFile(join(root, 'package.json'), JSON.stringify({ name: 'generic-app', version: '1.0.0', type: 'module' }))
     await writeFile(join(root, 'config/library.ts'), `export default ${config}`)
     await writeFile(join(root, 'resources/functions/add.ts'), 'export const add = (a: number, b: number): number => a + b')
-    for (const command of [['init', '--quiet'], ['add', '.'], ['-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '--quiet', '-m', 'test: seed app']]) {
+    for (const command of [['init', '--quiet'], ['config', 'user.name', 'Fixture'], ['config', 'user.email', 'fixture@example.invalid'], ['add', '.'], ['commit', '--quiet', '-m', 'test: seed app']]) {
       const result = Bun.spawnSync(['git', ...command], { cwd: root, stdout: 'pipe', stderr: 'pipe' })
       if (result.exitCode) throw new Error(result.stderr.toString())
     }

@@ -9,7 +9,7 @@ import { dirname, join } from 'node:path'
 import { inspectLibraryRelease, prepareLibraryRelease, validateLibraryReleaseSource } from './release-artifacts'
 import { downloadLibraryReleaseSource } from './release-download'
 import { createLibraryReleaseReader } from './release-network'
-import { DEFAULT_LIBRARY_SOURCE_CI, planNativeLibraryRelease } from './release-plan'
+import { DEFAULT_LIBRARY_SOURCE_CI, isLibraryPrereleaseVersion, planNativeLibraryRelease } from './release-plan'
 import { publishPreparedLibraryRelease, readbackLibraryRelease } from './release-registry'
 import { acceptLibraryReleaseSource, latestLibrarySourceRun } from './release-source'
 import { configuredLibrary } from './packages'
@@ -126,7 +126,7 @@ export async function publishNativeLibraryRelease(options: Omit<NativeLibraryAcc
   const receipt = await verifyNativeLibraryAcceptance(options)
   const config = plan.config
   const candidate = await inspectLibraryRelease(options.directory, { repository: receipt.source.repository, commit: receipt.source.commit })
-  if (candidate.packages.some(pkg => pkg.tag !== (config?.release?.distTag ?? 'latest') || pkg.version.includes('-') && pkg.tag === 'latest')) throw new Error('Candidate distribution channel differs from current release policy')
+  if (candidate.packages.some(pkg => pkg.tag !== (config?.release?.distTag ?? 'latest') || isLibraryPrereleaseVersion(pkg.version) && pkg.tag === 'latest')) throw new Error('Candidate distribution channel differs from current release policy')
   const result = await publishPreparedLibraryRelease(options.directory, { ...options, source: { repository: receipt.source.repository, commit: receipt.source.commit }, publisher: config?.release?.publisher })
   result.source = receipt.source
   result.verifierCommit = fullCommit(options.cwd, 'HEAD')

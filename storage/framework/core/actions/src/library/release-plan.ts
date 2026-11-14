@@ -20,6 +20,11 @@ export interface LibraryReleasePlan {
   packages: Array<{ name: string, version: string, registry: 'npm' | 'pantry', access: 'public' | 'restricted' }>
 }
 
+/** Classify a validated package version, excluding its build metadata. */
+export function isLibraryPrereleaseVersion(version: string): boolean {
+  return /^\d+\.\d+\.\d+-/.test(version)
+}
+
 /** Read-only validation used BEFORE generation, Bump, tags or provider writes. */
 export async function planNativeLibraryRelease(options: { cwd: string, config?: LibraryConfig, bump?: string, preid?: string, validateWorkflow?: boolean, which?: (bin: string) => string | null }): Promise<LibraryReleasePlan | undefined> {
   const config = options.config ?? await configuredLibrary()
@@ -47,7 +52,7 @@ export async function planNativeLibraryRelease(options: { cwd: string, config?: 
     else throw new Error('Invalid library release bump')
   }
   const resolved = packages.map(pkg => ({ name: pkg.name, version: pkg.version ?? version!, registry: pkg.registry, access: pkg.access }))
-  const prerelease = resolved.some(pkg => /^\d+\.\d+\.\d+-/.test(pkg.version)) || /^pre/.test(options.bump ?? '')
+  const prerelease = resolved.some(pkg => isLibraryPrereleaseVersion(pkg.version))
   if (prerelease && (!release.distTag || release.distTag === 'latest')) throw new Error('Prerelease packages require an explicit non-latest distribution tag in library.release.distTag; --preid only selects a version identifier')
   const tag = release.distTag ?? 'latest'
   for (const pkg of resolved) {
