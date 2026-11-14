@@ -242,9 +242,11 @@ New apps ship `.github/workflows/preview.yml`, requiring `DEPLOY_SSH_KEY`,
 `DOTENV_PRIVATE_KEY_PREVIEW` and `vars.PREVIEW_DOMAIN`. Fork PRs are skipped. The workflow enforces
 the same constrained support and does not make arbitrary PR code safe to run with credentials.
 
-Removal retains its existing exact-name behavior: services, gateway/certificate units, files and
-shared data directory, plus DNS records. It leaves sibling preview names alone. This change adds
-no new teardown or database-removal behavior.
+Removal cleans the exact implicit native runtime and the legacy first-server target when their
+names differ. Explicit site selection retains its historical exact target. All selected runtime
+instances and units must stop before gateway/certificate, release and shared data cleanup.
+A failed stop preserves shared data, DNS and local state. Common cleanup runs once and leaves
+sibling preview names alone. Discovery of arbitrary historical target names remains deferred.
 
 ## Deployment hooks
 

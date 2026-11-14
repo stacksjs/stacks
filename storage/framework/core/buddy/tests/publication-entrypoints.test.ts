@@ -40,7 +40,7 @@ function previewFixture(root: string) {
 // contract, while dedicated startup benchmarks measure command performance.
 const PUBLICATION_FIXTURE_TIMEOUT = 30_000
 
-async function command(args: string[], setup?: (root: string) => void, guardStartup = false) {
+async function command(args: string[], setup?: (root: string) => void, guardStartup = false, removal?: 'success' | 'failure') {
   const checkout = resolve(import.meta.dir, '../../../../..')
   const root = mkdtempSync(join(tmpdir(), 'buddy-publication-entry-'))
   try {
@@ -59,6 +59,27 @@ async function command(args: string[], setup?: (root: string) => void, guardStar
   })
 } })`)
     }
+    if (removal) {
+      writeFileSync(startupGuard, `import { mock } from 'bun:test'
+import * as cloud from ${JSON.stringify(join(checkout, 'node_modules/@stacksjs/ts-cloud/dist/index.js'))}
+const capture = { remote: [], dns: [] }
+const save = () => Bun.write('removal-capture.json', JSON.stringify(capture))
+mock.module('@stacksjs/ts-cloud', () => ({ ...cloud,
+  sshExecOrThrow: async (_host, command) => {
+    capture.remote.push(Buffer.from(command.split(' ')[1], 'base64').toString())
+    await save()
+    if (${removal === 'failure'}) throw new Error('Inert runtime stop failed')
+    return ''
+  },
+  detectDnsProvider: async () => ({ name: 'inert' }),
+  removeAddressRecords: async (_provider, zone, host) => {
+    capture.dns.push({ zone, host }); await save()
+    return { removed: [], warnings: [] }
+  },
+}))
+globalThis.fetch = async () => { throw new Error('No network permitted') }
+`)
+    }
     writeFileSync(runner, `import { cli } from ${JSON.stringify(join(checkout, 'storage/framework/core/cli/src/index.ts'))}
 import { release } from ${JSON.stringify(join(checkout, 'storage/framework/core/buddy/src/commands/release.ts'))}
 import { deploy } from ${JSON.stringify(join(checkout, 'storage/framework/core/buddy/src/commands/deploy.ts'))}
@@ -70,13 +91,16 @@ await buddy.parse()
 `)
     const child = Bun.spawn([
       process.execPath, '--no-env-file', '--tsconfig-override', join(checkout, 'storage/framework/tsconfig.framework.json'),
-      ...(guardStartup ? ['--preload', startupGuard] : []), runner, ...args,
-    ], { cwd: root, env: { ...publicationEnvironment(), GIT_TRACE: join(root, 'git-trace.log') }, stdout: 'pipe', stderr: 'pipe', timeout: PUBLICATION_FIXTURE_TIMEOUT })
+      ...(guardStartup || removal ? ['--preload', startupGuard] : []), runner, ...args,
+    ], { cwd: root, env: { ...publicationEnvironment(), GIT_TRACE: join(root, 'git-trace.log'), ...(removal ? { TS_CLOUD_SSH_HOST: '203.0.113.8', CLOUDFLARE_API_TOKEN: 'inert-token' } : {}) }, stdout: 'pipe', stderr: 'pipe', timeout: PUBLICATION_FIXTURE_TIMEOUT })
     const [code, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
     return {
       code, output: `${stdout}\n${stderr}`, ran: existsSync(join(root, 'policy-ran')),
       trace: existsSync(join(root, 'git-trace.log')) ? readFileSync(join(root, 'git-trace.log'), 'utf8') : '',
       head, finalHead: head ? git(root, 'rev-parse', 'HEAD') : undefined,
+      removal: existsSync(join(root, 'removal-capture.json')) ? JSON.parse(readFileSync(join(root, 'removal-capture.json'), 'utf8')) : undefined,
+      pinExists: existsSync(join(root, 'storage/cloud/state/fixture-pr-7-production.json')),
+      siblingPinExists: existsSync(join(root, 'storage/cloud/state/fixture-pr-70-production.json')),
     }
   }
   finally {
@@ -257,3 +281,38 @@ test.each(['release:ios', 'release:github'])('%s dry-run does not execute an app
   expect(result.ran).toBe(false)
   expect(result.output).not.toContain('publication:check failed')
 }, 45_000)
+
+
+for (const deploy of ['bucket', 'server']) {
+  test(`registered preview removal cleans both ${deploy}-first identities with one DNS and local cleanup`, async () => {
+    const result = await command(['deploy:preview:remove', 'pr-7'], (root) => {
+      previewFixture(root)
+      const file = join(root, 'config/cloud.ts')
+      writeFileSync(file, readFileSync(file, 'utf8').replace('sites: {', `sites: { assets: { deploy: '${deploy}', port: 3339 },`))
+      mkdirSync(join(root, 'storage/cloud/state'), { recursive: true })
+      writeFileSync(join(root, 'storage/cloud/state/fixture-pr-7-production.json'), '{}')
+      writeFileSync(join(root, 'storage/cloud/state/fixture-pr-70-production.json'), '{}')
+    }, false, 'success')
+    expect(result.code, result.output).toBe(0)
+    expect(result.removal.remote).toHaveLength(1)
+    expect(result.removal.remote[0]).toContain('/var/www/fixture-pr-7-main ')
+    expect(result.removal.remote[0]).toContain('/var/www/fixture-pr-7-assets ')
+    expect(result.removal.dns).toEqual([{ zone: 'pr-7.preview.example.test', host: 'pr-7.preview.example.test' }])
+    expect(result.pinExists).toBe(false)
+    expect(result.siblingPinExists).toBe(true)
+    expect(result.ran).toBe(false)
+  }, 45_000)
+}
+
+test('registered removal keeps DNS and local state after a remote stop failure', async () => {
+  const result = await command(['deploy:preview:remove', 'pr-7'], (root) => {
+    previewFixture(root)
+    mkdirSync(join(root, 'storage/cloud/state'), { recursive: true })
+    writeFileSync(join(root, 'storage/cloud/state/fixture-pr-7-production.json'), '{}')
+  }, false, 'failure')
+  expect(result.code, result.output).not.toBe(0)
+  expect(result.output).toContain('Inert runtime stop failed')
+  expect(result.removal.remote).toHaveLength(1)
+  expect(result.removal.dns).toEqual([])
+  expect(result.pinExists).toBe(true)
+})

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { assertPreviewName, buildPreviewTeardownScript, derivePreviewConfig, previewDomain, previewPort, previewSite, previewTarget } from '../src/commands/preview-deploy'
+import { assertPreviewName, buildPreviewTeardownScript, derivePreviewConfig, previewDomain, previewPort, previewRemovalTarget, previewSite, previewTarget } from '../src/commands/preview-deploy'
 
 /**
  * Preview deployments (stacksjs/stacks#735): a pull request as its own tenant
@@ -46,7 +46,7 @@ describe('preview names and targets', () => {
     expect(() => previewSite({ sites: { legacy: app.sites.legacy } })).toThrow('nothing to preview')
   })
 
-  it('retains the existing removal target for stale bucket and static server fields', () => {
+  it('retains the legacy target helper for stale bucket and static server fields', () => {
     for (const deploy of ['bucket', 'server']) {
       const config = { ...app, sites: { assets: { deploy, port: 2999 }, ...app.sites } }
       const legacy = previewTarget(config, 'pr-7', 'preview.acme.dev')
@@ -54,6 +54,29 @@ describe('preview names and targets', () => {
       expect(buildPreviewTeardownScript(legacy.slug, legacy.site)).toContain('/var/www/acme-pr-7-assets')
       expect(previewTarget({ ...config, cloud: { previews: { site: 'docs' } } }, 'pr-7', 'preview.acme.dev').site).toBe('docs')
     }
+  })
+
+  it('removes the sole native runtime and the exact implicit legacy name, once each', () => {
+    for (const deploy of ['bucket', 'server']) {
+      const config = { ...app, sites: { assets: { deploy, port: 2999 }, ...app.sites } }
+      expect(previewRemovalTarget(config, 'pr-7', 'preview.acme.dev').sites).toEqual(['assets', 'web'])
+    }
+    expect(previewRemovalTarget(app, 'pr-7', 'preview.acme.dev').sites).toEqual(['web'])
+  })
+
+  it('retains explicit current and historical removal selections', () => {
+    for (const site of ['web', 'docs']) {
+      const config = { ...app, cloud: { previews: { site } } }
+      expect(previewRemovalTarget(config, 'pr-7', 'preview.acme.dev').sites).toEqual([site])
+    }
+    expect(previewRemovalTarget({ ...app, sites: { assets: { deploy: 'bucket', port: 2999 } } }, 'pr-7', 'preview.acme.dev').sites).toEqual(['assets'])
+    // Unsupported multi-runtime deployments do not widen historical removal.
+    expect(previewRemovalTarget({ ...app, sites: { web: app.sites.web, api: { start: 'bun start', port: 3001 } } }, 'pr-7', 'preview.acme.dev').sites).toEqual(['web'])
+  })
+
+  it('validates every computed removal name before discovery', () => {
+    expect(() => previewRemovalTarget({ ...app, project: { slug: 'acme;bad' } }, 'pr-7', 'preview.acme.dev')).toThrow('Refusing')
+    expect(() => previewRemovalTarget({ ...app, sites: { assets: { deploy: 'bucket', port: 2999 }, '../main': { start: 'bun start' } } }, 'pr-7', 'preview.acme.dev')).toThrow('Refusing')
   })
 
   it('is its own slug, attached to the box the app runs on', () => {
@@ -150,13 +173,20 @@ describe('buildPreviewTeardownScript', () => {
   })
 
   it('removes exact paths, never a glob on the slug', () => {
-    expect(script).toContain('rm -rf /var/www/acme-pr-1-web /var/www/acme-pr-1-shared /usr/local/sbin/acme-pr-1-web-liveness')
+    expect(script).toContain('rm -rf /var/www/acme-pr-1-web /usr/local/sbin/acme-pr-1-web-liveness /var/www/acme-pr-1-shared')
     expect(script).toContain('/etc/rpx/sites.d/acme-pr-1.json')
     expect(script).not.toMatch(/\/var\/www\/acme-pr-1-\*/)
+  })
+
+  it('deduplicates exact owned site names before generating cleanup', () => {
+    expect(buildPreviewTeardownScript('acme-pr-1', ['web', 'web'])).toBe(script)
   })
 
   it('refuses a slug or site that could widen what it removes', () => {
     expect(() => buildPreviewTeardownScript('acme-*', 'web')).toThrow('Refusing')
     expect(() => buildPreviewTeardownScript('acme-pr-1', '../etc')).toThrow('Refusing')
+    expect(() => buildPreviewTeardownScript('acme-pr-1', ['web', '../etc'])).toThrow('Refusing')
+    expect(() => buildPreviewTeardownScript('acme-pr-1', [])).toThrow('Refusing')
+    expect(() => buildPreviewTeardownScript('acme-pr-1', ['web', 'assets', 'unknown'])).toThrow('Refusing')
   })
 })

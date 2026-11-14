@@ -72,19 +72,22 @@ if (selection) {
 let selected
 let error
 let discoveries = 0
+let teardown
 try {
 if (${execution === 'preview' && !defense}) {
   const { email } = await import('@stacksjs/config')
-  const { runPreviewDeploy } = await import(${JSON.stringify(join(checkout, 'storage/framework/core/buddy/src/commands/preview-deploy.ts'))})
+  const { runPreviewDeploy, previewRemovalTarget, buildPreviewTeardownScript } = await import(${JSON.stringify(join(checkout, 'storage/framework/core/buddy/src/commands/preview-deploy.ts'))})
   await runPreviewDeploy({ config: { ...config, sites: applyScheduledWork(config.sites, 'app/Scheduler.ts') },
     name: 'pr-7', domain: 'preview.example.test', context: { hasMailProvisioning: mailProvisioningEnabled(email, true) } }, {
     discoverPorts: async (target) => { discoveries++; selected = target.site; return new Map([[3340, 'fixture']]) }, deploy,
   })
+  const removal = previewRemovalTarget(config, 'pr-7', 'preview.example.test')
+  teardown = buildPreviewTeardownScript(removal.slug, removal.sites)
 } else {
   await deploy({ ...config, project: { ...config.project, slug: 'fixture-pr-7' }, cloud: { ...config.cloud, attachTo: 'fixture' } })
 }
 } catch (caught) { error = caught.message }
-await Bun.write('capture.json', JSON.stringify({ commands, requests, external, selected, error, discoveries }))
+await Bun.write('capture.json', JSON.stringify({ commands, requests, external, selected, error, discoveries, teardown }))
 `)
     const child = Bun.spawn([process.execPath, '--no-env-file', '--tsconfig-override', join(checkout, 'storage/framework/tsconfig.framework.json'), join(root, 'capture.ts')], {
       cwd: root, env: { ...publicationEnvironment(), TS_CLOUD_GITHUB_DEPLOYMENTS: '0' }, stdout: 'pipe', stderr: 'pipe', timeout: 30_000,
@@ -111,6 +114,9 @@ test('native preview execution ships local SQLite without inferred scheduler or 
   expect(capture.external).toEqual([])
   expect(JSON.stringify(capture.commands)).not.toContain('mail-health')
   expect(productionEnvWritten).toBe(false)
+  const trace = teardownTrace(capture.teardown)
+  expect(trace).toContain('systemctl stop fixture-pr-7-main.service')
+  expect(trace.join('\n')).not.toContain('fixture-pr-7-assets')
 }, 45_000)
 
 test.each(['bucket', 'server'] as const)('native preview selects the sole server app after %s assets with stale server fields', async (deploy) => {
@@ -130,6 +136,9 @@ test.each(['bucket', 'server'] as const)('native preview honors explicit runtime
   expect(capture.requests.length).toBeGreaterThan(0)
   expect(JSON.stringify(capture.requests)).not.toContain('fixture-pr-7-assets')
   expect(buildRan).toBe(false)
+  const trace = teardownTrace(capture.teardown)
+  expect(trace).toContain('systemctl stop fixture-pr-7-main.service')
+  expect(trace.join('\n')).not.toContain('fixture-pr-7-assets')
 }, 45_000)
 
 test.each(['bucket', 'server'] as const)('native preview refuses explicit %s assets before discovery or build', async (deploy) => {
@@ -161,3 +170,95 @@ test('native preview execution cannot enter inherited CDN/mail policy or persist
   expect(JSON.stringify(capture.commands)).not.toContain('production.example.test')
   expect(productionEnvWritten).toBe(false)
 }, 45_000)
+
+// Execute the actual generated shell with every mutating transport replaced by
+// shell functions. No /etc or /var/www fixture, systemctl, SSH or provider runs.
+function teardownTrace(script: string, failure = '', expectedCode = 0): string[] {
+  const harness = `
+systemctl() {
+  if [ "$1 \${2:-}" = "$PREVIEW_TEST_FAILURE" ] || [ "$1 \${5:-}" = "$PREVIEW_TEST_FAILURE" ]; then return 1; fi
+  if [ "$1" = list-units ]; then
+    case "$5" in
+      fixture-pr-7-main@*) echo 'fixture-pr-7-main@abc.service loaded active running' ;;
+      fixture-pr-7-assets@*) echo 'fixture-pr-7-assets@old.service loaded active running' ;;
+    esac
+  else
+    echo "systemctl $*"
+  fi
+}
+ls() {
+  case "$1" in
+    /etc/rpx/sites.d/) echo 'fixture-pr-7.json'; echo 'fixture-pr-7-main-queue.json' ;;
+    /etc/systemd/system/)
+      echo 'fixture-pr-7-main.service'
+      echo 'fixture-pr-7-main@.service'
+      echo 'fixture-pr-7-main-liveness.timer'
+      echo 'fixture-pr-7-assets.service'
+      echo 'fixture-pr-7-assets@.service'
+      echo 'fixture-pr-7-assets-scheduler.service'
+      echo 'fixture-pr-7-main-queue-main.service'
+      echo 'fixture-pr-70-main.service'
+      echo 'fixture-main.service'
+    ;;
+  esac
+}
+rm() { echo "rm $*"; }
+`
+  const result = Bun.spawnSync(['bash', '-c', harness + script], { env: { ...process.env, PREVIEW_TEST_FAILURE: failure } })
+  expect(result.stderr.toString()).toBe('')
+  expect(result.exitCode, result.stderr.toString()).toBe(expectedCode)
+  return result.stdout.toString().trim().split('\n')
+}
+
+test.each(['bucket', 'server'] as const)('native %s-first preview round trip removes current and legacy runtimes before shared data', async (deploy) => {
+  const { capture, output } = await nativeDeploy('preview', false, { deploy })
+  expect(capture.error, output).toBeUndefined()
+  expect(JSON.stringify(capture.requests)).toContain('fixture-pr-7-main')
+  const trace = teardownTrace(capture.teardown)
+  expect(trace).toContain('systemctl stop fixture-pr-7-main@abc.service')
+  expect(trace).toContain('systemctl stop fixture-pr-7-assets@old.service')
+  expect(trace).toContain('systemctl stop fixture-pr-7-main.service')
+  expect(trace).toContain('systemctl stop fixture-pr-7-assets.service')
+  const shared = trace.findIndex(line => line.includes('rm -rf') && line.includes('/var/www/fixture-pr-7-shared'))
+  expect(shared).toBeGreaterThan(0)
+  for (const unit of ['main@abc', 'assets@old', 'main', 'assets'])
+    expect(trace.indexOf(`systemctl stop fixture-pr-7-${unit}.service`)).toBeLessThan(shared)
+  expect(trace.join('\n')).toContain('/var/www/fixture-pr-7-main ')
+  expect(trace.join('\n')).toContain('/var/www/fixture-pr-7-assets ')
+  expect(trace.filter(line => line.includes('rm ') && line.includes('/var/www/fixture-pr-7-shared'))).toHaveLength(1)
+  expect(trace.filter(line => line.includes('rm ') && line.includes('/etc/rpx/sites.d/fixture-pr-7.json'))).toHaveLength(1)
+  expect(trace.filter(line => line.includes('systemctl reload rpx-gateway.service'))).toHaveLength(1)
+  for (const line of trace.filter(line => line.startsWith('systemctl stop ')))
+    expect(trace.indexOf(line)).toBeLessThan(shared)
+  expect(trace.join('\n')).not.toContain('fixture-pr-7-main-queue-main.service')
+  expect(trace.join('\n')).not.toContain('stop fixture-pr-70-main.service')
+  expect(trace.join('\n')).not.toContain('stop fixture-main.service')
+}, 45_000)
+
+
+test.each([
+  'stop fixture-pr-7-main@abc.service',
+  'stop fixture-pr-7-assets@old.service',
+  'stop fixture-pr-7-main.service',
+  'stop fixture-pr-7-assets.service',
+  'list-units fixture-pr-7-main@*.service',
+  'list-units fixture-pr-7-assets@*.service',
+])('preview removal preserves shared data and gateway when %s fails', async (failure) => {
+  const { buildPreviewTeardownScript } = await import('../src/commands/preview-deploy')
+  const trace = teardownTrace(buildPreviewTeardownScript('fixture-pr-7', ['main', 'assets']), failure, 1)
+  expect(trace.join('\n')).not.toContain('/var/www/')
+  expect(trace.join('\n')).not.toContain('/etc/rpx/sites.d/fixture-pr-7.json')
+  expect(trace.join('\n')).not.toContain('rpx-cert-renew-')
+  expect(trace.join('\n')).not.toContain('reload rpx-gateway')
+})
+
+test('explicit legacy removal stops only its historical target', async () => {
+  const { previewRemovalTarget, buildPreviewTeardownScript } = await import('../src/commands/preview-deploy')
+  const target = previewRemovalTarget({ project: { slug: 'fixture' }, cloud: { previews: { site: 'assets' } }, sites: {
+    assets: { deploy: 'server', port: 3339 }, main: { start: 'bun start', port: 3340 },
+  } }, 'pr-7', 'preview.example.test')
+  const trace = teardownTrace(buildPreviewTeardownScript(target.slug, target.sites))
+  expect(trace).toContain('systemctl stop fixture-pr-7-assets@old.service')
+  expect(trace).toContain('systemctl stop fixture-pr-7-assets.service')
+  expect(trace.join('\n')).not.toContain('fixture-pr-7-main')
+})

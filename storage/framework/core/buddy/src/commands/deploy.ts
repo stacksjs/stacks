@@ -27,7 +27,7 @@ import { resultFailed } from '../result'
 import { deploymentRetirements, explicitDeploymentEnvFile, validateDeploymentProviderInputs } from '../deployment-inputs'
 import { findUnbackedManagedServices, hasOffsiteBackupDestination, unbackedDataMessage } from '../unbacked-data'
 import { applyDeploymentDomainOverride, createDeploymentPreview, deploymentPreviewJsonPrefix, formatDeploymentPreview, resolveDeploymentEnvironment } from './deploy-preview'
-import { buildPreviewTeardownScript, previewDomain, previewHasSymlinkPaths, previewTarget, runPreviewDeploy } from './preview-deploy'
+import { buildPreviewTeardownScript, previewDomain, previewHasSymlinkPaths, previewRemovalTarget, runPreviewDeploy } from './preview-deploy'
 import type { SshTarget } from './deploy-ssh-target'
 import { deployTargetLabel, dnsPublishingAllowed, hetznerTarget, isSshPipelineProvider, lanUrls, mergeSshStatePin, remoteExecOptions, resolveSshTarget, sshCliArgs, sshStatePin, toSshTarget } from './deploy-ssh-target'
 
@@ -5547,7 +5547,7 @@ async function runPreviewCommand(name: string, options: { base?: string, verbose
 
   // Discovery is inside the guarded callback too: invalid configuration must
   // stop before publication scripts, host access, builds, state pins or deploy.
-  const discoverRemote = async (target: ReturnType<typeof previewTarget>) => {
+  const discoverRemote = async (target: { owner: string }) => {
     const sshTarget = provider === 'ssh' ? resolveSshTarget(appConfig) : null
     const lookup = provider === 'ssh' ? null : await resolveAttachTargetBox(target.owner, base, appConfig)
     const host = sshTarget?.host ?? lookup?.box?.publicIp
@@ -5564,7 +5564,7 @@ async function runPreviewCommand(name: string, options: { base?: string, verbose
   }
 
   if (action === 'remove') {
-    const target = previewTarget(appConfig, name, previewDomain(appConfig, process.env))
+    const target = previewRemovalTarget(appConfig, name, previewDomain(appConfig, process.env))
     const remote = await discoverRemote(target)
     await removePreview(target, base, remote.runRemote)
     return
@@ -5607,9 +5607,9 @@ async function runPreviewCommand(name: string, options: { base?: string, verbose
  * Undo a preview: its units, gateway route, certificate units and files on
  * the box, its DNS records, and this checkout's state pin for it.
  */
-async function removePreview(target: ReturnType<typeof previewTarget>, base: string, runRemote: (script: string) => Promise<string>): Promise<void> {
+async function removePreview(target: ReturnType<typeof previewRemovalTarget>, base: string, runRemote: (script: string) => Promise<string>): Promise<void> {
   log.info(`Removing preview ${target.slug} (${target.host})`)
-  await runRemote(buildPreviewTeardownScript(target.slug, target.site))
+  await runRemote(buildPreviewTeardownScript(target.slug, target.sites))
   log.success(`Removed ${target.slug} from the box`)
 
   const tsCloudConfig = await loadTsCloudConfig(base).catch(() => undefined)

@@ -7,7 +7,7 @@ import { resolveSiteKind } from '@stacksjs/ts-cloud/deploy'
  * pipeline. The bounded preflight rejects known unsafe inherited settings
  * before discovery/deployment effects. Separate release paths alone do not
  * establish credential provenance or isolate arbitrary trusted app code.
- * Removal retains its existing exact-name behavior.
+ * Removal cleans the current and legacy exact names before shared state.
  */
 
 /** A preview name: `pr-123`, lowercase, usable in a hostname, a unit name and a slug. */
@@ -62,6 +62,27 @@ export function previewSite(config: any): string {
 
 export function previewTarget(config: any, name: string, domain: string): PreviewTarget {
   return createPreviewTarget(config, name, domain)
+}
+
+/**
+ * Removal supports the old first-start/port identity and the sole native
+ * runtime now deployed implicitly. Explicit selections retain their existing
+ * exact-name meaning, including legacy nonruntime targets. This is bounded
+ * compatibility, not discovery of arbitrary historical configuration names.
+ */
+export function previewRemovalTarget(config: any, name: string, domain: string): PreviewTarget & { sites: string[] } {
+  const legacy = previewTarget(config, name, domain)
+  const sites = [legacy.site]
+  if (!config?.cloud?.previews?.site) {
+    const runtimes = Object.entries(config?.sites ?? {}).filter(([, site]) => site && resolveSiteKind(site as any) === 'server-app')
+    if (runtimes.length === 1) {
+      const current = createPreviewTarget(config, name, domain, runtimes[0]![0])
+      sites.push(current.site)
+    }
+  }
+  const unique = [...new Set(sites)]
+  assertPreviewTeardownNames(legacy.slug, unique)
+  return { ...legacy, sites: unique }
 }
 
 function createPreviewTarget(config: any, name: string, domain: string, selectedSite?: string): PreviewTarget {
@@ -150,6 +171,12 @@ export function previewPort(owners: ReadonlyMap<number, string>, slug: string, p
   throw new Error(`No free port between ${range.start} and ${range.end} on the box for a preview.`)
 }
 
+function assertPreviewTeardownNames(slug: string, sites: readonly string[]): void {
+  if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(slug) || sites.length === 0 || sites.length > 2
+    || sites.some(site => !/^[a-z0-9][a-z0-9_-]*$/i.test(site)))
+    throw new TypeError(`Refusing to build a teardown for "${slug}" / "${sites.join(',')}".`)
+}
+
 /**
  * Remove a preview from the box: stop and delete its units, its gateway
  * fragment and certificate units, and its files, then reload the gateway.
@@ -159,38 +186,48 @@ export function previewPort(owners: ReadonlyMap<number, string>, slug: string, p
  * preview `pr-1`'s slug is a prefix of preview `pr-1-docs`'s, and a glob on
  * it would take the other preview down too.
  */
-export function buildPreviewTeardownScript(slug: string, site: string): string {
-  if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(slug) || !/^[a-z0-9][a-z0-9_-]*$/i.test(site))
-    throw new TypeError(`Refusing to build a teardown for "${slug}" / "${site}".`)
-  const unit = `${slug}-${site}`
-  // ts-cloud's units for one site: the app and its template instances, its
-  // liveness probe, its scheduler, and its queue and daemon workers.
-  const units = `^${unit}(@[^.]*)?\\.service$|^${unit}-(liveness\\.(service|timer)|scheduler\\.service|(queue|daemon)-.*\\.service)$`
+export function buildPreviewTeardownScript(slug: string, site: string | readonly string[]): string {
+  const sites = [...new Set(typeof site === 'string' ? [site] : site)]
+  assertPreviewTeardownNames(slug, sites)
+  const teardown = sites.flatMap((site) => {
+    const unit = `${slug}-${site}`
+    // ts-cloud's exact app/template, liveness, scheduler and worker names.
+    const units = `^${unit}(@[^.]*)?\\.service$|^${unit}-(liveness\\.(service|timer)|scheduler\\.service|(queue|daemon)-.*\\.service)$`
+    return [
+      // Capture first so a failed unit listing aborts instead of silently
+      // deleting data under a runtime whose instances could not be inspected.
+      `instances=$(systemctl list-units --all --plain --no-legend '${unit}@*.service')`,
+      `for instance in $(printf '%s\\n' "$instances" | awk '{print $1}'); do`,
+      '  systemctl stop "$instance"',
+      '  systemctl disable "$instance" 2>/dev/null || true',
+      'done',
+      `rm -f /etc/systemd/system/*.wants/${unit}@*.service`,
+      `for unit in $(ls /etc/systemd/system/ 2>/dev/null | grep -E '${units}' || true); do`,
+      '  skip=0',
+      '  for other in $others; do case "$unit" in "$other"-*) skip=1 ;; esac; done',
+      '  [ "$skip" = 1 ] && continue',
+      // A template file is not itself a stoppable runtime. Its active
+      // instances were stopped above. All real stop failures abort cleanup.
+      '  case "$unit" in *@.service) ;; *) systemctl stop "$unit" ;; esac',
+      '  systemctl disable "$unit" 2>/dev/null || true',
+      '  rm -rf "/etc/systemd/system/$unit"',
+      'done',
+    ]
+  })
+  const paths = sites.flatMap(site => [`/var/www/${slug}-${site}`, `/usr/local/sbin/${slug}-${site}-liveness`])
   return [
     'set -eu',
-    // Running template instances (`<unit>@<release>.service`) have no file of
-    // their own under /etc/systemd/system, only wants links, so they are asked
-    // for by name. `@` straight after the exact unit name: no other preview's
-    // unit can match.
-    `for instance in $(systemctl list-units --all --plain --no-legend '${unit}@*.service' 2>/dev/null | awk '{print $1}'); do`,
-    '  systemctl disable --now "$instance" 2>/dev/null || true',
-    'done',
-    `rm -f /etc/systemd/system/*.wants/${unit}@*.service`,
-    // Another preview whose slug extends this one (`pr-1-docs` beside `pr-1`)
-    // still has its fragment, and none of its units are this preview's.
+    // Keep longer-named sibling preview units even if their name happens to
+    // match an owned site's worker suffix. Never wildcard-delete a slug.
     `others=$(ls /etc/rpx/sites.d/ 2>/dev/null | sed -n 's/^\\(${slug}-.*\\)\\.json$/\\1/p')`,
-    `for unit in $(ls /etc/systemd/system/ 2>/dev/null | grep -E '${units}' || true); do`,
-    '  skip=0',
-    '  for other in $others; do case "$unit" in "$other"-*) skip=1 ;; esac; done',
-    '  [ "$skip" = 1 ] && continue',
-    '  systemctl disable --now "$unit" 2>/dev/null || true',
-    '  rm -rf "/etc/systemd/system/$unit"',
-    'done',
+    ...teardown,
+    // Only after EVERY current/legacy runtime has stopped may common gateway,
+    // certificate and shared data cleanup run. DNS/local state run once too.
     `systemctl disable --now rpx-cert-renew-${slug}.timer 2>/dev/null || true`,
     `rm -f /etc/systemd/system/rpx-cert-renew-${slug}.timer /etc/systemd/system/rpx-cert-renew-${slug}.service /etc/rpx/renew-certs-${slug}.sh /etc/rpx/sites.d/${slug}.json`,
     'systemctl daemon-reload',
     'systemctl reload rpx-gateway.service 2>/dev/null || systemctl restart rpx-gateway.service 2>/dev/null || true',
-    `rm -rf /var/www/${unit} /var/www/${slug}-shared /usr/local/sbin/${unit}-liveness`,
+    `rm -rf ${paths.join(' ')} /var/www/${slug}-shared`,
     `echo "removed ${slug}"`,
   ].join('\n')
 }
