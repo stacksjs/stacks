@@ -122,11 +122,12 @@ test('a wrong private token fails once without invoking a publisher or exposing 
 
 test('the default real Bun publisher uploads an original archive and reads a private registry with scoped authentication', async () => {
   const { root, directory, candidate, archive } = await fixture()
-  const token = 'fixture-private-token'
+  const token = 'fixture-private-read-token'
+  const publisherToken = 'fixture-private-write-token'
   let uploaded: Uint8Array | undefined
   let puts = 0, authenticatedReads = 0, denied = 0
   const server = Bun.serve({ hostname: '127.0.0.1', port: 0, async fetch(request) {
-    if (request.headers.get('authorization') !== `Bearer ${token}`) { denied++; return new Response('', { status: 401 }) }
+    if (request.headers.get('authorization') !== `Bearer ${request.method === 'PUT' ? publisherToken : token}`) { denied++; return new Response('', { status: 401 }) }
     if (request.method === 'PUT') {
       puts++
       const body = await request.json() as { _attachments: Record<string, { data: string }> }
@@ -143,7 +144,7 @@ test('the default real Bun publisher uploads an original archive and reads a pri
   const home = join(root, 'isolated-home')
   await mkdir(home)
   await writeFile(join(root, 'package.json'), JSON.stringify({ private: true, name: 'local-private-registry-probe', version: '0.0.0', type: 'module' }))
-  await writeFile(join(root, '.npmrc'), `registry=${server.url.origin}\n//127.0.0.1:${server.port}/:_authToken=${token}\n`, { mode: 0o600 })
+  await writeFile(join(root, '.npmrc'), `registry=${server.url.origin}\n//127.0.0.1:${server.port}/:_authToken=${publisherToken}\n`, { mode: 0o600 })
   const probe = join(root, 'publish.ts')
   await writeFile(probe, `import {realpathSync} from 'node:fs';
 import {publishPreparedLibraryRelease,readbackLibraryRelease} from ${JSON.stringify(join(import.meta.dir, '../src/library/release-registry.ts'))};
@@ -153,7 +154,7 @@ const options={publisher:'bun',cwd:process.cwd(),npmRegistry:endpoint.origin,rea
 const receipt=await publishPreparedLibraryRelease(${JSON.stringify(directory)},options);
 const retry=await publishPreparedLibraryRelease(${JSON.stringify(directory)},options);
 const readback=await readbackLibraryRelease(${JSON.stringify(directory)},options);
-if(JSON.stringify([receipt,retry,readback]).includes(${JSON.stringify(token)}))throw new Error('Credential leaked into a receipt');
+if(${JSON.stringify([token, publisherToken])}.some(token=>JSON.stringify([receipt,retry,readback]).includes(token)))throw new Error('Credential leaked into a receipt');
 await Bun.write(${JSON.stringify(join(root, 'outcome.json'))},JSON.stringify({receipt,retry,readback}));
 `)
   try {
