@@ -1,5 +1,39 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.589...v0.75.590)
+
+## 🐛 Bug Fixes
+
+- **i18n**: use the framework STX dependency cohort ([8616758](https://github.com/stacksjs/stacks/commit/8616758)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.588...v0.75.589)
+
+## 🐛 Bug Fixes
+
+- **i18n**: preserve callable types in published browser entries ([0591106](https://github.com/stacksjs/stacks/commit/0591106)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **i18n**: include the published type contract in native references ([1a18b50](https://github.com/stacksjs/stacks/commit/1a18b50)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.587...v0.75.588)
+
+## 🐛 Bug Fixes
+
+- **i18n**: generate source aliases for declared client exports ([ba6385b](https://github.com/stacksjs/stacks/commit/ba6385b)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.586...v0.75.587)
 
 ## ✨ Features
