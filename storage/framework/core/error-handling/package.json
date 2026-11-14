@@ -63,7 +63,7 @@
     "@stacksjs/stx": "^0.2.872",
     "@stacksjs/types": "workspace:*",
     "ts-error-handling": "^0.1.4",
-    "ts-syntax-highlighter": "^0.2.19"
+    "ts-syntax-highlighter": "^0.2.20"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",

@@ -70,7 +70,7 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/ts-cloud": "^0.16.125",
-    "@stacksjs/ts-xml": "^0.1.0",
+    "@stacksjs/ts-xml": "^0.1.2",
     "ts-images": "https://registry.pantry.dev/ts-images@22073a9"
   },
   "devDependencies": {
