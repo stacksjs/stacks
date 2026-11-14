@@ -159,6 +159,14 @@ credentials, unsupported state adapters, external writable storage, absolute/tra
 paths, explicit shared targets, and custom hooks/build/preStart/background-worker effects. A
 `cloud.previews.site` selection cannot make a multi-runtime project safe.
 
+Runtime eligibility uses ts-cloud's native classification: a `proxyTo` upstream cannot qualify
+through stale `start`/`port` fields. Native scheduler inference from `app/Scheduler.ts`, inherited
+CDN policy and enabled explicit `config/email.ts` provisioning also refuse before publication.
+An effective `scheduler: false` or email `server.enabled: false` remains an opt-out. Accepted
+previews run with ancillary reconciliation disabled: no inferred scheduler, management dashboard,
+app-wide DNS records, CDN, R2, Workers, mail tenant/health/DNS or mailbox credential persistence.
+Only the preview site's ordinary gateway, address DNS and TLS publication remain enabled.
+
 The command requires `.env.preview` to be readable and decryptable before its explicit cloud
 config reload. Shared CLI startup can already have evaluated app config.
 The native env reader expands ambient variables and command substitutions. Ambient application

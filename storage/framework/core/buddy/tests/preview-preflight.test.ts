@@ -2,8 +2,9 @@ import { describe, expect, test } from 'bun:test'
 import { mkdtempSync, mkdirSync, rmSync, symlinkSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { resolveCloudflareCdnPlan, resolveSiteKind, shipsARelease } from '@stacksjs/ts-cloud'
 import { apiDeploymentProblem, applyPersistentStatePaths, mergeSiteDeployEnv } from '../src/commands/deploy'
-import { previewHasSymlinkPaths, previewPreflightProblems, runPreviewDeploy } from '../src/commands/preview-deploy'
+import { derivePreviewConfig, previewHasSymlinkPaths, previewPreflightProblems, previewTarget, runPreviewDeploy } from '../src/commands/preview-deploy'
 
 // Public preview orchestration: catches refusal before the actual discovery and
 // deployment callbacks; it does not prove provider behavior or app-code isolation.
@@ -29,6 +30,24 @@ describe('preview preflight before effects', () => {
       path: 'database/app.sqlite', target: '/var/www/fixture-pr-7-shared/database/app.sqlite', seed: true,
     })
     expect(local).toEqual(before)
+  })
+
+  test('requires the installed native classifier to ship a server runtime', () => {
+    const proxy = { ...local.sites.main, proxyTo: '127.0.0.1:3348' }
+    expect(resolveSiteKind(proxy)).toBe('proxy')
+    expect(shipsARelease(proxy)).toBe(false)
+    expect(previewPreflightProblems({ ...local, sites: { ...local.sites, php: { start: 'php artisan serve', type: 'laravel' } } }).length).toBeGreaterThan(0)
+    for (const site of [proxy, { ...local.sites.main, deploy: 'bucket' }, { ...local.sites.main, type: 'php' }])
+      expect(previewPreflightProblems({ ...local, sites: { main: site } }).length).toBeGreaterThan(0)
+  })
+
+  test('refuses CDN policy whose actual native planner would retain the production hosts', () => {
+    const config = { ...local, infrastructure: { compute: { proxy: { cdn: { provider: 'cloudflare', frontedHosts: ['production.example.test'], purge: true } } } } }
+    const derived = derivePreviewConfig(config, previewTarget(config, 'pr-7', 'preview.example.test'), 3341)
+    const { plan, errors } = resolveCloudflareCdnPlan(derived, { env: key => key === 'CLOUDFLARE_API_TOKEN' ? 'synthetic-token' : undefined })
+    expect(errors).toEqual([])
+    expect(plan?.hosts).toEqual(['production.example.test'])
+    expect(previewPreflightProblems(config).join(' ')).toContain('Inherited CDN')
   })
 
   test('refuses a missing API dependency but preserves a self-contained API runtime', async () => {

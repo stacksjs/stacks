@@ -1,5 +1,6 @@
 import { lstatSync } from 'node:fs'
 import { join } from 'node:path'
+import { resolveSiteKind } from '@stacksjs/ts-cloud/deploy'
 
 /**
  * Preview deployments use a separate project slug and the ordinary attach
@@ -193,6 +194,8 @@ export function buildPreviewTeardownScript(slug: string, site: string): string {
 export interface PreviewPreflightContext {
   /** Checked without importing/executing application hooks. */
   hasDeployHooks?: boolean
+  /** The ordinary native mail tenant provisioner would be enabled. */
+  hasMailProvisioning?: boolean
   /** Read-only inspection found a symlink in a configured source/state path. */
   hasSymlinkPaths?: boolean
   /** The page runtime would require a separately served API. */
@@ -253,7 +256,11 @@ export function previewPreflightProblems(config: any, context: PreviewPreflightC
   const present = (value: unknown): boolean => value !== undefined && value !== null && value !== '' && value !== false
   const configured = (value: unknown): boolean => present(value) && (!Array.isArray(value) || value.length > 0) && (typeof value !== 'object' || Object.keys(value as object).length > 0)
   const sites = Object.values(config?.sites ?? {}) as any[]
-  const runtimes = sites.filter(site => site && !site.redirect && !site.bucket && (site.start || site.port !== undefined || site.deploy === 'server'))
+  const runtimes = sites.filter(site => site && resolveSiteKind(site) === 'server-app')
+  if (sites.some(site => site && resolveSiteKind(site) === 'server-php'))
+    refuse('Other native server runtimes require an explicit isolation planner; only a self-contained server app is supported.')
+  if (sites.some(site => site && resolveSiteKind(site) === 'proxy'))
+    refuse('Proxy upstreams are unsupported for previews; the preview must ship its own server runtime.')
   if (runtimes.length !== 1)
     refuse('Only a single self-contained server runtime can be previewed; multi-runtime selection requires an explicit isolation planner.')
   if (config?.cloud?.previews?.site && !runtimes.includes(config.sites?.[config.cloud.previews.site]))
@@ -266,8 +273,12 @@ export function previewPreflightProblems(config: any, context: PreviewPreflightC
     refuse('Inherited provider resources are unsupported for previews.')
   if (['services', 'managedServices', 'volumes', 'backups', 'storage', 'dataDisk', 'servicesServer', 'deploymentStorage'].some(key => configured(compute[key])) || configured(config?.objectStorage))
     refuse('Inherited services, storage, volumes or backup policies are unsupported for previews.')
+  if (configured(compute.proxy?.cdn))
+    refuse('Inherited CDN policies are unsupported for previews; CDN hosts and zone settings require an explicit ownership policy.')
   if (context.hasDeployHooks || configured(config?.hooks) || configured(config?.notifications))
     refuse('Custom deployment hooks are unsupported for previews.')
+  if (context.hasMailProvisioning)
+    refuse('Inherited mail provisioning is unsupported for previews; shared mail tenants, credentials and DNS must never be reconciled.')
   if (context.requiresApiRuntime)
     refuse('API routes require a separately isolated API runtime; single-runtime previews cannot infer that dependency.')
   if (context.hasSymlinkPaths)

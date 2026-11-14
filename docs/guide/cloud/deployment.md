@@ -213,6 +213,14 @@ Before publication scripts, host discovery and the attach deploy, the command ch
 configuration and actual final merged site env. It refuses known unsupported mutable state,
 absolute/traversing/symlinked configured paths, explicit shared targets, custom hooks/build/preStart
 commands and background workers. Selecting only one site cannot bypass the topology check.
+
+Runtime eligibility uses ts-cloud's native classification: a `proxyTo` upstream cannot qualify
+through stale `start`/`port` fields. Native scheduler inference from `app/Scheduler.ts`, inherited
+CDN policy and enabled explicit `config/email.ts` provisioning also refuse before publication.
+An effective `scheduler: false` or email `server.enabled: false` remains an opt-out. Accepted
+previews run with ancillary reconciliation disabled: no inferred scheduler, management dashboard,
+app-wide DNS records, CDN, R2, Workers, mail tenant/health/DNS or mailbox credential persistence.
+Only the preview site's ordinary gateway, address DNS and TLS publication remain enabled.
 Accepted previews retain their own slug (`<slug>-pr-123`), gateway route, service and release paths;
 a relative SQLite file uses the existing preview-scoped shared target.
 

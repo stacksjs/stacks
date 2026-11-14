@@ -123,6 +123,62 @@ test('preview preflight refuses managed DB/API before the real publication scrip
   expect(result.ran).toBe(false)
 }, 45_000)
 
+test('preview refuses scheduler work inferred from app/Scheduler.ts before publication', async () => {
+  const result = await command(['deploy:preview', 'policy-fixture'], (root) => {
+    previewFixture(root)
+    mkdirSync(join(root, 'app'))
+    writeFileSync(join(root, 'app/Scheduler.ts'), 'schedule.command("native:job").everyMinute()')
+  }, true)
+  expect(result.output).toContain('Preview preflight refused')
+  expect(result.output).not.toContain('Publication startup loaded deployment machinery:')
+  expect(result.ran).toBe(false)
+}, 45_000)
+
+test('preview refuses native proxyTo precedence over stale server fields before publication', async () => {
+  const result = await command(['deploy:preview', 'policy-fixture'], (root) => {
+    previewFixture(root)
+    const file = join(root, 'config/cloud.ts')
+    writeFileSync(file, readFileSync(file, 'utf8').replace("port: 3340", "port: 3340, proxyTo: '127.0.0.1:3348'"))
+  }, true)
+  expect(result.output).toContain('Preview preflight refused')
+  expect(result.ran).toBe(false)
+}, 45_000)
+
+test('preview refuses inherited explicit CDN production hosts before publication', async () => {
+  const result = await command(['deploy:preview', 'policy-fixture'], (root) => {
+    previewFixture(root)
+    const file = join(root, 'config/cloud.ts')
+    writeFileSync(file, readFileSync(file, 'utf8').replace("sites: {", "infrastructure: { compute: { proxy: { cdn: { provider: 'cloudflare', frontedHosts: ['production.example.test'], purge: true } } } }, sites: {"))
+  }, true)
+  expect(result.output).toContain('Preview preflight refused')
+  expect(result.output).not.toContain('production.example.test')
+  expect(result.ran).toBe(false)
+}, 45_000)
+
+test('preview refuses effective native email provisioning before publication', async () => {
+  const result = await command(['deploy:preview', 'policy-fixture'], (root) => {
+    previewFixture(root)
+    writeFileSync(join(root, 'config/email.ts'), "export default { domain: 'production.example.test', server: { enabled: true, generatePasswords: true, attachTo: 'mail-owner' }, mailboxes: ['support'] }")
+  }, true)
+  expect(result.output).toContain('Preview preflight refused')
+  expect(result.output).not.toContain('production.example.test')
+  expect(result.ran).toBe(false)
+}, 45_000)
+
+test('explicit scheduler and native mail opt-outs preserve eligible local previews', async () => {
+  const result = await command(['deploy:preview', 'policy-fixture'], (root) => {
+    previewFixture(root)
+    mkdirSync(join(root, 'app'))
+    writeFileSync(join(root, 'app/Scheduler.ts'), 'schedule.command("native:job").everyMinute()')
+    const file = join(root, 'config/cloud.ts')
+    writeFileSync(file, readFileSync(file, 'utf8').replace('port: 3340', 'port: 3340, scheduler: false'))
+    writeFileSync(join(root, 'config/email.ts'), "export default { domain: 'production.example.test', server: { enabled: false } }")
+  }, true)
+  expect(result.output).toContain('publication:check failed with exit code 9')
+  expect(result.output).not.toContain('Preview preflight refused')
+  expect(result.ran).toBe(true)
+}, 45_000)
+
 test('an unreadable encrypted preview env refuses before explicit cloud reload or publication', async () => {
   const result = await command(['deploy:preview', 'policy-fixture'], (root) => {
     previewFixture(root)

@@ -99,6 +99,14 @@ unsupported state adapters, external writable storage, absolute/traversing/symli
 state paths, explicit shared targets, custom hooks/build/preStart commands and background workers.
 Selecting `cloud.previews.site` does not bypass the topology check.
 
+Runtime eligibility uses ts-cloud's native classification: a `proxyTo` upstream cannot qualify
+through stale `start`/`port` fields. Native scheduler inference from `app/Scheduler.ts`, inherited
+CDN policy and enabled explicit `config/email.ts` provisioning also refuse before publication.
+An effective `scheduler: false` or email `server.enabled: false` remains an opt-out. Accepted
+previews run with ancillary reconciliation disabled: no inferred scheduler, management dashboard,
+app-wide DNS records, CDN, R2, Workers, mail tenant/health/DNS or mailbox credential persistence.
+Only the preview site's ordinary gateway, address DNS and TLS publication remain enabled.
+
 Accepted configurations use their own tenant slug (`<slug>-pr-123`) on the app's box at
 `pr-123.<cloud.previews.domain | PREVIEW_DOMAIN>`; relative SQLite keeps the existing preview-scoped
 persistent target. `--base staging` selects the staging box. Removal retains the existing exact-name
