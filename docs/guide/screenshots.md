@@ -51,7 +51,7 @@ buddy docs:screenshots
 buddy docs:screenshots --check
 ```
 
-`--list` validates the configuration and prints its inventory without opening a browser. Capture failures remain in `manifest.json` and make the command fail. `--check` validates full inventory coverage, source/configuration fingerprints and saved image hashes without contacting the application. It cannot tell whether a remote deployment has changed since capture; recapture after deploying a new build.
+`--list` validates the configuration and prints its inventory without opening a browser. Capture failures remain in `manifest.json` and make the command fail. `--check` validates full inventory coverage, SDK version, source/configuration fingerprints and saved image hashes without contacting the application. It cannot tell whether a remote deployment has changed since capture; recapture after deploying a new build.
 
 ## Authentication and roles
 
@@ -107,6 +107,10 @@ Use separate ids for meaningful states of the same route. A page's `prepare` hoo
 }
 ```
 
+HTTP error documents fail capture when the browser exposes their navigation status. To require that proof in CI, use `backend: 'chrome'` and `requireHttpStatus: true`. The manifest records the observed `httpStatus`, and readiness hooks receive it too. System WebKit currently does not expose this timing field; strict HTTP verification reports that limitation and asks you to use Chrome. Selectors and readiness hooks still need to verify the intended application state, including errors returned by its JSON APIs.
+
+To document an intentional error screen, set that page's `expectedStatus`, for example `expectedStatus: 404`. This requires an observable matching status. A page expected to return 200 fails if it returns 404, even when its error template contains the ready selector.
+
 The tool waits for the page's selector, optional `ready` hook, fonts and visible image loads. It disables animations, transitions and carets before taking the picture. Password inputs and configured `masks` are hidden. A failed visible image prevents capture. Lazy images below the viewport load when a hook scrolls them into view.
 
 These are viewport screenshots, not stitched full-page images or native simulator captures. Add several named states for a long page. Native iOS builds still need simulator/device checks; a 390px browser capture verifies the web layout only.
@@ -140,7 +144,7 @@ buddy docs:screenshots --only home,settings --viewport mobile
 buddy docs:screenshots --out docs/public/screens
 ```
 
-A partial capture merges results with a matching previous manifest. A first partial run remains incomplete, and `--check` fails until all required combinations are captured. Existing unrelated files are never deleted. The JSON manifest identifies captures, explained exclusions and failures, with SHA-256 hashes. `gallery.md` contains the explanations and relative image links. Copy or link reviewed images from authored documentation rather than automatically publishing every capture.
+A partial capture merges results with a matching previous manifest. After changing inputs or upgrading the SDK, use a fresh output directory or run a complete capture before making partial updates. A first partial run remains incomplete, and `--check` fails until all required combinations are captured. Existing unrelated files are never deleted. The JSON manifest identifies captures, explained exclusions and failures, with SHA-256 hashes. `gallery.md` contains the explanations and relative image links. Copy or link reviewed images from authored documentation rather than automatically publishing every capture.
 
 In CI, start the application with seeded data, wait for readiness, run capture, then `--check`. Upload the manifest, gallery and PNGs as review artifacts even when capture fails. Only commit or publish the reviewed output. A capture does not replace behavioral tests or a person's visual review.
 

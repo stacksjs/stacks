@@ -7,6 +7,7 @@ import { discoverScreenshotModels, screenshotFixturePath, type ScreenshotFixture
 export { discoverScreenshotModels, planScreenshotModels, screenshotFixturePath } from './screenshot-models'
 export type { ScreenshotFixtures, ScreenshotModel, ScreenshotModelOptions, ScreenshotModelPlan } from './screenshot-models'
 import { spawnOwnedProcess } from '@stacksjs/cli/owned-process'
+import { version as generatorVersion } from '../package.json'
 
 export interface ScreenshotViewport { name: string, width: number, height: number }
 export interface ScreenshotContext {
@@ -15,6 +16,7 @@ export interface ScreenshotContext {
   profile: string
   viewport: ScreenshotViewport
   page: ScreenshotPage & { path: string }
+  httpStatus?: number
 }
 export interface ScreenshotPathContext { fixtures: ScreenshotFixtures, models: ScreenshotModelPlan, profile: string }
 export interface ScreenshotPage {
@@ -33,6 +35,8 @@ export interface ScreenshotPage {
   sources?: string[]
   profiles?: string[]
   waitFor: string
+  /** Intentional HTTP error screens must name their expected status. */
+  expectedStatus?: number
   /** Run after navigation, before readiness and masking. */
   prepare?: (context: ScreenshotContext) => Promise<void>
   /** Application-specific readiness, e.g. data loaded instead of a skeleton. */
@@ -49,6 +53,8 @@ export interface ScreenshotConfig {
   /** Each profile runs in its own process, including Chrome's cookie store. */
   profiles?: Record<string, { prepare?: (context: ScreenshotContext) => Promise<void> }>
   backend?: 'webkit' | 'chrome'
+  /** Refuse captures when the browser cannot report the document HTTP status. */
+  requireHttpStatus?: boolean
   timeoutMs?: number
   /** Additional source/version files whose changes require recapture. */
   inputs?: string[]
@@ -74,6 +80,7 @@ export interface ScreenshotResult {
   reason?: string
   path: string
   status: 'captured' | 'failed' | 'skipped'
+  httpStatus?: number
   file?: string
   sha256?: string
   error?: string
@@ -81,6 +88,7 @@ export interface ScreenshotResult {
 export interface ScreenshotReport {
   format: 1
   generator: '@stacksjs/docs/screenshots'
+  generatorVersion: string
   configHash: string
   backend: string
   bun: string
@@ -112,6 +120,7 @@ export async function validateScreenshotConfig(config: ScreenshotConfig, root = 
   if (config.timeoutMs !== undefined && (!Number.isFinite(config.timeoutMs) || config.timeoutMs < 100 || config.timeoutMs > 120_000))
     throw new Error('timeoutMs must be between 100 and 120000')
   if (config.backend && !['webkit', 'chrome'].includes(config.backend)) throw new Error('backend must be webkit or chrome')
+  if (config.requireHttpStatus !== undefined && typeof config.requireHttpStatus !== 'boolean') throw new Error('requireHttpStatus must be a boolean')
   const profiles = Object.keys(config.profiles ?? { default: {} })
   if (!profiles.length || profiles.some(name => !safeName(name))) throw new Error('Profile names must be safe filenames')
   const ids = new Set<string>()
@@ -119,6 +128,7 @@ export async function validateScreenshotConfig(config: ScreenshotConfig, root = 
   for (const page of config.pages) {
     if (!safeName(page.id) || ids.has(page.id)) throw new Error(`Duplicate or invalid screen id: ${page.id}`)
     ids.add(page.id)
+    if (page.expectedStatus !== undefined && (!Number.isInteger(page.expectedStatus) || page.expectedStatus < 100 || page.expectedStatus > 599)) throw new Error(`Invalid expected HTTP status for ${page.id}`)
     if (!page.title.trim() || !page.description.trim() || !page.waitFor.trim()) throw new Error(`Screen ${page.id} needs title, description and waitFor`)
     if (typeof page.path !== 'string' && (typeof page.path !== 'function' || !page.route)) throw new Error(`Screen ${page.id} needs a route pattern for its path resolver`)
     const target = new URL(typeof page.path === 'string' ? page.path : page.route!, base)
@@ -219,6 +229,13 @@ async function captureProfile(configFile: string, profile: string, options: Scre
             await config.profiles?.[profile]?.prepare?.(context)
             phase = 'opening the screen'
             await view!.navigate(new URL(concrete.path, config.baseUrl).href)
+            phase = 'checking the document HTTP status'
+            const httpStatus = Number(await view!.evaluate(`performance.getEntriesByType('navigation')[0]?.responseStatus || 0`))
+            if (Number.isInteger(httpStatus) && httpStatus >= 100 && httpStatus <= 599) {
+              context.httpStatus = result.httpStatus = httpStatus
+            }
+            if (!context.httpStatus && (config.requireHttpStatus || page.expectedStatus !== undefined)) throw new Error('The browser did not expose a document HTTP status; choose the chrome backend for HTTP-verified captures')
+            if (page.expectedStatus !== undefined ? context.httpStatus !== page.expectedStatus : httpStatus >= 400) throw new Error(`The screen returned HTTP ${httpStatus}${page.expectedStatus !== undefined ? ` instead of ${page.expectedStatus}` : '; check its route, access and fixture'}`)
             phase = 'preparing the screen state'
             await page.prepare?.(context)
             phase = 'waiting for screen readiness'
@@ -269,12 +286,12 @@ export async function captureScreenshots(options: ScreenshotOptions = {}): Promi
   for (const name of options.viewports ?? []) if (!(config.viewports ?? defaults).some(viewport => viewport.name === name)) throw new Error(`Unknown viewport: ${name}`)
   const output = resolve(root, options.outDir ?? config.outDir)
   const inputs = [...new Set([...(config.inputs ?? []), ...config.pages.flatMap(page => page.sources ?? [])])].sort()
-  const report: ScreenshotReport = { format: 1, generator: '@stacksjs/docs/screenshots', models: await discoverScreenshotModels(root, config.models), configHash: hash(Buffer.concat([await readFile(configFile), ...await Promise.all(inputs.map(file => readFile(resolve(root, file))))])), inventory: config.pages.map(page => ({ id: page.id, title: page.title, path: new URL(typeof page.path === 'string' ? page.path : page.route!, config.baseUrl).pathname, sources: page.sources ?? [], ...(page.skip ? { skip: page.skip } : {}) })), backend: config.backend ?? (process.platform === 'darwin' ? 'webkit' : 'chrome'), bun: Bun.version, results: [] }
+  const report: ScreenshotReport = { format: 1, generator: '@stacksjs/docs/screenshots', generatorVersion, models: await discoverScreenshotModels(root, config.models), configHash: hash(Buffer.concat([Buffer.from(generatorVersion), await readFile(configFile), ...await Promise.all(inputs.map(file => readFile(resolve(root, file))))])), inventory: config.pages.map(page => ({ id: page.id, title: page.title, path: new URL(typeof page.path === 'string' ? page.path : page.route!, config.baseUrl).pathname, sources: page.sources ?? [], ...(page.skip ? { skip: page.skip } : {}) })), backend: config.backend ?? (process.platform === 'darwin' ? 'webkit' : 'chrome'), bun: Bun.version, results: [] }
   if (options.list) return report
   if (options.check) {
     const existing = JSON.parse(await readFile(join(output, 'manifest.json'), 'utf8')) as ScreenshotReport
     if (existing.generator !== '@stacksjs/docs/screenshots') throw new Error('This is not a Stacks screenshot manifest')
-    if (existing.configHash !== report.configHash || existing.models?.sourceHash !== report.models.sourceHash || existing.results.some(result => result.status === 'failed')) throw new Error('Screenshot inventory changed or the previous capture failed; capture again')
+    if (existing.generatorVersion !== generatorVersion || existing.configHash !== report.configHash || existing.models?.sourceHash !== report.models.sourceHash || existing.results.some(result => result.status === 'failed')) throw new Error('Screenshot SDK or inventory changed, or the previous capture failed; capture again')
     for (const page of config.pages) {
       for (const profile of page.profiles ?? Object.keys(config.profiles ?? { default: {} })) {
         for (const viewport of config.viewports ?? defaults) {
@@ -292,6 +309,7 @@ export async function captureScreenshots(options: ScreenshotOptions = {}): Promi
     if ((await lstat(file)).isSymbolicLink()) throw new Error('Screenshot manifest must not be a symlink')
     previous = JSON.parse(await readFile(file, 'utf8')) as ScreenshotReport
     if (previous.generator !== '@stacksjs/docs/screenshots') throw new Error('Refusing to overwrite an unowned manifest')
+    if ((options.only?.length || options.viewports?.length) && previous.configHash !== report.configHash) throw new Error('Capture inputs or SDK changed; use a fresh output directory or run a complete capture before updating individual screens')
   }
   catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error }
   const owned = new Set(previous?.results.map(result => result.file).filter(Boolean))
@@ -355,11 +373,18 @@ export async function captureScreenshots(options: ScreenshotOptions = {}): Promi
       }
       catch { /* A first partial capture is incomplete until the rest is captured. */ }
     }
+    // A failed refresh still owns the previous PNG, so a later retry can replace
+    // it. Its failed status keeps that stale image out of the published gallery.
+    for (const result of report.results) {
+      if (result.status !== 'failed' || result.file) continue
+      const old = previous?.results.find(row => row.id === result.id && row.profile === result.profile && row.viewport.name === result.viewport.name)
+      if (old?.file) { result.file = old.file; result.sha256 = old.sha256 }
+    }
     await mkdir(output, { recursive: true })
     await Bun.write(join(output, 'manifest.json.tmp'), `${JSON.stringify(report, null, 2)}\n`)
     await rename(join(output, 'manifest.json.tmp'), join(output, 'manifest.json'))
     const escape = (value: string): string => value.replace(/[\\`*_[\]<>]/g, '\\$&').replaceAll('\n', ' ')
-    const gallery = ['# Screen captures', '', 'Generated from the explicit screen inventory. Review the images before publishing.', '']
+    const gallery = ['# Screen captures', '', `Generated from the explicit screen inventory with @stacksjs/docs ${generatorVersion}. Review the images before publishing.`, '']
     for (const result of report.results) {
       gallery.push(`## ${escape(result.title)} (${result.profile}, ${result.viewport.name})`, '', escape(result.description), '', ...(result.reason ? [escape(result.reason), ''] : []), result.status === 'captured' ? `![${escape(result.title)}](${result.file})` : `**${result.status}:** ${escape(result.error ?? 'No image')}`, '')
     }
