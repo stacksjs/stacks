@@ -872,3 +872,23 @@ The credential is consumed before the callback, so it composes with
 `revokeAccountCredentials(claim.userId)`. That sweep also removes any pending
 password-reset links; changing a password must retire recovery credentials too.
 The existing `passwordResets(email)` flow supports email-addressed bcrypt tokens.
+
+## Enterprise relying-party identity
+
+Use `@stacksjs/auth/enterprise-oidc` for signed OIDC callbacks with PKCE, state,
+nonce, issuer, audience and JWKS verification. Use `@stacksjs/auth/enterprise-saml`
+for signed SAML requests and strict signed Response + Assertion verification.
+Keep each challenge in a native durable, browser-bound, one-use OAuth flow and
+consume it before accepting a callback. These helpers return provider subject
+identity only; they never assign roles or link a local account by email.
+
+HQ.support uses operator-approved issuer/endpoint configuration. The OIDC helper
+requires discovery endpoints on the issuer origin and client-secret-post support.
+SAML requires persistent NameIDs, RSA-SHA256 and SHA256 digests, exact audience and
+callback recipient, request correlation and bounded assertion lifetime. Provider
+configuration and private keys belong to the operator, never login input.
+
+Tests: `auth/tests/enterprise-oidc.test.ts` and `auth/tests/enterprise-saml.test.ts`.
+They exercise signed fixtures and refusals, not live identity-provider readiness.
+Deprovision workspace memberships and linked identities within that workspace;
+a tenant administrator must not revoke another workspace's native credentials.

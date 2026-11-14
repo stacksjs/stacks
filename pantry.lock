@@ -301,7 +301,9 @@
         "@stacksjs/socials": "workspace:*",
         "@stacksjs/storage": "workspace:*",
         "@stacksjs/ts-auth": "^0.4.7",
-        "ts-qr-codes": "^0.1.8"
+        "ts-qr-codes": "^0.1.8",
+        "oauth4webapi": "^3.8.8",
+        "@node-saml/node-saml": "^5.2.0"
       },
       "devDependencies": {
         "better-dx": "^0.2.39"

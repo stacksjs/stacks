@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **384 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **385 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -77,7 +77,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `stack` | 3 |
 | `storage` | 3 |
 | `stripe` | 1 |
-| `support` | 2 |
+| `support` | 3 |
 | `test` | 5 |
 | `types` | 2 |
 | `unlink` | 1 |
@@ -5888,6 +5888,26 @@ Examples:
 ```bash
 buddy support:install
 buddy support:install --no-open
+```
+
+### `support:verify`
+
+Publish a Stacks deployment challenge and confirm the permanent HQ.support free tier
+
+- Usage: `$ buddy support:verify <origin>`
+- Namespace: `support`
+- Aliases: none
+- Arguments: `<origin>`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--confirm` | Confirm the public challenge after deployment | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy support:verify https://my-app.example
+buddy support:verify https://my-app.example --confirm
 ```
 
 ### `telemetry`

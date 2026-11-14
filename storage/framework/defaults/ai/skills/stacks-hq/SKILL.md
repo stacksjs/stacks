@@ -190,3 +190,19 @@ the two project readers, with no port.
   durable total loads behind it.
 - This package does not create accounts, sign anyone in, or share keys between
   services.
+
+## Stacks Free deployment verification
+
+`buddy support:verify https://your-app.example` starts an HQ.support challenge
+using the project's server integration key. It writes only the public nonce
+document to `public/.well-known/hq-support` and a pending record to ignored
+`storage/framework/runtime/support-verification.json`. Deploy the document, then
+run the same command with `--confirm` within ten minutes. No consumer deployment
+is started implicitly. The configured native static server serves the proof;
+JSON and octet-stream MIME types are accepted at the exact well-known path.
+
+The service checks public HTTPS ownership, a confirmed Buddy connection, the
+challenge expiry and one free workspace per owning account. Framework metadata is
+a self-reported eligibility signal, not an unforgeable attestation. Free includes
+2 agents, 100 monthly conversations with 20% grace, 10 hosted text AI conversations,
+300 MB storage and 10 MB per file. Keep all integration keys server-side.

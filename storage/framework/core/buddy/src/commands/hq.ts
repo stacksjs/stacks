@@ -5,6 +5,8 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { defineCommand } from '@stacksjs/cli'
 import { HQ_SERVICE_NAMES, resolveHqServices, runHqConnect, runHqStatus, runSupportDoctor } from '../hq'
+import { runSupportVerification } from '../support-verification'
+import { version as frameworkVersion } from '../../package.json'
 
 /**
  * `buddy hq:connect` and `buddy hq:status`.
@@ -164,9 +166,29 @@ const status = defineCommand({
   },
 })
 
+const verify = defineCommand({
+  name: 'support:verify <origin>',
+  description: 'Publish a Stacks deployment challenge and confirm the permanent HQ.support free tier',
+  options: { '--confirm': { description: 'Confirm the public challenge after deployment', default: false } },
+  examples: ['buddy support:verify https://my-app.example', 'buddy support:verify https://my-app.example --confirm'],
+  async handle(options, origin) {
+    const { config } = await hqConfig()
+    const { projectPath } = await import('@stacksjs/path')
+    const statePath = projectPath('storage/framework/runtime/support-verification.json')
+    const ok = await runSupportVerification(config, String(origin || ''), { confirm: options.confirm, frameworkVersion }, {
+      fetch: (input, init) => fetch(input, init), print: line => console.log(line),
+      writeDocument: async document => { await Bun.write(projectPath('public/.well-known/hq-support'), JSON.stringify(document)) },
+      readState: async () => { try { return await Bun.file(statePath).json() } catch { return null } },
+      writeState: async state => { await Bun.write(statePath, JSON.stringify(state)) },
+    })
+    process.exitCode = ok ? 0 : 1
+  },
+})
+
 export function hq(buddy: CLI): void {
   connect(buddy)
   status(buddy)
   install(buddy)
   doctor(buddy)
+  verify(buddy)
 }
