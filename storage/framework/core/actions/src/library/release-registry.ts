@@ -21,7 +21,8 @@ export interface LibraryRegistryPackageReceipt {
   registry: 'npm' | 'pantry'
   integrity: string
   archiveSha256: string
-  tarball: string
+  /** Registry origin plus name/version identify provenance; opaque download URLs may be credentials. */
+  registryOrigin: string
   tags: Record<string, string>
 }
 export interface LibraryRegistryReceipt {
@@ -51,7 +52,9 @@ async function publishedPackage(pkg: LibraryReleasePackage, options: LibraryRegi
   const metadata = JSON.parse(new TextDecoder().decode(raw)) as { name?: string, version?: string, dist?: { integrity?: string, tarball?: string } }
   if (metadata.name !== pkg.name || metadata.version !== pkg.version || metadata.dist?.integrity !== pkg.archive.integrity || typeof metadata.dist.tarball !== 'string')
     throw new Error(`Published ${pkg.name}@${pkg.version} metadata identity differs from the retained candidate`)
-  const tarball = new URL(metadata.dist.tarball)
+  let tarball: URL
+  try { tarball = new URL(metadata.dist.tarball) }
+  catch { throw new Error('Published tarball URL is invalid') }
   if (tarball.origin !== origin || tarball.username || tarball.password || tarball.hash)
     throw new Error('Published tarball is outside its actual registry origin')
   const bytes = await reader.read(tarball.href, { maxBytes: options.maxArchiveBytes ?? 64 * 1024 * 1024, processing: !missing, headers })
@@ -63,7 +66,7 @@ async function publishedPackage(pkg: LibraryReleasePackage, options: LibraryRegi
   if (!tags || typeof tags !== 'object' || Array.isArray(tags) || Object.values(tags).some(value => typeof value !== 'string'))
     throw new Error('Actual registry distribution tags are invalid')
   if (checkTag && tags[pkg.tag] !== pkg.version) throw new Error(`Actual registry tag ${pkg.tag} does not identify ${pkg.name}@${pkg.version}`)
-  return { name: pkg.name, version: pkg.version, registry: pkg.registry, integrity: pkg.archive.integrity, archiveSha256: pkg.archive.sha256, tarball: tarball.href, tags }
+  return { name: pkg.name, version: pkg.version, registry: pkg.registry, integrity: pkg.archive.integrity, archiveSha256: pkg.archive.sha256, registryOrigin: origin, tags }
 }
 
 /** Read actual bytes/tags with current verifier code; never has a publisher capability. */
@@ -131,7 +134,7 @@ export async function publishPreparedLibraryRelease(directory: string, options: 
       // Dry-run delegates publisher validation but makes no registry reads/writes.
       const exit = await execute(commands[i]!, { cwd: resolve(options.cwd ?? process.cwd()), timeoutMs: options.requestTimeoutMs ?? 15_000 })
       if (exit !== 0) throw new Error(`Dry-run publishing ${pkg.name} failed with exit code ${exit}`)
-      packages.push({ name: pkg.name, version: pkg.version, registry: pkg.registry, integrity: pkg.archive.integrity, archiveSha256: pkg.archive.sha256, tarball: '', tags: {}, status: 'dry-run' })
+      packages.push({ name: pkg.name, version: pkg.version, registry: pkg.registry, integrity: pkg.archive.integrity, archiveSha256: pkg.archive.sha256, registryOrigin: libraryRegistryOrigin(options.npmRegistry), tags: {}, status: 'dry-run' })
       continue
     }
     const existing = existingPackages[i]
