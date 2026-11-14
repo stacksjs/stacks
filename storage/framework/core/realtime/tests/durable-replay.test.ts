@@ -42,3 +42,29 @@ test('retention, response bytes and malformed JSON cannot silently advance a cur
   const cycle: Record<string, unknown> = {}; cycle.self = cycle
   await expect(store.append({ channel: 'orders', event: 'cycle', data: cycle, idempotencyKey: 'cycle' })).rejects.toThrow()
 })
+
+test('array slots obey the JSON node budget before traversal or serialization', async () => {
+  const store = createMemoryDurableReplayStore()
+  const append = (data: unknown, idempotencyKey: string) => store.append({ channel: 'bounded-arrays', event: 'changed', data, idempotencyKey })
+  await expect(append(new Array(5000), 'sparse-over-budget')).rejects.toThrow('structural bounds')
+  const sparse = [1, 2, 3]
+  delete sparse[1]
+  await expect(append(sparse, 'sparse-within-budget')).rejects.toThrow('dense')
+
+  // Length-only allocation. If bounds regress, the first getter fails fast;
+  // this test never maps/stringifies billions of nulls or allocates a payload.
+  const huge: unknown[] = []
+  huge.length = 0xFFFFFFFF
+  let visited = false
+  Object.defineProperty(huge, 0, { get() { visited = true; throw new Error('Huge array must be rejected before element access') } })
+  await expect(append(huge, 'huge-length')).rejects.toThrow('structural bounds')
+  expect(visited).toBe(false)
+
+  const dense = new Array(4095).fill(0)
+  const accepted = await append(dense, 'exact-node-budget')
+  expect(accepted.message.seq).toBe(1)
+  expect(accepted.message.data).toEqual(dense)
+  await expect(append(new Array(4096).fill(0), 'one-node-over')).rejects.toThrow('structural bounds')
+  const normal = [null, true, 1, 'text', { nested: [2, 3] }]
+  expect((await append(normal, 'normal-json')).message.data).toEqual(normal)
+})

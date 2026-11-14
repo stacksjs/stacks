@@ -24,6 +24,8 @@ test('SQL append/replay persists sequence and scope independently of process-loc
     const foreign = createSqlDurableReplayStore({ ...connection, scope: { workspace_id: 2, project_id: 2 } })
     expect((await foreign.replay({ channel: 'private-order.1', after: null })).messages).toEqual([])
     expect((await foreign.replay({ channel: 'private-order.1', after: second.cursor })).gap).toBe('incarnation')
+    await expect(restarted.append({ channel: 'private-order.1', event: 'oversized', data: new Array(5000), idempotencyKey: 'oversized' })).rejects.toThrow('structural bounds')
+    expect((await restarted.append({ channel: 'private-order.1', event: 'valid', data: [1, 2], idempotencyKey: 'after-rejection' })).message.seq).toBe(3)
     database.query('DELETE FROM replay_events WHERE seq = 1 AND workspace_id = 1').run()
     await expect(restarted.replay({ channel: 'private-order.1', after: null })).rejects.toMatchObject({ code: 'replay_storage_gap' })
   }

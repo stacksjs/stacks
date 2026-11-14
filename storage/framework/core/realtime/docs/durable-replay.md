@@ -98,7 +98,9 @@ Defaults are 100 events/channel, five-minute TTL, 64 KiB JSON payloads and a
 1 MiB message-page byte budget. Limits allow at most 10,000 retained events,
 one-year TTL, 64 KiB payloads, 16 MiB page budget and 100 events per replay
 request. JSON nesting (32) and node count (4096) are bounded; nonfinite values,
-functions, BigInts, cycles and non-JSON objects are rejected. Response byte
+functions, BigInts, cycles, sparse arrays and non-JSON objects are rejected.
+Array lengths are checked against the remaining node budget before any element
+traversal or allocation; holes cannot bypass the bound or reach serialization. Response byte
 budget counts serialized message records; the small page envelope is additional.
 
 Retention removes a prefix on append/replay/explicit `prune(channel)`. It

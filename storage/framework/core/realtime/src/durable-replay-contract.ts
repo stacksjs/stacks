@@ -1,5 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto'
 
+const MAX_JSON_NODES = 4096
+
 export interface DurableReplayCursor { incarnation: string, seq: number }
 export interface DurableReplayMessage { seq: number, ts: number, event: string, data: unknown }
 export interface DurableReplayAppend { channel: string, event: string, data?: unknown, idempotencyKey: string }
@@ -52,14 +54,25 @@ export function prepareAppend(input: DurableReplayAppend, policy: ReplayPolicy):
   let nodes = 0, bytes = 0
   const seen = new Set<object>()
   function visit(value: unknown, depth: number): unknown {
-    if (++nodes > 4096 || depth > 32) throw new TypeError('Replay JSON exceeds structural bounds')
+    if (++nodes > MAX_JSON_NODES || depth > 32) throw new TypeError('Replay JSON exceeds structural bounds')
     if (value === null || typeof value === 'boolean') return value
     if (typeof value === 'string') { bytes += Buffer.byteLength(value); if (bytes > policy.maxPayloadBytes) throw new TypeError('Replay payload exceeds its byte bound'); return value }
     if (typeof value === 'number' && Number.isFinite(value)) return value
     if (typeof value !== 'object' || !value || seen.has(value) || (!Array.isArray(value) && ![Object.prototype, null].includes(Object.getPrototypeOf(value)))) throw new TypeError('Replay payload must be finite, acyclic JSON')
     seen.add(value)
     let result: unknown
-    if (Array.isArray(value)) result = value.map(item => visit(item, depth + 1))
+    if (Array.isArray(value)) {
+      const length = value.length
+      // Every JSON array slot becomes a node, including holes that map skips.
+      // Check length before traversal/allocation; never stringify a huge sparse array.
+      if (!Number.isSafeInteger(length) || length < 0 || length > MAX_JSON_NODES - nodes) throw new TypeError('Replay JSON exceeds structural bounds')
+      const array: unknown[] = []
+      for (let index = 0; index < length; index++) {
+        if (!Object.hasOwn(value, index)) throw new TypeError('Replay JSON arrays must be dense')
+        array.push(visit(value[index], depth + 1))
+      }
+      result = array
+    }
     else {
       const object: Record<string, unknown> = Object.create(null)
       for (const key of Object.keys(value).sort()) { bytes += Buffer.byteLength(key); if (bytes > policy.maxPayloadBytes) throw new TypeError('Replay payload exceeds its byte bound'); object[key] = visit((value as Record<string, unknown>)[key], depth + 1) }
