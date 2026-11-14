@@ -1,4 +1,5 @@
 import type { LibraryConfig } from '@stacksjs/types'
+import type { LibraryHostedBuildReport, LibraryHostedInput } from './hosted'
 import type { LibraryManifest } from './manifest'
 import type { ResolvedLibraryPackage } from './packages'
 import { existsSync } from 'node:fs'
@@ -10,6 +11,7 @@ import { projectPath } from '@stacksjs/path'
 import { buildComponentLibrary } from '@stacksjs/stx'
 import { functionEntryData } from './entries'
 import { ambientGlobalsUsed, stxAmbientGlobals } from './globals'
+import { buildHostedOutput, prepareHostedInputs, validateHostedBrowser } from './hosted'
 import { generatedReadme, libraryManifest, serializeManifest } from './manifest'
 import { configuredLibrary, LibraryConfigError, resolveLibraryPackages } from './packages'
 
@@ -18,6 +20,7 @@ export interface LibraryBuildReport {
   kind: string
   dir: string
   sources: number
+  hosted?: LibraryHostedBuildReport
 }
 
 export interface LibraryPackageBuildOptions {
@@ -63,6 +66,7 @@ export async function buildLibraryPackages(options: LibraryPackageBuildOptions =
     )
   }
 
+  const hostedInputs = await prepareHostedInputs(packages)
   const version = await projectVersion()
   const reports: LibraryBuildReport[] = []
 
@@ -78,15 +82,18 @@ export async function buildLibraryPackages(options: LibraryPackageBuildOptions =
     if (compile)
       runPrebuild(pkg)
 
+    let componentStyles: string[] = []
     if (pkg.kind === 'functions')
       await buildFunctionPackage(pkg, config, version, compile)
     else
-      await buildComponentPackage(pkg, config, version, compile)
+      componentStyles = await buildComponentPackage(pkg, config, version, compile, hostedInputs.get(pkg.name))
 
     if (compile)
       await copyAssets(pkg)
 
-    reports.push({ name: pkg.name, kind: pkg.kind, dir: pkg.dir, sources: pkg.sources.length })
+    const input = hostedInputs.get(pkg.name)
+    const hosted = compile && input ? await buildHostedOutput(input, pkg.version ?? version, componentStyles) : undefined
+    reports.push({ name: pkg.name, kind: pkg.kind, dir: pkg.dir, sources: pkg.sources.length, ...(hosted ? { hosted } : {}) })
 
     if (compile)
       log.success(`Built ${pkg.name} → ${relative(projectPath(), pkg.dir)}/dist`)
@@ -157,10 +164,10 @@ async function buildFunctionPackage(pkg: ResolvedLibraryPackage, config: Library
  * each component registers its tag on import, so the `web-components` flavor
  * is the same build published through `bundle.js` instead of `index.js`.
  */
-async function buildComponentPackage(pkg: ResolvedLibraryPackage, config: LibraryConfig | undefined, version: string, compile: boolean): Promise<void> {
+async function buildComponentPackage(pkg: ResolvedLibraryPackage, config: LibraryConfig | undefined, version: string, compile: boolean, hosted?: LibraryHostedInput): Promise<string[]> {
   if (!compile) {
     await writeManifest(pkg, config, version)
-    return
+    return []
   }
 
   const result = await buildComponentLibrary({
@@ -182,11 +189,18 @@ async function buildComponentPackage(pkg: ResolvedLibraryPackage, config: Librar
     sourcemap: pkg.sourcemap ? 'external' : false,
   })
 
+  if (hosted) {
+    if (result.components.some(component => typeof component.styles !== 'string'))
+      throw new LibraryConfigError(`Package "${pkg.name}": the installed stx compiler does not expose component style metadata. Upgrade the STX package cohort together.`)
+    await validateHostedBrowser(hosted)
+  }
+
   log.debug(`${pkg.name}: compiled ${result.components.length} components (${result.totalBytes} bytes)`)
 
   await writeManifest(pkg, config, version)
   await validateDeclarations(pkg.dir)
   await validateRuntimeExports(pkg.dir)
+  return result.components.map(component => component.styles).filter(Boolean)
 }
 
 /**

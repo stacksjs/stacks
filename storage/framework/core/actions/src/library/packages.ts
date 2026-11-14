@@ -1,6 +1,6 @@
-import type { LibraryConfig, LibraryPackageKind, LibraryPackageOptions } from '@stacksjs/types'
-import { existsSync } from 'node:fs'
-import { relative, resolve } from 'node:path'
+import type { LibraryConfig, LibraryHostedOptions, LibraryPackageKind, LibraryPackageOptions } from '@stacksjs/types'
+import { existsSync, realpathSync } from 'node:fs'
+import { relative, resolve, sep } from 'node:path'
 import process from 'node:process'
 import { awaitConfig, library } from '@stacksjs/config'
 import { componentsPath, functionsPath, libraryPackagePath } from '@stacksjs/path'
@@ -47,6 +47,7 @@ export interface LibraryPackageDefinition {
   assets: Array<{ dest: string, source: string }>
   /** Shell command run in the project root before the build, to produce the assets. */
   prebuild?: string
+  hosted?: LibraryHostedOptions
   runtime: 'standalone' | 'stx'
   sourcemap: boolean
   include: string[]
@@ -117,7 +118,7 @@ function toDefinition(option: LibraryPackageOptions, fallback: { license?: strin
 
   const slug = (option.dir ?? unscopedName(name)).replace(/^@/, '')
 
-  if (!/^[\w.-]+$/.test(slug))
+  if (!/^[\w.-]+$/.test(slug) || slug === '.' || slug === '..')
     throw new LibraryConfigError(`Package "${name}" resolves to the directory "${slug}", which is not a single safe path segment. Set \`dir\` explicitly.`)
 
   const aliases: Record<string, string> = {}
@@ -180,6 +181,7 @@ function toDefinition(option: LibraryPackageOptions, fallback: { license?: strin
     readme: option.readme,
     assets,
     prebuild: option.prebuild,
+    hosted: option.hosted,
     runtime: option.runtime ?? 'standalone',
     sourcemap: option.shouldGenerateSourcemap ?? false,
     include,
@@ -301,6 +303,11 @@ export async function resolveLibraryPackages(
  * Sorted, so a build's output order does not depend on filesystem order.
  */
 export async function matchSources(sourceDir: string, include: string[], exclude: string[]): Promise<string[]> {
+  for (const pattern of [...include, ...exclude]) {
+    if (!pattern || pattern.startsWith('/') || pattern.includes('\\') || pattern.includes('\0') || pattern.includes(':') || pattern.split('/').includes('..'))
+      throw new LibraryConfigError(`Library source glob "${pattern}" must stay inside its source directory.`)
+  }
+
   if (!existsSync(sourceDir))
     return []
 
@@ -308,8 +315,12 @@ export async function matchSources(sourceDir: string, include: string[], exclude
     const files = new Set<string>()
 
     for (const pattern of patterns) {
-      for await (const file of new Bun.Glob(pattern).scan({ cwd: sourceDir, absolute: true, onlyFiles: true }))
+      for await (const file of new Bun.Glob(pattern).scan({ cwd: sourceDir, absolute: true, onlyFiles: true })) {
+        const canonical = realpathSync(file)
+        if (!canonical.startsWith(`${realpathSync(sourceDir)}${sep}`))
+          throw new LibraryConfigError(`Library source glob "${pattern}" reaches outside its source directory through a symbolic link.`)
         files.add(resolve(file))
+      }
     }
 
     return files
