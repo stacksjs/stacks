@@ -30,9 +30,10 @@ function resourceSid(value: unknown, prefix: string): string {
   if (!new RegExp(`^${prefix}[a-f0-9]{32}$`, 'i').test(result)) badResponse()
   return result
 }
+function optionalSid(value: unknown, prefix: string): string | null { return value == null || value === '' ? null : resourceSid(value, prefix) }
 function numberResult(value: unknown): PhoneNumber {
   const row = object(value)
-  return { sid: resourceSid(row.sid, 'PN'), phoneNumber: text(row.phone_number), voiceUrl: row.voice_url == null ? null : text(row.voice_url), smsUrl: row.sms_url == null ? null : text(row.sms_url) }
+  return { sid: resourceSid(row.sid, 'PN'), phoneNumber: text(row.phone_number), voiceUrl: row.voice_url == null ? null : text(row.voice_url), smsUrl: row.sms_url == null ? null : text(row.sms_url), voiceApplicationSid: optionalSid(row.voice_application_sid, 'AP'), smsApplicationSid: optionalSid(row.sms_application_sid, 'AP'), trunkSid: optionalSid(row.trunk_sid, 'TK') }
 }
 function duration(value: unknown): number | null {
   if (value === undefined || value === null) return null

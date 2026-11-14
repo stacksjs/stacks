@@ -13,6 +13,9 @@ export interface PhoneNumber {
   phoneNumber: string
   voiceUrl: string | null
   smsUrl?: string | null
+  voiceApplicationSid?: string | null
+  smsApplicationSid?: string | null
+  trunkSid?: string | null
 }
 export interface Call {
   sid: string
