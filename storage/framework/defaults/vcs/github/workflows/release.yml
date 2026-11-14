@@ -4,39 +4,144 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to resume
+        required: true
+        type: string
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
 
 jobs:
-  release:
+  accept:
+    timeout-minutes: 45
+    name: Accept source CI
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      accepted: ${{ steps.library.outputs.accepted }}
+      tag: ${{ steps.tag.outputs.tag }}
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v6
+      # Always execute the current verifier. Historical source is retained data.
+      - uses: actions/checkout@v6
         with:
-          # The changelog is generated from commits since the previous tag, so
-          # the full history has to be present.
+          ref: ${{ github.event.repository.default_branch }}
           fetch-depth: 0
-
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@cdb82193cb344c2b881a88ea79f88243f5522e0f # v0.11.75
         with:
           install: 'false'
-
-      - name: Use Cached node_modules
-        uses: actions/cache@v5
-        with:
-          path: node_modules
-          key: node-modules-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            node-modules-
-
-      - name: Install Dependencies
-        run: bun install
-
-      - name: Create GitHub Release
-        uses: stacksjs/action-releaser@v1.2.9
+      - run: bun install --frozen-lockfile --ignore-scripts
+      - name: Select release tag
+        id: tag
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+        # Validate structured workflow output before using it in later jobs.
+        run: |
+          case "$RELEASE_TAG" in
+            *[!a-zA-Z0-9.+-]*|'') exit 1 ;;
+          esac
+          printf 'tag=%s\n' "$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+        # Keep source acceptance outputs on its own structured step below.
+      - name: Accept exact library source
+        id: library
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+        run: bun buddy release:accept --tag "$RELEASE_TAG" --directory storage/framework/runtime/accepted-library-release
+      - name: Retain accepted candidate and source receipt
+        if: steps.library.outputs.accepted == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: stacks-accepted-library
+          path: storage/framework/runtime/accepted-library-release/
+          if-no-files-found: error
+          retention-days: 30
+
+  publish:
+    name: Publish exact libraries
+    needs: accept
+    if: needs.accept.outputs.accepted == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+      - name: Setup Pantry
+        uses: pantry-pm/pantry/packages/action@cdb82193cb344c2b881a88ea79f88243f5522e0f # v0.11.75
+        with:
+          install: 'false'
+      - run: bun install --frozen-lockfile --ignore-scripts
+      - uses: actions/download-artifact@v4
+        with:
+          name: stacks-accepted-library
+          path: storage/framework/runtime/library-release/
+      - name: Publish original archives and read back actual bytes
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          BUN_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_USERCONFIG: ${{ github.workspace }}/.npmrc
+        # Native publication reaccepts provider ownership and compares the local
+        # candidate to the original provider ZIP before invoking the publisher.
+        run: |
+          umask 077
+          printf '//registry.npmjs.org/:_authToken=%s\n' "$NODE_AUTH_TOKEN" > .npmrc
+          chmod 600 .npmrc
+          bun buddy release:publish
+      - name: Retain registry receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: stacks-library-registry-receipt
+          path: |
+            storage/framework/runtime/library-release/registry-receipt.json
+            storage/framework/runtime/library-release/accepted-source.json
+            storage/framework/runtime/library-release/candidate.json
+          if-no-files-found: error
+
+  release:
+    name: GitHub release
+    needs: [accept, publish]
+    if: always() && needs.accept.result == 'success' && (needs.publish.result == 'success' || needs.accept.outputs.accepted != 'true')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+      - name: Setup Pantry
+        uses: pantry-pm/pantry/packages/action@cdb82193cb344c2b881a88ea79f88243f5522e0f # v0.11.75
+        with:
+          install: 'false'
+      - run: bun install --frozen-lockfile --ignore-scripts
+      - name: Fetch durable release receipts
+        if: needs.accept.outputs.accepted == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: stacks-library-registry-receipt
+          path: storage/framework/runtime/library-release-receipts/
+      - name: Create standard GitHub release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.accept.outputs.tag }}
+          HAS_LIBRARIES: ${{ needs.accept.outputs.accepted }}
+        run: |
+          if [ "$HAS_LIBRARIES" = 'true' ]; then
+            bun buddy release:github "$RELEASE_TAG" --assets storage/framework/runtime/library-release-receipts/candidate.json,storage/framework/runtime/library-release-receipts/accepted-source.json,storage/framework/runtime/library-release-receipts/registry-receipt.json
+          else
+            bun buddy release:github "$RELEASE_TAG"
+          fi

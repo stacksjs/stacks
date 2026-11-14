@@ -9,6 +9,12 @@ commit and tag. A consumer app releases its own root package. In the Stacks
 framework repository, the command releases the core packages together and
 updates their lockstep dependencies.
 
+For configured public libraries, the command validates the native release plan
+before changing the checkout. Main CI builds, tests and retains the original
+archives; the tag workflow accepts exact source CI, publishes those bytes and
+attaches verification receipts to the standard GitHub release. See
+[publishing libraries](/guide/libraries/publish) for package and CI configuration.
+
 Builds and publishing continue in GitHub Actions after the push. Check the
 workflow and the required public artifacts before updating consumers.
 
@@ -28,7 +34,7 @@ choose a major or minor increment from those messages.
 | Option | Purpose |
 | --- | --- |
 | `--bump <type>` | A Bumpx release type, `calendar`, or an explicit semantic version |
-| `--preid <identifier>` | A prerelease channel such as `beta` or `rc` |
+| `--preid <identifier>` | A prerelease version identifier such as `beta` or `rc`; registry channel is `library.release.distTag` |
 | `--dry-run` | Preview without committing, tagging or pushing |
 | `--skip-github-release` | Push the tag without creating its GitHub release through the command |
 | `--verbose` | Show additional details |

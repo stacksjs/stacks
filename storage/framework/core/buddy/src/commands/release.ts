@@ -1,3 +1,4 @@
+import { releaseLibrary } from './release-library'
 import type { CLI, ReleaseOptions } from '@stacksjs/types'
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
@@ -396,12 +397,13 @@ async function releaseTestFlightCommand(tagArgument: string | undefined, options
 }
 
 export function release(buddy: CLI): void {
+  releaseLibrary(buddy)
   buddy
     .command('release', descriptions.release)
     .option('--dry-run', descriptions.dryRun, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--bump <type>', descriptions.bump)
-    .option('--preid <identifier>', 'Prerelease channel, for example beta or rc')
+    .option('--preid <identifier>', 'Prerelease version identifier, for example beta or rc (registry channel is library.release.distTag)')
     .option('--skip-github-release', descriptions.skipGithubRelease, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: ReleaseOptions) => {
@@ -490,8 +492,9 @@ export function release(buddy: CLI): void {
 
   buddy
     .command('release:github [tag]', 'Create the GitHub release for a pushed tag (default: the newest), with the changes since the tag before it')
+    .option('--assets <paths>', 'Attach comma-separated immutable native JSON receipts to the release')
     .option('--dry-run', 'Print the release instead of creating it', { default: false })
-    .action(async (tag: string | undefined, options: { dryRun?: boolean }) => {
+    .action(async (tag: string | undefined, options: { dryRun?: boolean, assets?: string }) => {
       const startTime = await intro('buddy release:github')
       try {
         if (!options.dryRun)
@@ -512,6 +515,10 @@ export function release(buddy: CLI): void {
         const result = await publishGitHubRelease({ cwd: process.cwd(), tag: target, name: ios?.name, summary, dryRun: options.dryRun })
         if (result.status === 'failed')
           throw new Error(describeGitHubRelease(target, result))
+        if (options.assets && !options.dryRun) {
+          const { attachGitHubReleaseAssets } = await import('@stacksjs/actions/github-release-assets')
+          for (const link of await attachGitHubReleaseAssets({ cwd: process.cwd(), tag: target, files: options.assets.split(',') })) log.info(link)
+        }
         log.info(options.dryRun && result.draft
           ? `Would create the GitHub release ${target} (${result.draft.name}):\n\n${result.draft.body}`
           : describeGitHubRelease(target, result))

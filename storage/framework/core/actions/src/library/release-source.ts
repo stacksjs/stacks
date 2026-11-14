@@ -134,8 +134,15 @@ export async function acceptLibraryReleaseSource(options: AcceptLibrarySourceOpt
   if (decision.kind !== 'accepted') throw new Error(`Source CI was not accepted: ${decision.kind === 'rejected' ? decision.reason : decision.kind}`)
   const artifacts = await pages<LibrarySourceArtifact>(`/actions/runs/${run.id}/artifacts`, 'artifacts')
   const matches = artifacts.filter(artifact => artifact.name === options.artifactName)
-  if (matches.length !== 1) throw new Error('Expected exactly one owned retained candidate artifact')
-  const artifact = matches[0]!
+  if (!matches.length || matches.some(artifact => !Number.isSafeInteger(artifact.id) || artifact.id <= 0))
+    throw new Error('Expected owned retained candidate artifacts with positive integer IDs')
+  // GitHub retains same-name artifacts across full run attempts. Its artifact
+  // client selects the highest ID; validate that latest candidate, never an
+  // older fallback if the newest artifact or its later ownership check fails.
+  const latestId = matches.reduce((highest, artifact) => Math.max(highest, artifact.id), 0)
+  const latest = matches.filter(artifact => artifact.id === latestId)
+  if (latest.length !== 1) throw new Error('Expected exactly one latest owned retained candidate artifact')
+  const artifact = latest[0]!
   const ownership = artifact.workflow_run
   const maxBytes = options.maxArtifactBytes ?? 256 * 1024 * 1024
   if (!Number.isSafeInteger(maxBytes) || maxBytes <= 0 || !Number.isSafeInteger(artifact.id) || artifact.id <= 0 || artifact.expired !== false
