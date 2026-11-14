@@ -718,7 +718,9 @@
       "version": "0.75.585",
       "dependencies": {
         "@stacksjs/bunpress": "^0.2.25",
+        "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",
+        "@stacksjs/orm": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/stx": "^0.2.872"
       },
