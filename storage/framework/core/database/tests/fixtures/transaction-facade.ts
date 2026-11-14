@@ -14,7 +14,7 @@ else {
 }
 const { config, overridesReady } = await import('@stacksjs/config')
 await overridesReady
-const { db, ensureDatabaseConfigLoaded, initializeDbConfig, resetDatabaseConnection, enqueueAfterCommit, sqlHelpers } = await import('../../src')
+const { db, ensureDatabaseConfigLoaded, initializeDbConfig, resetDatabaseConnection, enqueueAfterCommit, sqlHelpers, assertActiveTransaction } = await import('../../src')
 await ensureDatabaseConfigLoaded()
 const { transactional, ormReady } = await import('@stacksjs/orm')
 await ormReady
@@ -31,6 +31,37 @@ async function check(name: string, run: () => Promise<void>) {
 }
 try {
   await db.unsafe('CREATE TABLE scope_probe (id INTEGER PRIMARY KEY)').execute()
+  await check('active transaction assertion rejects absent, overlapping and closed owners without SQL', async () => {
+    assert.throws(() => assertActiveTransaction(), /active database transaction/)
+    const effects: string[] = []
+    await db.transaction(async () => {
+      assert.doesNotThrow(() => assertActiveTransaction())
+      const entered = Promise.withResolvers<void>()
+      const release = Promise.withResolvers<void>()
+      let escaped: (() => void) | undefined
+      const nested = db.transaction(async () => {
+        assert.doesNotThrow(() => assertActiveTransaction())
+        const resource = new (await import('node:async_hooks')).AsyncResource('closed-native-owner')
+        escaped = resource.bind(() => { assertActiveTransaction(); enqueueAfterCommit(() => { effects.push('escaped') }) })
+        entered.resolve()
+        await release.promise
+        throw new Error('fixture owner rollback')
+      })
+      const rejected = nested.catch(error => error)
+      await entered.promise
+      try {
+        assert.throws(() => assertActiveTransaction(), /active nested transaction/)
+        assert.throws(() => db.unsafe('INSERT INTO scope_probe (id) VALUES (1)'), /active nested transaction/)
+      }
+      finally { release.resolve() }
+      assert.match((await rejected).message, /fixture owner rollback/)
+      assert.throws(() => escaped!(), /closed transaction callback/)
+      assert.doesNotThrow(() => assertActiveTransaction())
+      enqueueAfterCommit(() => { effects.push('parent') })
+    })
+    assert.deepEqual(effects, ['parent'])
+    assert.deepEqual(await ids(), [])
+  })
   await check('facade writes and nested transactions roll back with their caller', async () => {
     await assert.rejects(async () => db.transaction(async () => {
       await db.insertInto('scope_probe').values({ id: 1 }).execute()

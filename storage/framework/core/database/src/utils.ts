@@ -813,6 +813,16 @@ function activeTransactionConnection(): RawQueryBuilder | undefined {
   return scope.connection
 }
 
+/**
+ * Require a live native transaction owner before registering non-SQL work.
+ * Uses the same closed-callback and overlapping-savepoint checks as `db`.
+ * This checks ownership only; callers retain their own domain/scope validation.
+ */
+export function assertActiveTransaction(): void {
+  if (!activeTransactionConnection())
+    throw new Error('An active database transaction is required.')
+}
+
 function assertTransactionConnection(scope: TransactionConnectionScope): void {
   for (let owner: TransactionConnectionScope | undefined = scope; owner; owner = owner.parent) {
     if (!owner.active)
