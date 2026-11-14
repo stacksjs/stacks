@@ -46,3 +46,31 @@ test('enterprise OIDC refuses unsigned tokens and foreign callback/state', async
   await expect(verifyEnterpriseOidcCallback(f.config, f.callback.replace('state=', 'state=wrong'), f.challenge)).rejects.toThrow()
   await expect(verifyEnterpriseOidcCallback(f.config, f.callback.replace('support.example.test', 'foreign.example.test'), f.challenge)).rejects.toThrow()
 })
+
+test('enterprise OIDC rejects a corrupted signature after valid token claim parsing', async () => {
+  const f = fixture()
+  const original = f.config.fetch
+  f.config.fetch = (async (...args: Parameters<typeof fetch>) => {
+    const response = await original(...args)
+    if (String(args[0]).endsWith('/token')) {
+      const body = await response.json() as { id_token: string }
+      const parts = body.id_token.split('.')
+      parts[2] = (parts[2]!.startsWith('A') ? 'B' : 'A') + parts[2]!.slice(1)
+      return Response.json({ ...body, id_token: parts.join('.') })
+    }
+    return response
+  }) as typeof fetch
+  await expect(verifyEnterpriseOidcCallback(f.config, f.callback, f.challenge)).rejects.toThrow()
+})
+
+test('enterprise OIDC refuses cross-origin discovery endpoints before code exchange', async () => {
+  const f = fixture()
+  const original = f.config.fetch
+  f.config.fetch = (async (...args: Parameters<typeof fetch>) => {
+    const response = await original(...args)
+    if (String(args[0]).endsWith('/.well-known/openid-configuration')) return Response.json({ ...await response.json() as object, token_endpoint: 'https://another-origin.example/token' })
+    return response
+  }) as typeof fetch
+  await expect(enterpriseOidcAuthorization(f.config, f.challenge)).rejects.toThrow()
+  expect(f.calls).not.toContain(issuer + '/token')
+})
