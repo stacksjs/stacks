@@ -79,6 +79,21 @@ try {
     if (url.endsWith('/runs/123')) return Response.json(change.run ?? run)
     throw new Error(`Unexpected provider request ${url}`)
   }
+  // Full reruns retain the earlier same-name artifact. Select the newest one,
+  // then bind its downloaded ownership record to the provider's current attempt.
+  const owner = JSON.parse(await readFile(join(directory, 'ownership.json'), 'utf8'))
+  await writeFile(join(directory, 'ownership.json'), JSON.stringify({ ...owner, runAttempt: 2 }))
+  assert.equal(Bun.spawnSync(['zip', '-q', '-r', join(cwd, 'provider-rerun.zip'), '.'], { cwd: directory, stdout: 'pipe', stderr: 'pipe' }).exitCode, 0)
+  const rerunZip = await readFile(join(cwd, 'provider-rerun.zip'))
+  const olderArtifact = { ...artifact, id: 320 }
+  const rerunArtifact = { ...artifact, size_in_bytes: rerunZip.length, digest: `sha256:${librarySha256(rerunZip)}` }
+  const rerun = { ...run, run_attempt: 2 }
+  const rerunReceipt = await acceptNativeLibraryRelease({ cwd, directory: join(cwd, 'rerun-accepted'), tag: 'v1.0.0', runId: 123,
+    fetch: provider({ run: rerun, artifacts: [olderArtifact, rerunArtifact], zip: rerunZip }) })
+  assert.equal(rerunReceipt!.artifact.id, 321)
+  assert.equal(rerunReceipt!.runAttempt, 2)
+  await assert.rejects(acceptNativeLibraryRelease({ cwd, directory: join(cwd, 'rerun-wrong-owner'), tag: 'v1.0.0', runId: 123,
+    fetch: provider({ run: rerun, artifacts: [olderArtifact, artifact] }) }), /Candidate ownership record differs/)
   let attempt = 0
   for (const changed of [
     { jobs: jobs.slice(0, 2) }, { jobs: [...jobs, jobs[0]] }, { jobs: jobs.map(job => ({ ...job, conclusion: 'skipped' })) },

@@ -24,6 +24,25 @@ test('accepts one same-repository exact-SHA artifact and records current verifie
   expect(accepted.runAttempt).toBe(2)
 })
 
+test('selects the unique newest same-name artifact retained by a full CI rerun', async () => {
+  const accepted = await acceptLibraryReleaseSource({ ...policy, fetch: reader({ artifacts: [artifact, { ...artifact, id: 7, expired: true }] }) })
+  expect(accepted.artifact.id).toBe(8)
+  expect(accepted.runAttempt).toBe(2)
+  expect(accepted.artifact.downloadUrl).toBe('https://api.github.com/repos/example/libraries/actions/artifacts/8/zip')
+})
+
+test('rejects malformed or ambiguous latest IDs and never falls back from a newer invalid artifact', async () => {
+  for (const artifacts of [
+    [artifact, { ...artifact, id: 8 }],
+    [artifact, { ...artifact, id: '9' }],
+    [artifact, { ...artifact, id: 0 }],
+    [artifact, { ...artifact, id: Number.MAX_SAFE_INTEGER + 1 }],
+    [artifact, { ...artifact, id: 9, expired: true }],
+    [artifact, { ...artifact, id: 9, digest: 'wrong' }],
+    [artifact, { ...artifact, id: 9, workflow_run: { ...artifact.workflow_run, head_sha: 'f'.repeat(40) } }],
+  ]) await expect(acceptLibraryReleaseSource({ ...policy, fetch: reader({ artifacts }) })).rejects.toThrow()
+})
+
 test('rejects another source, fork, branch, workflow, missing/duplicate jobs and expired/duplicate artifacts', async () => {
   for (const changed of [
     { ...run, head_sha: 'd'.repeat(40) }, { ...run, repository: { id: 6, full_name: 'other/libraries' } },
