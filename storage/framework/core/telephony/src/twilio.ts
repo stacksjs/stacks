@@ -31,9 +31,14 @@ function resourceSid(value: unknown, prefix: string): string {
   return result
 }
 function optionalSid(value: unknown, prefix: string): string | null { return value == null || value === '' ? null : resourceSid(value, prefix) }
+function callbackMethod(value: unknown): 'GET' | 'POST' | null {
+  if (value == null) return null
+  if (value !== 'GET' && value !== 'POST') badResponse()
+  return value
+}
 function numberResult(value: unknown): PhoneNumber {
   const row = object(value)
-  return { sid: resourceSid(row.sid, 'PN'), phoneNumber: text(row.phone_number), voiceUrl: row.voice_url == null ? null : text(row.voice_url), smsUrl: row.sms_url == null ? null : text(row.sms_url), voiceApplicationSid: optionalSid(row.voice_application_sid, 'AP'), smsApplicationSid: optionalSid(row.sms_application_sid, 'AP'), trunkSid: optionalSid(row.trunk_sid, 'TK') }
+  return { sid: resourceSid(row.sid, 'PN'), phoneNumber: text(row.phone_number), voiceUrl: row.voice_url == null ? null : text(row.voice_url), smsUrl: row.sms_url == null ? null : text(row.sms_url), voiceMethod: callbackMethod(row.voice_method), smsMethod: callbackMethod(row.sms_method), voiceApplicationSid: optionalSid(row.voice_application_sid, 'AP'), smsApplicationSid: optionalSid(row.sms_application_sid, 'AP'), trunkSid: optionalSid(row.trunk_sid, 'TK') }
 }
 function duration(value: unknown): number | null {
   if (value === undefined || value === null) return null

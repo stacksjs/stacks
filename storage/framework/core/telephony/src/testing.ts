@@ -15,7 +15,7 @@ interface FakeState {
 }
 function nextSid(state: FakeState, prefix: string): string { return `${prefix}${(++state.sequence).toString(16).padStart(32, '0')}` }
 function callJson(call: Call): Record<string, unknown> { return { ...call, sid: call.sid, duration: call.durationSeconds == null ? null : String(call.durationSeconds), price: call.priceMicros == null ? null : `-${Math.floor(call.priceMicros / 1_000_000)}.${String(call.priceMicros % 1_000_000).padStart(6, '0')}`, price_unit: call.priceCurrency ?? null, time_limit: call.timeLimitSeconds ?? null } }
-function numberJson(number: PhoneNumber): Record<string, string | null> { return { sid: number.sid, phone_number: number.phoneNumber, voice_url: number.voiceUrl, sms_url: number.smsUrl ?? null } }
+function numberJson(number: PhoneNumber): Record<string, string | null> { return { sid: number.sid, phone_number: number.phoneNumber, voice_url: number.voiceUrl, sms_url: number.smsUrl ?? null, voice_method: number.voiceMethod ?? null, sms_method: number.smsMethod ?? null } }
 function notFound(): Response { return Response.json({ code: 20404 }, { status: 404 }) }
 
 function respond(state: FakeState, url: URL, method: string, params: URLSearchParams): Response {
@@ -29,7 +29,7 @@ function respond(state: FakeState, url: URL, method: string, params: URLSearchPa
     if (method === 'GET') return Response.json({ incoming_phone_numbers: [...state.numbers.values()].filter(number => !url.searchParams.has('PhoneNumber') || number.phoneNumber === url.searchParams.get('PhoneNumber')).slice(0, 50).map(numberJson) })
     const selected = params.get('PhoneNumber')!
     if (!state.available.some(number => number.phoneNumber === selected) || [...state.numbers.values()].some(number => number.phoneNumber === selected)) return Response.json({}, { status: 400 })
-    const number = { sid: nextSid(state, 'PN'), phoneNumber: selected, voiceUrl: params.get('VoiceUrl') }
+    const number = { sid: nextSid(state, 'PN'), phoneNumber: selected, voiceUrl: params.get('VoiceUrl'), voiceMethod: 'POST' as const }
     state.numbers.set(number.sid, number)
     return Response.json(numberJson(number), { status: 201 })
   }
@@ -38,8 +38,8 @@ function respond(state: FakeState, url: URL, method: string, params: URLSearchPa
     const number = state.numbers.get(numberSid)
     if (!number) return notFound()
     if (method === 'DELETE') { state.numbers.delete(numberSid); return new Response(null, { status: 204 }) }
-    if (params.has('VoiceUrl')) number.voiceUrl = params.get('VoiceUrl')
-    if (params.has('SmsUrl')) number.smsUrl = params.get('SmsUrl')
+    if (params.has('VoiceUrl')) { number.voiceUrl = params.get('VoiceUrl'); number.voiceMethod = 'POST' }
+    if (params.has('SmsUrl')) { number.smsUrl = params.get('SmsUrl'); number.smsMethod = 'POST' }
     return Response.json(numberJson(number))
   }
   if (path === 'Calls.json') {

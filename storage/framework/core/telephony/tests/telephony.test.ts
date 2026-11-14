@@ -165,6 +165,6 @@ test('configures SMS routing with the same durable write journal and keeps voice
 
 test('reports provider application/trunk overrides so readiness cannot rely on ignored webhook URLs', async () => {
   const application = `AP${'d'.repeat(32)}`, trunk = `TK${'e'.repeat(32)}`
-  const provider = new TwilioTelephony({ accountSid, authToken: 'test-only', journal: new MemoryOperationJournal(), fetch: async () => Response.json({ incoming_phone_numbers: [{ ...number, voice_application_sid: application, sms_application_sid: application, trunk_sid: trunk }] }) })
-  expect((await provider.listNumbers())[0]).toMatchObject({ voiceApplicationSid: application, smsApplicationSid: application, trunkSid: trunk })
+  const provider = new TwilioTelephony({ accountSid, authToken: 'test-only', journal: new MemoryOperationJournal(), fetch: async () => Response.json({ incoming_phone_numbers: [{ ...number, voice_method: 'POST', sms_method: 'POST', voice_application_sid: application, sms_application_sid: application, trunk_sid: trunk }] }) })
+  expect((await provider.listNumbers())[0]).toMatchObject({ voiceMethod: 'POST', smsMethod: 'POST', voiceApplicationSid: application, smsApplicationSid: application, trunkSid: trunk })
 })

@@ -13,6 +13,8 @@ export interface PhoneNumber {
   phoneNumber: string
   voiceUrl: string | null
   smsUrl?: string | null
+  voiceMethod?: 'GET' | 'POST' | null
+  smsMethod?: 'GET' | 'POST' | null
   voiceApplicationSid?: string | null
   smsApplicationSid?: string | null
   trunkSid?: string | null
