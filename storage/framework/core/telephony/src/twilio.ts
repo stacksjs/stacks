@@ -34,10 +34,32 @@ function numberResult(value: unknown): PhoneNumber {
   const row = object(value)
   return { sid: resourceSid(row.sid, 'PN'), phoneNumber: text(row.phone_number), voiceUrl: row.voice_url == null ? null : text(row.voice_url) }
 }
+function duration(value: unknown): number | null {
+  if (value === undefined || value === null) return null
+  if ((typeof value !== 'string' || !/^\d+$/.test(value)) && (typeof value !== 'number' || !Number.isSafeInteger(value))) badResponse()
+  const parsed = Number(value)
+  if (!Number.isSafeInteger(parsed) || parsed < 0) badResponse()
+  return parsed
+}
+function price(value: unknown): number | null {
+  if (value === undefined || value === null) return null
+  if (typeof value !== 'string' || !/^-?\d+(?:\.\d{1,6})?$/.test(value)) badResponse()
+  const [whole, fraction = ''] = value.replace(/^-/, '').split('.') as [string, string?]
+  const micros = BigInt(whole) * 1_000_000n + BigInt(fraction.padEnd(6, '0'))
+  if (micros > BigInt(Number.MAX_SAFE_INTEGER)) badResponse()
+  return Number(micros)
+}
+function callLimit(value: number): string {
+  if (!Number.isSafeInteger(value) || value < 1 || value > 86400) invalid('Call time limit must be 1 to 86400 seconds.')
+  return String(value)
+}
 function callResult(value: unknown): Call {
   const row = object(value)
   if (!callStatuses.includes(row.status as CallStatus)) badResponse()
-  return { sid: resourceSid(row.sid, 'CA'), from: text(row.from), to: text(row.to), status: row.status as CallStatus, direction: text(row.direction) }
+  const priceMicros = price(row.price)
+  const priceCurrency = row.price_unit == null ? null : text(row.price_unit).toUpperCase()
+  if ((priceCurrency !== null && !/^[A-Z]{3}$/.test(priceCurrency)) || (priceMicros !== null && priceCurrency === null)) badResponse()
+  return { sid: resourceSid(row.sid, 'CA'), from: text(row.from), to: text(row.to), status: row.status as CallStatus, direction: text(row.direction), durationSeconds: duration(row.duration), priceMicros, priceCurrency, timeLimitSeconds: duration(row.time_limit) }
 }
 function rows(value: unknown, key: string): unknown[] {
   const list = object(value)[key]
@@ -161,12 +183,17 @@ export class TwilioTelephony implements Telephony {
     const params = instructions(input)
     params.set('From', phone(input.from))
     params.set('To', phone(input.to))
+    if (input.timeLimitSeconds !== undefined) params.set('TimeLimit', callLimit(input.timeLimitSeconds))
     if (input.statusCallback) {
       params.set('StatusCallback', secureUrl(input.statusCallback))
       params.set('StatusCallbackMethod', 'POST')
       for (const event of ['initiated', 'ringing', 'answered', 'completed']) params.append('StatusCallbackEvent', event)
     }
     return this.write('Calls.json', 'POST', params, options, callResult)
+  }
+
+  async setCallTimeLimit(callSid: string, seconds: number, options: WriteOptions): Promise<Call> {
+    return this.write(`Calls/${sid(callSid, 'CA')}.json`, 'POST', new URLSearchParams({ TimeLimit: callLimit(seconds) }), options, callResult)
   }
 
   async getCall(callSid: string): Promise<Call> {

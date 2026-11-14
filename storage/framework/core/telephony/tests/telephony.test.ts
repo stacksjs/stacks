@@ -120,3 +120,29 @@ test('a full memory journal rejects a new operation while preserving previous id
   expect((await provider.provisionNumber(input, { operationKey: 'first' })).sid).toBe(numberSid)
   expect(requests).toBe(1)
 })
+
+test('bounds provider call duration on create/update and reports exact provider price in integer micros', async () => {
+  const forms: URLSearchParams[] = []
+  const provider = new TwilioTelephony({ accountSid, authToken: 'test-only', journal: new MemoryOperationJournal(), fetch: async (url, init) => {
+    expect(new URL(url).pathname).toContain('/Calls')
+    if (init?.body) forms.push(new URLSearchParams(String(init.body)))
+    return Response.json({ ...call, duration: '61', price: '-0.012345', price_unit: 'usd', time_limit: '120' })
+  } })
+  const result = await provider.createCall({ from: call.from, to: call.to, twiml: '<Response><Hangup/></Response>', timeLimitSeconds: 120 }, { operationKey: 'bounded-create' })
+  expect(forms[0]!.get('TimeLimit')).toBe('120')
+  expect(result).toMatchObject({ durationSeconds: 61, priceMicros: 12345, priceCurrency: 'USD', timeLimitSeconds: 120 })
+  await provider.setCallTimeLimit(callSid, 60, { operationKey: 'bounded-update' })
+  await provider.setCallTimeLimit(callSid, 60, { operationKey: 'bounded-update' })
+  expect(forms).toHaveLength(2)
+  expect(forms[1]!.get('TimeLimit')).toBe('60')
+  await expect(provider.setCallTimeLimit(callSid, 0, { operationKey: 'invalid-limit' })).rejects.toMatchObject({ code: 'validation' })
+  expect(forms).toHaveLength(2)
+})
+
+test('unavailable cost remains null; malformed or unsupported precision is rejected', async () => {
+  for (const [price, currency] of [[null, null], ['-0.0000001', 'usd'], ['NaN', 'usd'], ['-0.01', null]]) {
+    const provider = new TwilioTelephony({ accountSid, authToken: 'test-only', journal: new MemoryOperationJournal(), fetch: async () => Response.json({ ...call, price, price_unit: currency, duration: null }) })
+    if (price === null) expect((await provider.getCall(callSid)).priceMicros).toBeNull()
+    else await expect(provider.getCall(callSid)).rejects.toMatchObject({ code: 'invalid_response' })
+  }
+})

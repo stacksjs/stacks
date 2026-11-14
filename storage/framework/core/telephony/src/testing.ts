@@ -14,7 +14,7 @@ interface FakeState {
   failure?: 'before-request' | 'after-write' | 'rejected'
 }
 function nextSid(state: FakeState, prefix: string): string { return `${prefix}${(++state.sequence).toString(16).padStart(32, '0')}` }
-function callJson(call: Call): Record<string, string> { return { ...call, sid: call.sid } }
+function callJson(call: Call): Record<string, unknown> { return { ...call, sid: call.sid, duration: call.durationSeconds == null ? null : String(call.durationSeconds), price: call.priceMicros == null ? null : `-${Math.floor(call.priceMicros / 1_000_000)}.${String(call.priceMicros % 1_000_000).padStart(6, '0')}`, price_unit: call.priceCurrency ?? null, time_limit: call.timeLimitSeconds ?? null } }
 function numberJson(number: PhoneNumber): Record<string, string | null> { return { sid: number.sid, phone_number: number.phoneNumber, voice_url: number.voiceUrl } }
 function notFound(): Response { return Response.json({ code: 20404 }, { status: 404 }) }
 
@@ -45,7 +45,7 @@ function respond(state: FakeState, url: URL, method: string, params: URLSearchPa
     if (method === 'GET') return Response.json({ calls: [...state.calls.values()].filter(call => (!url.searchParams.has('To') || call.to === url.searchParams.get('To')) && (!url.searchParams.has('From') || call.from === url.searchParams.get('From'))).slice(0, 50).map(callJson) })
     // Simulate the verified caller-ID requirement rather than accepting arbitrary outbound sources.
     if (![...state.numbers.values()].some(number => number.phoneNumber === params.get('From'))) return Response.json({}, { status: 400 })
-    const call: Call = { sid: nextSid(state, 'CA'), from: params.get('From')!, to: params.get('To')!, status: 'queued', direction: 'outbound-api' }
+    const call: Call = { sid: nextSid(state, 'CA'), from: params.get('From')!, to: params.get('To')!, status: 'queued', direction: 'outbound-api', timeLimitSeconds: params.has('TimeLimit') ? Number(params.get('TimeLimit')) : null }
     state.calls.set(call.sid, call)
     return Response.json(callJson(call), { status: 201 })
   }
@@ -56,7 +56,8 @@ function respond(state: FakeState, url: URL, method: string, params: URLSearchPa
     if (method === 'POST') {
       if (['completed', 'busy', 'failed', 'no-answer', 'canceled'].includes(call.status)) return Response.json({}, { status: 400 })
       if (params.has('Status')) call.status = params.get('Status') as CallStatus
-      else call.status = 'in-progress'
+      else if (params.has('Twiml') || params.has('Url')) call.status = 'in-progress'
+      if (params.has('TimeLimit')) call.timeLimitSeconds = Number(params.get('TimeLimit'))
     }
     return Response.json(callJson(call))
   }
@@ -103,6 +104,14 @@ export class FakeTelephony extends TwilioTelephony {
     const call: Call = { sid: nextSid(this.state, 'CA'), from: input.from, to: input.to, status: 'ringing', direction: 'inbound' }
     this.state.calls.set(call.sid, call)
     return structuredClone(call)
+  }
+
+  /** Explicit simulated billing, never a live provider price. */
+  setCallBilling(callSid: string, input: { durationSeconds: number, priceMicros: number, currency: string }): void {
+    const call = this.state.calls.get(callSid)
+    if (!call) throw new TelephonyError('not_found', 'Fake call was not found.')
+    if (!Number.isSafeInteger(input.durationSeconds) || input.durationSeconds < 0 || !Number.isSafeInteger(input.priceMicros) || input.priceMicros < 0 || !/^[A-Z]{3}$/.test(input.currency)) throw new TelephonyError('validation', 'Invalid simulated billing.')
+    Object.assign(call, { durationSeconds: input.durationSeconds, priceMicros: input.priceMicros, priceCurrency: input.currency })
   }
 
   /** Explicit simulation only; a fake does not advance the call lifecycle on a timer. */

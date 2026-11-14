@@ -35,6 +35,22 @@ const call = await telephony.createCall({
 
 Search supports voice-capable US and Canadian **local** numbers. Search results determine the country; `+1` alone includes other NANP countries. The write APIs validate NANP E.164 syntax, not ownership or country. Provision only a country-verified search result, scope credentials/account resources to the correct workspace, and enforce authorization, consent, spend limits and regulatory requirements in the application. Optional `bundleSid` and `addressSid` are forwarded to Twilio; their presence does not imply approval.
 
+Pass `timeLimitSeconds` to `createCall` to put a hard limit on the provider call,
+including when the application worker goes away. `setCallTimeLimit(sid, seconds,
+{operationKey})` updates that bound for an existing inbound/outbound call. Both
+accept integer seconds from 1 to 86400; provider/account restrictions may be
+stricter. Increasing a limit is a paid application decision: reserve its maximum
+cost before changing the provider limit. Never rely on an in-process timer alone.
+
+Call results expose `durationSeconds`, `priceMicros`, `priceCurrency` and
+`timeLimitSeconds`, null when the provider has not supplied them. `priceMicros`
+is the nonnegative absolute provider charge at one million units per currency
+unit, parsed from decimal strings without floating point. Currency is uppercase;
+unknown price/currency must stay unreconciled, not be treated as free. The call
+resource price may arrive after the completion callback and does not include
+separate child legs, recordings, transcription, number rental or AI charges.
+Aggregate the actual relevant resources in the application before settling.
+
 `configureNumber(sid, voiceUrl, options)` changes inbound routing. `releaseNumber` releases a purchased number. `getCall`, `listCalls`, `redirectCall` and `endCall` retrieve or control calls. To answer an incoming call, return `voiceResponse(...)` as `text/xml` from the authenticated callback. Use `redirectCall` to change instructions for an existing call. `listNumbers(phoneNumber?)` and `listCalls({from?,to?})` return the first page, at most 50 results. Filter exact numbers when reconciling; eventual-consistency results cannot prove that an ambiguous outbound call was never created.
 
 Each write requires a stable `operationKey` and a journal supplied at construction. Twilio Calls/IncomingPhoneNumbers are **not assumed** to implement an idempotency header. The adapter sends one request and never retries it automatically:

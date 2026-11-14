@@ -19,6 +19,11 @@ export interface Call {
   to: string
   status: CallStatus
   direction: string
+  /** Null until reported by the provider. Monetary values use one million units per currency unit. */
+  durationSeconds?: number | null
+  priceMicros?: number | null
+  priceCurrency?: string | null
+  timeLimitSeconds?: number | null
 }
 export interface NumberSearch {
   country: PhoneCountry
@@ -34,7 +39,7 @@ export interface ProvisionNumber {
   addressSid?: string
 }
 export type CallInstructions = { twiml: string, url?: never } | { url: string, twiml?: never }
-export type CreateCall = CallInstructions & { from: string, to: string, statusCallback?: string }
+export type CreateCall = CallInstructions & { from: string, to: string, statusCallback?: string, timeLimitSeconds?: number }
 export interface WriteOptions {
   /** Stable application operation ID. Never generate a fresh key when retrying a job. */
   operationKey: string
@@ -47,6 +52,7 @@ export interface Telephony {
   configureNumber: (sid: string, voiceUrl: string, options: WriteOptions) => Promise<PhoneNumber>
   createCall: (input: CreateCall, options: WriteOptions) => Promise<Call>
   getCall: (sid: string) => Promise<Call>
+  setCallTimeLimit: (sid: string, seconds: number, options: WriteOptions) => Promise<Call>
   listCalls: (filter?: { from?: string, to?: string }) => Promise<Call[]>
   redirectCall: (sid: string, instructions: CallInstructions, options: WriteOptions) => Promise<Call>
   endCall: (sid: string, status: 'completed' | 'canceled', options: WriteOptions) => Promise<Call>
