@@ -14,7 +14,7 @@ interface KeysetQuery<Row> {
   orderBy(column: string, direction: 'asc' | 'desc'): KeysetQuery<Row>
   orderByRaw(fragment: ReturnType<typeof raw>): KeysetQuery<Row>
   limit(count: number): KeysetQuery<Row>
-  execute(): Promise<Row[]>
+  execute(): Row[] | Promise<Row[]>
 }
 export interface KeysetPage<Row> {
   data: Row[]
