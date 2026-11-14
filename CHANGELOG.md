@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.590...v0.75.591)
+
+## 🐛 Bug Fixes
+
+- **query-builder**: accept synchronous keyset query results ([2b74f42](https://github.com/stacksjs/stacks/commit/2b74f42)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.589...v0.75.590)
 
 ## 🐛 Bug Fixes
