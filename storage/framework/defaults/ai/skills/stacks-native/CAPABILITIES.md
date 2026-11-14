@@ -508,6 +508,56 @@ Retained evidence:
 - [storage/framework/core/realtime/tests/ws-auth.test.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/tests/ws-auth.test.ts)
 - [storage/framework/core/realtime/tests/websocket-options.test.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/tests/websocket-options.test.ts)
 
+## realtime: sqlite-replay
+
+Status: **supported**. Topology: worker-and-embedded-sqlite.
+
+Implementation: [storage/framework/core/realtime/src/durable-replay-sql.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/src/durable-replay-sql.ts).
+
+Prerequisites:
+
+- Opt-in app-owned model-generated channel/event tables
+- Transaction-bound SQLite adapter that resolves after commit
+- Fresh application channel authorization
+
+Limitations:
+
+- Selected explicitly with createSqlDurableReplayStore; this is finite history, not a live transport driver.
+- Idempotency expires with retained events; permanent domain deduplication remains application-owned.
+- Applications bound channel cardinality and prune inactive channels.
+- Nested savepoints cannot publish a committed cursor before the outer transaction commits.
+
+Retained evidence:
+
+- [storage/framework/core/realtime/tests/durable-replay-sql.test.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/tests/durable-replay-sql.test.ts)
+- [storage/framework/core/realtime/tests/durable-replay-process.test.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/tests/durable-replay-process.test.ts)
+- [storage/framework/core/realtime/tests/durable-replay-http.test.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/tests/durable-replay-http.test.ts)
+
+## realtime: postgres-replay
+
+Status: **supported**. Topology: client-server.
+
+Implementation: [storage/framework/core/realtime/src/durable-replay-sql.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/src/durable-replay-sql.ts).
+
+Prerequisites:
+
+- Opt-in app-owned model-generated channel/event tables
+- Transaction-bound PostgreSQL adapter that resolves after commit
+- Fresh application channel authorization
+
+Limitations:
+
+- Selected explicitly with createSqlDurableReplayStore; this is finite history, not a live transport driver.
+- Idempotency expires with retained events; permanent domain deduplication remains application-owned.
+- Applications bound channel cardinality and prune inactive channels.
+- Nested savepoints cannot publish a committed cursor before the outer transaction commits.
+
+Retained evidence:
+
+- [storage/framework/core/realtime/tests/durable-replay-sql.test.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/tests/durable-replay-sql.test.ts)
+- [storage/framework/core/realtime/tests/durable-replay-process.test.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/tests/durable-replay-process.test.ts)
+- [storage/framework/core/realtime/tests/durable-replay-http.test.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/tests/durable-replay-http.test.ts)
+
 ## deploy: ts-cloud-hetzner
 
 Status: **experimental**. Topology: hetzner-vm-systemd-rpx.
