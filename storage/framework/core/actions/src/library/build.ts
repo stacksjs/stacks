@@ -1,4 +1,4 @@
-import type { LibraryConfig } from '@stacksjs/types'
+import type { LibraryConfig } from '@stacksjs/types/library'
 import type { LibraryHostedBuildReport, LibraryHostedInput } from './hosted'
 import type { LibraryManifest } from './manifest'
 import type { ResolvedLibraryPackage } from './packages'

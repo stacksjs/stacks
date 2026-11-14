@@ -6,7 +6,7 @@ const { startTime } = await intro({
 })
 
 const result = await Bun.build({
-  entrypoints: ['./src/index.ts', './src/exit-code.ts', './src/mobile.ts'],
+  entrypoints: ['./src/index.ts', './src/exit-code.ts', './src/mobile.ts', './src/library.ts'],
   // Public entrypoints must share one enum object.
   splitting: true,
   outdir: './dist',

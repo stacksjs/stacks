@@ -1,4 +1,4 @@
-import type { LibraryConfig } from '@stacksjs/types'
+import type { LibraryConfig } from '@stacksjs/types/library'
 import { existsSync } from 'node:fs'
 import { relative, resolve } from 'node:path'
 import { log } from '@stacksjs/logging'

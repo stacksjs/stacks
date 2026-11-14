@@ -48,6 +48,12 @@
       "bun": "./dist/*.js",
       "import": "./dist/*.js",
       "default": "./dist/*.js"
+    },
+    "./library": {
+      "types": "./dist/library.d.ts",
+      "bun": "./dist/library.js",
+      "import": "./dist/library.js",
+      "default": "./dist/library.js"
     }
   },
   "module": "dist/index.js",
@@ -95,6 +101,12 @@
         "bun": "./dist/*",
         "import": "./dist/*",
         "default": "./dist/*"
+      },
+      "./library": {
+        "types": "./dist/library.d.ts",
+        "bun": "./dist/library.js",
+        "import": "./dist/library.js",
+        "default": "./dist/library.js"
       }
     }
   },

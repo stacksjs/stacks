@@ -1,0 +1,119 @@
+import { expect, test } from 'bun:test'
+import { cp, mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+
+// The shipped package interface is the seam: real builds and archives, an
+// isolated node_modules, and a strict consumer with no framework source paths.
+// This catches leaked declaration dependencies; runtime release effects have
+// their own owned-registry fixtures.
+test('packed native release interfaces compile without the framework model graph', async () => {
+  const framework = join(import.meta.dir, '../..')
+  const repository = join(framework, '../../..')
+  const runtime = join(framework, '../runtime')
+  await mkdir(runtime, { recursive: true })
+  const workspace = await mkdtemp(join(runtime, 'release-declaration-build-'))
+  const consumer = await mkdtemp(join(tmpdir(), 'stacks-release-declaration-consumer-'))
+  const home = join(consumer, 'home')
+  await mkdir(home)
+  const environment = {
+    PATH: process.env.PATH,
+    HOME: home,
+    APP_ENV: 'test',
+    SystemRoot: process.env.SystemRoot,
+    NPM_CONFIG_USERCONFIG: join(home, '.npmrc'),
+    NPM_CONFIG_CACHE: join(home, 'npm-cache'),
+    BUN_INSTALL_CACHE_DIR: join(home, 'bun-cache'),
+  }
+  await writeFile(environment.NPM_CONFIG_USERCONFIG, '')
+  function run(args: string[], cwd: string): string {
+    const result = Bun.spawnSync(args, { cwd, env: environment, stdout: 'pipe', stderr: 'pipe', timeout: 45_000 })
+    const output = result.stdout.toString() + result.stderr.toString()
+    expect(result.exitCode, output.slice(-12_000)).toBe(0)
+    return output
+  }
+  try {
+    await symlink(join(framework, 'build'), join(workspace, 'build'), 'dir')
+    await writeFile(join(workspace, 'tsconfig.json'), JSON.stringify({ compilerOptions: { target: 'ESNext', module: 'ESNext', moduleResolution: 'bundler' } }))
+    for (const name of ['types', 'actions']) {
+      const source = join(framework, name), output = join(workspace, name)
+      await mkdir(output)
+      await cp(join(source, 'src'), join(output, 'src'), { recursive: true })
+      await cp(join(source, 'package.json'), join(output, 'package.json'))
+      await cp(join(source, 'build.ts'), join(output, 'build.ts'))
+      await writeFile(join(output, 'tsconfig.json'), JSON.stringify({ extends: join(source, 'tsconfig.json') }))
+      run([process.execPath, 'run', 'build'], output)
+      run(['node', join(framework, '../scripts/normalize-workspace-deps-for-publish'), join(output, 'package.json'), join(framework, '..')], repository)
+      const archive = join(workspace, `${name}.tgz`)
+      run([process.execPath, 'pm', 'pack', '--ignore-scripts', '--filename', archive], output)
+      const installed = join(consumer, 'node_modules/@stacksjs', name)
+      await mkdir(installed, { recursive: true })
+      // Read the real tar payload, rather than substituting source files or
+      // resolving undeclared framework packages from the monorepo.
+      const files = await new Bun.Archive(await Bun.file(archive).arrayBuffer()).files()
+      for (const [path, file] of files) {
+        expect(path.startsWith('package/')).toBe(true)
+        const relative = path.slice('package/'.length)
+        const destination = join(installed, relative)
+        await mkdir(join(destination, '..'), { recursive: true })
+        await Bun.write(destination, file)
+      }
+    }
+    await writeFile(join(consumer, 'package.json'), JSON.stringify({ name: 'native-release-interface-consumer', private: true, type: 'module' }))
+    await writeFile(join(consumer, 'tsconfig.json'), JSON.stringify({
+      compilerOptions: { strict: true, skipLibCheck: false, noEmit: true, target: 'ESNext', module: 'ESNext', moduleResolution: 'bundler', lib: ['ESNext', 'DOM'], types: [] },
+      files: ['consumer.ts'],
+    }))
+    await writeFile(join(consumer, 'consumer.ts'), `
+import type { LibraryConfig, LibraryReleaseOptions } from '@stacksjs/types/library'
+import { planNativeLibraryRelease } from '@stacksjs/actions/library/release-plan'
+import { prepareNativeLibraryRelease, publishNativeLibraryRelease, readbackNativeLibraryRelease } from '@stacksjs/actions/library/release-lifecycle'
+import { resolveLibraryRegistryReadAuth } from '@stacksjs/actions/library/release-registry-auth'
+const release: LibraryReleaseOptions = { publisher: 'bun', distTag: 'alpha' }
+const config: LibraryConfig = { releaseable: true, repository: 'example/widgets', release, packages: [{ name: '@example/widgets', kind: 'functions', registry: 'npm' }] }
+// @ts-expect-error Only supported publishers can be configured.
+const invalid: LibraryReleaseOptions = { publisher: 'unsupported' }
+const auth = resolveLibraryRegistryReadAuth({}, { NPM_READ_TOKEN: 'synthetic-read-only' })
+const registry: string | undefined = auth?.registry
+// @ts-expect-error Registry read tokens are strings.
+resolveLibraryRegistryReadAuth({ readAuth: { registry: 'https://registry.example.test', token: 42 } }, {})
+async function check() {
+  const plan = await planNativeLibraryRelease({ cwd: '.', config })
+  const version: string | undefined = plan?.packages[0]?.version
+  const prepared = await prepareNativeLibraryRelease({ cwd: '.', directory: 'retained', dryRun: true })
+  if (prepared.prepared) {
+    const preparedVersion: string | undefined = prepared.candidate.packages[0]?.version
+    // @ts-expect-error Prepared candidate versions are strings.
+    const invalidVersion: number = prepared.candidate.packages[0]!.version
+    void [preparedVersion, invalidVersion]
+  }
+  const receipt = await readbackNativeLibraryRelease({ cwd: '.', directory: 'retained' })
+  const integrity: string | undefined = receipt.packages[0]?.integrity
+  const published = await publishNativeLibraryRelease({ cwd: '.', directory: 'retained', dryRun: true, readAuth: auth })
+  const publishedVersion: string | undefined = published.packages[0]?.version
+  // @ts-expect-error Archive identities remain typed at the emitted interface.
+  const invalidIntegrity: number = receipt.packages[0]!.integrity
+  return [version, integrity, publishedVersion, invalidIntegrity]
+}
+void [config, invalid, registry, check]
+`)
+    run([join(repository, 'node_modules/.bin/tsc'), '-p', join(consumer, 'tsconfig.json')], consumer)
+    await writeFile(join(consumer, 'runtime.ts'), `
+import assert from 'node:assert/strict'
+assert.equal(Bun.resolveSync('@stacksjs/types/library', import.meta.dir), import.meta.dir + '/node_modules/@stacksjs/types/dist/library.js')
+await import('@stacksjs/types/library')
+const { resolveLibraryRegistryReadAuth } = await import('@stacksjs/actions/library/release-registry-auth')
+assert.equal(resolveLibraryRegistryReadAuth({}, { NPM_READ_TOKEN: 'synthetic-read-only' }).registry, 'https://registry.npmjs.org')
+`)
+    run([process.execPath, 'runtime.ts'], consumer)
+    run(['node', '--input-type=module', '--eval', `
+await import('@stacksjs/types/library')
+const { resolveLibraryRegistryReadAuth } = await import('@stacksjs/actions/library/release-registry-auth')
+if (resolveLibraryRegistryReadAuth({}, { NPM_READ_TOKEN: 'synthetic-read-only' }).registry !== 'https://registry.npmjs.org') throw new Error('Missing public registry interface')
+`], consumer)
+  }
+  finally {
+    await rm(workspace, { recursive: true, force: true })
+    await rm(consumer, { recursive: true, force: true })
+  }
+}, 120_000)

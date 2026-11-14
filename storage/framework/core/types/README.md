@@ -2,6 +2,26 @@
 
 This package contains the Stacks TypeScript types.
 
+## Library configuration
+
+The library entrypoint provides configuration types for functions, components,
+web components and their native release lifecycle:
+
+```ts
+import type { LibraryConfig } from '@stacksjs/types/library'
+
+export default {
+  repository: 'example/widgets',
+  releaseable: true,
+  release: { publisher: 'bun', distTag: 'alpha' },
+  packages: [{ name: '@example/widgets', kind: 'functions', registry: 'npm' }],
+} satisfies LibraryConfig
+```
+
+Its declarations depend only on the library configuration types and component
+tag metadata. The same public subpath includes an executable empty module for
+tools that resolve configuration entrypoints at runtime.
+
 ## ☘️ Features
 
 wip

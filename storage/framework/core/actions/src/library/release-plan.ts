@@ -1,4 +1,4 @@
-import type { LibraryConfig, LibraryReleaseOptions } from '@stacksjs/types'
+import type { LibraryConfig, LibraryReleaseOptions } from '@stacksjs/types/library'
 import { lstat, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { incrementVersion, isReleaseType, isValidVersion } from '@stacksjs/bumpx'

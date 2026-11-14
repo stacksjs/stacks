@@ -1,4 +1,4 @@
-import type { LibraryConfig } from '@stacksjs/types'
+import type { LibraryConfig } from '@stacksjs/types/library'
 import type { ResolvedLibraryPackage } from './packages'
 
 export interface LibraryManifest {
