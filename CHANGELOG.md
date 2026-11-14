@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.589...v0.75.590)
+
+## 🐛 Bug Fixes
+
+- **i18n**: use the framework STX dependency cohort ([8616758](https://github.com/stacksjs/stacks/commit/8616758)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.588...v0.75.589)
 
 ## 🐛 Bug Fixes
