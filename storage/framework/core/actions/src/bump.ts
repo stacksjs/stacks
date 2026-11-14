@@ -7,6 +7,7 @@ import { describeGitHubRelease, publishGitHubRelease } from './github-release'
 import { pantryLockViolations } from './pantry-lock'
 import { resolvePantryToolchain } from './pantry-toolchain'
 import { releasePushTarget } from './release-push-target'
+import { planNativeLibraryRelease } from './library/release-plan'
 import { generateChangelog, loadLogsmithConfig } from '@stacksjs/logsmith'
 import { existsSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
@@ -92,7 +93,8 @@ async function git(args: string[], cwd = p.projectPath(), options: { throwOnErro
   })
 }
 
-const pushTarget = isDryRun ? undefined : releasePushTarget(p.projectPath(), isFrameworkRelease ? 'main' : undefined)
+const libraryPlan = isFrameworkRelease ? undefined : await planNativeLibraryRelease({ cwd: p.projectPath(), bump: resolvedBumpArg ?? undefined, preid: options?.preid })
+const pushTarget = isDryRun ? undefined : releasePushTarget(p.projectPath(), isFrameworkRelease ? 'main' : libraryPlan?.sourceCi.branch)
 
 /**
  * Whether a .gitignore rule covers this path.

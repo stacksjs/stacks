@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **388 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **392 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -60,7 +60,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `publish` | 8 |
 | `queue` | 21 |
 | `realtime` | 2 |
-| `release` | 6 |
+| `release` | 10 |
 | `route` | 1 |
 | `scaffold` | 1 |
 | `schedule` | 6 |
@@ -5028,9 +5028,25 @@ Release a new version of your libraries/packages
 | `--dry-run` | Run the release without actually releasing | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--bump` | Non-interactive bump: patch \| minor \| major \| prepatch \| preminor \| premajor \| prerelease \| pre \| release \| build \| calendar \| x.y.z | value, required | - |
-| `--preid` | Prerelease channel, for example beta or rc | value, required | - |
+| `--preid` | Prerelease version identifier, for example beta or rc (registry channel is library.release.distTag) | value, required | - |
 | `--skip-github-release` | Push the tag without creating its GitHub release | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `release:accept`
+
+Accept exact successful source CI and download its original library candidate
+
+- Usage: `$ buddy release:accept`
+- Namespace: `release`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--directory` | Retained native library candidate directory | value, required | - |
+| `--tag` | Actual release tag (defaults to GITHUB_REF_NAME) | value, required | - |
+| `--run-id` | Exact source CI run for a historical readback or retry | value, required | - |
+| `--historical` | Read-only acquisition using current source policy, independent of current public package definitions | boolean, optional | `false` |
 
 ### `release:desktop`
 
@@ -5071,6 +5087,7 @@ Create the GitHub release for a pushed tag (default: the newest), with the chang
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
+| `--assets` | Attach comma-separated immutable native JSON receipts to the release | value, required | - |
 | `--dry-run` | Print the release instead of creating it | boolean, optional | `false` |
 
 ### `release:ios`
@@ -5110,6 +5127,48 @@ Print the tester notes of a mobile release tag (default: the newest v*-build.* t
 | `--wait` | With --testflight: wait this long for the build to appear (default 60) | value, optional | - |
 | `--notes` | Use this text instead | value, required | - |
 | `--notes-file` | Read the text from a file instead | value, required | - |
+
+### `release:prepare`
+
+Build, check and retain the exact source library candidate for normal CI
+
+- Usage: `$ buddy release:prepare`
+- Namespace: `release`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--directory` | Retained native library candidate directory | value, required | - |
+| `--dry-run` | Validate the real library plan without writing files | boolean, optional | `false` |
+
+### `release:publish`
+
+Publish only accepted original archives and verify actual registry bytes and tags
+
+- Usage: `$ buddy release:publish`
+- Namespace: `release`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--directory` | Retained native library candidate directory | value, required | - |
+| `--dry-run` | Validate retained publisher input without uploading | boolean, optional | `false` |
+
+### `release:readback`
+
+Verify retained historical library bytes using only the current verifier
+
+- Usage: `$ buddy release:readback`
+- Namespace: `release`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--directory` | Retained native library candidate directory | value, required | - |
+| `--output` | Save the read-only registry verification receipt | value, required | - |
 
 ### `release:testflight`
 

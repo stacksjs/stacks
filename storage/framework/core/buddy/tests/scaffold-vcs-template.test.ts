@@ -112,7 +112,7 @@ describe('the app CI template is app-shaped (#2239)', () => {
     // unvendor, so any file mentioning it is broken in every app that does not
     // pass --with-core.
     const offenders = appTemplateFiles
-      .filter(file => readFileSync(file, 'utf8').includes('storage/framework'))
+      .filter(file => /storage\/framework\/(?!runtime\/)/.test(readFileSync(file, 'utf8')))
       .map(file => file.slice(APP_VCS.length + 1))
 
     expect(offenders).toEqual([])

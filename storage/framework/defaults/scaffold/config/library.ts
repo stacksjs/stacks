@@ -18,7 +18,9 @@ export default {
   author: '',
   contributors: [],
   defaultLanguage: 'en',
-  releaseable: true,
+  // Enable after choosing your own public packages, repository and registry.
+  // Local `buddy build:libs` remains available for the sample packages below.
+  releaseable: false,
 
   /**
    * One `resources/` tree, any number of npm packages.

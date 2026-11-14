@@ -16,14 +16,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   lint:
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-      fail-fast: false
-
-    runs-on: ${{ matrix.os }}
+    name: Lint
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
@@ -51,12 +50,8 @@ jobs:
         run: bun buddy lint
 
   typecheck:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-      fail-fast: false
+    name: Typecheck
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
@@ -87,12 +82,9 @@ jobs:
         run: bun buddy test:types
 
   test:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-      fail-fast: false
+    name: Test
+    needs: [lint, typecheck]
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
@@ -126,5 +118,21 @@ jobs:
       - name: Migrate the database
         run: bun buddy migrate
 
+      # Build once before tests which consume compiled libraries/hosted assets.
+      # No-library applications are an explicit native no-op.
+      - name: Prepare Library Candidate
+        id: library
+        run: bun buddy release:prepare
+
       - name: Test Suite
         run: bun run test
+
+      # This upload is reached only after lint, types and the actual tests pass.
+      - name: Retain Tested Library Candidate
+        if: steps.library.outputs.prepared == 'true' && steps.library.outputs.source_eligible == 'true' && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: stacks-library-candidate
+          path: storage/framework/runtime/library-release/
+          if-no-files-found: error
+          retention-days: 30

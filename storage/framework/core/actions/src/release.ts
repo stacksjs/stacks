@@ -1,4 +1,6 @@
 #!/usr/bin/env bun
+import { planNativeLibraryRelease } from './library/release-plan'
+import { selectNativeLibraryReleaseVersion } from './library/release-selection'
 import { parseOptions } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
 import { Action } from '@stacksjs/enums'
@@ -45,6 +47,18 @@ for (const [k, v] of Object.entries(raw)) {
 // rather than before the tag, which is a re-tag: strictly cheaper than
 // corrupting the working tree.
 const isDryRun = passthrough.dryRun === true || passthrough.dryRun === 'true'
+const manifest = await Bun.file(projectPath('package.json')).json()
+const frameworkRelease = manifest.name === 'stacks' && await Bun.file(projectPath('storage/framework/core/package.json')).exists()
+if (!frameworkRelease && !passthrough.bump) {
+  const selected = await selectNativeLibraryReleaseVersion({ cwd: projectPath(), preid: passthrough.preid?.toString() })
+  if (selected) passthrough.bump = selected
+}
+const libraryPlan = frameworkRelease ? undefined : await planNativeLibraryRelease({ cwd: projectPath(), validateWorkflow: true, bump: passthrough.bump?.toString(), preid: passthrough.preid?.toString() })
+// The tag lifecycle creates the app release after exact archives verify.
+if (libraryPlan) {
+  releasePushTarget(projectPath(), libraryPlan.sourceCi.branch)
+  passthrough.skipGithubRelease = true
+}
 const actions: Action[] = isDryRun ? [Action.Bump] : [Action.GenerateLibraryEntries, Action.Bump]
 if (!isDryRun) {
   await assertPublicationAllowed({ cwd: projectPath(), channel: 'github-release' })

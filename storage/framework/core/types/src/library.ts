@@ -59,6 +59,9 @@ export interface LibraryOptions {
 
   releaseable: boolean
 
+  /** Immutable native release lifecycle; omitted fields use the default app CI. */
+  release?: LibraryReleaseOptions
+
   /**
    * The default language used within your stack.
    */
@@ -101,6 +104,23 @@ export interface LibraryOptions {
    * ```
    */
   packages: LibraryPackageOptions[]
+}
+
+/** Configuration shared by normal Buddy release and its CI/resume phases. */
+export interface LibraryReleaseOptions {
+  publisher?: 'bun' | 'npm' | 'pantry'
+  /** Explicit npm distribution channel; prereleases require a non-latest tag. */
+  distTag?: string
+  /** Named package.json scripts run after the native build, before retention. */
+  checks?: string[]
+  sourceCi?: {
+    workflow: string
+    branch: string
+    /** Exact successful job names, including matrix suffixes when used. */
+    requiredJobs: string[]
+    /** Bounded wait for fresh main CI after the release tag; default 30. */
+    timeoutMinutes?: number
+  }
 }
 
 /**
