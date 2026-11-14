@@ -36,6 +36,10 @@ export interface TwilioSendResult extends SmsSendResult {
 
 export interface TwilioReceipt {
   messageId: string
+  from?: string
+  to?: string
+  createdAt?: string
+  body?: string
   status: SmsStatus
   price?: string | null
   priceMicros?: number
@@ -300,7 +304,7 @@ export class TwilioDriver implements SmsDriver, SmsVerificationDriver {
     const data = await response.json() as TwilioMessageResponse
     if (data.sid !== messageId)
       throw new Error('Twilio receipt SID mismatch')
-    return { messageId: data.sid, status: mapTwilioStatus(data.status), price: data.price ?? undefined,
+    return { messageId: data.sid, from: data.from, to: data.to, createdAt: data.date_created, body: data.body, status: mapTwilioStatus(data.status), price: data.price ?? undefined,
       priceMicros: twilioPriceMicros(data.price), currency: data.price_unit,
       segments: data.num_segments ? Number.parseInt(data.num_segments, 10) : undefined }
   }
