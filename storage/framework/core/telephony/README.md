@@ -51,7 +51,9 @@ resource price may arrive after the completion callback and does not include
 separate child legs, recordings, transcription, number rental or AI charges.
 Aggregate the actual relevant resources in the application before settling.
 
-`configureNumber(sid, voiceUrl, options)` changes inbound routing. `releaseNumber` releases a purchased number. `getCall`, `listCalls`, `redirectCall` and `endCall` retrieve or control calls. To answer an incoming call, return `voiceResponse(...)` as `text/xml` from the authenticated callback. Use `redirectCall` to change instructions for an existing call. `listNumbers(phoneNumber?)` and `listCalls({from?,to?})` return the first page, at most 50 results. Filter exact numbers when reconciling; eventual-consistency results cannot prove that an ambiguous outbound call was never created.
+`configureNumber(sid, voiceUrl, options)` changes inbound voice routing.
+`configureSmsNumber(sid, smsUrl, options)` sets the HTTPS inbound SMS webhook
+using POST without changing voice routing; it uses the same durable journal. `releaseNumber` releases a purchased number. `getCall`, `listCalls`, `redirectCall` and `endCall` retrieve or control calls. To answer an incoming call, return `voiceResponse(...)` as `text/xml` from the authenticated callback. Use `redirectCall` to change instructions for an existing call. `listNumbers(phoneNumber?)` and `listCalls({from?,to?})` return the first page, at most 50 results. Filter exact numbers when reconciling; eventual-consistency results cannot prove that an ambiguous outbound call was never created.
 
 Each write requires a stable `operationKey` and a journal supplied at construction. Twilio Calls/IncomingPhoneNumbers are **not assumed** to implement an idempotency header. The adapter sends one request and never retries it automatically:
 

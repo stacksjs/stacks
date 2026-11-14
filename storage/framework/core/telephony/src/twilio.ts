@@ -32,7 +32,7 @@ function resourceSid(value: unknown, prefix: string): string {
 }
 function numberResult(value: unknown): PhoneNumber {
   const row = object(value)
-  return { sid: resourceSid(row.sid, 'PN'), phoneNumber: text(row.phone_number), voiceUrl: row.voice_url == null ? null : text(row.voice_url) }
+  return { sid: resourceSid(row.sid, 'PN'), phoneNumber: text(row.phone_number), voiceUrl: row.voice_url == null ? null : text(row.voice_url), smsUrl: row.sms_url == null ? null : text(row.sms_url) }
 }
 function duration(value: unknown): number | null {
   if (value === undefined || value === null) return null
@@ -171,6 +171,10 @@ export class TwilioTelephony implements Telephony {
 
   async configureNumber(numberSid: string, voiceUrl: string, options: WriteOptions): Promise<PhoneNumber> {
     return this.write(`IncomingPhoneNumbers/${sid(numberSid, 'PN')}.json`, 'POST', new URLSearchParams({ VoiceUrl: secureUrl(voiceUrl), VoiceMethod: 'POST' }), options, numberResult)
+  }
+
+  async configureSmsNumber(numberSid: string, smsUrl: string, options: WriteOptions): Promise<PhoneNumber> {
+    return this.write(`IncomingPhoneNumbers/${sid(numberSid, 'PN')}.json`, 'POST', new URLSearchParams({ SmsUrl: secureUrl(smsUrl), SmsMethod: 'POST' }), options, numberResult)
   }
 
   async releaseNumber(numberSid: string, options: WriteOptions): Promise<void> {

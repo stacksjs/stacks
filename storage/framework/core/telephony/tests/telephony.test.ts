@@ -146,3 +146,19 @@ test('unavailable cost remains null; malformed or unsupported precision is rejec
     else await expect(provider.getCall(callSid)).rejects.toMatchObject({ code: 'invalid_response' })
   }
 })
+
+test('configures SMS routing with the same durable write journal and keeps voice routing intact', async () => {
+  let writes = 0
+  const provider = new TwilioTelephony({ accountSid, authToken: 'test-only', journal: new MemoryOperationJournal(), fetch: async (url, init) => {
+    writes++
+    expect(url).toEndWith(`IncomingPhoneNumbers/${numberSid}.json`)
+    const body = new URLSearchParams(String(init?.body))
+    expect(body.get('SmsUrl')).toBe('https://app.example/sms')
+    expect(body.get('SmsMethod')).toBe('POST')
+    expect(body.has('VoiceUrl')).toBe(false)
+    return Response.json({ ...number, sms_url: body.get('SmsUrl') })
+  } })
+  expect((await provider.configureSmsNumber(numberSid, 'https://app.example/sms', { operationKey: 'sms-configure' })).smsUrl).toBe('https://app.example/sms')
+  await provider.configureSmsNumber(numberSid, 'https://app.example/sms', { operationKey: 'sms-configure' })
+  expect(writes).toBe(1)
+})

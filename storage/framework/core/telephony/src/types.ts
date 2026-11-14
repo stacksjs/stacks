@@ -12,6 +12,7 @@ export interface PhoneNumber {
   sid: string
   phoneNumber: string
   voiceUrl: string | null
+  smsUrl?: string | null
 }
 export interface Call {
   sid: string
@@ -51,6 +52,7 @@ export interface Telephony {
   provisionNumber: (input: ProvisionNumber, options: WriteOptions) => Promise<PhoneNumber>
   releaseNumber: (sid: string, options: WriteOptions) => Promise<void>
   configureNumber: (sid: string, voiceUrl: string, options: WriteOptions) => Promise<PhoneNumber>
+  configureSmsNumber: (sid: string, smsUrl: string, options: WriteOptions) => Promise<PhoneNumber>
   createCall: (input: CreateCall, options: WriteOptions) => Promise<Call>
   getCall: (sid: string) => Promise<Call>
   setCallTimeLimit: (sid: string, seconds: number, options: WriteOptions) => Promise<Call>
