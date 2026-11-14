@@ -1,5 +1,27 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.585...v0.75.586)
+
+## ✨ Features
+
+- resolve screenshot routes from existing application fixtures ([3c4330b](https://github.com/stacksjs/stacks/commit/3c4330b)) _(by Chris Breuer)_
+- automate model-aware documentation screenshots with Bun WebView ([c221de4](https://github.com/stacksjs/stacks/commit/c221de4)) _(by Chris Breuer)_
+
+## 🐛 Bug Fixes
+
+- distinguish cyclic fixture models from blocked dependants ([565438a](https://github.com/stacksjs/stacks/commit/565438a)) _(by Chris Breuer)_
+- identify the failing phase in screenshot capture reports ([ec1bcb3](https://github.com/stacksjs/stacks/commit/ec1bcb3)) _(by Chris Breuer)_
+- isolate screenshot workers from application preload hooks ([7ca5ebf](https://github.com/stacksjs/stacks/commit/7ca5ebf)) _(by Chris Breuer)_
+- synchronize screenshot dependencies in the Pantry workspace lock ([2005e9d](https://github.com/stacksjs/stacks/commit/2005e9d)) _(by Chris Breuer)_
+
+## 🔧 Chores
+
+- **deps**: ts-cloud 0.16.129, whose renewal run reports uncovered hostnames ([73de02e](https://github.com/stacksjs/stacks/commit/73de02e)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.584...v0.75.585)
 
 ## 🐛 Bug Fixes
