@@ -1,5 +1,5 @@
 import type { TableNames } from '@stacksjs/types'
-import { randomBytes } from 'node:crypto'
+import { randomInt } from 'node:crypto'
 import { db } from '@stacksjs/database/runtime'
 import { slugify } from 'ts-slug'
 
@@ -66,17 +66,17 @@ export async function uniqueSlug(value: string, options?: SlugifyOptions): Promi
   // slug instead of looping forever — collisions past 1000 attempts are
   // almost always pathological (test data fixtures, mass imports).
   //
-  // Uses crypto.randomBytes rather than Math.random because slugs end up
+  // Uses crypto.randomInt rather than Math.random because slugs end up
   // in URLs and an attacker who can enumerate "next likely" slugs could
   // probe for unsaved drafts or scraping-blocked pages by guessing the
-  // suffix. The 6 raw bytes encode to 8 base36 chars of unguessable
-  // entropy — same length as the previous Math.random suffix.
+  // suffix. A uniform sample from the eight-digit base36 space is padded
+  // to exactly eight characters; its range is below randomInt's 2^48 bound.
   return claim(`${baseSlug}-${randomSlugPart()}`)
 }
 
-/** Eight unguessable lowercase letters and digits, as near as base64url allows. */
+/** Eight uniformly sampled cryptographic base36 digits, including leading zeros. */
 function randomSlugPart(): string {
-  return randomBytes(6).toString('base64url').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 8)
+  return randomInt(36 ** 8).toString(36).padStart(8, '0')
 }
 
 // Re-export the original slugify for convenience

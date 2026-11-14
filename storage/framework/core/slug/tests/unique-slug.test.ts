@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { uniqueSlug } from '../src/unique'
+import { assertIsolatedOk, runIsolated } from '../../testing/src/isolated'
 
 /**
  * `uniqueSlug` inside a batch (stacksjs/stacks#3005).
@@ -51,8 +52,20 @@ describe('uniqueSlug for titles ts-slug had no letters for', () => {
   it('gives a title with no letters or digits a random slug', async () => {
     const first = await uniqueSlug('!!!', { table: 'posts', column: 'slug', connection: connection(new Set()) })
     const second = await uniqueSlug('🎉', { table: 'posts', column: 'slug', connection: connection(new Set()) })
-    expect(first).toMatch(/^[a-z0-9]{6,8}$/)
-    expect(second).toMatch(/^[a-z0-9]{6,8}$/)
+    expect(first).toMatch(/^[a-z0-9]{8}$/)
+    expect(second).toMatch(/^[a-z0-9]{8}$/)
     expect(first).not.toBe(second)
   })
+})
+
+// Public slug results with controlled cryptographic samples catch encoding loss
+// and bounded-collision claims; the child prevents crypto mocks leaking to peers.
+it('keeps eight base36 digits at both entropy bounds and claims collision fallbacks', async () => {
+  const result = await runIsolated(`${import.meta.dir}/fixtures/random-entropy.ts`, {
+    cwd: import.meta.dir,
+    envFile: false,
+    preload: [],
+    timeoutMs: 15000,
+  })
+  assertIsolatedOk(result, 'uniqueSlug bounded crypto entropy OK')
 })
