@@ -38,6 +38,7 @@ export * from './formatter'
 export * from './pluralization'
 export * from './loader'
 export * from './types'
+export { useI18n } from './stx'
 
 // Re-export the file-loading and type-generation surface from
 // `@stacksjs/ts-i18n`. The library handles disk loading (YAML / TS /
@@ -71,7 +72,6 @@ export {
   hasTranslation,
   I18n,
   createI18n,
-  useI18n,
 } from './translator'
 
 export {

@@ -180,6 +180,9 @@ export interface I18nInstance {
    */
   setLocale: (locale: string) => void
 
+  /** Subscribe to locale or message changes; call the return value to unsubscribe. */
+  subscribe: (listener: () => void) => () => void
+
   /**
    * Add translations for a locale
    */
