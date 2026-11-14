@@ -38,3 +38,11 @@ export { storeWebSocketEvent } from './ws'
 // unauthed.
 export { setWsAuthenticator, getWsAuthenticator } from './ws'
 export type { WsAuthenticator, WsAuthResult } from './ws'
+
+// Explicit awaited durable replay over application-owned, model-generated SQL.
+// Existing synchronous broadcast/replay APIs remain in-memory and unchanged.
+export { createMemoryDurableReplayStore, DurableReplayError } from './durable-replay'
+export type { DurableReplayAppend, DurableReplayCursor, DurableReplayMessage, DurableReplayOptions, DurableReplayPage, DurableReplayRead, DurableReplayStore, MemoryDurableReplayOptions } from './durable-replay'
+export { createSqlDurableReplayStore } from './durable-replay-sql'
+export type { ReplaySqlQuery, SqlDurableReplayOptions } from './durable-replay-sql'
+export { createDurableReplayResponse, publishDurableReplay } from './durable-replay-http'

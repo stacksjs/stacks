@@ -1,37 +1,31 @@
 # Stacks Realtime
 
-wip
+Native WebSocket broadcasting and authenticated HTTP event streams, with
+opt-in process-local replay or explicit durable SQL replay.
 
-## ☘️ Features
+```ts
+import { emit, createBroadcastResponse } from '@stacksjs/realtime'
 
-wip
-
-- ⚡️
-
-wip
-
-## 🤖 Usage
-
-wip
-
-```bash
-bun install -d @stacksjs/realtime
+emit('orders.42', 'changed', { orderId: 42 }, { private: true })
 ```
 
-Now, you can use it in your project:
+Initialize the native broadcast server/hub before emitting. Stream consumers
+supply current per-request authorization; a channel name is not authority.
 
-```js
-import realtime from '@stacksjs/realtime'
+For durable history, use `createSqlDurableReplayStore` with app-owned generated
+tables and a transaction-bound SQL adapter. Await `append` before notifying.
+`createDurableReplayResponse` checks authorization before and after replay.
+Existing synchronous broadcasting and `replaySince` remain unchanged.
 
-// wip
-```
+The [durable replay contract and model examples](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/docs/durable-replay.md)
+cover atomic per-channel sequences, incarnation-bound cursors, bounded retention
+and idempotency, response gaps, and the absence of live cluster fan-out or
+exactly-once delivery. The deterministic fake is `createMemoryDurableReplayStore`.
 
-Learn more in the docs.
-
-## 🧪 Testing
+Run the package tests from the framework root:
 
 ```bash
-bun test
+bun test ./storage/framework/core/realtime/tests
 ```
 
 ## 📈 Changelog

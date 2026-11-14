@@ -1,6 +1,6 @@
 ---
 name: stacks-realtime
-description: Use when implementing real-time features in Stacks - WebSocket broadcasting, public/private/presence channels, emit to users, the Channel class, broadcast discovery, server lifecycle, or realtime configuration. Covers @stacksjs/realtime and config/realtime.ts.
+description: Use when implementing real-time features in Stacks - WebSocket broadcasting, durable SQL replay, public/private/presence channels, emit to users, the Channel class, broadcast discovery, server lifecycle, or realtime configuration. Covers @stacksjs/realtime and config/realtime.ts.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -407,3 +407,32 @@ STX's `useBroadcastStream({ request, endpoint, onMessage, onConnected })` makes
 fresh authenticated requests using the application's injected transport, reconnects
 with backoff, and cancels on `close()`. Re-read durable state in `onConnected`;
 this stream does not promise durable replay. Credentials stay in HTTP headers.
+
+
+## Durable SQL replay (explicit opt-in)
+
+`createSqlDurableReplayStore({dialect,tables,scope,transaction,...limits})` uses
+application-owned, model-generated channel/event tables. The callback supplies
+one genuinely transaction-bound query handle; checkpoint UPDATE locks serialize
+append, retention and replay. Persisted incarnation/sequence cursors detect
+channel recreation; gaps require domain snapshot resynchronization. Existing
+synchronous `setReplayBuffer`/`emit` behavior is unchanged.
+
+`createMemoryDurableReplayStore` is the deterministic fake for this separate
+contract. `publishDurableReplay({store,input,notify})` commits before notifying;
+hints can repeat and have no exactly-once/network/fan-out guarantee.
+`createDurableReplayResponse({store,channel,after,authorize})` requires current
+per-request/channel authorization before and after storage. Scope columns and
+cursor strings never grant authority. Applications own visibility and channel
+selection; do not replay private messages from a browser-supplied channel name.
+
+Event idempotency lasts only while the event remains retained. JSON payload,
+page, TTL and count bounds are validated; retention records a durable prefix
+floor. Checkpoints retain metadata indefinitely, so applications bound channel
+creation and schedule inactive pruning. Same-policy workers are required.
+No schema is installed by importing realtime and no runtime DDL is performed.
+Read `core/realtime/docs/durable-replay.md` for the exact SQL/transaction contract,
+bounds, crash/retention limitations and native model examples under
+`core/realtime/tests/fixtures/replay-app`. Retained tests are
+`core/realtime/tests/durable-replay*.test.ts`, including independent SQLite and
+PostgreSQL workers, rollback/SIGKILL, restart, scope/reset and HTTP revocation.

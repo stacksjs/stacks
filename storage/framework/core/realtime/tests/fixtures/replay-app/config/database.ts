@@ -1,0 +1,1 @@
+export default { default: process.env.DB_CONNECTION || 'sqlite', queryLogging: { enabled: false }, models: { includeFrameworkDefaults: false }, connections: { sqlite: { database: process.env.DB_DATABASE_PATH || ':memory:' } } }

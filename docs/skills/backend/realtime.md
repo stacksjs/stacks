@@ -1,12 +1,12 @@
 ---
 title: "Realtime skill"
-description: "Use when implementing real-time features in Stacks - WebSocket broadcasting, public/private/presence channels, emit to users, the Channel class, broadcast discovery, server lifecycle, or realtime configuration. Covers @stacksjs/realtime and config/realtime.ts."
+description: "Use when implementing real-time features in Stacks - WebSocket broadcasting, durable SQL replay, public/private/presence channels, emit to users, the Channel class, broadcast discovery, server lifecycle, or realtime configuration. Covers @stacksjs/realtime and config/realtime.ts."
 ---
 # Realtime
 
 `stacks-realtime` · Native Stacks · model-invoked
 
-Use when implementing real-time features in Stacks - WebSocket broadcasting, public/private/presence channels, emit to users, the Channel class, broadcast discovery, server lifecycle, or realtime configuration. Covers @stacksjs/realtime and config/realtime.ts.
+Use when implementing real-time features in Stacks - WebSocket broadcasting, durable SQL replay, public/private/presence channels, emit to users, the Channel class, broadcast discovery, server lifecycle, or realtime configuration. Covers @stacksjs/realtime and config/realtime.ts.
 
 Read the skill for the implementation workflow and its current signatures. The
 [Native capabilities](/skills/platform/native) catalog maps the package to
@@ -25,6 +25,7 @@ source and retained evidence; driver limits are explicit.
 - config/realtime.ts
 - Gotchas
 - Capability evidence
+- Durable SQL replay (explicit opt-in)
 
 ## Using it
 
