@@ -310,6 +310,7 @@ export async function captureScreenshots(options: ScreenshotOptions = {}): Promi
   }
   await mkdir(output, { recursive: true })
   const temporary = await mkdtemp(join(output, '.stacks-screenshots-'))
+  await Bun.write(join(temporary, 'bunfig.toml'), 'preload = []\n')
   try {
     for (const profile of Object.keys(config.profiles ?? { default: {} })) {
       const resultFile = join(temporary, `${profile}.json`)
@@ -319,7 +320,7 @@ export async function captureScreenshots(options: ScreenshotOptions = {}): Promi
       const runtime = import.meta.path.startsWith('/$bunfs/') ? Bun.which('bun') : process.execPath
       if (!runtime) throw new Error('An installed Bun is required for screenshot workers')
       const entry = import.meta.path.startsWith('/$bunfs/') ? Bun.resolveSync('@stacksjs/docs/screenshots', root) : import.meta.path
-      const worker = spawnOwnedProcess([runtime, entry, '--worker', configFile, profile, JSON.stringify({ ...options, root, staging: temporary }), resultFile], { ownerRuntime: runtime, cwd: root, env: process.env, stdin: 'ignore', stdout: 'ignore', stderr: 'ignore', ipc: (message) => {
+      const worker = spawnOwnedProcess([runtime, '--no-env-file', `--config=${join(temporary, 'bunfig.toml')}`, entry, '--worker', configFile, profile, JSON.stringify({ ...options, root, staging: temporary }), resultFile], { ownerRuntime: runtime, cwd: root, env: process.env, stdin: 'ignore', stdout: 'ignore', stderr: 'ignore', ipc: (message) => {
         const progress = message as { type?: string, result?: ScreenshotResult }
         if (progress?.type === 'screenshot-result' && progress.result) options.onProgress?.(progress.result)
       } })
