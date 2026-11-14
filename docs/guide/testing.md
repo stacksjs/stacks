@@ -570,3 +570,5 @@ coverageThreshold = {
 - [HTTP Tests](/testing/http-tests) - API testing
 - [Mocking](/testing/mocking) - Mocking guide
 - [Database Testing](/testing/database) - Database utilities
+
+For a reusable inventory of screens, roles and viewport captures, see [Automated screen documentation](/guide/screenshots). `buddy docs:screenshots` uses Bun WebView and records coverage and image hashes alongside its gallery.

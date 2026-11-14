@@ -54,6 +54,10 @@ jobs:
         env:
           STACKS_BROWSER_TESTS: '1'
         run: bun test ./storage/framework/core/testing/tests/browser.test.ts ./storage/framework/core/testing/tests/browser-shared.test.ts
+      - name: Verify native WebView documentation captures
+        env:
+          STACKS_BROWSER_TESTS: '1'
+        run: bun test ./storage/framework/core/docs/tests/screenshots.test.ts ./storage/framework/core/docs/tests/screenshot-models.test.ts
       - name: Verify repeated mid-gesture rejection and cleanup
         env:
           STACKS_BROWSER_TESTS: '1'

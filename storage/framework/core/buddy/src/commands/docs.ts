@@ -15,6 +15,35 @@ import { runTool } from './run-tool'
  * validate the framework repository's own reference artifacts.
  */
 export function docs(buddy: CLI): void {
+  buddy
+    .command('docs:screenshots', 'Capture and verify an explicit UI inventory with Bun WebView')
+    .option('--config <path>', 'Screenshot configuration path', { default: 'config/screenshots.ts' })
+    .option('--out <directory>', 'Override the output directory')
+    .option('--only <ids>', 'Comma-separated screen ids to capture')
+    .option('--viewport <names>', 'Comma-separated configured viewport names')
+    .option('--list', 'Validate screen coverage without opening a browser', { default: false })
+    .option('--check', 'Verify the complete saved inventory and image hashes', { default: false })
+    .option('--json', 'Print the inventory, model plan and capture report as JSON', { default: false })
+    .example('buddy docs:screenshots --list')
+    .example('buddy docs:screenshots --only welcome,calendar --viewport mobile')
+    .action(async (options: { config?: string, out?: string, only?: string, viewport?: string, list?: boolean, check?: boolean, json?: boolean }) => {
+      const { captureScreenshots } = await import('@stacksjs/docs/screenshots')
+      const report = await captureScreenshots({ config: options.config, outDir: options.out, only: options.only?.split(',').filter(Boolean), viewports: options.viewport?.split(',').filter(Boolean), list: options.list, check: options.check, onProgress: result => { if (!options.json) console.log(`${result.status} ${result.id}/${result.profile}/${result.viewport.name}`) } })
+      if (options.json) {
+        console.log(JSON.stringify(report, null, 2))
+        if (report.results.some(result => result.status === 'failed')) process.exitCode = 1
+        return
+      }
+      if (options.list) for (const screen of report.inventory) console.log(`${screen.id}  ${screen.path}${screen.skip ? `  [excluded: ${screen.skip}]` : ''}`)
+      if (options.list) for (const model of report.models.models) console.log(`${model.name} (${model.table || 'table inferred'}, key ${model.primaryKey}): ${model.factoryFields.length} factories, seeder count ${model.seederCount ?? 'not declared'}, parents ${model.parents.join(', ') || 'none'}, required overrides ${model.requiredWithoutFactory.join(', ') || 'none'}, sensitive fields ${model.sensitiveFields.join(', ') || 'none'}, states ${model.suggestedStates.join(', ')}`)
+      if (options.list && report.models.cycles.length) console.log(`Cyclic model dependencies: ${report.models.cycles.join(', ')}`)
+      if (options.list && report.models.externalParents.length) console.log(`Parent fixtures outside this model set: ${report.models.externalParents.join(', ')}`)
+      const failed = report.results.filter(result => result.status === 'failed')
+      for (const result of failed) console.error(`${result.id}/${result.profile}/${result.viewport.name}: ${result.error}`)
+      console.log(options.list ? 'Screenshot configuration and template coverage verified.' : `${report.results.filter(result => result.status === 'captured').length} captures, ${failed.length} failed, ${report.results.filter(result => result.status === 'skipped').length} explained exclusions.`)
+      if (failed.length) process.exitCode = 1
+    })
+
   for (const check of [false, true]) {
     buddy
       .command(check ? 'docs:style-guide:check' : 'docs:style-guide', check ? 'Verify generated application style guide freshness' : 'Generate a branded application component style guide')

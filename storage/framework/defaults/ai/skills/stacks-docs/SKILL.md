@@ -105,3 +105,16 @@ pages have their title, description, code blocks, navigation and valid links,
 including a changed guide and a skill page. A successful build alone does not
 prove the prose or API examples are correct. For deployment work, read
 `stacks-deploy` and verify the CI run for the pushed commit plus the live docs.
+
+## Automated screen documentation
+
+Use `buddy docs:screenshots` for an explicit UI inventory rather than one-off
+page captures. `config/screenshots.ts` uses `defineScreenshotConfig` from
+`@stacksjs/docs/screenshots`: pages describe purpose, concrete paths, profiles,
+readiness selectors, optional hooks and masks. Each profile owns a separate
+Bun WebView process. `--list` verifies template coverage without a browser;
+`--check` verifies the complete saved inventory, source/config hashes and PNG
+bytes. Failed or deliberately excluded screens remain visible in the manifest.
+Read `docs/guide/screenshots.md` for the full configuration and CI workflow.
+Use seeded accounts, keep credentials out of artifacts, review every image, and
+verify native apps separately from phone-width web captures.

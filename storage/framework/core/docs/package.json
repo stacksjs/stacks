@@ -58,8 +58,10 @@
   },
   "dependencies": {
     "@stacksjs/bunpress": "^0.2.25",
+    "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/path": "workspace:*",
+    "@stacksjs/orm": "workspace:*",
     "@stacksjs/stx": "^0.2.872"
   },
   "devDependencies": {

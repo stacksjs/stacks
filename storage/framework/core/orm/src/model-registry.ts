@@ -5,7 +5,7 @@ import { basename, extname, join } from 'node:path'
 
 export interface ModelRegistryOptions {
   userRoot: string
-  defaultsRoot: string
+  defaultsRoot?: string
   onImportError?: (file: string, error: unknown) => void
 }
 
@@ -75,7 +75,7 @@ async function loadRoot(
 export async function loadModelRegistryWithOrigins(options: ModelRegistryOptions): Promise<LoadedModelRegistry> {
   const registry: LoadedModelRegistry = { models: {}, origins: {} }
 
-  await loadRoot(options.defaultsRoot, 'default', registry, options.onImportError)
+  if (options.defaultsRoot) await loadRoot(options.defaultsRoot, 'default', registry, options.onImportError)
   await loadRoot(options.userRoot, 'app', registry, options.onImportError)
 
   return registry

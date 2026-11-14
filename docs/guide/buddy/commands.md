@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **387 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **388 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -29,7 +29,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `desktop` | 8 |
 | `dev` | 8 |
 | `dns` | 3 |
-| `docs` | 18 |
+| `docs` | 19 |
 | `domains` | 3 |
 | `email` | 7 |
 | `env` | 7 |
@@ -1783,6 +1783,32 @@ Verify native skills cover current packages and driver capabilities
 - Namespace: `docs`
 - Aliases: none
 - Arguments: none
+
+### `docs:screenshots`
+
+Capture and verify an explicit UI inventory with Bun WebView
+
+- Usage: `$ buddy docs:screenshots`
+- Namespace: `docs`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--config` | Screenshot configuration path | value, required | `"config/screenshots.ts"` |
+| `--out` | Override the output directory | value, required | - |
+| `--only` | Comma-separated screen ids to capture | value, required | - |
+| `--viewport` | Comma-separated configured viewport names | value, required | - |
+| `--list` | Validate screen coverage without opening a browser | boolean, optional | `false` |
+| `--check` | Verify the complete saved inventory and image hashes | boolean, optional | `false` |
+| `--json` | Print the inventory, model plan and capture report as JSON | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy docs:screenshots --list
+buddy docs:screenshots --only welcome,calendar --viewport mobile
+```
 
 ### `docs:snippets`
 

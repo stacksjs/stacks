@@ -36,3 +36,7 @@ bun test ./storage/framework/core/docs/tests
 ```
 
 MIT license. Contributions follow the Stacks repository conventions.
+
+## Automated UI documentation
+
+`@stacksjs/docs/screenshots` exports `defineScreenshotConfig`, `validateScreenshotConfig` and `captureScreenshots`. Run a configured inventory with `buddy docs:screenshots`; use `--list` to verify template coverage and `--check` to validate saved captures. Each authentication profile owns a separate Bun WebView worker process. See the [screen documentation guide](https://stacksjs.com/docs/guide/screenshots) for readiness hooks, role setup, masks, artifacts and CI examples.
