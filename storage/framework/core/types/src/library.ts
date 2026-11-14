@@ -240,6 +240,10 @@ export interface LibraryPackageOptions {
    *
    * A package build only compiles TypeScript, so JSON, scripts and other
    * generated data reach the tarball through here or not at all.
+   * On hosted web-component packages these explicitly published assets also
+   * retain their dist-relative paths in the immutable public revision. Do not
+   * configure private files here. Generated SSR, types and source maps are not
+   * automatically hosted. Hidden destination segments and symlinks reject.
    *
    * @example { webkit: 'dist-webkit' }
    */

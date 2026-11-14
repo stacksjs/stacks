@@ -66,6 +66,8 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@babel/parser": "^8.1.2",
+    "@babel/types": "^8.1.2",
     "@stacksjs/action-runner": "workspace:*",
     "@stacksjs/ai": "workspace:*",
     "@stacksjs/analytics": "workspace:*",

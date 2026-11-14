@@ -138,6 +138,8 @@
       "name": "@stacksjs/actions",
       "version": "0.75.591",
       "dependencies": {
+        "@babel/parser": "^8.1.2",
+        "@babel/types": "^8.1.2",
         "@stacksjs/action-runner": "workspace:*",
         "@stacksjs/ai": "workspace:*",
         "@stacksjs/analytics": "workspace:*",

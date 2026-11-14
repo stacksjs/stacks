@@ -229,3 +229,185 @@ test('hosted build paths reject hidden segments before creating a CI candidate',
   }
   finally { for (const path of [dirname(component), output, packageDir]) await rm(path, { recursive: true, force: true }) }
 })
+
+// Public builder seam catches generated-input order and immutable bytes; provider
+// publication is deliberately outside this fixture.
+test('native prebuild generates current hosted loader dependencies and literal styles exactly once', async () => {
+  const component = projectPath('resources/components/hosted-prebuild/Panel.stx')
+  const inputs = projectPath('resources/functions/hosted-prebuild')
+  const output = projectPath('public/hosted-prebuild')
+  const packageDir = projectPath('storage/framework/libs/packages/hosted-prebuild')
+  const config: LibraryConfig = { packages: [{ name: 'hosted-prebuild', kind: 'web-components', include: ['hosted-prebuild/*.stx'],
+    prebuild: 'bun resources/functions/hosted-prebuild/generate.ts', hosted: {
+      outputDir: 'public/hosted-prebuild/revisions', base: '/hosted-prebuild/revisions', entry: 'public/hosted-prebuild/elements.js',
+      styles: ['resources/functions/hosted-prebuild/generated.css'], loader: { source: 'resources/functions/hosted-prebuild/loader.ts' },
+    },
+  }] }
+  try {
+    await Bun.write(component, '<template><p>Generated inputs</p></template>')
+    await Bun.write(resolve(inputs, 'loader.ts'), "import css from './generated.css' with { type: 'text' }; export { marker } from './generated.ts'; export { css }")
+    await Bun.write(resolve(inputs, 'generate.ts'), `const root = import.meta.dir; const n = Number(await Bun.file(root + '/count').text().catch(() => '0')) + 1; await Bun.write(root + '/count', String(n)); await Bun.write(root + '/generated.ts', 'export const marker = "after-' + n + '"'); await Bun.write(root + '/generated.css', ':host { color: rgb(' + n + ', 0, 0); }')`)
+    await buildLibraryPackages({ config, compile: false })
+    expect(await Bun.file(resolve(inputs, 'count')).exists()).toBe(false)
+    for (const count of [1, 2]) {
+      const result = (await buildLibraryPackages({ config }))[0]!
+      const hosted = result.hosted!
+      const module = await import(resolve(hosted.immutableDir, 'elements.js'))
+      const css = await Bun.file(resolve(inputs, 'generated.css')).text()
+      expect(module.marker).toBe(`after-${count}`)
+      expect(module.css).toBe(css)
+      expect(await Bun.file(resolve(inputs, 'count')).text()).toBe(String(count))
+      expect(hosted.manifest.csp.styleSrc).toContain(`'sha256-${createHash('sha256').update(css).digest('base64')}'`)
+      expect(await Bun.file(resolve(hosted.immutableDir, 'bundle.js')).bytes()).toEqual(await Bun.file(resolve(result.dir, 'dist/bundle.js')).bytes())
+    }
+  }
+  finally { for (const path of [dirname(component), inputs, output, packageDir]) await rm(path, { recursive: true, force: true }) }
+}, 30_000)
+
+test('hosted browser validation distinguishes executable environment reads from literal copy', async () => {
+  const component = projectPath('resources/components/hosted-code/Panel.stx')
+  const inputs = projectPath('resources/functions/hosted-code')
+  const output = projectPath('public/hosted-code')
+  const packageDir = projectPath('storage/framework/libs/packages/hosted-code')
+  const config: LibraryConfig = { packages: [{ name: 'hosted-code', kind: 'web-components', include: ['hosted-code/*.stx'], hosted: {
+    outputDir: 'public/hosted-code/revisions', base: '/hosted-code/revisions', entry: 'public/hosted-code/elements.js', loader: { source: 'resources/functions/hosted-code/loader.ts' },
+  } }] }
+  try {
+    await Bun.write(component, '<script>const label = "process.env.SECRET"; /* Bun.env.PRIVATE */</script><template><p>Set process.env.SUPPORTHQ_KEY on the server.</p><p>{{ "Bun.env.SECRET" }}</p><p>{{ label }}</p></template>')
+    await Bun.write(resolve(inputs, 'loader.ts'), `// process.env.SECRET\nexport const copy = 'process.env.SECRET'; export const pattern = /Bun.env.SECRET/; export const literal = \`import.meta.env.SECRET\``)
+    const result = (await buildLibraryPackages({ config }))[0]!.hosted!
+    expect(await Bun.file(resolve(result.immutableDir, 'bundle.js')).text()).toContain('process.env.SUPPORTHQ_KEY')
+    for (const expression of ['process.env.SECRET', 'process["env"].SECRET', 'process[`env`].SECRET', 'globalThis.process.env.SECRET', 'Bun.env.SECRET', 'import.meta.env.SECRET', '`secret:${process.env.SECRET}`']) {
+      await Bun.write(resolve(inputs, 'dependency.ts'), `export const value = ${expression}`)
+      await Bun.write(resolve(inputs, 'loader.ts'), "export { value } from './dependency.ts'")
+      await expect(buildLibraryPackages({ config })).rejects.toThrow(/environment access/)
+    }
+    await Bun.write(resolve(inputs, 'loader.ts'), 'export const boot = true')
+    for (const source of [
+      '<script>const secret = process.env.SECRET</script><template><p>{{ secret }}</p></template>',
+      '<script client>export function secret() { return Bun.env.SECRET }</script><template><p>Private</p></template>',
+      '<template><p>{{ process.env.SECRET }}</p></template>',
+      '<template><p>{{ `secret:${process.env.SECRET}` }}</p></template>',
+    ]) {
+      await Bun.write(component, source)
+      await expect(buildLibraryPackages({ config })).rejects.toThrow(/environment access/)
+    }
+  }
+  finally { for (const path of [dirname(component), inputs, output, packageDir]) await rm(path, { recursive: true, force: true }) }
+}, 30_000)
+
+// Build, archive and browser seams catch omitted assets and drift. This does
+// not exercise an external registry or deployment.
+test('configured native assets retain their nested paths, browser URLs and archive identity', async () => {
+  const component = projectPath('resources/components/hosted-assets/Panel.stx')
+  const inputs = projectPath('resources/functions/hosted-assets')
+  const output = projectPath('public/hosted-assets')
+  const packageDir = projectPath('storage/framework/libs/packages/hosted-assets')
+  const consumer = await mkdtemp(resolve(tmpdir(), 'native-hosted-assets-'))
+  const config: LibraryConfig = { packages: [{ name: 'hosted-assets', registry: 'npm', kind: 'web-components', include: ['hosted-assets/*.stx'], version: '1.2.3',
+    assets: { 'payload.json': 'resources/functions/hosted-assets/payload.json', data: 'resources/functions/hosted-assets/data' },
+    hosted: { outputDir: 'public/hosted-assets/revisions', base: '/hosted-assets/revisions', entry: 'public/hosted-assets/elements.js', loader: { source: 'resources/functions/hosted-assets/loader.ts' } },
+  }] }
+  const source = { repository: 'example/native-assets', commit: '1234567890abcdef1234567890abcdef12345678' }
+  try {
+    await Bun.write(component, '<template><p>Native assets</p></template>')
+    await Bun.write(resolve(inputs, 'loader.ts'), "export async function read() { return Promise.all(['./payload.json', './data/nested/value.json'].map(async path => (await fetch(new URL(path, import.meta.url))).json())) }")
+    await Bun.write(resolve(inputs, 'payload.json'), '{"revision":1}')
+    await Bun.write(resolve(inputs, 'data/nested/value.json'), '{"nested":true}')
+    const result = (await buildLibraryPackages({ config }))[0]!
+    const first = result.hosted!
+    for (const name of ['payload.json', 'data/nested/value.json']) {
+      const bytes = await Bun.file(resolve(packageDir, 'dist', name)).bytes()
+      expect(await Bun.file(resolve(first.immutableDir, name)).bytes()).toEqual(bytes)
+      const metadata = first.manifest.files.find(file => file.path.endsWith(`/${name}`))!
+      expect(metadata.sha256).toBe(createHash('sha256').update(bytes).digest('hex'))
+      expect(metadata.bytes).toBe(bytes.length)
+      expect(metadata.gzipBytes).toBe(gzipSync(bytes).length)
+      expect(metadata.integrity).toBe(`sha384-${createHash('sha384').update(bytes).digest('base64')}`)
+      expect(hostedLibraryRetentionInput(first).files.find(file => file.source === resolve(first.immutableDir, name))?.packagePath).toBe(`dist/${name}`)
+    }
+    expect(first.manifest.files.some(file => /\.ssr\.|\.d\.ts$|\.map$/.test(file.path))).toBe(false)
+    const archive = resolve(consumer, 'assets.tgz')
+    const pack = () => {
+      const proc = Bun.spawnSync({ cmd: [process.execPath, 'pm', 'pack', '--ignore-scripts', '--filename', archive], cwd: packageDir, stdout: 'pipe', stderr: 'pipe' })
+      expect(proc.exitCode, proc.stderr.toString()).toBe(0)
+    }
+    pack()
+    const plans = await planLibraryPublish(config)
+    const candidateDir = resolve(consumer, 'candidate')
+    const candidate = await retainLibraryRelease({ directory: candidateDir, source, packages: [{ ...plans[0]!, archivePath: archive, hosted: hostedLibraryRetentionInput(first) }] })
+    expect((await inspectLibraryRelease(candidateDir, source)).packages).toEqual(candidate.packages)
+    await Bun.write(resolve(consumer, 'package.json'), JSON.stringify({ private: true, type: 'module', dependencies: { 'hosted-assets': 'file:assets.tgz' } }))
+    for (const cmd of [
+      [process.execPath, 'install', '--ignore-scripts'],
+      ['node', '--input-type=module', '-e', 'import value from "hosted-assets/data/nested/value.json" with { type: "json" }; if (!value.nested) throw new Error("Missing nested package asset")'],
+    ]) {
+      const proc = Bun.spawnSync({ cmd, cwd: consumer, stdout: 'pipe', stderr: 'pipe' })
+      expect(proc.exitCode, proc.stderr.toString()).toBe(0)
+    }
+    if (process.env.STACKS_BROWSER_TESTS === '1') {
+      const server = Bun.serve({ port: 0, hostname: '127.0.0.1', async fetch(request) {
+        const path = new URL(request.url).pathname
+        if (path === '/') return new Response('<script type="module" src="/test.js"></script>', { headers: { 'Content-Type': 'text/html' } })
+        if (path === '/test.js') return new Response("const { read } = await import('/hosted-assets/elements.js'); globalThis.result = await read()", { headers: { 'Content-Type': 'text/javascript' } })
+        if (path === '/favicon.ico') return new Response(null, { status: 204 })
+        const file = Bun.file(projectPath(`public${path}`))
+        return await file.exists() ? new Response(file) : new Response('Missing', { status: 404 })
+      } })
+      let browser: Awaited<ReturnType<typeof launch>> | undefined
+      try {
+        browser = await launch()
+        await navigate(browser.cdp, `http://127.0.0.1:${server.port}/`)
+        expect(await browser.cdp.evaluate('globalThis.result')).toEqual([{ revision: 1 }, { nested: true }])
+        expect(browser.cdp.errors).toEqual([])
+      }
+      finally { try { await browser?.close() } finally { server.stop(true) } }
+    }
+    // A newly packed package cannot silently disagree with the hosted revision.
+    await Bun.write(resolve(packageDir, 'dist/payload.json'), '{"revision":999}')
+    pack()
+    await expect(retainLibraryRelease({ directory: resolve(consumer, 'wrong-archive'), source, packages: [{ ...plans[0]!, archivePath: archive, hosted: hostedLibraryRetentionInput(first) }] })).rejects.toThrow(/hosted|Hosted/)
+    await Bun.write(resolve(inputs, 'payload.json'), '{"revision":2}')
+    const second = (await buildLibraryPackages({ config }))[0]!.hosted!
+    expect(second.revision).not.toBe(first.revision)
+    expect(await Bun.file(resolve(first.immutableDir, 'payload.json')).text()).toBe('{"revision":1}')
+    await Bun.write(resolve(second.immutableDir, 'data/nested/value.json'), 'corrupted')
+    await expect(buildLibraryPackages({ config })).rejects.toThrow(/Immutable hosted/)
+  }
+  finally { for (const path of [dirname(component), inputs, output, packageDir, consumer]) await rm(path, { recursive: true, force: true }) }
+}, 60_000)
+
+test('hosted assets and generated paths fail closed before public writes', async () => {
+  const component = projectPath('resources/components/hosted-paths/Panel.stx')
+  const inputs = projectPath('resources/functions/hosted-paths')
+  const output = projectPath('public/hosted-paths')
+  const packageDir = projectPath('storage/framework/libs/packages/hosted-paths')
+  const outside = await mkdtemp(resolve(tmpdir(), 'hosted-outside-'))
+  const hosted = { outputDir: 'public/hosted-paths/revisions', base: '/hosted-paths/revisions', entry: 'public/hosted-paths/elements.js', loader: { source: 'resources/functions/hosted-paths/loader.ts' } }
+  const pkg = { name: 'hosted-paths', kind: 'web-components' as const, include: ['hosted-paths/*.stx'], hosted, prebuild: 'bun resources/functions/hosted-paths/generate.ts' }
+  try {
+    await Bun.write(component, '<template><p>Safe paths</p></template>')
+    await Bun.write(resolve(inputs, 'loader.ts'), 'export const ready = true')
+    await Bun.write(resolve(inputs, 'payload.json'), '{}')
+    await Bun.write(resolve(inputs, 'generate.ts'), "await Bun.write(import.meta.dir + '/ran', 'yes')")
+    for (const dest of ['.hidden.json', 'data/.private/payload.json', 'manifest.json', 'elements.js', 'elements.js/nested.json']) {
+      await expect(buildLibraryPackages({ config: { packages: [{ ...pkg, assets: { [dest]: 'resources/functions/hosted-paths/payload.json' } }] } })).rejects.toThrow(/hidden|collides/)
+      expect(await Bun.file(resolve(inputs, 'ran')).exists()).toBe(false)
+      expect(await Bun.file(resolve(packageDir, 'package.json')).exists()).toBe(false)
+    }
+    await Bun.write(resolve(outside, 'private.css'), ':host { color: red; }')
+    await Bun.write(resolve(inputs, 'generate.ts'), `import { symlink } from 'node:fs/promises'; await symlink(${JSON.stringify(resolve(outside, 'private.css'))}, import.meta.dir + '/generated.css')`)
+    await expect(buildLibraryPackages({ config: { packages: [{ ...pkg, hosted: { ...hosted, styles: ['resources/functions/hosted-paths/generated.css'] } }] } })).rejects.toThrow(/symbolic link/)
+    expect(await Bun.file(resolve(output, 'elements.js')).exists()).toBe(false)
+    // A nested copy result cannot smuggle a hidden artifact past CI retention.
+    await Bun.write(resolve(inputs, 'generate.ts'), "await Bun.write(import.meta.dir + '/data/.private.json', '{}')")
+    await expect(buildLibraryPackages({ config: { packages: [{ ...pkg, assets: { data: 'resources/functions/hosted-paths/data' } }] } })).rejects.toThrow(/hidden/)
+    expect(await Bun.file(resolve(output, 'elements.js')).exists()).toBe(false)
+    await Bun.write(resolve(inputs, '.env.secret'), 'PRIVATE_TOKEN=private')
+    await expect(buildLibraryPackages({ config: { packages: [{ ...pkg, prebuild: undefined, assets: { 'payload.json': 'resources/functions/hosted-paths/.env.secret' } }] } })).rejects.toThrow(/server source/)
+    await Bun.write(resolve(inputs, 'unsafe.js'), 'export const secret = process.env.PRIVATE')
+    await expect(buildLibraryPackages({ config: { packages: [{ ...pkg, prebuild: undefined, assets: { 'public.js': 'resources/functions/hosted-paths/unsafe.js' } }] } })).rejects.toThrow(/environment access/)
+    expect(await Bun.file(resolve(output, 'elements.js')).exists()).toBe(false)
+  }
+  finally { for (const path of [dirname(component), inputs, output, packageDir, outside]) await rm(path, { recursive: true, force: true }) }
+}, 30_000)
