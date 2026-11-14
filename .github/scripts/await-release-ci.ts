@@ -1,34 +1,11 @@
 import process from 'node:process'
 
-interface SourceRun {
-  id: number
-  head_sha: string
-  head_branch: string
-  event: string
-  path: string
-  status: string
-  conclusion: string | null
-  run_attempt?: number
-}
-interface SourceJob { name: string, status: string, conclusion: string | null, runner_id?: number | null, steps?: unknown[] }
-type Decision = { kind: 'pending' }
-  | { kind: 'accepted', runId: number }
-  | { kind: 'rejected', runId: number, reason: string }
-  | { kind: 'starved', runId: number, attempt: number, jobs: string[] }
+import { evaluateLibrarySourceCi, latestLibrarySourceRun, sourceJobNeverStarted } from '../../storage/framework/core/actions/src/library/release-source'
+import type { LibrarySourceRun as SourceRun, LibrarySourceJob as SourceJob } from '../../storage/framework/core/actions/src/library/release-source'
 
 /** How many times one release asks GitHub to run jobs that never got a runner. */
 export const STARVED_RERUNS = 3
-
-/**
- * A job GitHub cancelled before any runner took it: no runner, no step ran.
- * The macOS release-evidence job sat queued for 15 minutes and was cancelled
- * this way five times on 2026-11-03 (runner_id 0, no steps), and each time the
- * release failed as though the ownership checks had. Nothing was executed, so
- * nothing was proven either way.
- */
-export function neverStarted(job: SourceJob): boolean {
-  return job.status === 'completed' && job.conclusion === 'cancelled' && !job.runner_id && (job.steps?.length ?? 0) === 0
-}
+export const neverStarted = sourceJobNeverStarted
 
 // Required source contracts. PR-only lock maintenance and the release commit's
 // intentionally skipped publication commit are not execution evidence.
@@ -41,31 +18,16 @@ export const requiredSourceJobs = [
 ]
 
 /** A manual run executes the same protected main workflow and every required job. */
+function sourcePolicy(sha: string) {
+  return { commit: sha, branch: 'main', workflow: '.github/workflows/ci.yml', requiredJobs: requiredSourceJobs }
+}
 function latestExactRun(sha: string, runs: SourceRun[]): SourceRun | undefined {
-  if (!/^[a-f0-9]{40}$/.test(sha)) throw new Error('Expected the exact release commit')
-  return runs.filter(run => Number.isSafeInteger(run.id) && run.id > 0 && run.head_sha === sha
-    && run.head_branch === 'main' && (run.event === 'push' || run.event === 'workflow_dispatch') && run.path === '.github/workflows/ci.yml')
-    .sort((a, b) => b.id - a.id)[0]
+  return latestLibrarySourceRun(sourcePolicy(sha), runs)
 }
 
-/** No earlier green run, missing job or incomplete execution can permit a write. */
-export function evaluateReleaseCi(sha: string, runs: SourceRun[], jobs: SourceJob[]): Decision {
-  const run = latestExactRun(sha, runs)
-  if (!run || run.status !== 'completed') return { kind: 'pending' }
-  if (run.conclusion !== 'success') {
-    // Only when every unsuccessful job never started: a job that ran and
-    // failed, timed out or was cancelled mid-run still rejects the release.
-    const unsuccessful = jobs.filter(job => job.conclusion !== 'success' && job.conclusion !== 'skipped')
-    if ((run.conclusion === 'failure' || run.conclusion === 'cancelled') && unsuccessful.length && unsuccessful.every(neverStarted))
-      return { kind: 'starved', runId: run.id, attempt: run.run_attempt ?? 1, jobs: unsuccessful.map(job => job.name) }
-    return { kind: 'rejected', runId: run.id, reason: `Source CI concluded ${run.conclusion}` }
-  }
-  for (const name of requiredSourceJobs) {
-    const matches = jobs.filter(job => job.name === name)
-    if (matches.length !== 1 || matches[0]?.status !== 'completed' || matches[0].conclusion !== 'success')
-      return { kind: 'rejected', runId: run.id, reason: `Required source job did not succeed exactly once: ${name}` }
-  }
-  return { kind: 'accepted', runId: run.id }
+/** Existing framework required jobs and retry gates remain unchanged. */
+export function evaluateReleaseCi(sha: string, runs: SourceRun[], jobs: SourceJob[]) {
+  return evaluateLibrarySourceCi(sourcePolicy(sha), runs, jobs)
 }
 
 if (import.meta.main) {

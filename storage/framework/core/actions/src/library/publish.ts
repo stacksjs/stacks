@@ -24,10 +24,11 @@ export interface LibraryPublishPlan {
  * because the publish step ran with `--ignore-scripts` and nothing checked
  * that a build had happened first. This is that check, ahead of time.
  */
-export async function planLibraryPublish(config?: LibraryConfig): Promise<LibraryPublishPlan[]> {
-  const packages = await resolveLibraryPackages(config ?? await configuredLibrary())
+export async function planLibraryPublish(config?: LibraryConfig, options: { allowEmpty?: boolean } = {}): Promise<LibraryPublishPlan[]> {
+  const packages = await resolveLibraryPackages(config ?? await configuredLibrary(), { onUnmatched: options.allowEmpty ? 'skip' : 'error' })
   const publishable = packages.filter(pkg => !pkg.private)
 
+  if (!publishable.length && options.allowEmpty) return []
   if (!publishable.length)
     throw new LibraryConfigError('Every configured library package is marked private. Nothing to publish.')
 
