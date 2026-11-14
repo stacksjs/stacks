@@ -1,6 +1,7 @@
 import type { LibraryReleaseCandidate, LibraryReleaseLimits, LibraryReleasePackage, LibraryReleaseSource } from './release-artifacts'
 import type { LibraryNetworkOptions, LibraryReader } from './release-network'
 import type { LibraryPublisher } from './publish'
+import { spawnOwnedProcess } from '@stacksjs/cli/owned-process'
 import { resolve } from 'node:path'
 import { inspectLibraryRelease, libraryIntegrity, librarySha256 } from './release-artifacts'
 import { createLibraryReleaseReader } from './release-network'
@@ -25,6 +26,12 @@ export interface LibraryRegistryReceipt {
   verifierCommit?: string
   verifiedAt: string
   packages: Array<LibraryRegistryPackageReceipt & { status?: 'published' | 'existing-identical' | 'dry-run' }>
+}
+export interface LibraryReadbackOptions extends LibraryRegistryOptions {
+  source?: LibraryReleaseSource
+  verifierCommit?: string
+  /** Defaults to true. Historical audits can report moved tags without requiring their old target. */
+  requireCurrentTag?: boolean
 }
 function registryOrigin(options: LibraryRegistryOptions): string {
   const url = new URL(options.npmRegistry ?? 'https://registry.npmjs.org')
@@ -62,12 +69,12 @@ async function publishedPackage(pkg: LibraryReleasePackage, options: LibraryRegi
 }
 
 /** Read actual bytes/tags with current verifier code; never has a publisher capability. */
-export async function readbackLibraryRelease(directory: string, options: LibraryRegistryOptions & { source?: LibraryReleaseSource, verifierCommit?: string } = {}): Promise<LibraryRegistryReceipt> {
+export async function readbackLibraryRelease(directory: string, options: LibraryReadbackOptions = {}): Promise<LibraryRegistryReceipt> {
   const candidate = await inspectLibraryRelease(directory, options.source, options)
   if (options.verifierCommit !== undefined && !/^[a-f0-9]{40}$/.test(options.verifierCommit)) throw new Error('Expected full verifier commit SHA')
   const reader = createLibraryReleaseReader(options)
   const packages: LibraryRegistryPackageReceipt[] = []
-  for (const pkg of candidate.packages) packages.push((await publishedPackage(pkg, options, reader, false, true))!)
+  for (const pkg of candidate.packages) packages.push((await publishedPackage(pkg, options, reader, false, options.requireCurrentTag !== false))!)
   return { schemaVersion: 1, source: candidate.source, verifierCommit: options.verifierCommit, verifiedAt: new Date().toISOString(), packages }
 }
 
@@ -109,10 +116,14 @@ export async function publishPreparedLibraryRelease(directory: string, options: 
   }
   const packages: LibraryRegistryReceipt['packages'] = []
   const execute = options.execute ?? (async (args, execution) => {
-    const proc = Bun.spawn(args, { cwd: execution.cwd, stdout: 'inherit', stderr: 'inherit' })
-    const timer = setTimeout(() => proc.kill(), Math.max(1, execution.timeoutMs))
-    try { return await proc.exited }
-    finally { clearTimeout(timer) }
+    const bun = Bun.which('bun')
+    if (!bun) throw new Error('The native publisher process owner requires an installed Bun runtime')
+    const proc = spawnOwnedProcess(args, { ownerRuntime: bun, cwd: execution.cwd, stdout: 'inherit', stderr: 'inherit', stopGraceMs: 0 })
+    // The deadline forcibly stops the owned tree, even if a publisher handles
+    // SIGTERM. exited settles only after the native owner disposes descendants.
+    const timer = setTimeout(() => { void proc.stop().catch(() => {}) }, Math.max(1, execution.timeoutMs))
+    try { return (await proc.exited).code }
+    finally { clearTimeout(timer); await proc.stop() }
   })
   for (let i = 0; i < candidate.packages.length; i++) {
     const pkg = candidate.packages[i]!

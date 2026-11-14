@@ -138,11 +138,14 @@ function limits(options: LibraryReleaseLimits) {
   return { archive, expanded }
 }
 function validateArchiveExports(manifest: Record<string, unknown>, files: Map<string, Uint8Array>): void {
-  function target(value: unknown): void {
+  function target(value: unknown, relativeExport = false): void {
     if (value === null) return
-    if (Array.isArray(value)) { value.forEach(target); return }
-    if (value && typeof value === 'object') { Object.values(value).forEach(target); return }
+    if (Array.isArray(value)) { value.forEach(item => target(item, relativeExport)); return }
+    if (value && typeof value === 'object') { Object.values(value).forEach(item => target(item, relativeExport)); return }
     if (typeof value !== 'string') fail('Archive declares an invalid export target')
+    // Unlike main/module/types, Node package exports require the ./ prefix.
+    // File existence alone would accept a package which cannot be imported.
+    if (relativeExport && !value.startsWith('./')) fail('Archive exports require a relative ./ target')
     const path = value.replace(/^\.\//, '')
     if (!safeArchivePath(path)) fail('Archive export escapes its package')
     if (path.includes('*')) {
@@ -151,7 +154,7 @@ function validateArchiveExports(manifest: Record<string, unknown>, files: Map<st
     }
     else if (!files.has(path)) fail(`Archive export ${value} is missing`)
   }
-  if (manifest.exports !== undefined) target(manifest.exports)
+  if (manifest.exports !== undefined) target(manifest.exports, true)
   for (const key of ['main', 'module', 'types', 'typings']) if (manifest[key] !== undefined) target(manifest[key])
 }
 function sameIdentity(bytes: Uint8Array, expected: LibraryFileIdentity): boolean {
