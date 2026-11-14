@@ -533,6 +533,14 @@ describe('publishCommand', () => {
     expect(() => publishCommand('npm', on())).toThrow(/pantry/)
   })
 
+  it('forwards explicit distribution tags to every native publisher', () => {
+    expect(publishCommand('npm', bin => bin === 'pantry' ? bin : null, 'alpha')).toEqual(['pantry', 'publish', '--npm', '--tag', 'alpha'])
+    expect(publishCommand('pantry', bin => bin === 'pantry' ? bin : null, 'next')).toEqual(['pantry', 'publish', '--tag', 'next'])
+    expect(publishCommand('npm', bin => bin === 'bun' ? bin : null, 'alpha')).toEqual(['bun', 'publish', '--tag', 'alpha'])
+    expect(publishCommand('npm', bin => bin === 'npm' ? bin : null, 'alpha')).toEqual(['npm', 'publish', '--tag', 'alpha'])
+    for (const tag of ['', '1.0.0', '^1', 'v1', '../alpha', 'alpha --access public']) expect(() => publishCommand('npm', () => 'bun', tag)).toThrow('distribution tag')
+  })
+
   it('takes the registry from the package, and Pantry when it names none', () => {
     const packages = normalizeLibraryPackages({ packages: [{ name: 'to-npm', registry: 'npm' }, { name: 'to-pantry' }] })
     expect(packages.map(pkg => `${pkg.name}:${pkg.registry}`)).toEqual(['to-npm:npm', 'to-pantry:pantry'])

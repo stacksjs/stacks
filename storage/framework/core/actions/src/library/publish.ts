@@ -87,18 +87,21 @@ export async function planLibraryPublish(config?: LibraryConfig): Promise<Librar
  * Every publisher takes the flags the caller adds: `--access` and `--dry-run`
  * mean the same thing to all three.
  */
-export function publishCommand(registry: 'pantry' | 'npm' = 'pantry', which: (bin: string) => string | null = Bun.which): string[] {
+export function publishCommand(registry: 'pantry' | 'npm' = 'pantry', which: (bin: string) => string | null = Bun.which, tag?: string): string[] {
+  if (tag !== undefined && (!/^[a-z][a-z0-9_-]{0,63}$/.test(tag) || /^v\d/.test(tag)))
+    throw new LibraryConfigError('Use a lower-case distribution tag such as alpha, next or latest, not a version or range.')
+  const tagged = (command: string[]) => tag === undefined ? command : [...command, '--tag', tag]
   if (which('pantry'))
-    return registry === 'npm' ? ['pantry', 'publish', '--npm'] : ['pantry', 'publish']
+    return tagged(registry === 'npm' ? ['pantry', 'publish', '--npm'] : ['pantry', 'publish'])
 
   if (registry === 'pantry')
     throw new Error('This package publishes to the Pantry registry, which only `pantry publish` reaches, and `pantry` is not on PATH. Install pantry, or set `registry: \'npm\'` on the package in config/library.ts.')
 
   if (which('bun'))
-    return ['bun', 'publish']
+    return tagged(['bun', 'publish'])
 
   if (which('npm'))
-    return ['npm', 'publish']
+    return tagged(['npm', 'publish'])
 
   throw new Error('None of `pantry`, `bun` or `npm` is on PATH, so there is nothing to publish with.')
 }
@@ -111,11 +114,13 @@ export function publishCommand(registry: 'pantry' | 'npm' = 'pantry', which: (bi
  * time means a failure names the package that failed instead of leaving the
  * set half-published with no record of where it stopped.
  */
-export async function publishLibraryPackages(options: { dryRun?: boolean, config?: LibraryConfig } = {}): Promise<LibraryPublishPlan[]> {
+export async function publishLibraryPackages(options: { dryRun?: boolean, tag?: string, config?: LibraryConfig } = {}): Promise<LibraryPublishPlan[]> {
+  // Validate before config or publisher execution, including when the package set is empty.
+  if (options.tag !== undefined) publishCommand('npm', bin => bin === 'bun' ? 'bun' : null, options.tag)
   const plans = await planLibraryPublish(options.config)
 
   for (const plan of plans) {
-    const args = [...publishCommand(plan.registry), '--access', plan.access]
+    const args = [...publishCommand(plan.registry, Bun.which, options.tag), '--access', plan.access]
 
     if (options.dryRun)
       args.push('--dry-run')
