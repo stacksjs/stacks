@@ -253,6 +253,13 @@ export async function materializeLibraryRelease(directory: string, destination: 
       await mkdir(dirname(target), { recursive: true })
       await writeFile(target, bytes, { flag: 'wx' })
     }
+    for (const [path, expected] of Object.entries(record.packages[i]!.hosted?.files ?? {})) {
+      const bytes = await retainedBytes(directory, `hosted/${i}/${path}`, limits(options).expanded)
+      if (!sameIdentity(bytes, expected)) fail('Retained hosted identity changed during materialization')
+      const target = join(destination, 'hosted', String(i), path)
+      await mkdir(dirname(target), { recursive: true })
+      await writeFile(target, bytes, { flag: 'wx' })
+    }
   }
   return record
 }

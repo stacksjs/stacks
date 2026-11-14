@@ -65,6 +65,8 @@ test('rejects source, retained hosted, export and archive tampering before publi
   const plan = { name: '@example/math', version: '1.2.3-alpha.1', dir, registry: 'npm' as const, access: 'public' as const, tarballFiles: 1 }
   await writeFile(join(root, 'manifest.json'), JSON.stringify({ version: plan.version }))
   const candidate = await retainLibraryRelease({ directory, source, tag: 'alpha', packages: [{ ...plan, hosted: { manifest: 'manifest.json', files: [{ path: 'manifest.json', source: join(root, 'manifest.json') }, { path: 'bundle.js', source: join(dir, 'dist/index.js'), packagePath: 'dist/index.js' }] } }] })
+  await materializeLibraryRelease(directory, join(root, 'restored-with-hosted'))
+  expect(await Bun.file(join(root, 'restored-with-hosted/hosted/0/bundle.js')).text()).toBe(await Bun.file(join(dir, 'dist/index.js')).text())
   await expect(inspectLibraryRelease(directory, { ...source, commit: 'b'.repeat(40) })).rejects.toThrow('source identity')
   await expect(retainLibraryRelease({ directory, source, tag: 'alpha', packages: [plan] })).rejects.toThrow()
   await writeFile(join(directory, 'hosted/0/bundle.js'), 'export const secret = 1')
