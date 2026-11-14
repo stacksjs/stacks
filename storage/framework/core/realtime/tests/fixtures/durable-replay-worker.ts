@@ -25,8 +25,9 @@ async function boundary<T>(work: (query: ReplaySqlQuery) => Promise<T>): Promise
     return result
   }
   if (input.native) {
-    const { db, ensureDatabaseConfigLoaded } = await import('../../../database/src/runtime')
+    const { db, ensureDatabaseConfigLoaded, resolvedDatabaseConfig } = await import('../../../database/src/runtime')
     await ensureDatabaseConfigLoaded()
+    if (resolvedDatabaseConfig().driver !== dialect) throw new Error('Native replay fixture resolved the wrong application database driver')
     return await db.transaction(async tx => await execute(async (sql, values) => await tx.unsafe(sql, values).execute()), dialect === 'sqlite' ? { sqliteMode: 'immediate' } : undefined)
   }
   if (postgres) return await postgres.begin(async connection => await execute(async (sql, values) => await connection.unsafe(sql, values)))

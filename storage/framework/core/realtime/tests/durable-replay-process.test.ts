@@ -10,7 +10,7 @@ for (const dialect of ['sqlite', 'postgres'] as const) test.skipIf(dialect === '
     const config = resolve(database.directory, 'bunfig.toml'), workers = new Set<ReturnType<typeof Bun.spawn>>()
     await Bun.write(config, '[test]\npreload = []\n')
     function start(mode: string, input: Record<string, unknown> = {}) {
-      const child = Bun.spawn([process.execPath, `--config=${config}`, '--no-env-file', resolve(import.meta.dir, 'fixtures/durable-replay-worker.ts'), mode, JSON.stringify(input)], { env: { ...process.env, ...database.env }, stdout: 'pipe', stderr: 'pipe' })
+      const child = Bun.spawn([process.execPath, `--config=${config}`, '--no-env-file', resolve(import.meta.dir, 'fixtures/durable-replay-worker.ts'), mode, JSON.stringify(input)], { cwd: resolve(import.meta.dir, 'fixtures/replay-app'), env: { ...process.env, ...database.env, APP_ENV: 'test' }, stdout: 'pipe', stderr: 'pipe' })
       workers.add(child)
       const text = new Response(child.stdout).text(), errors = new Response(child.stderr).text()
       return { child, async result() { const timer = setTimeout(() => child.kill(9), 30000); try { const [code, stdout, stderr] = await Promise.all([child.exited, text, errors]); if (code !== 0) throw new Error(`Replay worker failed (${code}): ${stderr}\n${stdout}`); return JSON.parse(stdout.trim().split('\n').at(-1)!) as any } finally { clearTimeout(timer); workers.delete(child) } } }
