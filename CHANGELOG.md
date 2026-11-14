@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.577...v0.75.578)
+
+## ✅ Tests
+
+- pin supported Twilio messaging and content API versions ([5d6a6fe](https://github.com/stacksjs/stacks/commit/5d6a6fe)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.576...v0.75.577)
 
 ## ✨ Features
