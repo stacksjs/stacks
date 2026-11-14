@@ -20,21 +20,50 @@ import type {
 const API_BASE = 'https://api.twilio.com/2010-04-01'
 const VERIFY_API_BASE = 'https://verify.twilio.com/v2'
 
-/**
- * Twilio's free tier rate-limits to 60 messages/sec; bulk sends past
- * that hit 429s. Honor the Retry-After header on 429/503 with up to
- * three retries (exponential backoff) before giving up. Anything
- * outside that band falls through to the original error path.
- */
-async function fetchWithRetry(url: string, init: RequestInit, maxRetries = 3): Promise<Response> {
+export interface TwilioTransportOptions {
+  fetch?: typeof fetch
+  /** Only explicit 429 rejections are retried for message creation. */
+  maxRetries?: number
+}
+
+export interface TwilioSendResult extends SmsSendResult {
+  outcome?: 'accepted' | 'rejected' | 'unknown'
+  httpStatus?: number
+  providerCode?: number
+  /** Exact absolute provider price in millionths of the quoted currency. */
+  priceMicros?: number
+}
+
+export interface TwilioReceipt {
+  messageId: string
+  status: SmsStatus
+  price?: string | null
+  priceMicros?: number
+  currency?: string
+  segments?: number
+}
+
+/** Parse a decimal provider price without floating-point currency rounding. */
+export function twilioPriceMicros(value: string | null | undefined): number | undefined {
+  if (typeof value !== 'string' || !/^-?\d+(?:\.\d{1,6})?$/.test(value))
+    return undefined
+  const [whole, fraction = ''] = value.replace(/^-/, '').split('.')
+  const micros = BigInt(whole!) * 1000000n + BigInt(fraction.padEnd(6, '0'))
+  return micros <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(micros) : undefined
+}
+
+async function fetchWithRetry(fetcher: typeof fetch, url: string, init: RequestInit, maxRetries = 3): Promise<Response> {
   let attempt = 0
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const response = await fetch(url, init)
-    if (response.status !== 429 && response.status !== 503) return response
-    if (attempt >= maxRetries) return response
-    const retryAfter = Number(response.headers.get('retry-after')) || (2 ** attempt)
-    await new Promise(r => setTimeout(r, Math.min(retryAfter, 30) * 1000))
+    const response = await fetcher(url, { ...init, redirect: 'error', signal: init.signal ?? AbortSignal.timeout(15000) })
+    // Message creation has no general idempotency guarantee. A 503 or lost
+    // acknowledgement might follow acceptance; resending can duplicate it.
+    if (response.status !== 429 || attempt >= maxRetries)
+      return response
+    const retryHeader = response.headers.get('retry-after')
+    const seconds = retryHeader === null ? 2 ** attempt : Number(retryHeader)
+    await new Promise(r => setTimeout(r, Math.max(0, Math.min(Number.isFinite(seconds) ? seconds : 2 ** attempt, 30)) * 1000))
     attempt++
   }
 }
@@ -42,16 +71,20 @@ async function fetchWithRetry(url: string, init: RequestInit, maxRetries = 3): P
 export class TwilioDriver implements SmsDriver, SmsVerificationDriver {
   private config: TwilioConfig
   private verifyServiceSid?: string
+  private readonly fetcher: typeof fetch
+  private readonly maxRetries: number
 
-  constructor(config: TwilioConfig, verifyServiceSid?: string) {
-    this.config = config
+  constructor(config: TwilioConfig, verifyServiceSid?: string, transport: TwilioTransportOptions = {}) {
+    this.config = { ...config }
+    this.fetcher = transport.fetch ?? ((input, init) => fetch(input, init)) as typeof fetch
+    this.maxRetries = transport.maxRetries ?? 3
     this.verifyServiceSid = verifyServiceSid
   }
 
   /**
    * Send an SMS message
    */
-  async send(message: SmsMessage): Promise<SmsSendResult> {
+  async send(message: SmsMessage): Promise<TwilioSendResult> {
     const recipients = Array.isArray(message.to) ? message.to : [message.to]
 
     if (recipients.length > 1) {
@@ -109,6 +142,7 @@ export class TwilioDriver implements SmsDriver, SmsVerificationDriver {
       }
 
       const response = await fetchWithRetry(
+        this.fetcher,
         `${API_BASE}/Accounts/${this.config.accountSid}/Messages.json`,
         {
           method: 'POST',
@@ -118,6 +152,7 @@ export class TwilioDriver implements SmsDriver, SmsVerificationDriver {
           },
           body: body.toString(),
         },
+        this.maxRetries,
       )
 
       const data = await response.json() as TwilioMessageResponse
@@ -128,11 +163,20 @@ export class TwilioDriver implements SmsDriver, SmsVerificationDriver {
           to,
           error: data.message || `HTTP ${response.status}`,
           provider: 'twilio',
+          outcome: response.status >= 500 || response.status === 408 ? 'unknown' : 'rejected',
+          httpStatus: response.status,
+          providerCode: data.code,
         }
       }
 
+      if (!data.sid)
+        return { success: false, to, provider: 'twilio', outcome: 'unknown', error: 'Twilio acknowledgement has no message SID', httpStatus: response.status }
+
       return {
         success: true,
+        outcome: 'accepted',
+        httpStatus: response.status,
+        priceMicros: twilioPriceMicros(data.price),
         messageId: data.sid,
         status: mapTwilioStatus(data.status),
         to,
@@ -142,12 +186,13 @@ export class TwilioDriver implements SmsDriver, SmsVerificationDriver {
         currency: data.price_unit,
       }
     }
-    catch (error) {
+    catch {
       return {
         success: false,
         to,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: 'Twilio acknowledgement unavailable',
         provider: 'twilio',
+        outcome: 'unknown',
       }
     }
   }
@@ -165,7 +210,7 @@ export class TwilioDriver implements SmsDriver, SmsVerificationDriver {
    * Get message status
    */
   async getStatus(messageId: string): Promise<SmsStatusUpdate> {
-    const response = await fetch(
+    const response = await this.fetcher(
       `${API_BASE}/Accounts/${this.config.accountSid}/Messages/${messageId}.json`,
       {
         headers: {
@@ -190,12 +235,31 @@ export class TwilioDriver implements SmsDriver, SmsVerificationDriver {
     }
   }
 
+  /** Retrieve authoritative status and the exact quoted provider cost. */
+  async getReceipt(messageId: string): Promise<TwilioReceipt> {
+    if (!/^SM[a-f0-9]{32}$/i.test(messageId) && !/^MM[a-f0-9]{32}$/i.test(messageId))
+      throw new Error('Invalid Twilio message SID')
+    const response = await this.fetcher(`${API_BASE}/Accounts/${this.config.accountSid}/Messages/${messageId}.json`, {
+      headers: { Authorization: `Basic ${btoa(`${this.config.accountSid}:${this.config.authToken}`)}` },
+      redirect: 'error',
+      signal: AbortSignal.timeout(15000),
+    })
+    if (!response.ok)
+      throw new Error(`Twilio receipt API error: ${response.status}`)
+    const data = await response.json() as TwilioMessageResponse
+    if (data.sid !== messageId)
+      throw new Error('Twilio receipt SID mismatch')
+    return { messageId: data.sid, status: mapTwilioStatus(data.status), price: data.price ?? undefined,
+      priceMicros: twilioPriceMicros(data.price), currency: data.price_unit,
+      segments: data.num_segments ? Number.parseInt(data.num_segments, 10) : undefined }
+  }
+
   /**
    * Verify a phone number using Twilio Lookup API
    */
   async verify(phoneNumber: string): Promise<{ valid: boolean, carrier?: string, type?: string }> {
     try {
-      const response = await fetch(
+      const response = await this.fetcher(
         `https://lookups.twilio.com/v2/PhoneNumbers/${encodeURIComponent(phoneNumber)}?Fields=line_type_intelligence`,
         {
           headers: {
@@ -225,7 +289,7 @@ export class TwilioDriver implements SmsDriver, SmsVerificationDriver {
    * Get account balance
    */
   async getBalance(): Promise<{ balance: number, currency: string }> {
-    const response = await fetch(
+    const response = await this.fetcher(
       `${API_BASE}/Accounts/${this.config.accountSid}/Balance.json`,
       {
         headers: {
@@ -275,7 +339,7 @@ export class TwilioDriver implements SmsDriver, SmsVerificationDriver {
         body.append('CustomMessage', request.customMessage)
       }
 
-      const response = await fetch(
+      const response = await this.fetcher(
         `${VERIFY_API_BASE}/Services/${this.verifyServiceSid}/Verifications`,
         {
           method: 'POST',
@@ -329,7 +393,7 @@ export class TwilioDriver implements SmsDriver, SmsVerificationDriver {
       body.append('To', request.to)
       body.append('Code', request.code)
 
-      const response = await fetch(
+      const response = await this.fetcher(
         `${VERIFY_API_BASE}/Services/${this.verifyServiceSid}/VerificationCheck`,
         {
           method: 'POST',
@@ -378,7 +442,7 @@ export class TwilioDriver implements SmsDriver, SmsVerificationDriver {
       const body = new URLSearchParams()
       body.append('Status', 'canceled')
 
-      const response = await fetch(
+      const response = await this.fetcher(
         `${VERIFY_API_BASE}/Services/${this.verifyServiceSid}/Verifications/${verificationId}`,
         {
           method: 'POST',
@@ -427,13 +491,14 @@ interface TwilioMessageResponse {
   body: string
   status: string
   num_segments?: string
-  price?: string
+  price?: string | null
   price_unit?: string
   date_created: string
   date_updated?: string
   error_code?: number
   error_message?: string
   message?: string
+  code?: number
 }
 
 interface TwilioLookupResponse {
@@ -468,8 +533,8 @@ interface TwilioVerificationCheckResponse {
 // Factory Function
 // =============================================================================
 
-export function createTwilioDriver(config: TwilioConfig, verifyServiceSid?: string): TwilioDriver {
-  return new TwilioDriver(config, verifyServiceSid)
+export function createTwilioDriver(config: TwilioConfig, verifyServiceSid?: string, transport?: TwilioTransportOptions): TwilioDriver {
+  return new TwilioDriver(config, verifyServiceSid, transport)
 }
 
 export { TwilioDriver as default }

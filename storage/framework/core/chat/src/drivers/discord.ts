@@ -1,6 +1,8 @@
 import type { ChatMessage, ChatResult, RenderOptions } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
 import { appServices, count, present } from '../app-config'
+import type { ChatTransportOptions } from '../transport'
+import { chatJson, chatRequest, ChatTransportError } from '../transport'
 import { BaseChatDriver } from './base'
 
 export interface DiscordConfig {
@@ -139,20 +141,25 @@ export class DiscordDriver extends BaseChatDriver {
   public name = 'discord'
 
   /** What this send uses; see {@link resolveConfig}. */
-  private settings: DiscordConfig = {}
+  private readonly explicitSettings?: DiscordConfig
+  private readonly fetcher: typeof fetch
 
   /** Retry settings passed to the constructor win over config/services.ts. */
   private readonly explicitRetries: { maxRetries?: number, retryTimeout?: number }
 
-  constructor(options?: DiscordConfig) {
+  constructor(options?: DiscordConfig, transport: ChatTransportOptions = {}) {
     super({
       maxRetries: options?.maxRetries ?? 3,
       retryTimeout: options?.retryTimeout ?? 1000,
     })
     this.explicitRetries = { maxRetries: options?.maxRetries, retryTimeout: options?.retryTimeout }
-    if (options) {
-      configure(options)
-    }
+    this.fetcher = transport.fetch ?? ((input, init) => fetch(input, init)) as typeof fetch
+    if (options?.webhookUrl)
+      assertWebhookUrl(options.webhookUrl)
+    // Explicit credentials belong to THIS instance. They must never mutate or
+    // inherit the app-wide credentials used by another tenant's driver.
+    if (options?.webhookUrl || options?.botToken)
+      this.explicitSettings = { ...options }
   }
 
   public async send(message: ChatMessage, options?: RenderOptions): Promise<ChatResult> {
@@ -166,41 +173,49 @@ export class DiscordDriver extends BaseChatDriver {
 
     try {
       this.validateMessage(message)
-      this.settings = await resolveConfig()
+      const settings = this.explicitSettings ?? await resolveConfig()
       this.config = {
         ...this.config,
-        maxRetries: this.explicitRetries.maxRetries ?? this.settings.maxRetries ?? this.config.maxRetries,
-        retryTimeout: this.explicitRetries.retryTimeout ?? this.settings.retryTimeout ?? this.config.retryTimeout,
+        maxRetries: this.explicitRetries.maxRetries ?? settings.maxRetries ?? this.config.maxRetries,
+        retryTimeout: this.explicitRetries.retryTimeout ?? settings.retryTimeout ?? this.config.retryTimeout,
       }
-      return await this.sendWithRetry(message, options)
+      return await this.sendWithRetry(message, settings, options)
     }
     catch (error) {
-      return this.handleError(error, message)
+      const result = await this.handleError(error, message)
+      return { ...result, data: { ...result.data, outcome: error instanceof ChatTransportError ? error.outcome : 'rejected', httpStatus: error instanceof ChatTransportError ? error.httpStatus : undefined } }
     }
   }
 
-  private async sendWithRetry(message: ChatMessage, options?: RenderOptions, attempt = 1): Promise<ChatResult> {
+  private async sendWithRetry(message: ChatMessage, settings: DiscordConfig, options?: RenderOptions, attempt = 1): Promise<ChatResult> {
     try {
-      const response = await this.sendMessage(message, options)
-      return this.handleSuccess(message, response.id)
+      const response = await this.sendMessage(message, settings, options)
+      let result: ChatResult
+      try {
+        result = await this.handleSuccess(message, response.id)
+      }
+      catch {
+        result = { success: false, provider: this.name, message: 'Message accepted; completion callback failed' }
+      }
+      return { ...result, messageId: response.id, data: { ...result.data, outcome: 'accepted' } }
     }
     catch (error) {
-      if (attempt < this.config.maxRetries) {
+      if (error instanceof ChatTransportError && error.httpStatus === 429 && attempt < this.config.maxRetries) {
         log.warn(`[${this.name}] Message send failed, retrying (${attempt}/${this.config.maxRetries})`)
-        await new Promise(resolve => setTimeout(resolve, this.config.retryTimeout))
-        return this.sendWithRetry(message, options, attempt + 1)
+        await new Promise(resolve => setTimeout(resolve, error.retryAfterMs ?? this.config.retryTimeout))
+        return this.sendWithRetry(message, settings, options, attempt + 1)
       }
       throw error
     }
   }
 
-  private async sendMessage(message: ChatMessage, _options?: RenderOptions): Promise<{ id?: string }> {
-    if (this.settings.webhookUrl) {
-      return this.sendViaWebhook(message)
+  private async sendMessage(message: ChatMessage, settings: DiscordConfig, _options?: RenderOptions): Promise<{ id?: string }> {
+    if (settings.webhookUrl) {
+      return this.sendViaWebhook(message, settings)
     }
 
-    if (this.settings.botToken) {
-      return this.sendViaBotToken(message)
+    if (settings.botToken) {
+      return this.sendViaBotToken(message, settings)
     }
 
     throw new Error('Discord not configured: provide webhookUrl or botToken')
@@ -212,37 +227,40 @@ export class DiscordDriver extends BaseChatDriver {
    */
   private messageFor(message: ChatMessage): DiscordMessage {
     const embedded = Boolean(message.subject || message.template)
+    if ((message.content?.length ?? 0) > (embedded ? 4096 : 2000) || (message.subject?.length ?? 0) > 256)
+      throw new Error('Discord message exceeds provider text limits')
     return {
       ...(embedded ? { embeds: [this.buildEmbed(message)] } : { content: message.content }),
       // `from` is an object - `{ id?, name?, avatar? }` - and `username` is a
       // string, so the whole object was being handed over and arrived as
       // "[object Object]". The sender's name is what this field is for.
       username: message.from?.name,
+      ...(message.data?.allowedMentions ? { allowedMentions: message.data.allowedMentions } : {}),
     }
   }
 
-  private async sendViaWebhook(message: ChatMessage): Promise<{ id?: string }> {
-    const response = await fetch(this.settings.webhookUrl!, {
+  private async sendViaWebhook(message: ChatMessage, settings: DiscordConfig): Promise<{ id?: string }> {
+    const webhookUrl = new URL(settings.webhookUrl!)
+    webhookUrl.searchParams.set('wait', 'true')
+    const response = await chatRequest(this.fetcher, webhookUrl.href, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(discordPayload(this.messageFor(message))),
     })
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      throw new Error(`Discord webhook failed: ${response.status} - ${errorText}`)
-    }
 
     // Webhooks can return empty response on success
     if (response.status === 204) {
       return {}
     }
 
-    const result = await response.json() as { id?: string }
+    const result = await chatJson<{ id?: string }>(response)
+    if (!result.id)
+      throw new ChatTransportError('Discord acknowledgement has no message ID', 'unknown')
     return { id: result.id }
   }
 
-  private async sendViaBotToken(message: ChatMessage): Promise<{ id?: string }> {
+  private async sendViaBotToken(message: ChatMessage, settings: DiscordConfig): Promise<{ id?: string }> {
     const channelId = Array.isArray(message.to) ? message.to[0] : message.to
     if (!channelId)
       throw new Error('Discord bot-token sends need message.to: the channel ID to post in')
@@ -250,21 +268,19 @@ export class DiscordDriver extends BaseChatDriver {
     // A bot posts as itself, so no username.
     const { username: _username, ...payload } = this.messageFor(message)
 
-    const response = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages`, {
+    const response = await chatRequest(this.fetcher, `https://discord.com/api/v10/channels/${channelId}/messages`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bot ${this.settings.botToken}`,
+        'Authorization': `Bot ${settings.botToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(discordPayload(payload)),
     })
 
-    if (!response.ok) {
-      const errorData = await response.json() as { message?: string }
-      throw new Error(`Discord API failed: ${response.status} - ${errorData.message}`)
-    }
 
-    const result = await response.json() as { id: string }
+    const result = await chatJson<{ id: string }>(response)
+    if (!result.id)
+      throw new ChatTransportError('Discord acknowledgement has no message ID', 'unknown')
     return { id: result.id }
   }
 

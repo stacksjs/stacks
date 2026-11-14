@@ -134,3 +134,44 @@ Many thanks to the following core technologies & people who have contributed to 
 The MIT License (MIT). Please see [LICENSE](https://github.com/stacksjs/stacks/tree/main/LICENSE.md) for more information.
 
 Made with 💙
+
+### Scoped transport and exact Twilio receipts
+
+`TwilioDriver(config, verifyServiceSid?, { fetch?, maxRetries? })` keeps a copy
+of its credentials and accepts an instance-specific transport. A send result
+adds `outcome: 'accepted' | 'rejected' | 'unknown'`. Message-creation retries
+apply only to an explicit HTTP 429 rejection. Timeouts, disconnects, malformed
+acknowledgements and 5xx responses stay unknown, since repeating an accepted
+POST can send the message twice. Reconcile using provider callbacks and
+persisted operations before attempting another send.
+
+`getReceipt(messageSid)` returns authoritative status, raw decimal `price`,
+`currency`, segments and `priceMicros`. `twilioPriceMicros` parses a quoted
+absolute decimal price exactly into millionths of the quoted currency, with
+at most six fractional places. For example `-0.007900` becomes `7900`.
+An absent/unparseable price remains undefined, never a fabricated zero.
+The existing numeric `price` field remains available for display. Applications
+must check currency and apply their own billing/markup once to the exact
+provider cost. Provider acceptance is distinct from recipient delivery.
+
+### WhatsApp Cloud text replies
+
+`WhatsAppCloudClient({ accessToken, phoneNumberId, apiVersion }, { fetch? })`
+uses a scoped token and explicit Graph API version. `identity()` verifies the
+configured phone-number ID; `sendText(to, text, { replyTo?, callbackData? })`
+sends session text and returns `accepted`, `rejected` or `unknown`, plus a
+provider message ID when acknowledged. It never blindly retries a POST.
+The opaque callback value is for correlating a signed status callback with a
+persisted operation, including a lost HTTP acknowledgement.
+
+This low-level client does not grant permission to message a customer. The
+application must enforce consent, opt-outs, provider registration and messaging
+windows. Templates and proactive campaigns require their own explicit flow.
+Phone recipients are international numbers; text is limited to 4,096 characters.
+These clients do not use the local desktop WhatsApp database/inbox driver.
+
+Protocol references: [Meta WhatsApp Cloud API](https://www.postman.com/meta/whatsapp-business-platform/documentation/wlk6lh4/whatsapp-cloud-api)
+and [Meta text-message object](https://whatsapp.github.io/WhatsApp-Nodejs-SDK/api-reference/messages/text/).
+The latter SDK is archived; this package implements the HTTP client and does
+not depend on that SDK. Provider protocol fixtures are not live delivery
+qualification.

@@ -43,7 +43,7 @@ describe('chat settings from config/services.ts', () => {
     expect(out.slack.success).toBe(true)
     expect(out.discord.success).toBe(true)
     expect(out.teams.success).toBe(true)
-    expect(out.requests.map((request: any) => request.url)).toEqual([SLACK, DISCORD, TEAMS])
+    expect(out.requests.map((request: any) => request.url)).toEqual([SLACK, `${DISCORD}?wait=true`, TEAMS])
   }, 60_000)
 
   it('uses a Slack bot token when that is what is configured', async () => {

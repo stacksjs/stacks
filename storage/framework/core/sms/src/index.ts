@@ -13,6 +13,10 @@ export { default as SMS } from './sms'
 
 // Drivers
 export * from './drivers'
-export { TwilioDriver, createTwilioDriver } from './drivers/twilio'
+export { TwilioDriver, createTwilioDriver, twilioPriceMicros } from './drivers/twilio'
 export { VonageDriver, createVonageDriver } from './drivers/vonage'
 export * from './compliance'
+
+export type { TwilioReceipt, TwilioSendResult, TwilioTransportOptions } from './drivers/twilio'
+export { WhatsAppCloudClient } from './whatsapp-cloud'
+export type { WhatsAppCloudConfig, WhatsAppCloudResult } from './whatsapp-cloud'
