@@ -626,7 +626,8 @@ export function autoImportSourceFingerprint(): string {
 
   // The package set, not the manifest's bytes: it also records when it was
   // written, which differs on every machine.
-  let packages = ''
+  // Missing discovery and a discovered empty set describe the same sources.
+  let packages = '[]'
   try {
     const manifest = JSON.parse(readFileSync(path.storagePath('framework/discovered-packages.json'), 'utf8')) as { packages?: Record<string, unknown> }
     packages = JSON.stringify(Object.keys(manifest.packages ?? {}).sort().map(name => [name, manifest.packages![name]]))
