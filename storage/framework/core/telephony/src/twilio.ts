@@ -59,7 +59,7 @@ function callResult(value: unknown): Call {
   const priceMicros = price(row.price)
   const priceCurrency = row.price_unit == null ? null : text(row.price_unit).toUpperCase()
   if ((priceCurrency !== null && !/^[A-Z]{3}$/.test(priceCurrency)) || (priceMicros !== null && priceCurrency === null)) badResponse()
-  return { sid: resourceSid(row.sid, 'CA'), from: text(row.from), to: text(row.to), status: row.status as CallStatus, direction: text(row.direction), durationSeconds: duration(row.duration), priceMicros, priceCurrency, timeLimitSeconds: duration(row.time_limit) }
+  return { sid: resourceSid(row.sid, 'CA'), from: text(row.from), to: text(row.to), status: row.status as CallStatus, direction: text(row.direction), parentSid: row.parent_call_sid == null ? null : resourceSid(row.parent_call_sid, 'CA'), durationSeconds: duration(row.duration), priceMicros, priceCurrency, timeLimitSeconds: duration(row.time_limit) }
 }
 function rows(value: unknown, key: string): unknown[] {
   const list = object(value)[key]

@@ -20,6 +20,7 @@ export interface Call {
   status: CallStatus
   direction: string
   /** Null until reported by the provider. Monetary values use one million units per currency unit. */
+  parentSid?: string | null
   durationSeconds?: number | null
   priceMicros?: number | null
   priceCurrency?: string | null

@@ -42,7 +42,7 @@ accept integer seconds from 1 to 86400; provider/account restrictions may be
 stricter. Increasing a limit is a paid application decision: reserve its maximum
 cost before changing the provider limit. Never rely on an in-process timer alone.
 
-Call results expose `durationSeconds`, `priceMicros`, `priceCurrency` and
+Call results expose `parentSid` for child-leg reconciliation, `durationSeconds`, `priceMicros`, `priceCurrency` and
 `timeLimitSeconds`, null when the provider has not supplied them. `priceMicros`
 is the nonnegative absolute provider charge at one million units per currency
 unit, parsed from decimal strings without floating point. Currency is uppercase;
