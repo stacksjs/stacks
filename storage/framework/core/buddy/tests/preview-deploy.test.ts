@@ -46,6 +46,16 @@ describe('preview names and targets', () => {
     expect(() => previewSite({ sites: { legacy: app.sites.legacy } })).toThrow('nothing to preview')
   })
 
+  it('retains the existing removal target for stale bucket and static server fields', () => {
+    for (const deploy of ['bucket', 'server']) {
+      const config = { ...app, sites: { assets: { deploy, port: 2999 }, ...app.sites } }
+      const legacy = previewTarget(config, 'pr-7', 'preview.acme.dev')
+      expect(legacy.site).toBe('assets')
+      expect(buildPreviewTeardownScript(legacy.slug, legacy.site)).toContain('/var/www/acme-pr-7-assets')
+      expect(previewTarget({ ...config, cloud: { previews: { site: 'docs' } } }, 'pr-7', 'preview.acme.dev').site).toBe('docs')
+    }
+  })
+
   it('is its own slug, attached to the box the app runs on', () => {
     expect(previewTarget(app, 'pr-7', 'preview.acme.dev')).toEqual({
       slug: 'acme-pr-7',

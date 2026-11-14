@@ -144,6 +144,36 @@ test('preview refuses native proxyTo precedence over stale server fields before 
   expect(result.ran).toBe(false)
 }, 45_000)
 
+for (const deploy of ['bucket', 'server']) {
+  for (const site of [undefined, 'main', 'assets']) {
+    test(`preview ${site ? `selecting ${site}` : 'implicitly selecting the runtime'} beside ${deploy} assets validates before publication`, async () => {
+      const result = await command(['deploy:preview', 'policy-fixture'], (root) => {
+        previewFixture(root)
+        writeFileSync(join(root, 'config/cloud.ts'), `export const tsCloud = {
+          project: { name: 'Fixture', slug: 'fixture' },
+          cloud: { provider: 'ssh', previews: { domain: 'preview.example.test', site: ${JSON.stringify(site) ?? 'undefined'} } },
+          sites: {
+            assets: { deploy: '${deploy}', port: 3339, ${deploy === 'bucket' ? "start: 'bun run unused'," : ''} build: 'bun build-marker.ts' },
+            main: { start: 'bun run start', port: 3340 },
+          },
+        }`)
+        writeFileSync(join(root, 'build-marker.ts'), 'throw new Error("Unvalidated assets build ran")')
+      }, true)
+      expect(result.output).not.toContain('Publication startup loaded deployment machinery:')
+      expect(result.output).not.toContain('Unvalidated assets build ran')
+      if (site === 'assets') {
+        expect(result.output).toContain('Preview preflight refused')
+        expect(result.ran).toBe(false)
+      }
+      else {
+        expect(result.output).toContain('publication:check failed with exit code 9')
+        expect(result.output).not.toContain('Preview preflight refused')
+        expect(result.ran).toBe(true)
+      }
+    }, 45_000)
+  }
+}
+
 test('preview refuses inherited explicit CDN production hosts before publication', async () => {
   const result = await command(['deploy:preview', 'policy-fixture'], (root) => {
     previewFixture(root)

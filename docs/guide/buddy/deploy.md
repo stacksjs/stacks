@@ -159,9 +159,11 @@ credentials, unsupported state adapters, external writable storage, absolute/tra
 paths, explicit shared targets, and custom hooks/build/preStart/background-worker effects. A
 `cloud.previews.site` selection cannot make a multi-runtime project safe.
 
-Runtime eligibility uses ts-cloud's native classification: a `proxyTo` upstream cannot qualify
-through stale `start`/`port` fields. Native scheduler inference from `app/Scheduler.ts`, inherited
-CDN policy and enabled explicit `config/email.ts` provisioning also refuse before publication.
+Runtime eligibility and default selection use ts-cloud's native classification: the sole
+`server-app` is selected even after bucket/static sites with stale `start`/`port` fields. An explicit
+`cloud.previews.site` must name that runtime; selecting bucket/static sites refuses before effects.
+A `proxyTo` upstream cannot qualify through stale server fields. Native scheduler inference from
+`app/Scheduler.ts`, inherited CDN policy and enabled explicit `config/email.ts` provisioning also refuse before publication.
 An effective `scheduler: false` or email `server.enabled: false` remains an opt-out. Accepted
 previews run with ancillary reconciliation disabled: no inferred scheduler, management dashboard,
 app-wide DNS records, CDN, R2, Workers, mail tenant/health/DNS or mailbox credential persistence.

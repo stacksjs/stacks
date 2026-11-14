@@ -45,7 +45,7 @@ export function previewDomain(config: any, env: Record<string, string | undefine
   return domain.toLowerCase()
 }
 
-/** The site a preview deploys: `cloud.previews.site`, else the first site that runs a server. */
+/** Legacy target selection, retained for removal of existing previews. */
 export function previewSite(config: any): string {
   const sites: Record<string, any> = config?.sites ?? {}
   const named = config?.cloud?.previews?.site
@@ -61,6 +61,10 @@ export function previewSite(config: any): string {
 }
 
 export function previewTarget(config: any, name: string, domain: string): PreviewTarget {
+  return createPreviewTarget(config, name, domain)
+}
+
+function createPreviewTarget(config: any, name: string, domain: string, selectedSite?: string): PreviewTarget {
   assertPreviewName(name)
   const appSlug = config?.project?.slug
   if (!appSlug)
@@ -68,7 +72,7 @@ export function previewTarget(config: any, name: string, domain: string): Previe
   const slug = `${appSlug}-${name}`
   if (slug.length > 63)
     throw new TypeError(`The preview slug "${slug}" is longer than 63 characters; use a shorter preview name.`)
-  const site = previewSite(config)
+  const site = selectedSite ?? previewSite(config)
   // The preview's units and directories are named `<slug>-<site>`. One of the
   // app's own sites must never share that prefix, or removing the preview
   // would match the app's units.
@@ -250,20 +254,24 @@ export function previewHasSymlinkPaths(config: any, projectRoot: string): boolea
  * A conservative configuration guard for trusted apps, not an env provenance
  * guarantee or a sandbox for arbitrary application code/hardcoded adapters.
  */
-export function previewPreflightProblems(config: any, context: PreviewPreflightContext = {}): string[] {
+function previewPreflight(config: any, context: PreviewPreflightContext = {}): { problems: string[], site: string | undefined } {
   const problems = new Set<string>()
   const refuse = (message: string): void => { problems.add(message) }
   const present = (value: unknown): boolean => value !== undefined && value !== null && value !== '' && value !== false
   const configured = (value: unknown): boolean => present(value) && (!Array.isArray(value) || value.length > 0) && (typeof value !== 'object' || Object.keys(value as object).length > 0)
-  const sites = Object.values(config?.sites ?? {}) as any[]
-  const runtimes = sites.filter(site => site && resolveSiteKind(site) === 'server-app')
+  const entries = Object.entries(config?.sites ?? {}) as [string, any][]
+  const sites = entries.map(([, site]) => site)
+  const runtimes = entries.filter(([, site]) => site && resolveSiteKind(site) === 'server-app')
+  // Resolve once from native kinds, then carry this exact validated identity
+  // into the target. The legacy removal selector must not choose deployment.
+  const site = config?.cloud?.previews?.site || (runtimes.length === 1 ? runtimes[0]?.[0] : undefined)
   if (sites.some(site => site && resolveSiteKind(site) === 'server-php'))
     refuse('Other native server runtimes require an explicit isolation planner; only a self-contained server app is supported.')
   if (sites.some(site => site && resolveSiteKind(site) === 'proxy'))
     refuse('Proxy upstreams are unsupported for previews; the preview must ship its own server runtime.')
   if (runtimes.length !== 1)
     refuse('Only a single self-contained server runtime can be previewed; multi-runtime selection requires an explicit isolation planner.')
-  if (config?.cloud?.previews?.site && !runtimes.includes(config.sites?.[config.cloud.previews.site]))
+  if (!runtimes.some(([name]) => name === site))
     refuse('The selected preview site must be the self-contained server runtime.')
   const infra = config?.infrastructure ?? {}
   const compute = infra.compute ?? {}
@@ -286,7 +294,7 @@ export function previewPreflightProblems(config: any, context: PreviewPreflightC
   if (present(config?.stateDir) && !isPreviewRelativePath(config.stateDir))
     refuse('Preview state paths must remain relative to the project.')
 
-  for (const site of runtimes) {
+  for (const [, site] of runtimes) {
     if (['preStart', 'deployScript', 'daemons', 'queues', 'scheduler', 'repository', 'build', 'notifications'].some(key => configured(site[key])))
       refuse('Custom build/deploy commands, background workers and site effects are unsupported for previews.')
     if (present(site.root) && !isPreviewRelativePath(site.root))
@@ -327,7 +335,11 @@ export function previewPreflightProblems(config: any, context: PreviewPreflightC
     if (has('TS_CLOUD_STATE_DIR'))
       refuse('A state-directory environment override is unsupported for previews.')
   }
-  return [...problems]
+  return { problems: [...problems], site }
+}
+
+export function previewPreflightProblems(config: any, context: PreviewPreflightContext = {}): string[] {
+  return previewPreflight(config, context).problems
 }
 
 export interface PreviewDeployInput {
@@ -347,10 +359,10 @@ export interface PreviewDeployEffects {
 
 /** The command's effect boundary: no discovery or deployment on refusal. */
 export async function runPreviewDeploy(input: PreviewDeployInput, effects: PreviewDeployEffects): Promise<PreviewTarget> {
-  const problems = previewPreflightProblems(input.config, input.context)
-  if (problems.length)
+  const { problems, site } = previewPreflight(input.config, input.context)
+  if (problems.length || !site)
     throw new TypeError(`Preview preflight refused: ${problems.join(' ')}`)
-  const target = previewTarget(input.config, input.name, input.domain)
+  const target = createPreviewTarget(input.config, input.name, input.domain, site)
   const owners = await effects.discoverPorts(target)
   const port = previewPort(owners, target.slug, Number(input.config.sites?.[target.site]?.port) || 3000)
   await effects.deploy(derivePreviewConfig(input.config, target, port), target, port)
