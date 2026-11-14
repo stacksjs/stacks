@@ -1,5 +1,64 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.592...v0.75.593)
+
+## ✨ Features
+
+- integrate native hosted library builds ([766e470](https://github.com/stacksjs/stacks/commit/766e470)) _(by Chris Breuer)_
+- **library**: build immutable hosted web components ([d9e70ba](https://github.com/stacksjs/stacks/commit/d9e70ba)) _(by Chris)_
+- **library**: scope private registry read credentials ([d51462d](https://github.com/stacksjs/stacks/commit/d51462d)) _(by Chris Breuer)_
+- **library**: integrate immutable publication into native Buddy releases ([aa5451c](https://github.com/stacksjs/stacks/commit/aa5451c)) _(by Chris Breuer)_
+- **library**: retain and publish exact source release archives ([958e78b](https://github.com/stacksjs/stacks/commit/958e78b)) _(by Chris)_
+
+## 🐛 Bug Fixes
+
+- integrate credential-safe registry receipts ([491e54d](https://github.com/stacksjs/stacks/commit/491e54d)) _(by Chris Breuer)_
+- keep registry download credentials out of release receipts ([2524eec](https://github.com/stacksjs/stacks/commit/2524eec)) _(by Chris Breuer)_
+- integrate native hosted build review corrections ([3b12be8](https://github.com/stacksjs/stacks/commit/3b12be8)) _(by Chris Breuer)_
+- preserve native hosted build inputs and assets ([22b45cd](https://github.com/stacksjs/stacks/commit/22b45cd)) _(by Chris Breuer)_
+- integrate native library public type entry ([a2a7510](https://github.com/stacksjs/stacks/commit/a2a7510)) _(by Chris Breuer)_
+- **library**: isolate published release configuration types ([e0bfc30](https://github.com/stacksjs/stacks/commit/e0bfc30)) _(by Chris Breuer)_
+- **library**: narrow hosted configuration type import ([31450f0](https://github.com/stacksjs/stacks/commit/31450f0)) _(by Chris)_
+- **library**: accept the latest owned CI rerun artifact ([0eb2507](https://github.com/stacksjs/stacks/commit/0eb2507)) _(by Chris Breuer)_
+- **library**: align release channels and hermetic qualification ([3f8c2f2](https://github.com/stacksjs/stacks/commit/3f8c2f2)) _(by Chris Breuer)_
+- **library**: bind native release reads to scoped registry credentials ([5918e72](https://github.com/stacksjs/stacks/commit/5918e72)) _(by Chris Breuer)_
+- **library**: bind historical receipts and artifact downloads to owned source ([cc3fa4b](https://github.com/stacksjs/stacks/commit/cc3fa4b)) _(by Chris Breuer)_
+- integrate native library release boundary corrections ([b1c2c2d](https://github.com/stacksjs/stacks/commit/b1c2c2d)) _(by Chris Breuer)_
+- **library**: preserve valid export fallback arrays ([ac3ba85](https://github.com/stacksjs/stacks/commit/ac3ba85)) _(by Chris Breuer)_
+- **library**: enforce native release artifact boundaries ([a0cbffe](https://github.com/stacksjs/stacks/commit/a0cbffe)) _(by Chris Breuer)_
+- **library**: materialize retained hosted release files ([a59e25f](https://github.com/stacksjs/stacks/commit/a59e25f)) _(by Chris)_
+- **library**: reject conflicting retained archive paths ([a25690a](https://github.com/stacksjs/stacks/commit/a25690a)) _(by Chris)_
+- **server**: normalize empty auto-import discovery fingerprints ([23f4f54](https://github.com/stacksjs/stacks/commit/23f4f54)) _(by Chris)_
+
+## ✅ Tests
+
+- **library**: separate registry read and publish credentials ([28c80b8](https://github.com/stacksjs/stacks/commit/28c80b8)) _(by Chris Breuer)_
+
+## 🔧 Chores
+
+- integrate current framework release source ([bd48912](https://github.com/stacksjs/stacks/commit/bd48912)) _(by Chris Breuer)_
+- regenerate native library source mappings ([cb9291a](https://github.com/stacksjs/stacks/commit/cb9291a)) _(by Chris Breuer)_
+- integrate current native library release fixes ([e1e23ed](https://github.com/stacksjs/stacks/commit/e1e23ed)) _(by Chris Breuer)_
+- refresh native library capability inventory ([a2d582e](https://github.com/stacksjs/stacks/commit/a2d582e)) _(by Chris Breuer)_
+- integrate current native library release source ([f110213](https://github.com/stacksjs/stacks/commit/f110213)) _(by Chris Breuer)_
+- integrate native Buddy library release lifecycle ([01f3301](https://github.com/stacksjs/stacks/commit/01f3301)) _(by Chris Breuer)_
+- integrate current framework release source ([57711a5](https://github.com/stacksjs/stacks/commit/57711a5)) _(by Chris Breuer)_
+- integrate native registry authentication wiring ([c4ff308](https://github.com/stacksjs/stacks/commit/c4ff308)) _(by Chris Breuer)_
+- integrate scoped registry read authentication ([47770f3](https://github.com/stacksjs/stacks/commit/47770f3)) _(by Chris Breuer)_
+- integrate current native release boundaries ([79aff90](https://github.com/stacksjs/stacks/commit/79aff90)) _(by Chris Breuer)_
+- integrate current framework release source ([3c4ca66](https://github.com/stacksjs/stacks/commit/3c4ca66)) _(by Chris Breuer)_
+- integrate native auto-import discovery fingerprint fix ([bbcf7e4](https://github.com/stacksjs/stacks/commit/bbcf7e4)) _(by Chris Breuer)_
+- integrate native library release artifact foundation ([0c864b4](https://github.com/stacksjs/stacks/commit/0c864b4)) _(by Chris Breuer)_
+
+## 🎉 Miscellaneous
+
+- Merge branch 'codex/native-library-release' into codex/native-library-release-artifacts ([6bc946f](https://github.com/stacksjs/stacks/commit/6bc946f)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.591...v0.75.592)
 
 ## 🐛 Bug Fixes
