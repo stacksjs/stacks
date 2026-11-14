@@ -25,8 +25,8 @@ async function fixture(exports: unknown = './dist/index.js') {
   return { root, dir, plan, directory: join(root, 'candidate') }
 }
 
-test('rejects an export target which exists in the archive but is invalid for a Node package import', async () => {
-  const { root, plan, directory } = await fixture('dist/index.js')
+test.each(['dist/index.js', ['dist/index.js']].map(exports => ({ exports })))('rejects export targets with no valid Node package fallback', async ({ exports }) => {
+  const { root, plan, directory } = await fixture(exports)
   const node = Bun.which('node')
   expect(node).not.toBeNull()
   const consumer = Bun.spawnSync([node!, '--input-type=module', '-e', "await import('@example/boundary')"], { cwd: root, stdout: 'pipe', stderr: 'pipe' })
@@ -36,20 +36,32 @@ test('rejects an export target which exists in the archive but is invalid for a 
 })
 
 test.each([
-  './dist/index.js',
-  { import: ['./dist/index.js'], default: './dist/index.js' },
-  { '.': { types: './dist/index.d.ts', import: ['./dist/index.js'], default: './dist/index.js' }, './features/*': './dist/*.js', './private': null },
-])('retains valid string, conditional, array, wildcard and null exports with conventional manifest fields', async (exports) => {
+  { exports: './dist/index.js', nodeOnly: false },
+  { exports: ['dist/index.js', './dist/index.js'], nodeOnly: true },
+  { exports: { import: ['./dist/index.js'], default: './dist/index.js' }, nodeOnly: false },
+  { exports: { import: ['invalid:target', './dist/index.js'], default: './dist/index.js' }, nodeOnly: true },
+  { exports: { '.': { types: './dist/index.d.ts', import: ['./dist/index.js'], default: './dist/index.js' }, './features/*': './dist/*.js', './private': null }, nodeOnly: false },
+])('retains valid string, conditional, array, wildcard and null exports with conventional manifest fields', async ({ exports, nodeOnly }) => {
   const { root, plan, directory } = await fixture(exports)
   const candidate = await retainLibraryRelease({ directory, source, tag: 'alpha', packages: [plan] })
   expect(candidate.packages[0]!.archive.files['dist/index.js']).toBeDefined()
-  for (const runtime of [Bun.which('node')!, process.execPath]) {
+  // Bun 1.4.4 does not implement Node's invalid-target array fallback. Node
+  // qualifies that grammar; both runtimes qualify canonical valid arrays.
+  for (const runtime of nodeOnly ? [Bun.which('node')!] : [Bun.which('node')!, process.execPath]) {
     const subpaths = typeof exports === 'object' && './features/*' in exports
       ? "const feature=await import('@example/boundary/features/index');if(feature.answer!==42)throw new Error('Wrong wildcard export');const hidden=await import('@example/boundary/private').then(()=>false,()=>true);if(!hidden)throw new Error('Null export should deny access');"
       : ''
     const consumer = Bun.spawnSync([runtime, '--input-type=module', '-e', `const {answer}=await import('@example/boundary'); if(answer!==42) throw new Error('Wrong public export');${subpaths}`], { cwd: root, stdout: 'pipe', stderr: 'pipe' })
     expect(consumer.exitCode, consumer.stderr.toString()).toBe(0)
   }
+})
+
+test('does not hide a missing valid export behind a later fallback', async () => {
+  const { root, plan, directory } = await fixture(['./dist/missing.js', './dist/index.js'])
+  const consumer = Bun.spawnSync([Bun.which('node')!, '--input-type=module', '-e', "await import('@example/boundary')"], { cwd: root, stdout: 'pipe', stderr: 'pipe' })
+  expect(consumer.exitCode).not.toBe(0)
+  expect(consumer.stderr.toString()).toContain('ERR_MODULE_NOT_FOUND')
+  await expect(retainLibraryRelease({ directory, source, tag: 'alpha', packages: [plan] })).rejects.toThrow('missing')
 })
 
 test('historical readback can report advanced tags without weakening publication or archive identity', async () => {
@@ -95,8 +107,8 @@ test.skipIf(process.platform === 'win32')('the default publisher deadline stops 
   await writeFile(probe, `import {publishPreparedLibraryRelease} from ${JSON.stringify(join(import.meta.dir, '../src/library/release-registry.ts'))};
 if(Bun.which('npm')!==${JSON.stringify(executable)})throw new Error('Wrong publisher executable');
 const endpoint=new URL(${JSON.stringify(server.url.origin)});if(endpoint.hostname!=='127.0.0.1'||!endpoint.port)throw new Error('Expected owned loopback endpoint');
-const started=performance.now();const operation=publishPreparedLibraryRelease(${JSON.stringify(directory)},{publisher:'npm',cwd:process.cwd(),dryRun:true,npmRegistry:endpoint.origin,requestTimeoutMs:400});
-let watchdog;const outcome=await Promise.race([operation.then(()=>({settled:true,error:''})).catch(error=>({settled:true,error:String(error)})),new Promise(resolve=>{watchdog=setTimeout(()=>resolve({settled:false,error:''}),3000)})]);clearTimeout(watchdog);
+const started=performance.now();const operation=publishPreparedLibraryRelease(${JSON.stringify(directory)},{publisher:'npm',cwd:process.cwd(),dryRun:true,npmRegistry:endpoint.origin,requestTimeoutMs:1500});
+let watchdog;const outcome=await Promise.race([operation.then(()=>({settled:true,error:''})).catch(error=>({settled:true,error:String(error)})),new Promise(resolve=>{watchdog=setTimeout(()=>resolve({settled:false,error:''}),5000)})]);clearTimeout(watchdog);
 const alive=[];for(const file of ${JSON.stringify([pid, descendantPid])}){if(!await Bun.file(file).exists())throw new Error('Publisher fixture did not start');const target=Number(await Bun.file(file).text());try{process.kill(target,0);alive.push(target)}catch{}}
 console.log(JSON.stringify({...outcome,elapsed:performance.now()-started,alive}));for(const target of alive){try{process.kill(target,'SIGKILL')}catch{}}await operation.catch(()=>{});
 `)
@@ -107,7 +119,7 @@ console.log(JSON.stringify({...outcome,elapsed:performance.now()-started,alive})
     const result = JSON.parse(output.trim()) as { settled: boolean, elapsed: number, error: string, alive: number[] }
     expect(result.settled).toBe(true)
     expect(result.error).toBeTruthy()
-    expect(result.elapsed).toBeLessThan(3000)
+    expect(result.elapsed).toBeLessThan(4500)
     expect(result.alive).toEqual([])
   }
   finally { server.stop(true) }

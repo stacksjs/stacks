@@ -137,15 +137,31 @@ function limits(options: LibraryReleaseLimits) {
   if (![archive, expanded].every(value => Number.isSafeInteger(value) && value > 0)) fail('Invalid archive byte budgets')
   return { archive, expanded }
 }
+class InvalidRelativeExportTarget extends Error {}
+
 function validateArchiveExports(manifest: Record<string, unknown>, files: Map<string, Uint8Array>): void {
   function target(value: unknown, relativeExport = false): void {
     if (value === null) return
-    if (Array.isArray(value)) { value.forEach(item => target(item, relativeExport)); return }
+    if (Array.isArray(value)) {
+      let valid = value.length === 0
+      let invalid: InvalidRelativeExportTarget | undefined
+      for (const item of value) {
+        try { target(item, relativeExport); valid = true }
+        catch (error) {
+          // Node skips invalid targets in an export fallback array. A missing
+          // declared file remains an error; it is not a syntax fallback.
+          if (!(error instanceof InvalidRelativeExportTarget)) throw error
+          invalid = error
+        }
+      }
+      if (!valid && invalid) throw invalid
+      return
+    }
     if (value && typeof value === 'object') { Object.values(value).forEach(item => target(item, relativeExport)); return }
     if (typeof value !== 'string') fail('Archive declares an invalid export target')
     // Unlike main/module/types, Node package exports require the ./ prefix.
     // File existence alone would accept a package which cannot be imported.
-    if (relativeExport && !value.startsWith('./')) fail('Archive exports require a relative ./ target')
+    if (relativeExport && !value.startsWith('./')) throw new InvalidRelativeExportTarget('Library release blocked: Archive exports require a relative ./ target')
     const path = value.replace(/^\.\//, '')
     if (!safeArchivePath(path)) fail('Archive export escapes its package')
     if (path.includes('*')) {
