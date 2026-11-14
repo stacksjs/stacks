@@ -194,6 +194,56 @@ builds, so the assets are regenerated rather than shipped stale:
   first call. Either import the names explicitly, or set `runtime: 'stx'` on
   the package to declare that it is only ever consumed from inside an stx app.
 
+### Hosted web-component output
+
+Set `packages[].hosted` on a `web-components` package to emit public browser
+assets during the normal native build. No app build hook is needed:
+
+```ts
+{
+  name: '@acme/elements', kind: 'web-components', include: ['widgets/**'],
+  hosted: {
+    outputDir: 'public/widgets', base: '/widgets', entry: 'public/elements.js',
+    styles: ['resources/functions/widgets/layout.css'],
+    loader: {
+      source: 'resources/functions/widgets/loader.ts',
+      exports: ['default', 'createWidget'],
+      define: { ELEMENT_MODULE: JSON.stringify('./bundle.js') },
+    },
+  },
+}
+```
+
+Omit `loader` to have the stable entry re-export the native bundle. An authored
+loader remains application code; `define` supplies explicit public build
+expressions, and `exports` selects the stable entry's public API. Omit `exports`
+to forward the loader's named exports and its default when present. The optional
+`styles` list names literal project-relative `.css` text files to hash. A loader can import the same file using
+`import layoutCss from './layout.css' with { type: 'text' }`. The builder
+reads exact stylesheet text without parsing or executing the authored loader.
+
+`outputDir` and `entry` must be project-relative paths beneath `public/`. `base`
+is its absolute public path or HTTPS URL. Overlapping package destinations,
+path traversal, hidden output segments excluded by CI artifact retention,
+missing loader exports, environment access and privileged server
+imports fail the hosted build. Use explicit public constants in browser code.
+
+The native bundle, component manifest, optional light-DOM CSS and optional loader
+land in `outputDir/<package-version>-<content-hash>/`. The package version
+respects its configured pin. Existing immutable files must contain exactly the
+same bytes or the build fails. The stable ESM entry and `outputDir/manifest.json`
+move to the completed revision. The immutable manifest records public paths,
+SHA-256, SHA-384 SRI, raw/gzip byte sizes and CSP style hashes. Style hashes come
+from the compiler's public exact component style metadata plus declared literal
+stylesheet text, rather than minified standalone CSS files. The hosted `bundle.js`
+is copied unchanged from package `dist/bundle.js`.
+
+`buildLibraryPackages()` returns an optional `hosted` report for each such
+package. Its `files` include absolute paths, project-relative paths, hashes and
+an `immutable` flag for retaining all content and both manifest copies. Source
+and compiled-output checks are retained in `actions/tests/library-hosted.test.ts`;
+set `STACKS_BROWSER_TESTS=1` and `CHROME_PATH` to run its real browser CSP check.
+
 ### Release flow
 
 `buddy release` runs `generate/lib-entries`, which stages sources and writes

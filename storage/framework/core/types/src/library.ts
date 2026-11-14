@@ -135,9 +135,28 @@ export interface LibraryReleaseOptions {
  */
 export type LibraryPackageKind = 'functions' | 'components' | 'web-components'
 
-/**
- * One releasable package built out of `resources/`.
- */
+/** Public browser assets emitted alongside a native web-component package. */
+export interface LibraryHostedOptions {
+  /** Project-relative directory beneath public/ for immutable revisions. Hidden path segments are rejected for CI retention. */
+  outputDir: string
+  /** Public URL base for outputDir, either an absolute path or an HTTPS URL. */
+  base: string
+  /** Project-relative stable ESM entry beneath public/, for example public/elements.js. */
+  entry: string
+  /** Project-relative literal .css text files whose exact contents need extra CSP hashes. */
+  styles?: string[]
+  /** Omit to expose the native bundle directly through the stable entry. */
+  loader?: {
+    /** Project-relative authored browser module. Never executed by the builder. */
+    source: string
+    /** Public exports forwarded by the stable entry. Defaults to all named exports and default when present. */
+    exports?: string[]
+    /** Explicit Bun build expressions, for example { ELEMENT_MODULE: JSON.stringify('./bundle.js') }. */
+    define?: Record<string, string>
+  }
+}
+
+/** One releasable package built out of `resources/`. */
 export interface LibraryPackageOptions {
   /**
    * The package name as published to npm, scope included.
@@ -300,6 +319,9 @@ export interface LibraryPackageOptions {
    * Peer dependencies written into the generated package.json.
    */
   peerDependencies?: Record<string, string>
+
+  /** Emit native web-component browser assets and a stable entry without an app build hook. */
+  hosted?: LibraryHostedOptions
 }
 
 export type LibraryConfig = Partial<LibraryOptions>

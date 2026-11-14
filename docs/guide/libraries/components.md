@@ -6,6 +6,41 @@ description: Build reusable STX component libraries that work across projects wi
 
 Build reusable STX component libraries that work across projects with Stacks.
 
+## Hosted web components
+
+A `web-components` package can publish browser assets as part of
+`buddy build:web-components` or `buddy build:libs`:
+
+```ts
+// config/library.ts, inside packages[]
+{
+  name: '@acme/elements',
+  kind: 'web-components',
+  include: ['widgets/**'],
+  hosted: {
+    outputDir: 'public/widgets',
+    base: '/widgets',
+    entry: 'public/elements.js',
+  },
+}
+```
+
+The stable `/elements.js` entry re-exports a content-addressed revision under
+`/widgets/`. Its bundle is identical to the package's `dist/bundle.js`. Both
+an immutable manifest in the revision directory and `/widgets/manifest.json`
+record public file URLs, SHA-256, SHA-384 integrity, byte/gzip sizes and exact
+compiler style hashes for CSP. Existing revision files are never overwritten.
+
+An optional `hosted.loader` supplies an authored browser module with `source`,
+`exports` and `define`. For example, define a loader's module
+constant as `JSON.stringify('./bundle.js')` to import its sibling bundle.
+`hosted.styles` names project-relative literal `.css` text files for extra CSP
+hashes; the loader can import the same text with `with { type: 'text' }`. Keep
+application behavior in this loader; Stacks owns compilation, output identity,
+manifest generation and stable aliases. The
+[build skill](/skills/toolchain/build) documents the full contract and retained
+consumer/browser verification.
+
 ## Component Architecture
 
 ### File Structure
