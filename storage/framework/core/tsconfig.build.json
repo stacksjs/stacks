@@ -266,6 +266,7 @@
       "@stacksjs/types": ["./types/src/index.ts"],
       "@stacksjs/types/*": ["./types/src/*.ts"],
       "@stacksjs/types/*.js": ["./types/src/*.ts"],
+      "@stacksjs/types/library": ["./types/src/library.ts"],
       "@stacksjs/types/mobile": ["./types/src/mobile.ts"],
       "@stacksjs/ui": ["./ui/src/index.ts"],
       "@stacksjs/ui/components": ["./ui/src/components.ts"],
