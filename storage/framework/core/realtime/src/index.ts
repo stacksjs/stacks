@@ -46,3 +46,9 @@ export type { DurableReplayAppend, DurableReplayCursor, DurableReplayMessage, Du
 export { createSqlDurableReplayStore } from './durable-replay-sql'
 export type { ReplaySqlQuery, SqlDurableReplayOptions } from './durable-replay-sql'
 export { createDurableReplayResponse, publishDurableReplay } from './durable-replay-http'
+
+// Opt-in metadata-only hints. SQL replay/domain state remain authoritative.
+export { createMemoryInvalidationBus, InvalidationError } from './invalidation-bus'
+export type { InvalidationBounds, InvalidationBus, InvalidationNotice, InvalidationStatus, InvalidationSubscription, MemoryInvalidationBus } from './invalidation-bus'
+export { createRedisInvalidationBus } from './redis-invalidations'
+export type { RedisInvalidationOptions } from './redis-invalidations'

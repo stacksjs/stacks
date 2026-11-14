@@ -508,6 +508,35 @@ Retained evidence:
 - [storage/framework/core/realtime/tests/ws-auth.test.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/tests/ws-auth.test.ts)
 - [storage/framework/core/realtime/tests/websocket-options.test.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/tests/websocket-options.test.ts)
 
+## realtime: redis-invalidations
+
+Status: **experimental**. Topology: worker-and-redis.
+
+Implementation: [storage/framework/core/realtime/src/redis-invalidations.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/src/redis-invalidations.ts).
+
+Prerequisites:
+
+- Explicit createRedisInvalidationBus and createBroadcastResponse invalidations option
+- Bun native Redis Pub/Sub methods (qualified on Bun 1.4.4)
+- Operator-owned Redis URL and application/environment namespace
+- Owned Redis binary for live tests (qualified on Redis 8.8.0)
+- Current per-request/channel authorization
+
+Limitations:
+
+- Metadata-only at-most-once hints; no transcript forwarding, durable delivery or automatic WebSocket cluster fan-out.
+- Bun documents the native Pub/Sub interface as experimental; unsupported runtimes fail only on explicit factory use.
+- Live tests own isolated loopback Redis and skip without STACKS_TEST_REDIS_BINARY or redis-server on PATH; this record does not claim a CI service contract.
+- Reconnect issues resync hints, but producer-only outages can lose hints; applications still need authoritative snapshots/replay or periodic refresh.
+- TLS, ACL and managed cluster configurations require separate qualification.
+
+Retained evidence:
+
+- [storage/framework/core/realtime/tests/invalidation-bus.test.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/tests/invalidation-bus.test.ts)
+- [storage/framework/core/realtime/tests/stream-invalidations.test.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/tests/stream-invalidations.test.ts)
+- [storage/framework/core/realtime/tests/redis-invalidations.test.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/tests/redis-invalidations.test.ts)
+- [storage/framework/core/realtime/tests/redis-invalidation-process.test.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/tests/redis-invalidation-process.test.ts)
+
 ## realtime: sqlite-replay
 
 Status: **supported**. Topology: worker-and-embedded-sqlite.

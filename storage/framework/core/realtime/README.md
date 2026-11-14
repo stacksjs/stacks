@@ -1,7 +1,7 @@
 # Stacks Realtime
 
 Native WebSocket broadcasting and authenticated HTTP event streams, with
-opt-in process-local replay or explicit durable SQL replay.
+opt-in process-local replay, explicit durable SQL replay, and Redis invalidation hints.
 
 ```ts
 import { emit, createBroadcastResponse } from '@stacksjs/realtime'
@@ -21,6 +21,15 @@ The [durable replay contract and model examples](https://github.com/stacksjs/sta
 cover atomic per-channel sequences, incarnation-bound cursors, bounded retention
 and idempotency, response gaps, and the absence of live cluster fan-out or
 exactly-once delivery. The deterministic fake is `createMemoryDurableReplayStore`.
+
+For cross-worker HTTP wake-ups, explicitly create `createRedisInvalidationBus`
+and pass it as `createBroadcastResponse({ invalidations, ... })`. The bus uses
+operator-owned Redis connections and namespaces, carries only metadata, and
+retains current per-request/channel authorization. Local callers are unchanged.
+The [Redis invalidation contract](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/docs/redis-invalidations.md)
+covers Bun's experimental Pub/Sub interface, owned-service evidence, bounds,
+reconnect resync, readonly status and at-most-once limitations. Set
+`STACKS_TEST_REDIS_BINARY` to run the isolated live Redis fixture cases.
 
 Run the package tests from the framework root:
 

@@ -1,6 +1,6 @@
 ---
 name: stacks-realtime
-description: Use when implementing real-time features in Stacks - WebSocket broadcasting, durable SQL replay, public/private/presence channels, emit to users, the Channel class, broadcast discovery, server lifecycle, or realtime configuration. Covers @stacksjs/realtime and config/realtime.ts.
+description: Use when implementing real-time features in Stacks - WebSocket broadcasting, Redis invalidation hints, durable SQL replay, public/private/presence channels, emit to users, the Channel class, broadcast discovery, server lifecycle, or realtime configuration. Covers @stacksjs/realtime and config/realtime.ts.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -361,7 +361,7 @@ automatic broadcast socket upgrade handler.
 - There is no Stacks heartbeat or backpressure guard; use `createServer({ websocket: { idleTimeout, sendPings, backpressureLimit, closeOnBackpressureLimit } })`
 - Serverless/provider shapes in config describe cloud options; inspect their actual deploy/runtime wiring before claiming the Stacks broadcast APIs support that topology
 - Rate limiting defaults: 100 connections per IP, 50 messages/second, 64KB max payload, 300s ban duration
-- The supported Stacks runtime contract is single-process WebSocket; scale-out requires an application-provided fan-out layer and separate provider evidence
+- WebSocket broadcasting remains single-process; the separate opt-in Redis invalidation adapter wakes authorized HTTP consumers only
 - Auto-scaling config (min/max/targetCPU) is for cloud deployment orchestration
 - The `satisfies RealtimeConfig` type annotation ensures the config matches the expected type from `@stacksjs/types`
 
@@ -436,3 +436,39 @@ bounds, crash/retention limitations and native model examples under
 `core/realtime/tests/fixtures/replay-app`. Retained tests are
 `core/realtime/tests/durable-replay*.test.ts`, including independent SQLite and
 PostgreSQL workers, rollback/SIGKILL, restart, scope/reset and HTTP revocation.
+
+## Redis invalidation hints (explicit opt-in, experimental)
+
+`createRedisInvalidationBus({url,namespace,...bounds})` owns separate publisher
+and subscriber Bun clients. Use operator-owned configuration and an explicit
+app/environment namespace: Redis Pub/Sub database numbers do not isolate topics.
+The public API is `publish(channel)`, `subscribe({channels,onInvalidate,onClose?,signal?})`,
+`close()` and readonly `status`. `createMemoryInvalidationBus` is the deterministic
+fake. Importing realtime does not connect Redis; unsupported Bun Pub/Sub methods
+fail only when the explicit Redis factory is called.
+
+Pass a shared worker bus as `createBroadcastResponse({invalidations,channels,authorize,signal})`.
+It captures the initially authorized exact channel set, awaits subscription ACK,
+reauthorizes before opening SSE, then retains per-event and heartbeat checks.
+Hints emit only `{channel,event:'invalidated',data:null}` and require an authorized
+state/replay read. No wildcard subscription, transcript, file, credential or
+arbitrary Redis body is forwarded. Existing local-only callers keep their bytes.
+
+Publish only after domain/outbox commit. Redis Pub/Sub is at-most-once; its
+subscriber connection count is not browser delivery or a durable receipt.
+Reconnect restores subscriptions and emits a bounded resync hint; a producer-only
+outage may still lose hints. Keep authoritative replay/snapshot or periodic refresh.
+Bounds cover channels/subscribers, queued hints, callbacks, pending publishes,
+nonces and command/connect deadlines. Abort/dispose releases references; shutdown
+closes the owned clients and cancels retry/deadline work. Status callbacks receive
+only enums and core paths do not log broker URLs/errors or domain payloads.
+
+Bun's native Pub/Sub interface is experimental, qualified with Bun 1.4.4 and an
+owned Redis 8.8.0 loopback service. TLS/ACL/managed cluster deployments need
+separate evidence. Read `core/realtime/docs/redis-invalidations.md` for protocol,
+limits, archive checksum and live test instructions. `redis-invalidations` and
+`redis-invalidation-process` tests start/stop an owned binary, never shared Redis;
+set `STACKS_TEST_REDIS_BINARY` (or provide redis-server on PATH) so these cases
+run rather than skip. Retained evidence includes separate API/publisher processes,
+real HTTP/SSE, namespace isolation, outage, restart/resync, offline revocation and
+physical unsubscribe. This does not turn WebSocket broadcasting into a cluster.

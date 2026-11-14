@@ -140,12 +140,18 @@ is a driver you cannot select.
 | Driver | Status | Topology | Live service | Evidence |
 |---|---|---|---|---|
 | `websocket` | **supported** | single-process-websocket | - | `ws-auth.test.ts`<br>`websocket-options.test.ts` |
+| `redis-invalidations` | **experimental** | worker-and-redis | - | `invalidation-bus.test.ts`<br>`stream-invalidations.test.ts`<br>`redis-invalidations.test.ts`<br>`redis-invalidation-process.test.ts` |
 | `sqlite-replay` | **supported** | worker-and-embedded-sqlite | - | `durable-replay-sql.test.ts`<br>`durable-replay-process.test.ts`<br>`durable-replay-http.test.ts` |
 | `postgres-replay` | **supported** | client-server | postgres 17.11 | `durable-replay-sql.test.ts`<br>`durable-replay-process.test.ts`<br>`durable-replay-http.test.ts` |
 
 **Limitations**
 
 - **`websocket`** - Scale-out requires an application-provided fan-out layer.
+- **`redis-invalidations`** - Metadata-only at-most-once hints; no transcript forwarding, durable delivery or automatic WebSocket cluster fan-out.
+- **`redis-invalidations`** - Bun documents the native Pub/Sub interface as experimental; unsupported runtimes fail only on explicit factory use.
+- **`redis-invalidations`** - Live tests own isolated loopback Redis and skip without STACKS_TEST_REDIS_BINARY or redis-server on PATH; this record does not claim a CI service contract.
+- **`redis-invalidations`** - Reconnect issues resync hints, but producer-only outages can lose hints; applications still need authoritative snapshots/replay or periodic refresh.
+- **`redis-invalidations`** - TLS, ACL and managed cluster configurations require separate qualification.
 - **`sqlite-replay`** - Selected explicitly with createSqlDurableReplayStore; this is finite history, not a live transport driver.
 - **`sqlite-replay`** - Idempotency expires with retained events; permanent domain deduplication remains application-owned.
 - **`sqlite-replay`** - Applications bound channel cardinality and prune inactive channels.
