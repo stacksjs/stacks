@@ -34,6 +34,7 @@ test('persisted extension prerequisite precedes table and later view SQL, and a 
     expect(files[1]).toEndWith('-create-documents-table.sql')
     expect(readFileSync(join(directory, files[2]!), 'utf8')).toContain('CREATE VIEW')
     expect(persistGeneratedMigrations(statements)).toBe(0)
+    expect(persistGeneratedMigrations([...databaseExtensionStatements([{ databaseExtensions: ['vector'] }], 'postgres'), '-- No changes detected'])).toBe(0)
     expect(readdirSync(directory).sort()).toEqual(files)
   }
   finally {

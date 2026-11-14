@@ -2,6 +2,10 @@ import { describe, expect, it } from 'bun:test'
 import { groupGeneratedStatements, inlineSqliteAddedColumnReferences, withTableDropsLast } from '../src/migrations'
 
 describe('generated migration grouping', () => {
+  it('ignores comment-only diffs while retaining comment text inside SQL values', () => {
+    const statement = "CREATE TABLE notices (id INTEGER PRIMARY KEY, body TEXT DEFAULT '-- No changes detected');"
+    expect(groupGeneratedStatements(['-- No changes detected', '\n-- informational header\n;\n', statement])).toEqual([{ label: 'create-notices-table', statements: [statement] }])
+  })
   it('keeps references when SQLite adds a relation column incrementally', () => {
     const statements = inlineSqliteAddedColumnReferences(
       ['ALTER TABLE "delivery_routes" ADD COLUMN "courier_id" INTEGER;'],

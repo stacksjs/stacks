@@ -4970,7 +4970,10 @@ function normalizeCreateStatements(sqlStatements: string[]): string[] {
  * `drop-<table>-table`. Anything we can't match falls back to `auto-misc`.
  */
 export function groupGeneratedStatements(sqlStatements: string[], previousPlan?: MigrationPlan): GeneratedGroup[] {
-  const normalizedStatements = normalizeCreateStatements(sqlStatements)
+  // A dry-run diff returns a comment when the schema has not changed. Extension
+  // prerequisites can still reach the writer on that run; the comment must not
+  // become an empty auto-misc migration after the prerequisite is deduplicated.
+  const normalizedStatements = normalizeCreateStatements(sqlStatements.filter(statement => sqlStatementsOf(statement).length > 0))
   const groups = new Map<string, string[]>()
   const push = (label: string, stmt: string): void => {
     const list = groups.get(label) ?? []
