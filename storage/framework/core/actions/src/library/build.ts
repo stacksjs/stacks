@@ -273,6 +273,7 @@ async function writeManifest(pkg: ResolvedLibraryPackage, config: LibraryConfig 
     config,
     version,
     pkg.sources.map(source => relative(projectPath(), source)),
+    pkg.kind === 'functions' || !existsSync(resolve(pkg.dir, 'dist')) ? [] : await Array.fromAsync(new Bun.Glob('**/*').scan({ cwd: resolve(pkg.dir, 'dist'), onlyFiles: true })),
   )
 
   await Bun.write(resolve(pkg.dir, 'package.json'), serializeManifest(withRuntime(manifest, pkg)))

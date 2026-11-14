@@ -276,7 +276,18 @@ describe('libraryManifest', () => {
     const manifest = libraryManifest({ ...base, kind: 'components' } as never, {}, '1.0.0', [])
 
     expect(manifest.module).toBe('dist/index.js')
-    expect(manifest.exports['./style.css']).toBe('./dist/bundle.css')
+    expect(manifest.exports['./style.css']).toBeUndefined()
+  })
+
+  it('exports only emitted component modules, declarations and styles', () => {
+    const manifest = libraryManifest({ ...base, kind: 'web-components' } as never, {}, '1.0.0', [], ['index.js', 'index.d.ts', 'bundle.js', 'runtime.js', 'test-card.js', 'test-card.d.ts', 'test-card.css', 'custom-elements.json'])
+    expect(manifest.exports['./style.css']).toBeUndefined()
+    expect(manifest.exports['./runtime']).toBeUndefined()
+    expect(manifest.exports['./*']).toBeUndefined()
+    expect(manifest.exports['./test-card']).toEqual({ types: './dist/test-card.d.ts', import: './dist/test-card.js', default: './dist/test-card.js' })
+    expect(manifest.exports['./test-card.js']).toEqual(manifest.exports['./test-card'])
+    expect(manifest.exports['./test-card.css']).toBe('./dist/test-card.css')
+    expect(manifest.exports['./custom-elements.json']).toBe('./dist/custom-elements.json')
   })
 
   it('links the repository itself, since the package is built in a gitignored directory', () => {
@@ -357,6 +368,13 @@ describe('buildLibraryPackages', () => {
       const elements = projectPath('storage/framework/libs/packages/test-elements')
       expect(await Bun.file(resolve(elements, 'dist/bundle.js')).exists()).toBe(true)
       expect(await Bun.file(resolve(elements, 'dist/test-window.js')).exists()).toBe(false)
+      const elementManifest = await Bun.file(resolve(elements, 'package.json')).json()
+      expect(elementManifest.exports['./test-taskbar'].types).toBe('./dist/test-taskbar.d.ts')
+      expect(elementManifest.exports['./test-taskbar.js']).toEqual(elementManifest.exports['./test-taskbar'])
+      for (const entry of Object.values(elementManifest.exports)) {
+        for (const target of typeof entry === 'string' ? [entry] : Object.values(entry as Record<string, string>)) expect(await Bun.file(resolve(elements, target as string)).exists()).toBe(true)
+      }
+
     }
     finally {
       for (const report of reports)

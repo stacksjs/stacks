@@ -54,6 +54,7 @@ export function libraryManifest(
   config: LibraryConfig | undefined,
   version: string,
   sourcesRelativeToProject: string[],
+  emittedFiles: readonly string[] = [],
 ): LibraryManifest {
   const cfg = config ?? {}
   const repository = cfg.repository
@@ -101,11 +102,28 @@ export function libraryManifest(
   else
     manifest.publishConfig = { access: pkg.access }
 
-  // A component library ships CSS beside its modules, and a consumer that
-  // cannot `import '@acme/ui/style.css'` has to reach into dist/ by hand.
+  // Component emitters produce individual CSS files and an internal runtime
+  // without declarations. A wildcard invented nonexistent runtime types and
+  // doubled explicit .js suffixes; advertise only files the build produced.
   if (pkg.kind !== 'functions') {
-    (manifest.exports as Record<string, unknown>)['./style.css'] = './dist/bundle.css'
-    ;(manifest.exports as Record<string, unknown>)['./custom-elements.json'] = './dist/custom-elements.json'
+    delete manifest.exports['./*']
+    const files = new Set(emittedFiles)
+    for (const file of [...files].sort()) {
+      if (file.endsWith('.js') && files.has(`${file.slice(0, -3)}.d.ts`)) {
+        const entry = { types: `./dist/${file.slice(0, -3)}.d.ts`, import: `./dist/${file}`, default: `./dist/${file}` }
+        manifest.exports[`./${file.slice(0, -3)}`] = entry
+        manifest.exports[`./${file}`] = entry
+      }
+      else if (file.endsWith('.css')) manifest.exports[`./${file}`] = `./dist/${file}`
+    }
+    // The bundled root uses the declaration barrel but has no bundle.d.ts.
+    if (files.has('bundle.js') && files.has('index.d.ts')) {
+      const entry = { types: './dist/index.d.ts', import: './dist/bundle.js', default: './dist/bundle.js' }
+      manifest.exports['./bundle'] = entry
+      manifest.exports['./bundle.js'] = entry
+    }
+    if (files.has('bundle.css')) manifest.exports['./style.css'] = './dist/bundle.css'
+    if (files.has('custom-elements.json')) manifest.exports['./custom-elements.json'] = './dist/custom-elements.json'
   }
 
   // Assets are data, not modules: `./*` would send `<name>/webkit/manifest.json`
