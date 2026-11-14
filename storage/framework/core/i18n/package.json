@@ -1,6 +1,6 @@
 {
   "name": "@stacksjs/i18n",
-  "version": "0.75.586",
+  "version": "0.75.587",
   "description": "Internationalization system for Stacks.js applications",
   "type": "module",
   "sideEffects": false,
@@ -20,6 +20,18 @@
       "bun": "./dist/index.js",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "bun": "./dist/client.js",
+      "import": "./dist/client.js",
+      "default": "./dist/client.js"
+    },
+    "./stx": {
+      "types": "./dist/stx.d.ts",
+      "bun": "./dist/stx.js",
+      "import": "./dist/stx.js",
+      "default": "./dist/stx.js"
     }
   },
   "main": "./dist/index.js",
@@ -39,7 +51,8 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/path": "workspace:*",
-    "@stacksjs/ts-i18n": "^0.1.11"
+    "@stacksjs/ts-i18n": "^0.1.11",
+    "@stacksjs/stx": "^0.2.881"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
@@ -51,6 +64,18 @@
         "bun": "./dist/index.js",
         "import": "./dist/index.js",
         "default": "./dist/index.js"
+      },
+      "./client": {
+        "types": "./dist/client.d.ts",
+        "bun": "./dist/client.js",
+        "import": "./dist/client.js",
+        "default": "./dist/client.js"
+      },
+      "./stx": {
+        "types": "./dist/stx.d.ts",
+        "bun": "./dist/stx.js",
+        "import": "./dist/stx.js",
+        "default": "./dist/stx.js"
       }
     }
   }

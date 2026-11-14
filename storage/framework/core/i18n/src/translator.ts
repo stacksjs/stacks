@@ -43,20 +43,22 @@ export class I18n implements I18nInstance {
   private _fallbackLocale: string
   private _messages: Translations
   private _config: I18nConfig
+  private readonly listeners = new Set<() => void>()
 
-  constructor(options: Partial<I18nConfig> = {}) {
+  constructor(options: Partial<I18nConfig> = {}, private readonly track: () => void = () => {}) {
     this._config = { ...defaultConfig, ...options }
     this._locale = this._config.locale
     this._fallbackLocale = this._config.fallbackLocale
-    this._messages = this._config.messages || {}
+    this._messages = { ...this._config.messages }
   }
 
   get locale(): string {
+    this.track()
     return this._locale
   }
 
   set locale(value: string) {
-    this._locale = value
+    this.setLocale(value)
   }
 
   get fallbackLocale(): string {
@@ -64,6 +66,7 @@ export class I18n implements I18nInstance {
   }
 
   get availableLocales(): string[] {
+    this.track()
     return Object.keys(this._messages)
   }
 
@@ -99,7 +102,19 @@ export class I18n implements I18nInstance {
    * Set the current locale
    */
   setLocale = (locale: string): void => {
+    if (locale === this._locale) return
     this._locale = locale
+    this.notify()
+  }
+
+  /** Subscribe to locale or catalog changes. Returns an unsubscribe function. */
+  subscribe = (listener: () => void): (() => void) => {
+    this.listeners.add(listener)
+    return () => { this.listeners.delete(listener) }
+  }
+
+  private notify(): void {
+    for (const listener of this.listeners) listener()
   }
 
   /**
@@ -110,6 +125,7 @@ export class I18n implements I18nInstance {
       this._messages[locale] = {}
     }
     this._messages[locale] = deepMerge(this._messages[locale], messages)
+    this.notify()
   }
 
   /**
@@ -117,16 +133,16 @@ export class I18n implements I18nInstance {
    */
   d = (value: Date | number, format?: string): string => {
     const date = typeof value === 'number' ? new Date(value) : value
-    const options = this._config.dateTimeFormats?.[this._locale]?.[format || 'short'] || {}
-    return new Intl.DateTimeFormat(this._locale, options).format(date)
+    const options = this._config.dateTimeFormats?.[this.locale]?.[format || 'short'] || {}
+    return new Intl.DateTimeFormat(this.locale, options).format(date)
   }
 
   /**
    * Format a number
    */
   n = (value: number, format?: string): string => {
-    const options = this._config.numberFormats?.[this._locale]?.[format || 'decimal'] || {}
-    return new Intl.NumberFormat(this._locale, options).format(value)
+    const options = this._config.numberFormats?.[this.locale]?.[format || 'decimal'] || {}
+    return new Intl.NumberFormat(this.locale, options).format(value)
   }
 
   /**
@@ -145,7 +161,7 @@ export class I18n implements I18nInstance {
    * for the rest. The intermediate language fallback closes that gap.
    */
   private translate(key: string, values?: InterpolationValues, locale?: string): string {
-    const targetLocale = locale || this._locale
+    const targetLocale = locale || this.locale
     let message = this.getMessage(key, targetLocale)
 
     // Try language-part fallback (e.g. en-GB → en)
@@ -194,8 +210,13 @@ export class I18n implements I18nInstance {
     values?: InterpolationValues,
     locale?: string,
   ): string {
-    const targetLocale = locale || this._locale
+    const targetLocale = locale || this.locale
     let message = this.getMessage(key, targetLocale)
+
+    // Regional catalogs share the same language fallback as ordinary text.
+    if (message === undefined && targetLocale.includes('-')) {
+      message = this.getMessage(key, targetLocale.split('-')[0]!)
+    }
 
     // Try fallback locale
     if (message === undefined && targetLocale !== this._fallbackLocale) {
@@ -205,6 +226,10 @@ export class I18n implements I18nInstance {
     if (message === undefined || typeof message !== 'string') {
       if (this._config.warnMissing) {
         console.warn(`[i18n] Missing plural translation: "${key}" for locale "${targetLocale}"`)
+      }
+      if (message === undefined && this._config.missingHandler) {
+        const result = this._config.missingHandler(targetLocale, key)
+        if (result !== undefined) return result
       }
       return key
     }
@@ -222,7 +247,7 @@ export class I18n implements I18nInstance {
    * Check if a translation exists
    */
   private hasTranslation(key: string, locale?: string): boolean {
-    const targetLocale = locale || this._locale
+    const targetLocale = locale || this.locale
     return this.getMessage(key, targetLocale) !== undefined
   }
 
@@ -230,6 +255,7 @@ export class I18n implements I18nInstance {
    * Get a message by key (supports nested keys)
    */
   private getMessage(key: string, locale: string): TranslationMessages | string | undefined {
+    this.track()
     const messages = this._messages[locale]
     if (!messages) return undefined
 
@@ -432,13 +458,6 @@ export function tm(key: string, locale?: string): TranslationMessages | string |
  */
 export function createI18n(options: Partial<I18nConfig> = {}): I18n {
   return new I18n(options)
-}
-
-/**
- * Use the i18n composable from an STX component.
- */
-export function useI18n(options: Partial<I18nConfig> = {}): I18nInstance {
-  return createI18n(options)
 }
 
 /**

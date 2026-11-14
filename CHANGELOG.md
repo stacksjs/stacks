@@ -1,5 +1,25 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.586...v0.75.587)
+
+## ✨ Features
+
+- **i18n**: translate mounted STX screens without navigation ([d32f085](https://github.com/stacksjs/stacks/commit/d32f085)) _(by Chris Breuer)_
+
+## 🐛 Bug Fixes
+
+- **i18n**: resolve client subpaths in framework source checks ([4ea8211](https://github.com/stacksjs/stacks/commit/4ea8211)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **i18n**: refresh native client capability references ([9cdea45](https://github.com/stacksjs/stacks/commit/9cdea45)) _(by Chris Breuer)_
+- **models**: the pantry package of the Bun that needs no worker thread ([0bc353e](https://github.com/stacksjs/stacks/commit/0bc353e)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.585...v0.75.586)
 
 ## ✨ Features
