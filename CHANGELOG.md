@@ -1,5 +1,27 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.576...v0.75.577)
+
+## ✨ Features
+
+- integrate identified support into native Stacks applications ([addcb96](https://github.com/stacksjs/stacks/commit/addcb96)) _(by Chris)_
+- **telephony**: expose verified callback routing methods ([1c75ae3](https://github.com/stacksjs/stacks/commit/1c75ae3)) _(by Chris)_
+- expose account-bound Twilio inbound message timestamps ([e920582](https://github.com/stacksjs/stacks/commit/e920582)) _(by Chris)_
+- **telephony**: report number routing overrides for verification ([e2d532f](https://github.com/stacksjs/stacks/commit/e2d532f)) _(by Chris)_
+- support Twilio WhatsApp sender probes and approved content templates ([d973cd1](https://github.com/stacksjs/stacks/commit/d973cd1)) _(by Chris)_
+- **telephony**: configure journaled inbound SMS routing ([c096bbe](https://github.com/stacksjs/stacks/commit/c096bbe)) _(by Chris)_
+- **telephony**: expose parent call identity for leg settlement ([f539545](https://github.com/stacksjs/stacks/commit/f539545)) _(by Chris)_
+- **telephony**: bound call duration and expose provider charges ([f082f74](https://github.com/stacksjs/stacks/commit/f082f74)) _(by Chris)_
+
+## 🐛 Bug Fixes
+
+- isolate tenant messaging transports and preserve uncertain delivery ([135b7e4](https://github.com/stacksjs/stacks/commit/135b7e4)) _(by Chris)_
+- **auth**: verify SAML references through public XML signature APIs ([e3ca779](https://github.com/stacksjs/stacks/commit/e3ca779)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.575...v0.75.576)
 
 ## ✨ Features
