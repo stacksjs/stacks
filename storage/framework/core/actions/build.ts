@@ -1,4 +1,5 @@
 import { dts } from '@dtsx/bun'
+import { rm } from 'node:fs/promises'
 /**
  * Build the @stacksjs/actions package.
  *
@@ -24,6 +25,8 @@ import { frameworkExternal, intro, outro, transpilePackage } from '../build/src'
 const { startTime } = await intro({
   dir: import.meta.dir,
 })
+
+await rm(`${import.meta.dir}/dist`, { recursive: true, force: true })
 
 await transpilePackage({
   dir: import.meta.dir,

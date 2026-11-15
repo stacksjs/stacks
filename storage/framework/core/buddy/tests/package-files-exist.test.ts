@@ -123,7 +123,8 @@ describe('package manifests', () => {
         continue
 
       for (const [key, value] of Object.entries(manifest.exports)) {
-        if (key.includes('*'))
+        // Null deliberately excludes a subpath rather than naming a file.
+        if (value === null || key.includes('*'))
           continue
 
         const targets = typeof value === 'string'

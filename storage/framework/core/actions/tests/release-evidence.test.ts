@@ -226,6 +226,18 @@ console.log(JSON.stringify(result.consumer))
     expect(receipt.bunVersion).toMatch(/^\d+\.\d+\.\d+/)
   }, 30_000)
 
+  test('preserves separate dependency installations while still checking all package-owned files', async () => {
+    const root = consumer()
+    const dependencies = join(root, 'node_modules/@example/runtime/node_modules/dependency')
+    mkdirSync(dependencies, { recursive: true })
+    writeFileSync(join(dependencies, 'index.js'), 'export default "separate package"')
+    const receipt = await verifyReleaseEvidence(plan, { cwd: root, fetch: publishedSource() })
+    expect(receipt.schemaVersion).toBe(1)
+    expect(receipt.sources[0]?.packages[0]?.filesSha256).toMatch(/^[a-f0-9]{64}$/)
+    writeFileSync(join(root, 'node_modules/@example/runtime/private.ts'), 'private source')
+    await expect(verifyReleaseEvidence(plan, { cwd: root, fetch: publishedSource() })).rejects.toThrow('private.ts differs from the verified archive')
+  })
+
   test('rejects source-patched installed code even when its version, lock and consumer checks agree', async () => {
     const root = consumer()
     writeFileSync(join(root, 'node_modules/@example/runtime/index.js'), 'export default "patched source"')
