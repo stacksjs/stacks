@@ -5,6 +5,7 @@ const config = {
   provider: 'reviewos' as const, origin: 'https://reviewos.org', repository: 'owner/private-app',
   runners: { checks: ['self-hosted', 'app-linux'], deploy: ['self-hosted', 'app-linux'], ios: ['self-hosted', 'app-mobile'] },
   deploy: true,
+  env: { checks: { COPYFILE_DISABLE: '1' }, ios: { DEVELOPER_DIR: '/Applications/Xcode_27.1.app/Contents/Developer' } },
   commands: Object.fromEntries(['after-deploy', 'native-build', 'native-accept'].map(step => [step, [['bun', 'run', step]]])),
   secrets: { checks: ['PANTRY_REGISTRY_TOKEN'], deploy: ['DEPLOY_SSH_KEY'], ios: ['APP_STORE_CONNECT_KEY_ID'] },
   native: { artifacts: ['storage/native/simulator/**/*.zip', 'storage/native/simulator/**/receipt.json'], downloadDirectory: 'storage/native/received', archivePattern: '**/*.app.zip' },
@@ -19,9 +20,12 @@ test('normal Stacks checks, deployment and downloaded native acceptance share an
   expect(workflow.jobs.native['runs-on']).toEqual(config.runners.ios)
   expect(workflow.jobs.deploy.environment).toBe('production')
   expect(workflow.jobs.native.environment).toBe('ios-testflight')
+  expect(workflow.jobs.native.env.DEVELOPER_DIR).toBe(config.env.ios.DEVELOPER_DIR)
   for (const name of ['lint', 'typecheck', 'test', 'build']) {
     const job = workflow.jobs[name]
     expect(job.environment).toBeUndefined()
+    expect(job.env.COPYFILE_DISABLE).toBe('1')
+    expect(job.env.DEVELOPER_DIR).toBeUndefined()
     expect(job.steps.some((step: any) => step.run === `./buddy workflow:step ${name}`)).toBe(true)
     expect(JSON.stringify(job)).not.toContain('DEPLOY_SSH_KEY')
     expect(JSON.stringify(job)).not.toContain('APP_STORE_CONNECT_KEY_ID')

@@ -19,6 +19,7 @@ import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { getErrorCode, getErrorMessage } from '@stacksjs/utils'
 import { withDeployNotification } from '../deploy-notify'
+import { deploymentIdentityConfig, withDeploymentIdentity } from '../deploy-identity'
 import type { DeploymentRevisionCheck } from '../deployment-revision'
 import { assertCurrentDeploymentRevision, assertNotBehindLiveRelease, automatedDeploymentRevision, liveReleasesCommand } from '../deployment-revision'
 import { dnsCredentialFix, envFileForEnvironment, resolveZoneNameservers } from '../dns-credentials'
@@ -2145,6 +2146,10 @@ export function applyEnvironmentToSites(sites: Record<string, TsCloudSite | null
  * The app is served directly on the server's public IP (no domain required).
  */
 async function deployOverSsh(tsCloudConfig: any, deployEnv: string, options: DeployOptions, envFile?: string): Promise<void> {
+  return withDeploymentIdentity(process.env.DEPLOY_SSH_KEY, identity => deployOverSshWithIdentity(deploymentIdentityConfig(tsCloudConfig, identity), deployEnv, options, envFile))
+}
+
+async function deployOverSshWithIdentity(tsCloudConfig: any, deployEnv: string, options: DeployOptions, envFile?: string): Promise<void> {
   const verbose = options.verbose === true
   const environment = (deployEnv === 'prod' ? 'production' : deployEnv) as 'production' | 'staging' | 'development'
   const provider = resolveProvider(tsCloudConfig)
@@ -2188,7 +2193,7 @@ async function deployOverSsh(tsCloudConfig: any, deployEnv: string, options: Dep
     }
 
     // Confirm the local SSH public key the driver will register on the server.
-    const sshPubKey = join(homedir(), '.ssh', 'id_ed25519.pub')
+    const sshPubKey = tsCloudConfig.hetzner?.sshPublicKeyPath || (tsCloudConfig.hetzner?.sshPrivateKeyPath ? `${tsCloudConfig.hetzner.sshPrivateKeyPath}.pub` : join(homedir(), '.ssh', 'id_ed25519.pub'))
     if (!existsSync(sshPubKey)) {
       log.error(`SSH public key not found at ${sshPubKey}.`)
       log.info('ts-cloud deploys to Hetzner over SSH and registers this key on the server.')

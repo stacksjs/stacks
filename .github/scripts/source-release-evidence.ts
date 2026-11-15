@@ -5,7 +5,7 @@ import { subpathBuildTargets } from './subpath-packages'
 export const releaseEvidenceTests = [
   'actions/tests/release-evidence.test.ts', 'buddy/tests/release-evidence.test.ts',
   'actions/tests/reviewos-evidence.test.ts', 'actions/tests/reviewos-workflows.test.ts',
-  'buddy/tests/workflow-project.test.ts', 'buddy/tests/workflow-template.test.ts', 'buddy/tests/workflow-release.test.ts',
+  'buddy/tests/deploy-identity.test.ts', 'buddy/tests/workflow-project.test.ts', 'buddy/tests/workflow-template.test.ts', 'buddy/tests/workflow-release.test.ts',
   'actions/tests/publication-preflight.test.ts', 'actions/tests/publication-entrypoints.test.ts',
   'buddy/tests/publication-entrypoints.test.ts', 'actions/tests/project-scripts.test.ts',
   'testing/tests/process-tree.test.ts', 'testing/tests/owned-artifacts.test.ts',

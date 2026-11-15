@@ -57,6 +57,12 @@ The defaults run the normal Buddy lint, typecheck, tests and deploy commands,
 plus the application's build script. Override a step with argv arrays in
 `commands`; no shell quoting or provider polling belongs in application code.
 Use protected `production` and `ios-testflight` environments for their secrets.
+When `DEPLOY_SSH_KEY` is supplied, normal Buddy deployments derive its public
+key in a private temporary directory, use that identity throughout the SSH
+pipeline and clean it up afterward. The runner's home-directory keys are kept.
+Use `env.checks`, `env.deploy` and `env.ios` for non-secret job settings, such as
+a pinned `DEVELOPER_DIR`; secret references take precedence over these settings.
+
 The local commands use the installed ReviewOS CLI's normal login; CI can supply
 its scoped `REVIEWOS_TOKEN`.
 

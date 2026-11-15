@@ -10,6 +10,7 @@ export interface WorkflowConfig {
   pantry?: string
   runners: { checks: string[], deploy?: string[], ios?: string[] }
   secrets?: { checks?: string[], deploy?: string[], ios?: string[] }
+  env?: { checks?: Record<string, string>, deploy?: Record<string, string>, ios?: Record<string, string> }
   commands?: Partial<Record<WorkflowStep, string[][]>>
   deploy?: boolean
   native?: {

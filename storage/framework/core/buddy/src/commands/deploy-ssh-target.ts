@@ -76,8 +76,8 @@ function expandHome(value: string, env: NodeJS.ProcessEnv): string {
  * Passing an already-built target through unchanged lets a call site accept
  * either an IP string (every existing caller) or a full target.
  */
-export function hetznerTarget(ip: string): SshTarget {
-  return { host: ip, user: 'root', port: DEFAULT_SSH_PORT, profile: 'generic', hostKey: 'accept-new' }
+export function hetznerTarget(ip: string, env: Record<string, string | undefined> = process.env): SshTarget {
+  return { host: ip, user: 'root', port: DEFAULT_SSH_PORT, profile: 'generic', hostKey: 'accept-new', ...(env.TS_CLOUD_SSH_KEY ? { identityFile: env.TS_CLOUD_SSH_KEY } : {}) }
 }
 
 /** Normalise a call-site argument that may still be a bare IP string. */

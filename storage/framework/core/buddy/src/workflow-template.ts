@@ -12,6 +12,9 @@ export function validateWorkflowConfig(config: WorkflowConfig): void {
     const labels = config.runners[group as keyof WorkflowConfig['runners']]
     if (!Array.isArray(labels) || !labels.includes('self-hosted') || labels.some(label => !/^[\w.-]+$/.test(label))) throw new Error(`Declare the owned ${group} runner labels`)
   }
+  for (const values of Object.values(config.env ?? {})) {
+    if (!values || typeof values !== 'object' || Array.isArray(values) || Object.entries(values).some(([name, value]) => !/^[A-Z_][A-Z0-9_]*$/.test(name) || typeof value !== 'string' || value.includes('\x00'))) throw new Error('Workflow environment settings must be named string values')
+  }
   for (const names of Object.values(config.secrets ?? {})) {
     if (!Array.isArray(names) || names.some(name => !/^[A-Z_][A-Z0-9_]*$/.test(name))) throw new Error('Workflow secrets must be environment variable names')
   }
@@ -43,19 +46,19 @@ export function renderReviewOsWorkflow(config: WorkflowConfig): string {
   for (const name of ['lint', 'typecheck', 'test', 'build']) jobs[name] = {
     'runs-on': config.runners.checks,
     'timeout-minutes': name === 'test' ? 90 : 30,
-    reviewos: { secrets: config.secrets?.checks ?? [] }, env: secretEnv('checks'),
+    reviewos: { secrets: config.secrets?.checks ?? [] }, env: { ...config.env?.checks, ...secretEnv('checks') },
     steps: [...bootstrap(), { name: `Run ${name}`, run: `./buddy workflow:step ${name}` }],
   }
   if (config.deploy) jobs.deploy = {
     needs: ['lint', 'typecheck', 'test', 'build'], if: main,
     'runs-on': config.runners.deploy, 'timeout-minutes': 60, environment: 'production',
-    reviewos: { secrets: [...(config.secrets?.checks ?? []), ...(config.secrets?.deploy ?? [])] }, env: { ...secretEnv('checks'), ...secretEnv('deploy') },
+    reviewos: { secrets: [...(config.secrets?.checks ?? []), ...(config.secrets?.deploy ?? [])] }, env: { ...config.env?.checks, ...config.env?.deploy, ...secretEnv('checks'), ...secretEnv('deploy') },
     steps: [...bootstrap(), { name: 'Deploy the qualified source', run: './buddy workflow:step deploy' }, { name: 'Verify the deployed application', run: './buddy workflow:step after-deploy' }],
   }
   if (config.native) jobs.native = {
     needs: config.deploy ? ['deploy'] : ['lint', 'typecheck', 'test', 'build'], if: main,
     'runs-on': config.runners.ios, 'timeout-minutes': 90, environment: 'ios-testflight',
-    reviewos: { secrets: [...(config.secrets?.checks ?? []), ...(config.secrets?.ios ?? [])] }, env: { ...secretEnv('checks'), ...secretEnv('ios') },
+    reviewos: { secrets: [...(config.secrets?.checks ?? []), ...(config.secrets?.ios ?? [])] }, env: { ...config.env?.checks, ...config.env?.ios, ...secretEnv('checks'), ...secretEnv('ios') },
     steps: [...bootstrap(),
       { name: 'Read the committed release identity', id: 'release', run: './buddy workflow:release-state', env: { WORKFLOW_UPLOAD_REQUESTED: "${{ inputs.upload && 'true' || 'false' }}" } },
       { name: 'Build the simulator application', run: './buddy workflow:step native-build' },
