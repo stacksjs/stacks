@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.595...v0.75.596)
+
+## 📝 Documentation
+
+- refresh native catalog for checkout return configuration ([2124031](https://github.com/stacksjs/stacks/commit/2124031)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.594...v0.75.595)
 
 ## 🐛 Bug Fixes
