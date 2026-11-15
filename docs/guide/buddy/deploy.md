@@ -147,6 +147,46 @@ APP_ENV=staging buddy deploy
 APP_ENV=production buddy deploy
 ```
 
+## Preview deployments
+
+`buddy deploy:preview pr-123` supports a constrained single server runtime with relative local
+SQLite/state paths, on the app's Hetzner or SSH box. `--base staging` chooses the staging box.
+A bounded preflight inspects the cloud configuration and final merged site environment before
+publication scripts, host discovery, deploy hooks, builds, state writes or provider/SSH mutations.
+
+It refuses multi-runtime/API dependencies, managed/external DB identities, Redis-backed state or
+credentials, unsupported state adapters, external writable storage, absolute/traversing/symlinked
+paths, explicit shared targets, and custom hooks/build/preStart/background-worker effects. A
+`cloud.previews.site` selection cannot make a multi-runtime project safe.
+
+Runtime eligibility and default selection use ts-cloud's native classification: the sole
+`server-app` is selected even after bucket/static sites with stale `start`/`port` fields. An explicit
+`cloud.previews.site` must name that runtime; selecting bucket/static sites refuses before effects.
+A `proxyTo` upstream cannot qualify through stale server fields. Native scheduler inference from
+`app/Scheduler.ts`, inherited CDN policy and enabled explicit `config/email.ts` provisioning also refuse before publication.
+An effective `scheduler: false` or email `server.enabled: false` remains an opt-out. Accepted
+previews run with ancillary reconciliation disabled: no inferred scheduler, management dashboard,
+app-wide DNS records, CDN, R2, Workers, mail tenant/health/DNS or mailbox credential persistence.
+Only the preview site's ordinary gateway, address DNS and TLS publication remain enabled.
+
+The command requires `.env.preview` to be readable and decryptable before its explicit cloud
+config reload. Shared CLI startup can already have evaluated app config.
+The native env reader expands ambient variables and command substitutions. Ambient application
+variables can still influence config/build evaluation, and site env values
+still override the file. This guard does not establish strict secret provenance or prove arbitrary
+trusted application code and hardcoded adapter settings safe. Isolated env evaluation and explicit
+multi-site/database/Redis/storage ownership policies remain pending; a prefix or different password
+is not proof of ownership. Managed PostgreSQL web/API previews remain unsupported.
+
+Accepted previews retain their preview slug, host and relative SQLite persistent target.
+`buddy deploy:preview:remove pr-123` removes the exact implicit native runtime and, when different,
+the legacy first-server target. An explicit site keeps its exact historical removal selection.
+Unit and sibling-preview directories must be readable before any stop or deletion. All selected
+runtime instances and units must stop before shared data and gateway cleanup; a failed listing
+or stop preserves shared data, DNS and local state. Common cleanup runs once and sibling
+preview names remain untouched. Ordinary production and staging deployments use their
+existing paths and are unaffected by the preview preflight.
+
 ## What Gets Deployed
 
 Stacks deploys a complete cloud infrastructure:

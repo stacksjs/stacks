@@ -27,7 +27,7 @@ import { resultFailed } from '../result'
 import { deploymentRetirements, explicitDeploymentEnvFile, validateDeploymentProviderInputs } from '../deployment-inputs'
 import { findUnbackedManagedServices, hasOffsiteBackupDestination, unbackedDataMessage } from '../unbacked-data'
 import { applyDeploymentDomainOverride, createDeploymentPreview, deploymentPreviewJsonPrefix, formatDeploymentPreview, resolveDeploymentEnvironment } from './deploy-preview'
-import { buildPreviewTeardownScript, derivePreviewConfig, previewDomain, previewPort, previewTarget } from './preview-deploy'
+import { buildPreviewTeardownScript, previewDomain, previewHasSymlinkPaths, previewRemovalTarget, runPreviewDeploy } from './preview-deploy'
 import type { SshTarget } from './deploy-ssh-target'
 import { deployTargetLabel, dnsPublishingAllowed, hetznerTarget, isSshPipelineProvider, lanUrls, mergeSshStatePin, remoteExecOptions, resolveSshTarget, sshCliArgs, sshStatePin, toSshTarget } from './deploy-ssh-target'
 
@@ -1602,7 +1602,12 @@ export function declaresScheduledWork(schedulerFile: string): boolean {
  * that wants the scheduler somewhere else has said so, and one that has turned
  * it off has said that too.
  */
-export function applyScheduledWork(sites: Record<string, any>, schedulerFile: string): Record<string, any> {
+export function applyScheduledWork(sites: Record<string, any>, schedulerFile: string, execution: DeploymentExecution = 'application'): Record<string, any> {
+  // Preflight already refused effective scheduled work. Keep native inference
+  // off throughout preview execution, including if the source file changes.
+  if (execution === 'preview')
+    return Object.fromEntries(Object.entries(sites).map(([name, site]) => [name, site ? { ...site, scheduler: false } : site]))
+
   if (Object.values(sites).some(site => site?.scheduler !== undefined))
     return sites
 
@@ -2144,7 +2149,7 @@ export function applyEnvironmentToSites(sites: Record<string, TsCloudSite | null
  *
  * The app is served directly on the server's public IP (no domain required).
  */
-async function deployOverSsh(tsCloudConfig: any, deployEnv: string, options: DeployOptions, envFile?: string): Promise<void> {
+async function deployOverSsh(tsCloudConfig: any, deployEnv: string, options: DeployOptions, envFile?: string, execution: DeploymentExecution = 'application'): Promise<void> {
   const verbose = options.verbose === true
   const environment = (deployEnv === 'prod' ? 'production' : deployEnv) as 'production' | 'staging' | 'development'
   const provider = resolveProvider(tsCloudConfig)
@@ -2221,7 +2226,7 @@ async function deployOverSsh(tsCloudConfig: any, deployEnv: string, options: Dep
     log.warn(`[deploy] ${unbackedDataMessage(unbacked)}`)
 
   try {
-    await runSshDeploy({ tsCloudConfig, environment, verbose, docker: (options).docker === true, createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, shipsARelease, onlySite: (options).site || undefined, persistedAttachBox, provider, sshTarget, envFile })
+    await runSshDeploy({ tsCloudConfig, environment, verbose, docker: (options).docker === true, createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, shipsARelease, onlySite: (options).site || undefined, persistedAttachBox, provider, sshTarget, envFile, execution })
   }
   catch (err) {
     log.error(`${deployTargetLabel(provider, sshTarget?.profile)} deploy failed:`)
@@ -2617,7 +2622,12 @@ async function assertNotBehindLiveBox(slug: string | undefined, where: string | 
   log.info(`Production serves ${live.join(', ') || 'no release yet'}; ${automatedRevisionCheck.revision.sha.slice(0, 7)} is newer, deploying it (${automatedRevisionCheck.newer.length} newer commit${automatedRevisionCheck.newer.length === 1 ? '' : 's'} still in CI).`)
 }
 
-async function runSshDeploy(args: {
+/** Internal execution intent, never inferred from app config or the base environment. */
+export type DeploymentExecution = 'application' | 'preview'
+
+export async function runSshDeploy(args: {
+  /** Preflight-validated previews cannot infer or reconcile ancillary app services. */
+  execution?: DeploymentExecution
   tsCloudConfig: any
   environment: 'production' | 'staging' | 'development'
   /** Read site env from this file only (a preview's `.env.preview`). */
@@ -2683,7 +2693,7 @@ async function runSshDeploy(args: {
   // and best-effort: a UI-resolution hiccup or an older ts-cloud without the
   // export never blocks the app deploy. Set TS_CLOUD_UI_DISABLE=1 to opt out.
   try {
-    if (shouldInjectManagementDashboard(tsCloudConfig) && typeof ensureManagementDashboard === 'function') {
+    if (args.execution !== 'preview' && shouldInjectManagementDashboard(tsCloudConfig) && typeof ensureManagementDashboard === 'function') {
       ensureManagementDashboard(tsCloudConfig, {
         cwd: process.cwd(),
         logger: { info: (m: string) => log.info(m), warn: (m: string) => log.warn(m) },
@@ -3082,6 +3092,7 @@ async function runSshDeploy(args: {
         slug,
       ),
       p.projectPath('app/Scheduler.ts'),
+      args.execution,
     ),
     projectDatabaseTarget(slug, 'backups'),
   )
@@ -3157,7 +3168,7 @@ async function runSshDeploy(args: {
     // Full deploys let ts-cloud reconcile the one-dashboard-per-server
     // invariant. A narrowed --site deployment must not add or remove dashboard
     // state because it intentionally touches one application site only.
-    managementDashboard: !onlySite,
+    managementDashboard: args.execution !== 'preview' && !onlySite,
     // The rpx gateway is ALWAYS regenerated from the full site model, never the
     // narrowed single-site `deployConfig`, so a `--site` deploy can never drop the
     // other sites' routes (the production-incident guard). Use the environment-
@@ -3262,11 +3273,16 @@ async function runSshDeploy(args: {
     }
   }
 
+  // A preview publishes only its own site DNS/TLS above. App-wide ancillary
+  // policy can come from independently loaded config (especially email), so
+  // checked cloud config alone cannot constrain these reconcilers.
+  const reconcileAncillaries = ok && dnsAllowed && args.execution !== 'preview'
+
   // Reconcile the app's declared DNS records (config/dns.ts) beyond the apex/www
   // A records above — e.g. verification TXT, extra CNAMEs. Strictly additive:
   // only creates declared records that are missing (and never a private IP),
   // never deletes or overwrites. Best-effort, same as the reconcilers around it.
-  if (ok && dnsAllowed)
+  if (reconcileAncillaries)
     await reconcileConfigDns(onlySite ? { [onlySite]: sites[onlySite] } : sites, log)
 
   // Put the frontends behind Cloudflare's edge, and bust the cache.
@@ -3281,7 +3297,7 @@ async function runSshDeploy(args: {
   // This is also where a release becomes visible: HTML is cached at the edge,
   // so without the purge at the tail of this step a deploy would ship new
   // assets that nobody is served until the TTL lapses.
-  if (ok && dnsAllowed)
+  if (reconcileAncillaries)
     await reconcileCloudflareCdnForDeploy(tsCloudConfig, ip, ipv6, log)
 
   // Object storage the app declares on Cloudflare R2 (config/cloud.ts
@@ -3290,21 +3306,21 @@ async function runSshDeploy(args: {
   // creates its DNS record, so this is the DNS step for a bucket-served host
   // like tiles.example.com. After the CDN step for the same reason that step is
   // after TLS: nothing here should race the box's own records.
-  if (ok && dnsAllowed)
+  if (reconcileAncillaries)
     await reconcileR2ForDeploy(tsCloudConfig, log)
 
   // Cloudflare Workers the app declares (config/cloud.ts
   // `infrastructure.workers`): bundled from their entry, uploaded with their
   // bindings, and put on their custom domains, which bring their own DNS
   // records. After R2 because a Worker's bucket bindings must already exist.
-  if (ok && dnsAllowed)
+  if (reconcileAncillaries)
     await reconcileWorkersForDeploy(tsCloudConfig, log)
 
   // Reconcile this app's mail routing onto the (shared) mail server from
   // config/email.ts: register its local domain and provision its auto-forward
   // rules (forwards.json + compiled RFC 5228 Sieve). Idempotent, merge-based and best-effort — it never
   // removes another tenant's domains/forwards and never fails the release.
-  if (ok && dnsAllowed) {
+  if (reconcileAncillaries) {
     const mailOwner = mailServerOwnerFromConfig(emailConfig)
     let mailIp: string | undefined = ip
     if (mailOwner) {
@@ -3545,6 +3561,13 @@ export interface MailTenantResult {
  */
 export function hasExplicitEmailConfig(projectRoot = p.projectPath()): boolean {
   return existsSync(join(projectRoot, 'config', 'email.ts'))
+}
+
+/** The effective native tenant policy, shared by preflight and provisioning. */
+export function mailProvisioningEnabled(config: any, explicit: boolean): boolean {
+  return explicit && config?.server?.enabled !== false && Boolean(config?.domain
+    || (typeof config?.from?.address === 'string' && config.from.address.includes('@'))
+    || (config?.forwards && typeof config.forwards === 'object' && Object.keys(config.forwards).length > 0))
 }
 
 export function mailServerOwnerFromConfig(config: { server?: { attachTo?: unknown } } | null | undefined): string | undefined {
@@ -3865,16 +3888,9 @@ export function reportMailboxCredentials(
  * DKIM public key), or null when there is nothing to reconcile / it failed.
  */
 export async function provisionMailTenant(ip: string, logger: typeof log): Promise<MailTenantResult | null> {
-  if (!hasExplicitEmailConfig())
-    return null
-
   const cfg: any = emailConfig || {}
-  // Mail explicitly disabled for this app (config/email.ts `server.enabled:
-  // false`): skip the shared-mail tenant reconcile entirely — no local-domain
-  // registration, DKIM key, mailboxes, or mail DNS. Without this gate the
-  // reconcile keyed off `cfg.domain`/`from.address` alone, so an app with no
-  // mail intent still mutated the SHARED mail server + its own MX records.
-  if (cfg.server?.enabled === false)
+  // The same effective native policy is checked before preview publication.
+  if (!mailProvisioningEnabled(cfg, hasExplicitEmailConfig()))
     return null
 
   const domain: string | undefined = cfg.domain
@@ -5499,19 +5515,21 @@ export async function reconcileHetznerDns(sites: Record<string, any>, ip: string
  */
 async function runPreviewCommand(name: string, options: { base?: string, verbose?: boolean }, action: 'deploy' | 'remove'): Promise<void> {
   const base = resolveDeploymentEnvironment({ option: options.base }) as 'production' | 'staging' | 'development'
-  if (action === 'deploy')
-    await assertPublicationAllowed({ cwd: p.projectPath(), channel: 'preview' })
-
-  // A preview's secrets are `.env.preview`'s alone. Loaded before the config
-  // is evaluated, so config/cloud.ts sees them, and never layered over the
-  // base environment's file: a pull request must not reach production data.
+  // Read the selected file completely before the explicit preview config
+  // reload. Shared CLI startup can already have evaluated app config, and
+  // ambient variables remain: strict provenance needs a separate boundary.
   const envFile = '.env.preview'
   if (action === 'deploy' && !existsSync(p.projectPath(envFile))) {
     log.error(`Previews read their secrets from ${envFile} only, and this project has none.`)
     log.info(`Create it with its own database, mail and API credentials (never production's): buddy env:set --file ${envFile} APP_KEY ...`)
     process.exit(ExitCode.FatalError)
   }
-  if (existsSync(p.projectPath(envFile))) {
+  let previewEnv: Record<string, string> = {}
+  if (action === 'deploy') {
+    previewEnv = await resolveDeployEnvValues(base, undefined, envFile)
+    Object.assign(process.env, previewEnv)
+  }
+  else if (existsSync(p.projectPath(envFile))) {
     const { loadEnv } = await import('@stacksjs/env')
     loadEnv({ path: envFile, env: 'preview', keysFile: '.env.keys', overload: true, quiet: true })
   }
@@ -5527,45 +5545,60 @@ async function runPreviewCommand(name: string, options: { base?: string, verbose
     process.exit(ExitCode.FatalError)
   }
 
-  let target: ReturnType<typeof previewTarget>
-  try {
-    target = previewTarget(appConfig, name, previewDomain(appConfig, process.env))
-  }
-  catch (error) {
-    log.error(getErrorMessage(error))
-    process.exit(ExitCode.InvalidArgument)
-  }
-
-  // The box: the operator's host for `ssh`, the owner's labelled server for Hetzner.
-  const sshTarget = provider === 'ssh' ? resolveSshTarget(appConfig) : null
-  const lookup = provider === 'ssh' ? null : await resolveAttachTargetBox(target.owner, base, appConfig)
-  const host = sshTarget?.host ?? lookup?.box?.publicIp
-  if (!host) {
-    log.error(provider === 'ssh' ? 'No SSH host configured for this project.' : describeAttachLookupFailure(target.owner, base, lookup?.failure))
-    process.exit(ExitCode.FatalError)
-  }
-  const remoteTarget: SshTarget = sshTarget ? { ...sshTarget, host } : hetznerTarget(host)
-  const { sshExecOrThrow } = await import('@stacksjs/ts-cloud')
-  const runRemote = (script: string): Promise<string> => {
-    const encoded = Buffer.from(script).toString('base64')
-    const privileged = remoteTarget.user === 'root' ? 'bash' : 'sudo -n bash'
-    return sshExecOrThrow(host, `echo ${encoded} | base64 -d | ${privileged}`, remoteExecOptions(remoteTarget, 15))
+  // Discovery is inside the guarded callback too: invalid configuration must
+  // stop before publication scripts, host access, builds, state pins or deploy.
+  const discoverRemote = async (target: { owner: string }) => {
+    const sshTarget = provider === 'ssh' ? resolveSshTarget(appConfig) : null
+    const lookup = provider === 'ssh' ? null : await resolveAttachTargetBox(target.owner, base, appConfig)
+    const host = sshTarget?.host ?? lookup?.box?.publicIp
+    if (!host)
+      throw new Error(provider === 'ssh' ? 'No SSH host configured for this project.' : describeAttachLookupFailure(target.owner, base, lookup?.failure))
+    const remoteTarget: SshTarget = sshTarget ? { ...sshTarget, host } : hetznerTarget(host)
+    const { sshExecOrThrow } = await import('@stacksjs/ts-cloud')
+    const runRemote = (script: string): Promise<string> => {
+      const encoded = Buffer.from(script).toString('base64')
+      const privileged = remoteTarget.user === 'root' ? 'bash' : 'sudo -n bash'
+      return sshExecOrThrow(host, `echo ${encoded} | base64 -d | ${privileged}`, remoteExecOptions(remoteTarget, 15))
+    }
+    return { host, runRemote }
   }
 
   if (action === 'remove') {
-    await removePreview(target, base, runRemote)
+    const target = previewRemovalTarget(appConfig, name, previewDomain(appConfig, process.env))
+    const remote = await discoverRemote(target)
+    await removePreview(target, base, remote.runRemote)
     return
   }
 
-  const { buildHostSitePortsScript, occupiedHostPorts, parseHostSiteFragments } = await import('@stacksjs/ts-cloud')
-  const owners = occupiedHostPorts(parseHostSiteFragments(await runRemote(buildHostSitePortsScript())))
-  const port = previewPort(owners, target.slug, Number(appConfig.sites?.[target.site]?.port) || 3000)
-  log.info(`Deploying preview ${target.slug} to ${target.url} (port ${port} on ${host})`)
-
-  await deployOverSsh(derivePreviewConfig(appConfig, target, port), base, { verbose: options.verbose === true, yes: true } as DeployOptions, envFile)
+  // Validate exactly the merge used by the deployment pipeline. In particular,
+  // a hardcoded site.env DB identity wins over .env.preview and must be refused.
+  const config = { ...appConfig, sites: applyScheduledWork(mergeSiteDeployEnv(appConfig.sites ?? {}, previewEnv), p.projectPath('app/Scheduler.ts')) }
+  const hasDeployHooks = ['.ts', '.js', '.mts', '.mjs', '.cts', '.cjs'].some(extension => existsSync(p.projectPath(`cloud/deploy-script${extension}`)))
+  let remote: Awaited<ReturnType<typeof discoverRemote>>
+  const target = await runPreviewDeploy({
+    config, name, domain: previewDomain(appConfig, process.env),
+    context: {
+      hasDeployHooks,
+      hasMailProvisioning: mailProvisioningEnabled(emailConfig, hasExplicitEmailConfig()),
+      hasSymlinkPaths: previewHasSymlinkPaths(config, p.projectPath()),
+      requiresApiRuntime: Boolean(apiDeploymentProblem(config.sites, existsSync(p.projectPath('routes/api.ts')))),
+    },
+  }, {
+    async discoverPorts(preview) {
+      // Publication policies may execute application scripts, so they belong
+      // after preflight, along with all other effects.
+      await assertPublicationAllowed({ cwd: p.projectPath(), channel: 'preview' })
+      remote = await discoverRemote(preview)
+      const { buildHostSitePortsScript, occupiedHostPorts, parseHostSiteFragments } = await import('@stacksjs/ts-cloud')
+      return occupiedHostPorts(parseHostSiteFragments(await remote.runRemote(buildHostSitePortsScript())))
+    },
+    async deploy(derived, preview, port) {
+      log.info(`Deploying preview ${preview.slug} to ${preview.url} (port ${port} on ${remote.host})`)
+      await deployOverSsh(derived, base, { verbose: options.verbose === true, yes: true } as DeployOptions, envFile, 'preview')
+    },
+  })
 
   log.success(`Preview deployed: ${target.url}`)
-  // For the workflow that comments the URL on the pull request.
   if (process.env.GITHUB_OUTPUT)
     writeFileSync(process.env.GITHUB_OUTPUT, `url=${target.url}\n`, { flag: 'a' })
 }
@@ -5574,9 +5607,9 @@ async function runPreviewCommand(name: string, options: { base?: string, verbose
  * Undo a preview: its units, gateway route, certificate units and files on
  * the box, its DNS records, and this checkout's state pin for it.
  */
-async function removePreview(target: ReturnType<typeof previewTarget>, base: string, runRemote: (script: string) => Promise<string>): Promise<void> {
+async function removePreview(target: ReturnType<typeof previewRemovalTarget>, base: string, runRemote: (script: string) => Promise<string>): Promise<void> {
   log.info(`Removing preview ${target.slug} (${target.host})`)
-  await runRemote(buildPreviewTeardownScript(target.slug, target.site))
+  await runRemote(buildPreviewTeardownScript(target.slug, target.sites))
   log.success(`Removed ${target.slug} from the box`)
 
   const tsCloudConfig = await loadTsCloudConfig(base).catch(() => undefined)
