@@ -73,6 +73,13 @@ syntax alone does not establish support.
   `stacks-composables`, including cleanup and client-delivery boundaries.
 - Content hashes include config/class inputs. A cache file should never be
   hand-edited to fix a source class or token.
+- `space-y-*` and `space-x-*` do not reach an STX component. Each component
+  renders inside a `[data-stx-component-wrapper]` element that is
+  `display: contents`, so the margin those utilities put on the wrapper lays
+  out nothing: a `<Button>` at the end of a `space-y-4` form sits flush against
+  the field above it. Space a container that holds components with
+  `flex flex-col gap-*` (or `grid gap-*`), which applies to the component's own
+  root.
 
 ## Source and evidence
 
