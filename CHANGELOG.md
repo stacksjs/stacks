@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.594...v0.75.595)
+
+## 🐛 Bug Fixes
+
+- **payments**: allow explicitly configured frontend return origins ([d632b03](https://github.com/stacksjs/stacks/commit/d632b03)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.593...v0.75.594)
 
 ## ✨ Features
