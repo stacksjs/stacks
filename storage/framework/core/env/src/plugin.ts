@@ -229,10 +229,13 @@ export function loadEnv(options: EnvPluginOptions = {}): { loaded: number, error
   // Bun preloaded as ciphertext are not usable overrides and may be replaced.
   // Values loaded from an earlier file in this call are also not external, so
   // a later, more-specific file can override them without `overload: true`.
-  const externalOverrides = new Set(
+  //
+  // Bun also preloads `.env` in plaintext, and that is indistinguishable here
+  // from a shell export, except by value: a variable already holding exactly
+  // what a file in this call says came from that file (see the loop below).
+  const externalOverrides = new Map(
     Object.entries(plaintextEnv(process.env))
-      .filter(([, value]) => value !== undefined)
-      .map(([key]) => key),
+      .filter((entry): entry is [string, string] => entry[1] !== undefined),
   )
 
   // Determine which private key to use
@@ -330,6 +333,16 @@ export function loadEnv(options: EnvPluginOptions = {}): { loaded: number, error
         // wrote nowhere. Ciphertext is unusable to every consumer, so it
         // never wins; genuine external overrides (shell/CI) still do.
         const isStaleCiphertext = isEncryptedValue(existing) && value !== existing
+
+        // Bun reads `.env` into process.env before this runs, so every key of
+        // the base file looked like a shell override and `.env.production`
+        // could not replace it: a blank `AWS_ENDPOINT=` in `.env` silently
+        // beat the production endpoint. A variable holding exactly this
+        // file's value was loaded from this file, so it stops being external
+        // and a later, more-specific file wins. A shell export that differs
+        // from the file still does.
+        if (externalOverrides.get(key) === value)
+          externalOverrides.delete(key)
 
         if (overload || !externalOverrides.has(key) || isStaleCiphertext) {
           process.env[key] = value
