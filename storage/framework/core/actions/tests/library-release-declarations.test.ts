@@ -69,6 +69,12 @@ import type { LibraryConfig, LibraryReleaseOptions } from '@stacksjs/types/libra
 import { planNativeLibraryRelease } from '@stacksjs/actions/library/release-plan'
 import { prepareNativeLibraryRelease, publishNativeLibraryRelease, readbackNativeLibraryRelease } from '@stacksjs/actions/library/release-lifecycle'
 import { resolveLibraryRegistryReadAuth } from '@stacksjs/actions/library/release-registry-auth'
+import { inspectInstalledLibraryPackage } from '@stacksjs/actions/library/installed'
+const installed: Map<string, Uint8Array> = inspectInstalledLibraryPackage('package', new Map<string, Uint8Array>(), { consumerRoot: '.', allowBunTag: true, maxEntries: 100, maxDepth: 8, maxBytes: 1024, maxFileBytes: 512 })
+// @ts-expect-error Installed payloads contain bytes, not strings.
+const invalidInstalled: Map<string, string> = installed
+// @ts-expect-error Arbitrary installed file exemptions are unsupported.
+inspectInstalledLibraryPackage('package', new Map<string, Uint8Array>(), { ignoreFiles: ['private.ts'] })
 const release: LibraryReleaseOptions = { publisher: 'bun', distTag: 'alpha' }
 const config: LibraryConfig = { releaseable: true, repository: 'example/widgets', release, packages: [{ name: '@example/widgets', kind: 'functions', registry: 'npm' }] }
 // @ts-expect-error Only supported publishers can be configured.
@@ -98,19 +104,35 @@ async function check() {
   const invalidIntegrity: number = receipt.packages[0]!.integrity
   return [version, integrity, registryOrigin, download, publishedVersion, invalidIntegrity]
 }
-void [config, invalid, registry, check]
+void [config, invalid, registry, check, invalidInstalled]
 `)
     run([join(repository, 'node_modules/.bin/tsc'), '-p', join(consumer, 'tsconfig.json')], consumer)
+    const installedProbe = `
+const { inspectInstalledLibraryPackage } = await import('@stacksjs/actions/library/installed')
+const { mkdirSync, writeFileSync } = await import('node:fs')
+mkdirSync('installed-fixture', { recursive: true })
+writeFileSync('installed-fixture/package.json', '{}')
+const expected = new Map([['package.json', new TextEncoder().encode('{}')]])
+if (inspectInstalledLibraryPackage('installed-fixture', expected, { consumerRoot: '.' }).size !== 1) throw new Error('Missing installed payload')
+writeFileSync('installed-fixture/private.ts', 'private source')
+let rejected = false
+try { inspectInstalledLibraryPackage('installed-fixture', expected) } catch { rejected = true }
+if (!rejected) throw new Error('Installed payload ignored extra files')
+const { rmSync } = await import('node:fs')
+rmSync('installed-fixture', { recursive: true })
+`
     await writeFile(join(consumer, 'runtime.ts'), `
 import assert from 'node:assert/strict'
 assert.equal(Bun.resolveSync('@stacksjs/types/library', import.meta.dir), import.meta.dir + '/node_modules/@stacksjs/types/dist/library.js')
 await import('@stacksjs/types/library')
+${installedProbe}
 const { resolveLibraryRegistryReadAuth } = await import('@stacksjs/actions/library/release-registry-auth')
 assert.equal(resolveLibraryRegistryReadAuth({}, { NPM_READ_TOKEN: 'synthetic-read-only' }).registry, 'https://registry.npmjs.org')
 `)
     run([process.execPath, 'runtime.ts'], consumer)
     run(['node', '--input-type=module', '--eval', `
 await import('@stacksjs/types/library')
+${installedProbe}
 const { resolveLibraryRegistryReadAuth } = await import('@stacksjs/actions/library/release-registry-auth')
 if (resolveLibraryRegistryReadAuth({}, { NPM_READ_TOKEN: 'synthetic-read-only' }).registry !== 'https://registry.npmjs.org') throw new Error('Missing public registry interface')
 `], consumer)

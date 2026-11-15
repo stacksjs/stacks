@@ -1,8 +1,9 @@
 import { boundedBody, libraryArchiveEntries } from './library/archive'
 import { createHash } from 'node:crypto'
-import { lstatSync, readFileSync, readdirSync, realpathSync } from 'node:fs'
+import { readFileSync, realpathSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
 import { runProjectScripts } from './project-scripts'
+import { verifyInstalledFiles } from './library/installed-internal'
 
 export interface ReleaseSource {
   repository: string
@@ -114,32 +115,7 @@ async function archiveFiles(bytes: Uint8Array, limit: number): Promise<PackageFi
   return new Map([...entries].map(([name, bytes]) => [name, { sha256: hash(bytes), bytes: bytes.length }]))
 }
 
-function verifyInstalledFiles(directory: string, expected: PackageFiles): void {
-  const found = new Set<string>()
-  const hasBundledDependencies = [...expected.keys()].some(path => path.startsWith('node_modules/'))
-  function visit(path: string, depth: number): void {
-    if (depth > 128) fail('Installed package directory depth exceeds its budget')
-    for (const entry of readdirSync(join(directory, path), { withFileTypes: true })) {
-      // Nested dependency installations belong to their own package archive.
-      if (!path && entry.name === 'node_modules' && !hasBundledDependencies) continue
-      const name = path ? `${path}/${entry.name}` : entry.name
-      if (found.size >= 100_000) fail('Installed package has too many files')
-      const fullPath = join(directory, name)
-      if (entry.isDirectory()) visit(name, depth + 1)
-      else {
-        const identity = expected.get(name)
-        const stat = lstatSync(fullPath)
-        if (!identity || !stat.isFile() || stat.size !== identity.bytes || hash(readFileSync(fullPath)) !== identity.sha256)
-          fail(`Installed package file ${name} differs from the verified archive`)
-        found.add(name)
-      }
-    }
-  }
-  visit('', 0)
-  if (found.size !== expected.size) fail('Installed package is missing files from the verified archive')
-}
-
-function installedState(plan: ReleaseEvidencePlan, cwd: string, archives: Map<string, PackageFiles>): { lock: string, sha256: string, manifests: string } {
+function installedState(plan: ReleaseEvidencePlan, cwd: string, archives: Map<string, PackageFiles>, maxBytes: number): { lock: string, sha256: string, manifests: string } {
   const lock = readFileSync(join(cwd, 'bun.lock'), 'utf8')
   const parsed = Bun.JSONC.parse(lock) as { packages?: Record<string, unknown[]> }
   const nodeModules = realpathSync(join(cwd, 'node_modules'))
@@ -157,7 +133,7 @@ function installedState(plan: ReleaseEvidencePlan, cwd: string, archives: Map<st
       const manifest = JSON.parse(raw) as { name?: string, version?: string }
       if (manifest.name !== pkg.name || manifest.version !== pkg.version)
         fail(`Installed ${pkg.name} does not match tested version ${pkg.version}`)
-      verifyInstalledFiles(directory, archives.get(pkg.name)!)
+      verifyInstalledFiles(directory, archives.get(pkg.name)!, { maxBytes }, true)
       manifests.push(hash(raw))
     }
   }
@@ -251,11 +227,11 @@ export async function verifyReleaseEvidence(plan: ReleaseEvidencePlan, options: 
     }
     receipt.sources.push(verified)
   }
-  const initial = installedState(plan, options.cwd, archives)
+  const initial = installedState(plan, options.cwd, archives, maxExpandedBytes)
   const checks = await runProjectScripts({ cwd: options.cwd, scripts: plan.checks, signal: options.signal, timeoutMs: checkTimeoutMs })
   receipt.consumer.bunVersion = checks.bunVersion
   receipt.consumer.checks = checks.checks
-  const final = installedState(plan, options.cwd, archives)
+  const final = installedState(plan, options.cwd, archives, maxExpandedBytes)
   if (final.sha256 !== initial.sha256 || final.manifests !== initial.manifests) fail('Consumer checks changed the verified lockfile or package identities')
   receipt.consumer.sha256 = initial.sha256
   options.signal?.throwIfAborted()

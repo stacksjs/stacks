@@ -92,6 +92,39 @@ safe derived download URL. The shared CI evaluator preserves the framework's
 existing job selection and never-started-job retry policy; callers provide their
 own workflow/job names. Ownership receipts are data, never historical code.
 
+## Installed library payloads
+
+Use the narrow `@stacksjs/actions/library/installed` entrypoint to verify a
+caller-owned, stable installation against the native archive reader:
+
+```ts
+import { libraryArchiveEntries } from '@stacksjs/actions/library/archive'
+import { inspectInstalledLibraryPackage } from '@stacksjs/actions/library/installed'
+
+const expected = await libraryArchiveEntries(archiveBytes)
+const actual = inspectInstalledLibraryPackage(installedDirectory, expected, {
+  consumerRoot: isolatedConsumerDirectory,
+  allowBunTag: true, // Optional Bun file-archive installer marker only.
+})
+// Run product checks or serve browser fixtures using this complete actual Map.
+```
+
+Inspection checks every actual file and the complete expected key set, then
+returns freshly read bytes. Missing, changed and unexpected files, symlinks,
+special files, unsafe paths and consumer-root escapes fail closed. Standalone
+inspection also checks nested `node_modules`; it has no arbitrary ignore list.
+The optional root `.bun-tag` must be a regular 95-byte SHA-512 SRI marker and is
+excluded from the returned archive payload. This checks its shape, not installer
+authenticity. A marker already present in the expected archive must match its
+expected bytes normally.
+
+Default budgets are 100,000 entries (including directories/installer metadata),
+128 nested directory levels, and 256 MiB of total and individual file bytes.
+`maxEntries`, `maxDepth`, `maxBytes` and `maxFileBytes` accept positive safe
+integers. The total includes allowed installer metadata. Inspection does not
+establish registry/source ownership or provide a snapshot against concurrent
+writers; use an isolated installation with no concurrent mutation.
+
 ## 🧪 Testing
 
 ```bash
