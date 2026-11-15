@@ -1530,6 +1530,30 @@ async function getMiddlewareRegistry(): Promise<Record<string, string> | null> {
 }
 
 /**
+ * Middleware a compiled app carries inside itself.
+ *
+ * `loadMiddleware` finds a middleware by importing its file: through the
+ * auto-import registry under `storage/framework`, then `app/Middleware/`, then
+ * the framework defaults. All three are paths on disk, and a compiled binary
+ * has no project tree beside it, so every route behind `auth` answered 500
+ * there and the automatic `csrf` check failed on every write: the app's own
+ * routes were unreachable in exactly the build that bundles them.
+ *
+ * The same answer as `provideActions`: the build imports each middleware
+ * statically and registers the loaders here, keyed by class name (`'Auth'`),
+ * so the router resolves a name inside the bundle. An alias (`'auth'`) is
+ * accepted too, for a caller that has no alias map to resolve it through.
+ */
+const providedMiddleware = new Map<string, () => Promise<{ default?: unknown }>>()
+
+export function provideMiddleware(loaders: Record<string, () => Promise<{ default?: unknown }>>): void {
+  for (const [name, load] of Object.entries(loaders))
+    providedMiddleware.set(name.endsWith('.ts') ? name.slice(0, -3) : name, load)
+  // A name that failed before it was provided must not stay failed.
+  middlewareCache = undefined
+}
+
+/**
  * Load a middleware by name.
  *
  * Returns null when the alias cannot be resolved to a module with a
@@ -1548,6 +1572,28 @@ async function loadMiddleware(name: string): Promise<MiddlewareHandler | null> {
   }
 
   const className = await resolveMiddlewareName(name)
+
+  // A compiled app first. It has no auto-import registry and no source tree
+  // beside it, so neither lookup below can find anything: the build imports
+  // each middleware statically and hands the loaders over (provideMiddleware).
+  const provided = providedMiddleware.get(className) ?? providedMiddleware.get(name)
+  if (provided) {
+    try {
+      const middleware = await provided()
+      const handler = (middleware.default ?? null) as MiddlewareHandler | null
+      if (!handler || typeof handler.handle !== 'function') {
+        log.error(`[Router] Middleware '${name}' was provided by the build, but its module has no default export with a handle() method`)
+        cachedMiddleware.set(name, null)
+        return null
+      }
+      cachedMiddleware.set(name, handler)
+      return handler
+    }
+    catch (err: unknown) {
+      log.error(`[Router] Failed to load the middleware '${name}' the build provided:`, err)
+      return null
+    }
+  }
 
   // The registry first: it is exact, it already encodes the app-over-defaults
   // override, and it works inside a compiled binary where probing source

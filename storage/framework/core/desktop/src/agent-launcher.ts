@@ -171,6 +171,12 @@ export interface StacksAgentHandlerOptions {
   routes?: AgentRouteFile[]
   /** The actions those routes name by string (`'Actions/SaveTab'`), imported statically for the same reason. */
   actions?: Record<string, () => Promise<{ default?: unknown }>>
+  /**
+   * Middleware by class name (`'Auth'`), imported statically for the same
+   * reason: a route behind `.middleware('auth')` is unreachable in a compiled
+   * app unless its middleware travels inside it.
+   */
+  middleware?: Record<string, () => Promise<{ default?: unknown }>>
 }
 
 /**
@@ -200,8 +206,9 @@ export async function stacksAgentHandler(options: StacksAgentHandlerOptions): Pr
     }
   }
 
-  const { provideActions, route, serverResponse } = await import('@stacksjs/router')
+  const { provideActions, provideMiddleware, route, serverResponse } = await import('@stacksjs/router')
   if (options.actions) provideActions(options.actions)
+  if (options.middleware) provideMiddleware(options.middleware)
 
   const module = options.entry ? await options.entry() as { default?: unknown } : undefined
   if (typeof module?.default === 'function') return module.default as AgentHandler
@@ -231,7 +238,7 @@ export async function stacksAgentHandler(options: StacksAgentHandlerOptions): Pr
  * route module by absolute path so the bundler can follow it: whatever that
  * module imports is inside the built app.
  */
-export function renderAgentEntry(options: { agentEntry?: string, launcherModule?: string, routes?: Array<{ file: string, prefix?: string, middleware?: string[] }>, actions?: Record<string, string> } = {}): string {
+export function renderAgentEntry(options: { agentEntry?: string, launcherModule?: string, routes?: Array<{ file: string, prefix?: string, middleware?: string[] }>, actions?: Record<string, string>, middleware?: Record<string, string> } = {}): string {
   const launcher = options.launcherModule ?? fileURLToPath(import.meta.url)
   const entry = options.agentEntry ? `() => import(${JSON.stringify(options.agentEntry)})` : 'undefined'
   const routes = options.routes?.length
@@ -240,6 +247,10 @@ export function renderAgentEntry(options: { agentEntry?: string, launcherModule?
   const actionEntries = Object.entries(options.actions ?? {})
   const actions = actionEntries.length
     ? `{\n${actionEntries.map(([name, file]) => `    ${JSON.stringify(name)}: () => import(${JSON.stringify(file)}),`).join('\n')}\n  }`
+    : '{}'
+  const middlewareEntries = Object.entries(options.middleware ?? {})
+  const middleware = middlewareEntries.length
+    ? `{\n${middlewareEntries.map(([name, file]) => `    ${JSON.stringify(name)}: () => import(${JSON.stringify(file)}),`).join('\n')}\n  }`
     : '{}'
   return `// Written by buddy build:desktop and buddy dev:desktop (macos.agent). Do not edit.
 import process from 'node:process'
@@ -253,7 +264,7 @@ if (!file) {
 const manifest = readAgentManifest(file)
 process.exit(await runDesktopAgentApp({
   manifest,
-  handler: () => stacksAgentHandler({ entry: ${entry}, appRoutes: manifest.appRoutes, routes: ${routes}, actions: ${actions} }),
+  handler: () => stacksAgentHandler({ entry: ${entry}, appRoutes: manifest.appRoutes, routes: ${routes}, actions: ${actions}, middleware: ${middleware} }),
 }))
 `
 }

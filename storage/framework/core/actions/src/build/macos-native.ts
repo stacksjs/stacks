@@ -265,6 +265,28 @@ export function macosAgentActionFiles(root: string, sources: string[]): Record<s
 }
 
 /**
+ * Every middleware a compiled app can be asked for, by class name: the app's
+ * `app/Middleware/*.ts` first, then the framework defaults behind them.
+ *
+ * All of them, not only the ones the route files name. `csrf` is checked on
+ * every write without a route asking for it, a route group can name one from
+ * another file, and an alias map can point any name at any class, so reading
+ * the route files for names would miss the ones that matter most.
+ */
+export function macosAgentMiddlewareFiles(root: string): Record<string, string> {
+  const middleware: Record<string, string> = {}
+  // The app's directory second, so its file replaces the default of the same name.
+  for (const dir of [join(root, 'storage/framework/defaults/app/Middleware'), join(root, 'app/Middleware')]) {
+    if (!existsSync(dir)) continue
+    for (const file of readdirSync(dir)) {
+      if (!file.endsWith('.ts') || file.endsWith('.d.ts') || file.endsWith('.test.ts')) continue
+      middleware[file.slice(0, -3)] = join(dir, file)
+    }
+  }
+  return middleware
+}
+
+/**
  * The agent launcher, written and compiled for the bundle. A compiled binary
  * cannot read route files off disk (the router refuses: they could not
  * resolve the framework packages from there), so the project's route files
@@ -279,7 +301,8 @@ export async function prepareMacosAgent(config: ResolvedMacosDesktop, prepared: 
   const routes = config.agent.appRoutes === false ? [] : await macosAgentRouteFiles(prepared.root)
   const agentEntry = macosAgentEntry(prepared.root, config)
   const actions = macosAgentActionFiles(prepared.root, [...routes.map(route => route.file), ...(agentEntry ? [agentEntry] : [])])
-  writeFileSync(entry, renderAgentEntry({ agentEntry, routes, actions }))
+  const middleware = config.agent.appRoutes === false ? {} : macosAgentMiddlewareFiles(prepared.root)
+  writeFileSync(entry, renderAgentEntry({ agentEntry, routes, actions, middleware }))
   const launcher = join(work, `${config.executable}-agent`)
   const compile = Bun.spawnSync(['bun', ...desktopLauncherCompileArgs({ entry, outfile: launcher })], { cwd: prepared.root, stdout: 'pipe', stderr: 'pipe' })
   if (compile.exitCode !== 0)
