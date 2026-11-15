@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.601...v0.75.602)
+
+## 🐛 Bug Fixes
+
+- flush frontend failures and isolate provided middleware fixtures ([9b663c1](https://github.com/stacksjs/stacks/commit/9b663c1)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.600...v0.75.601)
 
 ## ✨ Features
