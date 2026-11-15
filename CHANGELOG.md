@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.598...v0.75.599)
+
+## 🐛 Bug Fixes
+
+- **env**: let the environment file override base .env values Bun preloaded ([f6fc198](https://github.com/stacksjs/stacks/commit/f6fc198)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- say why space-y does not reach an stx component, and what to use instead ([02ff2b2](https://github.com/stacksjs/stacks/commit/02ff2b2)) _(by Chris Breuer)_
+- **skills**: refresh the native catalog for the env base-file test ([724b3a0](https://github.com/stacksjs/stacks/commit/724b3a0)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.597...v0.75.598)
 
 ## ✨ Features
