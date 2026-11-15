@@ -197,7 +197,7 @@
         "better-dx": "^0.2.39"
       },
       "peerDependencies": {
-        "craft-native": ">=0.0.499"
+        "craft-native": ">=0.0.505"
       },
       "optionalPeers": ["craft-native"]
     },
@@ -677,7 +677,7 @@
         "@stacksjs/router": "0.75.597",
         "@stacksjs/server": "0.75.597",
         "@stacksjs/storage": "0.75.597",
-        "craft-native": ">=0.0.499"
+        "craft-native": ">=0.0.505"
       },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
