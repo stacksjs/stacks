@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.597...v0.75.598)
+
+## ✨ Features
+
+- **desktop**: in-app updates and Developer ID releases for native macos apps ([af3a042](https://github.com/stacksjs/stacks/commit/af3a042)) _(by Chris Breuer)_
+
+## 🔧 Chores
+
+- **desktop**: record the craft-native 0.0.505 floor in pantry.lock ([ab3141e](https://github.com/stacksjs/stacks/commit/ab3141e)) _(by Chris Breuer)_
+- **desktop**: require craft-native 0.0.505 for desktop builds ([c63f946](https://github.com/stacksjs/stacks/commit/c63f946)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.596...v0.75.597)
 
 ## 🐛 Bug Fixes
