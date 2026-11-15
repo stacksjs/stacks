@@ -107,6 +107,15 @@ test('permits only explicit well-formed root Bun installer metadata and counts i
   expect(() => inspectInstalledLibraryPackage(directory, expected, { allowBunTag: true })).toThrow('symbolic link')
 })
 
+test('rejects a root Bun marker directory with and without installer metadata permission', async () => {
+  const { directory, expected } = await installed()
+  mkdirSync(join(directory, '.bun-tag'))
+  expect(() => inspectInstalledLibraryPackage(directory, expected)).toThrow('.bun-tag is not a regular file')
+  expect(() => inspectInstalledLibraryPackage(directory, expected, { allowBunTag: true })).toThrow('.bun-tag is not a regular file')
+  const expectedMarker = new Map([...expected, ['.bun-tag', new TextEncoder().encode('archive marker')]])
+  expect(() => inspectInstalledLibraryPackage(directory, expectedMarker, { allowBunTag: true })).toThrow('.bun-tag is not a regular file')
+})
+
 test.skipIf(process.platform === 'win32')('rejects a special file without opening or blocking on it', async () => {
   const { directory, expected } = await installed()
   const result = Bun.spawnSync(['mkfifo', join(directory, 'pipe')])

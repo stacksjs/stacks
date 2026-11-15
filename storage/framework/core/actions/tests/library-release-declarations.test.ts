@@ -5,8 +5,8 @@ import { join } from 'node:path'
 
 // The shipped package interface is the seam: real builds and archives, an
 // isolated node_modules, and a strict consumer with no framework source paths.
-// This catches leaked declaration dependencies; runtime release effects have
-// their own owned-registry fixtures.
+// This catches leaked declaration dependencies and private package subpaths;
+// runtime release effects have their own owned-registry fixtures.
 test('packed native release interfaces compile without the framework model graph', async () => {
   const framework = join(import.meta.dir, '../..')
   const repository = join(framework, '../../..')
@@ -70,6 +70,11 @@ import { planNativeLibraryRelease } from '@stacksjs/actions/library/release-plan
 import { prepareNativeLibraryRelease, publishNativeLibraryRelease, readbackNativeLibraryRelease } from '@stacksjs/actions/library/release-lifecycle'
 import { resolveLibraryRegistryReadAuth } from '@stacksjs/actions/library/release-registry-auth'
 import { inspectInstalledLibraryPackage } from '@stacksjs/actions/library/installed'
+// @ts-expect-error The legacy dependency policy is implementation-private.
+import { verifyInstalledFiles } from '@stacksjs/actions/library/installed-internal'
+// @ts-expect-error The private adapter is unavailable through the .js spelling too.
+import { verifyInstalledFiles as privateJs } from '@stacksjs/actions/library/installed-internal.js'
+void [verifyInstalledFiles, privateJs]
 const installed: Map<string, Uint8Array> = inspectInstalledLibraryPackage('package', new Map<string, Uint8Array>(), { consumerRoot: '.', allowBunTag: true, maxEntries: 100, maxDepth: 8, maxBytes: 1024, maxFileBytes: 512 })
 // @ts-expect-error Installed payloads contain bytes, not strings.
 const invalidInstalled: Map<string, string> = installed
@@ -109,16 +114,35 @@ void [config, invalid, registry, check, invalidInstalled]
     run([join(repository, 'node_modules/.bin/tsc'), '-p', join(consumer, 'tsconfig.json')], consumer)
     const installedProbe = `
 const { inspectInstalledLibraryPackage } = await import('@stacksjs/actions/library/installed')
-const { mkdirSync, writeFileSync } = await import('node:fs')
+for (const subpath of ['library/installed-internal', 'library/installed-internal.js']) {
+  let blocked = false
+  try { await import('@stacksjs/actions/' + subpath) } catch (error) {
+    blocked = error.code === (process.versions.bun ? 'ERR_MODULE_NOT_FOUND' : 'ERR_PACKAGE_PATH_NOT_EXPORTED')
+  }
+  if (!blocked) throw new Error('Private package subpath remains accessible: ' + subpath)
+}
+const { mkdirSync, writeFileSync, rmSync } = await import('node:fs')
 mkdirSync('installed-fixture', { recursive: true })
 writeFileSync('installed-fixture/package.json', '{}')
 const expected = new Map([['package.json', new TextEncoder().encode('{}')]])
 if (inspectInstalledLibraryPackage('installed-fixture', expected, { consumerRoot: '.' }).size !== 1) throw new Error('Missing installed payload')
+mkdirSync('installed-fixture/.bun-tag')
+for (const options of [undefined, { allowBunTag: true }]) {
+  let markerRejected = false
+  try { inspectInstalledLibraryPackage('installed-fixture', expected, options) } catch { markerRejected = true }
+  if (!markerRejected) throw new Error('Installed payload accepted a directory as Bun metadata')
+}
+rmSync('installed-fixture/.bun-tag', { recursive: true })
 writeFileSync('installed-fixture/private.ts', 'private source')
+let extraRejected = false
+try { inspectInstalledLibraryPackage('installed-fixture', expected) } catch { extraRejected = true }
+if (!extraRejected) throw new Error('Installed payload ignored an extra private file')
+rmSync('installed-fixture/private.ts')
+mkdirSync('installed-fixture/node_modules/private', { recursive: true })
+writeFileSync('installed-fixture/node_modules/private/leak.ts', 'private source')
 let rejected = false
 try { inspectInstalledLibraryPackage('installed-fixture', expected) } catch { rejected = true }
 if (!rejected) throw new Error('Installed payload ignored extra files')
-const { rmSync } = await import('node:fs')
 rmSync('installed-fixture', { recursive: true })
 `
     await writeFile(join(consumer, 'runtime.ts'), `

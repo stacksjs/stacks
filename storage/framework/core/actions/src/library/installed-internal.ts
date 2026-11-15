@@ -61,6 +61,7 @@ export function verifyInstalledFiles(directory: string, expected: ReadonlyMap<st
         const fullPath = join(root, name)
         const stat = lstatSync(fullPath)
         if (stat.isSymbolicLink()) fail(`Installed package file ${name} is a symbolic link`)
+        if (!separateDependencies && name === '.bun-tag' && !stat.isFile()) fail(`Installed package file ${name} is not a regular file`)
         if (stat.isDirectory()) { visit(name, depth + 1); continue }
         if (!stat.isFile()) fail(`Installed package file ${name} is not a regular file`)
         const identity = identities.get(name)
