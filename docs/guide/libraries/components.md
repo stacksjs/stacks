@@ -601,6 +601,25 @@ describe('Button', () => {
 })
 ```
 
+## Sample control events
+
+The public `LoginForm`, `LoginScreen`, and `Window` samples communicate with
+their host through typed events. They do not call ambient application functions.
+`LoginForm` emits `submit`, `back`, and `close`; `Window` emits `minimize`,
+`maximize`, and `close`; `LoginScreen` emits `close`. Every event detail contains
+the component's `id`.
+
+Handle these events in the host instead of defining globals such as
+`handleLogin` or `minimizeWindow`. In an STX host, bind a handler with
+`@submit="onLogin"` or `@minimize="onMinimize"`. An installed custom element
+exposes the same events through its normal event listener API.
+
+`LoginForm.submitHandler` remains a deprecated string prop for compatibility.
+Its value is opaque data in the `submit` event detail, alongside `id`; the
+component never executes it. Migrate code such as `submitHandler="login()"` to
+a host-owned submit callback. Treat IDs and event data as values, including
+when they contain quotes or markup.
+
 ## Best Practices
 
 1. **Single responsibility** - Each component does one thing

@@ -1,5 +1,5 @@
 <script>
-import { defineProps, withDefaults } from 'stx'
+import { defineEmits, defineProps, withDefaults } from 'stx'
 
 interface LoginScreenProps {
   id?: string
@@ -15,13 +15,19 @@ const { id, logoText, subtitle } = withDefaults(
     subtitle: 'To begin, click your user name'
   }
 )
+
+const emit = defineEmits<{ close: [detail: { id: string }] }>()
+
+function onClose() {
+  emit('close', { id: id! })
+}
 </script>
 
 <template>
   <div id="{{ id }}" class="hidden login-screen">
     <div class="login-background">
       <div class="login-container">
-        <button class="login-close-btn" onclick="closeLoginScreens()">×</button>
+        <button class="login-close-btn" @click="onClose">×</button>
         <div class="login-header">
           <div class="login-logo">{{ logoText }}</div>
           <div class="login-subtitle">{{ subtitle }}</div>

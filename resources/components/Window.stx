@@ -1,5 +1,5 @@
 <script>
-import { defineProps, withDefaults } from 'stx'
+import { defineEmits, defineProps, withDefaults } from 'stx'
 
 interface WindowProps {
   id: string
@@ -24,6 +24,24 @@ const { id, icon, title, left, top, width, height, style } = withDefaults(
   }
 )
 
+const emit = defineEmits<{
+  minimize: [detail: { id: string }]
+  maximize: [detail: { id: string }]
+  close: [detail: { id: string }]
+}>()
+
+function onMinimize() {
+  emit('minimize', { id })
+}
+
+function onMaximize() {
+  emit('maximize', { id })
+}
+
+function onClose() {
+  emit('close', { id })
+}
+
 </script>
 
 <template>
@@ -32,9 +50,9 @@ const { id, icon, title, left, top, width, height, style } = withDefaults(
       <div class="window-icon">{{ icon }}</div>
       <div class="window-title">{{ title }}</div>
       <div class="window-controls">
-        <button class="minimize window-control" onclick="minimizeWindow('{{ id }}')">_</button>
-        <button class="maximize window-control" onclick="toggleMaximizeWindow('{{ id }}')">□</button>
-        <button class="close window-control" onclick="closeWindow('{{ id }}')">×</button>
+        <button class="minimize window-control" @click="onMinimize">_</button>
+        <button class="maximize window-control" @click="onMaximize">□</button>
+        <button class="close window-control" @click="onClose">×</button>
       </div>
     </div>
     <div class="window-content">
