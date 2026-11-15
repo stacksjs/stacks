@@ -1,5 +1,28 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.593...v0.75.594)
+
+## ✨ Features
+
+- inspect complete installed library payloads ([4654e3d](https://github.com/stacksjs/stacks/commit/4654e3d)) _(by Chris)_
+
+## 🐛 Bug Fixes
+
+- require the released stx compiler cohort ([d987a09](https://github.com/stacksjs/stacks/commit/d987a09)) _(by Chris Breuer)_
+- hide legacy installed policy inside module ([f55afd6](https://github.com/stacksjs/stacks/commit/f55afd6)) _(by Chris)_
+- keep installed verification policy private ([aaf08b2](https://github.com/stacksjs/stacks/commit/aaf08b2)) _(by Chris)_
+
+## 🔧 Chores
+
+- refresh native inventory evidence catalog ([e6800ed](https://github.com/stacksjs/stacks/commit/e6800ed)) _(by Chris)_
+- integrate qualified installed inventory ([4159ff9](https://github.com/stacksjs/stacks/commit/4159ff9)) _(by Chris)_
+- integrate qualified compiler floor ([8354466](https://github.com/stacksjs/stacks/commit/8354466)) _(by Chris)_
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.592...v0.75.593)
 
 ## ✨ Features
