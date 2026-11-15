@@ -10,6 +10,8 @@ export interface WorkflowConfig {
   pantry?: string
   runners: { checks: string[], deploy?: string[], ios?: string[] }
   secrets?: { checks?: string[], deploy?: string[], ios?: string[] }
+  /** Native credentials enter only the steps that need them, never the build. */
+  stepSecrets?: Partial<Record<Extract<WorkflowStep, `native-${string}`>, string[]>>
   env?: { checks?: Record<string, string>, deploy?: Record<string, string>, ios?: Record<string, string> }
   commands?: Partial<Record<WorkflowStep, string[][]>>
   deploy?: boolean

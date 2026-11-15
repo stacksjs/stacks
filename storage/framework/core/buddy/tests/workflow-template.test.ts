@@ -45,3 +45,17 @@ test('workflow generation refuses incomplete native or unsafe secret and runner 
   expect(() => renderReviewOsWorkflow({ ...config, secrets: { checks: ['bad name'] } })).toThrow()
   for (const downloadDirectory of ['../outside', 'C:/outside', '\\outside']) expect(() => renderReviewOsWorkflow({ ...config, native: { ...config.native, downloadDirectory } })).toThrow()
 })
+
+test('native build and downloaded acceptance receive only their declared credentials', () => {
+  const workflow = Bun.YAML.parse(renderReviewOsWorkflow({
+    ...config,
+    secrets: { ...config.secrets, ios: ['ATHLETE_FIXTURES', 'APPLE_UPLOAD_KEY'] },
+    stepSecrets: { 'native-accept': ['ATHLETE_FIXTURES'], 'native-sign': ['APPLE_UPLOAD_KEY'] },
+  })) as any
+  const native = workflow.jobs.native
+  expect(native.env.ATHLETE_FIXTURES).toBeUndefined()
+  expect(native.env.APPLE_UPLOAD_KEY).toBeUndefined()
+  expect(native.steps.find((step: any) => step.run === './buddy workflow:step native-build').env).toBeUndefined()
+  expect(native.steps.find((step: any) => step.run === './buddy workflow:step native-accept').env).toEqual({ ATHLETE_FIXTURES: '${{ secrets.ATHLETE_FIXTURES }}' })
+  expect(native.steps.find((step: any) => step.run === './buddy workflow:step native-sign').env).toEqual({ APPLE_UPLOAD_KEY: '${{ secrets.APPLE_UPLOAD_KEY }}' })
+})

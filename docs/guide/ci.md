@@ -57,6 +57,10 @@ The defaults run the normal Buddy lint, typecheck, tests and deploy commands,
 plus the application's build script. Override a step with argv arrays in
 `commands`; no shell quoting or provider polling belongs in application code.
 Use protected `production` and `ios-testflight` environments for their secrets.
+Native credentials are scoped to steps with `stepSecrets`, for example
+`{ 'native-accept': ['ATHLETE_FIXTURES'], 'native-sign': ['APPLE_UPLOAD_KEY'] }`.
+List these names in `secrets.ios`. They are not inherited by native builds;
+without an explicit selection, only the signing step receives `secrets.ios`.
 When `DEPLOY_SSH_KEY` is supplied, normal Buddy deployments derive its public
 key in a private temporary directory, use that identity throughout the SSH
 pipeline and clean it up afterward. The runner's home-directory keys are kept.

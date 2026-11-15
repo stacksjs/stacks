@@ -18,6 +18,10 @@ export function validateWorkflowConfig(config: WorkflowConfig): void {
   for (const names of Object.values(config.secrets ?? {})) {
     if (!Array.isArray(names) || names.some(name => !/^[A-Z_][A-Z0-9_]*$/.test(name))) throw new Error('Workflow secrets must be environment variable names')
   }
+  for (const [step, names] of Object.entries(config.stepSecrets ?? {})) {
+    if (!['native-build', 'native-accept', 'native-sign', 'native-upload', 'native-verify', 'native-cleanup'].includes(step)
+      || !Array.isArray(names) || names.some(name => !config.secrets?.ios?.includes(name))) throw new Error('Step credentials must name declared native secrets')
+  }
   if (config.native && (!config.native.artifacts.length || ![...config.native.artifacts, config.native.downloadDirectory, config.native.archivePattern, ...(config.native.evidence ?? []), ...(config.native.releaseArtifacts ?? [])].every(relativePath))) throw new Error('Native artifacts must stay inside the workspace')
   if (config.deploy && !config.commands?.['after-deploy']?.length) throw new Error('Configure deployed application verification')
   if (config.native && ['native-build', 'native-accept'].some(step => !config.commands?.[step as keyof typeof config.commands]?.length)) throw new Error('Configure native build and downloaded acceptance commands')
@@ -36,6 +40,10 @@ export function renderReviewOsWorkflow(config: WorkflowConfig): string {
   const main = `github.ref == 'refs/heads/${branch}' && github.event_name != 'pull_request'`
   const upload = "steps.release.outputs.upload == 'true'"
   const secretEnv = (group: 'checks' | 'deploy' | 'ios') => Object.fromEntries((config.secrets?.[group] ?? []).map(name => [name, '${{ secrets.' + name + ' }}']))
+  const nativeSecrets = (step: keyof NonNullable<WorkflowConfig['stepSecrets']>) => {
+    const names = config.stepSecrets?.[step] ?? (step === 'native-sign' ? config.secrets?.ios ?? [] : [])
+    return names.length ? { env: Object.fromEntries(names.map(name => [name, '${{ secrets.' + name + ' }}'])) } : {}
+  }
   const bootstrap = () => [
     { name: 'Checkout the exact source', uses: 'actions/checkout@11d5960a326750d5838078e36cf38b85af677262', with: { 'fetch-depth': 0, 'persist-credentials': false } },
     { name: 'Set up the pinned tools', uses: 'pantry-pm/pantry/packages/action@624cd6674f8c5c2d4e4204c11ece62a00d7fac0a', with: { version: config.pantry ?? '0.11.199', install: 'false', packages: `bun.sh@${config.bun ?? '1.4.4'}` } },
@@ -58,17 +66,17 @@ export function renderReviewOsWorkflow(config: WorkflowConfig): string {
   if (config.native) jobs.native = {
     needs: config.deploy ? ['deploy'] : ['lint', 'typecheck', 'test', 'build'], if: main,
     'runs-on': config.runners.ios, 'timeout-minutes': 90, environment: 'ios-testflight',
-    reviewos: { secrets: [...(config.secrets?.checks ?? []), ...(config.secrets?.ios ?? [])] }, env: { ...config.env?.checks, ...config.env?.ios, ...secretEnv('checks'), ...secretEnv('ios') },
+    reviewos: { secrets: [...(config.secrets?.checks ?? []), ...(config.secrets?.ios ?? [])] }, env: { ...config.env?.checks, ...config.env?.ios, ...secretEnv('checks') },
     steps: [...bootstrap(),
       { name: 'Read the committed release identity', id: 'release', run: './buddy workflow:release-state', env: { WORKFLOW_UPLOAD_REQUESTED: "${{ inputs.upload && 'true' || 'false' }}" } },
-      { name: 'Build the simulator application', run: './buddy workflow:step native-build' },
+      { name: 'Build the simulator application', run: './buddy workflow:step native-build', ...nativeSecrets('native-build') },
       { name: 'Publish the simulator application', uses: 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02', with: { name: 'native-simulator-${{ github.run_id }}', path: config.native.artifacts.join('\n'), 'if-no-files-found': 'error', 'retention-days': 7 } },
       { name: 'Download the published application', uses: 'actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093', with: { name: 'native-simulator-${{ github.run_id }}', path: config.native.downloadDirectory } },
-      { name: 'Accept the downloaded application', run: './buddy workflow:step native-accept' },
-      { name: 'Prepare temporary signing material', if: upload, run: './buddy workflow:step native-sign' },
-      { name: 'Upload the accepted application', if: upload, run: './buddy workflow:step native-upload' },
-      { name: 'Verify tester availability', if: upload, run: './buddy workflow:step native-verify' },
-      { name: 'Remove temporary signing material', if: 'always()', run: './buddy workflow:step native-cleanup' },
+      { name: 'Accept the downloaded application', run: './buddy workflow:step native-accept', ...nativeSecrets('native-accept') },
+      { name: 'Prepare temporary signing material', if: upload, run: './buddy workflow:step native-sign', ...nativeSecrets('native-sign') },
+      { name: 'Upload the accepted application', if: upload, run: './buddy workflow:step native-upload', ...nativeSecrets('native-upload') },
+      { name: 'Verify tester availability', if: upload, run: './buddy workflow:step native-verify', ...nativeSecrets('native-verify') },
+      { name: 'Remove temporary signing material', if: 'always()', run: './buddy workflow:step native-cleanup', ...nativeSecrets('native-cleanup') },
       ...([...(config.native.evidence ?? []), ...(config.native.releaseArtifacts ?? [])].length ? [{ name: 'Preserve acceptance and release receipts', if: 'always()', uses: 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02', with: { name: 'native-evidence-${{ github.run_id }}', path: [...(config.native.evidence ?? []), ...(config.native.releaseArtifacts ?? [])].join('\n'), 'if-no-files-found': 'warn', 'retention-days': 7 } }] : []),
     ],
   }
