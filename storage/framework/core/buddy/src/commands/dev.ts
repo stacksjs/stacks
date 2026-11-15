@@ -377,6 +377,54 @@ async function canStartPrettyDevProxy(): Promise<boolean> {
   }
 }
 
+/**
+ * Give each dev server a port of its own.
+ *
+ * Each server used to be stepped past a busy port independently, so nothing
+ * stopped one from landing on a port another was about to bind. With :3006 and
+ * :3007 held by a second project, Docs walked forward to :3008, which probed
+ * free only because this project's API had not bound it yet. The banner then
+ * printed the API and the docs on the same port and whichever bound second
+ * failed.
+ *
+ * A server keeps its preferred port whenever that port is free. One that has
+ * to move skips every port another server here prefers or was already given,
+ * so a move never takes a neighbour's port, and two servers configured onto
+ * the same port come out apart.
+ *
+ * When the whole window is taken the preferred port is handed back, so the
+ * caller fails on the real bind with the real error rather than here.
+ */
+export async function claimDevPorts(
+  servers: Array<{ label: string, preferred: number }>,
+  isFree: (port: number) => Promise<boolean>,
+  attempts = 20,
+): Promise<{ ports: number[], shifts: string[] }> {
+  const preferred = new Set(servers.map(server => server.preferred))
+  const taken = new Set<number>()
+  const ports: number[] = []
+  const shifts: string[] = []
+
+  for (const server of servers) {
+    let port = server.preferred
+    if (taken.has(port) || !(await isFree(port))) {
+      for (let candidate = server.preferred + 1; candidate < server.preferred + attempts; candidate++) {
+        if (taken.has(candidate) || preferred.has(candidate) || !(await isFree(candidate)))
+          continue
+        port = candidate
+        break
+      }
+    }
+
+    if (port !== server.preferred)
+      shifts.push(`${server.label} :${server.preferred} → :${port}`)
+    taken.add(port)
+    ports.push(port)
+  }
+
+  return { ports, shifts }
+}
+
 export function dev(buddy: CLI): void {
   const descriptions = {
     dev: 'Start development server',
@@ -553,6 +601,19 @@ export function dev(buddy: CLI): void {
 
       await checkFrameworkDefaults()
       const perf = await intro('buddy dev:docs')
+
+      // Run alone, nothing has stepped the docs server past a port another
+      // project holds, the way `buddy dev` does for it: the server crashed on
+      // EADDRINUSE under `bun --watch`, which then sat there holding nothing.
+      const preferredDocsPort = Number(process.env.PORT_DOCS) || 3006
+      const { ports: [docsPort = preferredDocsPort], shifts } = process.env.STACKS_PROXY_MANAGED === '1'
+        ? { ports: [preferredDocsPort], shifts: [] }
+        : await claimDevPorts([{ label: 'Docs', preferred: preferredDocsPort }], portIsFree)
+      process.env.PORT_DOCS = String(docsPort)
+      if (shifts.length > 0)
+        console.log(`  ${yellow('⚠')}  ${yellow('Port in use by another process')} ${dim(`- ${shifts.join(', ')}`)}`)
+      console.log(`  ${green('➜')}  ${bold('Docs')}:  ${cyan(`http://localhost:${docsPort}`)}\n`)
+
       const result = await (await actions()).runAction(Action.DevDocs, options)
 
       if (resultFailed(result)) {
@@ -665,7 +726,13 @@ export function dev(buddy: CLI): void {
     .action(async (options: DevOptions) => {
       await checkFrameworkDefaults()
       process.env.STACKS_DEV_ENTRY_PATH = resolveDevelopmentEntryPath({ site: options.site })
-      await (await actions()).runFrontendDevServer(options)
+      try {
+        await (await actions()).runFrontendDevServer(options)
+      }
+      catch (error) {
+        log.error(error instanceof Error ? error.message : String(error))
+        process.exit(ExitCode.FatalError)
+      }
     })
 
   buddy
@@ -736,22 +803,14 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   //
   // Under rpx (`STACKS_PROXY_MANAGED`) the ports are assigned to us by the
   // daemon that is already proxying to them, so they are taken as given.
-  const portShifts: string[] = []
-  const claimPort = async (label: string, preferred: number): Promise<number> => {
-    if (proxyManagedExternally)
-      return preferred
-
-    const port = await findAvailablePort(preferred)
-    if (port !== preferred)
-      portShifts.push(`${label} :${preferred} → :${port}`)
-
-    return port
-  }
-
-  const frontendPort = await claimPort('Frontend', preferredFrontendPort)
-  const apiPort = await claimPort('API', preferredApiPort)
-  const docsPort = await claimPort('Docs', preferredDocsPort)
-  const dashboardPort = await claimPort('Dashboard', preferredDashboardPort)
+  const claimed = await claimDevPorts([
+    { label: 'Frontend', preferred: preferredFrontendPort },
+    { label: 'API', preferred: preferredApiPort },
+    { label: 'Docs', preferred: preferredDocsPort },
+    { label: 'Dashboard', preferred: preferredDashboardPort },
+  ], proxyManagedExternally ? async () => true : portIsFree)
+  const portShifts = claimed.shifts
+  const [frontendPort, apiPort, docsPort, dashboardPort] = claimed.ports as [number, number, number, number]
 
   // Child dev actions (`dev/views.ts`, `dev/api.ts`, `dev/docs.ts`) each read
   // their port from the environment, so the resolved values have to be
@@ -1049,9 +1108,10 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
     .catch(() => { /* swallow — verbose-mode error handlers below already log */ })
 
   await Promise.all([
+    // Not gated on --verbose: the banner has already printed this server's
+    // URL, so a frontend that failed to start has to say so.
     a.runFrontendDevServer(quietOpts).catch((error) => {
-      if (options.verbose)
-        log.error(`Frontend: ${error}`)
+      log.error(`Frontend: ${error instanceof Error ? error.message : error}`)
     }),
     a.runApiDevServer(quietOpts).catch((error) => {
       if (options.verbose)
@@ -1483,8 +1543,7 @@ async function probeDevServerHttp(port: number): Promise<boolean> {
 }
 
 /**
- * Return `preferred` if nothing is listening on it, otherwise the next free
- * port above it.
+ * Whether nothing holds `port`.
  *
  * A port counts as taken if EITHER check says so, because neither alone is
  * sufficient:
@@ -1499,17 +1558,6 @@ async function probeDevServerHttp(port: number): Promise<boolean> {
  *     `0.0.0.0:3000`, so the bind alone reports a busy port as free and the
  *     dev server goes on to fail its real bind.
  */
-async function findAvailablePort(preferred: number, attempts = 20): Promise<number> {
-  for (let port = preferred; port < preferred + attempts; port++) {
-    if (await portIsFree(port))
-      return port
-  }
-
-  // Everything in the window is taken. Hand back the preferred port so the
-  // caller fails on the real bind with the real error rather than here.
-  return preferred
-}
-
 async function portIsFree(port: number): Promise<boolean> {
   for (const host of ['127.0.0.1', '::1']) {
     if (await someoneIsListening(port, host))
