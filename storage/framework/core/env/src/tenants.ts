@@ -31,6 +31,17 @@ export interface TenantEnvOptions {
   self?: string
   /** Slugs of the projects attached to this box, from `cloud.tenants`. */
   tenants?: readonly string[]
+  /**
+   * Keys that are this project's own whatever their prefix.
+   *
+   * A tenant on the box can also be a service this project uses. BugHQ runs
+   * beside the apps that report to it, and an app's `BUGHQ_KEY` is that app's
+   * key to BugHQ, issued to it by `buddy hq:connect`: its own configuration,
+   * not BugHQ's secret. Treated as foreign it was stripped from every deploy,
+   * and the app went live reporting nowhere. Name such keys here exactly: the
+   * rest of the tenant's prefix stays foreign.
+   */
+  shared?: readonly string[]
 }
 
 /**
@@ -67,11 +78,12 @@ export function partitionTenantEnv(
     .filter(({ prefix }) => prefix !== selfPrefix)
     .sort((a, b) => b.prefix.length - a.prefix.length)
 
+  const shared = new Set(options.shared ?? [])
   const own: Record<string, string> = {}
   const foreign: Record<string, Record<string, string>> = {}
 
   for (const [key, value] of Object.entries(values)) {
-    const match = tenants.find(({ prefix }) => key.startsWith(prefix))
+    const match = shared.has(key) ? undefined : tenants.find(({ prefix }) => key.startsWith(prefix))
 
     if (match) {
       ;(foreign[match.slug] ??= {})[key] = value

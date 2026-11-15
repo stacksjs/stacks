@@ -417,7 +417,8 @@ export function env(buddy: CLI): void {
           }
           else {
             const { foreignTenantKeys, partitionTenantEnv } = await import('@stacksjs/env')
-            const foreign = foreignTenantKeys(partitionTenantEnv(values, declaredTenants))
+            const { HQ_CONNECTION_ENV_KEYS } = await import('../hq')
+            const foreign = foreignTenantKeys(partitionTenantEnv(values, { ...declaredTenants, shared: HQ_CONNECTION_ENV_KEYS }))
 
             // `.env` is machine-local: gitignored, and excluded from the
             // deploy tarball. Foreign keys there are inert, and it is where

@@ -165,3 +165,23 @@ describe('foreignTenantKeys', () => {
     expect(foreignTenantKeys(partitionTenantEnv({ APP_KEY: 'own' }, { tenants: ['bughq'] }))).toEqual([])
   })
 })
+
+describe('a tenant that is also a service this project uses', () => {
+  const values = {
+    BUGHQ_KEY: 'this app\'s key to BugHQ',
+    BUGHQ_PROJECT_ID: 'votescape-1',
+    BUGHQ_DB_PASSWORD: 'BugHQ\'s own secret',
+    APP_NAME: 'Votescape',
+  }
+
+  it('keeps the keys named as shared, and still strips the rest of the prefix', () => {
+    const partition = partitionTenantEnv(values, { self: 'votescape', tenants: ['bughq'], shared: ['BUGHQ_KEY', 'BUGHQ_PROJECT_ID'] })
+    expect(Object.keys(partition.own).sort()).toEqual(['APP_NAME', 'BUGHQ_KEY', 'BUGHQ_PROJECT_ID'])
+    expect(partition.foreign).toEqual({ bughq: { BUGHQ_DB_PASSWORD: 'BugHQ\'s own secret' } })
+  })
+
+  it('strips them all when nothing is named', () => {
+    const partition = partitionTenantEnv(values, { self: 'votescape', tenants: ['bughq'] })
+    expect(Object.keys(partition.own)).toEqual(['APP_NAME'])
+  })
+})

@@ -1167,9 +1167,13 @@ export async function resolveDeployEnvValues(
       throw new Error('The environment still contains ciphertext')
 
     const { foreignTenantKeys, partitionTenantEnv } = await import('@stacksjs/env')
+    // An app's keys to an HQ service are its own, even where the service is
+    // a tenant of the same box (see HQ_CONNECTION_ENV_KEYS).
+    const { HQ_CONNECTION_ENV_KEYS } = await import('../hq')
     const partition = partitionTenantEnv(values, {
       self: tsCloudConfig?.project?.slug,
       tenants: await resolveDeclaredTenants(),
+      shared: HQ_CONNECTION_ENV_KEYS,
     })
 
     for (const { tenant, keys } of foreignTenantKeys(partition)) {

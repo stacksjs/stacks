@@ -35,6 +35,32 @@ export const HQ_SERVICES: Record<HqServiceName, HqServiceDescriptor> = {
 
 export const HQ_SERVICE_NAMES = Object.keys(HQ_SERVICES) as HqServiceName[]
 
+/**
+ * Every env key that is an app's connection to an HQ service: the keys
+ * `hq:connect` writes, and the settings config/services.ts, config/logging.ts
+ * and config/monitoring.ts read beside them.
+ *
+ * They are the app's own, even on a box where the service is a tenant too. A
+ * deploy keeps a tenant's prefixed keys out of other projects' sites, and
+ * without this list it took an app's `BUGHQ_KEY` for BugHQ's own secret.
+ */
+export const HQ_CONNECTION_ENV_KEYS: readonly string[] = [
+  ...new Set([
+    ...Object.values(HQ_SERVICES).flatMap(service => Object.values(service.env)),
+    'BUGHQ_HOST',
+    'BUGHQ_DSN',
+    'BUGHQ_PROJECT',
+    'BUGHQ_RELEASE',
+    'LOGHQ_BASE_URL',
+    'LOGHQ_PROJECT',
+    'ANALYTICSHQ_URL',
+    'STATUSHQ_URL',
+    'SUPPORTHQ_URL',
+    'COMMSHQ_URL',
+    'REPORTSHQ_URL',
+  ]),
+]
+
 /** The services `hq:connect` asks when none is named: the two that have shipped the contract. */
 export const HQ_DEFAULT_SERVICES: HqServiceName[] = ['bughq', 'loghq']
 
