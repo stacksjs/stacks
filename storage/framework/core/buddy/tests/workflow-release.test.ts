@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto'
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { evaluateProjectWorkflow, nextWorkflowRelease, requireQualifiedWorkflow } from '../src/workflow-release'
+import { commitWorkflowRelease, evaluateProjectWorkflow, nextWorkflowRelease, requireQualifiedWorkflow } from '../src/workflow-release'
 import { writeWorkflowReleaseState } from '../src/workflow-project'
 import { renderReviewOsWorkflow } from '../src/workflow-template'
 
@@ -15,6 +15,7 @@ function fixture() {
   mkdirSync(join(root, 'config'))
   mkdirSync(join(root, '.reviewos/workflows'), { recursive: true })
   writeFileSync(join(root, 'config/workflows.ts'), `export default ${JSON.stringify(config)}`)
+  writeFileSync(join(root, 'package.json'), '{"version":"1.0.0-build.35"}')
   writeFileSync(join(root, 'product.json'), '{"version":"1.0.0","build":35}')
   const source = renderReviewOsWorkflow(config)
   writeFileSync(join(root, '.reviewos/workflows/ci.yml'), source)
@@ -65,4 +66,27 @@ test('release upload uses the real tag and checkout, including detached CI check
     for (const [key, value] of Object.entries({ GITHUB_OUTPUT: previous.output, GITHUB_REF: previous.ref, WORKFLOW_UPLOAD_REQUESTED: previous.requested })) { if (value === undefined) delete process.env[key]; else process.env[key] = value }
     rmSync(root, { recursive: true, force: true })
   }
+})
+
+test('a normal workflow release atomically publishes aligned metadata, notes and its immutable tag', () => {
+  const { root, config, git } = fixture()
+  try {
+    const remote = join(root, 'remote.git')
+    git('init', '--bare', remote)
+    git('remote', 'add', 'origin', remote)
+    git('push', 'origin', 'main')
+    mkdirSync(join(root, 'notes'))
+    writeFileSync(join(root, 'notes/en-US.txt'), 'Test workout comments.\n')
+    git('add', 'notes/en-US.txt')
+    const identity = nextWorkflowRelease(root, config, 'build')
+    commitWorkflowRelease(root, config, identity, ['notes/en-US.txt'])
+    expect(JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version).toBe('1.0.0-build.36')
+    expect(JSON.parse(readFileSync(join(root, 'product.json'), 'utf8')).build).toBe(36)
+    expect(git('log', '-1', '--format=%s')).toBe('chore(release): v1.0.0-build.36')
+    expect(git('rev-parse', 'refs/tags/v1.0.0-build.36^{commit}')).toBe(git('rev-parse', 'HEAD'))
+    expect(git('ls-remote', 'origin', 'refs/heads/main')).toContain(git('rev-parse', 'HEAD'))
+    expect(git('ls-remote', 'origin', 'refs/tags/v1.0.0-build.36^{}')).toContain(git('rev-parse', 'HEAD'))
+    expect(git('status', '--porcelain', '--untracked-files=no')).toBe('')
+  }
+  finally { rmSync(root, { recursive: true, force: true }) }
 })

@@ -20,9 +20,58 @@ Stacks CI features:
 
 ### Create a Workflow
 
-Stacks does not scaffold CI files via a buddy command yet. Create a workflow file
-for your CI platform by hand; the sections below cover GitHub Actions, GitLab CI,
-CircleCI, and Jenkins.
+For owned ReviewOS runners, declare the project workflow and generate it with
+Buddy. Other CI platforms can use the examples below.
+
+```ts
+// config/workflows.ts
+import type { WorkflowConfig } from '@stacksjs/types'
+
+export default {
+  provider: 'reviewos',
+  origin: 'https://reviewos.org',
+  repository: 'my-team/my-app',
+  bun: '1.4.4',
+  runners: {
+    checks: ['self-hosted', 'my-linux-runner'],
+    deploy: ['self-hosted', 'my-linux-runner'],
+  },
+  deploy: true,
+  secrets: { deploy: ['DEPLOY_SSH_KEY'] },
+  commands: {
+    'after-deploy': [['bun', 'scripts/verify-deployment.ts']],
+  },
+} satisfies WorkflowConfig
+```
+
+```sh
+buddy workflow:setup
+buddy workflow:setup --check
+buddy workflow:runs
+buddy workflow:show 42
+buddy workflow:artifacts 42
+```
+
+Commit `config/workflows.ts` and the generated `.reviewos/workflows/ci.yml`.
+The defaults run the normal Buddy lint, typecheck, tests and deploy commands,
+plus the application's build script. Override a step with argv arrays in
+`commands`; no shell quoting or provider polling belongs in application code.
+Use protected `production` and `ios-testflight` environments for their secrets.
+The local commands use the installed ReviewOS CLI's normal login; CI can supply
+its scoped `REVIEWOS_TOKEN`.
+
+A `native` declaration adds simulator publication, download and acceptance before
+any signing or upload. Configure its artifact paths and `native-build` and
+`native-accept` commands. A complete `{artifact}` argument is replaced only with
+the single archive in the declared download directory. Add `release.versionFile`
+for the tracked JSON version/build identity and the native signing, upload,
+verification and cleanup commands to use `buddy release:ios --bump build --wait`.
+A release requires full exact-source acceptance before changing metadata, then
+pushes main and its immutable tag atomically. The ordered main pipeline keeps
+the deployed backend stable through native acceptance and TestFlight delivery.
+The release manifest and application package version stay aligned; set
+`release.packageVersion` to `version` for plain marketing versions, or `false`
+when the application does not publish a package version.
 
 ## GitHub Actions
 
