@@ -181,8 +181,9 @@ is not proof of ownership. Managed PostgreSQL web/API previews remain unsupporte
 Accepted previews retain their preview slug, host and relative SQLite persistent target.
 `buddy deploy:preview:remove pr-123` removes the exact implicit native runtime and, when different,
 the legacy first-server target. An explicit site keeps its exact historical removal selection.
-All selected runtime instances and units must stop before shared data and gateway cleanup;
-a failed stop preserves shared data, DNS and local state. Common cleanup runs once and sibling
+Unit and sibling-preview directories must be readable before any stop or deletion. All selected
+runtime instances and units must stop before shared data and gateway cleanup; a failed listing
+or stop preserves shared data, DNS and local state. Common cleanup runs once and sibling
 preview names remain untouched. Ordinary production and staging deployments use their
 existing paths and are unaffected by the preview preflight.
 

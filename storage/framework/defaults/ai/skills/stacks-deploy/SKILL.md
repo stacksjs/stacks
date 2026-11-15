@@ -114,7 +114,8 @@ Accepted configurations use their own tenant slug (`<slug>-pr-123`) on the app's
 persistent target. `--base staging` selects the staging box. Implicit removal cleans both the sole
 native runtime and the legacy first-server target when different; explicit site selection keeps
 its historical exact target. Every selected runtime must stop before shared data and gateway
-cleanup. A stop failure preserves shared data, DNS and local state. Common cleanup runs once;
+cleanup. Unit and sibling-preview directories must be readable before any stop or deletion.
+A listing or stop failure preserves shared data, DNS and local state. Common cleanup runs once;
 sibling preview names remain untouched. Arbitrary historical target discovery remains deferred.
 
 The command requires a completely readable/decryptable `.env.preview` before cloud config

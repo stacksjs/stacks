@@ -245,7 +245,8 @@ the same constrained support and does not make arbitrary PR code safe to run wit
 Removal cleans the exact implicit native runtime and the legacy first-server target when their
 names differ. Explicit site selection retains its historical exact target. All selected runtime
 instances and units must stop before gateway/certificate, release and shared data cleanup.
-A failed stop preserves shared data, DNS and local state. Common cleanup runs once and leaves
+Unit and sibling-preview directories must be readable before any stop or deletion. A failed
+listing or stop preserves shared data, DNS and local state. Common cleanup runs once and leaves
 sibling preview names alone. Discovery of arbitrary historical target names remains deferred.
 
 ## Deployment hooks

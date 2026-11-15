@@ -40,7 +40,30 @@ function previewFixture(root: string) {
 // contract, while dedicated startup benchmarks measure command performance.
 const PUBLICATION_FIXTURE_TIMEOUT = 30_000
 
-async function command(args: string[], setup?: (root: string) => void, guardStartup = false, removal?: 'success' | 'failure') {
+// Execute the received remote shell against inert transport functions, including
+// a queue-shaped sibling whose ownership requires a successful fragment listing.
+const removalHarness = `
+systemctl() {
+  if [ "$1" = list-units ]; then return 0; fi
+  echo "systemctl $*"
+}
+ls() {
+  case "$1" in
+    /etc/systemd/system/)
+      if [ "$PREVIEW_REMOVAL_FAILURE" = units ]; then return 17; fi
+      printf '%s\\n' fixture-pr-7-assets.service fixture-pr-7-main.service fixture-pr-7-main-queue-main.service fixture-pr-70-main.service fixture-main.service
+      ;;
+    /etc/rpx/sites.d/)
+      if [ "$PREVIEW_REMOVAL_FAILURE" = fragments ]; then return 17; fi
+      printf '%s\\n' fixture-pr-7.json fixture-pr-7-main-queue.json
+      ;;
+    *) return 18 ;;
+  esac
+}
+rm() { echo "rm $*"; }
+`
+
+async function command(args: string[], setup?: (root: string) => void, guardStartup = false, removal?: 'success' | 'failure' | 'units' | 'fragments') {
   const checkout = resolve(import.meta.dir, '../../../../..')
   const root = mkdtempSync(join(tmpdir(), 'buddy-publication-entry-'))
   try {
@@ -62,14 +85,22 @@ async function command(args: string[], setup?: (root: string) => void, guardStar
     if (removal) {
       writeFileSync(startupGuard, `import { mock } from 'bun:test'
 import * as cloud from ${JSON.stringify(join(checkout, 'node_modules/@stacksjs/ts-cloud/dist/index.js'))}
-const capture = { remote: [], dns: [] }
+const capture = { remote: [], dns: [], executions: [] }
 const save = () => Bun.write('removal-capture.json', JSON.stringify(capture))
 mock.module('@stacksjs/ts-cloud', () => ({ ...cloud,
   sshExecOrThrow: async (_host, command) => {
-    capture.remote.push(Buffer.from(command.split(' ')[1], 'base64').toString())
+    const script = Buffer.from(command.split(' ')[1], 'base64').toString()
+    capture.remote.push(script)
     await save()
     if (${removal === 'failure'}) throw new Error('Inert runtime stop failed')
-    return ''
+    const result = Bun.spawnSync(['bash', '-c', ${JSON.stringify(removalHarness)} + script], {
+      env: { PATH: '/usr/bin:/bin', PREVIEW_REMOVAL_FAILURE: ${JSON.stringify(removal)} },
+    })
+    const stdout = result.stdout.toString()
+    capture.executions.push({ code: result.exitCode, stdout, stderr: result.stderr.toString() })
+    await save()
+    if (result.exitCode !== 0) throw new Error('Inert remote teardown failed with exit code ' + result.exitCode)
+    return stdout
   },
   detectDnsProvider: async () => ({ name: 'inert' }),
   removeAddressRecords: async (_provider, zone, host) => {
@@ -297,6 +328,13 @@ for (const deploy of ['bucket', 'server']) {
     expect(result.removal.remote).toHaveLength(1)
     expect(result.removal.remote[0]).toContain('/var/www/fixture-pr-7-main ')
     expect(result.removal.remote[0]).toContain('/var/www/fixture-pr-7-assets ')
+    const execution = result.removal.executions[0]
+    expect(execution.code).toBe(0)
+    expect(execution.stdout).toContain('systemctl stop fixture-pr-7-assets.service')
+    expect(execution.stdout).toContain('systemctl stop fixture-pr-7-main.service')
+    expect(execution.stdout).not.toContain('fixture-pr-7-main-queue-main.service')
+    expect(execution.stdout).not.toContain('fixture-pr-70-main.service')
+    expect(execution.stdout).not.toContain('fixture-main.service')
     expect(result.removal.dns).toEqual([{ zone: 'pr-7.preview.example.test', host: 'pr-7.preview.example.test' }])
     expect(result.pinExists).toBe(false)
     expect(result.siblingPinExists).toBe(true)
@@ -316,3 +354,22 @@ test('registered removal keeps DNS and local state after a remote stop failure',
   expect(result.removal.dns).toEqual([])
   expect(result.pinExists).toBe(true)
 })
+
+test.each(['units', 'fragments'] as const)('registered removal keeps DNS and local state when the remote %s listing fails', async (failure) => {
+  const result = await command(['deploy:preview:remove', 'pr-7'], (root) => {
+    previewFixture(root)
+    const file = join(root, 'config/cloud.ts')
+    writeFileSync(file, readFileSync(file, 'utf8').replace('sites: {', "sites: { assets: { deploy: 'bucket', port: 3339 },"))
+    mkdirSync(join(root, 'storage/cloud/state'), { recursive: true })
+    writeFileSync(join(root, 'storage/cloud/state/fixture-pr-7-production.json'), '{}')
+    writeFileSync(join(root, 'storage/cloud/state/fixture-pr-70-production.json'), '{}')
+  }, false, failure)
+  expect(result.code, result.output).not.toBe(0)
+  expect(result.output).toContain('Inert remote teardown failed with exit code 17')
+  expect(result.removal.remote).toHaveLength(1)
+  expect(result.removal.executions).toEqual([{ code: 17, stdout: '', stderr: '' }])
+  expect(result.removal.dns).toEqual([])
+  expect(result.pinExists).toBe(true)
+  expect(result.siblingPinExists).toBe(true)
+  expect(result.ran).toBe(false)
+}, 45_000)

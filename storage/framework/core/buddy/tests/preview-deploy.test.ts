@@ -150,7 +150,7 @@ describe('buildPreviewTeardownScript', () => {
   })
 
   it('selects exactly this preview\'s units, never the app\'s or a sibling preview\'s', () => {
-    const pattern = /grep -E '([^']+)'/.exec(script.split('\n').find(line => line.includes('/etc/systemd/system/ 2>/dev/null | grep -E'))!)![1]!
+    const pattern = /grep -E '([^']+)'/.exec(script.split('\n').find(line => line.includes('grep -E'))!)![1]!
     const listing = [
       'acme-pr-1-web.service', 'acme-pr-1-web@.service', 'acme-pr-1-web@a1b2.service', 'acme-pr-1-web-liveness.service',
       'acme-pr-1-web-liveness.timer', 'acme-pr-1-web-scheduler.service', 'acme-pr-1-web-queue-0.service', 'acme-pr-1-web-daemon-mail-0.service',
@@ -168,7 +168,7 @@ describe('buildPreviewTeardownScript', () => {
   it('skips a unit belonging to a longer-named sibling preview whose fragment is still there', () => {
     // `pr-1-web-queue` beside `pr-1`: its units match pr-1's queue pattern by
     // prefix, so the script consults the box's fragments before touching one.
-    expect(script).toContain('others=$(ls /etc/rpx/sites.d/ 2>/dev/null | sed -n \'s/^\\(acme-pr-1-.*\\)\\.json$/\\1/p\')')
+    expect(script).toContain('others=$(printf \'%s\\n\' "$fragments" | sed -n \'s/^\\(acme-pr-1-.*\\)\\.json$/\\1/p\')')
     expect(script).toContain('for other in $others; do case "$unit" in "$other"-*) skip=1 ;; esac; done')
   })
 

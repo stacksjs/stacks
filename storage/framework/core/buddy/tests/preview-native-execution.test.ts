@@ -173,11 +173,12 @@ test('native preview execution cannot enter inherited CDN/mail policy or persist
 
 // Execute the actual generated shell with every mutating transport replaced by
 // shell functions. No /etc or /var/www fixture, systemctl, SSH or provider runs.
-function teardownTrace(script: string, failure = '', expectedCode = 0): string[] {
+function teardownTrace(script: string, failure = '', expectedCode = 0, listing = 'owned'): string[] {
   const harness = `
 systemctl() {
   if [ "$1 \${2:-}" = "$PREVIEW_TEST_FAILURE" ] || [ "$1 \${5:-}" = "$PREVIEW_TEST_FAILURE" ]; then return 1; fi
   if [ "$1" = list-units ]; then
+    if [ "$PREVIEW_TEST_LISTING" != owned ]; then return 0; fi
     case "$5" in
       fixture-pr-7-main@*) echo 'fixture-pr-7-main@abc.service loaded active running' ;;
       fixture-pr-7-assets@*) echo 'fixture-pr-7-assets@old.service loaded active running' ;;
@@ -187,12 +188,24 @@ systemctl() {
   fi
 }
 ls() {
+  if [ "ls $1" = "$PREVIEW_TEST_FAILURE" ]; then return 17; fi
+  case "$PREVIEW_TEST_LISTING" in
+    empty) return 0 ;;
+    unrelated)
+      case "$1" in
+        /etc/rpx/sites.d/) echo 'fixture-pr-70.json' ;;
+        /etc/systemd/system/) echo 'fixture-pr-70-main.service'; echo 'fixture-main.service' ;;
+      esac
+      return 0 ;;
+  esac
   case "$1" in
     /etc/rpx/sites.d/) echo 'fixture-pr-7.json'; echo 'fixture-pr-7-main-queue.json' ;;
     /etc/systemd/system/)
       echo 'fixture-pr-7-main.service'
       echo 'fixture-pr-7-main@.service'
       echo 'fixture-pr-7-main-liveness.timer'
+      echo 'fixture-pr-7-assets-queue-0.service'
+      echo 'fixture-pr-7-main-daemon-mail-0.service'
       echo 'fixture-pr-7-assets.service'
       echo 'fixture-pr-7-assets@.service'
       echo 'fixture-pr-7-assets-scheduler.service'
@@ -204,7 +217,7 @@ ls() {
 }
 rm() { echo "rm $*"; }
 `
-  const result = Bun.spawnSync(['bash', '-c', harness + script], { env: { ...process.env, PREVIEW_TEST_FAILURE: failure } })
+  const result = Bun.spawnSync(['bash', '-c', harness + script], { env: { PATH: '/usr/bin:/bin', PREVIEW_TEST_FAILURE: failure, PREVIEW_TEST_LISTING: listing } })
   expect(result.stderr.toString()).toBe('')
   expect(result.exitCode, result.stderr.toString()).toBe(expectedCode)
   return result.stdout.toString().trim().split('\n')
@@ -237,10 +250,32 @@ test.each(['bucket', 'server'] as const)('native %s-first preview round trip rem
 
 
 test.each([
+  'ls /etc/systemd/system/',
+  'ls /etc/rpx/sites.d/',
+])('preview removal aborts before any mutation when %s fails', async (failure) => {
+  const { buildPreviewTeardownScript } = await import('../src/commands/preview-deploy')
+  const trace = teardownTrace(buildPreviewTeardownScript('fixture-pr-7', ['assets', 'main']), failure, 17)
+  expect(trace).toEqual([''])
+})
+
+test.each(['empty', 'unrelated'])('preview removal accepts a successful %s listing without stopping other runtimes', async (listing) => {
+  const { buildPreviewTeardownScript } = await import('../src/commands/preview-deploy')
+  const trace = teardownTrace(buildPreviewTeardownScript('fixture-pr-7', ['assets', 'main']), '', 0, listing)
+  expect(trace.filter(line => line.startsWith('systemctl stop '))).toEqual([])
+  expect(trace.filter(line => line.includes('/var/www/fixture-pr-7-shared'))).toHaveLength(1)
+  expect(trace.filter(line => line.includes('/etc/rpx/sites.d/fixture-pr-7.json'))).toHaveLength(1)
+  expect(trace).toContain('removed fixture-pr-7')
+})
+
+test.each([
   'stop fixture-pr-7-main@abc.service',
   'stop fixture-pr-7-assets@old.service',
   'stop fixture-pr-7-main.service',
   'stop fixture-pr-7-assets.service',
+  'stop fixture-pr-7-main-liveness.timer',
+  'stop fixture-pr-7-assets-scheduler.service',
+  'stop fixture-pr-7-assets-queue-0.service',
+  'stop fixture-pr-7-main-daemon-mail-0.service',
   'list-units fixture-pr-7-main@*.service',
   'list-units fixture-pr-7-assets@*.service',
 ])('preview removal preserves shared data and gateway when %s fails', async (failure) => {

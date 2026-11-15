@@ -202,7 +202,7 @@ export function buildPreviewTeardownScript(slug: string, site: string | readonly
       '  systemctl disable "$instance" 2>/dev/null || true',
       'done',
       `rm -f /etc/systemd/system/*.wants/${unit}@*.service`,
-      `for unit in $(ls /etc/systemd/system/ 2>/dev/null | grep -E '${units}' || true); do`,
+      `for unit in $(printf '%s\\n' "$unit_files" | grep -E '${units}' || true); do`,
       '  skip=0',
       '  for other in $others; do case "$unit" in "$other"-*) skip=1 ;; esac; done',
       '  [ "$skip" = 1 ] && continue',
@@ -217,9 +217,13 @@ export function buildPreviewTeardownScript(slug: string, site: string | readonly
   const paths = sites.flatMap(site => [`/var/www/${slug}-${site}`, `/usr/local/sbin/${slug}-${site}-liveness`])
   return [
     'set -eu',
+    // Check raw discovery before any stop or deletion. A failed directory
+    // listing is not evidence that no owned units or sibling previews exist.
+    'unit_files=$(ls /etc/systemd/system/)',
+    'fragments=$(ls /etc/rpx/sites.d/)',
     // Keep longer-named sibling preview units even if their name happens to
     // match an owned site's worker suffix. Never wildcard-delete a slug.
-    `others=$(ls /etc/rpx/sites.d/ 2>/dev/null | sed -n 's/^\\(${slug}-.*\\)\\.json$/\\1/p')`,
+    `others=$(printf '%s\\n' "$fragments" | sed -n 's/^\\(${slug}-.*\\)\\.json$/\\1/p')`,
     ...teardown,
     // Only after EVERY current/legacy runtime has stopped may common gateway,
     // certificate and shared data cleanup run. DNS/local state run once too.
