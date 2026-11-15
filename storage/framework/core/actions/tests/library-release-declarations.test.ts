@@ -42,6 +42,12 @@ test('packed native release interfaces compile without the framework model graph
       await cp(join(source, 'package.json'), join(output, 'package.json'))
       await cp(join(source, 'build.ts'), join(output, 'build.ts'))
       await writeFile(join(output, 'tsconfig.json'), JSON.stringify({ extends: join(source, 'tsconfig.json') }))
+      if (name === 'actions') {
+        // A rebuild must remove the previously shipped private adapter too.
+        await mkdir(join(output, 'dist/library'), { recursive: true })
+        await writeFile(join(output, 'dist/library/installed-internal.js'), 'export function verifyInstalledFiles() {}')
+        await writeFile(join(output, 'dist/library/installed-internal.d.ts'), 'export declare function verifyInstalledFiles(): void')
+      }
       run([process.execPath, 'run', 'build'], output)
       run(['node', join(framework, '../scripts/normalize-workspace-deps-for-publish'), join(output, 'package.json'), join(framework, '..')], repository)
       const archive = join(workspace, `${name}.tgz`)
@@ -51,6 +57,8 @@ test('packed native release interfaces compile without the framework model graph
       // Read the real tar payload, rather than substituting source files or
       // resolving undeclared framework packages from the monorepo.
       const files = await new Bun.Archive(await Bun.file(archive).arrayBuffer()).files()
+      expect(files.has('package/dist/library/installed-internal.js')).toBe(false)
+      expect(files.has('package/dist/library/installed-internal.d.ts')).toBe(false)
       for (const [path, file] of files) {
         expect(path.startsWith('package/')).toBe(true)
         const relative = path.slice('package/'.length)
@@ -74,7 +82,11 @@ import { inspectInstalledLibraryPackage } from '@stacksjs/actions/library/instal
 import { verifyInstalledFiles } from '@stacksjs/actions/library/installed-internal'
 // @ts-expect-error The private adapter is unavailable through the .js spelling too.
 import { verifyInstalledFiles as privateJs } from '@stacksjs/actions/library/installed-internal.js'
-void [verifyInstalledFiles, privateJs]
+// @ts-expect-error Repeated separators cannot expose the private policy.
+import { verifyInstalledFiles as privateAlias } from '@stacksjs/actions/library//installed-internal'
+// @ts-expect-error Co-located legacy policy stays module-private.
+import { verifyInstalledFiles as privatePolicy } from '@stacksjs/actions/release-evidence'
+void [verifyInstalledFiles, privateJs, privateAlias, privatePolicy]
 const installed: Map<string, Uint8Array> = inspectInstalledLibraryPackage('package', new Map<string, Uint8Array>(), { consumerRoot: '.', allowBunTag: true, maxEntries: 100, maxDepth: 8, maxBytes: 1024, maxFileBytes: 512 })
 // @ts-expect-error Installed payloads contain bytes, not strings.
 const invalidInstalled: Map<string, string> = installed
@@ -114,13 +126,19 @@ void [config, invalid, registry, check, invalidInstalled]
     run([join(repository, 'node_modules/.bin/tsc'), '-p', join(consumer, 'tsconfig.json')], consumer)
     const installedProbe = `
 const { inspectInstalledLibraryPackage } = await import('@stacksjs/actions/library/installed')
-for (const subpath of ['library/installed-internal', 'library/installed-internal.js']) {
+for (const subpath of ['library/installed-internal', 'library/installed-internal.js', 'library//installed-internal', 'library//installed-internal.js', 'library/%69nstalled-internal', 'library/installed-internal?probe', 'library/installed-internal.js?probe']) {
   let blocked = false
   try { await import('@stacksjs/actions/' + subpath) } catch (error) {
-    blocked = error.code === (process.versions.bun ? 'ERR_MODULE_NOT_FOUND' : 'ERR_PACKAGE_PATH_NOT_EXPORTED')
+    blocked = ['ERR_MODULE_NOT_FOUND', 'ERR_PACKAGE_PATH_NOT_EXPORTED', 'ERR_INVALID_MODULE_SPECIFIER'].includes(error.code)
   }
   if (!blocked) throw new Error('Private package subpath remains accessible: ' + subpath)
 }
+for (const specifier of ['@stacksjs/actions/release-evidence', '@stacksjs/actions//release-evidence', '@stacksjs/actions/%72elease-evidence', './node_modules/@stacksjs/actions/dist/release-evidence.js', './node_modules/@stacksjs/actions/dist/release-evidence.js?probe']) {
+  const namespace = await import(specifier)
+  if (Object.keys(namespace).sort().join(',') !== 'inspectInstalledLibraryPackage,validateReleaseEvidencePlan,verifyReleaseEvidence') throw new Error('Legacy implementation exports private policy: ' + specifier)
+}
+const facade = await import('@stacksjs/actions/library/installed')
+if (Object.keys(facade).join(',') !== 'inspectInstalledLibraryPackage') throw new Error('Installed facade exports private policy')
 const { mkdirSync, writeFileSync, rmSync } = await import('node:fs')
 mkdirSync('installed-fixture', { recursive: true })
 writeFileSync('installed-fixture/package.json', '{}')

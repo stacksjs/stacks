@@ -46,8 +46,6 @@
       "import": "./dist/run-action.js",
       "default": "./dist/run-action.js"
     },
-    "./library/installed-internal": null,
-    "./library/installed-internal.js": null,
     "./*": {
       "types": "./dist/*.d.ts",
       "bun": "./dist/*.js",
