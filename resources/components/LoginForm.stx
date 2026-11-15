@@ -1,11 +1,12 @@
 <script>
-import { defineProps, withDefaults } from 'stx'
+import { defineEmits, defineProps, withDefaults } from 'stx'
 
 interface LoginFormProps {
   id: string
   icon?: string
   title?: string
   prompt?: string
+  /** @deprecated Opaque submit event data. Handle the submit event in host code. */
   submitHandler?: string
 }
 
@@ -18,15 +19,33 @@ const { id, icon, title, prompt, submitHandler } = withDefaults(
     submitHandler: 'handleLogin()'
   }
 )
+
+const emit = defineEmits<{
+  submit: [detail: { id: string, submitHandler: string }]
+  back: [detail: { id: string }]
+  close: [detail: { id: string }]
+}>()
+
+function onSubmit() {
+  emit('submit', { id, submitHandler: submitHandler! })
+}
+
+function onBack() {
+  emit('back', { id })
+}
+
+function onClose() {
+  emit('close', { id })
+}
 </script>
 
 <template>
   <div id="{{ id }}" class="hidden login-form">
     <div class="login-form-background">
       <div class="login-form-container">
-        <button class="login-close-btn" onclick="closeLoginScreens()">×</button>
+        <button class="login-close-btn" @click="onClose">×</button>
         <div class="login-form-header">
-          <button class="login-back-button" onclick="hideLoginForms()">← Back</button>
+          <button class="login-back-button" @click="onBack">← Back</button>
           <div class="login-form-title">
             <div class="login-form-icon">{{ icon }}</div>
             <h2>{{ title }}</h2>
@@ -37,7 +56,7 @@ const { id, icon, title, prompt, submitHandler } = withDefaults(
           <div class="login-form-prompt">{{ prompt }}</div>
           <slot />
           <div class="login-actions">
-            <button class="login-submit-btn" onclick="{{ submitHandler }}">
+            <button class="login-submit-btn" @click="onSubmit">
               <span class="login-btn-icon">→</span>
               <span>Log In</span>
             </button>

@@ -62,7 +62,7 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/orm": "workspace:*",
-    "@stacksjs/stx": "^0.2.889"
+    "@stacksjs/stx": "^0.2.890"
   },
   "devDependencies": {
     "@stacksjs/alias": "workspace:*",
