@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.596...v0.75.597)
+
+## 🐛 Bug Fixes
+
+- build sample component props with the published shared-script compiler ([a0c1e7a](https://github.com/stacksjs/stacks/commit/a0c1e7a)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.595...v0.75.596)
 
 ## 📝 Documentation
