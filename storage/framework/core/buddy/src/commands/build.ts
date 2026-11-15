@@ -402,7 +402,7 @@ export function build(buddy: CLI): void {
     .option('--app-name <name>', 'Bundle display name (or DESKTOP_APP_NAME / APP_NAME)')
     .option('--app-version <version>', "Bundle version (or DESKTOP_APP_VERSION; defaults to the project's package.json)")
     .option('--bundle-id <id>', 'Reverse-DNS bundle identifier (or DESKTOP_BUNDLE_ID)')
-    .option('--signing-identity <identity>', 'Developer ID identity to sign with (or DESKTOP_SIGNING_IDENTITY)')
+    .option('--signing-identity <identity>', 'Developer ID identity to sign with (or DESKTOP_SIGNING_IDENTITY). An AppKit app (`macos`) is then built for direct distribution: not sandboxed, with its updater when it has `macos.updates`')
     .option('--notary-profile <profile>', 'notarytool keychain profile to notarize and staple with (or DESKTOP_NOTARY_PROFILE)')
     .option('--notarize', 'Notarize and staple with an App Store Connect API key (or DESKTOP_NOTARIZE)')
     .option('--api-key-id <id>', 'App Store Connect API key ID (or APP_STORE_CONNECT_API_KEY_ID)')

@@ -7,6 +7,7 @@ import process from 'node:process'
 import { codesignArgs, plistValue, renderInfoPlist } from './index'
 import { loadDesktopConfig } from './macos-app'
 import { makeIcns, runBundleCommand } from './macos-bundle'
+import { desktopUpdatesProblems } from './update-signing'
 import { webviewComponentDirs } from './webview-agent'
 import { OPTIONAL_CRAFT_FLAGS, WEBVIEW_RUNTIME_NAME } from './webview-launcher'
 
@@ -69,20 +70,7 @@ export function validateWebviewDesktop(config: ResolvedWebviewDesktop): string[]
   for (const scheme of config.urlSchemes ?? []) {
     if (!/^[a-z][a-z0-9+.-]*$/i.test(scheme)) errors.push(`webview.urlSchemes: ${JSON.stringify(scheme)} is not a URL scheme`)
   }
-  if (config.updates) {
-    try {
-      const url = new URL(config.updates.feedUrl)
-      if (url.protocol !== 'https:' && !['localhost', '127.0.0.1'].includes(url.hostname)) errors.push('webview.updates.feedUrl must be https')
-    }
-    catch {
-      errors.push(`webview.updates.feedUrl is not a URL (got ${JSON.stringify(config.updates.feedUrl)})`)
-    }
-    const keys = Object.entries(config.updates.publicKeys ?? {})
-    if (!keys.length) errors.push('webview.updates.publicKeys needs at least one key (run `buddy desktop:update:keypair`)')
-    for (const [id, key] of keys) {
-      if (!key.startsWith('ed25519-public:')) errors.push(`webview.updates.publicKeys.${id} is not a public key (it starts with ed25519-public:)`)
-    }
-  }
+  if (config.updates) errors.push(...desktopUpdatesProblems(config.updates, 'webview.updates'))
   return errors
 }
 

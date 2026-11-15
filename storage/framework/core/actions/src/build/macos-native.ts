@@ -5,15 +5,16 @@ import { dirname, join, resolve } from 'node:path'
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
 import { log } from '@stacksjs/cli'
-import { AGENT_MANIFEST, agentHostArguments, desktopLauncherCompileArgs, macosOutputDirectory, macosScreens, renderAgentEntry, validateMacosDesktop } from '@stacksjs/desktop-build'
+import { AGENT_MANIFEST, agentHostArguments, desktopLauncherCompileArgs, macosOutputDirectory, macosScreens, macosSelfUpdates, renderAgentEntry, validateMacosDesktop } from '@stacksjs/desktop-build'
 import { projectPath, storagePath } from '@stacksjs/path'
 import { craftBuilderVersion } from './craft-entry'
 
 /**
  * What a native macOS app needs before it can be a bundle: its stx screens
  * compiled to the script Craft's AppKit host runs, and the host itself. Shared
- * by `buddy build:desktop` (a development app) and `buddy desktop:apple:package`
- * (the sandboxed Mac App Store app), so the two cannot drift.
+ * by `buddy build:desktop` (a development app), `buddy release:desktop` (the
+ * Developer ID app people download) and `buddy desktop:apple:package` (the
+ * sandboxed Mac App Store app), so the three cannot drift.
  *
  * Nothing here is project-specific. The Zig compiler and the zig-js engine the
  * host is built with come from Craft's `resolveMacOSToolchain` (Pantry installs
@@ -21,7 +22,7 @@ import { craftBuilderVersion } from './craft-entry'
  */
 
 interface CraftMacosBuilder {
-  buildMacOSNative: (options: { outdir: string, nativeBundle: string, webkit?: boolean }) => Promise<{ executable: string, bundle: string }>
+  buildMacOSNative: (options: { outdir: string, nativeBundle: string, webkit?: boolean, updater?: boolean }) => Promise<{ executable: string, bundle: string }>
 }
 
 /** The file an entry URL names: the Craft source in a checkout, or the published `dist` module. */
@@ -43,6 +44,17 @@ function entryFile(entry: string, root: string): string | null {
 export function craftSupportsWebkit(source: string): boolean {
   // `options.webkit` (or `e.webkit` once minified), or `{ webkit }` destructured.
   return /\.webkit\b|[{,]\s*webkit\s*[,}=]/.test(source)
+}
+
+/**
+ * Whether this Craft's `buildMacOSNative` takes `updater`, which compiles the
+ * in-app updater into the host (Craft's `CRAFT_UPDATER` compile flag, as
+ * `webkit` is its `CRAFT_WEBKIT`). Read from its source for the same reason:
+ * a Craft that does not know the option would build a host that never
+ * updates, and a release would ship it without a word.
+ */
+export function craftSupportsUpdater(source: string): boolean {
+  return /\.updater\b|[{,]\s*updater\s*[,}=]/.test(source)
 }
 
 type CompileNativeBundle = (options: {
@@ -68,10 +80,11 @@ function craftMacosEntry(root: string): string {
 }
 
 /** What the host binary depends on, so a rebuilt screen reuses it and a new Craft does not. */
-function hostKey(entry: string, root: string, webkit = false): string {
+function hostKey(entry: string, root: string, webkit = false, updater = false): string {
   const hash = createHash('sha256')
-  // A host with WebKit linked is a different binary from one without.
+  // A host with WebKit linked is a different binary from one without, and so is one with the updater.
   if (webkit) hash.update('webkit')
+  if (updater) hash.update('updater')
   const path = entry.startsWith('file:') ? new URL(entry).pathname : entry
   const version = craftBuilderVersion(entry, root)?.version
   hash.update(version ?? 'unversioned')
@@ -92,9 +105,21 @@ export interface PreparedMacosNative {
   host: string
   /** What the host was built from, for provenance. */
   hostKey: string
+  /** Whether the host was compiled with Craft's updater. Never for the Mac App Store. */
+  updater: boolean
 }
 
-export async function prepareMacosNative(config: ResolvedMacosDesktop, options: { root?: string } = {}): Promise<PreparedMacosNative> {
+export interface PrepareMacosNativeOptions {
+  root?: string
+  /**
+   * Who the build is for. It decides whether the host carries the updater:
+   * only a development or Developer ID build of an app with `macos.updates`
+   * does. Unset, the host has none, which is what a Store build needs.
+   */
+  distribution?: MacosDistribution
+}
+
+export async function prepareMacosNative(config: ResolvedMacosDesktop, options: PrepareMacosNativeOptions = {}): Promise<PreparedMacosNative> {
   const root = options.root ?? projectPath()
   const errors = validateMacosDesktop(config)
   if (errors.length) throw new Error(`config/desktop.ts macos is not buildable:\n${errors.map(error => `  - ${error}`).join('\n')}`)
@@ -133,17 +158,30 @@ export async function prepareMacosNative(config: ResolvedMacosDesktop, options: 
     if (!file || !existsSync(file) || !craftSupportsWebkit(readFileSync(file, 'utf8')))
       throw new Error(`macos.webkit needs a Craft whose buildMacOSNative links WebKit, and ${file ?? entry} does not. Upgrade craft-native, or point CRAFT_MACOS_SRC at a Craft checkout that has it.`)
   }
-  const key = hostKey(entry, root, webkit)
+  // The updater is compiled in only where the app may replace itself: never for the Mac App Store.
+  let updater = macosSelfUpdates(config, options.distribution)
+  if (updater) {
+    const file = entryFile(entry, root)
+    if (!file || !existsSync(file) || !craftSupportsUpdater(readFileSync(file, 'utf8'))) {
+      const reason = `macos.updates needs a Craft whose buildMacOSNative compiles the updater, and ${file ?? entry} does not. Upgrade craft-native, or point CRAFT_MACOS_SRC at a Craft checkout that has it.`
+      // A release that could never update itself is refused; a development run goes on without it.
+      if (options.distribution === 'developer-id') throw new Error(reason)
+      await log.warn(`${reason} This development build has no updater.`)
+      updater = false
+    }
+  }
+  const key = hostKey(entry, root, webkit, updater)
   const hostDirectory = storagePath(`framework/desktop/host/${key}`)
   const host = join(hostDirectory, 'craft-native-macos')
   if (!existsSync(host)) {
-    await log.info(`Building the AppKit host${webkit ? ' with WebKit' : ''} (first build for this Craft; the toolchain installs through Pantry)`)
+    const parts = [webkit && 'WebKit', updater && 'the updater'].filter(Boolean)
+    await log.info(`Building the AppKit host${parts.length ? ` with ${parts.join(' and ')}` : ''} (first build for this Craft; the toolchain installs through Pantry)`)
     const builder = await import(entry) as CraftMacosBuilder
     mkdirSync(hostDirectory, { recursive: true })
-    await builder.buildMacOSNative({ outdir: hostDirectory, nativeBundle, ...(webkit ? { webkit: true } : {}) })
+    await builder.buildMacOSNative({ outdir: hostDirectory, nativeBundle, ...(webkit ? { webkit: true } : {}), ...(updater ? { updater: true } : {}) })
   }
 
-  return { root, output, nativeBundle, host, hostKey: key }
+  return { root, output, nativeBundle, host, hostKey: key, updater }
 }
 
 /** Where the agent's own routes are: `macos.agent.entry`, else `app/Desktop/Agent.ts` when the project has one. */

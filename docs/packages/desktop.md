@@ -56,7 +56,7 @@ hands its arguments to the first and exits.
 | `buddy dev:desktop` | Runs the app from source, with the views rendered live by stx |
 | `buddy build:desktop` | Builds this machine's target. `--target linux-x64,win32-x64` or `all` cross-compiles the agents; `--package` makes the installers this operating system can make |
 | `buddy desktop:update:keypair` | Prints the Ed25519 keypair that signs update manifests |
-| `buddy release:desktop` | Signs and notarizes (macOS), signs (Windows, with a certificate), writes a signed manifest per platform and architecture, and publishes through `@stacksjs/storage` |
+| `buddy release:desktop` | Signs and notarizes (macOS), signs (Windows, with a certificate), writes a signed manifest per platform and architecture, and publishes through `@stacksjs/storage`. Also releases a native `macos` app, below |
 
 Bun cross-compiles the agent for every target from any machine. Installers are made on their own
 operating system: the macOS `.app` is signed, notarized and imaged on a Mac; the MSI needs WiX and
@@ -81,7 +81,7 @@ A machine with no Craft installed fetches the runtime for its own platform as it
 
 An installed app asks `<feedUrl>/<platform>/<arch>` for a newer version. The framework mounts
 that route (`/api/updates/{platform}/{arch}`, `Actions/Desktop/UpdateFeedAction`) when
-`webview.updates` is configured, and it serves the manifest `release:desktop` published. The app
+`webview.updates` (or `macos.updates`, below) is configured, and it serves the manifest `release:desktop` published. The app
 verifies the manifest's signature and the download's SHA-256 before installing: a bundle swap on
 macOS after checking the new bundle is signed by the same team, the MSI on Windows, a replaced
 AppImage on Linux, and a notice for deb and rpm installs.
@@ -92,6 +92,93 @@ and a release writes that URL into the manifest, derived from `feedUrl`. It stre
 updates disk with byte ranges, so a release on the default local disk can be downloaded with no
 bucket. Set `webview.updates.artifactBaseUrl` when a bucket or CDN serves the disk itself.
 `release:desktop` refuses an artifact URL on a loopback or development host.
+
+## Native macOS apps: updates and direct distribution
+
+`macos` in `config/desktop.ts` declares a native AppKit app: Craft's AppKit host drawing the
+project's stx screens, with no web view. It ships two ways, and only one of them updates itself.
+
+```ts
+// config/desktop.ts
+export default {
+  macos: {
+    appName: 'Library',
+    bundleId: 'com.example.library',
+    teamId: 'ABCDE12345',
+    url: 'https://example.com',
+    nativeScreens: ['Main', 'Settings'],
+    updates: { feedUrl: 'https://example.com/api/updates', publicKeys: { main: 'ed25519-public:...' } },
+  },
+} satisfies DesktopConfig
+```
+
+`macos.updates` takes the same keys as `webview.updates`: `feedUrl`, `publicKeys`, and optionally
+`channel`, `checkEveryHours`, `disk`, `prefix` and `artifactBaseUrl`.
+
+| | Direct download (`buddy release:desktop`) | Mac App Store (`buddy desktop:apple:publish`) |
+|---|---|---|
+| Signed with | A Developer ID Application certificate, under the hardened runtime, and notarized | Mac App Distribution, with the provisioning profile |
+| App Sandbox | Off, always | On |
+| Updates | The app updates itself from your feed | The Store updates it |
+| `updates` in the app | Written into `Contents/Resources/craft-app.json` | Never written, and the updater is compiled out of the host |
+
+A Developer ID build is not sandboxed, whatever `macos.sandbox` says: an app that updates itself
+replaces its own bundle, which the App Sandbox does not allow. A Store build never carries the
+updater: the Store replaces its own apps, and App Review rejects one that installs code. A
+development build (`buddy build:desktop`) carries the `updates` settings too, and refuses to swap
+itself while it is signed ad hoc.
+
+```bash
+buddy desktop:update:keypair
+# public half  -> macos.updates.publicKeys in config/desktop.ts
+# private half -> DESKTOP_UPDATE_PRIVATE_KEY (a password manager or a CI secret)
+
+buddy release:desktop --identity "Developer ID Application: Example (ABCDE12345)" --notary-profile example
+```
+
+The release builds the Developer ID app, checks everything that can refuse it before Apple or the
+disk is touched (the build's version and commit, a clean working tree, the signing key, the version
+the feed already serves), then notarizes and staples the `.app`, zips it with `ditto` for the
+updater, images it into a signed, notarized DMG, and publishes both with a signed manifest and
+`release.json`. The storage layout and manifest are a web view app's, at platform `darwin` and this
+Mac's architecture, so the feed and artifact routes above serve it unchanged.
+
+| Flag | Environment | |
+|---|---|---|
+| `--identity` | `DESKTOP_SIGNING_IDENTITY`, else `APPLE_SIGNING_IDENTITY` | The Developer ID Application certificate. Without one, the certificate in the keychain |
+| `--notary-profile` | `DESKTOP_NOTARY_PROFILE` | A `notarytool` keychain profile |
+| `--api-key-id`, `--api-issuer-id`, `--api-key-path` | `APP_STORE_CONNECT_API_KEY_ID`, `APP_STORE_CONNECT_API_ISSUER_ID`, `APP_STORE_CONNECT_API_KEY_PATH` (or the PEM in `APP_STORE_CONNECT_API_KEY`) | An App Store Connect API key, used when no profile is given |
+| | `DESKTOP_UPDATE_PRIVATE_KEY` | Signs the update manifest |
+| `--channel`, `--notes` | | The release channel, and the notes the app shows |
+| `--dry-run` | | Everything except notarizing and uploading; the signed manifest is written locally |
+| `--skip-build` | | Release the Developer ID app an earlier run built |
+| `--package-only` | | Stop at the signed app and a signed DMG, for Pantry |
+| `--native` | | Release the AppKit app when the config also declares a web view app |
+
+A config with both `webview` and `macos` releases the web view app unless `--native` is given, the
+rule `build:desktop` follows. Both store a Mac release under the same folder, so give
+`macos.updates` its own `prefix` and `feedUrl` and answer that path with
+`answerUpdateFeed({ app: 'macos' })`; a release refuses two `updates` that would overwrite each other.
+
+### Publishing the same app to Pantry
+
+`buddy release:desktop --package-only` is the build step of Pantry's native app pipeline. It builds
+the Developer ID app and a signed DMG, records them in `.pantry/native/artifact.json`, and leaves
+notarizing, stapling, Gatekeeper assessment and the registry upload to Pantry:
+
+```json
+{
+  "native": {
+    "build": ["./buddy", "release:desktop", "--package-only"],
+    "macos": { "notarize": true },
+    "registry": { "domain": "github.com/your-org/your-app" }
+  }
+}
+```
+
+Pantry releases the version in `package.json`, so leave `macos.version` unset or equal to it. Once
+Pantry has stapled the app, `buddy release:desktop --skip-build` publishes that same bundle to the
+update feed without notarizing it a second time.
 
 The support matrix below is about the older framework desktop driver. Web view apps were built,
 launched and exercised on macOS arm64; the Windows and Linux agents are cross-compiled but have

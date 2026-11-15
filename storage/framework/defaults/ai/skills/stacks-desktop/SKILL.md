@@ -12,6 +12,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 - Core package: `storage/framework/core/desktop/src/`
 - Web view apps: `webview-agent.ts`, `webview-launcher.ts`, `webview-app.ts`; updates: `updater.ts`, `update-signing.ts`, `update-feed.ts`, `update-install.ts`
 - Build and release actions: `storage/framework/core/actions/src/build/desktop-webview.ts`, `desktop-release.ts`
+- Native macOS apps: `macos-app.ts`, `macos-bundle.ts`, `macos-release.ts`; actions `build/desktop-macos.ts`, `build/dmg-macos.ts`, `build/desktop-release-macos.ts` (publishing shared with web view apps in `build/desktop-release-shared.ts`)
 - Update feed: `storage/framework/defaults/app/Actions/Desktop/UpdateFeedAction.ts`, `defaults/routes/desktop-updates.ts`
 - Source: `storage/framework/core/desktop/src/index.ts`
 - System tray views: `storage/framework/defaults/views/system-tray/`
@@ -287,7 +288,8 @@ export default {
 ```
 
 - `buddy build:desktop` compiles the screens (`compileNativeBundle`), builds Craft's AppKit host
-  (`craft-native/macos`, cached per Craft revision), lays out `<App>.app` and signs it ad hoc. `buddy dev:desktop`
+  (`craft-native/macos`, cached per Craft revision), lays out `<App>.app` and signs it with an Apple Development
+  identity when the Mac has one, else ad hoc. `buddy dev:desktop`
   does the same and opens it. Output: `storage/framework/desktop/macos/`.
 - The toolchain is not the app's business: Craft resolves the pinned Zig through Pantry and fetches and builds the pinned
   zig-js into `~/.cache/craft/toolchain` (`CRAFT_TOOLCHAIN_DIR` moves it, `CRAFT_ZIG` overrides the compiler).
@@ -350,6 +352,100 @@ export default {
   `usageDescriptions` entry wins).
 - `webkit` needs a craft-native whose `buildMacOSNative` takes `webkit`; the build checks Craft's source and fails by
   name rather than building a host with blank web views. `dockMenu` reaches the host through `craft-app.json`.
+
+### Updates and direct distribution (`macos.updates`)
+
+The copy people download from you, not from the Mac App Store, updates itself. The config is the web view app's
+`updates` shape (`DesktopUpdatesConfig`; `WebviewUpdatesConfig` is the same type), under `macos`:
+
+```ts
+macos: {
+  // ...
+  updates: {
+    feedUrl: 'https://example.com/api/updates',         // the app asks <feedUrl>/darwin/<arch>
+    publicKeys: { main: 'ed25519-public:...' },         // buddy desktop:update:keypair
+    // channel: 'stable', checkEveryHours: 24, disk, prefix: 'desktop-updates', artifactBaseUrl
+  },
+}
+```
+
+A `macos` app is built for one of three distributions (`MacosDistribution`):
+
+| | `development` | `developer-id` | `app-store` |
+|---|---|---|---|
+| Built by | `build:desktop`, `dev:desktop` | `release:desktop`, `build:dmg` with an identity | `desktop:apple:package` / `publish` |
+| Signed with | Apple Development, else ad hoc | Developer ID Application (required), hardened runtime, timestamp | Mac App Distribution + profile |
+| Sandbox | Off (`DESKTOP_SANDBOX=1` turns it on) | Always off | On |
+| Store entitlements (app id, team, Keychain group) | No | No | Yes |
+| `updates` in `craft-app.json`, updater in the host | Yes | Yes | Never |
+
+- **A Developer ID build is never sandboxed**, whatever `macos.sandbox` says: an app that updates itself replaces its
+  own bundle, which the App Sandbox forbids. Its sign-in lives in the login Keychain, as a development build's does.
+- **A Store build never carries the updater.** `renderHostConfig(config, 'app-store')` writes no `updates`, and the
+  host is compiled without it. The Store replaces its own apps; one that downloads and installs code is rejected.
+- `craft-app.json` gets `updates: { feedUrl, publicKeys, channel, checkEveryHours }`, the channel and interval written
+  out in full. `disk`, `prefix` and `artifactBaseUrl` are the releaser's and stay out of the app.
+- The host's updater is a Craft compile option: the build passes `updater: true` to `buildMacOSNative` (Craft's
+  `CRAFT_UPDATER` flag, as `webkit: true` is its `CRAFT_WEBKIT`) and caches that host under its own key. A Craft
+  without the option fails a Developer ID build by name, and a development build warns and goes on without it.
+- Screens drive it through `craft.updater` (`status`, `check`, `install`, `relaunch`, `onChange`); in a Store build
+  every call answers `state: 'unavailable'`. An ad hoc signed development build refuses to swap itself.
+- Validation (`validateMacosDesktop`): an https feed (loopback http while rehearsing), at least one key, every key a
+  readable `ed25519-public:` key, and `macos.version` as `major.minor.patch`, because an update is offered by
+  comparing versions.
+
+```bash
+buddy desktop:update:keypair            # public half -> macos.updates.publicKeys; private half -> DESKTOP_UPDATE_PRIVATE_KEY
+buddy release:desktop --identity "Developer ID Application: Example (ABCDE12345)" --notary-profile example
+buddy release:desktop --api-key-id ABC123DEFG --api-issuer-id <uuid> --api-key-path ./AuthKey_ABC123DEFG.p8
+buddy release:desktop --dry-run         # no notarization, no upload; the signed manifest is written locally
+buddy release:desktop --skip-build      # release the Developer ID app an earlier run built
+buddy release:desktop --package-only    # the signed app and DMG for Pantry; nothing notarized or published
+```
+
+`release:desktop` for a `macos` app builds the Developer ID app, then (`build/desktop-release-macos.ts`) checks the
+build is that one, at the config's version, from a clean checkout of HEAD, that `DESKTOP_UPDATE_PRIVATE_KEY` is a key
+the app trusts, and that the feed does not already serve this version or a newer one. Only then is the `.app`
+notarized and stapled, zipped with `ditto` (what an installed app updates from, so the ticket travels inside it),
+imaged into a signed, notarized DMG, and published with a signed manifest and `release.json`: the web view layout
+exactly (`<prefix>/<channel>/darwin-<arch>/latest.json`, artifacts under `<version>/` as `<App>-<version>-<arch>.zip`
+and `.dmg`), so the same feed route, artifact route and download page serve it. `<arch>` is this Mac's (`arm64`,
+`x64`); there is no universal build.
+
+- **The identity** is `--identity` / `DESKTOP_SIGNING_IDENTITY`, else `APPLE_SIGNING_IDENTITY`, else the Developer ID
+  Application certificate in the keychain. An ad hoc signature is refused, except in `--dry-run` on a Mac without the
+  certificate, which says so.
+- **Notarizing** uses `--notary-profile` / `DESKTOP_NOTARY_PROFILE`, or an App Store Connect API key:
+  `APP_STORE_CONNECT_API_KEY_ID`, `APP_STORE_CONNECT_API_ISSUER_ID`, and `APP_STORE_CONNECT_API_KEY_PATH` or the PEM
+  in `APP_STORE_CONNECT_API_KEY` (flags `--api-key-id`, `--api-issuer-id`, `--api-key-path`). A `macos` release uses
+  the key whenever no profile is given; a web view release needs `--notarize` (or `DESKTOP_NOTARIZE=1`) to ask for it.
+- The feed routes mount when `macos.updates` is set, and the default actions read it.
+- **Both `webview` and `macos` declared:** `release:desktop` releases the web view app, and `--native` the AppKit one,
+  as `build:desktop` and `dev:desktop` choose. The framework feed serves `webview.updates`. Both apps store a Mac
+  release under `<prefix>/<channel>/darwin-<arch>/`, so a release refuses two `updates` on the same disk and prefix:
+  give `macos.updates` its own `prefix` and `feedUrl`, and answer that path from an action of your own with
+  `answerUpdateFeed({ app: 'macos', ... })` and `answerUpdateArtifact({ app: 'macos', ... })`.
+
+**Pantry.** `--package-only` is the build step of Pantry's native app pipeline (`ts-pantry/native`
+`prepareNativeRelease`): it builds the Developer ID app and a signed DMG and writes `.pantry/native/artifact.json`
+(the DMG as `path`, the `.app` as `appPath`, the executable name, bundle id, version, build number), then stops.
+Pantry notarizes, staples and assesses them itself and publishes the app to its registry.
+
+```json
+{
+  "native": {
+    "build": ["./buddy", "release:desktop", "--package-only"],
+    "macos": { "notarize": true },
+    "registry": { "domain": "github.com/your-org/your-app" }
+  }
+}
+```
+
+Pantry signs with `APPLE_SIGNING_IDENTITY` (or imports `APPLE_APPLICATION_CERTIFICATE`), which the build reads. It
+releases the version in `package.json`, so `--package-only` refuses a `macos.version` that differs. A project whose
+`pantry.json` has `native` also gets the record after a full `release:desktop`. After Pantry has stapled the app,
+`buddy release:desktop --skip-build` publishes the same bundle to the update feed without sending it to Apple again.
+An agent app answers `<App> --version` with its host's version and exits, which is Pantry's launch check.
 
 ## Web view apps on a local agent (`desktop.webview`)
 
@@ -593,7 +689,7 @@ buddy new <name> --desktop     # a Stacks app that is also a native Mac app, API
 buddy dev:desktop              # run the desktop app: webview, else macos, else the dev server window
 buddy build:desktop            # build it; --target and --package for a webview app, --native for macos
 buddy desktop:update:keypair   # the Ed25519 keypair that signs update manifests
-buddy release:desktop          # sign, notarize, and publish a webview app with signed update manifests
+buddy release:desktop          # sign, notarize, and publish a webview or macos app with signed update manifests
 buddy desktop:apple:init       # generate the reusable GitHub Actions caller
 buddy desktop:apple:doctor     # validate Apple tooling, identities, profile, and API key
 buddy desktop:apple:package    # build, sandbox, sign, and create a Store .pkg

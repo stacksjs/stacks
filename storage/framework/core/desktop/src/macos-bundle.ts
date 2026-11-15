@@ -1,6 +1,6 @@
 import type { DesktopAgentManifest } from './agent-launcher'
 import type { MacosDistribution, ResolvedMacosDesktop } from './macos-app'
-import { chmodSync, copyFileSync, cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { chmodSync, copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { AGENT_MANIFEST } from './agent-launcher'
 import { ICONSET_SIZES, renderHostConfig, renderMacosEntitlements, renderMacosHostEntitlements, renderMacosInfoPlist, renderPrivacyManifest } from './macos-app'
@@ -36,14 +36,20 @@ export interface AssembleMacosAppOptions {
   distribution: MacosDistribution
   /** A `.provisionprofile`, embedded for the Mac App Store. */
   provisioningProfile?: string
-  /** A codesign identity (name or hash). `-` (default) signs ad hoc. */
+  /** A codesign identity (name or hash). `-` (default) signs ad hoc. A `developer-id` build names a Developer ID Application certificate. */
   signingIdentity?: string
   /** Look for the identity in this keychain file only. */
   keychain?: string
-  /** Sign without the sandbox, so a development run reads the login Keychain without a provisioning profile. */
+  /** Sign without the sandbox, so a development run reads the login Keychain without a provisioning profile. A `developer-id` build never has it. */
   unsandboxed?: boolean
   /** `macos.agent`: the launcher and its manifest. The host then sits beside the launcher as `craft-runtime`. */
   agent?: MacosAgentBundle
+  /**
+   * Let a `developer-id` build be signed ad hoc: a release rehearsal
+   * (`release:desktop --dry-run`) on a Mac without the certificate. The
+   * bundle is laid out as the release would be, and no other Mac opens it.
+   */
+  rehearsal?: boolean
   run?: BundleCommand
 }
 
@@ -69,8 +75,8 @@ export function makeIcns(png: string, output: string, scratch: string, run: Bund
 /**
  * Lay out and sign the `.app`: the host as the executable, the compiled
  * screens and host settings in Resources, then `codesign` with the entitlements
- * for the chosen distribution. The same function builds the development app and
- * the Mac App Store app, so what runs locally is what ships.
+ * for the chosen distribution. The same function builds the development app,
+ * the Developer ID app and the Mac App Store app, so what runs locally is what ships.
  */
 export function assembleMacosApp(options: AssembleMacosAppOptions): AssembledMacosApp {
   const run = options.run ?? runBundleCommand
@@ -111,7 +117,7 @@ export function assembleMacosApp(options: AssembleMacosAppOptions): AssembledMac
   }
   chmodSync(join(macos, config.executable), 0o755)
   copyFileSync(options.nativeBundle, join(resources, 'native-screen.js'))
-  writeFileSync(join(resources, 'craft-app.json'), renderHostConfig(config))
+  writeFileSync(join(resources, 'craft-app.json'), renderHostConfig(config, options.distribution))
   writeFileSync(join(resources, 'PrivacyInfo.xcprivacy'), renderPrivacyManifest(config))
 
   let iconFile: string | undefined
@@ -137,14 +143,17 @@ export function assembleMacosApp(options: AssembleMacosAppOptions): AssembledMac
     // with error 90255 because the code signature then cannot be verified.
     chmodSync(embedded, 0o644)
   }
-  const signed = options.unsandboxed ? { ...config, sandbox: false } : config
+  const identity = options.signingIdentity || '-'
+  if (options.distribution === 'developer-id' && identity === '-' && !options.rehearsal)
+    throw new Error('A Developer ID build needs a Developer ID Application identity: Gatekeeper refuses an ad hoc signature on every other Mac.')
+  // A Developer ID app replaces its own bundle to update, which the sandbox forbids.
+  const signed = options.unsandboxed || options.distribution === 'developer-id' ? { ...config, sandbox: false } : config
   const entitlementsPath = join(options.output, `${config.appName}.entitlements`)
   writeFileSync(entitlementsPath, renderMacosEntitlements(signed, options.distribution))
   const hostEntitlements = join(options.output, `${config.appName}.host.entitlements`)
-  if (options.agent) writeFileSync(hostEntitlements, renderMacosHostEntitlements(signed))
+  if (options.agent) writeFileSync(hostEntitlements, renderMacosHostEntitlements(signed, options.distribution))
   run(['plutil', '-lint', join(contents, 'Info.plist'), join(resources, 'PrivacyInfo.xcprivacy'), entitlementsPath, ...(options.agent ? [hostEntitlements] : [])])
 
-  const identity = options.signingIdentity || '-'
   if (options.agent) {
     // Nested code is signed before the bundle that seals it.
     run([
@@ -170,6 +179,67 @@ export function parseDevelopmentIdentity(output: string): string | undefined {
     if (match) return match[1]
   }
   return undefined
+}
+
+/**
+ * The first "Developer ID Application" identity in `security find-identity -v
+ * -p codesigning` output, by its hash: what a `developer-id` build is signed
+ * with when it was not told which.
+ */
+export function parseDeveloperIdIdentity(output: string): string | undefined {
+  for (const line of output.split('\n')) {
+    const match = /^\s*\d+\)\s+([0-9A-F]{40})\s+"Developer ID Application:/.exec(line)
+    if (match) return match[1]
+  }
+  return undefined
+}
+
+export function findDeveloperIdIdentity(read: () => string = () => Bun.spawnSync(['security', 'find-identity', '-v', '-p', 'codesigning'], { stdout: 'pipe', stderr: 'ignore' }).stdout.toString()): string | undefined {
+  try { return parseDeveloperIdIdentity(read()) }
+  catch { return undefined }
+}
+
+/**
+ * What `buddy build:desktop` writes beside a `macos` app
+ * (`<App>.build.json`): what was built, from which commit, for whom. A release
+ * reads it to refuse a bundle built for development, from another commit, or
+ * at another version than the config now says.
+ */
+export interface MacosBuildRecord {
+  appName: string
+  bundleId: string
+  version: string
+  buildNumber: string
+  url: string | null
+  agent: boolean
+  webkit: boolean
+  host: { key: string, sha256: string }
+  signedWith: string
+  sandboxed: boolean
+  distribution: MacosDistribution
+  /** Whether the host was built with Craft's updater, and `craft-app.json` carries `updates`. */
+  updater: boolean
+  /** A Node architecture id: the machine the host was compiled on. */
+  architecture: string
+  /** The full commit the build came out of; null outside a Git checkout. */
+  sourceRevision: string | null
+}
+
+export function macosBuildRecordFile(output: string, appName: string): string {
+  return join(output, `${appName}.build.json`)
+}
+
+/** The record of the last build, or null when there is none or it predates the fields a release needs. */
+export function readMacosBuildRecord(output: string, appName: string): MacosBuildRecord | null {
+  const file = macosBuildRecordFile(output, appName)
+  if (!existsSync(file)) return null
+  try {
+    const record = JSON.parse(readFileSync(file, 'utf8')) as Partial<MacosBuildRecord>
+    return typeof record.version === 'string' && typeof record.distribution === 'string' && typeof record.architecture === 'string' ? record as MacosBuildRecord : null
+  }
+  catch {
+    return null
+  }
 }
 
 /**

@@ -1,8 +1,8 @@
 import { Action } from '@stacksjs/actions/runtime'
 
 /**
- * The update feed of the desktop app this project builds
- * (`desktop.webview.updates` in config/desktop.ts):
+ * The update feed of the desktop app this project builds (`webview.updates`
+ * in config/desktop.ts, or `macos.updates` for a native macOS app):
  * `GET /api/updates/{platform}/{arch}`.
  *
  * It serves the manifest `buddy release:desktop` published for that platform
@@ -11,10 +11,14 @@ import { Action } from '@stacksjs/actions/runtime'
  * releaser did not sign. `?current=<version>` gets 204 when there is nothing
  * newer; `?channel=beta` reads another channel.
  *
- * Mounted by the framework when `webview.updates` is configured. To change the
- * path, mount it yourself in routes/api.ts:
+ * Mounted by the framework when `webview.updates` or `macos.updates` is
+ * configured. To change the path, mount it yourself in routes/api.ts:
  *
  *   route.get('/desktop/feed/{platform}/{arch}', 'Actions/Desktop/UpdateFeedAction')
+ *
+ * A project that declares both apps with updates serves the web view app's
+ * here. Give `macos.updates` its own `prefix` and `feedUrl`, and answer that
+ * path from an action of your own with `answerUpdateFeed({ app: 'macos', ... })`.
  */
 export default new Action({
   name: 'DesktopUpdateFeedAction',

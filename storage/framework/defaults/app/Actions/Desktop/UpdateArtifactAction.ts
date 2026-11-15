@@ -6,12 +6,12 @@ import { Action } from '@stacksjs/actions/runtime'
  * `target` is `<platform>-<arch>` (`darwin-arm64`).
  *
  * It is where `buddy release:desktop` points a manifest and release.json when
- * `webview.updates.artifactBaseUrl` is not set, so a release on any disk, the
+ * the app's `updates.artifactBaseUrl` is not set, so a release on any disk, the
  * private local one included, can be downloaded with no bucket or CDN. The
  * file is streamed from the updates disk with its length and byte ranges, so
  * a large installer is never held in memory and a download can resume.
  *
- * Only a key of the artifact shape under `webview.updates.prefix` is read: no
+ * Only a key of the artifact shape under the app's `updates.prefix` is read: no
  * path here reaches another folder or file on the disk. Public on purpose,
  * like the feed: an installer is downloaded before anyone has an account.
  *

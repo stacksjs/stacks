@@ -11,8 +11,9 @@ import { runBuildStep } from './run-build-step'
 /**
  * `buddy build:dmg` for a project whose `config/desktop.ts` declares a `macos`
  * app: build `<App>.app` the way `build:desktop` does (build/desktop-macos.ts),
- * signed with the Developer ID identity given, notarize and staple it, then
- * image it into a signed, notarized DMG.
+ * as the Developer ID distribution when an identity is given, notarize and
+ * staple it, then image it into a signed, notarized DMG. `buddy
+ * release:desktop` does the same and also publishes the update feed.
  *
  * `build/dmg.ts` packages the Craft web-view app from `build:desktop`'s
  * manifest, which a `macos` app never writes, so this command used to build
@@ -46,8 +47,14 @@ const { volumeName, signingIdentity, notary } = resolveDmgPackaging({
 if (notary && !signingIdentity)
   throw new Error('Notarizing needs a Developer ID identity (--signing-identity or DESKTOP_SIGNING_IDENTITY): Apple only notarizes signed code.')
 
-// build/desktop-macos.ts signs with DESKTOP_SIGNING_IDENTITY when it is set.
-if (signingIdentity) process.env.DESKTOP_SIGNING_IDENTITY = signingIdentity
+// build/desktop-macos.ts signs with DESKTOP_SIGNING_IDENTITY when it is set. An
+// identity makes this the copy people download, so it is built as one
+// (`developer-id`): the Developer ID certificate, no sandbox, and the updater
+// when the app has `macos.updates`. Without one it is this Mac's development app in an image.
+if (signingIdentity) {
+  process.env.DESKTOP_SIGNING_IDENTITY = signingIdentity
+  process.env.DESKTOP_DISTRIBUTION = 'developer-id'
+}
 await import('./desktop-macos')
 
 const app = join(macosOutputDirectory(root, config), `${config.appName}.app`)

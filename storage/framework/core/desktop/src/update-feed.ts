@@ -331,14 +331,47 @@ export async function serveUpdateArtifact(options: ServeUpdateArtifactOptions): 
 
 type UpdatesConfig = { disk?: string, prefix?: string, channel?: string }
 
-/** `webview.updates` of the project at `root`, read without the desktop toolchain a web server has no use for. */
-async function projectUpdates(root?: string): Promise<UpdatesConfig | undefined> {
+/** Which of a project's desktop apps a feed serves: the web view one (`webview.updates`) or the native macOS one (`macos.updates`). */
+export type DesktopUpdatesApp = 'webview' | 'macos'
+
+type UpdatesSections = { webview?: { updates?: UpdatesConfig }, macos?: { updates?: UpdatesConfig } }
+
+/**
+ * The `updates` a project's feed serves. An app that declares one desktop app
+ * with updates serves that one. With both, `webview.updates` is the answer
+ * unless `app` says otherwise, as `buddy build:desktop` and `buddy
+ * release:desktop` take the web view app unless given `--native`.
+ */
+export function selectDesktopUpdates<T extends UpdatesConfig>(config: { webview?: { updates?: T }, macos?: { updates?: T } } | null | undefined, app?: DesktopUpdatesApp): T | undefined {
+  if (app) return config?.[app]?.updates
+  return config?.webview?.updates ?? config?.macos?.updates
+}
+
+/**
+ * Why a project's two desktop apps cannot both publish updates as configured,
+ * or nothing. Both kinds store a Mac release under `<prefix>/<channel>/darwin-<arch>/`,
+ * so on one disk and folder each release would replace the other's manifest
+ * and an installed app would be offered the other app.
+ */
+export function desktopUpdatesCollision(config: UpdatesSections): string | undefined {
+  const webview = config.webview?.updates
+  const macos = config.macos?.updates
+  if (!webview || !macos) return undefined
+  const folder = (updates: UpdatesConfig): string => (updates.prefix ?? DEFAULT_UPDATE_PREFIX).replace(/^\/+|\/+$/g, '')
+  if ((webview.disk ?? '') !== (macos.disk ?? '') || folder(webview) !== folder(macos)) return undefined
+  return `config/desktop.ts: webview.updates and macos.updates publish to the same folder (${folder(macos)}) on the same disk, where each app's release would replace the other's. Give one of them its own \`prefix\`.`
+}
+
+/** The `updates` of the project at `root`, read without the desktop toolchain a web server has no use for. */
+async function projectUpdates(root?: string, app?: DesktopUpdatesApp): Promise<UpdatesConfig | undefined> {
   const file = join(root ?? process.cwd(), 'config/desktop.ts')
-  return existsSync(file) ? (await import(pathToFileURL(file).href) as { default?: { webview?: { updates?: UpdatesConfig } } }).default?.webview?.updates : undefined
+  return existsSync(file) ? selectDesktopUpdates((await import(pathToFileURL(file).href) as { default?: UpdatesSections }).default, app) : undefined
 }
 
 export interface AnswerUpdateArtifactOptions extends Omit<ServeUpdateArtifactOptions, 'store' | 'prefix'> {
   root?: string
+  /** Which app's `updates` to read from the config, for a project with both. Default: the web view app's, else the macOS app's. */
+  app?: DesktopUpdatesApp
   updates?: UpdatesConfig
   store?: UpdateStore
 }
@@ -348,7 +381,7 @@ export interface AnswerUpdateArtifactOptions extends Omit<ServeUpdateArtifactOpt
  * answer: `GET /api/updates/files/{channel}/{target}/{version}/{file}`.
  */
 export async function answerUpdateArtifact(options: AnswerUpdateArtifactOptions): Promise<Response> {
-  const updates = options.updates ?? (options.store ? undefined : await projectUpdates(options.root))
+  const updates = options.updates ?? (options.store ? undefined : await projectUpdates(options.root, options.app))
   if (!updates && !options.store) return refused(404, 'This app publishes no desktop updates.')
   return serveUpdateArtifact({ ...options, store: options.store ?? await storageUpdateStore(updates?.disk), prefix: updates?.prefix })
 }
@@ -360,7 +393,9 @@ export interface AnswerUpdateFeedOptions {
   currentVersion?: string | null
   /** The project whose `config/desktop.ts` says where updates are stored. Default: the working directory. */
   root?: string
-  /** `webview.updates` from the config, when the caller already has it. */
+  /** Which app's `updates` to read from the config, for a project with both. Default: the web view app's, else the macOS app's. */
+  app?: DesktopUpdatesApp
+  /** `webview.updates` or `macos.updates` from the config, when the caller already has it. */
   updates?: { disk?: string, prefix?: string, channel?: string }
   store?: UpdateStore
 }
@@ -368,14 +403,14 @@ export interface AnswerUpdateFeedOptions {
 /**
  * The update feed for the app this project builds, as a route handler's
  * answer: `GET /api/updates/{platform}/{arch}`. Reads the manifest
- * `buddy release:desktop` published, from the disk and folder
- * `webview.updates` names. A project that publishes no desktop updates
- * answers 404.
+ * `buddy release:desktop` published, from the disk and folder the app's
+ * `updates` names (`webview.updates`, or `macos.updates` for a native macOS
+ * app). A project that publishes no desktop updates answers 404.
  */
 export async function answerUpdateFeed(options: AnswerUpdateFeedOptions): Promise<Response> {
   let updates = options.updates
   if (!updates && !options.store) {
-    updates = await projectUpdates(options.root)
+    updates = await projectUpdates(options.root, options.app)
     if (!updates) return new Response(JSON.stringify({ error: 'This app publishes no desktop updates.' }), { status: 404, headers: feedHeaders })
   }
   return serveUpdateFeed({

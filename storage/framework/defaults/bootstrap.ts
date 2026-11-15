@@ -218,9 +218,9 @@ async function registerDefaultBundles(): Promise<void> {
 
   // The desktop update feed (`/api/updates/{platform}/{arch}`): what an
   // installed desktop app asks for a newer version. Like `social`, it exists
-  // exactly when the app configured it - `webview.updates` in
-  // config/desktop.ts - so no existing app gains a route. The config file is
-  // read directly: the desktop build package is not loaded at server boot.
+  // exactly when the app configured it - `webview.updates` or `macos.updates`
+  // in config/desktop.ts - so no existing app gains a route. The config file
+  // is read directly: the desktop build package is not loaded at server boot.
   if (await publishesDesktopUpdates()) {
     await route.register(frameworkPath('defaults/routes/desktop-updates.ts'))
   }
@@ -232,8 +232,8 @@ async function publishesDesktopUpdates(): Promise<boolean> {
   const file = projectPath('config/desktop.ts')
   if (!existsSync(file)) return false
   try {
-    const desktop = (await import(file) as { default?: { webview?: { updates?: unknown } } }).default
-    return Boolean(desktop?.webview?.updates)
+    const desktop = (await import(file) as { default?: { webview?: { updates?: unknown }, macos?: { updates?: unknown } } }).default
+    return Boolean(desktop?.webview?.updates || desktop?.macos?.updates)
   }
   catch {
     return false

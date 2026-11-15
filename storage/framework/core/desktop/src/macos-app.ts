@@ -1,8 +1,9 @@
-import type { DesktopConfig, MacosAgentConfig, MacosDesktopConfig, MacosPermissions } from '@stacksjs/types'
+import type { DesktopConfig, DesktopUpdatesConfig, MacosAgentConfig, MacosDesktopConfig, MacosPermissions } from '@stacksjs/types'
 import { existsSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { plistValue, renderUserlandPlistEntries, xmlEscape } from './index'
+import { desktopUpdatesProblems } from './update-signing'
 
 /**
  * The native macOS app (`config/desktop.ts` `macos`): Craft's AppKit host
@@ -113,7 +114,44 @@ export function validateMacosDesktop(config: ResolvedMacosDesktop): string[] {
   if (!names.length) errors.push('macos.nativeScreens must name at least one screen')
   if (names.length && !names.includes(config.initialScreen)) errors.push(`macos.initialScreen "${config.initialScreen}" is not one of the native screens (${names.join(', ')})`)
   for (const scheme of config.urlSchemes ?? []) if (!/^[a-z][a-z0-9+.-]*$/.test(scheme)) errors.push(`macos.urlSchemes: "${scheme}" is not a valid URL scheme`)
+  if (config.updates) {
+    errors.push(...desktopUpdatesProblems(config.updates, 'macos.updates', { decodeKeys: true }))
+    // An update is offered when its version is newer, which only full versions can say.
+    if (!/^\d+\.\d+\.\d+$/.test(config.version)) errors.push(`macos.version must be major.minor.patch (1.4.0) when macos.updates is set, not "${config.version}": the app compares versions to know an update is newer`)
+  }
   return errors
+}
+
+/**
+ * What the AppKit host reads as `updates` in `craft-app.json`: only what an
+ * installed app needs to ask and to verify. Where a release is stored (`disk`,
+ * `prefix`, `artifactBaseUrl`) stays on the releaser's side. The channel and
+ * the interval are written out in full, so the host needs no defaults of its own.
+ */
+export interface MacosHostUpdates {
+  feedUrl: string
+  publicKeys: Record<string, string>
+  channel: string
+  checkEveryHours: number
+}
+
+export function macosHostUpdates(updates: DesktopUpdatesConfig): MacosHostUpdates {
+  return {
+    feedUrl: updates.feedUrl.replace(/\/+$/, ''),
+    publicKeys: { ...updates.publicKeys },
+    channel: updates.channel || 'stable',
+    checkEveryHours: updates.checkEveryHours ?? 24,
+  }
+}
+
+/**
+ * Whether a build of this distribution updates itself: it has `macos.updates`
+ * and it is not for the Mac App Store. The Store replaces its own apps, and
+ * App Review rejects one that downloads and installs code, so a Store build
+ * carries neither the `updates` settings nor the updater in its host.
+ */
+export function macosSelfUpdates(config: Pick<MacosDesktopConfig, 'updates'>, distribution: MacosDistribution | undefined): boolean {
+  return Boolean(config.updates) && (distribution === 'development' || distribution === 'developer-id')
 }
 
 /** Screen name to its `.stx` source, relative to the project root. */
@@ -123,8 +161,14 @@ export function macosScreens(config: Pick<MacosDesktopConfig, 'nativeScreens' | 
   return { ...config.nativeScreens }
 }
 
-/** What the host reads from `Contents/Resources/craft-app.json` when Finder launches it with no arguments. */
-export function renderHostConfig(config: ResolvedMacosDesktop): string {
+/**
+ * What the host reads from `Contents/Resources/craft-app.json` when Finder
+ * launches it with no arguments. `updates` is written for a development or
+ * Developer ID build and for no other: with no distribution named there is
+ * none, so a caller cannot put the updater's settings in a Store app by
+ * leaving an argument out.
+ */
+export function renderHostConfig(config: ResolvedMacosDesktop, distribution?: MacosDistribution): string {
   const window = { ...MACOS_DEFAULTS.window, ...config.window }
   return `${JSON.stringify({
     // An agent app's origin is a port chosen at launch, which the launcher passes as --api-url.
@@ -141,6 +185,7 @@ export function renderHostConfig(config: ResolvedMacosDesktop): string {
     ...(window.trafficLights ? { trafficLights: window.trafficLights } : {}),
     ...(config.webkit ? { webkit: true } : {}),
     ...(config.dockMenu?.length ? { dockMenu: config.dockMenu.map(item => ({ title: item.title, action: item.action })) } : {}),
+    ...(config.updates && macosSelfUpdates(config, distribution) ? { updates: macosHostUpdates(config.updates) } : {}),
   }, null, 2)}\n`
 }
 
@@ -251,14 +296,32 @@ ${icon}${schemes}${documents}${extra}</dict>
   return { xml, ignored: [...ignored, ...owned] }
 }
 
-export type MacosDistribution = 'development' | 'app-store'
+/**
+ * Who a build is for.
+ *
+ * - `development`: this Mac. Signed with an Apple Development identity when
+ *   there is one, else ad hoc.
+ * - `developer-id`: people who download it from you (`buddy release:desktop`,
+ *   `buddy build:dmg` with an identity). Signed with a Developer ID
+ *   Application certificate under the hardened runtime, notarized, and never
+ *   sandboxed: an app that updates itself replaces its own bundle, which the
+ *   App Sandbox does not allow. It carries none of the Store's entitlements.
+ * - `app-store`: the Mac App Store (`buddy desktop:apple:package`). Sandboxed,
+ *   with the application identifier and Keychain group, and no updater.
+ */
+export type MacosDistribution = 'development' | 'developer-id' | 'app-store'
 
 /**
  * The signed app's entitlements. The sandbox and outbound network are what
  * the Mac App Store requires of an app that only talks to a server; the
  * application identifier and keychain access group are what let the app keep
  * its sign-in in the data-protection Keychain, and need a team. A development
- * build carries neither (it is signed ad hoc, which cannot hold them).
+ * build carries neither (it is signed ad hoc, which cannot hold them), and
+ * nor does a Developer ID build: those entitlements are restricted, and
+ * outside the Store they need a provisioning profile a downloaded app has none of.
+ *
+ * A Developer ID build is not sandboxed, whatever `macos.sandbox` says: see
+ * `MacosDistribution`.
  *
  * `permissions` adds a device entitlement for each device the app asks for,
  * sandboxed or not: the hardened runtime refuses the camera, microphone and
@@ -272,7 +335,7 @@ export type MacosDistribution = 'development' | 'app-store'
 export function renderMacosEntitlements(config: ResolvedMacosDesktop, distribution: MacosDistribution): string {
   const entitlements: Record<string, boolean | string | string[]> = {}
   const permissions: MacosPermissions = config.permissions ?? {}
-  if (config.sandbox) {
+  if (config.sandbox && distribution !== 'developer-id') {
     entitlements['com.apple.security.app-sandbox'] = true
     if (permissions.network !== false) entitlements['com.apple.security.network.client'] = true
     if (config.agent) entitlements['com.apple.security.network.server'] = true
@@ -304,8 +367,8 @@ export function renderMacosEntitlements(config: ResolvedMacosDesktop, distributi
  * permissions); unsandboxed, it needs its own device entitlements, because
  * the host is the process whose web views use the camera and microphone.
  */
-export function renderMacosHostEntitlements(config: ResolvedMacosDesktop): string {
-  if (config.sandbox) return renderEntitlementsPlist({ 'com.apple.security.app-sandbox': true, 'com.apple.security.inherit': true })
+export function renderMacosHostEntitlements(config: ResolvedMacosDesktop, distribution?: MacosDistribution): string {
+  if (config.sandbox && distribution !== 'developer-id') return renderEntitlementsPlist({ 'com.apple.security.app-sandbox': true, 'com.apple.security.inherit': true })
   const permissions: MacosPermissions = config.permissions ?? {}
   const entitlements: Record<string, boolean> = {}
   if (permissions.camera) entitlements['com.apple.security.device.camera'] = true

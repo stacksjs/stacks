@@ -870,7 +870,8 @@ async function packageNativeApple(config: AppleDesktopConfig, native: ResolvedMa
     version: config.version, buildNumber: config.buildNumber, minimumSystemVersion: config.minimumMacos, category: config.category,
     ...(config.icon ? { icon: config.icon } : {}), sandbox: true,
   }
-  const prepared = await prepareMacosNative(store)
+  // No updater in the host and no `updates` in craft-app.json: the Store updates its own apps.
+  const prepared = await prepareMacosNative(store, { distribution: 'app-store' })
   const agent = store.agent ? await prepareMacosAgent(store, prepared, 'app-store') : undefined
   const appleDir = join(storagePath('framework/desktop/macos'), 'apple')
   if (existsSync(appleDir)) rmSync(appleDir, { recursive: true })

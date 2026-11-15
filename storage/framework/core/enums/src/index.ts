@@ -83,6 +83,8 @@ export enum Action {
   BuildDesktopWebview = 'build/desktop-webview',
   /** [`build/desktop-release`](../../actions/src/build/desktop-release.ts) */
   ReleaseDesktop = 'build/desktop-release',
+  /** [`build/desktop-release-macos`](../../actions/src/build/desktop-release-macos.ts) */
+  ReleaseDesktopMacos = 'build/desktop-release-macos',
   /** [`build/dmg`](../../actions/src/build/dmg.ts) */
   BuildDmg = 'build/dmg',
   /** [`build/dmg-macos`](../../actions/src/build/dmg-macos.ts) */

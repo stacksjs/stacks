@@ -1,35 +1,24 @@
-import type { DesktopUpdateManifest, ReleaseRecord, ReleaseRecordDownload, UpdateStore } from '@stacksjs/desktop-build'
 import type { DesktopTargetName } from '@stacksjs/types'
-import { copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import type { PlannedRelease } from './desktop-release-shared'
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { basename, join, resolve } from 'node:path'
+import { join, resolve } from 'node:path'
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
 import {
-  artifactUrlProblem,
-  compareVersions,
   DEFAULT_UPDATE_PREFIX,
-  describeArtifact,
+  desktopUpdatesCollision,
   developerIdProblem,
+  loadDesktopConfig,
   loadWebviewDesktop,
-  mergeReleaseRecord,
-  publishDesktopUpdate,
-  publishedArtifactUrl,
-  releaseArtifactFormat,
   releaseArtifactNames,
-  releaseRecordKey,
-  releaseVersionProblem,
   resignWebviewMacosApp,
   resolveDmgPackaging,
   splitDesktopTarget,
-  storageUpdateStore,
-  updateArtifactKey,
-  updateManifestKey,
-  updatePublicKey,
-  validateUpdateManifest,
 } from '@stacksjs/desktop-build'
 import { projectPath } from '@stacksjs/path'
-import { imageDmg, notarizeAndStaple, notaryArguments } from './notarize'
+import { assertReleasable, assertReleaseSource, publishPlannedReleases, releaseSigningKey, releaseStore } from './desktop-release-shared'
+import { notaryArguments, packageMacRelease } from './notarize'
 
 /**
  * `buddy release:desktop`, after `build:desktop` has run for the same
@@ -65,6 +54,8 @@ const pkg = existsSync(join(root, 'package.json')) ? JSON.parse(readFileSync(joi
 const config = await loadWebviewDesktop(root, pkg.version)
 if (!config) throw new Error('config/desktop.ts has no webview section.')
 if (!config.updates) throw new Error('config/desktop.ts has no webview.updates: a release needs the feed URL and the public keys the app trusts.')
+const collision = desktopUpdatesCollision((await loadDesktopConfig(root)) ?? {})
+if (collision) throw new Error(collision)
 
 const dryRun = process.env.DESKTOP_RELEASE_DRY_RUN === '1'
 const updates = config.updates
@@ -86,55 +77,28 @@ if (!build.sourceRevision || !/^[0-9a-f]{40}$/.test(build.sourceRevision)) throw
 const sourceRevision = build.sourceRevision
 
 // The build came out of the working tree: an uncommitted edit would ship with nothing naming it.
-const dirty = Bun.spawnSync(['git', 'status', '--porcelain'], { cwd: root, stdout: 'pipe' }).stdout.toString().trim()
-const head = Bun.spawnSync(['git', 'rev-parse', 'HEAD'], { cwd: root, stdout: 'pipe' }).stdout.toString().trim()
-if (process.env.DESKTOP_RELEASE_ALLOW_DIRTY !== '1') {
-  if (dirty) throw new Error(`The working tree is not clean, and the build came out of it. Commit these first:\n${dirty}`)
-  if (head !== sourceRevision) throw new Error(`The build is from ${sourceRevision.slice(0, 12)} but HEAD is ${head.slice(0, 12)}. Build again.`)
-}
+assertReleaseSource(root, sourceRevision)
 
-const privateKey = process.env.DESKTOP_UPDATE_PRIVATE_KEY
-if (!privateKey) throw new Error('DESKTOP_UPDATE_PRIVATE_KEY is not set. It is the private half `buddy desktop:update:keypair` printed.')
-const publicKey = updatePublicKey(privateKey)
-const keyId = Object.entries(config.updates.publicKeys).find(([, key]) => key === publicKey)?.[0]
-if (!keyId) throw new Error('DESKTOP_UPDATE_PRIVATE_KEY does not match any key in webview.updates.publicKeys: installed apps would refuse what it signs.')
+const { privateKey, keyId } = releaseSigningKey(updates, 'webview.updates')
 
 const notes = process.env.DESKTOP_RELEASE_NOTES ? readFileSync(resolve(root, process.env.DESKTOP_RELEASE_NOTES), 'utf8').trim() : undefined
 const { signingIdentity, notary } = resolveDmgPackaging({ flags: {}, env: process.env })
 
-const store: UpdateStore = dryRun
-  ? { read: async () => null, write: async () => {}, publicUrl: async key => `https://dry-run.invalid/${key}` }
-  : await storageUpdateStore(config.updates.disk)
+const destination = { store: await releaseStore(updates, dryRun), updates, channel, prefix, dryRun }
 
-const artifactUrl = (location: { platform: string, architecture: string, channel: string, prefix: string }, file: string): Promise<string> =>
-  publishedArtifactUrl({ store, artifactBaseUrl: updates.artifactBaseUrl, feedUrl: updates.feedUrl, ...location }, config.version, basename(file))
-
-interface Planned {
-  target: DesktopTargetName
-  directory: string
-  /** The file an installed app updates from, once made. */
-  update: string
-  downloads: string[]
+interface Planned extends PlannedRelease {
   prepare: () => Promise<void>
 }
 const planned: Planned[] = []
 
 for (const item of build.targets) {
-  const { platform, architecture } = splitDesktopTarget(item.target)
+  const { platform } = splitDesktopTarget(item.target)
   const directory = join(output, item.directory)
   const names = releaseArtifactNames(config, item.target)
   const staged = join(releaseDir, item.target)
-  const location = { platform, architecture, channel, prefix }
 
   // A feed never goes backwards and never serves two builds under one number.
-  const existing = await store.read(updateManifestKey(location))
-  const unreachable = artifactUrlProblem(await artifactUrl(location, names.update))
-  if (unreachable && process.env.DESKTOP_RELEASE_ALLOW_LOCAL_URL !== '1') {
-    throw new Error(`${item.target}: ${unreachable}. Set webview.updates.${updates.artifactBaseUrl ? 'artifactBaseUrl' : 'feedUrl'} to the address the app is served from.`)
-  }
-
-  const problem = releaseVersionProblem(config.version, existing ? validateUpdateManifest(JSON.parse(existing)).version : null, compareVersions)
-  if (problem) throw new Error(`${item.target}: ${problem}`)
+  await assertReleasable(destination, 'webview.updates', item.target, config.version, names.update)
 
   if (platform === 'darwin') {
     const app = join(directory, `${config.appName}.app`)
@@ -164,21 +128,10 @@ for (const item of build.targets) {
       prepare: async () => {
         const scratch = mkdtempSync(join(tmpdir(), 'stacks-desktop-release-'))
         try {
-          const auth = !dryRun && notary ? notaryArguments(notary) : undefined
-          if (auth) await notarizeAndStaple(app, `${config.appName}.app`, auth, scratch)
-          // After stapling, so the ticket travels inside the update. ditto keeps the signature and the ticket; zip does not.
-          run(['ditto', '-c', '-k', '--keepParent', app, join(staged, names.update)])
-          const staging = join(scratch, 'dmg')
-          mkdirSync(staging, { recursive: true })
-          cpSync(app, join(staging, `${config.appName}.app`), { recursive: true, verbatimSymlinks: true })
-          await imageDmg({ staging, volumeName: config.appName, dmgPath: dmg, ...(dryRun ? {} : { signingIdentity }) })
-          if (auth) {
-            await notarizeAndStaple(dmg, 'the DMG', auth, scratch)
-            // Checked against the file that gets uploaded, not only the build output.
-            run(['codesign', '--verify', '--deep', '--strict', app])
-            run(['spctl', '-a', '-t', 'open', '--context', 'context:primary-signature', dmg])
-            run(['xcrun', 'stapler', 'validate', dmg])
-          }
+          await packageMacRelease({
+            app, appName: config.appName, updateZip: join(staged, names.update), dmg, scratch,
+            ...(dryRun ? {} : { signingIdentity, ...(notary ? { auth: notaryArguments(notary) } : {}) }),
+          })
         }
         finally {
           rmSync(scratch, { recursive: true, force: true })
@@ -215,12 +168,6 @@ for (const item of build.targets) {
 
 if (!planned.length) throw new Error('The build has no targets to release.')
 
-function run(command: string[]): void {
-  console.log(`> ${command.join(' ')}`)
-  const result = Bun.spawnSync(command, { stdout: 'inherit', stderr: 'inherit' })
-  if (result.exitCode !== 0) throw new Error(`${command[0]} exited with ${result.exitCode}`)
-}
-
 // Every target's artifacts are made and verified before any is published, so a
 // failure on the last one does not leave the first already in the feed.
 // Only this run's targets are cleared: a release made in several runs keeps the artifacts of the others.
@@ -231,57 +178,5 @@ for (const item of planned) {
   await item.prepare()
 }
 
-const published: Array<{ target: DesktopTargetName, manifest: DesktopUpdateManifest, downloads: ReleaseRecordDownload[] }> = []
-for (const item of planned) {
-  const { platform, architecture } = splitDesktopTarget(item.target)
-  const location = { platform, architecture, channel, prefix }
-  // Uploaded before the manifest that announces the version. The installer the app updates from is one of them on
-  // Linux and Windows; the manifest's own publish uploads that one.
-  const others = new Map<string, ReleaseRecordDownload>()
-  for (const file of item.downloads) {
-    if (file === item.update) continue
-    const key = updateArtifactKey(location, config.version, basename(file))
-    await store.write(key, readFileSync(file))
-    const { sha256, size } = await describeArtifact(file)
-    others.set(file, { name: basename(file), format: releaseArtifactFormat(file), url: await artifactUrl(location, file), sha256, bytes: size })
-  }
-  const manifest = await publishDesktopUpdate({
-    store,
-    artifact: item.update,
-    version: config.version,
-    sourceRevision,
-    privateKey,
-    keyId,
-    notes,
-    artifactBaseUrl: updates.artifactBaseUrl,
-    feedUrl: updates.feedUrl,
-    ...location,
-  })
-  // Kept beside the artifacts, so a dry run shows exactly what the feed would serve.
-  writeFileSync(join(item.directory, 'latest.json'), `${JSON.stringify(manifest, null, 2)}\n`)
-  const downloads = item.downloads.map(file => others.get(file) ?? { name: basename(file), format: releaseArtifactFormat(file), url: manifest.url, sha256: manifest.sha256, bytes: manifest.size })
-  published.push({ target: item.target, manifest, downloads })
-  await log.success(`${item.target}: ${dryRun ? 'would publish' : 'published'} ${basename(item.update)} (${manifest.size} bytes, sha256 ${manifest.sha256})`)
-}
-
-// What a download page reads: every platform's installers for this version, in one file. A release is often made
-// in several runs (the Mac here, the Linux and Windows installers from where they were built), so a run adds its
-// targets to the record of the same version and channel instead of replacing it.
-const thisRun: ReleaseRecord = {
-  version: config.version,
-  channel,
-  sourceRevision,
-  publishedAt: new Date().toISOString(),
-  targets: published.map(item => ({ target: item.target, update: { name: basename(item.manifest.url), format: releaseArtifactFormat(item.manifest.url), url: item.manifest.url, sha256: item.manifest.sha256, bytes: item.manifest.size }, downloads: item.downloads })),
-}
-const recordKey = releaseRecordKey({ channel, prefix })
-const localRecord = join(releaseDir, 'release.json')
-// The published record is the one that counts; a dry run has only its own earlier one to add to.
-const stored = dryRun ? (existsSync(localRecord) ? readFileSync(localRecord, 'utf8') : null) : await store.read(recordKey)
-const summary = mergeReleaseRecord(stored, thisRun)
-mkdirSync(releaseDir, { recursive: true })
-writeFileSync(localRecord, `${JSON.stringify(summary, null, 2)}\n`)
-if (!dryRun) await store.write(recordKey, `${JSON.stringify(summary, null, 2)}\n`)
-
-await log.success(dryRun ? `Dry run: nothing was notarized or uploaded. See ${releaseDir}` : `Released ${config.appName} ${config.version} on ${channel} for ${published.map(item => item.target).join(', ')}`)
+await publishPlannedReleases({ ...destination, planned, appName: config.appName, version: config.version, sourceRevision, privateKey, keyId, notes, releaseDir })
 process.exitCode = 0

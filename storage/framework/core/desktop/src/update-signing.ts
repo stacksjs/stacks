@@ -1,3 +1,4 @@
+import type { DesktopUpdatesConfig } from '@stacksjs/types'
 import type { DesktopUpdateManifest } from './updater'
 import { createHash, createPrivateKey, createPublicKey, generateKeyPairSync, sign } from 'node:crypto'
 import { createReadStream, statSync } from 'node:fs'
@@ -47,6 +48,44 @@ function privateKeyObject(encoded: string): ReturnType<typeof createPrivateKey> 
 /** The public key that verifies what a private key signs, in the encoding the app trusts. */
 export function updatePublicKey(privateKey: string): string {
   return `${UPDATE_PUBLIC_PREFIX}${createPublicKey(privateKeyObject(privateKey)).export({ format: 'der', type: 'spki' }).toString('base64url')}`
+}
+
+/** Whether a value is a public key an app can verify with: the prefix, then an Ed25519 key as base64url SPKI DER. */
+export function isUpdatePublicKey(encoded: string): boolean {
+  if (typeof encoded !== 'string' || !encoded.startsWith(UPDATE_PUBLIC_PREFIX)) return false
+  try {
+    return createPublicKey({ key: Buffer.from(encoded.slice(UPDATE_PUBLIC_PREFIX.length), 'base64url'), format: 'der', type: 'spki' }).asymmetricKeyType === 'ed25519'
+  }
+  catch {
+    return false
+  }
+}
+
+/**
+ * Why an `updates` section cannot ship, as a list; empty when it can. `key`
+ * names it in the messages (`webview.updates`, `macos.updates`). The feed is
+ * https, or loopback while developing; every trusted key is a public key.
+ * `decodeKeys` also reads each key: the AppKit host parses them natively, and
+ * one it cannot read is an app that never updates and never says why.
+ */
+export function desktopUpdatesProblems(updates: DesktopUpdatesConfig, key: string, options: { decodeKeys?: boolean } = {}): string[] {
+  const errors: string[] = []
+  try {
+    const url = new URL(updates.feedUrl)
+    if (url.protocol !== 'https:' && !['localhost', '127.0.0.1'].includes(url.hostname)) errors.push(`${key}.feedUrl must be https`)
+  }
+  catch {
+    errors.push(`${key}.feedUrl is not a URL (got ${JSON.stringify(updates.feedUrl)})`)
+  }
+  const keys = Object.entries(updates.publicKeys ?? {})
+  if (!keys.length) errors.push(`${key}.publicKeys needs at least one key (run \`buddy desktop:update:keypair\`)`)
+  for (const [id, value] of keys) {
+    if (typeof value !== 'string' || !value.startsWith(UPDATE_PUBLIC_PREFIX)) errors.push(`${key}.publicKeys.${id} is not a public key (it starts with ${UPDATE_PUBLIC_PREFIX})`)
+    else if (options.decodeKeys && !isUpdatePublicKey(value)) errors.push(`${key}.publicKeys.${id} is not a readable Ed25519 public key: paste the one \`buddy desktop:update:keypair\` printed, whole`)
+  }
+  if (updates.checkEveryHours !== undefined && !(Number.isFinite(updates.checkEveryHours) && updates.checkEveryHours >= 0))
+    errors.push(`${key}.checkEveryHours must be a number of hours, or 0 to turn the automatic check off`)
+  return errors
 }
 
 export type UnsignedUpdateManifest = Omit<DesktopUpdateManifest, 'signature' | 'signingKeyId'>

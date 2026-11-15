@@ -267,6 +267,8 @@ export interface RunDesktopAgentAppOptions {
   logWhenDetached?: boolean
   /** For tests: spawn something other than the manifest's host. */
   spawn?: (command: string[]) => { exited: Promise<number>, kill: () => void }
+  /** The app's arguments. Default: this process's. `--version` prints the host's version and exits. */
+  argv?: string[]
 }
 
 /**
@@ -276,6 +278,16 @@ export interface RunDesktopAgentAppOptions {
  */
 export async function runDesktopAgentApp(options: RunDesktopAgentAppOptions): Promise<number> {
   const { manifest } = options
+  // `<App> --version` answers and exits, as the bare host does: it is how a
+  // packaging pipeline (Pantry's native launch check) proves the app loads
+  // and links without opening a window or starting the agent.
+  if ((options.argv ?? process.argv.slice(2)).includes('--version')) {
+    if (!existsSync(manifest.host)) {
+      console.error(`[${manifest.appName}] the AppKit host is missing: ${manifest.host}`)
+      return 1
+    }
+    return Bun.spawnSync([manifest.host, '--version'], { stdout: 'inherit', stderr: 'inherit' }).exitCode ?? 1
+  }
   const paths = options.paths ?? desktopAgentPaths(manifest.appName)
   const tag = `[${manifest.appName}]`
   if (options.logWhenDetached !== false) logToFileWhenDetached(paths.logFile)

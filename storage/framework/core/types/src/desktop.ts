@@ -47,8 +47,9 @@ export interface DesktopConfig {
    * } satisfies DesktopConfig
    * ```
    *
-   * When both `webview` and `macos` are declared, `buddy dev:desktop` and
-   * `buddy build:desktop` run the web view app; `--native` picks the AppKit one.
+   * When both `webview` and `macos` are declared, `buddy dev:desktop`,
+   * `buddy build:desktop` and `buddy release:desktop` run the web view app;
+   * `--native` picks the AppKit one.
    */
   webview?: WebviewDesktopConfig
 }
@@ -97,7 +98,12 @@ export interface WebviewAgentConfig {
   publicPaths?: string[]
 }
 
-export interface WebviewUpdatesConfig {
+/**
+ * In-app updates of a desktop app, the same for a web view app
+ * (`webview.updates`) and a native macOS one (`macos.updates`): where the app
+ * asks, which keys it trusts, and where `buddy release:desktop` publishes.
+ */
+export interface DesktopUpdatesConfig {
   /**
    * Where the app asks for updates. `/{platform}/{arch}` is appended, so
    * `https://example.com/api/updates` is asked as `.../api/updates/darwin/arm64`.
@@ -126,6 +132,9 @@ export interface WebviewUpdatesConfig {
   /** Check on launch and then this often, in hours. Default 24; 0 turns the automatic check off. */
   checkEveryHours?: number
 }
+
+/** `webview.updates`. The same shape as `macos.updates`; kept under its first name. */
+export type WebviewUpdatesConfig = DesktopUpdatesConfig
 
 export interface WebviewDesktopConfig {
   /** The name people see: the window, the bundle, the installer. */
@@ -256,6 +265,8 @@ export interface MacosDesktopConfig {
   /**
    * Run in the App Sandbox. Default `true`, which the Mac App Store requires;
    * the app then gets `network.client` and its own Keychain access group.
+   * A Developer ID build (`buddy release:desktop`, `build:dmg` with an
+   * identity) is never sandboxed: see `updates`.
    */
   sandbox?: boolean
   /**
@@ -303,6 +314,23 @@ export interface MacosDesktopConfig {
   permissions?: MacosPermissions
   /** Items above the app's windows in its Dock menu (right-click the Dock icon). */
   dockMenu?: MacosDockMenuItem[]
+  /**
+   * In-app updates for the copy people download from you (`buddy
+   * release:desktop`, a Developer ID build): the feed the app asks and the
+   * keys it trusts, the same shape as `webview.updates`. The app's screens
+   * drive it through `craft.updater`.
+   *
+   * It is written into a development build and a Developer ID build, and
+   * never into a Mac App Store build (`buddy desktop:apple:package`): the
+   * Store updates its own apps, and one that replaced itself would be
+   * rejected. A Developer ID build is not sandboxed, whatever `sandbox`
+   * says, because a sandboxed app cannot replace its own bundle.
+   *
+   * ```ts
+   * updates: { feedUrl: 'https://example.com/api/updates', publicKeys: { main: 'ed25519-public:...' } }
+   * ```
+   */
+  updates?: DesktopUpdatesConfig
 }
 
 export interface MacosAgentConfig {

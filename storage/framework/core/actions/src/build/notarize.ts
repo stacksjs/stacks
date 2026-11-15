@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { cpSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 import process from 'node:process'
@@ -74,5 +74,63 @@ export async function imageDmg(options: { staging: string, volumeName: string, d
       cwd: dirname(options.dmgPath),
       describe: 'Signing the DMG',
     })
+  }
+}
+
+/** Whether a notarization ticket is already stapled to `target` (an `.app` or a DMG). */
+export function hasStapledTicket(target: string): boolean {
+  return Bun.spawnSync(['xcrun', 'stapler', 'validate', target], { stdout: 'ignore', stderr: 'ignore' }).exitCode === 0
+}
+
+function runReleaseCommand(command: string[]): void {
+  console.log(`> ${command.join(' ')}`)
+  const result = Bun.spawnSync(command, { stdout: 'inherit', stderr: 'inherit' })
+  if (result.exitCode !== 0) throw new Error(`${command[0]} exited with ${result.exitCode}`)
+}
+
+export interface PackageMacReleaseOptions {
+  /** The signed `.app`. It is stapled in place. */
+  app: string
+  appName: string
+  /** Where the update archive goes: what an installed app downloads. Left out, none is made. */
+  updateZip?: string
+  /** Where the disk image goes: what a person downloads. */
+  dmg: string
+  /** Signs the disk image. Without it the image is unsigned, which only a dry run wants. */
+  signingIdentity?: string
+  /** notarytool's sign-in (`notaryArguments`). Without it nothing is notarized. */
+  auth?: string[]
+  scratch: string
+}
+
+/**
+ * What a direct-distribution Mac release is made of, from a Developer ID
+ * signed `.app`, shared by a web view app's release and a native macOS one's:
+ * the app notarized and stapled, zipped for the updater, and imaged into a
+ * signed, notarized DMG, each checked as the file that gets uploaded.
+ *
+ * The order matters: the zip is made after the app is stapled, so the ticket
+ * travels inside the update and Gatekeeper accepts the new bundle offline.
+ * `ditto` keeps the signature and the ticket; `zip` does not. An app that
+ * already carries a ticket (one Pantry's native pipeline stapled, released
+ * here with `--skip-build`) is not sent to Apple a second time.
+ */
+export async function packageMacRelease(options: PackageMacReleaseOptions): Promise<void> {
+  const { app, appName, auth, scratch } = options
+  if (auth) {
+    if (hasStapledTicket(app)) log.info(`${appName}.app already carries its notarization ticket`)
+    else await notarizeAndStaple(app, `${appName}.app`, auth, scratch)
+  }
+  if (options.updateZip) runReleaseCommand(['ditto', '-c', '-k', '--keepParent', app, options.updateZip])
+  const staging = join(scratch, 'dmg')
+  mkdirSync(staging, { recursive: true })
+  cpSync(app, join(staging, `${appName}.app`), { recursive: true, verbatimSymlinks: true })
+  await imageDmg({ staging, volumeName: appName, dmgPath: options.dmg, ...(options.signingIdentity ? { signingIdentity: options.signingIdentity } : {}) })
+  if (auth) {
+    await notarizeAndStaple(options.dmg, 'the DMG', auth, scratch)
+    // Checked against the file that gets uploaded, not only the build output.
+    runReleaseCommand(['codesign', '--verify', '--deep', '--strict', app])
+    runReleaseCommand(['spctl', '-a', '-t', 'open', '--context', 'context:primary-signature', options.dmg])
+    runReleaseCommand(['xcrun', 'stapler', 'validate', options.dmg])
   }
 }

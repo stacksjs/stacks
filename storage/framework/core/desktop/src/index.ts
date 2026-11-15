@@ -19,6 +19,7 @@ export * from './webview-build-record'
 export * from './support'
 export * from './macos-app'
 export * from './macos-bundle'
+export * from './macos-release'
 
 export interface Desktop {
   app: unknown

@@ -355,7 +355,7 @@ Package the desktop build as a macOS .app inside a .dmg
 | `--app-name` | Bundle display name (or DESKTOP_APP_NAME / APP_NAME) | value, required | - |
 | `--app-version` | Bundle version (or DESKTOP_APP_VERSION; defaults to the project's package.json) | value, required | - |
 | `--bundle-id` | Reverse-DNS bundle identifier (or DESKTOP_BUNDLE_ID) | value, required | - |
-| `--signing-identity` | Developer ID identity to sign with (or DESKTOP_SIGNING_IDENTITY) | value, required | - |
+| `--signing-identity` | Developer ID identity to sign with (or DESKTOP_SIGNING_IDENTITY). An AppKit app (`macos`) is then built for direct distribution: not sandboxed, with its updater when it has `macos.updates` | value, required | - |
 | `--notary-profile` | notarytool keychain profile to notarize and staple with (or DESKTOP_NOTARY_PROFILE) | value, required | - |
 | `--notarize` | Notarize and staple with an App Store Connect API key (or DESKTOP_NOTARIZE) | boolean, optional | - |
 | `--api-key-id` | App Store Connect API key ID (or APP_STORE_CONNECT_API_KEY_ID) | value, required | - |
@@ -5050,7 +5050,7 @@ Accept exact successful source CI and download its original library candidate
 
 ### `release:desktop`
 
-Build, sign and notarize the web view desktop app, and publish it with signed update manifests
+Build, sign and notarize the desktop app (web view, or AppKit `macos`), and publish it with signed update manifests
 
 - Usage: `$ buddy release:desktop`
 - Namespace: `release`
@@ -5059,12 +5059,18 @@ Build, sign and notarize the web view desktop app, and publish it with signed up
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--target` | Comma-separated targets (darwin-arm64, linux-x64, win32-x64, ...) or all. Default: this machine | value, required | - |
-| `--identity` | macOS: Developer ID Application certificate (or DESKTOP_SIGNING_IDENTITY). A bundle built with another identity is signed again with it | value, required | - |
+| `--target` | Web view app: comma-separated targets (darwin-arm64, linux-x64, win32-x64, ...) or all. Default: this machine | value, required | - |
+| `--native` | Release the AppKit app (`macos`) when the config also declares a web view app | boolean, optional | `false` |
+| `--identity` | macOS: Developer ID Application certificate (or DESKTOP_SIGNING_IDENTITY). A web view bundle built with another identity is signed again with it | value, required | - |
 | `--notary-profile` | macOS: notarytool keychain profile (or DESKTOP_NOTARY_PROFILE) | value, required | - |
-| `--channel` | Release channel (default: webview.updates.channel, else stable) | value, required | - |
+| `--notarize` | macOS: notarize with an App Store Connect API key instead of a keychain profile (or DESKTOP_NOTARIZE). An AppKit release uses the key whenever no profile is given | boolean, optional | `false` |
+| `--api-key-id` | macOS: App Store Connect API key ID (or APP_STORE_CONNECT_API_KEY_ID) | value, required | - |
+| `--api-issuer-id` | macOS: App Store Connect API issuer ID (or APP_STORE_CONNECT_API_ISSUER_ID) | value, required | - |
+| `--api-key-path` | macOS: the AuthKey_*.p8 file (or APP_STORE_CONNECT_API_KEY_PATH, or its PEM in APP_STORE_CONNECT_API_KEY) | value, required | - |
+| `--channel` | Release channel (default: the app's updates.channel, else stable) | value, required | - |
 | `--notes` | Release notes, shown by the app before it updates | value, required | - |
-| `--skip-build` | Release what `buddy build:desktop` already made, including targets added with `build:desktop --import` | boolean, optional | `false` |
+| `--skip-build` | Release what was already built: `buddy build:desktop` targets (including `--import`ed ones), or the Developer ID AppKit app of an earlier run | boolean, optional | `false` |
+| `--package-only` | AppKit app: stop at the Developer ID app and a signed DMG, and record them in .pantry/native/artifact.json. Nothing is notarized or published: the build step of Pantry's native app pipeline | boolean, optional | `false` |
 | `--dry-run` | Do everything except notarize and upload; write the signed manifests locally | boolean, optional | `false` |
 | `--allow-dirty` | Release from a working tree with uncommitted changes | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
@@ -5073,7 +5079,9 @@ Examples:
 
 ```bash
 buddy release:desktop --identity "Developer ID Application: Example (ABCDE12345)" --notary-profile example
+buddy release:desktop --api-key-id ABC123DEFG --api-issuer-id 00000000-0000-0000-0000-000000000000 --api-key-path ./AuthKey_ABC123DEFG.p8
 buddy release:desktop --target linux-x64 --skip-build
+buddy release:desktop --package-only
 ```
 
 ### `release:github`
