@@ -75,7 +75,7 @@ const OPTIONS = { app: 'my-app', pollIntervalMs: 2000, timeoutMs: 60_000, readAt
 describe('buddy hq:connect', () => {
   it('connects each service once it is approved, writes its keys and verifies them', async () => {
     const bughq = createFakeHqService({ service: 'bughq', approveOnPoll: 1 })
-    const loghq = createFakeHqService({ service: 'loghq', approveOnPoll: 3, confirmCode: true })
+    const loghq = createFakeHqService({ service: 'loghq', approveOnPoll: 3 })
     const h = harness([bughq, loghq])
 
     const result = await runHqConnect(['bughq', 'loghq'], configFor(bughq, loghq), OPTIONS, h.deps)
@@ -98,10 +98,11 @@ describe('buddy hq:connect', () => {
       LOGHQ_PROJECT_ID: log!.project.id,
     })
 
-    // The person is shown where to approve, and LogHQ's confirmation code.
+    // The person is shown where to approve, and each service's confirmation code.
     expect(h.opened).toEqual([`${bughq.origin}/cli/connect?code=${bughq.codes()[0]}`, `${loghq.origin}/cli/connect?code=${loghq.codes()[0]}`])
     expect(h.output()).toContain(h.opened[1]!)
-    expect(h.output()).toContain(`Confirmation code: ${loghq.confirmCodeFor(loghq.codes()[0]!)} (type it on that page)`)
+    for (const fake of [bughq, loghq])
+      expect(h.output()).toContain(`Confirmation code: ${fake.confirmCodeFor(fake.codes()[0]!)} (type it on that page)`)
     expect(h.output()).toContain('Press Ctrl+C to cancel')
     expect(h.output()).toMatch(/BugHQ\s+pass\s+pass\s+pass/)
     expect(h.output()).toMatch(/LogHQ\s+pass\s+pass\s+pass/)
@@ -115,7 +116,7 @@ describe('buddy hq:connect', () => {
   })
 
   it('connects HQ.support with server-only keys and no synthetic support traffic', async () => {
-    const support = createFakeHqService({ service: 'supporthq', approveOnPoll: 1, confirmCode: true })
+    const support = createFakeHqService({ service: 'supporthq', approveOnPoll: 1 })
     const h = harness([support])
     const result = await runHqConnect(['supporthq'], configFor(support), OPTIONS, h.deps)
     const grant = support.grants()[0]!

@@ -91,22 +91,26 @@ return new Response(null, {
 
 | Route | Answer |
 |---|---|
-| `POST /api/cli/connect` | `201 { code, approveUrl }` |
+| `POST /api/cli/connect` | `201 { code, approveUrl, confirmCode }` |
 | `GET /api/cli/connect/{code}` | `{ status: 'pending' }`, or once approved `{ status: 'approved', project, ingestKey, readKey, dashboardUrl }`; `404 { status: 'expired' }` after that |
 | `GET /api/v1/usage` | `{ meter, used, limit, period, state, upgradeUrl }[]`, authorised by `Authorization: Bearer <read key>` |
 
 The adapter (`HqServiceAdapter`) is what the service implements: `approveUrl`,
 `upgradeUrl`, `codes`, `provision`, `authenticateReadKey`, `usage`. The approve
 page calls `describeConnect(code)` to show the app name and
-`approveConnect(code, user)` once a signed-in user confirms.
+`approveConnect(code, user, typed)` once a signed-in user confirms, where
+`typed` is the confirmation code they entered.
 
 An approve link can be minted by anyone for any app name, so approving on the
 link alone would let a signed-in person be talked into handing over their keys.
-`confirmationCode(code)` is a six-character code derived from the connect code.
-Send it as `confirmCode` beside `code` and `approveUrl` (`buddy hq:connect`
-prints it), ask for it on the approve page without rendering it, and call
-`approveConnect` only once `confirmationMatches(code, typed)` holds. Limit the
-attempts per person.
+The confirmation code is six characters derived from the connect code, and the
+package owns both ends of it, so every service connects the same way:
+`startConnect` answers it as `confirmCode` (`buddy hq:connect` prints it), and
+`approveConnect` answers `{ ok: false, reason: 'confirmation_mismatch' }`,
+provisioning nothing and leaving the code pending, until it is given what the
+person typed. Do not add `confirmCode` or check it in the route yourself. The
+approve page asks for the code and never renders it. Limit the attempts per
+person in the route.
 
 Codes are single-use and expire after ten minutes. A store holds only the
 SHA-256 of a code, and the approved keys wait encrypted under a key derived from

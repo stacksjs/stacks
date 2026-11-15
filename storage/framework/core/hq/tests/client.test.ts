@@ -1,7 +1,7 @@
 import type { HqClientOptions } from '../src/client'
 import { describe, expect, test } from 'bun:test'
 import { createHqClient } from '../src/client'
-import { createHqService } from '../src/service'
+import { confirmationCode, createHqService } from '../src/service'
 import { createMemoryHqAdapter } from '../src/testing'
 
 const services: HqClientOptions['services'] = {
@@ -23,7 +23,7 @@ describe('getUsage', () => {
     const adapter = createMemoryHqAdapter({ service: 'bughq', meters: [{ meter: 'errors', used: 450, limit: 500 }] })
     const service = createHqService(adapter)
     const { code } = await (await service.startConnect(new Request('http://x/api/cli/connect', { method: 'POST' }))).json() as { code: string }
-    await service.approveConnect(code, { id: 'u' })
+    await service.approveConnect(code, { id: 'u' }, await confirmationCode(code))
     const grant = await (await service.pollConnect(new Request(`http://x/api/cli/connect/${code}`))).json() as { readKey: string }
 
     const client = createHqClient({

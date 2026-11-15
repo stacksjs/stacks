@@ -1,7 +1,7 @@
 import type { SqlClient } from '../src/meter'
 import { Database } from 'bun:sqlite'
 import { describe, expect, test } from 'bun:test'
-import { connectCodesMigrationSql, createHqService, createMemoryConnectCodeStore, ensureConnectCodesTable, isLicenseGrant, sqlConnectCodeStore } from '../src/service'
+import { confirmationCode, connectCodesMigrationSql, createHqService, createMemoryConnectCodeStore, ensureConnectCodesTable, isLicenseGrant, sqlConnectCodeStore } from '../src/service'
 import { createMemoryHqAdapter, hqServiceContract } from '../src/testing'
 
 function sqlite(): SqlClient {
@@ -56,7 +56,7 @@ describe('usage endpoint', () => {
     })
     const service = createHqService(adapter, { now: () => new Date('2026-06-02T00:00:00.000Z') })
     const { code } = await (await service.startConnect(new Request('http://x/api/cli/connect', { method: 'POST' }))).json() as { code: string }
-    await service.approveConnect(code, { id: 'u' })
+    await service.approveConnect(code, { id: 'u' }, await confirmationCode(code))
     const grant = await (await service.pollConnect(new Request(`http://x/api/cli/connect/${code}`))).json() as { readKey: string }
 
     const response = await service.usage(new Request('http://x/api/v1/usage', { headers: { authorization: `Bearer ${grant.readKey}` } }))
@@ -114,7 +114,7 @@ describe('a licence-only service', () => {
     const started = await service.handle(request('/api/cli/connect', 'POST', { app: 'my-app' }))
     const { code } = await started!.json() as { code: string }
 
-    expect(await service.approveConnect(code, { id: 'user_1' })).toEqual({ ok: true, project: { id: 'user_1-my-app', name: 'my-app' } })
+    expect(await service.approveConnect(code, { id: 'user_1' }, await confirmationCode(code))).toEqual({ ok: true, project: { id: 'user_1-my-app', name: 'my-app' } })
 
     const approved = await (await service.handle(request(`/api/cli/connect/${code}`)))!.json() as Record<string, unknown>
     expect(approved).toEqual({

@@ -22,8 +22,6 @@ export interface FakeHqServiceOptions {
   origin?: string
   /** What `GET /api/v1/usage` reports for every project. */
   meters?: MeterReading[]
-  /** Answer a `confirmCode` beside the code, as LogHQ does. Default false. */
-  confirmCode?: boolean
   /** `false` is a service that has not shipped the contract: its connect and usage routes answer 404. */
   contract?: boolean
   /** Approve a connect by itself on this poll (1 is the first). Unset never approves. */
@@ -197,7 +195,8 @@ export function createFakeHqService(options: FakeHqServiceOptions = {}): FakeHqS
     return [...projects.values()].some(project => project.grant.project.id === id && project.grant.readKey === key)
   }
 
-  const confirmCodeOf = (code: string): string => `${code.slice(0, 3)}-${code.slice(3, 6)}`.toUpperCase()
+  /** The confirmation code each connect was answered with, by its code: what a person would type. */
+  const confirmCodes = new Map<string, string>()
 
   async function handle(request: Request): Promise<Response> {
     const url = new URL(request.url)
@@ -211,9 +210,10 @@ export function createFakeHqService(options: FakeHqServiceOptions = {}): FakeHqS
 
     if (method === 'POST' && path === '/api/cli/connect') {
       const started = await hq.startConnect(request)
-      const body = await started.json() as { code: string, approveUrl: string }
+      const body = await started.json() as { code: string, approveUrl: string, confirmCode: string }
       codes.push(body.code)
-      return json(options.confirmCode ? { ...body, confirmCode: confirmCodeOf(body.code) } : body, started.status)
+      confirmCodes.set(body.code, body.confirmCode)
+      return json(body, started.status)
     }
 
     if (method === 'GET' && path.startsWith('/api/cli/connect/')) {
@@ -221,7 +221,7 @@ export function createFakeHqService(options: FakeHqServiceOptions = {}): FakeHqS
       const count = (polls.get(code) ?? 0) + 1
       polls.set(code, count)
       if (options.approveOnPoll !== undefined && count === options.approveOnPoll)
-        await hq.approveConnect(code, user)
+        await hq.approveConnect(code, user, confirmCodes.get(code))
       return hq.pollConnect(request, code)
     }
 
@@ -342,11 +342,11 @@ export function createFakeHqService(options: FakeHqServiceOptions = {}): FakeHqS
     fetch: (input, init) => handle(input instanceof Request ? input : new Request(String(input), init)),
     approve: async (code) => {
       const target = code ?? codes[codes.length - 1]
-      return target ? hq.approveConnect(target, user) : { ok: false, reason: 'expired' }
+      return target ? hq.approveConnect(target, user, confirmCodes.get(target)) : { ok: false, reason: 'expired' }
     },
     project: (app = 'app') => provision(user.id, app),
     codes: () => [...codes],
-    confirmCodeFor: code => (options.confirmCode && codes.includes(code) ? confirmCodeOf(code) : undefined),
+    confirmCodeFor: code => confirmCodes.get(code),
     grants: () => [...projects.values()].map(project => project.grant),
     licenses: () => [...licensed.values()].map(entry => entry.grant),
     logs: () => [...logs],

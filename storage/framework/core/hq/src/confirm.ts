@@ -17,8 +17,10 @@
  * prefix of its own, so it is neither the hash a store keeps nor a piece of
  * the connect code.
  *
- * A service sends it as `confirmCode` beside `code` and `approveUrl`, which
- * `buddy hq:connect` prints. The approve page asks for it and never renders
+ * `createHqService` owns both ends, so every HQ service connects the same
+ * way: `startConnect` answers it as `confirmCode` beside `code` and
+ * `approveUrl`, which `buddy hq:connect` prints, and `approveConnect` refuses
+ * until it is given what the person typed. The approve page asks for it and never renders
  * it: a code the page shows is a code a person can agree with without looking
  * at anything.
  */

@@ -2,7 +2,7 @@ import type { ConnectGrant, HqServiceAdapter, LicenseGrant, MeterReading, ReadPr
 import type { UsageReport } from './types'
 import { describe, expect, test } from 'bun:test'
 import { isPeriod } from './period'
-import { createHqService, createMemoryConnectCodeStore, hashConnectCode, isLicenseGrant } from './service'
+import { confirmationCode, createHqService, createMemoryConnectCodeStore, hashConnectCode, isLicenseGrant } from './service'
 
 /**
  * The contract every HQ service's adapter must pass, and an in-memory adapter
@@ -65,6 +65,24 @@ export function hqServiceContract<User>(name: string, setup: () => HqContractHar
       expect(await service.describeConnect(code)).toMatchObject({ app: 'my-app' })
     })
 
+    test('starting a connect answers the confirmation code, which the approve URL does not carry', async () => {
+      const { service } = await boot()
+      const response = await service.handle(request('/api/cli/connect', { method: 'POST', body: { app: 'my-app' } }))
+      const { code, approveUrl, confirmCode } = await response!.json() as { code: string, approveUrl: string, confirmCode: string }
+      expect(confirmCode).toBe(await confirmationCode(code))
+      expect(approveUrl).not.toContain(confirmCode)
+    })
+
+    test('a code is not approved without the confirmation code, and can still be approved with it', async () => {
+      const { start, poll, service, user } = await boot()
+      const { code } = await start()
+      const other = await confirmationCode((await start()).code)
+      for (const typed of [undefined, '', 'ABC-DEF', other])
+        expect(await service.approveConnect(code, user, typed)).toEqual({ ok: false, reason: 'confirmation_mismatch' })
+      expect(await poll(code)).toEqual({ status: 200, body: { status: 'pending' } })
+      expect((await service.approveConnect(code, user, (await confirmationCode(code)).toLowerCase())).ok).toBe(true)
+    })
+
     test('two connects never share a code', async () => {
       const { start } = await boot()
       expect((await start()).code).not.toBe((await start()).code)
@@ -89,7 +107,7 @@ export function hqServiceContract<User>(name: string, setup: () => HqContractHar
     test('an approved code hands over the project and its keys or its licence, once', async () => {
       const { start, poll, service, user, adapter, licensed } = await boot()
       const { code } = await start('my-app')
-      const approval = await service.approveConnect(code, user)
+      const approval = await service.approveConnect(code, user, await confirmationCode(code))
       expect(approval.ok).toBe(true)
 
       // The keys wait encrypted: the stored record must not contain them.
@@ -119,13 +137,13 @@ export function hqServiceContract<User>(name: string, setup: () => HqContractHar
       }
 
       expect(await poll(code)).toEqual({ status: 404, body: { status: 'expired' } })
-      expect(await service.approveConnect(code, user)).toEqual({ ok: false, reason: 'expired' })
+      expect(await service.approveConnect(code, user, await confirmationCode(code))).toEqual({ ok: false, reason: 'expired' })
     })
 
     test('concurrent polls of an approved code yield the keys exactly once', async () => {
       const { start, poll, service, user } = await boot()
       const { code } = await start()
-      await service.approveConnect(code, user)
+      await service.approveConnect(code, user, await confirmationCode(code))
       const outcomes = await Promise.all([poll(code), poll(code), poll(code)])
       expect(outcomes.filter(outcome => outcome.body.status === 'approved')).toHaveLength(1)
       expect(outcomes.filter(outcome => outcome.status === 404)).toHaveLength(2)
@@ -134,19 +152,19 @@ export function hqServiceContract<User>(name: string, setup: () => HqContractHar
     test('a code cannot be approved twice', async () => {
       const { start, service, user } = await boot()
       const { code } = await start()
-      expect((await service.approveConnect(code, user)).ok).toBe(true)
-      expect(await service.approveConnect(code, user)).toEqual({ ok: false, reason: 'already_approved' })
+      expect((await service.approveConnect(code, user, await confirmationCode(code))).ok).toBe(true)
+      expect(await service.approveConnect(code, user, await confirmationCode(code))).toEqual({ ok: false, reason: 'already_approved' })
     })
 
     test('a code expires, approved or not', async () => {
       const { start, poll, service, user, clock } = await boot()
       const pending = await start()
       const approved = await start()
-      await service.approveConnect(approved.code, user)
+      await service.approveConnect(approved.code, user, await confirmationCode(approved.code))
       clock.at += 60_001
       expect(await poll(pending.code)).toEqual({ status: 404, body: { status: 'expired' } })
       expect(await poll(approved.code)).toEqual({ status: 404, body: { status: 'expired' } })
-      expect(await service.approveConnect(pending.code, user)).toEqual({ ok: false, reason: 'expired' })
+      expect(await service.approveConnect(pending.code, user, await confirmationCode(pending.code))).toEqual({ ok: false, reason: 'expired' })
       expect(await service.describeConnect(pending.code)).toBeNull()
     })
 
@@ -161,7 +179,7 @@ export function hqServiceContract<User>(name: string, setup: () => HqContractHar
       const grants: ConnectGrant[] = []
       for (let i = 0; i < 2; i++) {
         const { code } = await start('same-app')
-        await service.approveConnect(code, user)
+        await service.approveConnect(code, user, await confirmationCode(code))
         grants.push((await poll(code)).body as unknown as ConnectGrant)
       }
       expect(grants[1]!.project.id).toBe(grants[0]!.project.id)
@@ -181,7 +199,7 @@ export function hqServiceContract<User>(name: string, setup: () => HqContractHar
       if (licensed)
         return
       const { code } = await start()
-      await service.approveConnect(code, user)
+      await service.approveConnect(code, user, await confirmationCode(code))
       const grant = (await poll(code)).body as unknown as ConnectGrant
 
       const attempts: (Record<string, string> | undefined)[] = [
@@ -203,7 +221,7 @@ export function hqServiceContract<User>(name: string, setup: () => HqContractHar
       if (licensed)
         return
       const { code } = await start()
-      await service.approveConnect(code, user)
+      await service.approveConnect(code, user, await confirmationCode(code))
       const grant = (await poll(code)).body as unknown as ConnectGrant
 
       const response = await service.handle(request('/api/v1/usage', { headers: { Authorization: `Bearer ${grant.readKey}` } }))

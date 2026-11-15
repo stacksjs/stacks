@@ -1,6 +1,7 @@
 import type { ConnectCodeStore } from './connect-codes'
 import type { MeterPolicy, MeterPolicyName } from './policy'
 import type { UsageReport } from './types'
+import { confirmationCode, confirmationMatches } from './confirm'
 import { isPeriod, periodOf } from './period'
 import { evaluate } from './policy'
 
@@ -11,7 +12,7 @@ export type { UsageReport } from './types'
 /**
  * The three endpoints every HQ service answers the same way:
  *
- *   POST /api/cli/connect          -> { code, approveUrl }
+ *   POST /api/cli/connect          -> { code, approveUrl, confirmCode }
  *   GET  /api/cli/connect/{code}   -> pending | { project, ingestKey, readKey, dashboardUrl }
  *                                     (or { project, licenseKey, dashboardUrl } from a licence-only service)
  *   GET  /api/v1/usage  (read key) -> { meter, used, limit, period, state, upgradeUrl }[]
@@ -115,7 +116,7 @@ export type ConnectPollResponse
 
 export type ApproveResult
   = | { ok: true, project: ConnectGrant['project'] }
-    | { ok: false, reason: 'expired' | 'already_approved' }
+    | { ok: false, reason: 'expired' | 'already_approved' | 'confirmation_mismatch' }
 
 export interface HqRoute {
   method: 'GET' | 'POST'
@@ -131,8 +132,13 @@ export interface HqService<User = unknown> {
   pollConnect: (request: HqRequest, code?: string) => Promise<Response>
   /** What the approve page shows before the user confirms. `null` once expired, approved or unknown. */
   describeConnect: (code: string) => Promise<{ app: string, expiresAt: number } | null>
-  /** Call from the approve page's action, with the signed-in user, once they confirm. */
-  approveConnect: (code: string, user: User) => Promise<ApproveResult>
+  /**
+   * Call from the approve page's action, with the signed-in user and the
+   * confirmation code they typed off their terminal. Nothing is provisioned
+   * and the code stays pending when it does not match (`confirmation_mismatch`),
+   * so the person can try again. Limit the attempts per person in the router.
+   */
+  approveConnect: (code: string, user: User, confirmation: unknown) => Promise<ApproveResult>
   /** `GET /api/v1/usage`. Answers 404 on a service whose adapter has no `usage`. */
   usage: (request: HqRequest) => Promise<Response>
   /** The routes, to register one by one: three, or the two connect routes on a licence-only service. */
@@ -250,7 +256,9 @@ export function createHqService<User = unknown>(adapter: HqServiceAdapter<User>,
       sealedGrant: null,
       expiresAt: at + ttl,
     })
-    return json({ code, approveUrl: adapter.approveUrl(code) }, 201)
+    // `confirmCode` goes to the caller that asked for the code and to nobody
+    // else: the approve page never shows it (see `confirm.ts`).
+    return json({ code, approveUrl: adapter.approveUrl(code), confirmCode: await confirmationCode(code) }, 201)
   }
 
   async function describeConnect(code: string): Promise<{ app: string, expiresAt: number } | null> {
@@ -258,12 +266,14 @@ export function createHqService<User = unknown>(adapter: HqServiceAdapter<User>,
     return record && record.status === 'pending' ? { app: record.app, expiresAt: record.expiresAt } : null
   }
 
-  async function approveConnect(code: string, user: User): Promise<ApproveResult> {
+  async function approveConnect(code: string, user: User, confirmation: unknown): Promise<ApproveResult> {
     const record = await live(code)
     if (!record)
       return { ok: false, reason: 'expired' }
     if (record.status !== 'pending')
       return { ok: false, reason: 'already_approved' }
+    if (!await confirmationMatches(code, confirmation))
+      return { ok: false, reason: 'confirmation_mismatch' }
     const grant = await adapter.provision(user, { app: record.app })
     const approved = await adapter.codes.approve(record.codeHash, await sealGrant(code, grant))
     return approved ? { ok: true, project: grant.project } : { ok: false, reason: 'already_approved' }
