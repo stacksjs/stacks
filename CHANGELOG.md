@@ -1,5 +1,33 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.600...v0.75.601)
+
+## ✨ Features
+
+- **router**: let a compiled app carry its middleware ([c2b2f7c](https://github.com/stacksjs/stacks/commit/c2b2f7c)) _(by Chris Breuer)_
+- **workflows**: run application releases on owned ReviewOS runners ([e922256](https://github.com/stacksjs/stacks/commit/e922256)) _(by Chris Breuer)_
+- **deploy**: moving a domain onto Cloudflare is one deploy, not two ([776972f](https://github.com/stacksjs/stacks/commit/776972f)) _(by Chris Breuer)_
+
+## 🐛 Bug Fixes
+
+- **workflows**: limit native credentials to their declared steps ([2e4cb30](https://github.com/stacksjs/stacks/commit/2e4cb30)) _(by Chris Breuer)_
+- **deploy**: restrict temporary SSH identities with Windows ACLs ([49789c5](https://github.com/stacksjs/stacks/commit/49789c5)) _(by Chris Breuer)_
+- **auth**: a token cannot create a token with scopes it does not hold ([4f6a480](https://github.com/stacksjs/stacks/commit/4f6a480)) _(by Chris Breuer)_
+- **email**: account mail is tagged transactional, and a repeated suppression is a no-op on Postgres ([8a69f5f](https://github.com/stacksjs/stacks/commit/8a69f5f)) _(by Chris Breuer)_
+- **dev**: give every dev server its own port, and say when the frontend fails ([4168566](https://github.com/stacksjs/stacks/commit/4168566)) _(by Chris Breuer)_
+- **queue**: a job that cannot be queued says why, and a deploy with no worker says so ([5f25895](https://github.com/stacksjs/stacks/commit/5f25895)) _(by Chris Breuer)_
+- **deploy**: use the scoped identity for mail and TLS steps ([8d5983e](https://github.com/stacksjs/stacks/commit/8d5983e)) _(by Chris Breuer)_
+- **deploy**: scope workflow SSH identities to each deployment ([b79058f](https://github.com/stacksjs/stacks/commit/b79058f)) _(by Chris Breuer)_
+- **workflows**: keep artifact paths portable and refresh native references ([451b153](https://github.com/stacksjs/stacks/commit/451b153)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **workflows**: explain owned app delivery and verify atomic releases ([9e8272d](https://github.com/stacksjs/stacks/commit/9e8272d)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.599...v0.75.600)
 
 ## ✨ Features
