@@ -84,5 +84,5 @@ export function renderReviewOsWorkflow(config: WorkflowConfig): string {
     name: 'CI', on: { push: { branches: [branch] }, pull_request: { branches: [branch] }, workflow_dispatch: { inputs: { upload: { type: 'boolean', default: false, description: 'Upload a committed release after native acceptance' } } } },
     concurrency: { group: 'stacks-app-${{ github.ref }}', 'cancel-in-progress': `\${{ github.ref != 'refs/heads/${branch}' }}` },
     permissions: { contents: 'read' }, jobs,
-  })
+  }, null, 2)
 }
