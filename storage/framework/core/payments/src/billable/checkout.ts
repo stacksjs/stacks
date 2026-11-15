@@ -10,7 +10,7 @@ export interface Checkout {
 }
 
 /**
- * Validate that a redirect target URL is on the configured app origin.
+ * Validate a redirect target against the app origin and explicitly configured browser origins.
  * Without this, an attacker who could influence params (e.g. via a
  * forged form) could route the post-payment redirect to a phishing
  * site impersonating the brand. We compare origins (scheme+host+port)
@@ -25,6 +25,8 @@ export function assertSameOriginUrl(url: string | undefined, label: string): voi
   catch {
     throw new Error(`[payments/checkout] ${label} is not a valid URL: ${url}`)
   }
+  if (!['http:', 'https:'].includes(parsed.protocol) || parsed.username || parsed.password)
+    throw new Error(`[payments/checkout] ${label} must be an HTTP URL without credentials`)
   const appUrl = (config as { app?: { url?: string } })?.app?.url
   if (!appUrl) return // no configured origin to enforce — trust the caller
   let appOrigin: string
@@ -34,7 +36,17 @@ export function assertSameOriginUrl(url: string | undefined, label: string): voi
   catch {
     return
   }
-  if (parsed.origin !== appOrigin) {
+  const browserOrigins = config.payment?.checkoutReturnOrigins ?? []
+  const allowedOrigins = browserOrigins.map((value) => {
+    try {
+      const origin = new URL(value)
+      if (!['http:', 'https:'].includes(origin.protocol) || origin.username || origin.password || origin.pathname !== '/' || origin.search || origin.hash)
+        throw new Error('Not a bare origin')
+      return origin.origin
+    }
+    catch { throw new Error('[payments/checkout] checkoutReturnOrigins must contain bare HTTP origins without credentials') }
+  })
+  if (parsed.origin !== appOrigin && !allowedOrigins.includes(parsed.origin)) {
     throw new Error(`[payments/checkout] ${label} origin (${parsed.origin}) does not match app origin (${appOrigin})`)
   }
 }

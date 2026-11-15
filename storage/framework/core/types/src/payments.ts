@@ -11,6 +11,9 @@ import type Stripe from 'stripe'
 // =============================================================================
 
 export interface PaymentOptions {
+  /** Additional trusted browser origins for Stripe Checkout returns when the API is hosted separately. No wildcards or paths. */
+  checkoutReturnOrigins?: string[]
+
   /**
    * Payment provider: the driver `paymentDriver()` returns. `stripe`,
    * `adyen`, `paddle` or `lemonsqueezy`, or the name of one registered with

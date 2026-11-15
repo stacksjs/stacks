@@ -1,5 +1,11 @@
 # Stacks Path
 
+Stripe Checkout returns default to `config.app.url`. Deployments with a separate
+browser frontend can explicitly list its bare origin in
+`config.payment.checkoutReturnOrigins`, for example `['https://app.example.com']`.
+Only exact HTTP origins are accepted. Paths, credentials and wildcards are refused;
+checkout callers cannot supply additional trusted origins.
+
 Easily work with file paths.
 
 ## ☘️ Features
