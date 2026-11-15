@@ -104,7 +104,7 @@
     "@stacksjs/server": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/ts-cloud": "^0.16.129",
+    "@stacksjs/ts-cloud": "^0.16.135",
     "very-happy-dom": "^0.4.1"
   },
   "devDependencies": {
