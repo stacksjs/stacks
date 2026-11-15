@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.599...v0.75.600)
+
+## ✨ Features
+
+- **hq**: every service asks for the confirmation code, because the connect service does ([d9bbff4](https://github.com/stacksjs/stacks/commit/d9bbff4)) _(by Chris Breuer)_
+
+## 🐛 Bug Fixes
+
+- **auth**: leave the magic-link sweep as it was ([dde8f3b](https://github.com/stacksjs/stacks/commit/dde8f3b)) _(by Chris Breuer)_
+- **auth**: a password reset no longer fails when the app owns a table called sessions ([7434276](https://github.com/stacksjs/stacks/commit/7434276)) _(by Chris Breuer)_
+
+## 🔧 Chores
+
+- **deps**: ts-cloud 0.16.135 and bumpx 0.2.32 as the minimum ([cfdacf2](https://github.com/stacksjs/stacks/commit/cfdacf2)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.598...v0.75.599)
 
 ## 🐛 Bug Fixes
