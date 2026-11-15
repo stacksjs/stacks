@@ -39,5 +39,5 @@ test('normal Stacks checks, deployment and downloaded native acceptance share an
 test('workflow generation refuses incomplete native or unsafe secret and runner declarations', () => {
   expect(() => renderReviewOsWorkflow({ ...config, runners: { checks: [] } })).toThrow()
   expect(() => renderReviewOsWorkflow({ ...config, secrets: { checks: ['bad name'] } })).toThrow()
-  expect(() => renderReviewOsWorkflow({ ...config, native: { ...config.native, downloadDirectory: '../outside' } })).toThrow()
+  for (const downloadDirectory of ['../outside', 'C:/outside', '\\outside']) expect(() => renderReviewOsWorkflow({ ...config, native: { ...config.native, downloadDirectory } })).toThrow()
 })

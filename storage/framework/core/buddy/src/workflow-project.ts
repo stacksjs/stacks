@@ -1,7 +1,7 @@
 import type { WorkflowConfig, WorkflowStep } from '@stacksjs/types'
 import { execFileSync } from 'node:child_process'
 import { appendFileSync, existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
-import { dirname, join, relative, resolve } from 'node:path'
+import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { renderReviewOsWorkflow, validateWorkflowConfig } from './workflow-template'
 
@@ -16,7 +16,7 @@ export async function loadWorkflowConfig(root: string): Promise<WorkflowConfig> 
 function ownedFile(root: string, file: string): string {
   const path = resolve(root, file)
   const child = relative(realpathSync(root), realpathSync(path))
-  if (!child || child === '..' || child.startsWith('../') || lstatSync(path).isSymbolicLink() || !lstatSync(path).isFile()) throw new Error('Workflow inputs must be regular files inside the project')
+  if (!child || isAbsolute(child) || child === '..' || child.startsWith(`..${sep}`) || lstatSync(path).isSymbolicLink() || !lstatSync(path).isFile()) throw new Error('Workflow inputs must be regular files inside the project')
   return path
 }
 

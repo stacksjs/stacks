@@ -1,7 +1,7 @@
 import type { WorkflowConfig } from '@stacksjs/types'
 
 function relativePath(value: string): boolean {
-  return typeof value === 'string' && !!value && !/^[\\/]|[\\\r\n\x00]/.test(value) && !value.split('/').some(segment => segment === '.' || segment === '..')
+  return typeof value === 'string' && !!value && !/^[A-Za-z]:|^[\\/]|[\\\r\n\x00]/.test(value) && !value.split('/').some(segment => segment === '.' || segment === '..')
 }
 
 export function validateWorkflowConfig(config: WorkflowConfig): void {
