@@ -4,7 +4,7 @@ import { log } from '@stacksjs/logging'
 import { User } from '@stacksjs/orm'
 import { verifyHash } from '@stacksjs/security'
 import { config } from '@stacksjs/config'
-import { db, getDatabaseDialect, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
+import { db, getDatabaseDialect, parseSqlDateTime, sqlDateTime, tableHasColumn } from '@stacksjs/database/runtime'
 import { clientAddress, getCurrentRequest } from '@stacksjs/router'
 import { DUMMY_BCRYPT_HASH } from './internal-constants'
 import { findAuthUserByEmail, normalizeAuthEmail } from './credential-user'
@@ -231,7 +231,8 @@ export async function sessionLogout(sessionId: string): Promise<void> {
  *
  * Like `sessionLogout`, real failures propagate (fail loud): a reset
  * that reports success while the attacker's session lives would be a
- * lie. An absent legacy `sessions` table or an unapplied browser-session
+ * lie. An absent legacy `sessions` table, an application's own table of
+ * that name (one with no `user_id`), or an unapplied browser-session
  * migration has no credential to revoke. A missing trigger dependency is
  * still a real failure and rolls back both credential families.
  */
@@ -243,6 +244,13 @@ export async function sessionDestroyAll(userId: number, options: { exceptId?: st
     throw new TypeError('[auth] Invalid browser session credential to preserve.')
   await db.transaction(async () => {
     for (const table of ['sessions', 'auth_browser_sessions'] as const) {
+      // `sessions` is the legacy store's name, and an application can own a
+      // table of that name for something else (an analytics product's visitor
+      // sessions). Without a `user_id` column it cannot hold a legacy auth
+      // session, since sessionLogin's insert names that column, so there is
+      // nothing here to revoke. Asked of the catalog first: a DELETE that
+      // fails on the missing column would roll the password change back.
+      if (table === 'sessions' && !(await tableHasColumn('sessions', 'user_id'))) continue
       try {
         // A savepoint permits an absent legacy table without poisoning the
         // PostgreSQL transaction or skipping the other credential family.

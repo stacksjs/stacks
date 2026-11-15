@@ -2,7 +2,7 @@ import { Database } from 'bun:sqlite'
 import { SQL } from 'bun'
 import { describe, expect, test } from 'bun:test'
 import type { TableCatalogRunner } from '../src/table-exists'
-import { tableExists, tableExistsSql } from '../src/table-exists'
+import { tableExists, tableExistsSql, tableHasColumn, tableHasColumnSql } from '../src/table-exists'
 
 /**
  * `tableExists` against each dialect's real catalog. The dashboard uses it to
@@ -29,6 +29,18 @@ describe('tableExists on SQLite', () => {
     expect(await tableExists('widget_view', run, 'sqlite')).toBeFalse()
     expect(await tableExists('widgets\'; DROP TABLE widgets; --', run, 'sqlite')).toBeFalse()
     expect(await tableExists('widgets', run, 'sqlite')).toBeTrue()
+  })
+
+  test('tableHasColumn answers from the table\'s own columns', async () => {
+    const database = new Database(':memory:')
+    database.run('CREATE TABLE sessions (id INTEGER PRIMARY KEY, visitor_id TEXT)')
+    const run = sqliteRunner(database)
+
+    expect(await tableHasColumn('sessions', 'visitor_id', run, 'sqlite')).toBeTrue()
+    expect(await tableHasColumn('sessions', 'user_id', run, 'sqlite')).toBeFalse()
+    expect(await tableHasColumn('gadgets', 'id', run, 'sqlite')).toBeFalse()
+    expect(await tableHasColumn('sessions', 'id\'; DROP TABLE sessions; --', run, 'sqlite')).toBeFalse()
+    expect(await tableHasColumn('sessions', 'id', run, 'sqlite')).toBeTrue()
   })
 })
 
@@ -57,6 +69,10 @@ for (const dialect of ['postgres', 'mysql'] as const) {
       expect(await tableExists('widgets\'; DROP TABLE widgets; --', run, dialect)).toBeFalse()
       expect(await tableExists('widgets', run, dialect)).toBeTrue()
 
+      expect(await tableHasColumn('widgets', 'id', run, dialect)).toBeTrue()
+      expect(await tableHasColumn('widgets', 'user_id', run, dialect)).toBeFalse()
+      expect(await tableHasColumn('gadgets', 'id', run, dialect)).toBeFalse()
+
       if (dialect === 'postgres') {
         // Outside search_path, an unqualified query cannot reach it either.
         await database.unsafe('CREATE SCHEMA elsewhere')
@@ -77,5 +93,8 @@ test('the name is always a bound value', () => {
     const sql = tableExistsSql(dialect)
     expect(sql).toMatch(dialect === 'postgres' ? /\$1/ : /\?/)
     expect(sql).not.toContain('widgets')
+
+    const columnSql = tableHasColumnSql(dialect)
+    expect(columnSql).toMatch(dialect === 'postgres' ? /\$1.*\$2/ : /\?.*\?/)
   }
 })

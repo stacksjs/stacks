@@ -242,6 +242,27 @@ try {
     assert.ok(await verifyHash('chosen-password', String(user.password)))
   })
 
+  // Last: it replaces the legacy `sessions` table the checks above rely on.
+  await check('an application-owned sessions table does not fail the sweep', async () => {
+    await resetUser('pw')
+    const pair = await oldPair('before-change')
+    // An analytics product's visitor sessions: same name, no `user_id`.
+    await db.unsafe('DROP TABLE sessions').execute()
+    await db.unsafe('CREATE TABLE sessions (id INTEGER PRIMARY KEY, site_id INTEGER, visitor_id TEXT)').execute()
+    await db.unsafe('INSERT INTO sessions (id, site_id, visitor_id) VALUES (1, 7, \'visitor\')').execute()
+
+    const result = await revokeAccountCredentials(42)
+    assert.ok(result.passwordChangedAt instanceof Date)
+    assert.equal(await live(pair), false, 'the rest of the sweep still runs')
+    const rows = await db.unsafe('SELECT id, site_id, visitor_id FROM sessions').execute() as unknown[]
+    assert.equal(rows.length, 1, 'the application\'s rows are not the framework\'s to delete')
+
+    await db.unsafe('DROP TABLE sessions').execute()
+    await db.unsafe('DROP TABLE IF EXISTS magic_link_tokens').execute()
+    const absent = await revokeAccountCredentials(42)
+    assert.ok(absent.passwordChangedAt instanceof Date, 'absent optional tables have nothing to revoke')
+  })
+
   if (failures.length > 0) {
     console.error(failures.join('\n\n'))
     process.exitCode = 1
