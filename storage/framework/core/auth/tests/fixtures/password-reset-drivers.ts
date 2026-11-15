@@ -35,8 +35,17 @@ const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
 const { registerPersistentQueryHooks } = await import('@stacksjs/query-builder')
 const failures: string[] = []
 async function check(name: string, run: () => Promise<void>) {
-  try { await run() }
-  catch (error) { failures.push(`${name}: ${String(error)}`) }
+  const started = performance.now()
+  console.error(`[password-reset:${dialect}] start ${name}`)
+  try {
+    await run()
+    console.error(`[password-reset:${dialect}] passed ${name} (${Math.round(performance.now() - started)} ms)`)
+  }
+  catch (error) {
+    const failure = `${name}: ${String(error)}`
+    failures.push(failure)
+    console.error(`[password-reset:${dialect}] failed ${failure}`)
+  }
 }
 const now = new Date('2030-01-02T03:04:05.000Z')
 const previousTimezone = process.env.TZ
