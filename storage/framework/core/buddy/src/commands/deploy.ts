@@ -3242,11 +3242,11 @@ async function runSshDeploy(args: {
       //
       // The unit is idempotent and skips anything not expiring within 30
       // days, so re-running it costs one ACME no-op.
-      const { execSync } = await import('node:child_process')
+      const { execFileSync } = await import('node:child_process')
       const slug = tsCloudConfig.project?.slug || 'app'
       const unit = `rpx-cert-renew-${slug}.service`
       const certSshArgs = sshCliArgs(sshTarget ? { ...sshTarget, host: ip } : hetznerTarget(ip), { connectTimeoutSec: 20 })
-      const out = execSync(`ssh ${certSshArgs.map(a => `'${a}'`).join(' ')} bash -s`, {
+      const out = execFileSync('ssh', [...certSshArgs, 'bash', '-s'], {
         input: `systemctl start ${unit} 2>&1 || true\nsystemctl is-active ${unit} >/dev/null 2>&1 && echo TLSUNIT:running || echo TLSUNIT:done\njournalctl -u ${unit} -n 20 --no-pager 2>/dev/null | grep -E 'Certificate written|Skipping|error|Error' | tail -5 || true`,
         encoding: 'utf8',
         stdio: ['pipe', 'pipe', 'pipe'],
@@ -3558,8 +3558,8 @@ export function mailServerOwnerFromConfig(config: { server?: { attachTo?: unknow
 }
 
 async function cleanupDetachedMailHealth(ip: string, logger: typeof log): Promise<void> {
-  const { execSync } = await import('node:child_process')
-  const sshArgs = ['-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=20', `root@${ip}`]
+  const { execFileSync } = await import('node:child_process')
+  const sshArgs = sshCliArgs(hetznerTarget(ip), { connectTimeoutSec: 20 })
   const script = `set -e
 if systemctl list-unit-files --type=service --no-legend | awk '{print $1}' | grep -qx mail.service; then
   exit 0
@@ -3574,7 +3574,7 @@ systemctl daemon-reload
 systemctl reset-failed`
 
   try {
-    execSync(`ssh ${sshArgs.map(a => `'${a}'`).join(' ')} bash -s`, {
+    execFileSync('ssh', [...sshArgs, 'bash', '-s'], {
       input: script,
       encoding: 'utf8',
       stdio: ['pipe', 'pipe', 'pipe'],
@@ -3980,8 +3980,8 @@ export async function provisionMailTenant(ip: string, logger: typeof log): Promi
   if (!domain && !hasForwards)
     return null
 
-  const { execSync } = await import('node:child_process')
-  const sshArgs = ['-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=20', `root@${ip}`]
+  const { execFileSync } = await import('node:child_process')
+  const sshArgs = sshCliArgs(hetznerTarget(ip), { connectTimeoutSec: 20 })
 
   // Compact forwarding manifest, base64'd so it survives the SSH shell hop.
   const forwardsB64 = hasForwards ? Buffer.from(JSON.stringify(forwards)).toString('base64') : ''
@@ -4423,7 +4423,7 @@ systemctl enable --now mail-health.timer >/dev/null 2>&1
 if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo "MAILTENANT:env-changed+restarted,forwards=$FWD_STATE"; else echo "MAILTENANT:current,forwards=$FWD_STATE"; fi`
 
   try {
-    const out = execSync(`ssh ${sshArgs.map(a => `'${a}'`).join(' ')} bash -s`, {
+    const out = execFileSync('ssh', [...sshArgs, 'bash', '-s'], {
       input: script,
       encoding: 'utf8',
       stdio: ['pipe', 'pipe', 'pipe'],
