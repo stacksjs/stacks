@@ -1,8 +1,8 @@
 import { Action } from '@stacksjs/actions/runtime'
-import { createToken } from '@stacksjs/auth'
+import { createToken, currentAccessToken } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation/runtime'
-import { normalizeTokenExpiry, normalizeTokenScopes, wantsRefreshToken } from './token-request'
+import { normalizeTokenExpiry, normalizeTokenScopes, scopesBeyond, wantsRefreshToken } from './token-request'
 
 export default new Action({
   name: 'CreateTokenAction',
@@ -37,6 +37,12 @@ export default new Action({
 
     if (scopeArray.length === 0)
       return response.badRequest('At least one valid token scope is required')
+
+    // A token cannot create a token with scopes it does not hold, `*` included
+    // (see scopesBeyond). A cookie session has no token and may grant anything.
+    const caller = await currentAccessToken()
+    if (scopesBeyond(caller?.scopes ?? null, scopeArray).length > 0)
+      return response.forbidden('A token cannot create a token with scopes it does not hold.')
 
     try {
       const result = await createToken(Number(user.id), name, scopeArray, {

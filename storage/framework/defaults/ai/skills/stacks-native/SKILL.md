@@ -253,6 +253,13 @@ await request.authorize('update', post)                        // throws a 403
 - **2FA:** `generateTwoFactorSetup`, `enableTwoFactor`, `verifyTwoFactorLoginCode`.
 - **Passkeys:** `beginPasskeyRegistration` / `finishPasskeyAuthentication`. In the
   browser, import from `@stacksjs/auth/passkeys-browser`.
+- **API keys are tokens.** Any credential a machine presents (API key, read
+  key, deploy token, agent token) is a personal access token with named
+  scopes: `createToken(id, name, ['posts:read'], { expiresAt, withRefreshToken: false })`,
+  listed with `tokens`, checked with `findToken`, ended with `revokeTokenById`.
+  Never add a key column or generate and compare a secret yourself. Once a
+  token narrower than `*` exists, "signed in" has to mean a token holding
+  `*`. See "API keys and machine credentials" in `stacks-auth`.
 - **Gotcha:** an ability with no gate and no policy method is denied. Don't
   loosen the default row-scoping policy to make an example work. Declare an
   owner instead (see RECIPES.md).
