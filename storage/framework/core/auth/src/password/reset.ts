@@ -295,6 +295,9 @@ export function passwordResets(value: string): PasswordResetActions {
     }
 
     await mail.sendOrFail({
+      // Account mail, not marketing: under `suppressionPolicy: 'transactional-allowed'`
+      // it still reaches someone who unsubscribed from everything else.
+      tag: 'transactional',
       to: delivery.email,
       subject,
       text,

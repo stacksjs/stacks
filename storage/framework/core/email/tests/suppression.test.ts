@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { isMissingTableError } from '../src/suppression'
+import { isDuplicateSuppressionError, isMissingTableError } from '../src/suppression-errors'
 
 // stacksjs/stacks#1976 — the suppression layer is fail-open: a missing
 // `email_suppressions` table must warn-once and proceed, never hard-fail a
@@ -35,5 +35,30 @@ describe('isMissingTableError', () => {
     expect(isMissingTableError(new Error('connection refused'))).toBe(false)
     expect(isMissingTableError(null)).toBe(false)
     expect(isMissingTableError(undefined)).toBe(false)
+  })
+})
+
+// Suppressing the same address twice is a no-op on every database, in each
+// one's own words for "already there". Postgres's were not known, so a second
+// bounce for an address threw out of the webhook that recorded it.
+describe('isDuplicateSuppressionError', () => {
+  test('sqlite: UNIQUE constraint failed', () => {
+    expect(isDuplicateSuppressionError({ message: 'UNIQUE constraint failed: email_suppressions.email, email_suppressions.type' })).toBe(true)
+  })
+
+  test('mysql: Duplicate entry, by message or by errno', () => {
+    expect(isDuplicateSuppressionError({ message: 'Duplicate entry \'a@b.co-bounce\' for key \'email_suppressions_email_type_unique\'' })).toBe(true)
+    expect(isDuplicateSuppressionError({ message: 'ER_DUP_ENTRY', errno: 1062 })).toBe(true)
+  })
+
+  test('postgres: unique_violation, by SQLSTATE or by message', () => {
+    expect(isDuplicateSuppressionError({ message: 'something else', code: '23505' })).toBe(true)
+    expect(isDuplicateSuppressionError({ message: 'duplicate key value violates unique constraint "email_suppressions_email_type_unique"' })).toBe(true)
+  })
+
+  test('does NOT match a missing table or an unrelated error', () => {
+    expect(isDuplicateSuppressionError({ message: 'relation "email_suppressions" does not exist', code: '42P01' })).toBe(false)
+    expect(isDuplicateSuppressionError({ message: 'connection closed' })).toBe(false)
+    expect(isDuplicateSuppressionError(null)).toBe(false)
   })
 })

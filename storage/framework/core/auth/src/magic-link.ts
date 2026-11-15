@@ -201,6 +201,9 @@ async function deliverMagicLink(normalized: string, raw: string, ttl: number, si
 
   try {
     await mail.sendOrFail({
+      // Account mail, not marketing: under `suppressionPolicy: 'transactional-allowed'`
+      // it still reaches someone who unsubscribed from everything else.
+      tag: 'transactional',
       to: normalized,
       subject: `Sign in to ${appName}`,
       ...(html ? { html } : {}),

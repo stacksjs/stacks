@@ -266,6 +266,9 @@ export async function sendPasswordChangedNotification(userEmail: string): Promis
     // notification. Send a plain-text notification instead.
     if (!html && !text) {
       await mail.sendOrFail({
+        // Account mail, not marketing: under `suppressionPolicy: 'transactional-allowed'`
+        // it still reaches someone who unsubscribed from everything else.
+        tag: 'transactional',
         to: userEmail,
         subject: `Your ${appName} password has been changed`,
         text: `Your ${appName} password was changed on ${changedAt}.${supportEmail ? ` If this wasn't you, contact ${supportEmail}.` : ''}`,
@@ -274,6 +277,9 @@ export async function sendPasswordChangedNotification(userEmail: string): Promis
     }
 
     await mail.sendOrFail({
+      // Account mail, not marketing: under `suppressionPolicy: 'transactional-allowed'`
+      // it still reaches someone who unsubscribed from everything else.
+      tag: 'transactional',
       to: userEmail,
       subject: `Your ${appName} password has been changed`,
       text,

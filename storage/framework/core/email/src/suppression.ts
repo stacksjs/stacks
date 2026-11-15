@@ -29,6 +29,9 @@
  */
 
 import { db } from '@stacksjs/database/runtime'
+import { isDuplicateSuppressionError, isMissingTableError } from './suppression-errors'
+
+export { isDuplicateSuppressionError, isMissingTableError }
 
 export type SuppressionType = 'bounce' | 'complaint' | 'unsubscribe' | 'manual'
 
@@ -46,30 +49,10 @@ function warnOnceAboutMissingTable(): void {
   warnedAboutMissingTable = true
   // eslint-disable-next-line no-console
   console.warn(
-    '[email/suppression] email_suppressions table missing - suppression checks accepted but NOT enforced. '
-    + 'Run migrations to enable enforcement.',
+    '[email/suppression] The email_suppressions table is missing, so bounces, complaints and unsubscribes are NOT honoured: every address is sent to. '
+    + 'Publish the model (`buddy publish model EmailSuppression`) and run `buddy migrate`, or add its table in a migration of your own '
+    + '(email, type, reason, created_at, updated_at, unique on email and type).',
   )
-}
-
-/**
- * Does this error mean the backing table simply hasn't been migrated yet?
- * Exported for direct unit coverage across dialects.
- *
- * Each supported database phrases "missing table" differently, and the
- * suppression layer is fail-open — so a matcher that only knows sqlite/mysql
- * would let Postgres's wording slip through and hard-fail every send on an
- * un-migrated Postgres DB (stacksjs/stacks#1976). We scope the Postgres check
- * to `undefined_table` specifically (SQLSTATE 42P01 / `relation "..." does not
- * exist`) rather than a bare `does not exist`, so a genuine `column ... does
- * not exist` schema bug still surfaces instead of being silently swallowed.
- */
-export function isMissingTableError(err: unknown): boolean {
-  const e = err as { message?: string, code?: string } | null
-  const msg = e?.message ?? ''
-  return e?.code === '42P01' // postgres SQLSTATE: undefined_table
-    || msg.includes('no such table') // sqlite
-    || msg.includes("doesn't exist") // mysql: Table '...' doesn't exist
-    || /relation "[^"]*" does not exist/i.test(msg) // postgres wording
 }
 
 /**
@@ -189,9 +172,8 @@ export async function suppress(
       warnOnceAboutMissingTable()
       return
     }
-    const msg = (err as { message?: string } | null)?.message ?? ''
     // Idempotent — duplicate (email, type) is fine, that's the point of suppression
-    if (msg.includes('UNIQUE constraint') || msg.includes('Duplicate entry')) return
+    if (isDuplicateSuppressionError(err)) return
     throw err
   }
 }
