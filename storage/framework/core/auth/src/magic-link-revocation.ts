@@ -1,11 +1,7 @@
-import { db, tableExists } from '@stacksjs/database/runtime'
+import { db } from '@stacksjs/database/runtime'
 
 /** Revoke outstanding passwordless grants as part of account recovery. */
 export async function revokeMagicLinks(userId: number): Promise<void> {
-  // An app that never enabled magic links has no table and nothing to revoke.
-  // Asking the catalog keeps every password change from logging a failed
-  // DELETE as an error, which an error tracker then files as an issue.
-  if (!(await tableExists('magic_link_tokens'))) return
   try {
     // A savepoint keeps an absent optional table from aborting PostgreSQL's
     // enclosing recovery transaction. Other storage failures must propagate.

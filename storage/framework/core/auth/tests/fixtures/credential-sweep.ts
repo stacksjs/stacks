@@ -258,9 +258,8 @@ try {
     assert.equal(rows.length, 1, 'the application\'s rows are not the framework\'s to delete')
 
     await db.unsafe('DROP TABLE sessions').execute()
-    await db.unsafe('DROP TABLE IF EXISTS magic_link_tokens').execute()
     const absent = await revokeAccountCredentials(42)
-    assert.ok(absent.passwordChangedAt instanceof Date, 'absent optional tables have nothing to revoke')
+    assert.ok(absent.passwordChangedAt instanceof Date, 'an absent legacy table has nothing to revoke')
   })
 
   if (failures.length > 0) {
