@@ -13,6 +13,7 @@ import type { Job } from './action'
 import { moveToDeadLetter } from './dead-letter'
 import { assertEnvelopeSerializable, createEnvelope, serializeEnvelope } from './envelope'
 import { claimDispatchKey, releaseDispatchKey } from './idempotency'
+import { isMissingTableError, missingJobsTableError } from './missing-table'
 import { isQuarantined } from './poison'
 import { runNamedAction } from './action-runner'
 
@@ -404,17 +405,26 @@ class JobBuilder {
       throw error
     }))
 
-    await db
-      .insertInto('jobs')
-      .values({
-        queue: this.options.queue || 'default',
-        payload: payloadJson,
-        attempts: 0,
-        reserved_at: null,
-        available_at: availableAt,
-        created_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
-      })
-      .execute()
+    try {
+      await db
+        .insertInto('jobs')
+        .values({
+          queue: this.options.queue || 'default',
+          payload: payloadJson,
+          attempts: 0,
+          reserved_at: null,
+          available_at: availableAt,
+          created_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
+        })
+        .execute()
+    }
+    catch (error) {
+      // Said in words that carry the fix: this is read in a log, by someone
+      // wondering why an email never arrived, not by the code that dispatched.
+      if (isMissingTableError(error))
+        throw missingJobsTableError(this.name, error)
+      throw error
+    }
   }
 
   /**

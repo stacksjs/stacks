@@ -4,6 +4,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, 
 import { homedir } from 'node:os'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import process from 'node:process'
+import { missingQueueWorkerProblem } from '../deploy-queue-worker'
 import { pathToFileURL } from 'node:url'
 import { runAction } from '@stacksjs/actions/run-action'
 import { assertPublicationAllowed } from '@stacksjs/actions/publication-preflight'
@@ -2990,6 +2991,10 @@ async function runSshDeploy(args: {
     '*.sqlite-wal',
     '*.sqlite-shm',
   ]
+
+  const queueProblem = missingQueueWorkerProblem(sites, process.env.QUEUE_DRIVER)
+  if (queueProblem)
+    log.warn(`Queue: ${queueProblem}`)
 
   if (onlySite && !sites[onlySite]) {
     log.error(`--site '${onlySite}' is not a configured site. Available: ${Object.keys(sites).join(', ')}`)

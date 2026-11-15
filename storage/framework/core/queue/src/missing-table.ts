@@ -45,3 +45,23 @@ export function isMissingTableError(err: unknown): boolean {
     || msg.includes('doesn\'t exist') // MySQL / MariaDB
     || msg.includes('does not exist') // Postgres, SingleStore
 }
+
+/**
+ * The error a dispatch throws when the queue's own table is not there.
+ *
+ * A database's "relation \"jobs\" does not exist" is true and useless: it
+ * names a table nobody remembers creating, from inside a dispatch whose caller
+ * often swallows it on purpose (a password reset must answer the same whether
+ * or not the mail went). So the log line is the only place the cause is ever
+ * read, and it has to carry the fix. In production the database queue is the
+ * default, which is how an app that never asked for a queue comes to need one.
+ */
+export function missingJobsTableError(jobName: string, cause: unknown): Error {
+  return new Error(
+    `[queue] ${jobName} was not queued: the "jobs" table does not exist. `
+    + 'Jobs are queued to the database (the default in production), and this app has not created the queue\'s tables. '
+    + 'Run `buddy queue:table`, add it after `migrate` in the deploy\'s preStart, '
+    + 'and declare a worker for the site (`queues` in config/cloud.ts): a queued job with no worker never runs.',
+    { cause },
+  )
+}
