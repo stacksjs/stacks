@@ -68,3 +68,5 @@ export * from './tinker'
 export * from './types'
 export * from './upgrade'
 export * from './version'
+
+export * from './workflow'

@@ -273,3 +273,14 @@ For an intentional hostname handoff, the old owner removes its site and runs
 `buddy deploy --prod --retire-domains old.example.com`. This operator input retires
 omitted names without committing tenant names to the host's config. It cannot
 retire a domain the configuration still declares.
+
+## ReviewOS application pipeline
+
+Declare owned runner labels, scoped secret names and application argv hooks in
+`config/workflows.ts` using `WorkflowConfig`. `buddy workflow:setup` generates
+the normal checks and ordered deployment, and `--check` verifies committed
+workflow freshness. The deployment defaults to `buddy deploy --prod --yes`.
+Declare `after-deploy` to verify the actual application before native acceptance.
+Production and iOS signing secrets belong to their protected environments;
+check jobs receive only their declared check secrets. Do not copy per-app
+provider polling scripts or bypass the acceptance graph when switching hosts.

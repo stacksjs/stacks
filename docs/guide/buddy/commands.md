@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **392 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **399 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -84,6 +84,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `unpublish` | 2 |
 | `upgrade` | 5 |
 | `user` | 3 |
+| `workflow` | 7 |
 
 ## Commands
 
@@ -6521,3 +6522,80 @@ Retrieving Stacks build version
 - Namespace: none
 - Aliases: none
 - Arguments: none
+
+### `workflow:artifacts`
+
+Read retained artifact identities and digests
+
+- Usage: `$ buddy workflow:artifacts <number>`
+- Namespace: `workflow`
+- Aliases: none
+- Arguments: `<number>`
+
+### `workflow:release-state`
+
+Verify the committed release identity and set its upload output
+
+- Usage: `$ buddy workflow:release-state`
+- Namespace: `workflow`
+- Aliases: none
+- Arguments: none
+
+### `workflow:run`
+
+Start a configured workflow using its normal API
+
+- Usage: `$ buddy workflow:run [file]`
+- Namespace: `workflow`
+- Aliases: none
+- Arguments: `[file]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--ref` | Source branch or revision | value, required | - |
+| `--inputs` | Workflow input values as JSON, without credentials | value, required | - |
+
+### `workflow:runs`
+
+Read the exact-source workflow run history
+
+- Usage: `$ buddy workflow:runs [file]`
+- Namespace: `workflow`
+- Aliases: none
+- Arguments: `[file]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--sha` | Filter by the full source commit | value, required | - |
+
+### `workflow:setup`
+
+Generate the normal Stacks workflow from config/workflows.ts
+
+- Usage: `$ buddy workflow:setup`
+- Namespace: `workflow`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--force` | Replace a reviewed existing custom workflow | boolean, optional | `false` |
+| `--check` | Verify committed workflow bytes without changing them | boolean, optional | `false` |
+
+### `workflow:show`
+
+Read actual workflow job and step execution
+
+- Usage: `$ buddy workflow:show <number>`
+- Namespace: `workflow`
+- Aliases: none
+- Arguments: `<number>`
+
+### `workflow:step`
+
+Run one declared application step through Stacks
+
+- Usage: `$ buddy workflow:step <step>`
+- Namespace: `workflow`
+- Aliases: none
+- Arguments: `<step>`

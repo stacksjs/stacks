@@ -30,7 +30,7 @@ const descriptions = {
   skipGithubRelease: 'Push the tag without creating its GitHub release',
 }
 
-interface IosReleaseOptions {
+export interface IosReleaseOptions {
   bump?: string
   dryRun?: boolean
   keepBuilds?: number | string
@@ -160,6 +160,15 @@ async function releaseIos(options: IosReleaseOptions): Promise<string> {
   const configPath = join(root, 'config/mobile.ts')
   if (!existsSync(configPath))
     throw new Error('config/mobile.ts not found: run this in a Stacks app with a mobile config')
+
+  if (existsSync(join(root, 'config/workflows.ts'))) {
+    const { loadWorkflowConfig } = await import('../workflow-project')
+    const config = await loadWorkflowConfig(root)
+    if (config.release) {
+      const { releaseWorkflowIos } = await import('../workflow-release-ios')
+      return releaseWorkflowIos(root, config, options)
+    }
+  }
 
   // The build regenerates the Xcode project with Pantry's xcodegen; a machine
   // without it stops here, before anything is pulled, bumped or committed.
@@ -449,7 +458,7 @@ export function release(buddy: CLI): void {
       try {
         const tag = await releaseIos(options)
         await outro(options.dryRun ? `Dry run complete: would release ${tag}` : process.exitCode ? `Published ${tag}; TestFlight delivery is incomplete` : `Released ${tag}`, { startTime, useSeconds: true })
-        if (!options.dryRun)
+        if (!options.dryRun && !existsSync(join(process.cwd(), 'config/workflows.ts')))
           log.info('A CI that builds tags (Xcode Cloud: Tag Changes, prefix "v") turns it into a TestFlight build now.')
       }
       catch (error) {

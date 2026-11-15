@@ -56,7 +56,7 @@ test('reads the latest exact-source run through public paginated metadata withou
       expect(url.searchParams.get('sha')).toBe(plan.commit)
       expect(url.searchParams.get('branch')).toBe('main')
       expect(url.searchParams.get('workflow')).toBe('9')
-      return Response.json({ workflow_runs: [{ number: 11, head_sha: plan.commit }, { number: 12, head_sha: plan.commit }], next: null })
+      return Response.json({ workflow_runs: [{ number: 11, head_sha: plan.commit, state: 'succeeded' }, { number: 12, head_sha: plan.commit, state: 'failed' }], next: null })
     }
     expect(url.searchParams.get('number')).toBe('12')
     const latest = evidence(); latest.workflow_run.state = 'failed'

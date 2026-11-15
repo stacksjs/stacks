@@ -213,6 +213,13 @@ const commandRegistry: Record<string, CommandLoader> = {
   'preview': { path: './commands/serve.ts', load: () => import('./commands/serve.ts'), exportName: 'preview' },
   'serve': { path: './commands/serve.ts', load: () => import('./commands/serve.ts'), exportName: 'serve' },
   'serve:api': { path: './commands/serve.ts', load: () => import('./commands/serve.ts'), exportName: 'serveApi' },
+  'workflow:setup': { path: './commands/workflow.ts', load: () => import('./commands/workflow.ts'), exportName: 'workflow' },
+  'workflow:step': { path: './commands/workflow.ts', load: () => import('./commands/workflow.ts'), exportName: 'workflow' },
+  'workflow:release-state': { path: './commands/workflow.ts', load: () => import('./commands/workflow.ts'), exportName: 'workflow' },
+  'workflow:runs': { path: './commands/workflow.ts', load: () => import('./commands/workflow.ts'), exportName: 'workflow' },
+  'workflow:show': { path: './commands/workflow.ts', load: () => import('./commands/workflow.ts'), exportName: 'workflow' },
+  'workflow:run': { path: './commands/workflow.ts', load: () => import('./commands/workflow.ts'), exportName: 'workflow' },
+  'workflow:artifacts': { path: './commands/workflow.ts', load: () => import('./commands/workflow.ts'), exportName: 'workflow' },
   'setup': { path: './commands/setup.ts', load: () => import('./commands/setup.ts'), exportName: 'setup' },
   'ensure': { path: './commands/setup.ts', load: () => import('./commands/setup.ts'), exportName: 'setup' },
   // setup.ts registers the whole `setup:*` family.

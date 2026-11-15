@@ -778,3 +778,27 @@ sheet. Import `passkeys` from `@stacksjs/mobile`, check
 for verification. The native capability never replaces the server challenge,
 origin and user-verification checks. On unsupported hosts retain another sign-in
 method and offer the installation's secure browser settings.
+
+## Owned ReviewOS application workflows
+
+Use typed `config/workflows.ts` (`WorkflowConfig` from `@stacksjs/types`) and
+`buddy workflow:setup` for checks, deployment and native acceptance on owned
+ReviewOS runners. Commit the generated `.reviewos/workflows/ci.yml`; verify
+its bytes with `buddy workflow:setup --check`. Commands in the config are argv
+arrays, including domain-specific build or acceptance hooks. Use `{artifact}`
+as a complete argument for the single downloaded simulator archive. Acceptance
+runs after upload and download, before signing. Main pipelines finish in order
+so a newer backend cannot replace the one undergoing native acceptance.
+
+Configure `release.versionFile` for the tracked JSON version/build manifest and
+all native release commands. `buddy release:ios --bump build --wait` then checks
+full exact-source workflow execution before changing a version, commits the
+metadata and notes, and atomically pushes main with its immutable release tag.
+The release pipeline checks the real Git tag before uploading and verifies
+tester availability afterward. A failed or pending preflight consumes no build.
+Xcode Cloud remains the default when a ReviewOS release is not configured.
+
+Inspect `buddy workflow:runs`, `workflow:show <number>` and
+`workflow:artifacts <number>`. These use the public metadata API, with
+`REVIEWOS_TOKEN` in CI or the installed ReviewOS CLI's normal login locally.
+Never import a forge's private database or keychain implementation into an app.
