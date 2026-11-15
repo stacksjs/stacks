@@ -5109,6 +5109,18 @@ async function reconcileCloudflareCdnForDeploy(
       originGuard: plan.originGuard,
       purge: plan.purge,
       skipOriginProbe: plan.skipOriginProbe,
+      // A zone that was just delegated has no edge certificate yet. Cloudflare
+      // activates the zone and issues one on its own, so the deploy waits for
+      // it and turns the proxy on in this run: moving a domain onto the edge
+      // is one deploy, not a deploy now and another once someone remembers.
+      // An older ts-cloud has no `edgeWaitMs` and ignores `edgeWait`.
+      edgeWait: plan.edgeWaitMs > 0
+        ? {
+            timeoutMs: plan.edgeWaitMs,
+            whilePending: zoneDelegatedThisDeploy,
+            onProgress: (message: string) => logger.info(`  ${message}`),
+          }
+        : undefined,
     })
 
     for (const record of report.records)
@@ -5123,7 +5135,7 @@ async function reconcileCloudflareCdnForDeploy(
     // the normal first-deploy outcome, not an error — but it has to be said, or
     // the site looks CDN-fronted when it is not.
     for (const deferred of report.deferredProxy || [])
-      logger.warn(`  ${deferred.host} left DNS-only: ${deferred.reason} — re-run the deploy once TLS is issued.`)
+      logger.warn(`  ${deferred.host} left DNS-only: ${deferred.reason}. The next deploy proxies it once the certificate is there.`)
     for (const warning of report.warnings) logger.warn(`  ${warning}`)
   }
   catch (err: any) {
@@ -5312,11 +5324,20 @@ async function reconcileConfigDns(sites: Record<string, any>, logger: typeof log
  * comes back as `skipped` rather than throwing, because none of them is a
  * reason to fail a deployment that is otherwise fine.
  */
+/**
+ * Whether this deploy found, or made, the registrar point at the declared
+ * provider. The CDN step reads it to know that a zone still pending at the
+ * provider is on its way to active and worth waiting for: a zone whose
+ * nameservers are elsewhere (a dry run, a blocked delegation) never activates.
+ */
+let zoneDelegatedThisDeploy = false
+
 export async function delegateDeclaredZone(
   config: TsCloudConfig | null | undefined,
   logger: typeof log,
 ): Promise<void> {
   const dns = config?.tsCloud?.infrastructure?.dns ?? config?.infrastructure?.dns
+  zoneDelegatedThisDeploy = false
   if (!dns?.registrar)
     return
 
@@ -5329,6 +5350,7 @@ export async function delegateDeclaredZone(
     } = await import('@stacksjs/ts-cloud')
 
     const result = await delegateZoneFromConfig(dns as any)
+    zoneDelegatedThisDeploy = result.status === 'delegated' || result.status === 'already-delegated'
 
     for (const line of describeDelegation(result))
       logger.info(line)
