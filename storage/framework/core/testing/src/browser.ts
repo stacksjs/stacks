@@ -217,10 +217,18 @@ export async function click(cdp: Cdp, target: string | { selector: string, text?
 
 type Listener = (params: any) => void
 
+interface FetchPause {
+  answered: boolean
+  canceled: boolean
+  pending: boolean
+  networkId?: string
+}
+
 interface Pending {
   resolve: (value: any) => void
   reject: (error: Error) => void
   timer: ReturnType<typeof setTimeout>
+  pause?: FetchPause
 }
 
 interface CdpTransportFailure {
@@ -343,7 +351,10 @@ export function pausedRequestMatches(pattern: FetchPattern, paused: Pick<PausedR
  *   `Fetch.continueRequest` / `fulfillRequest` / `failRequest` /
  *   `continueResponse` for it resolves without reaching Chrome (which would
  *   reject it), until the same request pauses again at its response stage;
- * - a paused request nothing would answer is continued.
+ * - a paused request nothing would answer is continued;
+ * - `Network.loadingFailed` with `canceled: true` retires the associated
+ *   Fetch pause. A delayed answer resolves without sending a stale command.
+ *   Uncorrelated pauses and genuine handler/protocol failures stay visible.
  */
 export class Cdp {
   private id = 0
@@ -353,8 +364,9 @@ export class Cdp {
   private interceptors: Interceptor[] = []
   /** What the caller last passed to `Fetch.enable` through `send`, or null after `Fetch.disable`. */
   private ownFetch: { patterns: FetchPattern[], params: Record<string, unknown> } | null = null
-  /** Paused request ids: true once answered, false while waiting for an answer. */
-  private answered = new Map<string, boolean>()
+  /** Fetch ids and their Network cancellation ownership, retained for late answers. */
+  private pauses = new Map<string, FetchPause>()
+  private canceledRequests = new Set<string>()
   private frameLoaders = new Map<string, string>()
   private requestLoaders = new Map<string, { frameId: string, loaderId: string }>()
   private speculativeRequests = new Set<string>()
@@ -409,6 +421,8 @@ export class Cdp {
     this.closeCause = cause
     this.frameLoaders.clear()
     this.requestLoaders.clear()
+    this.pauses.clear()
+    this.canceledRequests.clear()
     for (const [id, pending] of this.pending) {
       clearTimeout(pending.timer)
       pending.reject(this.closedError())
@@ -429,7 +443,11 @@ export class Cdp {
       if (!pending) return
       this.pending.delete(message.id)
       clearTimeout(pending.timer)
-      if (message.error) pending.reject(new Error(message.error.message))
+      if (pending.pause) pending.pause.pending = false
+      // A continuation already sent can race the Network cancellation event.
+      // Only Chrome's invalid-id response for that positively canceled pause
+      // is retired; unrelated protocol and handler failures remain visible.
+      if (message.error && !(pending.pause?.canceled && message.error.code === -32602 && message.error.message === 'Invalid InterceptionId.')) pending.reject(new Error(message.error.message))
       else pending.resolve(message.result)
       return
     }
@@ -454,7 +472,12 @@ export class Cdp {
    * it. Returns whether the `Fetch.requestPaused` listeners should see it too.
    */
   private routePaused(paused: PausedRequest): boolean {
-    this.remember(paused.requestId, false)
+    this.remember(paused.requestId, {
+      answered: false,
+      pending: false,
+      canceled: paused.networkId !== undefined && this.canceledRequests.has(paused.networkId),
+      networkId: paused.networkId,
+    })
     const claimed = this.interceptors.filter(interceptor => interceptor.patterns.some(pattern => pausedRequestMatches(pattern, paused)))
     for (const interceptor of claimed) {
       try {
@@ -478,15 +501,30 @@ export class Cdp {
     return listening && (own || !claimed.length)
   }
 
-  private remember(requestId: string, answered: boolean): void {
-    this.answered.delete(requestId)
-    this.answered.set(requestId, answered)
-    // Answered ids only matter until a stray second answer arrives.
-    if (this.answered.size > 2000) {
-      for (const [id] of this.answered) {
-        this.answered.delete(id)
-        if (this.answered.size <= 1000) break
+  private remember(requestId: string, pause: FetchPause): void {
+    this.pauses.delete(requestId)
+    this.pauses.set(requestId, pause)
+    // Keep live pauses owned until their handler answers, even in long runs.
+    if (this.pauses.size > 2000) {
+      for (const [id, state] of this.pauses) {
+        if (state.answered && !state.pending) this.pauses.delete(id)
+        if (this.pauses.size <= 1000) break
       }
+    }
+  }
+
+  private cancelRequest(requestId: string): void {
+    this.canceledRequests.add(requestId)
+    // A cancellation may arrive before Fetch.requestPaused. Chrome's request
+    // ids are session-scoped; a new request event also clears its tombstone.
+    if (this.canceledRequests.size > 2000) this.canceledRequests.delete(this.canceledRequests.values().next().value!)
+    for (const pause of this.pauses.values()) {
+      if (pause.networkId === requestId) pause.canceled = true
+    }
+    // A response-stage pause can replace the current entry before the
+    // preceding continuation receives its command response.
+    for (const pending of this.pending.values()) {
+      if (pending.pause?.networkId === requestId) pending.pause.canceled = true
     }
   }
 
@@ -546,6 +584,7 @@ export class Cdp {
   private track(method: string, params: any): void {
     if (method === 'Network.requestWillBeSent') {
       const { requestId, frameId, loaderId } = params
+      this.canceledRequests.delete(requestId)
       // Chrome can omit terminal events for requests of a replaced document.
       // A started navigation is insufficient: retire only on a frame commit.
       this.requestLoaders.delete(requestId)
@@ -557,8 +596,10 @@ export class Cdp {
       if (frameId && loaderId) this.requestLoaders.set(requestId, { frameId, loaderId })
       this.inFlight.set(params.requestId, `${params.request?.method} ${params.request?.url}`)
     }
-    else if (method === 'Network.loadingFinished' || method === 'Network.loadingFailed')
+    else if (method === 'Network.loadingFinished' || method === 'Network.loadingFailed') {
+      if (method === 'Network.loadingFailed' && params.canceled === true) this.cancelRequest(params.requestId)
       this.finishRequest(params.requestId)
+    }
     else if (method === 'Network.responseReceived' && params.response?.mimeType === 'text/event-stream')
       this.finishRequest(params.requestId)
     else if (method === 'Page.frameNavigated' && params.frame?.id && params.frame?.loaderId) {
@@ -643,22 +684,28 @@ export class Cdp {
       this.ownFetch = null
       return this.closed ? this.command(method, params) : this.applyFetch()
     }
-    if (FETCH_ANSWERS.has(method) && typeof params.requestId === 'string') {
-      if (this.answered.get(params.requestId) === true) return Promise.resolve({} as T)
-      if (this.answered.has(params.requestId)) this.remember(params.requestId, true)
+    const pause = FETCH_ANSWERS.has(method) && typeof params.requestId === 'string' ? this.pauses.get(params.requestId) : undefined
+    if (pause) {
+      if (pause.answered || pause.canceled) {
+        pause.answered = true
+        return Promise.resolve({} as T)
+      }
+      pause.answered = true
     }
-    return this.command<T>(method, params)
+    return this.command<T>(method, params, pause)
   }
 
-  private command<T = any>(method: string, params: Record<string, unknown> = {}): Promise<T> {
+  private command<T = any>(method: string, params: Record<string, unknown> = {}, pause?: FetchPause): Promise<T> {
     const id = ++this.id
     return new Promise<T>((resolve, reject) => {
       if (this.closed) return reject(this.closedError())
       const timer = setTimeout(() => {
         this.pending.delete(id)
+        if (pause) pause.pending = false
         reject(new Error(`Chrome command timed out: ${method}`))
       }, this.commandTimeoutMs)
-      this.pending.set(id, { resolve, reject, timer })
+      if (pause) pause.pending = true
+      this.pending.set(id, { resolve, reject, timer, pause })
       this.socket.send(JSON.stringify({ id, method, params }))
     })
   }
