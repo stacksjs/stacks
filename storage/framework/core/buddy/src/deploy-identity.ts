@@ -27,6 +27,17 @@ export async function withDeploymentIdentity<T>(key: string | undefined, run: (i
   process.once('SIGINT', interrupt)
   process.once('SIGTERM', terminate)
   try {
+    if (process.platform === 'win32') {
+      // chmod does not remove inherited NTFS access. Restrict the directory
+      // before writing a key, using the current SID rather than a localized name.
+      try {
+        const user = execFileSync('whoami.exe', ['/user', '/fo', 'csv', '/nh'], { encoding: 'utf8', timeout: 10000 })
+        const sid = /"(S-1-\d+(?:-\d+)+)"/.exec(user)?.[1]
+        if (!sid) throw new Error('No current user SID')
+        execFileSync('icacls.exe', [directory, '/inheritance:r', '/grant:r', `*${sid}:(OI)(CI)F`], { stdio: 'pipe', timeout: 10000 })
+      }
+      catch { throw new Error('Cannot restrict the deployment identity directory to the current Windows user') }
+    }
     writeFileSync(privateKeyPath, key.replaceAll('\r\n', '\n').trimEnd() + '\n', { mode: 0o600, flag: 'wx' })
     let publicKey: string
     try { publicKey = execFileSync('ssh-keygen', ['-y', '-P', '', '-f', privateKeyPath], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 10000 }).trim() }
