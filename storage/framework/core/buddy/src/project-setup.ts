@@ -19,6 +19,11 @@ const APP_KEY_OPTIONAL_COMMANDS = [
   // Linking build dependencies changes no application data or secrets.
   'link:core',
   'unlink:core',
+  // Changing framework packaging never initializes application secrets.
+  'publish:core',
+  'unpublish:core',
+  'publish:defaults',
+  'unpublish:defaults',
   'lint',
   'docs',
   'release',
