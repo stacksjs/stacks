@@ -730,7 +730,7 @@ export function dev(buddy: CLI): void {
         await (await actions()).runFrontendDevServer(options)
       }
       catch (error) {
-        log.error(error instanceof Error ? error.message : String(error))
+        await log.error(error instanceof Error ? error.message : String(error))
         process.exit(ExitCode.FatalError)
       }
     })

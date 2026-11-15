@@ -13,13 +13,16 @@
  */
 
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
+import { clearMiddlewareCache, clearRouteMiddlewareRegistry } from '../src/stacks-router'
 
 let server: any = null
 let port = 0
 const seen: string[] = []
 
 beforeAll(async () => {
-  const { provideMiddleware, route } = await import('../src')
+  clearRouteMiddlewareRegistry()
+  const { provideMiddleware, createStacksRouter } = await import('../src')
+  const route = createStacksRouter()
 
   provideMiddleware({
     // By class name, as a build registers them.
@@ -46,6 +49,8 @@ beforeAll(async () => {
 
 afterAll(() => {
   server?.stop(true)
+  clearRouteMiddlewareRegistry()
+  clearMiddlewareCache()
 })
 
 describe('middleware a build provides', () => {
