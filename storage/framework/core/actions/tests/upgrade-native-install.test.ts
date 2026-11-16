@@ -10,7 +10,7 @@ const upgradeModule = join(import.meta.dir, '../src/upgrade/packages.ts')
 
 // A private registry and real Bun installation reproduce a caret upgrade
 // choosing a newer release than the one the native command reports.
-async function campaign(options: { installed?: string, force?: boolean, archiveVersion?: string, prefix?: string, repeat?: boolean, pantry?: boolean } = {}) {
+async function campaign(options: { installed?: string, force?: boolean, archiveVersion?: string, prefix?: string, repeat?: boolean, pantry?: boolean | 'native-only' } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'stacks-native-upgrade-'))
   const app = join(root, 'app')
   mkdirSync(join(app, 'storage/framework'), { recursive: true })
@@ -91,7 +91,7 @@ throw new Error('The framework script returned instead of terminating at its pac
   const manifest = (version: string) => ({
     name: 'native-upgrade-consumer', private: true,
     dependencies: { stacks: `${options.prefix ?? '^'}${version}` },
-    ...(options.pantry ? { workspaces: ['packages/*'] } : {}),
+    ...(options.pantry === true ? { workspaces: ['packages/*'] } : {}),
   })
   async function run(args: string[], label: string) {
     const stdout = join(root, `${label}.stdout`)
@@ -108,7 +108,7 @@ throw new Error('The framework script returned instead of terminating at its pac
     finally { clearTimeout(timer) }
   }
   try {
-    if (options.pantry) {
+    if (options.pantry === true) {
       mkdirSync(join(app, 'packages/library'), { recursive: true })
       writeFileSync(join(app, 'packages/library/package.json'), JSON.stringify({ name: 'native-upgrade-library', version: '1.0.0', private: true }))
     }
@@ -155,6 +155,16 @@ console.log('PACKAGE_UPGRADE_RETURNED')
 }
 
 describe('native package upgrade release selection', () => {
+  test('a native-only Pantry lock does not require JavaScript workspace metadata', async () => {
+    const result = await campaign({ installed: newer, pantry: 'native-only', repeat: true })
+    expect(result.code, result.stderr).toBe(0)
+    expect(result.installed).toBe(target)
+    expect(result.pantryLock?.workspaces).toBeUndefined()
+    expect(result.pantryReplay?.code, result.pantryReplay?.stderr).toBe(0)
+    expect(result.stdout).not.toContain('Refreshing Pantry workspace metadata')
+    expect(result.repeated?.code, result.repeated?.stderr).toBe(0)
+  }, 60_000)
+
   test('keeps the real Pantry workspace lock aligned with the upgraded Bun dependency graph', async () => {
     const result = await campaign({ installed: newer, pantry: true, repeat: true })
     expect(result.code, result.stderr).toBe(0)

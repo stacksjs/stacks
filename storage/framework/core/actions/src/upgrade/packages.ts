@@ -131,31 +131,42 @@ export function needsFrameworkInstall(projectRoot: string, target: string, runti
   }
 }
 
-/** Pantry also records JavaScript declarations in mixed workspace projects. */
-function pantryWorkspaceMetadataStale(projectRoot: string): boolean {
-  const file = join(projectRoot, 'pantry.lock')
-  if (!existsSync(file)) return false
+/** Native-only locks have no JavaScript workspace declarations to synchronize. */
+function pantryWorkspaceMetadataState(projectRoot: string): 'native-only' | 'current' | 'stale' {
   try {
-    const lock = JSON.parse(readFileSync(file, 'utf8')) as { workspaces?: Record<string, Record<string, unknown>> }
-    if (!lock.workspaces || typeof lock.workspaces !== 'object' || Array.isArray(lock.workspaces)) return true
+    const lock = JSON.parse(readFileSync(join(projectRoot, 'pantry.lock'), 'utf8')) as { workspaces?: Record<string, Record<string, unknown>> }
+    if (!Object.hasOwn(lock, 'workspaces')) {
+      const declared = ['package.json', 'pantry.json', 'pantry.jsonc'].some(name => {
+        const file = join(projectRoot, name)
+        if (!existsSync(file)) return false
+        const configuration = Bun.JSONC.parse(readFileSync(file, 'utf8'))
+        if (!configuration || typeof configuration !== 'object' || Array.isArray(configuration))
+          throw new TypeError(`Invalid workspace configuration: ${name}`)
+        return Object.hasOwn(configuration, 'workspaces')
+      })
+      return declared ? 'stale' : 'native-only'
+    }
+    if (!lock.workspaces || typeof lock.workspaces !== 'object' || Array.isArray(lock.workspaces)) return 'stale'
     for (const [workspace, recorded] of Object.entries(lock.workspaces)) {
-      if (isAbsolute(workspace) || workspace.split(/[\\/]/).includes('..')) return true
+      if (isAbsolute(workspace) || workspace.split(/[\\/]/).includes('..')) return 'stale'
       const manifest = JSON.parse(readFileSync(join(projectRoot, workspace, 'package.json'), 'utf8')) as Record<string, unknown>
       for (const field of ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies']) {
         const entries = (value: unknown) => Object.entries((value ?? {}) as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b))
-        if (JSON.stringify(entries(recorded[field])) !== JSON.stringify(entries(manifest[field]))) return true
+        if (JSON.stringify(entries(recorded[field])) !== JSON.stringify(entries(manifest[field]))) return 'stale'
       }
     }
-    return false
+    return 'current'
   }
-  catch { return true }
+  catch { return 'stale' }
 }
 
 async function refreshPantryWorkspaceMetadata(projectRoot: string, changed: boolean): Promise<void> {
-  if (!existsSync(join(projectRoot, 'pantry.lock')) || (!changed && !pantryWorkspaceMetadataStale(projectRoot))) return
+  if (!existsSync(join(projectRoot, 'pantry.lock'))) return
+  const state = pantryWorkspaceMetadataState(projectRoot)
+  if (state === 'native-only' || (!changed && state === 'current')) return
   console.log('  Refreshing Pantry workspace metadata with `pantry install --ignore-scripts`...')
   const result = await runCommand('pantry install --ignore-scripts', { cwd: projectRoot })
-  if (result.isErr || pantryWorkspaceMetadataStale(projectRoot))
+  if (result.isErr || pantryWorkspaceMetadataState(projectRoot) === 'stale')
     throw new Error('The framework was installed, but Pantry workspace metadata is not current. Resolve the Pantry install error and re-run buddy upgrade before committing the lockfiles.')
 }
 
