@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.607...v0.75.608)
+
+## ✅ Tests
+
+- **testing**: isolate process fixtures from framework boot ([a406007](https://github.com/stacksjs/stacks/commit/a406007)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.606...v0.75.607)
 
 ## 🐛 Bug Fixes
