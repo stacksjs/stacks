@@ -3190,6 +3190,25 @@ function isPageFormPost(req: EnhancedRequest): boolean {
   return !destination || destination === 'document' || destination === 'iframe' || destination === 'frame'
 }
 
+/**
+ * Whether `path` is a page of this application a browser may be sent to: one
+ * leading `/`, and nothing a browser reads as another host (`//evil`, `/\evil`,
+ * a leading space or control character it strips first).
+ */
+function isLocalPagePath(path: string): boolean {
+  if (!path.startsWith('/') || path.startsWith('//') || path.startsWith('/\\'))
+    return false
+  // eslint-disable-next-line no-control-regex
+  if (/[\u0000-\u001F\u007F\s\\]/.test(path.slice(0, 2)))
+    return false
+  try {
+    return new URL(path, 'http://stacks.invalid').host === 'stacks.invalid'
+  }
+  catch {
+    return false
+  }
+}
+
 /** Whether the request came over https, directly or through a proxy that says so. */
 function requestIsSecure(req: EnhancedRequest): boolean {
   return req.headers.get('x-forwarded-proto') === 'https' || req.url.startsWith('https:')
@@ -3344,7 +3363,9 @@ function actionAnswer(result: unknown, req: EnhancedRequest, action: RouterActio
 
   const declared = typeof action.notice === 'function' ? action.notice(result, req) : action.notice
   const notice = typeof declared === 'string' ? declared.trim() : ''
-  const page = formPage(req as unknown as Request)
+  // Where the action sends the browser next, else back to the form's page.
+  const onward = typeof action.next === 'function' ? action.next(result, req) : action.next
+  const page = (typeof onward === 'string' && isLocalPagePath(onward) ? onward : null) ?? formPage(req as unknown as Request)
   if (!page)
     return notice ? noticeDocument(notice) : formatResult(result, req)
   if (!notice)
@@ -3692,6 +3713,8 @@ export interface RouterAction {
   apiResponse?: boolean
   /** What to tell a person whose browser form this action carried out (stacksjs/stacks#3312). */
   notice?: string | ((result: any, req: any) => string | null | undefined)
+  /** Where a browser form this action carried out goes next (stacksjs/stacks#3312). */
+  next?: string | ((result: any, req: any) => string | null | undefined)
   model?: unknown
   modelDefinition?: unknown
   name?: string
@@ -3734,6 +3757,12 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
   // route regardless of content negotiation. Wins over the group-level
   // flag (which `createMiddlewareHandler` already applied).
   const actionForcesJson = action.apiResponse === true
+
+  // A `next` written as a string is the application's own page or a mistake,
+  // and a mistake is said where the route is registered, not on the first
+  // shopper to finish the form.
+  if (typeof action.next === 'string' && !isLocalPagePath(action.next))
+    throw new Error(`Action '${action.name ?? handlerKey}' declares next: '${action.next}', which is not a path of this application. Write a path that starts with one '/'.`)
 
   /*
    * The rules `request.validate()` falls back to, derived once.

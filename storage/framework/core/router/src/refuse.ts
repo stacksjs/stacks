@@ -17,6 +17,8 @@
  * ```
  */
 
+import type { RefusalResponse } from '@stacksjs/actions'
+
 /**
  * Where the router reads what a refusal says: on the `Response` an action
  * returns, or on an error a middleware throws. A registered symbol, so code
@@ -45,7 +47,7 @@ export interface RefuseOptions {
  * one is named) for a caller that asked for data, and the person's page,
  * saying `message`, for a browser form.
  */
-export function refuse(message: string, options: RefuseOptions = {}): Response {
+export function refuse(message: string, options: RefuseOptions = {}): RefusalResponse {
   const status = options.status ?? 422
   if (!Number.isInteger(status) || status < 400 || status > 599)
     throw new RangeError(`refuse() needs a 4xx or 5xx status, not ${status}`)
@@ -55,7 +57,7 @@ export function refuse(message: string, options: RefuseOptions = {}): Response {
   const answer = Response.json(body, { status })
   const refusal: FormRefusal = { message, status, ...(options.field ? { field: options.field } : {}) }
   Object.defineProperty(answer, FORM_REFUSAL, { value: refusal })
-  return answer
+  return answer as RefusalResponse
 }
 
 /** What a refusal says, or undefined when `value` is not one. */

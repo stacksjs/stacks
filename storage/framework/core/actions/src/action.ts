@@ -219,9 +219,40 @@ interface ActionOptions<
    * page it built (an HTML `Response`), a redirect, a download or a stream is
    * left alone, which is how a secret that is shown once (a new API token)
    * stays out of a redirect. `apiResponse: true` keeps every answer JSON.
+   *
+   * Told only what `handle` answered when it did what was asked: a
+   * `refuse()` never reaches it, so it is left out of `result`'s type.
    */
   notice?: string | ((
-    result: TResult,
+    result: Accomplished<TResult>,
+    request: InferRequest<TModel, TValidations, TPath>,
+  ) => string | null | undefined)
+  /**
+   * Where a person whose browser form this action carried out goes next: a
+   * path of this application, such as the next step of a checkout.
+   *
+   * Without it the browser goes back to the page the form was on
+   * (stacksjs/stacks#3312). With it, it goes here, with the `notice` if
+   * there is one. A `fetch()` or API caller gets the body as before and is
+   * never redirected. A refusal still goes back to the form's own page.
+   *
+   * ```ts
+   * next: '/checkout/payment',
+   * next: result => `/orders/${result.order_id}`,
+   * ```
+   *
+   * Only ever a path on this application. A string that is not one is an
+   * error when the route is registered. A function's answer that is not one
+   * (an address taken from the request, say) is not followed: the browser
+   * goes back to the form's page instead. Answer null for that too.
+   *
+   * When `handle` reads its request without a type written on it, declare
+   * `handle` before `notice` and `next`: TypeScript works out what it returns
+   * in the order the object is written, and a function after it is then
+   * told that.
+   */
+  next?: string | ((
+    result: Accomplished<TResult>,
     request: InferRequest<TModel, TValidations, TPath>,
   ) => string | null | undefined)
   /**
@@ -321,6 +352,21 @@ interface ActionOptions<
   dependencies?: () => Record<string, unknown>
 }
 
+declare const refusalMark: unique symbol
+
+/**
+ * What `refuse()` from `@stacksjs/router` answers with: a `Response` that
+ * carries a refusal (stacksjs/stacks#3311). Named here, beside
+ * {@link ActionResult}, so `notice` and `next` can leave it out of what
+ * `handle` returned: they run only when the action did what was asked.
+ */
+export interface RefusalResponse extends Response {
+  readonly [refusalMark]: true
+}
+
+/** What `handle` answered, less its refusals. */
+type Accomplished<TResult> = Exclude<TResult, RefusalResponse>
+
 /**
  * Everything an action's `handle()` is allowed to return. The router's
  * `formatResult()` walks each branch:
@@ -387,6 +433,8 @@ export class Action<
   before?: ActionOptions<TModel, TValidations, TPath>['before']
   /** @see {@link ActionOptions.notice} */
   notice?: ActionOptions<TModel, TValidations, TPath, TPayload, TResult, TInvocation>['notice']
+  /** @see {@link ActionOptions.next} */
+  next?: ActionOptions<TModel, TValidations, TPath, TPayload, TResult, TInvocation>['next']
   handle: ActionOptions<TModel, TValidations, TPath, TPayload, TResult, TInvocation>['handle']
   model?: string
   /**
@@ -436,6 +484,7 @@ export class Action<
     authorize,
     before,
     notice,
+    next,
     dependencies,
   }: ActionOptions<TModel, TValidations, TPath, TPayload, TResult, TInvocation>) {
     this.name = name
@@ -459,6 +508,7 @@ export class Action<
     this.authorize = authorize
     this.before = before
     this.notice = notice
+    this.next = next
     this._dependenciesFactory = dependencies
     this.modelDefinition = model
 

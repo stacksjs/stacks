@@ -193,3 +193,40 @@ void new Action({
   notice: () => 107,
   handle: () => ({ id: 107 }),
 })
+
+// ── next: where the form goes, told only what was accomplished ─────────────
+
+/*
+ * A handler that refuses with `refuse()` and otherwise answers with data:
+ * `next` and `notice` run only for the data, and say so in their types.
+ */
+// eslint-disable-next-line pickier/no-unused-vars
+declare function refuseForTest(message: string): import('@stacksjs/actions').RefusalResponse
+
+void new Action({
+  name: 'PlaceOrderNext',
+  method: 'POST',
+  handle: (request) => {
+    if (!request.get('cart'))
+      return refuseForTest('Your cart is empty.')
+    return { ok: true, order_id: 42 }
+  },
+  next: result => `/orders/${result.order_id}`,
+  notice: result => `Order ${result.order_id} placed`,
+})
+
+void new Action({
+  name: 'PlaceOrderNextTypo',
+  method: 'POST',
+  // @ts-expect-error - the handler's data has no `id`.
+  next: result => `/orders/${result.id}`,
+  handle: () => ({ ok: true, order_id: 42 }),
+})
+
+void new Action({
+  name: 'PlaceOrderNextNumber',
+  method: 'POST',
+  // @ts-expect-error - a page is a path, not a number.
+  next: () => 42,
+  handle: () => ({ ok: true }),
+})
