@@ -277,6 +277,29 @@ describe('a list posted by a form', () => {
     expect(seen.repository_ids).toEqual(['3,7'])
   })
 
+  it('takes a ticked checkbox as true', async () => {
+    // A checkbox with no `value` sends `on`, which a boolean rule refused,
+    // so no plain checkbox could ever satisfy one (stacksjs/stacks#3311).
+    let seen: any
+    const stacks = createStacksRouter()
+    stacks.post('/api/settings', new Action({
+      name: 'Settings',
+      skipCsrf: true,
+      validations: { notify: { rule: schema.boolean() } },
+      async handle(req: any) {
+        seen = req.getValidated()
+        return { ok: true }
+      },
+    }) as any)
+    const send = (body: string) => stacks.bunRouter.handleRequest(new Request('http://localhost/api/settings', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded', 'accept': 'application/json' }, body }))
+    expect((await send('notify=on')).status).toBe(200)
+    expect(seen).toEqual({ notify: true })
+    expect((await send('notify=0')).status).toBe(200)
+    expect(seen).toEqual({ notify: false })
+    // Anything else is still not a yes or a no.
+    expect((await send('notify=maybe')).status).toBe(422)
+  })
+
   it('is left alone when it came as JSON', async () => {
     const res = await router().bunRouter.handleRequest(new Request('http://localhost/api/user/tokens', {
       method: 'POST',

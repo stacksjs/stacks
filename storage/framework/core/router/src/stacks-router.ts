@@ -4207,7 +4207,10 @@ function getRequestInput(
         }
       }
       else if (validatorName === 'boolean') {
-        if (value === 'true' || value === '1') {
+        // `on` is what a ticked checkbox with no `value` sends, so a plain
+        // `<input type="checkbox">` could never satisfy a boolean rule
+        // (stacksjs/stacks#3311). An unticked one sends nothing at all.
+        if (value === 'true' || value === '1' || value === 'on') {
           input[field] = true
           coerced = true
         }
