@@ -576,7 +576,7 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    requestBody?: never
+    requestBody: { content: { "application/json": { "shipping_name": string; "shipping_address": string; "shipping_city": string; "shipping_state": string; "shipping_zip": string } } }
     responses: {
       "200": { content: { "application/json": Record<string, unknown> } }
       "422": { content: never }

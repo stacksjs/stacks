@@ -79,11 +79,30 @@ const ship = {
   state: cart?.shipping_state || '',
   zip: cart?.shipping_zip || '',
 }
+
+// After a refused submission: each field's message and what was typed, so
+// the form is drawn as it was left. The saved address on a first visit.
+const shipField = (field: string, saved: string): { value: string, error: string } => ({
+  value: requestContext.old(field, saved),
+  error: requestContext.error(field),
+})
+const shipName = shipField('shipping_name', ship.name)
+const shipAddress = shipField('shipping_address', ship.address)
+const shipCity = shipField('shipping_city', ship.city)
+const shipState = shipField('shipping_state', ship.state)
+const shipZip = shipField('shipping_zip', ship.zip)
+// Why the form this page posted was refused, when it was not about one field
+// ("Your cart is empty."). Shown once (stacksjs/stacks#3311).
+const formError = requestContext.formError()
 </script>
 
 @section('content')
   <div class="mx-auto px-6 py-12 max-w-5xl">
     <CheckoutSteps current="shipping" />
+
+    @if (formError)
+      <p role="alert" class="mb-6 px-4 py-3 font-medium text-sm text-red-800 bg-red-50 border border-red-200 rounded-xl">{{ formError }}</p>
+    @endif
 
     @if (items.length === 0 || !cart?.email)
       <div class="p-12 text-center border border-dashed border-stone-300 rounded-3xl">
@@ -99,28 +118,43 @@ const ship = {
           <form action="/api/checkout/shipping" method="POST" class="mt-8 space-y-5">
             <div>
               <label class="font-semibold text-stone-500 text-xs tracking-wider uppercase">Full name</label>
-              <input type="text" name="shipping_name" required autocomplete="name" value="{{ ship.name }}" class="mt-1 px-4 py-3 w-full text-sm border border-stone-300 rounded-2xl focus:border-stone-900 focus:outline-none">
+              <input type="text" name="shipping_name" required autocomplete="name" value="{{ shipName.value }}" aria-invalid="{{ shipName.error ? 'true' : 'false' }}" class="mt-1 px-4 py-3 w-full text-sm border border-stone-300 rounded-2xl focus:border-stone-900 focus:outline-none">
+              @if (shipName.error)
+                <p role="alert" class="mt-2 text-sm text-red-700">{{ shipName.error }}</p>
+              @endif
             </div>
 
             <div>
               <label class="font-semibold text-stone-500 text-xs tracking-wider uppercase">Street address</label>
-              <input type="text" name="shipping_address" required autocomplete="street-address" value="{{ ship.address }}" class="mt-1 px-4 py-3 w-full text-sm border border-stone-300 rounded-2xl focus:border-stone-900 focus:outline-none">
+              <input type="text" name="shipping_address" required autocomplete="street-address" value="{{ shipAddress.value }}" aria-invalid="{{ shipAddress.error ? 'true' : 'false' }}" class="mt-1 px-4 py-3 w-full text-sm border border-stone-300 rounded-2xl focus:border-stone-900 focus:outline-none">
+              @if (shipAddress.error)
+                <p role="alert" class="mt-2 text-sm text-red-700">{{ shipAddress.error }}</p>
+              @endif
             </div>
 
             <div class="grid gap-4 grid-cols-2">
               <div>
                 <label class="font-semibold text-stone-500 text-xs tracking-wider uppercase">City</label>
-                <input type="text" name="shipping_city" required autocomplete="address-level2" value="{{ ship.city }}" class="mt-1 px-4 py-3 w-full text-sm border border-stone-300 rounded-2xl focus:border-stone-900 focus:outline-none">
+                <input type="text" name="shipping_city" required autocomplete="address-level2" value="{{ shipCity.value }}" aria-invalid="{{ shipCity.error ? 'true' : 'false' }}" class="mt-1 px-4 py-3 w-full text-sm border border-stone-300 rounded-2xl focus:border-stone-900 focus:outline-none">
+                @if (shipCity.error)
+                  <p role="alert" class="mt-2 text-sm text-red-700">{{ shipCity.error }}</p>
+                @endif
               </div>
               <div>
                 <label class="font-semibold text-stone-500 text-xs tracking-wider uppercase">State</label>
-                <input type="text" name="shipping_state" required autocomplete="address-level1" value="{{ ship.state }}" class="mt-1 px-4 py-3 w-full text-sm border border-stone-300 rounded-2xl focus:border-stone-900 focus:outline-none">
+                <input type="text" name="shipping_state" required autocomplete="address-level1" value="{{ shipState.value }}" aria-invalid="{{ shipState.error ? 'true' : 'false' }}" class="mt-1 px-4 py-3 w-full text-sm border border-stone-300 rounded-2xl focus:border-stone-900 focus:outline-none">
+                @if (shipState.error)
+                  <p role="alert" class="mt-2 text-sm text-red-700">{{ shipState.error }}</p>
+                @endif
               </div>
             </div>
 
             <div class="max-w-[200px]">
               <label class="font-semibold text-stone-500 text-xs tracking-wider uppercase">ZIP / Postal</label>
-              <input type="text" name="shipping_zip" required autocomplete="postal-code" value="{{ ship.zip }}" class="mt-1 px-4 py-3 w-full text-sm border border-stone-300 rounded-2xl focus:border-stone-900 focus:outline-none">
+              <input type="text" name="shipping_zip" required autocomplete="postal-code" value="{{ shipZip.value }}" aria-invalid="{{ shipZip.error ? 'true' : 'false' }}" class="mt-1 px-4 py-3 w-full text-sm border border-stone-300 rounded-2xl focus:border-stone-900 focus:outline-none">
+              @if (shipZip.error)
+                <p role="alert" class="mt-2 text-sm text-red-700">{{ shipZip.error }}</p>
+              @endif
             </div>
 
             <div class="flex gap-4 items-center justify-between pt-2">

@@ -349,8 +349,8 @@ export function createClient(config: ClientConfig) {
   /**
    * POST /api/checkout/shipping
    */
-  postCheckoutShipping(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
-    return request(config, "POST", "/api/checkout/shipping", {}, [], null, "application/json", [], options)
+  postCheckoutShipping(input: { body: { "shipping_name": string; "shipping_address": string; "shipping_city": string; "shipping_state": string; "shipping_zip": string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/checkout/shipping", input ?? {}, [], {"required":true,"content":["application/json"]}, "application/json", [], options)
   },
 
   /**

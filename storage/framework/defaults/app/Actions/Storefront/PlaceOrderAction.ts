@@ -3,7 +3,7 @@ import { Action } from '@stacksjs/actions/runtime'
 import { customers } from '@stacksjs/commerce'
 import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database/runtime'
-import { response } from '@stacksjs/router'
+import { refuse, response } from '@stacksjs/router'
 import { sendOrderConfirmation } from '../../Mail/OrderConfirmation'
 import { readCartCookie } from '../../Storefront/CartCookie'
 import { storefrontCurrency } from '../../Storefront/StorefrontMoney'
@@ -32,7 +32,7 @@ export default new Action({
   async handle(request: any) {
     const token = readCartCookie(request, CART_COOKIE)
     if (!token)
-      return response.json({ error: 'Your cart is empty.' }, { status: 400 })
+      return refuse('Your cart is empty.', { status: 400 })
 
     const cart = await (db as any)
       .selectFrom('carts')
@@ -42,7 +42,7 @@ export default new Action({
       .executeTakeFirst()
 
     if (!cart)
-      return response.json({ error: 'Your cart is empty.' }, { status: 400 })
+      return refuse('Your cart is empty.', { status: 400 })
 
     const items = await (db as any)
       .selectFrom('cart_items')
@@ -51,10 +51,10 @@ export default new Action({
       .execute()
 
     if (items.length === 0)
-      return response.json({ error: 'Your cart is empty.' }, { status: 400 })
+      return refuse('Your cart is empty.', { status: 400 })
 
     if (!cart.email || !cart.shipping_name || !cart.shipping_address)
-      return response.json({ error: 'Checkout details are incomplete.' }, { status: 422 })
+      return refuse('Checkout details are incomplete. Go back and fill in your email and shipping address.')
 
     // One customer per email — repeat shoppers reuse the same row so
     // the dashboard's customer total isn't inflated by checkouts.

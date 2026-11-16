@@ -47,6 +47,49 @@ function cartCookie(): string {
   }
 }
 
+/** What one shipping field shows: its value, whether it is marked wrong, and its message. */
+function readShipField(html: string, field: string): { value: string | null, invalid: string | null, alert: string | null } {
+  const at = html.indexOf(`name="${field}"`)
+  const input = at === -1 ? '' : html.slice(html.lastIndexOf('<input', at), html.indexOf('>', at) + 1)
+  const after = at === -1 ? '' : html.slice(html.indexOf('>', at) + 1, html.indexOf('</div>', at))
+  return {
+    value: /value="([^"]*)"/.exec(input)?.[1] ?? null,
+    invalid: /aria-invalid="([^"]*)"/.exec(input)?.[1] ?? null,
+    alert: /<p role="alert"[^>]*>\s*([^<]*?)\s*<\/p>/.exec(after)?.[1] ?? null,
+  }
+}
+
+/** The message a page shows for its whole form, before any field. */
+function readFormError(html: string): string | null {
+  return /<p role="alert" class="mb-6[^"]*"[^>]*>\s*([^<]*?)\s*<\/p>/.exec(html)?.[1] ?? null
+}
+
+/** A form posted by a browser from one of this server's pages. */
+function browserPost(base: string, path: string, from: string, body: string, cookies: string[]): Promise<Response> {
+  return fetch(`${base}${path}`, {
+    method: 'POST',
+    redirect: 'manual',
+    headers: {
+      'content-type': 'application/x-www-form-urlencoded',
+      'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'origin': base,
+      'referer': `${base}${from}`,
+      'sec-fetch-site': 'same-origin',
+      'sec-fetch-mode': 'navigate',
+      'sec-fetch-dest': 'document',
+      ...(cookies.length ? { cookie: cookies.join('; ') } : {}),
+    },
+    body,
+  })
+}
+
+/** The form-flash value a response sets. */
+function carriedFlash(response: Response): string {
+  const carried = response.headers.getSetCookie().find(cookie => cookie.startsWith(`${FORM_FLASH_COOKIE}=`))
+  expect(carried).toBeDefined()
+  return carried!.slice(FORM_FLASH_COOKIE.length + 1, carried!.indexOf(';'))
+}
+
 /** What the router seals when the cart's remove form works. */
 function removed(path = '/cart'): string {
   return sealFormFlash({ path, errors: {}, old: {}, notice: 'Removed from your cart.', expires: Date.now() + 60_000 }, APP_KEY)!
@@ -106,8 +149,10 @@ beforeAll(async () => {
   // The key the view servers are started with, so each can read what this seals.
   app.key = APP_KEY
   const { default: CheckoutContactAction } = await import('../../../defaults/app/Actions/Storefront/CheckoutContactAction')
+  const { default: CheckoutShippingAction } = await import('../../../defaults/app/Actions/Storefront/CheckoutShippingAction')
   const router = createStacksRouter()
   ;(router.post('/api/checkout/contact', CheckoutContactAction as never) as { skipCsrf?: () => unknown }).skipCsrf?.()
+  ;(router.post('/api/checkout/shipping', CheckoutShippingAction as never) as { skipCsrf?: () => unknown }).skipCsrf?.()
   api = Bun.serve({ port: 0, hostname: '127.0.0.1', fetch: request => router.bunRouter.handleRequest(request) })
 })
 afterAll(() => {
@@ -249,6 +294,50 @@ for (const server of servers) {
       const contact = await get('/checkout/contact', [cartCookie(), `${FORM_FLASH_COOKIE}=${removed()}`])
       expect(readField(await contact.text()).alert).toBeNull()
       expect(clears(contact)).toBe(false)
+    }, 60_000)
+
+    // stacksjs/stacks#3311: the shipping step's fields were checked by hand
+    // and refused with one JSON body for the lot.
+    it('sends a shipping form with a missing field back with the message under it', async () => {
+      const posted = await browserPost(base, '/api/checkout/shipping', '/checkout/shipping', 'shipping_name=Ava+Reyes&shipping_address=+++&shipping_city=Portland&shipping_state=OR&shipping_zip=', [cartCookie()])
+      expect(posted.status, `${await posted.clone().text()}\n${output.slice(-2000)}`).toBe(303)
+      expect(posted.headers.get('location')).toBe('/checkout/shipping')
+
+      const html = await (await get('/checkout/shipping', [cartCookie(), `${FORM_FLASH_COOKIE}=${carriedFlash(posted)}`])).text()
+      expect(readShipField(html, 'shipping_name')).toEqual({ value: 'Ava Reyes', invalid: 'false', alert: null })
+      // A field of spaces is a missing field.
+      expect(readShipField(html, 'shipping_address')).toEqual({ value: '   ', invalid: 'true', alert: 'Enter the street address.' })
+      expect(readShipField(html, 'shipping_city')).toEqual({ value: 'Portland', invalid: 'false', alert: null })
+      expect(readShipField(html, 'shipping_zip')).toEqual({ value: '', invalid: 'true', alert: 'Enter the ZIP or postal code.' })
+      expect(readFormError(html)).toBeNull()
+    }, 60_000)
+
+    it('sends a form the action refused itself back with one message for the form', async () => {
+      // Every field filled, and no cart: the action finds that out in handle().
+      const posted = await browserPost(base, '/api/checkout/shipping', '/checkout/shipping', 'shipping_name=Ava&shipping_address=1+Main+St&shipping_city=Portland&shipping_state=OR&shipping_zip=97201', [])
+      expect(posted.status, `${await posted.clone().text()}\n${output.slice(-2000)}`).toBe(303)
+      const sealed = carriedFlash(posted)
+      expect(openFormFlash(sealed, APP_KEY, '/checkout/shipping')).toMatchObject({ formError: 'Your cart is empty.', errors: {} })
+
+      const page = await get('/checkout/shipping', [cartCookie(), `${FORM_FLASH_COOKIE}=${sealed}`])
+      const html = await page.text()
+      expect(readFormError(html)).toBe('Your cart is empty.')
+      expect(readShipField(html, 'shipping_name').value).toBe('Ava')
+      expect(clears(page)).toBe(true)
+
+      // A script is told in JSON, with the status the action chose.
+      const script = await fetch(`${base}/api/checkout/shipping`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ shipping_name: 'Ava', shipping_address: '1 Main St', shipping_city: 'Portland', shipping_state: 'OR', shipping_zip: '97201' }) })
+      expect(script.status).toBe(400)
+      expect(await script.json()).toMatchObject({ error: 'Your cart is empty.' })
+    }, 60_000)
+
+    it('shows a refusal for the whole form on the cart and the other checkout steps', async () => {
+      for (const path of ['/cart', '/checkout/contact', '/checkout/payment']) {
+        const sealed = sealFormFlash({ path, errors: {}, old: {}, formError: 'Your cart is empty.', expires: Date.now() + 60_000 }, APP_KEY)!
+        const html = await (await get(path, [cartCookie(), `${FORM_FLASH_COOKIE}=${sealed}`])).text()
+        expect(html, path).toContain('Your cart is empty.</p>')
+        expect(/<p role="alert"[^>]*>\s*Your cart is empty\.\s*<\/p>/.test(html), path).toBe(true)
+      }
     }, 60_000)
 
     // The whole loop: the form crosses this server's proxy to the router,

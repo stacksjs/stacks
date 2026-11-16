@@ -1,7 +1,7 @@
 import { Action } from '@stacksjs/actions/runtime'
 import { config } from '@stacksjs/config'
 import { db, sqlDateTime } from '@stacksjs/database/runtime'
-import { response } from '@stacksjs/router'
+import { refuse, response } from '@stacksjs/router'
 import { randomUUIDv7 } from 'bun'
 import { readCartCookie, writeCartCookie } from '../../Storefront/CartCookie'
 import { storefrontCurrency } from '../../Storefront/StorefrontMoney'
@@ -36,7 +36,7 @@ export default new Action({
     const quantity = Math.max(1, Math.min(99, Number(request.get('quantity') ?? 1) || 1))
 
     if (!slug)
-      return response.json({ error: 'A product slug is required.' }, { status: 422 })
+      return refuse('Choose a product to add.', { field: 'slug' })
 
     const product = await (db as any)
       .selectFrom('products')
@@ -47,7 +47,7 @@ export default new Action({
       .executeTakeFirst()
 
     if (!product)
-      return response.json({ error: `Product "${slug}" not found` }, { status: 404 })
+      return refuse('That product is no longer available.', { status: 404 })
 
     // readCartCookie verifies the HMAC; tampered cookies return null
     // and the action falls through to the "create new cart" branch as

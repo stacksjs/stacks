@@ -86,6 +86,9 @@ const freeShippingNote = summary.freeShippingNote
 
 // What the form just posted from this page did, said once (stacksjs/stacks#3312).
 const cartNotice = requestContext.notice()
+// Why the form this page posted was refused, when it was not about one field
+// ("Your cart is empty."). Shown once (stacksjs/stacks#3311).
+const formError = requestContext.formError()
 </script>
 
 @section('content')
@@ -94,6 +97,10 @@ const cartNotice = requestContext.notice()
     <p class="font-medium text-stone-500 text-xs tracking-wider uppercase">Your bowl</p>
     <h1 class="mt-2 font-bold text-4xl text-stone-900 tracking-tight">Cart</h1>
     <p class="mt-2 text-stone-600">{{ items.length }} item{{ items.length === 1 ? '' : 's' }}{{ items.length > 0 ? ' ready to ship' : '' }}.</p>
+
+    @if (formError)
+      <p role="alert" class="mt-6 px-4 py-3 font-medium text-sm text-red-800 bg-red-50 border border-red-200 rounded-xl">{{ formError }}</p>
+    @endif
 
     @if (cartNotice)
       <p role="status" class="mt-6 px-4 py-3 font-medium text-sm text-stone-800 bg-stone-100 border border-stone-200 rounded-xl">{{ cartNotice }}</p>

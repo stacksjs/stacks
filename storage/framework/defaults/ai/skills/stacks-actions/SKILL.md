@@ -143,14 +143,49 @@ const emailValue = requestContext.old('email', cart.email)  // what was typed, e
   a string. A rule that asks for `schema.array()` takes it as a list of one,
   and an empty field as an empty list. A value is never split on commas.
 
-Not covered yet (stacksjs/stacks#3311): a refusal an action writes by hand
-(`response.json({ error }, 400)` for "your cart is empty" still reaches a form
-as JSON, and there is no message for the whole form, only by field), a
-refused CSRF token, and a form submitted with `method="get"`.
+A refusal only `handle()` can know about ("your cart is empty", "that item
+has gone") is answered with `refuse()` from `@stacksjs/router`, never with a
+hand-written `response.json({ error }, 400)` (stacksjs/stacks#3311):
 
-The shipped checkout's contact step is the worked example
-(`Actions/Storefront/CheckoutContactAction.ts`, `views/checkout/contact.stx`).
+```ts
+import { refuse } from '@stacksjs/router'
+
+if (!cart)
+  return refuse('Your cart is empty.', { status: 400 })
+if (!deliversTo(zip))
+  return refuse('We do not deliver to that postcode yet.', { field: 'shipping_zip' })
+```
+
+- A caller that asked for data gets `{ error: message }` with that status
+  (`422` when none is given), plus `errors` by field when `field` is named:
+  the body such actions already wrote.
+- A browser form goes back to its page with what was posted. A message with
+  a `field` is read with `requestContext.error(field)`; one without is about
+  the whole form and is read with `requestContext.formError()`.
+  `hasErrors()` is true for either.
+- `authorize` and `before` can return one too.
+- With no page to go back to, the browser gets the plain page of messages,
+  with the status the action chose.
+
+```html
+<script server>
+const formError = requestContext.formError()
+</script>
+
+@if (formError)
+  <p role="alert">{{ formError }}</p>
+@endif
+```
+
+Not covered yet (stacksjs/stacks#3311): a refused CSRF token, and a form
+submitted with `method="get"`.
+
+The shipped checkout is the worked example: the contact and shipping steps
+declare their fields (`Actions/Storefront/CheckoutContactAction.ts`,
+`CheckoutShippingAction.ts`), and every storefront action refuses an empty
+cart with `refuse()`. The pages are `views/checkout/*.stx` and `views/cart.stx`.
 Tests: `core/router/tests/form-validation-refusal.test.ts`,
+`core/router/tests/form-action-refusal.test.ts`,
 `core/config/tests/form-flash.test.ts`, and
 `core/buddy/tests/refused-form-page.test.ts`, which posts a form through each
 view server and reads the page that comes back.

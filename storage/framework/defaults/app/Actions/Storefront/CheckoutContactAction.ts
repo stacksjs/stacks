@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions/runtime'
 import { db } from '@stacksjs/database/runtime'
-import { response } from '@stacksjs/router'
+import { refuse, response } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation/runtime'
 import { readCartCookie } from '../../Storefront/CartCookie'
 
@@ -29,11 +29,11 @@ export default new Action({
     const email = String(request.get('email') ?? '').trim().toLowerCase()
     // For a caller that runs the action without the router in front of it.
     if (!email || !email.includes('@'))
-      return response.json({ error: 'A valid email is required.' }, { status: 422 })
+      return refuse('Enter a valid email address.', { field: 'email' })
 
     const token = readCartCookie(request, CART_COOKIE)
     if (!token)
-      return response.json({ error: 'Your cart is empty.' }, { status: 400 })
+      return refuse('Your cart is empty.', { status: 400 })
 
     const cart = await (db as any)
       .selectFrom('carts')
@@ -43,7 +43,7 @@ export default new Action({
       .executeTakeFirst()
 
     if (!cart)
-      return response.json({ error: 'Your cart is empty.' }, { status: 400 })
+      return refuse('Your cart is empty.', { status: 400 })
 
     await (db as any)
       .updateTable('carts')

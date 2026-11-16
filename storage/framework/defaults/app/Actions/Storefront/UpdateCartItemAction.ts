@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions/runtime'
 import { db } from '@stacksjs/database/runtime'
-import { response } from '@stacksjs/router'
+import { refuse, response } from '@stacksjs/router'
 import { readCartCookie } from '../../Storefront/CartCookie'
 
 const CART_COOKIE = 'stacks_cart'
@@ -30,7 +30,7 @@ export default new Action({
     // an attacker can't probe for the existence of arbitrary carts.
     const token = readCartCookie(request, CART_COOKIE)
     if (!token)
-      return response.json({ error: 'No active cart' }, { status: 400 })
+      return refuse('Your cart is empty.', { status: 400 })
 
     const cart = await (db as any)
       .selectFrom('carts')
@@ -39,7 +39,7 @@ export default new Action({
       .executeTakeFirst()
 
     if (!cart)
-      return response.json({ error: 'Cart not found' }, { status: 404 })
+      return refuse('Your cart is empty.', { status: 404 })
 
     const item = await (db as any)
       .selectFrom('cart_items')
@@ -49,7 +49,7 @@ export default new Action({
       .executeTakeFirst()
 
     if (!item)
-      return response.json({ error: 'Item not in your cart' }, { status: 404 })
+      return refuse('That item is no longer in your cart.', { status: 404 })
 
     if (quantity === 0) {
       await (db as any).deleteFrom('cart_items').where('id', '=', item.id).execute()
