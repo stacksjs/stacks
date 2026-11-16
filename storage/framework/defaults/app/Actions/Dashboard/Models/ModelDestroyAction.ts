@@ -1,21 +1,8 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
 import { response } from '@stacksjs/router'
-import { destroyModelRow, rowRefusalResponse } from './model-row-writes'
+import { destroyModelRow, requestAccountId, rowRefusalResponse } from './model-row-writes'
 import { parseRowId, resolveWritableModel } from './model-write'
-
-/** The id of the account making this request, when there is one. */
-async function signedInId(request: RequestInstance): Promise<number | null> {
-  try {
-    const id = Number((await request.user())?.id)
-    return Number.isSafeInteger(id) && id > 0 ? id : null
-  }
-  catch {
-    // The local dashboard runs without a session, and then there is no
-    // account to protect.
-    return null
-  }
-}
 
 /**
  * `DELETE /api/dashboard/models/{slug}/{id}`.
@@ -39,7 +26,7 @@ export default new Action({
     if (id === null)
       return response.json({ message: 'A numeric row id is required.' }, 400)
 
-    const result = await destroyModelRow(resolved, id, await signedInId(request))
+    const result = await destroyModelRow(resolved, id, await requestAccountId(request))
     return result.ok ? { ok: true, id, anonymized: result.anonymized } : rowRefusalResponse(result)
   },
 })

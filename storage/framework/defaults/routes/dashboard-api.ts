@@ -524,6 +524,8 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   // actions enforce rather than the route.
   guard(route.post('/models/{slug}', 'Actions/Dashboard/Models/ModelStoreAction'))
   guard(route.patch('/models/{slug}/{id}', 'Actions/Dashboard/Models/ModelUpdateAction'))
+  // A record and its related rows, all or nothing (stacksjs/stacks#3315).
+  guard(route.patch('/models/{slug}/{id}/save', 'Actions/Dashboard/Models/ModelSaveAction'))
   guard(route.delete('/models/{slug}/{id}', 'Actions/Dashboard/Models/ModelDestroyAction'))
   // The actions a model lists under `dashboard.actions`, run on one record:
   // "Mark as shipped". The parameters other than `id` are named so that an

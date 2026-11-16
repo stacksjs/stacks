@@ -10,6 +10,7 @@
  * Every rule a single save has applies to each row of a combined one.
  */
 import type { ResponseStatus } from '@stacksjs/bun-router'
+import type { RequestInstance } from '@stacksjs/types'
 import { eraseSubject, GDPR_SUBJECT_MODEL, isUniqueViolation, ModelValidationError, toSnakeCaseKeys } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 import { dashboardOperationalError } from '../dashboard-response'
@@ -125,6 +126,19 @@ export async function updateModelRow(resolved: ResolvedModel, id: number, body: 
   catch (error) {
     return fieldRefusal(resolved, error, Object.keys(changes), true)
       ?? failed(error, 'The model record could not be updated.', 'ModelUpdateAction')
+  }
+}
+
+/** The id of the account making this request, when there is one. */
+export async function requestAccountId(request: RequestInstance): Promise<number | null> {
+  try {
+    const id = Number((await request.user())?.id)
+    return Number.isSafeInteger(id) && id > 0 ? id : null
+  }
+  catch {
+    // The local dashboard runs without a session, and then there is no
+    // account to protect.
+    return null
   }
 }
 
