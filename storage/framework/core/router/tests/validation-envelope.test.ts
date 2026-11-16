@@ -60,7 +60,11 @@ describe('the automatic 422 emitted for an Action `validations:` block', () => {
     const text = await Bun.file(src).text()
 
     expect(text).toContain('return response.validationError(errors) as Response')
-    expect(text).toContain('return validationFailureResponse(validationResult.errors)')
+    // Through `validationRefusal`, which answers a caller that asked for data
+    // with exactly that body, and sends a browser's form back to its page
+    // (stacksjs/stacks#3309, form-validation-refusal.test.ts).
+    expect(text).toContain('return validationRefusal(req, validationResult.errors)')
+    expect(text).toMatch(/isApiRequest\(req as unknown as Request\)\)\n {4}return validationFailureResponse\(errors\)/)
   })
 
   it('no longer emits the `error`-keyed shape', async () => {

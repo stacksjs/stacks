@@ -3104,6 +3104,126 @@ function validationFailureResponse(errors: Record<string, string[]>): Response {
 }
 
 /**
+ * The page a form was posted from, as a path this application may send the
+ * browser back to, or null when the request does not say or the form was not
+ * on a page of this application's own.
+ *
+ * Only ever the path and query of the `Referer`, so the browser resolves it
+ * against the address it posted to: behind the dev proxy and behind a load
+ * balancer the router's own idea of its host is the upstream's.
+ *
+ * And only for a form on this origin. A form on another site that posts here
+ * must not be able to choose a page of this one for a visitor to land on,
+ * with its own values filled in. The browser says where a form was with
+ * `Sec-Fetch-Site`, which no page can set and no proxy changes; a browser
+ * too old to send it is held to its `Origin` and to the host the request was
+ * made for. A page on a sibling subdomain is not sent back either: the
+ * cookie that carries the messages would not reach it. Nor is a page whose
+ * path begins with two slashes: as a `Location` that is another host.
+ */
+function refusedFormPage(req: Request): string | null {
+  const referer = req.headers.get('referer')
+  if (!referer)
+    return null
+  let page: URL
+  try {
+    page = new URL(referer)
+  }
+  catch {
+    return null
+  }
+
+  const site = req.headers.get('sec-fetch-site')
+  if (site) {
+    if (site !== 'same-origin')
+      return null
+  }
+  else {
+    let host = req.headers.get('x-forwarded-host')?.split(',')[0]?.trim() || req.headers.get('host')
+    if (!host) {
+      try {
+        host = new URL(req.url).host
+      }
+      catch {
+        return null
+      }
+    }
+    if (host !== page.host)
+      return null
+    const origin = req.headers.get('origin')
+    if (origin && origin !== 'null' && origin !== page.origin)
+      return null
+  }
+  if (page.pathname.startsWith('//'))
+    return null
+  return `${page.pathname}${page.search}`
+}
+
+/** A refusal as a page, for a browser with no page to be sent back to. */
+function refusedFormDocument(errors: Record<string, string[]>): Response {
+  const escape = (text: string): string => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  const messages = Object.values(errors).flat().map(message => `<li>${escape(message)}</li>`).join('')
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>This form could not be submitted</title></head><body style="margin:0;font-family:system-ui,sans-serif;background:#fafafa;color:#171717"><main style="max-width:32rem;margin:15vh auto;padding:0 1.5rem"><h1 style="font-size:1.25rem;margin:0 0 .75rem">This form could not be submitted</h1><ul style="margin:0 0 1rem;padding-left:1.25rem;line-height:1.6">${messages}</ul><p style="margin:0;color:#525252">Go back to the form, correct it and send it again.</p></main></body></html>`
+  return new Response(html, { status: 422, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } })
+}
+
+/**
+ * Answer a request that failed validation (stacksjs/stacks#3309).
+ *
+ * A caller that asked for data gets the 422 body, as it always has. A browser
+ * that posted a form gets its page back: it is sent to the page the form was
+ * on, and the messages and what it posted go with it in a cookie that page
+ * reads once (`requestContext.errors()`, `.old()`). The 422 body in a browser
+ * tab was a page of JSON with the back button as the only way out, and
+ * because `validations` run before `handle()`, no action could do anything
+ * about it.
+ *
+ * Which caller this is follows what it asked for (`isApiRequest`), never the
+ * endpoint: the same action answers a `fetch()` and a form.
+ */
+function validationRefusal(req: EnhancedRequest, errors: Record<string, string[]>): Response {
+  const method = req.method.toUpperCase()
+  if (method === 'GET' || method === 'HEAD' || isApiRequest(req as unknown as Request))
+    return validationFailureResponse(errors)
+
+  const page = refusedFormPage(req as unknown as Request)
+  if (!page)
+    return refusedFormDocument(errors)
+
+  const flash = requireFormFlash()
+  let old: Record<string, string | string[]> = {}
+  try {
+    old = flash.flashableInput(getAllInputFor(req))
+  }
+  catch {
+    // What was posted could not be read back. The messages still go.
+  }
+  const mark = page.indexOf('?')
+  const sealed = flash.sealFormFlash({
+    path: mark === -1 ? page : page.slice(0, mark),
+    errors,
+    old,
+    expires: Date.now() + flash.FORM_FLASH_SECONDS * 1000,
+  }, (flash.config as { app?: { key?: string } }).app?.key)
+  // No application key, so nothing to sign the cookie with, and an unsigned
+  // one is not read. The page saying what was wrong beats a silent redirect.
+  if (!sealed)
+    return refusedFormDocument(errors)
+
+  const secure = req.headers.get('x-forwarded-proto') === 'https' || req.url.startsWith('https:')
+  return new Response(null, {
+    status: 303,
+    headers: { 'location': page, 'set-cookie': flash.formFlashCookie(sealed, secure), 'cache-control': 'no-store' },
+  })
+}
+
+let formFlashModule: typeof import('@stacksjs/config') | undefined
+/** `@stacksjs/config`, loaded the first time a form is refused and not before. */
+function requireFormFlash(): typeof import('@stacksjs/config') {
+  return formFlashModule ??= require('@stacksjs/config') as typeof import('@stacksjs/config')
+}
+
+/**
  * Whether this request is asking "would this be accepted?" rather than
  * "do this" (stacksjs/stacks#2226).
  *
@@ -3531,7 +3651,7 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
     if (action.validations) {
       const validationResult = validateActionInputSync(req, action.validations, actionValidationEntries, actionMayHaveRouteParams, true, requestHasQuery)
       if (!validationResult.valid)
-        return validationFailureResponse(validationResult.errors)
+        return validationRefusal(req, validationResult.errors)
     }
   }
 
@@ -3957,6 +4077,15 @@ function getRequestInput(
           input[field] = false
           coerced = true
         }
+      }
+      else if (validatorName === 'array') {
+        // A form and a query string say a list by repeating a name. Two
+        // occurrences arrive as an array and one as a string, so a rule that
+        // asks for an array refused every list of one (stacksjs/stacks#3309).
+        // One value is a list of one, and an empty field is an empty list.
+        // Not split on commas: a value may hold one.
+        input[field] = value === '' ? [] : [value]
+        coerced = true
       }
     }
   }
@@ -5012,7 +5141,7 @@ function createHandlerErrorResponse(error: unknown, req: EnhancedRequest, handle
   // dropped it in development (stacksjs/stacks#3012).
   const fieldErrors = status === 422 ? validationFieldErrors(error) : undefined
   if (fieldErrors)
-    return Promise.resolve(validationFailureResponse(fieldErrors))
+    return Promise.resolve(validationRefusal(req, fieldErrors))
   return createErrorResponse(
     error instanceof Error ? error : new Error(String(error)),
     req,
