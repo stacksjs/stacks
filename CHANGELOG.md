@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.608...v0.75.609)
+
+## 🐛 Bug Fixes
+
+- **cloud**: use the published deployment key rotation fix ([4a78331](https://github.com/stacksjs/stacks/commit/4a78331)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.607...v0.75.608)
 
 ## ✅ Tests
