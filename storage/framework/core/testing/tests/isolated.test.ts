@@ -5,12 +5,15 @@ import { assertIsolatedOk, isolatedCommand, runIsolated } from '../src/isolated'
 
 const fixture = (name: string) => join(import.meta.dir, '../fixtures/isolated', name)
 const read = (stdout: string) => JSON.parse(stdout.trim().split('\n').pop()!)
+// These exercise process isolation, not a cold framework boot. Keep the
+// existing five-second test budget and cover default preloads separately.
+const bare = { preload: [], envFile: false }
 
 describe('runIsolated', () => {
   test('runs a script with its own env and args, and collects both streams', async () => {
     process.env.ISOLATED_REMOVED = 'parent'
     try {
-      const result = await runIsolated(fixture('echo.ts'), { env: { ISOLATED_MARKER: 'child', ISOLATED_REMOVED: undefined }, args: ['one', 'two'] })
+      const result = await runIsolated(fixture('echo.ts'), { ...bare, env: { ISOLATED_MARKER: 'child', ISOLATED_REMOVED: undefined }, args: ['one', 'two'] })
       expect(result.code).toBe(0)
       expect(result.timedOut).toBe(false)
       expect(read(result.stdout)).toEqual({ argv: ['one', 'two'], marker: 'child', removed: null, preloaded: null })
@@ -22,13 +25,13 @@ describe('runIsolated', () => {
   })
 
   test('reports a failing exit code', async () => {
-    const result = await runIsolated(fixture('echo.ts'), { args: ['fail'] })
+    const result = await runIsolated(fixture('echo.ts'), { ...bare, args: ['fail'] })
     expect(result.code).toBe(3)
     expect(() => assertIsolatedOk(result)).toThrow(/exited 3[\s\S]*to stderr/)
   })
 
   test('kills a child that outlives its timeout', async () => {
-    const result = await runIsolated(fixture('echo.ts'), { args: ['hang'], timeoutMs: 500 })
+    const result = await runIsolated(fixture('echo.ts'), { ...bare, args: ['hang'], timeoutMs: 500 })
     expect(result.timedOut).toBe(true)
     expect(result.code).toBeNull()
     expect(result.durationMs).toBeLessThan(5_000)
@@ -36,7 +39,7 @@ describe('runIsolated', () => {
   })
 
   test('feeds stdin and can drop the inherited environment', async () => {
-    const result = await runIsolated(fixture('echo.ts'), { args: ['stdin'], stdin: 'hello\n', inheritEnv: false, env: { ISOLATED_MARKER: 'bare' } })
+    const result = await runIsolated(fixture('echo.ts'), { ...bare, args: ['stdin'], stdin: 'hello\n', inheritEnv: false, env: { ISOLATED_MARKER: 'bare' } })
     expect(result.stdout.startsWith('hello\n')).toBe(true)
     expect(read(result.stdout).marker).toBe('bare')
   })
@@ -51,6 +54,13 @@ describe('runIsolated', () => {
     expect(result.code).toBe(0)
     expect(read(result.stdout).preloaded).toBe('from-bunfig')
     expect(result.command).toContain(`--config=${fixture('bunfig.toml')}`)
+  })
+
+  test('keeps the working directory default preloads when none are replaced', async () => {
+    const result = await runIsolated('echo.ts', { cwd: fixture(''), envFile: false })
+    expect(read(result.stdout).preloaded).toBe('from-bunfig')
+    expect(result.code).toBe(0)
+    expect(result.command.some(argument => argument.startsWith('--config='))).toBe(false)
   })
 
   test('refuses a missing bunfig, or one alongside preload', async () => {
