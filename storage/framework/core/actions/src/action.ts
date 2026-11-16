@@ -197,6 +197,34 @@ interface ActionOptions<
   requestHeaders?: Record<string, { description: string, required?: boolean, schema?: Record<string, unknown> }>
   model?: TModel
   /**
+   * What to tell a person whose browser form this action carried out.
+   *
+   * A form posted by a browser (not `fetch()`, not a JSON client) that this
+   * action answers with data is not shown that data: the browser is sent back
+   * to the page the form was on, and the page reads this sentence with
+   * `requestContext.notice()` (stacksjs/stacks#3312). A JSON or `fetch()`
+   * caller gets the body as it always has, and never sees the notice.
+   *
+   * Say what happened, in the words the person would use about the control
+   * they pressed: "Token revoked", not "Done". The framework never writes one
+   * for you, because a generated message cannot say which of the controls on
+   * a page just worked. Use a function when it depends on the outcome:
+   *
+   * ```ts
+   * notice: result => result.already_revoked ? 'That token was already revoked' : 'Token revoked',
+   * ```
+   *
+   * No notice, or an empty one, still sends the browser back and says
+   * nothing: right for a form that only reads. An action that answers with a
+   * page it built (an HTML `Response`), a redirect, a download or a stream is
+   * left alone, which is how a secret that is shown once (a new API token)
+   * stays out of a redirect. `apiResponse: true` keeps every answer JSON.
+   */
+  notice?: string | ((
+    result: TResult,
+    request: InferRequest<TModel, TValidations, TPath>,
+  ) => string | null | undefined)
+  /**
    * Opt this action out of the global CSRF gate.
    *
    * The router reads `action.skipCsrf === true || action.csrf === false`
@@ -357,6 +385,8 @@ export class Action<
   authorize?: ActionOptions<TModel, TValidations, TPath>['authorize']
   /** @see {@link ActionOptions.before} */
   before?: ActionOptions<TModel, TValidations, TPath>['before']
+  /** @see {@link ActionOptions.notice} */
+  notice?: ActionOptions<TModel, TValidations, TPath, TPayload, TResult, TInvocation>['notice']
   handle: ActionOptions<TModel, TValidations, TPath, TPayload, TResult, TInvocation>['handle']
   model?: string
   /**
@@ -405,6 +435,7 @@ export class Action<
     csrf,
     authorize,
     before,
+    notice,
     dependencies,
   }: ActionOptions<TModel, TValidations, TPath, TPayload, TResult, TInvocation>) {
     this.name = name
@@ -427,6 +458,7 @@ export class Action<
     this.csrf = csrf
     this.authorize = authorize
     this.before = before
+    this.notice = notice
     this._dependenciesFactory = dependencies
     this.modelDefinition = model
 

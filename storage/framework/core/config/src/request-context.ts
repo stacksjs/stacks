@@ -134,6 +134,15 @@ export interface StacksRequestContext {
   old: (field: string, fallback?: string) => string
   /** Every value a field was sent with: a group of checkboxes, a multiple select. */
   oldValues: (field: string) => string[]
+  /**
+   * What the form this page posted did, in the action's words ("Token
+   * revoked"), or '' when it said nothing or no form was posted.
+   *
+   * Set when a browser form succeeds and its action declares a `notice`: the
+   * router sends the browser back here instead of answering a page of JSON
+   * (stacksjs/stacks#3312). Shown once, like {@link errors}.
+   */
+  notice: () => string
 }
 
 /**
@@ -270,6 +279,7 @@ export function createRequestContext(
       const value = flash()?.old[field]
       return value === undefined ? [] : typeof value === 'string' ? [value] : value
     },
+    notice: () => flash()?.notice ?? '',
   }
 }
 

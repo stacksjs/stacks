@@ -1,6 +1,6 @@
 /**
- * What a refused form carries back to the page it was posted from
- * (stacksjs/stacks#3309).
+ * What a form carries back to the page it was posted from: why it was
+ * refused (stacksjs/stacks#3309), or what it did (stacksjs/stacks#3312).
  *
  * A browser form that failed an action's `validations` was answered with the
  * 422 body, so the page was replaced by JSON and everything typed was gone.
@@ -25,7 +25,7 @@
  */
 import { createHmac, timingSafeEqual } from 'node:crypto'
 
-export const FORM_FLASH_COOKIE = 'stacks_form_errors'
+export const FORM_FLASH_COOKIE = 'stacks_form_flash'
 
 /** How long it is good for. The redirect that reads it follows at once. */
 export const FORM_FLASH_SECONDS = 120
@@ -36,6 +36,9 @@ export const FORM_FLASH_SECONDS = 120
  */
 export const FORM_FLASH_MAX_BYTES = 3600
 
+/** The longest notice carried. A sentence, not a document. */
+export const FORM_FLASH_NOTICE_LENGTH = 500
+
 export interface FormFlash {
   /** The page it is for: the path the form was posted from. */
   path: string
@@ -43,6 +46,12 @@ export interface FormFlash {
   errors: Record<string, string[]>
   /** What was posted, by field, less what must not travel. */
   old: Record<string, string | string[]>
+  /**
+   * What a form that worked did, in the action's own words ("Token
+   * revoked"). Absent when the form was refused, or when the action had
+   * nothing to say.
+   */
+  notice?: string
   /** When it stops being read, in milliseconds since the epoch. */
   expires: number
 }
@@ -128,8 +137,9 @@ export function sealFormFlash(flash: FormFlash, key: string | undefined | null):
 
   const errors: Record<string, string[]> = Object.fromEntries(Object.entries(flash.errors).map(([field, messages]) => [field, [...messages]]))
   const old: Record<string, string | string[]> = { ...flash.old }
+  const notice = flash.notice ? flash.notice.slice(0, FORM_FLASH_NOTICE_LENGTH) : undefined
   const sealed = (): string => {
-    const body = encode(JSON.stringify({ path: flash.path, errors, old, expires: flash.expires }))
+    const body = encode(JSON.stringify({ path: flash.path, errors, old, notice, expires: flash.expires }))
     return `${body}.${signature(body, key)}`
   }
 
@@ -199,10 +209,15 @@ export function openFormFlash(value: string | undefined | null, key: string | un
     return null
   if (!Object.values(flash.old).every(entry => typeof entry === 'string' || stringList(entry)))
     return null
-  return { path: flash.path, errors: flash.errors, old: flash.old as FormFlash['old'], expires: flash.expires }
+  if (flash.notice !== undefined && typeof flash.notice !== 'string')
+    return null
+  const opened: FormFlash = { path: flash.path, errors: flash.errors, old: flash.old as FormFlash['old'], expires: flash.expires }
+  if (flash.notice)
+    opened.notice = flash.notice
+  return opened
 }
 
-/** The `Set-Cookie` that carries a sealed refusal to the page. */
+/** The `Set-Cookie` that carries a sealed refusal or notice to the page. */
 export function formFlashCookie(value: string, secure: boolean): string {
   return `${FORM_FLASH_COOKIE}=${value}; Path=/; Max-Age=${FORM_FLASH_SECONDS}; HttpOnly; SameSite=Lax${secure ? '; Secure' : ''}`
 }

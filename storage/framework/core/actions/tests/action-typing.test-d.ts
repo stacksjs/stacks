@@ -155,3 +155,41 @@ export const registryIsPopulated: RunnableActionName = someString
 
 // A real action resolves.
 export const knownAction: RunnableActionName = 'Actions/SendWelcomeEmail'
+
+// ── notice: told what `handle` returned (stacksjs/stacks#3312) ────────────
+
+/*
+ * The words a browser form is sent back with depend on the outcome, so the
+ * function sees the handler's own return type, not the `ActionResult` union.
+ */
+void new Action({
+  name: 'TokenRevoke',
+  method: 'POST',
+  notice: result => result.already_revoked ? 'That token was already revoked' : 'Token revoked',
+  handle: () => ({ id: 107, already_revoked: false }),
+})
+
+void new Action({
+  name: 'TokenRevokeWithRequest',
+  method: 'POST',
+  notice: (result, request) => request.get('quiet') ? '' : `Token ${result.id} revoked`,
+  async handle() {
+    return { id: 107 }
+  },
+})
+
+void new Action({
+  name: 'TokenRevokeTypo',
+  method: 'POST',
+  // @ts-expect-error - the handler returns no `revoked` field.
+  notice: result => result.revoked ? 'Revoked' : '',
+  handle: () => ({ id: 107, already_revoked: false }),
+})
+
+void new Action({
+  name: 'TokenRevokeNumber',
+  method: 'POST',
+  // @ts-expect-error - a notice is words, not a number.
+  notice: () => 107,
+  handle: () => ({ id: 107 }),
+})
