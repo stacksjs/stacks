@@ -306,6 +306,8 @@ Set `ios.testFlightGroups` to the names of existing internal groups (for example
 `['Internal testers']`) to distribute processed builds to those groups.
 `release:ios --wait` confirms `IN_BETA_TESTING` and the configured memberships
 before retiring older builds; upload or `VALID` processing alone is insufficient.
+Automatic internal groups are left for Apple to assign; delivery waits for their
+observed membership instead of attempting a manual assignment during propagation.
 Without a wait, older builds stay available. Resume a tagged release with
 `buddy release:testflight <tag> --wait [minutes]`, preserving its existing
 localized notes; `--dry-run` validates the

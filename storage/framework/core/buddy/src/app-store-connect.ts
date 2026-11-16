@@ -73,6 +73,8 @@ export interface TestFlightGroup {
   id: string
   name: string
   isInternalGroup: boolean
+  /** Apple distributes builds automatically; actual membership may appear later. */
+  hasAccessToAllBuilds?: boolean
 }
 
 export class AppStoreConnect {
@@ -146,8 +148,8 @@ export class AppStoreConnect {
     if (!Array.isArray(names) || names.some(name => typeof name !== 'string' || !name.trim()))
       throw new Error('ios.testFlightGroups must contain nonempty internal group names')
     if (!names.length) return []
-    const groups: TestFlightGroup[] = (await this.pages(`/v1/apps/${encodeURIComponent(appId)}/betaGroups?limit=200&fields[betaGroups]=name,isInternalGroup`))
-      .map(row => ({ id: String(row.id), name: String(row.attributes?.name ?? ''), isInternalGroup: row.attributes?.isInternalGroup === true }))
+    const groups: TestFlightGroup[] = (await this.pages(`/v1/apps/${encodeURIComponent(appId)}/betaGroups?limit=200&fields[betaGroups]=name,isInternalGroup,hasAccessToAllBuilds`))
+      .map(row => ({ id: String(row.id), name: String(row.attributes?.name ?? ''), isInternalGroup: row.attributes?.isInternalGroup === true, hasAccessToAllBuilds: row.attributes?.hasAccessToAllBuilds === true }))
     return [...new Set(names.map(name => name.trim()))].map(name => {
       const matching = groups.filter(group => group.name === name)
       if (matching.length !== 1 || !matching[0]!.isInternalGroup)
@@ -164,7 +166,10 @@ export class AppStoreConnect {
     if (!groups.length) return groups
     const assigned = new Set((await this.buildTestFlightGroups(build.id)).map(group => group.id))
     for (const group of groups) {
-      if (assigned.has(group.id)) continue
+      // Apple rejects manual assignment to an automatic internal group. Let its
+      // assignment propagate; delivery still requires observed membership and
+      // IN_BETA_TESTING rather than treating this setting as proof of access.
+      if (assigned.has(group.id) || group.hasAccessToAllBuilds) continue
       await this.request(`/v1/betaGroups/${encodeURIComponent(group.id)}/relationships/builds`, {
         method: 'POST',
         body: JSON.stringify({ data: [{ type: 'builds', id: build.id }] }),

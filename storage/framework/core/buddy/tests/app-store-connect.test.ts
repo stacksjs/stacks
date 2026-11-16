@@ -36,7 +36,7 @@ describe('App Store Connect for release:ios', () => {
       if (url.pathname === '/v1/betaGroups' && url.searchParams.get('filter[builds]') === 'b158') return Response.json({ data: [] })
       return new Response('Unexpected Apple request', { status: 404 })
     })
-    expect(await api.assignBuildToInternalGroups('app', build(158), ['Team'])).toEqual([{ id: 'team', name: 'Team', isInternalGroup: true }])
+    expect(await api.assignBuildToInternalGroups('app', build(158), ['Team'])).toEqual([{ id: 'team', name: 'Team', isInternalGroup: true, hasAccessToAllBuilds: false }])
     expect(writes).toEqual([{ path: '/v1/betaGroups/team/relationships/builds', body: { data: [{ type: 'builds', id: 'b158' }] } }])
   })
 
@@ -104,6 +104,36 @@ describe('App Store Connect for release:ios', () => {
     expect(result?.number).toBe(158)
     expect(clock).toBe(60_000)
     expect(operations).toEqual(['assign', 'expire:/v1/builds/b156', 'expire:/v1/builds/b155'])
+  })
+
+  it.each([true, false])('waits for automatic internal membership without a rejected manual assignment (delivered: %s)', async (delivered) => {
+    let clock = 0
+    let writes = 0
+    const api = new AppStoreConnect('token', async (input, init) => {
+      const url = new URL(input)
+      if (init?.method === 'POST' || init?.method === 'PATCH') {
+        writes++
+        return new Response('Cannot add internal group to a build', { status: 422 })
+      }
+      if (url.pathname === '/v1/apps/app/betaGroups') {
+        expect(url.searchParams.get('fields[betaGroups]')).toContain('hasAccessToAllBuilds')
+        return Response.json({ data: [{ id: 'team', attributes: { name: 'Team', isInternalGroup: true, hasAccessToAllBuilds: true } }] })
+      }
+      if (url.pathname === '/v1/betaGroups')
+        return Response.json({ data: delivered && clock >= 30_000 ? [{ id: 'team' }] : [] })
+      if (url.pathname === '/v1/builds/b158/buildBetaDetail')
+        return Response.json({ data: { attributes: { internalBuildState: 'IN_BETA_TESTING' } } })
+      if (url.pathname === '/v1/builds')
+        return Response.json({ data: [{ id: 'b158', attributes: { version: '158', processingState: 'VALID', expired: false } }] })
+      return new Response('Unexpected Apple request', { status: 404 })
+    })
+    const result = await api.deliverBuild('app', '1.0.0', 158, {
+      groups: ['Team'], timeoutMs: 60_000, intervalMs: 30_000, now: () => clock,
+      sleep: async ms => { clock += ms },
+    })
+    expect(result?.number ?? null).toBe(delivered ? 158 : null)
+    expect(clock).toBe(delivered ? 30_000 : 60_000)
+    expect(writes).toBe(0)
   })
 
   it('leaves older builds available when internal testing never becomes ready', async () => {
