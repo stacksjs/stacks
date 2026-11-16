@@ -103,6 +103,8 @@ const CONVERTED_AREAS: Record<string, { shared: number, checkboxes: number }> = 
   // per option now), and the upload dialog's file picker, kept below.
   'Content/': { shared: 26, checkboxes: 2 },
   'Marketing/': { shared: 35, checkboxes: 0 },
+  // 31 before: the restore's downtime acknowledgement is the shared Checkbox.
+  'Operations/': { shared: 30, checkboxes: 1 },
 }
 
 /** A native control a converted dialog keeps, and why the shared ones cannot do its job. */

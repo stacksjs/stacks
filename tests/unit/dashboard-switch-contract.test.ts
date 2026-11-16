@@ -22,7 +22,6 @@ const NATIVE_CHECKBOXES: Record<string, { count: number, because: string }> = {
   'Auth/AccessTokenCreateDialog.stx': { count: 1, because: 'a token\'s scopes: several of many' },
   'Management/AssignmentDrawer.stx': { count: 1, because: 'what is assigned: several of many' },
   'Settings/MailSettingsDashboard.stx': { count: 5, because: 'clear a stored secret on this save: an instruction, not a state that is kept' },
-  'Operations/RecoveryRestoreDialog.stx': { count: 1, because: 'acknowledging downtime before an in-place restore' },
   'Auth/Login.stx': { count: 1, because: 'remember me, on the sign-in form' },
   'Auth/Register.stx': { count: 1, because: 'agreeing to the terms' },
 }

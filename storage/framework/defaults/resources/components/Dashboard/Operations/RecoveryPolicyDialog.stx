@@ -17,10 +17,11 @@ const includePatterns = state('')
 const excludePatterns = state('storage/framework/runtime,storage/framework/stx')
 const schedule = state('daily')
 const timezone = state('UTC')
-const keepLast = state(7)
-const expireAfterDays = state(30)
-const expectedRpoMinutes = state(1440)
-const expectedRtoMinutes = state(120)
+// Text, as the shared input reports it; a number where it is sent.
+const keepLast = state('7')
+const expireAfterDays = state('30')
+const expectedRpoMinutes = state('1440')
+const expectedRtoMinutes = state('120')
 const compression = state<RecoveryPolicyInput['compression']>('gzip')
 const enabled = state(true)
 
@@ -47,102 +48,47 @@ function submit(): void {
     excludePatterns: split(excludePatterns()),
     schedule: schedule().trim(),
     timezone: timezone().trim(),
-    keepLast: keepLast(),
-    expireAfterDays: expireAfterDays(),
+    keepLast: Number(keepLast()),
+    expireAfterDays: Number(expireAfterDays()),
     compression: compression(),
-    expectedRpoMinutes: expectedRpoMinutes(),
-    expectedRtoMinutes: expectedRtoMinutes(),
+    expectedRpoMinutes: Number(expectedRpoMinutes()),
+    expectedRtoMinutes: Number(expectedRtoMinutes()),
     enabled: enabled(),
   } satisfies RecoveryPolicyInput)
 }
 </script>
 
 <Modal :isOpen="open()" title="Create recovery policy" description="Define the source once. The native recovery queue handles scheduled and on-demand runs." size="lg" :closable="!busy()" @close="close">
-  <form id="recovery-policy-form" class="space-y-4" @submit.prevent="submit">
+  <form id="recovery-policy-form" class="grid gap-4" @submit.prevent="submit">
     <div class="grid gap-4 sm:grid-cols-2">
-      <div>
-        <label for="recovery-policy-name" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Policy name</label>
-        <input id="recovery-policy-name" x-model.trim="name" required placeholder="Daily control plane" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
-      </div>
-      <div>
-        <label for="recovery-policy-destination" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Destination</label>
-        <select id="recovery-policy-destination" x-model="destinationId" required class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700">
-          <option value="">Choose destination</option>
-          <option :for="destination in destinations()" :value="destination.id">{{ destination.name }} ({{ destination.status }})</option>
-        </select>
-      </div>
-      <div>
-        <label for="recovery-policy-kind" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Source type</label>
-        <select id="recovery-policy-kind" x-model="resourceKind" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700">
-          <option value="control_plane">Control plane</option>
-          <option value="files">Project files</option>
-          <option value="logical_database">Logical database</option>
-          <option value="managed_database">Managed database</option>
-          <option value="volume">Docker volume</option>
-          <option value="infrastructure">AWS infrastructure</option>
-        </select>
-      </div>
+      <Input v-model:value="name" id="recovery-policy-name" label="Policy name" :required="true" placeholder="Daily control plane" />
+      <Select v-model:value="destinationId" id="recovery-policy-destination" label="Destination" :required="true" placeholder="Choose destination" :options="destinations().map(destination => ({ value: destination.id, label: destination.name + ' (' + destination.status + ')' }))" />
+      <Select v-model:value="resourceKind" id="recovery-policy-kind" label="Source type" placeholder="" :options="[{ value: 'control_plane', label: 'Control plane' }, { value: 'files', label: 'Project files' }, { value: 'logical_database', label: 'Logical database' }, { value: 'managed_database', label: 'Managed database' }, { value: 'volume', label: 'Docker volume' }, { value: 'infrastructure', label: 'AWS infrastructure' }]" />
       <div :if="resourceKind() === 'files' || resourceKind() === 'volume'">
-        <label for="recovery-policy-resource" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Resource</label>
-        <select id="recovery-policy-resource" x-model="resourceId" required class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700">
-          <option value="">Choose resource</option>
-          <option :for="resource in resources()" :value="resource.id">{{ resource.name }} ({{ resource.kind }})</option>
-        </select>
+        <Select v-model:value="resourceId" id="recovery-policy-resource" label="Resource" :required="true" placeholder="Choose resource" :options="resources().map(resource => ({ value: resource.id, label: resource.name + ' (' + resource.kind + ')' }))" />
       </div>
       <div :if="resourceKind() === 'logical_database' || resourceKind() === 'managed_database'">
-        <label for="recovery-policy-service" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Data service</label>
-        <select id="recovery-policy-service" x-model="dataServiceId" required class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700">
-          <option value="">Choose data service</option>
-          <option :for="service in dataServices()" :value="service.id">{{ service.name }} ({{ service.engine }})</option>
-        </select>
+        <Select v-model:value="dataServiceId" id="recovery-policy-service" label="Data service" :required="true" placeholder="Choose data service" :options="dataServices().map(service => ({ value: service.id, label: service.name + ' (' + service.engine + ')' }))" />
       </div>
     </div>
 
     <div :if="resourceKind() === 'files' || resourceKind() === 'volume' || resourceKind() === 'infrastructure'">
-      <label for="recovery-policy-includes" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Include entries</label>
-      <input id="recovery-policy-includes" x-model.trim="includePatterns" required placeholder="storage/app,public/uploads" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
-      <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Comma separated. Volumes use a volume name. Infrastructure uses resource:arn: and role:arn: entries.</p>
+      <Input v-model:value="includePatterns" id="recovery-policy-includes" label="Include entries" :required="true" placeholder="storage/app,public/uploads" :spellcheck="false" hint="Comma separated. Volumes use a volume name. Infrastructure uses resource:arn: and role:arn: entries." />
     </div>
     <div :if="resourceKind() === 'files'">
-      <label for="recovery-policy-excludes" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Exclude patterns</label>
-      <input id="recovery-policy-excludes" x-model.trim="excludePatterns" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
+      <Input v-model:value="excludePatterns" id="recovery-policy-excludes" label="Exclude patterns" :spellcheck="false" />
     </div>
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <div>
-        <label for="recovery-policy-schedule" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Schedule</label>
-        <input id="recovery-policy-schedule" x-model.trim="schedule" required placeholder="daily" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
-      </div>
-      <div>
-        <label for="recovery-policy-timezone" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Timezone</label>
-        <input id="recovery-policy-timezone" x-model.trim="timezone" required class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
-      </div>
-      <div>
-        <label for="recovery-policy-rpo" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">RPO minutes</label>
-        <input id="recovery-policy-rpo" x-model.number="expectedRpoMinutes" type="number" min="1" required class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
-      </div>
-      <div>
-        <label for="recovery-policy-rto" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">RTO minutes</label>
-        <input id="recovery-policy-rto" x-model.number="expectedRtoMinutes" type="number" min="1" required class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
-      </div>
+      <Input v-model:value="schedule" id="recovery-policy-schedule" label="Schedule" :required="true" placeholder="daily" :spellcheck="false" />
+      <Input v-model:value="timezone" id="recovery-policy-timezone" label="Timezone" :required="true" :spellcheck="false" />
+      <Input v-model:value="expectedRpoMinutes" id="recovery-policy-rpo" label="RPO minutes" type="number" min="1" step="1" inputmode="numeric" :required="true" />
+      <Input v-model:value="expectedRtoMinutes" id="recovery-policy-rto" label="RTO minutes" type="number" min="1" step="1" inputmode="numeric" :required="true" />
     </div>
     <div class="grid gap-4 sm:grid-cols-3">
-      <div>
-        <label for="recovery-policy-keep" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Keep latest</label>
-        <input id="recovery-policy-keep" x-model.number="keepLast" type="number" min="1" required class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
-      </div>
-      <div>
-        <label for="recovery-policy-expire" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Expire after days</label>
-        <input id="recovery-policy-expire" x-model.number="expireAfterDays" type="number" min="1" required class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
-      </div>
-      <div>
-        <label for="recovery-policy-compression" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Compression</label>
-        <select id="recovery-policy-compression" x-model="compression" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700">
-          <option value="gzip">Gzip</option>
-          <option value="zstd">Zstandard</option>
-          <option value="none">None</option>
-        </select>
-      </div>
+      <Input v-model:value="keepLast" id="recovery-policy-keep" label="Keep latest" type="number" min="1" step="1" inputmode="numeric" :required="true" />
+      <Input v-model:value="expireAfterDays" id="recovery-policy-expire" label="Expire after days" type="number" min="1" step="1" inputmode="numeric" :required="true" />
+      <Select v-model:value="compression" id="recovery-policy-compression" label="Compression" placeholder="" :options="[{ value: 'gzip', label: 'Gzip' }, { value: 'zstd', label: 'Zstandard' }, { value: 'none', label: 'None' }]" />
     </div>
     <div>
       <Toggle v-model:checked="enabled" label="Enable scheduled runs" />
