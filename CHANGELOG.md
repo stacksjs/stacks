@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.605...v0.75.606)
+
+## ✅ Tests
+
+- **release**: own the compiled verifier process before fixture disposal ([505aa42](https://github.com/stacksjs/stacks/commit/505aa42)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.604...v0.75.605)
 
 ## 🐛 Bug Fixes
