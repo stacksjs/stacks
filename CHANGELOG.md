@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.611...v0.75.612)
+
+## 🐛 Bug Fixes
+
+- **hq**: the route sync describes the app as deployed, not as it runs on a laptop ([a80af23](https://github.com/stacksjs/stacks/commit/a80af23)) _(by Chris Breuer)_
+- **hq**: hq:sync works for an app with no route files ([afae37c](https://github.com/stacksjs/stacks/commit/afae37c)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.610...v0.75.611)
 
 ## 🐛 Bug Fixes
