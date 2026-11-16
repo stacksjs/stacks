@@ -135,15 +135,21 @@ describe('dashboard generic model writes', () => {
 
   test('store action writes through the model and the guarded dashboard route', () => {
     const action = source('storage/framework/defaults/app/Actions/Dashboard/Models/ModelStoreAction.ts')
+    // The steps a single create and a combined save share (model-row-writes.ts).
+    const steps = source('storage/framework/defaults/app/Actions/Dashboard/Models/model-row-writes.ts')
     const routes = source('storage/framework/defaults/routes/dashboard-api.ts')
 
     expect(action).toContain("resolveWritableModel(request.getParam('slug'), 'store')")
     expect(action).toContain('request.all()')
     expect(action).not.toContain('request as any')
-    expect(action).toContain('await resolved.Model.create(toSnakeCaseKeys(data))')
-    expect(action).toContain("response.json({ message: 'Validation failed.', errors }, 422)")
-    expect(action).toContain("dashboardOperationalError(error, 'The model record could not be created.', 'ModelStoreAction', 500)")
+    expect(action).toContain('storeModelRow(resolved, formFields(request.all().fields))')
+    expect(action).toContain('rowRefusalResponse(result)')
+    expect(steps).toContain('const values = { ...toSnakeCaseKeys(data), ...fixed }')
+    expect(steps).toContain('await resolved.Model.create(values)')
+    expect(steps).toContain("return refused(422, 'Validation failed.', errors)")
+    expect(steps).toContain("failed(error, 'The model record could not be created.', 'ModelStoreAction')")
     expect(action).not.toContain('insertInto(')
+    expect(steps).not.toContain('insertInto(')
     expect(routes).toContain("guard(route.post('/models/{slug}', 'Actions/Dashboard/Models/ModelStoreAction'))")
   })
 

@@ -132,12 +132,18 @@ describe('dashboard operational error contract', () => {
       'Models/ModelStoreAction.ts',
       'Models/ModelUpdateAction.ts',
     ].map(readAction).join('\n')
+    // The steps the three share with a combined save (model-row-writes.ts).
+    const steps = readAction('Models/model-row-writes.ts')
     const show = readAction('Models/ModelShowAction.ts')
     const resolver = readAction('Models/model-write.ts')
 
-    // One per write, and a second in destroy: an erasure that did not finish
-    // is reported apart from a delete that failed (stacksjs/stacks#3253).
-    expect(writes.match(/dashboardOperationalError\(/g)?.length).toBe(4)
+    // Every write answers a refusal or a failure the same one way.
+    expect(writes.match(/rowRefusalResponse\(result\)/g)?.length).toBe(3)
+    expect(steps.match(/dashboardOperationalError\(/g)?.length).toBe(1)
+    // One failure per write, and a second in destroy: an erasure that did not
+    // finish is reported apart from a delete that failed (stacksjs/stacks#3253).
+    expect(steps.match(/\bfailed\((?:error|result\.cause), /g)?.length).toBe(4)
+    expect(steps).toContain("'ModelDestroyAction.erase'")
     expect(writes).not.toMatch(/return \{ ok: false, error:/)
     expect(show.match(/dashboardOperationalError\(/g)?.length).toBe(2)
     expect(show).not.toContain('e instanceof Error ? e.message')
