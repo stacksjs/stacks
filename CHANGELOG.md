@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.603...v0.75.604)
+
+## 🐛 Bug Fixes
+
+- **upgrade**: refresh Pantry workspace metadata with the framework cohort ([b86f5bf](https://github.com/stacksjs/stacks/commit/b86f5bf)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **skills**: a credential that acts for a thing is owned by the thing, not by a user ([c5ae8fe](https://github.com/stacksjs/stacks/commit/c5ae8fe)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.602...v0.75.603)
 
 ## 🐛 Bug Fixes
