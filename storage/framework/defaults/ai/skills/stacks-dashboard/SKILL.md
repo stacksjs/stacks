@@ -640,8 +640,10 @@ lists every one by file with its reason and fails on any other.
 A hand-built dialog asks for a value with `Dashboard/UI/Input.stx`,
 `Select.stx` and `Textarea.stx`, as a model's form does, never with a native
 `<input>`, `<select>` or `<textarea>` and a copy of their classes
-(stacksjs/stacks#3310). The commerce dialogs are all converted;
-`tests/unit/dashboard-form-controls.test.ts` fails if one writes its own again.
+(stacksjs/stacks#3310). The commerce and content dialogs are converted;
+`tests/unit/dashboard-form-controls.test.ts` fails if one writes its own again,
+and names the one native control a converted dialog keeps (the upload
+dialog's file picker) with its reason.
 
 ```html
 <Input v-model:value="name" label="Name" :maxLength="50" :required="true" />
@@ -673,9 +675,21 @@ A hand-built dialog asks for a value with `Dashboard/UI/Input.stx`,
   the rest. Call the field `descriptionText`, `reviewTitle`. The test reads
   the Modal's props and fails on a collision.
 - **Give it a box of its own inside a `space-y-*` stack**, as a switch needs.
+- **Several of many is a `Checkbox` per option**, ticked when its id is in the
+  list and adding or removing it as it is ticked. Loop on a wrapper, not on
+  the component (a loop on a component tag loses its item in slot content):
+
+  ```html
+  <span :for="tagOption in tags()" class="contents">
+    <Checkbox size="sm" :label="tagOption.name" :checked="tagIds().includes(tagOption.id)" @update:checked="chooseTag(tagOption.id, $event)" />
+  </span>
+  ```
+- `Input` takes `autofocus` for the field a dialog focuses when it opens, and
+  `Textarea` takes `minLength` like an input.
 
 Not converted yet: the filter bars on the list pages (a search box and a row
-of dropdowns), and the dialogs outside commerce.
+of dropdowns), and the dialogs in Marketing, Operations, Kanban, Auth and
+Library.
 
 ### Sidebar-aware overlays
 

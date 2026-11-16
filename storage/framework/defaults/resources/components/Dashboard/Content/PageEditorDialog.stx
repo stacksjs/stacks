@@ -16,7 +16,9 @@ const open = useReactiveProp('open', false)
 const page = useReactiveProp('page', null as PageRecord | null)
 const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
-const title = state('')
+// Not `title`: a field bound inside the Modal is first read as the Modal's own
+// `title` prop (stacksjs/stacks#3310).
+const pageTitle = state('')
 const template = state('default')
 const published = state(false)
 const emit = defineEmits(['close', 'submit'])
@@ -26,7 +28,7 @@ effect(() => {
   const isOpen = open()
   if (isOpen && !wasOpen) {
     const record = page()
-    title.set(record?.title || '')
+    pageTitle.set(record?.title || '')
     template.set(record?.template || 'default')
     published.set(Boolean(record?.publishedAt))
   }
@@ -40,7 +42,7 @@ function close(): void {
 
 function submit(): void {
   const draft: PageDraft = {
-    title: title().trim(),
+    title: pageTitle().trim(),
     template: template(),
     published: published(),
   }
@@ -56,19 +58,8 @@ function submit(): void {
   @close="close"
 >
   <form id="page-editor-form" class="grid gap-4" @submit.prevent="submit">
-    <label>
-      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Title</span>
-      <input x-model="title" name="title" required minlength="3" maxlength="255" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-    </label>
-    <label>
-      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Template</span>
-      <select x-model="template" name="template" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
-        <option value="default">Default</option>
-        <option value="landing">Landing</option>
-        <option value="blog">Blog</option>
-        <option value="contact">Contact</option>
-      </select>
-    </label>
+    <Input v-model:value="pageTitle" name="title" label="Title" :required="true" :minLength="3" :maxLength="255" />
+    <Select v-model:value="template" name="template" label="Template" placeholder="" :options="[{ value: 'default', label: 'Default' }, { value: 'landing', label: 'Landing' }, { value: 'blog', label: 'Blog' }, { value: 'contact', label: 'Contact' }]" />
     <div class="p-3 bg-gray-50 dark:bg-neutral-900/50 border border-gray-200 rounded-lg dark:border-neutral-700">
       <Toggle v-model:checked="published" name="published" label="Published" description="Published pages receive a timestamp. Clearing this returns the page to draft." labelPosition="left" />
     </div>
@@ -81,7 +72,7 @@ function submit(): void {
   <template #footer>
     <div class="flex gap-2 justify-end w-full">
       <Button :disabled="busy()" variant="secondary" @click="close">Cancel</Button>
-      <Button type="submit" form="page-editor-form" :disabled="title().trim().length < 3" :loading="busy()">
+      <Button type="submit" form="page-editor-form" :disabled="pageTitle().trim().length < 3" :loading="busy()">
         {{ page() ? 'Save changes' : 'Create page' }}
       </Button>
     </div>

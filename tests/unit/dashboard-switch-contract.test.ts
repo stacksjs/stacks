@@ -19,7 +19,6 @@ const NATIVE_CHECKBOXES: Record<string, { count: number, because: string }> = {
   'UI/Checkbox.stx': { count: 1, because: 'the shared checkbox' },
   'UI/Table.stx': { count: 3, because: 'picking rows' },
   'Models/ModelRecordsDashboard.stx': { count: 2, because: 'picking rows' },
-  'Content/PostEditorDialog.stx': { count: 2, because: 'a post\'s categories and tags: several of many' },
   'Auth/AccessTokenCreateDialog.stx': { count: 1, because: 'a token\'s scopes: several of many' },
   'Management/AssignmentDrawer.stx': { count: 1, because: 'what is assigned: several of many' },
   'Settings/MailSettingsDashboard.stx': { count: 5, because: 'clear a stored secret on this save: an instruction, not a state that is kept' },

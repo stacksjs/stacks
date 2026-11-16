@@ -11,7 +11,9 @@ const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
 const name = state('')
 const slug = state('')
-const description = state('')
+// Not `description`: a field bound inside the Modal is first read as the Modal's own
+// `description` prop (stacksjs/stacks#3310).
+const descriptionText = state('')
 const slugTouched = state(false)
 const emit = defineEmits(['close', 'submit'])
 let wasOpen = false
@@ -32,7 +34,7 @@ effect(() => {
   if (isOpen && !wasOpen) {
     name.set('')
     slug.set('')
-    description.set('')
+    descriptionText.set('')
     slugTouched.set(false)
   }
   wasOpen = isOpen
@@ -63,7 +65,7 @@ function submit(): void {
   const draft: TaxonomyDraft = {
     name: name().trim(),
     slug: slugify(slug()),
-    description: description().trim(),
+    description: descriptionText().trim(),
   }
   emit('submit', draft)
 }
@@ -77,18 +79,9 @@ function submit(): void {
   @close="close"
 >
   <form id="taxonomy-editor-form" class="grid gap-4" @submit.prevent="submit">
-    <label>
-      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span>
-      <input x-model="name" name="name" required maxlength="255" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-    </label>
-    <label>
-      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Slug</span>
-      <input x-model="slug" name="slug" required maxlength="255" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="markSlugTouched" @blur="normalizeSlug" />
-    </label>
-    <label>
-      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Description</span>
-      <textarea x-model="description" name="description" rows="3" maxlength="1000" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea>
-    </label>
+    <Input v-model:value="name" name="name" label="Name" :required="true" :maxLength="255" />
+    <Input v-model:value="slug" name="slug" label="Slug" :required="true" :maxLength="255" :spellcheck="false" :monospace="true" @input="markSlugTouched" @blur="normalizeSlug" />
+    <Textarea v-model:value="descriptionText" name="description" label="Description" :rows="3" :maxLength="1000" />
   </form>
 
   <div :if="error()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">

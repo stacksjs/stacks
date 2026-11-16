@@ -93,6 +93,60 @@ describe('commerce dialogs', () => {
   })
 })
 
+/**
+ * The dialogs outside commerce, area by area as each is converted
+ * (stacksjs/stacks#3310): how many shared controls each area's dialogs hold
+ * now, which is how many native ones they had, so none was dropped.
+ */
+const CONVERTED_AREAS: Record<string, { shared: number, checkboxes: number }> = {
+  // 29 native before: 26 fields, a post's categories and tags (one checkbox
+  // per option now), and the upload dialog's file picker, kept below.
+  'Content/': { shared: 26, checkboxes: 2 },
+}
+
+/** A native control a converted dialog keeps, and why the shared ones cannot do its job. */
+const NATIVE_KEPT: Record<string, { count: number, because: string }> = {
+  'Content/FileUploadDialog.stx': { count: 1, because: 'a file picker drawn as a drop zone, and the shared controls have no file input' },
+}
+
+describe('dialogs outside commerce', () => {
+  for (const [area, expected] of Object.entries(CONVERTED_AREAS)) {
+    it(`${area} write no input, dropdown or text area of their own`, () => {
+      const dialogs = components.filter(file => file.startsWith(area) && file.endsWith('Dialog.stx'))
+      expect(dialogs.length).toBeGreaterThan(0)
+      const native: Record<string, number> = {}
+      let shared = 0
+      let checkboxes = 0
+      for (const file of dialogs) {
+        const source = read(file)
+        const found = (source.match(/<(?:input|select|textarea)\b/g) || []).length
+        if (found > 0)
+          native[file] = found
+        shared += (source.match(/<(?:Input|Select|Textarea)\b/g) || []).length
+        checkboxes += (source.match(/<Checkbox\b/g) || []).length
+      }
+      const kept = Object.fromEntries(Object.entries(NATIVE_KEPT).filter(([file]) => file.startsWith(area)).map(([file, entry]) => [file, entry.count]))
+      expect(native).toEqual(kept)
+      expect({ shared, checkboxes }).toEqual(expected)
+    })
+  }
+
+  it('say why each native control they keep stays', () => {
+    for (const [file, entry] of Object.entries(NATIVE_KEPT)) {
+      expect(entry.because.length, file).toBeGreaterThan(20)
+      expect(read(file), file).toContain('type="file"')
+    }
+  })
+
+  it('carry over what a field was held to', () => {
+    // Lengths, kinds and focus the native fields had.
+    expect(read('Content/PostEditorDialog.stx')).toContain('<Textarea v-model:value="content" name="content" label="Content" :required="true" :minLength="10" :maxLength="100000" :showCount="true"')
+    expect(read('Content/BlogPostEditorDialog.stx')).toContain('<Input v-model:value="postTitle" name="title" label="Title" :required="true" :autofocus="true" />')
+    expect(read('Content/AuthorEditorDialog.stx')).toContain('<Input v-model:value="email" name="email" label="Email" type="email" :required="true" autocomplete="email" />')
+    expect(read('Content/TaxonomyEditorDialog.stx')).toContain('@input="markSlugTouched" @blur="normalizeSlug"')
+  })
+})
+
 describe('the shared controls', () => {
   it('the input passes on what the browser holds a value to', () => {
     const input = read('UI/Input.stx')
@@ -112,6 +166,9 @@ describe('the shared controls', () => {
     expect(input).toContain(`liveType() === 'number' ? 'tabular-nums' : ''`)
     expect(input).toContain(`liveMonospace() ? 'font-mono' : ''`)
     expect(read('UI/Textarea.stx')).toContain(':spellcheck="liveSpellcheck() === null ? null : String(liveSpellcheck())"')
+    // The field a dialog focuses when it opens, and a text area's shortest text.
+    expect(input).toContain(':autofocus="liveAutofocus() || null"')
+    expect(read('UI/Textarea.stx')).toContain(':minlength="liveMinLength() || null"')
   })
 
   it('the dropdown keeps its choice when the options come after the value', () => {

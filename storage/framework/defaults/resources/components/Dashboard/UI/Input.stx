@@ -34,6 +34,8 @@ const liveList = useReactiveProp('list', '')
 const liveMonospace = useReactiveProp('monospace', false)
 // Added to the input itself: `uppercase` for a code that is stored that way.
 const liveClass = useReactiveProp('class', '')
+// The field a dialog focuses when it opens: the Modal looks for `[autofocus]`.
+const liveAutofocus = useReactiveProp('autofocus', false)
 const emit = defineEmits(['update:value', 'input', 'change', 'blur'])
 const generatedId = useId('input')
 
@@ -119,6 +121,7 @@ function handleBlur(event: Event): void {
       :inputmode="liveInputmode() || null"
       :spellcheck="liveSpellcheck() === null ? null : String(liveSpellcheck())"
       :list="liveList() || null"
+      :autofocus="liveAutofocus() || null"
       class="{{ $slots.iconLeft ? 'pl-8' : '' }}"
       :class="inputClass()"
       @input="handleInput"

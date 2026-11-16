@@ -55,44 +55,10 @@ function submit(): void {
   :closable="!busy()"
   @close="close"
 >
-  <form id="seo-editor-form" class="space-y-4" @submit.prevent="submit">
-    <div>
-      <label for="seo-focus-keyword" class="block font-medium text-neutral-700 text-sm dark:text-neutral-300">Focus keyword</label>
-      <input
-        id="seo-focus-keyword"
-        name="focus_keyword"
-        type="text"
-        maxlength="100"
-        x-model="focusKeyword"
-        class="block mt-1.5 px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-white/5 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-      >
-    </div>
-    <div>
-      <div class="flex items-center justify-between">
-        <label for="seo-meta-description" class="block font-medium text-neutral-700 text-sm dark:text-neutral-300">Meta description</label>
-        <span class="tabular-nums text-neutral-500 text-xs dark:text-neutral-400">{{ metaDescription().length }}/160</span>
-      </div>
-      <textarea
-        id="seo-meta-description"
-        name="meta_description"
-        rows="4"
-        maxlength="160"
-        x-model="metaDescription"
-        class="block mt-1.5 px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-white/5 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-      ></textarea>
-    </div>
-    <div>
-      <label for="seo-canonical-url" class="block font-medium text-neutral-700 text-sm dark:text-neutral-300">Canonical URL</label>
-      <input
-        id="seo-canonical-url"
-        name="canonical_url"
-        type="url"
-        inputmode="url"
-        placeholder="https://example.com/post"
-        x-model="canonicalUrl"
-        class="block mt-1.5 px-3 py-2 w-full text-neutral-900 text-sm dark:text-white placeholder:text-neutral-400 bg-white dark:bg-white/5 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-      >
-    </div>
+  <form id="seo-editor-form" class="grid gap-4" @submit.prevent="submit">
+    <Input v-model:value="focusKeyword" id="seo-focus-keyword" name="focus_keyword" label="Focus keyword" :maxLength="100" />
+    <Textarea v-model:value="metaDescription" id="seo-meta-description" name="meta_description" label="Meta description" :rows="4" :maxLength="160" :showCount="true" />
+    <Input v-model:value="canonicalUrl" id="seo-canonical-url" name="canonical_url" label="Canonical URL" type="url" inputmode="url" placeholder="https://example.com/post" />
   </form>
 
   <div :if="error()" role="alert" class="mt-4 px-3 py-2 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-500/10 border border-red-200 rounded-lg dark:border-red-500/20">

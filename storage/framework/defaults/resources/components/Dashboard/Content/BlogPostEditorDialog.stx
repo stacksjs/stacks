@@ -34,9 +34,11 @@ const bodyLoading = useReactiveProp('bodyLoading', false)
 const bodyLoadFailed = useReactiveProp('bodyLoadFailed', false)
 const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
-const title = state('')
+// Not `title` and `description`: a field bound inside the Modal is first read
+// as the Modal's own prop of that name (stacksjs/stacks#3310).
+const postTitle = state('')
 const slug = state('')
-const description = state('')
+const descriptionText = state('')
 const date = state('')
 const author = state('')
 const poster = state('')
@@ -55,7 +57,7 @@ function slugify(input: string): string {
     .slice(0, 80)
 }
 
-const suggestedSlug = derived(() => slugify(title()))
+const suggestedSlug = derived(() => slugify(postTitle()))
 const wordCount = derived(() => body().split(/\s+/).filter(Boolean).length)
 const readingTime = derived(() => Math.max(1, Math.round(wordCount() / 200)))
 const dialogTitle = derived(() => editing() ? 'Edit post' : 'New post')
@@ -66,9 +68,9 @@ effect(() => {
   if (isOpen && !wasOpen) {
     const record = editing()
     activeSlug = record?.slug || ''
-    title.set(record?.title || '')
+    postTitle.set(record?.title || '')
     slug.set(record?.slug || '')
-    description.set(record?.description || '')
+    descriptionText.set(record?.description || '')
     date.set(record?.date || new Date().toISOString().slice(0, 10))
     author.set(record?.author || '')
     poster.set(record?.poster || '')
@@ -85,7 +87,7 @@ effect(() => {
 })
 
 function valid(): boolean {
-  return title().trim().length > 0 && !bodyLoading() && !bodyLoadFailed()
+  return postTitle().trim().length > 0 && !bodyLoading() && !bodyLoadFailed()
 }
 
 function close(): void {
@@ -99,8 +101,8 @@ function submit(): void {
 
   const postDraft: BlogPostDraft = {
     slug: slug().trim() || suggestedSlug(),
-    title: title().trim(),
-    description: description().trim(),
+    title: postTitle().trim(),
+    description: descriptionText().trim(),
     date: date(),
     author: author().trim(),
     authorBio: '',
@@ -131,49 +133,27 @@ function submit(): void {
     </div>
 
     <div class="grid gap-4 sm:grid-cols-2">
-      <label class="flex flex-col gap-2 sm:col-span-2">
-        <span class="font-medium text-sm">Title</span>
-        <input x-model="title" name="title" type="text" required autofocus class="px-3 py-2 text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
-      </label>
-
-      <label class="flex flex-col gap-2 sm:col-span-2">
-        <span class="font-medium text-sm">Slug</span>
-        <input x-model="slug" name="slug" type="text" :placeholder="suggestedSlug()" class="placeholder-neutral-500 px-3 py-2 font-mono text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
-        <span class="text-neutral-500 text-xs dark:text-neutral-400">The file name and public URL: /blog/{{ slug() || suggestedSlug() || 'your-post' }}</span>
-      </label>
-
-      <label class="flex flex-col gap-2 sm:col-span-2">
-        <span class="font-medium text-sm">Description</span>
-        <input x-model="description" name="description" type="text" class="px-3 py-2 text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
-        <span class="text-neutral-500 text-xs dark:text-neutral-400">Used as the excerpt, meta description, and RSS summary.</span>
-      </label>
-
-      <label class="flex flex-col gap-2">
-        <span class="font-medium text-sm">Date</span>
-        <input x-model="date" name="date" type="date" class="px-3 py-2 text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
-      </label>
-
-      <label class="flex flex-col gap-2">
-        <span class="font-medium text-sm">Author</span>
-        <input x-model="author" name="author" type="text" class="px-3 py-2 text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
-      </label>
-
-      <label class="flex flex-col gap-2 sm:col-span-2">
-        <span class="font-medium text-sm">Poster image</span>
-        <input x-model="poster" name="poster" type="text" placeholder="/assets/images/example.svg" class="placeholder-neutral-500 px-3 py-2 text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
-      </label>
-
-      <label class="flex flex-col gap-2 sm:col-span-2">
-        <span class="flex gap-3 items-center justify-between">
-          <span class="font-medium text-sm">Content</span>
-          <span :if="bodyLoading()" role="status" class="inline-flex gap-1.5 items-center text-neutral-500 text-xs dark:text-neutral-400">
-            <span class="h-3.5 w-3.5 animate-spin i-hugeicons-loading-03"></span>
-            Loading content
-          </span>
-        </span>
-        <textarea x-model="body" name="body" rows="14" :disabled="bodyLoading() || bodyLoadFailed()" class="px-3 py-2 font-mono text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 disabled:opacity-60 resize-y"></textarea>
-        <span class="text-neutral-500 text-xs dark:text-neutral-400">Markdown. {{ wordCount() }} words, about {{ readingTime() }} min read.</span>
-      </label>
+      <div class="sm:col-span-2">
+        <Input v-model:value="postTitle" name="title" label="Title" :required="true" :autofocus="true" />
+      </div>
+      <div class="sm:col-span-2">
+        <Input v-model:value="slug" name="slug" label="Slug" :placeholder="suggestedSlug()" :spellcheck="false" :monospace="true" :hint="'The file name and public URL: /blog/' + (slug() || suggestedSlug() || 'your-post')" />
+      </div>
+      <div class="sm:col-span-2">
+        <Input v-model:value="descriptionText" name="description" label="Description" hint="Used as the excerpt, meta description, and RSS summary." />
+      </div>
+      <Input v-model:value="date" name="date" label="Date" type="date" />
+      <Input v-model:value="author" name="author" label="Author" />
+      <div class="sm:col-span-2">
+        <Input v-model:value="poster" name="poster" label="Poster image" placeholder="/assets/images/example.svg" />
+      </div>
+      <div class="sm:col-span-2">
+        <Textarea v-model:value="body" name="body" label="Content" :rows="14" :monospace="true" :disabled="bodyLoading() || bodyLoadFailed()" :hint="'Markdown. ' + wordCount() + ' words, about ' + readingTime() + ' min read.'" />
+        <p :if="bodyLoading()" role="status" class="inline-flex gap-1.5 items-center mt-1.5 text-neutral-500 text-xs dark:text-neutral-400">
+          <span aria-hidden="true" class="h-3.5 w-3.5 animate-spin i-hugeicons-loading-03"></span>
+          Loading content
+        </p>
+      </div>
     </div>
 
     <div class="flex flex-col gap-3 sm:flex-row sm:gap-6 pt-2 border-neutral-200 border-t dark:border-neutral-800">

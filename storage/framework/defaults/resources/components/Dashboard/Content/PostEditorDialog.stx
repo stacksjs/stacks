@@ -43,7 +43,9 @@ const contentLoading = useReactiveProp('contentLoading', false)
 const contentLoadFailed = useReactiveProp('contentLoadFailed', false)
 const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
-const title = state('')
+// Not `title`: a field bound inside the Modal is first read as the Modal's own
+// `title` prop (stacksjs/stacks#3310).
+const postTitle = state('')
 const excerpt = state('')
 const content = state('')
 const poster = state('')
@@ -61,7 +63,7 @@ effect(() => {
   if (isOpen && !wasOpen) {
     const record = editing()
     activeId = record?.id || ''
-    title.set(record?.title || '')
+    postTitle.set(record?.title || '')
     excerpt.set(record?.excerpt || '')
     content.set('')
     poster.set(record?.poster || '')
@@ -82,9 +84,20 @@ effect(() => {
 function valid(): boolean {
   const excerptLength = excerpt().trim().length
   return !contentLoading() && !contentLoadFailed()
-    && title().trim().length >= 3 && title().trim().length <= 255
+    && postTitle().trim().length >= 3 && postTitle().trim().length <= 255
     && content().trim().length >= 10 && content().length <= 100000
     && (excerptLength === 0 || excerptLength >= 10) && excerpt().length <= 500
+}
+
+/** Tick or untick one category or tag, as its box reports. */
+function chooseCategory(id: string, chosen: boolean): void {
+  const current = categoryIds()
+  categoryIds.set(chosen ? (current.includes(id) ? current : [...current, id]) : current.filter(entry => entry !== id))
+}
+
+function chooseTag(id: string, chosen: boolean): void {
+  const current = tagIds()
+  tagIds.set(chosen ? (current.includes(id) ? current : [...current, id]) : current.filter(entry => entry !== id))
 }
 
 function close(): void {
@@ -94,7 +107,7 @@ function close(): void {
 
 function submit(): void {
   const draft: PostDraft = {
-    title: title().trim(),
+    title: postTitle().trim(),
     excerpt: excerpt().trim(),
     content: content().trim(),
     poster: poster().trim(),
@@ -117,63 +130,40 @@ function submit(): void {
   @close="close"
 >
   <form id="post-editor-form" class="grid gap-5" @submit.prevent="submit">
-    <label>
-      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Title</span>
-      <input x-model.trim="title" name="title" required minlength="3" maxlength="255" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-    </label>
+    <Input v-model:value="postTitle" name="title" label="Title" :required="true" :minLength="3" :maxLength="255" />
     <div class="grid gap-4 sm:grid-cols-3">
-      <label>
-        <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span>
-        <select x-model="status" name="status" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
-          <option value="archived">Archived</option>
-        </select>
-      </label>
-      <label>
-        <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Author</span>
-        <select x-model="authorId" name="author_id" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
-          <option value="">No author</option>
-          <option :for="author in authors()" :value="author.id">{{ author.name }} ({{ author.email }})</option>
-        </select>
-      </label>
+      <Select v-model:value="status" name="status" label="Status" placeholder="" :options="[{ value: 'draft', label: 'Draft' }, { value: 'published', label: 'Published' }, { value: 'archived', label: 'Archived' }]" />
+      <Select v-model:value="authorId" name="author_id" label="Author" placeholder="" :options="[{ value: '', label: 'No author' }, ...authors().map(author => ({ value: author.id, label: author.name + ' (' + author.email + ')' }))]" />
       <div class="self-end px-3 py-2 min-h-10 bg-gray-50 dark:bg-neutral-900/60 border border-gray-200 rounded-md dark:border-neutral-700">
         <Toggle v-model:checked="featured" name="featured" label="Featured post" labelPosition="left" />
       </div>
     </div>
-    <label>
-      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Poster URL</span>
-      <input x-model.trim="poster" name="poster" type="url" inputmode="url" maxlength="255" placeholder="https://example.com/poster.jpg" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-    </label>
-    <label>
-      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Excerpt</span>
-      <textarea x-model="excerpt" name="excerpt" rows="3" maxlength="500" placeholder="Optional, at least 10 characters when provided" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea>
-      <span class="block mt-1 text-gray-500 text-xs dark:text-gray-400">{{ excerpt().length }}/500</span>
-    </label>
-    <label>
-      <span class="flex gap-3 items-center justify-between">
-        <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Content</span>
-        <span :if="contentLoading()" role="status" class="inline-flex gap-1.5 items-center text-gray-500 text-xs dark:text-neutral-400">
-          <span aria-hidden="true" class="h-3.5 w-3.5 animate-spin i-hugeicons-loading-03"></span>
-          Loading content
-        </span>
-      </span>
-      <textarea x-model="content" name="content" required minlength="10" maxlength="100000" rows="10" :disabled="contentLoading() || contentLoadFailed()" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-60"></textarea>
-      <span class="block mt-1 text-gray-500 text-xs dark:text-gray-400">{{ content().length }}/100000</span>
-    </label>
+    <Input v-model:value="poster" name="poster" label="Poster URL" type="url" inputmode="url" :maxLength="255" placeholder="https://example.com/poster.jpg" />
+    <Textarea v-model:value="excerpt" name="excerpt" label="Excerpt" :rows="3" :maxLength="500" :showCount="true" placeholder="Optional, at least 10 characters when provided" />
+    <div>
+      <Textarea v-model:value="content" name="content" label="Content" :required="true" :minLength="10" :maxLength="100000" :showCount="true" :rows="10" :monospace="true" :disabled="contentLoading() || contentLoadFailed()" />
+      <p :if="contentLoading()" role="status" class="inline-flex gap-1.5 items-center mt-1.5 text-gray-500 text-xs dark:text-neutral-400">
+        <span aria-hidden="true" class="h-3.5 w-3.5 animate-spin i-hugeicons-loading-03"></span>
+        Loading content
+      </p>
+    </div>
     <div class="grid gap-4 lg:grid-cols-2">
       <fieldset class="p-4 border border-gray-200 rounded-lg dark:border-neutral-700">
         <legend class="px-1 font-semibold text-gray-700 text-sm dark:text-neutral-200">Categories, {{ categoryIds().length }} selected</legend>
         <div :if="categories().length === 0" class="text-gray-500 text-sm dark:text-neutral-400">No categories available.</div>
         <div :else class="grid gap-2">
-          <label :for="categoryOption in categories()" class="flex gap-2 items-center"><input x-model="categoryIds" name="category_ids" type="checkbox" :value="categoryOption.id" class="h-4 w-4 text-blue-600 border-gray-300 rounded" /><span class="text-gray-700 text-sm dark:text-neutral-200">{{ categoryOption.name }}</span></label>
+          <span :for="categoryOption in categories()" class="contents">
+            <Checkbox size="sm" :label="categoryOption.name" :checked="categoryIds().includes(categoryOption.id)" @update:checked="chooseCategory(categoryOption.id, $event)" />
+          </span>
         </div>
       </fieldset>
       <fieldset class="p-4 border border-gray-200 rounded-lg dark:border-neutral-700">
         <legend class="px-1 font-semibold text-gray-700 text-sm dark:text-neutral-200">Tags, {{ tagIds().length }} selected</legend>
         <div :if="tags().length === 0" class="text-gray-500 text-sm dark:text-neutral-400">No tags available.</div>
         <div :else class="grid gap-2 sm:grid-cols-2">
-          <label :for="tag in tags()" class="flex gap-2 items-center"><input x-model="tagIds" name="tag_ids" type="checkbox" :value="tag.id" class="h-4 w-4 text-blue-600 border-gray-300 rounded" /><span class="text-gray-700 text-sm dark:text-neutral-200">{{ tag.name }}</span></label>
+          <span :for="tagOption in tags()" class="contents">
+            <Checkbox size="sm" :label="tagOption.name" :checked="tagIds().includes(tagOption.id)" @update:checked="chooseTag(tagOption.id, $event)" />
+          </span>
         </div>
       </fieldset>
     </div>

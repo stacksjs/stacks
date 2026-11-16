@@ -278,7 +278,9 @@ describe('dashboard native STX bindings', () => {
       'Content/SeoDashboard.stx',
     ]) {
       const source = componentSource(component)
-      expect(source).toContain('x-model=')
+      // Bound both ways: a native control by `x-model`, a shared one by
+      // `v-model:value` (stacksjs/stacks#3310), never a value and a handler.
+      expect(source).toMatch(/x-model=|v-model:value=/)
       expect(source).not.toMatch(/:value="[^"]+\(\)"[^>]+@(?:input|change)=/)
       expect(source).not.toMatch(/:checked="[^"]+\(\)"[^>]+@change=/)
       expect(source).not.toMatch(/function update[A-Z]\w*\(event: Event\)/)
@@ -355,8 +357,10 @@ describe('dashboard native STX bindings', () => {
     expect(posts).not.toContain('fixed inset-y-0')
     expect(postEditor).toContain('<Modal')
     expect(postEditor).toContain('form="post-editor-form"')
-    expect(postEditor).toContain('x-model="categoryIds"')
-    expect(postEditor).toContain('x-model="tagIds"')
+    // Several of many: a shared checkbox per option, ticked when its id is in
+    // the list and adding or removing it as it is ticked (stacksjs/stacks#3310).
+    expect(postEditor).toContain(':checked="categoryIds().includes(categoryOption.id)" @update:checked="chooseCategory(categoryOption.id, $event)"')
+    expect(postEditor).toContain(':checked="tagIds().includes(tagOption.id)" @update:checked="chooseTag(tagOption.id, $event)"')
 
     const seoView = readFileSync(
       resolve('storage/framework/defaults/views/dashboard/content/seo/index.stx'),
@@ -370,7 +374,7 @@ describe('dashboard native STX bindings', () => {
     expect(seo).not.toContain('fixed inset-0')
     expect(seoEditor).toContain('<Modal')
     expect(seoEditor).toContain('form="seo-editor-form"')
-    expect(seoEditor).toContain('x-model="metaDescription"')
+    expect(seoEditor).toContain('<Textarea v-model:value="metaDescription"')
   })
 
   test('content overview is a thin component backed by persisted metrics', () => {

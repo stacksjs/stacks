@@ -61,22 +61,10 @@ function submit(): void {
   @close="close"
 >
   <form id="author-editor-form" class="grid gap-4" @submit.prevent="submit">
-    <label>
-      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span>
-      <input x-model="name" name="name" required minlength="5" maxlength="255" autocomplete="name" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-    </label>
-    <label>
-      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Email</span>
-      <input x-model="email" name="email" type="email" required autocomplete="email" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-    </label>
-    <label>
-      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Bio</span>
-      <textarea x-model="bio" name="bio" maxlength="500" rows="3" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea>
-    </label>
-    <label>
-      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Avatar URL</span>
-      <input x-model="avatar" name="avatar" type="url" inputmode="url" placeholder="https://example.com/avatar.jpg" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-    </label>
+    <Input v-model:value="name" name="name" label="Name" :required="true" :minLength="5" :maxLength="255" autocomplete="name" />
+    <Input v-model:value="email" name="email" label="Email" type="email" :required="true" autocomplete="email" />
+    <Textarea v-model:value="bio" name="bio" label="Bio" :rows="3" :maxLength="500" />
+    <Input v-model:value="avatar" name="avatar" label="Avatar URL" type="url" inputmode="url" placeholder="https://example.com/avatar.jpg" />
   </form>
 
   <div :if="error()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
