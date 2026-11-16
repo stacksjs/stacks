@@ -64,7 +64,8 @@ describe('the automatic 422 emitted for an Action `validations:` block', () => {
     // with exactly that body, and sends a browser's form back to its page
     // (stacksjs/stacks#3309, form-validation-refusal.test.ts).
     expect(text).toContain('return validationRefusal(req, validationResult.errors)')
-    expect(text).toMatch(/isApiRequest\(req as unknown as Request\)\)\n {4}return validationFailureResponse\(errors\)/)
+    // Which callers those are is `isPageFormPost` (stacksjs/stacks#3312).
+    expect(text).toMatch(/if \(!isPageFormPost\(req\)\)\n {4}return validationFailureResponse\(errors\)/)
   })
 
   it('no longer emits the `error`-keyed shape', async () => {

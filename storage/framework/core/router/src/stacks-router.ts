@@ -3121,7 +3121,7 @@ function validationFailureResponse(errors: Record<string, string[]>): Response {
  * cookie that carries the messages would not reach it. Nor is a page whose
  * path begins with two slashes: as a `Location` that is another host.
  */
-function refusedFormPage(req: Request): string | null {
+function formPage(req: Request): string | null {
   const referer = req.headers.get('referer')
   if (!referer)
     return null
@@ -3159,10 +3159,62 @@ function refusedFormPage(req: Request): string | null {
   return `${page.pathname}${page.search}`
 }
 
+/**
+ * Whether this request is a form a browser posted as a page, so whatever
+ * comes back is what the person sees.
+ *
+ * Not a GET, which a browser makes for a page and not for a form. Not a
+ * caller that asked for data (`isApiRequest`: a JSON body, `fetch()`'s
+ * `Accept: *\/*`, a client that sends no `Accept`). Not an action or route
+ * group that answers JSON whoever asks (`apiResponse: true`). And, when the
+ * browser says what it is fetching, a document or a frame: a script that
+ * fetches with `Accept: text/html` is still a script, and is answered as one.
+ */
+function isPageFormPost(req: EnhancedRequest): boolean {
+  // The Fetch standard upper-cases GET and HEAD however they were written.
+  const method = req.method
+  if (method === 'GET' || method === 'HEAD' || req._forceJson === true)
+    return false
+  if (isApiRequest(req as unknown as Request))
+    return false
+  const destination = req.headers.get('sec-fetch-dest')
+  return !destination || destination === 'document' || destination === 'iframe' || destination === 'frame'
+}
+
+/** Whether the request came over https, directly or through a proxy that says so. */
+function requestIsSecure(req: EnhancedRequest): boolean {
+  return req.headers.get('x-forwarded-proto') === 'https' || req.url.startsWith('https:')
+}
+
+/**
+ * Send the browser back to `page` with what it should be told, or null when
+ * there is no application key to sign it with.
+ */
+function backToPage(req: EnhancedRequest, page: string, told: { errors?: Record<string, string[]>, old?: Record<string, string | string[]>, notice?: string }): Response | null {
+  const flash = requireFormFlash()
+  const mark = page.indexOf('?')
+  const sealed = flash.sealFormFlash({
+    path: mark === -1 ? page : page.slice(0, mark),
+    errors: told.errors ?? {},
+    old: told.old ?? {},
+    notice: told.notice,
+    expires: Date.now() + flash.FORM_FLASH_SECONDS * 1000,
+  }, (flash.config as { app?: { key?: string } }).app?.key)
+  if (!sealed)
+    return null
+  return new Response(null, {
+    status: 303,
+    headers: { 'location': page, 'set-cookie': flash.formFlashCookie(sealed, requestIsSecure(req)), 'cache-control': 'no-store' },
+  })
+}
+
+function escapeHtml(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
 /** A refusal as a page, for a browser with no page to be sent back to. */
 function refusedFormDocument(errors: Record<string, string[]>): Response {
-  const escape = (text: string): string => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-  const messages = Object.values(errors).flat().map(message => `<li>${escape(message)}</li>`).join('')
+  const messages = Object.values(errors).flat().map(message => `<li>${escapeHtml(message)}</li>`).join('')
   const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>This form could not be submitted</title></head><body style="margin:0;font-family:system-ui,sans-serif;background:#fafafa;color:#171717"><main style="max-width:32rem;margin:15vh auto;padding:0 1.5rem"><h1 style="font-size:1.25rem;margin:0 0 .75rem">This form could not be submitted</h1><ul style="margin:0 0 1rem;padding-left:1.25rem;line-height:1.6">${messages}</ul><p style="margin:0;color:#525252">Go back to the form, correct it and send it again.</p></main></body></html>`
   return new Response(html, { status: 422, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } })
 }
@@ -3182,43 +3234,80 @@ function refusedFormDocument(errors: Record<string, string[]>): Response {
  * endpoint: the same action answers a `fetch()` and a form.
  */
 function validationRefusal(req: EnhancedRequest, errors: Record<string, string[]>): Response {
-  const method = req.method.toUpperCase()
-  if (method === 'GET' || method === 'HEAD' || isApiRequest(req as unknown as Request))
+  if (!isPageFormPost(req))
     return validationFailureResponse(errors)
 
-  const page = refusedFormPage(req as unknown as Request)
+  const page = formPage(req as unknown as Request)
   if (!page)
     return refusedFormDocument(errors)
 
-  const flash = requireFormFlash()
   let old: Record<string, string | string[]> = {}
   try {
-    old = flash.flashableInput(getAllInputFor(req))
+    old = requireFormFlash().flashableInput(getAllInputFor(req))
   }
   catch {
     // What was posted could not be read back. The messages still go.
   }
-  const mark = page.indexOf('?')
-  const sealed = flash.sealFormFlash({
-    path: mark === -1 ? page : page.slice(0, mark),
-    errors,
-    old,
-    expires: Date.now() + flash.FORM_FLASH_SECONDS * 1000,
-  }, (flash.config as { app?: { key?: string } }).app?.key)
   // No application key, so nothing to sign the cookie with, and an unsigned
   // one is not read. The page saying what was wrong beats a silent redirect.
-  if (!sealed)
-    return refusedFormDocument(errors)
+  return backToPage(req, page, { errors, old }) ?? refusedFormDocument(errors)
+}
 
-  const secure = req.headers.get('x-forwarded-proto') === 'https' || req.url.startsWith('https:')
-  return new Response(null, {
-    status: 303,
-    headers: { 'location': page, 'set-cookie': flash.formFlashCookie(sealed, secure), 'cache-control': 'no-store' },
-  })
+/**
+ * Whether an action answered with data rather than with something it built
+ * for the person to see.
+ *
+ * Data is a value the router serializes (an object, a list, a string, nothing
+ * at all) or a `Response` the action made of JSON. A page it rendered, a
+ * redirect, an error, a download and a stream are its own answer: that is
+ * how an action that issues a secret shown once (a new API token) answers
+ * with a page carrying it, and keeps it out of a redirect.
+ */
+function answeredWithData(result: unknown): boolean {
+  if (!(result instanceof Response))
+    return !(result instanceof ReadableStream)
+  if (result.status < 200 || result.status > 299 || result.headers.has('content-disposition'))
+    return false
+  return result.status === 204 || JSON_CONTENT_TYPE.test(result.headers.get('content-type') ?? '')
+}
+
+/** A notice as a page, for a browser with no page to be sent back to. */
+function noticeDocument(notice: string): Response {
+  const text = escapeHtml(notice)
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${text}</title></head><body style="margin:0;font-family:system-ui,sans-serif;background:#fafafa;color:#171717"><main style="max-width:32rem;margin:15vh auto;padding:0 1.5rem"><p role="status" style="font-size:1.25rem;margin:0">${text}</p></main></body></html>`
+  return new Response(html, { status: 200, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } })
+}
+
+/**
+ * Answer a request an action carried out (stacksjs/stacks#3312).
+ *
+ * The counterpart of {@link validationRefusal}. A browser form the action
+ * answered with data is sent back to the page it was on, with the action's
+ * `notice` for that page to show (`requestContext.notice()`). The data itself
+ * was a page of JSON with the back button as the only way out, and it said
+ * nothing a person could read: "revoked" and "broken" looked the same. Every
+ * other caller gets the answer it always got.
+ *
+ * The words are the action's. With none the browser is still sent back, and
+ * the page says nothing: a form that only reads has nothing to announce.
+ */
+function actionAnswer(result: unknown, req: EnhancedRequest, action: RouterAction): Response {
+  if (!isPageFormPost(req) || !answeredWithData(result))
+    return formatResult(result, req)
+
+  const declared = typeof action.notice === 'function' ? action.notice(result, req) : action.notice
+  const notice = typeof declared === 'string' ? declared.trim() : ''
+  const page = formPage(req as unknown as Request)
+  if (!page)
+    return notice ? noticeDocument(notice) : formatResult(result, req)
+  if (!notice)
+    return new Response(null, { status: 303, headers: { 'location': page, 'cache-control': 'no-store' } })
+  // No application key to sign the notice with: say it here instead.
+  return backToPage(req, page, { notice }) ?? noticeDocument(notice)
 }
 
 let formFlashModule: typeof import('@stacksjs/config') | undefined
-/** `@stacksjs/config`, loaded the first time a form is refused and not before. */
+/** `@stacksjs/config`, loaded the first time a form is sent back to its page and not before. */
 function requireFormFlash(): typeof import('@stacksjs/config') {
   return formFlashModule ??= require('@stacksjs/config') as typeof import('@stacksjs/config')
 }
@@ -3554,6 +3643,8 @@ export interface RouterAction {
   skipCsrf?: boolean
   csrf?: boolean
   apiResponse?: boolean
+  /** What to tell a person whose browser form this action carried out (stacksjs/stacks#3312). */
+  notice?: string | ((result: any, req: any) => string | null | undefined)
   model?: unknown
   modelDefinition?: unknown
   name?: string
@@ -3678,7 +3769,7 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
           ? result.then(
               (value) => {
                 try {
-                  return formatResult(value, req)
+                  return actionAnswer(value, req, action)
                 }
                 catch (error) {
                   return rethrowActionError(error)
@@ -3686,7 +3777,7 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
               },
               rethrowActionError,
             )
-          : formatResult(result, req)
+          : actionAnswer(result, req, action)
       }
       catch (handleError) {
         return rethrowActionError(handleError)
@@ -3739,7 +3830,7 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
 
       const pendingResult = action.handle(req)
       const result = pendingResult instanceof Promise ? await pendingResult : pendingResult
-      return formatResult(result, req)
+      return actionAnswer(result, req, action)
     }
     catch (handleError) {
       return rethrowActionError(handleError)

@@ -137,7 +137,10 @@ describe('a browser form that fails validation', () => {
   it('reaches the handler when the form is right, as before', async () => {
     let seen: unknown
     const res = await router((req) => { seen = req.getValidated(); return { ok: true } }).bunRouter.handleRequest(form('name=Deploy+key&repository_ids=3&repository_ids=7'))
-    expect(res.status).toBe(200)
+    // Back to the page, and with nothing to say: the action declares no
+    // notice (stacksjs/stacks#3312).
+    expect(res.status).toBe(303)
+    expect(res.headers.get('location')).toBe('/settings/tokens?tab=api')
     expect(seen).toEqual({ name: 'Deploy key', repository_ids: ['3', '7'] })
     expect(res.headers.get('set-cookie') ?? '').not.toContain(FORM_FLASH_COOKIE)
   })
@@ -265,12 +268,12 @@ describe('a list posted by a form', () => {
     const stacks = router((req) => { seen = req.getValidated(); return { ok: true } })
     // Two occurrences arrive as an array, one as a string: the rule asked for
     // an array and refused every list of one.
-    expect((await stacks.bunRouter.handleRequest(form('name=Deploy+key&repository_ids=3'))).status).toBe(200)
+    expect((await stacks.bunRouter.handleRequest(form('name=Deploy+key&repository_ids=3'))).status).toBe(303)
     expect(seen.repository_ids).toEqual(['3'])
-    expect((await stacks.bunRouter.handleRequest(form('name=Deploy+key&repository_ids='))).status).toBe(200)
+    expect((await stacks.bunRouter.handleRequest(form('name=Deploy+key&repository_ids='))).status).toBe(303)
     expect(seen.repository_ids).toEqual([])
     // A value is not split on commas: it may hold one.
-    expect((await stacks.bunRouter.handleRequest(form('name=Deploy+key&repository_ids=3%2C7'))).status).toBe(200)
+    expect((await stacks.bunRouter.handleRequest(form('name=Deploy+key&repository_ids=3%2C7'))).status).toBe(303)
     expect(seen.repository_ids).toEqual(['3,7'])
   })
 
