@@ -99,7 +99,7 @@ const formError = requestContext.formError()
     <p class="mt-2 text-stone-600">{{ items.length }} item{{ items.length === 1 ? '' : 's' }}{{ items.length > 0 ? ' ready to ship' : '' }}.</p>
 
     @if (formError)
-      <p role="alert" class="mt-6 px-4 py-3 font-medium text-sm text-red-800 bg-red-50 border border-red-200 rounded-xl">{{ formError }}</p>
+      <p role="alert" class="mt-6 px-4 py-3 font-medium text-red-800 text-sm bg-red-50 border border-red-200 rounded-xl">{{ formError }}</p>
     @endif
 
     @if (cartNotice)

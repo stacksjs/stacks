@@ -83,7 +83,7 @@ const formError = requestContext.formError()
     <CheckoutSteps current="payment" />
 
     @if (formError)
-      <p role="alert" class="mb-6 px-4 py-3 font-medium text-sm text-red-800 bg-red-50 border border-red-200 rounded-xl">{{ formError }}</p>
+      <p role="alert" class="mb-6 px-4 py-3 font-medium text-red-800 text-sm bg-red-50 border border-red-200 rounded-xl">{{ formError }}</p>
     @endif
 
     @if (items.length === 0 || !ready)

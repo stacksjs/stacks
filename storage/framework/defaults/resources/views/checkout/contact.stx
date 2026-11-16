@@ -81,7 +81,7 @@ const formError = requestContext.formError()
     <CheckoutSteps current="contact" />
 
     @if (formError)
-      <p role="alert" class="mb-6 px-4 py-3 font-medium text-sm text-red-800 bg-red-50 border border-red-200 rounded-xl">{{ formError }}</p>
+      <p role="alert" class="mb-6 px-4 py-3 font-medium text-red-800 text-sm bg-red-50 border border-red-200 rounded-xl">{{ formError }}</p>
     @endif
 
     @if (items.length === 0)
@@ -108,7 +108,7 @@ const formError = requestContext.formError()
                 class="mt-1 px-4 py-3 w-full text-sm border border-stone-300 rounded-2xl focus:border-stone-900 focus:outline-none"
               >
               @if (emailError)
-                <p role="alert" class="mt-2 text-sm text-red-700">{{ emailError }}</p>
+                <p role="alert" class="mt-2 text-red-700 text-sm">{{ emailError }}</p>
               @endif
             </div>
             <div class="flex gap-4 items-center justify-between">

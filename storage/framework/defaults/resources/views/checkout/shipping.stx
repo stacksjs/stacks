@@ -101,7 +101,7 @@ const formError = requestContext.formError()
     <CheckoutSteps current="shipping" />
 
     @if (formError)
-      <p role="alert" class="mb-6 px-4 py-3 font-medium text-sm text-red-800 bg-red-50 border border-red-200 rounded-xl">{{ formError }}</p>
+      <p role="alert" class="mb-6 px-4 py-3 font-medium text-red-800 text-sm bg-red-50 border border-red-200 rounded-xl">{{ formError }}</p>
     @endif
 
     @if (items.length === 0 || !cart?.email)
@@ -120,7 +120,7 @@ const formError = requestContext.formError()
               <label class="font-semibold text-stone-500 text-xs tracking-wider uppercase">Full name</label>
               <input type="text" name="shipping_name" required autocomplete="name" value="{{ shipName.value }}" aria-invalid="{{ shipName.error ? 'true' : 'false' }}" class="mt-1 px-4 py-3 w-full text-sm border border-stone-300 rounded-2xl focus:border-stone-900 focus:outline-none">
               @if (shipName.error)
-                <p role="alert" class="mt-2 text-sm text-red-700">{{ shipName.error }}</p>
+                <p role="alert" class="mt-2 text-red-700 text-sm">{{ shipName.error }}</p>
               @endif
             </div>
 
@@ -128,7 +128,7 @@ const formError = requestContext.formError()
               <label class="font-semibold text-stone-500 text-xs tracking-wider uppercase">Street address</label>
               <input type="text" name="shipping_address" required autocomplete="street-address" value="{{ shipAddress.value }}" aria-invalid="{{ shipAddress.error ? 'true' : 'false' }}" class="mt-1 px-4 py-3 w-full text-sm border border-stone-300 rounded-2xl focus:border-stone-900 focus:outline-none">
               @if (shipAddress.error)
-                <p role="alert" class="mt-2 text-sm text-red-700">{{ shipAddress.error }}</p>
+                <p role="alert" class="mt-2 text-red-700 text-sm">{{ shipAddress.error }}</p>
               @endif
             </div>
 
@@ -137,14 +137,14 @@ const formError = requestContext.formError()
                 <label class="font-semibold text-stone-500 text-xs tracking-wider uppercase">City</label>
                 <input type="text" name="shipping_city" required autocomplete="address-level2" value="{{ shipCity.value }}" aria-invalid="{{ shipCity.error ? 'true' : 'false' }}" class="mt-1 px-4 py-3 w-full text-sm border border-stone-300 rounded-2xl focus:border-stone-900 focus:outline-none">
                 @if (shipCity.error)
-                  <p role="alert" class="mt-2 text-sm text-red-700">{{ shipCity.error }}</p>
+                  <p role="alert" class="mt-2 text-red-700 text-sm">{{ shipCity.error }}</p>
                 @endif
               </div>
               <div>
                 <label class="font-semibold text-stone-500 text-xs tracking-wider uppercase">State</label>
                 <input type="text" name="shipping_state" required autocomplete="address-level1" value="{{ shipState.value }}" aria-invalid="{{ shipState.error ? 'true' : 'false' }}" class="mt-1 px-4 py-3 w-full text-sm border border-stone-300 rounded-2xl focus:border-stone-900 focus:outline-none">
                 @if (shipState.error)
-                  <p role="alert" class="mt-2 text-sm text-red-700">{{ shipState.error }}</p>
+                  <p role="alert" class="mt-2 text-red-700 text-sm">{{ shipState.error }}</p>
                 @endif
               </div>
             </div>
@@ -153,7 +153,7 @@ const formError = requestContext.formError()
               <label class="font-semibold text-stone-500 text-xs tracking-wider uppercase">ZIP / Postal</label>
               <input type="text" name="shipping_zip" required autocomplete="postal-code" value="{{ shipZip.value }}" aria-invalid="{{ shipZip.error ? 'true' : 'false' }}" class="mt-1 px-4 py-3 w-full text-sm border border-stone-300 rounded-2xl focus:border-stone-900 focus:outline-none">
               @if (shipZip.error)
-                <p role="alert" class="mt-2 text-sm text-red-700">{{ shipZip.error }}</p>
+                <p role="alert" class="mt-2 text-red-700 text-sm">{{ shipZip.error }}</p>
               @endif
             </div>
 
