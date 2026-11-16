@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions/runtime'
 import { db } from '@stacksjs/database/runtime'
-import { refuse, response } from '@stacksjs/router'
+import { refuse } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation/runtime'
 import { readCartCookie } from '../../Storefront/CartCookie'
 
@@ -15,6 +15,8 @@ export default new Action({
   name: 'CheckoutContactAction',
   description: 'Save the shopper email on the active cart.',
   method: 'POST',
+  // A browser form goes on to the next step; a script gets `next` in the body.
+  next: '/checkout/shipping',
 
   // Declared, so the router answers a wrong address the way the caller asked
   // to be answered: the checkout page gets the shopper back on the contact
@@ -51,11 +53,6 @@ export default new Action({
       .where('id', '=', cart.id)
       .execute()
 
-    const wantsHtml = (request.headers?.get?.('accept') || '').includes('text/html')
-    const xhr = request.headers?.get?.('x-requested-with') === 'XMLHttpRequest'
-    if (wantsHtml && !xhr)
-      return response.redirect('/checkout/shipping')
-
-    return response.json({ ok: true, next: '/checkout/shipping' })
+    return { ok: true, next: '/checkout/shipping' }
   },
 })

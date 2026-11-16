@@ -60,8 +60,15 @@ function request(input: Record<string, unknown>): any {
   }
 }
 
+/**
+ * What an action answered, as its caller reads it. An action answers with a
+ * `Response` it built or with data the router serializes: the checkout steps
+ * return data so a browser form can be sent on to the next page (`next`).
+ */
 async function run(action: { handle: (request: any) => unknown }, input: Record<string, unknown>): Promise<any> {
-  const result = await action.handle(request(input)) as Response
+  const result = await action.handle(request(input))
+  if (!(result instanceof Response))
+    return result
   const body = await result.json()
   assert(result.status < 400, `${dialect}: ${JSON.stringify(input)} answered ${result.status} ${JSON.stringify(body)}`)
   return body

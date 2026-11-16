@@ -257,10 +257,43 @@ const notice = requestContext.notice()   // '' when there is nothing to say
   a notice is shown on a small page of its own; with no notice the body is
   sent as before. With no `APP_KEY`, the notice is shown on that small page.
 - Do not write the split by hand (`if (accept.includes('text/html')) return
-  response.redirect(...)`). Return the data and declare the notice.
+  response.redirect(...)`). Return the data and declare the notice, and
+  `next` when the form should go on somewhere else.
+
+To send the browser on instead of back, say where with `next`, a path of this
+application or a function of the result and the request:
+
+```ts
+export default new Action({
+  name: 'CheckoutShippingAction',
+  method: 'POST',
+  next: '/checkout/payment',
+  async handle(request) {
+    // ...
+    return { ok: true, next: '/checkout/payment' }
+  },
+})
+
+// next: result => `/orders/${result.order_id}`
+```
+
+- A script gets the body and is never redirected. A refusal still goes back
+  to the form's own page. A `notice` goes with the browser to the next page.
+- Only ever a path on this application. A string that is not one fails when
+  the route is registered. A function's answer that is not one (an address
+  taken from the request) is not followed, and the browser goes back to the
+  form's page instead, so `next: (_, request) => request.get('redirect')`
+  cannot send anyone to another site.
+- `notice` and `next` are told only what `handle` answered when it did what
+  was asked: `refuse()` is left out of `result`'s type. When `handle` reads
+  its request without a type written on it, declare `handle` first, because
+  TypeScript works out what it returns in the order the object is written.
 
 The shipped cart is the worked example (`Actions/Storefront/UpdateCartItemAction.ts`,
-`views/cart.stx`). Tests: `core/router/tests/form-success-answer.test.ts`, and
+`views/cart.stx`), and the checkout steps declare `next`
+(`CheckoutContactAction`, `CheckoutShippingAction`, `PlaceOrderAction`,
+`AddToCartAction`). Tests: `core/router/tests/form-success-answer.test.ts`,
+`core/router/tests/form-next-page.test.ts`, and
 `core/buddy/tests/refused-form-page.test.ts` for the cart page.
 
 `Precognition: true` or `?_validate=1` requests a validation-only probe.

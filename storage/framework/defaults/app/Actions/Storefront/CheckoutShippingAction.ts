@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions/runtime'
 import { db } from '@stacksjs/database/runtime'
-import { refuse, response } from '@stacksjs/router'
+import { refuse } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation/runtime'
 import { readCartCookie } from '../../Storefront/CartCookie'
 
@@ -14,6 +14,8 @@ export default new Action({
   name: 'CheckoutShippingAction',
   description: 'Save shipping address on the active cart.',
   method: 'POST',
+  // A browser form goes on to the next step; a script gets `next` in the body.
+  next: '/checkout/payment',
 
   // Declared, so a missing field is answered the way the caller asked: the
   // checkout page gets the shopper back with the message under the field and
@@ -64,11 +66,6 @@ export default new Action({
       .where('id', '=', cart.id)
       .execute()
 
-    const wantsHtml = (request.headers?.get?.('accept') || '').includes('text/html')
-    const xhr = request.headers?.get?.('x-requested-with') === 'XMLHttpRequest'
-    if (wantsHtml && !xhr)
-      return response.redirect('/checkout/payment')
-
-    return response.json({ ok: true, next: '/checkout/payment' })
+    return { ok: true, next: '/checkout/payment' }
   },
 })

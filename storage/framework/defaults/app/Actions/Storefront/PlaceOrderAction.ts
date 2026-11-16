@@ -3,7 +3,7 @@ import { Action } from '@stacksjs/actions/runtime'
 import { customers } from '@stacksjs/commerce'
 import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database/runtime'
-import { refuse, response } from '@stacksjs/router'
+import { refuse } from '@stacksjs/router'
 import { sendOrderConfirmation } from '../../Mail/OrderConfirmation'
 import { readCartCookie } from '../../Storefront/CartCookie'
 import { storefrontCurrency } from '../../Storefront/StorefrontMoney'
@@ -28,6 +28,8 @@ export default new Action({
   name: 'PlaceOrderAction',
   description: 'Convert the active cart into an Order + OrderItems.',
   method: 'POST',
+  // A browser form goes to the order it placed; a script gets its id and totals.
+  next: (result: { order_id: number }) => `/orders/${result.order_id}`,
 
   async handle(request: any) {
     const token = readCartCookie(request, CART_COOKIE)
@@ -179,17 +181,12 @@ export default new Action({
       console.error(`[PlaceOrderAction] order receipt email failed for order #${order.id}:`, message)
     })
 
-    const wantsHtml = (request.headers?.get?.('accept') || '').includes('text/html')
-    const xhr = request.headers?.get?.('x-requested-with') === 'XMLHttpRequest'
-    if (wantsHtml && !xhr)
-      return response.redirect(`/orders/${order.id}`)
-
-    return response.json({
+    return {
       ok: true,
       order_id: order.id,
       total,
       subtotal,
       shipping,
-    })
+    }
   },
 })
