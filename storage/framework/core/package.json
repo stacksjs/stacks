@@ -411,7 +411,7 @@
     "@stacksjs/i18n": "0.75.612",
     "@stacksjs/cron": "0.75.612",
     "@stacksjs/sites": "0.75.612",
-    "bun-query-builder": "^0.6.0",
+    "bun-query-builder": "^0.6.2",
     "@stacksjs/desktop-build": "0.75.612",
     "@stacksjs/support": "0.75.612",
     "@stacksjs/telephony": "0.75.612"

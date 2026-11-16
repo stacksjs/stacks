@@ -34,10 +34,11 @@ export interface TransactionOptions {
  * The transaction will automatically commit if the callback succeeds,
  * or rollback if an error is thrown.
  *
- * Every query that belongs to the transaction must execute through the `tx`
- * callback handle. The model executor is a separate execution surface and is
- * not rebound to this handle, so `User.find()` or an instance relation call
- * inside the callback cannot be assumed to observe uncommitted `tx` writes.
+ * A model call made from the callback is part of the transaction, however
+ * many `await`s later it runs: `User.update()` rolls back with it, and the
+ * model and `tx` each see what the other has written but not yet committed
+ * (stacksjs/stacks#3269). Work the callback starts and does not wait for, if
+ * it runs after the callback has returned, is an ordinary write.
  *
  * It is done when it returns: BEGIN, the callback and COMMIT have happened by
  * the next line, and what the callback returned is the result. A callback that

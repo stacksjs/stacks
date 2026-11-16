@@ -916,21 +916,24 @@ function applyTransactionDispatchScope(instance: RawQueryBuilder): void {
           if (owner) owner.transactions++
           if (parent) parent.nested = true
           try {
-            // Native SQL pool callbacks may enter from a connection's async
-            // context rather than this request's. Preserve routing and caller
-            // context explicitly, then establish the per-attempt scopes inside.
+            // bun-query-builder runs the callback in the async context
+            // `transaction()` was called from, even when a pooled driver
+            // starts it from another, and adds the scope that puts model
+            // writes in the transaction. Binding it here as well restored the
+            // context from before that scope, so `User.update()` inside the
+            // callback stayed outside the transaction (stacksjs/stacks#3269).
             // The builder is handed this wrapper, not the caller's callback,
             // so it is told here what it could otherwise see for itself:
             // whether that callback is `async` and will hold the transaction
             // open across an `await`.
-            const runCallback = standingFor(AsyncLocalStorage.bind((tx: RawQueryBuilder) => runAttempt(() => {
+            const runCallback = standingFor((tx: RawQueryBuilder) => runAttempt(() => {
               applyTransactionDispatchScope(tx)
               const scope: TransactionConnectionScope = { connection: tx, parent, active: true, nested: false }
               return transactionConnection.run(scope, () => settle(function* (): Generator<unknown, unknown, unknown> {
                 try { return yield* wait(callback(tx)) }
                 finally { scope.active = false }
               }))
-            })), callback)
+            }), callback)
             return yield* wait((original as (...args: unknown[]) => unknown)(runCallback, method === 'transaction' ? {
               ...options, afterCommit: undefined,
               onRollback: parentObserver(effectiveOptions.onRollback),

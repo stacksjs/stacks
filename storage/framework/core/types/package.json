@@ -74,7 +74,7 @@
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/stx": "^0.2.889",
     "@stacksjs/ts-validation": "^0.5.7",
-    "bun-query-builder": "^0.6.0",
+    "bun-query-builder": "^0.6.2",
     "meilisearch": "^0.62.0",
     "stripe": "23.0.0"
   },
