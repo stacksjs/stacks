@@ -23,7 +23,17 @@
  */
 
 import type { FileInfo } from '@stacksjs/bun-router'
-import type { Collection } from '@stacksjs/types'
+import type { AccessToken, Collection } from '@stacksjs/types'
+import type { RequestTypeRegistry } from './index'
+
+/**
+ * The signed-in user on a request: the type registered as
+ * `RequestTypeRegistry['user']` (see `./index`), or anything with an `id`
+ * when nothing is.
+ */
+export type AuthenticatedUser = RequestTypeRegistry extends { user: infer TUser extends { readonly id: number | string } }
+  ? TUser
+  : { readonly id: number | string }
 
 /**
  * Stacks-specific marker fields attached to the request by the
@@ -89,11 +99,6 @@ export interface StacksRequestMarkers {
   _startNs?: bigint
 
   /**
-   * Authenticated user resolved by the Auth middleware. Stamped so
-   * downstream code can read the user without re-running the
-   * middleware. `unknown` because the User shape is project-defined.
-   */
-  /**
    * Validation rules attached by `request.validate()`, read back by the
    * error handler to shape a 422 body.
    */
@@ -111,13 +116,22 @@ export interface StacksRequestMarkers {
    */
   _validatedInput?: unknown
 
-  _authenticatedUser?: unknown
+  /**
+   * Authenticated user resolved by the Auth middleware. Stamped so
+   * downstream code can read the user without re-running the
+   * middleware. Its type is the application's (`AuthenticatedUser`).
+   */
+  _authenticatedUser?: AuthenticatedUser
 
   /**
    * The access token row matched against the bearer token by the
    * Auth middleware. Used by `request.userToken()` / `tokenCan()`.
+   *
+   * An `AccessToken` from `@stacksjs/types`. The Auth middleware stamps the
+   * `PersonalAccessToken` that extends it, and `currentAccessToken()` in
+   * `@stacksjs/auth` the plain row, so read what both carry: its `scopes`.
    */
-  _currentAccessToken?: unknown
+  _currentAccessToken?: AccessToken
 
   /**
    * Set true once `parseRequestBody` has run on this request so the
@@ -238,9 +252,9 @@ export interface StacksRequestMacros {
    * The authenticated user (resolved lazily — falls back to the
    * cached `_authenticatedUser` marker when available).
    */
-  user?: () => Promise<unknown>
+  user?: () => Promise<AuthenticatedUser | undefined>
   /** The active access-token row matching the bearer. */
-  userToken?: () => Promise<unknown>
+  userToken?: () => Promise<AccessToken | undefined>
   /** Whether the active token grants `ability`. */
   tokenCan?: (ability: string) => Promise<boolean>
   /** Inverse of `tokenCan`. */

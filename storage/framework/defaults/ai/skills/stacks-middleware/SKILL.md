@@ -248,7 +248,10 @@ User middleware in `app/Middleware/` always takes precedence over framework defa
 The default `defaults/app/Middleware/Auth.ts` resolves a parsed bearer first,
 then the configured token cookie, then `session_id`. It loads the user, calls
 `Auth.setUser`, stamps `_authenticatedUser`, and stamps `_currentAccessToken`
-for token authentication. The following is only a minimal custom bearer guard:
+for token authentication. Both read back typed, with no cast:
+`_authenticatedUser` is the User row (`AuthenticatedUser`, which
+`@stacksjs/auth` registers through the router's `RequestTypeRegistry`), and
+`_currentAccessToken` is an `AccessToken`, whose `scopes` say what it grants. The following is only a minimal custom bearer guard:
 
 ```typescript
 export default new Middleware({

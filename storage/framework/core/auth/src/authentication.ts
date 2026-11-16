@@ -31,6 +31,21 @@ import { IMPERSONATION_HEADER } from './impersonation'
 import type { ImpersonationGrant } from './impersonation'
 import { authenticatedImpersonationService, clearRequestImpersonation, resolveRequestImpersonation } from './impersonation-auth'
 
+/**
+ * The signed-in user on a request is the User model row this class resolves
+ * (stacksjs/stacks#3236).
+ *
+ * The router cannot name it, since this package depends on the router, so it
+ * declares `RequestTypeRegistry` for the owner of the user to fill. It is the
+ * row `User.find` returns, the same type `user()` and `getUserFromToken()`
+ * answer with, so an app's own User model and its columns come through.
+ */
+declare module '@stacksjs/router' {
+  interface RequestTypeRegistry {
+    user: UserModel
+  }
+}
+
 interface VerifiedCredentials {
   user: UserModel
   plaintext: string

@@ -316,7 +316,7 @@ export default new Middleware({
       throw error
     }
     // Set authenticated user on request
-    ;(request as any)._authenticatedUser = user
+    request._authenticatedUser = user
   },
 })
 ```

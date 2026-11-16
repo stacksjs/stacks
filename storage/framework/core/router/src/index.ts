@@ -23,7 +23,32 @@ export * from '@stacksjs/bun-router'
 
 // Re-export the augmentation types so userland can refer to the marker
 // surface explicitly when needed.
-export type { StacksRequestExtensions, StacksRequestMacros, StacksRequestMarkers } from './request-augmentation'
+export type { AuthenticatedUser, StacksRequestExtensions, StacksRequestMacros, StacksRequestMarkers } from './request-augmentation'
+
+/**
+ * Augmentation target: the types an application gives the request.
+ *
+ * `user` is the type of the signed-in user the Auth middleware stamps on
+ * `request._authenticatedUser`. `@stacksjs/orm` registers its `UserModel`,
+ * which an app narrows to its own User by augmenting `UserModel`. With
+ * nothing registered, the user is anything with an `id`.
+ *
+ * Declared here, in the entry, rather than beside the markers: an
+ * augmentation merges into the module it names, and an interface that is only
+ * re-exported from here would get a second, unrelated declaration that the
+ * markers never see (the same trap bun-router's `RouterTypeRegistry` notes).
+ *
+ * @example
+ * ```ts
+ * declare module '@stacksjs/router' {
+ *   interface RequestTypeRegistry {
+ *     user: UserModel
+ *   }
+ * }
+ * ```
+ */
+// eslint-disable-next-line ts/no-empty-object-type -- augmentation target; empty by design
+export interface RequestTypeRegistry {}
 
 // Export Stacks-specific action resolver and URL helper
 export { assertRouteMiddlewareResolvable,

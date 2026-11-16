@@ -583,12 +583,7 @@ export async function currentAccessToken(): Promise<AccessToken | null> {
   if (!request) return null
 
   // Check if token is already attached to request.
-  //
-  // The marker is declared `unknown` on the request - deliberately, since the
-  // shape is project-defined - so it is narrowed here rather than returned
-  // straight into an `AccessToken` slot the way the `(request)` read
-  // used to allow.
-  const attached = request._currentAccessToken as AccessToken | undefined
+  const attached = request._currentAccessToken
   // A request may outlive its credential. Caching avoids repeated lookups,
   // not the absolute deadline check on a later authorization decision.
   if (attached) return !attached.revoked && validTokenExpiry(attached.expiresAt) ? attached : null

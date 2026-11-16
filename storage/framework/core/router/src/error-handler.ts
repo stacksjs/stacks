@@ -195,15 +195,15 @@ function getRequestBody(request: Request | EnhancedRequest): unknown {
  */
 async function getUserContext(request: Request | EnhancedRequest): Promise<{ id?: string | number, email?: string, name?: string } | undefined> {
   const req = request as EnhancedRequest
-  // Check if user was set by auth middleware. The shape is project-
-  // defined (`_authenticatedUser` is typed `unknown` in the request
-  // augmentation), so narrow to the fields we actually read.
-  const authed = req._authenticatedUser as { id?: string | number, email?: string, name?: string, username?: string } | undefined
+  // Check if user was set by auth middleware. Its columns are the app's,
+  // so the ones read here are read only when they are text.
+  const authed: { readonly id: number | string, readonly email?: unknown, readonly name?: unknown, readonly username?: unknown } | undefined = req._authenticatedUser
   if (authed) {
+    const text = (value: unknown): string | undefined => typeof value === 'string' && value !== '' ? value : undefined
     return {
       id: authed.id,
-      email: authed.email,
-      name: authed.name || authed.username,
+      email: text(authed.email),
+      name: text(authed.name) ?? text(authed.username),
     }
   }
   return undefined

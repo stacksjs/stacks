@@ -1,3 +1,4 @@
+import type { EnhancedRequest } from '@stacksjs/router'
 import { clientAddress, createRateLimitMiddleware, Middleware, parseThrottleString, scaledLimit } from '@stacksjs/router'
 
 // Cache for rate limiters to avoid creating new instances for each request
@@ -22,12 +23,11 @@ const RATE_LIMIT_HEADERS = ['X-RateLimit-Limit', 'X-RateLimit-Remaining', 'X-Rat
  * that delivered the request is Cloudflare). A client-written
  * `X-Forwarded-For` no longer buys a fresh budget.
  */
-function throttleKey(request: { _authenticatedUser?: unknown }): string {
-  const user = request._authenticatedUser as { id?: unknown } | null | undefined
-  const id = user?.id
+function throttleKey(request: EnhancedRequest): string {
+  const id = request._authenticatedUser?.id
   if ((typeof id === 'number' && Number.isFinite(id)) || (typeof id === 'string' && id !== ''))
     return `user:${id}`
-  return `ip:${clientAddress(request as unknown as Request) ?? 'unknown'}`
+  return `ip:${clientAddress(request) ?? 'unknown'}`
 }
 
 /**

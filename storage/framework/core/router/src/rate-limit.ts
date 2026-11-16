@@ -101,7 +101,7 @@ function getLimiter(requestedMax: number, windowMs: number): RateLimiter | Promi
  */
 function resolveIdentity(explicit?: string): string {
   if (explicit !== undefined) return explicit
-  const req = getCurrentRequest() as (Request & { _authenticatedUser?: { id?: unknown } | null }) | undefined
+  const req = getCurrentRequest()
   if (!req) return 'anon'
   const id = req._authenticatedUser?.id
   if ((typeof id === 'number' && Number.isFinite(id)) || (typeof id === 'string' && id !== ''))

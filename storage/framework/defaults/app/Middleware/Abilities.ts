@@ -36,9 +36,10 @@ export default new Middleware({
       throw new HttpError(401, 'Unauthenticated.')
     }
 
-    // `_currentAccessToken` is declared `unknown` (the token row is
-    // project-defined), so name the one field this middleware reads.
-    const tokenAbilities: string[] = (token as { abilities?: string[] }).abilities || []
+    // `scopes`, which every token row carries: the Auth middleware stamps a
+    // `PersonalAccessToken`, whose `abilities` copy them, and
+    // `currentAccessToken()` the plain row, which has no `abilities` at all.
+    const tokenAbilities: readonly string[] = Array.isArray(token.scopes) ? token.scopes : []
 
     // Wildcard grants all permissions
     if (tokenAbilities.includes('*')) {

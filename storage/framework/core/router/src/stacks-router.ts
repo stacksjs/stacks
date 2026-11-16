@@ -4914,7 +4914,7 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
   async userToken() {
     return this._currentAccessToken
   },
-  // Strict: a missing token, a token without an `abilities` array, or a
+  // Strict: a missing token, a token without a `scopes` array, or a
   // non-string ability all fail closed.
   async tokenCan(ability: string) {
     if (typeof ability !== 'string' || ability.length === 0)
@@ -4923,9 +4923,10 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
     if (!token || typeof token !== 'object')
       return false
 
-    // The access token's shape is project-defined, so it arrives as `unknown`
-    // and is narrowed to the one field this checks.
-    const abilities = (token as { abilities?: unknown }).abilities
+    // `scopes`, which every token row carries. The Auth middleware stamps a
+    // `PersonalAccessToken`, whose `abilities` copy them; `currentAccessToken()`
+    // in `@stacksjs/auth` stamps the plain row, which has no `abilities`.
+    const abilities: unknown = token.scopes
 
     if (!Array.isArray(abilities))
       return false
@@ -4943,7 +4944,9 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
     if (typeof ability !== 'string' || ability.length === 0)
       return false
     const { Gate } = requestGateModule ??= await import('@stacksjs/auth/gate')
-    const user = (this._authenticatedUser as Parameters<typeof Gate.allows>[1]) ?? null
+    // Gate types its user as the ORM's `UserModel`, which no User row matches,
+    // so the row crosses over as one (stacksjs/stacks#3314).
+    const user = (this._authenticatedUser ?? null) as unknown as Parameters<typeof Gate.allows>[1]
     return Gate.allows(ability, user, ...args)
   },
   async cannot(ability: string, ...args: unknown[]) {
@@ -4953,7 +4956,8 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
   // AuthorizationException (403) on deny.
   async authorize(ability: string, ...args: unknown[]) {
     const { Gate } = requestGateModule ??= await import('@stacksjs/auth/gate')
-    const user = (this._authenticatedUser as Parameters<typeof Gate.authorize>[1]) ?? null
+    // As in `can`: stacksjs/stacks#3314.
+    const user = (this._authenticatedUser ?? null) as unknown as Parameters<typeof Gate.authorize>[1]
     await Gate.authorize(ability, user, ...args)
   },
 }

@@ -40,21 +40,23 @@ export default new Middleware({
 
   async handle(request: Request) {
     // Parameters are available via _middlewareParams
-    const requiredAbilities = (request as any)._middlewareParams?.abilities?.split(',') || []
+    const requiredAbilities = request._middlewareParams?.abilities?.split(',') || []
 
     if (requiredAbilities.length === 0) {
       return // No abilities required
     }
 
-    const token = (request as any)._currentAccessToken
+    // An `AccessToken` from `@stacksjs/types`: read its `scopes`, which every
+    // token row carries.
+    const token = request._currentAccessToken
     if (!token) {
       throw new HttpError(401, 'Unauthenticated.')
     }
 
-    const tokenAbilities: string[] = token.abilities || []
+    const tokenAbilities: readonly string[] = token.scopes
 
     // Wildcard grants all permissions
-    if (tokenAbilities.includes('_')) {
+    if (tokenAbilities.includes('*')) {
       return
     }
 
@@ -439,8 +441,8 @@ After middleware processing, the request object includes:
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `_authenticatedUser` | `User` | Authenticated user (after auth middleware) |
-| `_currentAccessToken` | `Token` | Current access token (after auth middleware) |
+| `_authenticatedUser` | `AuthenticatedUser` | Authenticated user (after auth middleware): the User row `User.find` returns, so your own columns read without a cast |
+| `_currentAccessToken` | `AccessToken` | Current access token (after auth middleware). Read what it grants from `scopes` |
 | `_middlewareParams` | `Record<string, string>` | Middleware parameters |
 | `jsonBody` | `object` | Parsed JSON body |
 | `formBody` | `object` | Parsed form data |
