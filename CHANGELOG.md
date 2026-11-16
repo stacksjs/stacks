@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.604...v0.75.605)
+
+## 🐛 Bug Fixes
+
+- **desktop**: fetch the published Craft runtime when this machine's craft is a wrapper script ([7f02b7e](https://github.com/stacksjs/stacks/commit/7f02b7e)) _(by Chris Breuer)_
+- **workflows**: isolate native artifacts by run attempt ([a80d40f](https://github.com/stacksjs/stacks/commit/a80d40f)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.603...v0.75.604)
 
 ## 🐛 Bug Fixes
