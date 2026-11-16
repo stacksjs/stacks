@@ -1,5 +1,61 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.612...v0.75.613)
+
+## ✨ Features
+
+- **deploy**: --hold-dns brings a release up on a new server without cutting over ([35adc2c](https://github.com/stacksjs/stacks/commit/35adc2c)) _(by Chris Breuer)_
+- **dashboard**: every list page filters with the shared controls ([5ec36da](https://github.com/stacksjs/stacks/commit/5ec36da)) _(by glennmichael123)_ ([#3310](https://github.com/stacksjs/stacks/issues/3310))
+- **dashboard**: the operations list pages filter with the shared controls ([0ba927b](https://github.com/stacksjs/stacks/commit/0ba927b)) _(by glennmichael123)_ ([#3310](https://github.com/stacksjs/stacks/issues/3310))
+- **dashboard**: the marketing and content list pages filter with the shared controls ([a518775](https://github.com/stacksjs/stacks/commit/a518775)) _(by glennmichael123)_ ([#3310](https://github.com/stacksjs/stacks/issues/3310))
+- **dashboard**: the commerce overview, POS and waitlist filters are the shared controls ([4aa358a](https://github.com/stacksjs/stacks/commit/4aa358a)) _(by glennmichael123)_ ([#3310](https://github.com/stacksjs/stacks/issues/3310))
+- **dashboard**: the commerce list pages filter with the shared controls ([0096bd4](https://github.com/stacksjs/stacks/commit/0096bd4)) _(by glennmichael123)_ ([#3310](https://github.com/stacksjs/stacks/issues/3310))
+- **dashboard**: the search box is the shared input, and a dropdown reports its new value ([6a013ce](https://github.com/stacksjs/stacks/commit/6a013ce)) _(by glennmichael123)_ ([#3310](https://github.com/stacksjs/stacks/issues/3310))
+- **dashboard**: the last dialogs ask with the shared controls ([b979edb](https://github.com/stacksjs/stacks/commit/b979edb)) _(by glennmichael123)_ ([#3310](https://github.com/stacksjs/stacks/issues/3310))
+- **dashboard**: the recovery dialogs ask with the shared controls ([0fe6061](https://github.com/stacksjs/stacks/commit/0fe6061)) _(by glennmichael123)_ ([#3310](https://github.com/stacksjs/stacks/issues/3310))
+- **dashboard**: the marketing dialogs ask with the shared controls ([1b4ca1b](https://github.com/stacksjs/stacks/commit/1b4ca1b)) _(by glennmichael123)_ ([#3310](https://github.com/stacksjs/stacks/issues/3310))
+- **dashboard**: the content dialogs ask with the shared controls ([ed01842](https://github.com/stacksjs/stacks/commit/ed01842)) _(by glennmichael123)_ ([#3310](https://github.com/stacksjs/stacks/issues/3310))
+- **actions**: `next` says where a browser form goes once it worked ([92dd5e9](https://github.com/stacksjs/stacks/commit/92dd5e9)) _(by glennmichael123)_ ([#3313](https://github.com/stacksjs/stacks/issues/3313), [#3312](https://github.com/stacksjs/stacks/issues/3312))
+- **buddy**: doctor warns about a form its action's rules always refuse ([54badbf](https://github.com/stacksjs/stacks/commit/54badbf)) _(by glennmichael123)_ ([#3311](https://github.com/stacksjs/stacks/issues/3311))
+- **security**: a browser form with a stale CSRF token goes back to its page ([bff852f](https://github.com/stacksjs/stacks/commit/bff852f)) _(by glennmichael123)_ ([#3311](https://github.com/stacksjs/stacks/issues/3311))
+- **storefront**: the checkout refuses a form on its page, not in JSON ([7c5f2ed](https://github.com/stacksjs/stacks/commit/7c5f2ed)) _(by glennmichael123)_ ([#3311](https://github.com/stacksjs/stacks/issues/3311))
+- **router**: an action refuses a browser form with refuse() ([0f2807b](https://github.com/stacksjs/stacks/commit/0f2807b)) _(by glennmichael123)_ ([#3311](https://github.com/stacksjs/stacks/issues/3311))
+- **storefront**: the cart says when its remove button worked ([d704336](https://github.com/stacksjs/stacks/commit/d704336)) _(by glennmichael123)_ ([#3312](https://github.com/stacksjs/stacks/issues/3312))
+- **router**: a browser form that worked goes back to its page ([ab7b683](https://github.com/stacksjs/stacks/commit/ab7b683)) _(by glennmichael123)_ ([#3312](https://github.com/stacksjs/stacks/issues/3312))
+- **actions**: an action says what its form did with `notice` ([cc0ea9d](https://github.com/stacksjs/stacks/commit/cc0ea9d)) _(by glennmichael123)_ ([#3312](https://github.com/stacksjs/stacks/issues/3312), [#3309](https://github.com/stacksjs/stacks/issues/3309))
+- **views**: the page shows a refused form's errors once ([cfa3b35](https://github.com/stacksjs/stacks/commit/cfa3b35)) _(by glennmichael123)_ ([#3309](https://github.com/stacksjs/stacks/issues/3309), [#3311](https://github.com/stacksjs/stacks/issues/3311))
+- **router**: a refused browser form goes back to its page ([9bf87e2](https://github.com/stacksjs/stacks/commit/9bf87e2)) _(by glennmichael123)_ ([#3309](https://github.com/stacksjs/stacks/issues/3309))
+- **config**: a page can read why its form was refused ([959aa9e](https://github.com/stacksjs/stacks/commit/959aa9e)) _(by glennmichael123)_ ([#3309](https://github.com/stacksjs/stacks/issues/3309))
+- **dashboard**: the order, product and delivery dialogs ask with the shared controls ([2d9d77f](https://github.com/stacksjs/stacks/commit/2d9d77f)) _(by glennmichael123)_ ([#3310](https://github.com/stacksjs/stacks/issues/3310))
+- **dashboard**: eleven commerce dialogs ask with the shared controls ([faffab5](https://github.com/stacksjs/stacks/commit/faffab5)) _(by glennmichael123)_ ([#3310](https://github.com/stacksjs/stacks/issues/3310))
+- **dashboard**: the shared input holds what a native one can, and the dropdown keeps its choice ([4cff792](https://github.com/stacksjs/stacks/commit/4cff792)) _(by glennmichael123)_ ([#3310](https://github.com/stacksjs/stacks/issues/3310))
+
+## 🐛 Bug Fixes
+
+- **orm**: a model write inside transaction() is part of the transaction ([49d0deb](https://github.com/stacksjs/stacks/commit/49d0deb)) _(by glennmichael123)_ ([#3269](https://github.com/stacksjs/stacks/issues/3269), [stacksjs/bun-query-builder#1212](https://github.com/stacksjs/bun-query-builder/issues/1212))
+- **router**: the request's user and token read back as what they are ([2489695](https://github.com/stacksjs/stacks/commit/2489695)) _(by glennmichael123)_ ([#3236](https://github.com/stacksjs/stacks/issues/3236), [#3314](https://github.com/stacksjs/stacks/issues/3314))
+- **storefront**: the checkout says its next page once, and never another site ([e5d6339](https://github.com/stacksjs/stacks/commit/e5d6339)) _(by glennmichael123)_ ([#3313](https://github.com/stacksjs/stacks/issues/3313))
+- **router**: a ticked checkbox satisfies a boolean rule ([1008f6e](https://github.com/stacksjs/stacks/commit/1008f6e)) _(by glennmichael123)_ ([#3311](https://github.com/stacksjs/stacks/issues/3311))
+
+## 📝 Documentation
+
+- **buddy**: list --hold-dns in the command reference ([90b4eb0](https://github.com/stacksjs/stacks/commit/90b4eb0)) _(by Chris Breuer)_
+- **skills**: count the router test #3236 added in the native catalog ([4341bba](https://github.com/stacksjs/stacks/commit/4341bba)) _(by glennmichael123)_ ([#3236](https://github.com/stacksjs/stacks/issues/3236))
+
+## 💄 Styles
+
+- **storefront**: order the form messages' classes as the linter asks ([a03d5e8](https://github.com/stacksjs/stacks/commit/a03d5e8)) _(by glennmichael123)_ ([#3311](https://github.com/stacksjs/stacks/issues/3311), [#3309](https://github.com/stacksjs/stacks/issues/3309))
+
+## ✅ Tests
+
+- **dashboard**: a sort select on the shared control still counts as one ([f386b8d](https://github.com/stacksjs/stacks/commit/f386b8d)) _(by glennmichael123)_ ([#3310](https://github.com/stacksjs/stacks/issues/3310))
+- **dashboard**: a commerce dialog writes no form control of its own ([1126d43](https://github.com/stacksjs/stacks/commit/1126d43)) _(by glennmichael123)_ ([#3310](https://github.com/stacksjs/stacks/issues/3310))
+
+## Contributors
+
+- _Chris Breuer_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.611...v0.75.612)
 
 ## 🐛 Bug Fixes
