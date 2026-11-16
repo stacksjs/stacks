@@ -376,7 +376,7 @@
         <div class="bg-white dark:bg-neutral-900 border border-zinc-200 rounded-lg dark:border-zinc-800">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-5 py-3 border-b border-zinc-200 dark:border-zinc-800">
             <h2 class="font-medium text-sm text-zinc-700 dark:text-zinc-300">Roles (<span :text="roles().length"></span>)</h2>
-            <input x-model="roleFilter" type="search" aria-label="Filter roles" placeholder="Filter roles…" class="block px-3 py-1 w-full sm:w-64 text-xs text-zinc-900 dark:text-zinc-100 dark:bg-neutral-800 border-0 ring-1 ring-zinc-300 rounded-md dark:ring-zinc-700 focus:ring-2 focus:ring-violet-500" />
+            <SearchFilter v-model:searchValue="roleFilter" placeholder="Filter roles…" ariaLabel="Filter roles" class="w-full sm:w-64" />
           </div>
           <div :if="filteredRoles().length === 0" class="px-5 py-8 text-center text-sm text-zinc-500" :text="roles().length === 0 ? 'No roles yet.' : 'No matching roles.'"></div>
           <div :if="filteredRoles().length > 0" class="overflow-x-auto">
@@ -424,7 +424,7 @@
         <div class="bg-white dark:bg-neutral-900 border border-zinc-200 rounded-lg dark:border-zinc-800">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-5 py-3 border-b border-zinc-200 dark:border-zinc-800">
             <h2 class="font-medium text-sm text-zinc-700 dark:text-zinc-300">Permissions (<span :text="permissions().length"></span>)</h2>
-            <input x-model="permissionFilter" type="search" aria-label="Filter permissions" placeholder="Filter permissions…" class="block px-3 py-1 w-full sm:w-64 text-xs text-zinc-900 dark:text-zinc-100 dark:bg-neutral-800 border-0 ring-1 ring-zinc-300 rounded-md dark:ring-zinc-700 focus:ring-2 focus:ring-violet-500" />
+            <SearchFilter v-model:searchValue="permissionFilter" placeholder="Filter permissions…" ariaLabel="Filter permissions" class="w-full sm:w-64" />
           </div>
           <div :if="filteredPermissions().length === 0" class="px-5 py-8 text-center text-sm text-zinc-500" :text="permissions().length === 0 ? 'No permissions yet.' : 'No matching permissions.'"></div>
           <div :if="filteredPermissions().length > 0" class="overflow-x-auto">
@@ -459,7 +459,7 @@
         <div class="bg-white dark:bg-neutral-900 border border-zinc-200 rounded-lg dark:border-zinc-800">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-5 py-3 border-b border-zinc-200 dark:border-zinc-800">
             <h2 class="font-medium text-sm text-zinc-700 dark:text-zinc-300">Users (<span :text="users().length"></span>)</h2>
-            <input x-model="userFilter" type="search" aria-label="Filter users" placeholder="Filter users…" class="block px-3 py-1 w-full sm:w-64 text-xs text-zinc-900 dark:text-zinc-100 dark:bg-neutral-800 border-0 ring-1 ring-zinc-300 rounded-md dark:ring-zinc-700 focus:ring-2 focus:ring-violet-500" />
+            <SearchFilter v-model:searchValue="userFilter" placeholder="Filter users…" ariaLabel="Filter users" class="w-full sm:w-64" />
           </div>
           <div :if="filteredUsers().length === 0" class="px-5 py-8 text-center text-sm text-zinc-500" :text="users().length === 0 ? 'No users found.' : 'No matching users.'"></div>
           <div :if="filteredUsers().length > 0" class="overflow-x-auto">

@@ -117,14 +117,7 @@ onMount(() => { void loadPackages() })
       empty-description="Adjust the search or visibility filter."
     >
       <template #toolbar>
-        <label>
-          <span class="sr-only">Filter package visibility</span>
-          <select x-model="visibility" class="px-2.5 py-1.5 text-sm bg-white dark:bg-neutral-800 border border-stone-300 rounded-lg dark:border-neutral-600">
-            <option value="all">All workspaces</option>
-            <option value="public">Public</option>
-            <option value="private">Private</option>
-          </select>
-        </label>
+        <Select v-model:value="visibility" ariaLabel="Filter package visibility" placeholder="" :options="[{ value: 'all', label: 'All workspaces' }, { value: 'public', label: 'Public' }, { value: 'private', label: 'Private' }]" />
       </template>
 
       <template #cell="{ row }">

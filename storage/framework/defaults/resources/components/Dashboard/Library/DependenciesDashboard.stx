@@ -125,21 +125,8 @@ onMount(() => { void loadDependencies() })
       empty-description="Adjust the dataset, scope, or search."
     >
       <template #toolbar>
-        <label>
-          <span class="sr-only">Choose dependency dataset</span>
-          <select x-model="dataset" class="px-2.5 py-1.5 text-sm bg-white dark:bg-neutral-800 border border-stone-300 rounded-lg dark:border-neutral-600">
-            <option value="declared">Declared</option>
-            <option value="transitive">Transitive</option>
-          </select>
-        </label>
-        <label>
-          <span class="sr-only">Filter dependency scope</span>
-          <select x-model="scope" :disabled="dataset() === 'transitive'" class="px-2.5 py-1.5 text-sm bg-white dark:bg-neutral-800 border border-stone-300 rounded-lg dark:border-neutral-600 disabled:opacity-50">
-            <option value="all">All scopes</option>
-            <option value="workspace">Workspace</option>
-            <option value="third-party">Third-party</option>
-          </select>
-        </label>
+        <Select v-model:value="dataset" ariaLabel="Choose dependency dataset" placeholder="" :options="[{ value: 'declared', label: 'Declared' }, { value: 'transitive', label: 'Transitive' }]" />
+        <Select v-model:value="scope" ariaLabel="Filter dependency scope" placeholder="" :options="[{ value: 'all', label: 'All scopes' }, { value: 'workspace', label: 'Workspace' }, { value: 'third-party', label: 'Third-party' }]" :disabled="dataset() === 'transitive'" />
       </template>
     </Table>
   </section>

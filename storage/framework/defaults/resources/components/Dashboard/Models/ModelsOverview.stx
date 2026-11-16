@@ -171,18 +171,8 @@ onMount(() => {
         <p class="mt-1 min-h-4 text-neutral-500 text-xs dark:text-neutral-400" :text="matchingLabel()"></p>
       </div>
       <div class="flex flex-col gap-2 sm:flex-row w-full sm:w-auto">
-        <label class="block relative w-full sm:w-64">
-          <span class="sr-only">Search models</span>
-          <span aria-hidden="true" class="absolute left-3 top-1/2 h-4 w-4 text-neutral-400 pointer-events-none -translate-y-1/2 i-hugeicons-search-01"></span>
-          <input x-model="search" type="search" placeholder="Search models" class="block pl-9 pr-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-neutral-300 rounded-lg dark:border-neutral-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-        </label>
-        <label>
-          <span class="sr-only">Filter model category</span>
-          <select x-model="selectedCategory" class="block px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-neutral-300 rounded-lg dark:border-neutral-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-            <option value="all">All categories</option>
-            <option :for="category in categories()" :value="category.key">{{ category.label }}</option>
-          </select>
-        </label>
+        <div class="w-full sm:w-64"><SearchFilter v-model:searchValue="search" placeholder="Search models" ariaLabel="Search models" /></div>
+        <Select v-model:value="selectedCategory" ariaLabel="Filter model category" placeholder="" :options="[{ value: 'all', label: 'All categories' }, ...categories().map(category => ({ value: category.key, label: category.label }))]" />
       </div>
     </div>
 

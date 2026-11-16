@@ -175,6 +175,53 @@ describe('dialogs outside commerce', () => {
   })
 })
 
+/**
+ * The list pages' filter rows: a search box and a row of dropdowns, written
+ * once per page with their classes copied (stacksjs/stacks#3310). They are
+ * the shared SearchFilter and Select now. What is left native is named here
+ * with what it is; none of it is a list page's filter row.
+ */
+const NATIVE_FILTER_CONTROLS_KEPT: Record<string, { selects: number, searches: number, because: string }> = {
+  'GlobalSearch.stx': { selects: 0, searches: 1, because: 'the search palette: focused on open and driven by its own keys, not a filter row' },
+  'Email/InboxSettingsDashboard.stx': { selects: 6, searches: 0, because: 'a settings form, not a list filter' },
+  'Teams/TeamPeopleDashboard.stx': { selects: 2, searches: 0, because: 'the invite form and each member row\'s role, not a list filter' },
+  'Management/AssignmentDrawer.stx': { selects: 1, searches: 0, because: 'a guard picked inside an assignment drawer, not a list filter' },
+  'Remote/RemoteConsole.stx': { selects: 2, searches: 0, because: 'the host and command a console runs, not a list filter' },
+  'Content/FileStoragePanel.stx': { selects: 1, searches: 0, because: 'the disk a file panel browses, not a list filter' },
+  'Analytics/EventAnalytics.stx': { selects: 1, searches: 0, because: 'the currency of an event being recorded, not a list filter' },
+  'Commerce/Delivery/TabNavigation.stx': { selects: 1, searches: 0, because: 'the section menu on a narrow screen, not a list filter' },
+}
+
+describe('list pages', () => {
+  it('filter with the shared search box and dropdown', () => {
+    const found: Record<string, { selects: number, searches: number }> = {}
+    for (const file of components.filter(file => !file.startsWith('UI/'))) {
+      const source = read(file)
+      const selects = (source.match(/<select\b/g) || []).length
+      const searches = (source.match(/<input\b[^>]*type="search"/g) || []).length
+      if (selects || searches)
+        found[file] = { selects, searches }
+    }
+    expect(found).toEqual(Object.fromEntries(Object.entries(NATIVE_FILTER_CONTROLS_KEPT).map(([file, entry]) => [file, { selects: entry.selects, searches: entry.searches }])))
+    for (const entry of Object.values(NATIVE_FILTER_CONTROLS_KEPT))
+      expect(entry.because.length).toBeGreaterThan(20)
+    // The walk read the dashboard, and the filter rows are there to be found.
+    const shared = components.reduce((total, file) => total + (read(file).match(/<SearchFilter\b/g) || []).length, 0)
+    expect(shared).toBeGreaterThan(50)
+  })
+
+  it('keep what each filter did when it changed', () => {
+    // Reloads on change still read the choice just made (see the dropdown's order below).
+    expect(read('Infrastructure/LogsDashboard.stx')).toContain('@search="scheduleSearch"')
+    expect(read('Commerce/PrintLogsDashboard.stx')).toContain('@search="loadSearch"')
+    expect(read('Models/ModelRecordsDashboard.stx')).toContain('@search="onSearchInput"')
+    expect(read('Content/ContentDashboard.stx')).toContain(':options="rangeOptions" @change="changeRange"')
+    // A filter passed up to the page that owns it.
+    expect(read('Commerce/CommercePosCatalog.stx')).toContain(`@change="emit('category', $event)"`)
+    expect(read('Email/InboxMessageList.stx')).toContain(`@search="emit('search', $event)"`)
+  })
+})
+
 describe('the shared controls', () => {
   it('the input passes on what the browser holds a value to', () => {
     const input = read('UI/Input.stx')

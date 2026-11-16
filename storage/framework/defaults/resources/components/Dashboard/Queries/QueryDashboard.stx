@@ -176,27 +176,9 @@ onMount(() => {
           <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Slow threshold: {{ data().slowThreshold }} ms</p>
         </div>
         <div class="flex gap-2 items-center">
-          <label for="query-connection" class="sr-only">Connection</label>
-          <select id="query-connection" x-model="connection" class="px-3 py-2 text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700">
-            <option value="all">All connections</option>
-            <option :for="item in connections()" :value="item">{{ item }}</option>
-          </select>
-          <label for="query-type" class="sr-only">Query type</label>
-          <select id="query-type" x-model="type" class="px-3 py-2 text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700">
-            <option value="all">All types</option>
-            <option value="SELECT">SELECT</option>
-            <option value="INSERT">INSERT</option>
-            <option value="UPDATE">UPDATE</option>
-            <option value="DELETE">DELETE</option>
-            <option value="OTHER">OTHER</option>
-          </select>
-          <label :if="mode() !== 'slow'" for="query-status" class="sr-only">Query status</label>
-          <select :if="mode() !== 'slow'" id="query-status" x-model="status" class="px-3 py-2 text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700">
-            <option value="all">All statuses</option>
-            <option value="completed">Completed</option>
-            <option value="slow">Slow</option>
-            <option value="failed">Failed</option>
-          </select>
+          <Select v-model:value="connection" id="query-connection" ariaLabel="Connection" placeholder="" :options="[{ value: 'all', label: 'All connections' }, ...connections().map(item => ({ value: item, label: item }))]" />
+          <Select v-model:value="type" id="query-type" ariaLabel="Query type" placeholder="" :options="[{ value: 'all', label: 'All types' }, { value: 'SELECT', label: 'SELECT' }, { value: 'INSERT', label: 'INSERT' }, { value: 'UPDATE', label: 'UPDATE' }, { value: 'DELETE', label: 'DELETE' }, { value: 'OTHER', label: 'OTHER' }]" />
+          <Select :if="mode() !== 'slow'" v-model:value="status" id="query-status" ariaLabel="Query status" placeholder="" :options="[{ value: 'all', label: 'All statuses' }, { value: 'completed', label: 'Completed' }, { value: 'slow', label: 'Slow' }, { value: 'failed', label: 'Failed' }]" />
         </div>
       </div>
     </template>

@@ -691,8 +691,28 @@ dialog's file picker) with its reason.
   does and can call `preventDefault()` or `stopPropagation()`; there are no
   `.enter` or `.meta` modifiers on a component.
 
-Not converted yet: the filter bars on the list pages (a search box and a row
-of dropdowns).
+### A list page filters with the shared controls
+
+A list page's filter row is `UI/SearchFilter.stx` and `Select`, never a native
+search box or dropdown with copied classes (stacksjs/stacks#3310). The same
+test fails if one comes back, and names the few native ones left (a settings
+form, a console, the search palette) with what they are.
+
+```html
+<div class="sm:col-span-2"><SearchFilter v-model:searchValue="search" placeholder="Search codes or products" ariaLabel="Search coupons" /></div>
+<Select v-model:value="statusFilter" ariaLabel="Coupon status" placeholder="" :options="[{ value: 'all', label: 'All statuses' }, ...statuses().map(status => ({ value: status, label: status }))]" @change="reloadFilters" />
+```
+
+- **SearchFilter is the shared input with a search icon**, so it matches the
+  dropdowns beside it. `ariaLabel` names the list it searches; a `class` on
+  it sizes the whole field (`class="w-56"`).
+- **It reports only what is typed**: `@search` does not fire as the page
+  mounts, nor when the page sets the box itself (`search.set('')` to clear
+  it), so a page that reloads on `@search` loads once.
+- **A dropdown updates its value before `@change`**, so a handler that reloads
+  reads the choice just made.
+- A hidden label becomes `ariaLabel`. A visible word beside the dropdown
+  ("Sort") stays, with the dropdown inside its label at `size="sm"`.
 
 ### Sidebar-aware overlays
 

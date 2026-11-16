@@ -327,7 +327,7 @@ describe('the pages', () => {
     // stats used to go in a slot before it; they are the model's now.
     expect(list).toContain('<ModelRegion place="listTop" />')
     expect(list).not.toContain('<slot name="summary"')
-    expect(list.indexOf('<ModelRegion place="listTop" />')).toBeLessThan(list.indexOf('type="search"'))
+    expect(list.indexOf('<ModelRegion place="listTop" />')).toBeLessThan(list.indexOf('<SearchFilter'))
     expect(list.indexOf('<ModelRegion place="listBottom" />')).toBeGreaterThan(list.indexOf('</table>'))
     // The page that hosts the list for Users, Teams and Subscribers adds
     // nothing: the list it hosts already has both places.

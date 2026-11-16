@@ -64,8 +64,10 @@ describe('dashboard global search', () => {
     const modelView = source('storage/framework/defaults/resources/components/Dashboard/Models/ModelRecordsDashboard.stx')
 
     expect(modelView).toContain("const search = state(navigation.urlQuery('q') || '')")
-    expect(modelView).toContain('x-model="search"')
-    expect(modelView).toContain('x-model.number="perPage"')
+    expect(modelView).toContain('<SearchFilter v-model:searchValue="search"')
+    // The page size is text, as the shared dropdown reports it, and a number where it is used.
+    expect(modelView).toContain('<Select v-model:value="perPage"')
+    expect(modelView).toContain('Number(perPage())')
     expect(modelView).not.toContain(':value="search()"')
   })
 })

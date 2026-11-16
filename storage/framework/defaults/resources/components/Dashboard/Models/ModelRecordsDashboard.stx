@@ -90,7 +90,8 @@ const relationNames = state<Record<string, Record<string, string>>>({})
 const columnMeta = state<ColumnMeta[]>([])
 const totalCount = state(0)
 const page = state(1)
-const perPage = state(25)
+// Text, as the dropdown reports it; a number where the range and the request use it.
+const perPage = state('25')
 const lastPage = state(1)
 const sort = state('')
 const dir = state<'asc' | 'desc'>('desc')
@@ -167,8 +168,8 @@ const recordLabel = derived(() => {
 
 const rangeLabel = derived(() => {
   if (totalCount() === 0) return 'No records'
-  const from = (page() - 1) * perPage() + 1
-  const to = Math.min(page() * perPage(), totalCount())
+  const from = (page() - 1) * Number(perPage()) + 1
+  const to = Math.min(page() * Number(perPage()), totalCount())
   return `${from.toLocaleString()} to ${to.toLocaleString()} of ${totalCount().toLocaleString()}`
 })
 
@@ -335,7 +336,7 @@ async function load() {
   try {
     const params = new URLSearchParams({
       page: String(page()),
-      per_page: String(perPage()),
+      per_page: perPage(),
       dir: dir(),
     })
     if (sort()) params.set('sort', sort())
@@ -702,18 +703,7 @@ onDestroy(() => {
 
   <!-- Search + page size -->
   <div :if="migrated()" class="flex flex-wrap gap-3 items-center">
-    <div class="relative flex-1 max-w-sm">
-      <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-        <div class="h-4 w-4 text-neutral-400 dark:text-neutral-500 i-hugeicons-search-01"></div>
-      </div>
-      <input
-        type="search"
-        x-model="search"
-        @input="onSearchInput"
-        :placeholder="searchPlaceholder()"
-        class="block pl-9 pr-3 py-1.5 w-full text-[13px] text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 bg-white dark:bg-white/10 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
-      >
-    </div>
+    <SearchFilter v-model:searchValue="search" :placeholder="searchPlaceholder()" class="flex-1 max-w-sm" @search="onSearchInput" />
 
     <div :if="activeFilterCount() > 0 || search()" class="flex items-center">
       <Button variant="ghost" size="sm" @click="clearFilters()">
@@ -723,13 +713,7 @@ onDestroy(() => {
 
     <div class="flex gap-2 items-center ml-auto text-[12px] text-neutral-500 dark:text-neutral-400">
       <span>Show</span>
-      <select
-        x-model.number="perPage"
-        @change="onPerPageChange"
-        class="px-2 h-8 text-[12px] text-neutral-700 dark:text-neutral-200 bg-white dark:bg-white/10 border border-black/10 rounded-md dark:border-white/15 focus:border-blue-500/50"
-      >
-        <option :for="option in PER_PAGE_OPTIONS" :value="option" :selected="option === perPage()">{{ option }}</option>
-      </select>
+      <Select v-model:value="perPage" ariaLabel="Records per page" size="sm" placeholder="" :options="PER_PAGE_OPTIONS.map(option => ({ value: String(option), label: String(option) }))" @change="onPerPageChange" />
     </div>
   </div>
 

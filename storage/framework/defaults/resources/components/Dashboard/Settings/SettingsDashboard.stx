@@ -198,17 +198,7 @@ void loadFiles()
   <div class="grid gap-6 lg:grid-cols-[17rem_minmax(0,1fr)]">
     <Card variant="default" padding="none">
       <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
-        <label for="config-search" class="sr-only">Search configuration</label>
-        <div class="relative">
-          <span class="absolute left-3 top-1/2 h-4 w-4 text-neutral-400 pointer-events-none -translate-y-1/2 i-hugeicons-search-01"></span>
-          <input
-            id="config-search"
-            type="search"
-            placeholder="Search config"
-            x-model="query"
-            class="block pl-9 pr-3 py-2 w-full text-neutral-900 text-sm dark:text-white placeholder:text-neutral-400 bg-white dark:bg-white/5 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
-          >
-        </div>
+        <SearchFilter v-model:searchValue="query" placeholder="Search config" ariaLabel="Search configuration" />
       </div>
 
       <nav class="overflow-y-auto p-2 max-h-[68vh]" aria-label="Configuration files">

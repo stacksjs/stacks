@@ -184,20 +184,10 @@ onMount(() => {
       empty-description="Adjust the search or category filter."
     >
       <template #toolbar>
-        <label>
-          <span class="sr-only">Filter by category</span>
-          {{-- `x-text` rather than `{{ category }}`: an interpolation inside
-               slot content is preserved but never evaluated on the installed
-               stx, while the attribute forms read the loop variable fine.
-               See stacksjs/stx#2095. --}}
-          <select
-            x-model="selectedCategory"
-            aria-label="Filter by category"
-            class="px-2.5 py-1.5 text-sm bg-white dark:bg-neutral-800 border border-stone-300 rounded-lg dark:border-neutral-600"
-          >
-            <option :for="category in categories()" :value="category" x-text="category"></option>
-          </select>
-        </label>
+        {{-- The options are bound as an attribute: an interpolation inside slot
+             content is preserved but never evaluated on the installed stx.
+             See stacksjs/stx#2095. --}}
+        <Select v-model:value="selectedCategory" ariaLabel="Filter by category" placeholder="" :options="[...categories().map(category => ({ value: category, label: category }))]" />
       </template>
     </Table>
   </section>

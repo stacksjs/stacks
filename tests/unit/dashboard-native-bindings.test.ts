@@ -214,8 +214,10 @@ describe('dashboard native STX bindings', () => {
   test('analytics page header models its local selection across the component boundary', () => {
     const source = componentSource('Analytics/AnalyticsPageHeader.stx')
 
-    expect(source).toContain('x-model="selectedRange"')
-    expect(source).toContain('emitRange($event)')
+    // The shared dropdown, bound both ways, handing the handler the range chosen.
+    expect(source).toContain('<Select v-model:value="selectedRange"')
+    expect(source).toContain('@change="emitRange"')
+    expect(source).toContain('function emitRange(next: string): void {')
     expect(source).not.toContain(':value="range()"')
 
     const webView = readFileSync(
@@ -423,8 +425,8 @@ describe('dashboard native STX bindings', () => {
     expect(preview).toContain('referrerpolicy="no-referrer"')
 
     const list = componentSource('Email/InboxMessageList.stx')
-    expect(list).toContain('x-model="search"')
-    expect(list).toContain("emit('search', $event.target.value)")
+    expect(list).toContain('<SearchFilter v-model:searchValue="search"')
+    expect(list).toContain(`@search="emit('search', $event)"`)
     expect(list).not.toContain('function updateSearch(')
 
     const settings = componentSource('Email/InboxSettingsDashboard.stx')
@@ -1157,7 +1159,7 @@ describe('dashboard native STX bindings', () => {
     expect(view).toContain('<SettingsDashboard />')
     expect(view).not.toContain('<script')
     expect(page).toContain('const drafts = reactive<')
-    expect(page).toContain('x-model="query"')
+    expect(page).toContain('<SearchFilter v-model:searchValue="query"')
     expect(page).toContain('x-model="drafts[field.key]"')
     expect(page).toContain('x-model.number="drafts[field.key]"')
     // A yes or no is the shared switch, bound to its draft the same way.
@@ -1225,9 +1227,8 @@ describe('dashboard native STX bindings', () => {
     // The search box moved into `UI/Table` (`searchable`), so this component
     // no longer owns one - what stays its own is the category filter, which is
     // specific to components. See stacksjs/stacks#2925.
-    expect(component).toContain('x-model="selectedCategory"')
+    expect(component).toContain('<Select v-model:value="selectedCategory"')
     expect(component).toContain('searchable')
-    expect(component).toContain('x-model="selectedCategory"')
     expect(component).toContain('<SourceScaffoldDialog')
     expect(component).not.toContain('fixed inset-y-0')
     expect(functions).toContain('<SourceScaffoldDialog')
@@ -1400,11 +1401,11 @@ describe('dashboard native STX bindings', () => {
       'newPermName',
       'newPermDescription',
       'newPermGuard',
-      'roleFilter',
-      'permissionFilter',
-      'userFilter',
     ])
       expect(page).toContain(`x-model="${model}"`)
+    // The list filters are the shared search box (stacksjs/stacks#3310).
+    for (const model of ['roleFilter', 'permissionFilter', 'userFilter'])
+      expect(page).toContain(`<SearchFilter v-model:searchValue="${model}"`)
 
     const assignmentDrawer = readFileSync(
       resolve('storage/framework/defaults/resources/components/Dashboard/Management/AssignmentDrawer.stx'),
