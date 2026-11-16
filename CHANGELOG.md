@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.616...v0.75.617)
+
+## 🐛 Bug Fixes
+
+- wait for automatic TestFlight group delivery ([1250322](https://github.com/stacksjs/stacks/commit/1250322)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.615...v0.75.616)
 
 ## ✨ Features
