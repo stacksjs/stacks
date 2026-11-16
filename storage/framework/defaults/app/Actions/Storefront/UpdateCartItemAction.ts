@@ -9,11 +9,18 @@ const CART_COOKIE = 'stacks_cart'
  * Change the quantity of a cart line, or remove it (quantity=0).
  * Scoped by the caller's cart cookie so one shopper can't poke at
  * another's cart by guessing item ids.
+ *
+ * The cart page posts plain forms here. The router sends that browser back
+ * to the cart with the notice below, and a `fetch()` caller gets the totals
+ * (stacksjs/stacks#3312).
  */
 export default new Action({
   name: 'UpdateCartItemAction',
   description: 'Update or remove a cart item by id, scoped to caller cookie.',
   method: 'POST',
+  // A changed quantity shows on the page itself. A line that disappears
+  // needs saying.
+  notice: (_result: unknown, request: any) => Number(request.get('quantity') ?? 1) === 0 ? 'Removed from your cart.' : '',
 
   async handle(request: any) {
     const itemId = Number(request.get('item_id') ?? 0)
@@ -72,11 +79,6 @@ export default new Action({
       .set({ total_items: totalItems, subtotal, total: subtotal })
       .where('id', '=', cart.id)
       .execute()
-
-    const wantsHtml = (request.headers?.get?.('accept') || '').includes('text/html')
-    const xhr = request.headers?.get?.('x-requested-with') === 'XMLHttpRequest'
-    if (wantsHtml && !xhr)
-      return response.redirect('/cart')
 
     return response.json({ ok: true, total_items: totalItems, subtotal })
   },

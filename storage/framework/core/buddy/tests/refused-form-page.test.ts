@@ -1,6 +1,7 @@
 /**
  * A form that was refused comes back as its page, with the message under the
- * field and what was typed still in it (stacksjs/stacks#3309).
+ * field and what was typed still in it (stacksjs/stacks#3309). A form that
+ * worked comes back as its page too, saying what it did (stacksjs/stacks#3312).
  *
  * A browser form that failed an action's `validations` was answered with the
  * 422 body: a page of JSON, the back button the only way out. The router now
@@ -44,6 +45,16 @@ function cartCookie(): string {
     else
       process.env.APP_KEY = previous
   }
+}
+
+/** What the router seals when the cart's remove form works. */
+function removed(path = '/cart'): string {
+  return sealFormFlash({ path, errors: {}, old: {}, notice: 'Removed from your cart.', expires: Date.now() + 60_000 }, APP_KEY)!
+}
+
+/** The notice a page shows, or null when it shows none. */
+function readNotice(html: string): string | null {
+  return /<p role="status"[^>]*>\s*([^<]*?)\s*<\/p>/.exec(html)?.[1] ?? null
 }
 
 /** What the router seals when it refuses the contact step's form. */
@@ -108,6 +119,16 @@ const servers = [
   { name: 'buddy serve', entry: process.env.STACKS_SERVE_ENTRY || 'storage/framework/core/buddy/src/serve-entry.ts', env: { APP_ENV: 'production', NODE_ENV: 'production' } },
   { name: 'buddy dev', entry: 'storage/framework/core/actions/src/dev/views.ts', env: { APP_ENV: 'development', NODE_ENV: 'development' } },
 ]
+
+describe('the cart\'s update action', () => {
+  it('says so when a line is removed, and nothing when a quantity changes', async () => {
+    const { default: UpdateCartItemAction } = await import('../../../defaults/app/Actions/Storefront/UpdateCartItemAction')
+    const notice = UpdateCartItemAction.notice as (result: unknown, request: { get: (field: string) => unknown }) => string
+    const posting = (fields: Record<string, string>) => ({ get: (field: string) => fields[field] })
+    expect(notice({ ok: true }, posting({ item_id: '1', quantity: '0' }))).toBe('Removed from your cart.')
+    expect(notice({ ok: true }, posting({ item_id: '1', quantity: '3' }))).toBe('')
+  })
+})
 
 for (const server of servers) {
   describe(`${server.name}: a refused form's page`, () => {
@@ -213,6 +234,21 @@ for (const server of servers) {
       const cart = await get('/cart', [cartCookie(), `${FORM_FLASH_COOKIE}=${refusal()}`])
       await cart.text()
       expect(clears(cart)).toBe(false)
+    }, 60_000)
+
+    it('says what the cart\'s form did, once, and only on the cart', async () => {
+      const cart = await get('/cart', [cartCookie(), `${FORM_FLASH_COOKIE}=${removed()}`])
+      const html = await cart.text()
+      expect(cart.status, output.slice(-2000)).toBe(200)
+      expect(readNotice(html)).toBe('Removed from your cart.')
+      expect(clears(cart)).toBe(true)
+
+      const first = await get('/cart', [cartCookie()])
+      expect(readNotice(await first.text())).toBeNull()
+      // Another page leaves the cart's notice for the cart.
+      const contact = await get('/checkout/contact', [cartCookie(), `${FORM_FLASH_COOKIE}=${removed()}`])
+      expect(readField(await contact.text()).alert).toBeNull()
+      expect(clears(contact)).toBe(false)
     }, 60_000)
 
     // The whole loop: the form crosses this server's proxy to the router,

@@ -98,6 +98,10 @@ never the endpoint (stacksjs/stacks#3309):
 | `fetch()`, an API client, anything that did not ask for a page | `422` with `{ success: false, message: 'Validation failed', errors }`, as always |
 | A browser submitting an HTML form (`Accept` has `text/html`, not a GET) | `303` back to the page the form was on, with the messages and what was posted |
 
+A script that asks for HTML is still a script: when the browser says what it
+is fetching (`Sec-Fetch-Dest`), only a document or a frame counts as a page.
+An action or route group with `apiResponse: true` answers JSON to everyone.
+
 `validations` run before `handle()`, so an action cannot do this for itself.
 The browser used to get the 422 body: a page of JSON with the back button as
 the only way out. Do not work around it in `handle()` with a hand-rolled
@@ -122,7 +126,7 @@ const emailValue = requestContext.old('email', cart.email)  // what was typed, e
   refused), `error(field)` the first for one field, `hasErrors()` whether
   there are any, `old(field, fallback)` what was posted and `oldValues(field)`
   every value of a repeated field.
-- **Shown once.** They travel in a cookie (`stacks_form_errors`) signed with
+- **Shown once.** They travel in a cookie (`stacks_form_flash`) signed with
   `APP_KEY`, good for two minutes and for the one page it names. The page's
   server removes it with the response that showed it. With no `APP_KEY` there
   is nothing to sign with, and the browser gets a plain page listing the
@@ -150,6 +154,59 @@ Tests: `core/router/tests/form-validation-refusal.test.ts`,
 `core/config/tests/form-flash.test.ts`, and
 `core/buddy/tests/refused-form-page.test.ts`, which posts a form through each
 view server and reads the page that comes back.
+
+### A form that worked goes back to its page
+
+The same split holds when the action succeeds (stacksjs/stacks#3312). A
+browser form the action answers with **data** (an object, a list, a string,
+nothing, or a JSON `Response`) is sent back (`303`) to the page it was on. A
+`fetch()` or API caller gets the body, unchanged. The data in a tab was a page
+of JSON that said nothing a person could read: from it, "revoked" and "broken"
+looked the same.
+
+Say what happened with `notice`, in the words the person would use about the
+control they pressed:
+
+```ts
+export default new Action({
+  name: 'RevokeTokenAction',
+  method: 'POST',
+  notice: result => result.already_revoked ? 'That token was already revoked' : 'Token revoked',
+  async handle(request) {
+    // ...
+    return { id: token.id, revoked_at: token.revoked_at, already_revoked: false }
+  },
+})
+```
+
+```html
+<script server>
+const notice = requestContext.notice()   // '' when there is nothing to say
+</script>
+
+@if (notice)
+  <p role="status">{{ notice }}</p>
+@endif
+```
+
+- **The words are yours.** `notice` is a string, or a function of what
+  `handle` returned and the request. The framework never makes one up: "Done"
+  cannot say which of the controls on a page just worked.
+- **No notice, or an empty one, goes back and says nothing.** Right for a POST
+  that only reads. No cookie is set, so the page draws no empty bar.
+- **What the action built itself is left alone**: a page it rendered (an HTML
+  `Response`), a redirect, an error status, a download, a stream. A secret
+  shown once, such as a new API token, must not travel in a redirect, so
+  answer with a rendered page that carries it.
+- With no page of this application to go back to (no `Referer`, another site),
+  a notice is shown on a small page of its own; with no notice the body is
+  sent as before. With no `APP_KEY`, the notice is shown on that small page.
+- Do not write the split by hand (`if (accept.includes('text/html')) return
+  response.redirect(...)`). Return the data and declare the notice.
+
+The shipped cart is the worked example (`Actions/Storefront/UpdateCartItemAction.ts`,
+`views/cart.stx`). Tests: `core/router/tests/form-success-answer.test.ts`, and
+`core/buddy/tests/refused-form-page.test.ts` for the cart page.
 
 `Precognition: true` or `?_validate=1` requests a validation-only probe.
 `Precognition-Validate-Only` narrows explicit validation fields. Probes stop

@@ -83,6 +83,9 @@ const subtotalLabel = summary.subtotalLabel
 const shippingLabel = summary.shippingLabel
 const totalLabel = summary.totalLabel
 const freeShippingNote = summary.freeShippingNote
+
+// What the form just posted from this page did, said once (stacksjs/stacks#3312).
+const cartNotice = requestContext.notice()
 </script>
 
 @section('content')
@@ -91,6 +94,10 @@ const freeShippingNote = summary.freeShippingNote
     <p class="font-medium text-stone-500 text-xs tracking-wider uppercase">Your bowl</p>
     <h1 class="mt-2 font-bold text-4xl text-stone-900 tracking-tight">Cart</h1>
     <p class="mt-2 text-stone-600">{{ items.length }} item{{ items.length === 1 ? '' : 's' }}{{ items.length > 0 ? ' ready to ship' : '' }}.</p>
+
+    @if (cartNotice)
+      <p role="status" class="mt-6 px-4 py-3 font-medium text-sm text-stone-800 bg-stone-100 border border-stone-200 rounded-xl">{{ cartNotice }}</p>
+    @endif
 
     @if (items.length === 0)
       <div class="mt-12 p-12 md:p-16 text-center bg-stone-50 border border-dashed border-stone-300 rounded-3xl">
