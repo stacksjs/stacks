@@ -84,8 +84,8 @@ effect(() => {
   customerId.set(current?.customerId || '')
 })
 
-function syncCurrentBalance(event: Event): void {
-  const next = (event.target as HTMLInputElement).value
+/** What the initial balance was just changed to, as the input reports it. */
+function syncCurrentBalance(next: string): void {
   if (currentBalance() === previousInitialBalance)
     currentBalance.set(next)
   previousInitialBalance = next
@@ -165,20 +165,20 @@ function errorMessages(): string[] {
           <li :for="message in errorMessages()" :key="message">{{ message }}</li>
         </ul>
         <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
-          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Code</span><input x-model="code" type="text" maxlength="50" required spellcheck="false" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Initial balance</span><input x-model="initialBalance" type="number" min="0" :step="moneyInputStep(currency())" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="syncCurrentBalance($event)" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Current balance</span><input x-model="currentBalance" :max="initialBalance()" type="number" min="0" :step="moneyInputStep(currency())" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <div class="sm:col-span-2"><Input v-model:value="code" label="Code" :maxLength="50" :required="true" :spellcheck="false" :monospace="true" class="uppercase" /></div>
+          <Input v-model:value="initialBalance" label="Initial balance" type="number" min="0" :step="moneyInputStep(currency())" :required="true" @input="syncCurrentBalance($event)" />
+          <Input v-model:value="currentBalance" label="Current balance" :max="initialBalance()" type="number" min="0" :step="moneyInputStep(currency())" :required="true" />
           <p :if="balanceError()" class="sm:col-span-2 -mt-2 text-red-600 text-xs dark:text-red-400">{{ balanceError() }}</p>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Currency</span><input x-model="currency" type="text" minlength="3" maxlength="3" required spellcheck="false" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select x-model="status" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="ACTIVE">Active</option><option value="USED">Used</option><option value="EXPIRED">Expired</option><option value="DEACTIVATED">Deactivated</option></select></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Recipient name</span><input x-model="recipientName" type="text" placeholder="Optional" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Recipient email</span><input x-model="recipientEmail" type="email" placeholder="Optional" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Personal message</span><textarea x-model="personalMessage" rows="3" placeholder="Optional" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Expiry date</span><input x-model="expiryDate" type="datetime-local" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Last used date</span><input x-model="lastUsedDate" type="datetime-local" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Purchaser ID</span><input x-model="purchaserId" type="text" placeholder="Optional" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Customer ID</span><input x-model="customerId" type="number" min="1" step="1" placeholder="Optional" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Template ID</span><input x-model="templateId" type="text" placeholder="Optional" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <Input v-model:value="currency" label="Currency" :minLength="3" :maxLength="3" :required="true" :spellcheck="false" :monospace="true" class="uppercase" />
+          <Select v-model:value="status" label="Status" placeholder="" :options="[{ value: 'ACTIVE', label: 'Active' }, { value: 'USED', label: 'Used' }, { value: 'EXPIRED', label: 'Expired' }, { value: 'DEACTIVATED', label: 'Deactivated' }]" />
+          <Input v-model:value="recipientName" label="Recipient name" placeholder="Optional" />
+          <Input v-model:value="recipientEmail" label="Recipient email" type="email" placeholder="Optional" />
+          <div class="sm:col-span-2"><Textarea v-model:value="personalMessage" label="Personal message" :rows="3" placeholder="Optional" /></div>
+          <Input v-model:value="expiryDate" label="Expiry date" type="datetime-local" />
+          <Input v-model:value="lastUsedDate" label="Last used date" type="datetime-local" />
+          <Input v-model:value="purchaserId" label="Purchaser ID" placeholder="Optional" :monospace="true" />
+          <Input v-model:value="customerId" label="Customer ID" type="number" min="1" step="1" placeholder="Optional" />
+          <div class="sm:col-span-2"><Input v-model:value="templateId" label="Template ID" placeholder="Optional" :monospace="true" /></div>
           <div class="grid gap-3 grid-cols-1 sm:col-span-2 sm:grid-cols-3">
             <div class="p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
               <Toggle v-model:checked="isActive" label="Enabled" labelPosition="left" />

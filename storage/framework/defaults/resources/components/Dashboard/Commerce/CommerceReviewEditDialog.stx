@@ -7,7 +7,7 @@ const review = useReactiveProp('review', null as ReviewRecord | null)
 const busy = useReactiveProp('busy', false)
 const errors = useReactiveProp('errors', {} as Record<string, string>)
 const emit = defineEmits(['submit', 'close'])
-const title = state('')
+const reviewTitle = state('')
 const content = state('')
 // A string, so the select can hold "no rating" as well as 1 to 5.
 const rating = state('5')
@@ -24,7 +24,7 @@ effect(() => {
   if (hydratedId === current.id)
     return
   hydratedId = current.id
-  title.set(current.title)
+  reviewTitle.set(current.title)
   content.set(current.content)
   rating.set(current.rating === null ? '' : String(current.rating))
   approved.set(current.approved)
@@ -32,10 +32,10 @@ effect(() => {
 })
 
 function submit(): void {
-  if (!title().trim() || !content().trim())
+  if (!reviewTitle().trim() || !content().trim())
     return
   emit('submit', {
-    title: title().trim(),
+    title: reviewTitle().trim(),
     content: content().trim(),
     rating: rating() === '' ? null : Number(rating()),
     isApproved: approved(),
@@ -61,25 +61,15 @@ function errorMessages(): string[] {
         </ul>
 
         <div class="space-y-4">
-          <label class="block">
-            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Title</span>
-            <input x-model="title" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-          </label>
-          <label class="block">
-            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Review</span>
-            <textarea x-model="content" rows="6" maxlength="2000" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea>
-          </label>
-          <label class="block">
-            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Rating</span>
-            <select x-model="rating" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
-              <option value="5">5 stars</option>
-              <option value="4">4 stars</option>
-              <option value="3">3 stars</option>
-              <option value="2">2 stars</option>
-              <option value="1">1 star</option>
-              <option value="">No rating</option>
-            </select>
-          </label>
+          <div>
+            <Input v-model:value="reviewTitle" label="Title" :maxLength="100" :required="true" />
+          </div>
+          <div>
+            <Textarea v-model:value="content" label="Review" :rows="6" :maxLength="2000" :required="true" />
+          </div>
+          <div>
+            <Select v-model:value="rating" label="Rating" placeholder="" :options="[{ value: '5', label: '5 stars' }, { value: '4', label: '4 stars' }, { value: '3', label: '3 stars' }, { value: '2', label: '2 stars' }, { value: '1', label: '1 star' }, { value: '', label: 'No rating' }]" />
+          </div>
           <div class="grid gap-3 grid-cols-1 sm:grid-cols-2">
             <div class="p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
               <Toggle v-model:checked="approved" label="Approved" labelPosition="left" />
@@ -93,7 +83,7 @@ function errorMessages(): string[] {
   <template #footer>
     <div class="flex gap-2 justify-end w-full">
         <Button variant="secondary" :disabled="busy()" @click="emit('close')">Cancel</Button>
-        <Button type="submit" form="review-form" :loading="busy()" :disabled="!title().trim() || !content().trim()">Save review</Button>
+        <Button type="submit" form="review-form" :loading="busy()" :disabled="!reviewTitle().trim() || !content().trim()">Save review</Button>
     </div>
   </template>
 </Modal>

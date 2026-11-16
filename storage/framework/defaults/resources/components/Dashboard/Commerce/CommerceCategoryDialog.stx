@@ -10,7 +10,7 @@ const busy = useReactiveProp('busy', false)
 const errors = useReactiveProp('errors', {} as Record<string, string>)
 const emit = defineEmits(['submit', 'close'])
 const name = state('')
-const description = state('')
+const descriptionText = state('')
 const slug = state('')
 const imageUrl = state('')
 const isActive = state(true)
@@ -30,7 +30,7 @@ effect(() => {
     return
   hydrationKey = key
   name.set(current?.name || '')
-  description.set(current?.description || '')
+  descriptionText.set(current?.description || '')
   slug.set(current?.slug || '')
   imageUrl.set(current?.imageUrl || '')
   isActive.set(current?.isActive ?? true)
@@ -94,7 +94,7 @@ function submit(): void {
     return
   emit('submit', {
     name: name().trim(),
-    description: description().trim(),
+    description: descriptionText().trim(),
     slug: slugify(slug()),
     imageUrl: imageUrl().trim(),
     isActive: isActive(),
@@ -121,12 +121,12 @@ function errorMessages(): string[] {
           <li :for="message in errorMessages()" :key="message">{{ message }}</li>
         </ul>
         <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span><input x-model="name" type="text" maxlength="50" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Slug</span><input x-model="slug" type="text" required spellcheck="false" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="markSlugTouched" @blur="normalizeSlug" /></label>
-          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Description</span><textarea x-model="description" rows="3" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea></label>
-          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Image URL</span><input x-model="imageUrl" type="text" placeholder="Optional persisted asset URL" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /><span class="block mt-1 text-gray-500 text-xs dark:text-neutral-500">Use a stored asset URL. File uploads belong to the native storage workflow.</span></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Parent category</span><select x-model="parentCategoryId" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="">Root category</option><option :for="option in parentOptions()" :key="option.id" :value="option.id">{{ option.name }}</option></select></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Display order</span><input x-model="displayOrder" type="number" min="0" step="1" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <Input v-model:value="name" label="Name" :maxLength="50" :required="true" />
+          <Input v-model:value="slug" label="Slug" :required="true" :spellcheck="false" :monospace="true" @input="markSlugTouched" @blur="normalizeSlug" />
+          <div class="sm:col-span-2"><Textarea v-model:value="descriptionText" label="Description" :rows="3" /></div>
+          <div class="sm:col-span-2"><Input v-model:value="imageUrl" label="Image URL" placeholder="Optional persisted asset URL" hint="Use a stored asset URL. File uploads belong to the native storage workflow." /></div>
+          <Select v-model:value="parentCategoryId" label="Parent category" placeholder="" :options="[{ value: '', label: 'Root category' }, ...parentOptions().map(option => ({ value: option.id, label: option.name }))]" />
+          <Input v-model:value="displayOrder" label="Display order" type="number" min="0" step="1" :required="true" />
           <div class="sm:col-span-2 p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
             <Toggle v-model:checked="isActive" label="Active in the storefront" description="Availability is independent from the hierarchy." labelPosition="left" />
           </div>

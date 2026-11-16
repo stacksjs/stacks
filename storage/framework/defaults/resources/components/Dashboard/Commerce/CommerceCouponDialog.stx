@@ -15,7 +15,7 @@ const busy = useReactiveProp('busy', false)
 const errors = useReactiveProp('errors', {} as Record<string, string>)
 const emit = defineEmits(['submit', 'close'])
 const code = state('')
-const description = state('')
+const descriptionText = state('')
 const status = state<CouponStatus>('Active')
 const isActive = state(true)
 const discountType = state<CouponDiscountType>('percentage')
@@ -39,7 +39,7 @@ effect(() => {
     return
   hydrationKey = key
   code.set(current?.code || '')
-  description.set(current?.description || '')
+  descriptionText.set(current?.description || '')
   status.set(current?.status || 'Active')
   isActive.set(current?.isActive ?? true)
   discountType.set(current?.discountType || 'percentage')
@@ -88,7 +88,7 @@ function submit(): void {
     return
   emit('submit', {
     code: code().trim().toUpperCase(),
-    description: description().trim(),
+    description: descriptionText().trim(),
     status: status(),
     isActive: isActive(),
     discountType: discountType(),
@@ -121,17 +121,17 @@ function errorMessages(): string[] {
           <li :for="message in errorMessages()" :key="message">{{ message }}</li>
         </ul>
         <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Code</span><input x-model="code" type="text" maxlength="50" required spellcheck="false" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select x-model="status" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="Active">Active</option><option value="Scheduled">Scheduled</option><option value="Expired">Expired</option></select></label>
-          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Description</span><textarea x-model="description" rows="3" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Discount type</span><select x-model="discountType" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="percentage">Percentage</option><option value="fixed_amount">Fixed amount</option></select></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Discount value</span><input x-model="discountValue" type="number" :min="discountType() === 'fixed_amount' ? '0' : '0.01'" :step="discountType() === 'fixed_amount' ? moneyInputStep(currency()) : '0.01'" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Minimum order amount</span><input x-model="minOrderAmount" type="number" min="0" :step="moneyInputStep(currency())" placeholder="No minimum" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Maximum discount amount</span><input x-model="maxDiscountAmount" type="number" min="0" :step="moneyInputStep(currency())" placeholder="No maximum" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Usage limit</span><input x-model="usageLimit" type="number" min="1" step="1" placeholder="No limit" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Free product ID</span><input x-model="freeProductId" type="text" placeholder="Optional" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Start date</span><input x-model="startDate" type="date" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">End date</span><input x-model="endDate" type="date" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <Input v-model:value="code" label="Code" :maxLength="50" :required="true" :spellcheck="false" :monospace="true" class="uppercase" />
+          <Select v-model:value="status" label="Status" placeholder="" :options="[{ value: 'Active', label: 'Active' }, { value: 'Scheduled', label: 'Scheduled' }, { value: 'Expired', label: 'Expired' }]" />
+          <div class="sm:col-span-2"><Textarea v-model:value="descriptionText" label="Description" :rows="3" /></div>
+          <Select v-model:value="discountType" label="Discount type" placeholder="" :options="[{ value: 'percentage', label: 'Percentage' }, { value: 'fixed_amount', label: 'Fixed amount' }]" />
+          <Input v-model:value="discountValue" label="Discount value" type="number" :min="discountType() === 'fixed_amount' ? '0' : '0.01'" :step="discountType() === 'fixed_amount' ? moneyInputStep(currency()) : '0.01'" :required="true" />
+          <Input v-model:value="minOrderAmount" label="Minimum order amount" type="number" min="0" :step="moneyInputStep(currency())" placeholder="No minimum" />
+          <Input v-model:value="maxDiscountAmount" label="Maximum discount amount" type="number" min="0" :step="moneyInputStep(currency())" placeholder="No maximum" />
+          <Input v-model:value="usageLimit" label="Usage limit" type="number" min="1" step="1" placeholder="No limit" />
+          <Input v-model:value="freeProductId" label="Free product ID" placeholder="Optional" :monospace="true" />
+          <Input v-model:value="startDate" label="Start date" type="date" />
+          <Input v-model:value="endDate" label="End date" type="date" />
           <div class="sm:col-span-2 p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
             <Toggle v-model:checked="isActive" label="Enabled for redemption" description="Availability is stored separately from lifecycle status." labelPosition="left" />
           </div>

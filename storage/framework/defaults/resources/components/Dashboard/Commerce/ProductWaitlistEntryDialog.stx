@@ -142,8 +142,8 @@ effect(() => {
   void loadChoices('customers', '')
 })
 
-function hydrateCustomer(event: Event): void {
-  const selectedId = (event.target as HTMLSelectElement).value
+/** The customer just chosen, by the id the select reports. */
+function hydrateCustomer(selectedId: string): void {
   const customer = customers().find(option => option.id === selectedId)
   if (!customer)
     return
@@ -193,86 +193,33 @@ function errorMessages(): string[] {
     </ul>
 
     <div class="grid gap-4 sm:grid-cols-2 mt-6">
-      <label class="block sm:col-span-2">
-        <span class="block font-medium text-gray-900 text-sm dark:text-neutral-200">Product</span>
-        <input x-model="productQuery" @input="searchSoon('products')" type="search" name="product_search" aria-label="Search products by name or id" placeholder="Search products by name or id" class="block mt-2 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" />
-      </label>
+      <div class="sm:col-span-2"><Input v-model:value="productQuery" label="Product" type="search" name="product_search" ariaLabel="Search products by name or id" placeholder="Search products by name or id" @input="searchSoon('products')" /></div>
       <div class="sm:col-span-2 -mt-2">
-        <select x-model="productId" required aria-label="Product" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600">
-          <option value="">Select a product</option>
-          <option :for="option in products()" :key="option.id" :value="option.id" :selected="option.id === String(productId())">{{ option.label }}{{ option.detail ? ' · ' + option.detail : '' }}</option>
-        </select>
+        <Select v-model:value="productId" ariaLabel="Product" :required="true" placeholder="Select a product" :options="[...products().map(option => ({ value: option.id, label: option.label + (option.detail ? ' · ' + option.detail : '') }))]" />
         <p :if="moreLabel(productChoices().length, productMatches(), 'products')" class="mt-1 text-gray-500 text-xs dark:text-neutral-400" :text="moreLabel(productChoices().length, productMatches(), 'products')"></p>
       </div>
 
-      <label class="block sm:col-span-2">
-        <span class="block font-medium text-gray-900 text-sm dark:text-neutral-200">Existing customer</span>
-        <input x-model="customerQuery" @input="searchSoon('customers')" type="search" name="customer_search" aria-label="Search customers by name, email or phone" placeholder="Search customers by name, email or phone" class="block mt-2 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" />
-      </label>
+      <div class="sm:col-span-2"><Input v-model:value="customerQuery" label="Existing customer" type="search" name="customer_search" ariaLabel="Search customers by name, email or phone" placeholder="Search customers by name, email or phone" @input="searchSoon('customers')" /></div>
       <div class="sm:col-span-2 -mt-2">
-        <select x-model="customerId" aria-label="Existing customer" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" @change="hydrateCustomer($event)">
-          <option value="">No linked customer</option>
-          <option :for="option in customers()" :key="option.id" :value="option.id" :selected="option.id === String(customerId())">{{ option.label }}{{ option.detail ? ' · ' + option.detail : '' }}</option>
-        </select>
+        <Select v-model:value="customerId" ariaLabel="Existing customer" placeholder="" :options="[{ value: '', label: 'No linked customer' }, ...customers().map(option => ({ value: option.id, label: option.label + (option.detail ? ' · ' + option.detail : '') }))]" @change="hydrateCustomer($event)" />
         <p :if="moreLabel(customerChoices().length, customerMatches(), 'customers')" class="mt-1 text-gray-500 text-xs dark:text-neutral-400" :text="moreLabel(customerChoices().length, customerMatches(), 'customers')"></p>
       </div>
 
-      <label class="block">
-        <span class="block font-medium text-gray-900 text-sm dark:text-neutral-200">Name</span>
-        <input type="text" x-model.trim="name" required maxlength="255" autocomplete="name" class="block mt-2 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" />
-      </label>
+      <Input v-model:value="name" label="Name" :required="true" :maxLength="255" autocomplete="name" />
 
-      <label class="block">
-        <span class="block font-medium text-gray-900 text-sm dark:text-neutral-200">Email</span>
-        <input type="email" x-model.trim="email" required maxlength="255" autocomplete="email" class="block mt-2 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" />
-      </label>
+      <Input type="email" label="Email" v-model:value="email" :required="true" :maxLength="255" autocomplete="email" />
 
-      <label class="block">
-        <span class="block font-medium text-gray-900 text-sm dark:text-neutral-200">Phone</span>
-        <input type="tel" x-model.trim="phone" maxlength="100" autocomplete="tel" class="block mt-2 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" />
-      </label>
+      <Input type="tel" label="Phone" v-model:value="phone" :maxLength="100" autocomplete="tel" />
 
-      <label class="block">
-        <span class="block font-medium text-gray-900 text-sm dark:text-neutral-200">Quantity</span>
-        <input type="number" x-model.number="quantity" required min="1" step="1" class="block mt-2 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" />
-      </label>
+      <Input type="number" label="Quantity" v-model:value="quantity" :required="true" min="1" step="1" />
 
-      <label class="block">
-        <span class="block font-medium text-gray-900 text-sm dark:text-neutral-200">Notification preference</span>
-        <select x-model="notificationPreference" required class="block mt-2 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600">
-          <option value="email">Email</option>
-          <option value="sms">SMS</option>
-          <option value="both">Email and SMS</option>
-        </select>
-      </label>
+      <Select v-model:value="notificationPreference" label="Notification preference" :required="true" placeholder="" :options="[{ value: 'email', label: 'Email' }, { value: 'sms', label: 'SMS' }, { value: 'both', label: 'Email and SMS' }]" />
 
-      <label class="block">
-        <span class="block font-medium text-gray-900 text-sm dark:text-neutral-200">Source</span>
-        <select x-model="source" required class="block mt-2 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600">
-          <option value="website">Website</option>
-          <option value="social_media">Social media</option>
-          <option value="in-store">In store</option>
-          <option value="email">Email</option>
-          <option value="app">App</option>
-          <option value="referral">Referral</option>
-          <option value="other">Other</option>
-        </select>
-      </label>
+      <Select v-model:value="source" label="Source" :required="true" placeholder="" :options="[{ value: 'website', label: 'Website' }, { value: 'social_media', label: 'Social media' }, { value: 'in-store', label: 'In store' }, { value: 'email', label: 'Email' }, { value: 'app', label: 'App' }, { value: 'referral', label: 'Referral' }, { value: 'other', label: 'Other' }]" />
 
-      <label class="block">
-        <span class="block font-medium text-gray-900 text-sm dark:text-neutral-200">Status</span>
-        <select x-model="status" required class="block mt-2 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600">
-          <option value="waiting">Waiting</option>
-          <option value="notified">Notified</option>
-          <option value="purchased">Purchased</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
-      </label>
+      <Select v-model:value="status" label="Status" :required="true" placeholder="" :options="[{ value: 'waiting', label: 'Waiting' }, { value: 'notified', label: 'Notified' }, { value: 'purchased', label: 'Purchased' }, { value: 'cancelled', label: 'Cancelled' }]" />
 
-      <label class="block sm:col-span-2">
-        <span class="block font-medium text-gray-900 text-sm dark:text-neutral-200">Notes</span>
-        <textarea x-model.trim="notes" maxlength="500" rows="3" class="block mt-2 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600"></textarea>
-      </label>
+      <div class="sm:col-span-2"><Textarea v-model:value="notes" label="Notes" :maxLength="500" :rows="3" /></div>
     </div>
 
   </form>

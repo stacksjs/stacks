@@ -61,7 +61,7 @@ function submit(): void {
   @close="emit('close')"
 >
     <form id="payment-refund-form" @submit.prevent="submit">
-        <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Refund amount</span><input x-model="amount" type="number" :min="minorToInput(1, paymentCurrency())" :max="minorToInput(remaining(), paymentCurrency())" :step="moneyInputStep(paymentCurrency())" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+        <Input v-model:value="amount" label="Refund amount" type="number" :min="minorToInput(1, paymentCurrency())" :max="minorToInput(remaining(), paymentCurrency())" :step="moneyInputStep(paymentCurrency())" :required="true" />
         <p class="mt-2 text-amber-700 text-xs dark:text-amber-300">This records an already confirmed processor refund. It does not initiate money movement.</p>
     </form>
   <template #footer>

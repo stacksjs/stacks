@@ -68,11 +68,11 @@ function errorMessages(): string[] {
           <li :for="message in errorMessages()" :key="message">{{ message }}</li>
         </ul>
         <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
-          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span><input x-model="name" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">MAC address</span><input x-model="macAddress" type="text" maxlength="50" required spellcheck="false" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Location</span><input x-model="location" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Terminal</span><input x-model="terminal" type="text" maxlength="50" required spellcheck="false" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Operational status</span><select x-model="status" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="online">Online</option><option value="warning">Warning</option><option value="offline">Offline</option></select></label>
+          <div class="sm:col-span-2"><Input v-model:value="name" label="Name" :maxLength="100" :required="true" /></div>
+          <div class="sm:col-span-2"><Input v-model:value="macAddress" label="MAC address" :maxLength="50" :required="true" :spellcheck="false" :monospace="true" /></div>
+          <Input v-model:value="location" label="Location" :maxLength="100" :required="true" />
+          <Input v-model:value="terminal" label="Terminal" :maxLength="50" :required="true" :spellcheck="false" :monospace="true" />
+          <div class="sm:col-span-2"><Select v-model:value="status" label="Operational status" placeholder="" :options="[{ value: 'online', label: 'Online' }, { value: 'warning', label: 'Warning' }, { value: 'offline', label: 'Offline' }]" /></div>
         </div>
     </form>
   <template #footer>

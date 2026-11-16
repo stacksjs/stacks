@@ -9,7 +9,7 @@ const busy = useReactiveProp('busy', false)
 const errors = useReactiveProp('errors', {} as Record<string, string>)
 const emit = defineEmits(['submit', 'close'])
 const name = state('')
-const description = state('')
+const descriptionText = state('')
 const country = state('')
 const featured = state(false)
 let hydrationKey = ''
@@ -25,7 +25,7 @@ effect(() => {
     return
   hydrationKey = key
   name.set(current?.name || '')
-  description.set(current?.description || '')
+  descriptionText.set(current?.description || '')
   country.set(current?.country || '')
   featured.set(current?.featured || false)
 })
@@ -35,7 +35,7 @@ function submit(): void {
     return
   emit('submit', {
     manufacturer: name().trim(),
-    description: description().trim(),
+    description: descriptionText().trim(),
     country: country().trim(),
     featured: featured(),
   })
@@ -58,18 +58,15 @@ function errorMessages(): string[] {
           <li :for="message in errorMessages()" :key="message">{{ message }}</li>
         </ul>
         <div class="space-y-4">
-          <label class="block">
-            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span>
-            <input x-model="name" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-          </label>
-          <label class="block">
-            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Description</span>
-            <textarea x-model="description" rows="4" maxlength="2000" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea>
-          </label>
-          <label class="block">
-            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Country</span>
-            <input x-model="country" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-          </label>
+          <div>
+            <Input v-model:value="name" label="Name" :maxLength="100" :required="true" />
+          </div>
+          <div>
+            <Textarea v-model:value="descriptionText" label="Description" :rows="4" :maxLength="2000" />
+          </div>
+          <div>
+            <Input v-model:value="country" label="Country" :maxLength="100" :required="true" />
+          </div>
           <div class="p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
             <Toggle v-model:checked="featured" label="Featured manufacturer" labelPosition="left" />
           </div>

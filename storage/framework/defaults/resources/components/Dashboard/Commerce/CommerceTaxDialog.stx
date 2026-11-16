@@ -10,7 +10,10 @@ const busy = useReactiveProp('busy', false)
 const errors = useReactiveProp('errors', {} as Record<string, string>)
 const emit = defineEmits(['submit', 'close'])
 const name = state('')
-const rate = state(0)
+const rate = state<number | string>(0)
+/** The rate as a number: the input reports what was typed, as text. Not a number while it is empty. */
+const rateValue = derived(() => rate() === '' ? Number.NaN : Number(rate()))
+const rateValid = derived(() => rateValue() >= 0 && rateValue() <= 100)
 const type = state('')
 const country = state('')
 const region = state('North America')
@@ -44,11 +47,11 @@ effect(() => {
 })
 
 function submit(): void {
-  if (!name().trim() || !type().trim() || !country().trim() || rate() < 0 || rate() > 100)
+  if (!name().trim() || !type().trim() || !country().trim() || !rateValid())
     return
   emit('submit', {
     name: name().trim(),
-    rate: rate(),
+    rate: rateValue(),
     type: type().trim(),
     country: country().trim(),
     region: region(),
@@ -76,45 +79,26 @@ function errorMessages(): string[] {
           <li :for="message in errorMessages()" :key="message">{{ message }}</li>
         </ul>
         <div class="space-y-4">
-          <label class="block">
-            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span>
-            <input x-model="name" type="text" maxlength="255" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-          </label>
+          <div>
+            <Input v-model:value="name" label="Name" :maxLength="255" :required="true" />
+          </div>
           <div class="grid gap-4 sm:grid-cols-2">
-            <label class="block">
-              <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Rate (%)</span>
-              <input x-model.number="rate" type="number" min="0" max="100" step="0.01" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-            </label>
-            <label class="block">
-              <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Type</span>
-              <input x-model="type" type="text" list="tax-rate-types" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
+            <Input v-model:value="rate" label="Rate (%)" type="number" min="0" max="100" step="0.01" :required="true" />
+            <div>
+              <Input v-model:value="type" label="Type" list="tax-rate-types" :maxLength="100" :required="true" />
               <datalist id="tax-rate-types"><option :for="taxType in types()" :key="taxType" :value="taxType"></option></datalist>
-            </label>
+            </div>
           </div>
-          <label class="block">
-            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Country</span>
-            <input x-model="country" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-          </label>
+          <div>
+            <Input v-model:value="country" label="Country" :maxLength="100" :required="true" />
+          </div>
           <div class="grid gap-4 sm:grid-cols-2">
-            <label class="block">
-              <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Region</span>
-              <select x-model="region" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
-                <option :for="regionOption in regions" :key="regionOption" :value="regionOption">{{ regionOption }}</option>
-              </select>
-            </label>
-            <label class="block">
-              <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span>
-              <select x-model="status" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-            </label>
+            <Select v-model:value="region" label="Region" placeholder="" :options="[...regions.map(regionOption => ({ value: regionOption, label: regionOption }))]" />
+            <Select v-model:value="status" label="Status" placeholder="" :options="[{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }]" />
           </div>
-          <label class="block">
-            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Code</span>
-            <input x-model="code" type="text" placeholder="sales" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-            <span class="block mt-1 text-gray-500 text-xs dark:text-neutral-400">What the application matches on. Renaming the rate above does not change what is charged; changing this can.</span>
-          </label>
+          <div>
+            <Input v-model:value="code" label="Code" placeholder="sales" :monospace="true" hint="What the application matches on. Renaming the rate above does not change what is charged; changing this can." />
+          </div>
           <div class="p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
             <Toggle v-model:checked="isDefault" label="Default tax rate" description="Selecting this clears the default flag from every other rate." labelPosition="left" />
           </div>
@@ -131,7 +115,7 @@ function errorMessages(): string[] {
   <template #footer>
     <div class="flex gap-2 justify-end w-full">
         <Button variant="secondary" :disabled="busy()" @click="emit('close')">Cancel</Button>
-        <Button type="submit" form="tax-rate-form" :loading="busy()" :disabled="!name().trim() || !type().trim() || !country().trim() || rate() < 0 || rate() > 100">
+        <Button type="submit" form="tax-rate-form" :loading="busy()" :disabled="!name().trim() || !type().trim() || !country().trim() || !rateValid()">
           {{ mode() === 'edit' ? 'Save tax rate' : 'Add tax rate' }}
         </Button>
     </div>
