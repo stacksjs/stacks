@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.606...v0.75.607)
+
+## 🐛 Bug Fixes
+
+- **buddy**: keep defaults migration inside its repository ([6259eac](https://github.com/stacksjs/stacks/commit/6259eac)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.605...v0.75.606)
 
 ## ✅ Tests

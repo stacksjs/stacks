@@ -2,7 +2,7 @@
   "name": "@stacksjs/email",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.606",
+  "version": "0.75.607",
   "description": "The Stacks Email integration. Painlessly create & manage your inboxes, templates, and send emails.",
   "author": "Chris Breuer",
   "contributors": [
