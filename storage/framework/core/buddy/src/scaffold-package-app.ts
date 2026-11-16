@@ -329,7 +329,9 @@ function projectSources(dir: string): string[] {
   return entries.flatMap((entry) => {
     const full = join(dir, entry.name)
     if (entry.isDirectory())
-      return SKIPPED_DIRECTORIES.has(entry.name) ? [] : projectSources(full)
+      // A nested clone has a .git directory; an agent worktree has a .git
+      // file. Both own their imports independently of the parent application.
+      return SKIPPED_DIRECTORIES.has(entry.name) || existsSync(join(full, '.git')) ? [] : projectSources(full)
     return entry.isFile() && SCANNED_EXTENSIONS.has(extname(entry.name)) ? [full] : []
   })
 }

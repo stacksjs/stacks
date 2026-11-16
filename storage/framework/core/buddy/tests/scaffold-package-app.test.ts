@@ -163,6 +163,23 @@ test('a template import gets no .ts extension, which stx typecheck rejects', () 
   expect(readFileSync(join(app, 'resources/views/index.stx'), 'utf8')).toContain('from \'@stacksjs/defaults/functions/toasts\'')
 })
 
+test('defaults migration preserves nested clones and worktrees while updating this application', () => {
+  const source = 'export { default } from \'../storage/framework/defaults/app/Routes\'\n'
+  write('.git', 'gitdir: /synthetic/outer-worktree\n')
+  write('app/Routes.ts', source)
+  write('packages/shared/app/Routes.ts', source)
+  write('.claude/worktrees/other/.git', 'gitdir: /synthetic/other-worktree\n')
+  write('.claude/worktrees/other/app/Routes.ts', source)
+  write('examples/other-clone/.git/config', '[core]\n')
+  write('examples/other-clone/app/Routes.ts', source)
+
+  expect(rewriteDefaultsImports(app, () => true).sort()).toEqual(['app/Routes.ts', 'packages/shared/app/Routes.ts'])
+  for (const file of ['.claude/worktrees/other/app/Routes.ts', 'examples/other-clone/app/Routes.ts'])
+    expect(readFileSync(join(app, file), 'utf8')).toBe(source)
+  expect(readFileSync(join(app, 'app/Routes.ts'), 'utf8')).toContain('@stacksjs/defaults/app/Routes.ts')
+  expect(readFileSync(join(app, 'packages/shared/app/Routes.ts'), 'utf8')).toContain('@stacksjs/defaults/app/Routes.ts')
+})
+
 test('content globs into the core point at the published package', () => {
   copy('config/css.ts')
 
