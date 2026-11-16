@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.614...v0.75.615)
+
+## 🐛 Bug Fixes
+
+- **email**: an app's own mail host stands in for the scaffold's local catcher in production ([8c939e4](https://github.com/stacksjs/stacks/commit/8c939e4)) _(by Chris Breuer)_
+- **deploy**: the mail host's certificate is issued on the first deploy ([1ac24c2](https://github.com/stacksjs/stacks/commit/1ac24c2)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.613...v0.75.614)
 
 ## ✨ Features

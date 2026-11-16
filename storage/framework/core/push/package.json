@@ -2,7 +2,7 @@
   "name": "@stacksjs/push",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.614",
+  "version": "0.75.615",
   "description": "The Stacks Push integration",
   "author": "Chris Breuer",
   "contributors": [
