@@ -129,3 +129,45 @@ describe('the mail host of an app that runs its own mail', () => {
     expect(ownMailHost(undefined, 'production')).toBeUndefined()
   })
 })
+
+describe('the scaffold\'s local catcher and an app with its own mail', () => {
+  const originalEmail = { domain: (config as any).email?.domain, server: (config as any).email?.server }
+  const originalAppEnv = process.env.APP_ENV
+
+  afterEach(() => {
+    if ((config as any).email) {
+      ;(config as any).email.domain = originalEmail.domain
+      ;(config as any).email.server = originalEmail.server
+    }
+    if (originalAppEnv === undefined) delete process.env.APP_ENV
+    else process.env.APP_ENV = originalAppEnv
+  })
+
+  function scaffolded(): void {
+    delete process.env.MAIL_HOST
+    delete process.env.MAIL_PORT
+    delete process.env.MAIL_ENCRYPTION
+    if (config.services)
+      config.services.smtp = { host: '127.0.0.1', port: 1025, username: '', password: '', encryption: null } as any
+    ;(config as any).email.domain = 'votescape.org'
+    ;(config as any).email.server = { enabled: true }
+  }
+
+  it('in production, reaches its own mail host on the submission port with STARTTLS', () => {
+    scaffolded()
+    process.env.APP_ENV = 'production'
+    expect(resolve(new SMTPDriver())).toMatchObject({ host: 'mail.votescape.org', port: 587, encryption: 'starttls' })
+  })
+
+  it('keeps the catcher on a developer\'s machine, and a host that was named anywhere', () => {
+    scaffolded()
+    process.env.APP_ENV = 'local'
+    expect(resolve(new SMTPDriver())).toMatchObject({ host: '127.0.0.1', port: 1025 })
+
+    process.env.APP_ENV = 'production'
+    process.env.MAIL_HOST = 'smtp.elsewhere.example'
+    if (config.services)
+      config.services.smtp = { host: 'smtp.elsewhere.example', port: 465, username: '', password: '', encryption: 'ssl' } as any
+    expect(resolve(new SMTPDriver())).toMatchObject({ host: 'smtp.elsewhere.example', port: 465, encryption: 'ssl' })
+  })
+})

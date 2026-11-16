@@ -9,6 +9,10 @@ import type { TemplateOptions } from '../template'
 import { templateByName } from '../template'
 import { signDkim } from '../dkim'
 
+function isLoopbackHost(host: string): boolean {
+  return ['127.0.0.1', 'localhost', '::1', '0.0.0.0'].includes(host.trim().toLowerCase())
+}
+
 /**
  * The mail host of an app that runs its own mail (`email.server.enabled`),
  * for when no host is named: `mail.<domain>`, which its deploy publishes and
@@ -97,8 +101,15 @@ export class SMTPDriver extends BaseEmailDriver {
     const smtp = config.services?.smtp
     const env = process.env
 
-    const host = smtp?.host || env.MAIL_HOST || ownMailHost(config.email) || '127.0.0.1'
-    const port = smtp?.port || (env.MAIL_PORT ? Number(env.MAIL_PORT) : undefined) || 587
+    // A scaffolded config/services.ts names the local catcher (127.0.0.1:1025)
+    // when MAIL_HOST is unset. For an app that runs its own mail that is a
+    // placeholder, not a choice: where mail really goes out, its own host
+    // stands in for it, on the submission port.
+    const own = !env.MAIL_HOST && (!smtp?.host || isLoopbackHost(smtp.host)) ? ownMailHost(config.email) : undefined
+    const host = own || smtp?.host || env.MAIL_HOST || '127.0.0.1'
+    const port = own
+      ? (env.MAIL_PORT ? Number(env.MAIL_PORT) : 587)
+      : smtp?.port || (env.MAIL_PORT ? Number(env.MAIL_PORT) : undefined) || 587
 
     // Auth identity: an explicit SMTP username/password wins; otherwise fall
     // back to the app's configured SENDER mailbox (config.email.from.address),
@@ -113,7 +124,7 @@ export class SMTPDriver extends BaseEmailDriver {
     const localPart = (username.includes('@') ? username.split('@')[0]! : username).toUpperCase().replace(/[^A-Z0-9]/g, '_')
     const password = smtp?.password || env.MAIL_PASSWORD || (localPart ? env[`MAIL_PASSWORD_${localPart}`] : undefined) || ''
     // Its own mail host is a real server on the submission port: STARTTLS.
-    const rawEncryption = smtp?.encryption ?? env.MAIL_ENCRYPTION ?? (!smtp?.host && !env.MAIL_HOST && host !== '127.0.0.1' ? 'tls' : null)
+    const rawEncryption = own ? (env.MAIL_ENCRYPTION || 'tls') : (smtp?.encryption ?? env.MAIL_ENCRYPTION ?? null)
 
     return {
       host,
