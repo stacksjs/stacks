@@ -17,6 +17,23 @@ const liveId = useReactiveProp('id', '')
 const liveSize = useReactiveProp('size', 'md' as InputSize)
 const liveName = useReactiveProp('name', '')
 const liveFullWidth = useReactiveProp('fullWidth', true)
+// What the browser itself holds a value to: a number's or a date's range and
+// step, a text's length. Empty or zero means the input has none.
+const liveMin = useReactiveProp<string | number>('min', '')
+const liveMax = useReactiveProp<string | number>('max', '')
+const liveStep = useReactiveProp<string | number>('step', '')
+const liveMaxLength = useReactiveProp('maxLength', 0)
+const liveMinLength = useReactiveProp('minLength', 0)
+// Which keyboard a phone shows: `decimal`, `numeric`, `email`, `tel`, `url`.
+const liveInputmode = useReactiveProp('inputmode', '')
+// Null leaves it to the browser. False for what is not prose: a slug, a code, a key.
+const liveSpellcheck = useReactiveProp<boolean | null>('spellcheck', null)
+// The id of a `<datalist>` of suggestions.
+const liveList = useReactiveProp('list', '')
+// Codes, keys and slugs read better in a fixed-width face.
+const liveMonospace = useReactiveProp('monospace', false)
+// Added to the input itself: `uppercase` for a code that is stored that way.
+const liveClass = useReactiveProp('class', '')
 const emit = defineEmits(['update:value', 'input', 'change', 'blur'])
 const generatedId = useId('input')
 
@@ -37,11 +54,20 @@ const inputClass = derived(() => [
   'transition-all duration-150',
   'focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-0',
   sizeClasses[liveSize()] || sizeClasses.md,
+  liveMonospace() ? 'font-mono' : '',
+  // Digits of one width, so a column of amounts lines up and a number does not shift as it is typed.
+  liveType() === 'number' ? 'tabular-nums' : '',
   liveError()
     ? 'border-red-400/60 dark:border-red-500/60 focus:border-red-500 focus:ring-red-500/30'
     : 'border-stone-200/80 dark:border-white/15 focus:border-blue-400 hover:border-stone-300 dark:hover:border-white/25',
   liveDisabled() ? 'opacity-40 cursor-not-allowed bg-stone-50 dark:bg-white/5' : '',
+  liveClass(),
 ].join(' '))
+
+/** An attribute's value, or null to leave the attribute off. Zero is a real minimum. */
+function bound(value: string | number): string | number | null {
+  return value === '' || value === null || value === undefined ? null : value
+}
 
 function inputValue(event: Event): string {
   return (event.target as HTMLInputElement).value
@@ -85,6 +111,14 @@ function handleBlur(event: Event): void {
       :aria-invalid="liveError() ? 'true' : null"
       :autocomplete="liveAutocomplete() || null"
       :name="liveName() || null"
+      :min="bound(liveMin())"
+      :max="bound(liveMax())"
+      :step="bound(liveStep())"
+      :maxlength="liveMaxLength() || null"
+      :minlength="liveMinLength() || null"
+      :inputmode="liveInputmode() || null"
+      :spellcheck="liveSpellcheck() === null ? null : String(liveSpellcheck())"
+      :list="liveList() || null"
       class="{{ $slots.iconLeft ? 'pl-8' : '' }}"
       :class="inputClass()"
       @input="handleInput"

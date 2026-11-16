@@ -95,6 +95,7 @@ function handleChange(event: Event): void {
       <option
         :for="option in liveOptions()"
         :value="optionValue(option)"
+        :selected="String(optionValue(option)) === String(liveValue())"
         :disabled="optionDisabled(option)"
       >
         {{ optionLabel(option) }}

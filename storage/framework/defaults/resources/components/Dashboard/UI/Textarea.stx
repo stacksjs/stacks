@@ -19,6 +19,8 @@ const liveAriaLabel = useReactiveProp('ariaLabel', '')
 const liveClass = useReactiveProp('class', '')
 // Code and structured text (JSON) read better in a fixed-width face.
 const liveMonospace = useReactiveProp('monospace', false)
+// Null leaves it to the browser. False for what is not prose: JSON, a template.
+const liveSpellcheck = useReactiveProp<boolean | null>('spellcheck', null)
 const emit = defineEmits(['update:value', 'input', 'change', 'blur'])
 const generatedId = useId('textarea')
 
@@ -97,6 +99,7 @@ function handleBlur(event: Event): void {
       :aria-label="liveAriaLabel() || liveLabel() || null"
       :aria-invalid="liveError() ? 'true' : null"
       :maxlength="liveMaxLength() || null"
+      :spellcheck="liveSpellcheck() === null ? null : String(liveSpellcheck())"
       :class="textareaClass()"
       x-model="liveValue"
       :disabled="liveDisabled()"
