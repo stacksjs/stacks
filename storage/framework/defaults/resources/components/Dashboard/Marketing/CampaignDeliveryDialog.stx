@@ -71,11 +71,9 @@ function submit(): void {
       <p class="font-medium text-gray-900 text-sm dark:text-white">{{ record()?.name || '' }}</p>
       <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ record()?.emailListName || 'Not assigned' }} · {{ record()?.audienceSize.toLocaleString() || '0' }} active recipients</p>
     </div>
-    <label :if="mode() === 'schedule'" class="block mt-4">
-      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Delivery time</span>
-      <input x-model="scheduledAt" type="datetime-local" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-      <span class="block mt-1 text-gray-500 text-xs dark:text-neutral-400">Uses your browser’s local time.</span>
-    </label>
+    <div :if="mode() === 'schedule'" class="mt-4">
+      <Input v-model:value="scheduledAt" label="Delivery time" type="datetime-local" :required="true" hint="Uses your browser’s local time." />
+    </div>
     <div :if="error()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ error() }}</div>
   <template #footer>
     <div class="flex gap-2 justify-end w-full">

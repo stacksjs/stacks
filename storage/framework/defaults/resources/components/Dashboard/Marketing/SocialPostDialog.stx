@@ -62,51 +62,17 @@ function submit(): void {
     <form id="social-post-form" @submit.prevent="submit">
         <div :if="error()" role="alert" class="mb-5 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ error() }}</div>
 
-        <div class="space-y-4">
-          <label class="block">
-            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Content</span>
-            <textarea x-model="content" rows="5" maxlength="2000" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea>
-            <span class="block mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ content().length.toLocaleString() }} of 2,000 characters</span>
-          </label>
+        <div class="grid gap-4">
+          <Textarea v-model:value="content" label="Content" :rows="5" :maxLength="2000" :required="true" :showCount="true" />
           <div class="grid gap-4 sm:grid-cols-2">
-            <label class="block">
-              <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Platform</span>
-              <select x-model="platform" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
-                <option value="twitter">Twitter</option>
-                <option value="facebook">Facebook</option>
-                <option value="instagram">Instagram</option>
-                <option value="linkedin">LinkedIn</option>
-                <option value="tiktok">TikTok</option>
-                <option value="youtube">YouTube</option>
-              </select>
-            </label>
-            <label class="block">
-              <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span>
-              <select x-model="status" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
-                <option value="draft">Draft</option>
-                <option value="scheduled">Scheduled</option>
-                <option value="published">Published</option>
-                <option value="failed">Failed</option>
-              </select>
-            </label>
+            <Select v-model:value="platform" label="Platform" placeholder="" :options="[{ value: 'twitter', label: 'Twitter' }, { value: 'facebook', label: 'Facebook' }, { value: 'instagram', label: 'Instagram' }, { value: 'linkedin', label: 'LinkedIn' }, { value: 'tiktok', label: 'TikTok' }, { value: 'youtube', label: 'YouTube' }]" />
+            <Select v-model:value="status" label="Status" placeholder="" :options="[{ value: 'draft', label: 'Draft' }, { value: 'scheduled', label: 'Scheduled' }, { value: 'published', label: 'Published' }, { value: 'failed', label: 'Failed' }]" />
           </div>
           <div class="grid gap-4 sm:grid-cols-2">
-            <label class="block">
-              <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Schedule time</span>
-              <input x-model="scheduledAt" type="datetime-local" :required="status() === 'scheduled'" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-            </label>
-            <label class="block">
-              <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Owner</span>
-              <select x-model="userId" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
-                <option value="">Unassigned</option>
-                <option :for="user in users()" :key="user.id" :value="user.id">{{ user.name }}{{ user.email ? ' - ' + user.email : '' }}</option>
-              </select>
-            </label>
+            <Input v-model:value="scheduledAt" label="Schedule time" type="datetime-local" :required="status() === 'scheduled'" />
+            <Select v-model:value="userId" label="Owner" placeholder="" :options="[{ value: '', label: 'Unassigned' }, ...users().map(user => ({ value: user.id, label: user.name + (user.email ? ' - ' + user.email : '') }))]" />
           </div>
-          <label class="block">
-            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Image URL</span>
-            <input x-model="imageUrl" type="url" maxlength="2000" placeholder="https://example.com/image.jpg" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-          </label>
+          <Input v-model:value="imageUrl" label="Image URL" type="url" inputmode="url" :maxLength="2000" placeholder="https://example.com/image.jpg" />
         </div>
     </form>
   <template #footer>

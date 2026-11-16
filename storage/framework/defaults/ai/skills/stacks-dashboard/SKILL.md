@@ -640,7 +640,7 @@ lists every one by file with its reason and fails on any other.
 A hand-built dialog asks for a value with `Dashboard/UI/Input.stx`,
 `Select.stx` and `Textarea.stx`, as a model's form does, never with a native
 `<input>`, `<select>` or `<textarea>` and a copy of their classes
-(stacksjs/stacks#3310). The commerce and content dialogs are converted;
+(stacksjs/stacks#3310). The commerce, content and marketing dialogs are converted;
 `tests/unit/dashboard-form-controls.test.ts` fails if one writes its own again,
 and names the one native control a converted dialog keeps (the upload
 dialog's file picker) with its reason.
@@ -688,8 +688,7 @@ dialog's file picker) with its reason.
   `Textarea` takes `minLength` like an input.
 
 Not converted yet: the filter bars on the list pages (a search box and a row
-of dropdowns), and the dialogs in Marketing, Operations, Kanban, Auth and
-Library.
+of dropdowns), and the dialogs in Operations, Kanban, Auth and Library.
 
 ### Sidebar-aware overlays
 

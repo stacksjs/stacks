@@ -102,6 +102,7 @@ const CONVERTED_AREAS: Record<string, { shared: number, checkboxes: number }> = 
   // 29 native before: 26 fields, a post's categories and tags (one checkbox
   // per option now), and the upload dialog's file picker, kept below.
   'Content/': { shared: 26, checkboxes: 2 },
+  'Marketing/': { shared: 35, checkboxes: 0 },
 }
 
 /** A native control a converted dialog keeps, and why the shared ones cannot do its job. */

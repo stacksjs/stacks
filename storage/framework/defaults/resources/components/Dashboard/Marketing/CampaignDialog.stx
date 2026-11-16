@@ -16,7 +16,9 @@ const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
 const emit = defineEmits(['submit', 'close'])
 const name = state('')
-const description = state('')
+// Not `description`: a field bound inside the Modal is first read as the
+// Modal's own `description` prop (stacksjs/stacks#3310).
+const descriptionText = state('')
 const type = state<CampaignType>('email')
 const status = state<CampaignStatus>('draft')
 const subject = state('')
@@ -63,7 +65,7 @@ effect(() => {
     return
   hydrationKey = key
   name.set(current?.name || '')
-  description.set(current?.description || '')
+  descriptionText.set(current?.description || '')
   type.set(current?.type || 'email')
   status.set(current?.status || 'draft')
   subject.set(current?.subject || '')
@@ -89,8 +91,30 @@ function spentError(): string {
   return moneyInputError(spent(), currency(), { required: false })
 }
 
-function normalizeType(event: Event): void {
-  const nextType = (event.target as HTMLSelectElement).value as CampaignType
+/**
+ * The statuses this campaign may be set to. An email campaign is scheduled,
+ * sent and sending by its delivery, so those are shown only while it is one.
+ */
+const statusOptions = derived(() => {
+  const email = type() === 'email'
+  const current = status()
+  return [
+    { value: 'draft', label: 'Draft', shown: true },
+    { value: 'scheduled', label: 'Scheduled', shown: !email },
+    { value: 'active', label: 'Active', shown: !email },
+    { value: 'paused', label: 'Paused', shown: true },
+    { value: 'cancelled', label: 'Cancelled', shown: true },
+    { value: 'failed', label: 'Failed', shown: true },
+    { value: 'completed', label: 'Completed', shown: !email },
+    { value: 'archived', label: 'Archived', shown: !email },
+    { value: 'scheduled', label: 'Scheduled', shown: email && current === 'scheduled' },
+    { value: 'sending', label: 'Sending', shown: email && current === 'sending' },
+    { value: 'sent', label: 'Sent', shown: email && current === 'sent' },
+  ].filter(option => option.shown).map(({ value, label }) => ({ value, label }))
+})
+
+function normalizeType(next: string): void {
+  const nextType = next as CampaignType
   if (nextType === 'email')
     status.set('draft')
   else if (['sending', 'sent'].includes(status()))
@@ -103,7 +127,7 @@ function submit(): void {
   const code = currency().trim().toUpperCase()
   emit('submit', {
     name: name().trim(),
-    description: description().trim(),
+    description: descriptionText().trim(),
     type: type(),
     status: type() === 'email' && mode() === 'add' ? 'draft' : status(),
     subject: subject().trim(),
@@ -133,100 +157,42 @@ function submit(): void {
         <div :if="error()" role="alert" class="mb-5 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ error() }}</div>
 
         <div class="grid gap-4 sm:grid-cols-2">
-          <label class="block sm:col-span-2">
-            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span>
-            <input x-model="name" type="text" minlength="3" maxlength="255" required autocomplete="off" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-          </label>
-          <label class="block sm:col-span-2">
-            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Description</span>
-            <textarea x-model="description" rows="2" maxlength="1000" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea>
-          </label>
-          <label class="block">
-            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Type</span>
-            <select x-model="type" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="normalizeType($event)">
-              <option value="email">Email</option>
-              <option value="sms">SMS</option>
-              <option value="push">Push</option>
-              <option value="social">Social</option>
-              <option value="multi-channel">Multi-channel</option>
-            </select>
-          </label>
-          <label class="block">
-            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span>
-            <select x-model="status" :disabled="type() === 'email' && (mode() === 'add' || ['scheduled', 'sending', 'sent'].includes(status()))" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-60">
-              <option value="draft">Draft</option>
-              <option :if="type() !== 'email'" value="scheduled">Scheduled</option>
-              <option :if="type() !== 'email'" value="active">Active</option>
-              <option value="paused">Paused</option>
-              <option value="cancelled">Cancelled</option>
-              <option value="failed">Failed</option>
-              <option :if="type() !== 'email'" value="completed">Completed</option>
-              <option :if="type() !== 'email'" value="archived">Archived</option>
-              <option :if="type() === 'email' && status() === 'scheduled'" value="scheduled">Scheduled</option>
-              <option :if="type() === 'email' && status() === 'sending'" value="sending">Sending</option>
-              <option :if="type() === 'email' && status() === 'sent'" value="sent">Sent</option>
-            </select>
-          </label>
+          <div class="sm:col-span-2">
+            <Input v-model:value="name" label="Name" :minLength="3" :maxLength="255" :required="true" autocomplete="off" />
+          </div>
+          <div class="sm:col-span-2">
+            <Textarea v-model:value="descriptionText" label="Description" :rows="2" :maxLength="1000" />
+          </div>
+          <Select v-model:value="type" label="Type" placeholder="" :options="[{ value: 'email', label: 'Email' }, { value: 'sms', label: 'SMS' }, { value: 'push', label: 'Push' }, { value: 'social', label: 'Social' }, { value: 'multi-channel', label: 'Multi-channel' }]" @change="normalizeType" />
+          <Select v-model:value="status" label="Status" placeholder="" :options="statusOptions()" :disabled="type() === 'email' && (mode() === 'add' || ['scheduled', 'sending', 'sent'].includes(status()))" />
 
           <div :if="type() === 'email'" class="grid gap-4 sm:col-span-2 sm:grid-cols-2 p-4 bg-gray-50 dark:bg-neutral-900/50 border border-gray-200 rounded-lg dark:border-neutral-700">
-            <label class="block sm:col-span-2">
-              <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Email list</span>
-              <select x-model="emailListId" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
-                <option value="">Select a list</option>
-                <option :for="list in lists" :value="list.id">{{ list.name }} - {{ list.activeMembers.toLocaleString() }} active</option>
-              </select>
-            </label>
-            <label class="block sm:col-span-2">
-              <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Subject</span>
-              <input x-model="subject" type="text" maxlength="255" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-            </label>
-            <label class="block sm:col-span-2">
-              <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Template name or raw HTML</span>
-              <textarea x-model="template" rows="3" required class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea>
-            </label>
-            <label class="block sm:col-span-2">
-              <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Plain-text fallback</span>
-              <textarea x-model="text" rows="3" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea>
-            </label>
-            <label class="block">
-              <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">From name</span>
-              <input x-model="fromName" type="text" maxlength="100" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-            </label>
-            <label class="block">
-              <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">From address</span>
-              <input x-model="fromAddress" type="email" maxlength="255" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-            </label>
+            <div class="sm:col-span-2">
+              <Select v-model:value="emailListId" label="Email list" :required="true" placeholder="Select a list" :options="lists().map(list => ({ value: list.id, label: list.name + ' - ' + list.activeMembers.toLocaleString() + ' active' }))" />
+            </div>
+            <div class="sm:col-span-2">
+              <Input v-model:value="subject" label="Subject" :maxLength="255" :required="true" />
+            </div>
+            <div class="sm:col-span-2">
+              <Textarea v-model:value="template" label="Template name or raw HTML" :rows="3" :required="true" :monospace="true" />
+            </div>
+            <div class="sm:col-span-2">
+              <Textarea v-model:value="text" label="Plain-text fallback" :rows="3" />
+            </div>
+            <Input v-model:value="fromName" label="From name" :maxLength="100" />
+            <Input v-model:value="fromAddress" label="From address" type="email" :maxLength="255" />
           </div>
 
-          <label :if="status() === 'scheduled'" class="block sm:col-span-2">
-            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Scheduled for</span>
-            <input x-model="scheduledAt" type="datetime-local" required :disabled="type() === 'email'" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-60" />
-            <span :if="type() === 'email'" class="block mt-1 text-gray-500 text-xs dark:text-neutral-400">Email scheduling is managed by the delivery pipeline.</span>
-          </label>
+          <div :if="status() === 'scheduled'" class="sm:col-span-2">
+            <Input v-model:value="scheduledAt" label="Scheduled for" type="datetime-local" :required="true" :disabled="type() === 'email'" :hint="type() === 'email' ? 'Email scheduling is managed by the delivery pipeline.' : ''" />
+          </div>
 
-          <label class="block">
-            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Starts</span>
-            <input x-model="startDate" type="datetime-local" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-          </label>
-          <label class="block">
-            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Ends</span>
-            <input x-model="endDate" type="datetime-local" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-          </label>
-          <label class="block">
-            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Budget</span>
-            <input x-model="budget" type="number" min="0" :step="moneyInputStep(currency())" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-            <span :if="budgetError()" class="block mt-1 text-red-600 text-xs dark:text-red-400">{{ budgetError() }}</span>
-          </label>
+          <Input v-model:value="startDate" label="Starts" type="datetime-local" />
+          <Input v-model:value="endDate" label="Ends" type="datetime-local" />
+          <Input v-model:value="budget" label="Budget" type="number" min="0" :step="moneyInputStep(currency())" inputmode="decimal" :error="budgetError()" />
           <div class="grid gap-3 grid-cols-[1fr_7rem]">
-            <label class="block">
-              <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Spent</span>
-              <input x-model="spent" type="number" min="0" :step="moneyInputStep(currency())" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-              <span :if="spentError()" class="block mt-1 text-red-600 text-xs dark:text-red-400">{{ spentError() }}</span>
-            </label>
-            <label class="block">
-              <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Currency</span>
-              <input x-model="currency" type="text" minlength="3" maxlength="3" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-            </label>
+            <Input v-model:value="spent" label="Spent" type="number" min="0" :step="moneyInputStep(currency())" inputmode="decimal" :error="spentError()" />
+            <Input v-model:value="currency" label="Currency" :minLength="3" :maxLength="3" :required="true" class="uppercase" :spellcheck="false" />
           </div>
         </div>
     </form>
