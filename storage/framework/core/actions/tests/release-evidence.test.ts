@@ -4,6 +4,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { verifyReleaseEvidence } from '../src/release-evidence'
+import { spawnOwnedProcess } from '@stacksjs/cli/owned-process'
 
 // Public release verification catches false adoption receipts. It does not
 // establish platform fidelity or verify a registry's signing authority.
@@ -218,12 +219,21 @@ console.log(JSON.stringify(result.consumer))
     const binary = join(root, process.platform === 'win32' ? 'verifier.exe' : 'verifier')
     const build = await Bun.build({ entrypoints: [runner], compile: { outfile: binary } })
     expect(build.success).toBe(true)
-    const child = Bun.spawn([binary], { cwd: root, stdout: 'pipe', stderr: 'pipe', timeout: 10_000 })
-    const [code, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
-    expect(code, stderr).toBe(0)
-    const receipt = JSON.parse(stdout)
-    expect(receipt.checks[0].exitCode).toBe(0)
-    expect(receipt.bunVersion).toMatch(/^\d+\.\d+\.\d+/)
+    // The compiled verifier is a subprocess too. Native ownership must settle
+    // its complete tree before afterEach immediately removes its working dir.
+    const child = spawnOwnedProcess([binary], { ownerRuntime: process.execPath, cwd: root, stdout: 'pipe', stderr: 'pipe' })
+    const deadline = setTimeout(() => { void child.stop() }, 10_000)
+    try {
+      const [exit, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
+      expect(exit.code, stderr).toBe(0)
+      const receipt = JSON.parse(stdout)
+      expect(receipt.checks[0].exitCode).toBe(0)
+      expect(receipt.bunVersion).toMatch(/^\d+\.\d+\.\d+/)
+    }
+    finally {
+      clearTimeout(deadline)
+      await child.stop()
+    }
   }, 30_000)
 
   test('preserves separate dependency installations while still checking all package-owned files', async () => {
