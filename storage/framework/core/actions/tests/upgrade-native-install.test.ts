@@ -10,7 +10,7 @@ const upgradeModule = join(import.meta.dir, '../src/upgrade/packages.ts')
 
 // A private registry and real Bun installation reproduce a caret upgrade
 // choosing a newer release than the one the native command reports.
-async function campaign(options: { installed?: string, force?: boolean, archiveVersion?: string, prefix?: string, repeat?: boolean } = {}) {
+async function campaign(options: { installed?: string, force?: boolean, archiveVersion?: string, prefix?: string, repeat?: boolean, pantry?: boolean } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'stacks-native-upgrade-'))
   const app = join(root, 'app')
   mkdirSync(join(app, 'storage/framework'), { recursive: true })
@@ -86,11 +86,12 @@ throw new Error('The framework script returned instead of terminating at its pac
     BUN_INSTALL_CACHE_DIR: join(root, 'cache'),
     NPM_CONFIG_REGISTRY: registry.url.origin,
   }
-  writeFileSync(join(app, 'bunfig.toml'), `[install]\nregistry = ${JSON.stringify(registry.url.origin)}\n`)
+  writeFileSync(join(app, 'bunfig.toml'), `[install]\nlinker = "hoisted"\nregistry = ${JSON.stringify(registry.url.origin)}\n`)
   writeFileSync(join(app, '.npmrc'), `@stacksjs:registry=${registry.url.origin}\n`)
   const manifest = (version: string) => ({
     name: 'native-upgrade-consumer', private: true,
     dependencies: { stacks: `${options.prefix ?? '^'}${version}` },
+    ...(options.pantry ? { workspaces: ['packages/*'] } : {}),
   })
   async function run(args: string[], label: string) {
     const stdout = join(root, `${label}.stdout`)
@@ -107,11 +108,20 @@ throw new Error('The framework script returned instead of terminating at its pac
     finally { clearTimeout(timer) }
   }
   try {
+    if (options.pantry) {
+      mkdirSync(join(app, 'packages/library'), { recursive: true })
+      writeFileSync(join(app, 'packages/library/package.json'), JSON.stringify({ name: 'native-upgrade-library', version: '1.0.0', private: true }))
+    }
     if (options.installed) {
       writeFileSync(join(app, 'package.json'), JSON.stringify(manifest(options.installed)))
       const before = await run([process.execPath, 'install', '--ignore-scripts'], 'before')
       expect(before.code, before.stderr).toBe(0)
       expect(JSON.parse(readFileSync(join(app, 'node_modules/stacks/package.json'), 'utf8')).version).toBe(options.installed)
+    }
+    if (options.pantry) {
+      writeFileSync(join(app, 'pantry.json'), JSON.stringify({ dependencies: { 'bun.sh': Bun.version } }))
+      const before = await run(['pantry', 'install', '--ignore-scripts'], 'pantry-before')
+      expect(before.code, before.stderr).toBe(0)
     }
     writeFileSync(join(app, 'package.json'), JSON.stringify(manifest(target)))
     const entry = join(root, 'upgrade.ts')
@@ -134,7 +144,9 @@ console.log('PACKAGE_UPGRADE_RETURNED')
     const lock = existsSync(join(app, 'bun.lock')) ? Bun.JSONC.parse(readFileSync(join(app, 'bun.lock'), 'utf8')) : null
     const actions = [join(app, 'node_modules/@stacksjs/actions/package.json'), join(app, 'node_modules/stacks/node_modules/@stacksjs/actions/package.json')]
       .map(path => ({ path, manifest: existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : null }))
-    return { ...result, installed, declared, lock, requests, repeated, actions }
+    const pantryReplay = options.pantry ? await run(['pantry', 'ci'], 'pantry-after') : null
+    const pantryLock = options.pantry ? JSON.parse(readFileSync(join(app, 'pantry.lock'), 'utf8')) : null
+    return { ...result, installed, declared, lock, requests, repeated, actions, pantryReplay, pantryLock }
   }
   finally {
     registry.stop(true)
@@ -143,6 +155,15 @@ console.log('PACKAGE_UPGRADE_RETURNED')
 }
 
 describe('native package upgrade release selection', () => {
+  test('keeps the real Pantry workspace lock aligned with the upgraded Bun dependency graph', async () => {
+    const result = await campaign({ installed: newer, pantry: true, repeat: true })
+    expect(result.code, result.stderr).toBe(0)
+    expect(result.installed).toBe(target)
+    expect(result.pantryReplay?.code, result.pantryReplay?.stderr).toBe(0)
+    expect(result.pantryLock?.workspaces?.['']?.dependencies?.stacks).toBe(result.declared.dependencies.stacks)
+    expect(result.repeated?.code, result.repeated?.stderr).toBe(0)
+    expect(result.repeated?.stdout).not.toContain('Refreshing Pantry workspace metadata')
+  }, 60_000)
   test.each([
     ['fresh install', {}],
     ['repair a newer installed release', { installed: newer }],

@@ -6,7 +6,7 @@
 // (same as framework.ts) because the calling script exits synchronously.
 /* eslint-disable no-console */
 import { existsSync, lstatSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { isAbsolute, join, relative } from 'node:path'
 import process from 'node:process'
 import { buddyOptionArgs, runCommand } from '@stacksjs/cli'
 import { installedDefaultsVersion } from '@stacksjs/path'
@@ -129,6 +129,34 @@ export function needsFrameworkInstall(projectRoot: string, target: string, runti
   catch {
     return true
   }
+}
+
+/** Pantry also records JavaScript declarations in mixed workspace projects. */
+function pantryWorkspaceMetadataStale(projectRoot: string): boolean {
+  const file = join(projectRoot, 'pantry.lock')
+  if (!existsSync(file)) return false
+  try {
+    const lock = JSON.parse(readFileSync(file, 'utf8')) as { workspaces?: Record<string, Record<string, unknown>> }
+    if (!lock.workspaces || typeof lock.workspaces !== 'object' || Array.isArray(lock.workspaces)) return true
+    for (const [workspace, recorded] of Object.entries(lock.workspaces)) {
+      if (isAbsolute(workspace) || workspace.split(/[\\/]/).includes('..')) return true
+      const manifest = JSON.parse(readFileSync(join(projectRoot, workspace, 'package.json'), 'utf8')) as Record<string, unknown>
+      for (const field of ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies']) {
+        const entries = (value: unknown) => Object.entries((value ?? {}) as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b))
+        if (JSON.stringify(entries(recorded[field])) !== JSON.stringify(entries(manifest[field]))) return true
+      }
+    }
+    return false
+  }
+  catch { return true }
+}
+
+async function refreshPantryWorkspaceMetadata(projectRoot: string, changed: boolean): Promise<void> {
+  if (!existsSync(join(projectRoot, 'pantry.lock')) || (!changed && !pantryWorkspaceMetadataStale(projectRoot))) return
+  console.log('  Refreshing Pantry workspace metadata with `pantry install --ignore-scripts`...')
+  const result = await runCommand('pantry install --ignore-scripts', { cwd: projectRoot })
+  if (result.isErr || pantryWorkspaceMetadataStale(projectRoot))
+    throw new Error('The framework was installed, but Pantry workspace metadata is not current. Resolve the Pantry install error and re-run buddy upgrade before committing the lockfiles.')
 }
 
 async function updateStandalonePackage(projectRoot: string, options: PackageUpgradeOptions): Promise<void> {
@@ -747,6 +775,10 @@ catch (error) {
     ? syncPackageProjectFiles(projectRoot, defaultsPackageRoot)
     : []
   const tsconfigChanges = migratePackageProjectTsconfig(projectRoot)
+
+  await refreshPantryWorkspaceMetadata(projectRoot, Boolean(options.changedBeforeRestart || changes.length || manifestChanges.length || projectManifestChanges.length))
+  if (needsFrameworkInstall(projectRoot, target, installedPins))
+    throw new Error(`The dependency refresh did not preserve stacks@${target} and its published cohort. Re-run buddy upgrade before committing the lockfiles.`)
 
   const prunedRoutes = reportRouteActions(projectRoot, false)
 
