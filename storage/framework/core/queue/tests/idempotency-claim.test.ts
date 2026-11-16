@@ -29,6 +29,17 @@ describe('dispatch idempotency: claim-then-compensate (#1984)', () => {
     expect(fn).toMatch(/isMissingTableError[\s\S]*?return 'unenforced'/)
   })
 
+  it('asks SQLite and Postgres for a duplicate as an answer, not as a raised error', () => {
+    // A unique violation is written to the query log at error level before
+    // the catch below it can call it a duplicate, so every skipped dispatch
+    // reached the app's error tracker as a failed query.
+    const idem = src('idempotency.ts')
+    const start = idem.indexOf('export async function claimDispatchKey')
+    const fn = idem.slice(start, idem.indexOf('export async function releaseDispatchKey'))
+    expect(fn).toContain('ON CONFLICT ("idempotency_key") DO NOTHING RETURNING "idempotency_key"')
+    expect(fn).toMatch(/length > 0 \? 'claimed' : 'duplicate'/)
+  })
+
   describe('runDispatchPipeline claims before dispatch and compensates on failure', () => {
     const job = src('job.ts')
     const start = job.indexOf('private async runDispatchPipeline')

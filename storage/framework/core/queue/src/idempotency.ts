@@ -140,7 +140,21 @@ export type DispatchKeyClaim = 'claimed' | 'duplicate' | 'unenforced'
  */
 export async function claimDispatchKey(key: string, jobName: string, queue?: string): Promise<DispatchKeyClaim> {
   try {
-    const { db } = await loadDatabaseModule()
+    const { db, getDatabaseDialect, sqlHelpers } = await loadDatabaseModule()
+    const dialect = sqlHelpers(getDatabaseDialect())
+    if (!dialect.isMysql) {
+      // A duplicate is this function's ordinary second answer, so it is asked
+      // for as one: the insert that loses writes no row and raises nothing.
+      // Left to the unique constraint, every duplicate was first written to
+      // the query log at error level ("Query failed: duplicate key value")
+      // and reached the app's error tracker as a failure, once per skipped
+      // dispatch, although the dispatch was skipped exactly as intended.
+      const claimed = await db.unsafe(
+        `INSERT INTO "job_idempotency" ("idempotency_key", "job_name", "queue", "dispatched_at") VALUES (${[1, 2, 3, 4].map(index => dialect.param(index)).join(', ')}) ON CONFLICT ("idempotency_key") DO NOTHING RETURNING "idempotency_key"`,
+        [key, jobName, queue ?? 'default', new Date().toISOString().slice(0, 19).replace('T', ' ')],
+      ).execute()
+      return (claimed as unknown[]).length > 0 ? 'claimed' : 'duplicate'
+    }
     await db
       .insertInto('job_idempotency')
       .values({
