@@ -3076,6 +3076,9 @@ async function runSshDeploy(args: {
   // `env` overrides — see resolveDeployEnvValues' doc comment for why this
   // has to happen here (ts-cloud has no idea .env.production/decryption
   // exist) rather than inside ts-cloud itself.
+  // Before the environment is read: a mailbox password generated later, by
+  // the mail step, would be on the mail server and not in this release.
+  await ensureMailboxPasswords(log, args.envFile ?? (environment === 'staging' ? '.env.staging' : '.env.production'))
   const resolvedDeployEnv = await resolveDeployEnvValues(environment, tsCloudConfig, args.envFile)
   // Persistent-state paths are declared AFTER the env merge: which file (or
   // whether any file) the app opens is decided by the site's resolved
@@ -3888,6 +3891,61 @@ export function reportMailboxCredentials(
   logger.info(`Mail: created ${generated.length} mailbox(es) with generated passwords, saved encrypted to .env.production (not printed: this is not an interactive terminal):`)
   for (const box of generated)
     logger.info(`  ${box.address}  ->  buddy env:get ${mailboxPasswordKey(box)} --file .env.production`)
+}
+
+/**
+ * Give each mailbox that asked for a generated password one, and save it,
+ * before the app's environment ships.
+ *
+ * The mail step runs after the release is live, so a password it generated
+ * was on the mail server and in the environment file, and not in the release
+ * that had just gone out: the app could not sign in to its own mailbox until
+ * somebody deployed a second time. Generated here, the same deploy carries
+ * it, and the mail step reads it back as a declared password and creates the
+ * mailbox with it.
+ *
+ * Returns the env keys it wrote. Never fails a deploy: an unsaved password is
+ * left for the mail step, which says what it could not do.
+ */
+export async function ensureMailboxPasswords(
+  logger: Pick<typeof log, 'info' | 'warn'>,
+  file = '.env.production',
+  options: { config?: any, save?: (key: string, value: string, file: string) => Promise<unknown> | unknown, hasConfig?: boolean } = {},
+): Promise<string[]> {
+  if (!(options.hasConfig ?? hasExplicitEmailConfig()))
+    return []
+  const cfg: any = options.config ?? emailConfig ?? {}
+  if (cfg.server?.enabled === false)
+    return []
+  const domain: string | undefined = cfg.domain
+    || (typeof cfg.from?.address === 'string' && cfg.from.address.includes('@') ? cfg.from.address.split('@')[1] : undefined)
+  if (!domain)
+    return []
+
+  const generated = resolveMailboxesWithSkipped(cfg.mailboxes, domain, cfg.server?.generatePasswords === true).boxes.filter(box => box.generated)
+  if (generated.length === 0)
+    return []
+
+  const save = options.save ?? (async (key: string, value: string, target: string) => {
+    const { setEnv } = await import('@stacksjs/env')
+    return setEnv(key, value, { file: target })
+  })
+  const written: string[] = []
+  for (const box of generated) {
+    const key = mailboxPasswordKey(box)
+    try {
+      await save(key, box.password, file)
+      // The mail step, later in this process, finds it declared.
+      process.env[key] = box.password
+      written.push(key)
+    }
+    catch (err) {
+      logger.warn(`Mail: could not save a generated password for ${box.address} to ${file} before the release: ${getErrorMessage(err)}`)
+    }
+  }
+  if (written.length > 0)
+    logger.info(`Mail: generated ${written.length} mailbox password(s) and saved them encrypted to ${file}, so this release carries them: ${written.join(', ')}`)
+  return written
 }
 
 /**

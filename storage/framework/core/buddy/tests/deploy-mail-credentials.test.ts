@@ -442,3 +442,62 @@ describe('reportRecoveryReconcile', () => {
     expect(report('RECOVERY_SAME:pawel@hq.test\n', ['pawel@hq.test'])).toBe('')
   })
 })
+
+describe('a generated mailbox password and the release that needs it', () => {
+  const quiet = { info: () => {}, warn: () => {} }
+  const KEY = 'MAIL_PASSWORD_HELLOEARLY'
+
+  it('is saved before the environment ships, and the mail step then finds it declared', async () => {
+    const { ensureMailboxPasswords } = await import('../src/commands/deploy')
+    delete process.env[KEY]
+    const saved: Array<[string, string, string]> = []
+    try {
+      const written = await ensureMailboxPasswords(quiet, '.env.production', {
+        hasConfig: true,
+        config: { domain: 'votescape.org', mailboxes: ['helloearly'], server: { enabled: true, generatePasswords: true } },
+        save: (key, value, file) => { saved.push([key, value, file]) },
+      })
+      expect(written).toEqual([KEY])
+      expect(saved).toHaveLength(1)
+      expect(saved[0]![0]).toBe(KEY)
+      expect(saved[0]![2]).toBe('.env.production')
+      expect(saved[0]![1].length).toBeGreaterThan(20)
+      // Later in the same deploy it is a declared password, not a second one.
+      const again = resolveMailboxesWithSkipped(['helloearly'], 'votescape.org', true)
+      expect(again.boxes[0]).toMatchObject({ address: 'helloearly@votescape.org', generated: false, password: saved[0]![1] })
+    }
+    finally {
+      delete process.env[KEY]
+    }
+  })
+
+  it('writes nothing for an app that did not ask, has mail off, or already has its password', async () => {
+    const { ensureMailboxPasswords } = await import('../src/commands/deploy')
+    const save = () => { throw new Error('nothing should be saved') }
+    delete process.env[KEY]
+    expect(await ensureMailboxPasswords(quiet, '.env.production', { hasConfig: true, save, config: { domain: 'votescape.org', mailboxes: ['helloearly'], server: { enabled: true } } })).toEqual([])
+    expect(await ensureMailboxPasswords(quiet, '.env.production', { hasConfig: true, save, config: { domain: 'votescape.org', mailboxes: ['helloearly'], server: { enabled: false, generatePasswords: true } } })).toEqual([])
+    expect(await ensureMailboxPasswords(quiet, '.env.production', { hasConfig: false, save, config: { domain: 'votescape.org', mailboxes: ['helloearly'], server: { generatePasswords: true } } })).toEqual([])
+    process.env[KEY] = 'already-declared-password'
+    try {
+      expect(await ensureMailboxPasswords(quiet, '.env.production', { hasConfig: true, save, config: { domain: 'votescape.org', mailboxes: ['helloearly'], server: { enabled: true, generatePasswords: true } } })).toEqual([])
+    }
+    finally {
+      delete process.env[KEY]
+    }
+  })
+
+  it('leaves a password it could not save to the mail step, and says so', async () => {
+    const { ensureMailboxPasswords } = await import('../src/commands/deploy')
+    delete process.env[KEY]
+    const warned: string[] = []
+    const written = await ensureMailboxPasswords({ info: () => {}, warn: (m: string) => { warned.push(m) } }, '.env.production', {
+      hasConfig: true,
+      config: { domain: 'votescape.org', mailboxes: ['helloearly'], server: { enabled: true, generatePasswords: true } },
+      save: () => { throw new Error('read-only') },
+    })
+    expect(written).toEqual([])
+    expect(process.env[KEY]).toBeUndefined()
+    expect(warned[0]).toContain('helloearly@votescape.org')
+  })
+})

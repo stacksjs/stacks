@@ -244,6 +244,21 @@ abstract class BaseEmailDriver {
 }
 ```
 
+### A mailbox from config, in one deploy
+
+Declare the address the app sends from and let the deploy make it:
+
+```typescript
+{
+  from: { name: 'Votescape', address: 'hello@votescape.org' },
+  domain: 'votescape.org',
+  mailboxes: ['hello'],
+  server: { enabled: true, generatePasswords: true },
+}
+```
+
+`buddy deploy` generates `MAIL_PASSWORD_HELLO` before the environment ships (saved encrypted to the environment file, never printed in CI), creates `hello@votescape.org` on the mail server with it, and publishes the mail DNS below. The SMTP driver signs in as `from.address` with that password, and with no `MAIL_HOST` set it uses `mail.<domain>` on port 587 with STARTTLS in production and staging (`ownMailHost` in `core/email/src/drivers/smtp.ts`); elsewhere the default stays loopback. Set `MAIL_MAILER=smtp` to send through the mailbox when the app is also connected to CommsHQ, which otherwise carries its mail.
+
 ### Mail DNS a deploy publishes
 
 With `server.enabled`, `buddy deploy` reconciles the mail domain's DNS through whichever configured provider holds the zone: MX, SPF, DKIM at the selector the server signs under, DMARC (`server.dmarc`), `mail.<domain>`, and the Gmail Postmaster Tools verification TXT when `server.postmaster.google` is set. Writes are surgical: only records the deploy owns are replaced, so other apex TXT (Search Console, other verifications) survive.

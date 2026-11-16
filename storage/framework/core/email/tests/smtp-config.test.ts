@@ -112,3 +112,20 @@ describe('SMTPDriver.getConfig - env fallback (stacksjs/stacks#1925)', () => {
     expect(typeof resolved.port).toBe('number')
   })
 })
+
+describe('the mail host of an app that runs its own mail', () => {
+  it('is mail.<domain> in production when no host is named', async () => {
+    const { ownMailHost } = await import('../src/drivers/smtp')
+    expect(ownMailHost({ domain: 'votescape.org', server: { enabled: true } }, 'production')).toBe('mail.votescape.org')
+    expect(ownMailHost({ domain: 'Votescape.org', server: { enabled: true, subdomain: 'smtp' } }, 'staging')).toBe('smtp.votescape.org')
+  })
+
+  it('is nothing on a developer\'s machine, for an app without mail, or for a placeholder domain', async () => {
+    const { ownMailHost } = await import('../src/drivers/smtp')
+    expect(ownMailHost({ domain: 'votescape.org', server: { enabled: true } }, 'local')).toBeUndefined()
+    expect(ownMailHost({ domain: 'votescape.org', server: { enabled: false } }, 'production')).toBeUndefined()
+    expect(ownMailHost({ domain: 'votescape.org' }, 'production')).toBeUndefined()
+    expect(ownMailHost({ domain: 'example.com', server: { enabled: true } }, 'production')).toBeUndefined()
+    expect(ownMailHost(undefined, 'production')).toBeUndefined()
+  })
+})

@@ -8,6 +8,31 @@ import { log } from '@stacksjs/logging'
 import type { TemplateOptions } from '../template'
 import { templateByName } from '../template'
 import { signDkim } from '../dkim'
+
+/**
+ * The mail host of an app that runs its own mail (`email.server.enabled`),
+ * for when no host is named: `mail.<domain>`, which its deploy publishes and
+ * holds a certificate for.
+ *
+ * Without it an app that declared a mailbox and deployed still had to be told
+ * where its own mail server was, and until then tried the machine it ran on.
+ * Only where mail really goes out: a developer's machine keeps the loopback
+ * default, and must name a host to reach a real server.
+ */
+export function ownMailHost(
+  email: { domain?: unknown, server?: { enabled?: unknown, subdomain?: unknown } } | null | undefined,
+  environment: string | undefined = process.env.APP_ENV,
+): string | undefined {
+  if (!['production', 'staging'].includes(String(environment || '')))
+    return undefined
+  if (email?.server?.enabled !== true)
+    return undefined
+  const domain = typeof email.domain === 'string' ? email.domain.trim().toLowerCase() : ''
+  if (!domain || !domain.includes('.') || domain === 'example.com')
+    return undefined
+  const subdomain = typeof email.server.subdomain === 'string' && email.server.subdomain.trim() ? email.server.subdomain.trim() : 'mail'
+  return `${subdomain}.${domain}`
+}
 import { buildMimeMessage } from '../mime'
 import { ENVELOPE_ADDRESS, filterStringHeaders } from '../validation'
 import { BaseEmailDriver } from './base'
@@ -72,7 +97,7 @@ export class SMTPDriver extends BaseEmailDriver {
     const smtp = config.services?.smtp
     const env = process.env
 
-    const host = smtp?.host || env.MAIL_HOST || '127.0.0.1'
+    const host = smtp?.host || env.MAIL_HOST || ownMailHost(config.email) || '127.0.0.1'
     const port = smtp?.port || (env.MAIL_PORT ? Number(env.MAIL_PORT) : undefined) || 587
 
     // Auth identity: an explicit SMTP username/password wins; otherwise fall
@@ -87,7 +112,8 @@ export class SMTPDriver extends BaseEmailDriver {
     const username = smtp?.username || env.MAIL_USERNAME || fromAddress || ''
     const localPart = (username.includes('@') ? username.split('@')[0]! : username).toUpperCase().replace(/[^A-Z0-9]/g, '_')
     const password = smtp?.password || env.MAIL_PASSWORD || (localPart ? env[`MAIL_PASSWORD_${localPart}`] : undefined) || ''
-    const rawEncryption = smtp?.encryption ?? env.MAIL_ENCRYPTION ?? null
+    // Its own mail host is a real server on the submission port: STARTTLS.
+    const rawEncryption = smtp?.encryption ?? env.MAIL_ENCRYPTION ?? (!smtp?.host && !env.MAIL_HOST && host !== '127.0.0.1' ? 'tls' : null)
 
     return {
       host,
