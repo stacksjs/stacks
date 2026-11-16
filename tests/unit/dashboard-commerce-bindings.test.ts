@@ -30,8 +30,9 @@ describe('commerce dashboard filter bindings', () => {
         'utf8',
       )
 
-      expect(source).toContain('x-model="search"')
-      expect(source).toContain('x-model="sort"')
+      // The shared search box and dropdown, bound both ways (stacksjs/stacks#3310).
+      expect(source).toContain('<SearchFilter v-model:searchValue="search"')
+      expect(source).toMatch(/<Select v-model:value="sort"/)
       expect(source).not.toMatch(/function update(?:Search|Sort)\(/)
       expect(source).not.toMatch(/:value="search\(\)"[^>]+@input=/)
       expect(source).not.toMatch(/:value="sort\(\)"[^>]+@change=/)

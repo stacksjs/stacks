@@ -205,15 +205,11 @@ onMount(() => {
 
   <section class="flex flex-col gap-3">
     <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-6">
-      <label class="relative sm:col-span-2">
-        <span class="sr-only">Search print logs</span>
-        <span class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none"><span class="h-4 w-4 i-hugeicons-search-01"></span></span>
-        <input x-model="search" type="search" placeholder="Search documents, printers, or outcomes" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @input="loadSearch()" />
-      </label>
-      <label><span class="sr-only">Printer</span><select x-model="printerFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="reloadFilters()"><option value="all">All printers</option><option :for="printer in printers()" :key="printer" :value="printer">{{ printer }}</option></select></label>
-      <label><span class="sr-only">Print status</span><select x-model="statusFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="reloadFilters()"><option value="all">All statuses</option><option :for="status in statuses()" :key="status" :value="status">{{ status }}</option></select></label>
-      <label><span class="sr-only">Print log time range</span><select x-model="timeRange" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="reloadFilters()"><option value="1">Last 24 hours</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="90">Last 90 days</option><option value="all">All time</option></select></label>
-      <label><span class="sr-only">Sort print logs</span><select x-model="sort" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="reloadFilters()"><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="printer">Printer</option><option value="duration">Longest duration</option></select></label>
+      <div class="sm:col-span-2"><SearchFilter v-model:searchValue="search" placeholder="Search documents, printers, or outcomes" ariaLabel="Search print logs" @search="loadSearch" /></div>
+      <Select v-model:value="printerFilter" ariaLabel="Printer" placeholder="" :options="[{ value: 'all', label: 'All printers' }, ...printers().map(printer => ({ value: printer, label: printer }))]" @change="reloadFilters" />
+      <Select v-model:value="statusFilter" ariaLabel="Print status" placeholder="" :options="[{ value: 'all', label: 'All statuses' }, ...statuses().map(status => ({ value: status, label: status }))]" @change="reloadFilters" />
+      <Select v-model:value="timeRange" ariaLabel="Print log time range" placeholder="" :options="[{ value: '1', label: 'Last 24 hours' }, { value: '7', label: 'Last 7 days' }, { value: '30', label: 'Last 30 days' }, { value: '90', label: 'Last 90 days' }, { value: 'all', label: 'All time' }]" @change="reloadFilters" />
+      <Select v-model:value="sort" ariaLabel="Sort print logs" placeholder="" :options="[{ value: 'newest', label: 'Newest' }, { value: 'oldest', label: 'Oldest' }, { value: 'printer', label: 'Printer' }, { value: 'duration', label: 'Longest duration' }]" @change="reloadFilters" />
     </div>
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

@@ -236,15 +236,11 @@ onMount(() => {
 
   <section class="flex flex-col gap-3">
     <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-6">
-      <label class="relative sm:col-span-2">
-        <span class="sr-only">Search gift cards</span>
-        <span class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none"><span class="h-4 w-4 i-hugeicons-search-01"></span></span>
-        <input x-model="search" type="search" placeholder="Search codes, recipients, or purchasers" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" />
-      </label>
-      <label><span class="sr-only">Gift card status</span><select x-model="statusFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">All statuses</option><option value="ACTIVE">Active</option><option value="USED">Used</option><option value="EXPIRED">Expired</option><option value="DEACTIVATED">Deactivated</option></select></label>
-      <label><span class="sr-only">Gift card availability</span><select x-model="enabledFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">Any availability</option><option value="enabled">Enabled</option><option value="disabled">Disabled</option></select></label>
-      <label><span class="sr-only">Gift card delivery</span><select x-model="deliveryFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">Any delivery</option><option value="digital">Digital</option><option value="physical">Physical</option></select></label>
-      <label><span class="sr-only">Sort gift cards</span><select x-model="sort" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="newest">Newest</option><option value="code">Code</option><option value="balance">Highest balance</option><option value="expiry">Expiry date</option></select></label>
+      <div class="sm:col-span-2"><SearchFilter v-model:searchValue="search" placeholder="Search codes, recipients, or purchasers" ariaLabel="Search gift cards" /></div>
+      <Select v-model:value="statusFilter" ariaLabel="Gift card status" placeholder="" :options="[{ value: 'all', label: 'All statuses' }, { value: 'ACTIVE', label: 'Active' }, { value: 'USED', label: 'Used' }, { value: 'EXPIRED', label: 'Expired' }, { value: 'DEACTIVATED', label: 'Deactivated' }]" />
+      <Select v-model:value="enabledFilter" ariaLabel="Gift card availability" placeholder="" :options="[{ value: 'all', label: 'Any availability' }, { value: 'enabled', label: 'Enabled' }, { value: 'disabled', label: 'Disabled' }]" />
+      <Select v-model:value="deliveryFilter" ariaLabel="Gift card delivery" placeholder="" :options="[{ value: 'all', label: 'Any delivery' }, { value: 'digital', label: 'Digital' }, { value: 'physical', label: 'Physical' }]" />
+      <Select v-model:value="sort" ariaLabel="Sort gift cards" placeholder="" :options="[{ value: 'newest', label: 'Newest' }, { value: 'code', label: 'Code' }, { value: 'balance', label: 'Highest balance' }, { value: 'expiry', label: 'Expiry date' }]" />
     </div>
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

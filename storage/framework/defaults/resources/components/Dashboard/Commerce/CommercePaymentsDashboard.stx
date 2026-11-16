@@ -185,19 +185,18 @@ onMount(() => {
 
   <section class="flex flex-col gap-3">
     <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-5">
-      <label class="relative sm:col-span-2">
-        <span class="sr-only">Search payments</span>
-        <span class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none"><span class="h-4 w-4 i-hugeicons-search-01"></span></span>
-        <input x-model="search" type="search" placeholder="Search payments" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" />
-      </label>
-      <label><span class="sr-only">Payment status</span><select x-model="statusFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">All statuses</option><option :for="status in statuses()" :key="status" :value="status">{{ status }}</option></select></label>
-      <label><span class="sr-only">Payment method</span><select x-model="methodFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">All methods</option><option :for="method in methods()" :key="method" :value="method">{{ method }}</option></select></label>
-      <label><span class="sr-only">Payment time range</span><select x-model="timeRange" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="1">Last 24 hours</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="90">Last 90 days</option><option value="365">Last year</option><option value="all">All time</option></select></label>
+      <div class="sm:col-span-2"><SearchFilter v-model:searchValue="search" placeholder="Search payments" ariaLabel="Search payments" /></div>
+      <Select v-model:value="statusFilter" ariaLabel="Payment status" placeholder="" :options="[{ value: 'all', label: 'All statuses' }, ...statuses().map(status => ({ value: status, label: status }))]" />
+      <Select v-model:value="methodFilter" ariaLabel="Payment method" placeholder="" :options="[{ value: 'all', label: 'All methods' }, ...methods().map(method => ({ value: method, label: method }))]" />
+      <Select v-model:value="timeRange" ariaLabel="Payment time range" placeholder="" :options="[{ value: '1', label: 'Last 24 hours' }, { value: '7', label: 'Last 7 days' }, { value: '30', label: 'Last 30 days' }, { value: '90', label: 'Last 90 days' }, { value: '365', label: 'Last year' }, { value: 'all', label: 'All time' }]" />
     </div>
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <p class="text-gray-500 text-sm dark:text-neutral-400">{{ matchingLabel() }}</p>
-      <label class="flex gap-2 items-center text-gray-500 text-sm dark:text-neutral-400">Sort<select x-model="sort" class="px-3 py-1.5 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="amount">Highest amount</option><option value="status">Status</option></select></label>
+      <label class="flex gap-2 items-center text-gray-500 text-sm dark:text-neutral-400">
+        Sort
+        <Select v-model:value="sort" ariaLabel="Sort" size="sm" placeholder="" :options="[{ value: 'newest', label: 'Newest' }, { value: 'oldest', label: 'Oldest' }, { value: 'amount', label: 'Highest amount' }, { value: 'status', label: 'Status' }]" />
+      </label>
     </div>
 
     <CommercePaymentsTable :sort-reset-key="sort()" :records="records()" :total="total()" :current-page="page()" :per-page="perPage()" :loading="loading()" @view="openDetails" @page-change="changePage" @page-size-change="changePageSize" @sort="changeSort" />

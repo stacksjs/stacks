@@ -227,45 +227,17 @@ onMount(() => {
 
   <section class="flex flex-col gap-3">
     <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-5">
-      <label class="relative sm:col-span-2">
-        <span class="sr-only">Search tax rates</span>
-        <span class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none"><span class="h-4 w-4 i-hugeicons-search-01"></span></span>
-        <input x-model="search" type="search" placeholder="Search tax rates" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" />
-      </label>
-      <label>
-        <span class="sr-only">Tax status</span>
-        <select x-model="statusFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
-          <option value="all">All statuses</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
-      </label>
-      <label>
-        <span class="sr-only">Tax country</span>
-        <select x-model="countryFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
-          <option value="all">All countries</option>
-          <option :for="country in countries()" :key="country" :value="country">{{ country }}</option>
-        </select>
-      </label>
-      <label>
-        <span class="sr-only">Tax type</span>
-        <select x-model="typeFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
-          <option value="all">All tax types</option>
-          <option :for="type in taxTypes()" :key="type" :value="type">{{ taxTypeLabel(type) }}</option>
-        </select>
-      </label>
+      <div class="sm:col-span-2"><SearchFilter v-model:searchValue="search" placeholder="Search tax rates" ariaLabel="Search tax rates" /></div>
+      <Select v-model:value="statusFilter" ariaLabel="Tax status" placeholder="" :options="[{ value: 'all', label: 'All statuses' }, { value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }]" />
+      <Select v-model:value="countryFilter" ariaLabel="Tax country" placeholder="" :options="[{ value: 'all', label: 'All countries' }, ...countries().map(country => ({ value: country, label: country }))]" />
+      <Select v-model:value="typeFilter" ariaLabel="Tax type" placeholder="" :options="[{ value: 'all', label: 'All tax types' }, ...taxTypes().map(type => ({ value: type, label: taxTypeLabel(type) }))]" />
     </div>
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <p class="text-gray-500 text-sm dark:text-neutral-400">{{ visibleRecords().length }} matching tax rates</p>
       <label class="flex gap-2 items-center text-gray-500 text-sm dark:text-neutral-400">
         Sort
-        <select x-model="sort" class="px-3 py-1.5 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
-          <option value="name">Name</option>
-          <option value="rate">Highest rate</option>
-          <option value="country">Country</option>
-          <option value="newest">Newest</option>
-        </select>
+        <Select v-model:value="sort" ariaLabel="Sort" size="sm" placeholder="" :options="[{ value: 'name', label: 'Name' }, { value: 'rate', label: 'Highest rate' }, { value: 'country', label: 'Country' }, { value: 'newest', label: 'Newest' }]" />
       </label>
     </div>
 

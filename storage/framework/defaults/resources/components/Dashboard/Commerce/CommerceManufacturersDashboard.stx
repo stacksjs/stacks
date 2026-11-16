@@ -194,40 +194,16 @@ onMount(() => {
 
   <section class="flex flex-col gap-3">
     <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-      <label class="relative sm:col-span-2">
-        <span class="sr-only">Search manufacturers</span>
-        <span class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none">
-          <span class="h-4 w-4 i-hugeicons-search-01"></span>
-        </span>
-        <input x-model="search" type="search" placeholder="Search manufacturers" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" />
-      </label>
-      <label>
-        <span class="sr-only">Featured state</span>
-        <select x-model="featuredFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
-          <option value="all">All manufacturers</option>
-          <option value="featured">Featured only</option>
-          <option value="not-featured">Not featured</option>
-        </select>
-      </label>
-      <label>
-        <span class="sr-only">Country</span>
-        <select x-model="countryFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
-          <option value="all">All countries</option>
-          <option :for="country in countries()" :key="country" :value="country">{{ country }}</option>
-        </select>
-      </label>
+      <div class="sm:col-span-2"><SearchFilter v-model:searchValue="search" placeholder="Search manufacturers" ariaLabel="Search manufacturers" /></div>
+      <Select v-model:value="featuredFilter" ariaLabel="Featured state" placeholder="" :options="[{ value: 'all', label: 'All manufacturers' }, { value: 'featured', label: 'Featured only' }, { value: 'not-featured', label: 'Not featured' }]" />
+      <Select v-model:value="countryFilter" ariaLabel="Country" placeholder="" :options="[{ value: 'all', label: 'All countries' }, ...countries().map(country => ({ value: country, label: country }))]" />
     </div>
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <p class="text-gray-500 text-sm dark:text-neutral-400">{{ visibleRecords().length }} matching manufacturers</p>
       <label class="flex gap-2 items-center text-gray-500 text-sm dark:text-neutral-400">
         Sort
-        <select x-model="sort" class="px-3 py-1.5 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
-          <option value="name">Name</option>
-          <option value="products">Most products</option>
-          <option value="country">Country</option>
-          <option value="newest">Newest</option>
-        </select>
+        <Select v-model:value="sort" ariaLabel="Sort" size="sm" placeholder="" :options="[{ value: 'name', label: 'Name' }, { value: 'products', label: 'Most products' }, { value: 'country', label: 'Country' }, { value: 'newest', label: 'Newest' }]" />
       </label>
     </div>
 

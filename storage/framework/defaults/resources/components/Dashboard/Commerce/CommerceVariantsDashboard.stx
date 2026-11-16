@@ -209,19 +209,18 @@ onMount(() => {
 
   <section class="flex flex-col gap-3">
     <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-5">
-      <label class="relative sm:col-span-2">
-        <span class="sr-only">Search product variants</span>
-        <span class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none"><span class="h-4 w-4 i-hugeicons-search-01"></span></span>
-        <input x-model="search" type="search" placeholder="Search product variants" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" />
-      </label>
-      <label><span class="sr-only">Variant status</span><select x-model="statusFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option><option value="draft">Draft</option></select></label>
-      <label><span class="sr-only">Variant type</span><select x-model="typeFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">All types</option><option :for="type in variantTypes()" :key="type" :value="type">{{ type }}</option></select></label>
-      <label><span class="sr-only">Variant product</span><select x-model="productFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">All products</option><option :for="product in products()" :key="product.id" :value="product.id">{{ product.name }}</option></select></label>
+      <div class="sm:col-span-2"><SearchFilter v-model:searchValue="search" placeholder="Search product variants" ariaLabel="Search product variants" /></div>
+      <Select v-model:value="statusFilter" ariaLabel="Variant status" placeholder="" :options="[{ value: 'all', label: 'All statuses' }, { value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }, { value: 'draft', label: 'Draft' }]" />
+      <Select v-model:value="typeFilter" ariaLabel="Variant type" placeholder="" :options="[{ value: 'all', label: 'All types' }, ...variantTypes().map(type => ({ value: type, label: type }))]" />
+      <Select v-model:value="productFilter" ariaLabel="Variant product" placeholder="" :options="[{ value: 'all', label: 'All products' }, ...products().map(product => ({ value: product.id, label: product.name }))]" />
     </div>
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <p class="text-gray-500 text-sm dark:text-neutral-400">{{ matchingLabel() }}</p>
-      <label class="flex gap-2 items-center text-gray-500 text-sm dark:text-neutral-400">Sort<select x-model="sort" class="px-3 py-1.5 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="variant">Name</option><option value="options">Most options</option><option value="product">Product</option><option value="newest">Newest</option></select></label>
+      <label class="flex gap-2 items-center text-gray-500 text-sm dark:text-neutral-400">
+        Sort
+        <Select v-model:value="sort" ariaLabel="Sort" size="sm" placeholder="" :options="[{ value: 'variant', label: 'Name' }, { value: 'options', label: 'Most options' }, { value: 'product', label: 'Product' }, { value: 'newest', label: 'Newest' }]" />
+      </label>
     </div>
 
     <CommerceVariantsTable :sort-reset-key="sort()" :records="records()" :total="total()" :current-page="page()" :per-page="perPage()" :loading="loading()" @edit="openEdit" @delete="openDelete" @page-change="changePage" @page-size-change="changePageSize" @sort="changeSort" />

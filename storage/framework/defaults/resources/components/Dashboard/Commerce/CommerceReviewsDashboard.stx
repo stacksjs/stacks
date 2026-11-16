@@ -242,42 +242,10 @@ onMount(() => {
 
   <section class="flex flex-col gap-3">
     <div class="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-5">
-      <div class="relative xl:col-span-2">
-        <label class="sr-only" for="review-search">Search reviews</label>
-        <span class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none">
-          <span class="h-4 w-4 i-hugeicons-search-01"></span>
-        </span>
-        <input id="review-search" x-model="search" type="search" placeholder="Search reviews" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" />
-      </div>
-      <label>
-        <span class="sr-only">Product</span>
-        <select x-model="productFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
-          <option value="all">All products</option>
-          <option :for="product in products()" :key="product.id" :value="product.id">{{ product.label }}</option>
-        </select>
-      </label>
-      <label>
-        <span class="sr-only">Rating</span>
-        <select x-model="ratingFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
-          <option value="all">All ratings</option>
-          <option value="5">5 stars</option>
-          <option value="4">4 stars</option>
-          <option value="3">3 stars</option>
-          <option value="2">2 stars</option>
-          <option value="1">1 star</option>
-          <option value="none">No rating</option>
-        </select>
-      </label>
-      <label>
-        <span class="sr-only">Moderation state</span>
-        <select x-model="moderationFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
-          <option value="all">All states</option>
-          <option value="approved">Approved</option>
-          <option value="pending">Pending</option>
-          <option value="featured">Featured</option>
-          <option value="verified">Verified purchase</option>
-        </select>
-      </label>
+      <div class="xl:col-span-2"><SearchFilter v-model:searchValue="search" placeholder="Search reviews" ariaLabel="Search reviews" /></div>
+      <Select v-model:value="productFilter" ariaLabel="Product" placeholder="" :options="[{ value: 'all', label: 'All products' }, ...products().map(product => ({ value: product.id, label: product.label }))]" />
+      <Select v-model:value="ratingFilter" ariaLabel="Rating" placeholder="" :options="[{ value: 'all', label: 'All ratings' }, { value: '5', label: '5 stars' }, { value: '4', label: '4 stars' }, { value: '3', label: '3 stars' }, { value: '2', label: '2 stars' }, { value: '1', label: '1 star' }, { value: 'none', label: 'No rating' }]" />
+      <Select v-model:value="moderationFilter" ariaLabel="Moderation state" placeholder="" :options="[{ value: 'all', label: 'All states' }, { value: 'approved', label: 'Approved' }, { value: 'pending', label: 'Pending' }, { value: 'featured', label: 'Featured' }, { value: 'verified', label: 'Verified purchase' }]" />
     </div>
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -286,13 +254,7 @@ onMount(() => {
       </p>
       <label class="flex gap-2 items-center text-gray-500 text-sm dark:text-neutral-400">
         Sort
-        <select x-model="sort" class="px-3 py-1.5 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
-          <option value="newest">Newest first</option>
-          <option value="oldest">Oldest first</option>
-          <option value="rating-high">Highest rating</option>
-          <option value="rating-low">Lowest rating</option>
-          <option value="helpful">Most helpful</option>
-        </select>
+        <Select v-model:value="sort" ariaLabel="Sort" size="sm" placeholder="" :options="[{ value: 'newest', label: 'Newest first' }, { value: 'oldest', label: 'Oldest first' }, { value: 'rating-high', label: 'Highest rating' }, { value: 'rating-low', label: 'Lowest rating' }, { value: 'helpful', label: 'Most helpful' }]" />
       </label>
     </div>
 

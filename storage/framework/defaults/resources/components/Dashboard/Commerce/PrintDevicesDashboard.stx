@@ -244,14 +244,10 @@ onMount(() => {
 
   <section class="flex flex-col gap-3">
     <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-5">
-      <label class="relative sm:col-span-2">
-        <span class="sr-only">Search print devices</span>
-        <span class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none"><span class="h-4 w-4 i-hugeicons-search-01"></span></span>
-        <input x-model="search" type="search" placeholder="Search printers, locations, or terminals" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" />
-      </label>
-      <label><span class="sr-only">Printer status</span><select x-model="statusFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">All statuses</option><option value="online">Online</option><option value="warning">Warning</option><option value="offline">Offline</option></select></label>
-      <label><span class="sr-only">Printer location</span><select x-model="locationFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">All locations</option><option :for="location in locations()" :key="location" :value="location">{{ location }}</option></select></label>
-      <label><span class="sr-only">Sort print devices</span><select x-model="sort" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="name">Name</option><option value="prints">Most prints</option><option value="heartbeat">Recent heartbeat</option><option value="status">Status</option></select></label>
+      <div class="sm:col-span-2"><SearchFilter v-model:searchValue="search" placeholder="Search printers, locations, or terminals" ariaLabel="Search print devices" /></div>
+      <Select v-model:value="statusFilter" ariaLabel="Printer status" placeholder="" :options="[{ value: 'all', label: 'All statuses' }, { value: 'online', label: 'Online' }, { value: 'warning', label: 'Warning' }, { value: 'offline', label: 'Offline' }]" />
+      <Select v-model:value="locationFilter" ariaLabel="Printer location" placeholder="" :options="[{ value: 'all', label: 'All locations' }, ...locations().map(location => ({ value: location, label: location }))]" />
+      <Select v-model:value="sort" ariaLabel="Sort print devices" placeholder="" :options="[{ value: 'name', label: 'Name' }, { value: 'prints', label: 'Most prints' }, { value: 'heartbeat', label: 'Recent heartbeat' }, { value: 'status', label: 'Status' }]" />
     </div>
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

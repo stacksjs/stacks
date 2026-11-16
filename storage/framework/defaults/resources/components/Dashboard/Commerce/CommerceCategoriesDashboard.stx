@@ -240,14 +240,10 @@ onMount(() => {
 
   <section class="flex flex-col gap-3">
     <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-5">
-      <label class="relative sm:col-span-2">
-        <span class="sr-only">Search product categories</span>
-        <span class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none"><span class="h-4 w-4 i-hugeicons-search-01"></span></span>
-        <input x-model="search" type="search" placeholder="Search names, slugs, or descriptions" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" />
-      </label>
-      <label><span class="sr-only">Category availability</span><select x-model="activeFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">Any availability</option><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
-      <label><span class="sr-only">Category hierarchy</span><select x-model="hierarchyFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">Any hierarchy</option><option value="root">Root categories</option><option value="child">Child categories</option></select></label>
-      <label><span class="sr-only">Sort product categories</span><select x-model="sort" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="order">Display order</option><option value="name">Name</option><option value="newest">Newest</option></select></label>
+      <div class="sm:col-span-2"><SearchFilter v-model:searchValue="search" placeholder="Search names, slugs, or descriptions" ariaLabel="Search product categories" /></div>
+      <Select v-model:value="activeFilter" ariaLabel="Category availability" placeholder="" :options="[{ value: 'all', label: 'Any availability' }, { value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }]" />
+      <Select v-model:value="hierarchyFilter" ariaLabel="Category hierarchy" placeholder="" :options="[{ value: 'all', label: 'Any hierarchy' }, { value: 'root', label: 'Root categories' }, { value: 'child', label: 'Child categories' }]" />
+      <Select v-model:value="sort" ariaLabel="Sort product categories" placeholder="" :options="[{ value: 'order', label: 'Display order' }, { value: 'name', label: 'Name' }, { value: 'newest', label: 'Newest' }]" />
     </div>
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
