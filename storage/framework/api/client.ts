@@ -335,8 +335,8 @@ export function createClient(config: ClientConfig) {
   /**
    * POST /api/checkout/contact
    */
-  postCheckoutContact(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
-    return request(config, "POST", "/api/checkout/contact", {}, [], null, "application/json", [], options)
+  postCheckoutContact(input: { body: { "email": string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/checkout/contact", input ?? {}, [], {"required":true,"content":["application/json"]}, "application/json", [], options)
   },
 
   /**

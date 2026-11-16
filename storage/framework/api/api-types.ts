@@ -530,7 +530,7 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    requestBody?: never
+    requestBody: { content: { "application/json": { "email": string } } }
     responses: {
       "200": { content: { "application/json": Record<string, unknown> } }
       "422": { content: never }

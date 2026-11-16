@@ -68,6 +68,9 @@ const totalLabel = summary.totalLabel
 const freeShippingNote = summary.freeShippingNote
 
 const prefilledEmail = cart?.email || ''
+// After a refused submission: why, and what was typed. Empty on a first visit.
+const emailError = requestContext.error('email')
+const emailValue = requestContext.old('email', prefilledEmail)
 </script>
 
 @section('content')
@@ -93,9 +96,13 @@ const prefilledEmail = cart?.email || ''
                 name="email"
                 required
                 autocomplete="email"
-                value="{{ prefilledEmail }}"
+                value="{{ emailValue }}"
+                aria-invalid="{{ emailError ? 'true' : 'false' }}"
                 class="mt-1 px-4 py-3 w-full text-sm border border-stone-300 rounded-2xl focus:border-stone-900 focus:outline-none"
               >
+              @if (emailError)
+                <p role="alert" class="mt-2 text-sm text-red-700">{{ emailError }}</p>
+              @endif
             </div>
             <div class="flex gap-4 items-center justify-between">
               <a href="/cart" class="text-sm text-stone-500 hover:text-stone-900">← Back to cart</a>

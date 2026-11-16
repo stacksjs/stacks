@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
-import { config, enterRequestScope, feature, installRequestScope, overridesReady, resolveViewPatterns } from '@stacksjs/config'
+import { clearShownFormFlash, config, enterRequestScope, feature, installRequestScope, overridesReady, resolveViewPatterns } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { projectPath, siteConfigPath } from '@stacksjs/path'
 import { serverRequestBodyOptions } from '@stacksjs/server/request-body'
@@ -392,8 +392,12 @@ async function startDefaultServer() {
       }
 
       const seeded = await seedCsrfPageResponse(req, current)
-      finishRequestCapture(req, seeded ?? current)
-      return seeded ?? (current === baseline ? secured : current)
+      // A page that showed a refused form's messages has shown them: the
+      // cookie that carried them goes with this response (`form-flash.ts`).
+      const answered = seeded ?? (current === baseline ? secured : current)
+      const shown = clearShownFormFlash(req, answered ?? response, config.app?.key)
+      finishRequestCapture(req, shown)
+      return shown === (answered ?? response) ? answered : shown
     },
   })
 }

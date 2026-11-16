@@ -435,6 +435,13 @@ and validateFieldAsync support application async validation. These helpers propa
 instead of approving unchecked values. Keep operational failures separate from invalid input. Validate
 uniqueness at the durable write boundary and handle a uniqueness violation there.
 
+A refused request is answered by what the caller asked for: a script or an API
+client gets the 422 body, and a browser that submitted an HTML form is sent
+back to its page with the messages and what it posted, which the page reads
+with `requestContext.error(field)` and `requestContext.old(field)`
+(stacksjs/stacks#3309). The whole of it is in the stacks-actions skill, under
+"A refused form goes back to its page".
+
 Local is.ts helpers and legacy rules/type declarations are not
 automatically all public exports from the root.
 

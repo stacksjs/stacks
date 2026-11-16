@@ -88,6 +88,69 @@ returning a raw Response owns the wire format and yields unknown client output.
 external boundaries without module-wide mocking. They do not justify mocking
 every internal collaborator or replacing a real database test with a fake.
 
+### A refused form goes back to its page
+
+What a refused request is answered with follows what the caller asked for,
+never the endpoint (stacksjs/stacks#3309):
+
+| Caller | Answer |
+|---|---|
+| `fetch()`, an API client, anything that did not ask for a page | `422` with `{ success: false, message: 'Validation failed', errors }`, as always |
+| A browser submitting an HTML form (`Accept` has `text/html`, not a GET) | `303` back to the page the form was on, with the messages and what was posted |
+
+`validations` run before `handle()`, so an action cannot do this for itself.
+The browser used to get the 422 body: a page of JSON with the back button as
+the only way out. Do not work around it in `handle()` with a hand-rolled
+`response.json({ error }, 422)`: declare the rule and let the router answer.
+`request.validate()` inside a handler is answered the same way.
+
+The page reads what came back, in a `<script server>`:
+
+```html
+<script server>
+const emailError = requestContext.error('email')            // '' when there is none
+const emailValue = requestContext.old('email', cart.email)  // what was typed, else the saved value
+</script>
+
+<input type="email" name="email" value="{{ emailValue }}" aria-invalid="{{ emailError ? 'true' : 'false' }}">
+@if (emailError)
+  <p role="alert">{{ emailError }}</p>
+@endif
+```
+
+- `requestContext.errors()` is every message by field (`{}` when nothing was
+  refused), `error(field)` the first for one field, `hasErrors()` whether
+  there are any, `old(field, fallback)` what was posted and `oldValues(field)`
+  every value of a repeated field.
+- **Shown once.** They travel in a cookie (`stacks_form_errors`) signed with
+  `APP_KEY`, good for two minutes and for the one page it names. The page's
+  server removes it with the response that showed it. With no `APP_KEY` there
+  is nothing to sign with, and the browser gets a plain page listing the
+  messages instead.
+- **Never a secret.** A field whose name says password, token, secret, key or
+  card is not sent back, and nor is a file. Draw those empty.
+- **Only to this application's own page.** The form has to be on the same
+  origin (`Sec-Fetch-Site: same-origin`, or a matching host for a browser too
+  old to send it). A form on another site, or one with no `Referer`, gets the
+  plain page of messages and is not redirected.
+- What was typed is dropped, longest value first, when it would not fit a
+  cookie. The messages always arrive.
+- A form says a list by repeating a field name, and one occurrence arrives as
+  a string. A rule that asks for `schema.array()` takes it as a list of one,
+  and an empty field as an empty list. A value is never split on commas.
+
+Not covered yet (stacksjs/stacks#3311): a refusal an action writes by hand
+(`response.json({ error }, 400)` for "your cart is empty" still reaches a form
+as JSON, and there is no message for the whole form, only by field), a
+refused CSRF token, and a form submitted with `method="get"`.
+
+The shipped checkout's contact step is the worked example
+(`Actions/Storefront/CheckoutContactAction.ts`, `views/checkout/contact.stx`).
+Tests: `core/router/tests/form-validation-refusal.test.ts`,
+`core/config/tests/form-flash.test.ts`, and
+`core/buddy/tests/refused-form-page.test.ts`, which posts a form through each
+view server and reads the page that comes back.
+
 `Precognition: true` or `?_validate=1` requests a validation-only probe.
 `Precognition-Validate-Only` narrows explicit validation fields. Probes stop
 before authorization/hooks/handler side effects, and do not magically run

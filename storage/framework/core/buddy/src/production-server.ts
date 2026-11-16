@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
-import { enterRequestScope, feature, installRequestScope } from '@stacksjs/config'
+import { clearShownFormFlash, enterRequestScope, feature, installRequestScope } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { siteConfigPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
@@ -605,6 +605,13 @@ export async function startProductionServer(options?: { port?: string | number, 
             log.debug(`CSRF cookie seeding skipped: ${(error as Error).message}`)
             finished = current === baseline ? secured : current
           }
+
+          // A page that showed a refused form's messages has shown them: the
+          // cookie that carried them goes with this response. Before the
+          // cache header below, which never shares a document that sets one.
+          const shown = clearShownFormFlash(req, finished ?? response, config.app?.key)
+          if (shown !== (finished ?? response))
+            finished = shown
 
           // Last, so it sees whatever cookies the steps above added. A
           // document that sets one is about a single visitor and never gets a
