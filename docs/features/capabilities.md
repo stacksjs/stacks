@@ -124,6 +124,7 @@ is a driver you cannot select.
 | `sendgrid` | **partial** | managed-service | - | `driver-credentials.test.ts` |
 | `mailgun` | **partial** | managed-service | - | `driver-credentials.test.ts` |
 | `mailtrap` | **partial** | managed-service | - | `driver-credentials.test.ts` |
+| `commshq` | **partial** | managed-service | - | `commshq-driver.test.ts` |
 
 **Limitations**
 
@@ -134,6 +135,8 @@ is a driver you cannot select.
 - **`sendgrid`** - CI validates configuration and request behavior without a live delivery assertion.
 - **`mailgun`** - CI validates configuration and request behavior without a live delivery assertion.
 - **`mailtrap`** - CI validates configuration and request behavior without a live delivery assertion.
+- **`commshq`** - CI validates the request against a stand-in for CommsHQ without a live delivery assertion.
+- **`commshq`** - Attachments are refused: use the smtp driver for a message that carries one.
 
 ### Realtime
 
