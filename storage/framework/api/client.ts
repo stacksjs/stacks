@@ -3028,6 +3028,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * PATCH /api/dashboard/models/{slug}/{id}/save
+   */
+  patchDashboardModelsSlugIdSave(input: { "slug": string; "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/dashboard/models/{slug}/{id}/save", input ?? {}, [{"name":"slug","in":"path","required":true},{"name":"id","in":"path","required":true}], null, "application/json", [], options)
+  },
+
+  /**
    * GET /api/dashboard/monitoring/errors
    */
   getDashboardMonitoringErrors(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
