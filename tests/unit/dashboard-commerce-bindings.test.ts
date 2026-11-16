@@ -52,8 +52,8 @@ describe('commerce dashboard filter bindings', () => {
         'utf8',
       )
 
-      expect(source).toContain('x-model="search"')
-      expect(source).toContain('x-model="status"')
+      expect(source).toContain('<SearchFilter v-model:searchValue="search"')
+      expect(source).toContain('<Select v-model:value="status"')
       expect(source).not.toMatch(/function update(?:Search|Status)\(/)
     }
   })
@@ -65,8 +65,9 @@ describe('commerce dashboard filter bindings', () => {
     const catalog = readFileSync(resolve(componentRoot, 'CommercePosCatalog.stx'), 'utf8')
     const dashboard = readFileSync(resolve(componentRoot, 'CommercePosDashboard.stx'), 'utf8')
 
-    expect(catalog).toContain('x-model="search"')
-    expect(catalog).toContain('emit(\'search\', $event.target.value)')
+    expect(catalog).toContain('<SearchFilter v-model:searchValue="search"')
+    expect(catalog).toContain('@search="emit(\'search\', $event)"')
+    expect(catalog).toContain('@change="emit(\'category\', $event)"')
     expect(dashboard).toContain('@search="search.set($event)"')
     expect(dashboard).not.toMatch(/function update(?:Search|Category|Availability)\(/)
   })
@@ -215,7 +216,9 @@ describe('commerce dashboard filter bindings', () => {
       ),
       'utf8',
     )
-    expect(overview).toContain('reloadSelectedRange($event)')
+    // The dropdown hands the handler the range chosen.
+    expect(overview).toContain('@change="reloadSelectedRange"')
+    expect(overview).toContain('function reloadSelectedRange(next: string): void {')
     expect(overview).not.toContain('range.set(')
   })
 

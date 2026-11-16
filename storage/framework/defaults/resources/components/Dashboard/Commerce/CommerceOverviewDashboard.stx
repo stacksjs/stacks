@@ -52,8 +52,8 @@ function loadDashboard(): void {
   void loadRange(range())
 }
 
-function reloadSelectedRange(event: Event): void {
-  void loadRange((event.target as HTMLSelectElement).value as CommerceDashboardRange)
+function reloadSelectedRange(next: string): void {
+  void loadRange(next as CommerceDashboardRange)
 }
 
 onMount(() => {
@@ -68,15 +68,7 @@ onMount(() => {
       <span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>
       Refresh
     </Button>
-    <label class="sr-only" for="commerce-dashboard-range">Reporting range</label>
-    <select id="commerce-dashboard-range" x-model="range" class="block pl-3 pr-10 py-2 text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600" @change="reloadSelectedRange($event)">
-      <option value="today">Today</option>
-      <option value="7d">Last 7 days</option>
-      <option value="30d">Last 30 days</option>
-      <option value="90d">Last 90 days</option>
-      <option value="year">Last year</option>
-      <option value="all">All time</option>
-    </select>
+    <Select v-model:value="range" id="commerce-dashboard-range" ariaLabel="Reporting range" placeholder="" :options="[{ value: 'today', label: 'Today' }, { value: '7d', label: 'Last 7 days' }, { value: '30d', label: 'Last 30 days' }, { value: '90d', label: 'Last 90 days' }, { value: 'year', label: 'Last year' }, { value: 'all', label: 'All time' }]" @change="reloadSelectedRange" />
   </div>
   </PageHeader>
 

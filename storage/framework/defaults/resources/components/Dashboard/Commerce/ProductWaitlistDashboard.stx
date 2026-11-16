@@ -209,16 +209,8 @@ onMount(() => {
         <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">{{ matchingLabel() }}</p>
       </div>
       <div class="flex gap-2">
-        <label class="sr-only" for="waitlist-status">Status</label>
-        <select id="waitlist-status" x-model="status" class="px-3 py-2 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
-          <option value="all">All statuses</option>
-          <option value="waiting">Waiting</option>
-          <option value="notified">Notified</option>
-          <option value="purchased">Purchased</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
-        <label class="sr-only" for="waitlist-search">Search waitlist</label>
-        <input id="waitlist-search" x-model="search" type="search" placeholder="Search waitlist" class="px-3 py-2 w-56 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" />
+        <Select v-model:value="status" id="waitlist-status" ariaLabel="Status" placeholder="" :options="[{ value: 'all', label: 'All statuses' }, { value: 'waiting', label: 'Waiting' }, { value: 'notified', label: 'Notified' }, { value: 'purchased', label: 'Purchased' }, { value: 'cancelled', label: 'Cancelled' }]" />
+        <SearchFilter v-model:searchValue="search" placeholder="Search waitlist" ariaLabel="Search waitlist" class="w-56" />
       </div>
     </div>
 
