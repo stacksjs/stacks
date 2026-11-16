@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.609...v0.75.610)
+
+## ✨ Features
+
+- **hq**: connecting to CommsHQ sends an app's mail from its own domain ([9958957](https://github.com/stacksjs/stacks/commit/9958957)) _(by Chris Breuer)_
+- **hq**: connecting to StatusHQ syncs the app's routes, and StatusHQ checks them all ([dbf518f](https://github.com/stacksjs/stacks/commit/dbf518f)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **skills**: refresh the native skill catalog for the HQ additions ([5c319b2](https://github.com/stacksjs/stacks/commit/5c319b2)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.608...v0.75.609)
 
 ## 🐛 Bug Fixes
