@@ -261,6 +261,26 @@ export interface EmailServerConfig {
   generatePasswords?: boolean
 
   /**
+   * This application sends mail on behalf of other domains: a sending
+   * service, such as CommsHQ, whose customers have each proved their domain
+   * to it.
+   *
+   * With it on, the deploy names the application's sender (`from.address`,
+   * which must be one of its declared mailboxes) in the mail server's
+   * `SMTP_RELAY_ACCOUNTS`. The mail server then accepts a message from that
+   * account for another domain's address only when the message carries a
+   * DKIM signature that verifies against a key that domain publishes: the
+   * application must sign each customer's mail with that customer's key.
+   * Without it, the mail server refuses every author but the account itself.
+   *
+   * `true` relays through `from.address`; a mailbox name (`'no-reply'`) or
+   * a full address names the account outright, for a service whose sender
+   * is set per environment.
+   * @default false
+   */
+  relay?: boolean | string
+
+  /**
    * Reconcile this application's domains, mailboxes, and forwarding rules on
    * another ts-cloud project's Hetzner server instead of the application box.
    * This keeps application compute dedicated while sharing one mail daemon.

@@ -501,3 +501,35 @@ describe('a generated mailbox password and the release that needs it', () => {
     expect(warned[0]).toContain('helloearly@votescape.org')
   })
 })
+
+describe('a sending service and the account it relays through', () => {
+  const declared = ['no-reply@commshq.org']
+
+  it('is its own sender, when that is a declared mailbox on its domain', async () => {
+    const { relayAccountFromConfig } = await import('../src/commands/deploy')
+    expect(relayAccountFromConfig({ from: { address: 'No-Reply@commshq.org' }, server: { relay: true } }, 'commshq.org', declared)).toEqual({ account: 'no-reply@commshq.org' })
+  })
+
+  it('or the mailbox it names, whatever from.address is in this environment', async () => {
+    const { relayAccountFromConfig } = await import('../src/commands/deploy')
+    expect(relayAccountFromConfig({ from: { address: 'hello@commshq.org' }, server: { relay: 'no-reply' } }, 'commshq.org', declared)).toEqual({ account: 'no-reply@commshq.org' })
+    expect(relayAccountFromConfig({ from: { address: 'hello@commshq.org' }, server: { relay: 'no-reply@commshq.org' } }, 'commshq.org', declared)).toEqual({ account: 'no-reply@commshq.org' })
+    expect(relayAccountFromConfig({ server: { relay: 'no-reply@elsewhere.org' } }, 'commshq.org', declared).account).toBeUndefined()
+  })
+
+  it('is nobody unless the app asked', async () => {
+    const { relayAccountFromConfig } = await import('../src/commands/deploy')
+    expect(relayAccountFromConfig({ from: { address: 'no-reply@commshq.org' }, server: {} }, 'commshq.org', declared)).toEqual({})
+    expect(relayAccountFromConfig({ from: { address: 'no-reply@commshq.org' } }, 'commshq.org', declared)).toEqual({})
+  })
+
+  it('is refused, with the reason, for another domain, an undeclared mailbox, or anything that is not plainly an address', async () => {
+    const { relayAccountFromConfig } = await import('../src/commands/deploy')
+    const on = { relay: true }
+    expect(relayAccountFromConfig({ from: { address: 'no-reply@elsewhere.org' }, server: on }, 'commshq.org', declared).account).toBeUndefined()
+    expect(relayAccountFromConfig({ from: { address: 'hello@commshq.org' }, server: on }, 'commshq.org', declared).problem).toContain('not one of the declared mailboxes')
+    expect(relayAccountFromConfig({ from: { address: 'x@commshq.org,root@commshq.org' }, server: on }, 'commshq.org', declared).account).toBeUndefined()
+    expect(relayAccountFromConfig({ from: { address: 'a|b\'$(id)@commshq.org' }, server: on }, 'commshq.org', declared).account).toBeUndefined()
+    expect(relayAccountFromConfig({ from: {}, server: on }, 'commshq.org', declared).problem).toContain('unset')
+  })
+})

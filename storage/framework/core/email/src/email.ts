@@ -409,6 +409,7 @@ function getMail(): Mail {
       configured: (config)?.email?.default || process.env.MAIL_MAILER,
       explicit: Boolean(process.env.MAIL_MAILER || process.env.MAIL_DRIVER),
       commshqKey: (config)?.services?.commshq?.key || process.env.COMMSHQ_KEY,
+      commshqMail: (config)?.services?.commshq?.mail,
       environment: process.env.APP_ENV || (config)?.app?.env,
     })
     _mail = new Mail({ defaultDriver: driver })

@@ -26,10 +26,14 @@ export function resolveDefaultMailDriver(input: {
   explicit: boolean
   /** `config.services.commshq.key`. */
   commshqKey?: string
+  /** `config.services.commshq.mail`: `false` keeps the app's own mailer. */
+  commshqMail?: boolean
   environment?: string
 }): string {
   if (input.explicit && input.configured)
     return input.configured
+  if (input.commshqMail === false)
+    return input.configured || 'ses'
   // Connected, and running where mail should really go out. Elsewhere the
   // configured default stands, which for an app is the log driver: a
   // developer's machine must not send real mail because a key is in `.env`.

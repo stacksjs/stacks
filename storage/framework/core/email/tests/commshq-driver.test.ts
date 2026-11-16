@@ -12,6 +12,11 @@ describe('which mailer an app sends with', () => {
     expect(resolveDefaultMailDriver({ configured: 'log', explicit: false, commshqKey: 'key', environment: 'staging' })).toBe('commshq')
   })
 
+  test('a connected app that turned its mail off keeps its own mailer', () => {
+    expect(resolveDefaultMailDriver({ configured: 'smtp', explicit: false, commshqKey: 'key', commshqMail: false, environment: 'production' })).toBe('smtp')
+    expect(resolveDefaultMailDriver({ configured: 'smtp', explicit: false, commshqKey: 'key', commshqMail: true, environment: 'production' })).toBe('commshq')
+  })
+
   test('a key in a developer\'s .env does not send real mail', () => {
     expect(resolveDefaultMailDriver({ configured: 'log', explicit: false, commshqKey: 'key', environment: 'local' })).toBe('log')
     expect(resolveDefaultMailDriver({ configured: 'log', explicit: false, commshqKey: 'key' })).toBe('log')

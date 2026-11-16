@@ -25,6 +25,19 @@ export interface HqServiceOptions {
   license?: string
 }
 
+export interface CommsHqOptions extends HqServiceOptions {
+  /**
+   * Whether the app's mail goes through CommsHQ. A connected app's does, in
+   * production and staging, all of it: CommsHQ sends from addresses that
+   * mailbox providers already know, keeps one suppression list, and watches
+   * what bounces. Set `false` to stay connected (contacts, signup forms) and
+   * send through the app's own mailer instead. `MAIL_MAILER` in the
+   * environment also overrides it, for one deployment.
+   * @default true
+   */
+  mail?: boolean
+}
+
 /** The HQ entries of `config/services.ts`, on their own. */
 export interface SupportHqOptions extends HqServiceOptions {
   /** Explicit opt-in for native authenticated customer sessions. */
@@ -262,7 +275,7 @@ export interface ServicesOptions {
   loghq?: HqServiceOptions
   analyticshq?: HqServiceOptions
   statushq?: HqServiceOptions
-  commshq?: HqServiceOptions
+  commshq?: CommsHqOptions
   supporthq?: SupportHqOptions
   reportshq?: HqServiceOptions
 

@@ -3906,6 +3906,31 @@ export function reportMailboxCredentials(
 }
 
 /**
+ * The account a sending service relays through: its own sender, when
+ * `email.server.relay` is on and that sender is one of its declared mailboxes.
+ *
+ * Only a declared mailbox, on the app's own domain, in a shape that is
+ * plainly an address: the name goes into the mail server's configuration,
+ * where it decides who may carry other domains' mail.
+ */
+export function relayAccountFromConfig(cfg: any, domain: string | undefined, declared: Iterable<string>): { account?: string, problem?: string } {
+  const asked = cfg?.server?.relay
+  if (asked !== true && !(typeof asked === 'string' && asked.trim()))
+    return {}
+  // Named outright (`relay: 'no-reply'`), or the app's own sender.
+  const named = typeof asked === 'string' ? asked.trim().toLowerCase() : ''
+  const address = named
+    ? (named.includes('@') ? named : `${named}@${(domain || '').toLowerCase()}`)
+    : (typeof cfg.from?.address === 'string' ? cfg.from.address.trim().toLowerCase() : '')
+  if (!domain || !/^[a-z0-9][a-z0-9._+-]*@[a-z0-9][a-z0-9.-]*\.[a-z]{2,}$/.test(address) || !address.endsWith(`@${domain.toLowerCase()}`))
+    return { problem: `email.server.relay is on, but its sender (${address || 'unset'}) is not an address on ${domain || 'the mail domain'}` }
+  const boxes = new Set([...declared].map(box => box.toLowerCase()))
+  if (!boxes.has(address))
+    return { problem: `email.server.relay is on, but ${address} is not one of the declared mailboxes, so it cannot sign in to relay` }
+  return { account: address }
+}
+
+/**
  * Give each mailbox that asked for a generated password one, and save it,
  * before the app's environment ships.
  *
@@ -4099,6 +4124,10 @@ export async function provisionMailTenant(ip: string, logger: typeof log): Promi
   const recoveries = declaredRecoveries.recoveries
   const recoveriesB64 = recoveries.length ? Buffer.from(`${recoveries.map(r => `${r.address}\t${r.recovery}\t${r.policy}`).join('\n')}\n`).toString('base64') : ''
 
+  const relay = relayAccountFromConfig(cfg, domain, declaredBoxes)
+  if (relay.problem)
+    logger.warn(`Mail: ${relay.problem}. Nothing was changed on the mail server for it.`)
+
   // One idempotent, merge-based reconcile script. Emits keyed lines the caller
   // parses: MAILHOST:, DKIMPUB:, MADE:<addr>, and a final MAILTENANT:<state>.
   const script = `set -e
@@ -4106,6 +4135,7 @@ DOMAIN=${domain ? `'${domain}'` : "''"}
 FWD_B64='${forwardsB64}'
 README_B64='${readmeB64}'
 BOXES_B64='${boxesB64}'
+RELAY_ACCOUNT='${relay.account ?? ''}'
 RECOVERY_B64='${recoveriesB64}'
 ENVF=/etc/mail/mail.env
 FJSON=/opt/mail/forwards.json
@@ -4128,6 +4158,23 @@ if [ -n "$DOMAIN" ] && [ -f "$ENVF" ]; then
       else
         echo "SMTP_LOCAL_DOMAINS=$DOMAIN" >> "$ENVF"
       fi
+      ENV_CHANGED=1 ;;
+  esac
+fi
+# 1b) A sending service: name its sender in SMTP_RELAY_ACCOUNTS (merged, so
+#     another service's entry stays). The mail server still asks each message
+#     for a signature by the author's own domain; this only lets the account
+#     present one.
+if [ -n "$RELAY_ACCOUNT" ] && [ -f "$ENVF" ]; then
+  rcur=$(grep -E '^SMTP_RELAY_ACCOUNTS=' "$ENVF" | head -1 | cut -d= -f2- || true)
+  case ",$rcur," in
+    *",$RELAY_ACCOUNT,"*) : ;;
+    *) if grep -qE '^SMTP_RELAY_ACCOUNTS=' "$ENVF"; then
+        sed -i "s|^SMTP_RELAY_ACCOUNTS=.*|SMTP_RELAY_ACCOUNTS=\${rcur:+$rcur,}$RELAY_ACCOUNT|" "$ENVF"
+      else
+        echo "SMTP_RELAY_ACCOUNTS=$RELAY_ACCOUNT" >> "$ENVF"
+      fi
+      echo "RELAY:$RELAY_ACCOUNT"
       ENV_CHANGED=1 ;;
   esac
 fi
@@ -4565,6 +4612,10 @@ if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo
     const forwardError = (out.match(/FWDERR:([^\n]*)/) || [])[1]?.trim()
     if (forwardError)
       logger.warn(`Mail: the forward rules were not merged: ${forwardError}`)
+
+    const relayNamed = (out.match(/RELAY:([^\n]*)/) || [])[1]?.trim()
+    if (relayNamed)
+      logger.success(`Mail: ${relayNamed} may now relay mail that a customer's own domain has signed`)
 
     const certHost = (out.match(/CERTHOST:([^\n]*)/) || [])[1]?.trim()
     if (certHost)
