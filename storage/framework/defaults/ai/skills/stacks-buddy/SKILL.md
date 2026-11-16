@@ -616,7 +616,7 @@ buddy ai:context             # compact deterministic project context for coding 
   -o/--output [path]         # write to a file instead of stdout
   --max-chars [characters]   # prompt payload character budget (default: 4000)
   --model [model]            # model family for heuristic token estimates
-buddy doctor                 # health checks (Bun version, Node, package.json, .env, APP_KEY, mail DNS)
+buddy doctor                 # health checks (Bun version, Node, package.json, .env, APP_KEY, mail DNS, forms their action's rules refuse)
 buddy tinker                 # interactive REPL with Stacks preloaded
   -e/--eval [expr]           # evaluate expression and exit
   --print [expr]             # evaluate, print, and exit

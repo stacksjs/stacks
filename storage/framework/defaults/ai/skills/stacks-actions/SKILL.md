@@ -142,6 +142,8 @@ const emailValue = requestContext.old('email', cart.email)  // what was typed, e
 - A form says a list by repeating a field name, and one occurrence arrives as
   a string. A rule that asks for `schema.array()` takes it as a list of one,
   and an empty field as an empty list. A value is never split on commas.
+- A ticked checkbox with no `value` sends `on`, which a `schema.boolean()`
+  rule takes as true, like `true` and `1`.
 
 A refusal only `handle()` can know about ("your cart is empty", "that item
 has gone") is answered with `refuse()` from `@stacksjs/router`, never with a
@@ -184,8 +186,19 @@ run. A script still gets the `403`, and a form posted from another site is
 never sent back to a page of this one. A middleware of your own can do the
 same by marking the error it throws with `FORM_REFUSAL` (`{ message, status }`).
 
-Not covered yet (stacksjs/stacks#3311): a form submitted with `method="get"`,
-and a check that a page's form can satisfy its action's rules.
+A form can only send text, files and a name repeated for a list, and an
+unticked checkbox sends nothing. `buddy doctor` reads every page's plain POST
+form, finds the action it posts to in the route table, and warns, with the
+file and line, about each rule that form can never meet: an object, a
+required field the form has no control for, a required yes or no only a
+checkbox sends, or a checkbox, radio or option value the rule refuses
+(stacksjs/stacks#3311). A form whose address or field names are computed on
+the page is not read.
+
+Not covered yet: a form submitted with `method="get"`. It is a navigation, so
+a failed rule is still answered with the 422 body; going back to its page
+with a cookie is a different design, since the query string already holds
+what was typed.
 
 The shipped checkout is the worked example: the contact and shipping steps
 declare their fields (`Actions/Storefront/CheckoutContactAction.ts`,

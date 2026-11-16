@@ -158,6 +158,17 @@ export function doctor(buddy: CLI): void {
           checks.push({ name: 'STX packages', ...report })
       }
 
+      // A page's form that its action's rules refuse however it is filled in
+      // (stacksjs/stacks#3311): an object, a required checkbox, an option the
+      // rule does not allow.
+      try {
+        const { collectFormRuleReport } = await import('../form-rules')
+        checks.push({ name: 'Form rules', ...await collectFormRuleReport(resolve(process.cwd())) })
+      }
+      catch (error) {
+        checks.push({ name: 'Form rules', status: 'warn', message: `The forms could not be checked against their routes: ${error instanceof Error ? error.message : String(error)}` })
+      }
+
       // Obsolete scaffold dependency declarations (stacksjs/stacks#2919).
       const depsPath = resolve(process.cwd(), 'config/deps.ts')
       if (existsSync(depsPath)) {
