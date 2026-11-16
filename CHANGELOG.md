@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.617...v0.75.618)
+
+## 🐛 Bug Fixes
+
+- **upgrade**: respect native-only Pantry lockfiles ([f22e378](https://github.com/stacksjs/stacks/commit/f22e378)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.616...v0.75.617)
 
 ## 🐛 Bug Fixes
