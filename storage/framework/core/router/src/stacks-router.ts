@@ -335,6 +335,7 @@ export function shouldUseNativeRoutesByDefault(routes: readonly Route[]): boolea
 
 import { runWithRequestArgument, runWithRequestArguments, setAmbientRequestContext } from './request-context'
 import { isApiRequest, JSON_CONTENT_TYPE } from './api-shape'
+import { type FormRefusal, formRefusalOf } from './refuse'
 import { applySecurityHeaders, createJsonSecurityHeaders, secureSerializedJsonResponse } from './security-headers'
 import { isCursorPaginator, isPaginator, isSimplePaginator } from '@stacksjs/pagination'
 
@@ -3190,7 +3191,7 @@ function requestIsSecure(req: EnhancedRequest): boolean {
  * Send the browser back to `page` with what it should be told, or null when
  * there is no application key to sign it with.
  */
-function backToPage(req: EnhancedRequest, page: string, told: { errors?: Record<string, string[]>, old?: Record<string, string | string[]>, notice?: string }): Response | null {
+function backToPage(req: EnhancedRequest, page: string, told: { errors?: Record<string, string[]>, old?: Record<string, string | string[]>, notice?: string, formError?: string }): Response | null {
   const flash = requireFormFlash()
   const mark = page.indexOf('?')
   const sealed = flash.sealFormFlash({
@@ -3198,6 +3199,7 @@ function backToPage(req: EnhancedRequest, page: string, told: { errors?: Record<
     errors: told.errors ?? {},
     old: told.old ?? {},
     notice: told.notice,
+    formError: told.formError,
     expires: Date.now() + flash.FORM_FLASH_SECONDS * 1000,
   }, (flash.config as { app?: { key?: string } }).app?.key)
   if (!sealed)
@@ -3213,10 +3215,10 @@ function escapeHtml(text: string): string {
 }
 
 /** A refusal as a page, for a browser with no page to be sent back to. */
-function refusedFormDocument(errors: Record<string, string[]>): Response {
+function refusedFormDocument(errors: Record<string, string[]>, status = 422): Response {
   const messages = Object.values(errors).flat().map(message => `<li>${escapeHtml(message)}</li>`).join('')
   const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>This form could not be submitted</title></head><body style="margin:0;font-family:system-ui,sans-serif;background:#fafafa;color:#171717"><main style="max-width:32rem;margin:15vh auto;padding:0 1.5rem"><h1 style="font-size:1.25rem;margin:0 0 .75rem">This form could not be submitted</h1><ul style="margin:0 0 1rem;padding-left:1.25rem;line-height:1.6">${messages}</ul><p style="margin:0;color:#525252">Go back to the form, correct it and send it again.</p></main></body></html>`
-  return new Response(html, { status: 422, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } })
+  return new Response(html, { status, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } })
 }
 
 /**
@@ -3241,16 +3243,48 @@ function validationRefusal(req: EnhancedRequest, errors: Record<string, string[]
   if (!page)
     return refusedFormDocument(errors)
 
-  let old: Record<string, string | string[]> = {}
-  try {
-    old = requireFormFlash().flashableInput(getAllInputFor(req))
-  }
-  catch {
-    // What was posted could not be read back. The messages still go.
-  }
   // No application key, so nothing to sign the cookie with, and an unsigned
   // one is not read. The page saying what was wrong beats a silent redirect.
-  return backToPage(req, page, { errors, old }) ?? refusedFormDocument(errors)
+  return backToPage(req, page, { errors, old: postedInput(req) }) ?? refusedFormDocument(errors)
+}
+
+/** What a refused form posted, less what must not travel, or nothing when it cannot be read back. */
+function postedInput(req: EnhancedRequest): Record<string, string | string[]> {
+  try {
+    return requireFormFlash().flashableInput(getAllInputFor(req))
+  }
+  catch {
+    // What was posted could not be read back. The message still goes.
+    return {}
+  }
+}
+
+/**
+ * A refusal an action made itself, with `refuse()` (stacksjs/stacks#3311),
+ * answered to a browser form: back to its page with the message, by field
+ * when it names one and for the whole form when it does not, and with what
+ * was posted. The status the action chose is kept for the page drawn when
+ * there is nowhere to go back to.
+ */
+function refusedByAction(req: EnhancedRequest, refusal: FormRefusal): Response {
+  const errors = { [refusal.field ?? '']: [refusal.message] }
+  const page = formPage(req as unknown as Request)
+  if (!page)
+    return refusedFormDocument(errors, refusal.status)
+  const told = refusal.field
+    ? { errors: { [refusal.field]: [refusal.message] } }
+    : { formError: refusal.message }
+  return backToPage(req, page, { ...told, old: postedInput(req) }) ?? refusedFormDocument(errors, refusal.status)
+}
+
+/**
+ * What `authorize` or `before` answered, for the request that asked. They
+ * stop the action with a `Response` of their own, which is sent as it is,
+ * unless it is a `refuse()` and a browser form asked.
+ */
+function hookAnswer(answer: Response, req: EnhancedRequest): Response {
+  const refusal = formRefusalOf(answer)
+  return refusal && isPageFormPost(req) ? refusedByAction(req, refusal) : answer
 }
 
 /**
@@ -3292,7 +3326,12 @@ function noticeDocument(notice: string): Response {
  * the page says nothing: a form that only reads has nothing to announce.
  */
 function actionAnswer(result: unknown, req: EnhancedRequest, action: RouterAction): Response {
-  if (!isPageFormPost(req) || !answeredWithData(result))
+  if (!isPageFormPost(req))
+    return formatResult(result, req)
+  const refusal = formRefusalOf(result)
+  if (refusal)
+    return refusedByAction(req, refusal)
+  if (!answeredWithData(result))
     return formatResult(result, req)
 
   const declared = typeof action.notice === 'function' ? action.notice(result, req) : action.notice
@@ -3812,7 +3851,7 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
         const auth = pendingAuth !== null && (typeof pendingAuth === 'object' || typeof pendingAuth === 'function')
           ? await pendingAuth
           : pendingAuth
-        if (auth instanceof Response) return auth
+        if (auth instanceof Response) return hookAnswer(auth, req)
         if (auth === false) {
           return Response.json({ error: 'Forbidden' }, { status: 403 })
         }
@@ -3825,7 +3864,7 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
         const pre = pendingBefore !== null && (typeof pendingBefore === 'object' || typeof pendingBefore === 'function')
           ? await pendingBefore
           : pendingBefore
-        if (pre instanceof Response) return pre
+        if (pre instanceof Response) return hookAnswer(pre, req)
       }
 
       const pendingResult = action.handle(req)

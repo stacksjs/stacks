@@ -52,6 +52,11 @@ export interface FormFlash {
    * nothing to say.
    */
   notice?: string
+  /**
+   * Why the form was refused, when it was not about one field ("Your cart is
+   * empty."). Absent otherwise.
+   */
+  formError?: string
   /** When it stops being read, in milliseconds since the epoch. */
   expires: number
 }
@@ -138,8 +143,9 @@ export function sealFormFlash(flash: FormFlash, key: string | undefined | null):
   const errors: Record<string, string[]> = Object.fromEntries(Object.entries(flash.errors).map(([field, messages]) => [field, [...messages]]))
   const old: Record<string, string | string[]> = { ...flash.old }
   const notice = flash.notice ? flash.notice.slice(0, FORM_FLASH_NOTICE_LENGTH) : undefined
+  const formError = flash.formError ? flash.formError.slice(0, FORM_FLASH_NOTICE_LENGTH) : undefined
   const sealed = (): string => {
-    const body = encode(JSON.stringify({ path: flash.path, errors, old, notice, expires: flash.expires }))
+    const body = encode(JSON.stringify({ path: flash.path, errors, old, notice, formError, expires: flash.expires }))
     return `${body}.${signature(body, key)}`
   }
 
@@ -209,11 +215,13 @@ export function openFormFlash(value: string | undefined | null, key: string | un
     return null
   if (!Object.values(flash.old).every(entry => typeof entry === 'string' || stringList(entry)))
     return null
-  if (flash.notice !== undefined && typeof flash.notice !== 'string')
+  if ((flash.notice !== undefined && typeof flash.notice !== 'string') || (flash.formError !== undefined && typeof flash.formError !== 'string'))
     return null
   const opened: FormFlash = { path: flash.path, errors: flash.errors, old: flash.old as FormFlash['old'], expires: flash.expires }
   if (flash.notice)
     opened.notice = flash.notice
+  if (flash.formError)
+    opened.formError = flash.formError
   return opened
 }
 

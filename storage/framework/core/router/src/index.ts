@@ -129,6 +129,11 @@ export type { ApplicationHealthCheck, ApplicationHealthResult, HealthProbe, Heal
 export { stream } from './stacks-router'
 export type { StreamOptions } from './stacks-router'
 
+// Refuse a browser form from inside `handle()`: `{ error }` for a caller that
+// asked for data, its page with the message for a browser (stacksjs/stacks#3311).
+export { FORM_REFUSAL, formRefusalOf, refuse } from './refuse'
+export type { FormRefusal, RefuseOptions } from './refuse'
+
 // Signed-URL helpers — HMAC over the URL + optional expiry so single-
 // use links (email verify, password reset, unsubscribe) can be handed
 // out without long-lived bearer tokens. Pair `signedUrl(...)` with the

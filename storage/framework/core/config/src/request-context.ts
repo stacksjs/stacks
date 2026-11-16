@@ -123,8 +123,14 @@ export interface StacksRequestContext {
   errors: () => Record<string, string[]>
   /** The first message for one field, or '' when it has none. */
   error: (field: string) => string
-  /** Whether the form was refused at all. */
+  /** Whether the form was refused at all, about a field or about the whole form. */
   hasErrors: () => boolean
+  /**
+   * Why the form was refused when it was not about one field ("Your cart is
+   * empty."), or ''. Set when an action answers with `refuse(message)`
+   * (stacksjs/stacks#3311). Shown once, like {@link errors}.
+   */
+  formError: () => string
   /**
    * What the refused form had in a field, to draw the form as it was left.
    * `fallback` when the form was not refused or the field was not sent, so
@@ -268,7 +274,8 @@ export function createRequestContext(
 
     errors: () => flash()?.errors ?? {},
     error: (field: string) => flash()?.errors[field]?.[0] ?? '',
-    hasErrors: () => Object.keys(flash()?.errors ?? {}).length > 0,
+    hasErrors: () => Boolean(flash()?.formError) || Object.keys(flash()?.errors ?? {}).length > 0,
+    formError: () => flash()?.formError ?? '',
     old: (field: string, fallback: string = '') => {
       const value = flash()?.old[field]
       if (value === undefined)
