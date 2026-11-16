@@ -137,6 +137,12 @@ describe('UI/Table timestamp parsing', () => {
  * a column header was clicked, the select changed nothing visible
  * (stacksjs/stacks#2977).
  */
+/**
+ * A sort select: the shared `<Select>` bound to `sort`, which every list page
+ * filters with since stacksjs/stacks#3310, or a native one still on `x-model`.
+ */
+const SORT_SELECT = /(?:x-model|v-model:value)="sort"/
+
 describe('dashboards with a sort select hand it to their Table', () => {
   const sources = new Map(components().map(file => [file, readFileSync(file, 'utf8')]))
   const usesTable = new Set(
@@ -145,13 +151,13 @@ describe('dashboards with a sort select hand it to their Table', () => {
 
   it('finds pages to check', () => {
     // Without this, an empty scan would make the next assertion pass.
-    expect([...sources.values()].filter(source => /x-model="sort"/.test(source)).length).toBeGreaterThan(4)
+    expect([...sources.values()].filter(source => SORT_SELECT.test(source)).length).toBeGreaterThan(4)
   })
 
   it('every Table-backed component under a sort select receives sort-reset-key', () => {
     const missing: string[] = []
     for (const [file, source] of sources) {
-      if (!/x-model="sort"/.test(source))
+      if (!SORT_SELECT.test(source))
         continue
       for (const name of usesTable) {
         const tag = source.match(new RegExp(`<${name}(?=[\\s/>])[^>]*>`))
