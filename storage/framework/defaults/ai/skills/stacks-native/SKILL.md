@@ -257,9 +257,12 @@ await request.authorize('update', post)                        // throws a 403
   key, deploy token, agent token) is a personal access token with named
   scopes: `createToken(id, name, ['posts:read'], { expiresAt, withRefreshToken: false })`,
   listed with `tokens`, checked with `findToken`, ended with `revokeTokenById`.
-  Never add a key column or generate and compare a secret yourself. Once a
-  token narrower than `*` exists, "signed in" has to mean a token holding
-  `*`. See "API keys and machine credentials" in `stacks-auth`.
+  Never add a key column or generate and compare a secret yourself. A
+  credential that acts for a thing rather than a person (a project's read
+  key, a CI upload token) is owned by that thing via `tokenableType`, not by
+  a user, so a password change does not end it. Once a user token narrower
+  than `*` exists, "signed in" has to mean a token holding `*`. See "API keys
+  and machine credentials" in `stacks-auth`.
 - **Gotcha:** an ability with no gate and no policy method is denied. Don't
   loosen the default row-scoping policy to make an example work. Declare an
   owner instead (see RECIPES.md).
