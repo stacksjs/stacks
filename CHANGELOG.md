@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.615...v0.75.616)
+
+## ✨ Features
+
+- **email**: a sending service relays through the mail server, and CommsHQ mail can be turned off ([b730aab](https://github.com/stacksjs/stacks/commit/b730aab)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.614...v0.75.615)
 
 ## 🐛 Bug Fixes
