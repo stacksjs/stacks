@@ -61,6 +61,9 @@ import { Middleware, parseBearerToken } from '@stacksjs/router/middleware'
 export const CSRF_COOKIE_NAME = 'X-CSRF-Token'
 const CSRF_SECURE_TRANSPORT = Symbol.for('@stacksjs/router:csrf-secure-transport')
 const CSRF_HEADER_NAME = 'x-csrf-token'
+/** `FORM_REFUSAL` in @stacksjs/router, by its registered name: this module does not load the router. */
+const CSRF_FORM_REFUSAL = Symbol.for('stacks.formRefusal')
+const CSRF_FORM_MESSAGE = 'This form was open too long to be sent safely, so nothing was saved. Check it and send it again.'
 const CSRF_COOKIE_PREFIX = `${CSRF_COOKIE_NAME}=`
 const LEGACY_CSRF_COOKIE_PREFIX = 'csrf-token='
 const JOINED_CSRF_COOKIE_PREFIX = `, ${CSRF_COOKIE_PREFIX}`
@@ -381,7 +384,13 @@ function assertValidCsrfRequest(request: Request | EnhancedRequest): void {
   // mismatch" — it's not in the IANA list but most SPAs already
   // know how to refresh on 419. We use 403 for the strict-correct
   // status code instead (419 is non-standard).
-  throw new HttpError(403, 'CSRF token mismatch')
+  const refusal = new HttpError(403, 'CSRF token mismatch')
+  // A browser form from this application's own page (a tab left open past
+  // the token's life, a second tab that replaced it) goes back to that page
+  // with this, and what was typed, instead of the 403 body. A script and a
+  // form from anywhere else get the 403 as before (stacksjs/stacks#3311).
+  Object.defineProperty(refusal, CSRF_FORM_REFUSAL, { value: { message: CSRF_FORM_MESSAGE, status: 403 } })
+  throw refusal
 }
 
 export async function validateCsrfRequest(request: Request | EnhancedRequest): Promise<void> {

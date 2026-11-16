@@ -17,7 +17,11 @@
  * ```
  */
 
-/** Where the router reads what a refusal says, on the `Response` it returns. */
+/**
+ * Where the router reads what a refusal says: on the `Response` an action
+ * returns, or on an error a middleware throws. A registered symbol, so code
+ * that must not load the router (the CSRF middleware) can set it too.
+ */
 export const FORM_REFUSAL: unique symbol = Symbol.for('stacks.formRefusal')
 
 export interface FormRefusal {
@@ -56,5 +60,8 @@ export function refuse(message: string, options: RefuseOptions = {}): Response {
 
 /** What a refusal says, or undefined when `value` is not one. */
 export function formRefusalOf(value: unknown): FormRefusal | undefined {
-  return value instanceof Response ? (value as unknown as Record<symbol, FormRefusal | undefined>)[FORM_REFUSAL] : undefined
+  if (value === null || typeof value !== 'object')
+    return undefined
+  const refusal = (value as Record<symbol, unknown>)[FORM_REFUSAL] as FormRefusal | undefined
+  return refusal && typeof refusal.message === 'string' && typeof refusal.status === 'number' ? refusal : undefined
 }

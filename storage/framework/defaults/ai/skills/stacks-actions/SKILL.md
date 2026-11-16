@@ -177,8 +177,15 @@ const formError = requestContext.formError()
 @endif
 ```
 
-Not covered yet (stacksjs/stacks#3311): a refused CSRF token, and a form
-submitted with `method="get"`.
+A browser form refused for its CSRF token (a tab left open past the token's
+life, or a second tab that replaced it) goes back to its page the same way,
+with a sentence for the whole form and what was typed. The action does not
+run. A script still gets the `403`, and a form posted from another site is
+never sent back to a page of this one. A middleware of your own can do the
+same by marking the error it throws with `FORM_REFUSAL` (`{ message, status }`).
+
+Not covered yet (stacksjs/stacks#3311): a form submitted with `method="get"`,
+and a check that a page's form can satisfy its action's rules.
 
 The shipped checkout is the worked example: the contact and shipping steps
 declare their fields (`Actions/Storefront/CheckoutContactAction.ts`,

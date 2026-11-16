@@ -352,6 +352,14 @@ async function createErrorResponse(...args: Parameters<ErrorHandlerModule['creat
 }
 
 async function createMiddlewareErrorResponse(...args: Parameters<ErrorHandlerModule['createMiddlewareErrorResponse']>): Promise<Response> {
+  // A middleware that refused a browser form and said what to tell the
+  // person (a stale CSRF token): its page, with that, rather than the error
+  // page or a page of JSON. Everyone else gets the error as before
+  // (stacksjs/stacks#3311).
+  const [error, request] = args
+  const refusal = formRefusalOf(error)
+  if (refusal && isPageFormPost(request as EnhancedRequest))
+    return refusedByAction(request as EnhancedRequest, refusal)
   return (await loadErrorHandlerModule()).createMiddlewareErrorResponse(...args)
 }
 
