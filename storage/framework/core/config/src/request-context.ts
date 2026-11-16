@@ -36,6 +36,8 @@
  */
 
 import { AsyncLocalStorage } from 'node:async_hooks'
+import { config } from './config'
+import { FORM_FLASH_COOKIE, type FormFlash, openFormFlash } from './form-flash'
 
 /**
  * What a server knows about the request in flight.
@@ -110,6 +112,28 @@ export interface StacksRequestContext {
   host: () => string
   /** The site resolved for this request's host, or null on a single-site app. */
   site: () => SiteSnapshot | null
+  /**
+   * Why the form this page posted was refused, by field. Empty when nothing
+   * was: a page reads it on every render and draws no message for `{}`.
+   *
+   * Set when an action's `validations` refuse a browser form: the router
+   * sends the browser back here with the messages instead of answering a page
+   * of JSON (stacksjs/stacks#3309). Shown once.
+   */
+  errors: () => Record<string, string[]>
+  /** The first message for one field, or '' when it has none. */
+  error: (field: string) => string
+  /** Whether the form was refused at all. */
+  hasErrors: () => boolean
+  /**
+   * What the refused form had in a field, to draw the form as it was left.
+   * `fallback` when the form was not refused or the field was not sent, so
+   * `old('name', user.name)` is right on a first visit too. Never a password
+   * or a token: those are not sent back.
+   */
+  old: (field: string, fallback?: string) => string
+  /** Every value a field was sent with: a group of checkboxes, a multiple select. */
+  oldValues: (field: string) => string[]
 }
 
 /**
@@ -154,7 +178,11 @@ export function parseCookieHeader(header: string | null | undefined): Record<str
  * replaced between requests — capturing it would pin the first request's
  * cookies onto every later one.
  */
-export function createRequestContext(read: () => RequestContextSnapshot | undefined): StacksRequestContext {
+export function createRequestContext(
+  read: () => RequestContextSnapshot | undefined,
+  /** The key a refused form's cookie is signed with. The application's, unless a test says otherwise. */
+  flashKey: () => string | undefined = () => (config as { app?: { key?: string } }).app?.key,
+): StacksRequestContext {
   const snapshot = (): RequestContextSnapshot => read() ?? {}
 
   const searchOf = (): string => {
@@ -168,6 +196,32 @@ export function createRequestContext(read: () => RequestContextSnapshot | undefi
     return mark === -1 ? '' : url.slice(mark)
   }
 
+  const pathOf = (): string => {
+    const direct = snapshot().path
+    if (direct)
+      return direct
+
+    const url = snapshot().url ?? ''
+    if (!url)
+      return ''
+
+    try {
+      return new URL(url).pathname
+    }
+    catch {
+      // Relative url: everything up to the query is the path.
+      const mark = url.indexOf('?')
+      return mark === -1 ? url : url.slice(0, mark)
+    }
+  }
+
+  // Opened on every read. A page asks a handful of times and the cookie is
+  // small; keeping the answer would mean deciding which request it was for.
+  const flash = (): FormFlash | null => {
+    const sealed = snapshot().cookies?.[FORM_FLASH_COOKIE]
+    return sealed ? openFormFlash(sealed, flashKey(), pathOf()) : null
+  }
+
   return {
     cookie: (name: string) => snapshot().cookies?.[name] ?? null,
     cookies: () => snapshot().cookies ?? {},
@@ -176,24 +230,7 @@ export function createRequestContext(read: () => RequestContextSnapshot | undefi
     // why `new URL(requestContext.url())` threw on the box and nowhere else.
     url: () => snapshot().url ?? '',
 
-    path: () => {
-      const direct = snapshot().path
-      if (direct)
-        return direct
-
-      const url = snapshot().url ?? ''
-      if (!url)
-        return ''
-
-      try {
-        return new URL(url).pathname
-      }
-      catch {
-        // Relative url: everything up to the query is the path.
-        const mark = url.indexOf('?')
-        return mark === -1 ? url : url.slice(0, mark)
-      }
-    },
+    path: pathOf,
 
     search: searchOf,
 
@@ -219,6 +256,20 @@ export function createRequestContext(read: () => RequestContextSnapshot | undefi
     ip: () => snapshot().ip ?? '',
     host: () => snapshot().host ?? '',
     site: () => snapshot().site ?? null,
+
+    errors: () => flash()?.errors ?? {},
+    error: (field: string) => flash()?.errors[field]?.[0] ?? '',
+    hasErrors: () => Object.keys(flash()?.errors ?? {}).length > 0,
+    old: (field: string, fallback: string = '') => {
+      const value = flash()?.old[field]
+      if (value === undefined)
+        return fallback
+      return typeof value === 'string' ? value : value[0] ?? fallback
+    },
+    oldValues: (field: string) => {
+      const value = flash()?.old[field]
+      return value === undefined ? [] : typeof value === 'string' ? [value] : value
+    },
   }
 }
 
