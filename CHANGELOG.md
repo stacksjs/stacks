@@ -1,5 +1,33 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.613...v0.75.614)
+
+## ✨ Features
+
+- **dashboard**: the edit page saves a record and its related rows at once ([672d07a](https://github.com/stacksjs/stacks/commit/672d07a)) _(by glennmichael123)_ ([#3315](https://github.com/stacksjs/stacks/issues/3315))
+- **dashboard**: save a record and its related rows together, all or nothing ([c54c5ea](https://github.com/stacksjs/stacks/commit/c54c5ea)) _(by glennmichael123)_ ([#3315](https://github.com/stacksjs/stacks/issues/3315))
+
+## 🐛 Bug Fixes
+
+- **deploy**: a mailbox declared in config works after one deploy ([ef6213f](https://github.com/stacksjs/stacks/commit/ef6213f)) _(by Chris Breuer)_
+
+## ♻️ Code Refactoring
+
+- **dashboard**: one row's create, edit and delete as shared steps ([f83f95d](https://github.com/stacksjs/stacks/commit/f83f95d)) _(by glennmichael123)_ ([#3315](https://github.com/stacksjs/stacks/issues/3315))
+
+## 📝 Documentation
+
+- stop saying a model write takes no part in a transaction ([ce5763f](https://github.com/stacksjs/stacks/commit/ce5763f)) _(by glennmichael123)_ ([#3269](https://github.com/stacksjs/stacks/issues/3269))
+
+## 🔧 Chores
+
+- regenerate the artifacts the dashboard save changes left stale ([fcd5111](https://github.com/stacksjs/stacks/commit/fcd5111)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.612...v0.75.613)
 
 ## ✨ Features
