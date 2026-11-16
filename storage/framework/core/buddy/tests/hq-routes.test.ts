@@ -85,3 +85,17 @@ describe('whether an empty body is refused', () => {
     expect(validationOf({ slow: { rule: { validate: () => Promise.resolve({ valid: false }) } } })).toBe('optional')
   })
 })
+
+describe('an app with no route files', () => {
+  it('keeps the registry entries whose file exists and drops the rest', async () => {
+    const { mkdtempSync, writeFileSync } = await import('node:fs')
+    const { tmpdir } = await import('node:os')
+    const { join } = await import('node:path')
+    const { existingRouteFiles } = await import('../src/hq-routes')
+    const root = mkdtempSync(join(tmpdir(), 'routes-'))
+    writeFileSync(join(root, 'web.ts'), '')
+    // The default registry names routes/api.ts, which a pages-only app has not got.
+    expect(await existingRouteFiles({ api: 'api', web: { path: 'web' } }, root)).toEqual({ web: { path: 'web' } })
+    expect(await existingRouteFiles({ api: 'api' }, root)).toEqual({})
+  })
+})

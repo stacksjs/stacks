@@ -147,6 +147,28 @@ export function validationOf(validations: Record<string, { rule: { validate: (va
 }
 
 /**
+ * The registry, less the entries whose route file is not there.
+ *
+ * An app that registers nothing is given the default registry, which names
+ * `routes/api.ts`. An app made only of pages has no such file, and loading the
+ * registry as it stands threw before a single page was listed. Its pages are
+ * exactly what there is to check, so a file that does not exist is left out
+ * and one that exists and fails to load still fails loudly.
+ */
+export async function existingRouteFiles<T extends Record<string, unknown>>(registry: T, root?: string): Promise<T> {
+  const { existsSync } = await import('node:fs')
+  const { join } = await import('node:path')
+  const base = root ?? (await import('@stacksjs/path')).projectPath('routes')
+  const kept: Record<string, unknown> = {}
+  for (const [key, definition] of Object.entries(registry)) {
+    const file = typeof definition === 'string' ? definition : String((definition as { path?: unknown })?.path ?? key)
+    if (['.ts', '.js', '/index.ts'].some(ext => existsSync(join(base, `${file}${ext}`))) || existsSync(join(base, file)))
+      kept[key] = definition
+  }
+  return kept as T
+}
+
+/**
  * The app's routes and pages, as a manifest.
  *
  * Loads the routes the way the server does, without serving. A route whose
@@ -155,7 +177,7 @@ export function validationOf(validations: Record<string, { rule: { validate: (va
  */
 export async function collectRouteManifest(): Promise<RouteManifest> {
   const router = await import('@stacksjs/router')
-  await router.loadRoutes(await router.appRouteRegistry())
+  await router.loadRoutes(await existingRouteFiles(await router.appRouteRegistry()))
 
   const routes: ManifestRoute[] = []
   for (const route of router.listRegisteredRoutes()) {
