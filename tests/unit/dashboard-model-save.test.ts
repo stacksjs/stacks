@@ -162,3 +162,19 @@ describe('saving a record and its rows together', () => {
     expect((await save(ledger, { related: [{ slug: 'ledger-entry', update: [{ id: 10, fields: {} }], destroy: [10] }] })).body.message).toContain('both edited and deleted')
   })
 })
+
+describe('the edit page saves them that way', () => {
+  it('keeps row changes as drafts and sends them with the record, in one request', async () => {
+    const { readFileSync } = await import('node:fs')
+    const page = readFileSync('storage/framework/defaults/resources/components/Dashboard/Models/ModelRecordEdit.stx', 'utf8')
+    expect(page).toContain('modelRelatedSaveChanges(panels(), drafts())')
+    expect(page).toContain('saveModelRecordWithRelated(slug(), recordId(), fields, related)')
+    // A row is kept, not written, until the record is saved.
+    expect(page).toContain('drafts.set(modelDraftPut(drafts(), current.panel, current.key, rowValues()))')
+    expect(page).not.toContain('saveModelRelated(')
+    expect(page).not.toContain('deleteModelRecord(')
+    // The row form is part of the page, not a dialog over it.
+    expect(page).toContain('data-related-draft-editor')
+    expect(page).not.toContain('<Modal')
+  })
+})

@@ -1319,11 +1319,45 @@ pages use (`POST`, `PATCH` and `DELETE /api/dashboard/models/{slug}`), so
 casts, observers, validation and soft deletes apply and nothing new is
 opened. The panels are read again afterwards.
 
-There is no form that saves a record and its rows together, all or nothing:
-each row saved here stays saved when the next is refused. An operation that
-must be atomic across models belongs in an action that makes its model
-writes inside `transaction()`, where they roll back together
-(stacksjs/stacks#3269).
+Here each row is saved on its own, and stays saved when the next is
+refused. To change a record and its rows together, use its edit page.
+
+### The edit page saves a record and its rows together
+
+A record's edit page (`ModelRecordEdit.stx`) shows the same panels under its
+fields, wherever the related model lets the dashboard write its rows
+(stacksjs/stacks#3315). There, adding, editing or deleting a row does not
+write it: the row is kept as a draft (`functions/dashboard-model-drafts.ts`),
+marked New, Edited or Will be deleted, and "Save changes" sends the record's
+changed fields and every panel's drafts in one request:
+
+```
+PATCH /api/dashboard/models/{slug}/{id}/save
+{ fields: { status: 'paid' },
+  related: [{ slug: 'order-line',
+              create: [{ key: 'new-1', fields: { sku: 'A-1' } }],
+              update: [{ id: 5, fields: { quantity: 2 } }],
+              destroy: [7] }] }
+```
+
+`ModelSaveAction` runs every write inside one `transaction()`, through the
+same steps the single-row endpoints use (`model-row-writes.ts`), so each row
+gets every rule a single save has. The first refusal rolls all of it back,
+and the answer says where it was, in `at`:
+
+- `{ operation: 'update' }` for the record's own fields;
+- `{ operation, panel, row }` for one row: its id, or the key a new row was
+  sent with.
+
+The page then says "Nothing was saved." It shows the record's messages under
+its fields, and a row's message on that row and in its form.
+
+It allows no more than the record's page does. A panel must be one of the
+record's `hasMany`/`hasOne` that allows that write, decided by `relatedPanel`
+as the page decides it. A row edited or deleted must point at this record,
+and a new one is pointed at it: the link back is never taken from the form,
+so no row moves to another record from here. Bulk actions on a list stay one
+record at a time (below).
 
 The link between the two models is the foreign key the declaration names,
 else the related model's own `belongsTo`, else the conventional

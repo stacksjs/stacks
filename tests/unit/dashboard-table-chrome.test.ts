@@ -169,7 +169,8 @@ describe('dashboard row actions', () => {
     expect(edit).toContain('<span aria-current="page">Edit</span>')
     expect(edit).toContain('Edit {{ modelName() }}</h1>')
     expect(edit).toContain('const returnHref = derived(() => cameFromView ? viewHref() : listHref())')
-    expect(edit).toContain('<Button type="submit" variant="primary" :loading="saving()">Save changes</Button>')
+    // Below the record's fields and its related rows, so it names the form it submits.
+    expect(edit).toContain('<Button type="submit" variant="primary" form="model-edit-form" :loading="saving()">Save changes</Button>')
     expect(edit).toContain('@click="cancel">Cancel</Button>')
     // A model that does not allow updates says so instead of showing a form.
     expect(edit).toContain(`:title="modelName() + ' records cannot be edited here'"`)

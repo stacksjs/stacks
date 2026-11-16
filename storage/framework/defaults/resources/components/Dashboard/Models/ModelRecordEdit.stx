@@ -4,9 +4,17 @@
 // model's API lets the dashboard change are inputs; the rest are shown beside
 // them, read only, as context. Saving sends only what changed, then returns
 // to where the visitor came from: the record's page, or the list.
+//
+// Below them, the record's related rows (an order's lines), where the related
+// model lets the dashboard write them. A row added, edited or deleted here is
+// kept as a draft and saved with the record, all or nothing
+// (stacksjs/stacks#3315): one refusal and nothing is saved, and the page
+// points at the field or the row that was refused.
 import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
-import type { ModelFormValues, ModelRecord } from '../../../../functions/dashboard-model-record'
-import { fetchModelRecord, modelNameFromSlug, modelFormFieldsFor, modelFormPayload, modelFormValues, modelRecordBackHref, modelRecordHref, modelRecordListLabel, modelRecordSections, updateModelRecord } from '../../../../functions/dashboard-model-record'
+import type { ModelDraftListRow, ModelDrafts, ModelDraftState, ModelRelatedChanges, ModelSaveLocation } from '../../../../functions/dashboard-model-drafts'
+import { modelDraftChangeCount, modelDraftIsNew, modelDraftKey, modelDraftListRows, modelDraftPut, modelDraftRemove, modelDraftRestore, modelDraftRowLabel, modelDraftValues, modelRelatedSaveChanges, saveModelRecordWithRelated } from '../../../../functions/dashboard-model-drafts'
+import type { ModelFormValues, ModelRecord, ModelRelatedPanel } from '../../../../functions/dashboard-model-record'
+import { fetchModelRecord, fetchModelRelated, modelNameFromSlug, modelFormFieldsFor, modelFormPayload, modelFormValues, modelRecordBackHref, modelRecordHref, modelRecordListLabel, modelRecordSections, modelRelatedAddsHere, updateModelRecord } from '../../../../functions/dashboard-model-record'
 import { dashboardLoaderTimer } from '../../../../functions/dashboard-loading'
 import { pushToast } from '../../../../functions/toasts'
 
@@ -22,6 +30,16 @@ const loadError = state('')
 const saving = state(false)
 const saveError = state('')
 const saveErrors = state<Record<string, string[]>>({})
+
+// The record's related rows and what has been changed in them, unsaved.
+const panels = state<ModelRelatedPanel[]>([])
+const drafts = state<ModelDrafts>({})
+// The row form open in a panel: a listed row by its id, or one added here by its key.
+const rowEditor = state<{ panel: ModelRelatedPanel, key: string } | null>(null)
+const rowValues = state<ModelFormValues>({})
+// Where the last save was refused, when it was a row: shown on that row and in its form.
+const refusedAt = state<ModelSaveLocation | null>(null)
+const refusedErrors = state<Record<string, string[]>>({})
 
 // `/models/{slug}/{id}/edit`
 function slug(): string {
@@ -56,6 +74,113 @@ const context = derived(() => {
 const anonymized = derived(() => Boolean(record()?.anonymized))
 const canEdit = derived(() => Boolean(record()?.writeCapabilities.update) && writable().length > 0 && !anonymized())
 
+/** The panels whose rows can be changed here: added, edited or deleted. */
+const editablePanels = derived(() => panels().filter(panel => modelRelatedAddsHere(panel) || canEditRows(panel) || Boolean(panel.canDestroy)))
+const pendingCount = derived(() => modelDraftChangeCount(panels(), drafts()))
+
+function canEditRows(panel: ModelRelatedPanel): boolean {
+  return Boolean(panel.canUpdate) && (panel.fields?.length ?? 0) > 0
+}
+
+function listRows(panel: ModelRelatedPanel): ModelDraftListRow[] {
+  return modelDraftListRows(panel, drafts())
+}
+
+function rowLabel(panel: ModelRelatedPanel, row: ModelDraftListRow): string {
+  return modelDraftRowLabel(panel, row)
+}
+
+const STATE_LABELS: Record<ModelDraftState, string> = { kept: '', added: 'New', edited: 'Edited', removed: 'Will be deleted' }
+
+function stateLabel(row: ModelDraftListRow): string {
+  return STATE_LABELS[row.state]
+}
+
+/** A second of a `hasOne` would break the "one": only offered while there is none. */
+function canAddRow(panel: ModelRelatedPanel): boolean {
+  return modelRelatedAddsHere(panel) && (panel.kind === 'many' || listRows(panel).every(row => row.state === 'removed'))
+}
+
+/** A row added here, not one that is stored. */
+function isNewRow(row: ModelDraftListRow): boolean {
+  return modelDraftIsNew(row.key)
+}
+
+function canEditRow(panel: ModelRelatedPanel, row: ModelDraftListRow): boolean {
+  return row.state !== 'removed' && (modelDraftIsNew(row.key) || canEditRows(panel))
+}
+
+function canRemoveRow(panel: ModelRelatedPanel, row: ModelDraftListRow): boolean {
+  return row.state !== 'removed' && (modelDraftIsNew(row.key) || Boolean(panel.canDestroy))
+}
+
+function openRow(panel: ModelRelatedPanel, key: string): void {
+  rowValues.set(modelDraftValues(panel, drafts(), key))
+  rowEditor.set({ panel, key })
+}
+
+function addRow(panel: ModelRelatedPanel): void {
+  openRow(panel, modelDraftKey(drafts(), panel.slug))
+}
+
+function editRow(panel: ModelRelatedPanel, row: ModelDraftListRow): void {
+  openRow(panel, row.key)
+}
+
+function removeRow(panel: ModelRelatedPanel, row: ModelDraftListRow): void {
+  drafts.set(modelDraftRemove(drafts(), panel, row.key))
+}
+
+function restoreRow(panel: ModelRelatedPanel, row: ModelDraftListRow): void {
+  drafts.set(modelDraftRestore(drafts(), panel, row.key))
+}
+
+function setRowValue(change: { name: string, value: string | boolean }): void {
+  rowValues.set({ ...rowValues(), [change.name]: change.value })
+}
+
+/** Keep the row's form with the other changes. Nothing is written until the record is saved. */
+function keepRow(): void {
+  const current = rowEditor()
+  if (!current)
+    return
+  drafts.set(modelDraftPut(drafts(), current.panel, current.key, rowValues()))
+  rowEditor.set(null)
+}
+
+/** Whether this panel's row form is the one open. One row is changed at a time. */
+function editingIn(panel: ModelRelatedPanel): boolean {
+  return rowEditor()?.panel.slug === panel.slug
+}
+
+function closeRowEditor(): void {
+  rowEditor.set(null)
+}
+
+const rowEditorTitle = derived(() => {
+  const current = rowEditor()
+  if (!current)
+    return ''
+  const kept = drafts()[current.panel.slug]?.added.some(row => row.key === current.key) ?? false
+  return `${modelDraftIsNew(current.key) && !kept ? 'Add' : 'Edit'} ${current.panel.label.toLowerCase()}`
+})
+
+function refusedHere(panel: ModelRelatedPanel, key: string): boolean {
+  const at = refusedAt()
+  return Boolean(at) && at!.panel === panel.slug && at!.row === key
+}
+
+/** Why the last save refused this row, under it on the list. */
+function rowRefusal(panel: ModelRelatedPanel, row: ModelDraftListRow): string {
+  return refusedHere(panel, row.key) ? saveError() : ''
+}
+
+/** The row form's field messages, when it is the row the last save refused. */
+const rowEditorErrors = derived(() => {
+  const current = rowEditor()
+  return current && refusedHere(current.panel, current.key) ? refusedErrors() : {}
+})
+
 function setValue(change: { name: string, value: string | boolean }): void {
   values.set({ ...values(), [change.name]: change.value })
 }
@@ -70,6 +195,9 @@ async function loadRecord(): Promise<void> {
     const start = modelFormValues(loaded.fields, loaded.row)
     initial.set(start)
     values.set({ ...start })
+    // The rows are a part of the page that can fail on its own: without them
+    // the record's own fields are still edited and saved as before.
+    panels.set(await fetchModelRelated(slug(), recordId()).catch(() => []))
   }
   catch (error) {
     record.set(null)
@@ -86,13 +214,20 @@ async function save(): Promise<void> {
   if (!current || saving())
     return
   const fields = modelFormPayload(current.fields, values(), initial())
-  if (Object.keys(fields).length === 0) {
+  const related = modelRelatedSaveChanges(panels(), drafts())
+  if (Object.keys(fields).length === 0 && related.length === 0) {
     navigate(returnHref())
     return
   }
   saving.set(true)
   saveError.set('')
   saveErrors.set({})
+  refusedAt.set(null)
+  refusedErrors.set({})
+  if (related.length > 0) {
+    await saveTogether(current, fields, related)
+    return
+  }
   const result = await updateModelRecord(slug(), recordId(), fields)
   saving.set(false)
   if (!result.ok) {
@@ -103,6 +238,32 @@ async function save(): Promise<void> {
     return
   }
   pushToast('success', `${current.modelName} ${recordId()} updated`)
+  navigate(returnHref())
+}
+
+/** The record and its rows in one request: all of it saved, or none of it. */
+async function saveTogether(current: ModelRecord, fields: Record<string, unknown>, related: ModelRelatedChanges[]): Promise<void> {
+  const changes = pendingCount()
+  const result = await saveModelRecordWithRelated(slug(), recordId(), fields, related)
+  saving.set(false)
+  if (!result.ok) {
+    const at = result.at
+    const panel = at?.panel ? panels().find(candidate => candidate.slug === at.panel) : undefined
+    if (!panel || !at?.row) {
+      // The record's own fields: under each, as a single save shows them.
+      saveError.set(`Nothing was saved. ${result.error}`)
+      saveErrors.set(result.errors)
+      return
+    }
+    // One row: said on the row, and in its form when it is opened.
+    const words = Object.values(result.errors).flat().join(' ') || result.error
+    const row = listRows(panel).find(candidate => candidate.key === at.row)
+    refusedAt.set(at)
+    refusedErrors.set(result.errors)
+    saveError.set(`Nothing was saved. ${row ? rowLabel(panel, row) : `${panel.label} ${at.row}`}: ${words}`)
+    return
+  }
+  pushToast('success', `${current.modelName} ${recordId()} saved`, { detail: `With ${changes} ${changes === 1 ? 'change' : 'changes'} to its related rows.` })
   navigate(returnHref())
 }
 
@@ -149,36 +310,87 @@ onMount(() => {
     description="Its name and email were removed and it can no longer sign in, so there is nothing to edit. Records that refer to it were kept."
   />
 
-  <form :if="!loading() && canEdit()" id="model-edit-form" class="flex flex-col gap-6" @submit.prevent="save">
-    <div :if="saveError()" role="alert" class="px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg dark:border-red-900">
-      {{ saveError() }}
-    </div>
+  <div :if="!loading() && canEdit()" class="flex flex-col gap-6">
+    <form id="model-edit-form" class="flex flex-col gap-6" @submit.prevent="save">
+      <div :if="saveError()" role="alert" class="px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg dark:border-red-900">
+        {{ saveError() }}
+      </div>
 
-    <div class="grid gap-6 grid-cols-1 items-start lg:grid-cols-2">
-      <Card padding="none">
-        <h2 class="px-6 py-4 font-semibold text-base text-neutral-900 dark:text-white border-b border-neutral-200 dark:border-neutral-700">{{ modelName() }} Details</h2>
-        <div class="p-6">
-          <ModelFieldInputs :fields="writable()" :slug="slug()" :values="values()" :errors="saveErrors()" :disabled="saving()" @change="setValue" />
-        </div>
-      </Card>
-
-      <Card :if="context().length > 0" padding="none">
-        <div class="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
-          <h2 class="font-semibold text-base text-neutral-900 dark:text-white">Read only</h2>
-          <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Set by the application. These cannot be changed from here.</p>
-        </div>
-        <dl class="grid gap-x-8 gap-y-6 grid-cols-1 sm:grid-cols-2 p-6">
-          <div :for="detail in context()" :class="detail.wide ? 'min-w-0 sm:col-span-2' : 'min-w-0'">
-            <dt class="font-medium text-neutral-900 text-sm dark:text-white">{{ detail.label }}</dt>
-            <dd :class="detail.empty ? 'mt-1.5 text-sm text-neutral-400 dark:text-neutral-500' : 'mt-1.5 text-sm break-words text-neutral-700 dark:text-neutral-200'">{{ detail.value }}</dd>
+      <div class="grid gap-6 grid-cols-1 items-start lg:grid-cols-2">
+        <Card padding="none">
+          <h2 class="px-6 py-4 font-semibold text-base text-neutral-900 dark:text-white border-b border-neutral-200 dark:border-neutral-700">{{ modelName() }} Details</h2>
+          <div class="p-6">
+            <ModelFieldInputs :fields="writable()" :slug="slug()" :values="values()" :errors="saveErrors()" :disabled="saving()" @change="setValue" />
           </div>
-        </dl>
-      </Card>
+        </Card>
+
+        <Card :if="context().length > 0" padding="none">
+          <div class="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
+            <h2 class="font-semibold text-base text-neutral-900 dark:text-white">Read only</h2>
+            <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Set by the application. These cannot be changed from here.</p>
+          </div>
+          <dl class="grid gap-x-8 gap-y-6 grid-cols-1 sm:grid-cols-2 p-6">
+            <div :for="detail in context()" :class="detail.wide ? 'min-w-0 sm:col-span-2' : 'min-w-0'">
+              <dt class="font-medium text-neutral-900 text-sm dark:text-white">{{ detail.label }}</dt>
+              <dd :class="detail.empty ? 'mt-1.5 text-sm text-neutral-400 dark:text-neutral-500' : 'mt-1.5 text-sm break-words text-neutral-700 dark:text-neutral-200'">{{ detail.value }}</dd>
+            </div>
+          </dl>
+        </Card>
+      </div>
+    </form>
+
+    <div :if="editablePanels().length > 0" class="flex flex-col gap-6" data-related-drafts>
+      <div :for="panel in editablePanels()" class="min-w-0" data-related-draft-panel>
+        <Card padding="none">
+          <div class="flex flex-wrap gap-3 items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
+            <div class="min-w-0">
+              <h2 class="font-semibold text-base text-neutral-900 truncate dark:text-white">{{ panel.title }}</h2>
+              <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Changes here are saved with this record, all at once.</p>
+            </div>
+            <Button :if="canAddRow(panel)" variant="secondary" size="sm" :disabled="saving()" @click="addRow(panel)">
+              <span aria-hidden="true" class="h-3.5 w-3.5 i-hugeicons-add-01"></span>
+              {{ 'Add ' + panel.label.toLowerCase() }}
+            </Button>
+          </div>
+          <ul :if="listRows(panel).length > 0" class="divide-neutral-200 divide-y dark:divide-neutral-700">
+            <li :for="row in listRows(panel)" class="flex flex-wrap gap-3 items-center justify-between px-6 py-3" :data-draft-state="row.state">
+              <div class="min-w-0">
+                <p :class="row.state === 'removed' ? 'text-sm truncate text-neutral-400 line-through dark:text-neutral-500' : 'text-sm truncate text-neutral-900 dark:text-white'">{{ rowLabel(panel, row) }}</p>
+                <p :if="rowRefusal(panel, row)" role="alert" class="mt-1 text-red-600 text-xs dark:text-red-400">{{ rowRefusal(panel, row) }}</p>
+              </div>
+              <div class="flex flex-none gap-2 items-center">
+                <span :if="stateLabel(row)" class="px-2 py-0.5 font-medium text-neutral-700 text-xs dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-800 rounded-full">{{ stateLabel(row) }}</span>
+                <span :if="canEditRow(panel, row)"><Button variant="secondary" size="sm" :disabled="saving()" @click="editRow(panel, row)">Edit</Button></span>
+                <span :if="canRemoveRow(panel, row)"><Button variant="secondary" size="sm" :disabled="saving()" @click="removeRow(panel, row)">{{ isNewRow(row) ? 'Discard' : 'Delete' }}</Button></span>
+                <span :if="row.state === 'removed'"><Button variant="secondary" size="sm" :disabled="saving()" @click="restoreRow(panel, row)">Keep</Button></span>
+              </div>
+            </li>
+          </ul>
+          <p :if="listRows(panel).length === 0 && !editingIn(panel)" class="px-6 py-5 text-neutral-500 text-sm dark:text-neutral-400">{{ 'No ' + panel.title.toLowerCase() + ' yet' }}</p>
+
+          <form :if="editingIn(panel)" id="related-draft-form" class="flex flex-col gap-5 px-6 py-5 bg-neutral-50 dark:bg-neutral-900/40 border-neutral-200 border-t dark:border-neutral-700" data-related-draft-editor @submit.prevent="keepRow">
+            <h3 class="font-medium text-neutral-900 text-sm dark:text-white">{{ rowEditorTitle() }}</h3>
+            <ModelFieldInputs
+              :fields="rowEditor()?.panel.fields ?? []"
+              :slug="rowEditor()?.panel.slug ?? ''"
+              :values="rowValues()"
+              :errors="rowEditorErrors()"
+              @change="setRowValue"
+            />
+            <div class="flex flex-wrap gap-2 items-center">
+              <Button variant="primary" size="sm" type="submit">Keep</Button>
+              <Button variant="secondary" size="sm" @click="closeRowEditor">Cancel</Button>
+              <span class="text-neutral-500 text-xs dark:text-neutral-400">Nothing is written until you save the record.</span>
+            </div>
+          </form>
+        </Card>
+      </div>
     </div>
 
     <div class="flex gap-3 items-center">
-      <Button type="submit" variant="primary" :loading="saving()">Save changes</Button>
+      <Button type="submit" variant="primary" form="model-edit-form" :loading="saving()">Save changes</Button>
       <Button variant="secondary" :disabled="saving()" @click="cancel">Cancel</Button>
+      <span :if="pendingCount() > 0" class="text-neutral-500 text-sm dark:text-neutral-400">{{ pendingCount() + (pendingCount() === 1 ? ' related change' : ' related changes') + ' to save' }}</span>
     </div>
-  </form>
+  </div>
 </div>

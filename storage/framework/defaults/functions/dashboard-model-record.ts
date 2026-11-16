@@ -164,7 +164,7 @@ export interface ModelCreateForm {
 /** What a model offers before its capabilities are known, or when it has none. */
 export const NO_WRITES: ModelWriteCapabilities = { create: false, update: false, destroy: false, invite: false, anonymize: false }
 
-function modelPath(slug: string): string {
+export function modelPath(slug: string): string {
   return `/api/dashboard/models/${encodeURIComponent(slug)}`
 }
 

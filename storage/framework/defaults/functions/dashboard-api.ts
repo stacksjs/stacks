@@ -28,12 +28,18 @@ export interface ApiRequestOptions {
 export class DashboardApiError extends Error {
   readonly status: number
   readonly fields?: Record<string, string>
+  /**
+   * The answer's body as it came, for a caller that needs more of it than the
+   * message and the fields: where a combined save was refused, say.
+   */
+  readonly body?: unknown
 
-  constructor(message: string, status: number, fields?: Record<string, string>) {
+  constructor(message: string, status: number, fields?: Record<string, string>, body?: unknown) {
     super(message)
     this.name = 'DashboardApiError'
     this.status = status
     this.fields = fields
+    this.body = body
   }
 }
 
@@ -78,7 +84,7 @@ async function dashboardResponseError(res: Response): Promise<DashboardApiError>
   const failure = describeResponseError(res.status, payload)
   if (failure.unexpected)
     console.error('[dashboard-api] Unexpected request failure:', failure.cause)
-  return new DashboardApiError(failure.message, res.status, failure.fields)
+  return new DashboardApiError(failure.message, res.status, failure.fields, payload)
 }
 
 /**
@@ -104,7 +110,7 @@ export async function dashboardApi<T = unknown>(path: string, options: ApiReques
     const failure = describeResponseError(res.status, payload as ApiErrorBody | null)
     if (failure.unexpected)
       console.error('[dashboard-api] Unexpected request failure:', failure.cause)
-    throw new DashboardApiError(failure.message, res.status, failure.fields)
+    throw new DashboardApiError(failure.message, res.status, failure.fields, payload)
   }
 
   return payload as T
