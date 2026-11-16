@@ -146,6 +146,62 @@ export function validationOf(validations: Record<string, { rule: { validate: (va
   return 'optional'
 }
 
+/** What decides which routes production serves, and where. */
+const ROUTE_ENV_KEYS = ['APP_URL', 'STACKS_DEFAULT_ROUTES', 'STACKS_MODEL_APIS', 'APP_ENV'] as const
+
+/**
+ * The address and route settings of the app as it is DEPLOYED, which is the
+ * app StatusHQ will be asking.
+ *
+ * The routes are listed on the machine that runs `buddy`, whose `.env` is a
+ * laptop's: its APP_URL is a localhost name, and it serves the framework's
+ * default routes where production may turn them off. Sent as they stand, the
+ * address is one StatusHQ rightly refuses, and the list is full of routes
+ * production answers 404 for. So what the deployed site is given wins: the
+ * deploy's own environment, then the `env` of the site in config/cloud.ts
+ * that runs the app, then its domain.
+ */
+export function productionRouteContext(
+  cloud: { sites?: Record<string, { start?: unknown, port?: unknown, domain?: unknown, env?: Record<string, unknown> } | undefined> } | undefined,
+  deployEnv: Record<string, string | undefined> = {},
+  fallbackUrl = '',
+): { baseUrl: string, env: Record<string, string> } {
+  const sites = Object.values(cloud?.sites ?? {}).filter(Boolean) as Array<{ start?: unknown, port?: unknown, domain?: unknown, env?: Record<string, unknown> }>
+  // The site with a domain that runs a process is the app. A redirect or a
+  // static site is not what serves the routes.
+  const app = sites.find(site => (site.start || site.port) && site.domain) ?? sites.find(site => site.start || site.port)
+
+  const env: Record<string, string> = {}
+  for (const key of ROUTE_ENV_KEYS) {
+    const value = app?.env?.[key] ?? deployEnv[key]
+    if (typeof value === 'string' && value)
+      env[key] = value
+  }
+
+  const domain = typeof app?.domain === 'string' ? app.domain : ''
+  const baseUrl = env.APP_URL || (domain ? `https://${domain}` : '') || fallbackUrl
+  return { baseUrl: /^https?:\/\//.test(baseUrl) || !baseUrl ? baseUrl : `https://${baseUrl}`, env }
+}
+
+/** Reads config/cloud.ts for {@link productionRouteContext}. An app without one has no deployed site to speak of. */
+export async function readProductionRouteContext(deployEnv: Record<string, string | undefined> = {}): Promise<{ baseUrl: string, env: Record<string, string> }> {
+  const { config } = await import('@stacksjs/config')
+  const fallback = String((config as { app?: { url?: unknown } }).app?.url ?? '')
+  try {
+    const { existsSync } = await import('node:fs')
+    const { projectPath } = await import('@stacksjs/path')
+    const file = projectPath('config/cloud.ts')
+    if (!existsSync(file))
+      return productionRouteContext(undefined, deployEnv, fallback)
+    const module = await import(file) as { tsCloud?: unknown, default?: { tsCloud?: unknown } }
+    const cloud = (module.tsCloud ?? module.default?.tsCloud ?? module.default) as Parameters<typeof productionRouteContext>[0]
+    return productionRouteContext(cloud, deployEnv, fallback)
+  }
+  catch {
+    return productionRouteContext(undefined, deployEnv, fallback)
+  }
+}
+
 /**
  * The registry, less the entries whose route file is not there.
  *
@@ -175,7 +231,15 @@ export async function existingRouteFiles<T extends Record<string, unknown>>(regi
  * action cannot be loaded is still listed: it is read as unvalidated, which
  * leaves a writing route out rather than guessing.
  */
-export async function collectRouteManifest(): Promise<RouteManifest> {
+export async function collectRouteManifest(env: Record<string, string> = {}): Promise<RouteManifest> {
+  // Which routes register is decided by the environment at load time, so the
+  // deployed site's settings are put in place first. This runs in a CLI
+  // process that lists the routes and exits.
+  const { default: process } = await import('node:process')
+  for (const [key, value] of Object.entries(env)) {
+    if (key !== 'APP_URL')
+      process.env[key] = value
+  }
   const router = await import('@stacksjs/router')
   await router.loadRoutes(await existingRouteFiles(await router.appRouteRegistry()))
 
@@ -210,6 +274,19 @@ export async function collectRouteManifest(): Promise<RouteManifest> {
         return ''
       }
     }).filter(Boolean)
+    // Instances of a dynamic page (`/state/tx` for `state/[code]`) are named in
+    // config, where the sitemap takes them from too. They are real pages, and
+    // the only way a page with a parameter can be checked.
+    const included = ((config as { app?: { seo?: { sitemap?: { include?: unknown } } } }).app?.seo?.sitemap?.include ?? []) as unknown[]
+    for (const entry of included) {
+      const loc = typeof entry === 'string' ? entry : String((entry as { loc?: unknown, path?: unknown })?.path ?? (entry as { loc?: unknown })?.loc ?? '')
+      try {
+        const path = new URL(loc, 'http://app.invalid').pathname
+        if (path && !pages.includes(path))
+          pages.push(path)
+      }
+      catch { /* not a path */ }
+    }
   }
   catch {
     // An app with no views, or a page scan that cannot run, still has routes.

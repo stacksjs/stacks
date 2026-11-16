@@ -99,3 +99,29 @@ describe('an app with no route files', () => {
     expect(await existingRouteFiles({ api: 'api' }, root)).toEqual({})
   })
 })
+
+describe('the app as it is deployed', () => {
+  const cloud = {
+    sites: {
+      www: { domain: 'www.example.com', redirect: 'https://example.com' },
+      main: { start: 'bun serve.js', port: 3000, domain: 'example.com', env: { APP_URL: 'https://example.com', STACKS_DEFAULT_ROUTES: 'none' } },
+    },
+  }
+
+  it('takes its address and route settings from the site that runs it', async () => {
+    const { productionRouteContext } = await import('../src/hq-routes')
+    expect(productionRouteContext(cloud as never, {}, 'app.localhost')).toEqual({
+      baseUrl: 'https://example.com',
+      env: { APP_URL: 'https://example.com', STACKS_DEFAULT_ROUTES: 'none' },
+    })
+  })
+
+  it('falls back to the deploy environment, then the domain, then the local address', async () => {
+    const { productionRouteContext } = await import('../src/hq-routes')
+    const bare = { sites: { main: { start: 'bun serve.js', domain: 'example.com' } } }
+    expect(productionRouteContext(bare as never, { APP_URL: 'https://app.example.com' }).baseUrl).toBe('https://app.example.com')
+    expect(productionRouteContext(bare as never).baseUrl).toBe('https://example.com')
+    expect(productionRouteContext(undefined, {}, 'app.localhost').baseUrl).toBe('https://app.localhost')
+    expect(productionRouteContext(undefined).baseUrl).toBe('')
+  })
+})

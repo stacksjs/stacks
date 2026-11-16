@@ -173,9 +173,9 @@ function connectCommand(supportOnly = false) {
 
 /** The app's address and its routes, collected for StatusHQ. */
 async function routeSyncInput(): Promise<{ baseUrl: string, manifest: Awaited<ReturnType<typeof import('../hq-routes').collectRouteManifest>> }> {
-  const { config: fullConfig } = await import('@stacksjs/config')
-  const { collectRouteManifest } = await import('../hq-routes')
-  return { baseUrl: String(fullConfig.app.url || ''), manifest: await collectRouteManifest() }
+  const { collectRouteManifest, readProductionRouteContext } = await import('../hq-routes')
+  const context = await readProductionRouteContext()
+  return { baseUrl: context.baseUrl, manifest: await collectRouteManifest(context.env) }
 }
 
 const sync = defineCommand({

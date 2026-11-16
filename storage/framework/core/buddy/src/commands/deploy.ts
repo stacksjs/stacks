@@ -5397,14 +5397,15 @@ export async function syncRoutesAfterDeploy(deployEnv: Record<string, string>, l
     return
   try {
     const { config } = await import('@stacksjs/config')
-    const { collectRouteManifest } = await import('../hq-routes')
+    const { collectRouteManifest, readProductionRouteContext } = await import('../hq-routes')
     const { runHqRouteSync } = await import('../hq')
     const services = (config as { services?: Record<string, { url?: string }> }).services ?? {}
-    const baseUrl = deployEnv.APP_URL || String(config.app?.url || '')
+    const context = await readProductionRouteContext(deployEnv)
+    const baseUrl = context.baseUrl
     await runHqRouteSync(
       { ...services, statushq: { ...services.statushq, url: deployEnv.STATUSHQ_URL || services.statushq?.url || 'https://statushq.org' } } as never,
       { name: String(deployEnv.APP_NAME || config.app?.name || 'app') },
-      { baseUrl, manifest: await collectRouteManifest() },
+      { baseUrl, manifest: await collectRouteManifest(context.env) },
       { fetch: (input, init) => fetch(input, init), print: line => logger.info(line) },
       key,
     )
