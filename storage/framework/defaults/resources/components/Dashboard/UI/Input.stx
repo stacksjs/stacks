@@ -36,7 +36,9 @@ const liveMonospace = useReactiveProp('monospace', false)
 const liveClass = useReactiveProp('class', '')
 // The field a dialog focuses when it opens: the Modal looks for `[autofocus]`.
 const liveAutofocus = useReactiveProp('autofocus', false)
-const emit = defineEmits(['update:value', 'input', 'change', 'blur'])
+// A pattern the browser holds the text to, as a native input's.
+const livePattern = useReactiveProp('pattern', '')
+const emit = defineEmits(['update:value', 'input', 'change', 'blur', 'keydown'])
 const generatedId = useId('input')
 
 const sizeClasses: Record<InputSize, string> = {
@@ -88,6 +90,14 @@ function handleChange(event: Event): void {
 function handleBlur(event: Event): void {
   emit('blur', inputValue(event))
 }
+
+/**
+ * A key pressed in the field, as the event itself: a dialog that saves on
+ * Enter, or sends on Command+Enter, decides, and can prevent the default.
+ */
+function handleKeydown(event: KeyboardEvent): void {
+  emit('keydown', event)
+}
 </script>
 
 <div :class="liveFullWidth() ? 'w-full' : ''">
@@ -122,11 +132,13 @@ function handleBlur(event: Event): void {
       :spellcheck="liveSpellcheck() === null ? null : String(liveSpellcheck())"
       :list="liveList() || null"
       :autofocus="liveAutofocus() || null"
+      :pattern="livePattern() || null"
       class="{{ $slots.iconLeft ? 'pl-8' : '' }}"
       :class="inputClass()"
       @input="handleInput"
       @change="handleChange"
       @blur="handleBlur"
+      @keydown="handleKeydown"
       :disabled="liveDisabled()"
       :readonly="liveReadonly()"
       :required="liveRequired()"

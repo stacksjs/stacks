@@ -43,8 +43,7 @@ effect(() => {
   wasOpen = isOpen
 })
 
-function toggleScope(event: Event, scope: string): void {
-  const enabled = (event.target as HTMLInputElement).checked
+function toggleScope(scope: string, enabled: boolean): void {
   selectedScopes.set(enabled
     ? [...new Set([...selectedScopes(), scope])]
     : selectedScopes().filter(item => item !== scope))
@@ -97,38 +96,22 @@ async function copyToken(): Promise<void> {
     <div role="status" class="px-4 py-3 text-amber-800 text-sm dark:text-amber-200 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 rounded-lg dark:border-amber-900">
       {{ message() }}
     </div>
-    <label class="block">
-      <span class="font-medium text-neutral-700 text-sm dark:text-neutral-300">New token</span>
-      <textarea readonly rows="4" aria-label="New access token" class="block mt-2 p-3 w-full font-mono text-neutral-900 text-xs dark:text-white bg-neutral-50 dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700">{{ createdToken() }}</textarea>
-    </label>
+    <div>
+      <Textarea :value="createdToken()" label="New token" ariaLabel="New access token" :readonly="true" :rows="4" :monospace="true" />
+    </div>
   </div>
 
-  <form :if="!createdToken()" id="access-token-create-form" class="space-y-5" @submit.prevent="submit">
-    <label class="block">
-      <span class="font-medium text-neutral-700 text-sm dark:text-neutral-300">Token name</span>
-      <input x-model="tokenName" name="name" type="text" maxlength="255" required placeholder="CI deployment" class="block mt-2 px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-    </label>
-
-    <label class="block">
-      <span class="font-medium text-neutral-700 text-sm dark:text-neutral-300">Expires after</span>
-      <select x-model="expiryMinutes" name="expires_in_minutes" class="block mt-2 px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-        <option value="60">1 hour</option>
-        <option value="1440">1 day</option>
-        <option value="10080">7 days</option>
-        <option value="43200">30 days</option>
-      </select>
-    </label>
+  <form :if="!createdToken()" id="access-token-create-form" class="grid gap-5" @submit.prevent="submit">
+    <Input v-model:value="tokenName" name="name" label="Token name" :maxLength="255" :required="true" placeholder="CI deployment" />
+    <Select v-model:value="expiryMinutes" name="expires_in_minutes" label="Expires after" placeholder="" :options="[{ value: '60', label: '1 hour' }, { value: '1440', label: '1 day' }, { value: '10080', label: '7 days' }, { value: '43200', label: '30 days' }]" />
 
     <fieldset>
       <legend class="font-medium text-neutral-700 text-sm dark:text-neutral-300">Scopes</legend>
       <div class="grid gap-2 grid-cols-1 sm:grid-cols-2 mt-2">
-        <label :for="scope in availableScopes" class="flex gap-3 items-start p-3 border border-neutral-200 rounded-lg dark:border-neutral-700">
-          <input name="scopes" type="checkbox" :value="scope.name" :checked="selectedScopes().includes(scope.name)" class="mt-0.5 h-4 w-4 text-blue-600 rounded" @change="toggleScope($event, scope.name)">
-          <span>
-            <span class="block font-medium text-neutral-900 text-sm dark:text-white">{{ scope.name }}</span>
-            <span class="block mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">{{ scope.description }}</span>
-          </span>
-        </label>
+        <!-- Several of many: a shared checkbox per scope. The loop is on the card, not the component. -->
+        <div :for="scope in availableScopes" class="p-3 border border-neutral-200 rounded-lg dark:border-neutral-700">
+          <Checkbox size="sm" :label="scope.name" :description="scope.description" :checked="selectedScopes().includes(scope.name)" @update:checked="toggleScope(scope.name, $event)" />
+        </div>
       </div>
     </fieldset>
   </form>

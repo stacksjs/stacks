@@ -71,6 +71,52 @@ function close(): void {
     kanban.closeCardDetail()
 }
 
+/*
+ * The shared fields hand over the key event itself, so each says here what
+ * its keys do, as the native fields' modifiers did.
+ */
+
+/** Enter ends a title edit: the field loses focus, which saves it. */
+function blurOnEnter(event: KeyboardEvent): void {
+  if (event.key !== 'Enter')
+    return
+  event.preventDefault()
+  ;(event.target as HTMLElement).blur()
+}
+
+/** Command+Enter, or Ctrl+Enter, sends the comment being written. */
+function sendCommentOnCommandEnter(event: KeyboardEvent): void {
+  if (event.key !== 'Enter' || !(event.metaKey || event.ctrlKey))
+    return
+  event.preventDefault()
+  void submitComment()
+}
+
+/**
+ * Escape stops editing a comment without closing the card, and
+ * Command+Enter, or Ctrl+Enter, saves it.
+ */
+function editCommentKey(commentId: number, event: KeyboardEvent): void {
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    event.stopPropagation()
+    cancelCommentEditWithoutClosing()
+    return
+  }
+  if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+    event.preventDefault()
+    void saveCommentEdit(commentId)
+  }
+}
+
+/** Enter creates the label being named. */
+function createLabelOnEnter(event: KeyboardEvent): void {
+  if (event.key !== 'Enter')
+    return
+  event.preventDefault()
+  void submitNewLabel()
+}
+
 async function commitTitle(): Promise<void> {
   const card = openCard()
   if (!card)
@@ -252,18 +298,7 @@ function formatTimestamp(iso: string | null | undefined): string {
   @close="close"
 >
   <div :if="openCard()" class="grid gap-6">
-    <label class="grid gap-2">
-      <span class="font-medium text-xs text-zinc-500 tracking-wide uppercase">Title</span>
-      <input
-        x-model="titleDraft"
-        name="card_title"
-        required
-        autofocus
-        @blur="commitTitle()"
-        @keydown.enter.prevent="$event.currentTarget.blur()"
-        class="px-3 py-2 font-semibold text-lg text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-950 border border-zinc-200 rounded-md dark:border-zinc-800 focus:border-violet-400 focus:outline-none dark:focus:border-violet-600"
-      />
-    </label>
+    <Input v-model:value="titleDraft" name="card_title" label="Title" :required="true" :autofocus="true" @blur="commitTitle" @keydown="blurOnEnter" />
 
     <div :if="loadingCard()" role="status" class="flex gap-2 items-center text-sm text-zinc-500">
       <span class="h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
@@ -278,14 +313,7 @@ function formatTimestamp(iso: string | null | undefined): string {
       <div class="md:col-span-2 space-y-6">
         <section>
           <h4 class="mb-2 font-medium text-xs text-zinc-500 tracking-wide uppercase">Description</h4>
-          <textarea
-            x-model="descDraft"
-            name="card_description"
-            @blur="commitDescription()"
-            rows="4"
-            placeholder="Add a more detailed description"
-            class="px-3 py-2 w-full text-sm text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-950 border border-zinc-200 rounded dark:border-zinc-800 focus:border-violet-400 focus:outline-none dark:focus:border-violet-600 resize-y"
-          ></textarea>
+          <Textarea v-model:value="descDraft" name="card_description" ariaLabel="Description" :rows="4" placeholder="Add a more detailed description" @blur="commitDescription" />
         </section>
 
         <section :if="cardAttachments().length">
@@ -311,15 +339,7 @@ function formatTimestamp(iso: string | null | undefined): string {
         <section>
           <h4 class="mb-2 font-medium text-xs text-zinc-500 tracking-wide uppercase">Activity</h4>
           <div class="mb-4">
-            <textarea
-              x-model="commentDraft"
-              name="card_comment"
-              @keydown.meta.enter.prevent="submitComment()"
-              @keydown.ctrl.enter.prevent="submitComment()"
-              rows="2"
-              placeholder="Add a comment, then press Command+Enter to send"
-              class="px-3 py-2 w-full text-sm text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-950 border border-zinc-200 rounded dark:border-zinc-800 focus:border-violet-400 focus:outline-none dark:focus:border-violet-600 resize-none"
-            ></textarea>
+            <Textarea v-model:value="commentDraft" name="card_comment" ariaLabel="Add a comment" :rows="2" resize="none" placeholder="Add a comment, then press Command+Enter to send" @keydown="sendCommentOnCommandEnter" />
             <div class="flex justify-end mt-2">
               <Button size="sm" :disabled="!commentDraft().trim()" @click="submitComment()">Comment</Button>
             </div>
@@ -340,16 +360,7 @@ function formatTimestamp(iso: string | null | undefined): string {
                 </div>
                 <p :if="editingCommentId() !== comment.id" class="mt-0.5 text-xs text-zinc-700 whitespace-pre-wrap dark:text-zinc-300" :text="comment.body"></p>
                 <div :if="editingCommentId() === comment.id" class="mt-2">
-                  <textarea
-                    x-model="commentEditDraft"
-                    @keydown.escape.stop.prevent="cancelCommentEditWithoutClosing()"
-                    @keydown.meta.enter.prevent="saveCommentEdit(comment.id)"
-                    @keydown.ctrl.enter.prevent="saveCommentEdit(comment.id)"
-                    rows="3"
-                    maxlength="10000"
-                    :aria-label="'Edit comment by ' + (comment.authorName || comment.authorEmail || 'Unknown')"
-                    class="px-3 py-2 w-full text-sm text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-950 border border-zinc-200 rounded dark:border-zinc-800 focus:border-violet-400 focus:outline-none dark:focus:border-violet-600 resize-y"
-                  ></textarea>
+                  <Textarea v-model:value="commentEditDraft" :rows="3" :maxLength="10000" :ariaLabel="'Edit comment by ' + (comment.authorName || comment.authorEmail || 'Unknown')" @keydown="editCommentKey(comment.id, $event)" />
                   <div class="flex gap-2 justify-end mt-2">
                     <Button variant="secondary" size="xs" :disabled="savingCommentId() === comment.id" @click="cancelCommentEdit()">Cancel</Button>
                     <Button size="xs" :loading="savingCommentId() === comment.id" :disabled="!commentEditDraft().trim()" @click="saveCommentEdit(comment.id)">Save comment</Button>
@@ -388,7 +399,9 @@ function formatTimestamp(iso: string | null | undefined): string {
             </div>
 
             <div :if="showNewLabelComposer()" class="pt-2 space-y-2 border-t border-zinc-200 dark:border-zinc-800">
-              <input x-model="newLabelName" name="label_name" @keydown.enter.prevent="submitNewLabel()" placeholder="Label name" class="px-2 py-1 w-full text-xs bg-white dark:bg-zinc-950 border border-zinc-300 rounded dark:border-zinc-700 focus:border-violet-500 focus:outline-none" />
+              <div>
+                <Input v-model:value="newLabelName" name="label_name" ariaLabel="Label name" size="sm" placeholder="Label name" @keydown="createLabelOnEnter" />
+              </div>
               <div class="flex gap-1 items-center" role="group" aria-label="Label color">
                 <button :for="color in labelColors" type="button" @click="newLabelColor.set(color)" :class="`w-5 h-5 rounded ${labelChipClass(color)} ${newLabelColor() === color ? 'ring-2 ring-offset-1 ring-violet-500 dark:ring-offset-zinc-900' : ''}`" :aria-label="'Use ' + color + ' label color'" :aria-pressed="String(newLabelColor() === color)"></button>
               </div>
@@ -418,16 +431,9 @@ function formatTimestamp(iso: string | null | undefined): string {
             <span :if="cardAssignees().length === 0" class="italic text-xs text-zinc-500 dark:text-zinc-400">Unassigned</span>
           </div>
 
-          <input
-            :if="showAssigneePicker()"
-            type="search"
-            name="assignee_search"
-            aria-label="Search users to assign"
-            placeholder="Search by name or email"
-            x-model="assigneeQuery"
-            @input="searchAssigneesSoon()"
-            class="mb-2 px-2 py-1 w-full text-xs text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-950 border border-zinc-200 rounded dark:border-zinc-800 focus:border-violet-400 focus:outline-none"
-          />
+          <div :if="showAssigneePicker()" class="mb-2">
+            <Input v-model:value="assigneeQuery" type="search" name="assignee_search" ariaLabel="Search users to assign" size="sm" placeholder="Search by name or email" @input="searchAssigneesSoon" />
+          </div>
           <p :if="showAssigneePicker() && moreAssigneesLabel()" class="mb-2 text-[11px] text-zinc-500 dark:text-zinc-400" :text="moreAssigneesLabel()"></p>
           <div :if="showAssigneePicker()" class="overflow-y-auto space-y-1 max-h-48">
             <p :if="kanban.users().length === 0 && !kanban.userSearch()" class="italic text-xs text-zinc-500 dark:text-zinc-400">No users to assign.</p>
@@ -442,7 +448,7 @@ function formatTimestamp(iso: string | null | undefined): string {
 
         <section>
           <h4 class="mb-2 font-medium text-xs text-zinc-500 tracking-wide uppercase">Due date</h4>
-          <input type="date" x-model="dueDateDraft" name="due_date" @change="commitDueDate()" class="px-2 py-1 w-full text-xs text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-950 border border-zinc-200 rounded dark:border-zinc-800 focus:border-violet-400 focus:outline-none" />
+          <Input v-model:value="dueDateDraft" type="date" name="due_date" ariaLabel="Due date" size="sm" @change="commitDueDate" />
         </section>
 
         <section class="pt-3 border-t border-zinc-200 dark:border-zinc-800">

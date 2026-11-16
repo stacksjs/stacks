@@ -66,18 +66,7 @@ function submit(): void {
   @close="close"
 >
   <form id="source-scaffold-form" @submit.prevent="submit">
-    <label class="block">
-      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span>
-      <input
-        x-model.trim="sourceName"
-        name="name"
-        required
-        :pattern="pattern()"
-        :placeholder="placeholder()"
-        class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"
-      >
-      <span class="block mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ hint() }}</span>
-    </label>
+    <Input v-model:value="sourceName" name="name" label="Name" :required="true" :pattern="pattern()" :placeholder="placeholder()" :hint="hint()" :spellcheck="false" :monospace="true" />
   </form>
 
   <div :if="error()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">

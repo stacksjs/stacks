@@ -23,7 +23,7 @@ const liveClass = useReactiveProp('class', '')
 const liveMonospace = useReactiveProp('monospace', false)
 // Null leaves it to the browser. False for what is not prose: JSON, a template.
 const liveSpellcheck = useReactiveProp<boolean | null>('spellcheck', null)
-const emit = defineEmits(['update:value', 'input', 'change', 'blur'])
+const emit = defineEmits(['update:value', 'input', 'change', 'blur', 'keydown'])
 const generatedId = useId('textarea')
 
 const resizeClasses: Record<TextareaResize, string> = {
@@ -72,6 +72,14 @@ function handleChange(event: Event): void {
 function handleBlur(event: Event): void {
   emit('blur', textareaValue(event))
 }
+
+/**
+ * A key pressed in the field, as the event itself: a dialog that saves on
+ * Enter, or sends on Command+Enter, decides, and can prevent the default.
+ */
+function handleKeydown(event: KeyboardEvent): void {
+  emit('keydown', event)
+}
 </script>
 
 <div>
@@ -111,6 +119,7 @@ function handleBlur(event: Event): void {
       @input="handleInput"
       @change="handleChange"
       @blur="handleBlur"
+      @keydown="handleKeydown"
     ></textarea>
 
     <span

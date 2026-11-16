@@ -640,7 +640,7 @@ lists every one by file with its reason and fails on any other.
 A hand-built dialog asks for a value with `Dashboard/UI/Input.stx`,
 `Select.stx` and `Textarea.stx`, as a model's form does, never with a native
 `<input>`, `<select>` or `<textarea>` and a copy of their classes
-(stacksjs/stacks#3310). The commerce, content, marketing and operations dialogs are converted;
+(stacksjs/stacks#3310). Every dashboard dialog is converted;
 `tests/unit/dashboard-form-controls.test.ts` fails if one writes its own again,
 and names the one native control a converted dialog keeps (the upload
 dialog's file picker) with its reason.
@@ -684,11 +684,15 @@ dialog's file picker) with its reason.
     <Checkbox size="sm" :label="tagOption.name" :checked="tagIds().includes(tagOption.id)" @update:checked="chooseTag(tagOption.id, $event)" />
   </span>
   ```
-- `Input` takes `autofocus` for the field a dialog focuses when it opens, and
-  `Textarea` takes `minLength` like an input.
+- `Input` takes `autofocus` for the field a dialog focuses when it opens and
+  `pattern` as a native input does, and `Textarea` takes `minLength`.
+- **Keys arrive as the event.** `@keydown` on either hands over the
+  `KeyboardEvent`, so the dialog says what Enter, Command+Enter or Escape
+  does and can call `preventDefault()` or `stopPropagation()`; there are no
+  `.enter` or `.meta` modifiers on a component.
 
 Not converted yet: the filter bars on the list pages (a search box and a row
-of dropdowns), and the dialogs in Kanban, Auth and Library.
+of dropdowns).
 
 ### Sidebar-aware overlays
 

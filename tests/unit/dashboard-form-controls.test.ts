@@ -105,6 +105,10 @@ const CONVERTED_AREAS: Record<string, { shared: number, checkboxes: number }> = 
   'Marketing/': { shared: 35, checkboxes: 0 },
   // 31 before: the restore's downtime acknowledgement is the shared Checkbox.
   'Operations/': { shared: 30, checkboxes: 1 },
+  'Kanban/': { shared: 7, checkboxes: 0 },
+  // A token's scopes, several of many: one checkbox per scope.
+  'Auth/': { shared: 3, checkboxes: 1 },
+  'Library/': { shared: 1, checkboxes: 0 },
 }
 
 /** A native control a converted dialog keeps, and why the shared ones cannot do its job. */
@@ -134,6 +138,19 @@ describe('dialogs outside commerce', () => {
     })
   }
 
+  it('leave no dialog anywhere in the dashboard writing a control of its own', () => {
+    // Every area is converted, so a dialog added in a new folder is held to it too.
+    const dialogs = components.filter(file => file.endsWith('Dialog.stx'))
+    expect(dialogs.length).toBeGreaterThan(60)
+    const native: Record<string, number> = {}
+    for (const file of dialogs) {
+      const found = (read(file).match(/<(?:input|select|textarea)\b/g) || []).length
+      if (found > 0)
+        native[file] = found
+    }
+    expect(native).toEqual(Object.fromEntries(Object.entries(NATIVE_KEPT).map(([file, entry]) => [file, entry.count])))
+  })
+
   it('say why each native control they keep stays', () => {
     for (const [file, entry] of Object.entries(NATIVE_KEPT)) {
       expect(entry.because.length, file).toBeGreaterThan(20)
@@ -147,6 +164,14 @@ describe('dialogs outside commerce', () => {
     expect(read('Content/BlogPostEditorDialog.stx')).toContain('<Input v-model:value="postTitle" name="title" label="Title" :required="true" :autofocus="true" />')
     expect(read('Content/AuthorEditorDialog.stx')).toContain('<Input v-model:value="email" name="email" label="Email" type="email" :required="true" autocomplete="email" />')
     expect(read('Content/TaxonomyEditorDialog.stx')).toContain('@input="markSlugTouched" @blur="normalizeSlug"')
+    // Keys the native fields' modifiers handled are handled from the event.
+    const card = read('Kanban/KanbanCardDialog.stx')
+    expect(card).toContain('@keydown="blurOnEnter"')
+    expect(card).toContain('@keydown="sendCommentOnCommandEnter"')
+    expect(card).toContain('@keydown="editCommentKey(comment.id, $event)"')
+    expect(card).toContain('@keydown="createLabelOnEnter"')
+    expect(card).toMatch(/if \(event\.key === 'Escape'\) \{\s*event\.preventDefault\(\)\s*event\.stopPropagation\(\)/)
+    expect(read('Library/SourceScaffoldDialog.stx')).toContain(':pattern="pattern()"')
   })
 })
 
@@ -172,6 +197,12 @@ describe('the shared controls', () => {
     // The field a dialog focuses when it opens, and a text area's shortest text.
     expect(input).toContain(':autofocus="liveAutofocus() || null"')
     expect(read('UI/Textarea.stx')).toContain(':minlength="liveMinLength() || null"')
+    expect(input).toContain(':pattern="livePattern() || null"')
+    // A key is handed on as the event, so a dialog can prevent its default.
+    for (const file of ['UI/Input.stx', 'UI/Textarea.stx']) {
+      expect(read(file)).toContain('@keydown="handleKeydown"')
+      expect(read(file)).toContain(`emit('keydown', event)`)
+    }
   })
 
   it('the dropdown keeps its choice when the options come after the value', () => {
