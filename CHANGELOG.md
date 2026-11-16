@@ -1,5 +1,25 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.602...v0.75.603)
+
+## 🐛 Bug Fixes
+
+- **deploy**: an app keeps its HQ keys on a shared box, and the queue warning knows a worker site ([f1b7835](https://github.com/stacksjs/stacks/commit/f1b7835)) _(by Chris Breuer)_
+- **cli**: leave application keys untouched when changing framework packaging ([ff42bae](https://github.com/stacksjs/stacks/commit/ff42bae)) _(by Chris Breuer)_
+- **workflows**: generate readable block-style YAML ([f3a3f70](https://github.com/stacksjs/stacks/commit/f3a3f70)) _(by Chris Breuer)_
+
+## ✅ Tests
+
+- **auth**: report password reset driver case timings ([a774d05](https://github.com/stacksjs/stacks/commit/a774d05)) _(by Chris Breuer)_
+
+## 🔧 Chores
+
+- **deps**: ts-cloud 0.16.136 as the minimum ([71a8ffb](https://github.com/stacksjs/stacks/commit/71a8ffb)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.601...v0.75.602)
 
 ## 🐛 Bug Fixes
