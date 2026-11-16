@@ -7,6 +7,7 @@ import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import type { TemplateOptions } from '../template'
 import { templateByName } from '../template'
+import { signDkim } from '../dkim'
 import { buildMimeMessage } from '../mime'
 import { ENVELOPE_ADDRESS, filterStringHeaders } from '../validation'
 import { BaseEmailDriver } from './base'
@@ -140,7 +141,7 @@ export class SMTPDriver extends BaseEmailDriver {
       // path used by the SES `SendRawEmail` branch — see
       // stacksjs/stacks#1871 M-2 / M-3 / M-4 / M-5.
       const replyToAddresses = this.formatAddressList(message.replyTo)
-      const emailContent = buildMimeMessage({
+      const built = buildMimeMessage({
         from: fromName ? `${fromName} <${fromAddress}>` : fromAddress,
         to: toAddresses.join(', '),
         cc: message.cc ? this.formatAddresses(message.cc).join(', ') : undefined,
@@ -153,13 +154,19 @@ export class SMTPDriver extends BaseEmailDriver {
         messageIdDomain: config.email.domain,
       })
 
+      // Signed last, over exactly what is sent: nothing may touch the message
+      // between here and the server.
+      const emailContent = message.dkim ? signDkim(built, message.dkim) : built
+
       // Send via SMTP
       const recipients = [...new Set([
         ...toAddresses,
         ...this.formatAddresses(message.cc),
         ...this.formatAddresses(message.bcc),
       ])]
-      const messageId = await this.sendViaSMTP(smtpConfig, fromAddress, recipients, emailContent)
+      // The envelope sender is where bounces go and what SPF is checked
+      // against. It is the From address unless the message names another.
+      const messageId = await this.sendViaSMTP(smtpConfig, message.envelopeFrom || fromAddress, recipients, emailContent)
 
       return this.handleSuccess(message, messageId)
     }

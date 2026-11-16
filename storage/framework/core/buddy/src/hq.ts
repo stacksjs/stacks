@@ -67,6 +67,12 @@ export const HQ_CONNECTION_ENV_KEYS: readonly string[] = [
 export const HQ_DEFAULT_SERVICES: HqServiceName[] = ['bughq', 'loghq']
 
 export interface HqCliDeps {
+  /**
+   * What a service needs done on this side once it is connected, beyond
+   * keeping its keys. CommsHQ's is the app's sending domain: the records that
+   * let mail come from the app's own address. Must not throw.
+   */
+  afterConnect?: (service: HqServiceName, url: string, grant: { ingestKey?: string }) => Promise<void>
   fetch: (input: string, init?: RequestInit) => Promise<Response>
   print: (line: string) => void
   /** Open a URL in the person's browser. May do nothing (no display, CI). */
@@ -488,6 +494,7 @@ export async function runHqConnect(services: HqServiceName[], config: HqServices
       : `${label}: connected to project "${grant.project.name}". Keys written to .env.`)
     if (grant.dashboardUrl)
       deps.print(`  Dashboard: ${grant.dashboardUrl}`)
+    await deps.afterConnect?.(service, url, { ingestKey: grant.ingestKey })?.catch(() => {})
 
     // StatusHQ has nothing to watch until it is told the app's routes, so a
     // connect sends them straight away. A sync that fails is said and is not

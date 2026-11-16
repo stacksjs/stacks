@@ -3,6 +3,7 @@ import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import type { Message } from './types'
 import { CaptureEmailDriver } from './drivers/capture'
+import { CommsHqDriver, resolveDefaultMailDriver } from './drivers/commshq'
 import { LogEmailDriver } from './drivers/log'
 import { MailgunDriver } from './drivers/mailgun'
 import { MailtrapDriver } from './drivers/mailtrap'
@@ -145,6 +146,8 @@ export class Mail {
     this.drivers.set('mailgun', new MailgunDriver())
     this.drivers.set('mailtrap', new MailtrapDriver())
     this.drivers.set('smtp', new SMTPDriver())
+    // An app connected with `buddy hq:connect commshq` sends through it.
+    this.drivers.set('commshq', new CommsHqDriver())
     // Tests-only in-memory capture (stacksjs/stacks#1871 M-12). Cheap
     // to register even when unused — the driver only holds an empty
     // array until something calls `send()`.
@@ -399,9 +402,15 @@ function collectRecipientAddresses(message: EmailMessage): string[] {
 let _mail: Mail | undefined
 function getMail(): Mail {
   if (!_mail) {
-    const driver = (config)?.email?.default
-      || process.env.MAIL_MAILER
-      || 'ses'
+    // An app that named a mailer keeps it. One that did not, and is connected
+    // to CommsHQ, sends through CommsHQ where mail really goes out: the same
+    // way BugHQ and LogHQ switch on from the key `hq:connect` wrote.
+    const driver = resolveDefaultMailDriver({
+      configured: (config)?.email?.default || process.env.MAIL_MAILER,
+      explicit: Boolean(process.env.MAIL_MAILER || process.env.MAIL_DRIVER),
+      commshqKey: (config)?.services?.commshq?.key || process.env.COMMSHQ_KEY,
+      environment: process.env.APP_ENV || (config)?.app?.env,
+    })
     _mail = new Mail({ defaultDriver: driver })
   }
   return _mail

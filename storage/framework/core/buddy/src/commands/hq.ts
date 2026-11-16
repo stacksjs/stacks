@@ -92,6 +92,20 @@ function deps(signal?: AbortSignal): HqCliDeps {
       const { projectPath } = await import('@stacksjs/path')
       await writeEnvEntries(entries, projectPath())
     },
+    // CommsHQ sends from the app's own domain once the domain says it may.
+    afterConnect: async (service, url, grant) => {
+      if (service !== 'commshq' || !grant.ingestKey)
+        return
+      const { config } = await import('@stacksjs/config')
+      const { setUpSendingDomainForApp } = await import('../commshq-domain-run')
+      await setUpSendingDomainForApp({
+        url,
+        key: grant.ingestKey,
+        mailFrom: process.env.MAIL_FROM_ADDRESS,
+        appUrl: String(config.app?.url || ''),
+        print: line => console.log(line),
+      })
+    },
     signal,
   }
 }

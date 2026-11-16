@@ -3283,6 +3283,12 @@ async function runSshDeploy(args: {
   if (ok && dnsAllowed)
     await reconcileConfigDns(onlySite ? { [onlySite]: sites[onlySite] } : sites, log)
 
+  // An app connected to CommsHQ sends from its own domain once the domain's
+  // DNS says it may. The records are published here, each deploy, until
+  // CommsHQ has seen them; after that this is one request and nothing else.
+  if (ok && dnsAllowed)
+    await reconcileCommsHqSendingDomain(resolvedDeployEnv, tsCloudConfig, log)
+
   // Put the frontends behind Cloudflare's edge, and bust the cache.
   //
   // Deliberately AFTER DNS and after TLS issuance above. Cloudflare's proxy is
@@ -5296,6 +5302,39 @@ export function dnsProviderNameFromNameservers(nameservers: string[]): 'porkbun'
     return 'godaddy'
 
   return null
+}
+
+/**
+ * Keep the sending domain of an app connected to CommsHQ set up: register it,
+ * publish its ownership and DKIM records through the project's own DNS
+ * provider, and have CommsHQ check them (`../commshq-domain`).
+ *
+ * Does nothing for an app with no CommsHQ key. Best-effort like the
+ * reconcilers around it: the release is already live, and until the domain
+ * verifies CommsHQ sends from an address of its own.
+ */
+async function reconcileCommsHqSendingDomain(deployEnv: Record<string, string>, tsCloudConfig: any, logger: typeof log): Promise<void> {
+  const key = deployEnv.COMMSHQ_KEY
+  if (!key)
+    return
+
+  try {
+    const { setUpSendingDomainForApp } = await import('../commshq-domain-run')
+    logger.info('CommsHQ: checking the sending domain...')
+    const outcome = await setUpSendingDomainForApp({
+      url: deployEnv.COMMSHQ_URL || 'https://commshq.org',
+      key,
+      mailFrom: deployEnv.MAIL_FROM_ADDRESS,
+      appUrl: deployEnv.APP_URL,
+      zone: tsCloudConfig?.infrastructure?.dns?.domain,
+      print: line => logger.info(line),
+    })
+    if (outcome.status === 'failed')
+      logger.warn(`CommsHQ: the sending domain was not set up: ${outcome.detail}`)
+  }
+  catch (err) {
+    logger.warn(`CommsHQ: sending domain setup failed: ${err instanceof Error ? err.message : String(err)}`)
+  }
 }
 
 async function reconcileConfigDns(sites: Record<string, any>, logger: typeof log): Promise<void> {

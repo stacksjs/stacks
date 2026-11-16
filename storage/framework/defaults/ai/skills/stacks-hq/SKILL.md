@@ -209,6 +209,30 @@ dashboardUrl }`) from `provision` and leaves `authenticateReadKey` and `usage`
 off its adapter. `createHqService` then mounts the two connect routes and no
 usage route. `isLicenseGrant` tells the two kinds of approved answer apart.
 
+CommsHQ gives an app a send key (`COMMSHQ_KEY`) and a read key
+(`COMMSHQ_READ_KEY`). With the key set, the app's mail goes out through
+CommsHQ in production and staging without naming a mailer: the `commshq`
+driver in `@stacksjs/email` posts to `/api/v1/send`. An app that sets
+`MAIL_MAILER` keeps what it set, and a key in a developer's `.env` sends
+nothing from a local run.
+
+After the connect, and again on every `buddy deploy`, the framework sets up
+the app's sending domain (`buddy/src/commshq-domain.ts`): it registers the
+domain of `MAIL_FROM_ADDRESS`, else of `APP_URL`, with CommsHQ, publishes the
+ownership and DKIM records CommsHQ answers through the project's own DNS
+provider, and asks CommsHQ to verify them. Publishing is additive: a record is
+created when it is missing, and nothing else in the zone is changed or removed,
+the app's SPF record included. Mail sent this way is authenticated by its DKIM
+signature, made with the app domain's own key, so the app's SPF plays no part.
+Until the domain verifies, CommsHQ sends from an address of its own under the
+app's name, with replies going to the app.
+
+A service that sends on behalf of other domains signs each message itself:
+`mail.send({ dkim: { domain, selector, privateKey }, envelopeFrom })`. The SMTP
+driver signs the bytes it sends (`signDkim` in `@stacksjs/email`) and uses
+`envelopeFrom` as the envelope sender, so the mail server only relays and needs
+no key for the domain.
+
 The dashboard's Logs and Errors sections read LogHQ and BugHQ when
 `config/dashboard.ts` sets `providers.logs` or `providers.errors` to
 `{ driver: 'hq' }`.

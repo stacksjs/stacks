@@ -567,6 +567,32 @@ export interface EmailMessage {
    * tag the message.
    */
   tag?: 'transactional' | 'broadcast'
+  /**
+   * The envelope sender (`MAIL FROM`), where it is not the From address.
+   *
+   * Bounces go here, and SPF is checked against its domain. A service that
+   * sends on behalf of other domains keeps this on a domain of its own, so
+   * its mail server's SPF record covers every message, and lets the DKIM
+   * signature (see {@link dkim}) carry the From domain. Only the SMTP driver
+   * has an envelope to set; the others ignore it.
+   */
+  envelopeFrom?: string
+  /**
+   * Sign the message with this domain's DKIM key before it is handed to the
+   * mail server, so the server only has to carry it.
+   *
+   * This is what lets mail go out from a domain the mail server holds no key
+   * for: the signature's `d=` aligns with the From domain and DMARC passes on
+   * it. Honoured by the SMTP driver, which builds the bytes that are signed.
+   */
+  dkim?: {
+    /** The signing domain, `d=`. */
+    domain: string
+    /** The selector the key is published under. */
+    selector: string
+    /** The private key, PEM. */
+    privateKey: string
+  }
 }
 
 // Email interfaces

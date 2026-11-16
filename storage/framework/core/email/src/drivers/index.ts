@@ -6,6 +6,8 @@ export * as capture from './capture'
 // wrote to the other (stacksjs/stacks#2581).
 export { CaptureEmailDriver } from './capture'
 export type { CapturedMessage } from './capture'
+export * as commshq from './commshq'
+export { CommsHqDriver, resolveDefaultMailDriver } from './commshq'
 export * as log from './log'
 export * as mailgun from './mailgun'
 export * as mailtrap from './mailtrap'

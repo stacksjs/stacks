@@ -1,3 +1,4 @@
+export * from './dkim'
 export * from './drivers'
 export * from './email'
 export * from './idempotency'
