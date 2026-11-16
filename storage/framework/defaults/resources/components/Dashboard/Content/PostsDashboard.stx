@@ -238,10 +238,6 @@ function changeSearch(term: string): void {
   search.set(String(term || ''))
 }
 
-function changeStatus(event: Event): void {
-  statusFilter.set((event.target as HTMLSelectElement).value)
-}
-
 async function loadEditorContent(post: PostRecord): Promise<void> {
   const requestId = ++contentRequestId
   contentLoading.set(true)
@@ -388,15 +384,7 @@ onMount(() => { void loadPosts() })
       @sort="changeSort"
     >
       <template #toolbar>
-        <label>
-          <span class="sr-only">Filter by status</span>
-          <select :value="statusFilter()" @change="changeStatus($event)" class="px-2.5 py-1.5 text-sm bg-white dark:bg-neutral-800 border border-stone-300 rounded-lg dark:border-neutral-600">
-            <option value="all">All statuses</option>
-            <option value="published">Published</option>
-            <option value="draft">Draft</option>
-            <option value="archived">Archived</option>
-          </select>
-        </label>
+        <Select v-model:value="statusFilter" ariaLabel="Filter by status" size="sm" placeholder="" :options="[{ value: 'all', label: 'All statuses' }, { value: 'published', label: 'Published' }, { value: 'draft', label: 'Draft' }, { value: 'archived', label: 'Archived' }]" />
       </template>
 
       <template #cell="{ row, column }">

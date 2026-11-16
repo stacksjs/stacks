@@ -215,10 +215,10 @@ onMount(() => {
 
   <section class="flex flex-col gap-3">
     <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-      <label class="xl:col-span-1"><span class="sr-only">Search email lists</span><input x-model="search" type="search" placeholder="Search email lists" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-      <label><span class="sr-only">Filter status</span><select x-model="statusFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option><option value="archived">Archived</option></select></label>
-      <label><span class="sr-only">Filter visibility</span><select x-model="visibilityFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">All signup modes</option><option value="public">Public</option><option value="private">Private</option></select></label>
-      <label><span class="sr-only">Sort email lists</span><select x-model="sort" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="name">Name</option><option value="members">Most members</option><option value="campaigns">Most campaigns</option><option value="newest">Newest</option></select></label>
+      <div class="xl:col-span-1"><SearchFilter v-model:searchValue="search" placeholder="Search email lists" ariaLabel="Search email lists" /></div>
+      <Select v-model:value="statusFilter" ariaLabel="Filter status" placeholder="" :options="[{ value: 'all', label: 'All statuses' }, { value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }, { value: 'archived', label: 'Archived' }]" />
+      <Select v-model:value="visibilityFilter" ariaLabel="Filter visibility" placeholder="" :options="[{ value: 'all', label: 'All signup modes' }, { value: 'public', label: 'Public' }, { value: 'private', label: 'Private' }]" />
+      <Select v-model:value="sort" ariaLabel="Sort email lists" placeholder="" :options="[{ value: 'name', label: 'Name' }, { value: 'members', label: 'Most members' }, { value: 'campaigns', label: 'Most campaigns' }, { value: 'newest', label: 'Newest' }]" />
     </div>
     <MarketingListsTable :sort-reset-key="sort()" :page-reset-key="viewKey()" :records="filteredRecords()" :loading="loading()" @edit="openEdit" @delete="openDelete" />
   </section>

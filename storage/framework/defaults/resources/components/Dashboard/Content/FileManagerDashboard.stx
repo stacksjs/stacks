@@ -458,9 +458,9 @@ onMount(() => { void loadFiles() })
           <div class="ml-3 min-w-0"><p class="font-semibold text-stone-900 truncate dark:text-white">{{ currentFolderLabel }}</p><p class="mt-0.5 text-stone-500 text-xs dark:text-neutral-400">{{ selectedDisk }} disk</p></div>
         </div>
         <div class="flex flex-wrap gap-2 items-center">
-          <label class="relative"><span class="sr-only">Search current folder</span><span class="absolute left-3 top-2.5 h-4 w-4 text-stone-400 i-hugeicons-search-01"></span><input x-model="searchQuery" type="search" placeholder="Search this folder" class="pl-9 pr-3 py-2 w-56 text-sm text-stone-900 dark:text-white bg-white dark:bg-neutral-800 border border-stone-200 rounded-lg dark:border-neutral-700" /></label>
+          <SearchFilter v-model:searchValue="searchQuery" placeholder="Search this folder" ariaLabel="Search current folder" />
           <div class="flex gap-0.5 p-0.5 bg-black/[0.05] dark:bg-white/[0.06] rounded-lg"><button type="button" aria-label="Grid view" :class="gridViewClass()" @click="viewMode.set('grid')"><span class="h-5 w-5 i-hugeicons-grid-view"></span></button><button type="button" aria-label="List view" :class="listViewClass()" @click="viewMode.set('list')"><span class="h-5 w-5 i-hugeicons-right-to-left-list-number"></span></button></div>
-          <select x-model="sortBy" aria-label="Sort files" class="px-2.5 py-2 text-sm text-stone-700 dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-stone-200 rounded-lg dark:border-neutral-700"><option value="name">Name</option><option value="lastModified">Date</option><option value="size">Size</option></select>
+          <Select v-model:value="sortBy" ariaLabel="Sort files" placeholder="" :options="[{ value: 'name', label: 'Name' }, { value: 'lastModified', label: 'Date' }, { value: 'size', label: 'Size' }]" />
           <Button variant="ghost" iconOnly ariaLabel="Reverse sort order" @click="toggleSortOrder()"><span :class="sortOrderIconClass()"></span></Button>
           <Button :loading="loading()" variant="secondary" @click="loadFiles()"><span :if="!loading()" aria-hidden="true" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button>
           <Button @click="openCreateFolder()"><span aria-hidden="true" class="h-4 w-4 i-hugeicons-folder-add"></span>New folder</Button>

@@ -391,7 +391,7 @@ describe('dashboard native STX bindings', () => {
     expect(view).toContain('<ContentDashboard />')
     expect(view).not.toContain('<script client>')
     expect(component).toContain("dashboardApi<ContentOverview>(`/api/dashboard/content/overview?days=${selectedRange()}`)")
-    expect(component).toContain('x-model="selectedRange"')
+    expect(component).toContain('<Select v-model:value="selectedRange"')
     expect(component).toContain('@change="changeRange"')
     expect(component).toContain("import { useChart }")
     expect(component).not.toContain('Math.random')

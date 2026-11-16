@@ -191,10 +191,10 @@ onMount(() => {
 
   <section class="flex flex-col gap-3">
     <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-      <label><span class="sr-only">Search carts</span><input x-model="search" type="search" placeholder="Search by customer or product" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-      <label><span class="sr-only">Filter cart state</span><select x-model="stateFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="open">Still out there</option><option value="cold">Never chased</option><option value="chased">Already chased</option><option value="recovered">Recovered</option><option value="all">Everything</option></select></label>
-      <label><span class="sr-only">Filter by how long the cart has been idle</span><select x-model="idleFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">Any age</option><option value="4">Idle 4h or more</option><option value="24">Idle a day or more</option><option value="72">Idle 3 days or more</option></select></label>
-      <label><span class="sr-only">Sort carts</span><select x-model="sort" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="value">Highest value</option><option value="idle">Longest idle</option><option value="customer">Customer</option></select></label>
+      <SearchFilter v-model:searchValue="search" placeholder="Search by customer or product" ariaLabel="Search carts" />
+      <Select v-model:value="stateFilter" ariaLabel="Filter cart state" placeholder="" :options="[{ value: 'open', label: 'Still out there' }, { value: 'cold', label: 'Never chased' }, { value: 'chased', label: 'Already chased' }, { value: 'recovered', label: 'Recovered' }, { value: 'all', label: 'Everything' }]" />
+      <Select v-model:value="idleFilter" ariaLabel="Filter by how long the cart has been idle" placeholder="" :options="[{ value: 'all', label: 'Any age' }, { value: '4', label: 'Idle 4h or more' }, { value: '24', label: 'Idle a day or more' }, { value: '72', label: 'Idle 3 days or more' }]" />
+      <Select v-model:value="sort" ariaLabel="Sort carts" placeholder="" :options="[{ value: 'value', label: 'Highest value' }, { value: 'idle', label: 'Longest idle' }, { value: 'customer', label: 'Customer' }]" />
     </div>
     <AbandonedCartsTable :sort-reset-key="sort()" :page-reset-key="viewKey()" :records="filteredRecords()" :loading="loading()" />
   </section>

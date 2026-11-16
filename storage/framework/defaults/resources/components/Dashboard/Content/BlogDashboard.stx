@@ -55,27 +55,10 @@ defineClientPayload({ blogUrl })
     <section class="overflow-hidden max-w-full min-w-0 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-md dark:border-neutral-800">
       <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between p-4 border-b border-neutral-200 dark:border-neutral-800">
         <div class="relative flex-1 max-w-md">
-          <span class="absolute left-3 top-1/2 h-4 w-4 text-neutral-500 pointer-events-none -translate-y-1/2 i-hugeicons-search-01"></span>
-          <label for="blog-search" class="sr-only">Search posts</label>
-          <input
-            id="blog-search"
-            type="search"
-            x-model="searchQuery"
-            placeholder="Search posts"
-            class="placeholder-neutral-500 pl-9 pr-3 py-2 w-full text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
-          />
+          <SearchFilter v-model:searchValue="searchQuery" placeholder="Search posts" ariaLabel="Search posts" class="w-full" />
         </div>
         <div>
-          <label for="blog-status" class="sr-only">Filter by status</label>
-          <select
-            id="blog-status"
-            x-model="statusFilter"
-            class="px-3 py-2 text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 rounded-md dark:border-neutral-700"
-          >
-            <option value="all">All statuses</option>
-            <option value="published">Published</option>
-            <option value="draft">Draft</option>
-          </select>
+          <Select v-model:value="statusFilter" id="blog-status" ariaLabel="Filter by status" placeholder="" :options="[{ value: 'all', label: 'All statuses' }, { value: 'published', label: 'Published' }, { value: 'draft', label: 'Draft' }]" />
         </div>
       </div>
 
