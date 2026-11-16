@@ -1217,6 +1217,7 @@ Deploy your project
 | `--site` | Deploy only this one site to the existing server (multi-tenant surgical add) | value, required | - |
 | `--staging` | Deploy to staging | boolean, optional | `false` |
 | `--dry-run` | Preview the deployment and change nothing | boolean, optional | `false` |
+| `--hold-dns` | Ship and start the release without publishing DNS, TLS, CDN or mail records (bring a new server up before a cutover) | boolean, optional | `false` |
 | `--docker` | Also build an OCI image with pantry (native, no Docker daemon) and push it to the pantry registry | boolean, optional | `false` |
 | `-J`, `--json` | Emit a machine-readable deployment preview | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
