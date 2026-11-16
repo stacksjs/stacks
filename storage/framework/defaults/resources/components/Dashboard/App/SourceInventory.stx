@@ -242,11 +242,7 @@ onMount(() => {
         <h2 class="font-semibold text-neutral-900 dark:text-white">Native source inventory</h2>
         <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ page().note }}</p>
       </div>
-      <label class="block relative w-full sm:max-w-xs">
-        <span class="sr-only">Search {{ page().title.toLowerCase() }}</span>
-        <span class="absolute left-3 top-2.5 h-4 w-4 text-neutral-400 i-hugeicons-search-01"></span>
-        <input x-model="search" type="search" :placeholder="'Search ' + page().title.toLowerCase()" class="block pl-9 pr-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-      </label>
+      <SearchFilter v-model:searchValue="search" :placeholder="'Search ' + page().title.toLowerCase()" :ariaLabel="'Search ' + page().title.toLowerCase()" class="w-full sm:max-w-xs" />
     </div>
 
     <Table

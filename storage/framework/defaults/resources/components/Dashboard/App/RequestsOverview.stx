@@ -209,26 +209,9 @@ onMount(() => {
         <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Showing up to 100 persisted records. Last-hour rate: {{ stats().requestsPerMinute.toFixed(2) }} per minute.</p>
       </div>
       <div class="grid gap-3 grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
-        <label class="block relative">
-          <span class="sr-only">Search requests</span>
-          <span class="absolute left-3 top-2.5 h-4 w-4 text-neutral-400 i-hugeicons-search-01"></span>
-          <input x-model="search" type="search" placeholder="Search path, client, status, or error" class="block pl-9 pr-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-        </label>
-        <label>
-          <span class="sr-only">Method</span>
-          <select x-model="methodFilter" class="px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700">
-            <option value="all">All methods</option>
-            <option :for="method in methods()" :value="method">{{ method }}</option>
-          </select>
-        </label>
-        <label>
-          <span class="sr-only">Status</span>
-          <select x-model="statusFilter" class="px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700">
-            <option value="all">All statuses</option>
-            <option value="success">Below 400</option>
-            <option value="error">400 and above</option>
-          </select>
-        </label>
+        <SearchFilter v-model:searchValue="search" placeholder="Search path, client, status, or error" ariaLabel="Search requests" />
+        <Select v-model:value="methodFilter" ariaLabel="Method" placeholder="" :options="[{ value: 'all', label: 'All methods' }, ...methods().map(method => ({ value: method, label: method }))]" />
+        <Select v-model:value="statusFilter" ariaLabel="Status" placeholder="" :options="[{ value: 'all', label: 'All statuses' }, { value: 'success', label: 'Below 400' }, { value: 'error', label: '400 and above' }]" />
       </div>
     </div>
 

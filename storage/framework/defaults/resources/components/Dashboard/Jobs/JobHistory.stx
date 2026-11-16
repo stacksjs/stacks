@@ -87,19 +87,10 @@ onMount(() => {
 
   <div class="grid gap-3 grid-cols-1 md:grid-cols-[minmax(0,1fr)_12rem_12rem]">
     <div>
-      <label for="job-search" class="sr-only">Search jobs</label>
-      <input id="job-search" x-model="searchQuery" type="search" placeholder="Search job names" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" />
+      <SearchFilter v-model:searchValue="searchQuery" placeholder="Search job names" ariaLabel="Search jobs" class="w-full" />
     </div>
-    <select x-model="selectedQueue" aria-label="Queue" class="block px-3 py-2 text-gray-900 text-sm dark:text-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
-      <option value="all">All queues</option>
-      <option :for="queue in queues()" :value="queue">{{ queue }}</option>
-    </select>
-    <select x-model="selectedStatus" aria-label="Status" class="block px-3 py-2 text-gray-900 text-sm dark:text-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
-      <option value="all">All statuses</option>
-      <option value="queued">Queued</option>
-      <option value="processing">Processing</option>
-      <option value="failed">Failed</option>
-    </select>
+    <Select v-model:value="selectedQueue" ariaLabel="Queue" placeholder="" :options="[{ value: 'all', label: 'All queues' }, ...queues().map(queue => ({ value: queue, label: queue }))]" />
+    <Select v-model:value="selectedStatus" ariaLabel="Status" placeholder="" :options="[{ value: 'all', label: 'All statuses' }, { value: 'queued', label: 'Queued' }, { value: 'processing', label: 'Processing' }, { value: 'failed', label: 'Failed' }]" />
   </div>
 
   <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>

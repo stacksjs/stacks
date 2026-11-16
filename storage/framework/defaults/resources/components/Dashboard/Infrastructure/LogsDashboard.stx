@@ -269,15 +269,11 @@ onDestroy(() => {
         <p :if="generatedAt()" class="text-neutral-500 text-xs dark:text-neutral-500">Snapshot {{ formatDate(generatedAt()) }}</p>
       </div>
       <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 mt-5">
-        <label class="block relative sm:col-span-2 xl:col-span-1">
-          <span class="sr-only">Search system logs</span>
-          <span class="absolute left-3 top-2.5 h-4 w-4 text-neutral-400 i-hugeicons-search-01"></span>
-          <input x-model="search" type="search" placeholder="Search logs" class="pl-9 pr-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" @input="scheduleSearch" />
-        </label>
-        <label><span class="sr-only">Filter by type</span><select x-model="type" class="px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700" @change="reloadFilters"><option value="">All types</option><option :for="entry in options().types" :value="entry">{{ entry }}</option></select></label>
-        <label><span class="sr-only">Filter by source</span><select x-model="source" class="px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700" @change="reloadFilters"><option value="">All sources</option><option :for="entry in options().sources" :value="entry">{{ entry }}</option></select></label>
-        <label><span class="sr-only">Filter by project</span><select x-model="project" class="px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700" @change="reloadFilters"><option value="">All projects</option><option :for="entry in options().projects" :value="entry">{{ entry }}</option></select></label>
-        <label><span class="sr-only">Filter by time range</span><select x-model="range" class="px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700" @change="reloadFilters"><option value="1">Last 24 hours</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="90">Last 90 days</option><option value="all">All time</option></select></label>
+        <SearchFilter v-model:searchValue="search" placeholder="Search logs" ariaLabel="Search system logs" @search="scheduleSearch" />
+        <Select v-model:value="type" ariaLabel="Filter by type" placeholder="" :options="[{ value: '', label: 'All types' }, ...options().types.map(entry => ({ value: entry, label: entry }))]" @change="reloadFilters" />
+        <Select v-model:value="source" ariaLabel="Filter by source" placeholder="" :options="[{ value: '', label: 'All sources' }, ...options().sources.map(entry => ({ value: entry, label: entry }))]" @change="reloadFilters" />
+        <Select v-model:value="project" ariaLabel="Filter by project" placeholder="" :options="[{ value: '', label: 'All projects' }, ...options().projects.map(entry => ({ value: entry, label: entry }))]" @change="reloadFilters" />
+        <Select v-model:value="range" ariaLabel="Filter by time range" placeholder="" :options="[{ value: '1', label: 'Last 24 hours' }, { value: '7', label: 'Last 7 days' }, { value: '30', label: 'Last 30 days' }, { value: '90', label: 'Last 90 days' }, { value: 'all', label: 'All time' }]" @change="reloadFilters" />
         <Button :if="hasFilters()" variant="secondary" @click="resetFilters"><span class="h-4 w-4 i-hugeicons-cancel-01"></span>Reset filters</Button>
       </div>
     </div>
@@ -306,7 +302,7 @@ onDestroy(() => {
     <footer :if="logs().length > 0" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-5 py-4 text-neutral-500 text-sm dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-800/50 border-neutral-200 border-t dark:border-neutral-700">
       <p>Showing {{ pageStart() }} to {{ pageEnd() }} of {{ pagination().total }}</p>
       <div class="flex gap-2 items-center">
-        <label><span class="sr-only">Logs per page</span><select x-model="perPage" class="px-2 py-1.5 text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-neutral-300 rounded-lg dark:border-neutral-700" @change="reloadFilters"><option value="10">10 per page</option><option value="25">25 per page</option><option value="50">50 per page</option><option value="100">100 per page</option></select></label>
+        <Select v-model:value="perPage" ariaLabel="Logs per page" size="sm" placeholder="" :options="[{ value: '10', label: '10 per page' }, { value: '25', label: '25 per page' }, { value: '50', label: '50 per page' }, { value: '100', label: '100 per page' }]" @change="reloadFilters" />
         <Button variant="secondary" iconOnly :disabled="pagination().page <= 1" ariaLabel="Previous log page" @click="previousPage"><span class="block h-4 w-4 i-hugeicons-arrow-left-01"></span></Button>
         <span class="font-mono text-neutral-600 text-xs dark:text-neutral-300">{{ pagination().page }} / {{ pagination().totalPages }}</span>
         <Button variant="secondary" iconOnly :disabled="pagination().page >= pagination().totalPages" ariaLabel="Next log page" @click="nextPage"><span class="block h-4 w-4 i-hugeicons-arrow-right-01"></span></Button>

@@ -134,15 +134,8 @@ onMount(() => {
         <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Up to 200 of the most recent native records.</p>
       </div>
       <div class="flex gap-2">
-        <label class="sr-only" for="release-status">Status</label>
-        <select id="release-status" x-model="status" class="px-3 py-2 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
-          <option value="all">All statuses</option>
-          <option value="published">Published</option>
-          <option value="scheduled">Scheduled</option>
-          <option value="draft">Draft</option>
-        </select>
-        <label class="sr-only" for="release-search">Search releases</label>
-        <input id="release-search" x-model="search" type="search" placeholder="Search releases" class="px-3 py-2 w-56 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" />
+        <Select v-model:value="status" id="release-status" ariaLabel="Status" placeholder="" :options="[{ value: 'all', label: 'All statuses' }, { value: 'published', label: 'Published' }, { value: 'scheduled', label: 'Scheduled' }, { value: 'draft', label: 'Draft' }]" />
+        <SearchFilter v-model:searchValue="search" placeholder="Search releases" ariaLabel="Search releases" class="w-56" />
       </div>
     </div>
 

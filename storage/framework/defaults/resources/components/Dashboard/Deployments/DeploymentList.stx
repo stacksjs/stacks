@@ -246,17 +246,8 @@ onMount(() => {
         <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">No estimated totals or synthetic build activity.</p>
       </div>
       <div class="flex gap-2">
-        <label class="sr-only" for="deployment-status">Status</label>
-        <select id="deployment-status" x-model="status" class="px-3 py-2 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
-          <option value="all">All statuses</option>
-          <option value="success">Success</option>
-          <option value="failed">Failed</option>
-          <option value="running">Running</option>
-          <option value="pending">Pending</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
-        <label class="sr-only" for="deployment-search">Search deployments</label>
-        <input id="deployment-search" x-model="search" type="search" placeholder="Search deployments" class="px-3 py-2 w-56 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" />
+        <Select v-model:value="status" id="deployment-status" ariaLabel="Status" placeholder="" :options="[{ value: 'all', label: 'All statuses' }, { value: 'success', label: 'Success' }, { value: 'failed', label: 'Failed' }, { value: 'running', label: 'Running' }, { value: 'pending', label: 'Pending' }, { value: 'cancelled', label: 'Cancelled' }]" />
+        <SearchFilter v-model:searchValue="search" placeholder="Search deployments" ariaLabel="Search deployments" class="w-56" />
       </div>
     </div>
     <DeploymentTable :deployments="rows()" :loading="isLoading" />

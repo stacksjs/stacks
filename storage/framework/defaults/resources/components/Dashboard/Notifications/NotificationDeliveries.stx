@@ -52,7 +52,7 @@ const pendingCount = derived(() => deliveries().filter(delivery => delivery.stat
  * What the table is showing: a change returns it to the first page, as this
  * page's own pager did before the table took over paging.
  */
-const viewKey = derived(() => JSON.stringify([searchQuery(), selectedStatus(), sortDirection()]))
+const viewKey = derived(() => JSON.stringify([searchQuery().trim(), selectedStatus(), sortDirection()]))
 
 /**
  * A component event reaches this handler as the emitted value, not as a
@@ -135,32 +135,9 @@ onMount(loadDeliveries)
     </dl>
 
     <div :show="showFilters" class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-4">
-      <label class="block">
-        <span class="sr-only">Search notification deliveries</span>
-        <span class="block relative">
-          <span class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-            <span class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></span>
-          </span>
-          <input x-model.trim="searchQuery" type="search" placeholder="Search recipient or content..." class="block pl-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-neutral-100 placeholder:text-gray-400 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset" />
-        </span>
-      </label>
-      <label class="block">
-        <span class="sr-only">Delivery status</span>
-        <select x-model="selectedStatus" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-neutral-100 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600">
-          <option value="all">All Statuses</option>
-          <option value="sent">Sent</option>
-          <option value="delivered">Delivered</option>
-          <option value="failed">Failed</option>
-          <option value="pending">Pending</option>
-        </select>
-      </label>
-      <label class="block">
-        <span class="sr-only">Attempt order</span>
-        <select x-model="sortDirection" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-neutral-100 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600">
-          <option value="desc">Newest First</option>
-          <option value="asc">Oldest First</option>
-        </select>
-      </label>
+      <SearchFilter v-model:searchValue="searchQuery" placeholder="Search recipient or content..." ariaLabel="Search notification deliveries" />
+      <Select v-model:value="selectedStatus" ariaLabel="Delivery status" placeholder="" :options="[{ value: 'all', label: 'All Statuses' }, { value: 'sent', label: 'Sent' }, { value: 'delivered', label: 'Delivered' }, { value: 'failed', label: 'Failed' }, { value: 'pending', label: 'Pending' }]" />
+      <Select v-model:value="sortDirection" ariaLabel="Attempt order" placeholder="" :options="[{ value: 'desc', label: 'Newest First' }, { value: 'asc', label: 'Oldest First' }]" />
       <div>
         <Button variant="secondary" @click="resetFilters()">Reset Filters</Button>
       </div>

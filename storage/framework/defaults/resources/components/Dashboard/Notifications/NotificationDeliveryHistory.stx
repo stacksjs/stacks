@@ -122,42 +122,10 @@ onMount(load)
     </div>
 
     <div class="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-6 mt-6">
-      <label class="xl:col-span-2">
-        <span class="sr-only">Search notification history</span>
-        <input x-model="searchQuery" type="search" placeholder="Search recipient or content..." class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-neutral-100 placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset" />
-      </label>
-      <label>
-        <span class="sr-only">Channel</span>
-        <select x-model="selectedChannel" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-neutral-100 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600">
-          <option value="all">All Channels</option>
-          <option value="email">Email</option>
-          <option value="sms">SMS</option>
-          <option value="chat">Chat</option>
-          <option value="database">Database</option>
-          <option value="push">Push</option>
-          <option value="broadcast">Broadcast</option>
-        </select>
-      </label>
-      <label>
-        <span class="sr-only">Status</span>
-        <select x-model="selectedStatus" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-neutral-100 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600">
-          <option value="all">All Statuses</option>
-          <option value="sent">Sent</option>
-          <option value="delivered">Delivered</option>
-          <option value="failed">Failed</option>
-          <option value="pending">Pending</option>
-        </select>
-      </label>
-      <label>
-        <span class="sr-only">Sort field</span>
-        <select x-model="sortField" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-neutral-100 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600">
-          <option value="sent_at">Attempted</option>
-          <option value="recipient">Recipient</option>
-          <option value="channel">Channel</option>
-          <option value="status">Status</option>
-          <option value="id">ID</option>
-        </select>
-      </label>
+      <div class="xl:col-span-2"><SearchFilter v-model:searchValue="searchQuery" placeholder="Search recipient or content..." ariaLabel="Search notification history" /></div>
+      <Select v-model:value="selectedChannel" ariaLabel="Channel" placeholder="" :options="[{ value: 'all', label: 'All Channels' }, { value: 'email', label: 'Email' }, { value: 'sms', label: 'SMS' }, { value: 'chat', label: 'Chat' }, { value: 'database', label: 'Database' }, { value: 'push', label: 'Push' }, { value: 'broadcast', label: 'Broadcast' }]" />
+      <Select v-model:value="selectedStatus" ariaLabel="Status" placeholder="" :options="[{ value: 'all', label: 'All Statuses' }, { value: 'sent', label: 'Sent' }, { value: 'delivered', label: 'Delivered' }, { value: 'failed', label: 'Failed' }, { value: 'pending', label: 'Pending' }]" />
+      <Select v-model:value="sortField" ariaLabel="Sort field" placeholder="" :options="[{ value: 'sent_at', label: 'Attempted' }, { value: 'recipient', label: 'Recipient' }, { value: 'channel', label: 'Channel' }, { value: 'status', label: 'Status' }, { value: 'id', label: 'ID' }]" />
       <div class="flex gap-2">
         <Button variant="secondary" iconOnly :ariaLabel="sortDirection === 'asc' ? 'Sort descending' : 'Sort ascending'" @click="toggleSortDirection()">
           <span :class="'h-5 w-5 ' + (sortDirection === 'asc' ? 'i-hugeicons-sort-by-up-01' : 'i-hugeicons-sort-by-down-01')"></span>

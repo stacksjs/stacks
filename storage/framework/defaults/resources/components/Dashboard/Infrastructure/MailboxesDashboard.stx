@@ -230,11 +230,7 @@ onMount(() => {
   <section>
     <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div><h2 class="font-semibold text-neutral-900 dark:text-white">Configured mailboxes</h2><p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Add or change addresses in config/email.ts.</p></div>
-      <label class="block relative sm:w-72">
-        <span class="sr-only">Search mailboxes</span>
-        <span class="absolute left-3 top-2.5 h-4 w-4 text-neutral-400 i-hugeicons-search-01"></span>
-        <input x-model="search" type="search" placeholder="Search mailboxes" class="pl-9 pr-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-neutral-300 rounded-lg dark:border-neutral-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
-      </label>
+      <div class="sm:w-72"><SearchFilter v-model:searchValue="search" placeholder="Search mailboxes" ariaLabel="Search mailboxes" /></div>
     </div>
 
     <div :if="loading()" class="flex items-center justify-center mt-4 py-16 text-neutral-500 text-sm dark:text-neutral-400 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
