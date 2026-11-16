@@ -233,6 +233,21 @@ export function isPrivateHost(host: string): boolean {
 }
 
 /**
+ * Whether this deploy was asked to leave DNS where it is (`--hold-dns`).
+ *
+ * A first deploy to a new server publishes its address as the last step, which
+ * is right for a new app and wrong for one that is moving: the records would
+ * leave the server that has the data for one whose database is still empty.
+ * Held, the release ships, starts and passes its health check on the new
+ * server while every visitor is still answered by the old one, so the data can
+ * be restored and checked before a second, ordinary deploy cuts over.
+ */
+export function dnsHeld(env: NodeJS.ProcessEnv = process.env): boolean {
+  const value = env.STACKS_DEPLOY_HOLD_DNS
+  return value === '1' || value === 'true'
+}
+
+/**
  * Whether this deploy may publish DNS, request certificates and touch the CDN.
  *
  * Hetzner always may. An SSH host may only when it has an address the world can

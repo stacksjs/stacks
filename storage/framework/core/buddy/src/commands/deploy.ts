@@ -31,7 +31,7 @@ import { findUnbackedManagedServices, hasOffsiteBackupDestination, unbackedDataM
 import { applyDeploymentDomainOverride, createDeploymentPreview, deploymentPreviewJsonPrefix, formatDeploymentPreview, resolveDeploymentEnvironment } from './deploy-preview'
 import { buildPreviewTeardownScript, derivePreviewConfig, previewDomain, previewPort, previewTarget } from './preview-deploy'
 import type { SshTarget } from './deploy-ssh-target'
-import { deployTargetLabel, dnsPublishingAllowed, hetznerTarget, isSshPipelineProvider, lanUrls, mergeSshStatePin, remoteExecOptions, resolveSshTarget, sshCliArgs, sshStatePin, toSshTarget } from './deploy-ssh-target'
+import { deployTargetLabel, dnsHeld, dnsPublishingAllowed, hetznerTarget, isSshPipelineProvider, lanUrls, mergeSshStatePin, remoteExecOptions, resolveSshTarget, sshCliArgs, sshStatePin, toSshTarget } from './deploy-ssh-target'
 
 // Use console.log for clean output without timestamps
 const log = {
@@ -3205,7 +3205,12 @@ async function runSshDeploy(args: {
   // every visitor's browser at whatever occupies that address on THEIR network.
   // ACME has the same problem from the other side, since a challenge cannot
   // reach a host the internet cannot route to.
-  const dnsAllowed = dnsPublishingAllowed({ provider, publicIp: ip, sites })
+  const held = dnsHeld()
+  const dnsAllowed = !held && dnsPublishingAllowed({ provider, publicIp: ip, sites })
+  if (ok && held) {
+    log.info(`DNS held (--hold-dns): the release is running on ${ip} and no record was changed.`)
+    log.info('Visitors still reach the previous server. Deploy again without --hold-dns to cut over.')
+  }
   if (ok && !dnsAllowed && provider === 'ssh') {
     const reachable = lanUrls(onlySite ? { [onlySite]: sites[onlySite] } : sites, sshTarget ?? hetznerTarget(ip), tsCloudConfig.ssh?.lan?.hostname)
     log.info('Private host: skipping DNS, TLS issuance, CDN and mail reconciliation.')
@@ -5866,11 +5871,18 @@ export function deploy(buddy: CLI): void {
     .option('--site <name>', 'Deploy only this one site to the existing server (multi-tenant surgical add)', { default: undefined })
     .option('--staging', descriptions.staging, { default: false })
     .option('--dry-run', 'Preview the deployment and change nothing', { default: false })
+    .option('--hold-dns', 'Ship and start the release without publishing DNS, TLS, CDN or mail records (bring a new server up before a cutover)', { default: false })
     .option('--docker', 'Also build an OCI image with pantry (native, no Docker daemon) and push it to the pantry registry', { default: false })
     .option('-J, --json', 'Emit a machine-readable deployment preview', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(withDeployNotification(async (envArg: string | undefined, options: DeployOptions) => {
       log.debug('Running `buddy deploy` ...', options)
+
+      // Read from argv as well, for the reason given for --dry-run below: a
+      // flag that is asked for and not seen would publish the very records it
+      // exists to hold.
+      if (process.argv.includes('--hold-dns') || options.holdDns === true)
+        process.env.STACKS_DEPLOY_HOLD_DNS = '1'
 
       // Read argv in addition to the parsed option. Which key a global flag
       // lands on is clapp's business and has changed before; the literal argv

@@ -19,6 +19,8 @@ export interface DeployOptions extends CliOptions {
   site?: string
   docker?: boolean
   dryRun?: boolean
+  /** Ship and start the release without publishing DNS: a new server is brought up before a cutover. */
+  holdDns?: boolean
   json?: boolean
 }
 

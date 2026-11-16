@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import {
   deployTargetLabel,
+  dnsHeld,
   dnsPublishingAllowed,
   hetznerTarget,
   isPrivateHost,
@@ -188,6 +189,18 @@ describe('dnsPublishingAllowed', () => {
 
   it('can be forced off even when everything else says yes', () => {
     expect(dnsPublishingAllowed({ provider: 'ssh', publicIp: '203.0.113.9', sites, env: { TS_CLOUD_SSH_PUBLISH_DNS: '0' } })).toBe(false)
+  })
+})
+
+describe('dnsHeld', () => {
+  it('is off unless asked for, so an ordinary deploy still publishes', () => {
+    expect(dnsHeld({})).toBe(false)
+    expect(dnsHeld({ STACKS_DEPLOY_HOLD_DNS: '0' })).toBe(false)
+  })
+
+  it('holds DNS for a deploy that brings a new server up before a cutover', () => {
+    expect(dnsHeld({ STACKS_DEPLOY_HOLD_DNS: '1' })).toBe(true)
+    expect(dnsHeld({ STACKS_DEPLOY_HOLD_DNS: 'true' })).toBe(true)
   })
 })
 
