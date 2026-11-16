@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { craftRuntimeAsset, fetchCraftRuntime, installedCraftVersion, parseCraftReleaseManifest, windowsRuntimeCompanions } from '../src/craft-runtime'
 import { mergeReleaseRecord, releaseRecordKey } from '../src/update-feed'
-import { configuredWebviewRuntime, webviewRuntimeFor } from '../src/webview-app'
+import { configuredWebviewRuntime, isWrapperScript, nativeHostRuntime, webviewRuntimeFor } from '../src/webview-app'
 
 const scratch: string[] = []
 function temporary(): string {
@@ -111,6 +111,19 @@ describe('a Craft runtime for another platform', () => {
     expect(configuredWebviewRuntime({}, 'win32-x64', options)).toBeNull()
     expect(() => webviewRuntimeFor({}, 'win32-x64', options)).toThrow('No Craft runtime for win32-x64')
     expect(() => configuredWebviewRuntime({ runtime: { 'win32-x64': 'vendor/missing.exe' } }, 'win32-x64', options)).toThrow('does not exist')
+  })
+
+  test('a Craft that is a wrapper script is refused as the host runtime, so the build fetches the published one', () => {
+    const root = temporary()
+    // What a package manager leaves on the PATH: a shim that execs the real binary from its store.
+    writeFileSync(join(root, 'craft-shim'), '#!/bin/sh\nexec /store/craft "$@"\n')
+    writeFileSync(join(root, 'craft-native'), Buffer.from([0xCF, 0xFA, 0xED, 0xFE, 0x0C, 0x00]))
+    expect(isWrapperScript(join(root, 'craft-shim'))).toBe(true)
+    expect(isWrapperScript(join(root, 'craft-native'))).toBe(false)
+    expect(() => nativeHostRuntime(() => join(root, 'craft-shim'))).toThrow('wrapper script')
+    expect(nativeHostRuntime(() => join(root, 'craft-native'))).toBe(join(root, 'craft-native'))
+    // No Craft at all keeps its own error, which the build treats the same way.
+    expect(() => nativeHostRuntime(() => { throw new Error('craft not found') })).toThrow('craft not found')
   })
 
   test('WebView2Loader.dll beside a Windows runtime is included unless the app already names one', () => {

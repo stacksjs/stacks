@@ -556,7 +556,8 @@ machine's target; else the build fetches it. Craft publishes `craft-<os>-<arch>.
 `build:desktop --target ...` downloads the one for the installed `craft-native` version, checks its size and SHA-256
 against that release's `release-manifest.json`, and keeps it unpacked in `storage/framework/desktop/runtimes/<target>/`
 (gitignored; a later build reuses it and a new Craft version replaces it). An app needs no script of its own for
-this. A machine with no Craft of its own (a CI runner with no `CRAFT_BIN` and no `craft` on PATH) fetches its own
+this. A machine with no Craft of its own (a CI runner with no `CRAFT_BIN` and no `craft` on PATH), or whose `craft`
+is a wrapper script (a package manager's shim, a checkout's dev wrapper: neither can be copied into an app), fetches its own
 target's runtime the same way. Craft publishes runtimes for `darwin-arm64`, `darwin-x64`, `linux-x64` and `win32-x64`; the arm64 Linux and
 Windows targets still need a runtime named in the config. `DESKTOP_RUNTIME_FETCH=0` keeps a build off the network.
 

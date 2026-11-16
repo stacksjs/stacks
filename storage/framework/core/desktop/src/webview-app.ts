@@ -138,6 +138,27 @@ export function webviewRuntimeFor(config: Pick<WebviewDesktopConfig, 'runtime'>,
   throw new Error(`No Craft runtime for ${target}. Unpack that platform's Craft release and name its binary in desktop.webview.runtime['${target}'] or CRAFT_BIN_${target.replace('-', '_').toUpperCase()}.`)
 }
 
+/** Whether a file is a script (`#!`) rather than a native binary. */
+export function isWrapperScript(file: string): boolean {
+  return readFileSync(file).subarray(0, 2).toString() === '#!'
+}
+
+/**
+ * The build machine's own Craft, when it is one an app can carry.
+ *
+ * The runtime is copied into the app verbatim, so it has to be the native
+ * binary. A package manager's `craft` on the PATH is often a shell shim that
+ * execs the real one from its own store, and a development checkout has a
+ * wrapper script: both run on this machine and neither works from inside an
+ * app. Throwing here, where "no Craft installed" also throws, lets the build
+ * fall through to the runtime Craft published instead of stopping.
+ */
+export function nativeHostRuntime(hostRuntime: () => string): string {
+  const found = hostRuntime()
+  if (isWrapperScript(found)) throw new Error(`The Craft on this machine is a wrapper script, not a native binary: ${found}. Name the native binary in CRAFT_BIN, or let the build fetch the published runtime.`)
+  return found
+}
+
 /**
  * The runtime a project or this machine already has for a target, or null
  * when neither does: the one named in the config or the environment, else the

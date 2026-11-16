@@ -18,6 +18,7 @@ import {
   loadWebviewDesktop,
   mergeBuildRecord,
   nativeBuildSteps,
+  nativeHostRuntime,
   parseDesktopTargets,
   probeCraftFlags,
   recordPackagedInstallers,
@@ -77,7 +78,8 @@ const hostRuntime = (): string => resolveCraftExecutable()
  * machine's own Craft for this machine's target, else the one Craft published
  * for the installed craft-native version, fetched once and kept under
  * storage/framework/desktop/runtimes. A machine with no Craft of its own (a CI
- * runner) fetches its own target's the same way. DESKTOP_RUNTIME_FETCH=0 keeps
+ * runner), or with only a shim script on its PATH, fetches its own target's
+ * the same way. DESKTOP_RUNTIME_FETCH=0 keeps
  * a build off the network.
  */
 async function runtimeFor(target: DesktopTargetName): Promise<string> {
@@ -86,10 +88,11 @@ async function runtimeFor(target: DesktopTargetName): Promise<string> {
   let missing: unknown
   if (target === host) {
     try {
-      return hostRuntime()
+      return nativeHostRuntime(hostRuntime)
     }
     catch (error) {
-      // No Craft installed here: the published one for this platform does the same job.
+      // No Craft installed here, or only a shim that cannot go inside an app:
+      // the published one for this platform does the same job.
       missing = error
     }
   }
@@ -99,6 +102,8 @@ async function runtimeFor(target: DesktopTargetName): Promise<string> {
     // Says what to configure when there is nothing to fetch, or nothing to fetch with.
     return webviewRuntimeFor(config!, target, { root, hostRuntime })
   }
+  // Say why this machine's Craft was passed over; a machine with none needs no note.
+  if (missing instanceof Error && missing.message.includes('wrapper script')) await log.info(`${missing.message.split('. ')[0]}. Using the published runtime.`)
   const fetched = await fetchCraftRuntime({
     target,
     version,
