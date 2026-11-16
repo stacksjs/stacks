@@ -21,7 +21,7 @@ const errors = useReactiveProp('errors', {} as Record<string, string>)
 const emit = defineEmits(['submit', 'close'])
 const name = state('')
 const slug = state('')
-const description = state('')
+const descriptionText = state('')
 // The price as typed, in major units ("19.99"). It is stored as integer
 // minor units (1999), converted once in `productWritePayload`.
 const price = state('')
@@ -51,7 +51,7 @@ effect(() => {
   name.set(current?.name || '')
   slug.set(current?.slug || '')
   slugTouched = Boolean(current?.slug)
-  description.set(current?.description || '')
+  descriptionText.set(current?.description || '')
   price.set(current ? minorToInput(current.price, currency()) : '')
   imageUrl.set(current?.imageUrl || '')
   isAvailable.set(current?.isAvailable ?? true)
@@ -119,7 +119,7 @@ function submit(): void {
   emit('submit', productWritePayload({
     name: name(),
     slug: slugify(slug()),
-    description: description(),
+    description: descriptionText(),
     price: price(),
     imageUrl: imageUrl(),
     isAvailable: isAvailable(),
@@ -149,20 +149,20 @@ function errorMessages(): string[] {
           <li :for="message in errorMessages()" :key="message">{{ message }}</li>
         </ul>
         <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
-          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span><input x-model="name" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Slug</span><input x-model="slug" type="text" maxlength="255" required spellcheck="false" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="markSlugTouched" @blur="normalizeSlug" /><span class="block mt-1 text-gray-500 text-xs dark:text-neutral-500">The storefront address, /products/{{ slug() || 'slug' }}.</span></label>
-          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Description</span><textarea x-model="description" rows="3" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Price ({{ currency() }})</span><input x-model="price" type="number" min="0" :step="moneyInputStep(currency())" inputmode="decimal" required :aria-invalid="price() !== '' && priceError() !== ''" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /><span :if="price() !== '' && priceError()" class="block mt-1 text-red-600 text-xs dark:text-red-400">{{ priceError() }}</span></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Inventory count</span><input x-model="inventoryCount" type="number" min="0" step="1" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Preparation time (minutes)</span><input x-model="preparationTime" type="number" min="1" step="1" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <div class="sm:col-span-2"><Input v-model:value="name" label="Name" :maxLength="100" :required="true" /></div>
+          <div class="sm:col-span-2"><Input v-model:value="slug" label="Slug" :maxLength="255" :required="true" :spellcheck="false" :monospace="true" :hint="'The storefront address, /products/' + (slug() || 'slug') + '.'" @input="markSlugTouched" @blur="normalizeSlug" /></div>
+          <div class="sm:col-span-2"><Textarea v-model:value="descriptionText" label="Description" :rows="3" /></div>
+          <Input v-model:value="price" :label="'Price (' + currency() + ')'" type="number" min="0" :step="moneyInputStep(currency())" inputmode="decimal" :required="true" :error="price() !== '' ? priceError() : ''" />
+          <Input v-model:value="inventoryCount" label="Inventory count" type="number" min="0" step="1" :required="true" />
+          <Input v-model:value="preparationTime" label="Preparation time (minutes)" type="number" min="1" step="1" :required="true" />
           <div class="self-end px-3 py-2 min-h-10 bg-gray-50 dark:bg-neutral-900/60 border border-gray-200 rounded-md dark:border-neutral-700">
             <Toggle v-model:checked="isAvailable" label="Available for commerce" labelPosition="left" />
           </div>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Category</span><select x-model="categoryId" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="">Unassigned category</option><option :for="option in categories()" :key="option.id" :value="option.id">{{ option.label }}</option></select></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Manufacturer</span><select x-model="manufacturerId" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="">Unassigned manufacturer</option><option :for="option in manufacturers()" :key="option.id" :value="option.id">{{ option.label }}</option></select></label>
-          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Image URL</span><input x-model="imageUrl" type="url" placeholder="Optional persisted asset URL" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Allergens</span><input x-model="allergens" type="text" placeholder="Comma-separated, for example: Gluten, Soy" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Nutritional information (JSON object)</span><textarea x-model="nutritionalInfo" rows="4" spellcheck="false" :aria-invalid="!nutritionValid()" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea><span :if="!nutritionValid()" class="block mt-1 text-red-600 text-xs dark:text-red-400">Enter a valid JSON object.</span></label>
+          <Select v-model:value="categoryId" label="Category" placeholder="" :options="[{ value: '', label: 'Unassigned category' }, ...categories().map(option => ({ value: option.id, label: option.label }))]" />
+          <Select v-model:value="manufacturerId" label="Manufacturer" placeholder="" :options="[{ value: '', label: 'Unassigned manufacturer' }, ...manufacturers().map(option => ({ value: option.id, label: option.label }))]" />
+          <div class="sm:col-span-2"><Input v-model:value="imageUrl" label="Image URL" type="url" placeholder="Optional persisted asset URL" /></div>
+          <div class="sm:col-span-2"><Input v-model:value="allergens" label="Allergens" placeholder="Comma-separated, for example: Gluten, Soy" /></div>
+          <div class="sm:col-span-2"><Textarea v-model:value="nutritionalInfo" label="Nutritional information (JSON object)" :rows="4" :spellcheck="false" :monospace="true" :error="nutritionValid() ? '' : 'Enter a valid JSON object.'" /></div>
         </div>
     </form>
   <template #footer>

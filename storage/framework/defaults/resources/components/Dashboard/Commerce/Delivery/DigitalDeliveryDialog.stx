@@ -19,7 +19,7 @@ const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
 const emit = defineEmits(['invalid', 'submit', 'close'])
 const name = state('')
-const description = state('')
+const descriptionText = state('')
 const downloadLimit = state('')
 const expiryDays = state('30')
 const requiresLogin = state(false)
@@ -38,7 +38,7 @@ effect(() => {
     return
   hydrationKey = nextKey
   name.set(current?.name || '')
-  description.set(current?.description || '')
+  descriptionText.set(current?.description || '')
   downloadLimit.set(current?.download_limit === null || current?.download_limit === undefined ? '' : String(current.download_limit))
   expiryDays.set(String(current?.expiry_days ?? 30))
   requiresLogin.set(Boolean(current?.requires_login))
@@ -54,7 +54,7 @@ function submit(): void {
     emit('invalid', 'Method name is required.')
     return
   }
-  if (!description().trim()) {
+  if (!descriptionText().trim()) {
     emit('invalid', 'Description is required.')
     return
   }
@@ -69,7 +69,7 @@ function submit(): void {
 
   emit('submit', {
     name: name().trim(),
-    description: description().trim(),
+    description: descriptionText().trim(),
     downloadLimit: parsedDownloadLimit,
     expiryDays: parsedExpiryDays,
     requiresLogin: requiresLogin(),
@@ -90,11 +90,15 @@ function submit(): void {
         <div :if="error()" class="mb-5 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ error() }}</div>
 
         <div class="space-y-4">
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Method name</span><input x-model="name" type="text" required maxlength="255" autocomplete="off" placeholder="Secure download" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Description</span><textarea x-model="description" required rows="3" placeholder="Explain how customers receive and access files." class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700 resize-y"></textarea></label>
+          <div>
+            <Input v-model:value="name" label="Method name" :required="true" :maxLength="255" autocomplete="off" placeholder="Secure download" />
+          </div>
+          <div>
+            <Textarea v-model:value="descriptionText" label="Description" :required="true" :rows="3" placeholder="Explain how customers receive and access files." />
+          </div>
           <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
-            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Download limit</span><input x-model="downloadLimit" type="number" min="0" step="1" inputmode="numeric" placeholder="Unlimited" class="mt-1 px-3 py-2 w-full tabular-nums text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /><span class="block mt-1 text-gray-500 text-xs dark:text-neutral-500">Leave blank for unlimited downloads.</span></label>
-            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Expiry days</span><input x-model="expiryDays" type="number" required min="0" step="1" inputmode="numeric" class="mt-1 px-3 py-2 w-full tabular-nums text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /><span class="block mt-1 text-gray-500 text-xs dark:text-neutral-500">Use 0 for access without expiry.</span></label>
+            <Input v-model:value="downloadLimit" label="Download limit" type="number" min="0" step="1" inputmode="numeric" placeholder="Unlimited" hint="Leave blank for unlimited downloads." />
+            <Input v-model:value="expiryDays" label="Expiry days" type="number" :required="true" min="0" step="1" inputmode="numeric" hint="Use 0 for access without expiry." />
           </div>
           <div class="grid gap-3 grid-cols-1 sm:grid-cols-2">
             <div class="p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
@@ -104,7 +108,9 @@ function submit(): void {
               <Toggle v-model:checked="automaticDelivery" label="Automatic delivery" description="Fulfill automatically after payment." labelPosition="left" />
             </div>
           </div>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select x-model="status" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
+          <div>
+            <Select v-model:value="status" label="Status" placeholder="" :options="[{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }]" />
+          </div>
         </div>
     </form>
   <template #footer>

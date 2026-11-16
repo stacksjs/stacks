@@ -16,7 +16,7 @@ const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
 const emit = defineEmits(['invalid', 'submit', 'close'])
 const name = state('')
-const description = state('')
+const descriptionText = state('')
 const baseRate = state('')
 const freeShipping = state('')
 const status = state<'active' | 'inactive' | 'draft'>('active')
@@ -33,7 +33,7 @@ effect(() => {
     return
   hydrationKey = nextKey
   name.set(current?.name || '')
-  description.set(current?.description || '')
+  descriptionText.set(current?.description || '')
   baseRate.set(current ? minorToInput(current.base_rate, 'USD') : '')
   freeShipping.set(current?.free_shipping === null || current?.free_shipping === undefined
     ? ''
@@ -59,7 +59,7 @@ function submit(): void {
   }
   emit('submit', {
     name: name().trim(),
-    description: description().trim(),
+    description: descriptionText().trim(),
     baseRate: parseMoneyInput(baseRate(), 'USD'),
     freeShipping: parseMoneyInput(freeShipping(), 'USD', { required: false }),
     status: status(),
@@ -78,13 +78,19 @@ function submit(): void {
         <div :if="error()" class="mb-5 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ error() }}</div>
 
         <div class="space-y-4">
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Method name</span><input x-model="name" type="text" required maxlength="100" autocomplete="off" placeholder="Ground shipping" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Description</span><textarea x-model="description" rows="3" maxlength="500" placeholder="How and when this method is used" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea></label>
-          <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
-            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Base rate</span><input x-model="baseRate" type="number" required min="0" step="0.01" inputmode="decimal" placeholder="0.00" class="mt-1 px-3 py-2 w-full tabular-nums text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Free shipping threshold</span><input x-model="freeShipping" type="number" min="0" step="0.01" inputmode="decimal" placeholder="No threshold" class="mt-1 px-3 py-2 w-full tabular-nums text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <div>
+            <Input v-model:value="name" label="Method name" :required="true" :maxLength="100" autocomplete="off" placeholder="Ground shipping" />
           </div>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select x-model="status" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="active">Active</option><option value="inactive">Inactive</option><option value="draft">Draft</option></select></label>
+          <div>
+            <Textarea v-model:value="descriptionText" label="Description" :rows="3" :maxLength="500" placeholder="How and when this method is used" />
+          </div>
+          <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
+            <Input v-model:value="baseRate" label="Base rate" type="number" :required="true" min="0" step="0.01" inputmode="decimal" placeholder="0.00" />
+            <Input v-model:value="freeShipping" label="Free shipping threshold" type="number" min="0" step="0.01" inputmode="decimal" placeholder="No threshold" />
+          </div>
+          <div>
+            <Select v-model:value="status" label="Status" placeholder="" :options="[{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }, { value: 'draft', label: 'Draft' }]" />
+          </div>
         </div>
     </form>
   <template #footer>

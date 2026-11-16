@@ -118,18 +118,24 @@ function submit(): void {
         <div :if="error()" class="mb-5 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ error() }}</div>
 
         <div class="space-y-4">
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Zone name</span><input x-model="name" type="text" required maxlength="100" autocomplete="off" placeholder="North America" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block">
-            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Shipping method</span>
-            <select x-model="methodId" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
-              <option value="">Select a shipping method</option>
-              <option :for="method in methods()" :key="method.id" :value="method.id">{{ method.name }}</option>
-            </select>
-          </label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Countries</span><textarea x-model="countries" rows="2" maxlength="1000" placeholder="US, CA, MX" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Regions</span><textarea x-model="regions" rows="2" maxlength="500" placeholder="CA, OR, WA" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Postal codes</span><textarea x-model="postalCodes" rows="2" maxlength="1000" placeholder="90001, 90002" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select x-model="status" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="active">Active</option><option value="inactive">Inactive</option><option value="draft">Draft</option></select></label>
+          <div>
+            <Input v-model:value="name" label="Zone name" :required="true" :maxLength="100" autocomplete="off" placeholder="North America" />
+          </div>
+          <div>
+            <Select v-model:value="methodId" label="Shipping method" :required="true" placeholder="Select a shipping method" :options="[...methods().map(method => ({ value: method.id, label: method.name }))]" />
+          </div>
+          <div>
+            <Textarea v-model:value="countries" label="Countries" :rows="2" :maxLength="1000" placeholder="US, CA, MX" />
+          </div>
+          <div>
+            <Textarea v-model:value="regions" label="Regions" :rows="2" :maxLength="500" placeholder="CA, OR, WA" />
+          </div>
+          <div>
+            <Textarea v-model:value="postalCodes" label="Postal codes" :rows="2" :maxLength="1000" placeholder="90001, 90002" />
+          </div>
+          <div>
+            <Select v-model:value="status" label="Status" placeholder="" :options="[{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }, { value: 'draft', label: 'Draft' }]" />
+          </div>
         </div>
     </form>
   <template #footer>

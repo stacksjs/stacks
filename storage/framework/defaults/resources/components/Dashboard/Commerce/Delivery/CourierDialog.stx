@@ -95,20 +95,22 @@ function submit(): void {
         <div :if="error()" class="mb-5 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ error() }}</div>
 
         <div class="space-y-4">
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Courier name</span><input x-model="name" type="text" required maxlength="255" autocomplete="name" placeholder="Alex Morgan" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Phone</span><input x-model="phone" type="tel" required maxlength="255" autocomplete="tel" placeholder="+1 555 0100" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
-            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Vehicle number</span><input x-model="vehicleNumber" type="text" required maxlength="255" autocomplete="off" placeholder="VAN-204" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">License number</span><input x-model="license" type="text" required maxlength="255" autocomplete="off" placeholder="D1234567" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <div>
+            <Input v-model:value="name" label="Courier name" :required="true" :maxLength="255" autocomplete="name" placeholder="Alex Morgan" />
           </div>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select x-model="status" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="active">Available</option><option value="on_delivery">On delivery</option><option value="on_break">On break</option></select></label>
-          <label class="block">
-            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Linked user</span>
-            <select x-model="userId" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
-              <option value="">No linked user</option>
-              <option :for="user in users()" :key="user.id" :value="user.id">{{ user.name }}{{ user.email ? ' - ' + user.email : '' }}</option>
-            </select>
-          </label>
+          <div>
+            <Input v-model:value="phone" label="Phone" type="tel" :required="true" :maxLength="255" autocomplete="tel" placeholder="+1 555 0100" />
+          </div>
+          <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
+            <Input v-model:value="vehicleNumber" label="Vehicle number" :required="true" :maxLength="255" autocomplete="off" placeholder="VAN-204" :monospace="true" class="uppercase" />
+            <Input v-model:value="license" label="License number" :required="true" :maxLength="255" autocomplete="off" placeholder="D1234567" :monospace="true" class="uppercase" />
+          </div>
+          <div>
+            <Select v-model:value="status" label="Status" placeholder="" :options="[{ value: 'active', label: 'Available' }, { value: 'on_delivery', label: 'On delivery' }, { value: 'on_break', label: 'On break' }]" />
+          </div>
+          <div>
+            <Select v-model:value="userId" label="Linked user" placeholder="" :options="[{ value: '', label: 'No linked user' }, ...users().map(user => ({ value: user.id, label: `${user.name}${user.email ? ' - ' + user.email : ''}` }))]" />
+          </div>
         </div>
     </form>
   <template #footer>

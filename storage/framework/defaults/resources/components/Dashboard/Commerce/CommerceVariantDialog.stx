@@ -13,7 +13,7 @@ const errors = useReactiveProp('errors', {} as Record<string, string>)
 const emit = defineEmits(['submit', 'close'])
 const variant = state('')
 const type = state('')
-const description = state('')
+const descriptionText = state('')
 const options = state('')
 const status = state<'active' | 'inactive' | 'draft'>('active')
 const productId = state('')
@@ -82,7 +82,7 @@ effect(() => {
   hydrationKey = key
   variant.set(current?.variant || '')
   type.set(current?.type || '')
-  description.set(current?.description || '')
+  descriptionText.set(current?.description || '')
   options.set(current?.options.join(', ') || '')
   status.set(current?.status || 'active')
   productId.set(current?.productId || '')
@@ -96,7 +96,7 @@ function submit(): void {
   emit('submit', {
     variant: variant().trim(),
     type: type().trim(),
-    description: description().trim(),
+    description: descriptionText().trim(),
     options: options().split(/[,\n]/).map(option => option.trim()).filter(Boolean),
     status: status(),
     productId: productId() ? Number(productId()) : null,
@@ -121,13 +121,19 @@ function errorMessages(): string[] {
         </ul>
         <div class="space-y-4">
           <div class="grid gap-4 sm:grid-cols-2">
-            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Variant</span><input x-model="variant" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Type</span><input x-model="type" type="text" list="product-variant-types" maxlength="50" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /><datalist id="product-variant-types"><option :for="variantType in types()" :key="variantType" :value="variantType"></option></datalist></label>
+            <Input v-model:value="variant" label="Variant" :maxLength="100" :required="true" />
+            <div><Input v-model:value="type" label="Type" list="product-variant-types" :maxLength="50" :required="true" /><datalist id="product-variant-types"><option :for="variantType in types()" :key="variantType" :value="variantType"></option></datalist></div>
           </div>
-          <div><label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Product</span><input x-model="productQuery" @input="searchProductsSoon()" type="search" name="product_search" aria-label="Search products by name or id" placeholder="Search by name or id" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label><select x-model="productId" aria-label="Product" class="mt-2 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="">Unassigned</option><option :for="product in products()" :key="product.id" :value="product.id" :selected="product.id === productId()">{{ product.label }}</option></select><p :if="moreProductsLabel()" class="mt-1 text-gray-500 text-xs dark:text-neutral-400" :text="moreProductsLabel()"></p></div>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Description</span><textarea x-model="description" rows="3" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Options</span><textarea x-model="options" rows="3" placeholder="Small, Medium, Large" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea><span class="block mt-1 text-gray-500 text-xs dark:text-neutral-400">Separate options with commas or new lines.</span></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select x-model="status" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="active">Active</option><option value="inactive">Inactive</option><option value="draft">Draft</option></select></label>
+          <div><Input v-model:value="productQuery" label="Product" type="search" name="product_search" ariaLabel="Search products by name or id" placeholder="Search by name or id" @input="searchProductsSoon()" /><div class="mt-2"><Select v-model:value="productId" ariaLabel="Product" placeholder="" :options="[{ value: '', label: 'Unassigned' }, ...products().map(product => ({ value: product.id, label: product.label }))]" /></div><p :if="moreProductsLabel()" class="mt-1 text-gray-500 text-xs dark:text-neutral-400" :text="moreProductsLabel()"></p></div>
+          <div>
+            <Textarea v-model:value="descriptionText" label="Description" :rows="3" />
+          </div>
+          <div>
+            <Textarea v-model:value="options" label="Options" :rows="3" placeholder="Small, Medium, Large" hint="Separate options with commas or new lines." />
+          </div>
+          <div>
+            <Select v-model:value="status" label="Status" placeholder="" :options="[{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }, { value: 'draft', label: 'Draft' }]" />
+          </div>
         </div>
     </form>
   <template #footer>

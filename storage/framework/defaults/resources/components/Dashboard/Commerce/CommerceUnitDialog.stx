@@ -14,7 +14,7 @@ const emit = defineEmits(['submit', 'close'])
 const name = state('')
 const abbreviation = state('')
 const type = state('')
-const description = state('')
+const descriptionText = state('')
 const productId = state('')
 const isDefault = state(false)
 let hydrationKey = ''
@@ -83,7 +83,7 @@ effect(() => {
   name.set(current?.name || '')
   abbreviation.set(current?.abbreviation || '')
   type.set(current?.type || '')
-  description.set(current?.description || '')
+  descriptionText.set(current?.description || '')
   productId.set(current?.productId || '')
   isDefault.set(current?.isDefault || false)
   productQuery.set('')
@@ -97,7 +97,7 @@ function submit(): void {
     name: name().trim(),
     abbreviation: abbreviation().trim(),
     type: type().trim(),
-    description: description().trim(),
+    description: descriptionText().trim(),
     productId: productId() ? Number(productId()) : null,
     isDefault: isDefault(),
   })
@@ -121,37 +121,23 @@ function errorMessages(): string[] {
         </ul>
         <div class="space-y-4">
           <div class="grid gap-4 sm:grid-cols-2">
-            <label class="block">
-              <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span>
-              <input x-model="name" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-            </label>
-            <label class="block">
-              <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Abbreviation</span>
-              <input x-model="abbreviation" type="text" maxlength="10" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-            </label>
+            <Input v-model:value="name" label="Name" :maxLength="100" :required="true" />
+            <Input v-model:value="abbreviation" label="Abbreviation" :maxLength="10" :required="true" />
           </div>
-          <label class="block">
-            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Type</span>
-            <input x-model="type" type="text" list="product-unit-types" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-            <datalist id="product-unit-types">
-              <option :for="unitType in types()" :key="unitType" :value="unitType"></option>
-            </datalist>
-          </label>
-          <label class="block">
-            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Product</span>
-            <input x-model="productQuery" @input="searchProductsSoon()" type="search" name="product_search" aria-label="Search products by name or id" placeholder="Search by name or id" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-          </label>
           <div>
-            <select x-model="productId" aria-label="Product" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
-              <option value="">Unassigned</option>
-              <option :for="product in products()" :key="product.id" :value="product.id" :selected="product.id === productId()">{{ product.label }}</option>
-            </select>
+            <Input v-model:value="type" label="Type" list="product-unit-types" :required="true" />
+            <datalist id="product-unit-types"><option :for="unitType in types()" :key="unitType" :value="unitType"></option></datalist>
+          </div>
+          <div>
+            <Input v-model:value="productQuery" label="Product" type="search" name="product_search" ariaLabel="Search products by name or id" placeholder="Search by name or id" @input="searchProductsSoon()" />
+          </div>
+          <div>
+            <Select v-model:value="productId" ariaLabel="Product" placeholder="" :options="[{ value: '', label: 'Unassigned' }, ...products().map(product => ({ value: product.id, label: product.label }))]" />
             <p :if="moreProductsLabel()" class="mt-1 text-gray-500 text-xs dark:text-neutral-400" :text="moreProductsLabel()"></p>
           </div>
-          <label class="block">
-            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Description</span>
-            <textarea x-model="description" rows="3" maxlength="255" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea>
-          </label>
+          <div>
+            <Textarea v-model:value="descriptionText" label="Description" :rows="3" :maxLength="255" />
+          </div>
           <div class="p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
             <Toggle v-model:checked="isDefault" label="Default for this type" description="Selecting this clears any other default in the same unit type." labelPosition="left" />
           </div>
