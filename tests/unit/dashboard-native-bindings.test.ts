@@ -775,10 +775,13 @@ describe('dashboard native STX bindings', () => {
     // grid and want one input to drop into it. Promoted to `UI/` and kept as
     // the single search input. See stacksjs/stacks#2924.
     const search = componentSource('UI/SearchFilter.stx')
-    expect(search).toContain('x-model="query"')
+    // Drawn with the shared input, so it matches the dropdowns beside it
+    // (stacksjs/stacks#3310), and it reports only what the person types.
+    expect(search).toContain('<Input v-model:value="query" type="search"')
     expect(search).toContain(':placeholder="placeholder()"')
-    expect(search).toContain(':aria-label="placeholder()"')
-    expect(search).toContain("emit('update:searchValue', query())")
+    expect(search).toContain(':ariaLabel="ariaLabel() || placeholder()"')
+    expect(search).toContain("emit('update:searchValue', value)")
+    expect(search).toContain('if (value === known)')
     expect(search).not.toContain('data-filter-search')
 
     const quickLinks = componentSource('UI/QuickLinks.stx')

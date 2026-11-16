@@ -205,6 +205,22 @@ describe('the shared controls', () => {
     }
   })
 
+  it('the dropdown updates its value before it reports the change', () => {
+    // A filter that reloads on `@change` read the old value otherwise.
+    const select = read('UI/Select.stx')
+    expect(select.indexOf(`emit('update:value', nextValue)`)).toBeGreaterThan(-1)
+    expect(select.indexOf(`emit('update:value', nextValue)`)).toBeLessThan(select.indexOf(`emit('change', nextValue)`))
+  })
+
+  it('the search box is the shared input, and reports only what is typed', () => {
+    const search = read('UI/SearchFilter.stx')
+    expect(search).toContain('<Input v-model:value="query" type="search"')
+    expect(search).toContain('<template #iconLeft>')
+    // Not on mount, and not the value a parent seeded: a page that reloads on
+    // `@search` does not reload as it opens.
+    expect(search).toMatch(/const value = query\(\)\s*if \(value === known\)\s*return/)
+  })
+
   it('the dropdown keeps its choice when the options come after the value', () => {
     // A picker's options arrive from a search. Without this the dropdown
     // showed its first option while the form held another.

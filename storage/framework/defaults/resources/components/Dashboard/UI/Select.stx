@@ -65,8 +65,10 @@ function optionDisabled(option: SelectOption | string | number): boolean {
 
 function handleChange(event: Event): void {
   const nextValue = (event.target as HTMLSelectElement).value
-  emit('change', nextValue)
+  // The bound value first, then the change: a handler that reloads on
+  // `@change` reads the choice just made, as it did with a native select.
   emit('update:value', nextValue)
+  emit('change', nextValue)
 }
 </script>
 

@@ -14,33 +14,43 @@
  * shows up in it instead of being invisible.
  */
 const placeholder = useReactiveProp('placeholder', 'Search...')
+// What a screen reader announces, when it is not the placeholder: a filter
+// bar names the list it searches ("Search coupons").
+const ariaLabel = useReactiveProp('ariaLabel', '')
 const requested = useReactiveProp('searchValue', '')
 const query = state(requested())
 const emit = defineEmits(['update:searchValue', 'search'])
+// What the box last showed that the parent already knows: the value it was
+// seeded with, or the last search reported. Only a change the person makes is
+// reported, so a page that reloads on `@search` does not reload as it mounts,
+// nor when it seeds the box itself.
+let known = requested()
 
 effect(() => {
-  query.set(requested())
+  const next = requested()
+  known = next
+  query.set(next)
 })
 
 effect(() => {
-  emit('update:searchValue', query())
-  emit('search', query())
+  const value = query()
+  if (value === known)
+    return
+  known = value
+  emit('update:searchValue', value)
+  emit('search', value)
 })
 </script>
 
+<!--
+  The shared input with a search icon, so a search box is the same height,
+  border and focus ring as the dropdowns beside it (stacksjs/stacks#3310).
+  The box is the root, so a caller's `class` (a width) sizes the whole field.
+-->
 <div>
-  <div class="relative rounded-md shadow-sm">
-    <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-      <span class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></span>
-    </div>
-    <input
-      type="search"
-      name="search"
-      :placeholder="placeholder()"
-      :aria-label="placeholder()"
-      x-model="query"
-      autocomplete="off"
-      class="block pl-10 pr-3 py-2.5 w-full leading-6 text-gray-900 text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
-    >
-  </div>
+  <Input v-model:value="query" type="search" name="search" :placeholder="placeholder()" :ariaLabel="ariaLabel() || placeholder()" autocomplete="off" :spellcheck="false">
+    <template #iconLeft>
+      <span aria-hidden="true" class="h-4 w-4 i-hugeicons-search-01"></span>
+    </template>
+  </Input>
 </div>
