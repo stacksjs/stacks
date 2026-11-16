@@ -3349,6 +3349,13 @@ async function runSshDeploy(args: {
   for (const record of githubDeployments)
     await setGithubDeploymentStatus(record, ok ? 'success' : 'failure')
 
+  // Tell StatusHQ what the release serves, so its checks follow the routes
+  // that are now live. Only for an app connected to it, only for production
+  // (a preview's address is not the one being watched), and never the reason
+  // a deploy fails.
+  if (ok && environment === 'production' && !onlySite)
+    await syncRoutesAfterDeploy(resolvedDeployEnv, log)
+
   console.log('')
   if (ok) {
     const liveAt = dnsAllowed
@@ -5338,6 +5345,36 @@ async function reconcileConfigDns(sites: Record<string, any>, logger: typeof log
  * comes back as `skipped` rather than throwing, because none of them is a
  * reason to fail a deployment that is otherwise fine.
  */
+/**
+ * Send the app's routes to StatusHQ once a production release is live.
+ *
+ * The key is read from the environment the release was deployed with, which
+ * is where `buddy hq:connect statushq` leaves it once it is copied to
+ * `.env.production`. An app that is not connected is passed over silently.
+ */
+export async function syncRoutesAfterDeploy(deployEnv: Record<string, string>, logger: typeof log): Promise<void> {
+  const key = deployEnv.STATUSHQ_KEY || process.env.STATUSHQ_KEY
+  if (!key)
+    return
+  try {
+    const { config } = await import('@stacksjs/config')
+    const { collectRouteManifest } = await import('../hq-routes')
+    const { runHqRouteSync } = await import('../hq')
+    const services = (config as { services?: Record<string, { url?: string }> }).services ?? {}
+    const baseUrl = deployEnv.APP_URL || String(config.app?.url || '')
+    await runHqRouteSync(
+      { ...services, statushq: { ...services.statushq, url: deployEnv.STATUSHQ_URL || services.statushq?.url || 'https://statushq.org' } } as never,
+      { name: String(deployEnv.APP_NAME || config.app?.name || 'app') },
+      { baseUrl, manifest: await collectRouteManifest() },
+      { fetch: (input, init) => fetch(input, init), print: line => logger.info(line) },
+      key,
+    )
+  }
+  catch (error) {
+    logger.warn(`StatusHQ: routes not synced (${error instanceof Error ? error.message : String(error)}). Run \`buddy hq:sync\` to try again.`)
+  }
+}
+
 /**
  * Whether this deploy found, or made, the registrar point at the declared
  * provider. The CDN step reads it to know that a zone still pending at the

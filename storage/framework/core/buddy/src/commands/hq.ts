@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
 import { defineCommand } from '@stacksjs/cli'
-import { HQ_SERVICE_NAMES, resolveHqServices, runHqConnect, runHqStatus, runSupportDoctor } from '../hq'
+import { HQ_SERVICE_NAMES, resolveHqServices, runHqConnect, runHqRouteSync, runHqStatus, runSupportDoctor } from '../hq'
 import { runSupportVerification } from '../support-verification'
 import { runSupportDocsSync, selectSupportDocuments } from '../support-documentation'
 import { runSupportImport } from '../support-import'
@@ -137,6 +137,7 @@ function connectCommand(supportOnly = false) {
           open: flags.open !== false,
           verify: flags.verify !== false,
           timeoutMs: (Number.isFinite(seconds) && seconds > 0 ? seconds : 600) * 1000,
+          routes: routeSyncInput,
         }, deps(controller.signal))
         if (result.ok && flags.messenger && resolved.services.includes('supporthq')) {
           const { projectPath, frameworkPath } = await import('@stacksjs/path')
@@ -155,6 +156,43 @@ function connectCommand(supportOnly = false) {
     },
   })
 }
+
+/** The app's address and its routes, collected for StatusHQ. */
+async function routeSyncInput(): Promise<{ baseUrl: string, manifest: Awaited<ReturnType<typeof import('../hq-routes').collectRouteManifest>> }> {
+  const { config: fullConfig } = await import('@stacksjs/config')
+  const { collectRouteManifest } = await import('../hq-routes')
+  return { baseUrl: String(fullConfig.app.url || ''), manifest: await collectRouteManifest() }
+}
+
+const sync = defineCommand({
+  name: 'hq:sync',
+  description: 'Send this app\'s routes to StatusHQ, which checks each one',
+  options: {
+    '--dry-run': { description: 'Show what would be checked and what is left out, and send nothing', default: false },
+  },
+  examples: ['buddy hq:sync', 'buddy hq:sync --dry-run'],
+  handle: async (options) => {
+    const { config, app } = await hqConfig()
+    const input = await routeSyncInput()
+    if ((options as { dryRun?: boolean }).dryRun) {
+      const { print } = deps()
+      const { summarizeRouteManifest } = await import('@stacksjs/hq/route-manifest')
+      const counts = summarizeRouteManifest(input.manifest)
+      print(`${counts.total} route check(s) for ${input.baseUrl || 'an app with no APP_URL'}: ${counts.page} page(s), ${counts.public} public, ${counts.guard} behind auth, ${counts.validation} validated.`)
+      for (const check of input.manifest.checks)
+        print(`  ${check.kind.padEnd(10)} ${check.id}  expects ${check.expect.join(' or ')}`)
+      if (input.manifest.skipped.length) {
+        print(`${input.manifest.skipped.length} left out:`)
+        for (const route of input.manifest.skipped)
+          print(`  ${route.method} ${route.path}: ${route.reason}`)
+      }
+      print('Nothing was sent.')
+      process.exit(0)
+    }
+    const ok = await runHqRouteSync(config, { name: app }, input, deps())
+    process.exit(ok ? 0 : 1)
+  },
+})
 
 const connect = connectCommand()
 const install = connectCommand(true)
@@ -245,6 +283,7 @@ const importSupport = defineCommand({
 
 export function hq(buddy: CLI): void {
   connect(buddy)
+  sync(buddy)
   status(buddy)
   install(buddy)
   doctor(buddy)

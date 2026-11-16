@@ -166,6 +166,37 @@ without failing the others.
 `buddy hq:status` prints used, limit, period and state
 for every connected service, with the upgrade link from 80% of an allowance.
 
+## StatusHQ checks an app's routes
+
+Connecting StatusHQ sends it the app's routes, and it checks them as one
+monitor. `buddy hq:connect statushq` syncs once connected, `buddy deploy`
+syncs again after a production release when `STATUSHQ_KEY` is set, and
+`buddy hq:sync` does it by hand (`--dry-run` lists every check and every route
+left out, with the reason, and sends nothing).
+
+The checks come from what the router knows (`@stacksjs/hq/route-manifest`), and
+none can change data:
+
+| Route | What is asked | Passes on |
+|---|---|---|
+| A page (`resources/views`) | `GET` | 2xx, 3xx |
+| `GET`, no path parameters | `GET` | 2xx, 3xx, 401, 403 |
+| Behind `auth`, `can`, `role`, ... | the request with no credentials | 401, 403, 3xx (419 on a write) |
+| A write whose action has a required validation | an empty JSON body | 422, 400, 419, 403, 429 |
+
+Left out: a path with parameters, a write with no validation or one an empty
+body would pass, a webhook, a `/__` framework route, and paths such as
+`logout`, `callback`, `export` and `stream`. A route says otherwise itself:
+
+```ts
+route.get('/reports/rebuild', 'Actions/RebuildAction').monitor(false)
+route.get('/posts/{id}', 'Actions/PostShowAction').monitor({ path: '/posts/1' })
+route.get('/beta', 'Actions/BetaAction').monitor({ expect: [404] })
+```
+
+`expect` never turns a write into a check that may succeed: StatusHQ refuses
+one, whatever sent it.
+
 ReportsHQ is the odd one out: it runs inside the app against the app's own
 database, so it has no ingest or read key and meters nothing. Its entry is
 `services.reportshq` with a `license` from `REPORTSHQ_LICENSE`, which

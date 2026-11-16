@@ -1,6 +1,8 @@
 import type { HqUnavailable } from '@stacksjs/hq/client'
 import type { HqServiceName, HqServicesConfig } from '@stacksjs/types'
+import type { RouteManifest } from '@stacksjs/hq/route-manifest'
 import { createHqClient } from '@stacksjs/hq/client'
+import { describeRouteSync, syncRoutes } from './hq-routes'
 
 /**
  * What `buddy hq:connect` and `buddy hq:status` do, kept apart from the
@@ -89,6 +91,19 @@ export interface HqConnectOptions {
   pollIntervalMs?: number
   /** How many times, a second apart, to look for a test record before calling the read a failure. */
   readAttempts?: number
+  /**
+   * The app's routes, for StatusHQ to check once it is connected. Asked for
+   * only when StatusHQ connects, as collecting them loads the whole router.
+   * Left out, a connect to StatusHQ sends no routes.
+   */
+  routes?: () => Promise<RouteSyncInput>
+}
+
+/** What a route sync is told about the app. */
+export interface RouteSyncInput {
+  /** Where the app is served: its APP_URL. */
+  baseUrl: string
+  manifest: RouteManifest
 }
 
 export type HqConnectStatus
@@ -474,6 +489,21 @@ export async function runHqConnect(services: HqServiceName[], config: HqServices
     if (grant.dashboardUrl)
       deps.print(`  Dashboard: ${grant.dashboardUrl}`)
 
+    // StatusHQ has nothing to watch until it is told the app's routes, so a
+    // connect sends them straight away. A sync that fails is said and is not
+    // the connect failing: the keys are written, and `buddy hq:sync` retries.
+    if (service === 'statushq' && options.routes && grant.ingestKey) {
+      try {
+        const input = await options.routes()
+        const synced = await syncRoutes({ url, key: grant.ingestKey }, { name: options.app, baseUrl: input.baseUrl }, input.manifest, deps)
+        for (const line of describeRouteSync(input.manifest, synced))
+          deps.print(line.replace(/^StatusHQ: /, '  '))
+      }
+      catch (error) {
+        deps.print(`  Routes not synced (${error instanceof Error ? error.message : 'the routes could not be read'}). Run \`buddy hq:sync\` to try again.`)
+      }
+    }
+
     if (options.verify === false) {
       outcomes.push(outcome)
       continue
@@ -640,4 +670,22 @@ export async function runSupportDoctor(config: HqServicesConfig, deps: Pick<HqCl
   for (const check of checks)
     deps.print(`HQ.support ${check.name}: ${check.ok ? 'pass' : 'fail'} (${check.detail})`)
   return { ok: checks.every(check => check.ok), checks }
+}
+
+/**
+ * Send the app's routes to StatusHQ with the key it is already connected by.
+ * `buddy hq:sync` and the tail of `buddy deploy`. Answers whether it synced;
+ * never throws.
+ */
+export async function runHqRouteSync(
+  config: HqServicesConfig,
+  app: { name: string },
+  input: RouteSyncInput,
+  deps: Pick<HqCliDeps, 'fetch' | 'print'>,
+  key: string | undefined = config.statushq?.key,
+): Promise<boolean> {
+  const outcome = await syncRoutes({ url: config.statushq?.url ?? '', key: key ?? '' }, { name: app.name, baseUrl: input.baseUrl }, input.manifest, deps)
+  for (const line of describeRouteSync(input.manifest, outcome))
+    deps.print(line)
+  return outcome.ok
 }

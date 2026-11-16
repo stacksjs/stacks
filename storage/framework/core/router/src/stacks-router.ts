@@ -610,6 +610,30 @@ export interface ChainableRoute {
    * windows.
    */
   rateLimit: (max: number, window: 'second' | 'minute' | 'hour' | 'day' | number) => ChainableRoute
+  /**
+   * Say how an uptime monitor may check this route, or that it may not.
+   *
+   * `buddy hq:sync` works out a check for most routes from what the router
+   * already knows (see `@stacksjs/hq/route-manifest`). This is the route's own
+   * word where that is wrong or not enough. It changes nothing about how the
+   * route is served.
+   *
+   * @example
+   * ```ts
+   * route.get('/reports/rebuild', 'Actions/RebuildAction').monitor(false)
+   * route.get('/posts/{id}', 'Actions/PostShowAction').monitor({ path: '/posts/1' })
+   * route.get('/beta', 'Actions/BetaAction').monitor({ expect: [404] })
+   * ```
+   */
+  monitor: (option: RouteMonitorOption) => ChainableRoute
+}
+
+/** A route's own say in how it is monitored. `false` leaves it alone. */
+export type RouteMonitorOption = false | {
+  /** Statuses to accept: a code (`404`) or a class (`'2xx'`). */
+  expect?: Array<number | string>
+  /** The path to request, for a route with parameters. */
+  path?: string
 }
 
 const CSRF_DEFAULT = 0
@@ -641,6 +665,7 @@ interface RouteRuntimeState {
   middleware?: string[]
   csrfMode: RouteCsrfMode
   rateLimit?: RouteRateLimitConfig
+  monitor?: RouteMonitorOption
 }
 const routeStateRegistries = new Set<Map<string, RouteRuntimeState>>()
 const clearedRouteKeysByRegistry = new WeakMap<Map<string, RouteRuntimeState>, Set<string>>()
@@ -1212,7 +1237,7 @@ export function listRedirectRoutes(): RedirectRoute[] {
  * taking no input at all. The registry has known the real answer the whole
  * time; it was simply not being reported.
  */
-export function listRegisteredRoutes(): Array<{ method: string, path: string, name?: string, handler?: string, action?: RouterAction, middleware?: string[] }> {
+export function listRegisteredRoutes(): Array<{ method: string, path: string, name?: string, handler?: string, action?: RouterAction, middleware?: string[], monitor?: RouteMonitorOption }> {
   // Index once per snapshot, preserving the first alias in insertion order.
   // Rebuild on every call so assigning an existing name to a new path is live.
   const namesByPath = namedRouteRegistry ? new Map<string, string>() : undefined
@@ -1222,7 +1247,7 @@ export function listRegisteredRoutes(): Array<{ method: string, path: string, na
         namesByPath.set(named.path, name)
     }
   }
-  const out: Array<{ method: string, path: string, name?: string, handler?: string, action?: RouterAction, middleware?: string[] }> = []
+  const out: Array<{ method: string, path: string, name?: string, handler?: string, action?: RouterAction, middleware?: string[], monitor?: RouteMonitorOption }> = []
   // Route-state keys look like 'METHOD:/path'. We intentionally walk them
   // (not bunRouter.routes) so this works before serve() is called.
   const seen = new Set<string>()
@@ -1245,6 +1270,8 @@ export function listRegisteredRoutes(): Array<{ method: string, path: string, na
         // to be checked against: whether a route ended up with `auth` is not
         // visible from its path (stacksjs/stacks#1955 follow-up).
         middleware: registry.get(key)?.middleware,
+        // The route's own word on how it may be monitored (`.monitor()`).
+        monitor: registry.get(key)?.monitor,
       })
     }
   }
@@ -2866,6 +2893,7 @@ function createInertRoute(): ChainableRoute {
     skipCsrf: () => inert,
     requireCsrf: () => inert,
     rateLimit: () => inert,
+    monitor: () => inert,
   }
 
   return inert
@@ -2949,6 +2977,18 @@ function createChainableRoute(routeStates: Map<string, RouteRuntimeState>, route
       const windowSeconds = rateLimitWindowToSeconds(window)
       for (const state of states)
         state.rateLimit = { max: Math.floor(max), windowSeconds }
+      return chain
+    },
+
+    monitor(option) {
+      // Checked at registration, like the options above: a typo should fail
+      // the boot, not be found by a monitor that silently checks the default.
+      if (option !== false && (typeof option !== 'object' || option === null))
+        throw new TypeError(`[Router] .monitor() on ${routeKey} takes false or an object with expect and path`)
+      if (option !== false && option.path !== undefined && (typeof option.path !== 'string' || !option.path.startsWith('/')))
+        throw new TypeError(`[Router] .monitor() on ${routeKey}: path must start with a slash`)
+      for (const state of states)
+        state.monitor = option
       return chain
     },
   }

@@ -72,7 +72,7 @@ export type { UrlParams } from './stacks-router'
 export { isRouterAction, provideActions, provideMiddleware, resolveActionHandler, resolveActionValidations, wrapAction } from './stacks-router'
 export { withRouteAdmission } from './stacks-router'
 export type { RouteAdmission, WithheldRoute } from './stacks-router'
-export type { ChainableRoute, RedirectRoute, RedirectStatus, RouterAction, StacksHandler, StacksRouterInstance } from './stacks-router'
+export type { ChainableRoute, RedirectRoute, RedirectStatus, RouteMonitorOption, RouterAction, StacksHandler, StacksRouterInstance } from './stacks-router'
 
 /*
  * Typed routes, bound to this application's router.

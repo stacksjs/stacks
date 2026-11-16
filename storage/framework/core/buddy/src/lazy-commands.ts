@@ -127,6 +127,7 @@ const commandRegistry: Record<string, CommandLoader> = {
   'support:install': { path: './commands/hq.ts', load: () => import('./commands/hq.ts'), exportName: 'hq' },
   'support:doctor': { path: './commands/hq.ts', load: () => import('./commands/hq.ts'), exportName: 'hq' },
   'hq:status': { path: './commands/hq.ts', load: () => import('./commands/hq.ts'), exportName: 'hq' },
+  'hq:sync': { path: './commands/hq.ts', load: () => import('./commands/hq.ts'), exportName: 'hq' },
   'http': { path: './commands/http.ts', load: () => import('./commands/http.ts'), exportName: 'http' },
   'install': { path: './commands/install.ts', load: () => import('./commands/install.ts'), exportName: 'install' },
   'key': { path: './commands/key.ts', load: () => import('./commands/key.ts'), exportName: 'key' },

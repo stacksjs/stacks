@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **399 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **400 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -40,7 +40,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `gdpr` | 5 |
 | `general` | 52 |
 | `generate` | 18 |
-| `hq` | 2 |
+| `hq` | 3 |
 | `inspire` | 1 |
 | `integrations` | 1 |
 | `key` | 1 |
@@ -2989,6 +2989,26 @@ Examples:
 
 ```bash
 buddy hq:status
+```
+
+### `hq:sync`
+
+Send this app's routes to StatusHQ, which checks each one
+
+- Usage: `$ buddy hq:sync`
+- Namespace: `hq`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--dry-run` | Show what would be checked and what is left out, and send nothing | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy hq:sync
+buddy hq:sync --dry-run
 ```
 
 ### `http`

@@ -489,3 +489,69 @@ it('native support doctor checks the approved origin and immutable widget withou
   expect((await runSupportDoctor(config, h.deps, { origin: 'https://unapproved.example' })).ok).toBe(false)
   expectNoKeyPrinted(h.output(), service)
 })
+
+describe('buddy hq:connect statushq', () => {
+  const manifest = {
+    version: 1 as const,
+    checks: [{ id: 'GET /', method: 'GET', path: '/', kind: 'page' as const, expect: ['2xx', '3xx'] }],
+    skipped: [],
+  }
+
+  it('sends the app\'s routes with the key it was just given', async () => {
+    const statushq = createFakeHqService({ service: 'statushq', approveOnPoll: 1 })
+    const synced: Array<{ key: string | null, body: any }> = []
+    const base = fakeHqFetch(statushq)
+    const h = harness([statushq], {
+      fetch: (async (input: string, init?: RequestInit) => {
+        if (String(input).endsWith('/api/v1/routes/sync')) {
+          synced.push({ key: new Headers(init?.headers).get('authorization'), body: JSON.parse(String(init?.body)) })
+          return new Response(JSON.stringify({
+            monitor: { id: 9, name: 'my-app routes', intervalSeconds: 300 },
+            checks: { total: 1, added: 1, changed: 0, removed: 0, unchanged: 0 },
+            notMonitored: [],
+          }), { status: 200, headers: { 'content-type': 'application/json' } })
+        }
+        return base(input, init)
+      }) as HqCliDeps['fetch'],
+    })
+
+    let asked = 0
+    const result = await runHqConnect(['statushq'], configFor(statushq), {
+      ...OPTIONS,
+      verify: false,
+      routes: async () => {
+        asked++
+        return { baseUrl: 'https://my-app.example', manifest }
+      },
+    }, h.deps)
+
+    expect(result.outcomes[0]).toMatchObject({ service: 'statushq', status: 'connected' })
+    expect(asked).toBe(1)
+    expect(synced).toHaveLength(1)
+    expect(synced[0]!.key).toBe(`Bearer ${statushq.grants()[0]!.ingestKey}`)
+    expect(synced[0]!.body).toEqual({ app: 'my-app', baseUrl: 'https://my-app.example', manifest })
+    expect(h.output()).toContain('checking 1 route(s) as "my-app routes", every 5 min.')
+    expectNoKeyPrinted(h.output(), statushq)
+  })
+
+  it('stays connected when the routes cannot be sent, and says how to retry', async () => {
+    const statushq = createFakeHqService({ service: 'statushq', approveOnPoll: 1 })
+    const h = harness([statushq])
+    const result = await runHqConnect(['statushq'], configFor(statushq), {
+      ...OPTIONS,
+      verify: false,
+      routes: async () => { throw new Error('the routes could not be loaded') },
+    }, h.deps)
+    expect(result.outcomes[0]).toMatchObject({ status: 'connected' })
+    expect(h.env.STATUSHQ_KEY).toBe(statushq.grants()[0]!.ingestKey)
+    expect(h.output()).toContain('Routes not synced (the routes could not be loaded). Run `buddy hq:sync` to try again.')
+  })
+
+  it('does not collect routes for any other service', async () => {
+    const loghq = createFakeHqService({ service: 'loghq', approveOnPoll: 1 })
+    const h = harness([loghq])
+    let asked = 0
+    await runHqConnect(['loghq'], configFor(loghq), { ...OPTIONS, verify: false, routes: async () => { asked++; return { baseUrl: 'https://x.example', manifest } } }, h.deps)
+    expect(asked).toBe(0)
+  })
+})
