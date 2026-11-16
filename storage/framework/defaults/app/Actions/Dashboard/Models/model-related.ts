@@ -11,9 +11,8 @@
  * also where they are managed: it carries that model's form fields and each
  * listed row's values, so a row is added, edited and deleted from this page.
  * Each of those is a write of its own through the related model's own
- * endpoints. Saving a record and its rows together, all or nothing, is not
- * offered: a write through a model takes no part in a transaction
- * (stacksjs/stacks#3269).
+ * endpoints, so a row saved stays saved when the next one is refused. A form
+ * that saves a record and its rows together, all or nothing, is not offered.
  */
 import type { ModelHasRelation } from './model-relations'
 import { safeGet } from '../../../../resources/functions/dashboard/data'

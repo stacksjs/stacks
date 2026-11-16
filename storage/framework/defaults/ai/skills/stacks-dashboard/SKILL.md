@@ -1319,12 +1319,11 @@ pages use (`POST`, `PATCH` and `DELETE /api/dashboard/models/{slug}`), so
 casts, observers, validation and soft deletes apply and nothing new is
 opened. The panels are read again afterwards.
 
-There is no form that saves a record and its rows together, all or nothing.
-A write made through a model takes no part in `transaction()`
-(stacksjs/stacks#3269), so a combined save could leave the record changed
-and a row not. Until the model layer joins a transaction, an operation that
-must be atomic across models belongs in an action that writes through the
-transaction's own handle.
+There is no form that saves a record and its rows together, all or nothing:
+each row saved here stays saved when the next is refused. An operation that
+must be atomic across models belongs in an action that makes its model
+writes inside `transaction()`, where they roll back together
+(stacksjs/stacks#3269).
 
 The link between the two models is the foreign key the declaration names,
 else the related model's own `belongsTo`, else the conventional
@@ -1474,9 +1473,8 @@ applies to each record (`when`, `authorize`, `validations`, the self-delete
 guard, anonymizing a user others refer to), and the page shows how far it
 has got.
 
-It is not all or nothing, and does not claim to be: a write through a model
-takes no part in a transaction (stacksjs/stacks#3269). The toast says what
-happened: how many were done and, for the rest, which and why ("Order 8:
+It is not all or nothing, and does not claim to be: one record refused does
+not take back the others. The toast says what happened: how many were done and, for the rest, which and why ("Order 8:
 Already shipped."). A refusal about the record (any 4xx) goes on to the
 next. A failure that is not (a 5xx, no answer at all) stops the run and says
 where, so a broken backend is not pressed once per row.

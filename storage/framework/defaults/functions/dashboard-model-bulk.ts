@@ -5,9 +5,9 @@
  * A selection is acted on one record at a time, each through the endpoint a
  * single row uses, so every guard a single press has applies to each record
  * and nothing about an action changes for it. It is not all or nothing and
- * does not claim to be (a write through a model takes no part in a
- * transaction, stacksjs/stacks#3269): what is reported is what happened, how
- * many were done and, for the rest, which and why.
+ * does not claim to be: one record refused does not take back the others.
+ * What is reported is what happened, how many were done and, for the rest,
+ * which and why.
  */
 import { DashboardApiError } from './dashboard-api'
 import type { ModelActionResult, ModelCustomAction, ModelDeleteOutcome } from './dashboard-model-record'

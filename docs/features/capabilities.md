@@ -53,7 +53,7 @@ is a driver you cannot select.
 - **`turso`** - SQLite SQL over Hrana HTTP: each statement outside a transaction is one request, and a transaction holds one server stream for its duration.
 - **`turso`** - sqld refuses VACUUM, ATTACH, temporary tables and every PRAGMA except the read-only ones and foreign_keys.
 - **`turso`** - Embedded replicas are not supported; the connection is always remote.
-- **`turso`** - Inside transaction(), write through the tx handle: model writes use their own connection, as on PostgreSQL and MySQL, and wait while the transaction holds the write lock.
+- **`turso`** - Model writes inside transaction() have not been measured on libSQL: on SQLite, PostgreSQL and MySQL they are part of the transaction (stacksjs/stacks#3269), but here write through the tx handle until a live sqld test shows the same.
 - **`turso`** - Scheduler onOneServer() locks stay per-host, as they are on SQLite.
 - **`turso`** - `buddy db:backup` does not dump a Turso database; rely on Turso's own point-in-time restore.
 - **`dynamodb`** - DynamoDB helpers are not an ORM SQL driver and cannot be selected as database.default.

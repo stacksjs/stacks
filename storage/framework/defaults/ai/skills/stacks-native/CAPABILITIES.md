@@ -115,7 +115,7 @@ Limitations:
 - SQLite SQL over Hrana HTTP: each statement outside a transaction is one request, and a transaction holds one server stream for its duration.
 - sqld refuses VACUUM, ATTACH, temporary tables and every PRAGMA except the read-only ones and foreign_keys.
 - Embedded replicas are not supported; the connection is always remote.
-- Inside transaction(), write through the tx handle: model writes use their own connection, as on PostgreSQL and MySQL, and wait while the transaction holds the write lock.
+- Model writes inside transaction() have not been measured on libSQL: on SQLite, PostgreSQL and MySQL they are part of the transaction (stacksjs/stacks#3269), but here write through the tx handle until a live sqld test shows the same.
 - Scheduler onOneServer() locks stay per-host, as they are on SQLite.
 - `buddy db:backup` does not dump a Turso database; rely on Turso's own point-in-time restore.
 

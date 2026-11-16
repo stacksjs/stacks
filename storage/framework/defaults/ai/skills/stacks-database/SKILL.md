@@ -334,7 +334,8 @@ SQLite's SQL on a Turso or `sqld` server. Configure `TURSO_DATABASE_URL`
   `stacks_migration_lock` (`acquireLibsqlMigrationLock`), since migrating hosts share no filesystem.
 - libSQL rejects SQLite's double-quoted-string fallback, so a statement naming a missing column fails
   instead of storing the column name as text. `tests/corpus-rebuild-sources.test.ts` guards the corpus.
-- Inside `transaction()`, write through the `tx` handle; model writes use their own connection.
+- Inside `transaction()`, write through the `tx` handle: a model write made from the callback is part of
+  the transaction on SQLite, PostgreSQL and MySQL (stacksjs/stacks#3269), but that is not measured on libSQL.
 
 ## config/database.ts Shape
 ```typescript
@@ -413,7 +414,8 @@ are experimental with explicit service/topology limits. DynamoDB helpers are a
 separate entity API and cannot be selected as the SQL/ORM default.
 
 Turso's libsql alias shares SQLite rendering, but uses remote Hrana transport.
-Transactions must write through the tx handle; no embedded replicas or native
+Transactions write through the tx handle (model writes inside one are not
+measured on libSQL); no embedded replicas or native
 file backup are provided. Scheduler locks remain per host. Read the registry's
 provider versions and retained evidence rather than equating an available adapter
 with an unrestricted supported service.
