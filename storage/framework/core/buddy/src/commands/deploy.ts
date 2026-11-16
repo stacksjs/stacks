@@ -3353,8 +3353,18 @@ async function runSshDeploy(args: {
       await cleanupDetachedMailHealth(ip, log)
     // Publish the domain's mail DNS (MX/SPF/DKIM/DMARC) so the mailboxes can
     // actually send + receive. Best-effort, same as the tenant reconcile.
-    if (mailRes)
+    if (mailRes) {
       await reconcileMailDns(mailRes, mailIp!, log)
+      // A first deploy asks for the certificate of mail.<domain> before that
+      // name exists: the record is published just above. Ask again now that
+      // it does, so the app can reach its own mail host after one deploy
+      // rather than two. The reconcile is idempotent; only the certificate
+      // is left for it to do.
+      if (mailRes.certificateFailed) {
+        log.info(`Mail: mail.${mailRes.domain} is published now; asking for its certificate again`)
+        await provisionMailTenant(mailIp!, log)
+      }
+    }
   }
 
   // Close out every GitHub Deployment we opened (before the failure branch's
@@ -3549,6 +3559,8 @@ export function resolveMailboxRecoveries(mailboxes: unknown, domain: string): { 
 /** What a mail-tenant reconcile resolved + provisioned, for the DNS step. */
 export interface MailTenantResult {
   domain: string
+  /** The certificate for `mail.<domain>` was asked for and not issued. */
+  certificateFailed?: boolean
   /** The mail server's own hostname (SMTP_HOSTNAME) — the MX target. */
   mailHost: string
   /**
@@ -4578,7 +4590,7 @@ if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo
       logger.success(`Mail: migrated ${migratedAddrs.size} legacy mailbox username(s) to isolated full addresses`)
     reportRecoveryReconcile(logger, out, recoveries)
 
-    return domain ? { domain, mailHost, dkimPubB64, dkimSelector, created } : null
+    return domain ? { domain, mailHost, dkimPubB64, dkimSelector, created, certificateFailed: Boolean(certError) } : null
   }
   catch (err) {
     // Never fail a release on a mail-reconcile hiccup — it's additive config.
