@@ -635,6 +635,48 @@ this save only ("Clear stored password"), an acknowledgement, and "remember
 me" or the terms on the sign-in forms. `tests/unit/dashboard-switch-contract.test.ts`
 lists every one by file with its reason and fails on any other.
 
+### A dialog asks with the shared controls
+
+A hand-built dialog asks for a value with `Dashboard/UI/Input.stx`,
+`Select.stx` and `Textarea.stx`, as a model's form does, never with a native
+`<input>`, `<select>` or `<textarea>` and a copy of their classes
+(stacksjs/stacks#3310). The commerce dialogs are all converted;
+`tests/unit/dashboard-form-controls.test.ts` fails if one writes its own again.
+
+```html
+<Input v-model:value="name" label="Name" :maxLength="50" :required="true" />
+<Input v-model:value="price" :label="'Price (' + currency() + ')'" type="number" min="0" :step="moneyInputStep(currency())" inputmode="decimal" :required="true" :error="price() !== '' ? priceError() : ''" />
+<Select v-model:value="parentCategoryId" label="Parent category" placeholder="" :options="[{ value: '', label: 'Root category' }, ...parentOptions().map(option => ({ value: option.id, label: option.name }))]" />
+<Textarea v-model:value="notes" label="Notes" :rows="3" :maxLength="500" />
+```
+
+- **Input** takes what the browser holds a value to: `min`, `max`, `step`,
+  `maxLength`, `minLength`, `inputmode`, `:spellcheck="false"`, `list` (the id
+  of a `<datalist>` kept beside it), plus `monospace` for a code, a key or a
+  slug and `class` for what is added to the input itself (`uppercase`). A
+  number input gets digits of one width without being asked.
+- **Select** takes its choices as `:options`, each `{ value, label }`. A choice
+  that may be left empty is one of the options and `placeholder=""`; a choice
+  that must be made keeps a `placeholder`, which is shown and cannot be
+  chosen. It keeps its choice when the options arrive after the value, which a
+  search-then-pick field does every time.
+- **A hint and an error are props.** `hint` is the sentence under the field;
+  `error` takes its place and marks the field. Both can follow what is typed
+  (`:hint`, `:error`).
+- **The input reports text.** There is no `.number` or `.trim`: make a value a
+  number, or trim it, where it is checked and where it is sent. `@input`,
+  `@change` and `@blur` hand the handler the value, not the event.
+- **Do not name a field as the Modal names its own.** A prop bound inside a
+  `Modal`'s slot is first read in the Modal's own script, so a field called
+  `description` opened showing the dialog's description text. The Modal's
+  names are its props: `title`, `description`, `size`, `position`, `role` and
+  the rest. Call the field `descriptionText`, `reviewTitle`. The test reads
+  the Modal's props and fails on a collision.
+- **Give it a box of its own inside a `space-y-*` stack**, as a switch needs.
+
+Not converted yet: the filter bars on the list pages (a search box and a row
+of dropdowns), and the dialogs outside commerce.
+
 ### Sidebar-aware overlays
 
 The desktop sidebar is fixed and publishes its current width through

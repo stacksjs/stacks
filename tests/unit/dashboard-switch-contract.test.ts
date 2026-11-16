@@ -82,13 +82,14 @@ describe('dashboard switch contract', () => {
     expect(total).toBe(32)
   })
 
-  it('a switch in a spaced stack sits in a box of its own', () => {
+  it('a shared control in a spaced stack sits in a box of its own', () => {
     // `space-y-*` puts its margin on a component's scope wrapper, which makes
-    // no box, so a switch that is a direct child of one loses its spacing.
+    // no box, so a switch or an input that is a direct child of one loses its
+    // spacing.
     for (const file of components) {
       const lines = source(file).split('\n')
       lines.forEach((line, index) => {
-        if (!/^\s*<Toggle\b/.test(line))
+        if (!/^\s*<(?:Toggle|Input|Select|Textarea)\b/.test(line))
           return
         const indent = line.search(/\S/)
         // The nearest line above that is less indented opens the parent.
