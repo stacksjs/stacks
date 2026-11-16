@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.610...v0.75.611)
+
+## 🐛 Bug Fixes
+
+- **config**: list the CommsHQ mail driver in the capability registry ([cc7cd24](https://github.com/stacksjs/stacks/commit/cc7cd24)) _(by Chris Breuer)_
+- **queue**: claim a dispatch key without raising a duplicate as a database error ([64c5971](https://github.com/stacksjs/stacks/commit/64c5971)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **capabilities**: the capabilities page lists the CommsHQ mail driver ([8153d8e](https://github.com/stacksjs/stacks/commit/8153d8e)) _(by Chris Breuer)_
+
+## Contributors
+
+- _Chris Breuer_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.609...v0.75.610)
 
 ## ✨ Features
