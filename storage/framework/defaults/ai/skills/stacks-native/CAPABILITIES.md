@@ -489,6 +489,25 @@ Retained evidence:
 
 - [storage/framework/core/email/tests/driver-credentials.test.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/email/tests/driver-credentials.test.ts)
 
+## mail: commshq
+
+Status: **partial**. Topology: managed-service.
+
+Implementation: [storage/framework/core/email/src/drivers/commshq.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/email/src/drivers/commshq.ts).
+
+Prerequisites:
+
+- COMMSHQ_KEY, written by `buddy hq:connect commshq`
+
+Limitations:
+
+- CI validates the request against a stand-in for CommsHQ without a live delivery assertion.
+- Attachments are refused: use the smtp driver for a message that carries one.
+
+Retained evidence:
+
+- [storage/framework/core/email/tests/commshq-driver.test.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/email/tests/commshq-driver.test.ts)
+
 ## realtime: websocket
 
 Status: **supported**. Topology: single-process-websocket.
