@@ -19,6 +19,7 @@ import {
  */
 const actions = '../../storage/framework/defaults/app/Actions/Dashboard/Models'
 const { default: ModelDestroyAction } = await import(`${actions}/ModelDestroyAction`)
+const { default: ModelStoreAction } = await import(`${actions}/ModelStoreAction`)
 const { default: ModelUpdateAction } = await import(`${actions}/ModelUpdateAction`)
 
 function source(path: string): string {
@@ -31,7 +32,7 @@ interface Fake {
 }
 
 /** A model as the dashboard resolves one: the global the ORM would inject. */
-function fakeModel(definition: Record<string, unknown>, behaviour: { onDelete?: () => void, onUpdate?: () => void } = {}): Fake & Record<string, unknown> {
+function fakeModel(definition: Record<string, unknown>, behaviour: { onCreate?: () => void, onDelete?: () => void, onUpdate?: () => void } = {}): Fake & Record<string, unknown> {
   const calls: Fake = { deleted: [], updated: [] }
   return {
     ...definition,
@@ -49,6 +50,10 @@ function fakeModel(definition: Record<string, unknown>, behaviour: { onDelete?: 
     update: async (id: number, changes: Record<string, unknown>) => {
       behaviour.onUpdate?.()
       calls.updated.push({ id, changes })
+    },
+    create: async (values: Record<string, unknown>) => {
+      behaviour.onCreate?.()
+      return { id: 1, ...values }
     },
   }
 }
@@ -159,6 +164,42 @@ describe('refusals a person can act on', () => {
     expect(result.status).toBe(500)
     expect(duplicateFieldErrors(account, ['name'])).toEqual({})
     expect(duplicateFieldErrors(account, ['name', 'email'])).toEqual({ email: ['Email is already in use.'] })
+  })
+
+  it('names a pair a unique index covers, from the index or columns the driver names', () => {
+    // A team member's (team, user): no one field is in use, the pair is.
+    // Adding a team a user already belonged to said only "could not be
+    // created" (found by the dashboard's end-to-end tests, #3319).
+    const Membership = {
+      name: 'Membership',
+      belongsTo: ['Team', 'User'],
+      indexes: [{ name: 'memberships_team_user_unique', columns: ['team_id', 'user_id'], unique: true }],
+      attributes: { teamId: { fillable: true }, userId: { fillable: true }, role: { fillable: true } },
+    }
+    const expected = { teamId: ['That team and user combination is already in use.'] }
+    const postgres = Object.assign(new Error('duplicate key value violates unique constraint "memberships_team_user_unique"'), {
+      code: 'ERR_POSTGRES_SERVER_ERROR',
+      errno: '23505',
+      detail: 'Key (team_id, user_id)=(1, 10) already exists.',
+    })
+    expect(duplicateFieldErrors(Membership, ['team_id', 'user_id', 'role'], postgres)).toEqual(expected)
+    const sqlite = Object.assign(new Error('UNIQUE constraint failed: memberships.team_id, memberships.user_id'), { code: 'SQLITE_CONSTRAINT_UNIQUE' })
+    expect(duplicateFieldErrors(Membership, ['team_id', 'user_id', 'role'], sqlite)).toEqual(expected)
+    // An index the write did not cover, or a duplicate the driver does not
+    // pin on it, is not claimed.
+    expect(duplicateFieldErrors(Membership, ['team_id', 'role'], postgres)).toEqual({})
+    expect(duplicateFieldErrors(Membership, ['team_id', 'user_id'], new Error('duplicate key value violates unique constraint "memberships_uuid_unique"'))).toEqual({})
+  })
+
+  it('names the field when a new row repeats a value another row holds', async () => {
+    const subscriber = { name: 'Member', table: 'members', traits: { useApi: true }, attributes: { name: { fillable: true }, email: { fillable: true, unique: true } } }
+    globals.Member = fakeModel(subscriber, {
+      onCreate: () => {
+        throw Object.assign(new Error('UNIQUE constraint failed: members.email'), { code: 'SQLITE_CONSTRAINT_UNIQUE' })
+      },
+    })
+    const result = await answer(await ModelStoreAction.handle(request({ slug: 'member' }, { fields: { name: 'Ada', email: 'ada@example.com' } })))
+    expect(result).toEqual({ status: 422, body: { message: 'Validation failed.', errors: { email: ['Email is already in use.'] } } })
   })
 
   it('never writes a password from the edit form', async () => {

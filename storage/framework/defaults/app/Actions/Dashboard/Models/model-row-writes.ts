@@ -44,16 +44,17 @@ function failed(cause: unknown, message: string, where: string): RowRefusal {
 }
 
 /** The refusals a person can act on, read out of an error a write threw. */
-function fieldRefusal(resolved: ResolvedModel, error: unknown, columns: string[], unique: boolean): RowRefusal | null {
+function fieldRefusal(resolved: ResolvedModel, error: unknown, columns: string[]): RowRefusal | null {
   // The model's own rules rejected the row: the caller's mistake, named
   // field by field, not a server failure (stacksjs/stacks#3007).
   if (error instanceof ModelValidationError)
     return refused(422, 'Validation failed.', error.errors)
-  // A value another row already holds, on a field the model marks unique
-  // (a user's email). The person can fix that, so it is named on the field
-  // like any other rule, not reported as a failed save.
-  if (unique && isUniqueViolation(error)) {
-    const errors = duplicateFieldErrors(resolved.Model, columns)
+  // A value another row already holds, on a field the model marks unique (a
+  // user's email) or a pair a unique index covers (a team member's team and
+  // user), whether the row is new or edited. The person can fix that, so it
+  // is named on the field like any other rule, not reported as a failed save.
+  if (isUniqueViolation(error)) {
+    const errors = duplicateFieldErrors(resolved.Model, columns, error)
     if (Object.keys(errors).length > 0)
       return refused(422, 'Validation failed.', errors)
   }
@@ -89,7 +90,7 @@ export async function storeModelRow(resolved: ResolvedModel, body: Record<string
     return { ok: true, id: row?.id ?? row?.attributes?.id ?? null }
   }
   catch (error) {
-    return fieldRefusal(resolved, error, Object.keys(values), false)
+    return fieldRefusal(resolved, error, Object.keys(values))
       ?? failed(error, 'The model record could not be created.', 'ModelStoreAction')
   }
 }
@@ -124,7 +125,7 @@ export async function updateModelRow(resolved: ResolvedModel, id: number, body: 
     return { ok: true, id, changed: [...Object.keys(changes), ...turning.map(request => request.switch.column)] }
   }
   catch (error) {
-    return fieldRefusal(resolved, error, Object.keys(changes), true)
+    return fieldRefusal(resolved, error, Object.keys(changes))
       ?? failed(error, 'The model record could not be updated.', 'ModelUpdateAction')
   }
 }
