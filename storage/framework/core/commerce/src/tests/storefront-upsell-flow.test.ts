@@ -14,6 +14,7 @@ const defaults = '../../../../defaults/app'
 const PlaceOrderAction = (await import(`${defaults}/Actions/Storefront/PlaceOrderAction`)).default
 const AcceptOrderOfferAction = (await import(`${defaults}/Actions/Storefront/AcceptOrderOfferAction`)).default
 const DeclineOrderOfferAction = (await import(`${defaults}/Actions/Storefront/DeclineOrderOfferAction`)).default
+const ApplyDiscountCodeAction = (await import(`${defaults}/Actions/Storefront/ApplyDiscountCodeAction`)).default
 const { orderForKey } = await import(`${defaults}/Storefront/OrderKey`)
 
 beforeEach(async () => {
@@ -105,5 +106,45 @@ describe('storefront checkout with an automatic discount and a post-purchase off
     const declined = await DeclineOrderOfferAction.handle(request({ order_id: placed.order_id, key: placed.key, offer_id: s.offer }))
     expect(declined).toMatchObject({ ok: true, declined: 1 })
     expect(await upsells.eligibleOffers(placed.order_id)).toEqual([])
+  })
+
+  it('applies a discount code from the cart, explains a bad one, and re-checks it at placement', async () => {
+    await seedCart(2)
+    await insert('discounts', { title: 'Welcome', code: 'WELCOME10', type: 'percentage', value: 10, is_active: true, usage_count: 0, usage_limit: 1 })
+    const cookies = { stacks_cart: 'cart-token-1' }
+
+    const unknown = await ApplyDiscountCodeAction.handle(request({ code: 'NOPE' }, cookies)) as Response
+    expect(unknown.status).toBe(422)
+    expect(await unknown.json()).toMatchObject({ errors: { code: ['That discount code does not exist.'] } })
+
+    const applied = await ApplyDiscountCodeAction.handle(request({ code: 'welcome10' }, cookies))
+    expect(applied).toMatchObject({ ok: true, code: 'WELCOME10', discount: 500 })
+    expect(ApplyDiscountCodeAction.notice(applied)).toBe('Discount code WELCOME10 applied.')
+    expect((await db.selectFrom('carts' as any).selectAll().executeTakeFirst() as any).discount_code).toBe('WELCOME10')
+
+    // Used up by someone else before this shopper places the order.
+    await db.updateTable('discounts' as any).set({ usage_count: 1 } as any).where('code', '=', 'WELCOME10').execute()
+    const stale = await PlaceOrderAction.handle(request({}, cookies)) as Response
+    expect(stale.status).toBe(409)
+    expect((await db.selectFrom('carts' as any).selectAll().executeTakeFirst() as any).discount_code).toBeNull()
+
+    // Without it, the order goes through at the price now shown.
+    const placed = await PlaceOrderAction.handle(request({}, cookies))
+    expect(placed).toMatchObject({ ok: true, subtotal: 5000, discount: 0 })
+  })
+
+  it('charges the code\'s price when it still applies, and counts the use', async () => {
+    await seedCart(2)
+    await insert('discounts', { title: 'Welcome', code: 'WELCOME10', type: 'percentage', value: 10, is_active: true, usage_count: 0 })
+    const cookies = { stacks_cart: 'cart-token-1' }
+    await ApplyDiscountCodeAction.handle(request({ code: 'WELCOME10' }, cookies))
+    const placed = await PlaceOrderAction.handle(request({}, cookies))
+    // $50 of socks, 10% off: $45, which still clears the $40 free-shipping line.
+    expect(placed).toMatchObject({ ok: true, subtotal: 5000, discount: 500, shipping: 0, total: 4500 })
+    expect(Number((await db.selectFrom('discounts' as any).where('code', '=', 'WELCOME10').selectAll().executeTakeFirst() as any).usage_count)).toBe(1)
+
+    const removed = await ApplyDiscountCodeAction.handle(request({ remove: '1' }, cookies)) as Response
+    // The cart became an order, so there is no active cart to change.
+    expect(removed.status).toBe(400)
   })
 })

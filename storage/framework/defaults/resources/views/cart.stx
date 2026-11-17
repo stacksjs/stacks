@@ -19,6 +19,7 @@ interface CartItemRow {
 interface CartRow {
   id: number
   currency: string | null
+  discount_code?: string | null
 }
 
 interface StorefrontLineItem { lineTotal: number }
@@ -93,6 +94,10 @@ const cartNotice = requestContext.notice()
 // Why the form this page posted was refused, when it was not about one field
 // ("Your cart is empty."). Shown once (stacksjs/stacks#3311).
 const formError = requestContext.formError()
+// The discount code field: what is applied, or what was typed and refused.
+const discountCode = String(cart?.discount_code ?? '')
+const codeError = requestContext.error('code')
+const codeValue = requestContext.old('code', '')
 </script>
 
 @section('content')
@@ -169,19 +174,42 @@ const formError = requestContext.formError()
           @endforeach
         </div>
 
-        <OrderSummary
-          subtotalLabel="{{ subtotalLabel }}"
-          shippingLabel="{{ shippingLabel }}"
-          totalLabel="{{ totalLabel }}"
-          freeShippingNote="{{ freeShippingNote }}"
-          discountLabel="{{ discountLabel }}"
-          discountTitle="{{ discountTitle }}"
-          ctaHref="/checkout/contact"
-          ctaLabel="Checkout"
-          secondaryHref="/products"
-          secondaryLabel="Keep shopping"
-          :sticky="true"
-        />
+        <div class="space-y-4 lg:sticky lg:top-28">
+          <OrderSummary
+            subtotalLabel="{{ subtotalLabel }}"
+            shippingLabel="{{ shippingLabel }}"
+            totalLabel="{{ totalLabel }}"
+            freeShippingNote="{{ freeShippingNote }}"
+            discountLabel="{{ discountLabel }}"
+            discountTitle="{{ discountTitle }}"
+            ctaHref="/checkout/contact"
+            ctaLabel="Checkout"
+            secondaryHref="/products"
+            secondaryLabel="Keep shopping"
+          />
+
+          <form action="/api/cart/discount" method="POST" class="p-4 border border-stone-200 rounded-2xl">
+            @if (discountCode)
+              <p class="font-semibold text-stone-500 text-xs tracking-wider uppercase">Discount code</p>
+              <div class="flex gap-3 items-center justify-between mt-2">
+                <span class="inline-flex gap-2 items-center px-3 py-1.5 font-semibold text-emerald-800 text-sm bg-emerald-50 rounded-full">
+                  <span class="i-hugeicons-discount-tag-01 h-4 w-4" aria-hidden="true"></span>
+                  {{ discountCode }}
+                </span>
+                <button type="submit" name="remove" value="1" class="font-medium text-stone-500 text-xs underline-offset-4 hover:text-stone-900 hover:underline focus-visible:outline-none focus-visible:underline">Remove</button>
+              </div>
+            @else
+              <label for="discount-code" class="font-semibold text-stone-500 text-xs tracking-wider uppercase">Discount code</label>
+              <div class="flex gap-2 mt-2">
+                <input id="discount-code" name="code" type="text" autocomplete="off" autocapitalize="characters" maxlength="64" value="{{ codeValue }}" placeholder="Enter code" class="flex-1 min-w-0 px-3 py-2 text-sm text-stone-900 border border-stone-300 rounded-xl focus:border-stone-900 focus:outline-none" aria-describedby="discount-code-error">
+                <button type="submit" class="px-4 py-2 font-semibold text-sm text-stone-900 border border-stone-300 hover:border-stone-900 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 transition-colors">Apply</button>
+              </div>
+              @if (codeError)
+                <p id="discount-code-error" role="alert" class="mt-2 text-red-700 text-xs">{{ codeError }}</p>
+              @endif
+            @endif
+          </form>
+        </div>
 
       </div>
     @endif

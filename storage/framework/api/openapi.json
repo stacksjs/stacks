@@ -628,6 +628,31 @@
         }
       }
     },
+    "/api/cart/discount": {
+      "post": {
+        "summary": "/api/cart/discount",
+        "operationId": "post__api_cart_discount",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/cart/update": {
       "post": {
         "summary": "/api/cart/update",

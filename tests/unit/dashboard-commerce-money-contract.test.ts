@@ -232,7 +232,7 @@ describe('storefront money', () => {
 
   test('the place-order action charges with the same rule the pages show, in the cart currency', () => {
     const action = readFileSync(join(defaultsDir, 'app/Actions/Storefront/PlaceOrderAction.ts'), 'utf8')
-    expect(action).toContain('priceStorefront(lines, rules, currency)')
+    expect(action).toContain('priceStorefront(lines, rules, currency, new Date(), codes)')
     expect(action).toMatch(/total_amount: priced\.total,\s+discount_amount: priced\.discount,\s+currency,/)
     for (const page of ['cart.stx', 'checkout/contact.stx', 'checkout/shipping.stx', 'checkout/payment.stx'])
       expect(readFileSync(join(viewsDir, page), 'utf8')).toContain('storefrontCartSummary(db, row.id, currency)')

@@ -752,6 +752,7 @@ export const actions = {
   'Actions/SitemapAction': '../defaults/app/Actions/SitemapAction.ts',
   'Actions/Storefront/AcceptOrderOfferAction': '../defaults/app/Actions/Storefront/AcceptOrderOfferAction.ts',
   'Actions/Storefront/AddToCartAction': '../defaults/app/Actions/Storefront/AddToCartAction.ts',
+  'Actions/Storefront/ApplyDiscountCodeAction': '../defaults/app/Actions/Storefront/ApplyDiscountCodeAction.ts',
   'Actions/Storefront/CheckoutContactAction': '../defaults/app/Actions/Storefront/CheckoutContactAction.ts',
   'Actions/Storefront/CheckoutShippingAction': '../defaults/app/Actions/Storefront/CheckoutShippingAction.ts',
   'Actions/Storefront/DeclineOrderOfferAction': '../defaults/app/Actions/Storefront/DeclineOrderOfferAction.ts',

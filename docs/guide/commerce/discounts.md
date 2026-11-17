@@ -108,3 +108,5 @@ import { ruleFromDiscount } from '@stacksjs/commerce/discounts/rules'
 ## The default storefront
 
 The cart, every checkout step and `PlaceOrderAction` price through `app/Storefront/StorefrontPricing.ts` with the store's automatic discounts, so the total a shopper sees is the total the order is written with. Shipping follows the subtotal after discounts, and a free-shipping discount then waives what the flat rule charged. The order summary, the confirmation page and the receipt email show the discount and what it was.
+
+The cart has a discount code field (`POST /api/cart/discount`, `Actions/Storefront/ApplyDiscountCodeAction`). A code is priced against the cart before it is kept, so the shopper is told at once when it has expired or does not reach anything in the cart; `remove` takes it off. The code is checked again when the order is placed: one that has run out in the meantime is taken off the cart and the order is refused with the reason, so nobody is charged a price they were not shown.

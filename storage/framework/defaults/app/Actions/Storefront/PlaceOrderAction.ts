@@ -9,6 +9,7 @@ import { db } from '@stacksjs/database/runtime'
 import { refuse } from '@stacksjs/router'
 import { sendOrderConfirmation } from '../../Mail/OrderConfirmation'
 import { readCartCookie } from '../../Storefront/CartCookie'
+import { DISCOUNT_CODE_MESSAGES } from '../../Storefront/DiscountCodeMessages'
 import { storefrontCurrency } from '../../Storefront/StorefrontMoney'
 import { priceStorefront } from '../../Storefront/StorefrontPricing'
 
@@ -115,15 +116,25 @@ export default new Action({
       }
     })
 
+    const codes: string[] = cart.discount_code ? [String(cart.discount_code)] : []
     let rules: DiscountRule[] = []
     try {
-      rules = await discounts.fetchRules()
+      rules = await discounts.fetchRules({ codes })
     }
     catch (error) {
       // An app that has not migrated the discounts table yet sells at full price.
       console.warn(`[PlaceOrderAction] automatic discounts unavailable: ${error instanceof Error ? error.message : String(error)}`)
     }
-    const priced = priceStorefront(lines, rules, currency)
+    const priced = priceStorefront(lines, rules, currency, new Date(), codes)
+
+    // The code was good when it was applied; it can have expired or run out
+    // since. Say so and take it off, rather than charge a price the shopper
+    // was not shown.
+    const rejected = priced.result.rejectedCodes[0]
+    if (rejected) {
+      await (db as any).updateTable('carts').set({ discount_code: null }).where('id', '=', cart.id).execute()
+      return refuse(`${DISCOUNT_CODE_MESSAGES[rejected.reason]} We took it off your cart; check the new total and place your order again.`, { status: 409 })
+    }
     const discountTitle = priced.result.applied.filter(a => a.class !== 'shipping').map(a => a.title).join(', ')
 
     const fullAddress = [

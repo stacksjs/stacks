@@ -20,6 +20,7 @@ import { route } from '@stacksjs/router'
 route.get('/api/cart', 'Actions/Storefront/GetCartAction').skipCsrf()
 route.post('/api/cart/add', 'Actions/Storefront/AddToCartAction').skipCsrf()
 route.post('/api/cart/update', 'Actions/Storefront/UpdateCartItemAction').skipCsrf()
+route.post('/api/cart/discount', 'Actions/Storefront/ApplyDiscountCodeAction').skipCsrf()
 route.post('/api/checkout/contact', 'Actions/Storefront/CheckoutContactAction').skipCsrf()
 route.post('/api/checkout/shipping', 'Actions/Storefront/CheckoutShippingAction').skipCsrf()
 route.post('/api/checkout/place', 'Actions/Storefront/PlaceOrderAction').skipCsrf()

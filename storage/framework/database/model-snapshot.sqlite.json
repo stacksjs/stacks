@@ -8162,6 +8162,15 @@
             "isNullable": true,
             "hasDefault": false,
             "maxLength": 20
+          },
+          {
+            "name": "discount_code",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 64
           }
         ],
         "indexes": [
@@ -14908,7 +14917,7 @@
       }
     ]
   },
-  "hash": "0ad7d9ce48cb21bcb34b5edd3f52cb84440c58bf861111a248d8fac2da5ae89d",
+  "hash": "4aa7b3a700bde438bea1c2f7295c1034a09aa8d2eab7475d2228b0b8de930b5a",
   "dialect": "sqlite",
-  "updatedAt": "2026-11-17T01:39:06.850Z"
+  "updatedAt": "2026-11-17T01:58:25.322Z"
 }

@@ -221,6 +221,20 @@ export default defineModel({
         rule: schema.string().max(20),
       },
     },
+
+    /**
+     * The discount code the shopper entered, as typed. Checked when it is
+     * applied and again when the order is placed, since a code can expire or
+     * run out in between. Matches a `Discount` code or a `Coupon` code.
+     */
+    discountCode: {
+      order: 19,
+      fillable: true,
+      nullable: true,
+      validation: {
+        rule: schema.string().max(64),
+      },
+    },
   },
 
   dashboard: {

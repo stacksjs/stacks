@@ -13,10 +13,10 @@
  */
 
 import type { DiscountResult, DiscountRule } from '@stacksjs/commerce/discounts/engine'
-import type { DiscountRow } from '@stacksjs/commerce/discounts/rules'
+import type { CouponRow, DiscountRow } from '@stacksjs/commerce/discounts/rules'
 import type { Database } from 'bun:sqlite'
 import { applyDiscounts } from '@stacksjs/commerce/discounts/engine'
-import { ruleFromDiscount } from '@stacksjs/commerce/discounts/rules'
+import { ruleFromCoupon, ruleFromDiscount } from '@stacksjs/commerce/discounts/rules'
 import { freeShippingThreshold, shippingFor } from '../Actions/Storefront/_shipping'
 import { storefrontMoney } from './StorefrontMoney'
 
@@ -45,10 +45,10 @@ export interface StorefrontPrice {
  * Price lines against rules. Shipping follows the storefront's rule on the
  * subtotal after discounts, and a free-shipping discount can then waive it.
  */
-export function priceStorefront(lines: readonly StorefrontLine[], rules: readonly DiscountRule[], currency: string, now: Date = new Date()): StorefrontPrice {
-  const first = applyDiscounts({ lines, rules, now })
+export function priceStorefront(lines: readonly StorefrontLine[], rules: readonly DiscountRule[], currency: string, now: Date = new Date(), codes: readonly string[] = []): StorefrontPrice {
+  const first = applyDiscounts({ lines, rules, codes, now })
   const baseShipping = shippingFor(first.discountedSubtotal, currency)
-  const result = applyDiscounts({ lines, rules, shipping: baseShipping, now })
+  const result = applyDiscounts({ lines, rules, codes, shipping: baseShipping, now })
   return {
     result,
     subtotal: result.subtotal,
@@ -62,23 +62,58 @@ export function priceStorefront(lines: readonly StorefrontLine[], rules: readonl
 }
 
 /**
- * The store's automatic discounts, read from SQLite for a server-rendered
- * page. A database without the `discounts` table (not migrated since it was
- * added) has none, rather than an empty cart.
+ * The store's automatic discounts, plus the discounts and coupons whose codes
+ * were entered, read from SQLite for a server-rendered page. A database
+ * without the `discounts` table (not migrated since it was added) has none,
+ * rather than an empty cart.
  */
-export function readAutomaticDiscounts(db: Database): DiscountRule[] {
+export function readDiscountRules(db: Database, codes: readonly string[] = []): DiscountRule[] {
+  const wanted = new Set(codes.map(code => code.trim().toUpperCase()).filter(Boolean))
+  const rules: DiscountRule[] = []
+  const keep = (build: () => DiscountRule) => {
+    try {
+      rules.push(build())
+    }
+    catch {
+      // A row the engine cannot read is skipped, never the whole cart.
+    }
+  }
+
   try {
-    const rows = db.query<DiscountRow, []>(`SELECT * FROM discounts WHERE code IS NULL`).all()
-    const rules: DiscountRule[] = []
-    for (const row of rows) {
-      try {
-        rules.push(ruleFromDiscount(row))
-      }
-      catch {
-        // A row the engine cannot read is skipped, never the whole cart.
+    for (const row of db.query<DiscountRow, []>(`SELECT * FROM discounts`).all()) {
+      if (!row.code || wanted.has(row.code.toUpperCase()))
+        keep(() => ruleFromDiscount(row))
+    }
+  }
+  catch {
+    // No discounts table yet.
+  }
+
+  if (wanted.size) {
+    try {
+      for (const row of db.query<CouponRow, []>(`SELECT * FROM coupons`).all()) {
+        if (row.code && wanted.has(row.code.toUpperCase()) && !rules.some(r => r.code?.toUpperCase() === row.code.toUpperCase()))
+          keep(() => ruleFromCoupon(row))
       }
     }
-    return rules
+    catch {
+      // No coupons table.
+    }
+  }
+
+  return rules
+}
+
+/** The store's automatic discounts only. */
+export function readAutomaticDiscounts(db: Database): DiscountRule[] {
+  return readDiscountRules(db)
+}
+
+/** The code a cart carries, or none (also when the column is not migrated yet). */
+export function readCartCode(db: Database, cartId: number): string[] {
+  try {
+    const row = db.query<{ discount_code: string | null }, [number]>(`SELECT discount_code FROM carts WHERE id = ?1`).get(cartId)
+    return row?.discount_code ? [row.discount_code] : []
   }
   catch {
     return []
@@ -146,7 +181,8 @@ export interface StorefrontPricedSummary {
  */
 export function storefrontCartSummary(db: Database, cartId: number, currency: string): StorefrontPricedSummary | null {
   try {
-    const priced = priceStorefront(readCartLines(db, cartId), readAutomaticDiscounts(db), currency)
+    const codes = readCartCode(db, cartId)
+    const priced = priceStorefront(readCartLines(db, cartId), readDiscountRules(db, codes), currency, new Date(), codes)
     return pricedSummary(priced, currency)
   }
   catch (error) {

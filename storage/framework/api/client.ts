@@ -326,6 +326,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * POST /api/cart/discount
+   */
+  postCartDiscount(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/cart/discount", {}, [], null, "application/json", [], options)
+  },
+
+  /**
    * POST /api/cart/update
    */
   postCartUpdate(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {

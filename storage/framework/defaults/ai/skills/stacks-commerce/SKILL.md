@@ -210,6 +210,9 @@ const result = await commerce.upsells.acceptOffer({
   `app/Storefront/StorefrontPricing.ts` (automatic discounts; shipping on the
   discounted subtotal). `PlaceOrderAction` uses `orders.placeOrder` (atomic,
   stock-guarded, idempotent per cart).
+- `carts.discount_code` holds the shopper's code (`POST /api/cart/discount`);
+  pages read it through `storefrontCartSummary`, and `PlaceOrderAction`
+  re-checks it and refuses (clearing it) when it no longer applies.
 - `/orders/{id}` opens only with `?key=<orders.tracking_token>`
   (`app/Storefront/OrderKey.ts`); never link an order page by id alone. It renders
   the offer, posting to `/api/orders/offers/accept|decline`. The charge for an
