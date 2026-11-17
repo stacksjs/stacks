@@ -735,3 +735,11 @@ it('enables native passkeys only on builders with the system-sheet capability', 
   expect(() => assertCraftSupportsCapabilities({ passkeys: true }, '0.0.450', 'fixture')).toThrow('ios.capabilities.passkeys')
   expect(() => assertCraftSupportsCapabilities({ passkeys: true }, '0.0.451', 'fixture')).not.toThrow()
 })
+
+it('refuses passkeys without a webcredentials associated domain', () => {
+  const base = { appName: 'Example', bundleId: 'org.example.app', url: 'https://example.com', capabilities: { passkeys: true } }
+  expect(() => validateIosMobileConfig(base)).toThrow('webcredentials:')
+  expect(() => validateIosMobileConfig({ ...base, associatedDomains: ['applinks:example.com'] })).toThrow('webcredentials:')
+  expect(() => validateIosMobileConfig({ ...base, associatedDomains: ['applinks:example.com', 'webcredentials:example.com'] })).not.toThrow()
+  expect(() => validateIosMobileConfig({ ...base, capabilities: { passkeys: false } })).not.toThrow()
+})

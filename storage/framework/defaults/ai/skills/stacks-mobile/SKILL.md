@@ -773,8 +773,9 @@ missing font files and invalid names. Fonts work without a network request.
 ## Native passkeys
 
 Enable `ios.capabilities.passkeys` and a `webcredentials:<relying-party-host>`
-associated domain. Craft >= 0.0.451 supplies the system AuthenticationServices
-sheet. Import `passkeys` from `@stacksjs/mobile`, check
+associated domain; the build refuses passkeys without one, since iOS fails
+every passkey request from an app its domain does not vouch for. Craft >=
+0.0.451 supplies the system AuthenticationServices sheet. Import `passkeys` from `@stacksjs/mobile`, check
 `await passkeys.isAvailable()`, then pass server-issued JSON WebAuthn options to
 `create(options)` or `get(options)`. Send the JSON credential back to the server
 for verification. The native capability never replaces the server challenge,

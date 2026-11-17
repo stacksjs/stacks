@@ -391,6 +391,11 @@ export function validateIosMobileConfig(config: IosMobileConfig): void {
       throw new Error(`Invalid iOS associated domain: ${domain}`)
     }
   }
+  // iOS hands a passkey request only to an app associated with the relying
+  // party's domain, so without a `webcredentials:` entry every create() and
+  // get() fails on the device, long after the build said nothing.
+  if (config.capabilities?.passkeys && !(config.associatedDomains ?? []).some(domain => domain.startsWith('webcredentials:')))
+    throw new Error('ios.capabilities.passkeys needs a webcredentials:<relying-party-host> entry in ios.associatedDomains')
   for (const key of ['splashMaxSeconds', 'requestTimeoutSeconds'] as const) {
     const value = config[key]
     if (value !== undefined && (!Number.isFinite(value) || value <= 0)) throw new Error(`ios.${key} must be a positive number of seconds`)
