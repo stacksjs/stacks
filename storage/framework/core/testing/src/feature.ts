@@ -1,9 +1,31 @@
-import { relative } from 'node:path'
+import { mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join, relative } from 'node:path'
 import process from 'node:process'
 
 export function setupTestEnvironment(): void {
   process.env.NODE_ENV = 'test'
   process.env.APP_ENV = 'test'
+  isolateStacksHome()
+}
+
+/**
+ * Give the test run a `~/.stacks` of its own.
+ *
+ * `buddy` keeps machine state there: the list of projects on the machine, the
+ * background daemon's socket. A test that runs the CLI in a temporary project
+ * would otherwise add that project to the developer's real list, and every
+ * run of the suite left a few more behind. Set in the environment, so every
+ * process a test starts inherits it. A run that names its own `STACKS_HOME`
+ * keeps it.
+ */
+function isolateStacksHome(): void {
+  if (process.env.STACKS_HOME)
+    return
+
+  const home = mkdtempSync(join(tmpdir(), 'stacks-home-'))
+  process.env.STACKS_HOME = home
+  process.once('exit', () => rmSync(home, { recursive: true, force: true }))
 }
 
 /**
