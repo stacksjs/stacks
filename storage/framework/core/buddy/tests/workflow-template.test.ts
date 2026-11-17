@@ -62,3 +62,23 @@ test('native build and downloaded acceptance receive only their declared credent
   expect(native.steps.find((step: any) => step.run === './buddy workflow:step native-accept').env).toEqual({ ATHLETE_FIXTURES: '${{ secrets.ATHLETE_FIXTURES }}' })
   expect(native.steps.find((step: any) => step.run === './buddy workflow:step native-sign').env).toEqual({ APPLE_UPLOAD_KEY: '${{ secrets.APPLE_UPLOAD_KEY }}' })
 })
+
+test('declared queue priorities reach checks, deploy and native jobs without changing their gates', () => {
+  const workflow = Bun.YAML.parse(renderReviewOsWorkflow({ ...config, priorities: { checks: 30, deploy: 40, ios: 50 } })) as any
+  for (const name of ['lint', 'typecheck', 'test', 'build']) expect(workflow.jobs[name].reviewos.priority).toBe(30)
+  expect(workflow.jobs.deploy.reviewos.priority).toBe(40)
+  expect(workflow.jobs.native.reviewos.priority).toBe(50)
+  expect(workflow.jobs.deploy.needs).toEqual(['lint', 'typecheck', 'test', 'build'])
+  expect(workflow.jobs.native.needs).toEqual(['deploy'])
+  const defaults = Bun.YAML.parse(renderReviewOsWorkflow(config)) as any
+  for (const job of Object.values(defaults.jobs) as any[]) expect(job.reviewos.priority).toBeUndefined()
+})
+
+test('queue priorities reject unknown stages, invalid numbers and values outside ReviewOS bounds', () => {
+  for (const value of [0.5, Number.NaN, Number.POSITIVE_INFINITY, -1001, 1001])
+    expect(() => renderReviewOsWorkflow({ ...config, priorities: { checks: value } })).toThrow('priorities')
+  for (const priorities of [{ unknown: 1 }, [], null, 10, { checks: '30' }])
+    expect(() => renderReviewOsWorkflow({ ...config, priorities } as any)).toThrow('priorities')
+  for (const checks of [-1000, 0, 1000])
+    expect(() => renderReviewOsWorkflow({ ...config, priorities: { checks } })).not.toThrow()
+})
