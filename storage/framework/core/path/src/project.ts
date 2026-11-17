@@ -21,24 +21,10 @@ let cachedProjectRoot = ''
  * that root.
  */
 function projectRootFor(cwd: string): string {
-  if (existsSync(join(cwd, 'storage', 'framework')))
+  // A running process is taken at its word: a directory holding
+  // `storage/framework` is where it was started to work.
+  if (existsSync(join(cwd, 'storage', 'framework')) || isProjectRoot(cwd))
     return cwd
-
-  // Package-based apps need not have generated storage/framework yet. Keep
-  // their declared root even when a server stages them inside its own storage.
-  // An arbitrary framework package.json is not an application boundary.
-  const manifest = join(cwd, 'package.json')
-  if (existsSync(manifest)) {
-    if (existsSync(join(cwd, 'config', 'app.ts')))
-      return cwd
-    try {
-      if (JSON.parse(readFileSync(manifest, 'utf8')).stacks?.type === 'native')
-        return cwd
-    }
-    catch {
-      // Invalid or unreadable manifests cannot establish an app boundary.
-    }
-  }
 
   const segments = cwd.split(sep)
   const candidates: string[] = []
@@ -50,6 +36,108 @@ function projectRootFor(cwd: string): string {
   return candidates.find(candidate => existsSync(join(candidate, 'storage', 'framework')))
     ?? candidates.find(candidate => existsSync(join(candidate, 'package.json')))
     ?? cwd
+}
+
+/**
+ * Whether a directory is the root of a Stacks project: something to find, to
+ * list, and to run `buddy` in.
+ *
+ * It has a `package.json`, and beside it either `storage/framework`, or
+ * `config/app.ts` (a package-based app that has not generated its storage
+ * yet), or a manifest that declares a native app.
+ *
+ * The manifest is required because `storage/framework` alone proves nothing.
+ * Any process started in the wrong directory leaves a `storage/framework/
+ * runtime` behind, and a code folder holding one would otherwise read as a
+ * project that contains every real project in it. An arbitrary `package.json`
+ * is not a project either, which is what keeps a framework package from
+ * reading as one.
+ *
+ * The upward search below, the machine's project list and the scan that fills
+ * it all ask this, so a directory cannot be a project to one of them and not
+ * to another.
+ */
+export function isProjectRoot(directory: string): boolean {
+  const manifest = join(directory, 'package.json')
+  if (!existsSync(manifest))
+    return false
+
+  if (existsSync(join(directory, 'storage', 'framework')) || existsSync(join(directory, 'config', 'app.ts')))
+    return true
+
+  try {
+    return JSON.parse(readFileSync(manifest, 'utf8')).stacks?.type === 'native'
+  }
+  catch {
+    // Invalid or unreadable manifests cannot establish an app boundary.
+    return false
+  }
+}
+
+/**
+ * The `buddy` CLI entry a project runs, in the order its `buddy` shim looks:
+ * vendored framework source first, then the installed package from
+ * `node_modules`, then from `pantry`. Null when it has none installed (a fresh
+ * clone, before its dependencies are).
+ */
+export function projectCliEntry(root: string): string | null {
+  const candidates = [
+    'storage/framework/core/buddy/src/cli.ts',
+    'node_modules/@stacksjs/buddy/src/cli.ts',
+    'node_modules/@stacksjs/buddy/dist/cli.js',
+    'pantry/@stacksjs/buddy/src/cli.ts',
+    'pantry/@stacksjs/buddy/dist/cli.js',
+  ]
+
+  return candidates.map(candidate => join(root, candidate)).find(existsSync) ?? null
+}
+
+/**
+ * Whether the running `entry` is a `buddy` that does not belong to the project
+ * at `root`, which has one of its own: a `buddy` installed once for the whole
+ * machine, started inside that project.
+ *
+ * Such a process is only passing through. It finds the project and replaces
+ * itself with the project's own CLI, on the framework version the project
+ * pins, so nothing it would load for the project is used: the launcher asks
+ * this to decide the handover, and the project's preloader asks it to skip
+ * work the next process is about to do again.
+ */
+export function isVisitingCli(root: string, entry: string): boolean {
+  const own = projectCliEntry(root)
+  if (own === null)
+    return false
+
+  try {
+    return realpathSync(own) !== realpathSync(entry)
+  }
+  catch {
+    // An entry with no file behind it (a compiled binary) is not the project's.
+    return true
+  }
+}
+
+/**
+ * The Stacks project a directory is in: the directory itself, or its nearest
+ * ancestor that is a project root. Null when it is in none.
+ *
+ * `projectPath()` answers for a process that already runs in its project. This
+ * answers for one that has not picked a project yet: a `buddy` installed once
+ * for the machine and run from `app/Models`, three levels down, has to find
+ * the root above it before anything else can be resolved against it.
+ */
+export function findProjectRoot(from: string = process.cwd()): string | null {
+  let directory = resolve(from)
+
+  for (;;) {
+    if (isProjectRoot(directory))
+      return directory
+
+    const parent = dirname(directory)
+    if (parent === directory)
+      return null
+    directory = parent
+  }
 }
 
 /**

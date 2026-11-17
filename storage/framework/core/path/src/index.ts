@@ -29,22 +29,12 @@ import {
 } from 'node:path'
 import process from 'node:process'
 import { appPath, defaultsPath, frameworkDefaultsRoot, frameworkPath, projectPath, storagePath, usesVendoredDefaults } from './project'
+import { findProject } from './projects'
 
-export { appPath, defaultsPath, frameworkDefaultsRoot, frameworkPath, isCompiledBinary, isInstalledDefaultsRoot, linkPackagedDefaults, packagedDefaultsRoot, projectPath, storagePath, usesVendoredDefaults } from './project'
+export { appPath, defaultsPath, findProjectRoot, frameworkDefaultsRoot, frameworkPath, isCompiledBinary, isInstalledDefaultsRoot, isProjectRoot, isVisitingCli, linkPackagedDefaults, packagedDefaultsRoot, projectCliEntry, projectPath, storagePath, usesVendoredDefaults } from './project'
+export { clearProjectService, findProject, forgetProject, isProcessAlive, listProjects, pruneProjects, readProjectService, recordProjectService, registerProject, reserveProjectPort, stacksHome } from './projects'
+export type { ProjectMatch, ProjectService, RegisteredProject } from './projects'
 export { resolveModulePath } from './module-resolution'
-
-// Lazy import logging to avoid circular dependency (logging imports path)
-async function debugLog(message: string) {
-  try {
-    const loggingPackage = '@stacksjs/' + 'logging'
-    const { log } = await import(loggingPackage)
-    log.debug(message)
-  }
-  catch {
-    // Logging not available, silently ignore
-    console.debug(message)
-  }
-}
 
 /**
  * Returns the path to the `actions` directory. The `actions` directory
@@ -1052,31 +1042,26 @@ export function paymentsPath(path?: string): string {
  * @returns The absolute path to the specified file or directory within the project directory.
  */
 /**
- * Finds and returns the absolute path of a specified project by name.
+ * The absolute path of a Stacks project on this machine, by name or by path.
  *
- * @param project - The name of the project to find.
- * @returns The absolute path to the specified project.
- * @throws Error if the project with the specified name cannot be found.
+ * Answered from the machine's project list (see `./projects`). It used to run
+ * whatever `buddy` was first on `PATH`, parse the indented lines it printed,
+ * and take the first path that contained the name anywhere in it, so `shop`
+ * could resolve to `/Users/bishop/blog`.
+ *
+ * @param project - A listed project's name, or a path to (or inside) a project.
+ * @returns The absolute path of that project's root.
+ * @throws Error if no project matches, or if more than one does.
  */
 export async function findProjectPath(project: string): Promise<string> {
-  const projectList = Bun.spawnSync(['buddy', 'projects:list', '--quiet']).stdout.toString()
-  await debugLog(`ProjectList in findProjectPath ${projectList}`)
+  const match = findProject(project)
+  if (match.project)
+    return match.project.path
 
-  // get the list of all Stacks project paths (on the system)
-  const projects = projectList
-    .split('\n')
-    .filter((line: string) => line.startsWith('   - '))
-    .map((line: string) => line.trim().substring(4))
+  if (match.candidates.length > 0)
+    throw new Error(`"${project}" matches more than one project: ${match.candidates.map(candidate => candidate.name).join(', ')}`)
 
-  await debugLog(`Projects in findProjectPath ${projects}`)
-
-  // since we are targeting a specific project, find its path
-  const projectPath = projects.find((proj: string) => proj.includes(project))
-
-  if (!projectPath)
-    throw new Error(`Could not find project with name: ${project}`)
-
-  return projectPath.startsWith('/') ? projectPath : `/${projectPath}`
+  throw new Error(`Could not find project with name: ${project}`)
 }
 
 /**
