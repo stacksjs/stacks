@@ -1,7 +1,7 @@
 <template>
 <div class="min-h-screen dark:bg-neutral-800">
   <div class="flex h-screen">
-    <EmailSidebar :activeFolder="activeFolder" :folders="folders" :unreadCounts="unreadCounts" :mailbox="mailbox" @update:active-folder="handleFolderChange" @compose="handleCompose" />
+    <EmailSidebar :activeFolder="activeFolder" :folders="folders" :mailbox="mailbox" @update:active-folder="handleFolderChange" @compose="handleCompose" />
 
     <div class="flex overflow-hidden flex-1 flex-col">
       <div class="px-6 py-4 bg-white dark:bg-neutral-700 border-b border-gray-200 dark:border-neutral-600">
@@ -245,7 +245,6 @@ import type {
   NotificationSound,
   ReplyBehavior,
 } from '@stacksjs/defaults/functions/mail-preferences'
-import { fetchInboxActivity } from '@stacksjs/defaults/functions/inbox'
 import { fetchMailPreference, saveMailPreference } from '@stacksjs/defaults/functions/mail-preferences'
 
 interface SettingsSection {
@@ -264,15 +263,6 @@ const folders = [
   { id: 'trash', name: 'Trash', icon: 'waste' },
 ]
 
-const unreadCounts = state({
-  inbox: 0,
-  starred: 0,
-  sent: 0,
-  drafts: 0,
-  archive: 0,
-  spam: 0,
-  trash: 0,
-})
 const mailbox = state('')
 
 const settingsSections: SettingsSection[] = [
@@ -431,14 +421,9 @@ async function saveSettings(): Promise<void> {
 
 onMount(async () => {
   try {
-    const activity = await fetchInboxActivity('year')
-    if (activity) {
-      unreadCounts.set(activity.folder_counts)
-      mailbox.set(activity.mailbox)
-      accountEmail.set(activity.mailbox)
-    }
-
-    const preference = await fetchMailPreference(activity?.mailbox)
+    // Settings come from the configured mailbox's persisted preferences.
+    // Reading them must not require an available inbound storage provider.
+    const preference = await fetchMailPreference()
     if (preference)
       applyPreference(preference)
   }
