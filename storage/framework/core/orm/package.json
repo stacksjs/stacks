@@ -2,7 +2,7 @@
   "name": "@stacksjs/orm",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.618",
+  "version": "0.75.619",
   "description": "The Stacks ORM integration",
   "author": "Chris Breuer",
   "contributors": [

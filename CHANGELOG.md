@@ -1,5 +1,51 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.618...v0.75.619)
+
+## ✨ Features
+
+- **workflows**: configure queue priorities for application stages ([df1d370](https://github.com/stacksjs/stacks/commit/df1d370)) _(by Chris Breuer)_
+- **mobile**: forward Craft's nativeGate so a signed-out launch never draws the signed-in home ([4b17aba](https://github.com/stacksjs/stacks/commit/4b17aba)) _(by glennmichael123)_ ([#3318](https://github.com/stacksjs/stacks/issues/3318))
+- **hq**: signing in during a connect comes back to the approve page ([01035a6](https://github.com/stacksjs/stacks/commit/01035a6)) _(by Chris Breuer)_
+- **dashboard**: Discounts and Upsells commerce screens ([77cedca](https://github.com/stacksjs/stacks/commit/77cedca)) _(by Chris Breuer)_
+- **storefront**: discount code field on the cart ([42ab8cc](https://github.com/stacksjs/stacks/commit/42ab8cc)) _(by Chris Breuer)_
+- **storefront**: discounted atomic checkout and one-click upsells on the order page ([b959c27](https://github.com/stacksjs/stacks/commit/b959c27)) _(by Chris Breuer)_
+- **commerce**: discount engine and one-click post-purchase upsells ([66fcec6](https://github.com/stacksjs/stacks/commit/66fcec6)) _(by Chris Breuer)_
+
+## 🐛 Bug Fixes
+
+- **dashboard**: a duplicate pair says so, and a new row's duplicate is named too ([ca48271](https://github.com/stacksjs/stacks/commit/ca48271)) _(by glennmichael123)_ ([#3319](https://github.com/stacksjs/stacks/issues/3319))
+- **dashboard**: a refused link names only the record that is gone ([24557f9](https://github.com/stacksjs/stacks/commit/24557f9)) _(by glennmichael123)_ ([#3315](https://github.com/stacksjs/stacks/issues/3315))
+- **dashboard**: a row added on the edit page validates with its link to the record ([b9725a8](https://github.com/stacksjs/stacks/commit/b9725a8)) _(by glennmichael123)_ ([#3315](https://github.com/stacksjs/stacks/issues/3315))
+- **testing**: run test files in batches, so isolation cannot exhaust the machine ([eff017f](https://github.com/stacksjs/stacks/commit/eff017f)) _(by Chris)_
+- **database**: reconcile keeps another corpus's ledger rows and names every change ([7d943b8](https://github.com/stacksjs/stacks/commit/7d943b8)) _(by glennmichael123)_ ([#3163](https://github.com/stacksjs/stacks/issues/3163))
+- **mobile**: the build refuses iOS passkeys without a webcredentials domain ([145e276](https://github.com/stacksjs/stacks/commit/145e276)) _(by glennmichael123)_ ([#3148](https://github.com/stacksjs/stacks/issues/3148))
+- **auth**: make:policy and the docs name the user a gate receives ([b53a2b5](https://github.com/stacksjs/stacks/commit/b53a2b5)) _(by glennmichael123)_ ([#3314](https://github.com/stacksjs/stacks/issues/3314))
+- **auth**: Gate and policies take the user both request types hand them ([b5b7f7b](https://github.com/stacksjs/stacks/commit/b5b7f7b)) _(by glennmichael123)_ ([#3314](https://github.com/stacksjs/stacks/issues/3314))
+- **dashboard**: search boxes no longer start as "[object Object]" ([a67f511](https://github.com/stacksjs/stacks/commit/a67f511)) _(by Chris Breuer)_
+
+## 📝 Documentation
+
+- **ai**: the native catalog lists the hq connect-return entrypoint ([a3ed430](https://github.com/stacksjs/stacks/commit/a3ed430)) _(by Chris Breuer)_
+- **commerce**: discounts and post-purchase upsells ([0c6a953](https://github.com/stacksjs/stacks/commit/0c6a953)) _(by Chris Breuer)_
+
+## ✅ Tests
+
+- **dashboard**: the edit page saves a record and its rows together, end to end ([522619b](https://github.com/stacksjs/stacks/commit/522619b)) _(by glennmichael123)_ ([#3319](https://github.com/stacksjs/stacks/issues/3319), [stacksjs/stx#2197](https://github.com/stacksjs/stx/issues/2197), [#3315](https://github.com/stacksjs/stacks/issues/3315))
+- **dashboard**: end-to-end harness, and every sidebar page loads cleanly ([a736ca8](https://github.com/stacksjs/stacks/commit/a736ca8)) _(by glennmichael123)_ ([#3319](https://github.com/stacksjs/stacks/issues/3319), [#3315](https://github.com/stacksjs/stacks/issues/3315))
+- **dashboard**: the real-SSH terminal test starts its sshd on a free port ([651143a](https://github.com/stacksjs/stacks/commit/651143a)) _(by glennmichael123)_ ([#3316](https://github.com/stacksjs/stacks/issues/3316))
+
+## 🔧 Chores
+
+- **docs**: regenerate the native catalog for the actions test added in eff017f7a3 ([d76ffa8](https://github.com/stacksjs/stacks/commit/d76ffa8)) _(by glennmichael123)_
+- **database**: regenerate db types for the discount tables ([2ae3526](https://github.com/stacksjs/stacks/commit/2ae3526)) _(by glennmichael123)_
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.617...v0.75.618)
 
 ## 🐛 Bug Fixes
