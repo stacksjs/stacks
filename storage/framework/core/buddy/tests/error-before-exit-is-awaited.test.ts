@@ -28,7 +28,7 @@ const delivered = new Set<string>([
   // `reportFatal` writes the label and stack straight to `process.stderr`
   // immediately above this line, synchronously, before it ever calls the
   // logger - so the exit is not silent.
-  'storage/framework/core/buddy/src/cli.ts:53',
+  'storage/framework/core/buddy/src/cli.ts:134',
 ])
 
 function offenders(dir: string, found: string[] = []): string[] {

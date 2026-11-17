@@ -96,7 +96,38 @@ const entrypoint = (process.argv[1] ?? '').replaceAll('\\', '/')
 const repositoryAction = '(?:release|bump|generate/lib-entries)\\.[jt]s'
 const isRepositoryAction = new RegExp(`(?:^|/)storage/framework/core/actions/src/${repositoryAction}$`).test(entrypoint)
   || new RegExp(`(?:^|/)(?:node_modules|pantry)/@stacksjs/actions/(?:src|dist(?:/src)?)/${repositoryAction}$`).test(entrypoint)
-const skipPreloader = isRepl || isPostinstall || isRepositoryAction || (args.length > 0 && fastCommands.some(cmd => args[0] === cmd || args[0].startsWith(`${cmd}:`)))
+
+/**
+ * A `buddy` installed once for the whole machine, started in this project.
+ *
+ * It is only passing through: it finds the project and replaces itself with
+ * the project's own `buddy`, which runs this file again, for real. Everything
+ * below (the env files, the auto-import graph) would be loaded here, thrown
+ * away a moment later, and loaded again: about half a second on every command
+ * typed at a project root.
+ *
+ * Not when this process was itself handed the project (`STACKS_BUDDY_ROOT`):
+ * that one is the last, and does the work.
+ */
+async function isVisitingBuddy(): Promise<boolean> {
+  if (isPostinstall || !/(?:^|\/)buddy\/(?:src\/cli\.ts|dist\/cli\.js)$/.test(entrypoint))
+    return false
+  if (process.env.STACKS_BUDDY_ROOT)
+    return false
+
+  try {
+    const pathPackage = '@stacksjs/' + 'path'
+    const { isVisitingCli } = await import('../../../core/path/src/index.ts').catch(() => import(pathPackage))
+    // An installed @stacksjs/path that predates the helper: carry on as before.
+    return typeof isVisitingCli === 'function' && isVisitingCli(process.cwd(), entrypoint)
+  }
+  catch {
+    return false
+  }
+}
+
+const isPassingThrough = await isVisitingBuddy()
+const skipPreloader = isRepl || isPostinstall || isRepositoryAction || isPassingThrough || (args.length > 0 && fastCommands.some(cmd => args[0] === cmd || args[0].startsWith(`${cmd}:`)))
 
 if (!skipPreloader) {
   // Detect production/deployment commands and set environment accordingly BEFORE loading env files
@@ -137,7 +168,7 @@ if (!skipPreloader) {
 // importing it there can fail (see the isPostinstall note above). The REPL keeps
 // its original skip. The heavy auto-import graph below stays gated separately via
 // `skipAutoImports`.
-if (!isRepl && !isPostinstall) {
+if (!isRepl && !isPostinstall && !isPassingThrough) {
   // Resolve the vendored source first; the package fallback covers non-standard
   // layouts where defaults is consumed outside the framework layout.
   const envPackage = '@stacksjs/' + 'env'

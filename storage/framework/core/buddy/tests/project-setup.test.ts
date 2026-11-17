@@ -26,6 +26,13 @@ it('unpublishes framework defaults without generating or replacing application s
 }, 15_000)
 
 describe('Buddy project setup guards', () => {
+  it('runs the machine-level commands without a project around them', () => {
+    for (const command of ['projects', 'projects:scan', 'cd', 'daemon', 'daemon:status', 'dashboard'])
+      expect(shouldSkipAppKeyCheck(command), command).toBe(true)
+    // A command that works on a project's data still needs the project.
+    expect(shouldSkipAppKeyCheck('queue:work')).toBe(false)
+  })
+
   it('runs documentation tools without creating an application key', () => {
     expect(shouldSkipAppKeyCheck('docs:native-skills')).toBe(true)
     expect(shouldSkipAppKeyCheck('docs:native-skills:check')).toBe(true)

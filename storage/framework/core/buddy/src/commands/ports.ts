@@ -1,191 +1,34 @@
 import type { CLI, Ports, PortsOptions } from '@stacksjs/types'
-import { $ } from 'bun'
+import { connect } from 'node:net'
 import process from 'node:process'
-import { intro, italic, onUnknownSubcommand, outro } from "@stacksjs/cli"
+import { dim, green, intro, onUnknownSubcommand, outro, yellow } from '@stacksjs/cli'
 import { ports as projectPorts } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
-import { findProjectPath, path as p, projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
-import { findStacksProjects } from '@stacksjs/utils'
 
-export function ports(buddy: CLI): void {
-  const descriptions = {
-    command: 'Let buddy check your project for potential issues and misconfigurations',
-    ports: 'Check if the ports are available',
-    project: 'Target a specific project',
-    verbose: 'Enable verbose output',
-  }
+/**
+ * `buddy ports` - the ports this project's servers use.
+ *
+ * `--project <name>` works here the way it does on every command: the launcher
+ * (`../launcher.ts`) starts the command in that project, so by the time this
+ * runs `@stacksjs/config` is already that project's. This file used to do it
+ * by hand, running `./buddy projects:list` and `./buddy ports:list` in the
+ * other project and rewriting the object each printed back into JSON.
+ */
 
-  buddy
-    .command('ports', descriptions.command)
-    .option('-l, --list', 'List the used ports', { default: true })
-    .option('-c, --check', 'Check if the ports are available', {
-      default: false,
-    })
-    .option('-p, --project [name]', descriptions.project, {
-      default: undefined,
-    })
-    .option('-q, --quiet', 'Use minimal output', { default: false })
-    .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: PortsOptions) => {
-      log.debug('Running `buddy ports` ...', options)
-
-      let perf
-      if (!options.quiet)
-        perf = await intro('buddy ports')
-
-      if (options.project) {
-        const path = await findProjectPath(options.project)
-        log.debug(`Path: ${path}`)
-
-        const ports = await getPortsForProjectPath(path, options)
-        log.debug(`./buddy ports --quiet response for ${projectPath}`, ports)
-
-        outputPorts(ports, options)
-      }
-
-      // use the user config ports
-      else {
-        outputPorts(projectPorts, options)
-      }
-
-      if (!options.quiet)
-        await outro('Exited', { startTime: perf, useSeconds: false })
-
-      process.exit(ExitCode.Success)
-    })
-
-  buddy
-    .command('ports:list', descriptions.ports)
-    .option('-p, --project [name]', descriptions.project, {
-      default: undefined,
-    })
-    .option('-q, --quiet', 'Use minimal output', { default: false })
-    .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: PortsOptions) => {
-      log.debug('Running `buddy ports:list` ...', options)
-
-      let perf
-      if (!options.quiet)
-        perf = await intro('buddy ports:list')
-
-      // return the ports for the project
-      if (options.project) {
-        if (!options.quiet)
-          log.info(`Listing ports for project: ${italic(options.project)}`)
-
-        const path = await findProjectPath(options.project)
-
-        log.debug(`Path: ${path}`)
-
-        const ports = await getPortsForProjectPath(path, options)
-
-        outputPorts(ports, options)
-      }
-      // return the used ports for all projects
-      else {
-        outputPorts(projectPorts, options)
-      }
-
-      if (!options.quiet)
-        await outro('Exited', { startTime: perf, useSeconds: false })
-
-      process.exit(ExitCode.Success)
-    })
-
-  buddy
-    .command('ports:check', descriptions.ports)
-    .option('-p, --project [name]', descriptions.project, {
-      default: projectPath(),
-    })
-    .option('-q, --quiet', 'Use minimal output', { default: false })
-    .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: PortsOptions) => {
-      log.debug('Running `buddy ports:check` ...', options)
-
-      let perf
-      if (!options.quiet)
-        perf = await intro('buddy ports:check')
-
-      const projects = await findStacksProjects(undefined, { quiet: true })
-
-      log.debug('Running `buddy ports`')
-      log.debug(`Found ${projects.length} projects`)
-      log.debug('Projects:', projects)
-
-      // need to loop over the projects and then trigger `buddy ports` for each project (which returns a list of ports)
-      const projectsPorts: { [project: string]: Ports } = {}
-      for (const project of projects) projectsPorts[project] = await getPortsForProjectPath(project, options)
-
-      log.info('ProjectsPorts:', projectsPorts)
-
-      if (!options.quiet)
-        await outro('Exited', { startTime: perf, useSeconds: false })
-
-      process.exit(ExitCode.Success)
-    })
-
-  onUnknownSubcommand(buddy, "ports")
-}
-
-async function getPortsForProjectPath(path: string, options: PortsOptions) {
-  if (!options.quiet)
-    log.info(`Checking ports for project: ${italic(path)}`)
-
-  $.cwd(path)
-  // Load the .env file for the project. A malformed (or missing) .env should
-  // not abort `./buddy ports`. We log and fall through with the parent shell
-  // env so the command still produces useful output.
-  try {
-    $.env(await import(`${path}/.env`))
-  }
-  catch (err) {
-    if (!options.quiet)
-      log.warn(`[ports] Failed to load ${path}/.env (${(err as Error).message}). Falling back to current environment.`)
-  }
-
-  const projectList = await $`./buddy projects:list --quiet`.text()
-  log.debug('ProjectListResponse', projectList)
-
-  // get the list of all Stacks project paths (on the system)
-  const projects = projectList
-    .split('\n')
-    .filter(line => line.startsWith('   - '))
-    .map(line => line.trim().substring(4))
-  log.debug('Projects:', projects)
-
-  // since we are targeting a specific project, find its path
-  const ppath = options.project ?? p.projectPath()
-  let projectPath = projects.find(project => project.includes(ppath))
-
-  log.debug(`Checking ports for project: ${projectPath}`)
-  if (projectPath === '' || !projectPath)
-    // default to the current project
-    projectPath = p.projectPath()
-
-  log.debug(`$ Running: ./buddy ports:list --quiet via ${projectPath}`)
-  const response = await $`./buddy ports:list --quiet`.json()
-
-  log.debug(`Response for ./buddy ports:list --quiet via ${projectPath}`, response)
-
-  // Step 1: Add double quotes around keys
-  let validJsonString = response.replace(/(\w+)(?=\s*:)/g, '"$1"')
-
-  // Step 2: Remove potential trailing commas before closing braces
-  validJsonString = validJsonString.replace(/,(\s*\})/g, '$1')
-
-  // Now we can parse it into an object
-  let ports: Ports
-  try {
-    ports = JSON.parse(validJsonString) as Ports
-  }
-  catch {
-    throw new Error(`Failed to parse ports configuration: ${validJsonString.slice(0, 200)}`)
-  }
-
-  log.debug(`Ports for ${projectPath}`, ports)
-
-  return ports
+/** Whether something is listening on the port on this machine. */
+function isListening(port: number, timeoutMs = 300): Promise<boolean> {
+  return new Promise((resolve) => {
+    const socket = connect({ port, host: '127.0.0.1' })
+    const finish = (listening: boolean): void => {
+      clearTimeout(timer)
+      socket.destroy()
+      resolve(listening)
+    }
+    const timer = setTimeout(() => finish(false), timeoutMs)
+    socket.once('connect', () => finish(true))
+    socket.once('error', () => finish(false))
+  })
 }
 
 function outputPorts(ports: Ports, options: PortsOptions) {
@@ -196,4 +39,75 @@ function outputPorts(ports: Ports, options: PortsOptions) {
 
   if (!options.quiet)
     console.log('')
+}
+
+async function checkPorts(ports: Ports): Promise<void> {
+  const entries = Object.entries(ports).filter((entry): entry is [string, number] => typeof entry[1] === 'number')
+  const width = Math.max(...entries.map(([name]) => name.length))
+  const listening = await Promise.all(entries.map(([, port]) => isListening(port)))
+
+  entries.forEach(([name, port], index) => {
+    const state = listening[index] ? yellow('in use') : green('free')
+    console.log(`  ${name.padEnd(width)}  ${dim(String(port).padStart(5))}  ${state}`)
+  })
+}
+
+export function ports(buddy: CLI): void {
+  const descriptions = {
+    command: 'List the ports this project\'s servers use',
+    check: 'Check which of this project\'s ports are free and which are in use',
+    project: 'Target a specific project',
+    verbose: 'Enable verbose output',
+  }
+
+  for (const name of ['ports', 'ports:list']) {
+    const command = buddy
+      .command(name, descriptions.command)
+      .option('-p, --project [name]', descriptions.project, { default: undefined })
+      .option('-q, --quiet', 'Use minimal output', { default: false })
+      .option('--verbose', descriptions.verbose, { default: false })
+
+    if (name === 'ports')
+      command.option('-c, --check', descriptions.check, { default: false })
+
+    command.action(async (options: PortsOptions & { check?: boolean }) => {
+      log.debug(`Running \`buddy ${name}\` ...`, options)
+
+      let perf
+      if (!options.quiet)
+        perf = await intro(`buddy ${name}`)
+
+      if (options.check)
+        await checkPorts(projectPorts)
+      else
+        outputPorts(projectPorts, options)
+
+      if (!options.quiet)
+        await outro('Exited', { startTime: perf, useSeconds: false })
+
+      process.exit(ExitCode.Success)
+    })
+  }
+
+  buddy
+    .command('ports:check', descriptions.check)
+    .option('-p, --project [name]', descriptions.project, { default: undefined })
+    .option('-q, --quiet', 'Use minimal output', { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: PortsOptions) => {
+      log.debug('Running `buddy ports:check` ...', options)
+
+      let perf
+      if (!options.quiet)
+        perf = await intro('buddy ports:check')
+
+      await checkPorts(projectPorts)
+
+      if (!options.quiet)
+        await outro('Exited', { startTime: perf, useSeconds: false })
+
+      process.exit(ExitCode.Success)
+    })
+
+  onUnknownSubcommand(buddy, 'ports')
 }

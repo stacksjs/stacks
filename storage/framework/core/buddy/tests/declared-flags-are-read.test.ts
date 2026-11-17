@@ -23,11 +23,14 @@ const dir = join(import.meta.dir, '..', 'src', 'commands')
 /**
  * Handled by the CLI framework itself rather than by any one command.
  *
- * `project` used to be on this list and does not belong: `--project` is not a
- * process-wide option, it is declared per command, and 19 commands declared it
- * while reading nothing. The exemption was hiding them (stacksjs/stacks#2875).
+ * `project` was taken off this list once, rightly: 19 commands declared
+ * `--project` while reading nothing, and the exemption was hiding them
+ * (stacksjs/stacks#2875). It is back because it is now read for every built-in
+ * command, before the command runs: the launcher (`src/launcher.ts`) resolves
+ * the project it names and starts the command there. `launcher.test.ts` proves
+ * that, so a command need not read it again.
  */
-const framework = new Set(['verbose', 'quiet', 'debug', 'help', 'version', 'noInteraction', 'env'])
+const framework = new Set(['verbose', 'quiet', 'debug', 'help', 'version', 'noInteraction', 'env', 'project'])
 
 const camel = (flag: string) => flag.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase())
 

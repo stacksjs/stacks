@@ -12,6 +12,13 @@ const APP_KEY_OPTIONAL_COMMANDS = [
    * then wrote its own wrapper around the same `@stacksjs/env` functions.
    */
   'env',
+  // Machine-level commands: they list projects, find one, or talk to the
+  // background daemon, from any directory. Requiring a project to ask which
+  // projects there are made `buddy projects` unusable everywhere but inside one.
+  'projects',
+  'cd',
+  'daemon',
+  'dashboard',
   // Apple signing/provisioning also serves standalone Stacks native apps.
   'desktop:apple',
   'build',
