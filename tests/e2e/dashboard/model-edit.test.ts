@@ -88,15 +88,18 @@ describe.skipIf(!dashboardE2EAvailable)('a record and its rows, saved together',
     expect(await memberships()).toBe(membershipsBefore)
   }, 120_000)
 
-  // stx rendered each row's Edit, Delete and Discard as an empty placeholder
-  // inside the nested lists (stacksjs/stx#2197, fixed on stx main, not yet
-  // released). `test.failing` passes while the buttons are missing and fails
-  // once a fixed stx is installed: then make this a plain `test`.
-  test.failing('a staged row can be discarded (stacksjs/stx#2197)', async () => {
+  // stx once rendered each row's Edit, Delete and Discard as an empty
+  // placeholder inside the nested lists (stacksjs/stx#2197, fixed in stx
+  // 0.2.908), so a staged row could not be taken back.
+  test('a staged row can be discarded (stacksjs/stx#2197)', async () => {
     const { cdp } = e2e!.browser
     await openEditPage(cdp, e2e!.origin, userId)
     await addTeamMember(cdp, team.name)
-    await click(cdp, { selector: '[data-draft-state] button', text: 'Discard' }, { timeoutMs: 5_000 })
+    const staged = `document.querySelectorAll('[data-draft-state="added"]').length`
+    expect(await cdp.evaluate<number>(staged)).toBe(1)
+    expect(await cdp.evaluate<number>(`document.querySelectorAll('[data-draft-state] [data-stx-lazy]').length`)).toBe(0)
+    await click(cdp, { selector: '[data-draft-state="added"] button', text: 'Discard' }, { timeoutMs: 5_000 })
+    await waitFor(async () => await cdp.evaluate<number>(staged) === 0 || null, 5_000, { label: 'the staged row to go' })
   }, 60_000)
 })
 
