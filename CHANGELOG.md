@@ -1,5 +1,49 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.621...v0.75.622)
+
+## ✨ Features
+
+- **dashboard**: switch projects from the top of the sidebar ([dbfb64f](https://github.com/stacksjs/stacks/commit/dbfb64f)) _(by Chris Breuer)_
+- **buddy**: run project dashboards from a background daemon ([7fa8168](https://github.com/stacksjs/stacks/commit/7fa8168)) _(by Chris Breuer)_
+- **buddy**: run any project's commands from anywhere ([e73ff51](https://github.com/stacksjs/stacks/commit/e73ff51)) _(by Chris Breuer)_
+- **path**: find a project from any directory and keep the machine's project list ([2e7da1c](https://github.com/stacksjs/stacks/commit/2e7da1c)) _(by Chris Breuer)_
+
+## 🐛 Bug Fixes
+
+- **image**: generate opaque RGB App Store screenshots ([60ee725](https://github.com/stacksjs/stacks/commit/60ee725)) _(by Chris Breuer)_
+- **dashboard**: draw the switcher's Add button with the shared Button ([752c15e](https://github.com/stacksjs/stacks/commit/752c15e)) _(by Chris Breuer)_
+- **deploy**: a mail domain belongs to one project on a shared mail server ([443bde7](https://github.com/stacksjs/stacks/commit/443bde7)) _(by Chris Breuer)_
+- **utils**: find package-based apps when scanning for projects ([02b4eae](https://github.com/stacksjs/stacks/commit/02b4eae)) _(by Chris Breuer)_
+- **deps**: record ts-cloud 0.16.143 in pantry.lock ([4f794fa](https://github.com/stacksjs/stacks/commit/4f794fa)) _(by glennmichael123)_ ([#3317](https://github.com/stacksjs/stacks/issues/3317))
+
+## 📝 Documentation
+
+- refresh the native image test catalog ([9746beb](https://github.com/stacksjs/stacks/commit/9746beb)) _(by Chris Breuer)_
+- count the project switcher and the testing suite's new test ([f95e079](https://github.com/stacksjs/stacks/commit/f95e079)) _(by Chris Breuer)_
+- one buddy for every project, the daemon and the project switcher ([8918b6e](https://github.com/stacksjs/stacks/commit/8918b6e)) _(by Chris Breuer)_
+
+## ✅ Tests
+
+- **dashboard**: set the system theme instead of reading the runner's ([661fa1b](https://github.com/stacksjs/stacks/commit/661fa1b)) _(by Chris Breuer)_
+- **testing**: give every test run its own ~/.stacks ([bb0c1fa](https://github.com/stacksjs/stacks/commit/bb0c1fa)) _(by Chris Breuer)_
+- **dashboard**: appearance settings apply at once and carry to the next page ([61bed93](https://github.com/stacksjs/stacks/commit/61bed93)) _(by glennmichael123)_ ([#3320](https://github.com/stacksjs/stacks/issues/3320))
+- **dashboard**: create, search and delete a record from its list ([35b9f87](https://github.com/stacksjs/stacks/commit/35b9f87)) _(by glennmichael123)_ ([#3320](https://github.com/stacksjs/stacks/issues/3320))
+- **dashboard**: a staged row can be discarded ([278d35d](https://github.com/stacksjs/stacks/commit/278d35d)) _(by glennmichael123)_ ([#3315](https://github.com/stacksjs/stacks/issues/3315))
+- **dashboard**: mail settings load and save with no mail storage ([788bc40](https://github.com/stacksjs/stacks/commit/788bc40)) _(by glennmichael123)_ ([#3319](https://github.com/stacksjs/stacks/issues/3319))
+- **dashboard**: a page that never settles fails the audit, and the harness has no AWS account ([0570fa9](https://github.com/stacksjs/stacks/commit/0570fa9)) _(by glennmichael123)_ ([#3319](https://github.com/stacksjs/stacks/issues/3319), [stacksjs/ts-cloud#222](https://github.com/stacksjs/ts-cloud/issues/222))
+
+## 🔧 Chores
+
+- **deps**: stx 0.2.908 ([1efda73](https://github.com/stacksjs/stacks/commit/1efda73)) _(by glennmichael123)_ ([#3315](https://github.com/stacksjs/stacks/issues/3315), [stacksjs/stx#2197](https://github.com/stacksjs/stx/issues/2197))
+- **deps**: upgrade @stacksjs/ts-cloud to 0.16.143 (#3317) ([5e5f814](https://github.com/stacksjs/stacks/commit/5e5f814)) _(by Chris)_ ([#3317](https://github.com/stacksjs/stacks/issues/3317))
+
+## Contributors
+
+- _Chris_
+- _Chris Breuer_
+- _glennmichael123_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.620...v0.75.621)
 
 ## 🐛 Bug Fixes
