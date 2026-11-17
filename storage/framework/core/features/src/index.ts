@@ -198,6 +198,9 @@ export const FEATURE_TABLES: Record<FeatureName, readonly string[]> = {
     // PostgreSQL and MySQL (stacksjs/stacks#2995). They run ungated now.
     'customers', 'subscriptions',
     'gift_cards', 'coupons', 'transactions', 'reviews',
+    // Automatic and code discounts, and post-purchase offers with their
+    // responses (which key to `post_purchase_offers` and `orders`).
+    'discounts', 'post_purchase_offers', 'post_purchase_offer_responses',
     // `delivery_stops` keys to `delivery_routes` and `courier_pings` to
     // `couriers`, so both have to be hidden alongside them. Unclaimed, their
     // migrations ran with commerce disabled — the default — against a database

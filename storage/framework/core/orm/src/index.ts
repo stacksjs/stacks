@@ -522,6 +522,9 @@ const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature:
   ['Manufacturer', ['commerce'], 'commerce'],
   ['Category', ['commerce'], 'commerce'],
   ['Coupon', ['commerce'], 'commerce'],
+  ['Discount', ['commerce'], 'commerce'],
+  ['PostPurchaseOffer', ['commerce'], 'commerce'],
+  ['PostPurchaseOfferResponse', ['commerce'], 'commerce'],
   ['GiftCard', ['commerce'], 'commerce'],
   ['LicenseKey', ['commerce'], 'commerce'],
   ['LicenseActivation', ['commerce'], 'commerce'],
@@ -650,6 +653,9 @@ export const Label = lazyModel<typeof import('../../../defaults/app/Models/Label
 export const LicenseActivation = lazyModel<typeof import('../../../defaults/app/Models/commerce/LicenseActivation').default>('LicenseActivation')
 export const LicenseKey = lazyModel<typeof import('../../../defaults/app/Models/commerce/LicenseKey').default>('LicenseKey')
 export const LicenseSeat = lazyModel<typeof import('../../../defaults/app/Models/commerce/LicenseSeat').default>('LicenseSeat')
+export const Discount = lazyModel<typeof import('../../../defaults/app/Models/commerce/Discount').default>('Discount')
+export const PostPurchaseOffer = lazyModel<typeof import('../../../defaults/app/Models/commerce/PostPurchaseOffer').default>('PostPurchaseOffer')
+export const PostPurchaseOfferResponse = lazyModel<typeof import('../../../defaults/app/Models/commerce/PostPurchaseOfferResponse').default>('PostPurchaseOfferResponse')
 export const Log = lazyModel<typeof import('../../../defaults/app/Models/Log').default>('Log')
 export const LoyaltyPoint = lazyModel<typeof import('../../../defaults/app/Models/commerce/LoyaltyPoint').default>('LoyaltyPoint')
 export const LoyaltyReward = lazyModel<typeof import('../../../defaults/app/Models/commerce/LoyaltyReward').default>('LoyaltyReward')
@@ -711,7 +717,7 @@ const _allExports: Record<string, any> = {
   User, Job, FailedJob, QueueWorker,
   Activity, AnalyticsEvent, Automation, AutomationRun, Auction, AuctionItem,
   Author, Bid, Board, BoardColumn, Campaign, CampaignSend, CampaignVariant, Card,
-  CardComment, Cart, CartItem, Categorizable, Category, Comment, Coupon, Customer,
+  CardComment, Cart, CartItem, Categorizable, Category, Comment, Coupon, Customer, Discount,
   CommunicationSuppression, ConsentEvent,
   DeliveryRoute, DeliveryStop, Deployment, DigitalDelivery, Courier, CourierPing,
   EmailList,
@@ -720,7 +726,7 @@ const _allExports: Record<string, any> = {
   Log, LoyaltyPoint, LoyaltyReward, MailPreference, Manufacturer, Notification,
   MagicLinkToken, Menu, MenuItem, NotificationDelivery, Order, OrderIdempotency,
   OrderItem, Page, PageRevision, Payment, PaymentMethod, PaymentProduct,
-  PaymentTransaction, PaymentWebhookEvent, Pledge, Post, PrintDevice, Product, ProductUnit,
+  PaymentTransaction, PaymentWebhookEvent, Pledge, Post, PostPurchaseOffer, PostPurchaseOfferResponse, PrintDevice, Product, ProductUnit,
   ProductVariant, QueryLog, Receipt, Release, Request, Review, ShippingMethod,
   Redirect, SenderDomain, ShippingRate, ShippingZone, Site, SiteDomain,
   SmsOptOut, SocialAccount, SocialPost, Subscriber,

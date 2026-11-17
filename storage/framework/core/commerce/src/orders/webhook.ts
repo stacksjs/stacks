@@ -48,6 +48,7 @@ import { formatDate } from '@stacksjs/orm'
 import type { OrderStatus } from './events'
 import { canTransition, emitOrderCancelled, emitOrderPaid, emitOrderRefunded } from './events'
 import { handleLicensePaymentEvent } from '../licensing/service'
+import { completeUpsellPayment } from '../upsells'
 
 /**
  * Look up an order by its associated payment's `transaction_id`
@@ -319,9 +320,17 @@ async function handleRefundSucceeded(event: PaymentEvent): Promise<void> {
 export async function handleCommercePaymentEvent(event: PaymentEvent): Promise<boolean> {
   switch (event.type) {
     case 'payment.succeeded':
+      // A post-purchase offer whose payment needed the shopper (3-D Secure)
+      // waits as a pending acceptance; this is what finishes it.
+      if (event.reference && await completeUpsellPayment(event.reference, { succeeded: true, provider: event.provider }))
+        return true
       await handlePaymentSucceeded(event)
       return true
     case 'payment.failed':
+      // A failed upsell payment releases its stock and leaves the order alone:
+      // the order was paid for already, so it must not be cancelled.
+      if (event.reference && await completeUpsellPayment(event.reference, { succeeded: false, reason: event.reason, provider: event.provider }))
+        return true
       await handlePaymentFailed(event)
       return true
     case 'refund.succeeded':

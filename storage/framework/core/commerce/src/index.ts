@@ -6,6 +6,7 @@ import * as catalogImport from './imports'
 import * as coupons from './coupons'
 import * as customers from './customers'
 import * as devices from './devices'
+import * as discounts from './discounts'
 import * as errors from './errors'
 import * as giftCards from './gift-cards'
 import * as licensing from './licensing'
@@ -18,6 +19,7 @@ import * as releases from './releases'
 import * as receipts from './receipts'
 import * as shippings from './shippings'
 import * as tax from './tax'
+import * as upsells from './upsells'
 import * as waitlists from './waitlists'
 import * as restaurant from './waitlists/restaurant'
 
@@ -39,6 +41,8 @@ type RestaurantModule = typeof restaurant
 type TaxModule = typeof tax
 type WaitlistsModule = typeof waitlists
 type DevicesModule = typeof devices
+type DiscountsModule = typeof discounts
+type UpsellsModule = typeof upsells
 type ReceiptsModule = typeof receipts
 
 export interface CommerceNamespace {
@@ -50,6 +54,8 @@ export interface CommerceNamespace {
   catalog: CatalogModule
   coupons: CouponsModule
   customers: CustomersModule
+  /** Automatic and code discounts: buy X get Y, volume tiers, free shipping, combinations. */
+  discounts: DiscountsModule
   errors: ErrorsModule
   giftCards: GiftCardsModule
   /** Software licenses: issuing from payments, device activations, team seats, signed offline tokens. */
@@ -64,6 +70,8 @@ export interface CommerceNamespace {
   restaurant: RestaurantModule
   shippings: ShippingsModule
   tax: TaxModule
+  /** Post-purchase offers: discounted, one-time additions to an order just placed. */
+  upsells: UpsellsModule
   waitlists: WaitlistsModule
   devices: DevicesModule
   receipts: ReceiptsModule
@@ -76,6 +84,7 @@ export const commerce: CommerceNamespace = {
   coupons,
   customers,
   devices,
+  discounts,
   errors,
   giftCards,
   licensing,
@@ -88,6 +97,7 @@ export const commerce: CommerceNamespace = {
   restaurant,
   shippings,
   tax,
+  upsells,
   waitlists,
 }
 
@@ -103,6 +113,7 @@ export {
   coupons,
   customers,
   devices,
+  discounts,
   errors,
   giftCards,
   money,
@@ -115,6 +126,7 @@ export {
   restaurant,
   shippings,
   tax,
+  upsells,
   waitlists,
 }
 
