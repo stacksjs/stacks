@@ -24,6 +24,13 @@ route.post('/api/checkout/contact', 'Actions/Storefront/CheckoutContactAction').
 route.post('/api/checkout/shipping', 'Actions/Storefront/CheckoutShippingAction').skipCsrf()
 route.post('/api/checkout/place', 'Actions/Storefront/PlaceOrderAction').skipCsrf()
 
+// Post-purchase offers on the order confirmation page: add a discounted item
+// to the order just placed, or turn the offer down. Authorised by the order's
+// unguessable key (`orders.tracking_token`), which the confirmation link and
+// the forms carry, so CSRF adds nothing an attacker without the key could use.
+route.post('/api/orders/offers/accept', 'Actions/Storefront/AcceptOrderOfferAction').skipCsrf()
+route.post('/api/orders/offers/decline', 'Actions/Storefront/DeclineOrderOfferAction').skipCsrf()
+
 // Buyer-submitted product review. Tied to a shipped order via order_id + email
 // match (the SubmitReviewAction verifies ownership and stamps
 // is_verified_purchase=1). Stored as is_approved=0 for admin moderation through

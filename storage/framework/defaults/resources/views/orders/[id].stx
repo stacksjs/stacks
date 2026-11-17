@@ -3,89 +3,251 @@
 @section('title', 'Order confirmed')
 
 <script server>
-// The columns this query selects. bun:sqlite returns `any`, so nothing
-// downstream of the map was checked either.
+// The order page a shopper lands on after checkout, and opens again from the
+// receipt email. It authorises on the order's unguessable key
+// (`orders.tracking_token`, passed as `?key=`): order ids are sequential, and
+// without the key anyone could read another shopper's name, email and address
+// by counting. A wrong or missing key reads exactly like a missing order.
+//
+// Under the summary sits the post-purchase offer, when the order qualifies
+// for one (`commerce.upsells`): a discounted, one-time addition taken with one
+// click, posted to `/api/orders/offers/accept` with the same key.
+
 interface OrderItemRow {
   quantity: number | string
   price: number | string
-  name: string
+  name: string | null
   image_url: string | null
-  slug: string
+  slug: string | null
   weight_grams: number | null
 }
 
-interface StorefrontLineItem { lineTotal: number }
+interface OfferVariantView { id: number, name: string, unitPrice: number, regularPrice: number, inStock: boolean }
+interface OfferProductView {
+  productId: number
+  name: string
+  imageUrl: string | null
+  unitPrice: number
+  regularPrice: number
+  percentOff: number
+  variants: OfferVariantView[]
+  inStock: boolean
+  status: string | null
+}
+interface OfferView {
+  offerId: number
+  headline: string | null
+  message: string | null
+  minQuantity: number
+  defaultQuantity: number
+  maxQuantity: number | null
+  expiresAt: string
+  products: OfferProductView[]
+}
 
-const Database = require('bun:sqlite').Database
-const path = require('path')
 const { storefrontCurrency, storefrontMoney } = require('../../../app/Storefront/StorefrontMoney')
-
-const dbPath = path.resolve(process.cwd(), process.env.DB_DATABASE_PATH || 'database/stacks.sqlite')
-const db = new Database(dbPath, { readonly: true })
+const { orderForKey } = require('../../../app/Storefront/OrderKey')
 
 // From `params`, which is what stx puts in a server script's scope for a
-// `[id]` route. A bare `id` has never been a binding, so the `typeof` guard
-// was always false and this page rendered "order not found" for every order.
+// `[id]` route.
 const orderId = Number(params?.id ?? 0) || 0
+const queryParams = typeof requestContext !== 'undefined' ? requestContext.query() : (typeof query !== 'undefined' ? query : {})
+const key = String(queryParams?.key ?? '')
 
-const order = orderId
-  ? db.query(`
-      SELECT o.*, c.name AS customer_name, c.email AS customer_email
-      FROM orders o
-      LEFT JOIN customers c ON c.id = o.customer_id
-      WHERE o.id = ?1
-    `).get(orderId)
-  : null
+let order: Record<string, any> | null = null
+let items: Array<Record<string, any>> = []
+let offers: Array<Record<string, any>> = []
+
+try {
+  order = orderId ? await orderForKey(orderId, key) : null
+}
+catch (error) {
+  console.warn(`[storefront] order page could not read order ${orderId}: ${error instanceof Error ? error.message : String(error)}`)
+}
 
 // Every amount is integer minor units of the order's currency (1999 is
-// $19.99): `order_items.price`, `orders.delivery_fee` and `orders.total_amount`.
+// $19.99): `order_items.price`, `orders.delivery_fee`, `orders.discount_amount`
+// and `orders.total_amount`.
 const currency = storefrontCurrency(order?.currency)
 
-const items = order
-  ? db.query(`
-      SELECT oi.quantity, oi.price, p.name, p.image_url, p.slug, p.weight_grams
-      FROM order_items oi
-      LEFT JOIN products p ON p.id = oi.product_id
-      WHERE oi.order_id = ?1
-      ORDER BY oi.id ASC
-    `).all(order.id).map((row: OrderItemRow) => ({
-      name: row.name,
-      slug: row.slug,
-      image: row.image_url,
-      weight: row.weight_grams ? `${row.weight_grams}g` : '',
-      qty: Number(row.quantity),
-      price: Number(row.price),
-      lineTotal: Number(row.quantity) * Number(row.price),
-      lineTotalLabel: storefrontMoney(Number(row.quantity) * Number(row.price), currency),
-    }))
-  : []
+if (order) {
+  const { db } = await import('@stacksjs/database/runtime')
+  const customer = order.customer_id
+    ? await (db as any).selectFrom('customers').where('id', '=', order.customer_id).select(['name', 'email']).executeTakeFirst()
+    : null
+  order.customer_name = customer?.name ?? ''
+  order.customer_email = customer?.email ?? ''
 
-const subtotal = items.reduce((s: number, i: StorefrontLineItem) => s + i.lineTotal, 0)
+  const rows = await (db as any)
+    .selectFrom('order_items')
+    .leftJoin('products', 'products.id', 'order_items.product_id')
+    .where('order_items.order_id', '=', order.id)
+    .select(['order_items.quantity as quantity', 'order_items.price as price', 'products.name as name', 'products.image_url as image_url', 'products.slug as slug', 'products.weight_grams as weight_grams'])
+    .orderBy('order_items.id', 'asc')
+    .execute() as OrderItemRow[]
+
+  items = rows.map((row: OrderItemRow) => ({
+    name: row.name ?? 'Item',
+    slug: row.slug,
+    image: row.image_url,
+    weight: row.weight_grams ? `${row.weight_grams}g · ` : '',
+    qty: Number(row.quantity),
+    lineTotal: Number(row.quantity) * Number(row.price),
+    lineTotalLabel: storefrontMoney(Number(row.quantity) * Number(row.price), currency),
+  }))
+
+  try {
+    const { upsells } = await import('@stacksjs/commerce')
+    const views = await upsells.presentOffers(Number(order.id)) as OfferView[]
+    offers = views.map((offer: OfferView) => ({
+      offerId: offer.offerId,
+      headline: offer.headline || 'One-time offer',
+      message: offer.message || '',
+      minQuantity: offer.minQuantity,
+      maxQuantity: offer.maxQuantity ?? '',
+      defaultQuantity: offer.defaultQuantity,
+      expiresLabel: new Date(offer.expiresAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short' }),
+      products: offer.products.map((product: OfferProductView) => ({
+        productId: product.productId,
+        name: product.name,
+        image: product.imageUrl || '',
+        priceLabel: storefrontMoney(product.unitPrice, currency),
+        regularLabel: product.regularPrice > product.unitPrice ? storefrontMoney(product.regularPrice, currency) : '',
+        percentLabel: product.percentOff > 0 ? `${product.percentOff}% off` : '',
+        hasVariants: product.variants.length > 0,
+        variants: product.variants.map((variant: OfferVariantView) => ({
+          id: variant.id,
+          label: `${variant.name} - ${storefrontMoney(variant.unitPrice, currency)}${variant.inStock ? '' : ' (sold out)'}`,
+          disabled: !variant.inStock,
+        })),
+        added: product.status === 'accepted',
+        pending: product.status === 'pending',
+        available: product.inStock && product.status !== 'accepted' && product.status !== 'pending' && product.status !== 'declined',
+      })),
+    }))
+  }
+  catch (error) {
+    // The confirmation matters more than the offer: an offer that cannot be
+    // shown is left out, and the log says why.
+    console.warn(`[storefront] no post-purchase offer for order ${order.id}: ${error instanceof Error ? error.message : String(error)}`)
+  }
+}
+
+const subtotal = items.reduce((s: number, i: Record<string, any>) => s + Number(i.lineTotal), 0)
+const discount = order ? Number(order.discount_amount || 0) : 0
 const shipping = order ? Number(order.delivery_fee || 0) : 0
+const tax = order ? Number(order.tax_amount || 0) : 0
 const total = order ? Number(order.total_amount || 0) : 0
 const subtotalLabel = storefrontMoney(subtotal, currency)
+const discountLabel = discount > 0 ? `-${storefrontMoney(discount, currency)}` : ''
 const shippingLabel = shipping === 0 ? 'Free' : storefrontMoney(shipping, currency)
+const taxLabel = tax > 0 ? storefrontMoney(tax, currency) : ''
 const totalLabel = storefrontMoney(total, currency)
+const savingsLabel = discount > 0 ? storefrontMoney(discount, currency) : ''
+
+const notice = typeof requestContext !== 'undefined' ? requestContext.notice() : ''
+const formError = typeof requestContext !== 'undefined' ? requestContext.formError() : ''
 </script>
 
 @section('content')
-  <div class="mx-auto px-6 py-16 max-w-3xl">
+  <div class="mx-auto px-4 sm:px-6 py-16 max-w-3xl">
 
     @if (!order)
       <div class="py-16 text-center">
         <h1 class="font-bold text-3xl text-stone-900 tracking-tight">Order not found</h1>
-        <p class="mt-3 text-stone-600">We couldn't find that order. Try the shop instead.</p>
+        <p class="mt-3 text-stone-600">We couldn't find that order. Open it from the link in your receipt email, or try the shop instead.</p>
         <a href="/products" class="inline-flex mt-6 px-6 py-3 font-semibold text-sm text-stone-50 bg-stone-900 hover:bg-stone-800 rounded-full">Back to the shop</a>
       </div>
     @else
       <div class="text-center">
         <div class="inline-flex items-center justify-center h-14 w-14 bg-emerald-100 rounded-full">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-emerald-700" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+          <span class="i-hugeicons-tick-02 h-7 w-7 text-emerald-700" aria-hidden="true"></span>
         </div>
         <p class="mt-5 font-medium text-stone-500 text-xs tracking-wider uppercase">Order #{{ order.id }}</p>
         <h1 class="mt-2 font-bold text-4xl text-stone-900 tracking-tight">Order confirmed.</h1>
         <p class="mt-3 text-stone-600">Thanks, {{ order.customer_name }}. We sent a receipt to {{ order.customer_email }}.</p>
       </div>
+
+      @if (notice)
+        <p role="status" class="mt-8 px-4 py-3 font-medium text-emerald-800 text-sm bg-emerald-50 border border-emerald-200 rounded-xl">{{ notice }}</p>
+      @endif
+      @if (formError)
+        <p role="alert" class="mt-8 px-4 py-3 font-medium text-red-800 text-sm bg-red-50 border border-red-200 rounded-xl">{{ formError }}</p>
+      @endif
+
+      @foreach (offers as offer)
+        <section class="mt-10" aria-labelledby="offer-{{ offer.offerId }}">
+          <div class="flex gap-3 items-start p-5 bg-stone-100 border border-stone-200 rounded-2xl">
+            <span class="i-hugeicons-gift mt-0.5 h-5 w-5 flex-shrink-0 text-stone-700" aria-hidden="true"></span>
+            <div>
+              <h2 id="offer-{{ offer.offerId }}" class="font-semibold text-stone-900">{{ offer.headline }}</h2>
+              @if (offer.message)
+                <p class="mt-1 text-stone-700 text-sm">{{ offer.message }}</p>
+              @endif
+              <p class="mt-1 text-stone-500 text-xs">Only on this page, until {{ offer.expiresLabel }}. Charged to the payment method you just used.</p>
+            </div>
+          </div>
+
+          <ul class="flex gap-4 overflow-x-auto mt-4 pb-3 snap-x snap-mandatory">
+            @foreach (offer.products as product)
+              <li class="flex flex-col flex-shrink-0 w-64 sm:w-72 snap-start">
+                <div class="overflow-hidden aspect-square bg-stone-100 border border-stone-200 rounded-2xl">
+                  @if (product.image)
+                    <img src="{{ product.image }}" alt="{{ product.name }}" class="object-cover h-full w-full" loading="lazy">
+                  @endif
+                </div>
+                <h3 class="mt-3 font-semibold text-lg text-stone-900">{{ product.name }}</h3>
+                <p class="mt-1 text-base">
+                  <span class="font-semibold text-stone-900">{{ product.priceLabel }}</span>
+                  @if (product.regularLabel)
+                    <s class="ml-2 text-stone-500">{{ product.regularLabel }}</s>
+                  @endif
+                  @if (product.percentLabel)
+                    <span class="ml-2 font-medium text-emerald-700">({{ product.percentLabel }})</span>
+                  @endif
+                </p>
+
+                @if (product.added)
+                  <p class="mt-4 px-4 py-3 font-semibold text-center text-emerald-800 text-sm bg-emerald-50 rounded-xl">Added to your order</p>
+                @elseif (product.pending)
+                  <p class="mt-4 px-4 py-3 font-semibold text-center text-stone-700 text-sm bg-stone-100 rounded-xl">Confirming payment</p>
+                @elseif (product.available)
+                  <form method="POST" action="/api/orders/offers/accept" class="flex flex-col gap-3 mt-4">
+                    <input type="hidden" name="order_id" value="{{ order.id }}">
+                    <input type="hidden" name="key" value="{{ key }}">
+                    <input type="hidden" name="offer_id" value="{{ offer.offerId }}">
+                    <input type="hidden" name="product_id" value="{{ product.productId }}">
+                    @if (product.hasVariants)
+                      <label class="block px-4 pt-2 pb-2 border border-stone-300 rounded-xl focus-within:border-stone-900">
+                        <span class="block text-stone-500 text-xs">Option</span>
+                        <select name="variant_id" required class="block w-full text-stone-900 text-sm bg-transparent focus:outline-none">
+                          @foreach (product.variants as variant)
+                            <option value="{{ variant.id }}" {{ variant.disabled ? 'disabled' : '' }}>{{ variant.label }}</option>
+                          @endforeach
+                        </select>
+                      </label>
+                    @endif
+                    <label class="block px-4 pt-2 pb-2 border border-stone-300 rounded-xl focus-within:border-stone-900">
+                      <span class="block text-stone-500 text-xs">Quantity</span>
+                      <input type="number" name="quantity" value="{{ offer.defaultQuantity }}" min="{{ offer.minQuantity }}" max="{{ offer.maxQuantity }}" step="1" required inputmode="numeric" class="block w-full text-stone-900 text-sm bg-transparent focus:outline-none">
+                    </label>
+                    <button type="submit" class="px-6 py-3 font-semibold text-sm text-stone-50 bg-stone-900 hover:bg-stone-800 active:scale-[0.98] rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-stone-900 transition">Add to order</button>
+                  </form>
+                @else
+                  <p class="mt-4 px-4 py-3 font-medium text-center text-stone-500 text-sm bg-stone-100 rounded-xl">Sold out</p>
+                @endif
+              </li>
+            @endforeach
+          </ul>
+
+          <form method="POST" action="/api/orders/offers/decline" class="mt-2 text-right">
+            <input type="hidden" name="order_id" value="{{ order.id }}">
+            <input type="hidden" name="key" value="{{ key }}">
+            <input type="hidden" name="offer_id" value="{{ offer.offerId }}">
+            <button type="submit" class="font-medium text-stone-500 text-sm hover:text-stone-900 underline underline-offset-4">No thanks</button>
+          </form>
+        </section>
+      @endforeach
 
       <div class="mt-10 p-6 md:p-8 border border-stone-200 rounded-3xl">
         <p class="font-semibold text-stone-500 text-xs tracking-wider uppercase">Items</p>
@@ -93,11 +255,13 @@ const totalLabel = storefrontMoney(total, currency)
           @foreach (items as item)
             <li class="flex gap-4 items-center py-4">
               <div class="overflow-hidden flex-shrink-0 h-16 w-16 bg-stone-200 rounded-xl">
-                <img src="{{ item.image }}" alt="{{ item.name }}" class="object-cover h-full w-full">
+                @if (item.image)
+                  <img src="{{ item.image }}" alt="{{ item.name }}" class="object-cover h-full w-full">
+                @endif
               </div>
               <div class="flex-1">
                 <p class="font-semibold text-stone-900">{{ item.name }}</p>
-                <p class="text-stone-500 text-xs">{{ item.weight }} · qty {{ item.qty }}</p>
+                <p class="text-stone-500 text-xs">{{ item.weight }}qty {{ item.qty }}</p>
               </div>
               <p class="font-semibold text-stone-900">{{ item.lineTotalLabel }}</p>
             </li>
@@ -108,9 +272,22 @@ const totalLabel = storefrontMoney(total, currency)
 
         <dl class="space-y-2 text-sm">
           <div class="flex justify-between"><dt class="text-stone-600">Subtotal</dt><dd class="font-semibold text-stone-900">{{ subtotalLabel }}</dd></div>
+          @if (discountLabel)
+            <div class="flex justify-between"><dt class="text-stone-600">Discount</dt><dd class="font-semibold text-emerald-700">{{ discountLabel }}</dd></div>
+          @endif
           <div class="flex justify-between"><dt class="text-stone-600">Shipping</dt><dd class="font-semibold text-stone-900">{{ shippingLabel }}</dd></div>
+          @if (taxLabel)
+            <div class="flex justify-between"><dt class="text-stone-600">Tax</dt><dd class="font-semibold text-stone-900">{{ taxLabel }}</dd></div>
+          @endif
           <div class="flex justify-between pt-2 text-base border-stone-200 border-t"><dt class="font-semibold text-stone-900">Total</dt><dd class="font-bold text-stone-900">{{ totalLabel }}</dd></div>
         </dl>
+
+        @if (savingsLabel)
+          <p class="flex gap-2 items-center mt-4 font-semibold text-emerald-700 text-sm tracking-wide uppercase">
+            <span class="i-hugeicons-discount-tag-01 h-4 w-4" aria-hidden="true"></span>
+            Total savings {{ savingsLabel }}
+          </p>
+        @endif
 
         <div class="mt-6 p-4 text-sm bg-stone-100 rounded-xl">
           <p class="font-semibold text-stone-500 text-xs tracking-wider uppercase">Ship to</p>
@@ -121,31 +298,31 @@ const totalLabel = storefrontMoney(total, currency)
       <div class="grid gap-4 sm:grid-cols-3 mt-10 text-sm">
         <div class="p-5 border border-stone-200 rounded-2xl">
           <div class="inline-flex items-center justify-center h-9 w-9 bg-stone-100 rounded-full">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-stone-700" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+            <span class="i-hugeicons-mail-01 h-4 w-4 text-stone-700" aria-hidden="true"></span>
           </div>
           <p class="mt-3 font-semibold text-stone-900">Receipt sent</p>
           <p class="mt-1 text-stone-600">Check your inbox at <span class="text-stone-900">{{ order.customer_email }}</span>.</p>
         </div>
         <div class="p-5 border border-stone-200 rounded-2xl">
           <div class="inline-flex items-center justify-center h-9 w-9 bg-stone-100 rounded-full">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-stone-700" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m0 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0M3.375 5.25h12.5c.621 0 1.125.504 1.125 1.125v9M3.375 5.25a1.125 1.125 0 00-1.125 1.125v9.75c0 .621.504 1.125 1.125 1.125h.375M16.5 14.25V11.25c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v6c0 .621-.504 1.125-1.125 1.125H17.25"/></svg>
+            <span class="i-hugeicons-delivery-truck-01 h-4 w-4 text-stone-700" aria-hidden="true"></span>
           </div>
-          <p class="mt-3 font-semibold text-stone-900">Ships in 1–2 days</p>
+          <p class="mt-3 font-semibold text-stone-900">Ships in 1-2 days</p>
           <p class="mt-1 text-stone-600">We'll email tracking the moment it leaves the warehouse.</p>
         </div>
         <div class="p-5 border border-stone-200 rounded-2xl">
           <div class="inline-flex items-center justify-center h-9 w-9 bg-stone-100 rounded-full">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-stone-700" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/></svg>
+            <span class="i-hugeicons-checkmark-badge-01 h-4 w-4 text-stone-700" aria-hidden="true"></span>
           </div>
           <p class="mt-3 font-semibold text-stone-900">100% guaranteed</p>
-          <p class="mt-1 text-stone-600">If the bowl doesn't pass the sniff test, we'll refund or replace.</p>
+          <p class="mt-1 text-stone-600">Not right? We'll refund or replace it.</p>
         </div>
       </div>
 
       <div class="flex flex-col gap-3 justify-center sm:flex-row mt-10">
         <a href="/products" class="inline-flex gap-2 items-center justify-center px-6 py-3 font-semibold text-sm text-stone-50 bg-stone-900 hover:bg-stone-800 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50 focus-visible:ring-stone-900 transition-colors">
           Keep shopping
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+          <span class="i-hugeicons-arrow-right-02 h-4 w-4" aria-hidden="true"></span>
         </a>
         <a href="/" class="inline-flex items-center justify-center px-6 py-3 font-semibold text-sm text-stone-900 border border-stone-300 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50 focus-visible:ring-stone-900 hover:border-stone-900 transition-colors">Back home</a>
       </div>

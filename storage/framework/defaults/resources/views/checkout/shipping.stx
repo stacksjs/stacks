@@ -28,16 +28,17 @@ interface StorefrontLineItem { lineTotal: number }
 const { verifyCartCookie } = require('../../../app/Storefront/CartCookie')
 const { readStorefront } = require('../../../app/Storefront/StorefrontDatabase')
 const { storefrontCurrency, storefrontMoney, storefrontSummary } = require('../../../app/Storefront/StorefrontMoney')
+const { storefrontCartSummary } = require('../../../app/Storefront/StorefrontPricing')
 
 // Signed by the storefront actions as the token, a dot and its HMAC. An
 // unsigned or tampered cookie is no cart, and is never looked up.
 const token = verifyCartCookie(requestContext.cookie('stacks_cart'))
 
 const found = token
-  ? readStorefront('views/checkout/shipping.stx', { cart: null, items: [] }, (db: import('bun:sqlite').Database) => {
+  ? readStorefront('views/checkout/shipping.stx', { cart: null, items: [], summary: null }, (db: import('bun:sqlite').Database) => {
       const row = db.query<CartRow, [string]>(`SELECT * FROM carts WHERE session_token = ?1 AND status = 'active' LIMIT 1`).get(token)
       if (!row)
-        return { cart: null, items: [] }
+        return { cart: null, items: [], summary: null }
 
       // Every amount below is integer minor units of the cart's currency.
       const currency = storefrontCurrency(row.currency)
@@ -55,9 +56,10 @@ const found = token
         }
       })
 
-      return { cart: row, items: lines }
+      // Priced with the store's automatic discounts, exactly as PlaceOrderAction charges.
+      return { cart: row, items: lines, summary: storefrontCartSummary(db, row.id, currency) }
     })
-  : { cart: null, items: [] }
+  : { cart: null, items: [], summary: null }
 
 const cart = found.cart
 const items = found.items
@@ -66,7 +68,9 @@ const items = found.items
 // (app/Actions/Storefront/_shipping.ts), in minor units, so the running
 // totals on every checkout step match what gets charged.
 const subtotal = items.reduce((s: number, i: StorefrontLineItem) => s + i.lineTotal, 0)
-const summary = storefrontSummary(subtotal, storefrontCurrency(cart?.currency))
+const summary = found.summary ?? { ...storefrontSummary(subtotal, storefrontCurrency(cart?.currency)), discountLabel: '', discountTitle: '' }
+const discountLabel = summary.discountLabel
+const discountTitle = summary.discountTitle
 const subtotalLabel = summary.subtotalLabel
 const shippingLabel = summary.shippingLabel
 const totalLabel = summary.totalLabel
@@ -172,6 +176,8 @@ const formError = requestContext.formError()
           shippingLabel="{{ shippingLabel }}"
           totalLabel="{{ totalLabel }}"
           freeShippingNote="{{ freeShippingNote }}"
+          discountLabel="{{ discountLabel }}"
+          discountTitle="{{ discountTitle }}"
           :showItems="true"
         />
       </div>

@@ -17,10 +17,14 @@ export interface OrderConfirmationOptions {
   /** The amounts below are integer minor units of this currency (1999 is $19.99). */
   currency?: string
   subtotal: number
+  /** Taken off the subtotal by discounts; the row is left out when 0. */
+  discount?: number
+  /** What the discount was ("BUY 4, GET 4 FREE"). */
+  discountTitle?: string
   shipping: number
   total: number
   shippingAddress?: string
-  /** Absolute URL the receipt CTA should link to (e.g. `/orders/123`). */
+  /** Absolute URL the receipt CTA should link to (e.g. `/orders/123?key=...`). */
   orderUrl: string
 }
 
@@ -55,6 +59,8 @@ export async function sendOrderConfirmation(options: OrderConfirmationOptions): 
       // never has to know the amounts are minor units or which currency.
       subtotalLabel: formatCurrency(options.subtotal, currency),
       shippingLabel: formatCurrency(options.shipping, currency),
+      discountLabel: options.discount ? `-${formatCurrency(options.discount, currency)}` : '',
+      discountTitle: options.discountTitle || '',
       totalLabel: formatCurrency(options.total, currency),
       shippingAddress: options.shippingAddress || '',
       appName,

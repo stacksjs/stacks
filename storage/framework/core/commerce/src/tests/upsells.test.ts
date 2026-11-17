@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'bun:test'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { handleCommercePaymentEvent } from '../orders/webhook'
-import { acceptOffer, completeUpsellPayment, declineOffer, eligibleOffers, offerStats, presentOffers } from '../upsells'
+import { acceptOffer, completeUpsellPayment, declineOffer, eligibleOffers, offerStats, presentOffers, releaseStalePending } from '../upsells'
 import { refreshDatabase } from './setup'
 
 /**
@@ -222,6 +222,15 @@ describe('accepting an offer', () => {
     expect(Number((await row('orders', s.order)).total_amount)).toBe(14800)
     expect(await completeUpsellPayment('pi_3ds', { succeeded: true })).toBe(false)
     expect(Number((await row('orders', s.order)).total_amount)).toBe(14800)
+  })
+
+  it('releases a 3-D Secure acceptance the shopper walked away from', async () => {
+    const s = await seed()
+    await acceptOffer({ orderId: s.order, offerId: s.offer, productId: s.crew, variantId: s.crewBlackXl, quantity: 5, charge: charger({ status: 'requires_action', reference: 'pi_gone' }), now: SOON })
+    expect(await releaseStalePending({ now: new Date(Date.now() + 30 * 60_000) })).toBe(0)
+    expect(await releaseStalePending({ now: new Date(Date.now() + 61 * 60_000) })).toBe(1)
+    expect(Number((await row('product_variants', s.crewBlackXl)).inventory_count)).toBe(50)
+    expect(await completeUpsellPayment('pi_gone', { succeeded: true })).toBe(false)
   })
 
   it('does not cancel a paid order when an upsell payment fails later', async () => {

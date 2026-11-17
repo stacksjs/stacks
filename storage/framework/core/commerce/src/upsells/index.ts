@@ -448,6 +448,31 @@ export async function completeUpsellPayment(reference: string, outcome: { succee
 }
 
 /**
+ * Fail acceptances left `pending` for longer than `olderThanMinutes` (default
+ * 60) and put their stock back: a 3-D Secure prompt the shopper walked away
+ * from would otherwise hold the items forever. Schedule it like the abandoned
+ * cart sweeper. A payment that settles after this still reaches the webhook,
+ * which finds nothing pending and leaves it for a person to refund.
+ */
+export async function releaseStalePending(options: { olderThanMinutes?: number, now?: Date } = {}): Promise<number> {
+  const now = options.now ?? new Date()
+  const cutoff = formatDate(new Date(now.getTime() - (options.olderThanMinutes ?? 60) * 60_000))
+  const stale = await q()
+    .selectFrom('post_purchase_offer_responses')
+    .where('status', '=', 'pending')
+    .where('updated_at', '<', cutoff)
+    .select(['id'])
+    .execute() as Array<{ id: number }>
+  let released = 0
+  for (const { id } of stale) {
+    const row = await failAcceptance(Number(id), 'The payment was not completed in time.')
+    if (row?.status === 'failed')
+      released++
+  }
+  return released
+}
+
+/**
  * Turn an offer down for this order. Every product of it the shopper saw and
  * had not taken is marked declined. Answers how many were.
  */
@@ -526,6 +551,21 @@ export function chargeWith(driver: PaymentDriver, options: ChargeWithOptions): E
       clientConfirmation: result.clientConfirmation,
       redirectUrl: result.redirectUrl ?? null,
     }
+  }
+}
+
+/**
+ * A charger that takes the money from the payer's default saved payment
+ * method (or their only one) through a payments driver. Throws, which
+ * `acceptOffer` reports as a failed payment, when they have none on file.
+ */
+export function chargeDefaultMethod(driver: PaymentDriver, payer: Payer): Exclude<UpsellCharger, 'collect-later'> {
+  return async (request) => {
+    const methods = await driver.paymentMethods(payer)
+    const method = methods.find(m => m.isDefault) ?? (methods.length === 1 ? methods[0] : undefined)
+    if (!method)
+      throw new Error('There is no saved payment method to charge.')
+    return await chargeWith(driver, { payer, paymentMethod: method.id })(request)
   }
 }
 

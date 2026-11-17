@@ -1,3 +1,4 @@
+import type { DiscountRule } from '../../storage/framework/core/commerce/src/discounts/engine'
 import { describe, expect, test } from 'bun:test'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
@@ -5,6 +6,7 @@ import { makeModelRecords } from '@stacksjs/database'
 import { campaignWriteData, validateCampaignWriteData } from '../../storage/framework/defaults/app/Actions/Dashboard/Marketing/campaign-records'
 import { totalsFor } from '../../storage/framework/defaults/app/Actions/Storefront/_shipping'
 import { storefrontSummary } from '../../storage/framework/defaults/app/Storefront/StorefrontMoney'
+import { priceStorefront, pricedSummary } from '../../storage/framework/defaults/app/Storefront/StorefrontPricing'
 import { formatCurrency } from '../../storage/framework/core/commerce/src/money'
 
 /**
@@ -228,10 +230,31 @@ describe('storefront money', () => {
     expect(storefrontSummary(4000, 'USD').shippingLabel).toBe('Free')
   })
 
-  test('the place-order action charges with the same rule, in the cart currency', () => {
+  test('the place-order action charges with the same rule the pages show, in the cart currency', () => {
     const action = readFileSync(join(defaultsDir, 'app/Actions/Storefront/PlaceOrderAction.ts'), 'utf8')
-    expect(action).toContain('totalsFor(itemsSubtotal, currency)')
-    expect(action).toMatch(/total_amount: total,\s+currency,/)
+    expect(action).toContain('priceStorefront(lines, rules, currency)')
+    expect(action).toMatch(/total_amount: priced\.total,\s+discount_amount: priced\.discount,\s+currency,/)
+    for (const page of ['cart.stx', 'checkout/contact.stx', 'checkout/shipping.stx', 'checkout/payment.stx'])
+      expect(readFileSync(join(viewsDir, page), 'utf8')).toContain('storefrontCartSummary(db, row.id, currency)')
+  })
+
+  test('automatic discounts price the cart, and shipping follows the discounted subtotal', () => {
+    const bxgy: DiscountRule = { id: 'b4g4', title: 'BUY 4, GET 4 FREE', effect: { type: 'buy_x_get_y', buyQuantity: 4, getQuantity: 4, getPercent: 100 } }
+    // Eight $25 pairs: $200, half of it free, and $100 clears the $40 free-shipping line.
+    const socks = priceStorefront([{ id: 1, productId: 7, quantity: 8, unitPrice: 2500 }], [bxgy], 'USD')
+    expect(socks).toMatchObject({ subtotal: 20000, discount: 10000, shipping: 0, total: 10000 })
+
+    // $45 of goods with 20% off is $36: below the line again, so shipping is charged.
+    const twenty: DiscountRule = { id: 'twenty', title: '20% off', effect: { type: 'percentage', percent: 20 } }
+    const priced = priceStorefront([{ id: 1, productId: 1, quantity: 1, unitPrice: 4500 }], [twenty], 'USD')
+    expect(priced).toMatchObject({ discount: 900, shipping: 500, total: 4100, remainingForFree: 400 })
+    const labels = pricedSummary(priced, 'USD')
+    expect(labels.discountLabel).toBe(`-${formatCurrency(900, 'USD')}`)
+    expect(labels.discountTitle).toBe('20% off')
+
+    // A free-shipping discount waives what the flat rule charged.
+    const free: DiscountRule = { id: 'ship', title: 'Free shipping', effect: { type: 'free_shipping' } }
+    expect(priceStorefront([{ id: 1, productId: 1, quantity: 1, unitPrice: 1000 }], [free], 'USD')).toMatchObject({ shipping: 0, total: 1000, remainingForFree: 0 })
   })
 })
 

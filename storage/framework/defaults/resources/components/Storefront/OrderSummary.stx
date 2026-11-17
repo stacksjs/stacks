@@ -21,6 +21,10 @@ interface OrderSummaryProps {
   /** Optional, pre-formatted "Add $X.XX more for free shipping." nudge.
    *  When empty/omitted the nudge is hidden — let the caller decide. */
   freeShippingNote?: string
+  /** Optional, pre-formatted discount ("-$10.00"); the row is hidden when empty. */
+  discountLabel?: string
+  /** What the discount is, shown under the row: "BUY 4, GET 4 FREE". */
+  discountTitle?: string
   showItems?: boolean
   ctaHref?: string
   ctaLabel?: string
@@ -38,6 +42,8 @@ const {
   shippingLabel,
   totalLabel,
   freeShippingNote = '',
+  discountLabel = '',
+  discountTitle = '',
   showItems = false,
   ctaHref = '',
   ctaLabel = '',
@@ -64,6 +70,17 @@ const {
 
   <dl class="space-y-3 text-sm {{ showItems ? '' : 'mt-4' }}">
     <div class="flex justify-between"><dt class="text-stone-600">Subtotal</dt><dd class="font-semibold text-stone-900">{{ subtotalLabel }}</dd></div>
+    @if (discountLabel)
+      <div class="flex gap-3 justify-between">
+        <dt class="text-stone-600">
+          Discount
+          @if (discountTitle)
+            <span class="block font-medium text-emerald-700 text-xs tracking-wide uppercase">{{ discountTitle }}</span>
+          @endif
+        </dt>
+        <dd class="font-semibold text-emerald-700">{{ discountLabel }}</dd>
+      </div>
+    @endif
     <div class="flex justify-between"><dt class="text-stone-600">Shipping</dt><dd class="font-semibold text-stone-900">{{ shippingLabel }}</dd></div>
     @if (taxLabel)
       <div class="flex justify-between"><dt class="text-stone-600">Tax</dt><dd class="font-semibold text-stone-900">{{ taxLabel }}</dd></div>

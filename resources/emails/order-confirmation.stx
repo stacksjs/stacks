@@ -8,6 +8,9 @@ const itemRows = props.itemRows || ''
 // amounts are integer minor units of the order's currency.
 const subtotalLabel = props.subtotalLabel || ''
 const shippingLabel = props.shippingLabel || ''
+// Empty when the order had no discount, which hides the row.
+const discountLabel = props.discountLabel || ''
+const discountTitle = props.discountTitle || ''
 const totalLabel = props.totalLabel || ''
 const shippingAddress = props.shippingAddress || ''
 const year = new Date().getFullYear()
@@ -51,6 +54,12 @@ const year = new Date().getFullYear()
                   <td style="padding: 12px 0 4px; color: #a0a0a0; font-size: 14px;">Subtotal</td>
                   <td style="padding: 12px 0 4px; color: #a0a0a0; font-size: 14px; text-align: right;">{{ subtotalLabel }}</td>
                 </tr>
+                @if (discountLabel)
+                <tr>
+                  <td style="padding: 4px 0; color: #a0a0a0; font-size: 14px;">Discount @if (discountTitle)<span style="color: #6ee7b7;">({{ discountTitle }})</span>@endif</td>
+                  <td style="padding: 4px 0; color: #6ee7b7; font-size: 14px; text-align: right;">{{ discountLabel }}</td>
+                </tr>
+                @endif
                 <tr>
                   <td style="padding: 4px 0; color: #a0a0a0; font-size: 14px;">Shipping</td>
                   <td style="padding: 4px 0; color: #a0a0a0; font-size: 14px; text-align: right;">{{ shippingLabel }}</td>
