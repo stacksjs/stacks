@@ -288,14 +288,14 @@ onDestroy(() => {
           class="flex-1 px-2 py-1 min-w-0 text-[12px] placeholder:text-neutral-400 bg-black/5 dark:bg-white/10 border-none rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
           @keydown="handleAddKeydown"
         />
-        <button
-          type="button"
-          class="shrink-0 px-2 py-1 font-medium text-[12px] text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50"
+        <Button
+          variant="primary"
+          size="xs"
           :disabled="isSaving() || !addPath().trim()"
           @click="submitAdd()"
         >
           Add
-        </button>
+        </Button>
       </div>
     </div>
   </div>
